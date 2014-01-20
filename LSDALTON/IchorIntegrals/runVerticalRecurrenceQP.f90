@@ -265,22 +265,22 @@ CONTAINS
        WRITE(IB,'(A)')'         & QpreExpFac,AUXarray)'
     enddo
 
-    WRITE(LUMODC1,'(A)')'subroutine VerticalRecurrence1C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-    WRITE(LUMODC2,'(A)')'subroutine VerticalRecurrenceSegQ1C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-    WRITE(LUMODC3,'(A)')'subroutine VerticalRecurrenceSegP1C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-    WRITE(LUMODC4,'(A)')'subroutine VerticalRecurrenceSeg1C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-    WRITE(LUMODC5,'(A)')'subroutine VerticalRecurrenceSeg1Prim1C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
+    WRITE(LUMODC1,'(A)')'subroutine VerticalRecurrence1C(nPasses,nPrimP,nPrimQ,&'
+    WRITE(LUMODC2,'(A)')'subroutine VerticalRecurrenceSegQ1C(nPasses,nPrimP,nPrimQ,&'
+    WRITE(LUMODC3,'(A)')'subroutine VerticalRecurrenceSegP1C(nPasses,nPrimP,nPrimQ,&'
+    WRITE(LUMODC4,'(A)')'subroutine VerticalRecurrenceSeg1C(nPasses,nPrimP,nPrimQ,&'
+    WRITE(LUMODC5,'(A)')'subroutine VerticalRecurrenceSeg1Prim1C(nPasses,nPrimP,nPrimQ,&'
 
     do IC=11,15
        WRITE(IC,'(A)')'         & reducedExponents,TABFJW,Qexp,Ccenter,Pcent,Qcent,&'
        WRITE(IC,'(A)')'         & integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)'
     enddo
 
-    WRITE(LUMODD1,'(A)')'subroutine VerticalRecurrence1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-    WRITE(LUMODD2,'(A)')'subroutine VerticalRecurrenceSegQ1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-    WRITE(LUMODD3,'(A)')'subroutine VerticalRecurrenceSegP1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-    WRITE(LUMODD4,'(A)')'subroutine VerticalRecurrenceSeg1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-    WRITE(LUMODD5,'(A)')'subroutine VerticalRecurrenceSeg1Prim1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
+    WRITE(LUMODD1,'(A)')'subroutine VerticalRecurrence1D(nPasses,nPrimP,nPrimQ,&'
+    WRITE(LUMODD2,'(A)')'subroutine VerticalRecurrenceSegQ1D(nPasses,nPrimP,nPrimQ,&'
+    WRITE(LUMODD3,'(A)')'subroutine VerticalRecurrenceSegP1D(nPasses,nPrimP,nPrimQ,&'
+    WRITE(LUMODD4,'(A)')'subroutine VerticalRecurrenceSeg1D(nPasses,nPrimP,nPrimQ,&'
+    WRITE(LUMODD5,'(A)')'subroutine VerticalRecurrenceSeg1Prim1D(nPasses,nPrimP,nPrimQ,&'
     do ID=16,20
        WRITE(ID,'(A)')'         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,&'
        WRITE(ID,'(A)')'         & integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)'
@@ -291,9 +291,9 @@ CONTAINS
        WRITE(I,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ'
     enddo
     !C and D
-    do I=11,20
-       WRITE(I,'(A)')'  integer,intent(in) :: nAtomsC,nAtomsD'
-    enddo
+!    do I=11,20
+!       WRITE(I,'(A)')'  integer,intent(in) :: nAtomsC,nAtomsD'
+!    enddo
     do I=1,20
        WRITE(I,'(A)')'  REAL(REALK),intent(in) :: TABFJW(0:4,0:1200)'
     enddo
@@ -324,11 +324,17 @@ CONTAINS
     do IB=6,10
        WRITE(IB,'(A)')'  real(realk),intent(in) :: Bcenter(3)'
     enddo
+!    do IC=11,15
+!       WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3,nAtomsC)'
+!    enddo
+!    do ID=16,20
+!       WRITE(ID,'(A)')'  real(realk),intent(in) :: Dcenter(3,nAtomsD)'
+!    enddo
     do IC=11,15
-       WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3,nAtomsC)'
+       WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3)'
     enddo
     do ID=16,20
-       WRITE(ID,'(A)')'  real(realk),intent(in) :: Dcenter(3,nAtomsD)'
+       WRITE(ID,'(A)')'  real(realk),intent(in) :: Dcenter(3)'
     enddo
     !standard
     do I=1,16,5
@@ -355,12 +361,12 @@ CONTAINS
        WRITE(I,'(A)')'  !local variables'
        WRITE(I,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,ipnt'
     enddo
-    do I=11,15
-       WRITE(I,'(A)')'  integer :: iAtomC'
-    enddo
-    do I=16,20
-       WRITE(I,'(A)')'  integer :: iAtomD'
-    enddo
+!    do I=11,15
+!       WRITE(I,'(A)')'  integer :: iAtomC'
+!    enddo
+!    do I=16,20
+!       WRITE(I,'(A)')'  integer :: iAtomD'
+!    enddo
 
     do I=1,5
        WRITE(I,'(A)')'  real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa'
@@ -456,16 +462,22 @@ CONTAINS
        WRITE(I,'(A)')'   ENDDO'
     enddo
     do I=11,15
-       WRITE(I,'(A)')'   iAtomC = iPassQ - ((iPassQ-1)/nAtomsC)*nAtomsC'
-       WRITE(I,'(A)')'   Cx = -Ccenter(1,iAtomC)'
-       WRITE(I,'(A)')'   Cy = -Ccenter(2,iAtomC)'
-       WRITE(I,'(A)')'   Cz = -Ccenter(3,iAtomC)'
+!       WRITE(I,'(A)')'   iAtomC = iPassQ - ((iPassQ-1)/nAtomsC)*nAtomsC'
+!       WRITE(I,'(A)')'   Cx = -Ccenter(1,iAtomC)'
+!       WRITE(I,'(A)')'   Cy = -Ccenter(2,iAtomC)'
+!       WRITE(I,'(A)')'   Cz = -Ccenter(3,iAtomC)'
+       WRITE(I,'(A)')'   Cx = -Ccenter(1)'
+       WRITE(I,'(A)')'   Cy = -Ccenter(2)'
+       WRITE(I,'(A)')'   Cz = -Ccenter(3)'
     enddo
     do I=16,20
-       WRITE(I,'(A)')'   iAtomD = (iPassQ-1)/nAtomsC+1'
-       WRITE(I,'(A)')'   Dx = -Dcenter(1,iAtomD)'
-       WRITE(I,'(A)')'   Dy = -Dcenter(2,iAtomD)'
-       WRITE(I,'(A)')'   Dz = -Dcenter(3,iAtomD)'
+!       WRITE(I,'(A)')'   iAtomD = (iPassQ-1)/nAtomsC+1'
+!       WRITE(I,'(A)')'   Dx = -Dcenter(1,iAtomD)'
+!       WRITE(I,'(A)')'   Dy = -Dcenter(2,iAtomD)'
+!       WRITE(I,'(A)')'   Dz = -Dcenter(3,iAtomD)'
+       WRITE(I,'(A)')'   Dx = -Dcenter(1)'
+       WRITE(I,'(A)')'   Dy = -Dcenter(2)'
+       WRITE(I,'(A)')'   Dz = -Dcenter(3)'
     enddo
     do J=1,16
        I = non1Prim(J)
@@ -778,21 +790,21 @@ CONTAINS
           WRITE(I,'(A)')'         & AUXarray)'
        enddo
 
-       WRITE(LUMODC1,'(A,I1,A)')'subroutine VerticalRecurrence',JMAX,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-       WRITE(LUMODC2,'(A,I1,A)')'subroutine VerticalRecurrenceSegQ',JMAX,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-       WRITE(LUMODC3,'(A,I1,A)')'subroutine VerticalRecurrenceSegP',JMAX,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-       WRITE(LUMODC4,'(A,I1,A)')'subroutine VerticalRecurrenceSeg',JMAX,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-       WRITE(LUMODC5,'(A,I1,A)')'subroutine VerticalRecurrenceSeg1Prim',JMAX,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
+       WRITE(LUMODC1,'(A,I1,A)')'subroutine VerticalRecurrence',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
+       WRITE(LUMODC2,'(A,I1,A)')'subroutine VerticalRecurrenceSegQ',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
+       WRITE(LUMODC3,'(A,I1,A)')'subroutine VerticalRecurrenceSegP',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
+       WRITE(LUMODC4,'(A,I1,A)')'subroutine VerticalRecurrenceSeg',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
+       WRITE(LUMODC5,'(A,I1,A)')'subroutine VerticalRecurrenceSeg1Prim',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
        do I=11,15
           WRITE(I,'(A)')'         & reducedExponents,TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&'
           WRITE(I,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
        enddo
 
-       WRITE(LUMODD1,'(A,I1,A)')'subroutine VerticalRecurrence',JMAX,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-       WRITE(LUMODD2,'(A,I1,A)')'subroutine VerticalRecurrenceSegQ',JMAX,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-       WRITE(LUMODD3,'(A,I1,A)')'subroutine VerticalRecurrenceSegP',JMAX,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-       WRITE(LUMODD4,'(A,I1,A)')'subroutine VerticalRecurrenceSeg',JMAX,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
-       WRITE(LUMODD5,'(A,I1,A)')'subroutine VerticalRecurrenceSeg1Prim',JMAX,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&'
+       WRITE(LUMODD1,'(A,I1,A)')'subroutine VerticalRecurrence',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
+       WRITE(LUMODD2,'(A,I1,A)')'subroutine VerticalRecurrenceSegQ',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
+       WRITE(LUMODD3,'(A,I1,A)')'subroutine VerticalRecurrenceSegP',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
+       WRITE(LUMODD4,'(A,I1,A)')'subroutine VerticalRecurrenceSeg',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
+       WRITE(LUMODD5,'(A,I1,A)')'subroutine VerticalRecurrenceSeg1Prim',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
        do I=16,20
           WRITE(I,'(A)')'         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&'
           WRITE(I,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
@@ -802,9 +814,9 @@ CONTAINS
           WRITE(I,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ'
        enddo
        !C and D
-       do I=11,20
-          WRITE(I,'(A)')'  integer,intent(in) :: nAtomsC,nAtomsD'
-       enddo
+!       do I=11,20
+!          WRITE(I,'(A)')'  integer,intent(in) :: nAtomsC,nAtomsD'
+!       enddo
        do I=1,20
           WRITE(I,'(A,I2,A)')'  REAL(REALK),intent(in) :: TABFJW(0:',JMAX+3,',0:1200)'
        enddo
@@ -835,11 +847,17 @@ CONTAINS
        do IB=6,10    
           WRITE(IB,'(A)')'  real(realk),intent(in) :: Bcenter(3)'
        enddo
+!       do IC=11,15
+!          WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3,nAtomsC)'
+!       enddo
+!       do ID=16,20
+!          WRITE(ID,'(A)')'  real(realk),intent(in) :: Dcenter(3,nAtomsD)'
+!       enddo
        do IC=11,15
-          WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3,nAtomsC)'
+          WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3)'
        enddo
        do ID=16,20
-          WRITE(ID,'(A)')'  real(realk),intent(in) :: Dcenter(3,nAtomsD)'
+          WRITE(ID,'(A)')'  real(realk),intent(in) :: Dcenter(3)'
        enddo
        do I=1,16,5
           WRITE(I,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimQ*nPrimP*nPasses)'
@@ -865,12 +883,12 @@ CONTAINS
           WRITE(I,'(A)')'  !local variables'
           WRITE(I,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV'
        enddo
-       do I=11,15
-          WRITE(I,'(A)')'  integer :: iAtomC'
-       enddo
-       do I=16,20
-          WRITE(I,'(A)')'  integer :: iAtomD'
-       enddo
+!       do I=11,15
+!          WRITE(I,'(A)')'  integer :: iAtomC'
+!       enddo
+!       do I=16,20
+!          WRITE(I,'(A)')'  integer :: iAtomD'
+!       enddo
        do I=2,17,5
           WRITE(I,'(A,I5,A)')'  real(realk) :: TMPAUXarray(',nTUVprev,')'
        enddo
@@ -1011,16 +1029,22 @@ CONTAINS
           WRITE(I,'(A)')'   iP = iPassQ'
        enddo
        do I=11,15
-          WRITE(I,'(A)')'   iAtomC = iPassQ - ((iPassQ-1)/nAtomsC)*nAtomsC'
-          WRITE(I,'(A)')'   Cx = -Ccenter(1,iAtomC)'
-          WRITE(I,'(A)')'   Cy = -Ccenter(2,iAtomC)'
-          WRITE(I,'(A)')'   Cz = -Ccenter(3,iAtomC)'
+!          WRITE(I,'(A)')'   iAtomC = iPassQ - ((iPassQ-1)/nAtomsC)*nAtomsC'
+!          WRITE(I,'(A)')'   Cx = -Ccenter(1,iAtomC)'
+!          WRITE(I,'(A)')'   Cy = -Ccenter(2,iAtomC)'
+!          WRITE(I,'(A)')'   Cz = -Ccenter(3,iAtomC)'
+          WRITE(I,'(A)')'   Cx = -Ccenter(1)'
+          WRITE(I,'(A)')'   Cy = -Ccenter(2)'
+          WRITE(I,'(A)')'   Cz = -Ccenter(3)'
        enddo
        do I=16,20
-          WRITE(I,'(A)')'   iAtomD = (iPassQ-1)/nAtomsC+1'
-          WRITE(I,'(A)')'   Dx = -Dcenter(1,iAtomD)'
-          WRITE(I,'(A)')'   Dy = -Dcenter(2,iAtomD)'
-          WRITE(I,'(A)')'   Dz = -Dcenter(3,iAtomD)'
+!          WRITE(I,'(A)')'   iAtomD = (iPassQ-1)/nAtomsC+1'
+!          WRITE(I,'(A)')'   Dx = -Dcenter(1,iAtomD)'
+!          WRITE(I,'(A)')'   Dy = -Dcenter(2,iAtomD)'
+!          WRITE(I,'(A)')'   Dz = -Dcenter(3,iAtomD)'
+          WRITE(I,'(A)')'   Dx = -Dcenter(1)'
+          WRITE(I,'(A)')'   Dy = -Dcenter(2)'
+          WRITE(I,'(A)')'   Dz = -Dcenter(3)'
        enddo
 ! ======================================================================
 !    iPrimP Loop 
@@ -1255,7 +1279,10 @@ CONTAINS
           IF(MOD(I,5).EQ.2)SegQ = .TRUE.
           IF(MOD(I,5).EQ.3)SegP = .TRUE.
           IF(MOD(I,5).EQ.4)Seg = .TRUE.
-          IF(MOD(I,5).EQ.0)Seg = .TRUE.;Seg1Prim=.TRUE.
+          IF(MOD(I,5).EQ.0)THEN
+             Seg = .TRUE.
+             Seg1Prim=.TRUE.
+          ENDIF
           !Gen,SegQ,SegP,Seg
           allocate(CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
           CREATED  = .FALSE.

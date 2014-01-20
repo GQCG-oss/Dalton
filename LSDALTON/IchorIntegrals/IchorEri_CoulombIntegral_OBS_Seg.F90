@@ -39,42 +39,48 @@ CONTAINS
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,nCDAB,&
-       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&
-       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
+       & BasisCont1,BasisCont2,BasisCont3)
     implicit none
     integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD
     integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri
     integer,intent(in) :: nContA,nContB,nContC,nContD,nContP,nContQ,nTABFJW1,nTABFJW2
-    integer,intent(in) :: nAtomsC,nAtomsD
+    integer,intent(in) :: nAtomsA,nAtomsB
     integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ),Piprim1(nPrimP),Piprim2(nPrimP)
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
     real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB),Cexp(nPrimC),Dexp(nPrimD)
     logical,intent(in)     :: Qsegmented,Psegmented
     real(realk),intent(in) :: pexp(nPrimP),qexp(nPrimQ)
     real(realk),intent(in) :: pcent(3*nPrimP)           !qcent(3,nPrimP)
-    real(realk),intent(in) :: qcent(3*nPrimQ*MaxPasses) !qcent(3,nPrimQ,MaxPasses)
-    real(realk),intent(in) :: QpreExpFac(nPrimQ*MaxPasses),PpreExpFac(nPrimP)
+    real(realk),intent(in) :: qcent(3*nPrimQ)           !qcent(3,nPrimQ)
+    real(realk),intent(in) :: QpreExpFac(nPrimQ),PpreExpFac(nPrimP)
     real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2)
     !    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     !    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
     real(realk) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    integer,intent(in) :: nCDAB
-    real(realk),intent(inout) :: CDAB(nCDAB)
+    integer,intent(in) :: localintsmaxsize
+    real(realk),intent(inout) :: LOCALINTS(localintsmaxsize)
     real(realk),intent(in) :: integralPrefactor(nPrimQP)
     logical,intent(in) :: PQorder
     !integralPrefactor(nPrimP,nPrimQ)
     real(realk),intent(in) :: reducedExponents(nPrimQP)
     !reducedExponents(nPrimP,nPrimQ)
-    real(realk),intent(in) :: Qdistance12(3*MaxPasses) !Ccenter-Dcenter
-    !Qdistance12(3,MaxPasses)
+    real(realk),intent(in) :: Qdistance12(3) !Ccenter-Dcenter
+    !Qdistance12(3)
     real(realk),intent(in) :: Pdistance12(3)           !Acenter-Bcenter 
-    real(realk),intent(in) :: Acenter(3),Bcenter(3),Ccenter(3,nAtomsC),Dcenter(3,nAtomsD)
+    real(realk),intent(in) :: Acenter(3,nAtomsA),Bcenter(3,nAtomsB),Ccenter(3),Dcenter(3)
     logical,intent(in) :: spherical
     integer,intent(in) :: TMParray1maxsize,TMParray2maxsize
 !   TMP variables - allocated outside
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
+    integer,intent(in) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
+    real(realk) :: BasisCont1(BasisCont1maxsize) 
+    real(realk) :: BasisCont2(BasisCont2maxsize) 
+    real(realk) :: BasisCont3(BasisCont3maxsize) 
 !   Local variables 
     integer :: AngmomPQ,AngmomP,AngmomQ,I,J,nContQP,la,lb,lc,ld,nsize,angmomid
     
@@ -101,7 +107,7 @@ CONTAINS
 #endif
         call VerticalRecurrenceSeg0(nPasses,nPrimP,nPrimQ,&
                & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&
-               & PpreExpFac,QpreExpFac,CDAB)
+               & PpreExpFac,QpreExpFac,LOCALINTS(1:nPasses*1))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -115,10 +121,17 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrenceSeg1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*4))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,1,Pdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*3.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,1,Pdistance12,TMParray2(1:nPasses*4),&
+            & LOCALINTS(1:nPasses*3),lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -129,7 +142,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*10))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*16.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -137,16 +151,23 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q1AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*10),TMParray1(1:nPasses*16))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*12.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,4,Pdistance12,TMParray1(1:nPasses*16),&
+            & TMParray2(1:nPasses*12),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*9.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*12),&
+            & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -154,8 +175,9 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -163,16 +185,23 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q2CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*30),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*27.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*30),&
+            & LOCALINTS(1:nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -181,10 +210,17 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrenceSeg2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,1,Pdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*9.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,1,Pdistance12,TMParray2(1:nPasses*10),&
+            & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -195,7 +231,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -203,16 +240,23 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q1AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*36.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,4,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*36),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,9,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*27.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,9,Qdistance12,TMParray2(1:nPasses*36),&
+            & LOCALINTS(1:nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -221,7 +265,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -229,16 +274,23 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*100))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*90),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,9,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*81.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,9,Qdistance12,TMParray2(1:nPasses*90),&
+            & LOCALINTS(1:nPasses*81),lupri)
         !no Spherical Transformation RHS needed
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -247,7 +299,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrenceSeg2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
@@ -255,8 +308,15 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,1,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA2(1,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,1,Pdistance12,TMParray2(1:nPasses*10),&
+            & TMParray1(1:nPasses*6),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*5.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS1_maxAngP2_maxAngA2(1,nPasses,TMParray1(1:nPasses*6),&
+            & LOCALINTS(1:nPasses*5))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2010)  !Angmom(A= 2,B= 0,C= 1,D= 0) combi
@@ -266,7 +326,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -274,21 +335,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q1AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*24.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,4,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*24),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nPasses,TMParray2(1:nPasses*24),&
+            & TMParray1(1:nPasses*20))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*20),&
+            & LOCALINTS(1:nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -297,7 +366,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -305,21 +375,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*100))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*60),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray2(1:nPasses*60),&
+            & TMParray1(1:nPasses*50))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*50),&
+            & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -328,7 +406,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -336,35 +415,45 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*100))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*60),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray2(1:nPasses*60),&
+            & TMParray1(1:nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*50),&
+            & TMParray2(1:nPasses*30),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nPasses,TMParray2(1:nPasses*30),&
+            & LOCALINTS(1:nPasses*25))
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -372,35 +461,45 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q3CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*120.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,20,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*120),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nPasses,TMParray2(1:nPasses*120),&
+            & TMParray1(1:nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*90),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nPasses,TMParray2(1:nPasses*90),&
+            & LOCALINTS(1:nPasses*75))
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*350.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -408,27 +507,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*84),TMParray1(1:nPasses*350))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*210.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,35,Pdistance12,TMParray1(1:nPasses*350),&
+            & TMParray2(1:nPasses*210),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*175.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(35,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(35,nPasses,TMParray2(1:nPasses*210),&
+            & TMParray1(1:nPasses*175))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*175),&
+            & TMParray2(1:nPasses*180),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*125.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nPasses,TMParray2(1:nPasses*180),&
+            & LOCALINTS(1:nPasses*125))
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray2maxsize)THEN
@@ -436,7 +544,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrenceSeg3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
@@ -444,8 +553,15 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,1,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA2(1,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,1,Pdistance12,TMParray2(1:nPasses*20),&
+            & TMParray1(1:nPasses*18),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS1_maxAngP3_maxAngA2(1,nPasses,TMParray1(1:nPasses*18),&
+            & LOCALINTS(1:nPasses*15))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2110)  !Angmom(A= 2,B= 1,C= 1,D= 0) combi
@@ -455,7 +571,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*80.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -463,21 +580,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q1AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*80))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*72.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,4,Pdistance12,TMParray1(1:nPasses*80),&
+            & TMParray2(1:nPasses*72),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nPasses,TMParray2(1:nPasses*72),&
+            & TMParray1(1:nPasses*60))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*60),&
+            & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -486,7 +611,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -494,21 +620,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*180),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray2(1:nPasses*180),&
+            & TMParray1(1:nPasses*150))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*135.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*150),&
+            & LOCALINTS(1:nPasses*135),lupri)
         !no Spherical Transformation RHS needed
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -517,7 +651,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -525,27 +660,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*180),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray2(1:nPasses*180),&
+            & TMParray1(1:nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*150),&
+            & TMParray2(1:nPasses*90),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nPasses,TMParray2(1:nPasses*90),&
+            & LOCALINTS(1:nPasses*75))
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
@@ -553,7 +697,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*400.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -561,35 +706,45 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q3AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*84),TMParray1(1:nPasses*400))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*360.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,20,Pdistance12,TMParray1(1:nPasses*400),&
+            & TMParray2(1:nPasses*360),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*300.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nPasses,TMParray2(1:nPasses*360),&
+            & TMParray1(1:nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*270.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*300),&
+            & TMParray2(1:nPasses*270),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nPasses,TMParray2(1:nPasses*270),&
+            & LOCALINTS(1:nPasses*225))
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*120))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*700.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -597,27 +752,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*120),TMParray1(1:nPasses*700))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*630.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,35,Pdistance12,TMParray1(1:nPasses*700),&
+            & TMParray2(1:nPasses*630),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*525.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(35,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(35,nPasses,TMParray2(1:nPasses*630),&
+            & TMParray1(1:nPasses*525))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*540.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*525),&
+            & TMParray2(1:nPasses*540),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*375.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nPasses,TMParray2(1:nPasses*540),&
+            & LOCALINTS(1:nPasses*375))
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*35.GT.TMParray2maxsize)THEN
@@ -625,7 +789,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrenceSeg4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
@@ -633,8 +798,15 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,1,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP4_maxAngA2(1,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,1,Pdistance12,TMParray2(1:nPasses*35),&
+            & TMParray1(1:nPasses*36),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS1_maxAngP4_maxAngA2(1,nPasses,TMParray1(1:nPasses*36),&
+            & LOCALINTS(1:nPasses*25))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2210)  !Angmom(A= 2,B= 2,C= 1,D= 0) combi
@@ -644,7 +816,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*140.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -652,21 +825,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP4Q1AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*140))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*144.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,4,Pdistance12,TMParray1(1:nPasses*140),&
+            & TMParray2(1:nPasses*144),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,25,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nPasses,TMParray2(1:nPasses*144),&
+            & TMParray1(1:nPasses*100))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,25,Qdistance12,TMParray1(1:nPasses*100),&
+            & LOCALINTS(1:nPasses*75),lupri)
         !no Spherical Transformation RHS needed
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -675,7 +856,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*350.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -683,21 +865,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP4Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*84),TMParray1(1:nPasses*350))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*360.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*350),&
+            & TMParray2(1:nPasses*360),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*250.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,25,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray2(1:nPasses*360),&
+            & TMParray1(1:nPasses*250))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,25,Qdistance12,TMParray1(1:nPasses*250),&
+            & LOCALINTS(1:nPasses*225),lupri)
         !no Spherical Transformation RHS needed
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -706,7 +896,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*350.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -714,27 +905,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP4Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*84),TMParray1(1:nPasses*350))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*360.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*350),&
+            & TMParray2(1:nPasses*360),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*250.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray2(1:nPasses*360),&
+            & TMParray1(1:nPasses*250))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,25,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(25,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,25,Qdistance12,TMParray1(1:nPasses*250),&
+            & TMParray2(1:nPasses*150),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*125.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(25,nPasses,TMParray2(1:nPasses*150),&
+            & LOCALINTS(1:nPasses*125))
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray2maxsize)THEN
@@ -742,7 +942,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*120))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*700.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -750,27 +951,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP4Q3AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*120),TMParray1(1:nPasses*700))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*720.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,20,Pdistance12,TMParray1(1:nPasses*700),&
+            & TMParray2(1:nPasses*720),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*500.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nPasses,TMParray2(1:nPasses*720),&
+            & TMParray1(1:nPasses*500))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*450.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,25,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(25,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,25,Qdistance12,TMParray1(1:nPasses*500),&
+            & TMParray2(1:nPasses*450),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*375.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(25,nPasses,TMParray2(1:nPasses*450),&
+            & LOCALINTS(1:nPasses*375))
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*165.GT.TMParray2maxsize)THEN
@@ -778,7 +988,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*165))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*1225.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -786,40 +997,56 @@ CONTAINS
 #endif
         call TransferRecurrenceP4Q4AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*165),TMParray1(1:nPasses*1225))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*1260.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,35,Pdistance12,TMParray1(1:nPasses*1225),&
+            & TMParray2(1:nPasses*1260),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*875.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(35,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(35,nPasses,TMParray2(1:nPasses*1260),&
+            & TMParray1(1:nPasses*875))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*900.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,25,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(25,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,25,Qdistance12,TMParray1(1:nPasses*875),&
+            & TMParray2(1:nPasses*900),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*625.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(25,nPasses,TMParray2(1:nPasses*900),&
+            & LOCALINTS(1:nPasses*625))
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*4.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrenceSeg1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*4))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,1,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*3.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*4),&
+            & LOCALINTS(1:nPasses*3),lupri)
         !no Spherical Transformation RHS needed
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -827,8 +1054,9 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg2D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrenceSeg2D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -838,21 +1066,35 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,1,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(1,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*10),&
+            & TMParray1(1:nPasses*6),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*5.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(1,nPasses,TMParray1(1:nPasses*6),&
+            & LOCALINTS(1:nPasses*5))
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*4.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrenceSeg1C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*4))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,1,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*3.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*4),&
+            & LOCALINTS(1:nPasses*3),lupri)
         !no Spherical Transformation RHS needed
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -860,13 +1102,20 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg2C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrenceSeg2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,1,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*9.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*10),&
+            & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -874,8 +1123,9 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrenceSeg3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -885,16 +1135,24 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,1,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(1,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*20),&
+            & TMParray1(1:nPasses*18),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(1,nPasses,TMParray1(1:nPasses*18),&
+            & LOCALINTS(1:nPasses*15))
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*10.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg2C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrenceSeg2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -904,16 +1162,24 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,1,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(1,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*10),&
+            & TMParray1(1:nPasses*6),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*5.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(1,nPasses,TMParray1(1:nPasses*6),&
+            & LOCALINTS(1:nPasses*5))
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrenceSeg3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -923,16 +1189,24 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,1,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(1,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*20),&
+            & TMParray1(1:nPasses*18),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(1,nPasses,TMParray1(1:nPasses*18),&
+            & LOCALINTS(1:nPasses*15))
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*35.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg4C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrenceSeg4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -942,8 +1216,15 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,1,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(1,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*35),&
+            & TMParray1(1:nPasses*36),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(1,nPasses,TMParray1(1:nPasses*36),&
+            & LOCALINTS(1:nPasses*25))
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*4.GT.TMParray2maxsize)THEN
@@ -951,10 +1232,17 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrenceSeg1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*4))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,1,Pdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*3.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,1,Pdistance12,TMParray2(1:nPasses*4),&
+            & LOCALINTS(1:nPasses*3),lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -965,7 +1253,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*10))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*16.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -973,16 +1262,23 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q1BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*10),TMParray1(1:nPasses*16))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*12.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,4,Pdistance12,TMParray1(1:nPasses*16),&
+            & TMParray2(1:nPasses*12),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*9.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*12),&
+            & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -990,8 +1286,9 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -999,22 +1296,30 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q2DtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*30),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*18.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*30),&
+            & TMParray1(1:nPasses*18),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nPasses,TMParray1(1:nPasses*18),&
+            & LOCALINTS(1:nPasses*15))
     CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
@@ -1022,7 +1327,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*10))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*16.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1030,16 +1336,23 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q1BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*10),TMParray1(1:nPasses*16))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*12.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,4,Pdistance12,TMParray1(1:nPasses*16),&
+            & TMParray2(1:nPasses*12),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*9.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*12),&
+            & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1047,8 +1360,9 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1056,16 +1370,23 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q2CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*30),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*27.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*30),&
+            & LOCALINTS(1:nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1073,8 +1394,9 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*80.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1082,30 +1404,39 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q3DtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*80))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,20,Pdistance12,TMParray1(1:nPasses*80),&
+            & TMParray2(1:nPasses*60),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*54.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*60),&
+            & TMParray1(1:nPasses*54),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nPasses,TMParray1(1:nPasses*54),&
+            & LOCALINTS(1:nPasses*45))
     CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1113,30 +1444,39 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q2CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,10,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*30),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*18.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*30),&
+            & TMParray1(1:nPasses*18),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nPasses,TMParray1(1:nPasses*18),&
+            & LOCALINTS(1:nPasses*15))
     CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*80.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1144,30 +1484,39 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q3CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*80))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,20,Pdistance12,TMParray1(1:nPasses*80),&
+            & TMParray2(1:nPasses*60),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*54.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*60),&
+            & TMParray1(1:nPasses*54),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nPasses,TMParray1(1:nPasses*54),&
+            & LOCALINTS(1:nPasses*45))
     CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*140.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1175,22 +1524,30 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q4CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*140))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*105.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A0B1BtoA(nPasses,35,Pdistance12,TMParray1(1:nPasses*140),&
+            & TMParray2(1:nPasses*105),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*108.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*105),&
+            & TMParray1(1:nPasses*108),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nPasses,TMParray1(1:nPasses*108),&
+            & LOCALINTS(1:nPasses*75))
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*10.GT.TMParray2maxsize)THEN
@@ -1198,7 +1555,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrenceSeg2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
@@ -1206,8 +1564,15 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,1,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP2_maxAngA0(1,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,1,Pdistance12,TMParray2(1:nPasses*10),&
+            & TMParray1(1:nPasses*6),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*5.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS1_maxAngP2_maxAngA0(1,nPasses,TMParray1(1:nPasses*6),&
+            & LOCALINTS(1:nPasses*5))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
@@ -1217,7 +1582,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1225,21 +1591,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q1BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*24.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,4,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*24),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nPasses,TMParray2(1:nPasses*24),&
+            & TMParray1(1:nPasses*20))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*20),&
+            & LOCALINTS(1:nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1248,7 +1622,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1256,27 +1631,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q2BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*100))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*60),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray2(1:nPasses*60),&
+            & TMParray1(1:nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*50),&
+            & TMParray2(1:nPasses*30),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nPasses,TMParray2(1:nPasses*30),&
+            & LOCALINTS(1:nPasses*25))
     CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
@@ -1284,7 +1668,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1292,21 +1677,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q1BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*24.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,4,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*24),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nPasses,TMParray2(1:nPasses*24),&
+            & TMParray1(1:nPasses*20))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*20),&
+            & LOCALINTS(1:nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1315,7 +1708,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1323,21 +1717,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q2BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*100))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*60),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray2(1:nPasses*60),&
+            & TMParray1(1:nPasses*50))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*50),&
+            & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1345,8 +1747,9 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1354,27 +1757,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q3DtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*120.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,20,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*120),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nPasses,TMParray2(1:nPasses*120),&
+            & TMParray1(1:nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*90),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nPasses,TMParray2(1:nPasses*90),&
+            & LOCALINTS(1:nPasses*75))
     CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
@@ -1382,7 +1794,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1390,35 +1803,45 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q2BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*100))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,10,Pdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*60),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray2(1:nPasses*60),&
+            & TMParray1(1:nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*50),&
+            & TMParray2(1:nPasses*30),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nPasses,TMParray2(1:nPasses*30),&
+            & LOCALINTS(1:nPasses*25))
     CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1426,35 +1849,45 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q3CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*120.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,20,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*120),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nPasses,TMParray2(1:nPasses*120),&
+            & TMParray1(1:nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*90),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nPasses,TMParray2(1:nPasses*90),&
+            & LOCALINTS(1:nPasses*75))
     CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*350.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1462,27 +1895,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q4CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*84),TMParray1(1:nPasses*350))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*210.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A0B2BtoA(nPasses,35,Pdistance12,TMParray1(1:nPasses*350),&
+            & TMParray2(1:nPasses*210),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*175.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(35,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA0(35,nPasses,TMParray2(1:nPasses*210),&
+            & TMParray1(1:nPasses*175))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*175),&
+            & TMParray2(1:nPasses*180),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*125.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nPasses,TMParray2(1:nPasses*180),&
+            & LOCALINTS(1:nPasses*125))
     CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray2maxsize)THEN
@@ -1490,7 +1932,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*10))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*16.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1498,16 +1941,23 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q1AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*10),TMParray1(1:nPasses*16))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*12.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,4,Pdistance12,TMParray1(1:nPasses*16),&
+            & TMParray2(1:nPasses*12),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*9.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*12),&
+            & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1515,8 +1965,9 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1524,30 +1975,39 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q2DtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*30),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*18.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*30),&
+            & TMParray1(1:nPasses*18),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nPasses,TMParray1(1:nPasses*18),&
+            & LOCALINTS(1:nPasses*15))
     CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*80.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1555,30 +2015,39 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q3DtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*80))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,20,Pdistance12,TMParray1(1:nPasses*80),&
+            & TMParray2(1:nPasses*60),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*54.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*60),&
+            & TMParray1(1:nPasses*54),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nPasses,TMParray1(1:nPasses*54),&
+            & LOCALINTS(1:nPasses*45))
     CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1586,30 +2055,39 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q2CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*30),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*18.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*30),&
+            & TMParray1(1:nPasses*18),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nPasses,TMParray1(1:nPasses*18),&
+            & LOCALINTS(1:nPasses*15))
     CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*80.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1617,30 +2095,39 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q3CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*80))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,20,Pdistance12,TMParray1(1:nPasses*80),&
+            & TMParray2(1:nPasses*60),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*54.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*60),&
+            & TMParray1(1:nPasses*54),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nPasses,TMParray1(1:nPasses*54),&
+            & LOCALINTS(1:nPasses*45))
     CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*140.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1648,22 +2135,30 @@ CONTAINS
 #endif
         call TransferRecurrenceP1Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*140))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*105.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P1A1B0AtoB(nPasses,35,Pdistance12,TMParray1(1:nPasses*140),&
+            & TMParray2(1:nPasses*105),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*108.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray2(1:nPasses*105),&
+            & TMParray1(1:nPasses*108),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nPasses,TMParray1(1:nPasses*108),&
+            & LOCALINTS(1:nPasses*75))
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
@@ -1671,7 +2166,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1679,16 +2175,23 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q1AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*36.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,4,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*36),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,9,Qdistance12,TMParray2,CDAB     ,lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*27.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,9,Qdistance12,TMParray2(1:nPasses*36),&
+            & LOCALINTS(1:nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1697,7 +2200,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1705,30 +2209,39 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q2AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*100))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*90),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*54.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,9,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(9,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,9,Qdistance12,TMParray2(1:nPasses*90),&
+            & TMParray1(1:nPasses*54),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(9,nPasses,TMParray1(1:nPasses*54),&
+            & LOCALINTS(1:nPasses*45))
     CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1736,22 +2249,30 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q3DtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,20,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*180),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*162.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,9,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(9,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,9,Qdistance12,TMParray2(1:nPasses*180),&
+            & TMParray1(1:nPasses*162),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*135.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(9,nPasses,TMParray1(1:nPasses*162),&
+            & LOCALINTS(1:nPasses*135))
     CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
@@ -1759,7 +2280,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1767,30 +2289,39 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*100))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*90),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*54.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,9,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(9,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,9,Qdistance12,TMParray2(1:nPasses*90),&
+            & TMParray1(1:nPasses*54),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(9,nPasses,TMParray1(1:nPasses*54),&
+            & LOCALINTS(1:nPasses*45))
     CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1798,30 +2329,39 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q3CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,20,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*180),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*162.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,9,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(9,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,9,Qdistance12,TMParray2(1:nPasses*180),&
+            & TMParray1(1:nPasses*162),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*135.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(9,nPasses,TMParray1(1:nPasses*162),&
+            & LOCALINTS(1:nPasses*135))
     CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*350.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1829,22 +2369,30 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*84),TMParray1(1:nPasses*350))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*315.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A1B1AtoB(nPasses,35,Pdistance12,TMParray1(1:nPasses*350),&
+            & TMParray2(1:nPasses*315),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*324.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,9,Qdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(9,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,9,Qdistance12,TMParray2(1:nPasses*315),&
+            & TMParray1(1:nPasses*324),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(9,nPasses,TMParray1(1:nPasses*324),&
+            & LOCALINTS(1:nPasses*225))
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray2maxsize)THEN
@@ -1852,7 +2400,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrenceSeg3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
@@ -1860,8 +2409,15 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,1,Pdistance12,TMParray2,TMParray1,lupri)
-        call SphericalContractOBS1_maxAngP3_maxAngA1(1,nPasses,TMParray1,CDAB     )
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,1,Pdistance12,TMParray2(1:nPasses*20),&
+            & TMParray1(1:nPasses*18),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS1_maxAngP3_maxAngA1(1,nPasses,TMParray1(1:nPasses*18),&
+            & LOCALINTS(1:nPasses*15))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
@@ -1871,7 +2427,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*80.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1879,21 +2436,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q1BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*80))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*72.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,4,Pdistance12,TMParray1(1:nPasses*80),&
+            & TMParray2(1:nPasses*72),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nPasses,TMParray2(1:nPasses*72),&
+            & TMParray1(1:nPasses*60))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*60),&
+            & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1902,7 +2467,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1910,27 +2476,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q2BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*180),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray2(1:nPasses*180),&
+            & TMParray1(1:nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*150),&
+            & TMParray2(1:nPasses*90),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nPasses,TMParray2(1:nPasses*90),&
+            & LOCALINTS(1:nPasses*75))
     CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
@@ -1938,7 +2513,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*80.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1946,21 +2522,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q1BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*80))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*72.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,4,Pdistance12,TMParray1(1:nPasses*80),&
+            & TMParray2(1:nPasses*72),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nPasses,TMParray2(1:nPasses*72),&
+            & TMParray1(1:nPasses*60))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*60),&
+            & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1969,7 +2553,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -1977,21 +2562,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q2BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*180),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray2(1:nPasses*180),&
+            & TMParray1(1:nPasses*150))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*135.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*150),&
+            & LOCALINTS(1:nPasses*135),lupri)
         !no Spherical Transformation RHS needed
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2000,7 +2593,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*400.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2008,27 +2602,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q3BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*84),TMParray1(1:nPasses*400))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*360.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,20,Pdistance12,TMParray1(1:nPasses*400),&
+            & TMParray2(1:nPasses*360),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*300.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nPasses,TMParray2(1:nPasses*360),&
+            & TMParray1(1:nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*270.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*300),&
+            & TMParray2(1:nPasses*270),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nPasses,TMParray2(1:nPasses*270),&
+            & LOCALINTS(1:nPasses*225))
     CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
@@ -2036,7 +2639,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2044,27 +2648,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q2BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,10,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*180),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray2(1:nPasses*180),&
+            & TMParray1(1:nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*150),&
+            & TMParray2(1:nPasses*90),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nPasses,TMParray2(1:nPasses*90),&
+            & LOCALINTS(1:nPasses*75))
     CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
@@ -2072,7 +2685,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*400.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2080,35 +2694,45 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q3BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*84),TMParray1(1:nPasses*400))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*360.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,20,Pdistance12,TMParray1(1:nPasses*400),&
+            & TMParray2(1:nPasses*360),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*300.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nPasses,TMParray2(1:nPasses*360),&
+            & TMParray1(1:nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*270.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*300),&
+            & TMParray2(1:nPasses*270),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nPasses,TMParray2(1:nPasses*270),&
+            & LOCALINTS(1:nPasses*225))
     CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*120))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*700.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2116,27 +2740,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q4CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*120),TMParray1(1:nPasses*700))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*630.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,35,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A1B2BtoA(nPasses,35,Pdistance12,TMParray1(1:nPasses*700),&
+            & TMParray2(1:nPasses*630),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*525.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(35,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA1(35,nPasses,TMParray2(1:nPasses*630),&
+            & TMParray1(1:nPasses*525))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*540.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*525),&
+            & TMParray2(1:nPasses*540),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*375.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nPasses,TMParray2(1:nPasses*540),&
+            & LOCALINTS(1:nPasses*375))
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray2maxsize)THEN
@@ -2144,7 +2777,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*40.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2152,21 +2786,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q1AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*20),TMParray1(1:nPasses*40))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*24.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,4,Pdistance12,TMParray1(1:nPasses*40),&
+            & TMParray2(1:nPasses*24),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nPasses,TMParray2(1:nPasses*24),&
+            & TMParray1(1:nPasses*20))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*20),&
+            & LOCALINTS(1:nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2175,7 +2817,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2183,35 +2826,45 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q2AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*100))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*60),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray2(1:nPasses*60),&
+            & TMParray1(1:nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*50),&
+            & TMParray2(1:nPasses*30),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nPasses,TMParray2(1:nPasses*30),&
+            & LOCALINTS(1:nPasses*25))
     CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+        call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2219,27 +2872,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP2Q3DtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*120.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P2A2B0AtoB(nPasses,20,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*120),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nPasses,TMParray2(1:nPasses*120),&
+            & TMParray1(1:nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray1(1:nPasses*100),&
+            & TMParray2(1:nPasses*90),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nPasses,TMParray2(1:nPasses*90),&
+            & LOCALINTS(1:nPasses*75))
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray2maxsize)THEN
@@ -2247,7 +2909,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*80.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2255,21 +2918,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q1AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*35),TMParray1(1:nPasses*80))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*72.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,4,Pdistance12,TMParray1(1:nPasses*80),&
+            & TMParray2(1:nPasses*72),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nPasses,TMParray2(1:nPasses*72),&
+            & TMParray1(1:nPasses*60))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*60),&
+            & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2278,7 +2949,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*200.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2286,27 +2958,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q2AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*200))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*200),&
+            & TMParray2(1:nPasses*180),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray2(1:nPasses*180),&
+            & TMParray1(1:nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*150),&
+            & TMParray2(1:nPasses*90),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nPasses,TMParray2(1:nPasses*90),&
+            & LOCALINTS(1:nPasses*75))
     CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray2maxsize)THEN
@@ -2314,7 +2995,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*400.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2322,27 +3004,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP3Q3AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*84),TMParray1(1:nPasses*400))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*360.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P3A2B1AtoB(nPasses,20,Pdistance12,TMParray1(1:nPasses*400),&
+            & TMParray2(1:nPasses*360),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*300.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nPasses,TMParray2(1:nPasses*360),&
+            & TMParray1(1:nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*270.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray1(1:nPasses*300),&
+            & TMParray2(1:nPasses*270),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nPasses,TMParray2(1:nPasses*270),&
+            & LOCALINTS(1:nPasses*225))
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray2maxsize)THEN
@@ -2350,7 +3041,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*140.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2358,21 +3050,29 @@ CONTAINS
 #endif
         call TransferRecurrenceP4Q1AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*56),TMParray1(1:nPasses*140))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*144.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,4,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,4,Pdistance12,TMParray1(1:nPasses*140),&
+            & TMParray2(1:nPasses*144),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nPasses,TMParray2,TMParray1)
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,25,Qdistance12,TMParray1,CDAB     ,lupri)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nPasses,TMParray2(1:nPasses*144),&
+            & TMParray1(1:nPasses*100))
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,25,Qdistance12,TMParray1(1:nPasses*100),&
+            & LOCALINTS(1:nPasses*75),lupri)
         !no Spherical Transformation RHS needed
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2381,7 +3081,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*350.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2389,27 +3090,36 @@ CONTAINS
 #endif
         call TransferRecurrenceP4Q2AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*84),TMParray1(1:nPasses*350))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*360.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,10,Pdistance12,TMParray1(1:nPasses*350),&
+            & TMParray2(1:nPasses*360),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*250.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray2(1:nPasses*360),&
+            & TMParray1(1:nPasses*250))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,25,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(25,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,25,Qdistance12,TMParray1(1:nPasses*250),&
+            & TMParray2(1:nPasses*150),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*125.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ2_maxAngC0(25,nPasses,TMParray2(1:nPasses*150),&
+            & LOCALINTS(1:nPasses*125))
     CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray2maxsize)THEN
@@ -2417,7 +3127,8 @@ CONTAINS
         ENDIF
 #endif
         call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,TMParray2)
+               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+               & TMParray2(1:nPasses*120))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*700.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
@@ -2425,45 +3136,60 @@ CONTAINS
 #endif
         call TransferRecurrenceP4Q3AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & TMParray2,TMParray1)
+               & TMParray2(1:nPasses*120),TMParray1(1:nPasses*700))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*720.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,20,Pdistance12,TMParray1,TMParray2,lupri)
+        call HorizontalRR_LHS_P4A2B2AtoB(nPasses,20,Pdistance12,TMParray1(1:nPasses*700),&
+            & TMParray2(1:nPasses*720),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*500.GT.TMParray1maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nPasses,TMParray2,TMParray1)
+        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nPasses,TMParray2(1:nPasses*720),&
+            & TMParray1(1:nPasses*500))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*450.GT.TMParray2maxsize)THEN
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,25,Qdistance12,TMParray1,TMParray2,lupri)
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(25,nPasses,TMParray2,CDAB     )
+        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,25,Qdistance12,TMParray1(1:nPasses*500),&
+            & TMParray2(1:nPasses*450),lupri)
+#ifdef VAR_DEBUGICHOR
+        IF(nPasses*375.GT.LOCALINTSmaxsize)THEN
+          call ichorquit('nPassestoo small',-1)
+        ENDIF
+#endif
+        call SphericalContractOBS2_maxAngQ3_maxAngC1(25,nPasses,TMParray2(1:nPasses*450),&
+            & LOCALINTS(1:nPasses*375))
     CASE DEFAULT
         CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_Seg',-1)
     END SELECT
   end subroutine IchorCoulombIntegral_OBS_Seg
   
   subroutine IchorCoulombIntegral_OBS_general_sizeSeg(TMParray1maxsize,&
-         &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
+         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
+         & AngmomA,AngmomB,AngmomC,AngmomD,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     implicit none
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
+    integer,intent(inout) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
     integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP
+    integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD
     ! local variables
     integer :: AngmomID
     
     AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
     TMParray2maxSize = 1
     TMParray1maxSize = 1
+    BasisCont1maxsize = 1
+    BasisCont2maxsize = 1
+    BasisCont3maxsize = 1
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
