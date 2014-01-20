@@ -23,7 +23,7 @@ cat > cc_rsp_betafreq.info <<'%EOF%'
    Molecule:         HF in C2
    Wave Function:    CCS, CCSD / 6-31G**
    Test Purpose:     First hyperpolarizabilities
-                     - Parallel (beta_||) and orthogonal averages (beta_|_)
+                     - Parallel (beta_|| ) and orthogonal averages (beta_|_)
                      - Static and for two non-zero frequencies
                      - Use explicitly that X and Y directions degnerated
 %EOF%
@@ -55,7 +55,7 @@ cat > cc_rsp_betafreq.dal <<'%EOF%'
 .TITLE
   first hyperpolarizability for the HF molecule
   for CCS and CCSD wavefunctions compute:
-  - parallel (beta_||) and orthogonal averages (beta_|_)
+  - parallel (beta_|| ) and orthogonal averages (beta_|_)
   - static and for two non-zero frequencies
   - use explicitly that X and Y directions degnerated
 .CC
