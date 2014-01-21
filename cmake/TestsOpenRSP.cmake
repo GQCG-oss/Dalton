@@ -1,0 +1,21 @@
+macro(add_openrsp_test _name _labels)
+    add_test(
+        ${_name}
+        python ${CMAKE_SOURCE_DIR}/external/openrsp/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name})
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
+add_openrsp_test(alpha            "dalton;openrsp")
+add_openrsp_test(beta             "dalton;openrsp")
+add_openrsp_test(cars             "dalton;openrsp")
+add_openrsp_test(el               "dalton;openrsp")
+add_openrsp_test(el_geo           "dalton;openrsp")
+add_openrsp_test(gamma            "dalton;openrsp")
+add_openrsp_test(geo              "dalton;openrsp")
+add_openrsp_test(jones            "dalton;openrsp")
+add_openrsp_test(magnetizability  "dalton;openrsp")
+add_openrsp_test(roa              "dalton;openrsp")
+add_openrsp_test(vcd              "dalton;openrsp")
+add_openrsp_test(vibgamma         "dalton;openrsp")

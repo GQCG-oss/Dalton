@@ -34,7 +34,7 @@ C  /* Deck her_pardrv */
      &                      WORK,LWORK,ITYPE,MAXDER,IATOM,NODV,
      &                      NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                      DINTSKP,RELCAL)
+     &                      DINTSKP,RELCAL,GENCTR)
 
 C
 #include "implicit.h"
@@ -47,6 +47,7 @@ Cef begin
 Cef end
 C
       LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL, rma_model_save
+      LOGICAL   GENCTR
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), WORK(LWORK)
 
