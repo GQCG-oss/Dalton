@@ -1458,7 +1458,7 @@ C
      &     IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,I2TYP,
      &     JSTRS,NPRIM,NCONT,IORBS,
      &     ICEDIF,IFTHRS,WORK(KGABAO),WORK(KDMRAO),
-     &     WORK(KDMRSO),DINTSKP,RELCAL)
+     &     WORK(KDMRSO),DINTSKP,RELCAL,.false.)
 
 !------------------------
 !     free memory windows

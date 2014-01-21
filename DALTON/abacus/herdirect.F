@@ -253,7 +253,8 @@ C
      &            TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &            IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &            WORK(KIORBS),
-     &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
+     &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.,
+     &            .false.)
       IF (IPRINT.GT.0) CALL TIMER('GETDIS/TWOINT',TIMSTR,TIMEND)
 C
 C--------------------------------------
@@ -769,7 +770,8 @@ C
      &               IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,
      &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &               WORK(KIORBS),ICEDIF,IFTHRS,
-     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.,
+     &               .false.)
          HFXMU = HFXM0
          IF (IPRINT .GT. 0) THEN
            CALL GETTIM(CPU2,WALL2)
@@ -789,7 +791,8 @@ C
      &               IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,
      &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &               WORK(KIORBS),ICEDIF,IFTHRS,
-     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),
+     &               .FALSE.,.false.)
             IF (IPRINT .GT. 0) THEN
               CALL GETTIM(CPU1,WALL1)
               WALL   = WALL1 - WALL2

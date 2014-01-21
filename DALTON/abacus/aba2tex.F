@@ -572,7 +572,7 @@ cfrj-end
      &                     TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &                     RETUR,IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),
      &                     WORK(KNCONT),WORK(KIORBS),IDUMMY,IDUMMY,
-     &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
+     &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.,.false.)
                HFXMU = HFXM0
                IF (HFXMU.NE.D0) THEN
                   HFXFC0 = HFXFAC
@@ -583,7 +583,7 @@ cfrj-end
      &                     TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &                     RETUR,IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),
      &                     WORK(KNCONT),WORK(KIORBS),IDUMMY,IDUMMY,
-     &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
+     &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.,.false.)
                   HFXFAC = HFXFC0
                END IF
                IF (IPRINT .GE. 2)
