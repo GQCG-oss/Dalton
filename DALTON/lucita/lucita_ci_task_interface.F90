@@ -8,7 +8,7 @@ module lucita_ci_task_interface
   use lucita_integral_density_interface
 
 #ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
 #else

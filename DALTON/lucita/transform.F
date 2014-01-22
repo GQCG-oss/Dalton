@@ -48,7 +48,7 @@
 *
 #ifdef VAR_MPI
       use par_mcci_io
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
       use mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #else
@@ -557,7 +557,7 @@
 *
 
 #ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
       use mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #else

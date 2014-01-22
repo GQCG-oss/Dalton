@@ -2448,7 +2448,7 @@ C
 !                LUCITA to a generic format (here: SIRIUS)
 !
 #ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
       use mpi
 #else
 #include "mpif.h"
@@ -2565,7 +2565,7 @@ C
 !                LUCITA to a generic format (here: SIRIUS)
 !
 #ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
       use mpi
 #else
 #include "mpif.h"
