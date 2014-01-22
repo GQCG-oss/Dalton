@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -328,8 +328,10 @@ C
          END IF
       ELSE IF (CCPPA) THEN
          CALL TITLER('SOPPA(CCSD) response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('SOPPA(CCSD) RESPONSE')
       ELSE IF (SOPPA) THEN
          CALL TITLER('SOPPA response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
       ELSE IF (DODFT .AND. NASHT.GT.0) THEN
          CALL TITLER('High-spin DFT response calculation','*',103)
       ELSE IF (DODFT) THEN
@@ -340,6 +342,7 @@ C
          CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
 C
@@ -892,12 +895,19 @@ C
                GO TO 100
     3          CONTINUE
                   SOPPA = .TRUE.
+                  IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
                   IF (SOPPA .AND. EMBEDDING) THEN
                     WRITE (LUPRI,'(/A)')
-     &              'Full SOPPA + Embedding model not implemented '//
-     &               '- use .SOPRPA instead'
-                    CALL QUIT('RSPINP: Full SOPPA + Embedding model '//
-     &                    'not implemented - use .SOPRPA instead')
+     &              '@ **INFO**'//
+     &               ' This is a solvent-SOPPA calculation w/ dynamic'
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' solvent response at RPA level only,'
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' cf. JCC, 2012-2022, 33, (2012) for reference.'
+cjje: change this if full solvent soppa is ever implemented
+                    SOPRPA = .TRUE.
                   END IF
                GO TO 100
     4          CONTINUE
@@ -982,6 +992,15 @@ C              .PROP2Average
  24            CONTINUE
                  SOPRPA = .TRUE.
                  SOPPA = .TRUE.
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' This is a solvent-SOPPA calculation w/ dynamic'
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' solvent response at RPA level only,'
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'
                  IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
                   WRITE (LUPRI,'(/A)')
      &             'Vacuum calc. - use .SOPPA instead'
@@ -1246,7 +1265,7 @@ C  Initializing ESRHFC
       DATA HFCFC/.FALSE./,HFCSD/.FALSE./,HFCSO/.FALSE./
       DATA UNGAUSS/.TRUE./
       DATA HSOBRT/.FALSE./,HSOEFF/.FALSE./
-      DATA IPRHFC/5/
+      DATA IPRHFC/0/
 C  Initializing ABSLRS
        DATA ABSLRS/.FALSE./,ABSLRS_INTERVAL/.FALSE./
        DATA ABSLRS_ALPHA/.FALSE./,ABS_BATCH/.FALSE./
@@ -1621,8 +1640,8 @@ C .CHANNEL - restrict to excitations from particular orbitals
                DO I=1,NSYM
                   CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
                END DO
-               IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
-     &               'Too many orbitals for CHANNEL calculation: ' //
+               IF (CHANNEL_NORB .GT. CHANNEL_MAX) CALL QUIT(
+     &               'Too many orbitals for .CHANNEL calculation: ' //
      &               'increase CHANNEL_MAX and recompile')
                IOFF=0
                DO ISYM=1,NSYM
@@ -1679,6 +1698,13 @@ C
          ELSE
             CALL HEADER(' Linear Response single residue calculation',0)
          END IF
+
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' PE-QM response calculation'
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
+         END IF
+
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
             WRITE(LUPRI,'(A/A,F8.4)')
      *      ' Equilibrium continuum solvent model requested.',
@@ -1693,25 +1719,6 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
-
-         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
-            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-            IF (.NOT. SOPRPA .AND. SOPPA) THEN
-               WRITE (LUPRI,'(A)')
-     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA',
-     *     'Full solvent model SOPPA not implemented.',
-     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))',
-     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-               CALL QUIT(
-     *     'Full solvent-SOPPA is not implemented, see output')
-            END IF
-         ENDIF
-
-         if (peqm) then
-            write(lupri,'(a)') ' PE-QM response calculation'
-            write(lupri,'(a)') ' Environment is modeled using'//
-     &                  ' the polarizable embedding scheme (PE library)'
-         end if
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
@@ -1732,30 +1739,25 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
          END IF
+
+         IF (QM3) WRITE(LUPRI,'(A)')
+     &      ' QM/MM response calculation (model "QM3")'
+
+         IF (QMMM) WRITE(LUPRI,'(A)')
+     &      ' QM/MM response calculation (model "QMMM")'
+
+         IF (QMNPMM) WRITE(LUPRI,'(A)')
+     &      ' QM/NP/MM response calculation'
+
 C
-         IF (QM3 .OR. QMMM .OR. PCM) THEN
-            IF (.NOT. SOPRPA .AND. SOPPA) THEN
-               WRITE (LUPRI,*)
-     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
-               WRITE (LUPRI,*)
-     *     'Full solvent model SOPPA not implemented.'
-               WRITE (LUPRI,*)
-     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
-               WRITE (LUPRI,*)
-     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
+         IF (QM3 .OR. QMMM .OR. QMNPMM .OR. PCM .OR.PEQM
+     &       .AND. (SOPPA .AND. .NOT. SOPRPA)) THEN
+               WRITE (LUPRI,'(//A/A/A)') 'RSPPP-ERROR: Full '//
+     &     'embedding model SOPPA response is not implemented.',
+     &     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))',
+     &     'For SOPPA/RPA, use .SOPRPA under **RESPONSE',
                CALL QUIT(
-     *     'Full solvent-SOPPA is not implemented, see output')
-            END IF
-         else if (peqm .and. .not. soprpa .and. soppa) then
-            write(lupri,*) 
-     &      'ERROR: SOPPA not implemented with PE library.'
-            write(lupri,*)
-     &      'Full polarizable embedding with SOPPA not implemented.'
-            write(lupri,*)
-     &      'For PE with SOPPA/RPA (JCC, 2012-2022, 33, (2012)),'
-            write(lupri,*)
-     &      'use .SOPRPA under **RESPONSE.'
-            call quit('ERROR: SOPPA not implemented with PE library.')
+     &     'Full embedding SOPPA is not implemented, see output')
          END IF
 C
          IF (DOESA) THEN
@@ -2268,17 +2270,15 @@ C
      *      ,EPSOL
          END IF
          IF (PCM .AND. .NOT.NEQRSP) THEN
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Equilibrium PCM solvent model requested        : SOLVNT ='
-     *      ,PCM
+            WRITE(LUPRI,'(A/)')
+     *      ' Equilibrium PCM solvent model requested'
             WRITE(LUPRI,'(A,F8.4)')
      *      ' Dielectric constant                            : EPSOL  ='
      *      ,EPS
          END IF
          IF (PCM .AND. NEQRSP) THEN
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Non-equilibrium PCM solvent model requested    : INERSI ='
-     *      ,PCM
+            WRITE(LUPRI,'(A/)')
+     *      ' Non-equilibrium PCM solvent model requested'
             WRITE(LUPRI,'(A,F8.4)')
      *      ' Static dielectric constant                     : EPSTAT ='
      *      ,EPS
@@ -2298,15 +2298,15 @@ C
              WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
          END IF    
 
-         if (peqm) then
-            write(lupri,'(a)') ' PE-QM response calculation'
-            write(lupri,'(a)') ' Environment is modeled using'//
-     &                  ' the polarizable embedding scheme (PE library)'
-         end if
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A/A)') ' PE-QM response calculation',
+     &         ' Environment is modeled using'//
+     &            ' the polarizable embedding scheme (PE library)'
+         END IF
 
          IF (CHANNEL_CALC) THEN
-            WRITE(LUPRI,'(/A,10(/,10I5))')
-     &         ' Restricted channel RPA,   excitations from orbs:',
+            WRITE(LUPRI,'(/A,10(/5I5,5X,5I5))')
+     &         ' Restricted channel RPA,   excitations from orbitals:',
      &           (CHANNEL_ORB(I),I=1,CHANNEL_NORB)
          END IF
          IF (CHANNEL_VCALC) THEN
@@ -2331,18 +2331,18 @@ C
      *      NFREQ,' B-frequencies',
      *      (FREQ(I),I=1,NFREQ)
          IF (RESTLR) WRITE(LUPRI,'(/A,L1)')
-     *      ' USE TRIAL VECTORS AVAILABLE FOR RESTART. RESTLR =',RESTLR
+     *      ' Use trial vectors available for RESTART. RESTLR =',RESTLR
          IF (ABOCHK) THEN
             WRITE(LUPRI,'(/2A,L1)')
-     *      ' test option : SET UP ORBITAL PART OF E(2) AND S(2).',
+     *      ' Test option : SET UP ORBITAL PART OF E(2) AND S(2).',
      *      ' ABOCHK',ABOCHK
             IF ((ISTOCK.NE.1).OR.(MAXOCK.NE.6))
      *         WRITE(LUPRI,'(/A,I5,A,I5)')
-     *         ' SUBSPACE SELECTED FROM ROW',ISTOCK,' TO',MAXOCK
+     *         ' Subspace selected from row',ISTOCK,' to',MAXOCK
          END IF
          IF (SOPRSY) WRITE(LUPRI,'(/A/A/A,L1)')
-     *      ' TEST OPTION: BOTH UPPER AND LOWER BLOCK OF',
-     *      ' POLARISABILITIES CALCULATED TO CHECK QUADRATIC ACCURACY',
+     *      ' Test option: Both upper and lower block of',
+     *      ' polarisabilities calculated to check quadratic accuracy',
      *      ' SOPRSY =',SOPRSY
       END IF
 C
@@ -4368,7 +4368,8 @@ C
         DO I = 1,NNORBT
            FC(I) = FC(I) - WRK(I)
         END DO
-      ELSE IF(PCM) THEN
+      ELSE IF(PCM .and. (.not. SOPRPA)) THEN !jje
+!     ELSE IF(PCM) THEN
         CALL MOLLAB('PCMJXMAT',LUSIFC,LUPRI)
         CALL READT (LUSIFC,NNORBT,WRK)
         DO I = 1,NNORBT
@@ -4379,6 +4380,7 @@ C
             FC(I) = FC(I) + WAVFCK(I)
          ENDDO
       END IF
+Cjje
 C
       
 c      WRITE(LUPRI,*) 'NCONRF............................ =' , NCONRF
@@ -4912,11 +4914,11 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-         if (peqm) then
-            write(lupri,'(a)') ' PE-QM response calculation'
-            write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' PE-QM response calculation'
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
+         END IF
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='

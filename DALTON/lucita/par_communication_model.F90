@@ -14,7 +14,7 @@ module communication_model
 !           adapted for DALTON by sknecht, november 2010.
 !
   use communicator_type_module
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
 #else

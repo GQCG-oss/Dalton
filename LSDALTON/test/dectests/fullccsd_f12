@@ -56,8 +56,10 @@ TRILEVEL
 1.0d-5
 **CC
 .CCSD
-.CCSDsolver_serial
+.CCDEBUG
 .F12
+.MEMORY
+2.0
 *END OF INPUT
 %EOF%
 #######################################################################

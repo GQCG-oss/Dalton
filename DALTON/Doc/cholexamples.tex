@@ -4,8 +4,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 We present in this Chapter some examples of input files 
-\verb|DALTON.INP| for calculations that can be done
-with Cholesky-based algorithms available in the Dalton program 
+\dalinp\ for calculations that can be done
+with Cholesky-based algorithms available in the \dalton\ program 
 using either decomposed two-electron 
 integrals~\cite{choint,chorsp} either decomposed orbital 
 energy denominators~\cite{jcp_chopt,ijqc_chopt}.
@@ -39,7 +39,7 @@ way.
 *END OF
 \end{verbatim}
 Observe, that actually the keyword \Key{REDUCE} it is not needed, since it is
-the default. The threshold of the decompostion is $10^{-6}$, which is enough to 
+the default. The threshold of the decomposition is $10^{-6}$, which is enough to 
 converge the wave function until the default value of $10^{-5}$. Furthermore,
 note that the full section \Sec{*CHOLES} could have been omitted if the
 decomposition would have been carried out until its default value of $10^{-8}$.
@@ -75,7 +75,7 @@ to a standard (or direct) calculation of magnetic properties with {\dalton}.
 
 \section{MP2 energy}
 This example shows how to compute the MP2 energy using decomposed integrals. 
-Observe that, since default values for the decompostions all used throughout
+Observe that, since default values for the decompositions all used throughout
 the whole calculation, the only difference with respect to a standard 
 MP2 calculation using the {\cc} code is the presence of the keyword 
 \Key{CHOLES} in the \Sec{*DALTON} general input section.
@@ -258,16 +258,16 @@ We finally present an example of using active subsystems to reduce the
 computational cost. In particular, the input below is used
 to calculate the two lowest excitations of
 butanal declaring as active the orbitals localized on the aldehyde group 
-(atoms 4, 5 and 13 of  \verb|MOLECULE.INP|)
+(atoms 4, 5 and 13 of \molinp)
 
 \begin{verbatim}
 **GENERAL
-.RUN WA
-**HERMIT
+.RUN WAVE FUNCTIONS
+**INTEGRALS
 .NOSUP
-**SIRIUS
+**WAVE FUNCTIONS
 .CC
-*SCF IN
+*SCF INPUT
 .THRESHOLD
  1.0D-8
 .MAX DIIS
@@ -275,7 +275,7 @@ butanal declaring as active the orbitals localized on the aldehyde group
 *ORBITAL
 .MOSTART
  HUCKEL
-*CC INP
+*CC INPUT
 .PRINT
  3
 .CCSD

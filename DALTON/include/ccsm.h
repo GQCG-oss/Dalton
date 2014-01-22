@@ -5,7 +5,7 @@
       INTEGER IPRSM, NSMSEL, NSMOPER
 
       INTEGER IASMOP, IBSMOP, ICSMOP, IDSMOP
-     
+
       INTEGER NSMSELX, ISMSELX, ISMSL, ISMSEL
 
 #if defined (SYS_CRAY)
@@ -14,7 +14,7 @@
       DOUBLE PRECISION EXSMFR, BSMFR
 #endif
       COMMON /INFSMCC/  EXSMFR(MXSMSEL),  BSMFR(MXSMSEL),
-     *                   ISMSEL(MXSMSEL,2), 
+     *                   ISMSEL(MXSMSEL,2),
      *                   IASMOP(MXSMOP), IBSMOP(MXSMOP), ICSMOP(MXSMOP),
      *                   IDSMOP(MXSMOP), NSMSEL, IPRSM, NSMOPER,
      *                   NSMSELX(8), ISMSELX(8)

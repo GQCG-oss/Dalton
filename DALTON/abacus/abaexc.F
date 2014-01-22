@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -42,7 +42,10 @@ C
 #include "nuclei.h"
 #include "symmet.h"
       DATA TABLE /'.SKIP  ', '.INTPRI','.MAX IT','.THRESH',
-     *            '.MAXRED', '.MAXPHP','.TRIPLE','.XXXXXX',
+CPFP
+C    *            '.MAXRED', '.MAXPHP','.TRIPLE','.XXXXXX',
+     *            '.MAXRED', '.MAXPHP','.TRIPLE','.MAGPRP',
+Cend-PFP
      *            '.OPTORB', '.NEXCIT','.DIPSTR','.PRINT ',
      *            '.ROTVEL', '.FNAC  ','.STOP  ','.SUMRUL'/
 C
@@ -101,6 +104,10 @@ C
                   ICHANG = ICHANG + 1
                GO TO 100
     8          CONTINUE
+CPFP
+                  MAGPRP = .TRUE.
+                  ICHANG = ICHANG + 1
+Cend-PFP
                GO TO 100
     9          CONTINUE
                   OOTV   = .TRUE.
@@ -160,7 +167,6 @@ C
          NEXCIT(:) = 1
       END IF
 C
-CSPAS : let's try whether we cannot calculate all excitation energies
 C
 C     maximum number of excitation energies
 C
@@ -168,7 +174,6 @@ C
       DO ISYM = 1,8
          MXNEXI = MAX(MXNEXI,NEXCIT(ISYM))
       END DO
-CKeinSPASmehr
 C
       CALL HEADER('Changes of defaults for .EXCITA:',0)
       IF (EXCTRP) WRITE (LUPRI,'(A)') ' Triplet excitation energies'
@@ -208,6 +213,8 @@ C
 #include "cbiexc.h"
 #include "abainf.h"
 C
+      CALL QENTER('EXCINI')
+C
       IPR1IN = IPRDEF
       IPREXC = IPRDEF
       SKIP   = .FALSE.
@@ -218,6 +225,9 @@ C
       FNAC   = .FALSE.
       EXCTRP = .FALSE.
       ROTSTR = .FALSE.
+CPFP 
+      MAGPRP = .FALSE.
+Cend-PFP
       CALL IZERO(NEXCIT,8)
       THREXC = 1.D-04
       MAXITE = 60
@@ -226,14 +236,13 @@ C
       NABAPP = 0
       MXNEXI = 1
 C
+      CALL QEXIT('EXCINI')
+C
       RETURN
       END
 C  /* Deck excita */
       SUBROUTINE EXCITA(TRLEN,TRVEL,TQLEN,TQVEL,
-CSPAS:23/5-11: second and third moment sum rules
-C    &                  TRLON,TRMAG,BSRLON,EXENG,FONAC,
      &                  TRLON,TRMAG,BSRLON,TTLEN,EXENG,FONAC,
-CKeinSPASmehr
      &                  FONA2,SECMAT,WORK,LWORK,PASS)
 #include "implicit.h"
 #include "priunit.h"
@@ -242,17 +251,12 @@ CKeinSPASmehr
 #include "cbiexc.h"
 #include "infrsp.h"
 #include "nuclei.h"
-CSPAS : 6/11-2009 AO-SOPPA included
 #include "soppinf.h"
-CKeinSPASmehr
       LOGICAL PASS
       DIMENSION WORK(LWORK)
       DIMENSION TRLEN(3,NSYM,MXNEXI,*), TRVEL(3,NSYM,MXNEXI,*)
-CSPAS:23/5-11: second and third moment sum rules
-C     DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
       DIMENSION TQLEN(3,3,NSYM,MXNEXI,*), TQVEL(3,3,NSYM,MXNEXI,*)
       DIMENSION TTLEN(10,NSYM,MXNEXI,*)
-CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI,*), TRMAG(3,NSYM,MXNEXI,*)
       DIMENSION BSRLON(3,NSYM,MXNEXI,*),EXENG(NSYM,MXNEXI,*)
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
@@ -266,18 +270,14 @@ C
 C
       IPRRSP = IPREXC
 C
-      IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-CSPAS:23/5-11: second and third moment sum rules
-C        CALL SO_EXCIT1(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,SECMAT,EXENG,
-C    &                  WORK,LWORK)
+CPFP
+C      IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+      IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+Cend-PFP
          CALL SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
      &                  BSRLON,SECMAT,EXENG,WORK,LWORK)
-CKeinSPASmehr
       ELSE
-CSPAS:23/5-11: second and third moment sum rules
-C        CALL EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
          CALL EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,
-CKeinSPASmehr
      &               TRLON,TRMAG,BSRLON,EXENG,FONAC,FONA2,
      &               WORK,LWORK)
       END IF
@@ -293,10 +293,7 @@ C
       RETURN
       END
 C  /* Deck excit1 */
-CSPAS:23/5-11: second and third moment sum rules
-C      SUBROUTINE EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
       SUBROUTINE EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,
-CKeinSPASmehr
      &                  TRLON,TRMAG,BSRLON,EXENG,FONAC,
      &                  FONA2,WORK,LWORK)
 #include "implicit.h"
@@ -323,18 +320,13 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
       DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
-CSPAS:23/5-11: second and third moment sum rules
       DIMENSION TTLEN(10,NSYM,MXNEXI)
-CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
       CHARACTER*8 LABEL, LABINT(3*MXCOOR)
       LOGICAL   LOCDIPLEN, LOCDIPVEL, LOCANGMOM, LOCLONDON, LOCSECMOM,
-CSPAS:23/5-11: second and third moment sum rules
-C    &          LOCROTSTR, LOCHBDO, LOCHDO
      &          LOCTHIRDM, LOCROTSTR, LOCHBDO, LOCHDO
-CKeinSPASmehr
       LOGICAL   FOUND
 C
       CALL QENTER('EXCIT1')
@@ -474,9 +466,7 @@ C
       LOCLONDON = .FALSE.
       LOCSECMOM = .FALSE.
       LOCROTSTR = .FALSE.
-CSPAS:23/5-11: second and third moment sum rules
       LOCTHIRDM = .FALSE.
-CKeinSPASmehr
       LOCHBDO   = .FALSE.
       LOCHDO    = .FALSE.
 
@@ -502,14 +492,12 @@ CKeinSPASmehr
          LOCSECMOM = .TRUE.
          LOCROTSTR = .TRUE.
       END IF
-CSPAS:23/5-11: second and third moment sum rules
       IF (SUMRUL) THEN           ! sum rules, dip, quad, oct.
          LOCDIPLEN = .TRUE.
          LOCDIPVEL = .TRUE.
          LOCSECMOM = .TRUE.
          LOCTHIRDM = .TRUE.
       END IF
-CKeinSPASmehr
       IF (FNAC .AND. NODIFC) THEN
          LOCHDO    = .TRUE.
       END IF
@@ -619,9 +607,7 @@ C
       CALL DZERO(TRVEL,3*NSYM*MXNEXI)
       CALL DZERO(TQLEN,3*3*NSYM*MXNEXI)
       CALL DZERO(TQVEL,3*3*NSYM*MXNEXI)
-CSPAS:23/5-11: second and third moment sum rules
       CALL DZERO(TTLEN,10*NSYM*MXNEXI)
-CKeinSPASmehr
       CALL DZERO(TRLON,3*NSYM*MXNEXI)
       CALL DZERO(TRMAG,3*NSYM*MXNEXI)
       CALL DZERO(BSRLON,3*NSYM*MXNEXI)
@@ -791,7 +777,6 @@ C
                     ELSE
                        CALL QUIT('Logical error (SECMOM) in EXCIT1')
                     END IF
-CSPAS:23/5-11: second and third moment sum rules
                   ELSE IF (LABEL(5:8).EQ.'3MOM') THEN
                     IF (LABEL(1:3) .EQ. 'XXX') THEN
                        TTLEN(1,ISYM,IEXVAL) = EXMOM
@@ -816,7 +801,6 @@ CSPAS:23/5-11: second and third moment sum rules
                     ELSE
                        CALL QUIT('Logical error (THRMOM) in EXCIT1')
                     END IF
-CKeinSPASmehr
                   ELSE IF (LABEL(3:8).EQ.'ROTSTR') THEN
                     IF (LABEL(1:2) .EQ. 'XX') THEN
                        TQVEL(1,1,ISYM,IEXVAL) = -EXMOM
@@ -881,10 +865,7 @@ C
       END
 C  /* Deck excout */
       SUBROUTINE EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
-CSPAS:23/5-11: second and third moment sum rules
-C    &                  EXENG,FONAC,FONA2,RMLEN,RQLEN,RLEN,
      &                  TTLEN,EXENG,FONAC,FONA2,RMLEN,RQLEN,RLEN,
-CKeinSPASmehr
      &                  RMVEL,RQVEL,RVEL,SLEN,SVEL,WORK,LWORK)
 #include "implicit.h"
 #include "priunit.h"
@@ -899,9 +880,7 @@ CKeinSPASmehr
       CHARACTER COORDI*21, NMDTXT*9, LAPRPC*8
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
       DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
-CSPAS:23/5-11: second and third moment sum rules
       DIMENSION TTLEN(10,NSYM,MXNEXI)
-CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
@@ -914,9 +893,7 @@ CKeinSPASmehr
       DIMENSION DSSUML(-6:2,1:4),DLSUML(-6:2,1:4),DISUML(-6:2,1:4)
       DIMENSION DSSUMM(-6:2,1:4),DLSUMM(-6:2,1:4),DISUMM(-6:2,1:4)
       DIMENSION DSSUMV(-6:2,1:4),DLSUMV(-6:2,1:4),DISUMV(-6:2,1:4)
-CSPAS:23/5-11: second and third moment sum rules
       DIMENSION QSSUM(-6:2,1:4),DTSSUM(-6:2,1:4)
-CKeinSPASmehr
       DIMENSION XLEVICI(3,3,3), AVEC(3), XNEW(3)
       LOGICAL   LCOECD, LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1620,10 +1597,8 @@ C     =======================================
 C
       IF (SUMRUL) THEN
          CALL DZERO(DSSUML,4*9)
-CSPAS:23/5-11: second and third moment sum rules
          CALL DZERO(QSSUM ,4*9)
          CALL DZERO(DTSSUM,4*9)
-CKeinSPASmehr
          CALL DZERO(DLSUML,4*9)
          CALL DZERO(DSSUMM,4*9)
          CALL DZERO(DLSUMM,4*9)
@@ -1637,7 +1612,6 @@ CKeinSPASmehr
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
      &                              * TRLEN(ICOM,ISYM,IEXVAL)
      &                              * TRLEN(ICOM,ISYM,IEXVAL)
-CSPAS:23/5-11: second and third moment sum rules
                      QSSUM(K,ICOM) = QSSUM(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
      &                              * TQLEN(ICOM,ICOM,ISYM,IEXVAL)
@@ -1646,7 +1620,6 @@ CSPAS:23/5-11: second and third moment sum rules
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
      &                              * TRLEN(ICOM,ISYM,IEXVAL)
      &                              * TTLEN(ICOM,ISYM,IEXVAL)
-CKeinSPASmehr
                      DLSUML(K,ICOM) = DLSUML(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
      &                              * DLOG(EXENG(ISYM,IEXVAL))
@@ -1676,10 +1649,8 @@ CKeinSPASmehr
          ENDDO
          DO K = -6,2
             DSSUML(K,4) = (DSSUML(K,1)+DSSUML(K,2)+DSSUML(K,3)) / DTHREE
-CSPAS:23/5-11: second and third moment sum rules
             QSSUM(K,4)  = (QSSUM(K,1)+QSSUM(K,2)+QSSUM(K,3)) / DTHREE
             DTSSUM(K,4) = (DTSSUM(K,1)+DTSSUM(K,2)+DTSSUM(K,3)) / DTHREE
-CKeinSPASmehr
             DLSUML(K,4) = (DLSUML(K,1)+DLSUML(K,2)+DLSUML(K,3)) / DTHREE
             DSSUMM(K,4) = (DSSUMM(K,1)+DSSUMM(K,2)+DSSUMM(K,3)) / DTHREE
             DLSUMM(K,4) = (DLSUMM(K,1)+DLSUMM(K,2)+DLSUMM(K,3)) / DTHREE
@@ -1753,7 +1724,6 @@ C
      &   'K','xx - component','yy - component','zz - component','total'
          WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DISUMV(K,J),J=1,4),K=-6,2)
-CSPAS:23/5-11: second and third moment sum rules
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,2X,A,2X,A,5X,A,/)')
      &   'S(K) Sum Rules : Second Moments in a.u.',
      &   'K','xx,xx component','yy,yy component',
@@ -1766,7 +1736,6 @@ CSPAS:23/5-11: second and third moment sum rules
      &   'z,zzz component','total'
          WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DTSSUM(K,J),J=1,4),K=-6,2)
-CKeinSPASmehr
       ENDIF
 C
 C        *** If numerical derivatives are calculated, then ***

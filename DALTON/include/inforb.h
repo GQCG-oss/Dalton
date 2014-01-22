@@ -39,7 +39,7 @@
      &       NINFSS(MXSSYM,3), MXDGSS
 #else
 /*     MXSSYM = maximum number of "super symmetries" */
-#define MXSSYM 100 
+#define MXSSYM 100
 extern struct common_inforb {
     integer muld2h[8][8], nrhf[8],nrohf[8],nvir[8], nfro[8],
 	nish[8],nash[8],nssh[8],nocc[8],norb[8],nbas[8],

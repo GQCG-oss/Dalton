@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -95,9 +95,12 @@ C
 #include "abslrs.h"
 #include "qm3.h"
 C
-      LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX
+      LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX, USEDRC_SAVE
 C
       CALL QENTER('ABARSP')
+
+      USEDRC_SAVE = USEDRC
+
       IF (MMPCM) CALL MMPCMINIT()
       TIMRSP = SECOND()
       IPRRSP = IPRCLC - 2
@@ -500,6 +503,7 @@ C
 C
 C     *******************************************
 C
+      USEDRC = USEDRC_SAVE
       CALL QEXIT('ABARSP')
       RETURN
       END
@@ -625,7 +629,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                WRITE (LUPRI,'(/A,I3)')
      &             ' EIGENVECTOR FOR STATE NO.',(ISIM-1+INUM)
                CALL RSPPRO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),KZVAR,
-     *             LUPRI)
+     *             UDV,LUPRI)
 C            CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *             MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
@@ -842,7 +846,7 @@ C
                   IF (IPRLR .GE. 2) THEN
                      WRITE (LUPRI,'(/A,I5)') ' EIGENVECTOR NUMBER ',
      &                    IFREQ-1+IVEC
-                     CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
+                     CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,UDV,LUPRI)
                      CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
      *                    MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
                   END IF

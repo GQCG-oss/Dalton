@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -270,6 +270,7 @@ C
 #include "abslrs.h"
 #include "gnrinf.h"
 #include "infpar.h"
+#include "scbrhf.h"
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -314,7 +315,8 @@ C hj end TODO Mar 2004
 C
 C ov rsp_solvhyper passes with Q3FOCK  Sep 2004
 C
-      IF (TDHF.AND.NASHT.EQ.0.OR.HSROHF.OR.DFTRUN) THEN
+
+      IF (TDHF.AND.NASHT.EQ.0.OR.HSFOCK) THEN
          IF (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) THEN
             CALL C3FOCK(IBEQC,WRK(KFC),VECB,VECC,
      &                 WRK(KZYMB),WRK(KZYMC),
@@ -335,6 +337,8 @@ C
      &         WRK(KFREE),LFREE
      &         )
             DODFT=DFTSAV
+         ELSE
+            CALL QUIT('ERROR in E3INIT for HF or DFT')
          END IF
 C
          TRPLETSAVE=TRPLET
@@ -393,21 +397,21 @@ C
          END IF
       END IF
 
-      if (peqm) then
-        if (.not. tdhf) then 
-            call quit('ERROR: MCSCF quadratic response not'//
+      IF (PEQM) THEN
+        IF (.NOT. TDHF) then 
+            CALL QUIT('ERROR: MCSCF quadratic response not'//
      &                ' implemented with the PE library.')
-        else if (nasht > 0) then
-            call quit('ERROR: quadratic response not implemented for'//
+        ELSE IF (NASHT > 0) THEN
+            CALL QUIT('ERROR: quadratic response not implemented for'//
      &                ' open shell systems with the PE library.')
-        else if (trplet) then
-            call quit('ERROR: triplets not implemented for quadratic'//
+        ELSE IF (TRPLET) THEN
+            CALL QUIT('ERROR: triplets not implemented for quadratic'//
      &                ' response with the PE library.')
-        endif
-        call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
-     &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
-     &                 isyma, isymb, isymc, cmo, mjwop)
-      end if
+        ENDIF
+        CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
+     &                 UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
+     &                 ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+      END IF
 
       IF (QM3) THEN
          IF (TDHF) THEN

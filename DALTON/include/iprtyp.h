@@ -5,6 +5,7 @@
 #define DFT_KSM_WORK 4
 #define DFT_C_WORK 5
 #define DFT_GRAD_WORK 6
+#define DFT_EXPGRAD_WORK 666
 #define DFT_BRHS_WORK 7
 #define DFT_HESSTAT_WORK 8
 #define DFTHED_WORK 9
@@ -40,7 +41,7 @@
 #define QMMMB2_4_WORK 41
 #define LUCITA_WORK 42
 #define MEP_WORK 43
-#define PE 44
+#define POLARIZABLE_EMBEDDING 44
 #define GEN1INT_INIT 79
 #define GEN1INT_GET_INT 80
 #define GEN1INT_GET_EXPT 81

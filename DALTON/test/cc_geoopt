@@ -79,6 +79,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # initial SCF, MP2 and CCSD energies: 
 CRIT1=`$GREP "Final * HF energy: * \-109\.99363488" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * \-110\.33256868" $log | wc -l`
@@ -116,7 +121,7 @@ ERROR[4]="SUMMARY OF THE OPTIMIZATION IS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

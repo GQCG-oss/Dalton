@@ -1,14 +1,14 @@
-\chapter{\mol\ input style}\label{ch:molinp}
+\chapter{Molecule input format}\label{ch:molinp}
 \index{geometry!Cartesian coordinate input}
 \index{Cartesian coordinate input}
 \index{geometry!Z-matrix input}
 \index{Z-matrix input}
 
-The {\mol}-style input is originally based on the input for the \mol\
+The molecule input format is originally based on the input for the \mol\
 integral program by Alml\"{o}f~\cite{moleculeref}. However, there are
 few remnants of the original input structure. For users of earlier
-releases of the Dalton program, note should be taken of the fact that
-the input structure for the \mol\ file has undergone major changes,
+releases of the \dalton\ program, note should be taken of the fact that
+the input structure for the \molinp\ file has undergone major changes,
 however, backward compatibility has in most cases been
 retained\footnote{The two exceptions to the backward are that when
 using the {\tt ATOMBASIS} keyword, the basis set name has to be
@@ -36,9 +36,7 @@ different basis sets provided is in part
 related to the variety of molecular properties with very different
 basis set requirements that can be calculated with \dalton.
 Most of the basis sets have been downloaded from the EMSL basis set
-library service\index{EMSL basis set library service}\index{basis set!EMSL library}\newline
-(http://www.emsl.pnl.gov:2080/forms/basisform.html)~\cite{emslref}.
-Only a small number of the basis sets were obtained from different sources:
+library service\index{EMSL basis set library service}\index{basis set!EMSL library}\footnote{http://www.emsl.pnl.gov:2080/forms/basisform.html~\cite{emslref}} Only a small number of the basis sets were obtained from different sources:
 
 \begin{list}{--}{}
 \item The ano-1, ano-2, ano-3, ano-4 and Sadlej-pVTZ basis sets which where
@@ -46,7 +44,7 @@ downloaded from the MOLCAS home-page\index{NQvD basis set}\index{basis set!NQvD}
 \index{basis set!ANO}\index{sadlej basis set}\index{basis set!sadlej}
 (http://www.teokem.lu.se/molcas/).
 \item The NQvD (The Not Quite van Duijneveldt) basis sets were constructed
-by Knut F\ae gri for this distribution~\cite{nqvdref}.
+by Knut F\ae gri~\cite{nqvdref}.
 \item The Turbomole-X {X = SV,SVP,DZ,DZP,TZ,TZP,TZV,TZVP,TZVPP,TZVPPP} basis sets have
 been downloaded from Turbomole\index{Turbomole basis set}\index{basis set!Turbomole}(http://www.turbomole.com)
 \item The pc-$n$ and apc-$n$ polarization-consistent basis sets were provided to us by Frank Jensen.
@@ -107,7 +105,7 @@ the full name (or any intermediate option). The order of the keywords
 is arbitrary. The following keywords are recognized for this line:
 \begin{description}
 \item[Angstrom] Indicates that the atomic Cartesian coordinates are
-  given in \AA ngstr\"{o}m, and not in bohr (atomic units) which is
+  given in \angstrom{}, and not in \bohr{} (atomic units) which is
   the default.
 \item[Atomtypes] \verb|(Integer)|. {\em This keyword is
   required\/}. Number of atom types (number of atoms specified 
@@ -172,7 +170,7 @@ atoms, in which case the first line should read
  1:ATOMBASIS
 \end{verbatim}
 
-The fourth line (fifth in a calculation using the basis set library)
+The fourth line (fifth in a calculation using the basis set library with "BASIS" in line 1)
 looks a bit devastating. However, for ordinary
 Hartree--Fock\index{HF}\index{MP2}\index{SCF}\index{Hartree--Fock}\index{M{\o}ller-Plesset!second-order}
 or MP2 calculations, only the number of different atom types and the charge
@@ -237,12 +235,16 @@ to be used in the calculation (in this case C$_{2v}$, with the yz- and
 xz-planes as mirror planes).
 
 In tetrahedrane we will have two different kinds of atoms, carbon
-and hydrogen, as indicated by the number 2 on the fourth (fifth)
-line of the input. We will also assume that we punch the basis set
-ourselves, in order to present the input format for the basis set.
+and hydrogen, as indicated by the number 2 on the fourth line of the input.
+We will also assume that we enter the basis set ourselves,
+in order to present the input format for the basis set.
 
 For tetrahedrane, the input would then look like
 \begin{verbatim}
+ 1:INTGRL
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:                 4-31G** basis
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
  5:Charge=6.0 Atoms=2 Blocks=3 1 1 1
  6:C1    1.379495419          .0                 0.975450565
  7:C2     .0                 1.379495419         -.975450565
@@ -274,7 +276,7 @@ For tetrahedrane, the input would then look like
 33:0.75       1.0
 \end{verbatim}
 
-The different lines are:
+Lines 1-4 are already described. The different new types of lines are:
 \begin{description}
 \item[5] This line is keyword-driven. The general structure of the input is
 \verb|Keyword=|. The input is case sensitive, but it will recognize
@@ -315,10 +317,9 @@ evaluates all integrals arising from that
 shell\index{shell of basis functions} simultaneously, and
 the memory requirements grow rapidly with the number of basis
 functions in a shell (note for instance that four $g$ functions
-actually are 36
-basis functions, as there are 9 components of each $g$
-function). Memory requirements\index{memory} can therefore be reduced
-by splitting
+actually are 36 basis functions,
+as there are 9 components of each $g$ function).
+Memory requirements\index{memory} can therefore be reduced by splitting
 basis functions of the quantum number into different blocks. However,
 this will decrease the performance of the
 integral\index{performance of integral program} calculation.
@@ -341,8 +342,8 @@ integral\index{performance of integral program} calculation.
 \item[NAME] Atom name.  A different name should be used for
 each atom of the same type, although this is not required. Note that
 only the first four characters of the atom name will be used by the
-program, and that no spaces are allowed in naming the atom.
-\item[X] $x$-coordinate (in atomic units, unless \AA ngstr\"{o}m
+program.
+\item[X] $x$-coordinate (in atomic units, unless \angstrom{}
 has been requested on line 4 of the input).
 \item[Y] $y$-coordinate.
 \item[Z] $z$-coordinate.
@@ -462,9 +463,9 @@ ease of reference to a given atom, and is actually not used within the
 program, where any reference to an atom, is the number of the
 atom consecutively in the input list.
 
-The second Z-matrix line consists of the atom name, a running number, the
-number of the atom to which this atom is bonded with a given bond
-length in {\AA}ngstr{\"o}ms, and then finally the charge of this atom.
+The second Z-matrix line consists of the atom name, a running number,
+the number of the atom to which this atom is bonded with a given bond
+length in \angstrom{}, and then finally the charge of this atom.
 
 The third Z-matrix line is identical to the second, except that an extra atom
 number, to which the two first atoms on this line is bonded to with a
@@ -523,7 +524,7 @@ to:
 \end{verbatim}
 
 The use of the basis set library is indicated by the presence of the
-\verb|BASIS| word in the beginning of \mol-file instead of
+\verb|BASIS| word in the beginning of \molinp\ file instead of
 \verb|INTGRL|.
 
 An alternative approach would be to use different basis sets for
@@ -715,7 +716,7 @@ Note that the keyword \Key{R12AUX} must be specified in the
 \label{sec:basislist}
 \index{basis set!library}
 
-As was mentioned above, all the basis sets supplied with this distribution
+As was mentioned above, all the basis sets supplied with this release
 of the \dalton\ program --- with a few exceptions --- have been obtained 
 from the EMSL basis set library~\cite{emslref}. 
 Supplied basis sets include the STO-$n$G and Pople style basis sets,
@@ -748,65 +749,65 @@ cited when employing a given basis set in a calculation.
 
 \setlongtables
 \begin{longtable}{lll}
-\multicolumn{3}{}{\bf Basis Sets included in \dalton\ distribution.} \\ 
+\multicolumn{3}{l}{\bf Basis sets included in the \latestrelease\ release.} \\ 
 \hline \hline
 \bf{Basis set name} & \bf{Elements} & \bf{References}\\
 \hline\hline
 \endfirsthead
-\multicolumn{3}{}{\bf{Basis Sets included in \dalton\ distribution.}} \\
+\multicolumn{3}{l}{\bf Basis sets included in the \latestrelease\ release.} \\
 \hline \hline
 \bf{Basis set name} & \bf{Elements} & \bf{References}\\
-\hline \hline
+\hline
 \endhead
 \endfoot \endlastfoot
-\bf{\emph{STO-$n$G}} & & \\
+\multicolumn{3}{l}{\bf{\emph{STO-$n$G}}} \\
 STO-2G & H--Ca, Sr & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52} \\
 STO-3G & H--Cd & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52,
    wjpbalwjhrfsic19,wjpwjhjcc4} \\
 STO-6G & H--Ar & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52} \\
 \hline
-\bf{\emph{Pople-style basis sets}} & & \\
+\multicolumn{3}{l}{\bf{\emph{Pople-style basis sets}}} \\
 3-21G & H--Cs & \cite{jsbjapwjhjacs102,msgjsbjapwjpwjhjacs104,
    kddwjhjcc7,kddwjhjcc8-1,kddwjhjcc8-2,edgdfjpc99} \\
-3-21G* & H--Cl & 3-21G, with polariz. functions from
-  \cite{wjpmmfwjhdjdjapjsbjacs104}.\\
-  & & \emph{Note}: Polariz. functions only on Na--Cl \\
-3-21++G & H, Li--Ar & 3-21G, with diffuse functions from
-  \cite{tcjcgwsprsjcc4}.\\
+3-21G* & H--Cl & 3-21G, pol.\ funcs.\ from
+  \cite{wjpmmfwjhdjdjapjsbjacs104}\\
+  & & \emph{Note}: pol.\ funcs.\ only on Na--Cl \\
+3-21++G & H, Li--Ar & 3-21G, diffuse funcs.\ from
+  \cite{tcjcgwsprsjcc4}\\
 3-21++G* & H--Cl & 3-21++G and 3-21G*\\
 4-31G & H--Ar & \cite{rdwjhjapjcp54,msgjsbjapwjpwjhjacs104} 
-   He,Ne from Gaussian 90 \\
+   He,Ne from G90 \\
 6-31G & H--Ar, Zn & \cite{wjhrdjapjcp56,jddjapjcp62,
    mmfwjpwjhjsbmsgdjdjapjcp77,vrjapmrtlwjcp109} 
-   He,Ne from Gaussian 90 \\
-6-31G* & H--Ar & 6-31G, with polariz. functions from
+   He,Ne from G90 \\
+6-31G* & H--Ar & 6-31G, pol.\ funcs.\ from
   \cite{pchjaptca28,mmfwjpwjhjsbmsgdjdjapjcp77}\\
-6-31G** & H--Ar  & 6-31G*, with polariz. functions from
+6-31G** & H--Ar  & 6-31G*, pol.\ funcs.\ from
   \cite{pchjaptca28}\\
-6-31+G & H--Ar & 6-31G, with diffuse functions from
-  \cite{tcjcgwsprsjcc4}.\\
-6-31++G & H--Ar & 6-31G, with diffuse functions from
-  \cite{tcjcgwsprsjcc4}.\\
+6-31+G & H--Ar & 6-31G, diffuse funcs.\ from
+  \cite{tcjcgwsprsjcc4}\\
+6-31++G & H--Ar & 6-31G, diffuse funcs.\ from
+  \cite{tcjcgwsprsjcc4}\\
 6-31+G*   & H--Ar & 6-31+G and 6-31G*\\
 6-31++G*  & H--Ar & 6-31++G and 6-31G*\\
 6-31++G** & H--Ar & 6-31++G and 6-31G**\\
-6-31G(3df,3pd) & H--Ar & 6-31G, with polariz. functions from
-  \cite{mjfjapjsbjcp80}.\\
+6-31G(3df,3pd) & H--Ar & 6-31G, pol.\ funcs.\ from
+  \cite{mjfjapjsbjcp80}\\
 6-311G & H--Ar, Br, I & \cite{rkjsbrsjapjcp72,admgscjcp72,
    lacmpmjpbnedrcblrjcp103,mngapmpmlrjcp103}\\
-6-311G* & H--Ar, Br, I & 6-311G, with polariz. functions from
-  \cite{rkjsbrsjapjcp72,lacmpmjpbnedrcblrjcp103}.\\
-6-311G** & H--Ar, Br, I & 6-311G, with polariz. functions from
-  \cite{rkjsbrsjapjcp72,lacmpmjpbnedrcblrjcp103}.\\
-6-311+G* & H--Ne & 6-311G* with diffuse functions from 
-  \cite{tcjcgwsprsjcc4}.\\
-6-311++G** & H--Ne & 6-311G** with diffuse functions from
-  \cite{tcjcgwsprsjcc4}.\\
-6-311G(2df,2pd) & H--Ne & 6-311G, with polariz. functions from
+6-311G* & H--Ar, Br, I & 6-311G, pol.\ funcs.\ from
+  \cite{rkjsbrsjapjcp72,lacmpmjpbnedrcblrjcp103}\\
+6-311G** & H--Ar, Br, I & 6-311G, pol.\ funcs.\ from
+  \cite{rkjsbrsjapjcp72,lacmpmjpbnedrcblrjcp103}\\
+6-311+G* & H--Ne & 6-311G* diffuse funcs.\ from 
+  \cite{tcjcgwsprsjcc4}\\
+6-311++G** & H--Ne & 6-311G** diffuse funcs.\ from
+  \cite{tcjcgwsprsjcc4}\\
+6-311G(2df,2pd) & H--Ne & 6-311G, pol.\ funcs.\ from
   \cite{mjfjapjsbjcp80}.\\
-6-311++G(2d,2p) & H--Ne & 6-311++G, with polariz. functions from
+6-311++G(2d,2p) & H--Ne & 6-311++G, pol.\ funcs.\ from
   \cite{mjfjapjsbjcp80}.\\
-6-311++G(3df,3pd) & H--Ar & 6-311++G, with polariz. functions from
+6-311++G(3df,3pd) & H--Ar & 6-311++G, pol.\ funcs.\ from
   \cite{mjfjapjsbjcp80}.\\
 \hline
 %
@@ -815,114 +816,119 @@ MINI(Huzinaga) & H--Ca & \cite{huzinagabasis} \\
 MINI(Scaled) & H--Ca & \cite{huzinagabasis,htshjcc1} \\
 \hline
 %
-\bf{\emph{Dunning-Hay basis sets}} & & \\
-SV(Dunning-Hay) & H, Li--Ne & \cite{thdpjhhfs1977} \\
-SVP(Dunning-Hay) & H, Li--Ne & SV, with polariz. functions from
+\multicolumn{3}{l}{\bf{\emph{Dunning-Hay basis sets}}} \\
+SV(D.-H.) & H, Li--Ne & \cite{thdpjhhfs1977} \\
+SVP(D.-H.) & H, Li--Ne & SV, pol.\ funcs.\ from
   \cite{thdpjhhfs1977,emhfsjcp83}.\\
-SVP+Diffuse(Dunning-Hay) & H, Li--Ne & SVP with diffuse functions from
+SVP+Diffuse(D.-H.) & H, Li--Ne & SVP diffuse funcs.\ from
   \cite{thdpjhhfs1977,emhfsjcp83}.\\
-SV+Rydberg(Dunning-Hay) & H, Li--Ne & SV, with polariz. functions from
+SV+Rydberg(D.-H.) & H, Li--Ne & SV, pol.\ funcs.\ from
   \cite{thdpjhhfs1977-2}.\\
-\small{SV+DoubleRydberg(Dunning-Hay)} & H, Li--Ne & SV, with polariz. functions from
+\small{SV+DoubleRydberg(D.-H.)} & H, Li--Ne & SV, pol.\ funcs.\ from
   \cite{thdpjhhfs1977-2}.\\
-DZ(Dunning) & H, B--Ne, Al--Cl & \cite{thdjcp53,thdpjhhfs1977} \\
-DZP(Dunning) & H, B--Ne, Al--Cl & DZ, with polariz. functions from 
+DZ(D.) & H, B--Ne, Al--Cl & \cite{thdjcp53,thdpjhhfs1977} \\
+DZP(D.) & H, B--Ne, Al--Cl & DZ, pol.\ funcs.\ from 
   \cite{thdpjhhfs1977,emhfsjcp83}.\\
-DZP+Diffuse(Dunning) & H, B--Ne & DZP with diffuse functions from
+DZP+Diffuse(D.) & H, B--Ne & DZP diffuse funcs.\ from
   \cite{thdpjhhfs1977,emhfsjcp83}.\\
-DZ+Rydberg(Dunning) & H, B--Ne, Al--Cl & DZ, with polariz. functions from
+DZ+Rydberg(D.) & H, B--Ne, Al--Cl & DZ, pol.\ funcs.\ from
   \cite{thdpjhhfs1977-2}.\\
-DZP+Rydberg(Dunning) & H, B--Ne, Al--Cl & DZP, with polariz. functions from 
+DZP+Rydberg(D.) & H, B--Ne, Al--Cl & DZP, pol.\ funcs.\ from 
   \cite{thdpjhhfs1977-2}.\\
-TZ(Dunning) & H, Li--Ne & \cite{thdjcp55}\\
+TZ(D.) & H, Li--Ne & \cite{thdjcp55}\\
 \hline
-\multicolumn{2}{l}{\bf{\emph{Dunning's correlation-consistent basis 
+\multicolumn{3}{l}{\bf{\emph{Dunning's correlation-consistent basis 
 sets\index{basis set!correlation-consistent}\index{correlation-consistent basis set}}}} \\
 \multicolumn{3}{l}{\emph{Note: H,He (valence only) are included in all core-valence basis sets 
   for convenience.}} \\
-cc-pVXZ (X = D,T,Q,5,6) & H--Ne, Al--Ar, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,
+cc-pVXZ & H--Ne, Al--Ar, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,
   jkkapjpca106,akwdewkapthdjcp110} \\
-  & Ca, Ga--Kr & \emph{Note}: 6Z only includes H,C--O\\
-cc-pCVXZ (X = D,T,Q,5) & H, He, B--Ne, & cc-pVXZ, with core functions from
-  \cite{thdjcp90,jkkapjpca106,dewthdjcp103}. \\
-  & Na--Ar & \emph{Note}: 5Z only includes H, He, B--Ne. \\
-cc-pwCVXZ (X = D,T,Q,5) & H, He, C--Ne,  & cc-pCVXZ with core functions from 
-  \cite{thdjcp90,kapthdjcp117} \\
-  & Al--Ar & \\
-aug-cc-pVXZ (X = D,T,Q,5) & H, He, B--Ne, & cc-pVXZ, with aug. functions from 
-  \cite{thdjcp90,rakthdrjhjcp96,dewthdjcp98,dewthdjcp100}.\\
-  & Al--Ar, Ga--Kr & \\
-aug-cc-pV6Z & H, He, B--Ne, & \cite{akwtvmthdjsm388,tmakwtdhmp96} with aug. functions from 
-  \cite{akwtvmthdjsm388,tmakwtdhmp96,tmthdijqc76}.\\
-  & Al--Ar & \\
-aug-cc-pCVXZ (X = D,T,Q,5) & H, He, B--F, & aug-cc-pVXZ, cc-pCVXZ and \cite{dewthdjcp103,kapthdjcp117}.\\
-  & Ne, Al-Ar & \emph{Note}: Ne only available for TZ and QZ \\
-$n$-aug-cc-pVXZ ($n$ = d,t,q) & as aug-cc-pVXZ & aug-cc-pVXZ. See Sec.~\ref{sec:molbasis} \\
-$n$-aug-cc-pCVXZ ($n$ = d,t,q) & as aug-cc-pCVXZ & aug-cc-pCVXZ. See Sec.~\ref{sec:molbasis} \\
+ ~~~~(X = D,T,Q,5,6) & Ca, Ga--Kr & \emph{Note}: 6Z incl.\ only H,C--O\\
+cc-pCVXZ & H, He, B--Ne, & cc-pVXZ,  \\
+ ~~~~(X = D,T,Q,5) & Na--Ar & core funcs.\ from
+   \cite{thdjcp90,jkkapjpca106,dewthdjcp103} \\
+ 				   & & \emph{Note}: 5Z incl.\ only H, He, B--Ne. \\
+cc-pwCVXZ & H, He, C--Ne,  & cc-pCVXZ, \\
+ ~~~~(X = D,T,Q,5) & Al--Ar &  core funcs.\ from \cite{thdjcp90,kapthdjcp117} \\
+aug-cc-pVXZ & H, He, B--Ne, & cc-pVXZ,\\
+ ~~~~(X = D,T,Q,5) & Al--Ar, Ga--Kr &  aug.\ funcs.\ from 
+   \cite{thdjcp90,rakthdrjhjcp96,dewthdjcp98,dewthdjcp100} \\
+aug-cc-pV6Z & H, He, B--Ne, & \cite{akwtvmthdjsm388,tmakwtdhmp96}, \\
+  & Al--Ar & aug.\ funcs.\ from 
+    \cite{akwtvmthdjsm388,tmakwtdhmp96,tmthdijqc76} \\
+aug-cc-pCVXZ & H, He, B--F, & aug-cc-pVXZ, cc-pCVXZ \\
+ ~~~~(X = D,T,Q,5) & Ne, Al-Ar &  and \cite{dewthdjcp103,kapthdjcp117}\\
+                   & & \emph{Note}: Ne only avail.\ for TZ and QZ \\
+$n$-aug-cc-pVXZ & as aug-cc-pVXZ & aug-cc-pVXZ. See Sec.~\ref{sec:molbasis} \\
+ ~~~~($n$ = d,t,q) & & \\
+$n$-aug-cc-pCVXZ & as aug-cc-pCVXZ & aug-cc-pCVXZ. See Sec.~\ref{sec:molbasis} \\
+ ~~~~($n$ = d,t,q) & & \\
+cc-pVXZdenfit & H, B--F, Al--Cl & Turbomole program \\
+ ~~~~(X=T,Q,5) & & \\
+cc-pVXZ-DK & H,He,B--Ne, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,akwdewkapthdjcp110} 
+  cc-pVXZ \\
+ ~~~~(X = D,T,Q,5) & Al--Ar, Ga--Kr & re-contr.\ for Douglas-Kroll calcs.\\
 \hline
-\newpage
-cc-pVXZdenfit (X=T,Q,5) & H, B--F, Al--Cl & Turbomole program \\
-cc-pVXZ-DK (X = D,T,Q,5) & H,He,B--Ne, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,akwdewkapthdjcp110} 
-  cc-pVXZ re-contracted for \\
-  & Al--Ar, Ga--Kr & Douglas-Kroll calculations.\\
-\hline
-\multicolumn{2}{l}{\bf{\emph{Frank Jensen's polarization-consistent basis 
+\multicolumn{3}{l}{\bf{\emph{Frank Jensen's polarization-consistent basis 
 sets\index{basis set!polarization-consistent}\index{polarization-consistent basis set}}}} \\
-pc-$n$ ($n$ = 0,1,2,3,4)  & H, C--F & \cite{fjjcp115,fjjcp116} \\
-                      & Si--Cl & \cite{fjthjcp121} \\
-apc-$n$ ($n$ = 0,1,2,3,4) & H, C--F & pc-$n$, with aug. functions from \cite{fjjcp117} \\
-                      & Si--Cl & \cite{fjthjcp121} \\
+pc-$n$ & H, C--F & \cite{fjjcp115,fjjcp116} \\
+ ~~~~($n$ = 0,1,2,3,4) & Si--Cl & \cite{fjthjcp121} \\
+apc-$n$ & H, C--F & pc-$n$, aug.\ funcs.\ from \cite{fjjcp117} \\
+ ~~~~($n$ = 0,1,2,3,4) & Si--Cl & \cite{fjthjcp121} \\
 \hline
-\bf{\emph{Ahlrich's Turbomole basis sets}} & & \\
+\multicolumn{3}{l}{\bf{\emph{Ahlrich's Turbomole basis sets}}} \\
 \multicolumn{3}{l}{\emph{Note}: See text above -- Turbomole basis sets are preferred over EMSL sets} \\
 Turbomole-SV & H--Kr & \cite{ashhrajcp97} Turbomole SV basis\\
-Turbomole-XZ (X=D,T) & H--Kr & \cite{ashhrajcp97} Turbomole DZ,TZ basis\\
+Turbomole-XZ & H--Kr & \cite{ashhrajcp97} Turbomole DZ,TZ basis\\
+ ~~~~(X=D,T) & & \\
 Turbomole-TZV & H--Kr & \cite{aschrajcp100} Turbomole TZV basis \\
-Turbomole-XP & H--Kr & \cite{ashhrajcp97,aschrajcp100} Turbomole polariz. basis \\
+Turbomole-XP & H--Kr & \cite{ashhrajcp97,aschrajcp100} Turbomole pol.\ basis \\
  ~~~~(X=SV,DZ,TZ,TZV) & & \\
 Turbomole-TZVPP & H--Kr & \cite{aschrajcp100} Turbomole TZVPP basis \\
 Turbomole-TZVPPP & H--He,B--Ne,Al--Ar & \cite{aschrajcp100} Turbomole TZVPPP basis \\
-Ahlrichs-VXZ (X=D,T) & H--Kr & \cite{ashhrajcp97} From EMSL \\
-Ahlrichs-pVDZ & H--Kr & \cite{ashhrajcp97} From EMSL: polariz. functions unpublished.\\
+Ahlrichs-VXZ & H--Kr & \cite{ashhrajcp97} From EMSL \\
+ ~~~~(X=D,T) & & \\
+Ahlrichs-pVDZ & H--Kr & \cite{ashhrajcp97} From EMSL: pol.\ funcs.\ unpubl.\\
 \hline
 %
-\bf{\emph{Huzinaga basis sets}} & & \\
-Huz-II & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} All the Huz basis sets are of\\
-Huz-IIsu2 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} approximate valence TZ quality\\
-Huz-III & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} \\
+\multicolumn{3}{l}{\bf{\emph{Huzinaga basis sets}}} \\
+Huz-II & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} All the Huz basis \\
+Huz-IIsu2 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} sets are of approx.\ \\
+Huz-III & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} valence TZ quality\\
 Huz-IIIsu3 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
 Huz-IV & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
 Huz-IVsu4 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
 \hline
-GAMESS-VTZ & H, Be--Ne, Na--Ar & \cite{thdjcp55,admgscjcp72,ajhwjcp52} From GAMESS program \\
-GAMESS-PVTZ & H, Be--Ne & \cite{thdjcp55,admgscjcp72,ajhwjcp52} From GAMESS program \\
+GAMESS-VTZ & H, Be--Ne, Na--Ar & \cite{thdjcp55,admgscjcp72,ajhwjcp52} From GAMESS \\
+GAMESS-PVTZ & H, Be--Ne & \cite{thdjcp55,admgscjcp72,ajhwjcp52} From GAMESS \\
 %
 McLean-Chandler-VTZ & Na--Ar & \cite{admgscjcp72} \\
-Wachtersa+f & Sc--Cu & \cite{ajhwjcp52,wachterintern1969} with $f$ functions from \cite{cwbsrllabjcp91} \\
+Wachtersa+f & Sc--Cu & \cite{ajhwjcp52,wachterintern1969} $f$ funcs.\ from \cite{cwbsrllabjcp91} \\
 Sadlej-pVTZ & H--I & \cite{ajstca79,ajsmujmst234,ajstca81,ajstca81-2} \\
-  &  & \emph{Note}: No rare-gas, B, Al, Ga or In basis sets\\
+  & \multicolumn{2}{l}{\emph{Note}: No rare-gas, B, Al, Ga or In basis sets} \\
 %
-Sadlej-pVTZ-J & H, C--O, S & \cite{pfpgaaspasjcp115} Sadlej-pVTZ optimized for NMR calcs.\\
-aug-cc-pVTZ-J & H, C--F, S & \cite{pfpgaaspasjcp115} aug-cc-pVTZ optimized for NMR calcs. \\
+Sadlej-pVTZ-J & H, C--O, S & \cite{pfpgaaspasjcp115} Sadlej-pVTZ opt.\ for NMR \\
+aug-cc-pVTZ-J & H, C--F, S & \cite{pfpgaaspasjcp115} aug-cc-pVTZ opt.\ for NMR \\
 \hline
-\multicolumn{2}{l}{\bf{\emph{ANO basis sets\index{basis!ANO} -- see Sec.~\ref{sec:molbasis}.}}} & \\
+\multicolumn{3}{l}{\bf{\emph{ANO basis sets\index{basis!ANO} -- see Sec.~\ref{sec:molbasis}.}}} \\
 NQvD & & \cite{nqvdref} \\
 Almlof-Taylor-ANO & H--Ne & \cite{japrtjcp86} Almlof and Taylor ANO \\
-NASA-Ames-ANO & H, B--Ne, & \cite{japrtjcp86,cwbsrlaktca77} \\
-  & Al, P, Ti, Fe, Ni & \\
-ano-1 & H--Ne & \cite{powpambortca77} Roos Augmented ANO basis sets\\
+NASA-Ames-ANO & H, B--Ne, Al, & \cite{japrtjcp86,cwbsrlaktca77} \\
+  & P, Ti, Fe, Ni & \\
+ano-1 & H--Ne & \cite{powpambortca77} Roos Augmented ANO\\
 ano-2 & Na--Ar & \cite{powbjpbortca79} \\
 ano-3 & Sc--Zn & \cite{rpamminpowbortca92} \\
-ano-4 & H--Kr & \cite{kpbdpowbortca90} Roos ANO basis sets\\
+ano-4 & H--Kr & \cite{kpbdpowbortca90} Roos ANO\\
 \hline
-raf-r & O, Y--Pd, Hf--Tl, & Wahlgren/Faegri Relavistic Basis Set\\
+\multicolumn{3}{l}{\bf{\emph{Wahlgren/Faegri relativistic basis set}}} \\
+raf-r & O, Y--Pd, Hf--Tl, & \\
  & Po, Th, U & \\
 \hline
 \multicolumn{3}{l}{\bf{\emph{Effective core potential (ECP) basis sets}}} \\
-\multicolumn{3}{l}{\emph{Note}: ecp-sdd-DZ is Stuttgart ECP valence basis sets included in previous \dalton,}\\
-\multicolumn{3}{l}{see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html.}\\
-\multicolumn{3}{l}{Others are from EMSL with the EMSL name given in the third column,}\\
-\multicolumn{3}{l}{please check EMSL for complete reference.}\\
+\multicolumn{3}{l}{\emph{Note}: ecp-sdd-DZ is Stuttgart ECP valence basis sets included in previous Dalton}\\
+\multicolumn{3}{l}{ releases, see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html.}\\
+\multicolumn{3}{l}{Others are from EMSL with the EMSL name given in the third column, please check}\\
+\multicolumn{3}{l}{EMSL for complete reference.}\\
 aug\_cc\_pvdz\_pp & Cu-Kr, Y-Xe, & aug-cc-pVDZ-PP\\
                   & Hf-Rn &\\
 aug\_cc\_pvtz\_pp & Cu-Kr, Y-Xe, & aug-cc-pVTZ-PP\\
@@ -1001,19 +1007,19 @@ stuttgart\_rsc\_segmented\_ecp & La-Lu & Stuttgart RSC Segmented/ECP\\
 \hline
 \end{longtable}
 
-In the following, we give the comprehensive list of all ECPs included in \dalton,
+In the following, we give the comprehensive list of all ECPs included in the current release,
 together with a list of the elements supported. The ecp-sdd-DZ is Stuttgart
-ECPs included in previous \dalton~(see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html),
+ECPs included in previous Dalton releases~\footnote{see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html},
 while others are from EMSL, please check EMSL for the complete reference to be cited.
 
 \setlongtables
 \begin{longtable}{lll}
-\multicolumn{3}{}{\bf ECPs included in \dalton\ distribution.} \\ 
+\multicolumn{3}{l}{\bf ECPs included in the \latestrelease\ release.} \\ 
 \hline \hline
 \bf{ECP name} & \bf{Elements} & \bf{EMSL name}\\
 \hline\hline
 \endfirsthead
-\multicolumn{3}{}{\bf{ECPs included in \dalton\ distribution.}} \\
+\multicolumn{3}{l}{\bf{ECPs included in the \latestrelease\ release.}} \\
 \hline \hline
 \bf{ECP name} & \bf{Elements} & \bf{EMSL name}\\
 \hline \hline
@@ -1027,12 +1033,16 @@ cc\_pvdz\_pp & Cu-Kr, Y-Xe, Hf-Rn & cc-pVDZ-PP\\
 cc\_pvtz\_pp & Cu-Kr, Y-Xe, Hf-Rn & cc-pVTZ-PP\\
 cc\_pvqz\_pp & Cu-Kr, Y-Xe, Hf-Rn & cc-pVQZ-PP\\
 cc\_pv5z\_pp & Cu-Kr, Y-Xe, Hf-Rn & cc-pV5Z-PP\\
-cc\_pwcvdz\_pp & Cu, Zn, Y-Cd, I, Hf-Hg & cc-pwCVDZ-PP\\
-cc\_pwcvtz\_pp & Cu, Zn, Y-Cd, I, Hf-Hg & cc-pwCVTZ-PP\\
-cc\_pwcvqz\_pp & Cu, Zn, Y-Cd, I, Hf-Hg & cc-pwCVQZ-PP\\
+cc\_pwcvdz\_pp & Cu, Zn, Y-Cd, I, & cc-pwCVDZ-PP\\
+               & Hf-Hg & \\
+cc\_pwcvtz\_pp & Cu, Zn, Y-Cd, I, & cc-pwCVTZ-PP\\
+               & Hf-Hg & \\
+cc\_pwcvqz\_pp & Cu, Zn, Y-Cd, I, & cc-pwCVQZ-PP\\
+               & Hf-Hg & \\
 cc\_pwcv5z\_pp & Cu, Zn, Y-Cd, Hf-Hg & cc-pwCV5Z-PP\\
 crenbl\_ecp & Li-Uus & CRENBL ECP\\
-crenbs\_ecp & Sc-Zn, Y-Cd, La, Hf-Rn, Rf-Uus & CRENBS ECP\\
+crenbs\_ecp & Sc-Zn, Y-Cd, La, & CRENBS ECP\\
+ & Hf-Rn, Rf-Uus & \\
 def2\_qzvp & Rb-La, Hf-Rn & Def2-QZVP\\
 def2\_qzvpp & Rb-La, Hf-Rn & Def2-QZVPP\\
 def2\_sv\_p & Rb-La, Hf-Rn & Def2-SV(P)\\
@@ -1040,29 +1050,42 @@ def2\_svp & Rb-La, Hf-Rn & Def2-SVP\\
 def2\_tzvp & Rb-La, Hf-Rn & Def2-TZVP\\
 def2\_tzvpp & Rb-La, Hf-Rn & Def2-TZVPP\\
 dzq & Y-Ag & DZQ\\
-ecp-sdd-DZ & Li-Mg, Si-Ce, Nd, Sm-Tb, & Stuttgart ECPs\\
-           & Ho, Yb-Bi, Rn &\\
-hay\_wadt\_mb\_n1\_ecp & K-Cu, Rb-Ag, Cs-La, Hf-Au & Hay-Wadt MB (n+1) ECP\\
-hay\_wadt\_vdz\_n1\_ecp & K-Cu, Rb-Ag, Cs-La, Ta-Au & Hay-Wadt VDZ (n+1) ECP\\
+ecp-sdd-DZ & Li-Mg, Si-Ce, Nd, & Stuttgart ECPs\\
+           & Sm-Tb, Ho, Yb-Bi, & \\
+           & Rn  & \\
+hay\_wadt\_mb\_n1\_ecp & K-Cu, Rb-Ag, Cs-La, & Hay-Wadt MB (n+1) ECP\\
+ & Hf-Au & \\
+hay\_wadt\_vdz\_n1\_ecp & K-Cu, Rb-Ag, Cs-La, & Hay-Wadt VDZ (n+1) ECP\\
+ & Ta-Au & \\
 lanl08 & Na-La, Hf-Bi & LANL08\\
-lanl08\_f & Sc-Cu, Y-Ag, La, Hf-Au & LANL08(f)\\
+lanl08\_f & Sc-Cu, Y-Ag, La, & LANL08(f)\\
+		  & Hf-Au & \\
 lanl08\_p & Sc-Zn & LANL08+\\
-lanl08d & Si-Cl, Ge-Br, Sn-I, Pb-Bi & LANL08d\\
-lanl2dz\_ecp & Na-La, Hf-Au, Pb-Bi, U-Pu & LANL2DZ ECP\\
-lanl2dzdp\_ecp & Si-Cl, Ge-Br, Sn-I, Pb-Bi & LANL2DZdp ECP\\
-lanl2tz & Sc-Zn, Y-Cd, La, Hf-Au & LANL2TZ\\
-lanl2tz\_f & Sc-Cu, Y-Ag, La, Hf-Au & LANL2TZ(f)\\
+lanl08d & Si-Cl, Ge-Br, Sn-I, & LANL08d\\
+		& Pb-Bi & \\
+lanl2dz\_ecp & Na-La, Hf-Au, Pb-Bi, & LANL2DZ ECP\\
+ & U-Pu & \\
+lanl2dzdp\_ecp & Si-Cl, Ge-Br, Sn-I, & LANL2DZdp ECP\\
+				  & Pb-Bi & \\
+lanl2tz & Sc-Zn, Y-Cd, La, & LANL2TZ\\
+				  & Hf-Au & \\
+lanl2tz\_f & Sc-Cu, Y-Ag, La, & LANL2TZ(f)\\
+				  & Hf-Au & \\
 lanl2tz\_p & Sc-Zn & LANL2TZ+\\
-modified\_lanl2dz & Sc-Cu, Y-Ag, La, Hf-Au & modified LANL2DZ\\
-sbkjc\_polarized\_p\_2d\_lfk & Li-Ca, Ge-Sr, Sn-Ba, Pb-Rn & SBKJC Polarized (p,2d) - LFK\\
+modified\_lanl2dz & Sc-Cu, Y-Ag, La, & modified LANL2DZ\\
+				  & Hf-Au & \\
+sbkjc\_polarized\_p\_2d\_lfk & Li-Ca, Ge-Sr, Sn-Ba, & SBKJC Polarized (p,2d) - LFK\\
+ & Pb-Rn & \\
 sbkjc\_vdz\_ecp & Li-Ce, Hf-Rn & SBKJC VDZ ECP\\
 sdb\_aug\_cc\_pvqz & Ga-Br, In-I & SDB-aug-cc-pVQZ\\
 sdb\_aug\_cc\_pvtz & Ga-Br, In-I & SDB-aug-cc-pVTZ\\
 sdb\_cc\_pvqz & Ga-Kr, In-Xe & SDB-cc-pVQZ\\
 sdb\_cc\_pvtz & Ga-Kr, In-Xe & SDB-cc-pVTZ\\
-stuttgart\_rlc\_ecp & Li-Ca, Zn-Sr, In-Ba, Hg-Rn, Ac-Lr & Stuttgart RLC ECP\\
-stuttgart\_rsc\_1997\_ecp & K-Zn, Rb-Cd, Cs-Ba, Cs-Yb, & Stuttgart RSC 1997 ECP\\
-                          & Hf-Hg, Ac-Lr, Db &\\
+stuttgart\_rlc\_ecp & Li-Ca, Zn-Sr, In-Ba, & Stuttgart RLC ECP\\
+ & Hg-Rn, Ac-Lr & \\
+stuttgart\_rsc\_1997\_ecp & K-Zn, Rb-Cd, Cs-Ba, & Stuttgart RSC 1997 ECP\\
+                          & Cs-Yb, Hf-Hg, Ac-Lr, &\\
+                          & Db & \\
 stuttgart\_rsc\_ano\_ecp & La-Lu & Stuttgart RSC ANO/ECP\\
 stuttgart\_rsc\_segmented\_ecp & La-Lu & Stuttgart RSC Segmented/ECP\\
 \hline

@@ -88,6 +88,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Check 1: SCF Energy
 CRIT1=`$GREP "Total SCF   energy:                   -76.0411249" $log | wc -l`
 TEST[1]=`expr $CRIT1`
@@ -142,7 +147,7 @@ ERROR[8]="NOT STABILIZING SOLUTION"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi

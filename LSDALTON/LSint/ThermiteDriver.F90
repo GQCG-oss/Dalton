@@ -134,7 +134,7 @@ TYPE(ODITEM)         :: OD_LHS,OD_RHS
 Integer               :: ILHS,IRHS,Start_RHS,End_RHS
 TYPE(TUVitem),target  :: SharedTUV
 TYPE(Integralitem)    :: Integral
-TYPE(Allocitem)       :: Alloc
+TYPE(Allocitem)       :: Allocations
 TYPE(Overlap)         :: P,Q2
 TYPE(Overlap),pointer :: Q(:)
 TYPE(Overlap),pointer :: PassQ(:)
@@ -165,16 +165,16 @@ IF (IPRINT.GT. 5) THEN
 ENDIF
 CALL initTUVitem(sharedTUV,Input,OD_LHS,OD_RHS,LUPRI,IPRINT)
 integral%TUV => sharedTUV
-CALL Allocitem_init(Alloc,'Both')
-CALL Allocitem_zero(Alloc,'Both')
+CALL Allocitem_init(Allocations,'Both')
+CALL Allocitem_zero(Allocations,'Both')
 
 ! The LHS batches
 
 call mem_alloc(ODTypeIndex,OD_LHS%nbatches)
-call SelectODTypesFromODbatch(ODtypeIndex,Alloc,OD_LHS,OD_LHS%nBatches,&
+call SelectODTypesFromODbatch(ODtypeIndex,Allocations,OD_LHS,OD_LHS%nBatches,&
      &nLHSODTypes,TYPEOVERLAPINDEX,INPUT,IPRINT,LUPRI,'LHS')
 
-IF(IPRINT.GT.5)call Allocitem_print(Alloc,'LHS',lupri)
+IF(IPRINT.GT.5)call Allocitem_print(Allocations,'LHS',lupri)
 
 call mem_alloc(ILHSCOUNTINDEX,OD_LHS%nbatches)
 ILHSCOUNT=0
@@ -196,8 +196,8 @@ call ALLOC_ODRHS_BUFFERS
 DO IRHS=1,OD_RHS%nbatches
    CALL SET_Overlap(Q(IRHS),Input,SharedTUV,Integral,OD_RHS%BATCH(IRHS),2,LUPRI,IPRINT,.TRUE.)
 ENDDO
-CALL SelectODPassTypes2(ODpassesIndex,PassTypeOverlapIndex,Q,OD_RHS%nbatches,nPassTypes,Alloc,input,IPRINT,LUPRI)
-IF(IPRINT.GT.5)call Allocitem_print(Alloc,'RHS',lupri)
+CALL SelectODPassTypes2(ODpassesIndex,PassTypeOverlapIndex,Q,OD_RHS%nbatches,nPassTypes,Allocations,input,IPRINT,LUPRI)
+IF(IPRINT.GT.5)call Allocitem_print(Allocations,'RHS',lupri)
 call mem_alloc(nOverlapOfPassType,nPassTypes)
 DO Ipasstype = 1,nPassTypes
    nOverlapOfPassType(Ipasstype)=0
@@ -216,7 +216,7 @@ IF(.NOT.INPUT%noOMP)call mem_TurnONThread_Memory()
 !$OMP iODtype,P,PQ,ILHS,IRHS,iPassType,numpasses,Start_RHS,End_RHS,PassQ,screen,&
 !$OMP maxPassesFortypes,TOTmaxpasses,WORKLENGTH,WORK1EST,WORKLENGTH2,WORKLENGTH3,&
 !$OMP OverlapList,maxpasses,doPasses,&
-!$OMP IRHSTMP) SHARED(sharedTUV,Alloc,Input,OD_LHS,OD_RHS,nOverlapOfPassType,PassTypeOverlapIndex,&
+!$OMP IRHSTMP) SHARED(sharedTUV,Allocations,Input,OD_LHS,OD_RHS,nOverlapOfPassType,PassTypeOverlapIndex,&
 !$OMP Q,ODpassesIndex,OUTPUT,typeoverlapindex,nPassTypes,nLHSODtypes,IPRINT,LUPRI,ILHSCOUNTINDEX,&
 !$OMP ODTypeIndex,ReductionECONT)
 IF(.NOT.INPUT%noOMP)call init_threadmemvar()
@@ -229,7 +229,7 @@ tid=0
 #endif
 call INIT_BUFCOUNTERS(1)
 DO iODType=1,nLHSODTypes
-   call MEM_INIT_OVERLAP(Alloc,iODtype,Input,1,IPRINT,LUPRI)
+   call MEM_INIT_OVERLAP(Allocations,iODtype,Input,1,IPRINT,LUPRI)
 ENDDO
 call ALLOC_ODLHS_BUFFERS
 !reassociate pointers as the may be deassociated inside a OMP PARALLEL REGION
@@ -244,8 +244,8 @@ ILHSCOUNT=MIN(1+tid,OD_LHS%nbatches)
 ILHS = ILHSCOUNTINDEX(ILHSCOUNT)
 iODType=ODTypeIndex(ILHS)
 currentODtype = iODtype
-CALL INIT_OVERLAP(P,Alloc,iODtype,Input,1,IPRINT,LUPRI)
-CALL allocIntegralsWRAP(PQ,Integral,Input,Alloc,iODtype,nPassTypes,&
+CALL INIT_OVERLAP(P,Allocations,iODtype,Input,1,IPRINT,LUPRI)
+CALL allocIntegralsWRAP(PQ,Integral,Input,Allocations,iODtype,nPassTypes,&
      &maxPassesFortypes,1,INPUT%DO_PASSES,nOverlapOfPassType,lupri)
 call mem_alloc(Integral%Econt,input%NDMAT_RHS)
 IF(INPUT%fullcontraction)Integral%Econt=0.0E0_realk
@@ -271,34 +271,34 @@ ENDDO
 !LHS requirements
 WORKLENGTH = 0
 DO iODType=1,nLHSODtypes
-   WORK1EST = Alloc%maxprimLHSA(iODtype)*Alloc%maxContLHSA(iODtype)&
-        &+2*Alloc%maxETUVlenLHSA(iODtype)+Alloc%maxijkLHSA(iODtype)*Alloc%maxijkLHSA(iODtype)
+   WORK1EST = Allocations%maxprimLHSA(iODtype)*Allocations%maxContLHSA(iODtype)&
+        &+2*Allocations%maxETUVlenLHSA(iODtype)+Allocations%maxijkLHSA(iODtype)*Allocations%maxijkLHSA(iODtype)
    WORKLENGTH = MAX(WORKLENGTH,WORK1EST)
 ENDDO
 !intermediate
-WORKLENGTH = WORKLENGTH+Alloc%maxprimRHS*Alloc%maxprimLHS
+WORKLENGTH = WORKLENGTH+Allocations%maxprimRHS*Allocations%maxprimLHS
 !RHS requirements
 WORKLENGTH2 = 0
 DO iODType=1,nLHSODtypes
-   CALL determineMaxPassesForType(Alloc,iODtype,nPassTypes,&
+   CALL determineMaxPassesForType(Allocations,iODtype,nPassTypes,&
         &maxPassesFortypes,1,INPUT%DO_PASSES,nOverlapOfPassType,lupri)
    DO iPassType=1,nPassTypes
-      WORK1EST = Alloc%maxprimRHSA(iPassType)*Alloc%maxContRHSA(iPassType)&
-           &+2*Alloc%maxETUVlenRHSA(iPassType)*maxPassesForTypes(iPassType)&
-           &+Alloc%maxijkRHSA(iPassType)*Alloc%maxijkRHSA(iPasstype)
+      WORK1EST = Allocations%maxprimRHSA(iPassType)*Allocations%maxContRHSA(iPassType)&
+           &+2*Allocations%maxETUVlenRHSA(iPassType)*maxPassesForTypes(iPassType)&
+           &+Allocations%maxijkRHSA(iPassType)*Allocations%maxijkRHSA(iPasstype)
       WORKLENGTH2 = MAX(WORKLENGTH2,WORK1EST)
-      WORK1EST = Alloc%maxprimRHSA(iPassType)*Alloc%maxprimLHSA(iODtype)&
+      WORK1EST = Allocations%maxprimRHSA(iPassType)*Allocations%maxprimLHSA(iODtype)&
            &*maxPassesForTypes(iPassType)
       WORKLENGTH2 = MAX(WORKLENGTH2,WORK1EST)
    ENDDO
 ENDDO
 WORKLENGTH3 = MAX(WORKLENGTH2,WORKLENGTH)
 !intermediate
-WORK1EST = 5*alloc%maxPrimRHS
+WORK1EST = 5*Allocations%maxPrimRHS
 WORKLENGTH3 = MAX(WORKLENGTH3,WORK1EST)
 call init_workmem(WORKLENGTH3)
 
-CALL determineMaxPassesForType(Alloc,currentODtype,nPassTypes,&
+CALL determineMaxPassesForType(Allocations,currentODtype,nPassTypes,&
      & maxPassesFortypes,1,INPUT%DO_PASSES,nOverlapOfPassType,lupri)
 iODtype = currentODtype
 
@@ -319,8 +319,8 @@ DO ILHSCOUNT=1,OD_LHS%nbatches
       call mem_dealloc(PassQ)
       call mem_dealloc(overlaplist)
       !realloc
-      CALL INIT_OVERLAP(P,Alloc,iODtype,Input,1,IPRINT,LUPRI)
-      CALL allocIntegralsWRAP(PQ,Integral,Input,Alloc,iODtype,nPassTypes,&
+      CALL INIT_OVERLAP(P,Allocations,iODtype,Input,1,IPRINT,LUPRI)
+      CALL allocIntegralsWRAP(PQ,Integral,Input,Allocations,iODtype,nPassTypes,&
            &maxPassesFortypes,1,INPUT%DO_PASSES,nOverlapOfPassType,lupri)
       !Pass Memory alloc
       call DEALLOC_ODPASS_BUFFERS
@@ -438,7 +438,7 @@ DO iPassType=1,nPasstypes
    call mem_dealloc(PassTypeOverlapIndex(iPassType)%elms)
 ENDDO
 DEALLOCATE(PassTypeOverlapIndex)
-call allocitem_free(alloc,'Both')
+call allocitem_free(Allocations,'Both')
 DO IRHS=1,OD_RHS%nbatches
    CALL FREE_OVERLAP(Q(IRHS))
 ENDDO
@@ -1344,7 +1344,7 @@ TYPE(ODITEM)         :: OD_LHS,OD_RHS
 !
 Integer               :: ILHS,IRHS,Start_LHS,End_LHS,NFTUVbatches
 TYPE(Integralitem)    :: Integral
-TYPE(Allocitem)       :: Alloc
+TYPE(Allocitem)       :: Allocations
 TYPE(TUVitem),target  :: SharedTUV
 TYPE(Overlap)         :: P
 TYPE(Overlap)         :: PassF
@@ -1383,25 +1383,25 @@ ELSE
   maxPrimPass = 1
 ENDIF
 
-CALL AllocItem_init(Alloc,'Both')
-CALL AllocItem_zero(Alloc,'Both')
-CALL SET_ALLOC(Alloc,Input,OD_LHS,'LHS',IPRINT,LUPRI)
-CALL SET_ALLOC(Alloc,Input,OD_RHS,'RHS',IPRINT,LUPRI)
+CALL AllocItem_init(Allocations,'Both')
+CALL AllocItem_zero(Allocations,'Both')
+CALL SET_ALLOC(Allocations,Input,OD_LHS,'LHS',IPRINT,LUPRI)
+CALL SET_ALLOC(Allocations,Input,OD_RHS,'RHS',IPRINT,LUPRI)
 
 call MEM_OVERLAP(OD_RHS,Input,2)
 call ALLOC_ODRHS_BUFFERS
 call mem_alloc(Q,OD_RHS%nbatches)
 
 !we need room for a Contraction Matrix
-WORKLENGTH = Alloc%maxprimRHS*Alloc%maxContRHS
+WORKLENGTH = Allocations%maxprimRHS*Allocations%maxContRHS
 !we need room for a contraction matrix
-WORKLENGTH = Alloc%maxprimRHS*Alloc%maxijkRHS*INPUT%NDMAT_RHS
+WORKLENGTH = Allocations%maxprimRHS*Allocations%maxijkRHS*INPUT%NDMAT_RHS
 !When we do a spherical transformation on Etuv we need 2 Etuvs and a spherical transform
-WORKLENGTH = WORKLENGTH+2*Alloc%maxETUVlenRHS+Alloc%maxijkRHS*Alloc%maxijkRHS
+WORKLENGTH = WORKLENGTH+2*Allocations%maxETUVlenRHS+Allocations%maxijkRHS*Allocations%maxijkRHS
 !for an intermediate
-WORKLENGTH = WORKLENGTH+Alloc%maxprimRHS*Alloc%maxprimLHS
+WORKLENGTH = WORKLENGTH+Allocations%maxprimRHS*Allocations%maxprimLHS
 call init_workmem(WORKLENGTH) 
-CALL SET_FTUVbatches(F,NFTUVbatches,OD_RHS,Q,Input,SharedTUV,Integral,Alloc,&
+CALL SET_FTUVbatches(F,NFTUVbatches,OD_RHS,Q,Input,SharedTUV,Integral,Allocations,&
      &               INPUT%NDMAT_RHS,maxPrimPass,LUPRI,IPRINT)
 call free_workmem
 call mem_dealloc(Q)
@@ -1412,7 +1412,7 @@ ReductionEcont = 0.0E0_realk
 IF(.NOT.INPUT%noOMP)call mem_TurnONThread_Memory()
 !$OMP PARALLEL IF(.NOT.INPUT%noOMP) DEFAULT(none) PRIVATE(integral,P,PQ,ILHS,IRHS,Start_LHS,End_LHS,nPrimP,nPrimQ,&
 !$OMP screen,PassF,nPrimPass,passType,doLHS,WORKLENGTH,maxPrim,maxTUVdim,&
-!$OMP maxOrb) SHARED(sharedTUV,Alloc,Input,OD_LHS,OD_RHS,&
+!$OMP maxOrb) SHARED(sharedTUV,Allocations,Input,OD_LHS,OD_RHS,&
 !$OMP NFTUVbatches,Q,dopasses,maxprimpass,output,IPRINT,LUPRI,ReductionEcont)
 IF(.NOT.INPUT%noOMP)call init_threadmemvar()
 
@@ -1423,30 +1423,30 @@ IF(INPUT%LHSSameAsRHSDmat)THEN
 ENDIF
 
 call INIT_BUFCOUNTERS(1)
-call MEM_INIT_OVERLAP(Alloc,0,Input,1,IPRINT,LUPRI)
+call MEM_INIT_OVERLAP(Allocations,0,Input,1,IPRINT,LUPRI)
 call ALLOC_ODLHS_BUFFERS
-CALL INIT_OVERLAP(P,Alloc,0,Input,1,IPRINT,LUPRI)
+CALL INIT_OVERLAP(P,Allocations,0,Input,1,IPRINT,LUPRI)
 
 
 !we need room for a LHS or RHS Contraction Matrix
-WORKLENGTH = MAX(Alloc%maxprimRHS*Alloc%maxContRHS,Alloc%maxprimLHS*Alloc%maxContLHS) 
+WORKLENGTH = MAX(Allocations%maxprimRHS*Allocations%maxContRHS,Allocations%maxprimLHS*Allocations%maxContLHS) 
 !When we do a spherical transformation on Etuv we need 2 Etuvs and a spherical transform
-WORKLENGTH = WORKLENGTH+MAX(2*Alloc%maxETUVlenLHS+&
-     & Alloc%maxijkLHS*Alloc%maxijkLHS,2*Alloc%maxETUVlenRHS+&
-     & Alloc%maxijkRHS*Alloc%maxijkRHS) 
+WORKLENGTH = WORKLENGTH+MAX(2*Allocations%maxETUVlenLHS+&
+     & Allocations%maxijkLHS*Allocations%maxijkLHS,2*Allocations%maxETUVlenRHS+&
+     & Allocations%maxijkRHS*Allocations%maxijkRHS) 
 !for an intermediate
-WORKLENGTH = WORKLENGTH+Alloc%maxprimRHS*Alloc%maxprimLHS
+WORKLENGTH = WORKLENGTH+Allocations%maxprimRHS*Allocations%maxprimLHS
 call init_workmem(WORKLENGTH) 
 
-call getIntegralDimsJengine2(Alloc,maxPrimPass,INPUT%NDMAT_RHS,&
+call getIntegralDimsJengine2(Allocations,maxPrimPass,INPUT%NDMAT_RHS,&
      & INPUT%geoderivorder,INPUT%magderivorder,maxTUVdim,maxPrim)
 call init_bufcounters(5)
 CALL MemFTUVbatches(maxPrim,maxTUVdim,INPUT%NDMAT_RHS,5)
 call ALLOC_ODPASSF_BUFFERS
 
-maxTUVdim = getIntegralDimsJengine(Alloc,maxPrimPass,INPUT%NDMAT_RHS,INPUT%geoderivorder,INPUT%magderivorder)
-maxPrim   = Alloc%maxPrimLHS*Alloc%maxPrimRHS
-maxOrb    = Alloc%maxTotOrbRHS*Alloc%maxTotOrbLHS*INPUT%NDMAT_RHS
+maxTUVdim = getIntegralDimsJengine(Allocations,maxPrimPass,INPUT%NDMAT_RHS,INPUT%geoderivorder,INPUT%magderivorder)
+maxPrim   = Allocations%maxPrimLHS*Allocations%maxPrimRHS
+maxOrb    = Allocations%maxTotOrbRHS*Allocations%maxTotOrbLHS*INPUT%NDMAT_RHS
 CALL allocIntegrals(PQ,Integral,maxPrim,maxTUVdim,maxorb,lupri)
 call mem_alloc(Integral%Econt,input%NDMAT_RHS)
 IF(INPUT%fullcontraction)Integral%Econt = 0.0E0_realk   
@@ -1616,7 +1616,7 @@ Integer,target        :: ILHS,STATICSIZEOFDOINT
 Integer               :: IRHS,Start_RHS,End_RHS,i,j
 TYPE(TUVitem),target  :: SharedTUV
 TYPE(Integralitem)    :: Integral
-TYPE(Allocitem)       :: Alloc
+TYPE(Allocitem)       :: Allocations
 TYPE(Overlap)         :: P
 TYPE(Overlap),pointer :: Q(:)
 TYPE(Overlap),pointer :: PassQ(:)
@@ -1655,7 +1655,7 @@ logical        :: NOELEMENTSADDED,LHS,screen,dalink,doneBuild,DRHS_SYM,DLHS_SYM,
 real(realk)    :: mbieP(2),RAB,CPUTIME3,CPUTIME4
 type(lstensor),pointer :: pGAB
 type(lstensor) :: localKmat
-logical :: MBIE_SCREEN,nograd,nonSR_EXCHANGE,sameLHSaos
+logical :: MBIE_SCREEN,nograd,nonSR_EXCHANGE,sameLHSaos,PerformCALC
 logical,pointer :: dopasses(:)
 Integer,pointer  :: ODTypeIndex(:)
 type(integerpointer),pointer :: PassTypeOverlapindex(:)
@@ -1670,15 +1670,12 @@ integer,pointer     :: atomC(:),atomD(:),batchC(:),batchD(:),atomIndexC(:),atomI
 real(realk),pointer :: X3(:),Y3(:),Z3(:),X4(:),Y4(:),Z4(:)
 real(realk) :: TMP,factor,CS_THRESHOLD
 integer :: IRHSI(1),nLHSbatches,nA,node,numnodes
-integer :: nthreads,tid,nDMAT_RHS,nDMAT_LHS
+integer :: nthreads,tid,nDMAT_RHS,nDMAT_LHS,IOMPLHSCOUNT
 integer,pointer :: Belms(:)
 integer,pointer :: IODelms(:)
 real(realk)           :: ReductionECONT(input%NDMAT_RHS)
 #ifdef VAR_OMP
-integer,pointer :: MPIINDEX(:)
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
-#else
-integer :: MPIINDEX(0:0)
 #endif
 CALL LS_GETTIM(CPUTIMESTART,WALLTIMESTART)
 !IF(.NOT. INPUT%CS_SCREEN)THEN
@@ -1734,14 +1731,14 @@ IF (IPRINT.GT. 5) THEN
 ENDIF
 CALL initTUVitem(sharedTUV,Input,OD_LHS,OD_RHS,LUPRI,IPRINT)
 Integral%TUV => sharedTUV
-CALL AllocItem_init(Alloc,'Both')
-CALL Allocitem_zero(Alloc,'Both')
+CALL AllocItem_init(Allocations,'Both')
+CALL Allocitem_zero(Allocations,'Both')
 call mem_alloc(ODTypeIndex,nLHSoverlaps)
-call SelectODTypesFromODbatch(ODtypeIndex,Alloc,OD_LHS,nLHSoverlaps,&
+call SelectODTypesFromODbatch(ODtypeIndex,Allocations,OD_LHS,nLHSoverlaps,&
      &nLHSODTypes,TYPEOVERLAPINDEX,INPUT,IPRINT,LUPRI,'LHS')
 
 call mem_alloc(ODpassesIndex,nRHSoverlaps)
-call SelectODTypesFromODbatch(ODpassesIndex,Alloc,OD_RHS,nRHSoverlaps,&
+call SelectODTypesFromODbatch(ODpassesIndex,Allocations,OD_RHS,nRHSoverlaps,&
      &nPassTypes,PassTYPEOVERLAPINDEX,INPUT,IPRINT,LUPRI,'RHS')
 IF(nPassTypes.EQ.nRHSoverlaps)INPUTDO_PASSES = .FALSE.
 
@@ -1829,129 +1826,135 @@ ELSE
    ENDIF
 ENDIF
 
-! determine significant ket shell pairs
-NULLIFY(ketshell)
-ALLOCATE(ketshell(dim4))
-call mem_alloc(SORTING,dim3,dim4)
-CALL DETERMINE_SHELL_PAIRS_RHS(dim4,dim3,RED_GAB_RHS,CS_THRLOG,&
-        &maxLHSELM,ketshell,OD_RHS,INPUT%sameRHSaos,SORTING,&
-        &nRHSoverlaps,lupri)
-DO D=1,dim4
-   IF(ketshell(D)%DIM.GT.0)THEN
-      call mem_alloc(ketshell(D)%RED_GAB,ketshell(D)%DIM)
-      DO nC=1,ketshell(D)%DIM
-         C=ketshell(D)%belms(nC)
-         IRHS=ketshell(D)%IODelms(nC)
-         ketshell(D)%RED_GAB(nC) = RED_GAB_RHS(IRHS)
-      ENDDO
-   ENDIF
-ENDDO
-
-! determine significant bra shell pairs
-NULLIFY(brashell)
-ALLOCATE(brashell(dim2))
-IF(.NOT.sameODs)THEN
-   call mem_dealloc(SORTING)
-   call mem_alloc(SORTING,dim1,dim2)
-ENDIF
-CALL DETERMINE_SHELL_PAIRS_LHS(dim1,dim2,RED_GAB_LHS,CS_THRLOG,&
-     &maxRHSELM,brashell,OD_LHS,sameLHSaos,SORTING,&
-     &nLHSoverlaps,lupri)
-call mem_dealloc(SORTING)
-! build reduced density matrix
 IF(INPUT%CS_SCREEN)THEN
-   call mem_alloc(RED_DMAT_RHS,dim2,dim4)
-   call Build_full_shortint2dim_from_lstensor(input%LST_DRHS,RED_DMAT_RHS,dim2,dim4,lupri)
-   IF (input%sameODs) call symmetrize_SDMAT(RED_DMAT_RHS,dim2,dim4)
-   !WRITE(lupri,*)'The Dmat output'
-   !call shortint_output(RED_DMAT_RHS,dim1,dim3,lupri)
+   PerformCALC = maxLHSELM .GT. CS_THRLOG-maxRHSELM
 ELSE
-   !no screening so we set the screening Dmat quantity to 1000
-   call mem_alloc(RED_DMAT_RHS,dim2,dim4)
-   DO D=1,dim4
-      DO C=1,dim2
-         RED_DMAT_RHS(C,D) = 3
-      ENDDO
-   ENDDO
+   PerformCALC=.TRUE.
 ENDIF
 
-IF(DALINK)THEN
-   IF(SameODs)THEN
-      RED_DMAT_LHS => RED_DMAT_RHS 
-   ELSE
-      call mem_alloc(RED_DMAT_LHS,dim1,dim3)
-      IF(INPUT%CS_SCREEN)THEN
-         call Build_full_shortint2dim_from_lstensor(input%LST_DLHS,RED_DMAT_LHS,dim1,dim3,lupri)
-      ELSE
-         DO D=1,dim3
-            DO C=1,dim1
-               RED_DMAT_LHS(C,D) = 3
-            ENDDO
-         ENDDO
-      ENDIF
-   ENDIF
-   call mem_alloc(batchindex1,nRHSoverlaps)
-   call mem_alloc(batchindex2,nRHSoverlaps)
-   DO D=1,dim4
-      IF(ketshell(D)%DIM.GT.0)THEN
-         DO nC=1,ketshell(D)%DIM
-            C=ketshell(D)%belms(nC)
-            IRHS=ketshell(D)%IODelms(nC)
-            batchindex1(IRHS)=C
-            batchindex2(IRHS)=D
-         ENDDO
-      ENDIF
-   ENDDO
-ENDIF
-NULLIFY(ML)
-ALLOCATE(ML(dim2))
-call mem_alloc(SORTING2,dim4)
-CALL DETERMINE_BRAKET_PAIRS(dim1,dim2,dim4,RED_DMAT_RHS,&
-     &maxLHSGAB,maxRHSGAB,CS_THRLOG,ML,sameODs,SORTING2)
-call mem_dealloc(SORTING2)
-!================================================================================
-! Done Link Specific part, now we set up the ODtypes and so on
-!================================================================================
-call mem_alloc(AIndex,nLHSoverlaps)
-call mem_alloc(BIndex,nLHSoverlaps)
-call mem_alloc(ILHSCOUNTINDEX,nLHSoverlaps)
-ILHSCOUNT=0
-DO iODType=1,nLHSODtypes
-   DO B = 1,dim2
-      IODelms => brashell(B)%IODelms
-      Belms => brashell(B)%Belms
-      DO nA=1,brashell(B)%DIM
-         A=Belms(nA)
-         IF(sameLHSaos)THEN
-            IF(B.GE.A)THEN
-               ILHS=IODelms(nA)
-               IODType2 = ODtypeIndex(ILHS)
-               IF(IODType2.EQ.iODtype)THEN
-                  ILHSCOUNT=ILHSCOUNT+1
-                  ILHSCOUNTINDEX(ILHSCOUNT) = ILHS
-                  Aindex(ILHSCOUNT) = A
-                  Bindex(ILHSCOUNT) = B
-               ENDIF
-            ENDIF
-         ELSE
-            ILHS=IODelms(nA)
-            IODType2 = ODtypeIndex(ILHS)
-            IF(IODType2.EQ.iODtype)THEN
-               ILHSCOUNT=ILHSCOUNT+1
-               ILHSCOUNTINDEX(ILHSCOUNT) = ILHS
-               Aindex(ILHSCOUNT) = A
-               Bindex(ILHSCOUNT) = B
-            ENDIF
-         ENDIF
-      ENDDO
-   ENDDO
-ENDDO
-nLHSbatches = ILHSCOUNT
+IF(PerformCALC)THEN
+ ! determine significant ket shell pairs
+ NULLIFY(ketshell)
+ ALLOCATE(ketshell(dim4))
+ call mem_alloc(SORTING,dim3,dim4)
+ CALL DETERMINE_SHELL_PAIRS_RHS(dim4,dim3,RED_GAB_RHS,CS_THRLOG,&
+         &maxLHSELM,ketshell,OD_RHS,INPUT%sameRHSaos,SORTING,&
+         &nRHSoverlaps,lupri)
+ DO D=1,dim4
+    IF(ketshell(D)%DIM.GT.0)THEN
+       call mem_alloc(ketshell(D)%RED_GAB,ketshell(D)%DIM)
+       DO nC=1,ketshell(D)%DIM
+          C=ketshell(D)%belms(nC)
+          IRHS=ketshell(D)%IODelms(nC)
+          ketshell(D)%RED_GAB(nC) = RED_GAB_RHS(IRHS)
+       ENDDO
+    ENDIF
+ ENDDO 
 
-CALL LS_GETTIM(CPUTIME3,WALLTIME3)
-ReductionEcont = 0.0E0_realk
+ ! determine significant bra shell pairs
+ NULLIFY(brashell)
+ ALLOCATE(brashell(dim2))
+ IF(.NOT.sameODs)THEN
+    call mem_dealloc(SORTING)
+    call mem_alloc(SORTING,dim1,dim2)
+ ENDIF
+ CALL DETERMINE_SHELL_PAIRS_LHS(dim1,dim2,RED_GAB_LHS,CS_THRLOG,&
+      &maxRHSELM,brashell,OD_LHS,sameLHSaos,SORTING,&
+      &nLHSoverlaps,lupri)
+ call mem_dealloc(SORTING)
+ ! build reduced density matrix
+ IF(INPUT%CS_SCREEN)THEN
+    call mem_alloc(RED_DMAT_RHS,dim2,dim4)
+    call Build_full_shortint2dim_from_lstensor(input%LST_DRHS,RED_DMAT_RHS,dim2,dim4,lupri)
+    IF (input%sameODs) call symmetrize_SDMAT(RED_DMAT_RHS,dim2,dim4)
+    !WRITE(lupri,*)'The Dmat output'
+    !call shortint_output(RED_DMAT_RHS,dim1,dim3,lupri)
+ ELSE
+    !no screening so we set the screening Dmat quantity to 1000
+    call mem_alloc(RED_DMAT_RHS,dim2,dim4)
+    DO D=1,dim4
+       DO C=1,dim2
+          RED_DMAT_RHS(C,D) = 3
+       ENDDO
+    ENDDO
+ ENDIF
 
-IF(.NOT.INPUT%noOMP) call mem_TurnONThread_Memory()
+ IF(DALINK)THEN
+    IF(SameODs)THEN
+       RED_DMAT_LHS => RED_DMAT_RHS 
+    ELSE
+       call mem_alloc(RED_DMAT_LHS,dim1,dim3)
+       IF(INPUT%CS_SCREEN)THEN
+          call Build_full_shortint2dim_from_lstensor(input%LST_DLHS,RED_DMAT_LHS,dim1,dim3,lupri)
+       ELSE
+          DO D=1,dim3
+             DO C=1,dim1
+                RED_DMAT_LHS(C,D) = 3
+             ENDDO
+          ENDDO
+       ENDIF
+    ENDIF
+    call mem_alloc(batchindex1,nRHSoverlaps)
+    call mem_alloc(batchindex2,nRHSoverlaps)
+    DO D=1,dim4
+       IF(ketshell(D)%DIM.GT.0)THEN
+          DO nC=1,ketshell(D)%DIM
+             C=ketshell(D)%belms(nC)
+             IRHS=ketshell(D)%IODelms(nC)
+             batchindex1(IRHS)=C
+             batchindex2(IRHS)=D
+          ENDDO
+       ENDIF
+    ENDDO
+ ENDIF
+ NULLIFY(ML)
+ ALLOCATE(ML(dim2))
+ call mem_alloc(SORTING2,dim4)
+ CALL DETERMINE_BRAKET_PAIRS(dim1,dim2,dim4,RED_DMAT_RHS,&
+      &maxLHSGAB,maxRHSGAB,CS_THRLOG,ML,sameODs,SORTING2)
+ call mem_dealloc(SORTING2)
+ !================================================================================
+ ! Done Link Specific part, now we set up the ODtypes and so on
+ !================================================================================
+ call mem_alloc(AIndex,nLHSoverlaps)
+ call mem_alloc(BIndex,nLHSoverlaps)
+ call mem_alloc(ILHSCOUNTINDEX,nLHSoverlaps)
+ ILHSCOUNT=0
+ DO iODType=1,nLHSODtypes
+    DO B = 1,dim2
+       IODelms => brashell(B)%IODelms
+       Belms => brashell(B)%Belms
+       DO nA=1,brashell(B)%DIM
+          A=Belms(nA)
+          IF(sameLHSaos)THEN
+             IF(B.GE.A)THEN
+                ILHS=IODelms(nA)
+                IODType2 = ODtypeIndex(ILHS)
+                IF(IODType2.EQ.iODtype)THEN
+                   ILHSCOUNT=ILHSCOUNT+1
+                   ILHSCOUNTINDEX(ILHSCOUNT) = ILHS
+                   Aindex(ILHSCOUNT) = A
+                   Bindex(ILHSCOUNT) = B
+                ENDIF
+             ENDIF
+          ELSE
+             ILHS=IODelms(nA)
+             IODType2 = ODtypeIndex(ILHS)
+             IF(IODType2.EQ.iODtype)THEN
+                ILHSCOUNT=ILHSCOUNT+1
+                ILHSCOUNTINDEX(ILHSCOUNT) = ILHS
+                Aindex(ILHSCOUNT) = A
+                Bindex(ILHSCOUNT) = B
+             ENDIF
+          ENDIF
+       ENDDO
+    ENDDO
+ ENDDO
+ nLHSbatches = ILHSCOUNT
+ CALL LS_GETTIM(CPUTIME3,WALLTIME3)
+ ReductionEcont = 0.0E0_realk
+
+ IF(.NOT.INPUT%noOMP) call mem_TurnONThread_Memory()
 !$OMP PARALLEL IF(.NOT.INPUT%noOMP) DEFAULT(NONE) PRIVATE(ILHSCOUNT,integral,PQ,IRHS,&
 !$OMP RHSINDEX,A,nB,B,ILHS,nC,C,nD,D,LIST,LISTSIZE,TMPWORK,WORKLENGTH,DoINT,&
 !$OMP NOELEMENTSADDED,DMATELM1,DMATELM2,MAXDMAT,iPasstype,numpasses,PassQ,Q,&
@@ -1959,36 +1962,36 @@ IF(.NOT.INPUT%noOMP) call mem_TurnONThread_Memory()
 !$OMP totmaxpasses,screen,overlaplist,REDGABLHS,REDDMATRHSAD,REDDMATRHSBD,&
 !$OMP TMP_short,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,IRHSI,localKmat,&
 !$OMP iODType,currentODtype,tid,nthreads,WORKLENGTH2,WORKLENGTH3,WORKEST1,IODelms,&
-!$OMP Belms,RED_GAB_TMP,node,numnodes,natoms3,natoms4) SHARED(MPIINDEX,Input,&
+!$OMP Belms,RED_GAB_TMP,node,numnodes,natoms3,natoms4,IOMPLHSCOUNT) SHARED(Input,&
 !$OMP nPassTypes,nLHSODtypes,CS_THRESHOLD,nonSR_EXCHANGE,&
-!$OMP Alloc,OD_LHS,OD_RHS,iprint,lupri,sharedTUV,nOverlapOfPassType,&
+!$OMP Allocations,OD_LHS,OD_RHS,iprint,lupri,sharedTUV,nOverlapOfPassType,&
 !$OMP PassTypeOverlapIndex,TypeOverlapIndex,ODpassesIndex,dim3,dim4,sameods,&
 !$OMP aindex,bindex,mbie_screen,ml,ketshell,brashell,red_dmat_rhs,red_dmat_lhs,&
 !$OMP cs_thrlog,lsoutput,drhs_sym,dalink,dalink_thrlog,&
 !$OMP batchindex1,batchindex2,red_gab_lhs,red_gab_rhs,inputdo_passes,&
 !$OMP nRHSoverlaps,ndmat_rhs,factor,nograd,ILHSCOUNTINDEX,&
 !$OMP ODtypeIndex,nLHSbatches,ReductionECONT)
-
-IF(.NOT.INPUT%noOMP) call init_threadmemvar()
+ IF(.NOT.INPUT%noOMP) call init_threadmemvar()
 #ifdef VAR_MPI
-node = input%node
+ node = input%node
+ numnodes = input%numnodes
 #else
-node = 0
+ node = 0
+ numnodes = 1
 #endif
 #ifdef VAR_OMP
-nthreads=OMP_GET_NUM_THREADS()
-tid=OMP_GET_THREAD_NUM()
+ nthreads=OMP_GET_NUM_THREADS()
+ tid=OMP_GET_THREAD_NUM()
 !$OMP MASTER
-if(tid==0)then
-  IF(node.EQ.0)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',omp_get_num_threads(),' threads.'
-  call mem_alloc(MPIINDEX,nthreads,.TRUE.)
-endif
+ if(tid==0)then
+   IF(node.EQ.0)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',omp_get_num_threads(),' threads.' 
+ endif
 !$OMP END MASTER
 
 !$OMP BARRIER
 #else
-nthreads=1
-tid=0
+ nthreads=1
+ tid=0
 #endif
 
 !IF(nograd)then
@@ -1996,122 +1999,126 @@ tid=0
 !ENDIF
 
 !reassociate pointers as the may be deassociated inside a OMP PARALLEL REGION
-integral%TUV => sharedTUV
-IF(INPUT%LHSSameAsRHSDmat)THEN
-   INPUT%LST_DLHS => INPUT%LST_DRHS
-ENDIF
+ integral%TUV => sharedTUV
+ IF(INPUT%LHSSameAsRHSDmat)THEN
+    INPUT%LST_DLHS => INPUT%LST_DRHS
+ ENDIF
 
-call buildRHS_centerinfo(nAtoms3,nAtoms4,nRHSoverlaps,atomC,atomD,atomIndexC,atomIndexD,&
+ call buildRHS_centerinfo(nAtoms3,nAtoms4,nRHSoverlaps,atomC,atomD,atomIndexC,atomIndexD,&
      & batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,INPUT,OD_RHS,IPRINT,LUPRI)
 
-call mem_alloc(Q,nPassTypes)
-!RHS OVERLAP MEMORY CALCULATION
-call INIT_BUFCOUNTERS(2)
-DO iPassType=1,nPassTypes
-   IRHS = PassTypeOverlapIndex(iPassType)%elms(1) 
-   call MEM_SINGLE_OVERLAP(OD_RHS,IRHS,Input,2)
-ENDDO   
-call ALLOC_ODRHS_BUFFERS
-!LHS OVERLAP MEMORY CALCULATION
-call INIT_BUFCOUNTERS(1)
-DO iODType=1,nLHSODTypes
-   call MEM_INIT_OVERLAP(Alloc,iODtype,Input,1,IPRINT,LUPRI)
-ENDDO
-!ALLOC LHS AND RHS OVERLAP BUFFERS
-call ALLOC_ODLHS_BUFFERS
+ call mem_alloc(Q,nPassTypes)
+ !RHS OVERLAP MEMORY CALCULATION
+ call INIT_BUFCOUNTERS(2)
+ DO iPassType=1,nPassTypes
+    IRHS = PassTypeOverlapIndex(iPassType)%elms(1) 
+    call MEM_SINGLE_OVERLAP(OD_RHS,IRHS,Input,2)
+ ENDDO   
+ call ALLOC_ODRHS_BUFFERS
+ !LHS OVERLAP MEMORY CALCULATION
+ call INIT_BUFCOUNTERS(1)
+ DO iODType=1,nLHSODTypes
+    call MEM_INIT_OVERLAP(Allocations,iODtype,Input,1,IPRINT,LUPRI)
+ ENDDO
+ !ALLOC LHS AND RHS OVERLAP BUFFERS
+ call ALLOC_ODLHS_BUFFERS
 
-DO iPassType=1,nPassTypes
-   IRHS = PassTypeOverlapIndex(iPassType)%elms(1) 
-   CALL SET_Overlap(Q(iPassType),Input,SharedTUV,Integral,OD_RHS%BATCH(IRHS),2,LUPRI,IPRINT,.TRUE.)
-ENDDO
+ DO iPassType=1,nPassTypes
+    IRHS = PassTypeOverlapIndex(iPassType)%elms(1) 
+    CALL SET_Overlap(Q(iPassType),Input,SharedTUV,Integral,OD_RHS%BATCH(IRHS),2,LUPRI,IPRINT,.TRUE.)
+ ENDDO
 
-call mem_alloc(numpasses,nPassTypes)
-numpasses = 0
-call mem_alloc(LIST,dim3*dim4+nPassTypes)
-call mem_alloc(DoINT,dim3*dim4)
-NULLIFY(SIZEOFDOINT)
-IF(sameODs)THEN
-   SIZEOFDOINT => ILHS
-ELSE
-   STATICSIZEOFDOINT = dim3*dim4
-   SIZEOFDOINT => STATICSIZEOFDOINT
-ENDIF
-call mem_alloc(maxPassesFortypes,nPassTypes)
-call mem_alloc(doPasses,nPassTypes)
-!initial allocation
-ILHSCOUNT = MIN(1+tid,nLHSbatches)
-ILHS = ILHSCOUNTINDEX(ILHSCOUNT)
-iODType = ODtypeIndex(ILHS)
-currentODtype = iODType
-CALL INIT_OVERLAP(P,Alloc,iODtype,Input,1,IPRINT,LUPRI)
-CALL allocIntegralsWRAP(PQ,Integral,Input,Alloc,iODtype,nPassTypes,&
-     &maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
-call mem_alloc(Integral%Econt,input%NDMAT_RHS)
-IF(INPUT%fullcontraction)Integral%Econt = 0.0E0_realk   
-TOTmaxpasses = 0
-call INIT_BUFCOUNTERS(3)
-DO iPassType=1,nPassTypes
-   TOTmaxpasses = MAX(TOTmaxpasses,maxPassesForTypes(iPassType))
-   doPasses(iPassType) = maxPassesForTypes(iPassType).NE. 1
-   IF(doPasses(iPassType))THEN
-      CALL MEM_PASS_FROM_OVERLAP(Q(Ipasstype),Input,maxPassesForTypes(iPassType))
-   ENDIF
-ENDDO
-call ALLOC_ODPASS_BUFFERS
-call mem_alloc(PassQ,nPassTypes)
-TOTmaxpasses = 0
-DO iPassType=1,nPassTypes
-   TOTmaxpasses = MAX(TOTmaxpasses,maxPassesForTypes(iPassType))
-   doPasses(iPassType) = maxPassesForTypes(iPassType).NE. 1
-   IF(doPasses(iPassType))THEN
-      CALL INIT_PASS_FROM_OVERLAP(PassQ(iPassType),Q(Ipasstype),Input,maxPassesForTypes(iPassType),IPRINT,LUPRI)
-      CALL SetPassOrbitals(PassQ(iPassType),Q(Ipasstype),maxPassesForTypes(iPassType),LUPRI,IPRINT)
-   ENDIF
-ENDDO
-!alloc workarray
-!LHS requirements
-WORKLENGTH = 0
-DO iODType=1,nLHSODtypes
-   WORKEST1 = Alloc%maxprimLHSA(iODtype)*Alloc%maxContLHSA(iODtype)&
-        &+2*Alloc%maxETUVlenLHSA(iODtype)+Alloc%maxijkLHSA(iODtype)*Alloc%maxijkLHSA(iODtype)
-   WORKLENGTH = MAX(WORKLENGTH,WORKEST1)
-ENDDO
-!intermediate
-WORKLENGTH = WORKLENGTH+Alloc%maxprimRHS*Alloc%maxprimLHS
-
-!RHS requirements
-WORKLENGTH2 = 0
-DO iODType=1,nLHSODtypes
-   CALL determineMaxPassesForType(Alloc,iODtype,nPassTypes,&
-        &maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
-   DO iPassType=1,nPassTypes
-      WORKEST1 = Alloc%maxprimRHSA(iPassType)*Alloc%maxContRHSA(iPassType)&
-           &+2*Alloc%maxETUVlenRHSA(iPassType)*maxPassesForTypes(iPassType)&
-           &+Alloc%maxijkRHSA(iPassType)*Alloc%maxijkRHSA(iPasstype)
-      WORKLENGTH2 = MAX(WORKLENGTH2,WORKEST1)
-      WORKEST1 = Alloc%maxprimRHSA(iPassType)*Alloc%maxprimLHSA(iODtype)&
-           &*maxPassesForTypes(iPassType)
-      WORKLENGTH2 = MAX(WORKLENGTH2,WORKEST1)
-   ENDDO
-ENDDO
-WORKLENGTH3 = MAX(WORKLENGTH2,WORKLENGTH)
-!intermediate
-WORKEST1 = 5*alloc%maxPrimRHS
-WORKLENGTH3 = MAX(WORKLENGTH3,WORKEST1)
-call init_workmem(WORKLENGTH3)
-
-CALL determineMaxPassesForType(Alloc,currentODtype,nPassTypes,&
-     & maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
-iODtype = currentODtype
-
-#ifdef VAR_MPI
-MPIINDEX(tid) = 0 
-numnodes = input%numnodes
-node = input%node
-#endif
-call mem_alloc(overlaplist,TOTmaxpasses,npassTypes)
-!!$OMP DO SCHEDULE(DYNAMIC,1)
-DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
+ call mem_alloc(numpasses,nPassTypes)
+ numpasses = 0
+ call mem_alloc(LIST,dim3*dim4+nPassTypes)
+ call mem_alloc(DoINT,dim3*dim4)
+ NULLIFY(SIZEOFDOINT)
+ IF(sameODs)THEN
+    SIZEOFDOINT => ILHS
+ ELSE
+    STATICSIZEOFDOINT = dim3*dim4
+    SIZEOFDOINT => STATICSIZEOFDOINT
+ ENDIF
+ call mem_alloc(maxPassesFortypes,nPassTypes)
+ call mem_alloc(doPasses,nPassTypes)
+ !initial allocation
+ ILHSCOUNT = MIN(1+tid,nLHSbatches)
+ ILHS = ILHSCOUNTINDEX(ILHSCOUNT)
+ iODType = ODtypeIndex(ILHS)
+ currentODtype = iODType
+ CALL INIT_OVERLAP(P,Allocations,iODtype,Input,1,IPRINT,LUPRI)
+ CALL allocIntegralsWRAP(PQ,Integral,Input,Allocations,iODtype,nPassTypes,&
+      &maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
+ call mem_alloc(Integral%Econt,input%NDMAT_RHS)
+ IF(INPUT%fullcontraction)Integral%Econt = 0.0E0_realk   
+ TOTmaxpasses = 0
+ call INIT_BUFCOUNTERS(3)
+ DO iPassType=1,nPassTypes
+    TOTmaxpasses = MAX(TOTmaxpasses,maxPassesForTypes(iPassType))
+    doPasses(iPassType) = maxPassesForTypes(iPassType).NE. 1
+    IF(doPasses(iPassType))THEN
+       CALL MEM_PASS_FROM_OVERLAP(Q(Ipasstype),Input,maxPassesForTypes(iPassType))
+    ENDIF
+ ENDDO
+ call ALLOC_ODPASS_BUFFERS
+ call mem_alloc(PassQ,nPassTypes)
+ TOTmaxpasses = 0
+ DO iPassType=1,nPassTypes
+    TOTmaxpasses = MAX(TOTmaxpasses,maxPassesForTypes(iPassType))
+    doPasses(iPassType) = maxPassesForTypes(iPassType).NE. 1
+    IF(doPasses(iPassType))THEN
+       CALL INIT_PASS_FROM_OVERLAP(PassQ(iPassType),Q(Ipasstype),Input,maxPassesForTypes(iPassType),IPRINT,LUPRI)
+       CALL SetPassOrbitals(PassQ(iPassType),Q(Ipasstype),maxPassesForTypes(iPassType),LUPRI,IPRINT)
+    ENDIF
+ ENDDO
+ !alloc workarray
+ !LHS requirements
+ WORKLENGTH = 0
+ DO iODType=1,nLHSODtypes
+    WORKEST1 = Allocations%maxprimLHSA(iODtype)*Allocations%maxContLHSA(iODtype)&
+         &+2*Allocations%maxETUVlenLHSA(iODtype)+Allocations%maxijkLHSA(iODtype)*Allocations%maxijkLHSA(iODtype)
+    WORKLENGTH = MAX(WORKLENGTH,WORKEST1)
+ ENDDO
+ !intermediate
+ WORKLENGTH = WORKLENGTH+Allocations%maxprimRHS*Allocations%maxprimLHS
+ 
+ !RHS requirements
+ WORKLENGTH2 = 0
+ DO iODType=1,nLHSODtypes
+    CALL determineMaxPassesForType(Allocations,iODtype,nPassTypes,&
+         &maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
+    DO iPassType=1,nPassTypes
+       WORKEST1 = Allocations%maxprimRHSA(iPassType)*Allocations%maxContRHSA(iPassType)&
+            &+2*Allocations%maxETUVlenRHSA(iPassType)*maxPassesForTypes(iPassType)&
+            &+Allocations%maxijkRHSA(iPassType)*Allocations%maxijkRHSA(iPasstype)
+       WORKLENGTH2 = MAX(WORKLENGTH2,WORKEST1)
+       WORKEST1 = Allocations%maxprimRHSA(iPassType)*Allocations%maxprimLHSA(iODtype)&
+            &*maxPassesForTypes(iPassType)
+       WORKLENGTH2 = MAX(WORKLENGTH2,WORKEST1)
+    ENDDO
+ ENDDO
+ WORKLENGTH3 = MAX(WORKLENGTH2,WORKLENGTH)
+ !intermediate
+ WORKEST1 = 5*Allocations%maxPrimRHS
+ WORKLENGTH3 = MAX(WORKLENGTH3,WORKEST1)
+ call init_workmem(WORKLENGTH3)
+ 
+ CALL determineMaxPassesForType(Allocations,currentODtype,nPassTypes,&
+      & maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
+ iODtype = currentODtype 
+ 
+ call mem_alloc(overlaplist,TOTmaxpasses,npassTypes)
+ !!$OMP DO SCHEDULE(DYNAMIC,1)
+ IOMPLHSCOUNT = 0
+ DO ILHSCOUNT=1+node,nLHSbatches,numnodes
+  !each node does different of theses ILHSCOUNT
+  IOMPLHSCOUNT = IOMPLHSCOUNT+1
+  !Each thread does different of these IOMPLHSCOUNT
+  !Without MPI IOMPLHSCOUNT goes (1,2,..,nLHSbatches)
+  !and Thread1 takes 1, Thread2 takes 2, ...
+  !With 4 MPI procs IOMPLHSCOUNT goes (1,5,9,13,...)
+  !and Thread1 takes 1, Thread2 takes 5, ...
+  IF(MOD(IOMPLHSCOUNT,nthreads).EQ.tid)THEN
    ILHS = ILHSCOUNTINDEX(ILHSCOUNT)
    iODType = ODtypeIndex(ILHS)
    IF(iODType.NE.currentODtype)THEN
@@ -2127,8 +2134,8 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
       call mem_dealloc(PassQ)
       call mem_dealloc(overlaplist)
       !realloc
-      CALL INIT_OVERLAP(P,Alloc,iODtype,Input,1,IPRINT,LUPRI)
-      CALL allocIntegralsWRAP(PQ,Integral,Input,Alloc,iODtype,nPassTypes,&
+      CALL INIT_OVERLAP(P,Allocations,iODtype,Input,1,IPRINT,LUPRI)
+      CALL allocIntegralsWRAP(PQ,Integral,Input,Allocations,iODtype,nPassTypes,&
            &maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
 
       call DEALLOC_ODPASS_BUFFERS
@@ -2232,24 +2239,17 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
    ENDIF
    !Do diagonal =================================================
    IF(sameODs)THEN
-#ifdef VAR_MPI
-      MPIINDEX(tid) = MPIINDEX(tid) + 1
-      IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
-#endif
-         ipasstype = ODpassesIndex(ILHS)
-         IRHSI(1) = ILHS
-         call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
-         CALL modifyOverlapCenter(Q(iPassType),Q(iPassType)%nPrimitives,&
-              & IRHSI,TMPWORK,&
-              & 1,1,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
-              & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
-         call mem_workpointer_dealloc(TMPWORK)
-         CALL ExplicitIntegrals(Integral,PQ,P,Q(ipasstype),INPUT,LSOUTPUT,&
-              & ILHS,ILHS,LUPRI,IPRINT)
-         CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_MPI
-      ENDIF
-#endif
+      ipasstype = ODpassesIndex(ILHS)
+      IRHSI(1) = ILHS
+      call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
+      CALL modifyOverlapCenter(Q(iPassType),Q(iPassType)%nPrimitives,&
+           & IRHSI,TMPWORK,&
+           & 1,1,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
+           & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
+      call mem_workpointer_dealloc(TMPWORK)
+      CALL ExplicitIntegrals(Integral,PQ,P,Q(ipasstype),INPUT,LSOUTPUT,&
+           & ILHS,ILHS,LUPRI,IPRINT)
+      CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
       DoINT(ILHS) = .FALSE.
    ENDIF
    !Done diagonal ================================================
@@ -2276,54 +2276,6 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
          overlaplist(numPasses(iPassType),ipassType) = IRHS
          IF (numPasses(iPassType).EQ.maxPassesForTypes(iPassType)) THEN
 
-#ifdef VAR_MPI
-            MPIINDEX(tid) = MPIINDEX(tid) + 1
-            IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
-#endif
-               call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
-               CALL modifyOverlapCenter(PassQ(iPassType),PassQ(iPassType)%nPrimitives,&
-                    & overlaplist(1:numPasses(iPassType),iPasstype),&
-                    & TMPWORK,&
-                    & numPasses(iPassType),maxPassesForTypes(iPassType),&
-                    & atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
-                    & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
-               call mem_workpointer_dealloc(TMPWORK)
-               IRHS = overlaplist(1,iPassType)
-               CALL FinalizePass(PassQ(iPassType),Q(Ipasstype),maxPassesForTypes(iPassType),LUPRI,IPRINT)
-               CALL ExplicitIntegrals(Integral,PQ,P,PassQ(iPassType),INPUT,LSOUTPUT,&
-                    & ILHS,IRHS,LUPRI,IPRINT)
-               CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_MPI
-            ENDIF
-#endif
-            numPasses(iPassType) = 0
-         ENDIF
-      ELSE
-         IRHSI(1) = IRHS
-#ifdef VAR_MPI
-         MPIINDEX(tid) = MPIINDEX(tid) + 1
-         IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
-#endif
-            call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
-            CALL modifyOverlapCenter(Q(iPassType),Q(iPassType)%nPrimitives,&
-                 & IRHSI,TMPWORK,&
-                 & 1,1,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
-                 & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
-            call mem_workpointer_dealloc(TMPWORK)
-            CALL ExplicitIntegrals(Integral,PQ,P,Q(Ipasstype),INPUT,LSOUTPUT,&
-                 & ILHS,IRHS,LUPRI,IPRINT)
-            CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_MPI
-         ENDIF
-#endif
-      ENDIF
-   ENDDO LOOPRHS
-   DO iPassType=1,nPassTypes
-      IF(numPasses(iPassType).GT. 0) THEN
-#ifdef VAR_MPI
-         MPIINDEX(tid) = MPIINDEX(tid) + 1
-         IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
-#endif
             call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
             CALL modifyOverlapCenter(PassQ(iPassType),PassQ(iPassType)%nPrimitives,&
                  & overlaplist(1:numPasses(iPassType),iPasstype),&
@@ -2333,85 +2285,106 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
                  & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
             call mem_workpointer_dealloc(TMPWORK)
             IRHS = overlaplist(1,iPassType)
-            CALL FinalizePass(PassQ(iPassType),Q(Ipasstype),numPasses(iPassType),LUPRI,IPRINT)
-            IRHS=ILHS+1
-            !IRHS has been used to build Q(IRHS) which was then added to 
-            !PassQ and for all Q(IRHS), IRHS was different from ILHS.
-            !which was treated as a special case.  
-            !IRHS do no longer have any meaning, but is not allowed be accidentally be equal ILHS
-            !because then a triangular loop will be used which PassQ was not built for
+            CALL FinalizePass(PassQ(iPassType),Q(Ipasstype),maxPassesForTypes(iPassType),LUPRI,IPRINT)
             CALL ExplicitIntegrals(Integral,PQ,P,PassQ(iPassType),INPUT,LSOUTPUT,&
                  & ILHS,IRHS,LUPRI,IPRINT)
             CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_MPI
+            numPasses(iPassType) = 0
          ENDIF
-#endif
+      ELSE
+         IRHSI(1) = IRHS
+         call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
+         CALL modifyOverlapCenter(Q(iPassType),Q(iPassType)%nPrimitives,&
+              & IRHSI,TMPWORK,&
+              & 1,1,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
+              & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
+         call mem_workpointer_dealloc(TMPWORK)
+         CALL ExplicitIntegrals(Integral,PQ,P,Q(Ipasstype),INPUT,LSOUTPUT,&
+              & ILHS,IRHS,LUPRI,IPRINT)
+         CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
+      ENDIF
+   ENDDO LOOPRHS
+   DO iPassType=1,nPassTypes
+      IF(numPasses(iPassType).GT. 0) THEN
+         call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
+         CALL modifyOverlapCenter(PassQ(iPassType),PassQ(iPassType)%nPrimitives,&
+              & overlaplist(1:numPasses(iPassType),iPasstype),&
+              & TMPWORK,&
+              & numPasses(iPassType),maxPassesForTypes(iPassType),&
+              & atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
+              & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
+         call mem_workpointer_dealloc(TMPWORK)
+         IRHS = overlaplist(1,iPassType)
+         CALL FinalizePass(PassQ(iPassType),Q(Ipasstype),numPasses(iPassType),LUPRI,IPRINT)
+         IRHS=ILHS+1
+         !IRHS has been used to build Q(IRHS) which was then added to 
+         !PassQ and for all Q(IRHS), IRHS was different from ILHS.
+         !which was treated as a special case.  
+         !IRHS do no longer have any meaning, but is not allowed be accidentally be equal ILHS
+         !because then a triangular loop will be used which PassQ was not built for
+         CALL ExplicitIntegrals(Integral,PQ,P,PassQ(iPassType),INPUT,LSOUTPUT,&
+              & ILHS,IRHS,LUPRI,IPRINT)
+         CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
          numPasses(iPassType) = 0
       ENDIF
    ENDDO
    !numpass is now 0 for all ipasstype, and ready for next loop
-ENDDO
-!!$OMP END DO NOWAIT
+  ENDIF
+ ENDDO
+ !!$OMP END DO NOWAIT
 
-CALL FREE_OVERLAP(P)
-call DEALLOC_ODLHS_BUFFERS
-call DEALLOC_ODRHS_BUFFERS
+ CALL FREE_OVERLAP(P)
+ call DEALLOC_ODLHS_BUFFERS
+ call DEALLOC_ODRHS_BUFFERS
 
-IF(INPUT%fullcontraction)THEN
-!$OMP CRITICAL
- do i=1,input%NDMAT_RHS
-  ReductionECONT(i) = ReductionECONT(i) + Integral%Econt(i)
- enddo
-!$OMP END CRITICAL
-ENDIF
-call mem_dealloc(Integral%Econt)
-CALL deallocIntegrals(PQ,Integral)
-DO iPassType=1,nPassTypes
-   IF(doPasses(iPassType))THEN
-      CALL Free_overlap(PassQ(iPassType))
-   ENDIF
-ENDDO
-call mem_dealloc(PassQ)
-call DEALLOC_ODPASS_BUFFERS
-call free_workmem
-call mem_dealloc(overlaplist)
-call mem_dealloc(LIST)
-call mem_dealloc(DoINT)
-call mem_dealloc(numpasses)
-call mem_dealloc(maxPassesFortypes)
-call mem_dealloc(doPasses)
-DO iPassType=1,nPassTypes
-   CALL FREE_Overlap(Q(iPassType))
-ENDDO
-call mem_dealloc(Q)
+ IF(INPUT%fullcontraction)THEN
+ !$OMP CRITICAL
+  do i=1,input%NDMAT_RHS
+   ReductionECONT(i) = ReductionECONT(i) + Integral%Econt(i)
+  enddo
+ !$OMP END CRITICAL
+ ENDIF
+ call mem_dealloc(Integral%Econt)
+ CALL deallocIntegrals(PQ,Integral)
+ DO iPassType=1,nPassTypes
+    IF(doPasses(iPassType))THEN
+       CALL Free_overlap(PassQ(iPassType))
+    ENDIF
+ ENDDO
+ call mem_dealloc(PassQ)
+ call DEALLOC_ODPASS_BUFFERS
+ call free_workmem
+ call mem_dealloc(overlaplist)
+ call mem_dealloc(LIST)
+ call mem_dealloc(DoINT)
+ call mem_dealloc(numpasses)
+ call mem_dealloc(maxPassesFortypes)
+ call mem_dealloc(doPasses)
+ DO iPassType=1,nPassTypes
+    CALL FREE_Overlap(Q(iPassType))
+ ENDDO
+ call mem_dealloc(Q)
+ 
+ call freeRHS_centerinfo(atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,&
+      & X3,Y3,Z3,X4,Y4,Z4,INPUT%sameRHSaos)
+ !IF(nograd)then
+ !!$OMP CRITICAL
+ !   call add_lstensor_to_lstensor(localKmat,lsoutput%resultTensor)
+ !!$OMP END CRITICAL
+ !   call lstensor_free(localKmat)
+ !ENDIF
 
-
-call freeRHS_centerinfo(atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,&
-     & X3,Y3,Z3,X4,Y4,Z4,INPUT%sameRHSaos)
-!IF(nograd)then
-!!$OMP CRITICAL
-!   call add_lstensor_to_lstensor(localKmat,lsoutput%resultTensor)
-!!$OMP END CRITICAL
-!   call lstensor_free(localKmat)
-!ENDIF
-#ifdef VAR_OMP
-!$OMP BARRIER
-!$OMP MASTER
-if(tid==0)call mem_dealloc(MPIINDEX)
-!$OMP END MASTER
-#endif
-
-IF(.NOT.INPUT%noOMP)call collect_thread_memory()
+ IF(.NOT.INPUT%noOMP)call collect_thread_memory()
 !$OMP END PARALLEL
-IF(.NOT.INPUT%noOMP)call mem_TurnOffThread_Memory()
+ IF(.NOT.INPUT%noOMP)call mem_TurnOffThread_Memory()
 
-IF(INPUT%fullcontraction)THEN
- do ILHS=1,input%NDMAT_RHS
-  LsOutput%ResultTensor%LSAO(1)%elms(ILHS) = ReductionECONT(ILHS)
- enddo
-ENDIF
+ IF(INPUT%fullcontraction)THEN
+  do ILHS=1,input%NDMAT_RHS
+   LsOutput%ResultTensor%LSAO(1)%elms(ILHS) = ReductionECONT(ILHS)
+  enddo
+ ENDIF
 
-IF (IPRINT.GT. 5) THEN
+ IF (IPRINT.GT. 5) THEN
    IF (LSTIME_PRINT)THEN
       CALL LS_GETTIM(CPUTIME4,WALLTIME4)
       CPUTIMELINK = CPUTIME4-CPUTIME3
@@ -2421,51 +2394,52 @@ IF (IPRINT.GT. 5) THEN
       WRITE(lupri,*)'OVERALL CPU TIMINGS in LinkLoop'
       CALL ls_TIMTXT('>>>  CPU Time used in LinkLoop is         ',CPUTIMELINK,LUPRI)
    ENDIF
-ENDIF
-call mem_dealloc(AIndex)
-call mem_dealloc(BIndex)
-call mem_dealloc(ILHSCOUNTINDEX)
+ ENDIF
 
-call mem_dealloc(ODpassesIndex)
-CALL freeTUVitem(sharedTUV,Input)
+ call mem_dealloc(ILHSCOUNTINDEX)
+ call mem_dealloc(BIndex)
+ call mem_dealloc(AIndex)
 
-call mem_dealloc(RED_GAB_RHS)
-call mem_dealloc(maxRHSGAB)
-DO D=1,dim4
-   IF(ketshell(D)%DIM.NE. 0)THEN
-      call mem_dealloc(ketshell(D)%RED_GAB)
-      call linkshell_free(ketshell(D))
-   ENDIF
-ENDDO
-DEALLOCATE(ketshell)
-NULLIFY(ketshell)
+ DO B=1,dim2
+    call linkshell_free(ML(B))
+ ENDDO
+ DEALLOCATE(ML)
+ NULLIFY(ML)
+
+ IF(DALINK)THEN
+    IF(.NOT.SameODs)call mem_dealloc(RED_DMAT_LHS)
+    call mem_dealloc(batchindex1)
+    call mem_dealloc(batchindex2)
+ ENDIF
+ call mem_dealloc(RED_DMAT_RHS)
+
+ DO B=1,dim2
+    IF(brashell(B)%DIM.NE. 0)THEN
+       call linkshell_free(brashell(B))
+    ENDIF
+ ENDDO
+ DEALLOCATE(brashell)
+ NULLIFY(brashell)
+
+ DO D=1,dim4
+    IF(ketshell(D)%DIM.NE. 0)THEN
+       call mem_dealloc(ketshell(D)%RED_GAB)
+       call linkshell_free(ketshell(D))
+    ENDIF
+ ENDDO
+ DEALLOCATE(ketshell)
+ NULLIFY(ketshell)
+ENDIF !performCalc
 
 IF(.NOT.sameODs)THEN
-   call mem_dealloc(RED_GAB_LHS)
    call mem_dealloc(maxLHSGAB)
+   call mem_dealloc(RED_GAB_LHS)
 ENDIF
-
-DO B=1,dim2
-   IF(brashell(B)%DIM.NE. 0)THEN
-      call linkshell_free(brashell(B))
-   ENDIF
-ENDDO
-DEALLOCATE(brashell)
-NULLIFY(brashell)
-
-DO B=1,dim2
-   call linkshell_free(ML(B))
-ENDDO
-DEALLOCATE(ML)
-NULLIFY(ML)
-
-IF(DALINK)THEN
-   IF(.NOT.SameODs)call mem_dealloc(RED_DMAT_LHS)
-   call mem_dealloc(batchindex1)
-   call mem_dealloc(batchindex2)
-ENDIF
-call mem_dealloc(RED_DMAT_RHS)
-
+call mem_dealloc(maxRHSGAB)
+call mem_dealloc(RED_GAB_RHS)
+call mem_dealloc(nOverlapofPassType)
+call mem_dealloc(ODpassesIndex)
+call mem_dealloc(ODTypeIndex)
 DO iPassType=1,nPasstypes
    call mem_dealloc(PassTypeOverlapIndex(iPassType)%elms)
 ENDDO
@@ -2474,10 +2448,8 @@ DO iODType=1,nLHSODtypes
    call mem_dealloc(TypeOverlapIndex(iODType)%elms)
 ENDDO
 DEALLOCATE(TypeOverlapIndex)
-call mem_dealloc(nOverlapofPassType)
-call allocitem_free(alloc,'Both')
-
-call mem_dealloc(ODTypeIndex)
+call allocitem_free(Allocations,'Both')
+CALL freeTUVitem(sharedTUV,Input)
 
 CALL LS_GETTIM(CPUTIMEEND,WALLTIMEEND)
 CPUTIMELINK = CPUTIMEEND-CPUTIMESTART
@@ -2538,7 +2510,7 @@ DO IRHS=1,nRHSoverlaps
    atomIndexC(IRHS)= OD_RHS%BATCH(IRHS)%AO(1)%p%molecularIndex
    batchC(IRHS)    = OD_RHS%BATCH(IRHS)%AO(1)%p%batch
    atomD(IRHS)     = OD_RHS%BATCH(IRHS)%AO(2)%p%atom
-   atomIndexD(IRHS)= OD_RHS%BATCH(IRHS)%AO(1)%p%molecularIndex
+   atomIndexD(IRHS)= OD_RHS%BATCH(IRHS)%AO(2)%p%molecularIndex
    batchD(IRHS)    = OD_RHS%BATCH(IRHS)%AO(2)%p%batch
    X3(atomC(IRHS)) = OD_RHS%BATCH(IRHS)%AO(1)%p%center(1)
    Y3(atomC(IRHS)) = OD_RHS%BATCH(IRHS)%AO(1)%p%center(2)
@@ -3348,7 +3320,7 @@ CALL extractDifferentiated_PA(Integral%IN,INTEGRAL%OUT,l1,l2,ijkdiff,ijk,dim1,&
      & LUPRI,IPRINT)
 !
 Integral%nAng = ijk
-Integral%ngeoDeriv = P%ngeoDerivComp*P%nCartesianMomentComp
+Integral%ngeoDeriv = nComp*P%nCartesianMomentComp
 
 !Swap pointers IN and OUT
 ptemp => Integral%IN
@@ -3763,12 +3735,10 @@ DO iDerivP=1,ndim5P
               iQpd = iPassQ + (iDerivQ-1)*nPassQ
               DO iQ=1,nQ
                CDAB(iQ,iA,iB,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
-!              CDAB(iQ,iA,iB,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
               ENDDO !iQ
               IF (permute) THEN
                 DO iQ=1,nQ
                  CDAB(iQ,iB,iA,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
-!                CDAB(iQ,iB,iA,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
                 ENDDO !iQ
               ENDIF
              ENDDO !iDerivQ

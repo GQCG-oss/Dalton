@@ -10,6 +10,9 @@ project(DALTON Fortran C CXX)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
+# To link with fortran not c++
+set(CMAKE_CXX_LINKER_PREFERENCE_PROPAGATES FALSE)
+
 # these are paths that CMake will search for cmake
 # module files that end with .cmake
 set(CMAKE_MODULE_PATH
@@ -24,6 +27,8 @@ set(CMAKE_MODULE_PATH
     )
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                           OFF)
+option(ENABLE_OPENACC        "Enable OpenACC"                                   OFF)
+option(ENABLE_COLLAPSE       "Enable COLLAPSE clause for reorderings"           OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
@@ -33,7 +38,7 @@ option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable PE library"                                ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
@@ -43,14 +48,17 @@ option(ENABLE_INTEREST       "Enable interest integrals"                        
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
-option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"               OFF)
+option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
+option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
+
+option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
+option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
+option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
+option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 
 option(ENABLE_SRDFT          "Enable srdft module"                              ON)
 
-# this code lives on the k4mirror branch
-option(ENABLE_K4MIRROR       "Enable k4mirror integral code"                    OFF)
-
-set(LIBS)
+set(EXTERNAL_LIBS)
 
 include(ConfigVersion)
 include(SourcesDALTON)
@@ -61,6 +69,7 @@ include(CheckFortranStandardCompatibility)
 include(ConfigExternal)
 include(ConfigOMP)
 include(ConfigMath)
+include(ConfigExplicitLibs)
 include(ConfigMPI)
 include(ConfigSafeGuards)
 include(ConfigTesting)
@@ -70,18 +79,21 @@ include(mergestaticlibs)
 
 # set code coverage
 if(ENABLE_CODE_COVERAGE)
-    set(LIBS ${LIBS} gcov)
+    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} gcov)
 endif()
+
+set(CMAKE_Fortran_MODULE_DIRECTORY
+    ${PROJECT_BINARY_DIR}/modules
+    )
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/include
     ${CMAKE_SOURCE_DIR}/DALTON/dft
+    ${CMAKE_SOURCE_DIR}/DALTON/abacus
     ${CMAKE_SOURCE_DIR}/LSDALTON/dft
+    ${CMAKE_SOURCE_DIR}/LSDALTON/geomopt
     ${CMAKE_Fortran_MODULE_DIRECTORY}
-    )
-
-set(CMAKE_Fortran_MODULE_DIRECTORY
-    ${PROJECT_BINARY_DIR}/modules
+    ${PROJECT_BINARY_DIR}
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -108,10 +120,14 @@ configure_script(
     ${CMAKE_SOURCE_DIR}/LSDALTON/lsdalton.in
     ${CMAKE_BINARY_DIR}/lsdalton
     )
+configure_script(
+    ${CMAKE_SOURCE_DIR}/DALTON/dalton_config.in
+    ${CMAKE_BINARY_DIR}/dalton_config.h
+    )
 
 # if BLAS and/or LAPACK not found, add own sources to the list of
 # sources to compile
-if(USE_OWN_BLAS)
+if(USE_BUILTIN_BLAS)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_OWN_BLAS_SOURCES}
@@ -121,7 +137,7 @@ if(USE_OWN_BLAS)
         ${LSDALTON_OWN_BLAS_SOURCES}
         )
 endif()
-if(USE_OWN_LAPACK)
+if(USE_BUILTIN_LAPACK)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_OWN_LAPACK_SOURCES}

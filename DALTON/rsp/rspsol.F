@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -151,15 +151,6 @@ C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
 C         CALL QUIT(
 C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
 C      END IF
-      IF (.NOT. SOPRPA .AND. SOPPA) THEN
-         WRITE (LUPRI,*)
-     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
-         WRITE (LUPRI,*) 'Full solvent model SOPPA not implemented.'
-         WRITE (LUPRI,*) 'Only SOPPA/RPA (JCC, 2012-2022, 33, (2012))'
-         WRITE (LUPRI,*) 'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-         CALL QUIT(
-     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
-      END IF
 Clf      IF (IREFSY.EQ.KSYMST .AND. NASHT.GT.1 .AND. KZCONF.NE.NCREF)
 Clf     &   THEN
 ClfC
@@ -372,16 +363,16 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
-      if (peqm) then
-        if (.not. tdhf) then
-            call quit('ERROR: MCSCF linear response not implemented'//
+      IF (PEQM) THEN
+        IF (.NOT. TDHF) THEN
+            CALL QUIT('ERROR: MCSCF linear response not implemented'//
      &                ' with the PE library.')
-        endif
-        call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
-     &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
-     &                 wrk(kdvt), wrk(kdvttr), evecs,
-     &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
-      end if
+        ENDIF
+        CALL PE_RSPLIN(NCSIM, NOSIM, BCVECS, BOVECS, WRK(KCREF), CMO,
+     &                 INDXCI, UDV, WRK(KDV), WRK(KUDVTR), WRK(KDVTR),
+     &                 WRK(KDVT), WRK(KDVTTR), EVECS,
+     &                 EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
+      END IF
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)

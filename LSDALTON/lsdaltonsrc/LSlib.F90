@@ -1705,7 +1705,7 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   setting%SCHEME%DoSpherical = .TRUE.
 #ifdef VAR_MPI
   call get_rank_for_comm(MPI_COMM_LSDALTON,mynum)
-  CALL get_size_for_comm(MPI_COMM_LSDALTON,nodtot, ierr)
+  CALL get_size_for_comm(MPI_COMM_LSDALTON,nodtot)
   setting%numNodes = nodtot 
   setting%node = mynum
   setting%comm = MPI_COMM_LSDALTON

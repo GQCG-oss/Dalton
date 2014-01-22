@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -303,7 +303,7 @@ C
      *      '               Z part         Y part'
          CALL OUTPUT(GP(1+KZCONF),1,KZWOPT,1,2,KZVAR,2,1,LUPRI)
       ELSE IF (IPRHSO.GT.2) THEN
-         IF (LORB) CALL RSPPRO (GP(1+KZCONF),KZVAR,LUPRI)
+         IF (LORB) CALL RSPPRO (GP(1+KZCONF),KZVAR,UDV,LUPRI)
          IF (LCON) CALL RSPPRC (GP,KZCONF,KZVAR,LUPRI)
       END IF
 C
@@ -2155,7 +2155,7 @@ C
       CALL OUTPUT(WRK(KVEC + IVAR),1,NCONF,1,1,NCONF,1,1,LUPRI)
       WRITE(LUPRI,'(/A)') 'CALLING HSO2CR WITH VECTOR'
       CALL RSPPRC(WRK(KVEC),NCONF,IVAR,LUPRI)
-      CALL RSPPRW(WRK(KVEC+NCONF),MJWOP,IWOPT,1,IVAR,LUPRI)
+      CALL RSPPRW(WRK(KVEC+NCONF),MJWOP,IWOPT,1,IVAR,UDV,LUPRI)
       ISYMV = 1
       ISPINV = 0
       IKLVL = 0
@@ -2234,7 +2234,7 @@ C
          WRITE(LUPRI,'(/A)') ' Configuration part'
          CALL OUTPUT(GP,1,KZCONF,1,2,KZVAR,2,1,LUPRI)
       ELSE
-         CALL RSPPRW(GP(1+KZCONF),MJWOP,KZWOPT,KSYMOP,KZVAR,LUPRI)
+         CALL RSPPRW(GP(1+KZCONF),MJWOP,KZWOPT,KSYMOP,KZVAR,UDV,LUPRI)
          CALL RSPPRC(GP,KZCONF,KZVAR,LUPRI)
       END IF
       IF (KSYMOP.EQ.1 .AND. LCON) THEN
@@ -2244,7 +2244,7 @@ C
          CALL DAXPY(KZCONF,-OVLAP,WRK(KCREF),1,GP,1)
          OVLAP = DDOT(KZCONF,WRK(KCREF),1,GP(1+KZVAR),1)
          CALL DAXPY(KZCONF,-OVLAP,WRK(KCREF),1,GP(1+KZVAR),1)
-         CALL RSPPRW(GP(1+KZCONF),MJWOP,KZWOPT,KSYMOP,KZVAR,LUPRI)
+         CALL RSPPRW(GP(1+KZCONF),MJWOP,KZWOPT,KSYMOP,KZVAR,UDV,LUPRI)
          CALL RSPPRC(GP,KZCONF,KZVAR,LUPRI)
       END IF
       CALL MEMREL('HSOAL2',WRK,1,1,KFREE,LFREE)

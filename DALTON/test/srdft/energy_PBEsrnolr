@@ -130,7 +130,7 @@ ERROR[5]="PBE energy via HF-srPBE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]} ' ( ' ${TEST[i]} ${CTRL[i]} ' )'
      PASSED=0
    fi

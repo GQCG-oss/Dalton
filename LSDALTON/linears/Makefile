@@ -2,8 +2,12 @@ all: liblinears.a
 
 include ../Makefile.config
 
+ifdef VAR_RSP
+INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../SolverUtilities -I../responsesolver \
+	-I../../external/matrix-defop/src -I../../external/openrsp/src
+else
 INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../SolverUtilities -I../responsesolver
-
+endif
 # Keep the file lists sorted for easier modification.
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
 
@@ -48,10 +52,8 @@ F90_OBJS = \
 	localization_orbspread.o \
 	orbspread_util.o \
 	localization_util.o \
-        prop_contribs.o \
         response_driver.o \
         response_prop.o \
-        rsp_equations.o \
         scfopt-typedef.o \
 	soeo-loop.o \
 	soeo-util.o \
@@ -78,7 +80,6 @@ liblinears.a: $(F_OBJS) $(F90_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
-
 
 Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
 	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../geomopt -M../deccc -M../SolverUtilities -M../responsesolver -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend

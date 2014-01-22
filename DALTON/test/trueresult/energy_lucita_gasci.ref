@@ -1,14 +1,14 @@
 
 
-   ****************************************************************************
-   *************** DALTON2011 - An electronic structure program ***************
-   ****************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (DEVELOPMENT VERSION)
+    This is output from DALTON (Release Dalton2013 patch 0)
    ----------------------------------------------------------------------------
     NOTE:
      
-    DALTON is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -20,53 +20,89 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release Dalton2011 (2011), see http://daltonprogram.org"
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Heike Fliegl,             University of Helsinki,       Finland     (CCSD(R12))
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Bin Gao,                  University of Tromsoe,        Norway      (Gen1Int module)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
   Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
   Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
@@ -74,54 +110,53 @@
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
   David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Aug 24 19:40:20 2012
-     Host name              : stefans-mac-book-pro.local              
+     Date and time (Linux)  : Sun Sep  8 20:38:22 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /Users/Stefanknecht/progs/dalton/dalton-git-repo/test/2012-08-24T19_40-testjob-pid-53570
-   2) /Users/Stefanknecht/progs/dalton/dalton-git-repo/basis
+   1) /home/bast/DALTON-2013.0-Source/build/test_energy_lucita_gasci
+   2) /home/bast/DALTON-2013.0-Source/build/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | Stefanknecht@stefans-mac-book-pro.local
- System                   | Darwin-11.4.0
- Processor                | i386
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/local/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.6.2 20111019 (prerelease)
- Fortran flags            | -DVAR_GFORTRAN -DGFORTRAN=445 -g -fbacktrace -Wuni
-                          | nitialized -O3 -ffast-math -funroll-loops -ftree-v
-                          | ectorize
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
  C compiler               | /usr/bin/gcc
- C compiler version       | i686-apple-darwin11-llvm-gcc-4.2 (GCC) 4.2.1 (Base
-                          | d on Apple Inc. build 5658) (LLVM build 2336.9.00)
- C flags                  | -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -O3 -
-                          | ffast-math -funroll-loops -ftree-vectorize -Wno-un
-                          | used
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
  Static linking           | OFF
- Last Git revision        | a36b505
- Configuration time       | 2012-08-24 12:58:37.372390
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
 
 
    Content of the .dal input file
@@ -162,9 +197,6 @@ Compilation information
 .MXCIVE                                           
  6                                                
 .ANALYZ                                           
-.NATORB                                           
-.SPDENS                                           
- 1                                                
 *ORBITAL INPUT                                    
 .NOSUPSYM                                         
 **END OF INPUT                                    
@@ -219,7 +251,7 @@ FINISH
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/Users/Stefanknecht/progs/dalton/dalton-git-repo/basis/cc-pVDZ"
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
@@ -227,7 +259,7 @@ FINISH
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =  35 :
-     "/Users/Stefanknecht/progs/dalton/dalton-git-repo/basis/cc-pVDZ"
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
 
                          SYMGRP: Point group information
@@ -338,8 +370,10 @@ Point group: C2v
  Br    :    1.414431    0.000000
 
 
-  Max interatomic separation is    1.4144 Angstrom (    2.6729 Bohr)
+  Max    interatomic separation is    1.4144 Angstrom (    2.6729 Bohr)
   between atoms    2 and    1, "Br    " and "H     ".
+
+  Min HX interatomic separation is    1.4144 Angstrom (    2.6729 Bohr)
 
 
   Bond distances (Angstrom):
@@ -450,8 +484,8 @@ Point group: C2v
  Number of two-electron integrals written:       26459 ( 18.9% )
  Megabytes written:                              0.309
 
- >>>> Total CPU  time used in HERMIT:   0.11 seconds
- >>>> Total wall time used in HERMIT:   0.11 seconds
+ >>>> Total CPU  time used in HERMIT:   0.13 seconds
+ >>>> Total wall time used in HERMIT:   0.13 seconds
 
 
                         .----------------------------------.
@@ -493,8 +527,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Aug 24 19:40:20 2012
-     Host name              : stefans-mac-book-pro.local              
+     Date and time (Linux)  : Sun Sep  8 20:38:22 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      HBr with small basis set                                                
@@ -503,11 +537,10 @@ Point group: C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Generalized Active Space CI (with LUCITA)
+@    Generalized Active Space CI (with LUCITA)
+@              preceded by :
 
-               preceded by :
-
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option
@@ -517,30 +550,30 @@ Point group: C2v
 
      For the specification of the GAS CI in LUCITA: see later.
 
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons          36
-     Number of electrons in active shells       0
-     Total charge of the molecule               0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          36
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity and 2 M_S                1         0
+@    Spin multiplicity and 2 M_S                1         0
      Total number of symmetries                 4
-     Reference state symmetry                   1
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1    2    3    4
                                        --- |  ---  ---  ---  ---
-     Occupied SCF orbitals              18 |    9    4    4    1
+@    Occupied SCF orbitals              18 |    9    4    4    1
      Secondary orbitals                 14 |    7    3    3    1
      Total number of orbitals           32 |   16    7    7    2
      Number of basis functions          32 |   16    7    7    2
 
      Optimization information
      ========================
-     Number of configurations                 1
-     Number of orbital rotations             88
+@    Number of configurations                 1
+@    Number of orbital rotations             88
      ------------------------------------------
-     Total number of variables               89
+@    Total number of variables               89
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -556,38 +589,39 @@ Point group: C2v
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-   1    -2572.91679198        7.35044D-01   -2.57D+03    1
+@  1    -2572.91679198        7.35044D-01   -2.57D+03    1
       Virial theorem: -V/T =      2.000642
-      MULPOP  H      -0.00; Br      0.00; 
+@      MULPOP H      -0.00; Br      0.00; 
  -----------------------------------------------------------------------------
-   2    -2572.96641378        1.87710D-01   -4.96D-02    2
+@  2    -2572.96641378        1.87710D-01   -4.96D-02    2
       Virial theorem: -V/T =      2.000240
-      MULPOP  H       0.07; Br     -0.07; 
+@      MULPOP H       0.07; Br     -0.07; 
  -----------------------------------------------------------------------------
-   3    -2572.96986887        5.12599D-02   -3.46D-03    3
+@  3    -2572.96986887        5.12599D-02   -3.46D-03    3
       Virial theorem: -V/T =      2.000383
-      MULPOP  H       0.11; Br     -0.11; 
+@      MULPOP H       0.11; Br     -0.11; 
  -----------------------------------------------------------------------------
-   4    -2572.97023318        6.93909D-03   -3.64D-04    4
+@  4    -2572.97023318        6.93909D-03   -3.64D-04    4
       Virial theorem: -V/T =      2.000382
-      MULPOP  H       0.13; Br     -0.13; 
+@      MULPOP H       0.13; Br     -0.13; 
  -----------------------------------------------------------------------------
-   5    -2572.97024021        1.72200D-03   -7.03D-06    5
+@  5    -2572.97024021        1.72200D-03   -7.03D-06    5
       Virial theorem: -V/T =      2.000376
-      MULPOP  H       0.13; Br     -0.13; 
+@      MULPOP H       0.13; Br     -0.13; 
  -----------------------------------------------------------------------------
-   6    -2572.97024044        3.35582D-04   -2.35D-07    6
+@  6    -2572.97024044        3.35582D-04   -2.35D-07    6
       Virial theorem: -V/T =      2.000379
-      MULPOP  H       0.13; Br     -0.13; 
+@      MULPOP H       0.13; Br     -0.13; 
  -----------------------------------------------------------------------------
-   7    -2572.97024046        7.30809D-05   -2.16D-08    7
+@  7    -2572.97024046        7.30809D-05   -2.16D-08    7
       Virial theorem: -V/T =      2.000379
-      MULPOP  H       0.13; Br     -0.13; 
+@      MULPOP H       0.13; Br     -0.13; 
  -----------------------------------------------------------------------------
-   8    -2572.97024046        5.39463D-06   -1.02D-09    8
+@  8    -2572.97024046        5.39463D-06   -1.02D-09    8
 
- *** DIIS converged in   8 iterations !
-@    Converged SCF energy, gradient:  -2572.970240464635    5.39D-06
+@ *** DIIS converged in   8 iterations !
+@     Converged SCF energy, gradient:  -2572.970240464638    5.39D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -618,7 +652,7 @@ Point group: C2v
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       0.009       0.012
+ >>>> CPU and wall time for SCF :       0.007       0.007
 
 
                        .-----------------------------------.
@@ -626,19 +660,19 @@ Point group: C2v
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:           -2572.970240464635                 
-     Nuclear repulsion:            13.094454503613
-     Electronic energy:         -2586.064694968249
+@    Final HF energy:           -2572.970240464638                 
+@    Nuclear repulsion:            13.094454503613
+@    Electronic energy:         -2586.064694968251
 
-     Final gradient norm:           0.000005394632
+@    Final gradient norm:           0.000005394632
 
  
-     Date and time (Linux)  : Fri Aug 24 19:40:20 2012
-     Host name              : stefans-mac-book-pro.local              
+     Date and time (Linux)  : Sun Sep  8 20:38:22 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -646,32 +680,32 @@ Point group: C2v
  ------------------------------------------
 
     Orbital         5        6        7        8        9       10       11
-   1 H   :1s     0.0001   0.0190   0.0000   0.3014   0.6375  -0.3980   1.4870
-   2 H   :1s     0.0010  -0.0056   0.0000  -0.1311  -0.1795  -1.2631  -1.7957
-   3 H   :2pz    0.0000  -0.0052  -0.0000  -0.0272  -0.0339   0.0054   0.0250
-   5 Br  :1s     0.0002   0.0011   0.0000   0.0003   0.0038  -0.0238   0.0306
-   6 Br  :1s    -0.0042   0.0028   0.0000  -0.0013   0.0083  -0.0786   0.1213
-   7 Br  :1s     0.0024   0.0105   0.0000   0.9335  -0.2786   0.1441   0.2892
-   8 Br  :1s    -0.0026  -0.0156  -0.0000  -0.0272  -0.1244   0.7949  -0.0541
-  10 Br  :2pz    1.0000  -0.0036   0.0000  -0.0066  -0.0088  -0.0181   0.0552
-  11 Br  :2pz   -0.0006  -0.0016   0.0000   0.0915   0.7605   0.4501   0.1723
-  12 Br  :2pz   -0.0008  -0.0051  -0.0000  -0.0330  -0.1153   0.7240  -0.3355
-  13 Br  :3d0    0.0032   0.9969   0.0000  -0.0162  -0.0368   0.0447  -0.1406
-  14 Br  :3d2+  -0.0000  -0.0000   0.9968  -0.0000   0.0000   0.0000   0.0000
-  15 Br  :3d0   -0.0001   0.0090  -0.0000   0.0116   0.0570  -0.0574   0.4658
-  16 Br  :3d2+  -0.0000  -0.0000   0.0128  -0.0000   0.0000  -0.0000   0.0000
+   1 H   :1s     0.0001  -0.0190   0.0000   0.3014  -0.6375   0.3980   1.4870
+   2 H   :1s     0.0010   0.0056   0.0000  -0.1311   0.1795   1.2631  -1.7957
+   3 H   :2pz    0.0000   0.0052  -0.0000  -0.0272   0.0339  -0.0054   0.0250
+   5 Br  :1s     0.0002  -0.0011   0.0000   0.0003  -0.0038   0.0238   0.0306
+   6 Br  :1s    -0.0042  -0.0028   0.0000  -0.0013  -0.0083   0.0786   0.1213
+   7 Br  :1s     0.0024  -0.0105   0.0000   0.9335   0.2786  -0.1441   0.2892
+   8 Br  :1s    -0.0026   0.0156  -0.0000  -0.0272   0.1244  -0.7949  -0.0541
+  10 Br  :2pz    1.0000   0.0036   0.0000  -0.0066   0.0088   0.0181   0.0552
+  11 Br  :2pz   -0.0006   0.0016   0.0000   0.0915  -0.7605  -0.4501   0.1723
+  12 Br  :2pz   -0.0008   0.0051  -0.0000  -0.0330   0.1153  -0.7240  -0.3355
+  13 Br  :3d0    0.0032  -0.9969  -0.0000  -0.0162   0.0368  -0.0447  -0.1406
+  14 Br  :3d2+  -0.0000  -0.0000   0.9968  -0.0000  -0.0000   0.0000   0.0000
+  15 Br  :3d0   -0.0001  -0.0090  -0.0000   0.0116  -0.0570   0.0574   0.4658
+  16 Br  :3d2+  -0.0000   0.0000   0.0128  -0.0000   0.0000  -0.0000  -0.0000
 
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
     Orbital         1        2        3        4        5        6
-   1 H   :2px   -0.0000  -0.0000   0.0025   0.0203  -0.1954   0.0039
-   2 Br  :2px   -1.0000  -0.0001  -0.0000  -0.0002  -0.0012   0.0226
-   3 Br  :2px    0.0001  -0.9997  -0.0023  -0.0009  -0.0150   0.3167
-   4 Br  :2px   -0.0001   0.0039   0.0013   0.9779  -0.0615   2.2088
-   5 Br  :2px    0.0001  -0.0022  -0.0015   0.0200   0.1334  -2.4360
-   6 Br  :3d1+  -0.0001  -0.0025   0.9968  -0.0049   0.2487   0.0097
-   7 Br  :3d1+   0.0000   0.0000   0.0124   0.0154  -0.9507  -0.0401
+   1 H   :2px   -0.0000  -0.0000   0.0025   0.0203   0.1954   0.0039
+   2 Br  :2px   -1.0000  -0.0001  -0.0000  -0.0002   0.0012   0.0226
+   3 Br  :2px    0.0001  -0.9997  -0.0023  -0.0009   0.0150   0.3167
+   4 Br  :2px   -0.0001   0.0039   0.0013   0.9779   0.0615   2.2088
+   5 Br  :2px    0.0001  -0.0022  -0.0015   0.0200  -0.1334  -2.4360
+   6 Br  :3d1+  -0.0001  -0.0025   0.9968  -0.0049  -0.2487   0.0097
+   7 Br  :3d1+   0.0000   0.0000   0.0124   0.0154   0.9507  -0.0401
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
@@ -694,68 +728,11 @@ Point group: C2v
 
  Integral transformation: Total CPU and WALL times (sec)       0.007       0.007
 
-   ------------------------------------------------
-   LUCITA module started with run-id = return CIdim
-   ------------------------------------------------
+   ---------------------------------------------------
+   LUCITA module started with task-id = "standard ci "
+   ---------------------------------------------------
 
-
-          dimension of LUCITA work space :           63614828
-
-  Number of internal combinations per symmetry 
-  =========================================== 
-  CI space            1
-     16575.00000         16476.00000         16476.00000         16398.00000    
-
-  @@ total number of TTSS-blocks:                    124
-
-   ----------------------------------------------------------
-   LUCITA run, run-id = return CIdim finished with no errors.
-   ----------------------------------------------------------
-
-   ------------------------------------------------
-   LUCITA module started with run-id = ijkl resort 
-   ------------------------------------------------
-
-
-          dimension of LUCITA work space :           63614828
-
-  @@ total number of TTSS-blocks:                    124
-
-   ----------------------------------------------------------
-   LUCITA run, run-id = ijkl resort  finished with no errors.
-   ----------------------------------------------------------
-
-   ------------------------------------------------
-   LUCITA module started with run-id = standard ci 
-   ------------------------------------------------
-
-
-  ------------------------------------------------------------
-   title : HBr                                                                     
-  ------------------------------------------------------------
-   Type of calculation .................. GASCI 
-
-   Number of roots to be obtained .......   2
-
-   Calculation carried out in irrep .....   1
-
-   Number of active electrons ...........   8
-
-   Spin multiplicity ....................   1
-
-   Global print level is ................   0
-
-   Density matrices level ...............   1
-
-  ******************************************************************
-  Generalized active space: shell spaces and occupation constraints 
-  ******************************************************************
-
-                 Irrep    1   2   3   4        Min. occ    Max. occ 
-                 =====   ================      ========    ======== 
-        GAS 1             2   1   1   0            5           8
-        GAS 2             4   2   2   1            6           8
-        GAS 3             3   1   1   0            8           8
+          Dimension of R*8 workspace :           63734832
 
  **********************************************************************
  **********************************************************************
@@ -766,6 +743,9 @@ Point group: C2v
  Authors: J. Olsen, Univ. Aarhus
           H. J. Aa. Jensen, Univ. Southern Denmark 
           S. Knecht, Univ. Southern Denmark
+  
+ Based on LUCITA-DIRAC interface
+     Author: Timo Fleig, Univ. Toulouse
   
  Using LUCIA version 1999
   
@@ -784,157 +764,377 @@ Point group: C2v
  **********************************************************************
  **********************************************************************
 
-          dimension of LUCITA work space :           63565094
+ ********************************************************************************
+ *
+ * title : HBr                                                                     
+ *
+ ********************************************************************************
 
-  @@ total number of TTSS-blocks:                    124
+   Orbitals as initial wave function .... HF_SCF
+
+   Type of calculation .................. GASCI 
+
+   Number of roots to be obtained .......   2
+
+   Calculation carried out in irrep .....   1
+
+   Number of active electrons ...........   8
+
+   Spin multiplicity ....................   1
+
+   Global print level is ................ NON
+
+   Local print level is .................   0
+
+   Approximate size of CI calculation ... NOR
+
+   Running the CI calculation ........... sequenti
+
+   Using MPI-FILE I/O ................... No 
+
+
+  Truncation Factor .....................   1.00D-10
+
+
+ *************************************
+ *  Symmetry and spin of CI vectors  *
+ *************************************
+
+      Point group ............ D2H
+      Spatial symmetry ....... 1
+      2 times spinprojection   0
+      Spin multiplicity ....   1
+      Active electrons .....   8
+
+ *********************************************
+ *  Shell spaces and occupation constraints  *
+ ********************************************* 
+
+
+  *************************
+  Generalized active space 
+  *************************
+
+ Orbital subspaces:
+ ================== 
+
+                 Irrep    1   2   3   4
+                 =====   ================
+        GAS 1             2   1   1   0
+        GAS 2             4   2   2   1
+        GAS 3             3   1   1   0
+
+ *******************
+  Occupation spaces 
+ *******************
+
+ Number of Occupation spaces :   1
+
+ Bounds on accumulated occupations for space :   1
+ ====================================================== 
+
+         Min. occ    Max. occ 
+         ========    ======== 
+   GAS 1     5           8
+   GAS 2     6           8
+   GAS 3     8           8
+
+  **************************************************
+  Specification of CI Spaces (combinations of above)
+  **************************************************
+
+
+ Number of CI spaces included :   1
+
+
+ Information about CI space   1
+ ==================================
+    Number of occupation spaces included    1
+    Occupation spaces included   1
+
+  ******************************************
+  Specification of Sequence of calculations 
+  ******************************************
+
+
+        CI space   1
+        ==============
+
+                 Normal CI with max. iterations =  16
+
+
+ ***********
+ *  Roots  *
+ *********** 
+
+      Number of roots to be obtained   2
+      Roots to be obtained   1  2
+
+ **************************
+ *  Run time definitions  *
+ ************************** 
+
+      Program environment... DALTON
+      Integrals read in in SIRIUS format 
+      All integrals stored in core
+
+      CI optimization performed with SD's 
+
+      Initial vectors obtained from diagonal
+      No combination of degenerate initial vectors
+
+      3 symmetry-occ-occ blocks will be held in core 
+      Smallest allowed size of sigma- and C-batch:    100000
+      Dimension of block of resolution strings   :    100000
+      Particle-hole separation used 
+      Advice routine call to optimize sigma generation
+      Strings not divided into active and passive parts
+
+      No calculation of density matrices
+
+      CI diagonalization : 
+      ==================== 
+         No subspace Hamiltonian 
+         Diagonalizer : MICDV* 
+         No root homing 
+         Initial energy evaluations skipped after first calc
+         (Only active in connection with TERACI )
+         Allowed Dimension of CI subspace    6
+         Convergence threshold for energy   1.00E-07
+         No multispace method in use 
+
+      Final orbitals :
+      ================
+         Natural orbitals
+
+      Print levels : 
+      ==============
+         Raised  print level for string    information =   0
+         Raised  print level for CI space  information =   0
+         Raised  print level for orbital   information =   0
+         Raised  print level for density matrix        =   0
+         Raised  print level for iterative information =   0
+         Raised  print level for External blocks       =   0
+         Final CI vectors will be printed 
+
+  Number of internal combinations per symmetry
+  ============================================
+  CI space            1
+              16575.              16476.              16476.              16398.
+    1.6575000000D+04    1.6476000000D+04    1.6476000000D+04    1.6398000000D+04
+
   @@ Number of determinants/combinations:          16575
+  @@ total number of TTSS-blocks:                    124
+
+  ==============================================================
+  ==> allocation of two CI vectors and one resolution vector <==
+
+  current available free memory in double words:        63725994
+  allocate two CI vectors each of length:                  16575
+  allocate resolution vector of length:                     3264
+  ==============================================================
+
+
+ INFO !  DEGENERATE INITIAL VECTORS FOR CI ROOT    2
+ INFO !  ONLY ONE PARTNER USED, CHECK YOUR RESULTS!
 
            **************************************************
                entering MICDV6 (sequential solver routine)   
            **************************************************
 
- >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.00099999s
- >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.00199999s
  >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.00200000s
  >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.00299999s
- >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.00299999s
- >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.00399999s
- >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.00399999s
- >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.00300001s
 
  Info from iteration      1
  _______________________
- Iter RNORM EIGAPR        1    5.65093E-01      -2572.9706732099
- Iter RNORM EIGAPR        1    5.50720E-01      -2572.6221076578
+ Iter RNORM EIGAPR        1    5.65549E-01      -2572.9702404646
+ Iter RNORM EIGAPR        1    5.74230E-01      -2572.5451519757
 
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.25500001s
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.21500000s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.22399998s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.22000000s
 
- >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.08000000s
- >>>  WALL TIME FOR CURRENT ITERATION            :  0.58899999s
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.05700001s
+ >>>  WALL TIME FOR CURRENT ITERATION            :  0.52800000s
 
  Info from iteration      2
  _______________________
- Iter RNORM EIGAPR        2    1.17724E-01      -2573.1027663186
- Iter RNORM EIGAPR        2    1.40950E-01      -2572.7613470670
+ Iter RNORM EIGAPR        2    1.17843E-01      -2573.1027606587
+ Iter RNORM EIGAPR        2    5.54424E-01      -2572.6102274540
 
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.19499999s
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.19900000s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42100000s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42699999s
 
- >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.09900001s
- >>>  WALL TIME FOR CURRENT ITERATION            :  0.56400001s
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.08899999s
+ >>>  WALL TIME FOR CURRENT ITERATION            :  0.99199998s
 
  Info from iteration      3
  _______________________
- Iter RNORM EIGAPR        3    2.80189E-02      -2573.1075236345
- Iter RNORM EIGAPR        3    4.10489E-02      -2572.7690910095
+ Iter RNORM EIGAPR        3    2.80491E-02      -2573.1075314736
+ Iter RNORM EIGAPR        3    1.65454E-01      -2572.7567610616
 
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.19800001s
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.19799998s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42699999s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42199999s
 
- >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.10200000s
- >>>  WALL TIME FOR CURRENT ITERATION            :  0.57200000s
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.09200001s
+ >>>  WALL TIME FOR CURRENT ITERATION            :  1.00900000s
 
  Info from iteration      4
  _______________________
- Iter RNORM EIGAPR        4    7.51051E-03      -2573.1078222634
- Iter RNORM EIGAPR        4    1.36665E-02      -2572.7699560178
+ Iter RNORM EIGAPR        4    7.52169E-03      -2573.1078226902
+ Iter RNORM EIGAPR        4    5.30673E-02      -2572.7679692824
 
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.20199999s
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.19899999s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42199999s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42299998s
 
- >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.10500000s
- >>>  WALL TIME FOR CURRENT ITERATION            :  0.57799999s
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.09200001s
+ >>>  WALL TIME FOR CURRENT ITERATION            :  1.00600001s
 
  Info from iteration      5
  _______________________
- Iter RNORM EIGAPR        5    1.98281E-03      -2573.1078427682
- Iter RNORM EIGAPR        5    4.75228E-03      -2572.7700459687
+ Iter RNORM EIGAPR        5    2.01758E-03      -2573.1078427470
+ Iter RNORM EIGAPR        5    2.14317E-02      -2572.7697586205
 
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.19700000s
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.19700000s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42600000s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42399999s
 
- >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.09800000s
- >>>  WALL TIME FOR CURRENT ITERATION            :  0.56500001s
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.09400001s
+ >>>  WALL TIME FOR CURRENT ITERATION            :  1.01199999s
 
  Info from iteration      6
  _______________________
- Iter RNORM EIGAPR        6    6.36924E-04      -2573.1078443688
- Iter RNORM EIGAPR        6    1.83902E-03      -2572.7700563864
+ Iter RNORM EIGAPR        6    6.45597E-04      -2573.1078443788
+ Iter RNORM EIGAPR        6    8.84550E-03      -2572.7700144107
 
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.20200001s
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.20299999s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42799997s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42600000s
 
- >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.10600001s
- >>>  WALL TIME FOR CURRENT ITERATION            :  0.58399999s
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.09299999s
+ >>>  WALL TIME FOR CURRENT ITERATION            :  1.01499999s
 
  Info from iteration      7
  _______________________
- Iter RNORM EIGAPR        7    2.29855E-04      -2573.1078445630
- Iter RNORM EIGAPR        7    1.02865E-03      -2572.7700587905
+ Iter RNORM EIGAPR        7    2.08109E-04      -2573.1078445676
+ Iter RNORM EIGAPR        7    3.22901E-03      -2572.7700493570
 
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.20899999s
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.20199999s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42600000s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.41500002s
 
- >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.10499999s
- >>>  WALL TIME FOR CURRENT ITERATION            :  0.59099999s
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.09000003s
+ >>>  WALL TIME FOR CURRENT ITERATION            :  0.99800003s
 
  Info from iteration      8
  _______________________
- Iter RNORM EIGAPR        8    8.22786E-05      -2573.1078445846
- Iter RNORM EIGAPR        8    4.66931E-04      -2572.7700593572
+ Iter RNORM EIGAPR        8    7.22359E-05      -2573.1078445852
+ Iter RNORM EIGAPR        8    1.90390E-03      -2572.7700573216
 
- >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.20000000s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42500001s
 
- >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.07100001s
- >>>  WALL TIME FOR CURRENT ITERATION            :  0.30900002s
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.06700003s
+ >>>  WALL TIME FOR CURRENT ITERATION            :  0.52800000s
 
  Info from iteration      9
  _______________________
- Iter RNORM EIGAPR        9    8.07144E-05      -2573.1078445847
- Iter RNORM EIGAPR        9    1.75627E-04      -2572.7700594575
+ Iter RNORM EIGAPR        9    7.22359E-05      -2573.1078445852
+ Iter RNORM EIGAPR        9    7.87030E-04      -2572.7700590996
+
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42300001s
+
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.05500001s
+ >>>  WALL TIME FOR CURRENT ITERATION            :  0.50999999s
+
+ Info from iteration     10
+ _______________________
+ Iter RNORM EIGAPR       10    7.22358E-05      -2573.1078445852
+ Iter RNORM EIGAPR       10    3.21418E-04      -2572.7700593952
+
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  0.42399999s
+
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.05499998s
+ >>>  WALL TIME FOR CURRENT ITERATION            :  0.51099998s
+
+ Info from iteration     11
+ _______________________
+ Iter RNORM EIGAPR       11    7.22357E-05      -2573.1078445852
+ Iter RNORM EIGAPR       11    1.91342E-04      -2572.7700594727
 
  -------------------
  root number =     1
  -------------------
 
- iteration   1    -2572.9706732099     5.651E-01
- iteration   2    -2573.1027663186     1.177E-01
- iteration   3    -2573.1075236345     2.802E-02
- iteration   4    -2573.1078222634     7.511E-03
- iteration   5    -2573.1078427682     1.983E-03
- iteration   6    -2573.1078443688     6.369E-04
- iteration   7    -2573.1078445630     2.299E-04
- iteration   8    -2573.1078445846     8.228E-05
- iteration   9    -2573.1078445847     8.071E-05
+ iteration   1    -2572.9702404646     5.655E-01
+ iteration   2    -2573.1027606587     1.178E-01
+ iteration   3    -2573.1075314736     2.805E-02
+ iteration   4    -2573.1078226902     7.522E-03
+ iteration   5    -2573.1078427470     2.018E-03
+ iteration   6    -2573.1078443788     6.456E-04
+ iteration   7    -2573.1078445676     2.081E-04
+ iteration   8    -2573.1078445852     7.224E-05
+ iteration   9    -2573.1078445852     7.224E-05
+ iteration  10    -2573.1078445852     7.224E-05
+ iteration  11    -2573.1078445852     7.224E-05
 
  -------------------
  root number =     2
  -------------------
 
- iteration   1    -2572.6221076578     5.507E-01
- iteration   2    -2572.7613470670     1.409E-01
- iteration   3    -2572.7690910095     4.105E-02
- iteration   4    -2572.7699560178     1.367E-02
- iteration   5    -2572.7700459687     4.752E-03
- iteration   6    -2572.7700563864     1.839E-03
- iteration   7    -2572.7700587905     1.029E-03
- iteration   8    -2572.7700593572     4.669E-04
- iteration   9    -2572.7700594575     1.756E-04
+ iteration   1    -2572.5451519757     5.742E-01
+ iteration   2    -2572.6102274540     5.544E-01
+ iteration   3    -2572.7567610616     1.655E-01
+ iteration   4    -2572.7679692824     5.307E-02
+ iteration   5    -2572.7697586205     2.143E-02
+ iteration   6    -2572.7700144107     8.846E-03
+ iteration   7    -2572.7700493570     3.229E-03
+ iteration   8    -2572.7700573216     1.904E-03
+ iteration   9    -2572.7700590996     7.870E-04
+ iteration  10    -2572.7700593952     3.214E-04
+ iteration  11    -2572.7700594727     1.913E-04
 
  ****************************************************************
    iter   root         energy          residual     convergence
  ****************************************************************
-      9      1    -2573.1078445847     8.071E-05     converged   
-      9      2    -2572.7700594575     1.756E-04     converged   
+     11      1    -2573.1078445852     7.224E-05     converged   
+     11      2    -2572.7700594727     1.913E-04     converged   
 
-   ******************************************************
-   Analysis of leading coefficients for eigen state =   1
-   ******************************************************
+   **************************************************
+   Natural orbital occupation numbers for ROOT =   1
+   **************************************************
+  
+   Natural occupation numbers for symmetry =   1
+   __________________________________________________
+
+   1.985561707   1.956833393   0.034612735   0.013405288   0.008276121
+   0.005234767   0.002506095   0.000807300   0.000161098
+
+   Sum =         4.007398505
+  
+   Natural occupation numbers for symmetry =   2
+   __________________________________________________
+
+   1.967615243   0.013267944   0.007617897   0.001097039
+
+   Sum =         1.989598122
+  
+   Natural occupation numbers for symmetry =   3
+   __________________________________________________
+
+   1.967615243   0.013267944   0.007617897   0.001097039
+
+   Sum =         1.989598122
+  
+   Natural occupation numbers for symmetry =   4
+   __________________________________________________
+
+   0.013405250
+
+   Sum =         0.013405250
+
+   **************************************************
+   Analysis of leading coefficients for ROOT =   1
+   **************************************************
 
    Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
    =========================================================
-   Coefficient of combination        1 is 0.96891175E+00
+   Coefficient of combination        1 is 0.96891188E+00
    Corresponding alpha - and beta string 
        1   2   3   4
        1   2   3   4
@@ -945,22 +1145,22 @@ Point group: C2v
 
    Printout of coefficients in interval  0.5000E-01 to 0.1000E+00
    =========================================================
-   Coefficient of combination       53 is -.60819660E-01
+   Coefficient of combination       53 is -.60820234E-01
    Corresponding alpha - and beta string 
        1   3   4   5
        1   3   4   5
-   Norm of printed CI vector ..  0.94248902E+00
+   Norm of printed CI vector ..  0.94248932E+00
 
      Magnitude of CI coefficients 
     ==============================
 
-   10- 1 TO 10- 0           1  0.93878999E+00    0.93878999E+00
-   10- 2 TO 10- 1         134  0.46689869E-01    0.98547986E+00
-   10- 3 TO 10- 2         768  0.13899353E-01    0.99937921E+00
-   10- 4 TO 10- 3        5866  0.59959724E-03    0.99997881E+00
-   10- 5 TO 10- 4        7646  0.21143136E-04    0.99999995E+00
+   10- 1 TO 10- 0           1  0.93879022E+00    0.93879022E+00
+   10- 2 TO 10- 1         134  0.46689784E-01    0.98548001E+00
+   10- 3 TO 10- 2         768  0.13899158E-01    0.99937916E+00
+   10- 4 TO 10- 3        5862  0.59960170E-03    0.99997877E+00
+   10- 5 TO 10- 4        7652  0.21182887E-04    0.99999995E+00
 
-    Number of coefficients less than 10^{-11} is      2160
+    Number of coefficients less than 10^{-11} is      2158
 
     Magnitude of CI coefficients for each excitation level 
    =========================================================
@@ -968,434 +1168,257 @@ Point group: C2v
         Occupation of active sets :  5  1  2
         Number of coefficients larger than 10^-{11}:     3076
 
-   10- 4 TO 10- 3         782  0.40599231E-04    0.40599231E-04
-   10- 5 TO 10- 4        2294  0.54668937E-05    0.46066125E-04
+   10- 4 TO 10- 3         782  0.40597570E-04    0.40597570E-04
+   10- 5 TO 10- 4        2294  0.54661058E-05    0.46063676E-04
 
         Occupation of active sets :  6  0  2
         Number of coefficients larger than 10^-{11}:      150
 
-   10- 2 TO 10- 1           5  0.77042612E-03    0.77042612E-03
-   10- 3 TO 10- 2         107  0.12162811E-02    0.19867072E-02
-   10- 4 TO 10- 3          36  0.14348478E-04    0.20010557E-02
-   10- 5 TO 10- 4           2  0.16194693E-07    0.20010719E-02
+   10- 2 TO 10- 1           5  0.77043307E-03    0.77043307E-03
+   10- 3 TO 10- 2         107  0.12162716E-02    0.19867046E-02
+   10- 4 TO 10- 3          36  0.14348674E-04    0.20010533E-02
+   10- 5 TO 10- 4           2  0.16124979E-07    0.20010694E-02
 
         Occupation of active sets :  5  2  1
-        Number of coefficients larger than 10^-{11}:     6482
+        Number of coefficients larger than 10^-{11}:     6484
 
-   10- 3 TO 10- 2          16  0.27701491E-04    0.27701491E-04
-   10- 4 TO 10- 3        2672  0.25432510E-03    0.28202659E-03
-   10- 5 TO 10- 4        3794  0.10506729E-04    0.29253332E-03
+   10- 3 TO 10- 2          16  0.27692100E-04    0.27692100E-04
+   10- 4 TO 10- 3        2668  0.25428954E-03    0.28198164E-03
+   10- 5 TO 10- 4        3800  0.10546759E-04    0.29252840E-03
 
         Occupation of active sets :  6  1  1
         Number of coefficients larger than 10^-{11}:      494
 
-   10- 2 TO 10- 1          12  0.25735216E-02    0.25735216E-02
-   10- 3 TO 10- 2         326  0.60489513E-02    0.86224729E-02
-   10- 4 TO 10- 3         140  0.47963208E-04    0.86704361E-02
-   10- 5 TO 10- 4          16  0.70125803E-07    0.86705062E-02
+   10- 2 TO 10- 1          12  0.25735859E-02    0.25735859E-02
+   10- 3 TO 10- 2         326  0.60489774E-02    0.86225633E-02
+   10- 4 TO 10- 3         140  0.47962859E-04    0.86705262E-02
+   10- 5 TO 10- 4          16  0.70177320E-07    0.86705964E-02
 
         Occupation of active sets :  7  0  1
         Number of coefficients larger than 10^-{11}:       16
 
-   10- 3 TO 10- 2          12  0.25687866E-03    0.25687866E-03
-   10- 4 TO 10- 3           2  0.11745900E-06    0.25699612E-03
-   10- 5 TO 10- 4           2  0.16490132E-07    0.25701261E-03
+   10- 3 TO 10- 2          12  0.25688081E-03    0.25688081E-03
+   10- 4 TO 10- 3           2  0.11721932E-06    0.25699803E-03
+   10- 5 TO 10- 4           2  0.16482910E-07    0.25701452E-03
 
         Occupation of active sets :  5  3  0
         Number of coefficients larger than 10^-{11}:     3758
 
-   10- 3 TO 10- 2          44  0.71244716E-04    0.71244716E-04
-   10- 4 TO 10- 3        2196  0.22764013E-03    0.29888485E-03
-   10- 5 TO 10- 4        1518  0.50387783E-05    0.30392363E-03
+   10- 3 TO 10- 2          44  0.71247470E-04    0.71247470E-04
+   10- 4 TO 10- 3        2196  0.22767365E-03    0.29892112E-03
+   10- 5 TO 10- 4        1518  0.50393554E-05    0.30396047E-03
 
         Occupation of active sets :  6  2  0
         Number of coefficients larger than 10^-{11}:      418
 
-   10- 2 TO 10- 1         117  0.43345921E-01    0.43345921E-01
-   10- 3 TO 10- 2         249  0.61835234E-02    0.49529444E-01
-   10- 4 TO 10- 3          32  0.12385153E-04    0.49541829E-01
-   10- 5 TO 10- 4          20  0.27924392E-07    0.49541857E-01
+   10- 2 TO 10- 1         117  0.43345765E-01    0.43345765E-01
+   10- 3 TO 10- 2         249  0.61832778E-02    0.49529042E-01
+   10- 4 TO 10- 3          32  0.12387969E-04    0.49541430E-01
+   10- 5 TO 10- 4          20  0.27881136E-07    0.49541458E-01
 
         Occupation of active sets :  7  1  0
         Number of coefficients larger than 10^-{11}:       20
 
-   10- 3 TO 10- 2          14  0.94772462E-04    0.94772462E-04
-   10- 4 TO 10- 3           6  0.22184740E-05    0.96990936E-04
+   10- 3 TO 10- 2          14  0.94811283E-04    0.94811283E-04
+   10- 4 TO 10- 3           6  0.22242265E-05    0.97035509E-04
 
         Occupation of active sets :  8  0  0
         Number of coefficients larger than 10^-{11}:        1
 
-   10- 1 TO 10- 0           1  0.93878999E+00    0.93878999E+00
+   10- 1 TO 10- 0           1  0.93879022E+00    0.93879022E+00
 
     Total weight and number of SD's (> 10^{-11}):  
   =====================================================
          N        Weight    Acc. Weight   Occupation
   =====================================================
-       3076    0.00004607    0.00004607    5  1  2
-        150    0.00200107    0.00204714    6  0  2
-       6482    0.00029253    0.00233967    5  2  1
-        494    0.00867051    0.01101018    6  1  1
-         16    0.00025701    0.01126719    7  0  1
-       3758    0.00030392    0.01157111    5  3  0
-        418    0.04954186    0.06111297    6  2  0
-         20    0.00009699    0.06120996    7  1  0
-          1    0.93878999    0.99999995    8  0  0
+       3076    0.00004606    0.00004606    5  1  2
+        150    0.00200107    0.00204713    6  0  2
+       6484    0.00029253    0.00233966    5  2  1
+        494    0.00867060    0.01101026    6  1  1
+         16    0.00025701    0.01126727    7  0  1
+       3758    0.00030396    0.01157123    5  3  0
+        418    0.04954146    0.06111269    6  2  0
+         20    0.00009704    0.06120973    7  1  0
+          1    0.93879022    0.99999995    8  0  0
 
-   ******************************************************
-   Analysis of leading coefficients for eigen state =   2
-   ******************************************************
+   **************************************************
+   Natural orbital occupation numbers for ROOT =   2
+   **************************************************
+  
+   Natural occupation numbers for symmetry =   1
+   __________________________________________________
+
+   1.976996348   1.004765825   0.990651681   0.013758710   0.012232521
+   0.006186901   0.003980522   0.001664676   0.000345580
+
+   Sum =         4.010582764
+  
+   Natural occupation numbers for symmetry =   2
+   __________________________________________________
+
+   1.965948595   0.013413256   0.007639441   0.000827996
+
+   Sum =         1.987829288
+  
+   Natural occupation numbers for symmetry =   3
+   __________________________________________________
+
+   1.965948595   0.013413256   0.007639441   0.000827996
+
+   Sum =         1.987829288
+  
+   Natural occupation numbers for symmetry =   4
+   __________________________________________________
+
+   0.013758660
+
+   Sum =         0.013758660
+
+   **************************************************
+   Analysis of leading coefficients for ROOT =   2
+   **************************************************
 
    Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
    =========================================================
-   Coefficient of combination        5 is -.66464135E+00
+   Coefficient of combination        5 is -.66485484E+00
    Corresponding alpha - and beta string 
        1   2   3   4
        1   3   4   5
-   Coefficient of combination        5 is 0.66504464E+00
+   Coefficient of combination        5 is 0.66485845E+00
    Corresponding alpha - and beta string 
        1   3   4   5
        1   2   3   4
 
    Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
    =========================================================
-   Coefficient of combination        6 is 0.12679796E+00
+   Coefficient of combination        6 is -.12670866E+00
    Corresponding alpha - and beta string 
        1   2   3   4
        1   3   4   6
-   Coefficient of combination        6 is -.12680008E+00
+   Coefficient of combination        6 is 0.12670829E+00
    Corresponding alpha - and beta string 
        1   3   4   6
        1   2   3   4
 
    Printout of coefficients in interval  0.5000E-01 to 0.1000E+00
    =========================================================
-   Coefficient of combination        3 is -.89389047E-01
+   Coefficient of combination        3 is -.89383688E-01
    Corresponding alpha - and beta string 
        1   2   3   4
        1   3   4  14
-   Coefficient of combination        3 is 0.89407878E-01
+   Coefficient of combination        3 is 0.89383971E-01
    Corresponding alpha - and beta string 
        1   3   4  14
        1   2   3   4
-   Norm of printed CI vector ..  0.93217266E+00
+   Norm of printed CI vector ..  0.93215773E+00
 
      Magnitude of CI coefficients 
     ==============================
 
-   10- 1 TO 10- 0           4  0.91618849E+00    0.91618849E+00
-   10- 2 TO 10- 1         140  0.59371411E-01    0.97555990E+00
-   10- 3 TO 10- 2        1774  0.23461047E-01    0.99902095E+00
-   10- 4 TO 10- 3        6276  0.96126384E-03    0.99998221E+00
-   10- 5 TO 10- 4        6278  0.17740683E-04    0.99999995E+00
+   10- 1 TO 10- 0           4  0.91617879E+00    0.91617879E+00
+   10- 2 TO 10- 1         140  0.59380439E-01    0.97555923E+00
+   10- 3 TO 10- 2        1774  0.23462230E-01    0.99902146E+00
+   10- 4 TO 10- 3        6274  0.96074223E-03    0.99998221E+00
+   10- 5 TO 10- 4        6274  0.17743084E-04    0.99999995E+00
 
-    Number of coefficients less than 10^{-11} is      2103
+    Number of coefficients less than 10^{-11} is      2109
 
     Magnitude of CI coefficients for each excitation level 
    =========================================================
 
         Occupation of active sets :  5  1  2
-        Number of coefficients larger than 10^-{11}:     3171
+        Number of coefficients larger than 10^-{11}:     3172
 
-   10- 3 TO 10- 2         106  0.75989503E-03    0.75989503E-03
-   10- 4 TO 10- 3        1184  0.15707523E-03    0.91697026E-03
-   10- 5 TO 10- 4        1881  0.43542583E-05    0.92132452E-03
+   10- 3 TO 10- 2         106  0.75985198E-03    0.75985198E-03
+   10- 4 TO 10- 3        1184  0.15703256E-03    0.91688454E-03
+   10- 5 TO 10- 4        1882  0.43526427E-05    0.92123719E-03
 
         Occupation of active sets :  6  0  2
         Number of coefficients larger than 10^-{11}:      126
 
-   10- 2 TO 10- 1           2  0.20666896E-03    0.20666896E-03
-   10- 3 TO 10- 2          36  0.27800924E-03    0.48467820E-03
-   10- 4 TO 10- 3          64  0.18650513E-04    0.50332872E-03
-   10- 5 TO 10- 4          24  0.40904068E-07    0.50336962E-03
+   10- 2 TO 10- 1           2  0.20664677E-03    0.20664677E-03
+   10- 3 TO 10- 2          36  0.27803817E-03    0.48468494E-03
+   10- 4 TO 10- 3          64  0.18669771E-04    0.50335471E-03
+   10- 5 TO 10- 4          24  0.40777117E-07    0.50339549E-03
 
         Occupation of active sets :  5  2  1
-        Number of coefficients larger than 10^-{11}:     6526
+        Number of coefficients larger than 10^-{11}:     6528
 
-   10- 3 TO 10- 2         592  0.46562268E-02    0.46562268E-02
-   10- 4 TO 10- 3        2918  0.41544893E-03    0.50716758E-02
-   10- 5 TO 10- 4        3016  0.85841497E-05    0.50802599E-02
+   10- 3 TO 10- 2         592  0.46568802E-02    0.46568802E-02
+   10- 4 TO 10- 3        2918  0.41552468E-03    0.50724049E-02
+   10- 5 TO 10- 4        3018  0.85745245E-05    0.50809795E-02
 
         Occupation of active sets :  6  1  1
         Number of coefficients larger than 10^-{11}:      486
 
-   10- 2 TO 10- 1          12  0.32485024E-02    0.32485024E-02
-   10- 3 TO 10- 2         228  0.40361421E-02    0.72846445E-02
-   10- 4 TO 10- 3         190  0.49357039E-04    0.73340016E-02
-   10- 5 TO 10- 4          56  0.20504783E-06    0.73342066E-02
+   10- 2 TO 10- 1          12  0.32473774E-02    0.32473774E-02
+   10- 3 TO 10- 2         228  0.40340991E-02    0.72814765E-02
+   10- 4 TO 10- 3         190  0.49265019E-04    0.73307415E-02
+   10- 5 TO 10- 4          56  0.20510252E-06    0.73309466E-02
 
         Occupation of active sets :  7  0  1
         Number of coefficients larger than 10^-{11}:       16
 
-   10- 2 TO 10- 1           8  0.18821184E-01    0.18821184E-01
-   10- 3 TO 10- 2           8  0.81872861E-04    0.18903056E-01
+   10- 2 TO 10- 1           8  0.18817125E-01    0.18817125E-01
+   10- 3 TO 10- 2           8  0.81913760E-04    0.18899039E-01
 
         Occupation of active sets :  5  3  0
-        Number of coefficients larger than 10^-{11}:     3760
+        Number of coefficients larger than 10^-{11}:     3752
 
-   10- 2 TO 10- 1          70  0.18490225E-01    0.18490225E-01
-   10- 3 TO 10- 2         578  0.88156459E-02    0.27305871E-01
-   10- 4 TO 10- 3        1828  0.29791892E-03    0.27603790E-01
-   10- 5 TO 10- 4        1284  0.45006706E-05    0.27608291E-01
+   10- 2 TO 10- 1          70  0.18495944E-01    0.18495944E-01
+   10- 3 TO 10- 2         578  0.88159790E-02    0.27311923E-01
+   10- 4 TO 10- 3        1826  0.29748884E-03    0.27609412E-01
+   10- 5 TO 10- 4        1278  0.45141247E-05    0.27613926E-01
 
         Occupation of active sets :  6  2  0
-        Number of coefficients larger than 10^-{11}:      367
+        Number of coefficients larger than 10^-{11}:      366
 
-   10- 2 TO 10- 1          40  0.13504690E-01    0.13504690E-01
-   10- 3 TO 10- 2         218  0.46840260E-02    0.18188716E-01
-   10- 4 TO 10- 3          92  0.22813195E-04    0.18211530E-01
-   10- 5 TO 10- 4          17  0.55652800E-07    0.18211585E-01
+   10- 2 TO 10- 1          40  0.13499687E-01    0.13499687E-01
+   10- 3 TO 10- 2         218  0.46851665E-02    0.18184853E-01
+   10- 4 TO 10- 3          92  0.22761356E-04    0.18207615E-01
+   10- 5 TO 10- 4          16  0.55912193E-07    0.18207671E-01
 
         Occupation of active sets :  7  1  0
         Number of coefficients larger than 10^-{11}:       20
 
-   10- 1 TO 10- 0           4  0.91618849E+00    0.91618849E+00
-   10- 2 TO 10- 1           8  0.51001403E-02    0.92128863E+00
-   10- 3 TO 10- 2           8  0.14922905E-03    0.92143786E+00
+   10- 1 TO 10- 0           4  0.91617879E+00    0.91617879E+00
+   10- 2 TO 10- 1           8  0.51136591E-02    0.92129245E+00
+   10- 3 TO 10- 2           8  0.15030132E-03    0.92144276E+00
 
     Total weight and number of SD's (> 10^{-11}):  
   =====================================================
          N        Weight    Acc. Weight   Occupation
   =====================================================
-       3171    0.00092132    0.00092132    5  1  2
-        126    0.00050337    0.00142469    6  0  2
-       6526    0.00508026    0.00650495    5  2  1
-        486    0.00733421    0.01383916    6  1  1
-         16    0.01890306    0.03274222    7  0  1
-       3760    0.02760829    0.06035051    5  3  0
-        367    0.01821159    0.07856209    6  2  0
-         20    0.92143786    0.99999995    7  1  0
+       3172    0.00092124    0.00092124    5  1  2
+        126    0.00050340    0.00142463    6  0  2
+       6528    0.00508098    0.00650561    5  2  1
+        486    0.00733095    0.01383656    6  1  1
+         16    0.01889904    0.03273560    7  0  1
+       3752    0.02761393    0.06034952    5  3  0
+        366    0.01820767    0.07855719    6  2  0
+         20    0.92144276    0.99999995    7  1  0
 
-   **************************************************************
-   calculating 1-/2-particle density matrix for eigen state =   1
-   **************************************************************
-  print spindens           1           0
+ LUCITA run, task-id = "standard ci " finished with no errors.
 
-
-lucita_putdens_generic: 1-particle spin density matrix : 1
-dimension: NASHT, triangular packed      18
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.99253295
-       2      -0.00173802     0.97851939
-       3       0.00227181    -0.00196189     0.01052582
-       4       0.00247007    -0.00219318    -0.00636096     0.00683695
-       5      -0.00198435     0.00067444     0.00233271    -0.00134585     0.00308522
-       6      -0.00000000     0.00000010    -0.00000000     0.00000000     0.00000000     0.00670280
-       7       0.00343683    -0.00390870     0.00430278    -0.00128755     0.00056691     0.00000000
-       8       0.00031694     0.00943094     0.00039647    -0.00145057    -0.00005939    -0.00000000
-       9       0.00130629     0.00014066     0.00096636    -0.00086147     0.00011572     0.00000000
-      16       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.49382716
-
-               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
-       7       0.00287690
-       8      -0.00069899     0.00212709
-       9       0.00059551    -0.00021842     0.00049230
-      10       0.00000000     0.00000000     0.00000000     0.98379667
-      11       0.00000000     0.00000000     0.00000000    -0.00313024     0.00651761
-      12       0.00000000     0.00000000     0.00000000    -0.00039494     0.00057044     0.00390415
-      13       0.00000000     0.00000000     0.00000000     0.00075876     0.00026109    -0.00023007
-      14       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.49382716
-      15       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.06172839
-      16       0.06172839     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
-      13       0.00058046
-      14       0.00000000     0.98379667
-      15       0.00000000     0.00312979     0.00651760
-      16       0.00000000    -0.00039493    -0.00057044     0.00390415
-      17       0.00000000     0.00075880    -0.00026109    -0.00023007     0.00058046
-      18       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00670279
-    ==== End of matrix output ====
-
-
-lucita_putdens_generic: 1-particle spin density matrix : 2
-dimension: NASHT, triangular packed      18
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.99253287
-       2      -0.00173804     0.97851968
-       3       0.00226030    -0.00196081     0.01052592
-       4       0.00247109    -0.00219059    -0.00636123     0.00683702
-       5      -0.00198204     0.00067099     0.00233262    -0.00134575     0.00308522
-       6       0.00000000    -0.00000008    -0.00000002     0.00000001    -0.00000000     0.00670270
-       7       0.00343422    -0.00391169     0.00430269    -0.00128755     0.00056694    -0.00000000
-       8       0.00031575     0.00943378     0.00039654    -0.00145050    -0.00005942     0.00000000
-       9       0.00130610     0.00013979     0.00096632    -0.00086148     0.00011569    -0.00000000
-
-               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
-       7       0.00287687
-       8      -0.00069900     0.00212708
-       9       0.00059547    -0.00021842     0.00049230
-      10       0.00000000     0.00000000     0.00000000     0.98379660
-      11       0.00000000     0.00000000     0.00000000    -0.00312884     0.00651759
-      12       0.00000000     0.00000000     0.00000000    -0.00040072     0.00057049     0.00390418
-      13       0.00000000     0.00000000     0.00000000     0.00075929     0.00026107    -0.00023007
-
-               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
-      13       0.00058046
-      14       0.00000000     0.98379657
-      15       0.00000000     0.00312983     0.00651760
-      16       0.00000000    -0.00040077    -0.00057049     0.00390418
-      17       0.00000000     0.00075923    -0.00026106    -0.00023008     0.00058047
-      18       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00670269
-    ==== End of matrix output ====
-  
-   Natural occupation numbers for symmetry =   1
-   __________________________________________________
-
-   1.985561831   1.956833635   0.034612537   0.013405505   0.008276153
-   0.005234804   0.002506163   0.000807329   0.000161125
-
-   Sum =         4.007399081
-  
-   Natural occupation numbers for symmetry =   2
-   __________________________________________________
-
-   1.967614809   0.013267902   0.007617935   0.001097079
-
-   Sum =         1.989597726
-  
-   Natural occupation numbers for symmetry =   3
-   __________________________________________________
-
-   1.967614783   0.013267912   0.007617935   0.001097080
-
-   Sum =         1.989597709
-  
-   Natural occupation numbers for symmetry =   4
-   __________________________________________________
-
-   0.013405485
-
-   Sum =         0.013405485
-
-   **************************************************************
-   calculating 1-/2-particle density matrix for eigen state =   2
-   **************************************************************
-  print spindens           1           0
-
-
-lucita_putdens_generic: 1-particle spin density matrix : 1
-dimension: NASHT, triangular packed      18
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.98556255
-       2      -0.02425373     0.50194857
-       3       0.02594035    -0.00150435     0.47014316
-       4      -0.00341449     0.00352018    -0.08991995     0.02141510
-       5      -0.00466655     0.00574758     0.02186981    -0.00495094     0.00334129
-       6      -0.00000000     0.00000004     0.00000005    -0.00000001     0.00000001     0.00687794
-       7       0.01415915    -0.00257825     0.06356175    -0.01168290     0.00308008     0.00000000
-       8      -0.00037190     0.02238859    -0.01145457     0.00014783    -0.00068482    -0.00000000
-       9       0.00298179    -0.00343376     0.00222570    -0.00069070     0.00023646    -0.00000000
-      16       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.49382716
-
-               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
-       7       0.01117228
-       8      -0.00262198     0.00432781
-       9       0.00103965    -0.00052823     0.00050328
-      10       0.00000000     0.00000000     0.00000000     0.98278858
-      11       0.00000000     0.00000000     0.00000000     0.00195397     0.00658333
-      12       0.00000000     0.00000000     0.00000000     0.01337366     0.00022766     0.00400206
-      13       0.00000000     0.00000000     0.00000000    -0.00050673     0.00084217    -0.00017640
-      14       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.49382716
-      15       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.06172839
-      16       0.06172839     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
-      13       0.00054109
-      14       0.00000000     0.98278861
-      15       0.00000000    -0.00195382     0.00658329
-      16       0.00000000     0.01337364    -0.00022764     0.00400205
-      17       0.00000000    -0.00050675    -0.00084217    -0.00017640     0.00054108
-      18       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00687791
-    ==== End of matrix output ====
-
-
-lucita_putdens_generic: 1-particle spin density matrix : 2
-dimension: NASHT, triangular packed      18
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.98556745
-       2      -0.02424549     0.50250093
-       3       0.02593094    -0.00149219     0.46958303
-       4      -0.00339341     0.00353361    -0.08987035     0.02141693
-       5      -0.00467440     0.00576163     0.02186595    -0.00495309     0.00334288
-       6      -0.00000001    -0.00000002     0.00000006    -0.00000002     0.00000000     0.00687847
-       7       0.01414718    -0.00257962     0.06351297    -0.01168098     0.00308064     0.00000001
-       8      -0.00037848     0.02239381    -0.01145435     0.00014992    -0.00068432    -0.00000000
-       9       0.00297098    -0.00344355     0.00222416    -0.00069119     0.00023641     0.00000000
-
-               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
-       7       0.01116853
-       8      -0.00262275     0.00432745
-       9       0.00103932    -0.00052856     0.00050337
-      10       0.00000000     0.00000000     0.00000000     0.98278719
-      11       0.00000000     0.00000000     0.00000000     0.00196894     0.00658593
-      12       0.00000000     0.00000000     0.00000000     0.01337210     0.00022937     0.00400209
-      13       0.00000000     0.00000000     0.00000000    -0.00049883     0.00084197    -0.00017604
-
-               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
-      13       0.00054103
-      14       0.00000000     0.98278710
-      15       0.00000000    -0.00196914     0.00658604
-      16       0.00000000     0.01337211    -0.00022939     0.00400210
-      17       0.00000000    -0.00049874    -0.00084196    -0.00017604     0.00054104
-      18       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00687842
-    ==== End of matrix output ====
-  
-   Natural occupation numbers for symmetry =   1
-   __________________________________________________
-
-   1.976997895   1.004773485   0.990646878   0.013756407   0.012228187
-   0.006185582   0.003980568   0.001666454   0.000345590
-
-   Sum =         4.010581047
-  
-   Natural occupation numbers for symmetry =   2
-   __________________________________________________
-
-   1.965949543   0.013414019   0.007639489   0.000828258
-
-   Sum =         1.987831308
-  
-   Natural occupation numbers for symmetry =   3
-   __________________________________________________
-
-   1.965949483   0.013414080   0.007639487   0.000828263
-
-   Sum =         1.987831313
-  
-   Natural occupation numbers for symmetry =   4
-   __________________________________________________
-
-   0.013756332
-
-   Sum =         0.013756332
-
-   ----------------------------------------------------------
-   LUCITA run, run-id = standard ci  finished with no errors.
-   ----------------------------------------------------------
-
- >>>> CPU and wall time for LUCITA CI :       4.458       4.472
+ >>>> CPU and wall time for LUCITA CI :       8.104       8.161
 
 
 
- >>>> Total CPU  time used in SIRIUS :      4.48 seconds
- >>>> Total wall time used in SIRIUS :      4.50 seconds
+ >>>> Total CPU  time used in SIRIUS :      8.12 seconds
+ >>>> Total wall time used in SIRIUS :      8.18 seconds
 
  
-     Date and time (Linux)  : Fri Aug 24 19:40:25 2012
-     Host name              : stefans-mac-book-pro.local              
+     Date and time (Linux)  : Sun Sep  8 20:38:31 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   4.60 seconds
- >>>> Total wall time used in DALTON:   4.62 seconds
+ >>>> Total CPU  time used in DALTON:   8.26 seconds
+ >>>> Total wall time used in DALTON:   8.32 seconds
 
  
-     Date and time (Linux)  : Fri Aug 24 19:40:25 2012
-     Host name              : stefans-mac-book-pro.local              
+     Date and time (Linux)  : Sun Sep  8 20:38:31 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

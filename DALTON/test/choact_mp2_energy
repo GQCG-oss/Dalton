@@ -18,8 +18,8 @@ fi
 #  TEST DESCRIPTION
 #######################################################################
 cat > choact_mp2_energy.info <<'%EOF%'
-   choles_cc2_fop
-   ----------------
+   choact_mp2_energy
+   -----------------
    Molecule:         Butanal
    Wave Functions:   6-31G* / MP2
    Test Purpose:     Active subsystem
@@ -106,7 +106,10 @@ else
    GREP="egrep"
 fi
 
-
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
 
 # SCF and  MP2 CC2 energies:
 CRIT1=`$GREP "Total SCF" $log | $GREP "\-230.9811249" | wc -l`
@@ -127,7 +130,7 @@ ERROR[2]="NUMBER OF AMPLITUDES NOT CORRECT"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

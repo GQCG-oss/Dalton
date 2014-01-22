@@ -1,12 +1,12 @@
 !define DEBUG_RSPOLI
 #undef DEBUG_RSPOLI
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -94,6 +94,7 @@ C  INFINP : DIRFCK
 C  INFRSP : ?
 C  INFSOP : A2EXIST,KABSAD,KABTAD,...
 C
+#include "gnrinf.h"
 #include "maxorb.h"
 #include "maxash.h"
 #include "priunit.h"
@@ -109,6 +110,7 @@ C
 #include "wrkrsp.h"
 #include "infsop.h"
 #include "dftcom.h"
+#include "scbrhf.h"
 
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
 #include "grdccpt.h"
@@ -118,7 +120,7 @@ C
 C -- local constants
 C
       PARAMETER ( D1 = 1D0, DP5 = 0.5D0, D2 = 2.0D0, DM1 = -1.0D0 )
-      LOGICAL   DFTADX, ROKS
+      LOGICAL   DFTADX
       LOGICAL   DOFXC, DOFXV, DOFTC, DOFTV
       integer, allocatable ::  ISYMDM(:), IFCTYP(:)
       DIMENSION NEEDMU(-4:6),NEEDDI(-4:6)
@@ -129,7 +131,6 @@ C
 #endif
       CALL QENTER('RSPOLI')
 C
-      ROKS = NASHT.GT.0 .AND. DODFT
 C
       NEEDMU(-4:6) = 0
       NEEDDI(-4:6) = 0
@@ -245,11 +246,11 @@ C If DIRFCK compute Fock matrices in AO basis
 C If also single determinant, then nothing to do in MO part
 C
       !IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
-      IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000
+      !IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000
+      IF ((DIRFCK.OR.HSFOCK.OR.DODFT) .AND. KZCONF.EQ.0) GO TO 1000
       ! new test Dec. 2011, also valid for SOPPA .and. DIRFCK
       ! where TDHF true /hjaaj
-      IF (DODFT) GO TO 1000
-C     ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
+      ! ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
 
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
@@ -724,7 +725,7 @@ C
       JOFFAO = 0
       DO IOSIM = 1,NOSIM
          CALL DEQ27(CMO,ZYMAT(1,IOSIM),UDV,WRK(KDXCAO+JOFFAO),
-     *              WRK(KDXVAO+JOFFAO),WRK(KFREE),LFREE)
+     &              WRK(KDXVAO+JOFFAO),WRK(KFREE),LFREE)
          JOFFAO = JOFFAO + N2BASX
       END DO
       IF (NISHT .GT. 0) THEN
@@ -740,7 +741,7 @@ C
       allocate(ifctyp(nfmat))
 
       JDXCAO = KDXCAO
-      IF (ROKS .OR. HSROHF) THEN
+      IF (HSFOCK) THEN
          CALL DAXPY(NOSIM*N2BASX,D1,WRK(KDXVAO),1,WRK(KDXCAO),1)
          CALL DSCAL(NOSIM*N2BASX,-D1,WRK(KDXVAO),1)
       END IF
@@ -792,7 +793,7 @@ C           Coulomb+exchange
       END DO ! I = 1,NFMAT
 C
 C
-      IF (ROKS.OR.HSROHF) THEN
+      IF (HSFOCK) THEN
 C     Change IFCTYP for all Fa matrices
         DO I=1,NOSIM
           IF (TRPLET) THEN
@@ -881,10 +882,10 @@ C     Change IFCTYP for all Fa matrices
       END IF
 #endif
       DFTADD = DFTADX
-      IF (ROKS.OR.HSROHF) THEN
+      IF (HSFOCK) THEN
 C
 C Calculated matrices are (FC+FV,-FV(exch)=FV-Q)
-C Input fock matrices (form SIRIFC) are of the form
+C Input fock matrices (from SIRIFC) are of the form
 C (FC+Q,FV-Q), where Q=FV(coul) + 2*FV(exch)
 C adapt to this form (which works in RSPORB)
 C

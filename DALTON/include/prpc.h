@@ -1,6 +1,6 @@
 C
 C     Property information for calc. of numerical derivatives/vib. averages
-C     of properties 
+C     of properties
 C     Tentative version Ove 250899
 C
 c     CHARACTER*8 LAB0, LAB1, LAB2, LAB3

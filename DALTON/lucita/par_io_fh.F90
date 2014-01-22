@@ -12,7 +12,7 @@ module file_io_model
 !
 !           written by sknecht, may 2007 for DIRAC MCSCF/KR-CI/LUCITA
 !           adapted for DALTON by sknecht, november 2010.
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
 #else

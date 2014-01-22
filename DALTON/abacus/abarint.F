@@ -1,11 +1,11 @@
 #define OLD_DIAINT
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -4596,6 +4596,7 @@ C     This is brutally resolved by removing all symmetry, that is the
 C     molecule has to be minimized withim the C1 point group.
 C
       TMPLN = MLINE(1)
+      CALL UPCASE(TMPLN)
       BASIS = (TMPLN(1:5) .EQ. 'BASIS')
       I = 4
       IF (BASIS) I = 5
@@ -4624,8 +4625,10 @@ C
 C
       IATOM = 1
       I = NCLINE(IATOM)-1
+      TMPLN = MLINE(I)
+      CALL UPCASE(TMPLN)
       DO 50 J = 1, NONTYP
-         IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
+         IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
             CALL LINE5R(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),
      &                  MXAQN,BASIS,ATOMBA,LMULBS,BSNM,
      &                  RADIUS_PCM(J), ALPHA_PCM(J))

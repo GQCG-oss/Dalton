@@ -1,7 +1,7 @@
 % checked with "ispell" 18.Sep.2003 /hjaaj
 \chapter{\label{ch:wf-guide}Getting the wave function you want}
 
-Currently the following wave function types are implemented in DALTON:
+Currently the following wave function types are implemented in \dalton:
 
 \begin{description}
 
@@ -43,14 +43,14 @@ the restricted active space model
 
 \end{description}
 
-SIRIUS is the part of the code that computes all of these
+\sirius\ is the part of the code that computes all of these
 wave functions, with the exception of the coupled cluster wave functions.
-This part of the DALTON manual discusses aspects of converging the
+This part of the \dalton\ manual discusses aspects of converging the
 wave function you want\index{convergence!wave function}.
 
-\section{\label{sec:ig_necinp} Necessary input to SIRIUS}
+\section{\label{sec:ig_necinp} Necessary input to \sirius}
 
-In order for DALTON to perform a calculation for a given wave function a
+In order for \dalton\ to perform a calculation for a given wave function a
 minimum amount of
 information is required. This information is collected in the
 \Sec{*WAVE FUNCTIONS} input module. Fig.~\ref{fig-nec.inp.} collects the most
@@ -108,7 +108,7 @@ function.}\label{fig-nec.inp.}
 \end{figure}
 
 
-\section{\label{sec:si-ex} An input example for SIRIUS}
+\section{\label{sec:si-ex} An input example for \sirius}
 
 \noindent
 The number of symmetries and the number of basis orbitals are read from
@@ -156,7 +156,7 @@ The default convergence threshold\index{convergence!threshold} of
 1.0D-5 is used.
 
 
-\clearpage
+%\clearpage
 \section{\label{sec:ig_hints} Hints on the structure of the \Sec{*WAVE FUNCTIONS} input}
 
 
@@ -268,9 +268,9 @@ loose part of one macro iteration in case of system crashes, disks
 running full, or other irregularities. \noindent In general the
 only change needed to the wave function input is to add the
 \Key{RESTART} keyword under \Sec{*WAVE FUNCTIONS}. However, if the
-original job was a multistep calculation involving {\it e.g.\/} SCF,
+original job was a multistep calculation involving {\it e.g.}~SCF,
 MP2 and MCSCF wave functions, restarting the MCSCF part requires the
-removal of the \quotekw{HF} and \quotekw{MP2} keywords in the input
+removal of the \Key{HF} and \Key{MP2} keywords in the input
 file. If the correct
 two-electron integrals over molecular orbitals are available, you
 can skip the integral transformation\index{integral transformation} 
@@ -287,9 +287,9 @@ made available to the job.
 %As done in Example~\ref{ex-6.1.4}, you can also use the restart feature if you
 You can also use the restart feature if you find it desirable to
 converge\index{convergence!threshold} the wave function sharper
-than specified in the original input. By default, SCF wave
-functions are converged to 1.0D-6 in the gradient norm, whereas MCSCF
-and CI wave functions are converged to 1.0D-5 in the gradient norm. 
+than specified in the original input. By default, SCF, MCSCF
+and CI wave functions are converged to 1.0D-5 in the gradient norm.
+However, if MP2 is requested then the default SCF wave function convergence threshold is 1.0D-6 in the gradient norm.
 
 \pagebreak[2]
 \section{\label{sec:ig_orbtransfer}
@@ -309,7 +309,7 @@ second option is used to punch some molecular
 orbitals\index{molecular orbital} already available on the \verb|SIRIUS.RST|
 file, for instance the converged
 orbitals from a previous calculation.  The orbitals can then be
-transferred to another computer and appended to the SIRIUS input
+transferred to another computer and appended to the \sirius\  input
 there. The orbitals may then be read by \dalton\ using the \Key{MOSTART}
 followed by \Key{FORM18} option on the next line (with this option
 \dalton\ will, after having finished the \Sec{*WAVE FUNCTIONS}
@@ -320,8 +320,8 @@ coefficients to follow immediately afterwards).
 
 \section{\label{examples} Wave function input examples}
 
-Those who are used to the old {\sc sirius} input will not
-experience any dramatic changes with respect to the DALTON input,
+Those who are used to the old \sirius\ input will not
+experience any dramatic changes with respect to the \dalton\ input,
 although a few minor differences exist in order to create a more
 user-friendly environment. The input sections are the same as
 before starting with a wave function specification, currently,
@@ -353,7 +353,7 @@ spin-adapted configurations
 %by a calculation of molecular properties or geometry optimization,
 %when determinants\index{determinants} will be used. 
 The three
-following examples illustrate calculations on and excited
+following examples illustrate calculations on an excited
 state\index{excited state}, on a core-hole\index{core hole} state
 with frozen core orbital\index{frozen core} and on a core-hole
 state with relaxed core\index{relaxed core} orbital. The last
@@ -429,7 +429,7 @@ We finish this list of examples with a high-spin open-shell DFT input.
 We need to specify the number of singly as well as doubly occupied orbitals 
 in each symmetry in the \Sec{*SCF INPUT} section using the \Key{SINGLY OCCUPIED}
 and \Key{DOUBLY OCCUPIED} keywords respectively
-(here assuming $D_{2h}$ symmetry):
+(here assuming D$_{2h}$ symmetry):
 \begin{verbatim}
 **DALTON
 .RUN WAVE FUNCTIONS
@@ -673,7 +673,7 @@ compared to the previous input, assuming that we start out from
 orbitals and CI vectors generated by the previous calculation
 \Key{STARTHDIAGONAL} is therefore replaced by \Key{STARTOLDCI}, and
 the core orbital has number 3 (instead of 1) in the list of
-orbitals in the first symmetry. "\Key{CORERELAX}" is specified for
+orbitals in the first symmetry. The \Key{CORERELAX} keyword is specified for
 relaxation of the core orbital using the NR algorithm.
 
 \begin{verbatim}

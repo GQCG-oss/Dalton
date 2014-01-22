@@ -63,6 +63,8 @@ TIGHT
 .FROZENCORE
 .FRAGMENTADAPTED
 .NOTABSORBH
+.MEMORY
+2.0
 *END OF INPUT
 %EOF%
 #######################################################################

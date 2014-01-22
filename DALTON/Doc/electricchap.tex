@@ -1,13 +1,13 @@
 \chapter{Electric properties}\label{ch:electric}
 
 This chapter describes the calculation of the different electric
-properties which have been implemented in the \dalton\ program system.
+properties which have been implemented in the \dalton\ program.
 These include the dipole moment\index{dipole moment}, the quadrupole
 moment\index{quadrupole moment}, the nuclear quadrupole\index{nuclear quadrupole coupling}\index{electric field!gradient}\index{EFG}\index{NQCC}
 interactions, and the static and frequency dependent
 polarizability\index{polarizability}. Note that a number of different electric
 properties may be
-obtained by use of the {\resp} program if they can be expressed as a
+obtained by use of the {\resp} module if they can be expressed as a
 linear, quadratic or cubic response function. For the non-linear
 electric properties we refer to the chapter ``Getting the property you
 want'' (Chapter~\ref{ch:rspchap}).
@@ -164,7 +164,7 @@ achieved by the following input:
 **END OF DALTON INPUT
 \end{verbatim}
 
-Furthermore, the general RESPONSE program will also calculate the
+Furthermore, the general \response\ module will also calculate the
 frequency-dependent polarizability\index{polarizability}\index{linear response}\index{response!linear}
 as minus the linear response functions through the input
 
@@ -179,5 +179,5 @@ as minus the linear response functions through the input
 .DIPLEN
 **END OF DALTON INPUT
 \end{verbatim}
-For further details about input for the response program, we refer
+For further details about input for the \response\ module, we refer
 to Chapter~\ref{ch:rspchap}.

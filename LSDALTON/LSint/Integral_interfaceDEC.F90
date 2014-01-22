@@ -21,6 +21,7 @@ MODULE IntegralInterfaceDEC
   use BUILDAOBATCH, only: BUILD_SHELLBATCH_AO
   use lstiming
   use memory_handling,only: mem_alloc, mem_dealloc
+  use basis_typetype, only: BASISSETINFO
   PUBLIC:: II_precalc_DECScreenMat,II_getBatchOrbitalScreen,&
        & II_getBatchOrbitalScreen2,II_getBatchOrbitalScreenK,&
        & II_getBatchOrbitalScreen2K,II_GET_DECPACKED4CENTER_J_ERI,&
@@ -33,12 +34,11 @@ CONTAINS
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
-SUBROUTINE II_precalc_DECScreenMat(DECscreen,LUPRI,LUERR,SETTING,nbatches,ndimA,ndimG,intspec)
+SUBROUTINE II_precalc_DECScreenMat(DECscreen,LUPRI,LUERR,SETTING,ndimA,ndimG,intspec)
 IMPLICIT NONE
 TYPE(DECscreenITEM),intent(INOUT)    :: DecScreen
 TYPE(LSSETTING)      :: SETTING
 INTEGER,intent(in)   :: LUPRI,LUERR,ndimA,ndimG
-integer,intent(inout):: nbatches
 Character,intent(IN)          :: intSpec(5)
 !
 TYPE(lstensor),pointer :: GAB
@@ -127,7 +127,6 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
         &Oper,RegularSpec,ContractedInttype,0,SETTING,LUPRI,LUERR)
    CALL retrieve_screen_Output(lupri,setting,GAB,IntegralTransformGC)   
    CALL init_DECscreen_batch(ndimA,ndimG,DecSCREEN)
-
    !LHS
    call null_decscreen_and_associate_MasterGab_LHS(GAB,DecSCREEN)
    !BYPASS MPI in ls_getIntegrals because MPI is done on dec level.
@@ -158,7 +157,8 @@ END SUBROUTINE II_precalc_DECScreenMat
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 SUBROUTINE II_getBatchOrbitalScreen(DecScreen,Setting,nBast,nbatches1,nbatches2,&
-     & batchsize1,batchsize2,batchindex1,batchindex2,batchdim1,batchdim2,lupri,luerr)
+     & batchsize1,batchsize2,batchindex1,batchindex2,batchdim1,batchdim2,&
+     & INTSPEC,lupri,luerr)
 implicit none
 TYPE(DECscreenITEM),intent(INOUT)    :: DecScreen
 TYPE(LSSETTING) :: Setting !,intent(INOUT)
@@ -167,29 +167,45 @@ Integer,intent(IN)         :: nBatches1,nBatches2
 Integer,intent(IN)         :: batchdim1(nBatches1),batchdim2(nBatches2)
 Integer,intent(IN)         :: batchsize1(nBatches1),batchsize2(nBatches2)
 Integer,intent(IN)         :: batchindex1(nBatches1),batchindex2(nBatches2)
-character(len=80)          :: Filemaster
+Character,intent(IN)       :: intSpec(5)
 !
-TYPE(AOITEM)           :: AObuild
-Integer                :: nDim,AO
-!
-AO = AORdefault
-CALL setAObatch(AObuild,0,1,nDim,AO,PrimitiveInttype,Setting%scheme,Setting%fragment(1)%p,&
-     &          setting%basis(1)%p,lupri,luerr)
-CALL II_getBatchOrbitalScreen2(DECscreen,setting,AObuild,nBatches1,nBatches2,batchsize1,batchsize2,&
-     & batchindex1,batchindex2,batchdim1,batchdim2,lupri)
-CALL free_aoitem(lupri,AObuild)
+TYPE(AOITEM)           :: AObuild3,AObuild4
+Integer                :: nDim(4),AO(4),i
+
+DO i=1,4
+   IF (intSpec(i).EQ.'R') THEN
+      !   The regular AO-basis
+      ao(i) = AORegular
+   ELSE IF (intSpec(i).EQ.'C') THEN
+      !   The CABS AO-type basis
+      ao(i) = AOdfCABS
+   ELSE
+      call lsquit('Error in specification of ao1 in II_precalc_DECScreenMat',-1)
+   ENDIF
+ENDDO
+CALL setAObatch(AObuild3,0,1,nDim(3),AO(3),Contractedinttype,Setting%scheme,&
+     & Setting%fragment(1)%p,setting%basis(1)%p,lupri,luerr)
+CALL setAObatch(AObuild4,0,1,nDim(4),AO(4),Contractedinttype,Setting%scheme,&
+     & Setting%fragment(2)%p,setting%basis(2)%p,lupri,luerr)
+CALL II_getBatchOrbitalScreen2(DECscreen,setting,AObuild3,AObuild4,nBatches1,&
+     & nBatches2,batchsize1,batchsize2,batchindex1,batchindex2,batchdim1,&
+     & batchdim2,AO,lupri,luerr)
+CALL free_aoitem(lupri,AObuild3)
+CALL free_aoitem(lupri,AObuild4)
 END SUBROUTINE II_getBatchOrbitalScreen
 
-subroutine II_getBatchOrbitalScreen2(DECscreen,setting,AOfull,nBatches1,nBatches2,&
-     & batchsize1,batchsize2,batchindex1,batchindex2,batchdim1,batchdim2,lupri)
+subroutine II_getBatchOrbitalScreen2(DECscreen,setting,AOfull1,AOfull2,&
+     & nBatches1,nBatches2,batchsize1,batchsize2,batchindex1,batchindex2,&
+     & batchdim1,batchdim2,AO,lupri,luerr)
 implicit none
-TYPE(DECscreenITEM),intent(INOUT)    :: DecScreen
+TYPE(DECscreenITEM),intent(INOUT):: DecScreen
 TYPE(LSSETTING),intent(INOUT)    :: Setting
-TYPE(AOITEM),intent(IN)          :: AOfull
-Integer,intent(IN)               :: lupri,nBatches1,nBatches2
+TYPE(AOITEM),intent(IN)          :: AOfull1,AOfull2
+Integer,intent(IN)               :: lupri,nBatches1,nBatches2,luerr
 Integer,intent(IN)               :: batchdim1(nBatches1),batchdim2(nBatches2)
 Integer,intent(IN)               :: batchsize1(nBatches1),batchsize2(nBatches2)
 Integer,intent(IN)               :: batchindex1(nBatches1),batchindex2(nBatches2)
+Integer,intent(in)               :: AO(4)
 !
 TYPE(AOITEM)            :: AObatch1,AObatch2
 integer :: dim1,dim2,jBatch,iBatch,I,AObatchdim1,AObatchdim2
@@ -198,34 +214,61 @@ character(len=9) :: Jlabel,Ilabel
 logical :: FoundInMem,FoundOnDisk,uncont,intnrm
 type(lstensor),pointer :: MasterGAB
 type(lstensor),pointer :: GAB
-IF(ASSOCIATED(DECSCREEN%masterGabLHS))THEN
-   MasterGAB => DECSCREEN%masterGabLHS
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
+IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
+   MasterGAB => DECSCREEN%masterGabRHS
    uncont = .FALSE.
    intnrm = .FALSE.
-   
    IF(.NOT.ASSOCIATED(DECSCREEN%batchGab))CALL LSQUIT('DECSCREEN%batchGab not associated',-1)
    AOT1batch2 = 0
+
+   SELECT CASE(AO(3))
+   CASE (AORegular)
+      AObasis1 => setting%basis(3)%p%REGULAR
+   CASE (AOdfCABS)
+      AObasis1 => setting%basis(3)%p%CABS
+   CASE DEFAULT
+      print*,'case: ',AO(3)
+      WRITE(luerr,*) 'case: ',AO(3)
+      CALL LSQuit('Programming error: Not a case in II_getBatchOrbitalScreen2A!',lupri)
+   END SELECT
+   
+   SELECT CASE(AO(4))
+   CASE (AORegular)
+      AObasis2 => setting%basis(4)%p%REGULAR
+   CASE (AOdfCABS)
+      AObasis2 => setting%basis(4)%p%CABS
+   CASE DEFAULT
+      print*,'case: ',AO(4)
+      WRITE(luerr,*) 'case: ',AO(4)
+      CALL LSQuit('Programming error: Not a case in II_getBatchOrbitalScreen2B!',lupri)
+   END SELECT
+   
    DO jBatch1=1,nBatches2
       dim2 = batchdim2(jBatch1)
       jbat = batchindex2(jBatch1)
+
       call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
-           & Setting%molecule(1)%p,setting%basis(1)%p%REGULAR,AObatch2,&
+           & Setting%molecule(4)%p,aobasis2,AObatch2,&
            & uncont,intnrm,jBat,AObatchdim2,batchsize2(jBatch1))
-      !   IF(AObatchdim2.NE.dim2)CALL LSQUIT(' typedef_getBatchOrbitalScreen mismatch A',-1)
-      !   IF(batchsize2(jBatch1).NE.AObatch2%nbatches)CALL LSQUIT(' typedef_getBatchOrbitalScreen mismatch B',-1)
+      IF(AObatchdim2.NE.dim2)CALL LSQUIT(' typedef_getBatchOrbitalScreen2 mismatch A',-1)
+      IF(batchsize2(jBatch1).NE.AObatch2%nbatches)CALL LSQUIT(' typedef_getBatchOrbitalScreen2 mismatch B',-1)
+
       
       AOT1batch1 = 0
       DO iBatch1=1,nBatches1
          dim1 = batchdim1(iBatch1)      
          ibat = batchindex1(iBatch1)
+
          call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
-              & Setting%molecule(1)%p,setting%basis(1)%p%REGULAR,AObatch1,&
+              & Setting%molecule(3)%p,aobasis1,AObatch1,&
               & uncont,intnrm,iBat,AObatchdim1,batchsize1(iBatch1))
-         !      IF(AObatchdim1.NE.dim1)CALL LSQUIT(' typedef_getBatchOrbitalScreen mismatch A2',-1)
-         !      IF(batchsize1(iBatch1).NE.AObatch1%nbatches)CALL LSQUIT(' typedef_getBatchOrbitalScreen mismatch B2',-1)
+         IF(AObatchdim1.NE.dim1)CALL LSQUIT(' typedef_getBatchOrbitalScreen mismatch A2',-1)
+         IF(batchsize1(iBatch1).NE.AObatch1%nbatches)CALL LSQUIT(' typedef_getBatchOrbitalScreen mismatch B2',-1)
+         
          nullify(DECSCREEN%batchGab(iBatch1,jBatch1)%p)         
          allocate(DECSCREEN%batchGab(iBatch1,jBatch1)%p)         
-         call build_BatchGab(AOfull,AObatch1,AObatch2,iBatch1,jBatch1,AOT1batch1,AOT1batch2,dim1,dim2,&
+         call build_BatchGab(AOfull1,AOfull2,AObatch1,AObatch2,iBatch1,jBatch1,AOT1batch1,AOT1batch2,dim1,dim2,&
               & MasterGAB,DECSCREEN%batchGab(iBatch1,jBatch1)%p)
          CALL free_aoitem(lupri,AObatch1)
          AOT1batch1 = AOT1batch1 + batchsize1(iBatch1)
@@ -253,7 +296,7 @@ end subroutine II_getBatchOrbitalScreen2
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 SUBROUTINE II_getBatchOrbitalScreenK(DecScreen,Setting,nBast,nbatches1,nbatches2,&
-     & batchsize1,batchsize2,batchindex1,batchindex2,batchdim1,batchdim2,lupri,luerr)
+     & batchsize1,batchsize2,batchindex1,batchindex2,batchdim1,batchdim2,INTSPEC,lupri,luerr)
 implicit none
 TYPE(DECscreenITEM),intent(INOUT)    :: DecScreen
 TYPE(LSSETTING) :: Setting !,intent(INOUT)
@@ -262,42 +305,60 @@ Integer,intent(IN)         :: nBatches1,nBatches2
 Integer,intent(IN)         :: batchdim1(nBatches1),batchdim2(nBatches2)
 Integer,intent(IN)         :: batchsize1(nBatches1),batchsize2(nBatches2)
 Integer,intent(IN)         :: batchindex1(nBatches1),batchindex2(nBatches2)
-character(len=80)          :: Filemaster
+Character,intent(IN)       :: intSpec(5)
 !
-TYPE(AOITEM)           :: AObuild
-Integer                :: nDim,AO
+TYPE(AOITEM)           :: AObuild1,AObuild2
+Integer                :: nDim(4),AO(4),i
 !
-AO = AORdefault
-CALL setAObatch(AObuild,0,1,nDim,AO,PrimitiveInttype,Setting%scheme,Setting%fragment(1)%p,&
+DO i=1,4
+   IF (intSpec(i).EQ.'R') THEN
+      !   The regular AO-basis
+      ao(i) = AORegular
+   ELSE IF (intSpec(i).EQ.'C') THEN
+      !   The CABS AO-type basis
+      ao(i) = AOdfCABS
+   ELSE
+      call lsquit('Error in specification of ao1 in II_precalc_DECScreenMat',-1)
+   ENDIF
+ENDDO
+
+CALL setAObatch(AObuild1,0,1,nDim(1),AO(1),Contractedinttype,Setting%scheme,Setting%fragment(1)%p,&
      &          setting%basis(1)%p,lupri,luerr)
-CALL II_getBatchOrbitalScreen2K(DECscreen,setting,AObuild,nBatches1,nBatches2,batchsize1,batchsize2,&
-     & batchindex1,batchindex2,batchdim1,batchdim2,lupri)
-CALL free_aoitem(lupri,AObuild)
+CALL II_getBatchOrbitalScreen2K_LHS(DECscreen,setting,AObuild1,AO(2),nBatches1,batchsize1,batchindex1,batchdim1,lupri)
+
+CALL free_aoitem(lupri,AObuild1)
+CALL setAObatch(AObuild1,0,1,nDim(3),AO(3),Contractedinttype,Setting%scheme,Setting%fragment(1)%p,&
+     &          setting%basis(1)%p,lupri,luerr)
+CALL II_getBatchOrbitalScreen2K_RHS(DECscreen,setting,AObuild1,AO(4),nBatches2,batchsize2,batchindex2,batchdim2,lupri)
+
+CALL free_aoitem(lupri,AObuild1)
+
 END SUBROUTINE II_getBatchOrbitalScreenK
 
-subroutine II_getBatchOrbitalScreen2K(DECscreen,setting,AOfull,nBatches1,nBatches2,&
-     & batchsize1,batchsize2,batchindex1,batchindex2,batchdim1,batchdim2,lupri)
+subroutine II_getBatchOrbitalScreen2K_LHS(DECscreen,setting,AOfull1,AOSPEC,nBatches1,&
+     & batchsize1,batchindex1,batchdim1,lupri)
 implicit none
 TYPE(DECscreenITEM),intent(INOUT)    :: DecScreen
 TYPE(LSSETTING),intent(INOUT)    :: Setting
-TYPE(AOITEM),intent(IN)          :: AOfull
-Integer,intent(IN)               :: lupri,nBatches1,nBatches2
-Integer,intent(IN)               :: batchdim1(nBatches1),batchdim2(nBatches2)
-Integer,intent(IN)               :: batchsize1(nBatches1),batchsize2(nBatches2)
-Integer,intent(IN)               :: batchindex1(nBatches1),batchindex2(nBatches2)
+TYPE(AOITEM),intent(IN)          :: AOfull1
+Integer,intent(IN)               :: lupri,nBatches1,AOSPEC
+Integer,intent(IN)               :: batchdim1(nBatches1)
+Integer,intent(IN)               :: batchsize1(nBatches1)
+Integer,intent(IN)               :: batchindex1(nBatches1)
 !
-TYPE(AOITEM)            :: AObatch1,AObatch2
-integer :: dim1,dim2,jBatch,iBatch,I,AObatchdim1,AObatchdim2
-integer :: AOT1batch2,AOT1batch1,jBatch1,iBatch1,jbat,ibat
+TYPE(AOITEM)            :: AObatch1
+integer :: dim1,jBatch,iBatch,I,AObatchdim1
+integer :: AOT1batch1,jBatch1,iBatch1,jbat,ibat
 character(len=9) :: Jlabel,Ilabel
 logical :: FoundInMem,FoundOnDisk,uncont,intnrm
 type(lstensor),pointer :: MasterGAB
 type(lstensor),pointer :: GAB
+TYPE(BASISSETINFO),pointer :: AObasis
 IF(ASSOCIATED(DECSCREEN%masterGabLHS))THEN
    MasterGAB => DECSCREEN%masterGabLHS
 ELSE
    IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
-      call lsquit('error in typedef_getBatchOrbitalScreen ',lupri)
+      call lsquit('error in typedef_getBatchOrbitalScreenKLHS ',lupri)
    ENDIF
 ENDIF
 
@@ -306,19 +367,74 @@ intnrm = .FALSE.
 !LHS   
 IF(.NOT.ASSOCIATED(DECSCREEN%batchGabKLHS))CALL LSQUIT('DECSCREEN%batchGabKLHS not assocd',-1)
 AOT1batch1 = 0
+
+SELECT CASE(AOspec)
+CASE (AORegular)
+   AObasis => setting%basis(1)%p%REGULAR
+CASE (AOdfCABS)
+   AObasis => setting%basis(1)%p%CABS
+CASE DEFAULT
+   print*,'case: ',AOspec
+   WRITE(lupri,*) 'case: ',AOspec
+   CALL LSQuit('Programming error: Not a case in II_getBatchOrbitalScreenKLHS2B!',lupri)
+END SELECT
+
 DO iBatch1=1,nBatches1
    dim1 = batchdim1(iBatch1)      
    ibat = batchindex1(iBatch1)
    call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
-        & Setting%molecule(1)%p,setting%basis(1)%p%REGULAR,AObatch1,&
+        & Setting%molecule(1)%p,aobasis,AObatch1,&
         & uncont,intnrm,iBat,AObatchdim1,batchsize1(iBatch1))
    nullify(DECSCREEN%batchGabKLHS(iBatch1)%p)         
    allocate(DECSCREEN%batchGabKLHS(iBatch1)%p)         
-   call build_BatchGabK(AOfull,AObatch1,iBatch1,AOT1batch1,dim1,&
+   call build_BatchGabK(AOfull1,AObatch1,iBatch1,AOT1batch1,dim1,&
               & MasterGAB,DECSCREEN%batchGabKLHS(iBatch1)%p)
    CALL free_aoitem(lupri,AObatch1)
    AOT1batch1 = AOT1batch1 + batchsize1(iBatch1)
 ENDDO
+
+end subroutine II_getBatchOrbitalScreen2K_LHS
+
+subroutine II_getBatchOrbitalScreen2K_RHS(DECscreen,setting,AOfull2,aospec,nBatches2,&
+     & batchsize2,batchindex2,batchdim2,lupri)
+implicit none
+TYPE(DECscreenITEM),intent(INOUT)    :: DecScreen
+TYPE(LSSETTING),intent(INOUT)    :: Setting
+TYPE(AOITEM),intent(IN)          :: AOfull2
+Integer,intent(IN)               :: lupri,nBatches2,aospec
+Integer,intent(IN)               :: batchdim2(nBatches2)
+Integer,intent(IN)               :: batchsize2(nBatches2)
+Integer,intent(IN)               :: batchindex2(nBatches2)
+!
+TYPE(AOITEM)            :: AObatch2
+integer :: dim2,jBatch,iBatch,I,AObatchdim2
+integer :: AOT1batch2,jBatch1,jbat
+character(len=9) :: Jlabel,Ilabel
+logical :: FoundInMem,FoundOnDisk,uncont,intnrm
+type(lstensor),pointer :: MasterGAB
+type(lstensor),pointer :: GAB
+TYPE(BASISSETINFO),pointer :: AObasis
+IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
+   MasterGAB => DECSCREEN%masterGabRHS
+ELSE
+   IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
+      call lsquit('error in typedef_getBatchOrbitalScreenKRHS ',lupri)
+   ENDIF
+ENDIF
+
+SELECT CASE(AOspec)
+CASE (AORegular)
+   AObasis => setting%basis(1)%p%REGULAR
+CASE (AOdfCABS)
+   AObasis => setting%basis(1)%p%CABS
+CASE DEFAULT
+   print*,'case: ',AOspec
+   WRITE(lupri,*) 'case: ',AOspec
+   CALL LSQuit('Programming error: Not a case in II_getBatchOrbitalScreenKRHS2B!',lupri)
+END SELECT
+
+uncont = .FALSE.
+intnrm = .FALSE.
 !RHS
 IF(.NOT.ASSOCIATED(DECSCREEN%batchGabKRHS))CALL LSQUIT('DECSCREEN%batchGabKRHS not assocd',-1)
 AOT1batch2 = 0
@@ -326,17 +442,17 @@ DO jBatch1=1,nBatches2
    dim2 = batchdim2(jBatch1)
    jbat = batchindex2(jBatch1)
    call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
-        & Setting%molecule(1)%p,setting%basis(1)%p%REGULAR,AObatch2,&
+        & Setting%molecule(1)%p,aobasis,AObatch2,&
         & uncont,intnrm,jBat,AObatchdim2,batchsize2(jBatch1))
    nullify(DECSCREEN%batchGabKRHS(jBatch1)%p)         
    allocate(DECSCREEN%batchGabKRHS(jBatch1)%p)         
-   call build_BatchGabK(AOfull,AObatch2,jBatch1,AOT1batch2,dim2,&
+   call build_BatchGabK(AOfull2,AObatch2,jBatch1,AOT1batch2,dim2,&
               & MasterGAB,DECSCREEN%batchGabKRHS(jBatch1)%p)
    CALL free_aoitem(lupri,AObatch2)
    AOT1batch2 = AOT1batch2 + batchsize2(jBatch1)
 ENDDO
 
-end subroutine II_getBatchOrbitalScreen2K
+end subroutine II_getBatchOrbitalScreen2K_RHS
 
 !> \brief Calculates the decpacked explicit 4 center eri
 !> \author T. Kjaergaard
@@ -353,11 +469,11 @@ end subroutine II_getBatchOrbitalScreen2K
 !> \param dim4 the dimension of batch index 
 !> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
 SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,SETTING,&
-     &outputintegral,batchC,batchD,batchsizeC,batchSizeD,nbast1,nbast2,dim3,dim4,fullRHS,nbatches,intSpec)
+     &outputintegral,batchC,batchD,batchsizeC,batchSizeD,nbast1,nbast2,dim3,dim4,fullRHS,intSpec)
 IMPLICIT NONE
 TYPE(LSSETTING),intent(inout) :: SETTING
 INTEGER,intent(in)            :: LUPRI,LUERR,nbast1,nbast2,dim3,dim4,batchC,batchD
-INTEGER,intent(in)            :: batchsizeC,batchSizeD,nbatches
+INTEGER,intent(in)            :: batchsizeC,batchSizeD
 REAL(REALK),target            :: outputintegral(nbast1,nbast2,dim3,dim4,1)
 logical,intent(in)            :: FullRhs
 Character,intent(IN)          :: intSpec(5)
@@ -373,6 +489,7 @@ real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: iunit,k,l,IJ
 integer             :: nGaussian,nG2
 real(realk)         :: GGem
+type(lstensor),pointer :: tmpP
 call time_II_operations1()
 IF (intSpec(5).NE.'C') THEN
   nGaussian = 6
@@ -470,15 +587,7 @@ setting%output%DECPACKED = .TRUE.
 setting%output%Resultmat => outputintegral
 
 ! Set to zero
-do l=1,dim4
-   do k=1,dim3
-      do j=1,nbast2
-         do i=1,nbast1
-            setting%output%ResultMat(i,j,k,l,1) = 0.0E0_realk
-         end do
-      end do
-   end do
-end do
+call JZERO(setting%output%ResultMat,nbast1,nbast2,dim3,dim4)
 
 CALL ls_setDefaultFragments(setting)
 IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
@@ -488,6 +597,20 @@ IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
    IF(.NOT.associated(SETTING%LST_GAB_LHS))THEN
       CALL LSQUIT('SETTING%LST_GAB_LHS not associated in DEC_ERI',-1)
    ENDIF
+   !we switch sides as we actuall calc the integrals in (3412) order, 
+   !while still storing it as (1234) aka (bachC,batchD,full,full)
+   nullify(tmpP)
+   tmpP => SETTING%LST_GAB_RHS
+   nullify(SETTING%LST_GAB_RHS)
+   SETTING%LST_GAB_RHS => SETTING%LST_GAB_LHS
+   nullify(SETTING%LST_GAB_LHS)
+   SETTING%LST_GAB_LHS => tmpP
+
+   IF(SETTING%LST_GAB_RHS%nbast(1).NE.nbast1)call lsquit('dim mismatch GJERI1',-1)
+   IF(SETTING%LST_GAB_RHS%nbast(2).NE.nbast2)call lsquit('dim mismatch GJERI2',-1)
+   IF(SETTING%LST_GAB_LHS%nbast(1).NE.dim3)call lsquit('dim mismatch GJERI3',-1)
+   IF(SETTING%LST_GAB_LHS%nbast(2).NE.dim4)call lsquit('dim mismatch GJERI4',-1)
+
    if(.not. fullrhs) then
      IF(SETTING%LST_GAB_LHS%nbatches(1).NE.batchSizeC)call lsquit('error BatchsizeC.',-1)
      IF(SETTING%LST_GAB_LHS%nbatches(2).NE.batchSizeD)call lsquit('error BatchsizeD.',-1)
@@ -510,9 +633,35 @@ IF(.NOT.FULLRHS)THEN
 ENDIF
 setting%sameBas = OLDsameBAS
 call mem_dealloc(OLDsameBAS) 
+!back to normal
+IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
+   nullify(tmpP)
+   tmpP => SETTING%LST_GAB_RHS
+   nullify(SETTING%LST_GAB_RHS)
+   SETTING%LST_GAB_RHS => SETTING%LST_GAB_LHS
+   nullify(SETTING%LST_GAB_LHS)
+   SETTING%LST_GAB_LHS => tmpP
+ENDIF
 
 call time_II_operations2(JOB_II_GET_DECPACKED4CENTER_J_ERI)
 END SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI
+
+subroutine JZERO(ResultMat,dim1,dim2,dim3,dim4)
+implicit none
+integer,intent(in) :: dim1,dim2,dim3,dim4
+real(realk),intent(inout) :: ResultMat(dim1,dim2,dim3,dim4)
+!
+integer :: i,j,k,l
+do l=1,dim4
+   do k=1,dim3
+      do j=1,dim2
+         do i=1,dim1
+            ResultMat(i,j,k,l) = 0.0E0_realk
+         end do
+      end do
+   end do
+end do
+end subroutine JZERO
 
 !> \brief Calculates the decpacked explicit 4 center eri 
 !> \author T. Kjaergaard
@@ -642,20 +791,11 @@ ENDIF
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
 nullify(setting%output%resulttensor)
 call initIntegralOutputDims(setting%output,nbast1,dim3,dim4,nbast2,1)
-print*,'nbast1,dim3,dim4,nbast2',nbast1,dim3,dim4,nbast2
 setting%output%DECPACKED2 = .TRUE.
 setting%output%Resultmat => outputintegral
 
 ! Set to zero
-do j=1,nbast2
- do l=1,dim4
-  do k=1,dim3
-   do i=1,nbast1
-    setting%output%ResultMat(i,k,l,j,1) = 0.0E0_realk
-   end do
-  end do
- end do
-end do
+call JZERO(setting%output%ResultMat,nbast1,dim3,dim4,nbast2)
 
 CALL ls_setDefaultFragments(setting)
 IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
@@ -707,11 +847,11 @@ END SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI2
 !> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
 SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      & outputintegral,batchA,batchC,batchsizeA,batchSizeC,&
-     & dim1,nbast2,dim3,nbast4,nbatches,intSpec,FULLRHS)
+     & dim1,nbast2,dim3,nbast4,intSpec,FULLRHS)
   IMPLICIT NONE
   TYPE(LSSETTING),intent(inout) :: SETTING
   INTEGER,intent(in)            :: LUPRI,LUERR,nbast2,nbast4,dim1,dim3,batchA,batchC
-  INTEGER,intent(in)            :: batchsizeA,batchSizeC,nbatches
+  INTEGER,intent(in)            :: batchsizeA,batchSizeC
   REAL(REALK),target            :: outputintegral(dim1,nbast2,dim3,nbast4,1)
   Character,intent(IN)          :: intSpec(5)
   LOGICAL,intent(IN) :: FULLRHS 
@@ -736,7 +876,8 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      WRITE(lupri,*)'Since the full 4 dim is used we call the more efficient'
      WRITE(lupri,*)'II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int'
      CALL II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,SETTING,&
-          &outputintegral,batchA,batchC,batchsizeA,batchSizeC,nbast2,nbast4,dim1,dim3,fullRHS,nbatches,intSpec)
+          & outputintegral,batchA,batchC,batchsizeA,batchSizeC,&
+          & nbast2,nbast4,dim1,dim3,fullRHS,intSpec)
   ELSE
      IF (intSpec(5).NE.'C') THEN
         nGaussian = 6
@@ -823,15 +964,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      setting%output%Resultmat => outputintegral
 
      ! Set to zero
-     do l=1,nbast4
-        do k=1,dim3
-           do j=1,nbast2
-              do i=1,dim1
-                 setting%output%ResultMat(i,j,k,l,1) = 0.0E0_realk
-              end do
-           end do
-        end do
-     end do
+     call JZERO(setting%output%ResultMat,dim1,nbast2,dim3,nbast4)
 
      CALL ls_setDefaultFragments(setting)
      IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
@@ -843,6 +976,11 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
         ENDIF
         IF(SETTING%LST_GAB_LHS%nbatches(1).NE.batchSizeA)call lsquit('error BatchsizeA.',-1)
         IF(SETTING%LST_GAB_RHS%nbatches(1).NE.batchSizeC)call lsquit('error BatchsizeC.',-1)
+
+        IF(SETTING%LST_GAB_LHS%nbast(1).NE.dim1)call lsquit('dim mismatch GKERI3',-1)
+        IF(SETTING%LST_GAB_LHS%nbast(2).NE.nbast2)call lsquit('dim mismatch GKERI4',-1)        
+        IF(SETTING%LST_GAB_RHS%nbast(1).NE.dim3)call lsquit('dim mismatch GKERI1',-1)
+        IF(SETTING%LST_GAB_RHS%nbast(2).NE.nbast4)call lsquit('dim mismatch GKERI2',-1)
      ENDIF
      CALL ls_getIntegrals1(ao(1),ao(2),ao(3),ao(4),oper,RegularSpec,ContractedInttype,0,SETTING,LUPRI,LUERR)
      call mem_dealloc(setting%output%postprocess)

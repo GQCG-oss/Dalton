@@ -1,5 +1,5 @@
 C
-C     FILE: cbiher.h 
+C     FILE: cbiher.h
 C
 C     Purpose: define control variables for Hermit
 C

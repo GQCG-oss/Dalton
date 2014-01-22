@@ -37,7 +37,7 @@ module ccsdpt_module
   public :: ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
        & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair,&
        & ccsdpt_energy_e4_full, print_e4_full, ccsdpt_energy_e5_full,&
-       & print_e5_full, ccsd_energy_full, print_ccsd_full
+       & print_e5_full
   private
 
 contains
@@ -47,7 +47,7 @@ contains
   !> \brief: driver routine for dec-ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2012
-  subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,mylsitem,ccsd_doubles,&
+  subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_doubles,&
                          & ccsdpt_singles,ccsdpt_doubles)
 
     implicit none
@@ -57,7 +57,7 @@ contains
     !> ppfock and qqfock for fragment or full molecule
     real(realk), intent(in) :: ppfock(nocc,nocc), qqfock(nvirt,nvirt)
     !> mo coefficents for occ and virt space for fragment or full molecule
-    real(realk), intent(in) :: ypo(nbasis,nocc), ypv(nbasis,nvirt)
+    real(realk), intent(in) :: Co(nbasis,nocc), Cv(nbasis,nvirt)
     !> mylsitem for fragment or full molecule
     type(lsitem), intent(inout) :: mylsitem
     !> ccsd doubles amplitudes
@@ -76,7 +76,7 @@ contains
     integer :: i,j,k,idx,tuple_type
     !> mpi stuff
 #ifdef VAR_MPI
-    integer :: b_size,ntasks,nodtotal,ij,ij_count,i_old,j_old
+    integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
 #endif
     !> orbital energies
@@ -115,7 +115,7 @@ contains
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,ccsd_doubles%val,mylsitem)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%val,mylsitem)
 
     end if waking_the_slaves
 
@@ -134,7 +134,7 @@ contains
     Uvirt      = array2_init(virtdims)
     C_can_occ  = array2_init(occAO)
     C_can_virt = array2_init(virtAO)
-    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
+    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
                          & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
 
     ! ***************************************************
@@ -143,6 +143,14 @@ contains
     ! note: the integrals are calculated in canonical basis
 
     call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
+
+    !!! DEBUG
+    print *,'jaik:'
+    call array4_print_norm_nrm(jaik)
+    print *,'abij:'
+    call array4_print_norm_nrm(abij)
+    print *,'cbai:'
+    call array_print_norm_nrm(cbai)
 
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
@@ -197,18 +205,21 @@ contains
 
     ! create job distribution list
     ! first, determine common batch size from number of tasks and nodes
-    ntasks = (nocc**2 + nocc)/2
-    b_size = int(ntasks/nodtotal)
 
-    ! ij_array stores all jobs for composite ij indices in decending order
-    call mem_alloc(ij_array,ntasks)
-    ! init list (one more than b_size since mod(ntasks,nodtotal) is not necessearily zero
+    ! in the ij matrix, njobs is the number of elements in the lower triangular matrix
+    ! always an even number [ n(n+1) is always an even number ]
+    njobs = int((nocc**2 + nocc)/2)
+    b_size = int(njobs/nodtotal)
+
+    ! ij_array stores all jobs for composite ij indices in descending order
+    call mem_alloc(ij_array,njobs)
+    ! init list (one more than b_size since mod(njobs,nodtotal) is not necessearily zero
     call mem_alloc(jobs,b_size + 1)
 
     ! create ij_array
-    call create_ij_array_ccsdpt(ntasks,nocc,ij_array)
+    call create_ij_array_ccsdpt(njobs,nocc,ij_array)
     ! fill the list
-    call job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
+    call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
     ! release ij_array
     call mem_dealloc(ij_array)
@@ -573,6 +584,12 @@ contains
 
 #endif
 
+    !!! DEBUG
+    print *,'ccsdpt_doubles_2:'
+    call array4_print_norm_nrm(ccsdpt_doubles_2)
+    print *,'ccsdpt_doubles (before):'
+    call array4_print_norm_nrm(ccsdpt_doubles)
+
     ! now everything resides on the master...
 
     ! collect ccsdpt_doubles and ccsdpt_doubles_2 into ccsdpt_doubles array4 structure
@@ -581,6 +598,10 @@ contains
     call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_2%val,ccsdpt_doubles_2%dims(1),&
                                &ccsdpt_doubles_2%dims(2),ccsdpt_doubles_2%dims(3),ccsdpt_doubles_2%dims(4),&
                                &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%val)
+
+    !!! DEBUG
+    print *,'ccsdpt_doubles (after):'
+    call array4_print_norm_nrm(ccsdpt_doubles)
 
     ! release ccsdpt_doubles_2 array4 structure
     call array4_free(ccsdpt_doubles_2)
@@ -620,23 +641,39 @@ contains
   !> \brief: create ij_array for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine create_ij_array_ccsdpt(ntasks,no,ij_array)
+  subroutine create_ij_array_ccsdpt(njobs,no,ij_array)
 
     implicit none
 
-    !> batch size (without remainder contribution)
-    integer, intent(in) :: ntasks,no
-    !> jobs array
-    integer, dimension(ntasks), intent(inout) :: ij_array
+    !> njobs and nocc
+    integer, intent(in) :: njobs,no
+    !> ij_array
+    integer, dimension(njobs), intent(inout) :: ij_array
     !> integers
     integer :: counter,offset,fill_1,fill_2
 
-    ! since i .ge. j, the composite ij indices will make up a lower triangular matrix
+    ! since i .ge. j, the composite ij indices will make up a lower triangular matrix.
     ! for each ij, k (where j .ge. k) jobs have to be carried out.
     ! thus, the largest jobs for a given i-value will be those that have the largest j-value,
     ! and the largest jobs will thus be those for which the ij index appears near the diagonal.
     ! as the value of j specifies how large a given job is, we fill up the ij_array with jobs
-    ! for j-values in decending order.
+    ! for j-values in descending order.
+
+    ! the below is the lower triangular part of the ij (5*5) matrix written in row-major order
+
+    ! ||  1               ||
+    ! ||  2   3           ||
+    ! ||  4   5  6        ||
+    ! ||  7   8  9 10     ||
+    ! ||  11 12 13 14 15  ||
+
+    ! examples of ij --> i,j conversion
+    ! - ij index 15 corresponds to (i,j)=(5,5) and thus to k=1,2,3,4,5
+    ! - ij index 9  corresponds to (i,j)=(4,3) and thus to k=1,2,3
+    ! - ij index 11  corresponds to (i,j)=(5,1) and thus to k=1
+
+    ! we want ij_array to look like this
+    ! (15 , 14 , 10 , 13 , 9 , 6 , 12 , 8 , 5 , 3 , 11 , 7 , 4 , 2 , 1)
 
     ! counter specifies the index of ij_array
     counter = 1
@@ -648,8 +685,8 @@ contains
 
        if (fill_1 .eq. 0) then
 
-          ! this is largest possible job
-          ij_array(counter) = ntasks
+          ! this is largest possible job, i.e., the (no,no)-th entry in the ij matrix
+          ij_array(counter) = njobs
           ! increment counter
           counter = counter + 1
 
@@ -659,17 +696,20 @@ contains
 
              if (fill_2 .eq. 0) then
 
-                ! this is the largest i-value, for which we have to do k number of jobs
-                ij_array(counter) = ntasks - fill_1
+                ! this is the largest i-value, for which we have to do k number of jobs, 
+                ! that is, we are at the no'th row essentially moving from right towards left.
+                ij_array(counter) = njobs - fill_1
                 ! increment counter
                 counter = counter + 1
 
              else
 
-                ! we loop through the i-value keeping the j-value (and k-value of course) fixed
-                ! we thus loop from i == nocc up towards the diagonal of the lower triangular matrix
+                ! we loop through the i-values keeping the j-value (and k-range) fixed
+                ! we thus loop from i == no up towards the diagonal of the lower triangular matrix
                 offset = offset + (no - fill_2)
-                ij_array(counter) = ntasks - fill_1 - offset
+                ! 'njobs - fill_1' gives the current column, while 'offset' moves us up through the rows
+                ! while staying below or on the diagonal.(still row-major numbering)
+                ij_array(counter) = njobs - fill_1 - offset
                 ! increment counter
                 counter = counter + 1
 
@@ -687,14 +727,14 @@ contains
   !> \brief: make job distribution list for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
+  subroutine job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
     implicit none
 
-    !> batch size (without remainder contribution) 
-    integer, intent(in) :: b_size,ntasks
+    !> batch size (without remainder contribution) and njobs 
+    integer, intent(in) :: b_size,njobs
     !> ij_array
-    integer, dimension(ntasks), intent(inout) :: ij_array
+    integer, dimension(njobs), intent(inout) :: ij_array
     !> jobs array
     integer, dimension(b_size+1), intent(inout) :: jobs
     !> integers
@@ -705,7 +745,7 @@ contains
     nodtotal = infpar%lg_nodtot
 
     ! fill the jobs array with values of ij stored in ij_array
-    ! there are (nocc**2 + nocc)/2 tasks in total (ntasks)
+    ! there are (nocc**2 + nocc)/2 jobs in total (njobs)
 
     ! the below algorithm distributes the jobs evenly among the nodes.
 
@@ -713,7 +753,7 @@ contains
 
        fill_sum = infpar%lg_mynum + 1 + fill*nodtotal
 
-       if (fill_sum .le. ntasks) then
+       if (fill_sum .le. njobs) then
 
           jobs(fill + 1) = ij_array(infpar%lg_mynum + 1 + fill*nodtotal) 
 
@@ -745,9 +785,11 @@ contains
     !> integers
     integer :: gauss_sum,gauss_sum_old,series
 
-    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements
+    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements.
+    ! in column 1, there are N rows, in column 2, there are (N-1) rows, ...,  in
+    ! column (N-1), there are 2 rows, and in column N, there are 1 row.
     ! this is a gauss sum of 1 + 2 + 3 + ... + N-2 + N-1 + N
-    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum)
+    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum).
     ! if gauss_sum for a given i (series) is smaller than ij, we loop.
     ! when gauss_sum is greater than ij, we use the value of i for the present loop cycle
     ! and calculate the value of j from the present ij and previous gauss_sum values.
@@ -755,7 +797,7 @@ contains
 
     do series = 1,no
 
-       gauss_sum = (series**2 + series)/2
+       gauss_sum = int((series**2 + series)/2)
 
        if (gauss_sum .lt. ij) then
 
@@ -1836,7 +1878,7 @@ contains
     implicit none
 
     !> fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
@@ -1854,8 +1896,8 @@ contains
 
     ! init energy reals to be on the safe side.
     ! note: OccEnergyPT and VirtEnergyPT have been initialized in the e4 routine.
-    MyFragment%energies(12) = 0.0E0_realk
-    MyFragment%energies(13) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
 
     ! init temp energy
     ccsdpt_e5 = 0.0E0_realk
@@ -1875,19 +1917,19 @@ contains
                     end do ido_frag_singles
                     !$OMP END PARALLEL DO
 
-    MyFragment%energies(12) = 2.0E0_realk * ccsdpt_e5
+    MyFragment%energies(FRAGMODEL_OCCpT5) = 2.0E0_realk * ccsdpt_e5
 
     ! insert into occ. part. scheme part
-    MyFragment%energies(8) = MyFragment%energies(8) + MyFragment%energies(12)
+    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) + MyFragment%energies(FRAGMODEL_OCCpT5)
 
     ! *********************************
     ! do unoccupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
-    MyFragment%energies(9) = MyFragment%energies(9) + MyFragment%energies(12)
+    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) + MyFragment%energies(FRAGMODEL_OCCpT5)
     ! insert into virt_e5 part
-    MyFragment%energies(13) = MyFragment%energies(13) + MyFragment%energies(12)
+    MyFragment%energies(FRAGMODEL_VIRTpT5) = MyFragment%energies(FRAGMODEL_VIRTpT5) + MyFragment%energies(FRAGMODEL_OCCpT5)
 
     ! ******************************
     !   done with E[5] energy part
@@ -1904,11 +1946,11 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> fragment info
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
@@ -1926,8 +1968,8 @@ contains
 
     ! init energy reals to be on the safe side.
     ! note: OccEnergyPT and VirtEnergyPT have been initialized in the e4 routine.
-    PairFragment%energies(12) = 0.0E0_realk
-    PairFragment%energies(13) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
 
   ido_pair_singles: do i=1,nocc_eos
                     i_eos = PairFragment%idxo(i)
@@ -1953,7 +1995,7 @@ contains
                           end do
 
                           if (occ_in_frag_1 .and. virt_in_frag_2) then
-                             PairFragment%energies(12) = PairFragment%energies(12) &
+                             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
                                & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
                                & * ccsdpt_singles%val(a_eos,i_eos)
                           end if
@@ -1975,7 +2017,7 @@ contains
                           end do
                              
                           if (occ_in_frag_2 .and. virt_in_frag_1) then
-                             PairFragment%energies(12) = PairFragment%energies(12) &
+                             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
                                & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
                                & * ccsdpt_singles%val(a_eos,i_eos)
                           end if
@@ -2003,16 +2045,16 @@ contains
                     end do ido_pair_singles
 
     ! insert into occ. part. scheme part
-    PairFragment%energies(8) = PairFragment%energies(8) + PairFragment%energies(12)
+    PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
 
     ! *********************************
     ! do unoccupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
-    PairFragment%energies(9) = PairFragment%energies(9) + PairFragment%energies(12)
+    PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
     ! insert into virt_e5 part
-    PairFragment%energies(13) = PairFragment%energies(13) + PairFragment%energies(12)
+    PairFragment%energies(FRAGMODEL_VIRTpT5) = PairFragment%energies(FRAGMODEL_VIRTpT5) + PairFragment%energies(FRAGMODEL_OCCpT5)
 
     ! ******************************
     !   done with E[5] energy part
@@ -2030,7 +2072,7 @@ contains
     implicit none
 
     !> fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) doubles amplitudes
     type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> is this called from inside the ccsd(t) fragment optimization routine?
@@ -2059,10 +2101,10 @@ contains
     ! init energy reals to be on the safe side
     ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
     !       as this (e4) routine is called before the e5 routine
-    MyFragment%energies(8) = 0.0E0_realk
-    MyFragment%energies(9) = 0.0E0_realk
-    MyFragment%energies(10) = 0.0E0_realk
-    MyFragment%energies(11) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
 
     ! *******************************
     ! do occupied partitioning scheme
@@ -2133,10 +2175,10 @@ contains
                         !$OMP END PARALLEL DO
 
     !get total fourth--order energy contribution
-    MyFragment%energies(10) = energy_res_cou + energy_res_exc
+    MyFragment%energies(FRAGMODEL_OCCpT4) = energy_res_cou + energy_res_exc
 
     ! insert into occ. part. scheme part
-    MyFragment%energies(8) = MyFragment%energies(8) + MyFragment%energies(10)
+    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) + MyFragment%energies(FRAGMODEL_OCCpT4)
 
     ! *********************************
     ! do unoccupied partitioning scheme
@@ -2213,10 +2255,10 @@ contains
                         !$OMP END PARALLEL DO
 
     !get total fourth--order energy contribution
-    MyFragment%energies(11) = energy_res_cou + energy_res_exc
+    MyFragment%energies(FRAGMODEL_VIRTpT4) = energy_res_cou + energy_res_exc
 
     ! insert into virt. part. scheme part
-    MyFragment%energies(9) = MyFragment%energies(9) + MyFragment%energies(11)
+    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) + MyFragment%energies(FRAGMODEL_VIRTpT4)
 
     ! ******************************
     !   done with E[4] energy part
@@ -2249,11 +2291,11 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> pair fragment info
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
     type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     ! logical pointers for keeping hold of which pairs are to be handled
@@ -2288,10 +2330,10 @@ contains
     ! init energy reals to be on the safe side
     ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
     !       as this (e4) routine is called before the e5 routine
-    PairFragment%energies(8) = 0.0E0_realk
-    PairFragment%energies(9) = 0.0E0_realk
-    PairFragment%energies(10) = 0.0E0_realk
-    PairFragment%energies(11) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
 
     ! *******************************
     ! do occupied partitioning scheme
@@ -2352,10 +2394,10 @@ contains
                         !$OMP END PARALLEL DO
 
     ! get total fourth--order energy contribution
-    PairFragment%energies(10) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+    PairFragment%energies(FRAGMODEL_OCCpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
 
     ! insert into occ. part. scheme part
-    PairFragment%energies(8) = PairFragment%energies(8) + PairFragment%energies(10)
+    PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) + PairFragment%energies(FRAGMODEL_OCCpT4)
 
     ! *********************************
     ! do unoccupied partitioning scheme
@@ -2422,10 +2464,10 @@ contains
                         !$OMP END PARALLEL DO
 
     ! get total fourth--order energy contribution
-    PairFragment%energies(11) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+    PairFragment%energies(FRAGMODEL_VIRTpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
 
     ! insert into virt. part. scheme part
-    PairFragment%energies(9) = PairFragment%energies(9) + PairFragment%energies(11)
+    PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) + PairFragment%energies(FRAGMODEL_VIRTpT4)
 
     ! ******************************
     !   done with E[4] energy part
@@ -2454,7 +2496,7 @@ contains
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e4
     real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
@@ -2550,14 +2592,14 @@ contains
   !>         ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distance_table)
+  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: e4_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -2607,7 +2649,7 @@ contains
           if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
 
              write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
-                  & bohr_to_angstrom*distance_table(i,j), e4_matrix(i,j)
+                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
 
           end if
 
@@ -2617,206 +2659,6 @@ contains
 
   end subroutine print_e4_full
 
-  !> \brief: calculate ccsd correlation energy for full molecule calculation
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine ccsd_energy_full(nocc,nvirt,natoms,offset,ccsd_doubles,ccsd_singles,integral,occ_orbitals,&
-                           & eccsdpt_matrix_cou,eccsdpt_matrix_exc)
-
-    implicit none
-
-    !> ccsd doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
-    type(array4), intent(inout) :: ccsd_doubles, integral
-    !> ccsd singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles
-    !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
-    !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
-    !> etot
-    real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
-    !> integers
-    integer :: i,j,a,b,atomI,atomJ
-    !> energy reals
-    real(realk) :: energy_tmp_1, energy_tmp_2, energy_res_cou, energy_res_exc
-
-    ! *************************************************************
-    ! ************** do energy for full molecule ******************
-    ! *************************************************************
-
-    ! ***********************
-    !   do CCSD energy part
-    ! ***********************
-
-    energy_res_cou = 0.0E0_realk
-    energy_res_exc = 0.0E0_realk
-
-    ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
-    ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
-
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:eccsdpt_matrix_cou),&
-    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
-    do j=1,nocc
-    atomJ = occ_orbitals(j+offset)%CentralAtom
-       do i=1,nocc
-       atomI = occ_orbitals(i+offset)%CentralAtom
-
-          do b=1,nvirt
-             do a=1,nvirt
-
-                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
-                energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
-                eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
-                                        & + energy_tmp_1 + energy_tmp_2
-
-             end do
-          end do
-
-       end do
-    end do
-    !$OMP END PARALLEL DO
-
-    ! reorder from (a,b,i,j) to (a,b,j,i)
-    call array4_reorder(integral,[1,2,4,3])
-
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
-    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
-    do j=1,nocc
-    atomJ = occ_orbitals(j+offset)%CentralAtom
-       do i=1,nocc
-       atomI = occ_orbitals(i+offset)%CentralAtom
-
-          do b=1,nvirt
-             do a=1,nvirt
-
-                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
-                energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
-                eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) &
-                                        & + energy_tmp_1 + energy_tmp_2
-
-             end do
-          end do
-
-       end do
-    end do
-    !$OMP END PARALLEL DO
-
-    ! get total fourth--order energy contribution
-    eccsdpt_matrix_cou = 2.0E0_realk * eccsdpt_matrix_cou - eccsdpt_matrix_exc
-
-    ! for the pair fragment energy matrix,
-    ! we only consider pairs IJ where J>I; thus, move contributions
-
-    do AtomJ=1,natoms
-       do AtomI=AtomJ+1,natoms
-
-          eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
-                                              & + eccsdpt_matrix_cou(AtomJ,AtomI)
-       end do
-    end do
-
-
-    ! ******************************************************************
-    ! ************** done w/ energy for full molecule ******************
-    ! ******************************************************************
-
-  end subroutine ccsd_energy_full
-
-
-  !> \brief: print out CCSD fragment and pair interaction energies for full molecule calculation 
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine print_ccsd_full(natoms,ccsd_matrix,orbitals_assigned,distance_table)
-
-    implicit none
-
-    !> number of atoms in molecule
-    integer, intent(in) :: natoms
-    !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: ccsd_matrix, distance_table
-    !> vector handling how the orbitals are assigned?
-    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-    !> loop counters
-    integer :: i,j
-!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
-
-    ! print out fragment energies
-    if(.not.DECinfo%CCDhack)then
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,'(1X,a)') '*                         CCSD energies                       *'
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCSD)'
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,*)
-    else
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,'(1X,a)') '*                         CCD energies                        *'
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCD)'
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,*)
-    endif
-
-    do i=1,natoms
-
-       if (orbitals_assigned(i)) then
-
-          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, ccsd_matrix(i,i)
-
-       end if
-
-    end do
-
-    ! now print out pair interaction energies
-
-    if(.not.DECinfo%CCDhack)then
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCSD)                   '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-    else
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCD)                   '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-    endif
-
-    do j=1,natoms
-       do i=j+1,natoms
-
-          ! write increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
-                  & bohr_to_angstrom*distance_table(i,j), ccsd_matrix(i,j)
-
-          end if
-
-       end do
-    end do
-
-
-  end subroutine print_ccsd_full
 
 
   !> \brief: calculate E[5] contribution to ccsd(t) energy correction for full molecule calculation
@@ -2832,9 +2674,9 @@ contains
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> virtual orbital information
-    type(ccorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
+    type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e5
     real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix
@@ -2878,14 +2720,14 @@ contains
   !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distance_table)
+  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -2924,7 +2766,7 @@ contains
              else
 
                 write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-                     &bohr_to_angstrom*distance_table(a,i), e5_matrix(a,i)
+                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
 
              end if
 
@@ -2970,7 +2812,7 @@ contains
     real(realk) :: tcpu, twall
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
     type(array4) :: JAIB
-    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches
+    integer :: MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxActualDimGamma,nbatchesGamma
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
@@ -3014,6 +2856,7 @@ contains
 #else
 
     CBAI = array_init(dims,4)
+    call array_zero(CBAI)
 
 #endif
 
@@ -3037,7 +2880,7 @@ contains
     call mem_alloc(orb2batchGamma,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
          & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-         & nbatchesGamma,orb2BatchGamma)
+         & nbatchesGamma,orb2BatchGamma,'R')
 
     write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
@@ -3071,7 +2914,7 @@ contains
     call mem_alloc(orb2batchAlpha,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
          & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
-         & nbatchesAlpha,orb2BatchAlpha)
+         & nbatchesAlpha,orb2BatchAlpha,'R')
 
     write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
@@ -3104,14 +2947,14 @@ contains
     INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)='C' !C = Coulomb operator
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
-            & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+            & nbatchesAlpha,nbatchesGamma,INTSPEC)
 
     if (doscreen) then
 
        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,DECinfo%output,DECinfo%output)
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
 
     end if
 
@@ -3133,7 +2976,8 @@ contains
     ! init distribution
     distribution = 0
     myload = 0
-    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,batchdimAlpha,batchdimGamma,myload)
+    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
+    &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
 
 #endif
 
@@ -3165,8 +3009,8 @@ contains
 
 #endif
 
-          if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabRHS
-          if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+          if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+          if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
 
           ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
@@ -3174,7 +3018,7 @@ contains
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
-               & FullRHS,nbatches,INTSPEC)
+               & FullRHS,INTSPEC)
 
           ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
           m = nbasis*dimGamma*dimAlpha
@@ -3290,8 +3134,8 @@ contains
     if (infpar%lg_nodtot .gt. 1) then
 
        ! now, reduce o^2v^2 and o^3v integrals onto master
-       call lsmpi_local_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt)
-       call lsmpi_local_allreduce(JAIK%val,nocc,nvirt,nocc,nocc) 
+       call lsmpi_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt,infpar%lg_comm)
+       call lsmpi_allreduce(JAIK%val,nocc,nvirt,nocc,nocc, infpar%lg_comm) 
 
     end if
 
@@ -3401,7 +3245,7 @@ contains
     ! The smallest possible AO batch depends on the basis set
     ! (More precisely, if all batches are made as small as possible, then the
     !  call below determines the largest of these small batches).
-    call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch)
+    call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
   
   
     ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
@@ -3432,7 +3276,7 @@ contains
     ! The optimal gamma batch size is GammaOpt.
     ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
     ! and store this number in gammadim.
-    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,GammaOpt,gammadim)
+    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,GammaOpt,gammadim,'R')
   
   
     ! Largest possible alpha batch size
@@ -3458,7 +3302,7 @@ contains
     ! The optimal alpha batch size is AlphaOpt.
     ! We now find the maximum possible alpha batch size smaller than or equal to AlphaOpt
     ! and store this number in alphadim.
-    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim)
+    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
   
   
     ! Print out and sanity check
@@ -3536,25 +3380,32 @@ contains
     !> Tot size of temporary arrays (in GB)
     real(realk), intent(inout) :: mem
     real(realk) :: GB
-  
+    integer(kind=long) :: tmpI
     GB = 1.000E-9_realk ! 1 GB
     ! Array sizes needed in get_CCSDpT_integrals are checked and the largest one is found
   
     ! Tmp array 1 (five candidates)
     size1 = i8*alphadim*gammadim*nbasis*nbasis
-    size1 = max(size1,i8*nvirt**2*gammadim*alphadim)
-    size1 = max(size1,i8*nvirt*nocc*gammadim*alphadim)
-    size1 = max(size1,i8*nvirt*nocc**2*alphadim)
-    size1 = max(size1,i8*nvirt**3)
+    tmpI = i8*nvirt**2*gammadim*alphadim
+    size1 = max(size1,tmpI)
+    tmpI = i8*nvirt*nocc*gammadim*alphadim
+    size1 = max(size1,tmpI)
+    tmpI = i8*nvirt*nocc**2*alphadim
+    size1 = max(size1,tmpI)
+    tmpI = i8*nvirt**3
+    size1 = max(size1,tmpI)
   
     ! tmp array 2 (three candidates)
     size2 = i8*alphadim*gammadim*nbasis*nvirt
-    size2 = max(size2,alphadim*gammadim*nvirt*nocc)
-    size2 = max(size2,i8*nvirt**3)
+    tmpI = alphadim*gammadim*nvirt*nocc
+    size2 = max(size2,tmpI)
+    tmpI = i8*nvirt**3
+    size2 = max(size2,tmpI)
   
     ! Tmp array3 (two candidates)
     size3 = i8*alphadim*gammadim*nvirt**2
-    size3 = max(size3,i8*alphadim*nvirt**3)
+    tmpI = i8*alphadim*nvirt**3
+    size3 = max(size3,tmpI)
   
     ! Size = size1+size2+size3,  convert to GB
     mem = realk*GB*(size1+size2+size3)
@@ -3598,13 +3449,13 @@ end module ccsdpt_module
 
     implicit none
     integer :: nocc, nvirt,nbasis
-    real(realk), pointer :: ppfock(:,:), qqfock(:,:), ypo(:,:), ypv(:,:)
+    real(realk), pointer :: ppfock(:,:), qqfock(:,:), Co(:,:), Cv(:,:)
     type(array2) :: ccsdpt_t1
     type(array4) :: ccsd_t2, ccsdpt_t2
     type(lsitem) :: mylsitem
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,ccsd_t2%val,mylsitem)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%val,mylsitem)
 
     ! init and receive ppfock
     call mem_alloc(ppfock,nocc,nocc)
@@ -3614,13 +3465,13 @@ end module ccsdpt_module
     call mem_alloc(qqfock,nvirt,nvirt)
     call ls_mpibcast(qqfock,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
-    ! init and receive ypo
-    call mem_alloc(ypo,nbasis,nocc)
-    call ls_mpibcast(ypo,nbasis,nocc,infpar%master,infpar%lg_comm)
+    ! init and receive Co
+    call mem_alloc(Co,nbasis,nocc)
+    call ls_mpibcast(Co,nbasis,nocc,infpar%master,infpar%lg_comm)
 
-    ! init and receive ypv
-    call mem_alloc(ypv,nbasis,nvirt)
-    call ls_mpibcast(ypv,nbasis,nvirt,infpar%master,infpar%lg_comm)
+    ! init and receive Cv
+    call mem_alloc(Cv,nbasis,nvirt)
+    call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
 
     ! init and receive ccsd_doubles array4 structure
     ccsd_t2 = array4_init([nvirt,nocc,nvirt,nocc])
@@ -3631,7 +3482,7 @@ end module ccsdpt_module
     ccsdpt_t2 = array4_init_standard([nvirt,nvirt,nocc,nocc])
 
     ! now enter the ccsd(t) driver routine
-    call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,mylsitem,ccsd_t2,&
+    call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_t2,&
                          & ccsdpt_t1,ccsdpt_t2)
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
@@ -3643,8 +3494,8 @@ end module ccsdpt_module
     call ls_free(mylsitem)
     call mem_dealloc(ppfock)
     call mem_dealloc(qqfock)
-    call mem_dealloc(ypo)
-    call mem_dealloc(ypv)
+    call mem_dealloc(Co)
+    call mem_dealloc(Cv)
 
   end subroutine ccsdpt_slave
 

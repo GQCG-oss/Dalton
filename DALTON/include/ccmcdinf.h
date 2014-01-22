@@ -13,7 +13,7 @@
       COMMON /INFMCDCC/
      *        IAMCDOP(MXMCDOP),IBMCDOP(MXMCDOP),ICMCDOP(MXMCDOP),
      *        LAMCDRX(MXMCDOP),LBMCDRX(MXMCDOP),LCMCDRX(MXMCDOP),
-     *                 NMCDST, IPRMCD, NMCDOPER, NMCDSELX(8), 
+     *                 NMCDST, IPRMCD, NMCDOPER, NMCDSELX(8),
      *                 IMCDSELX(8),
      *                 IMCDSTSY(MXMCDST),IMCDSTNR(MXMCDST),
-     *                 SELMCDST,LUSEPL1,LUSE2N1 
+     *                 SELMCDST,LUSEPL1,LUSE2N1

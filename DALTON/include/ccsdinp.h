@@ -1,4 +1,4 @@
-      LOGICAL SKIP,   DIRECT, DIRGRD, CCRSTR, 
+      LOGICAL SKIP,   DIRECT, DIRGRD, CCRSTR,
      &        FROIMP, FROEXP, NOCCIT,
      &        CCSAVE, STOLD,  JACEXP, LHTR,
      &        DEBUG,  CCSTST, ANAAOD,
@@ -41,7 +41,7 @@ CKeinSPASmehr
      &                  rCCD, drCCD, SOSEX, rTCCD,
      &                  CCSDT,CCR12,MTRIP, CHOPT, DCPT2
 
-C For the RPA models we can calcualte several energies using the 
+C For the RPA models we can calcualte several energies using the
 C same set of amplitudes -- this temporary variable is used to store
 C one of the energies, the usual variables are reserved for use with
 C the choice that could be used in subsequent response or gradient

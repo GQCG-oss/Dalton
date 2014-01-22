@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -595,9 +595,10 @@ chj   END IF
       IF (QMMM)   WRITE (LUW4,1017) ESOLT
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
-         IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
-         IF (QM3) WRITE (LUPRI,1017) EQM3
-         IF (QMMM) WRITE (LUPRI,1017) ESOLT
+         IF (SOLVNT) WRITE (LUPRI,1016) ESOLT
+         IF (PCM)    WRITE (LUPRI,1019) ESOLT
+         IF (QM3)    WRITE (LUPRI,1017) EQM3
+         IF (QMMM)   WRITE (LUPRI,1017) ESOLT
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
  1005 FORMAT(/' Total MCSCF energy       :',F30.15,T54,
@@ -2869,23 +2870,6 @@ Ckr
      &              1,WRK(KWRK2),LWRK2)
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
-      END IF
-
-C Write qm3 solvent part of the Fock matrix to interface file
-
-      IF (QM3) THEN
-         KTMAT = KWRK1
-         KFSOLAO = KTMAT + NNORBT
-         KUCMO = KFSOLAO + NNBASX
-         KWRK2 = KUCMO + NORBT*NBAST
-         LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WR_SIRIFC-QM3',KWRK2,LFREE)
-         CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IPRSOL)
-         CALL UPKCMO(CMO,WRK(KUCMO))
-         CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
-     &             NBAST,NORBT)
-         WRITE (LUSIFC) LAB123,TABLE(7)
-         CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
       END IF
 
 C ****** edh: 24/11/2011 ******

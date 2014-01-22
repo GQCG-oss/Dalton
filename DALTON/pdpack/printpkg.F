@@ -1,6 +1,6 @@
 C FILE    : printpkg.F
 C
-C...   Dalton, Release DALTON2011, pdpack/printpkg.F
+C...   Dalton, Release DALTON2013, pdpack/printpkg.F
 C...
 C...   These routines are in the public domain and can be
 C...   used freely in other programs.
