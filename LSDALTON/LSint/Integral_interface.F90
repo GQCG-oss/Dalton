@@ -2466,9 +2466,7 @@ IF (dogeoderiv) THEN
      call lsquit('Error in II_get_4center_eri_diff - only first order geometrical derivative integrals implemented',lupri)
   ENDIF
 
-  !Simen Hack - GeoDerivSpec currently not working with family-type basis sets
-  nofamily = setting%scheme%nofamily
-  setting%scheme%nofamily = .TRUE.
+  IF (.NOT.setting%scheme%nofamily) CALL LSQUIT('II_get_4center_eri_diff only working with .NOFAMILY keyword option',-1)
 ELSE
   intSpec = RegularSpec
 ENDIF
@@ -2520,7 +2518,6 @@ ELSE
        call mem_dealloc(integrals)
      ENDIF
     ENDIF
-    setting%scheme%nofamily = nofamily
   ENDIF
   IF (dirac_format) THEN
    DO n=1,dim5

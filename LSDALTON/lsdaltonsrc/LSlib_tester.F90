@@ -8,12 +8,12 @@ Integer :: lupri,luerr
 luerr          = 0
 lupri          = 0
 ! setup the calculation 
-call lsinit_all(OnMaster,lupri,luerr,t1,t2)
+call lslib_init(OnMaster,lupri,luerr,t1,t2)
 
 IF(OnMaster) call LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
 
 ! free everything take time and close the files
-call lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
+call lslib_free(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
 
 CONTAINS
 
@@ -54,7 +54,6 @@ SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
 CALL LSlib_get_dimensions(nbast,natoms,nelectrons,lupri,luerr)
 write(lupri,'(A,I8,A,I8,A,I8)') 'Starting lslib_test with nbast =',nbast,', natoms =', natoms,&
      &                          ' and nelectrons =', nelectrons
-
 
 !* Allocations
 nullify(h1)
@@ -409,6 +408,7 @@ write(lupri,'(A80,2F18.10)') 'Exchange AO-matrix matrix from eri (Dirac): RMS an
 !*****************************************************************************
 !******                             nn gradient
 !*****************************************************************************
+
 
 call ls_dzero(TempGrad,natoms*3)
 CALL LSlib_get_nn_gradient(TempGrad(1,1,1),natoms,lupri,luerr)
