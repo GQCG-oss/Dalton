@@ -266,7 +266,7 @@ DO
       READWORD = .TRUE.
       CALL INTEGRAL_INPUT(config%integral,readword,word,lucmd,lupri)
    ENDIF
-   IF ((WORD(1:10) == '**WAVE FUN').OR.(WORD(1:10) == '**WAVEFUNC')) THEN
+   IF (WORD(1:6) == '**WAVE') THEN
       READWORD=.TRUE.
       DO   
          IF(READWORD) THEN
