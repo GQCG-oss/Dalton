@@ -872,9 +872,9 @@ C            FC2AM  (LUC2)  doubles part
 C            FC12AM (LUC12) R12 doubles part
 C
       IMPLICIT NONE
-C#include <implicit.h>
+C#include "implicit.h"
 #include "priunit.h"
-C#include <iratdef.h>
+C#include "iratdef.h"
 #include "cclr.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
@@ -931,9 +931,9 @@ C                doubles file (name: FC2AM,  nr: LUC2)
 C            R12 doubles file (name: FC12AM, nr: LUC12)
 C
       IMPLICIT NONE
-C#include <implicit.h>
+C#include "implicit.h"
 #include "priunit.h"
-C#include <iratdef.h>
+C#include "iratdef.h"
 #include "cclr.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
@@ -990,8 +990,8 @@ C                Open files for linear solver.
 C                Has to be 8 character long.
 C
       IMPLICIT NONE
-C#include <implicit.h>
-C#include <iratdef.h>
+C#include "implicit.h"
+C#include "iratdef.h"
 #include "ccsdinp.h"
 Cholesky
 #include "maxorb.h"
@@ -1063,8 +1063,8 @@ C     tbp: use fortran i/o [notably, gpopen/gpclose] for
 C          Cholesky....
 C
       IMPLICIT NONE
-C#include <implicit.h>
-C#include <iratdef.h>
+C#include "implicit.h"
+C#include "iratdef.h"
 #include "ccsdinp.h"
 Cholesky
 #include "maxorb.h"

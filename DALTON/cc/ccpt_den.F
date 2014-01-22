@@ -80,7 +80,7 @@ C
 #include "eribuf.h"
 #include "ccfro.h"
 CTEST
-C#include <ccfop.h>
+C#include "ccfop.h"
 
       CHARACTER MODEL*10
       CHARACTER NAME1*8
@@ -1653,7 +1653,7 @@ C
       DIMENSION D1PTIA(*)
       LOGICAL LTSTEN
 #include "ccorb.h"
-CCN #include <infind.h> not compatible with R12!
+CCN #include "infind.h" not compatible with R12!
 #include "ccisao.h"
 #include "r12int.h"
 #include "inftap.h"

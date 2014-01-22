@@ -23,7 +23,7 @@ C
 #include "priunit.h"
 C
 CSPAS:15/03-2006: merge with Dalton-2.0  
-C#include <cbilrs.h>
+C#include "cbilrs.h"
 CKeinSPASmehr
 #include "cbiexc.h"
 #include "ccsdsym.h"
@@ -34,11 +34,11 @@ CKeinSPASmehr
 #include "maxorb.h"
 #include "mxcent.h"
 CSPAS:10/11-2003: is merged with maxorb.h
-C#include <mxorb.h>
+C#include "mxorb.h"
 CKeinSPASmehr
 #include "nuclei.h"
 CSPAS:10/11-2003: I cannot find the corresponding include file
-C#include <nuctap.h>
+C#include "nuctap.h"
 CKeinSPASmehr
 #include "soppinf.h"
 #include "symmet.h"

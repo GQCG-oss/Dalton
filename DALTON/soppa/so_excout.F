@@ -22,7 +22,7 @@ C
 #include "ccorb.h"
 #include "cbiexc.h"
 CSPAS:15/03-2006: merge with Dalton-2.0  
-C#include <cbilrs.h>
+C#include "cbilrs.h"
 CKeinSPASmehr
 #include "soppinf.h"
 #include "maxorb.h"

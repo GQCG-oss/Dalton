@@ -316,7 +316,7 @@ C     Original source code provided by Kim Baldridge at SDSC. Punches
 C     molecular orbital coefficients
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
-c#include <implicit.h>
+c#include "implicit.h"
 C
 c      DIMENSION V(NDIM,M)
 C

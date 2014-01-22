@@ -117,7 +117,7 @@ C
 #include "primit.h"
 #include "pcmdef.h"
 #include "pcm.h"
-Clf#include <pcmlog.h>
+Clf#include "pcmlog.h"
 #include "symmet.h"
 #include "ecpinf.h"
 #include "expopt.h"
