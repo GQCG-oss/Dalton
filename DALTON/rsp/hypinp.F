@@ -543,7 +543,7 @@ C
      &         ' Polarizable Embedding response calculation',
      &         ' Environment is modeled using'//
      &            ' the polarizable embedding scheme (PE library)'
-         ENDIFf
+         ENDIF
 
          IF (QRSHG) THEN
             WRITE (LUPRI,'(A,L2)')
@@ -1011,12 +1011,12 @@ C
           WRITE(LUPRI,'(/A)') ' QM/MM response calculation'
          END IF
 
-         if (peqm) then
-            write(lupri,'(/A/A)')
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(/A/A)')
      &         ' Polarizable Embedding response calculation',
      &         ' Environment is modeled using'//
      &            ' the polarizable embedding scheme (PE library)'
-         end if
+         END IF
 
          IF (MCDCAL) THEN
             WRITE (LUPRI,'(A,L1)')
@@ -1049,13 +1049,6 @@ C
      *      ,MAXITO
          IF (E3TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from E3 and S3 terms.'
-<<<<<<< HEAD
-=======
-         IF (PEQM) THEN
-            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
-     &                  ' the polarizable embedding scheme (PE library)'
-         END IF
->>>>>>> origin/master
       END IF
 C
 C *** END OF SMOINP

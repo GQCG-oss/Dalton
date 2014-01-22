@@ -1755,7 +1755,7 @@ C
                WRITE (LUPRI,'(//A/A/A)') 'RSPPP-ERROR: Full '//
      &     'embedding model SOPPA response is not implemented.',
      &     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))',
-     &     'For SOPPA/RPA, use .SOPRPA under **RESPONSE',
+     &     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
                CALL QUIT(
      &     'Full embedding SOPPA is not implemented, see output')
          END IF
