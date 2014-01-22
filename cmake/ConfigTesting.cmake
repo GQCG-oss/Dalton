@@ -14,6 +14,9 @@ set(DART_TESTING_TIMEOUT
 
 include(TestsDALTON)
 include(TestsLSDALTON)
+if(ENABLE_OPENRSP)
+    include(TestsOpenRSP)
+endif()
 
 # radovan: does not work, suspect a bug in CMake 2.10 (works with 2.8)
 #configure_file(
