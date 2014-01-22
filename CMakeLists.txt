@@ -101,6 +101,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 
 # set definitions
 include(Definitions)
+if(ENABLE_OPENRSP)
+    include(DefinitionsOpenRSP)
+endif()
 
 # forward CPP directly to the code
 set(CPP)
