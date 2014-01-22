@@ -3,7 +3,7 @@ C#######################################################################
 C
 C Copyright Nov 1990 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 10)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
@@ -11,9 +11,9 @@ C
       LOGICAL ALLOPT
 C
 #include "stex.h"
-#include <inftap.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "inftap.h"
+#include "inforb.h"
+#include "priunit.h"
 C
       DATA TABLE /'.XAS   ','.XES   ','.SHAKE ','.PRINT ','.OPEN S',    ! 5
      &            '.COEFFI','.AO    ','.AUGER ','.AUGERT','.XXXXXX'/    !10
@@ -111,7 +111,7 @@ C
       END
 C#######################################################################
       SUBROUTINE STXCTL(WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
 C
 C  Driver routine for static exchange calculations
@@ -120,9 +120,9 @@ C Global
 C    NCMOT
 C
 #include "stex.h"
-#include <inforb.h>
-#include <infpri.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "infpri.h"
+#include "priunit.h"
 C
 C Local
 C
@@ -193,7 +193,7 @@ C
 C
 C#######################################################################
       SUBROUTINE STXAUG(CMO,WORK,KFREE,LFREE)
-#include <implicit.h>
+#include "implicit.h"
 C
 C   Input: KFREE, LFREE  start and length of free workspace
 C
@@ -205,10 +205,10 @@ C
       INTEGER KFREE, LFREE
       DIMENSION CMO(*), WORK(*)
 C
-#include <inforb.h>
-#include <inftap.h>      
+#include "inforb.h"
+#include "inftap.h"      
 #include "stex.h"
-#include <priunit.h>
+#include "priunit.h"
 C
       CHARACTER*8 FILE 
 C
@@ -296,7 +296,7 @@ C
       END
 C#######################################################################
       SUBROUTINE AUGORB(FILE,EMC,ENUC,CMO,WORK,KFREE,LFREE,icall)
-#include <implicit.h>
+#include "implicit.h"
 C
 C   Input: KFREE, LFREE  start and length of free workspace
 C
@@ -313,12 +313,12 @@ C  Global variables
 C  LUSIFC, LBSIFC
 C
 #include "stex.h"
-#include <inftap.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <priunit.h>
+#include "inftap.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "priunit.h"
 C
 C  Local variables
 C
@@ -484,7 +484,7 @@ C Input:
 C  CMO, MO orbital coefficients (symmetry blocked)
 C  IOUT, output file unit
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*)
 C
 C Used from common blocks:
@@ -492,12 +492,12 @@ C   INFINP : CENT,TYPE,SUPSYM,?
 C   INFORB : NSYM,...
 C   INFIND : ISSMO(),
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "priunit.h"
 C
       rewind iout
       write(iout) nsym
@@ -528,10 +528,10 @@ C
       END
 C#######################################################################
       SUBROUTINE APPOCC(CMO,EMC,ENUC,LUSTEX,WORK,KFREE,LFREE)
-#include <implicit.h>
+#include "implicit.h"
       REAL*8 CMO(*), WORK(*)
       INTEGER KFREE,LFREE
-#include <inforb.h>
+#include "inforb.h"
 #include "stex.h"
       CALL QENTER('APPOCC')
 C
@@ -580,16 +580,16 @@ C
       END
 C#######################################################################
       SUBROUTINE APPENE(FILE,LUSTEX,WORK,KFREE,LFREE)
-#include <implicit.h>
+#include "implicit.h"
       REAL*8 WORK(*)
       INTEGER LUSTEX,KFREE,LFREE
       CHARACTER FILE*(*)
-#include <inforb.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "inftap.h"
 #include "stex.h"
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
       DIMENSION MULD2H_(8,8) ,
      &   NFRO_(8), NRHF_(8), NISH_(8), NASH_(8), NORB_(8), NBAS_(8)
       LOGICAL FNDLAB, DEBUG
@@ -672,10 +672,10 @@ CVC     &       'Eigenvalues to LUSTEX from file '//FILE)
       END
 C#######################################################################
       SUBROUTINE MOVLAP(LUSTEX,WORK,KFREE,LFREE)
-#include <implicit.h>
+#include "implicit.h"
       REAL*8 WORK(*)
       INTEGER LUSTEX,KFREE,LFREE
-#include <inforb.h>
+#include "inforb.h"
 #include "stex.h"
       CALL QENTER('MOVLAP')
       IF (STEXMO) THEN
@@ -773,7 +773,7 @@ C
       END
 C#######################################################################
       SUBROUTINE STXDEN(CMO,DEN,WORK,KFREE,LFREE)
-#include <implicit.h>
+#include "implicit.h"
 C
 C Build modified densities for stex Hamiltonian
 C
@@ -786,9 +786,9 @@ C
 C Global
 C
 #include "stex.h"
-#include <inforb.h>
-#include <infpri.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "infpri.h"
+#include "priunit.h"
 C
 C Dimensions
 C
@@ -883,7 +883,7 @@ C
       END
 C#######################################################################
       SUBROUTINE STXFCK(DEN,FSTX,WORK,KFREE,LFREE)
-#include <implicit.h>
+#include "implicit.h"
 C
 C Purpose: given Coulomb and exchange density matrices calculate 
 C STEX Fock matrix
@@ -899,9 +899,9 @@ C
 C Global
 C
 #include "stex.h"
-#include <infpri.h>
-#include <inforb.h>
-#include <gnrinf.h>
+#include "infpri.h"
+#include "inforb.h"
+#include "gnrinf.h"
 C
 C Local
 C
@@ -969,15 +969,15 @@ C
       END
 C#######################################################################
       SUBROUTINE APPFCK(LU,F,WORK,KFREE,LFREE)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LU, KFREE, LFREE
       REAL*8 F(*), WORK(*)
 #include "stex.h"
-#include <inforb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <codata.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "codata.h"
+#include "priunit.h"
       CHARACTER*8 FILE
       INTEGER NSTEXF,ICALC,IHOLE,IHOL1,ISPIN,ICOUP,ICH
       LOGICAL FNDLAB,DEBUG
@@ -1175,7 +1175,7 @@ C#######################################################################
       END
 C#######################################################################
       BLOCK DATA STXBD
-#include <implicit.h>
+#include "implicit.h"
 #include "stex.h"
       DATA DOSTEX/.FALSE./
       END
@@ -1193,16 +1193,16 @@ C     to be square matrices in full dimension without symmetry reduction
 C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.50D00)
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST,*),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 #include "stex.h"
       LOGICAL DEBUG
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DEBUG=IPRSTX.GT.10
       IF (DEBUG) THEN
@@ -1260,14 +1260,14 @@ C     Symmetry is implicitly taken into account by the fact that
 C     only non-zero integrals are considered.  The symmetry of DMAT
 C     is not taken into account.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.50D00, DP25 = 0.25D0)
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO 100 INT = 1, LENGTH
          DINT = BUF(INT)
@@ -1295,18 +1295,18 @@ C        ... DMAT(i,j) = DMAT(j,i) has been used above
       END
 C#######################################################################
       SUBROUTINE APPPRP(LUSTXF,WORK,KFREE,LFREE)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LUSTXF, KFREE, LFREE
       REAL*8 WORK(*)
-#include <inftap.h>
-#include <inforb.h>
-#include <dummy.h>
+#include "inftap.h"
+#include "inforb.h"
+#include "dummy.h"
 #include "stex.h"
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <dipole.h>
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "dipole.h"
       LOGICAL FNDLB2,DEBUG
       EXTERNAL FNDLB2
       CHARACTER*7 RTNLBL(2)
@@ -1438,8 +1438,8 @@ C#######################################################################
       END
 C#######################################################################
       SUBROUTINE OUTFUL(A,M,N,TEXT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(M,N)
       CHARACTER TEXT*(*)
       CALL HEADER(TEXT,LUPRI)
@@ -1458,19 +1458,19 @@ C  else
 C     Overwrite 'LABEL3  ' on LUIT1
 C  end if
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 LABEL3
       DIMENSION CMO(NCMOT)
       LOGICAL   REWIT1
 C
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C  INFORB : NCMOT
 C  INFTAP : LUIT1
 C
-#include <inforb.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "inftap.h"
 C
       LOGICAL FNDLAB
       CHARACTER*8 MOLBL(3),LABTBL(2)
@@ -1506,12 +1506,12 @@ C
       END
 C#######################################################################
       SUBROUTINE LTRA(LABEL,CMOCC,WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       REAL*8  CMOCC(*), WORK(*)
       INTEGER  LWORK
       CHARACTER*8 LABEL
-#include <inftap.h>
-#include <inforb.h>
+#include "inftap.h"
+#include "inforb.h"
 #include "stex.h"
       LOGICAL FNDLAB, DEBUG
       EXTERNAL FNDLAB
@@ -1601,12 +1601,12 @@ C
       END
 C#######################################################################
       SUBROUTINE PRPTRA(LABEL,PRPTR,PRPSYM,WORK,LWORK,ANTI)
-#include <implicit.h>
+#include "implicit.h"
       REAL*8  PRPTR(*), WORK(*)
       INTEGER  LWORK, PRPSYM
       CHARACTER*8 LABEL
-#include <inftap.h>
-#include <inforb.h>
+#include "inftap.h"
+#include "inforb.h"
 #include "stex.h"
       LOGICAL FNDLAB
       EXTERNAL FNDLAB
@@ -1676,10 +1676,10 @@ C
 C#######################################################################
       SUBROUTINE NT2NX(ANT,ANX)
       REAL*8 ANT(*), ANX(*)
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
       CALL QENTER('NT2NX')
       CALL DCOPY(NNBAS(1),ANT,1,ANX,1)
       DO ISYM=2,NSYM
@@ -1695,7 +1695,7 @@ C#######################################################################
       END
 C#######################################################################
       SUBROUTINE GETCMX(NCOL,A,NDIM,NROW,VAL)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER NCOL,NROW,NDIM
       REAL*8 A(NDIM,*), VAL
       NROW=IDAMAX(NDIM,A(1,NCOL),1)
@@ -1703,7 +1703,7 @@ C#######################################################################
       END
 C#######################################################################
       SUBROUTINE UAUG(CMO1,NAO1,NMO1,CMO,NAO,NMO,S,WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO1(NAO1,NMO1), CMO(NAO,NMO), WORK(LWORK), S(NAO,NAO)
       LOGICAL DEBUG
       data debug/.false./
@@ -1868,7 +1868,7 @@ C
       END
 C#######################################################################
       SUBROUTINE UAUGOLD(CMO1,NAO1,NMO1,CMO,NAO,NMO,S,WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO1(NAO1,NMO1), CMO(NAO,NMO), WORK(LWORK), S(NAO,NAO)
       LOGICAL DEBUG
       data debug/.true./
@@ -2181,7 +2181,7 @@ CVC         CALL QUIT('MATFUN: '//FUNC//' NOT IMPLEMENTED')
       END
 C#######################################################################
       SUBROUTINE TRANSP(N,M,A,AT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(N,M), AT(M,N)
 C
 C     AT = TRANSPOSE(A)
@@ -2194,18 +2194,18 @@ C
       END
 C#######################################################################
       SUBROUTINE AUGCTL(WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
 cvc
       dimension over(2485),sss(100),vgs(4900)
 cvc
-#include <inforb.h>
+#include "inforb.h"
 #include "stex.h"
-#include <inftap.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <priunit.h>
+#include "inftap.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "priunit.h"
       CHARACTER*8 STRCOU, STREXC, LABEL
       INTEGER IJLIST(2,NOPMAX)
       LOGICAL FNDLAB
@@ -2521,10 +2521,10 @@ C B(IP,JQ) = (PI|QJ) - 0.5*(PJ|QI)
 C
 C Note: the factor -0.5 is included in the exchange matrices
 C
-#include <implicit.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "infvar.h"
 #include "stex.h"
       DIMENSION CMO(NCMOT), A(NWOPT,NWOPT), B(NWOPT,NWOPT)
       DIMENSION VWMAT(NBAST,NBAST,2,NWOPT), VWMO(NORBT,NORBT,2)
@@ -2601,12 +2601,12 @@ C
       END
 C#######################################################################
       SUBROUTINE GENTRA(LABEL,PRPAO,PRPMO,PRPSYM,WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       REAL*8  PRPAO(*), PRPMO(*), WORK(*)
       INTEGER  LWORK, PRPSYM
       CHARACTER*8 LABEL
-#include <inftap.h>
-#include <inforb.h>
+#include "inftap.h"
+#include "inforb.h"
 #include "stex.h"
       LOGICAL FNDLAB
       EXTERNAL FNDLAB

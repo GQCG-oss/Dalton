@@ -725,7 +725,7 @@ Clf*     $                 + FPI * (DELTAIJ - D(I,J)) * S(J,K) / A(J)
       END
 CC/* Deck V2EQMV1 */
 C      SUBROUTINE V2EQMV1(V2,V1,AMAT,N)
-C#include <implicit.h>
+C#include "implicit.h"
 C      DIMENSION V1(*),V2(*),AMAT(N,*)
 C      CALL DZERO (V2,N)
 C      DO J = 1, N
@@ -904,20 +904,20 @@ C  TODO: symmetrized version for QM part
 C        get rid of PCMCOORD and PCMCHG
 C
       SUBROUTINE COMP_NUC_POT_CAV(POTEN, DO_QMPOT, DO_MMPOT, DO_DIPOT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D100=100.0D0)
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <dipole.h>
-#include <dorps.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <qm3.h>
-#include <gnrinf.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "dipole.h"
+#include "dorps.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "qm3.h"
+#include "gnrinf.h"
+#include "ibtfun.h"
 
       DIMENSION POTEN(*)
       LOGICAL DO_QMPOT, DO_MMPOT, DO_DIPOT
@@ -979,20 +979,20 @@ C Arnfinn ->
 C As above, but coordinates and induced dipole moments are given as arguments. 
 C To calculate V^{[1]} from \mu^{[1]} (for instance).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D100=100.0D0)
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <dipole.h>
-#include <dorps.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <qm3.h>
-#include <gnrinf.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "dipole.h"
+#include "dorps.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "qm3.h"
+#include "gnrinf.h"
+#include "ibtfun.h"
 
       DIMENSION POTEN(*),CMMCOR(3,*),CMMDIP(3,*)
       LOGICAL DO_QMPOT, DO_MMPOT, DO_DIPOT
@@ -1054,11 +1054,11 @@ C /* Deck pcm_comp_chg */
 C
       SUBROUTINE PCM_COMP_CHG(NOSIM, NEQ, WRK, LWRK)
 
-#include <implicit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <ibtfun.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "ibtfun.h"
 
       LOGICAL NEQ
 
@@ -1104,11 +1104,11 @@ C
 C Arnfinn, April 2009, Odense
 C Calculate charges on tesseraes from potentials on tesseraes.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <ibtfun.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "ibtfun.h"
       
       INTEGER DO_FLAG
       DIMENSION POTEN(*), CHG(*), WRK(LWRK)
@@ -1317,10 +1317,10 @@ C /* Deck pcm_init_qvflags */
       SUBROUTINE PCM_INIT_QVFLAGS(WORD)
 C     Sets the pcm flags, which controls from what the potential
 C     and charges on the tesseraes are calculated.
-#include <implicit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
 
       CHARACTER*3 WORD
 
