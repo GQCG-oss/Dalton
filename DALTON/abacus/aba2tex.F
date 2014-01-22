@@ -514,7 +514,7 @@ cfrj-end
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
      &                  RETUR,IPRINT,IPRTYP,
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                  DUMMY)
+     &                  DUMMY,LDUMMY)
             HFXMU = HFXM0
             IF (HFXMU.NE.D0) THEN
 
@@ -537,7 +537,7 @@ cfrj-end
      &              ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
      &              RETUR,IPRINT,IPRTYP,
      &              IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &              DUMMY)
+     &              DUMMY,LDUMMY)
 cfrj-st camb3lyp looses the 1e-contribution during the second call to pardrv, reason unknown, kludge fix by zeroing array above and manually adding it again
                CALL DAXPY(MXPRIM,1.0D0,ALPGR1,1,ALPGRD,1)
 cfrj-end

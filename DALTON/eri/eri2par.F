@@ -27,7 +27,7 @@ C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
      &                  HESSEE,LWORK,ITYPE,MAXDIF,IATOM,NODV,NOPV,
      &                  NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
-     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP)
+     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP,GENCTR)
 C
 #include "implicit.h"
 #include "priunit.h"
