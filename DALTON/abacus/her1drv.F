@@ -496,8 +496,18 @@ C
             CALL GETESG_DENMAT_FOCMAT(WORK(KDSO),WORK(KFSO),NBAST,
      &                                NNBAST)
          ELSE
-           CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,IPRINT,
-     &                 NODC,NODV)
+Cajt Check whether written to files DSOTRI FSOTRI and can be read from there
+Cajt       CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,IPRINT,
+Cajt     &             NODC,NODV)
+           CALL GPINQ('DSOTRI','EXIST',FOUND)
+           IF (FOUND) CALL GPINQ('FSOTRI','EXIST',FOUND)
+           IF (FOUND) THEN
+              CALL READ_DSOFSO(WORK(KDSO),WORK(KFSO))
+           ELSE
+              CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,IPRINT,
+     &                    NODC,NODV)
+           END IF
+Cajt
          END IF
          CALL DSYM1(DENMAT,FOCMAT,WORK(KDSO),WORK(KFSO),.TRUE.,
      &              NBAST,IPRINT)
@@ -973,6 +983,46 @@ C
  1000 FORMAT (//,2X,'***************************************',
      *         /,2X,'********** ISHELA/B =',I3,',',I3,' **********',
      *         /,2X,'***************************************',/)
+      END
+C  /* Deck write_dsofso */
+      SUBROUTINE WRITE_DSOFSO(DSO,FSO)
+#include <implicit.h>
+#include <inforb.h>
+#include <dummy.h>
+      DIMENSION DSO(NNBAST), FSO(NNBAST)
+C
+      IUNIT = -1
+      CALL GPOPEN(IUNIT,'DSOTRI','UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE(IUNIT) (DSO(I), I=1,NNBAST)
+      CALL GPCLOSE(IUNIT,'KEEP')
+C
+      IUNIT = -1
+      CALL GPOPEN(IUNIT,'FSOTRI','UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE(IUNIT) (FSO(I), I=1,NNBAST)
+      CALL GPCLOSE(IUNIT,'KEEP')
+      RETURN
+      END
+C  /* Deck read_dsofso */
+      SUBROUTINE READ_DSOFSO(DSO,FSO)
+#include <implicit.h>
+#include <inforb.h>
+#include <dummy.h>
+      DIMENSION DSO(NNBAST), FSO(NNBAST)
+C
+      IUNIT = -1
+      CALL GPOPEN(IUNIT,'DSOTRI','UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      READ(IUNIT) (DSO(I), I=1,NNBAST)
+      CALL GPCLOSE(IUNIT,'KEEP')
+C
+      IUNIT = -1
+      CALL GPOPEN(IUNIT,'FSOTRI','UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      READ(IUNIT) (FSO(I), I=1,NNBAST)
+      CALL GPCLOSE(IUNIT,'KEEP')
+      RETURN
       END
 C  /* Deck dsofso */
       SUBROUTINE DSOFSO(DSO,FSO,WORK,LWORK,IPRINT,NODC,NODV)
