@@ -49,7 +49,8 @@ C
       LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL, rma_model_save
       LOGICAL   GENCTR
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
-     &          NSTAT(NODTOT), WORK(LWORK), HESSEE(*)
+     &          NSTAT(NODTOT), WORK(LWORK)
+
       DIMENSION GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
 
 C
@@ -105,13 +106,7 @@ C        using skeleton matrix approach (AO basis)
 C     Derivatives with respect to magnetic field(DDFOCK=T)
       ELSE IF (ITYPE .EQ. -5) THEN
          L_SUS = 9
-C         L_TMPMT = 3*N2BASX + L_SUS
-C modified by Bin Gao, June 3, 2009, from linsca
-         NFMAT = 3*NDMAT
-         IF (MAXDER .EQ. 2 .AND. .NOT.GENCTR)
-     &      NFMAT = 6*NDMAT
-         L_FCK = NFMAT*N2BASX
-         L_TMPMT = L_FCK + L_SUS
+         L_TMPMT = 3*N2BASX + L_SUS
       ELSE IF (ITYPE .EQ. 8) THEN
 C     Derivative Fock matrix for specified atom
          L_TMPMT = 3*NUCDEG(IATOM)*N2BASX
@@ -167,8 +162,9 @@ C
      &                NINDEX,L_TMPMT,L_GRA,L_HES,L_SUS,L_FCK,
      &                ITYPE,MAXDER,IATOM,NODV,NOPV,
      &                NOCONT,TKTIME,RETUR,IPRINT,
-     &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP,
-     &                WORK(KTSORT),GENCTR)
+     &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP,
+     &                WORK(KTSORT))
+
 !     restore rma_model in case it had been reset
       rma_model = rma_model_save
 
@@ -184,8 +180,7 @@ C  /* Deck her_pardr1 */
      &   NINDEX,L_TMPMT,L_GRA,L_HES,L_SUS,L_FCK,
      &   ITYPE,MAXDIF,IATOM,NODV,NOPV,
      &   NOCONT,TKTIME,RETUR,IPRINT,
-     &   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP,SORTING,
-     &   GENCTR)
+     &   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP,SORTING)
 C
 C
 C     **************************************************************
@@ -292,11 +287,11 @@ Cef begin
 Cef end
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
-      LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
+      LOGICAL   FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
-     &          NSTAT(NODTOT), TMPMAT(L_TMPMT), INDEX(3,NINDEX),
+     &          NSTAT(NODTOT), TMPMAT(*), INDEX(3,NINDEX),
      &          TIMES(MTOTTK), TSKCPU(MTOTTK), IWHICH(MTOTTK),
-     &          WORK(LWORK), NPOS(0:MAXTSK+1), HESSEE(*), SORTING(*)
+     &          WORK(LWORK), NPOS(0:MAXTSK+1), HESSEE(*),SORTING(*)
 CTROND
       DIMENSION GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
 CTROND
@@ -335,7 +330,7 @@ C---------------------------------------
 C
       CALL HER_SDINIT(DMAT,NDMAT,ISYMDM,IFCTYP,ITYPE,MAXDIF,IATOM,
      &                NODV,NOPV,NOCONT,TKTIME,RETUR,FIRST,IPRINT,
-     &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,GENCTR)
+     &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO)
 C
 Cef begin
 C---------------------------------------------------------------
@@ -435,8 +430,7 @@ C     Receive final results from nodes.
 C--------------------------------------
 C
       CALL HER_RVRES(FMAT,TMPMAT,HESSEE,TIMES,TSKCPU,IWHICH,L_TMPMT,
-     &               L_GRA,L_HES,L_SUS,L_FCK,ITYPE,IPRINT,DINTSKP,
-     &               GENCTR)
+     &               L_GRA,L_HES,L_SUS,L_FCK,ITYPE,IPRINT,DINTSKP)
 C
 C-----------------------------------------
 C     Sort the integral-calculation times.
@@ -576,7 +570,7 @@ C  /* Deck her_sdinit */
       SUBROUTINE HER_SDINIT(DMAT,NDMAT,ISYMDM,IFCTYP,ITYPE,MAXDIF,
      &                      IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,
      &                      FIRST,IPRINT,
-     &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,GENCTR)
+     &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO)
 
 !     module dependencies
       use parallel_communication_models_mpi
@@ -601,7 +595,7 @@ C
 #include "mtags.h"
 #include "expopt.h"
 C
-      LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR,FIRST,GENCTR
+      LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR,FIRST
       DIMENSION DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*)
 CTROND
 CKR      DIMENSION GABRAO(*), DMRAO(*), DMRSO(*), DINTSKP(*)
@@ -663,9 +657,6 @@ C
          NFMAT = NDMAT
       ELSE IF (ITYPE .EQ. -5) THEN
          NFMAT = 3*NDMAT
-C added by Bin Gao, June 3, 2009
-         IF (MAXDIF .EQ. 2 .AND. .NOT.GENCTR)
-     &      NFMAT = 6*NDMAT
       ELSE IF (ITYPE .EQ. 8) THEN
          NFMAT = 3*NDMAT*NUCDEG(IATOM)
       ELSE
@@ -819,9 +810,6 @@ C
         CALL MPIXBCAST(DMAT,N2BASX*NDMAT,'DOUBLE',MASTER)
       end if
 C
-C added by Bin Gao, June 3, 2009
-      CALL MPIXBCAST(GENCTR,1,'LOGICAL',MASTER)
-C
       IF(ITYPE.EQ.3) THEN
         N2RED = NSYMBL*NSYMBL
         CALL MPIXBCAST(N2RED,1,'INTEGER',MASTER)
@@ -891,7 +879,8 @@ C
 C  /* Deck her_rvres */
       SUBROUTINE HER_RVRES(FMAT,TMPMAT,HESSEE,TIMES,TSKCPU,IWHICH,
      &                     L_TMPMT,L_GRA,L_HES,L_SUS,L_FCK,ITYPE,
-     &                     IPRINT,DINTSKP,GENCTR)
+     &                     IPRINT,DINTSKP)
+
 !     module dependencies
       use parallel_communication_models_mpi
       use one_sided_communication_wrappers
@@ -908,9 +897,7 @@ C
 #include "maxorb.h"
 #include "mtags.h"
       PARAMETER (D1 = 1.0D0)
-C added by Bin Gao, June 3, 2009
-      logical GENCTR
-      DIMENSION FMAT(*), TMPMAT(L_TMPMT), TIMES(MTOTTK),
+      DIMENSION FMAT(*), TMPMAT(*), TIMES(MTOTTK),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK),DSKPBF(8),
      &          DINTSKP(8), HESSEE(*)
 C
@@ -949,7 +936,6 @@ C
 C
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,L_GRA)
-C modified by Bin Gao, December 24, 2009
          CALL DZERO(HESSEE,L_HES)
       ELSE IF (ITYPE .EQ. 3) THEN
          if(.not.rma_model)then
@@ -961,11 +947,7 @@ C modified by Bin Gao, December 24, 2009
          CALL BIN_SUM(8, DINTSKP)
 #endif
       ELSE IF (ITYPE .EQ. -5) THEN
-C modified by Bin Gao, December 21, 2009
-Cgb         CALL DZERO(FMAT,3*N2BASX)
-Cgb         CALL DZERO(SUS2EL,NUMSUS)
-         CALL DZERO(FMAT,L_FCK)
-         CALL DZERO(SUS2EL,L_SUS)
+         CALL DZERO(FMAT,3*N2BASX)
 COBL/AMT
 C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
          IF (.NOT. DONETWOLOP)THEN
@@ -1006,8 +988,8 @@ C
             CALL MPIXRECV(TMPMAT(1),L_TMPMT,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_TMPMT,D1,TMPMAT,1,FMAT,1)
          ELSE IF (ITYPE .EQ. -5) THEN
-            CALL MPIXRECV(TMPMAT(1),L_FCK,'DOUBLE',NWHO,MTAG7)
-            CALL DAXPY(L_FCK,D1,TMPMAT,1,FMAT,1)
+            CALL MPIXRECV(TMPMAT(1),3*N2BASX,'DOUBLE',NWHO,MTAG7)
+            CALL DAXPY(3*N2BASX,D1,TMPMAT,1,FMAT,1)
             CALL MPIXRECV(TMPMAT(1),L_SUS,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_SUS,D1,TMPMAT,1,SUS2EL,1)
          END IF
@@ -1219,7 +1201,7 @@ C
 #include "dummy.h"
 C
       PARAMETER (MXDMAT = 2*MXCOOR)
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
+      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME
       DIMENSION ISYMDM(MXDMAT), IFCTYP(MXDMAT),
      &          DINTSKP(2,4)
       real(8), allocatable :: work(:)
@@ -1318,7 +1300,7 @@ C     This is a slave in a parallel run; check for programming error
      &                IORBS,JORBS,KORBS,IPRINT,
      &                I2TYP,ICEDIF,IFTHRS,
      &                N2RED,dmat_buff,fmat_buff,KHESEE,KDMRAO,
-     &                KGABAO,KDMRSO,GENCTR,.true.)
+     &                KGABAO,KDMRSO,.true.)
       deallocate(work)
 
 !     Receive initialization from master - 2 - data on allocated matrices
@@ -1357,7 +1339,7 @@ C     This is a slave in a parallel run; check for programming error
      &                IORBS,JORBS,KORBS,IPRINT,
      &                I2TYP,ICEDIF,IFTHRS,
      &                N2RED,dmat_buff,fmat_buff,KHESEE,KDMRAO,
-     &                KGABAO,KDMRSO,GENCTR,.false.)
+     &                KGABAO,KDMRSO,.false.)
       IF (IPRINT .GE. 2) THEN
          WRITE(LUPRI,'(/A,4I5)')
      &   'After HER_RVINIT; ITYPE, IATOM, NDMAT, MAXDIF =',
@@ -1476,7 +1458,7 @@ C
      &     IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,I2TYP,
      &     JSTRS,NPRIM,NCONT,IORBS,
      &     ICEDIF,IFTHRS,WORK(KGABAO),WORK(KDMRAO),
-     &     WORK(KDMRSO),DINTSKP,RELCAL,GENCTR)
+     &     WORK(KDMRSO),DINTSKP,RELCAL,.false.)
 
 !------------------------
 !     free memory windows
@@ -1521,7 +1503,7 @@ C  /* Deck her_rvinit */
      &     RETUR,TKTIME,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &     JORBSH,KORBSH,IPRINT,I2TYP,ICEDIF,IFTHRS,
      &     N2RED,dmat_buff,fmat_buff,KHESEE,KDMRAO,
-     &     KGABAO,KDMRSO,GENCTR,set_cb_blocks)
+     &     KGABAO,KDMRSO,set_cb_blocks)
 C
 
 !     module dependencies
@@ -1546,7 +1528,7 @@ C
 #include "maxorb.h"
 #include "mtags.h"
       PARAMETER (D0 = 0.0D0)
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,FIRST,NOSYM,GENCTR
+      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,FIRST,NOSYM
       LOGICAL AUTOSY,DOCART,DOOWN
       CHARACTER*1 KASYM(3,3),ID3
 C
@@ -1881,10 +1863,7 @@ C
 !       call flshfo(lupri)
       end if
 
-      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)     
-C added by Bin Gao, June 3, 2009
-      CALL MPIXBCAST(GENCTR,1,'LOGICAL',MASTER)
-C
+      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
 
       IF(ITYPE.EQ.3) THEN
         CALL MPIXBCAST(N2RED,1,'INTEGER',MASTER)
@@ -1939,7 +1918,7 @@ Cef begin
      &     SQ12EL,INDHER,INDHSQ,IODDHR,TSKCPU,IWHICH,IJS,
      &     ISYMDM,IFCTYP,ADISTR,ITYPE,JSTRSH,NPRIMS,NCONTS,
      &     IORBSH,I2TYP,ICEDIF,IFTHRS,
-     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCTR)
+     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
 C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 
@@ -1958,8 +1937,8 @@ C
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DIA2SO, ZFS2EL,
      &        DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DONE,
-     &        SOFOCK,RELCAL,GENCTR
-      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*), 
+     &        SOFOCK,RELCAL
+      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*),
      & IODDHR(*), INDHER(*), WORK(LWORK), ISYMDM(*), IFCTYP(*),
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(MXSHEL,MXAOVC),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK), IJS(NTASK),
@@ -2366,7 +2345,7 @@ C
      &                 FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
      &                 ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,DUMMY,
      &                 ICEDIF,IFTHRS,DINTSKP,
-     &                 GABRAO,DMRAO,DMRSO,IREPDM,GENCTR)
+     &                 GABRAO,DMRAO,DMRSO,IREPDM)
 C
                IF (RETUR) THEN
                   IF (ISHELA .EQ. IPRNTA .AND.
@@ -2463,7 +2442,7 @@ C
 C     Send final results to master
 C
       CALL HER_SDRES(FMAT,HESSEE,NDMAT,DINTSKP,TSKCPU,IWHICH,ICOUNT,
-     &     ITYPE,JPRINT,GENCTR)
+     &     ITYPE,JPRINT)
 Cef 10.mai begin
 C This is a fix for an unresolved error in the AOSAVE-related code.
 C The price of the fix is a bit lower memory efficiency.
@@ -2479,7 +2458,8 @@ C
 Cef end
 C  /* Deck her_sdres */
       SUBROUTINE HER_SDRES(FMAT,HESSEE,NDMAT,DINTSKP,TSKCPU,IWHICH,
-     &                     ICOUNT,ITYPE,IPRINT,GENCTR)
+     &                     ICOUNT,ITYPE,IPRINT)
+
 !     module dependencies
       use parallel_communication_models_mpi
       use one_sided_communication_wrappers
@@ -2495,8 +2475,6 @@ C  /* Deck her_sdres */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "mtags.h"
-C added by Bin Gao, June 3, 2009
-      logical GENCTR
       DIMENSION FMAT(*), TSKCPU(ICOUNT), IWHICH(ICOUNT),
      &          DINTSKP(8), HESSEE(*)
 C
