@@ -36,7 +36,7 @@ C
 #include "maxash.h"
 #include "mxcent.h"
 CSPAS:10/11-2003: is merged with maxorb.h
-C#include <mxorb.h>
+C#include "mxorb.h"
 CKeinSPASmehr
 #include "aovec.h"
 #include "iratdef.h"

@@ -163,7 +163,7 @@ C  /* Deck cc_bfden */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccinftap.h"
@@ -490,7 +490,7 @@ C  /* Deck cc_bfao */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -649,7 +649,7 @@ C  /* Deck cc_bfmiao */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -848,7 +848,7 @@ C  /* Deck cc_bfmimo */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -1077,7 +1077,7 @@ C  /* Deck cc_bfib */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -1193,7 +1193,7 @@ C  /* Deck cc_bfbsort */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

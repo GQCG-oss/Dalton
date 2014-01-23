@@ -7,6 +7,9 @@ DALTON
 ------
 
 - Fixed a bug in printing results in CPP-QRF.
+- More efficient evaluation of numerical Hessian when C1 symmetry
+  (in each geometry step start wave function optimization from a
+  converged wave function from a neighboring geometry rather than from scratch each time).
 - Document changes here.
 
 
