@@ -880,7 +880,7 @@ end subroutine mp2f12_Xijijfull
     Real(realk),intent(OUT) :: Bjiij(nocc,nocc)
     Real(realk),intent(IN)  :: Tirjk(nocc,ncabsAO,nocc,nocc) !The Gaussian geminal operator squared g^2
     Real(realk),intent(IN)  :: hJ(nocc,ncabsAO) !(h+J)
-    Integer :: i,j,p
+    Integer :: i,j,p,r
 
     Bijij = 0.0E0_realk
     Bjiij = 0.0E0_realk
@@ -893,6 +893,15 @@ end subroutine mp2f12_Xijijfull
           ENDDO
        ENDDO
     ENDDO
+
+!!$    do i=1, nocc
+!!$       do r=1, ncabsAO
+!!$          if(hJ(i,r) > 1E-10) then
+!!$             print *, "i r hJir", i, r, hJ(i,r)
+!!$          endif
+!!$       enddo
+!!$    enddo
+          
 
 !!$    print *, '----------------------------------------'
 !!$    print *, '          B ijij                        '   
@@ -1018,6 +1027,8 @@ end subroutine mp2f12_Xijijfull
     Bijij = 0.0E0_realk
     Bjiij = 0.0E0_realk
 
+
+         
     !> Term 6 Fpp
     DO a=1,nvirt
        DO q=1,nbasis
@@ -1026,6 +1037,7 @@ end subroutine mp2f12_Xijijfull
                 DO i=1,nocc
                    Bijij(i,j) = Bijij(i,j) - (Gipja(i,p,j,a)*Fpp(q,p)*Gpiaj(q,i,a,j) &
                         & + Gipja(j,p,i,a)*Fpp(q,p)*Gpiaj(q,j,a,i))
+
                    Bjiij(i,j) = Bjiij(i,j) - (Gipja(j,p,i,a)*Fpp(q,p)*Gpiaj(q,i,a,j) &
                         & + Gipja(i,p,j,a)*Fpp(q,p)*Gpiaj(q,j,a,i))
                 ENDDO
@@ -1033,6 +1045,61 @@ end subroutine mp2f12_Xijijfull
           ENDDO
        ENDDO
     ENDDO
+!!$
+
+!!$    print *, '----------------------------------------'
+!!$    print *, '          Fpq - Terms                   '   
+!!$    print *, '----------------------------------------'
+!!$    do i=1, nbasis
+!!$       do j=1, nbasis
+!!$          if( abs(Fpp(i,j)) > 1E-10) then
+!!$             print *, i,j, Fpp(i,j)
+!!$          endif
+!!$       enddo
+!!$    enddo
+!!$    print *, '----------------------------------------'
+!!$    print *, '          Gipja                         '   
+!!$    print *, '----------------------------------------'
+!!$    do i=1, nocc
+!!$       do j=1, nocc
+!!$          do p=1, nbasis
+!!$             do a=1, nvirt
+!!$                if( abs(Gipja(i,p,j,a)) > 1E-10) then
+!!$                   print *, i,p,j,a,Gipja(i,p,j,a)
+!!$                endif
+!!$             enddo
+!!$          enddo
+!!$       enddo
+!!$    enddo
+!!$
+!!$    print *, '----------------------------------------'
+!!$    print *, '          Gpiaj                         '   
+!!$    print *, '----------------------------------------'
+!!$    do i=1, nocc
+!!$       do j=1, nocc
+!!$          do p=1, nbasis
+!!$             do a=1, nvirt
+!!$                if( abs(Gpiaj(p,i,a,j)) > 1E-10) then
+!!$                   print *, p,i,a,j, Gpiaj(p,i,a,j)
+!!$                endif
+!!$             enddo
+!!$          enddo
+!!$       enddo
+!!$    enddo
+!!$
+!!$
+!!$    print *, '----------------------------------------'
+!!$    print *, '          Term 6                        '   
+!!$    print *, '----------------------------------------'
+!!$
+!!$    do i=1, nocc
+!!$       do j=1, nocc
+!!$          if(abs(Bijij(i,j)) > 1E-10) then 
+!!$             print *,"i j Bijij(i,j)",i,j,Bijij(i,j) 
+!!$          endif
+!!$       enddo
+!!$    enddo
+
 
   end subroutine mp2f12_Bijij_term6
 

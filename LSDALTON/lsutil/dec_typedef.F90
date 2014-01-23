@@ -534,20 +534,16 @@ module dec_typedef_module
      
 
      !> Occ-Occ Fock matrix in MO basis
-     real(realk), pointer :: Fii(:,:) => null()
+     real(realk), pointer :: Fij(:,:) => null()
 
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
      real(realk), pointer :: hJir(:,:) => null() 
       !> Cabs ri-Cabs ri exchange matrix in MO basis
-     real(realk), pointer :: Krr(:,:) => null() 
+     real(realk), pointer :: Krs(:,:) => null() 
      !> Cabs ri-Cabs ri Fock matrix in MO basis
-     real(realk), pointer :: Frr(:,:) => null() 
+     real(realk), pointer :: Frs(:,:) => null() 
      !> Virt-Cabs Fock matrix in MO basis
      real(realk), pointer :: Fac(:,:) => null() 
-     !> (Occ+virt)-(Occ+virt) Fock matrix in MO basis
-     real(realk), pointer :: Fpp(:,:) => null()
-     !> Occ-Occ Fock matrix in MO basis
-     real(realk), pointer :: Fmm(:,:) => null()
      !> Cabs ri-Occ Fock matrix in MO basis  
      real(realk), pointer :: Frm(:,:) => null()
      !> Cabs-(Occ+virt) Fock matrix in MO basis
@@ -703,20 +699,16 @@ module dec_typedef_module
 
 
      !> Occ-Occ Fock matrix in MO basis
-     real(realk), pointer :: Fii(:,:) => null()  
-
+     real(realk), pointer :: Fij(:,:) => null()
+  
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
      real(realk), pointer :: hJir(:,:) => null() 
       !> Cabs ri-Cabs ri exchange matrix in MO basis
-     real(realk), pointer :: Krr(:,:) => null() 
+     real(realk), pointer :: Krs(:,:) => null() 
      !> Cabs ri-Cabs ri Fock matrix in MO basis
-     real(realk), pointer :: Frr(:,:) => null() 
+     real(realk), pointer :: Frs(:,:) => null() 
      !> Virt-Cabs Fock matrix in MO basis
      real(realk), pointer :: Fac(:,:) => null() 
-     !> (Occ+virt)-(Occ+virt) Fock matrix in MO basis
-     real(realk), pointer :: Fpp(:,:) => null()
-     !> Occ-Occ Fock matrix in MO basis
-     real(realk), pointer :: Fmm(:,:) => null()
      !> Cabs ri-Occ Fock matrix in MO basis  
      real(realk), pointer :: Frm(:,:) => null()
      !> Cabs-(Occ+virt) Fock matrix in MO basis
