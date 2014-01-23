@@ -13,7 +13,7 @@ module response_driver_module
   use precision
   use TYPEDEFTYPE, only: LSSETTING
   use matrix_module
-  use matrix_defop
+  use lsdalton_matrix_defop
   use rsp_contribs
   use rsp_equations
   use RSPsolver, only: rsp_init, rsp_solver, rsp_molcfg  

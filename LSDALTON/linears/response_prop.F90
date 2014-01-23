@@ -16,7 +16,7 @@ module response_wrapper_module
   use matrix_module, only: matrix
   !warning matrix_operations and matrix_defop do not mix
   use matrix_operations,only: mat_write_to_disk
-  use matrix_defop
+  use lsdalton_matrix_defop
   use rspsolver, only: rsp_molcfg
   use rsp_equations, only: rsp_eq_sol, pert_dens, pert_fock, rsp_eq_sol_empty
   use response_wrapper_type_module, only: ALPHAinputItem, &
@@ -2265,7 +2265,7 @@ Contains
   subroutine calculate_component_of_RHS_for_DTPA(molcfg, Dj, Dk, Fj, Fk, J, K, &
        & RHS,D,S,DS,SD)
 
-    use matrix_defop
+    use lsdalton_matrix_defop
 
     implicit none
     !> structure containing the molecule, integral and solver settings
