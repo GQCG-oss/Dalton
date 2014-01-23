@@ -1715,6 +1715,7 @@ C           ... i.e. not symmetric
       RETURN
       END
 C  /* Deck rewmot */
+C  /* Deck rewspl*/ !added by F.Beyer Jan.2014
       SUBROUTINE REWSPL(LU)
 C
 C     Short interface routine for rewinding a file that may have been 
