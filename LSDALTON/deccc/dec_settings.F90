@@ -278,7 +278,6 @@ contains
        case('.MP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.false.  
-          print *, "Test use singles" 
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 

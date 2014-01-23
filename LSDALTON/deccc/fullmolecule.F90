@@ -840,13 +840,6 @@ contains
     ncabsMO  = size(MyMolecule%Ccabs,2)
     nocvfull = nocc + nvirt
 
-!!$    print *,"nocvfull:",nocvfull
-!!$    print *,"nbasis:",nbasis
-!!$    print *,"nocc:",nocc
-!!$    print *,"nvirt:",nvirt
-!!$    print *,"ncabsMO:",ncabsMO
-!!$    print *,"ncabsAO:",ncabsAO
-
     call mem_alloc(hJir,nocc,ncabsAO) 
     call mem_alloc(Krs,ncabsAO,ncabsAO)
     call mem_alloc(Fac,nvirt,ncabsMO)
@@ -878,17 +871,6 @@ contains
     MyMolecule%Fij  = Fij
     MyMolecule%Frm  = Frm
     MyMolecule%Fcp  = Fcp
-
-!!$    The dcopy routine not working atm    
-!!$    call dcopy(nocc*ncabsAO,MyMolecule%hJir,1,hJir,1) 
-!!$    call dcopy(ncabsAO*ncabsAO,MyMolecule%Krr,1,Krr,1)
-!!$    call dcopy(nvirt*ncabsMO,MyMolecule%Fac,1,Fac,1)
-!!$    call dcopy(ncabsAO*ncabsAO,MyMolecule%Frr,1,Frr,1)
-!!$    call dcopy(nbasis*nbasis,MyMolecule%Fpp,1,Fpp,1)
-!!$    call dcopy(nocc*nocc,MyMolecule%Fij,1,Fij,1)
-!!$    call dcopy(noccfull*noccfull,MyMolecule%Fmn,1,Fmn,1)
-!!$    call dcopy(ncabsAO*ncabsMO,MyMolecule%Frm,1,Frm,1)
-!!$    call dcopy(ncabs*nbasis,MyMolecule%Fcp,1,Fcp,1)
     
     if(DECinfo%F12debug) then  
       print *,'-----------------------------------------'
@@ -914,7 +896,6 @@ contains
     call free_F12_mixed_MO_Matrices_real(hJir,Krs,Frs,Fac,Fij,Frm,Fcp)
 
   end subroutine molecule_mo_f12
-
 
 
   !> \brief Calculate how much memory is used for the fullmolecule type (in GB).
