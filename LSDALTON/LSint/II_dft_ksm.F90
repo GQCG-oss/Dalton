@@ -1175,7 +1175,7 @@ CALL ls_mpi_buffer(NBAST,infpar%master)
 CALL ls_mpi_buffer(NMO,infpar%master)
 CALL ls_mpi_buffer(SameCmat,infpar%master)
 call mem_dft_alloc(CMAT1,NBAST,NMO)
-CALL ls_mpi_buffer(CMAT2,NBAST,NMO,infpar%master)
+CALL ls_mpi_buffer(CMAT1,NBAST,NMO,infpar%master)
 IF(.NOT.SameCmat)THEN
    call mem_dft_alloc(CMAT2,NBAST,NMO)
    CALL ls_mpi_buffer(CMAT2,NBAST,NMO,infpar%master)
