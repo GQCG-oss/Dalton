@@ -137,6 +137,8 @@ implicit none
   ! PLT info
   call pltinfo_set_default_config(config%Plt)
   config%doplt=.false.
+  !F12 calc?
+  config%doF12=.false.
   
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
@@ -666,7 +668,7 @@ DO
    DECInput: IF (WORD(1:5) == '**DEC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word,.false.)
+      call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12)
    END IF DECInput
 
    ! Input for full molecular CC calculation
@@ -674,7 +676,7 @@ DO
    CCinput: IF (WORD(1:4) == '**CC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word,.true.)
+      call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12)
    END IF CCinput
 
 
@@ -3252,6 +3254,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       WRITE(config%LUPRI,'(/A)') &
            &     'You have specified .DENSFIT in the dalton input but not supplied a fitting basis set'
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
+   endif
+   if(config%doF12 .AND. (.NOT. config%integral%cabsbasis))then
+      WRITE(config%LUPRI,'(/A)') &
+           &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
+      CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
    endif
 !ADMM basis input
    if(config%integral%ADMM_JKBASIS .AND. (.NOT. config%integral%JKbasis))then
