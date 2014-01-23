@@ -192,10 +192,10 @@ ERROR[1]='INCORRECT SETTINGS FOR ANALYTICAL PE GRADIENT'
 #
 # LJ Energy
 #
-CRIT1=`$GREP "Dispersion 6 * (\-|\-0)\.005743......" $log | wc -l`
-CRIT2=`$GREP "Repulsion 12 * (|0)\.008791......" $log | wc -l`
-CRIT3=`$GREP "Total PE energy: * (\-|\-0)\.-0.033289......" $log | wc -l`
-CRIT4=`$GREP "Final HF energy: * \-190\.794590......" $log | wc -l`
+CRIT1=`$GREP "Dispersion 6 * (\-|\-0)\.00574339...." $log | wc -l`
+CRIT2=`$GREP "Repulsion 12 * (|0)\.00879103...." $log | wc -l`
+CRIT3=`$GREP "Total PE energy: * (\-|\-0)\.-0.03328946...." $log | wc -l`
+CRIT4=`$GREP "Final HF energy: * \-190\.79459066...." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
 CTRL[2]=6
 ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
@@ -203,12 +203,12 @@ ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Molecular gradient
 #
-CRIT1=`$GREP "C *  (|0)\.021729.... * (\-|\-0)\.024089.... * (\-|\-0)\.000001...." $log | wc -l`
-CRIT2=`$GREP "C * (\-|\-0)\.013440.... *  (|0)\.010083.... *  (|0)\.000002...." $log | wc -l`
-CRIT3=`$GREP "C *  (|0)\.003868.... * (\-|\-0)\.009295.... * (\-|\-0)\.000004...." $log | wc -l`
-CRIT4=`$GREP "O * (\-|\-0)\.013133.... *  (|0)\.036292.... *  (|0)\.000005...." $log | wc -l`
-CRIT5=`$GREP "H * (\-|\-0)\.008783.... * (\-|\-0)\.012952.... *  (|0)\.000007...." $log | wc -l`
-CRIT6=`$GREP "H *  (|0)\.000000.... *  (|0)\.007235.... * (\-|\-0)\.000007...." $log | wc -l`
+CRIT1=`$GREP "C *  (|0)\.021560.... * (\-|\-0)\.023902.... * (\-|\-0)\.000001...." $log | wc -l`
+CRIT2=`$GREP "C * (\-|\-0)\.013335.... *  (|0)\.010005.... *  (|0)\.000002...." $log | wc -l`
+CRIT3=`$GREP "C *  (|0)\.003837.... * (\-|\-0)\.009223.... * (\-|\-0)\.000004...." $log | wc -l`
+CRIT4=`$GREP "O * (\-|\-0)\.013030.... *  (|0)\.036010.... *  (|0)\.000005...." $log | wc -l`
+CRIT5=`$GREP "H * (\-|\-0)\.008715.... * (\-|\-0)\.012851.... *  (|0)\.000007...." $log | wc -l`
+CRIT6=`$GREP "H *  (|0)\.007835.... *  (|0)\.007234.... * (\-|\-0)\.000007...." $log | wc -l`
 CRIT7=`$GREP "H * (\-|\-0)\.008532.... * (\-|\-0)\.007850.... *  (|0)\.000008...." $log | wc -l`
 CRIT8=`$GREP "H *  (|0)\.011440.... * (\-|\-0)\.003538.... * (\-|\-0)\.000004...." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
