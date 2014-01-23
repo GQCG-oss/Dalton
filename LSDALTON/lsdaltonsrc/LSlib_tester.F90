@@ -2,22 +2,21 @@
 PROGRAM lslib_test
 use precision
 implicit none
-real(realk) :: t1,t2
-logical :: OnMaster,meminfo_slaves
+logical :: OnMaster
 Integer :: lupri,luerr
 luerr          = 0
 lupri          = 0
 ! setup the calculation 
-call lslib_init(OnMaster,lupri,luerr,t1,t2)
+call lslib_init(OnMaster,lupri,luerr)
 
-IF(OnMaster) call LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
+IF(OnMaster) call LSlib_test_driver(OnMaster,lupri,luerr)
 
 ! free everything take time and close the files
-call lslib_free(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
+call lslib_free(OnMaster,lupri,luerr)
 
 CONTAINS
 
-SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
+SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr)
   use files
   use lsmpi_type, only: lsmpi_finalize
 #ifdef LSLIB_RESTART
@@ -33,7 +32,6 @@ SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
 #endif
   implicit none
   logical, intent(in) :: OnMaster
-  logical, intent(out):: meminfo_slaves
   integer, intent(inout) :: lupri, luerr
   Integer             :: nbast,natoms,nelectrons,i,j,k,l,n,m,o,x,y,z,iGrad,iHess,iCubic,ij,nDerivPacked
 #ifdef LSLIB_RESTART
@@ -261,7 +259,7 @@ call daxpy(nbast*nbast,1.0_realk,h1,1,Fmat(1,1,2),1)
 
 ! Get the Fock matrix (not a valid AO density matrix so do not test # of electrons)
 !ToDo Make II_get_Fock work with ADMM
-!CALL LSlib_get_Fock(TempMat,Dmat,nbast,2,.TRUE.,lupri,luerr,.FALSE.)
+CALL LSlib_get_Fock(Fmat,Dmat,nbast,2,.TRUE.,lupri,luerr,.FALSE.,h1)
 
 tmp1 = 0.0_realk
 tmp2 = 0.0_realk
@@ -1294,8 +1292,6 @@ deallocate(Fmat)
 deallocate(Dmat)
 deallocate(Smat)
 deallocate(DFD)
-
-meminfo_slaves = .FALSE.
 
 write(lupri,'(A)') ''
 write(lupri,'(A)') '*** LSlib tester completed ***'

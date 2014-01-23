@@ -3,13 +3,56 @@
 MODULE lslib_state
 use configurationType, only: configitem
 use typedeftype, only: lsitem
+use precision, only: realk
 type(lsitem),save     :: ls
 Integer,save          :: nbasis
 type(configItem),save :: config
 logical,save          :: state_set = .FALSE.
+real(realk),save      :: tstart,tend
 END MODULE lslib_state
 
+!> \brief Used to initialize LSlib functionality- must be called prior to other LSlib calls
+!> \author S. Reine
+!> \date 2014-01-22
+!> \param lupri The print unit
+!> \param luerr The error unit
+SUBROUTINE LSlib_init(OnMaster,lupri,luerr)
+use precision
+use lslib_state
+use configuration, only: config_set_default_config, config_read_input
+use daltoninfo, only: ls_init
+implicit none
+logical,intent(OUT)       :: OnMaster
+integer,intent(IN)        :: lupri,luerr
+!
+logical :: dodft
 
+call lsinit_all(OnMaster,lupri,luerr,tstart,tend)
+
+call config_set_default_config(config)
+call config_read_input(config,lupri,luerr)
+doDFT = config%opt%calctype.EQ.config%opt%dftcalc
+call ls_init(ls,lupri,luerr,nbasis,config%integral,dodft,.false.,.false.)
+state_set = .TRUE.
+
+END SUBROUTINE LSlib_init
+
+SUBROUTINE LSlib_free(OnMaster,lupri,luerr)
+use precision
+use lslib_state
+use configuration, only: config_shutdown, config_free
+use daltoninfo, only: ls_free
+implicit none
+logical,intent(IN)        :: OnMaster
+integer,intent(IN)        :: lupri,luerr
+
+call ls_free(ls)
+call config_shutdown(config)
+call config_free(config)
+call lsfree_all(OnMaster,lupri,luerr,tstart,tend,.FALSE.)
+state_set = .FALSE.
+
+END SUBROUTINE LSlib_free
 
 !> \brief Returns the number of basis functions
 !> \author S. Reine
@@ -106,7 +149,7 @@ END SUBROUTINE LSlib_get_overlap
 !> Note that if both LSDALTON.OUT and LSDALTON.ERR are already open, and the -1 
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
-SUBROUTINE LSlib_get_Fock(F,D,nbast,ndmat,dsym,lupri,luerr,testElectrons)
+SUBROUTINE LSlib_get_Fock(F,D,nbast,ndmat,dsym,lupri,luerr,testElectrons,h1)
   use precision
   use configurationType, only: configitem
   use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
@@ -119,15 +162,19 @@ SUBROUTINE LSlib_get_Fock(F,D,nbast,ndmat,dsym,lupri,luerr,testElectrons)
   use integralinterfaceMod
   use memory_handling
   use lslib_state
+  use dal_interface, only: di_get_fock_lsdalton
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,ndmat,lupri,luerr
 Real(realk),intent(out) :: F(nbast,nbast,ndmat)
 Real(realk),intent(in)  :: D(nbast,nbast,ndmat)
+Real(realk),optional    :: h1(nbast,nbast)
 Logical,intent(IN)      :: Dsym
 Logical,optional        :: testElectrons
 !
 TYPE(MATRIX),target  :: Fmat(ndmat),Dmat(ndmat)
 Integer              :: mtype_save, idmat
+Real(realk)          :: Etotal(ndmat)
+TYPE(MATRIX)         :: h1mat
 
 IF (.NOT.state_set) CALL LSQUIT('LSlib_get_Fock error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_Fock. Basis-function mismatch',lupri)
@@ -142,9 +189,16 @@ DO idmat=1,ndmat
   call dcopy(nbast*nbast,D(1,1,idmat),1,Dmat(idmat)%elms,1)
 ENDDO
 
+CALL mat_init(h1mat,nbast,nbast)
+IF (PRESENT(h1)) THEN
+  call dcopy(nbast*nbast,h1,1,h1mat%elms,1)
+ELSE
+  call II_get_h1(lupri,luerr,ls%setting,h1mat) 
+ENDIF
 IF (PRESENT(testElectrons)) ls%setting%scheme%dft%testNelectrons = testElectrons
 
-CALL II_get_Fock_mat(lupri,luerr,ls%setting,Dmat,Dsym,Fmat,ndmat,.FALSE.)
+call di_get_fock_LSDALTON(Dmat,h1mat,Fmat,ndmat,Etotal,lupri,luerr,ls)
+CALL mat_free(h1mat)
 
 DO idmat=1,ndmat
   call dcopy(nbast*nbast,Fmat(idmat)%elms,1,F(1,1,idmat),1)
@@ -1496,43 +1550,3 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
 #endif
 
 end subroutine build_setting_from_scratch
-
-SUBROUTINE lslib_init(OnMaster,lupri,luerr,t1,t2)
-use precision
-use lslib_state
-use configuration, only: config_set_default_config, config_read_input
-use daltoninfo, only: ls_init
-implicit none
-logical,intent(OUT)       :: OnMaster
-integer,intent(IN)        :: lupri,luerr
-real(realk),intent(INOUT) :: t1,t2
-!
-logical :: dodft
-
-call lsinit_all(OnMaster,lupri,luerr,t1,t2)
-
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-doDFT = config%opt%calctype.EQ.config%opt%dftcalc
-call ls_init(ls,lupri,luerr,nbasis,config%integral,dodft,.false.,.false.)
-state_set = .TRUE.
-
-END SUBROUTINE lslib_init
-
-SUBROUTINE lslib_free(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
-use precision
-use lslib_state
-use configuration, only: config_shutdown, config_free
-use daltoninfo, only: ls_free
-implicit none
-logical,intent(IN)        :: OnMaster,meminfo_slaves
-integer,intent(IN)        :: lupri,luerr
-real(realk),intent(INOUT) :: t1,t2
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
-call lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
-state_set = .FALSE.
-
-END SUBROUTINE lslib_free
