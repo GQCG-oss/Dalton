@@ -610,7 +610,7 @@
 !           stop 'ERROR: PE-MCSCF response not implemented.'
 !       end if
 
-        if (ncsim > 0) then
+        if (ncsim > 0 .and. .not. soppa) then
             call pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
      &                     udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
         end if
