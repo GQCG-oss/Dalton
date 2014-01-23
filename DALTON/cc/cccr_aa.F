@@ -58,13 +58,13 @@ c /* deck cccr_aa */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
 #include "ccsdsym.h"
 #include "ccsdinp.h"
-C#include <ccr1rsp.h>
+C#include "ccr1rsp.h"
 #include "r12int.h"
 #include "ccr12int.h"
 

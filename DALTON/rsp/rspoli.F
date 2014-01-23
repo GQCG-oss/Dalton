@@ -44,7 +44,6 @@ C  /* Deck rspoli */
 !#define USE_XCINT_RESPONSE
 #ifdef USE_XCINT_RESPONSE
       use xcint_integrator
-      use interface_ao_specific
 #endif
 
 C
@@ -1073,7 +1072,6 @@ C          Proceed normal way otherwise
              call dft_get_ao_dens_mat(cmo, dmat_ao,
      &                                wrk(kfree), lfree)
              call dscal(nbast*nbast, 0.5d0, dmat_ao, 1)
-             call interface_ao_write()
              ! get perturbed ao density matrix
              call deq27(cmo, zymat, (/0.0d0/), dmat_ao(nbast*nbast + 1),
      &                  (/0.0d0/), wrk(kfree), lfree)

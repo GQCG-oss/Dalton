@@ -390,7 +390,7 @@ C
      $            DP5= 0.5D0)
 C
 #include "maxorb.h"
-C#include <pcmdef.h>
+C#include "pcmdef.h"
 #include "infdim.h"
 #include "inforb.h"
 #include "wrkrsp.h"

@@ -53,6 +53,7 @@ cat > decrpa_energy.dal <<'%EOF%'
 TRILEVEL
 .NOATOMSTART
 **DEC
+.MOCCSD
 .RPA
 .FOT
 4

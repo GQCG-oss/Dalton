@@ -1110,7 +1110,7 @@ C
 C
 #include "ccfield.h"
 #include "inforb.h"
-CCN #include <infind.h> not compatible with R12!
+CCN #include "infind.h" not compatible with R12!
 #include "ccisao.h"
 #include "r12int.h"
 #include "blocks.h"

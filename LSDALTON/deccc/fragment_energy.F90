@@ -292,8 +292,6 @@ contains
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
        call fragment_ccsolver(MyFragment,t1,t2,VOVO)
-       debugenergy=rpa_energy(t2,VOVO)
-       debugenergy=debugenergy +sosex_contribution(t2,VOVO)
 
 
        ! Extract EOS indices for integrals

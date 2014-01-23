@@ -55,6 +55,8 @@ cat > LSlib_cam_reg.dal <<'%EOF%'
  CAMB3LYP
 *DFT INPUT
 .GRID3
+**INTEGRALS
+.NOFAMILY
 *END OF INPUT
 %EOF%
 

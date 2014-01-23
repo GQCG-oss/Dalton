@@ -596,7 +596,7 @@ contains
     real(realk) :: t0,t1
     call cpu_time(t0)
     call array4_write_data(array)
-    call array4_alloc(array)
+    call array4_dealloc(array)
     call cpu_time(t1)
     time_array4_write = time_array4_write + (t1-t0)
     return
@@ -3988,7 +3988,7 @@ contains
     nocc = t2%dims(2)
     if(nvirt/=MyFragment%nunoccAOS .or. nocc/=MyFragment%noccAOS) then
        print *, 't2%dims', t2%dims
-       print *, 'nvirt,nocc', nvirt,nocc
+       print *, 'nvirt,nocc', MyFragment%nunoccAOS,MyFragment%noccAOS
        call lsquit('transform_virt_amp_to_FOs: Dimension mismatch for amplitudes and&
             & associated fragment',-1)
     end if

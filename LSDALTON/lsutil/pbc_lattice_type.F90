@@ -28,9 +28,9 @@ type,public ::lvec_data_t
   real(realk) :: std_coord(1:3)      ! standard coordinates
   REAL(realk),pointer :: d_vec(:),d_mat(:,:), elms(:)
   LOGICAL      :: is_redundant,g2_computed,f1_computed,J_computed,Kx_computed
-  LOGICAL      :: ovl_computed,Vz_computed
+  LOGICAL      :: ovl_computed,Vz_computed,dm_computed
+  TYPE(Moleculeinfo) :: molecule    
   TYPE(matrix) :: oper(MaxPBCOpTypes)         !Not sure 
-  TYPE(Moleculeinfo) :: molecule              !Not sure 
   !type(rspcopdata_t) :: opdat(MaxPBCOpTypes+1)
   ! other data?
   !type(matrix), pointer :: density(:)
@@ -43,6 +43,7 @@ type, public :: lvec_list_t
 #ifdef MOD_UNRELEASED
   type(rspace_lat_info_t) :: ldef   ! definition of real-space lattice
   integer :: num_entries,nf_entries
+  integer :: fdim(3)
   type(lvec_data_t), pointer :: lvec(:)
   type(lvec_data_t), pointer :: nflvec(:)
   type(rspcopdata_t) :: opdat(MaxPBCOpTypes+5)
@@ -63,6 +64,7 @@ type, public :: lvec_list_t
   integer            :: num_its,num_store
   Real(realk)        :: error
   integer            :: nneighbour,nf,ndmat
+  INTEGEr(short)     :: realthr
   integer      :: nk1,nk2,nk3
   integer      :: num_its_densmat
   character(len=10)  :: wannier_direct

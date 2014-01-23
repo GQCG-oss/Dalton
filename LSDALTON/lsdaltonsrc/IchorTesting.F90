@@ -184,6 +184,7 @@ do Ipass = 1,2
           call mem_dealloc(integralsII)
        ENDIF
        call mem_alloc(integralsII,dim1,dim2,dim3,dim4)
+       integralsII = 0.0E0_realk
 !       setting%scheme%intprint = 1000
        savedospherical = setting%scheme%dospherical
        setting%scheme%dospherical = spherical
@@ -197,7 +198,7 @@ do Ipass = 1,2
        setting%scheme%OD_SCREEN = .TRUE.
        setting%scheme%CS_SCREEN = .TRUE.
        setting%scheme%PS_SCREEN = .TRUE.
-!       setting%scheme%intprint = 0
+       setting%scheme%intprint = 0
        Setting%sameFrag = .FALSE.
        Setting%sameMol = .FALSE.
 
@@ -217,24 +218,39 @@ do Ipass = 1,2
        !setting%scheme%intprint = 0
        write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
             & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
+       FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .FALSE.
        DO D=1,dim4
           DO C=1,dim3
              DO B=1,dim2
                 DO A=1,dim1
-                   IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
-                        & 1.0E-10_realk/(ABS(integralsII(A,B,C,D))))THEN
-                      FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
-                      write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,B,C,D)))
-                      write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
-                      write(lupri,'(A,ES16.8)')'integralsII(A,B,C,D)   ',integralsII(A,B,C,D)
-                      write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
-                      write(lupri,'(A,ES16.8)')'DIFF                   ',&
-                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
-                      call lsquit('ERROR',-1)
+                   IF(ABS(integralsII(A,B,C,D)).GT.1.0E-10_realk)THEN
+                      IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
+                           & 1.0E-10_realk/(ABS(integralsII(A,B,C,D))))THEN
+                         FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+                         write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,B,C,D)))
+                         write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
+                         write(lupri,'(A,ES16.8)')'integralsII(A,B,C,D)   ',integralsII(A,B,C,D)
+                         write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
+                         write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                              & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                         call lsquit('ERROR',-1)
+                      ENDIF
                    ELSE
-!                      write(lupri,'(A,I2,A,I2,A,I2,A,I2,A,ES16.8,A,ES16.8)')&
-!                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
-!                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                      IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
+                           & 1.0E-10_realk)THEN
+                         FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+                         write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,B,C,D)))
+                         write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
+                         write(lupri,'(A,ES16.8)')'integralsII(A,B,C,D)   ',integralsII(A,B,C,D)
+                         write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
+                         write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                              & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                         call lsquit('ERROR',-1)
+                         !                   ELSE
+                         !                      write(lupri,'(A,I3,A,I3,A,I3,A,I3,A,ES16.8,A,ES16.8)')&
+                         !                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
+                         !                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                      ENDIF
                    ENDIF
                 ENDDO
              ENDDO
@@ -330,11 +346,25 @@ integer,intent(in) :: ICHARGE,lupri,nAtoms
 character(len=22) :: label
 character(len=4) :: Name
 integer :: I
-write(label,'(A11,I11)') 'UnittestMol',icharge
-write(name,'(A1,I3)') 'U',icharge
-
+do I=1,22
+   label(I:I)=' '
+enddo
+label(1:11)='UnittestMol'
+do I=1,4
+   name(I:I)=' '
+enddo
+name(1:1)='U'
+IF(icharge.LT.10)THEN
+   write(label(12:12),'(I1)') icharge
+   write(name(2:2),'(I1)') icharge
+ELSEIF(icharge.LT.100)THEN
+   write(label(12:13),'(I2)') icharge
+   write(name(2:3),'(I2)') icharge
+ELSEIF(icharge.LT.1000)THEN
+   write(name(2:4),'(I3)') icharge
+   write(label(12:14),'(I3)') icharge
+ENDIF
 atomicmolecule%label = label
-
 call mem_alloc(atomicmolecule%ATOM,nAtoms)
 atomicmolecule%nAtoms = nAtoms
 atomicmolecule%nAtomsNPC = nAtoms
@@ -362,7 +392,7 @@ do I=1,nAtoms
    atomicmolecule%ATOM(I)%CENTER(3) = Rxyz(3)*I
    atomicmolecule%ATOM(I)%Atomic_number = 0 
    atomicmolecule%ATOM(I)%Charge = Icharge       
-   atomicmolecule%ATOM(I)%nbasis=0 
+   atomicmolecule%ATOM(I)%nbasis=1
    
    atomicmolecule%ATOM(I)%basislabel(1) = 'None'
    atomicmolecule%ATOM(I)%basislabel(2) = 'None'
