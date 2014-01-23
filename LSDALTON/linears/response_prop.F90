@@ -18,7 +18,7 @@ module response_wrapper_module
   use matrix_operations,only: mat_write_to_disk
   use lsdalton_matrix_defop
   use rspsolver, only: rsp_molcfg
-  use rsp_equations, only: rsp_eq_sol, pert_dens, pert_fock, rsp_eq_sol_empty
+  use lsdalton_rsp_equations, only: rsp_eq_sol, pert_dens, pert_fock, rsp_eq_sol_empty
   use response_wrapper_type_module, only: ALPHAinputItem, &
        & BETAinputItem, GAMMAinputItem, TPAinputItem, ESGinputItem, &
        & DTPAinputItem, RSPSOLVERinputitem, MCDinputItem, ESDinputItem
@@ -2339,7 +2339,7 @@ Contains
   !> \author Kasper Kristensen                                                                
   !> \date 2010-09
   subroutine calculate_one_photon_absorption(molcfg,D,D1,one_photon)
-    use rsp_contribs
+    use lsdalton_rsp_contribs
 
     implicit none
     !> structure containing the molecule, integral and solver settings
@@ -4261,7 +4261,7 @@ END SUBROUTINE INSERTION_increasing
   !> Questions regarding this driver, the input structure etc. may be addressed to tkjaergaard@chem.au.dk.
   !> The result is placed in the tensor NMST which has dimensions (3*natoms)*3
 subroutine NMRshieldresponse_driver(molcfg,F,D,S)
-use rsp_contribs
+use lsdalton_rsp_contribs
 use lstiming
 implicit none
 type(rsp_molcfg), intent(inout) :: molcfg

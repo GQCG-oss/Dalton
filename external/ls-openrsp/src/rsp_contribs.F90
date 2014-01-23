@@ -8,7 +8,7 @@
 !> This module contains routines for calculating contributions
 !> to molecular properties (1st order, linear response, etc.),
 !> and perturbed Fock matrices. 
-module rsp_contribs
+module lsdalton_rsp_contribs
   use precision
   use integraloutput_type,   only: initIntegralOutputDims
   use ls_Integral_Interface, only: ls_getIntegrals, &
