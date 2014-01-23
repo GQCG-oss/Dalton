@@ -1944,8 +1944,10 @@ contains
     call atomic_fragment_free_simple(fragment)
     call atomic_fragment_free_basis_info(fragment)
     call free_fragment_t1(fragment)
-    
-    print *, "atomic_fragment_free"
+   
+    if(DECinfo%F12debug) then 
+       print *, "atomic_fragment_free"
+    end if
 
   end subroutine atomic_fragment_free
 
