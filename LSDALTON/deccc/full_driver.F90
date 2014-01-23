@@ -300,7 +300,7 @@ contains
     type(matrix) :: Fcp
     type(matrix) :: Fii
     type(matrix) :: Fac
-    Real(realk)  :: E21, E21_debug, E22, E22_debug, Gtmp
+    Real(realk)  :: E21, E21_debug, E22, E22_debug, E23_debug, Gtmp
     type(array4) :: array4Taibj,array4gmo
 
     ! Init stuff
@@ -380,8 +380,11 @@ contains
        print *, 'E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
        print *, 'E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
        print *, '----------------------------------------'
-       print *, 'E_21_Vsum: '  , 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
+       
+       E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
             & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)) 
+       
+       print *, 'E21_Vsum: ', E21_debug
        print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
     endif
 
@@ -702,9 +705,10 @@ contains
           print *, 'E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
           print *, 'E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
           print *, '----------------------------------------'
-          print *, 'E22_Xsum: ',  mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc) & 
+          E22_debug = mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc) & 
                & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
                & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
+          print *, 'E22_Xsum: ', E22_debug  
           print *, 'E22_debug: ',  mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
           print *, '----------------------------------------'
           print *, '          E_23 B term                   '
@@ -719,11 +723,12 @@ contains
           print *, 'E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
           print *, 'E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
           print *, '----------------------------------------'
-          print *, 'E23_Bsum: ',  mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
+          E23_debug = mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
                & + mp2f12_E23(Bijij_term2,Bjiij_term2,nocc) + mp2f12_E23(Bijij_term3,Bjiij_term3,nocc) &
                & + mp2f12_E23(Bijij_term4,Bjiij_term4,nocc) + mp2f12_E23(Bijij_term5,Bjiij_term5,nocc) &
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
+           print *, 'E23_Bsum: ',  E23_debug
           print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
           print *, '----------------------------------------'
        endif
@@ -786,17 +791,30 @@ contains
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
     call free_cabs
+    
+    if(DECinfo%F12DEBUG) then
 
-    write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
-    print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+       print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+       write(*,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21_debug
+       write(*,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22_debug
+       write(*,*) 'TOYCODE: F12 E23 CORRECTION TO ENERGY = ',E23_debug
+       write(*,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21_debug+E22_debug+E23_debug
+       write(*,*) 'TOYCODE: MP2-F12 ENERGY = ',energy+E21_debug+E22_debug+E23_debug
+       
+    else
 
-    write(*,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
-    write(DECinfo%output,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
-    write(*,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
-    write(DECinfo%output,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
+       write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+       print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
 
-    write(*,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21+E22
-    write(DECinfo%output,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ', E21+E22
+       write(*,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
+       write(DECinfo%output,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
+       write(*,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
+       write(DECinfo%output,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
+
+       write(*,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21+E22
+       write(DECinfo%output,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ', E21+E22       
+
+    endif
 
     ! Total MP2-F12 correlation energy
     ! Getting this energy 

@@ -200,6 +200,7 @@ contains
     real(realk) :: E_21, E_22, E_23, E_F12
     real(realk) :: tmp, energy, tmp2
     real(realk) :: temp
+    real(realk) :: MP2energy
 
     nbasis   = MyFragment%nbasis
     noccEOS  = MyFragment%noccEOS
@@ -215,18 +216,22 @@ contains
     ! ***********************************************************
     !  Printing Input variables 
     ! ***********************************************************
-    print *, "------------------"
-    print *, "nbasis: ", nbasis
-    print *, "noccEOS: ", noccEOS
-    print *, "nunoccEOS: ", nunoccEOS
-    print *, "------------------"
-    print *, "nocvAOS", nocvAOS
-    print *, "noccAOS", noccAOS
-    print *, "nvirtAOS", nvirtAOS
-    print *, "ncabsAO", ncabsAO
-    print *, "ncabsMO", ncabsMO
-    print *, "------------------"
-
+    
+    if(DECinfo%F12debug) then
+       print *, "--------------------------"
+       print *, "F12-integrals program"
+       print *, "--------------------------"
+       print *, "nbasis: ", nbasis
+       print *, "noccEOS: ", noccEOS
+       print *, "nunoccEOS: ", nunoccEOS
+       print *, "--------------------------"
+       print *, "nocvAOS", nocvAOS
+       print *, "noccAOS", noccAOS
+       print *, "nvirtAOS", nvirtAOS
+       print *, "ncabsAO", ncabsAO
+       print *, "ncabsMO", ncabsMO
+       print *, "--------------------------"
+    end if
 
     ! ***********************************************************
     ! Allocating memory for V matrix
@@ -362,27 +367,29 @@ contains
 
     !> Creating the V4ijkl = V3jilk !
     call array_reorder_4d(1.0E0_realk,V3ijkl,noccEOS,noccEOS,noccEOS,noccEOS,[2,1,4,3],0.0E0_realk,V4ijkl)
-
-    print *, '----------------------------------------'
-    print *, '            V matrix - Terms            '
-    print *, '----------------------------------------'
-    print *, 'norm2(V1ijkl):', norm2(V1ijkl)
-    print *, '----------------------------------------'   
-    print *, '(V2 Term):'
-    print *, '----------------------------------------'   
-    print *, 'norm2(V2ijkl):', norm2(V2ijkl)
-    print *, 'norm2(Gijpq):', norm2(Gijpq)
-    print *, 'norm2(Rijpq):', norm2(Rijpq)
-    print *, '----------------------------------------'   
-    print *, '(V3 Term):'
-    print *, '----------------------------------------'   
-    print *, 'norm2(V3ijkl):', norm2(V3ijkl)  
-    print *, 'norm2(Gijmc):', norm2(Gijmc)
-    print *, 'norm2(Rijmc):', norm2(Rijmc)
-    print *, '----------------------------------------'   
-    print *, '(V4 Term):'
-    print *, '----------------------------------------'
-    print *, 'norm2(V4ijkl):', norm2(V4ijkl)  
+    
+    if(DECinfo%F12debug) then
+       print *, '----------------------------------------'
+       print *, '            V matrix - Terms            '
+       print *, '----------------------------------------'
+       print *, 'norm2(V1ijkl):', norm2(V1ijkl)
+       print *, '----------------------------------------'   
+       print *, '(V2 Term):'
+       print *, '----------------------------------------'   
+       print *, 'norm2(V2ijkl):', norm2(V2ijkl)
+       print *, 'norm2(Gijpq):', norm2(Gijpq)
+       print *, 'norm2(Rijpq):', norm2(Rijpq)
+       print *, '----------------------------------------'   
+       print *, '(V3 Term):'
+       print *, '----------------------------------------'   
+       print *, 'norm2(V3ijkl):', norm2(V3ijkl)  
+       print *, 'norm2(Gijmc):', norm2(Gijmc)
+       print *, 'norm2(Rijmc):', norm2(Rijmc)
+       print *, '----------------------------------------'   
+       print *, '(V4 Term):'
+       print *, '----------------------------------------'
+       print *, 'norm2(V4ijkl):', norm2(V4ijkl)  
+    end if
 
     ! ***********************************************************
     ! Creating the F matrix 
@@ -428,15 +435,16 @@ contains
     !> Creating the X4ijkl = X4jilk 
     call array_reorder_4d(1.0E0_realk,X3ijkl,noccEOS,noccEOS,noccEOS,noccEOS,[2,1,4,3],0.0E0_realk,X4ijkl)
 
-    print *, '----------------------------------------'
-    print *, '          X matrix - Terms              '   
-    print *, '----------------------------------------'
-
-!!$    print *, 'norm2(Fij):'   , norm2(Fij)
-!!$    print *, 'norm2(X1ijkl):' , norm2(X1ijkl)
-!!$    print *, 'norm2(X2ijkl):' , norm2(X2ijkl)
-!!$    print *, 'norm2(X3ijkl):' , norm2(X3ijkl)
-!!$    print *, 'norm2(X4ijkl):' , norm2(X4ijkl)
+    if(DECinfo%F12debug) then
+       print *, '----------------------------------------'
+       print *, '          X matrix - Terms              '   
+       print *, '----------------------------------------'
+       print *, 'norm2(Fij):'    , norm2(Fij)
+       print *, 'norm2(X1ijkl):' , norm2(X1ijkl)
+       print *, 'norm2(X2ijkl):' , norm2(X2ijkl)
+       print *, 'norm2(X3ijkl):' , norm2(X3ijkl)
+       print *, 'norm2(X4ijkl):' , norm2(X4ijkl)
+    end if
 
     ! ***********************************************************
     ! Creating the B matrix 
@@ -481,54 +489,58 @@ contains
     ! ***********************************************************
     !                      B matrix 
     ! ***********************************************************
-    print *, '----------------------------------------'
-    print *, '      Individual B matrix - Terms       '   
-    print *, '----------------------------------------'
-    print *, '(B1 Term):'
-    print *, '----------------------------------------'
-    print *, 'norm2(B1ijkl):', norm2(B1ijkl)
-    print *, '----------------------------------------'   
-    print *, '(B2 Term):'
-    print *, '----------------------------------------'
-    print *, 'norm2(hJir):',  norm2(Myfragment%hJir)
-    print *, 'norm2(R2rlij):', norm2(R2rlij)
-    print *, '----------------------------------------'   
-    print *, '(B3 Term):'
-    print *, '----------------------------------------'
-    print *, 'norm2(hJir):',  norm2(Myfragment%hJir)
-    print *, 'norm2(R2ijkr):', norm2(R2ijkr)
-    print *, '----------------------------------------'   
-    print *, '(B4 Term):'
-    print *, '----------------------------------------'
-    print *, 'norm2(Krs):',  norm2(Myfragment%Krs)
-    print *, 'norm2(Rijrs):', norm2(Rijrs)
-    print *, '----------------------------------------'   
-    print *, '(B5 Term):'
-    print *, '----------------------------------------'
-    print *, 'norm2(Frs):',  norm2(Myfragment%Frs)
-    print *, 'norm2(Rijrm):', norm2(Rijrm)
-    print *, '----------------------------------------'   
-    print *, '(B6 Term):'
-    print *, '----------------------------------------'
-    print *, 'norm2(Fpq):',   norm2(Fpq)
-    print *, 'norm2(Rijpa):', norm2(Rijpa)
-    print *, '----------------------------------------'   
-    print *, '(B7 Term):'
-    print *, '----------------------------------------'
-    !print *, 'norm2(Fnm):',  norm2(Myfragment%Fnm)
-    print *, 'norm2(Rijcm):', norm2(Rijcm)
-    print *, '----------------------------------------'   
-    print *, '(B8 Term):'
-    print *, '----------------------------------------'
-    print *, 'norm2(Frm):',  norm2(Myfragment%Frm)
-    !print *, 'norm2(Rijcm):', norm2(Rijcm)
-    print *, 'norm2(Rijcr):', norm2(Rijcr)
-    print *, '----------------------------------------'   
-    print *, '(B9 Term):'
-    print *, '----------------------------------------'
-    print *, 'norm2(Fcp):',  norm2(Myfragment%Fcp)
-    !print *, 'norm2(Rijpa):', norm2(Rijpa)
-    print *, 'norm2(Rijca):', norm2(Rijca)
+
+    if(DECinfo%F12debug) then
+       print *, '----------------------------------------'
+       print *, '      Individual B matrix - Terms       '   
+       print *, '----------------------------------------'
+       print *, '(B1 Term):'
+       print *, '----------------------------------------'
+       print *, 'norm2(B1ijkl):', norm2(B1ijkl)
+       print *, '----------------------------------------'   
+       print *, '(B2 Term):'
+       print *, '----------------------------------------'
+       print *, 'norm2(hJir):',  norm2(Myfragment%hJir)
+       print *, 'norm2(R2rlij):', norm2(R2rlij)
+       print *, '----------------------------------------'   
+       print *, '(B3 Term):'
+       print *, '----------------------------------------'
+       print *, 'norm2(hJir):',  norm2(Myfragment%hJir)
+       print *, 'norm2(R2ijkr):', norm2(R2ijkr)
+       print *, '----------------------------------------'   
+       print *, '(B4 Term):'
+       print *, '----------------------------------------'
+       print *, 'norm2(Krs):',  norm2(Myfragment%Krs)
+       print *, 'norm2(Rijrs):', norm2(Rijrs)
+       print *, '----------------------------------------'   
+       print *, '(B5 Term):'
+       print *, '----------------------------------------'
+       print *, 'norm2(Frs):',  norm2(Myfragment%Frs)
+       print *, 'norm2(Rijrm):', norm2(Rijrm)
+       print *, '----------------------------------------'   
+       print *, '(B6 Term):'
+       print *, '----------------------------------------'
+       print *, 'norm2(Fpq):',   norm2(Fpq)
+       print *, 'norm2(Rijpa):', norm2(Rijpa)
+       print *, '----------------------------------------'   
+       print *, '(B7 Term):'
+       print *, '----------------------------------------'
+       !print *, 'norm2(Fnm):',  norm2(Myfragment%Fnm)
+       print *, 'norm2(Rijcm):', norm2(Rijcm)
+       print *, '----------------------------------------'   
+       print *, '(B8 Term):'
+       print *, '----------------------------------------'
+       print *, 'norm2(Frm):',  norm2(Myfragment%Frm)
+       !print *, 'norm2(Rijcm):', norm2(Rijcm)
+       print *, 'norm2(Rijcr):', norm2(Rijcr)
+       print *, '----------------------------------------'   
+       print *, '(B9 Term):'
+       print *, '----------------------------------------'
+       print *, 'norm2(Fcp):',  norm2(Myfragment%Fcp)
+       !print *, 'norm2(Rijpa):', norm2(Rijpa)
+       print *, 'norm2(Rijca):', norm2(Rijca)
+
+    end if
 
     ! *************************************************
     !       Dgemms to get the different B terms       
@@ -695,55 +707,61 @@ contains
           B9ijkl(i,j,j,i) = tmp2
        enddo
     enddo
+    
+    if(DECinfo%F12debug) then
 
-    print *, '----------------------------------------'
-    print *, '    B matrix - Terms for testing        '   
-    print *, '----------------------------------------'
-    print *, 'norm2(B1ijkl):', norm2(B1ijkl)
-    print *, 'norm2(B2ijkl):', norm2(B2ijkl)
-    print *, 'norm2(B3ijkl):', norm2(B3ijkl)
-    print *, 'norm2(B4ijij):', norm2(B4ijkl)
-    print *, 'norm2(B5ijij):', norm2(B5ijkl)
-    print *, 'norm2(B6ijij):', norm2(B6ijkl)
-    print *, 'norm2(B7ijij):', norm2(B7ijkl)
-    print *, 'norm2(B8ijij):', norm2(B8ijkl)
-    print *, 'norm2(B9ijij):', norm2(B9ijkl)
+       print *, '----------------------------------------'
+       print *, '    B matrix - Terms for testing        '   
+       print *, '----------------------------------------'
+       print *, 'norm2(B1ijkl):', norm2(B1ijkl)
+       print *, 'norm2(B2ijkl):', norm2(B2ijkl)
+       print *, 'norm2(B3ijkl):', norm2(B3ijkl)
+       print *, 'norm2(B4ijij):', norm2(B4ijkl)
+       print *, 'norm2(B5ijij):', norm2(B5ijkl)
+       print *, 'norm2(B6ijij):', norm2(B6ijkl)
+       print *, 'norm2(B7ijij):', norm2(B7ijkl)
+       print *, 'norm2(B8ijij):', norm2(B8ijkl)
+       print *, 'norm2(B9ijij):', norm2(B9ijkl)
 
-    print *, '----------------------------------------'
-    print *, '(Single Fragment Energies for V-matrix):'
-    print *, '----------------------------------------'
+    end if
+
     call get_mp2f12_sf_E21(V1ijkl, noccEOS, V1energy,  1.0E0_realk)
     call get_mp2f12_sf_E21(V2ijkl, noccEOS, V2energy, -1.0E0_realk)
     call get_mp2f12_sf_E21(V3ijkl, noccEOS, V3energy, -1.0E0_realk)
     call get_mp2f12_sf_E21(V4ijkl, noccEOS, V4energy, -1.0E0_realk)
-
-    print *, "E_21_V_term1:", V1energy
-    print *, "E_21_V_term2:", V2energy
-    print *, "E_21_V_term3:", V3energy
-    print *, "E_21_V_term4:", V4energy
-
     E_21 = V1energy + V2energy + V3energy + V4energy
-    print *, '----------------------------------------'
-    print *, "E_21_Vsum:", E_21
-    print *, '----------------------------------------'
-    print *, '  E_22 X term (Single Fragment)         '
-    print *, '----------------------------------------'
+    
+
+    if(DECinfo%F12debug) then
+       print *, '----------------------------------------'
+       print *, '(Single Fragment Energies for V-matrix):'
+       print *, '----------------------------------------'
+       print *, "E_21_V_term1:", V1energy
+       print *, "E_21_V_term2:", V2energy
+       print *, "E_21_V_term3:", V3energy
+       print *, "E_21_V_term4:", V4energy
+       print *, '----------------------------------------'
+       print *, "E_21_Vsum:", E_21
+    end if
+
     call get_mp2f12_sf_E22(Fij, X1ijkl, noccEOS, X1energy,  1.0E0_realk)
     call get_mp2f12_sf_E22(Fij, X2ijkl, noccEOS, X2energy, -1.0E0_realk)
     call get_mp2f12_sf_E22(Fij, X3ijkl, noccEOS, X3energy, -1.0E0_realk)
     call get_mp2f12_sf_E22(Fij, X4ijkl, noccEOS, X4energy, -1.0E0_realk)
-
-    print *, "E_22_X_term1:", X1energy
-    print *, "E_22_X_term2:", X2energy
-    print *, "E_22_X_term3:", X3energy
-    print *, "E_22_X_term4:", X4energy
-
     E_22 = X1energy + X2energy + X3energy + X4energy 
-    print *, '----------------------------------------'
-    print *, "E_22_Xsum:", E_22
-    print *, '----------------------------------------'
-    print *, '  E_22 B term (Single Fragment)         '
-    print *, '----------------------------------------'
+
+    if(DECinfo%F12debug) then
+       print *, '----------------------------------------'
+       print *, '  E_22 X term (Single Fragment)         '
+       print *, '----------------------------------------'
+       print *, "E_22_X_term1:", X1energy
+       print *, "E_22_X_term2:", X2energy
+       print *, "E_22_X_term3:", X3energy
+       print *, "E_22_X_term4:", X4energy
+       print *, '----------------------------------------'
+       print *, "E_22_Xsum:", E_22
+    end if
+
     call get_mp2f12_sf_E23(B1ijkl, noccEOS, B1energy,  1.0E0_realk)
     call get_mp2f12_sf_E23(B2ijkl, noccEOS, B2energy,  1.0E0_realk)
     call get_mp2f12_sf_E23(B3ijkl, noccEOS, B3energy,  1.0E0_realk)
@@ -752,27 +770,52 @@ contains
     call get_mp2f12_sf_E23(B6ijkl, noccEOS, B6energy,  -1.0E0_realk)
     call get_mp2f12_sf_E23(B7ijkl, noccEOS, B7energy,  1.0E0_realk)
     call get_mp2f12_sf_E23(B8ijkl, noccEOS, B8energy,  -2.0E0_realk)
-    call get_mp2f12_sf_E23(B9ijkl, noccEOS, B9energy,  -2.0E0_realk)
-
-    print *, "E_23_B_term1:", B1energy
-    print *, "E_23_B_term2:", B2energy   
-    print *, "E_23_B_term3:", B3energy   
-    print *, "E_23_B_term4:", B4energy   
-    print *, "E_23_B_term5:", B5energy   
-    print *, "E_23_B_term6:", B6energy   
-    print *, "E_23_B_term7:", B7energy   
-    print *, "E_23_B_term8:", B8energy   
-    print *, "E_23_B_term9:", B9energy   
-
+    call get_mp2f12_sf_E23(B9ijkl, noccEOS, B9energy,  -2.0E0_realk)     
     E_23 = B1energy + B2energy + B3energy + B4energy + B5energy + B6energy + B7energy &
          & + B8energy + B9energy
-    print *, "E_23_B_sum:", E_23
+    
+    if(DECinfo%F12debug) then
+       print *, '----------------------------------------'
+       print *, '  E_22 B term (Single Fragment)         '
+       print *, '----------------------------------------'
+       print *, "E_23_B_term1:", B1energy
+       print *, "E_23_B_term2:", B2energy   
+       print *, "E_23_B_term3:", B3energy   
+       print *, "E_23_B_term4:", B4energy   
+       print *, "E_23_B_term5:", B5energy   
+       print *, "E_23_B_term6:", B6energy   
+       print *, "E_23_B_term7:", B7energy   
+       print *, "E_23_B_term8:", B8energy   
+       print *, "E_23_B_term9:", B9energy   
+       print *, '----------------------------------------'
+       print *, "E_23_B_sum:", E_23
+    end if
     
     E_F12 = E_21 + E_22 + E_23
-    print *, "E_F12:", E_F12
-    print *, '----------------------------------------' 
+      
+    MP2energy = Myfragment%energies(FRAGMODEL_OCCMP2)
+    
+    if(.not. DECinfo%onlyoccpart) then
+    end if
+    
+    print *,   '----------------- DEC-MP2F12 CALCULATION ----------------'
+    write(*,*) 'WANGY TOYCODE: MP2 CORRELATION ENERGY = ', MP2energy
+    write(*,*) 'WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY = ', E_21
+    write(*,*) 'WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY = ', E_22
+    write(*,*) 'WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY = ', E_23
+    write(*,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
+    write(*,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
 
-    Myfragment%energies(17) = E_F12
+    
+    write(DECinfo%output,*) 'WANGY TOYCODE: MP2 CORRELATION ENERGY = ', MP2energy
+    write(DECinfo%output,*) 'WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY = ', E_21
+    write(DECinfo%output,*) 'WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY = ', E_22
+    write(DECinfo%output,*) 'WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY = ', E_23
+    write(DECinfo%output,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
+    write(DECinfo%output,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
+
+    
+    Myfragment%energies(FRAGMODEL_F12) = E_F12
 
     ! ***********************************************************
     ! Free Memory
@@ -1570,140 +1613,5 @@ contains
 
   end subroutine free_batch
 
-  !> Brief: Fock matrix elements
-  !> Author: Yang M. Wang
-  !> Data: August 2013
-  subroutine get_mp2f12_Fij(Fij, MyLsitem, MyFragment, nocc, noccfull, nvirt, nbasis, ncabsAO)
-    implicit none
-
-    !> Full molecule info
-    type(decfrag), intent(in) :: MyFragment
-    type(lsitem), intent(inout) :: mylsitem
-    integer :: nocc, noccfull, nvirt, nbasis, ncabsAO
-    type(matrix) :: Fcc
-    type(matrix) :: Fii
-    type(matrix) :: Dmat 
-
-    !> Fock Occupied MO coefficients
-    real(realk), intent(inout) :: Fij(nocc,nocc)   
-
-!!$    ! Mixed AO/AO full MO Fock matrix
-!!$    print *, "nbasis, ncabsAO", nbasis, ncabsAO
-!!$    call mat_init(Fcc,nbasis,nbasis)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')    
-!!$    
-!!$    !Fii
-!!$    call mat_init(Fii, nocc, nocc)
-!!$    !call MO_transform_AOMatrix(mylsitem, nbasis, nocc, noccfull, nvirt,&
-!!$    !     & MyFragment%Co, MyFragment%Cv,'ii',Fcc,Fii)
-!!$
-!!$    !call mat_to_full(Fii,1.0E0_realk,Fij)
-!!$ 
-!!$    !print *, norm2(Fii%elms)
-!!$    
-!!$    call mat_free(Fcc)
-!!$    call mat_free(Fii)
-!!$    call mat_free(Dmat)
-
-  end subroutine get_mp2f12_Fij
-
 end module f12_integrals_module
 
-
-!!$    print *, '----------------------------------------'
-!!$    print *, '          Fpq - Terms                   '   
-!!$    print *, '----------------------------------------'
-!!$    do i=1, nocvAOS
-!!$       print *, i,i, Fpq(i,i)
-!!$    enddo
-
-
-
-!!$    do i=1, noccEOS
-!!$       do j=1, noccEOS    
-!!$          tmp  = 0.0E0_realk
-!!$          tmp2 = 0.0E0_realk
-!!$          do a=1, nvirtAOS
-!!$             
-!!$             tmp  = 0.0E0_realk
-!!$             do p=1, noccEOS
-!!$                tmp = tmp + Rijpa(i,j,p,a)*Fij(p,p)*Rijpa(i,j,p,a) + &
-!!$                     & Rijpa(j,i,p,a)*Fij(p,p)*Rijpa(j,i,p,a) 
-!!$             enddo
-!!$             tmp2 = tmp2 + tmp
-!!$          
-!!$             tmp  = 0.0E0_realk
-!!$             do p=1, nvirtAOS
-!!$                tmp = tmp + Rijpa(i,j,p,a)*Fab(p,p)*Rijpa(i,j,p,a) + &
-!!$                     & Rijpa(j,i,p,a)*Fab(p,p)*Rijpa(j,i,p,a) 
-!!$             enddo
-!!$             tmp2 = tmp2 + tmp
-!!$          
-!!$          enddo
-!!$          B6ijkl(i,j,i,j) = tmp2
-!!$       enddo
-!!$    enddo
-
-
-!!$    print *, '----------------------------------------'
-!!$    print *, '          Rijpa  - Terms                '   
-!!$    print *, '----------------------------------------'
-!!$    do i=1, noccEOS
-!!$       do j=1, noccEOS
-!!$          do p=1, nocvAOS
-!!$             do a=1, nvirtAOS
-!!$                if( abs(Rijpa(i,j,p,a)) > 1E-10) then
-!!$                   print *, i,j,p,a,Rijpa(i,j,p,a)
-!!$                endif
-!!$             enddo
-!!$          enddo
-!!$       enddo
-!!$    enddo
-!!$
-!!$    print *, '----------------------------------------'
-!!$    print *, '          Rpaij  - Terms                '   
-!!$    print *, '----------------------------------------'
-!!$    do i=1, noccEOS
-!!$       do j=1, noccEOS
-!!$          do p=1, nocvAOS
-!!$             do a=1, nvirtAOS
-!!$                if( abs(Rpaij(p,a,i,j)) > 1E-10) then
-!!$                   print *, p,a,i,j,Rpaij(p,a,i,j)
-!!$                endif
-!!$             enddo
-!!$          enddo
-!!$       enddo
-!!$    enddo
-!!$
-!!$    print *, '----------------------------------------'
-!!$    print *, '          Foo - Terms                   '   
-!!$    print *, '----------------------------------------'
-!!$    do i=1, noccAOS
-!!$       do j=1, noccAOS
-!!$          if( abs(Fij(i,j)) > 1E-10) then
-!!$             print *, i,j, Fij(i,j)
-!!$          endif
-!!$       enddo
-!!$    enddo
-!!$
-!!$    print *, '----------------------------------------'
-!!$    print *, '          Fvv - Terms                   '   
-!!$    print *, '----------------------------------------'
-!!$    do i=1, nvirtAOS
-!!$       do j=1, nvirtAOS
-!!$          if( abs(Fab(i,j)) > 1E-10) then
-!!$             print *, i,j, Fab(i,j)
-!!$          endif
-!!$       enddo
-!!$    enddo
-!!$
-!!$    print *, '----------------------------------------'
-!!$    print *, '          B6ijkl - Terms               '   
-!!$    print *, '----------------------------------------'
-!!$    do i=1, noccEOS
-!!$       do j=1, noccEOS
-!!$          if( abs(B6ijkl(i,j,i,j)) > 1E-10) then
-!!$             print *, i,j,i,j,B6ijkl(i,j,i,j)
-!!$          endif
-!!$       enddo
-!!$    enddo

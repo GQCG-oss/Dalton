@@ -889,18 +889,20 @@ contains
 !!$    call dcopy(noccfull*noccfull,MyMolecule%Fmn,1,Fmn,1)
 !!$    call dcopy(ncabsAO*ncabsMO,MyMolecule%Frm,1,Frm,1)
 !!$    call dcopy(ncabs*nbasis,MyMolecule%Fcp,1,Fcp,1)
-      
-    print *,'-----------------------------------------'
-    print *,'        Get all F12 Fock integrals       '
-    print *,'-----------------------------------------'
-    print *, "norm2(hJir)", norm2(MyMolecule%hJir)
-    print *, "norm2(Krs)", norm2(MyMolecule%Krs)
-    print *, "norm2(Frs)", norm2(MyMolecule%Frs)
-    print *, "norm2(Fac)", norm2(MyMolecule%Fac)
-    print *, "norm2(Frm)", norm2(MyMolecule%Frm)
-    print *, "norm2(Fcp)", norm2(MyMolecule%Fcp)
-    print *, "norm2(Fij)", norm2(MyMolecule%Fij)
-    print *,'-----------------------------------------' 
+    
+    if(DECinfo%F12debug) then  
+      print *,'-----------------------------------------'
+      print *,'        Get all F12 Fock integrals       '
+      print *,'-----------------------------------------'
+      print *, "norm2(hJir)", norm2(MyMolecule%hJir)
+      print *, "norm2(Krs)", norm2(MyMolecule%Krs)
+      print *, "norm2(Frs)", norm2(MyMolecule%Frs)
+      print *, "norm2(Fac)", norm2(MyMolecule%Fac)
+      print *, "norm2(Frm)", norm2(MyMolecule%Frm)
+      print *, "norm2(Fcp)", norm2(MyMolecule%Fcp)
+      print *, "norm2(Fij)", norm2(MyMolecule%Fij)
+      print *,'-----------------------------------------' 
+    end if
 
     ! Mixed CABS/CABS exchange matrix
     ! Mixed CABS/CABS Fock matrix
@@ -1013,58 +1015,56 @@ contains
   
   subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
     implicit none
-    
+
     !> Full molecule structure to be initialized
     type(fullmolecule), intent(inout) :: molecule
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
-    
+
     type(matrix) :: CMO_cabs
     integer :: ncabsAO,ncabs
-    
+
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    
     call mat_init(CMO_cabs,nCabsAO,nCabs)
-    
+
     call init_cabs()
     call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
     call free_cabs()
-    
+
     ! NB! Memory leak need to be freed somewhere
     call mem_alloc(molecule%Ccabs,ncabsAO,nCabs)
     call mat_to_full(CMO_cabs,1.0E0_realk,molecule%Ccabs)
-    
     call mat_free(CMO_cabs)
-    
+
   end subroutine dec_get_CABS_orbitals
-  
-subroutine  dec_get_RI_orbitals(molecule,mylsitem)
+
+  subroutine  dec_get_RI_orbitals(molecule,mylsitem)
     implicit none
-    
+
     !> Full molecule structure to be initialized
     type(fullmolecule), intent(inout) :: molecule
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
-    
+
     type(matrix) :: CMO_RI
     integer :: ncabsAO,ncabs,lupri
-    
+
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    
+
     call mat_init(CMO_RI,ncabsAO,ncabsAO)
 
     call init_cabs()
     call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,lupri)
-call free_cabs()
+    call free_cabs()
 
     ! NB! Memory leak need to be freed somewhere
     call mem_alloc(molecule%Cri,ncabsAO,ncabsAO) 
-call mat_to_full(CMO_RI,1.0E0_realk,molecule%Cri)
+    call mat_to_full(CMO_RI,1.0E0_realk,molecule%Cri)
 
-call mat_free(CMO_RI)
+    call mat_free(CMO_RI)
 
-    end subroutine dec_get_RI_orbitals
- 
+  end subroutine dec_get_RI_orbitals
+
 
   ! THIS ROUTINE SHOULD BE RECONSIDERED IF WE FIND A GOOD ORBITAL INTERACTION MATRIX TO USE
   ! FOR FRAGMENT EXPANSION:   

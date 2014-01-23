@@ -200,7 +200,7 @@ contains
     ! Call main driver to get energy (and possibly density or gradient)
     call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
          & MyFragment,grad=grad)
-
+    
     ! Update full molecular singles amplitudes with (virt EOS,occ EOS) fragment contributions
     if(DECinfo%SinglesPolari) then
        ! Extract (virt EOS,occ EOS) indices from fragment
@@ -389,10 +389,7 @@ contains
 
 #ifdef MOD_UNRELEASED
     if(DECinfo%F12) then    
-       print *, "*******************************************"
-       print *, "       F12 energy single fragment          "  
-       print *, "*******************************************"
-   
+      
        ! Get the wrong density matrix (Not equal to the one for the fullmolecule)
        ! call mat_init(Dmat, myfragment%nbasis,myfragment%nbasis)
        ! call mem_alloc(dens, myfragment%nbasis, myfragment%nbasis)
@@ -2141,8 +2138,6 @@ contains
       & Occ_Atoms,nocc,nunocc,OccOrbitals,UnoccOrbitals, &
       & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
- print *,"---------wangy---norm2(hJir)------------------> ",norm2(MyMolecule%hJir)
-
  ! Information for fragment-adapted orbitals
  ! *****************************************
  ! For practical reasons we now simply repeat the MP2 calculation to get all AOS amplitudes
@@ -2596,8 +2591,6 @@ end subroutine optimize_atomic_fragment
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_orig, &
                & OccAOS_orig,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
                & AtomicFragment,.true.,.false.)
-
-          print *,'----------wangy-------------norm2(hJir)------------', norm2(MyMolecule%hJir)
 
           call atomic_fragment_energy_and_prop(AtomicFragment)
           exit REDUCTION_LOOP

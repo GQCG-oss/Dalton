@@ -1944,6 +1944,8 @@ contains
     call atomic_fragment_free_simple(fragment)
     call atomic_fragment_free_basis_info(fragment)
     call free_fragment_t1(fragment)
+    
+    print *, "atomic_fragment_free"
 
   end subroutine atomic_fragment_free
 
@@ -2146,8 +2148,20 @@ contains
     !> Atomic fragment to be freed
     type(decfrag),intent(inout) :: fragment
     
-    print *, "------------atomic_fragment_free_f12(fragment)----------"
+    if(DECinfo%F12debug) then   
+        print *, "atomic_fragment_free_f12"
+    end if
+
+    ! Free CABS MOs !
+    if(associated(fragment%Ccabs)) then
+       call mem_dealloc(fragment%Ccabs)
+    end if
     
+    ! Free CABS RI MOs !
+    if(associated(fragment%Cri)) then
+       call mem_dealloc(fragment%Cri)
+    end if
+
     if(associated(fragment%hJir)) then
        call mem_dealloc(fragment%hJir)
        fragment%hJir => null()
@@ -4440,7 +4454,7 @@ contains
     end select
 
     ! MODIFY FOR NEW CORRECTION
-    if(DECInfo%F12) then
+    if(DECInfo%F12debug) then
        print *, "(DEC_driver) Total energy for MP2-F12: ", energies(FRAGMODEL_F12)
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a,g20.10)') 'MP2F12-V_gr_term occupied correlation energy : ', energies(FRAGMODEL_F12)

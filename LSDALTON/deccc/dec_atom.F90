@@ -34,7 +34,7 @@ module atomic_fragment_operations
 
   ! F12 DEPENDENCIES 
   ! *****************************************
-  !use f12_routines_module
+  use CABS_operations
 
 contains
 
@@ -343,14 +343,7 @@ contains
 
     ! TIME FOR LOCAL MPI SLAVES
     fragment%slavetime = 0.0E0_realk
-
-    ! ============================================================
-    !                        F12-Specific                        !
-    ! ============================================================    
-    if(DECinfo%F12) then
-      ! call atomic_fragment_init_f12(fragment, MyMolecule)
-    endif
-
+    
     ! Free stuff
     call mem_dealloc(occ_listEFF)
     call mem_dealloc(occEOS)
@@ -370,135 +363,21 @@ contains
     end if
 
     call LSTIMER('FRAGMENT INIT',tcpu,twall,DECinfo%output)
-
-    
-!!$       ! Krr
-!!$       call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
-!!$       call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
-!!$       print *,"norm2(MyMolecule%Krs): ",norm2(MyMolecule%Krs)
-!!$       print *,"norm2(fragment%Krs):   ",norm2(fragment%Krs)
-!!$
-!!$       ! Frr
-!!$       call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
-!!$       call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
-!!$       print *,"norm2(MyMolecule%Frs): ",norm2(MyMolecule%Frs)
-!!$       print *,"norm2(fragment%Frs):   ",norm2(fragment%Frs)
-!!$
-!!$       ! Fac Virt AOS Partitioning ? This is not Fac(nbasis,MO virt AOS)!
-!!$       call mem_alloc(fragment%Fac, nunoccAOS, ncabsMO)
-!!$       do i=1, fragment%nunoccAOS
-!!$          ix = fragment%unoccAOSidx(i) ! This should work according to Thomas 
-!!$          fragment%Fac(i,:) = MyMolecule%Fac(ix,:)
-!!$       enddo
-!!$       print *,"norm2(MyMolecule%Fac): ",norm2(MyMolecule%Fac)
-!!$       print *,"norm2(fragment%Fac):   ",norm2(fragment%Fac)
-!!$       
-!!$       ! Fmm 
-!!$       call mem_alloc(fragment%Fmm, nunoccAOS, ncabsMO)
-!!$       do i=1, fragment%nunoccAOS
-!!$          ix = fragment%unoccAOSidx(i) ! This should work according to Thomas 
-!!$          fragment%Fac(i,:) = MyMolecule%Fac(ix,:)
-!!$       enddo
-!!$       print *,"norm2(MyMolecule%Fac): ",norm2(MyMolecule%Fac)
-!!$       print *,"norm2(fragment%Fac):   ",norm2(fragment%Fac)
-
-       ! Fortran Inner most loop i (i,j,k,l) l is the the outer most index. 
-       ! Fpp Occ+Virt AOS Partitioning
-       ! Foo
-
-!!$       call mem_alloc(fragment%Fpq, nocvAOS, nocvAOS)
-!!$       do j=1, fragment%noccAOS
-!!$          iy = fragment%occAOSidx(j) 
-!!$          do i=1, fragment%noccAOS
-!!$             ix = fragment%occAOSidx(i) 
-!!$             fragment%Fpq(i,j) = MyMolecule%Fpq(ix,iy)
-!!$          enddo
-!!$       enddo
-!!$
-!!$       ! Fov
-!!$       do j=fragment%noccAOS+1, nocvAOS
-!!$          iy = fragment%unoccAOSidx(j) 
-!!$          do i=1, fragment%noccAOS
-!!$             ix = fragment%occAOSidx(i) 
-!!$             print *, "i j", i, j
-!!$             print *, "ix iy", ix, iy
-!!$             fragment%Fpq(i,j) = MyMolecule%Fpq(ix,iy)
-!!$          enddo
-!!$       enddo
-!!$        
-!!$        ! Fvo
-!!$        do j=1, fragment%noccAOS
-!!$           iy = fragment%occAOSidx(j) 
-!!$           do i= fragment%noccAOS+1, fragment%nunoccAOS
-!!$              ix = fragment%unoccAOSidx(i) 
-!!$              fragment%Fpq(i,j) = MyMolecule%Fpq(ix,iy)
-!!$           enddo
-!!$        enddo
-        
-!!$        ! Fvv
-!!$       do j=fragment%noccAOS+1, nocvAOS
-!!$          iy = fragment%unoccAOSidx(j) 
-!!$          do i=fragment%noccAOS+1, nocvAOS
-!!$             print *, "i j", i, j
-!!$             print *, "ix iy", ix, iy
-!!$             ix = fragment%unoccAOSidx(i) 
-!!$             fragment%Fpq(i,j) = MyMolecule%Fpq(ix,iy)
-!!$          enddo
-!!$       enddo
-!!$       
-!!$       print *,"norm2(MyMolecule%Fpq): ",norm2(MyMolecule%Fpq)
-!!$       print *,"norm2(fragment%Fpq):   ",norm2(fragment%Fpq)
-!!$        
-       
-!!$       
-!!$       print *,"norm2(MyMolecule%Fpq): ",norm2(MyMolecule%Fpq)
-!!$       print *,"norm2(fragment%Fpq):   ",norm2(fragment%Fpq)
-!!$       
-!!$       ! Fii Occ EOS Partitioning
-!!$       call mem_alloc(fragment%Fij, noccEOS, noccEOS)
-!!$       do i=1, noccEOS
-!!$          fragment%Fij(i,:) = MyMolecule%Fij(i,:)
-!!$       end do
-!!$       print *,"norm2(MyMolecule%Fij): ",norm2(MyMolecule%Fij)
-!!$       print *,"norm2(fragment%Fij):   ",norm2(fragment%Fij)
-!!$       
-!!$       ! Fmm Occ AOS Partitioning. How is this partioned?
-!!$       call mem_alloc(fragment%Fmn, noccAOS, noccAOS)
-!!$       do i=1, noccAOS
-!!$          fragment%Fmn(i,:) = MyMolecule%Fmn(i,:)
-!!$       end do
-!!$       print *,"norm2(MyMolecule%Fmn): ",norm2(MyMolecule%Fmn)
-!!$       print *,"norm2(fragment%Fmn):   ",norm2(fragment%Fmn)
-!!$       
-!!$       call mem_alloc(fragment%Frm, ncabsAO, noccEOS)
-!!$       call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
-         
-    !Transfer the F12-specific matrices (hJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
-    ! end do
      
   end subroutine atomic_fragment_init_orbital_specific
 
-
+  
   !> \brief Initialize atomic fragment based on a list of specific AOS orbitals for F12-related matrices
   !> \author Yang Min Wang
   subroutine atomic_fragment_init_f12(fragment, MyMolecule)
     type(fullmolecule), intent(in) :: MyMolecule
     type(decfrag), intent(inout) :: fragment
-    
+
     !> F12 Specific Variables
     integer :: nbasis, noccEOS, nunoccEOS, noccfull, nocvAOS, nvirtAOS, ncabsAO, ncabsMO
     integer :: noccAOS, nunoccAOS
     integer :: ix, iy
 
-    ncabsAO = size(MyMolecule%Ccabs,1)
-    ncabsMO = size(MyMolecule%Ccabs,2)
-
-    call mem_alloc(fragment%Ccabs,ncabsAO,ncabsMO)
-    call dcopy(ncabsAO*ncabsMO,Mymolecule%Ccabs,1,fragment%Ccabs,1)
-    
-    call mem_alloc(fragment%Cri,ncabsAO,ncabsAO)
-    call dcopy(ncabsAO*ncabsAO,Mymolecule%Cri,1,fragment%Cri,1)
-    
     ! ============================================================
     !                        F12-Specific                        !
     ! ============================================================
@@ -506,48 +385,61 @@ contains
     nbasis   = fragment%nbasis
     noccEOS  = fragment%noccEOS
     nunoccEOS = fragment%nunoccEOS
- 
+
     noccAOS  = fragment%noccAOS
     nunoccAOS = fragment%nunoccAOS  
     nocvAOS  = fragment%noccAOS + fragment%nunoccAOS
     nvirtAOS = fragment%nunoccAOS
+  
     ncabsAO = size(fragment%Ccabs,1)    
     ncabsMO = size(fragment%Ccabs,2)    
-    
-      
-       ! ************************************************************
-       ! Creating a CocvAOS matrix 
-       ! ************************************1***********************
-       !do i=1, Fragment%noccAOS
-       !   CocvAOS(:,i) = Fragment%Co(:,i)
-       !end do
-       
-       print *,"nbasis:   ", nbasis
-       print *,"noccEOS:  ", noccEOS
-       print *,"nunoccEOS:", nunoccEOS
-       
-       print *,"nocvAOS:  ", nocvAOS
-       print *,"noccAOS: ",  noccAOS
-       print *,"nunoccAOS: ", nvirtAOS
-       print *,"ncabsAO:  ", ncabsAO
-       print *,"ncabsMO:  ", ncabsMO
 
-       ! Be carefull about defining what is EOS and AOS space
-       ! At the moment we have a EOS partitioning scheme not a CABS, they will 
-       ! eventually be dependent on the EOS i, j, because we will project out 
-       ! from the i and j and create the CABS 
-       ! We have partitioned the EOS space
-       
-       ! hJir
-       call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
-       do j=1,ncabsAO
-          do i=1, fragment%noccEOS
-             ix = fragment%idxo(i)
-             fragment%hJir(i,j) = MyMolecule%hJir(ix,j)
-          enddo
+    !CABS MO and RI AO
+    ncabsAO = size(MyMolecule%Ccabs,1)
+    ncabsMO = size(MyMolecule%Ccabs,2)
+    
+    !call mem_alloc(fragment%Ccabs,ncabsAO,ncabsMO)
+    !call dcopy(ncabsAO*ncabsMO,Mymolecule%Ccabs,1,fragment%Ccabs,1)
+
+    !RI MO and RI AO
+    ncabsAO = size(Mymolecule%Ccabs,1) 
+    !call mem_alloc(fragment%Cri,ncabsAO,ncabsAO)
+    !call dcopy(ncabsAO*ncabsAO,Mymolecule%Cri,1,fragment%Cri,1)
+
+    ! hJir
+    call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
+    do j=1,ncabsAO
+       do i=1, fragment%noccEOS
+          ix = fragment%idxo(i)
+          fragment%hJir(i,j) = MyMolecule%hJir(ix,j)
        enddo
-       print *,"norm2(MyMolecule%hJir): ",norm2(MyMolecule%hJir)
-       print *,"norm2(fragment%hJir):   ",norm2(fragment%hJir)
+    enddo
+
+    ! Krs
+    call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
+    call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
+
+    ! Frs
+    call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
+    call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
+
+    ! Frm
+    call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
+    do i=1, fragment%noccAOS
+       iy = fragment%occAOSidx(i) 
+       fragment%Frm(:,i) = MyMolecule%Frm(:,i)
+    enddo
+
+    ! Fcp in the order of the index (occ to virt)
+    call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
+    do i=1, fragment%noccAOS
+       iy = fragment%occAOSidx(i)  
+       fragment%Fcp(:,i) = MyMolecule%Fcp(:,i)
+    enddo
+    do i=noccAOS+1, nocvAOS
+       iy = fragment%unoccAOSidx(i)  
+       fragment%Fcp(:,i) = MyMolecule%Fcp(:,i)
+    enddo
 
   end subroutine atomic_fragment_init_f12
 
@@ -843,9 +735,6 @@ contains
        print *, 'AOS: nocc, nvirt', nocc, nvirt
        call lsquit('fragment_adapted_driver: No orbitals to rotate!',-1)
     end if
-
-
-
 
     ! ============================================================
     !                          VIRTUAL SPACE                     !
@@ -1233,7 +1122,6 @@ contains
 
 
 
-
   !> \brief Initialize the basis part of fragment, i.e. the information listed
   !> in the "expensive box" in the decfrag type definition.
   !> \author Kasper Kristensen
@@ -1269,16 +1157,95 @@ contains
     if(infpar%mynum/=infpar%master) then
        call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
             fragment%natoms,DECinfo%output,0)
+
+       !F12-Ccabs
+       if(DECinfo%F12) then
+          call create_f12_cabs_and_ri_fragment_info(fragment)
+       end if
     end if
+
 #else
     call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
          fragment%natoms,DECinfo%output,0)
+    
+    !F12-Ccabs
+    if(DECinfo%F12) then
+       call create_f12_cabs_and_ri_fragment_info(fragment)
+    endif
+    
 #endif
 
     ! Basis info has now been set
     fragment%BasisInfoIsSet=.true.
-
+    
   end subroutine atomic_fragment_init_basis_part
+
+
+  subroutine create_f12_cabs_and_ri_fragment_info(fragment)
+    implicit none 
+    type(decfrag), intent(inout) :: fragment
+
+    ! ============================================================
+    !                F12-Specific for Cabs and Cri               !
+    ! ============================================================    
+    if(DECinfo%F12) then 
+       call dec_get_CABS_orbitals_fragment(fragment, fragment%mylsitem)
+       call dec_get_RI_orbitals_fragment(fragment, fragment%mylsitem)
+    endif
+  end subroutine create_f12_cabs_and_ri_fragment_info
+  
+  
+  subroutine  dec_get_CABS_orbitals_fragment(fragment,mylsitem)
+    implicit none
+
+    !> Fragment molecule structure to be initialized
+    type(decfrag), intent(inout) :: fragment
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+
+    type(matrix) :: CMO_cabs
+    integer :: ncabsAO,ncabs
+
+    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    call mat_init(CMO_cabs,nCabsAO,nCabs)
+
+    call init_cabs()
+    call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
+    call free_cabs()
+
+    ! NB! Memory leak need to be freed somewhere
+    call mem_alloc(fragment%Ccabs,ncabsAO,nCabs)
+    call mat_to_full(CMO_cabs,1.0E0_realk,fragment%Ccabs)
+    call mat_free(CMO_cabs)
+
+  end subroutine dec_get_CABS_orbitals_fragment
+
+  subroutine  dec_get_RI_orbitals_fragment(fragment,mylsitem)
+    implicit none
+
+    !> Fragment molecule structure to be initialized
+    type(decfrag), intent(inout) :: fragment
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+
+    type(matrix) :: CMO_RI
+    integer :: ncabsAO,ncabs,lupri
+
+    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+
+    call mat_init(CMO_RI,ncabsAO,ncabsAO)
+
+    call init_cabs()
+    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,lupri)
+    call free_cabs()
+
+    ! NB! Memory leak need to be freed somewhere
+    call mem_alloc(fragment%Cri,ncabsAO,ncabsAO) 
+    call mat_to_full(CMO_RI,1.0E0_realk,fragment%Cri)
+
+    call mat_free(CMO_RI)
+
+  end subroutine dec_get_RI_orbitals_fragment
 
 
   !\ brief Purify fragment MO coefficients by (i) projecting out possible occupied
@@ -1373,7 +1340,6 @@ contains
 
 
   end subroutine fragment_purify
-
 
 
   !> \brief Initialize all atomic fragments such that they all contain the entire molecule.
@@ -2232,73 +2198,9 @@ contains
     integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
 
-    !> F12 Specific Variables
-    integer :: noccEOS, nunoccEOS, noccfull, nocvAOS, nvirtAOS, ncabsAO, ncabsMO
-    integer :: noccAOS, nunoccAOS
-    integer :: ix, iy
-
-    ! ============================================================
-    !                        F12-Specific                        !
-    ! ============================================================
-    !> F12 Specific Variables
-    nbasis   = fragment%nbasis
-    noccEOS  = fragment%noccEOS
-    nunoccEOS = fragment%nunoccEOS
- 
-    noccAOS  = fragment%noccAOS
-    nunoccAOS = fragment%nunoccAOS  
-    nocvAOS  = fragment%noccAOS + fragment%nunoccAOS
-    nvirtAOS = fragment%nunoccAOS
-    ncabsAO = size(fragment%Ccabs,1)    
-    ncabsMO = size(fragment%Ccabs,2)    
-    
-    !F12-calculation CABS MO and CABS AO
-    if(DECinfo%F12) then
-       ncabsAO = size(MyMolecule%Ccabs,1)
-       ncabsMO = size(MyMolecule%Ccabs,2)
-       call mem_alloc(fragment%Ccabs,ncabsAO,ncabsMO)
-       call dcopy(ncabsAO*ncabsMO,Mymolecule%Ccabs,1,fragment%Ccabs,1)
-   
-       !RI MO and RI AO
-       ncabsAO = size(Mymolecule%Ccabs,1) 
-       call mem_alloc(fragment%Cri,ncabsAO,ncabsAO)
-       call dcopy(ncabsAO*ncabsAO,Mymolecule%Cri,1,fragment%Cri,1)
-       
-       ! hJir
-       call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
-       do j=1,ncabsAO
-          do i=1, fragment%noccEOS
-             ix = fragment%idxo(i)
-             fragment%hJir(i,j) = MyMolecule%hJir(ix,j)
-          enddo
-       enddo
-
-       ! Krs
-       call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
-       call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
-       
-       ! Frs
-       call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
-       call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
-  
-       ! Frm
-       call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
-       do i=1, fragment%noccAOS
-          iy = fragment%occAOSidx(i) 
-          fragment%Frm(:,i) = MyMolecule%Frm(:,i)
-       enddo
-
-       ! Fcp in the order of the index (occ to virt)
-       call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
-       do i=1, fragment%noccAOS
-          iy = fragment%occAOSidx(i)  
-          fragment%Fcp(:,i) = MyMolecule%Fcp(:,i)
-       enddo
-       do i=noccAOS+1, nocvAOS
-          iy = fragment%unoccAOSidx(i)  
-          fragment%Fcp(:,i) = MyMolecule%Fcp(:,i)
-       enddo
-
+    !F12-calculation F12-Fock terms
+    if(DECinfo%F12) then     
+       call atomic_fragment_init_f12(fragment,MyMolecule)
     endif !F12
 
     ! allocate C^o(nbasis,occ) C^v(nbasis,unocc)
