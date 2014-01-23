@@ -16,9 +16,13 @@ endmacro()
 # (label "lsdalton" will be matched by "ctest -L dalton" and should
 #  therefore not be used.)
 
+if(ENABLE_INTEREST)
+    add_lsdalton_test(LSint/LSDALTON_interest                          "linsca;interest")
+endif()
+
 if(ENABLE_64BIT_INTEGERS)
-    add_lsdalton_test(linsca/linsca_trilevel_64bit "linsca;int64")
-    add_lsdalton_test(linsca/linsca_atoms_64bit    "linsca;int64")
+    add_lsdalton_test(linsca/linsca_trilevel_64bit                     "linsca;int64")
+    add_lsdalton_test(linsca/linsca_atoms_64bit                        "linsca;int64")
 endif()
 
 if(ENABLE_MPI AND ENABLE_SCALAPACK AND NOT USE_32BIT_MPI_INTERFACE)
