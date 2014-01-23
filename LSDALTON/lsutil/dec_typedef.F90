@@ -171,8 +171,13 @@ module dec_typedef_module
      !> defines a simple cutoff threshold for constructing the PNOs from the
      !correlation density
      real(realk) :: simplePNOthr
+     !> cutoff value for the overlap between different PNO spaces
+     logical :: noPNOoverlaptrunc
+     real(realk) :: PNOoverlapthr
      !> this defines the PNO threshold used for the EOS adapted space
      real(realk) :: EOSPNOthr
+     !> use triangular counting in th occupied indices
+     logical :: PNOtriangular
      !> Use MO-based algorithm to solve the CCSD equations
      logical :: MOCCSD
      !> Maximum number of MOs until which an MO-CCSD calculation should be

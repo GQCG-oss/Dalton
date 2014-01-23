@@ -5,8 +5,7 @@
 !     MXCENT = MXCENT_QM + max number of MM nuclei in QM3 model
 !              (number of nuclei in QMMM model is separately allocated in qmmm.h)
 !
-!     IF you change MXCENT you should do a "make depend"
-!     and then rebuild the program using the command "make".
+!     IF you change MXCENT you need to rebuild with "make".
 !
 !     In case of QM3 MXCENT_QM is used to allocate memory in herrdn.F.
 !     To run a QM3 calculation in most cases MXCENT will have to be

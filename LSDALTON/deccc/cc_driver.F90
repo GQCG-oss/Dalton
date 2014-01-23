@@ -2049,10 +2049,14 @@ contains
     !transform back to original basis   
     if(DECinfo%use_singles)then
       call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
-      &gvovo=VOVO%val,t2=t2_final%val,t1=t1_final%val)
+      &vovo=t2_final%val,vo=t1_final%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &vovo=VOVO%val)
     else
       call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
-      &gvovo=VOVO%val,t2=t2_final%val)
+      &vovo=t2_final%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &vovo=VOVO%val)
     endif
 
     call mem_dealloc(Uocc)

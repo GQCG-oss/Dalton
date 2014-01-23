@@ -18,10 +18,10 @@ fi
 #  TEST DESCRIPTION
 #######################################################################
 cat > pbc2_h2STO6G.info <<'%EOF%'
-   pbc2_h2SCF_iter1
+   pbc2_h2STO6g
    -------------
    Molecule:         H2
-   Wave Function:    HF/4-31G,Ahlrichs-Coulomb-Fit
+   Wave Function:    HF/STO-6G,Ahlrichs-Coulomb-Fit
    Test Purpose:     Check HOMO/LUMO at first SCF iteration
 %EOF%
 
@@ -102,13 +102,13 @@ CTRL[2]=1
 ERROR[2]="Basis not correct"
 
 # Test individual iterations
-CRIT1=`$GREP "final E\(HOMO\) \= * \-0\.77728104406" $log | wc -l`
+CRIT1=`$GREP "Final E\(HOMO\) \= * \-0\.737251" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="HOMO energy not correct -"
 
 # Test individual iterations
-CRIT1=`$GREP "final E\(LUMO\) \= * 1\.1240336008" $log | wc -l`
+CRIT1=`$GREP "Final E\(LUMO\) \= * 1\.123919" $log | wc -l`
 TEST[4]=`expr  $CRIT1`
 CTRL[4]=1
 ERROR[4]="LUMO energy at first iteration not correct -"

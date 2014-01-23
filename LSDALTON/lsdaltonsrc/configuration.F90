@@ -266,7 +266,7 @@ DO
       READWORD = .TRUE.
       CALL INTEGRAL_INPUT(config%integral,readword,word,lucmd,lupri)
    ENDIF
-   IF ((WORD(1:10) == '**WAVE FUN').OR.(WORD(1:10) == '**WAVEFUNC')) THEN
+   IF (WORD(1:6) == '**WAVE') THEN
       READWORD=.TRUE.
       DO   
          IF(READWORD) THEN
@@ -497,6 +497,8 @@ DO
             CASE('.MAXELM');     READ(LUCMD,*) config%solver%cfg_max_element
                                                config%solver%set_max_element = config%solver%cfg_max_element
             CASE('.MAXIT');      READ(LUCMD,*) config%opt%cfg_max_linscf_iterations
+            CASE('.NOQUITMAXIT');READ(LUCMD,*) config%opt%cfg_max_linscf_iterations
+                                               config%opt%opt_quit=.false.
             CASE('.MAXRATI');    READ(LUCMD,*) maxratio
                                                config%av%cfg_settings%max_dorth_ratio = maxratio
             CASE('.MAXSTEP');    READ(LUCMD,*) config%solver%cfg_max_step 
@@ -721,7 +723,7 @@ DO
            & lucmd,lupri,config%molecule%NAtoms)
    ENDIF
 !
-   !SECTION MADE BY JOHANNES
+   
 #ifdef MOD_UNRELEASED
    IF (WORD(1:5) == '**PBC') THEN
      READWORD=.TRUE.
@@ -739,6 +741,7 @@ DO
      config%latt_config%num_its_densmat=3
      config%latt_config%nf=6
      config%latt_config%ndmat=6
+     config%latt_config%realthr = -12
      config%latt_config%read_file=.false.
      config%latt_config%store_mats=.false.
      DO
@@ -769,6 +772,19 @@ DO
         CASE('.RECLAT')
           READ (LUCMD, '(3I2)')config%latt_config%nk1,config%latt_config%nk2,&
                                & config%latt_config%nk3
+          if(config%latt_config%nk2 .gt. 1 ) then
+            if(.not.config%latt_config%ldef%is_active(2)) then
+              WRITE(*,*) 'Reciprocal vector 2 should be set to 1'
+              call LSQUIT('ERROR IN RECIPROCAL VECTORS',lupri)
+            endif
+          endif
+
+          if(config%latt_config%nk3 .gt. 1 ) then
+            if(.not.config%latt_config%ldef%is_active(3)) then
+              WRITE(*,*) 'Reciprocal vector 3 should be set to 1'
+              call LSQUIT('ERROR IN RECIPROCAL VECTORS',lupri)
+            endif
+          endif
 
         CASE('.MLMAX')
           READ (LUCMD, '(I2)')config%latt_config%lmax
@@ -788,6 +804,9 @@ DO
         CASE('.DIIS')
           READ(LUCMD,*) config%latt_config%num_its,config%latt_config%num_store&
                &,config%latt_config%error
+
+        CASE('.REALTHR')
+          READ(LUCMD,*) config%latt_config%realthr
 
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
@@ -2529,6 +2548,33 @@ DO
       CASE ('.DISPER' )
          DALTON%DFT%DODISP = .TRUE.
          CALL DFTDISPCHECK()
+!AMT
+      CASE ('.DFT-D2')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP2 = .TRUE.
+         DALTON%DFT%DO_DFTD2 = .TRUE.
+      CASE ('.D2PAR')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%L_INP_D2PAR = .TRUE.
+         READ(LUCMD,*)DALTON%DFT%D2_s6_inp, DALTON%DFT%D2_alp_inp, DALTON%DFT%D2_rs6_inp
+      CASE ('.DFT-D3')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+      CASE ('.DFT-D3BJ')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+         DALTON%DFT%DO_BJDAMP = .TRUE.
+      CASE ('.3BODY')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DO_3BODY = .TRUE.
+      CASE ('.D3PAR')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%L_INP_D3PAR = .TRUE.
+         READ(LUCMD,*) DALTON%DFT%D3_s6_inp, DALTON%DFT%D3_alp_inp, DALTON%DFT%D3_rs6_inp, & 
+     &              DALTON%DFT%D3_rs18_inp, DALTON%DFT%D3_s18_inp
+!AMT
       CASE DEFAULT
          WRITE (LUPRI,'(/,3A,/)') ' Keyword ',WORD,&
               & ' not recognized in *DFT INPUT'
@@ -3280,6 +3326,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       ELSEIF(ls%input%basis%REGULAR%DunningsBasis)THEN
          WRITE(config%lupri,*)'We have detected a Dunnings Basis set so we deactivate the' 
          WRITE(config%lupri,*)'use of the Grand Canonical basis, which is normally default.'
+         WRITE(config%lupri,*)'The use of Grand Canonical basis can be enforced using the FORCEGCBASIS keyword' 
          config%decomp%cfg_gcbasis = .FALSE.         
       ENDIF
    ENDIF

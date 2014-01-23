@@ -3166,7 +3166,6 @@ CONTAINS
       real(realk) :: t1,t2
       call mem_alloc(Dfull,D%nrow,D%ncol)
       call mat_to_full(D,1E0_realk,DFULL)
-      call LSTIMER('START',t1,t2,LUPRI)
       iprint = 0
       INTSPEC(1) = 'R' 
       INTSPEC(2) = 'R'
@@ -3174,7 +3173,9 @@ CONTAINS
       INTSPEC(4) = 'R'
       INTSPEC(5) = 'C' !operator
       SameMOL = .TRUE.
+      call LSTIMER('START',t1,t2,LUPRI)
       call SCREEN_ICHORERI_DRIVER(lupri,luerr,ls%setting,INTSPEC,SameMOL)
+      call LSTIMER('SCREENDECJ',t1,t2,LUPRI)
 
       !step 1 Orbital to Batch information
       iAO = 1 !the center that the batching should occur on. 
@@ -3197,6 +3198,7 @@ CONTAINS
       WRITE(lupri,*)'nbatchesofAOS',nbatchesofAOS
       dim1 = nbast
       dim2 = nbast
+      call LSTIMER('START',t1,t2,LUPRI)
       BatchGamma: do gammaB = 1,nbatchesofAOS        ! batches of AO batches
         dimGamma = AObatchinfo(gammaB)%dim          ! Dimension of gamma batch
         GammaStart = AObatchinfo(gammaB)%orbstart   ! First orbital index in gamma batch
@@ -3210,7 +3212,7 @@ CONTAINS
           AOAlphaStart = AObatchinfo(alphaB)%AOstart  ! First AO batch index in alpha batch
           AOAlphaEnd = AObatchinfo(alphaB)%AOEnd      ! Last AO batch index in alpha batch
 
-          !calc (beta,delta,alphaB,gammaB) 
+          !calc (beta,delta,alphaB,gammaB)
           call MAIN_ICHORERI_DRIVER(lupri,iprint,ls%setting,dim1,dim2,dimAlpha,dimGamma,&
                & Integral,INTSPEC,.FALSE.,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
                & AOGammaStart,AOGammaEnd)
@@ -3247,12 +3249,12 @@ CONTAINS
           ENDDO
         ENDDO BatchAlpha
       ENDDO BatchGamma
+      call LSTIMER('DECJ   ',t1,t2,LUPRI)
       call mem_dealloc(AObatchinfo)
       call mat_init(Jdec,nbast,nbast)
       call mat_set_from_full(JdecFULL,1.0E0_realk,Jdec)
       call mem_dealloc(JdecFull)
       call mem_dealloc(DFULL)
-      call LSTIMER('DECJ   ',t1,t2,LUPRI)
 
       call mat_init(J,nbast,nbast)
       call mat_zero(J)
@@ -3435,7 +3437,6 @@ CONTAINS
       call mat_free(J)
       call mat_free(Jdec)
       call mat_free(tempm3)
-
     END SUBROUTINE DI_DECPACKEDJOLD
 
 #endif

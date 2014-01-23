@@ -72,6 +72,24 @@ LOGICAL           :: NOPRUN !                .FALSE.
 LOGICAL           :: DFTASC !                .FALSE.
 LOGICAL           :: DFTPOT !                .FALSE.
 LOGICAL           :: DODISP !                .FALSE. ; empirical dispersion correction following Grimme
+!AMT More Dispersion Correction related logicals and values
+LOGICAL           :: DO_DFTD2        !       .FALSE.
+LOGICAL           :: L_INP_D2PAR     !       .FALSE.
+REAL(REALK)       :: D2_s6_inp       !       D2 Parameters
+REAL(REALK)       :: D2_alp_inp
+REAL(REALK)       :: D2_rs6_inp
+LOGICAL           :: DODISP2        !       .FALSE.
+LOGICAL           :: DODISP3        !       .FALSE.
+LOGICAL           :: DO_DFTD3        !       .FALSE.
+LOGICAL           :: DO_BJDAMP       !       .FALSE.
+LOGICAL           :: DO_3BODY        !       .FALSE.
+LOGICAL           :: L_INP_D3PAR     !       .FALSE.
+REAL(REALK)       :: D3_s6_inp       !       D3 Parameters
+REAL(REALK)       :: D3_alp_inp
+REAL(REALK)       :: D3_rs6_inp
+REAL(REALK)       :: D3_rs18_inp
+REAL(REALK)       :: D3_s18_inp
+!AMT
 REAL(REALK)       :: DFTIPT !                1.0E-20_realk      
 REAL(REALK)       :: DFTBR1 !                1.0E-20_realk
 REAL(REALK)       :: DFTBR2 !                1.0E-20_realk

@@ -444,7 +444,7 @@ TYPE(LSMATRIX) :: LSMATRIXitem
 TYPE(MATRIX) :: MATRIXitem
 #ifdef MOD_UNRELEASED
 TYPE(lvec_data_t) :: lvec_dataitem
-TYPE(lvec_data_t) :: lattice_cellitem
+TYPE(lattice_cell_info_t) :: lattice_cellitem
 #endif
 ! Size of buffer handling for long integer buffer
 longintbuffersize = 76
@@ -917,7 +917,7 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlapT
     WRITE(LUPRI,'("  Allocated memory (BATCHTOORB):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_BATCHTOORB
-    WRITE(LUPRI,'("  Allocated memory (DECAOBATCHINFO):        ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated memory (DECAOBATCHINFO):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECAOBATCHINFO
     WRITE(LUPRI,'("  Allocated memory (MYPOINTER):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MYPOINTER
@@ -1054,15 +1054,15 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ATOMITEM
     WRITE(LUPRI,'("  Allocated MPI memory (LSMATRIX):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_LSMATRIX
-    WRITE(LUPRI,'("  Allocated MPI memory (DECORBITAL):       ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated MPI memory (DECORBITAL):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECORBITAL
-    WRITE(LUPRI,'("  Allocated MPI memory (DECFRAG):          ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated MPI memory (DECFRAG):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECFRAG
     WRITE(LUPRI,'("  Allocated MPI memory (overlapType):     ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlapT
     WRITE(LUPRI,'("  Allocated MPI memory (BATCHTOORB):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_BATCHTOORB
-    WRITE(LUPRI,'("  Allocated MPI memory (DECAOBATCHINFO):      ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated MPI memory (DECAOBATCHINFO):  ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECAOBATCHINFO
     WRITE(LUPRI,'("  Allocated MPI memory (MYPOINTER):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MYPOINTER
@@ -1199,15 +1199,15 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ATOMITEM
     WRITE(LUPRI,'("  Allocated memory (LSMATRIX):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_LSMATRIX
-    WRITE(LUPRI,'("  Allocated memory (DECORBITAL):       ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated memory (DECORBITAL):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECORBITAL
-    WRITE(LUPRI,'("  Allocated memory (DECFRAG):          ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated memory (DECFRAG):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECFRAG
     WRITE(LUPRI,'("  Allocated memory (overlapType):     ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_overlapT
     WRITE(LUPRI,'("  Allocated memory (BATCHTOORB):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_BATCHTOORB
-    WRITE(LUPRI,'("  Allocated memory (DECAOBATCHINFO):      ",i9," byte  &
+    WRITE(LUPRI,'("  Allocated memory (DECAOBATCHINFO):  ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECAOBATCHINFO
     WRITE(LUPRI,'("  Allocated memory (MYPOINTER):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MYPOINTER
@@ -2098,6 +2098,10 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
     endif
 
    bytes =n*lsmpi_len_realk
+   if(bytes<0)then
+     print *,"calling MPI_ALLOC_MEM with",bytes,n,lsmpi_len_realk
+     call lsquit('ERROR(mpi_allocate_dV8):something wrong in the subroutine, bytes<0',-1)
+   endif
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
@@ -2138,6 +2142,12 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
     endif
 
    bytes =n*lsmpi_len_realk
+
+   if(bytes<0)then
+     print *,"calling MPI_ALLOC_MEM with",bytes,n,lsmpi_len_realk
+     call lsquit('ERROR(mpi_allocate_dV4):something wrong in the subroutine, bytes<0',-1)
+   endif
+
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
@@ -2286,17 +2296,30 @@ if(present(comm))then
     if(loc) then
       bytes = int(0,kind=MPI_ADDRESS_KIND)
       if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) bytes = n1 * lsmpi_len_realk
+
+      if(bytes<0)then
+        print *,"calling MPI_WIN_ALLOCATE with",bytes,n1,lsmpi_len_realk
+        call lsquit('ERROR(lsmpi_allocate_d):something wrong in the subroutine, bytes<0',-1)
+      endif
+
       call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len_realk,info,comm,A%c,A%w,IERR)
+
     else
       bytes = n1 * lsmpi_len_realk
+
+      if(bytes<0)then
+        print *,"calling MPI_WIN_ALLOCATE with",bytes,n1,lsmpi_len_realk
+        call lsquit('ERROR(lsmpi_allocate_d):something wrong in the subroutine, bytes<0',-1)
+      endif
+
       call MPI_WIN_ALLOCATE(bytes,lsmpi_len_realk,info,comm,A%c,A%w,IERR)
     endif
 #else
-    call lsquit("ERROR(mpi_local_allocate_dV8): not possible withot mpi3",-1)
+    call lsquit("ERROR(lsmpi_allocate_d): not possible withot mpi3",-1)
 #endif
 
     IF (IERR.NE. 0) THEN
-      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in alloc",I5)') IERR
+      write (errmsg,'("ERROR(lsmpi_allocate_d):error in alloc",I5)') IERR
       CALL memory_error_quit(errmsg)
     ENDIF
 
@@ -2452,6 +2475,12 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
    endif
 
    bytes =n*lsmpi_intlen
+
+   if(bytes<0)then
+     print *,"calling MPI_ALLOC_MEM with",bytes,n,lsmpi_intlen
+     call lsquit('ERROR(mpi_allocate_i8V):something wrong in the subroutine, bytes<0',-1)
+   endif
+
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
@@ -2496,6 +2525,12 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
    endif
 
    bytes =n*lsmpi_intlen
+
+   if(bytes<0)then
+     print *,"calling MPI_ALLOC_MEM with",bytes,n,lsmpi_intlen
+     call lsquit('ERROR(mpi_allocate_i4V):something wrong in the subroutine, bytes<0',-1)
+   endif
+
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
