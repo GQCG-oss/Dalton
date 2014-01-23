@@ -18,7 +18,7 @@ module rsp_contribs
   use TYPEDEF, only: retrieve_output
   use GCtransMod, only: GCAO2AO_transform_matrixD2
   use Integralparameters
-  use matrix_defop
+  use lsdalton_matrix_defop
   use RSPsolver, only: rsp_molcfg
   use dal_interface , only: di_GET_GbDs, di_GET_GbDs_and_XC_linrsp
   use matrix_module, only: Matrixp, matrix

@@ -31,7 +31,7 @@
 module rsp_equations
 
    use precision
-   use matrix_defop  !matrix type and operators
+   use lsdalton_matrix_defop  !matrix type and operators
    use rsp_contribs  !integrals and integral contractions
    use RSPsolver, only: rsp_molcfg
    implicit none
