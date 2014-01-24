@@ -479,6 +479,13 @@ SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 nbast1 = getNbasis(AO1,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
 nbast2 = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(2)%p,LUPRI)
 
+!print *,"nbast1:",nbast1
+!print *,"nbast2:",nbast2
+!print *,"AO1:",AO1
+!print *,"AO2:",AO2
+!print *,"h%nrow:",h%nrow
+!print *,"h€ncol:",h%ncol
+
 IF(nBast1.NE.h%nrow)CALL LSQUIT('dim1 mismatch in II_get_nucel_mat_mixed',-1)
 IF(nBast2.NE.h%ncol)CALL LSQUIT('dim2 mismatch in II_get_nucel_mat_mixed',-1)
 

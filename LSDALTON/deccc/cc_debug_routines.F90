@@ -893,9 +893,9 @@ module cc_debug_routines_module
            elseif(CCmodel==MODEL_RPA) then
              !Here the energy is computed not in P U [bar P]
              !but in the AOS
-              ccenergy = RPA_energy(t2(iter),gmo)
-              sosex = SOSEX_contribution(t2(iter),gmo)
-              ccenergy=ccenergy+sosex
+              !ccenergy = RPA_energy(t2(iter),govov)
+              !sosex = SOSEX_contribution(t2(iter),govov)
+              !ccenergy=ccenergy+sosex
            else
               print *, 'MODEL = ', DECinfo%cc_models(DECinfo%ccmodel)
               call lsquit('ccsolver_debug: Energy for model is not implemented!',-1)
@@ -992,8 +992,10 @@ module cc_debug_routines_module
 
      ! free memory
      if (small_frag.or.(ccmodel==MODEL_RPA)) then
-       call array_free(pgmo_diag)
-       call array_free(pgmo_up)
+       if (.not.(ccmodel==MODEL_RPA)) then
+         call array_free(pgmo_diag)
+         call array_free(pgmo_up)
+       endif
        call mem_dealloc(MOinfo%dimInd1)
        call mem_dealloc(MOinfo%dimInd2)
        call mem_dealloc(MOinfo%StartInd1)
@@ -2823,16 +2825,18 @@ module cc_debug_routines_module
           call lsquit('only RPA and CCSD model should use this routine',DECinfo%output)
       end select
 
-      ! Declare PDM arrays for packed integrals:
-      pgmo_dims = ntot*(ntot+1)*dimP*(dimP+1)/4
-      !pgmo_diag = array_minit(pgmo_dims,2,local=local,atype='LDAR')
-      pgmo_diag = array_minit([pgmo_dims,Nbatch],2,local=local, &
-                & atype='TDAR',tdims=[pgmo_dims,1])
+      if (.not.(ccmodel==MODEL_RPA)) then
+        ! Declare PDM arrays for packed integrals:
+        pgmo_dims = ntot*(ntot+1)*dimP*(dimP+1)/4
+        !pgmo_diag = array_minit(pgmo_dims,2,local=local,atype='LDAR')
+        pgmo_diag = array_minit([pgmo_dims,Nbatch],2,local=local, &
+        & atype='TDAR',tdims=[pgmo_dims,1])
 
-      pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
-      !pgmo_up   = array_minit(pgmo_dims,2,local=local,atype='LDAR')
-      pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
-                & local=local,atype='TDAR',tdims=[pgmo_dims,1])
+        pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
+        !pgmo_up   = array_minit(pgmo_dims,2,local=local,atype='LDAR')
+        pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
+        & local=local,atype='TDAR',tdims=[pgmo_dims,1])
+      endif
     end if
     !======================================================================
 
@@ -2968,8 +2972,10 @@ module cc_debug_routines_module
     end if
 
     if (master) then 
-      call array_zero(pgmo_diag)
-      call array_zero(pgmo_up)
+      if (.not.(ccmodel==MODEL_RPA)) then
+        call array_zero(pgmo_diag)
+        call array_zero(pgmo_up)
+      endif
 
       MOinfo%nbatch = Nbatch
       call get_MO_batches_info(MOinfo, dimP, ntot)
