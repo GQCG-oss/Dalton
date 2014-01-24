@@ -6,6 +6,8 @@ rm -rf $SCRATCH_DIR
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
 export OMP_NUM_THREADS=6
+source /opt/intel/bin/compilervars.sh intel64
+#source /opt/intel/mkl/bin/mklvars.sh intel64
 #export MATH_ROOT=/opt/intel/mkl
 export MATH_ROOT=/lib64/atlas
 export DALTON_TMPDIR=$SCRATCH_DIR

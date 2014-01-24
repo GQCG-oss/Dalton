@@ -9,8 +9,11 @@ export OMP_NUM_THREADS=3
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=2
 export CTEST_PROJECT_NAME=LSDALTON
-#mpich2
+
+source /opt/intel/bin/compilervars.sh intel64
+source /opt/intel/mkl/bin/mklvars.sh intel64
 export MATH_ROOT=/opt/intel/mkl
+#mpich2 32 bit integer MPI compiled using ifort 
 export PATH=/home/sisyphos/mpich2-ifortbuild-exec/bin:$PATH
 export LD_LIBRARY_PATH=/home/sisyphos/mpich2-ifortbuild-exec/lib:$LD_LIBRARY_PATH
 

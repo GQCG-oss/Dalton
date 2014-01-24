@@ -6,7 +6,7 @@ rm -rf $SCRATCH_DIR
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
 export OMP_NUM_THREADS=2
-#export MATH_ROOT=
+export MATH_ROOT=/lib64/ATLAS
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=6
 export CTEST_PROJECT_NAME=LSDALTON
