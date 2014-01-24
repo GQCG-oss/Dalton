@@ -43,7 +43,7 @@ C
 C Used from common blocks
 C
 C MXORB  : MXSHEL (for INFPAR)
-C INFPAR : MASTER, NODTOT, IPRPAR,  NCODE, DEBUG
+C INFPAR : MASTER, NODTOT, IPRPAR,  NCODE, DBG
 C GNRINF : BASDIR, LENBAS
 C
 #include "infpar.h"
@@ -63,7 +63,7 @@ C
       END IF
       IF (IPRPAR .GT. 0) CALL GETTIM(CPU1,WALL1)
 C
-      IF (DEBUG) THEN
+      IF (DBG) THEN
          IPRNOD = IPRINT
       ELSE
          IPRNOD = 0
@@ -966,7 +966,8 @@ C
 C Slaves are sent to this nodedriver from abacus/dalton.F where they 
 C idle until the keyword IPRTYP is set with an MPI_BCAST (this is 
 C mediated via the subroutine MPIXBCAST from /gp/mpimacro.F)
-
+C Once the slaves have received the IPRTYP.ne.0 broadcast, they need a 
+C broadcast with the print level.
 C IPRTYP is set in iprtyp.h. This file associates every parallel 
 C computation in Dalton with an specific integer and a character string.
 C This file has to be imported in every subroutine that wants to 
@@ -1161,6 +1162,8 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
+         ELSE IF (IPRTYP.EQ.RPA_E_LINTRANS) THEN
+            CALL RPA_E_LIN_TRANSFORM(work, mwork, mytid )
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
@@ -1405,7 +1408,7 @@ C
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER
 C     on the Cray-T3E, K.Ruud-Nov.96
-C
+C     This Kludge fix is soon old enough to start at University...
       DIMENSION ITMP(4000)
       EQUIVALENCE (ITMP,MLINE)
 #endif
