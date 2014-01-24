@@ -17,50 +17,50 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decrpa_energy.info <<'%EOF%'
-   DEC-RPA energies for full DEC
-   -----------------------------
-   Molecule:         HCCH
-   Wave Function:    RPA / 6-31G
-   Test Purpose:     DEC-RPA energy calculation (Johannes R)
+cat > decmp2f12.info <<'%EOF%'
+   MP2-F12 energy for full molecule
+   --------------------------------
+   Molecule:         H2O
+   Wave Function:    MP2-F12 / 6-31G
+   Test Purpose:     Test DEC MP2-F12 energy using toy code (Yang W)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decrpa_energy.mol <<'%EOF%'
+cat > decmp2f12.mol <<'%EOF%'
 BASIS
-6-31G
+6-31G Aux=cc-pVDZ CABS=aug-cc-pVDZ
+%cc-pVDZ, cc-pVTZ
 
-
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=2
-C          0.57878        0.01237        0.13701
-C         -0.57877       -0.01239       -0.13714
+Atomtypes=2 Charge=0 Nosymmetry Angstrom
+Charge=8.0 Atoms=1
+O    0.0000     0.0000  0.1173
 Charge=1.0 Atoms=2
-H          1.61433        0.03455        0.38251
-H         -1.61434       -0.03454       -0.38238
+H    0.0000     0.7572  -0.4692
+H    0.0000     -0.7572 -0.4692
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decrpa_energy.dal <<'%EOF%'
+cat > decmp2f12.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .ARH
 .START
-TRILEVEL
-.NOATOMSTART
+ATOMS
+.CONVTHR
+1.0d-5
+**GENERAL
+.NOGCBASIS
 **DEC
-.MPISPLIT
-0
-.MOCCSD
-.RPA
-.FOT
-4
+.SimulateFull
+.MP2
+.F12
+.CANONICAL
 .MEMORY
-2.0
+2
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -72,8 +72,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >decrpa_energy.check
-cat >>decrpa_energy.check <<'%EOF%'
+echo $CHECK_SHELL >decmp2f12.check
+cat >>decmp2f12.check <<'%EOF%'
 
 log=$1
 
@@ -84,35 +84,35 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-76\.435586" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-75.983974" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# Total correlation energy
-CRIT1=`$GREP "Correlation energy  \: * \-0.11908" $log | wc -l`
+# STANDARD MP2 CORRELATION ENERGY
+CRIT1=`$GREP "WANGY TOYCODE: MP2 CORRELATION ENERGY = * \-0.12885[0-1]" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="Total correlation energy is not correct"
+ERROR[2]="MP2 correlation energy is not correct"
+
+# F12 CONTRIBUTION TO CORRELATION ENERGY
+CRIT1=`$GREP "WANGY TOYCODE: F12 CORRECTION TO ENERGY = * \-0.3248716" $log | wc -l`
+TEST[3]=`expr   $CRIT1`
+CTRL[3]=1
+ERROR[3]="F12 correction energy is not correct"
+
+# MP2-F12 CORRELATION ENERGY
+CRIT1=`$GREP "WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = *\-0.453722" $log | wc -l`
+TEST[4]=`expr   $CRIT1`
+CTRL[4]=1
+ERROR[4]="MP2-F12 corrected correlation energy is not correct"
 
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
-TEST[3]=`expr  $CRIT1`                                                    
-CTRL[3]=1                                                                 
-ERROR[3]="Memory leak -"
+TEST[5]=`expr  $CRIT1`                                                    
+CTRL[5]=1                                                                 
+ERROR[5]="Memory leak -"
                                                                           
-# Memory test for array4                                                  
-CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
-TEST[4]=`expr  $CRIT1`                                                    
-CTRL[4]=1                                                                 
-ERROR[4]="Memory leak for array4 -" 
-
-# MPI Memory test
-CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
-TEST[5]=`expr  $CRIT1`
-CTRL[5]=0
-ERROR[5]="MPI Memory leak -"
-
 PASSED=1
 for i in 1 2 3 4 5
 do

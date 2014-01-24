@@ -63,7 +63,7 @@ contains
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C)
+    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
 
     ! Fock, overlap, and MO coefficient matrices are now stored
     ! in Molecule, and there is no reason to store them twice.
@@ -299,7 +299,7 @@ contains
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C)
+    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
 
     ! No reason to save F,S and C twice. Delete the ones in matrix format and reset at the end
     call mat_free(F)
@@ -375,7 +375,7 @@ contains
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C)
+    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
 
     ! No reason to save F,S and C twice. Delete the ones in matrix format and reset at the end
     call mat_free(F)

@@ -73,7 +73,6 @@ set(DEC_SOURCES
     LSDALTON/deccc/rpa.F90
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/f12_routines.F90
-    LSDALTON/deccc/wangy_playground.F90 
     LSDALTON/deccc/cc_driver.F90
     LSDALTON/deccc/cc_debug_routines.F90
     LSDALTON/deccc/cc_integrals.F90
