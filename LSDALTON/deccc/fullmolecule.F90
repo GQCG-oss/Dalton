@@ -876,13 +876,13 @@ contains
       print *,'-----------------------------------------'
       print *,'        Get all F12 Fock integrals       '
       print *,'-----------------------------------------'
-      print *, "norm2(hJir)", norm2(MyMolecule%hJir)
-      print *, "norm2(Krs)", norm2(MyMolecule%Krs)
-      print *, "norm2(Frs)", norm2(MyMolecule%Frs)
-      print *, "norm2(Fac)", norm2(MyMolecule%Fac)
-      print *, "norm2(Frm)", norm2(MyMolecule%Frm)
-      print *, "norm2(Fcp)", norm2(MyMolecule%Fcp)
-      print *, "norm2(Fij)", norm2(MyMolecule%Fij)
+      print *, "norm2D(hJir)", norm2D(MyMolecule%hJir)
+      print *, "norm2D(Krs)", norm2D(MyMolecule%Krs)
+      print *, "norm2D(Frs)", norm2D(MyMolecule%Frs)
+      print *, "norm2D(Fac)", norm2D(MyMolecule%Fac)
+      print *, "norm2D(Frm)", norm2D(MyMolecule%Frm)
+      print *, "norm2D(Fcp)", norm2D(MyMolecule%Fcp)
+      print *, "norm2D(Fij)", norm2D(MyMolecule%Fij)
       print *,'-----------------------------------------' 
     end if
 

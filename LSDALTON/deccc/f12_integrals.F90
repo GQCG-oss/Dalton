@@ -369,23 +369,23 @@ contains
        print *, '----------------------------------------'
        print *, '            V matrix - Terms            '
        print *, '----------------------------------------'
-       print *, 'norm2(V1ijkl):', norm2(V1ijkl)
+       print *, 'norm4D(V1ijkl):', norm4D(V1ijkl)
        print *, '----------------------------------------'   
        print *, '(V2 Term):'
        print *, '----------------------------------------'   
-       print *, 'norm2(V2ijkl):', norm2(V2ijkl)
-       print *, 'norm2(Gijpq):', norm2(Gijpq)
-       print *, 'norm2(Rijpq):', norm2(Rijpq)
+       print *, 'norm4D(V2ijkl):', norm4D(V2ijkl)
+       print *, 'norm4D(Gijpq):', norm4D(Gijpq)
+       print *, 'norm4D(Rijpq):', norm4D(Rijpq)
        print *, '----------------------------------------'   
        print *, '(V3 Term):'
        print *, '----------------------------------------'   
-       print *, 'norm2(V3ijkl):', norm2(V3ijkl)  
-       print *, 'norm2(Gijmc):', norm2(Gijmc)
-       print *, 'norm2(Rijmc):', norm2(Rijmc)
+       print *, 'norm4D(V3ijkl):', norm4D(V3ijkl)  
+       print *, 'norm4D(Gijmc):', norm4D(Gijmc)
+       print *, 'norm4D(Rijmc):', norm4D(Rijmc)
        print *, '----------------------------------------'   
        print *, '(V4 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2(V4ijkl):', norm2(V4ijkl)  
+       print *, 'norm4D(V4ijkl):', norm4D(V4ijkl)  
     end if
 
     ! ***********************************************************
@@ -436,11 +436,11 @@ contains
        print *, '----------------------------------------'
        print *, '          X matrix - Terms              '   
        print *, '----------------------------------------'
-       print *, 'norm2(Fij):'    , norm2(Fij)
-       print *, 'norm2(X1ijkl):' , norm2(X1ijkl)
-       print *, 'norm2(X2ijkl):' , norm2(X2ijkl)
-       print *, 'norm2(X3ijkl):' , norm2(X3ijkl)
-       print *, 'norm2(X4ijkl):' , norm2(X4ijkl)
+       print *, 'norm2D(Fij):'    , norm2D(Fij)
+       print *, 'norm4D(X1ijkl):' , norm4D(X1ijkl)
+       print *, 'norm4D(X2ijkl):' , norm4D(X2ijkl)
+       print *, 'norm4D(X3ijkl):' , norm4D(X3ijkl)
+       print *, 'norm4D(X4ijkl):' , norm4D(X4ijkl)
     end if
 
     ! ***********************************************************
@@ -493,49 +493,49 @@ contains
        print *, '----------------------------------------'
        print *, '(B1 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2(B1ijkl):', norm2(B1ijkl)
+       print *, 'norm4D(B1ijkl):', norm4D(B1ijkl)
        print *, '----------------------------------------'   
        print *, '(B2 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2(hJir):',  norm2(Myfragment%hJir)
-       print *, 'norm2(R2rlij):', norm2(R2rlij)
+       print *, 'norm2D(hJir):',  norm2D(Myfragment%hJir)
+       print *, 'norm4D(R2rlij):', norm4D(R2rlij)
        print *, '----------------------------------------'   
        print *, '(B3 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2(hJir):',  norm2(Myfragment%hJir)
-       print *, 'norm2(R2ijkr):', norm2(R2ijkr)
+       print *, 'norm2D(hJir):',  norm2D(Myfragment%hJir)
+       print *, 'norm4D(R2ijkr):', norm4D(R2ijkr)
        print *, '----------------------------------------'   
        print *, '(B4 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2(Krs):',  norm2(Myfragment%Krs)
-       print *, 'norm2(Rijrs):', norm2(Rijrs)
+       print *, 'norm2D(Krs):',  norm2D(Myfragment%Krs)
+       print *, 'norm4D(Rijrs):', norm4D(Rijrs)
        print *, '----------------------------------------'   
        print *, '(B5 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2(Frs):',  norm2(Myfragment%Frs)
-       print *, 'norm2(Rijrm):', norm2(Rijrm)
+       print *, 'norm2D(Frs):',  norm2D(Myfragment%Frs)
+       print *, 'norm4D(Rijrm):', norm4D(Rijrm)
        print *, '----------------------------------------'   
        print *, '(B6 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2(Fpq):',   norm2(Fpq)
-       print *, 'norm2(Rijpa):', norm2(Rijpa)
+       print *, 'norm2D(Fpq):',   norm2D(Fpq)
+       print *, 'norm4D(Rijpa):', norm4D(Rijpa)
        print *, '----------------------------------------'   
        print *, '(B7 Term):'
        print *, '----------------------------------------'
-       !print *, 'norm2(Fnm):',  norm2(Myfragment%Fnm)
-       print *, 'norm2(Rijcm):', norm2(Rijcm)
+       !print *, 'norm2D(Fnm):',  norm2D(Myfragment%Fnm)
+       print *, 'norm4D(Rijcm):', norm4D(Rijcm)
        print *, '----------------------------------------'   
        print *, '(B8 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2(Frm):',  norm2(Myfragment%Frm)
-       !print *, 'norm2(Rijcm):', norm2(Rijcm)
-       print *, 'norm2(Rijcr):', norm2(Rijcr)
+       print *, 'norm2D(Frm):',  norm2D(Myfragment%Frm)
+       !print *, 'norm4D(Rijcm):', norm4D(Rijcm)
+       print *, 'norm4D(Rijcr):', norm4D(Rijcr)
        print *, '----------------------------------------'   
        print *, '(B9 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2(Fcp):',  norm2(Myfragment%Fcp)
-       !print *, 'norm2(Rijpa):', norm2(Rijpa)
-       print *, 'norm2(Rijca):', norm2(Rijca)
+       print *, 'norm2D(Fcp):',  norm2D(Myfragment%Fcp)
+       !print *, 'norm4D(Rijpa):', norm4D(Rijpa)
+       print *, 'norm4D(Rijca):', norm4D(Rijca)
 
     end if
 
@@ -703,15 +703,15 @@ contains
        print *, '----------------------------------------'
        print *, '    B matrix - Terms for testing        '   
        print *, '----------------------------------------'
-       print *, 'norm2(B1ijkl):', norm2(B1ijkl)
-       print *, 'norm2(B2ijkl):', norm2(B2ijkl)
-       print *, 'norm2(B3ijkl):', norm2(B3ijkl)
-       print *, 'norm2(B4ijij):', norm2(B4ijkl)
-       print *, 'norm2(B5ijij):', norm2(B5ijkl)
-       print *, 'norm2(B6ijij):', norm2(B6ijkl)
-       print *, 'norm2(B7ijij):', norm2(B7ijkl)
-       print *, 'norm2(B8ijij):', norm2(B8ijkl)
-       print *, 'norm2(B9ijij):', norm2(B9ijkl)
+       print *, 'norm4D(B1ijkl):', norm4D(B1ijkl)
+       print *, 'norm4D(B2ijkl):', norm4D(B2ijkl)
+       print *, 'norm4D(B3ijkl):', norm4D(B3ijkl)
+       print *, 'norm4D(B4ijij):', norm4D(B4ijkl)
+       print *, 'norm4D(B5ijij):', norm4D(B5ijkl)
+       print *, 'norm4D(B6ijij):', norm4D(B6ijkl)
+       print *, 'norm4D(B7ijij):', norm4D(B7ijkl)
+       print *, 'norm4D(B8ijij):', norm4D(B8ijkl)
+       print *, 'norm4D(B9ijij):', norm4D(B9ijkl)
 
     end if
 
@@ -1064,23 +1064,23 @@ contains
        print *, '----------------------------------------'
        print *, '   Pairfragment V matrix - Terms        '
        print *, '----------------------------------------'
-       print *, 'norm2(V1ijkl):', norm2(V1ijkl)
+       print *, 'norm4D(V1ijkl):', norm4D(V1ijkl)
        print *, '----------------------------------------'   
        print *, '(V2 Term):'
        print *, '----------------------------------------'   
-       print *, 'norm2(V2ijkl):', norm2(V2ijkl)
-       print *, 'norm2(Gijpq):', norm2(Gijpq)
-       print *, 'norm2(Rijpq):', norm2(Rijpq)
+       print *, 'norm4D(V2ijkl):', norm4D(V2ijkl)
+       print *, 'norm4D(Gijpq):', norm4D(Gijpq)
+       print *, 'norm4D(Rijpq):', norm4D(Rijpq)
        print *, '----------------------------------------'   
        print *, '(V3 Term):'
        print *, '----------------------------------------'   
-       print *, 'norm2(V3ijkl):', norm2(V3ijkl)  
-       print *, 'norm2(Gijmc):', norm2(Gijmc)
-       print *, 'norm2(Rijmc):', norm2(Rijmc)
+       print *, 'norm4D(V3ijkl):', norm4D(V3ijkl)  
+       print *, 'norm4D(Gijmc):', norm4D(Gijmc)
+       print *, 'norm4D(Rijmc):', norm4D(Rijmc)
        print *, '----------------------------------------'   
        print *, '(V4 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2(V4ijkl):', norm2(V4ijkl)  
+       print *, 'norm4D(V4ijkl):', norm4D(V4ijkl)  
     end if
 
     call get_mp2f12_pf_E21(V1ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V1energy, 1.0E0_realk)

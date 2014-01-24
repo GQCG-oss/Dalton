@@ -23,13 +23,72 @@ module f12_routines_module
  
 
   public :: MO_transform_AOMatrix, get_F12_mixed_MO_Matrices_real, get_F12_mixed_MO_Matrices, free_F12_mixed_MO_Matrices, &
-       & free_F12_mixed_MO_Matrices_real ! atomic_fragment_free_f12, atomic_fragment_init_f12
+       & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D ! atomic_fragment_free_f12, atomic_fragment_init_f12
 
   private
   
-
 contains
+  function norm1D(A)
+    implicit none
+    real(realk), intent(in) :: A(:)
+    integer :: m,i
+    real(realk) :: norm1D   
+    
+    norm1D = 0.0E0_realk
+    
+    m = size(A,1)
+    do i=1,m
+       norm1D = norm1D + A(i)
+    enddo
+  end function norm1D
+
+
+  !> Takes the norm of a matrix 
+  function norm2D(A)
+    implicit none
+    real(realk), intent(in) :: A(:,:)
+    integer :: m,n,i,j
+    real(realk) :: norm2D   
+    
+    norm2D = 0.0E0_realk
+    
+    m = size(A,1)
+    n = size(A,2)
+    
+    do j=1,n
+       do i=1,m
+          norm2D = norm2D + A(i,j)
+       enddo
+    enddo
+    
+  end function norm2D
+
+  function norm4D(A)
+    implicit none
+    real(realk), intent(in) :: A(:,:,:,:)
+    integer :: m,n,p,q,i,j,k,l
+    real(realk) :: norm4D   
+    
+    norm4D = 0.0E0_realk
+    
+    m = size(A,1)
+    n = size(A,2)
+    p = size(A,3)
+    q = size(A,4)
   
+    do l=1,q
+       do k=1,p
+          do j=1,n
+             do i=1,m 
+                norm4D = norm4D + A(i,j,k,l)
+             enddo
+          enddo
+       enddo
+    enddo
+
+  end function norm4D
+
+
   !> Needs documentation
   subroutine get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
        & nocc,noccfull,nvirt,ncabs,HJir_real,Krr_real,Frr_real,Fac_real,Fii_real,Frm_real,Fcp_real)

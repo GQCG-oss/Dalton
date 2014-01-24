@@ -366,12 +366,12 @@ contains
        print *, '----------------------------------------'
        print *, '           V - matrix terms             '
        print *, '----------------------------------------'
-       print *,'norm2(Fijkl): ', norm2(Fijkl)
-       print *,'norm2(Ripjq): ', norm2(Ripjq)
-       print *,'norm2(Gipjq): ', norm2(Gipjq)
+       print *,'norm4D(Fijkl): ', norm4D(Fijkl)
+       print *,'norm4D(Ripjq): ', norm4D(Ripjq)
+       print *,'norm4D(Gipjq): ', norm4D(Gipjq)
        print *, '----------------------------------------'
-       print *,'norm2(Rimjc): ', norm2(Rimjc)
-       print *,'norm2(Gimjc): ', norm2(Gimjc)
+       print *,'norm4D(Rimjc): ', norm4D(Rimjc)
+       print *,'norm4D(Gimjc): ', norm4D(Gimjc)
        print *, '----------------------------------------'
        print *, '           E21  V terms                 '
        print *, '----------------------------------------'
@@ -535,10 +535,10 @@ contains
           print *,'-----------------------------------------'
           print *,'          X - matrix terms               '
           print *,'-----------------------------------------'
-          print *,'norm2(Xijij_term1): ', norm2(Xijij_term1)
-          print *,'norm2(Xijij_term2): ', norm2(Xijij_term2)
-          print *,'norm2(Xijij_term3): ', norm2(Xijij_term3)
-          print *,'norm2(Xijij_term4): ', norm2(Xijij_term4)
+          print *,'norm2D(Xijij_term1): ', norm2D(Xijij_term1)
+          print *,'norm2D(Xijij_term2): ', norm2D(Xijij_term2)
+          print *,'norm2D(Xijij_term3): ', norm2D(Xijij_term3)
+          print *,'norm2D(Xijij_term4): ', norm2D(Xijij_term4)
           print *,'-----------------------------------------'
 
           call mp2f12_Bijij_term1(Bijij_term1,Bjiij_term1,nocc,Dijkl)
@@ -557,63 +557,63 @@ contains
           print *,'-----------------------------------------'
           print *, '(B1 Term):'
           print *,'-----------------------------------------'
-          print *,'norm2(Dijkl): ', norm2(Dijkl)
+          print *,'norm4D(Dijkl): ', norm4D(Dijkl)
           print *,'-----------------------------------------'
           print *, '(B2 Term):'
           print *,'-----------------------------------------'
-          print *,'norm2(Tirjk): ', norm2(Tirjk)
+          print *,'norm4D(Tirjk): ', norm4D(Tirjk)
           print *,'-----------------------------------------'
           print *, '(B3 Term):'
           print *,'-----------------------------------------'
-          print *,'norm2(Tijkr): ', norm2(Tijkr)
+          print *,'norm4D(Tijkr): ', norm4D(Tijkr)
           print *,'-----------------------------------------'
           print *, '(B4 Term):'
           print *,'-----------------------------------------'
-          print *,'norm2(Girjs): ', norm2(Girjs)
+          print *,'norm4D(Girjs): ', norm4D(Girjs)
           print *,'-----------------------------------------'
           print *, '(B5 Term):'
           print *,'-----------------------------------------'
-          print *,'norm2(Girjm): ', norm2(Girjm)
-          print *,'norm2(Grimj): ', norm2(Grimj)
+          print *,'norm4D(Girjm): ', norm4D(Girjm)
+          print *,'norm4D(Grimj): ', norm4D(Grimj)
           print *,'-----------------------------------------'
           print *, '(B6 Term):'
           print *,'-----------------------------------------'
-          print *,'norm2(Gipja): ', norm2(Gipja)
-          print *,'norm2(Gpiaj): ', norm2(Gpiaj)
+          print *,'norm4D(Gipja): ', norm4D(Gipja)
+          print *,'norm4D(Gpiaj): ', norm4D(Gpiaj)
           print *,'-----------------------------------------'
           print *, '(B7 Term):'
           print *,'-----------------------------------------'
-          print *,'norm2(Gicjm): ', norm2(Gicjm)
+          print *,'norm4D(Gicjm): ', norm4D(Gicjm)
           print *,'-----------------------------------------'
           print *, '(B8 Term):'
           print *,'-----------------------------------------'
-          print *,'norm2(Gcirj): ', norm2(Gcirj)
-           print *,'-----------------------------------------'
+          print *,'norm4D(Gcirj): ', norm4D(Gcirj)
+          print *,'-----------------------------------------'
           print *, '(B9 Term):'
           print *,'-----------------------------------------'
-          print *,'norm2(Gciaj): ', norm2(Gciaj)
+          print *,'norm4D(Gciaj): ', norm4D(Gciaj)
           print *,'-----------------------------------------'
-          print *,'norm2(Bijij_term1): ', norm2(Bijij_term1)
-          print *,'norm2(Bijij_term2): ', norm2(Bijij_term2)
-          print *,'norm2(Bijij_term3): ', norm2(Bijij_term3)
-          print *,'norm2(Bijij_term4): ', norm2(Bijij_term4)
-          print *,'norm2(Bijij_term5): ', norm2(Bijij_term5)
-          print *,'norm2(Bijij_term6): ', norm2(Bijij_term6)
-          print *,'norm2(Bijij_term7): ', norm2(Bijij_term7)
-          print *,'norm2(Bijij_term8): ', norm2(Bijij_term8)
-          print *,'norm2(Bijij_term9): ', norm2(Bijij_term9)      
+          print *,'norm2D(Bijij_term1): ', norm2D(Bijij_term1)
+          print *,'norm2D(Bijij_term2): ', norm2D(Bijij_term2)
+          print *,'norm2D(Bijij_term3): ', norm2D(Bijij_term3)
+          print *,'norm2D(Bijij_term4): ', norm2D(Bijij_term4)
+          print *,'norm2D(Bijij_term5): ', norm2D(Bijij_term5)
+          print *,'norm2D(Bijij_term6): ', norm2D(Bijij_term6)
+          print *,'norm2D(Bijij_term7): ', norm2D(Bijij_term7)
+          print *,'norm2D(Bijij_term8): ', norm2D(Bijij_term8)
+          print *,'norm2D(Bijij_term9): ', norm2D(Bijij_term9)      
           print *,'-----------------------------------------'
           print *,'        Get all F12 Fock integrals       '
           print *,'-----------------------------------------'
-          print *, "norm2(hJir)", norm2(hJir%elms)
-          print *, "norm2(Krr)", norm2(Krr%elms)
-          print *, "norm2(Frr)", norm2(Frr%elms)
-          print *, "norm2(Fac)", norm2(Fac%elms)
-          print *, "norm2(Fpp)", norm2(Fpp%elms)
-          print *, "norm2(Fii)", norm2(Fii%elms)
-          print *, "norm2(Fmm)", norm2(Fmm%elms)
-          print *, "norm2(Frm)", norm2(Frm%elms)
-          print *, "norm2(Fcp)", norm2(Fcp%elms)
+          print *, "norm1D(hJir)", norm1D(hJir%elms)
+          print *, "norm1D(Krr)", norm1D(Krr%elms)
+          print *, "norm1D(Frr)", norm1D(Frr%elms)
+          print *, "norm1D(Fac)", norm1D(Fac%elms)
+          print *, "norm1D(Fpp)", norm1D(Fpp%elms)
+          print *, "norm1D(Fii)", norm1D(Fii%elms)
+          print *, "norm1D(Fmm)", norm1D(Fmm%elms)
+          print *, "norm1D(Frm)", norm1D(Frm%elms)
+          print *, "norm1D(Fcp)", norm1D(Fcp%elms)
           print *,'-----------------------------------------' 
 
 !!$          print *, '----------------------------------------'
@@ -1005,9 +1005,9 @@ contains
     Bijij = 0.0E0_realk
     Bjiij = 0.0E0_realk
 
-    !print *,"norm(Bijij)", norm2(Xijij)
-    !print *,"norm(Bijij)", norm2(Xjiij)
-    !print *,"norm(Bijij)", norm2(Fii)
+    !print *,"norm2(Bijij)", norm2D(Xijij)
+    !print *,"norm2(Bijij)", norm2D(Xjiij)
+    !print *,"norm2(Bijij)", norm2D(Fii)
 
     DO j=1,nocc
        DO i=1,nocc
@@ -1716,8 +1716,7 @@ contains
          &                          MyMolecule%Co, MyMolecule%Cv,'imic',gAO,Rimjc)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCG')
-    !print *,"Gmjci", norm2(gao)
-
+  
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
          &                          MyMolecule%Co, MyMolecule%Cv,'imic',gAO,Gimjc)
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
