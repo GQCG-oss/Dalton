@@ -1038,7 +1038,8 @@ contains
     call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRG',Rijpq)
 
     !> Gijmc <ij|r^-1|mc> stored as (i,j,m,c) where c = cabs
-    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRC',Gijmc)    
+    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting, &
+        & CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRC',Gijmc)    
 
     !> Rijmc <ij|f12|mc> stored as (i,j,m,c) where c = cabs 
     call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
