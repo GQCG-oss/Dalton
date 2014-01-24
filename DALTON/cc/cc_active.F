@@ -31,7 +31,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_selact */
       SUBROUTINE CC_SELACT(WORK,LWORK)
@@ -41,23 +41,23 @@ C
 C     Purpose: Prepare selected orbitals to cheat CC code
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <inftap.h>
-#include <infinp.h>
-#include <infind.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <center.h>
-#include <nuclei.h>
-#include <molde.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "inftap.h"
+#include "infinp.h"
+#include "infind.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "center.h"
+#include "nuclei.h"
+#include "molde.h"
+#include "iratdef.h"
 C
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_SELACT')
@@ -1595,9 +1595,9 @@ C
 C
 C     asm 2008
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <priunit.h>
+#include "priunit.h"
 C
       DIMENSION CMO(*), DMAT(*)
       DIMENSION NVEC(8), NBAS(8), NJUMP(8)
@@ -1658,16 +1658,16 @@ C
 C     Purpose: Construct list of selected basis
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <center.h>
-#include <symmet.h>
-#include <ccorb.h>
-#include <maxash.h>
-#include <infind.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "center.h"
+#include "symmet.h"
+#include "ccorb.h"
+#include "maxash.h"
+#include "infind.h"
 C
       LOGICAL INFO
 C
@@ -1807,9 +1807,9 @@ C  /* Deck cho_dendeco */
 C
 C     Henrik Koch   3-may-2008
 C
-#include <implicit.h>
-#include <infpri.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "infpri.h"
+#include "priunit.h"
 C
       LOGICAL MINSPR
       LOGICAL SELDIR
@@ -1963,8 +1963,8 @@ C /* Deck cho_denupk */
 C
 C     asm 2008
 C
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 C
       DIMENSION DENPK(*), DENFUL(*)
       DIMENSION IOFDEN(8)
@@ -1993,12 +1993,12 @@ C /* Deck cho_spread */
 C
 C     asm 2010
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <mxcent.h>
-#include <center.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "mxcent.h"
+#include "center.h"
 C
       LOGICAL VIROCC,PRTSUM
 C
@@ -2240,7 +2240,7 @@ C
 C
       DOUBLE PRECISION FUNCTION AVEVAL(VECTOR,XMAT,SCR,NDIM)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION VECTOR(NDIM),SCR(NDIM),XMAT(NDIM,NDIM)
@@ -2258,9 +2258,9 @@ C     asm. July 2011
 C
 C      Symmetry packed totally symmetric Fock matrix
 C  
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
 C
       DIMENSION FCKSQ(*), FCKAO(*)
       DIMENSION IOFDE2(*)
@@ -2288,8 +2288,8 @@ C
       SUBROUTINE ACT_FREEZE(NSYM,FCKDIA,ISYDIA,NACTOC,NRHFFR,NACTFR)
 C
 C  
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION FCKDIA(*)
       DIMENSION ISYDIA(*), NACTOC(*),NRHFFR(*)

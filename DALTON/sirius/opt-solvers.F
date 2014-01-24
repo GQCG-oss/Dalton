@@ -547,7 +547,7 @@ c        ELSE No solution lowering the energy found
       END
 C --- end of opt-solvers.F ---
          SUBROUTINE PHPT(P,H,N)
-#include <implicit.h>
+#include "implicit.h"
          INTEGER N
          DIMENSION P(N,N)
          DIMENSION H(N,N)

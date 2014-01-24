@@ -3,21 +3,19 @@ MODULE AGC_OBS_VERTICALRECURRENCEMODDSegP
   
  CONTAINS
 
-subroutine VerticalRecurrenceSegP1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+subroutine VerticalRecurrenceSegP1D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,&
          & integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  integer,intent(in) :: nAtomsC,nAtomsD
   REAL(REALK),intent(in) :: TABFJW(0:4,0:1200)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
-  real(realk),intent(in) :: Dcenter(3,nAtomsD)
+  real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(4,nPrimQ,nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt
-  integer :: iAtomD
   real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd
   real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),alphaQ,RJ000(0:1)
   real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
@@ -50,10 +48,9 @@ subroutine VerticalRecurrenceSegP1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
     AUXarray(3,iPrimQ,iPassQ)=0.0E0_realk
     AUXarray(4,iPrimQ,iPassQ)=0.0E0_realk
    ENDDO
-   iAtomD = (iPassQ-1)/nAtomsC+1
-   Dx = -Dcenter(1,iAtomD)
-   Dy = -Dcenter(2,iAtomD)
-   Dz = -Dcenter(3,iAtomD)
+   Dx = -Dcenter(1)
+   Dy = -Dcenter(2)
+   Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
@@ -106,21 +103,19 @@ subroutine VerticalRecurrenceSegP1D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   enddo
 end subroutine
 
-subroutine VerticalRecurrenceSegP2D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+subroutine VerticalRecurrenceSegP2D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  integer,intent(in) :: nAtomsC,nAtomsD
   REAL(REALK),intent(in) :: TABFJW(0: 5,0:1200)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
-  real(realk),intent(in) :: Dcenter(3,nAtomsD)
+  real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(   10,nPrimQ*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
-  integer :: iAtomD
   real(realk) :: TMPAUXarray(    4)
   real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd
   real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),inv2expQ,alphaQ,RJ000(0: 2)
@@ -159,10 +154,9 @@ subroutine VerticalRecurrenceSegP2D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
     ENDDO
    ENDDO
    iP = (iPassQ-1)*nPrimQ
-   iAtomD = (iPassQ-1)/nAtomsC+1
-   Dx = -Dcenter(1,iAtomD)
-   Dy = -Dcenter(2,iAtomD)
-   Dz = -Dcenter(3,iAtomD)
+   Dx = -Dcenter(1)
+   Dy = -Dcenter(2)
+   Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
     iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
@@ -236,21 +230,19 @@ subroutine VerticalRecurrenceSegP2D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+subroutine VerticalRecurrenceSegP3D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  integer,intent(in) :: nAtomsC,nAtomsD
   REAL(REALK),intent(in) :: TABFJW(0: 6,0:1200)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
-  real(realk),intent(in) :: Dcenter(3,nAtomsD)
+  real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(   20,nPrimQ*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
-  integer :: iAtomD
   real(realk) :: TMPAUXarray(   10)
   real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd
   real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),inv2expQ,alphaQ,RJ000(0: 3)
@@ -290,10 +282,9 @@ subroutine VerticalRecurrenceSegP3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
     ENDDO
    ENDDO
    iP = (iPassQ-1)*nPrimQ
-   iAtomD = (iPassQ-1)/nAtomsC+1
-   Dx = -Dcenter(1,iAtomD)
-   Dy = -Dcenter(2,iAtomD)
-   Dz = -Dcenter(3,iAtomD)
+   Dx = -Dcenter(1)
+   Dy = -Dcenter(2)
+   Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
     iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
@@ -394,21 +385,19 @@ subroutine VerticalRecurrenceSegP3D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP4D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+subroutine VerticalRecurrenceSegP4D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  integer,intent(in) :: nAtomsC,nAtomsD
   REAL(REALK),intent(in) :: TABFJW(0: 7,0:1200)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
-  real(realk),intent(in) :: Dcenter(3,nAtomsD)
+  real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(   35,nPrimQ*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
-  integer :: iAtomD
   real(realk) :: TMPAUXarray(   20)
   real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd
   real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),inv2expQ,alphaQ,RJ000(0: 4)
@@ -449,10 +438,9 @@ subroutine VerticalRecurrenceSegP4D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
     ENDDO
    ENDDO
    iP = (iPassQ-1)*nPrimQ
-   iAtomD = (iPassQ-1)/nAtomsC+1
-   Dx = -Dcenter(1,iAtomD)
-   Dy = -Dcenter(2,iAtomD)
-   Dz = -Dcenter(3,iAtomD)
+   Dx = -Dcenter(1)
+   Dy = -Dcenter(2)
+   Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
     iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
@@ -598,21 +586,19 @@ subroutine VerticalRecurrenceSegP4D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+subroutine VerticalRecurrenceSegP5D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  integer,intent(in) :: nAtomsC,nAtomsD
   REAL(REALK),intent(in) :: TABFJW(0: 8,0:1200)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
-  real(realk),intent(in) :: Dcenter(3,nAtomsD)
+  real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(   56,nPrimQ*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
-  integer :: iAtomD
   real(realk) :: TMPAUXarray(   35)
   real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd
   real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),inv2expQ,alphaQ,RJ000(0: 5)
@@ -654,10 +640,9 @@ subroutine VerticalRecurrenceSegP5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
     ENDDO
    ENDDO
    iP = (iPassQ-1)*nPrimQ
-   iAtomD = (iPassQ-1)/nAtomsC+1
-   Dx = -Dcenter(1,iAtomD)
-   Dy = -Dcenter(2,iAtomD)
-   Dz = -Dcenter(3,iAtomD)
+   Dx = -Dcenter(1)
+   Dy = -Dcenter(2)
+   Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
     iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
@@ -875,21 +860,19 @@ subroutine VerticalRecurrenceSegP5D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP6D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+subroutine VerticalRecurrenceSegP6D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  integer,intent(in) :: nAtomsC,nAtomsD
   REAL(REALK),intent(in) :: TABFJW(0: 9,0:1200)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
-  real(realk),intent(in) :: Dcenter(3,nAtomsD)
+  real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(   84,nPrimQ*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
-  integer :: iAtomD
   real(realk) :: TMPAUXarray(   56)
   real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd
   real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),inv2expQ,alphaQ,RJ000(0: 6)
@@ -932,10 +915,9 @@ subroutine VerticalRecurrenceSegP6D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
     ENDDO
    ENDDO
    iP = (iPassQ-1)*nPrimQ
-   iAtomD = (iPassQ-1)/nAtomsC+1
-   Dx = -Dcenter(1,iAtomD)
-   Dy = -Dcenter(2,iAtomD)
-   Dz = -Dcenter(3,iAtomD)
+   Dx = -Dcenter(1)
+   Dy = -Dcenter(2)
+   Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
     iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
@@ -1262,21 +1244,19 @@ subroutine VerticalRecurrenceSegP6D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP7D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+subroutine VerticalRecurrenceSegP7D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  integer,intent(in) :: nAtomsC,nAtomsD
   REAL(REALK),intent(in) :: TABFJW(0:10,0:1200)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
-  real(realk),intent(in) :: Dcenter(3,nAtomsD)
+  real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(  120,nPrimQ*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
-  integer :: iAtomD
   real(realk) :: TMPAUXarray(   84)
   real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd
   real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),inv2expQ,alphaQ,RJ000(0: 7)
@@ -1320,10 +1300,9 @@ subroutine VerticalRecurrenceSegP7D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
     ENDDO
    ENDDO
    iP = (iPassQ-1)*nPrimQ
-   iAtomD = (iPassQ-1)/nAtomsC+1
-   Dx = -Dcenter(1,iAtomD)
-   Dy = -Dcenter(2,iAtomD)
-   Dz = -Dcenter(3,iAtomD)
+   Dx = -Dcenter(1)
+   Dy = -Dcenter(2)
+   Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
     iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
@@ -1808,21 +1787,19 @@ subroutine VerticalRecurrenceSegP7D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP8D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
+subroutine VerticalRecurrenceSegP8D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  integer,intent(in) :: nAtomsC,nAtomsD
   REAL(REALK),intent(in) :: TABFJW(0:11,0:1200)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
-  real(realk),intent(in) :: Dcenter(3,nAtomsD)
+  real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(  165,nPrimQ*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
-  integer :: iAtomD
   real(realk) :: TMPAUXarray(  120)
   real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd
   real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),inv2expQ,alphaQ,RJ000(0: 8)
@@ -1867,10 +1844,9 @@ subroutine VerticalRecurrenceSegP8D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,&
     ENDDO
    ENDDO
    iP = (iPassQ-1)*nPrimQ
-   iAtomD = (iPassQ-1)/nAtomsC+1
-   Dx = -Dcenter(1,iAtomD)
-   Dy = -Dcenter(2,iAtomD)
-   Dz = -Dcenter(3,iAtomD)
+   Dx = -Dcenter(1)
+   Dy = -Dcenter(2)
+   Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
     iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)

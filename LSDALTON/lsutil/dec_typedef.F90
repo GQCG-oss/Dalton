@@ -171,8 +171,18 @@ module dec_typedef_module
      !> defines a simple cutoff threshold for constructing the PNOs from the
      !correlation density
      real(realk) :: simplePNOthr
+     !> cutoff value for the overlap between different PNO spaces
+     logical :: noPNOoverlaptrunc
+     real(realk) :: PNOoverlapthr
      !> this defines the PNO threshold used for the EOS adapted space
      real(realk) :: EOSPNOthr
+     !> use triangular counting in th occupied indices
+     logical :: PNOtriangular
+     !> Use MO-based algorithm to solve the CCSD equations
+     logical :: MOCCSD
+     !> Maximum number of MOs until which an MO-CCSD calculation should be
+     !> performed
+     integer :: Max_num_MO
      !> do not update the singles residual
      logical :: CCDhack
      !> Debug CC driver
@@ -502,7 +512,9 @@ module dec_typedef_module
      !> Virtual MO coefficients (mu,a)
      real(realk), pointer :: Cv(:,:) => null()
      !> CABS MO coefficients (mu,x)
-     real(realk), pointer :: cabsMOs(:,:) => null()
+     real(realk), pointer :: Ccabs(:,:) => null()
+     !> RI MO coefficients 
+     real(realk), pointer :: Cri(:,:) => null() 
 
      !> Fock matrix (AO basis)
      real(realk), pointer :: fock(:,:) => null()
@@ -519,6 +531,24 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+     
+
+     !> Occ-Occ Fock matrix in MO basis
+     real(realk), pointer :: Fij(:,:) => null()
+
+     !> Occ-CABS (one-electron + coulomb matrix) in MO basis
+     real(realk), pointer :: hJir(:,:) => null() 
+      !> Cabs ri-Cabs ri exchange matrix in MO basis
+     real(realk), pointer :: Krs(:,:) => null() 
+     !> Cabs ri-Cabs ri Fock matrix in MO basis
+     real(realk), pointer :: Frs(:,:) => null() 
+     !> Virt-Cabs Fock matrix in MO basis
+     real(realk), pointer :: Fac(:,:) => null() 
+     !> Cabs ri-Occ Fock matrix in MO basis  
+     real(realk), pointer :: Frm(:,:) => null()
+     !> Cabs-(Occ+virt) Fock matrix in MO basis
+     real(realk), pointer :: Fcp(:,:) => null()
+
 
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()
@@ -651,9 +681,12 @@ module dec_typedef_module
      !> Virtual MO coefficients
      real(realk), pointer :: Cv(:,:) => null()
      !> Cabs MO coefficients
-     real(realk),pointer :: cabsMOs(:,:) => null()     
+     real(realk),pointer :: Ccabs(:,:) => null()     
      !> Core MO coefficients 
      real(realk),pointer :: CoreMO(:,:) => null()
+     !> RI Mo coefficients
+     real(realk),pointer :: Cri(:,:) => null()
+
 
      !> AO Fock matrix
      real(realk), pointer :: fock(:,:) => null()
@@ -664,6 +697,23 @@ module dec_typedef_module
      !> Core-core block of Fock matrix in MO basis  (subset of ppfock when frozen core is NOT used)
      real(realk), pointer :: ccfock(:,:) => null()
 
+
+     !> Occ-Occ Fock matrix in MO basis
+     real(realk), pointer :: Fij(:,:) => null()
+  
+     !> Occ-CABS (one-electron + coulomb matrix) in MO basis
+     real(realk), pointer :: hJir(:,:) => null() 
+      !> Cabs ri-Cabs ri exchange matrix in MO basis
+     real(realk), pointer :: Krs(:,:) => null() 
+     !> Cabs ri-Cabs ri Fock matrix in MO basis
+     real(realk), pointer :: Frs(:,:) => null() 
+     !> Virt-Cabs Fock matrix in MO basis
+     real(realk), pointer :: Fac(:,:) => null() 
+     !> Cabs ri-Occ Fock matrix in MO basis  
+     real(realk), pointer :: Frm(:,:) => null()
+     !> Cabs-(Occ+virt) Fock matrix in MO basis
+     real(realk), pointer :: Fcp(:,:) => null()
+     
      ! Information for local orbitals
      ! ******************************
      !> Local occupied MO coefficients

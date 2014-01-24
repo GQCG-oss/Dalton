@@ -600,8 +600,8 @@ end subroutine ls_dcopy
 #endif
 
       CALL ls_GETTIM(CTOT,WTOT)
-      CALL ls_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
-      CALL ls_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
+      CALL ls_TIMTXT('>>>> Total CPU  time used in LSDALTON:',CTOT,LUPRIN)
+      CALL ls_TIMTXT('>>>> Total wall time used in LSDALTON:',WTOT,LUPRIN)
       CALL ls_FLSHFO(LUPRIN)
 
 #ifdef VAR_MPI

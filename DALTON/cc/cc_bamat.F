@@ -85,7 +85,7 @@ c/* Deck CC_BAMAT */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "ccsdinp.h"
 #include "priunit.h"

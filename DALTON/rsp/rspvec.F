@@ -953,7 +953,7 @@ C
 #include "infhso.h"
 #include "inftap.h"
 #include "inflr.h"
-#include <infrank.h>
+#include "infrank.h"
 C
 C     Local variables:
 C

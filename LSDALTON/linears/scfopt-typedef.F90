@@ -163,6 +163,7 @@ implicit none
    opt%cfg_scale_virt            = .false.
    !INFO OPTIONS:
    !=============
+   opt%info_matop                = .FALSE.
    opt%print_final_cmo           = .false.
    !DEBUG OPTIONS:
    !==============

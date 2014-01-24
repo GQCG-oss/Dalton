@@ -1324,8 +1324,8 @@ cC
 cC     pario.h will no longer be needed as an include file when locking RMA
 cC     operations become available.
 cC
-c#include <dummy.h>
-c#include <pario.h>
+c#include "dummy.h"
+c#include "pario.h"
 c#endif
 #include "infpar.h"
 #include "inforb.h"
@@ -1813,8 +1813,8 @@ cC
 cC     pario.h will no longer be needed as an include file when locking RMA
 cC     operations become available.
 cC
-c#include <dummy.h>
-c#include <pario.h>
+c#include "dummy.h"
+c#include "pario.h"
 c#endif
 #include "abainf.h"
 #include "cbinum.h"
@@ -2506,8 +2506,8 @@ C
 C
 C     /* Deck nmpres */
 c      SUBROUTINE NMPRES
-c#include <implicit.h>
-c#include <priunit.h>
+c#include "implicit.h"
+c#include "priunit.h"
 c
 C
 C

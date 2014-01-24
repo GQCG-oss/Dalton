@@ -16,7 +16,7 @@ source /com/intel/Compiler/11.1/064/bin/intel64/ifortvars_intel64.sh
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
-./setup --fc=ifort --cc=icc -D BUILDNAME="MB-Grendel-linux-ifort11.1-debug" --check --type=debug
+./setup --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="MB-Grendel-linux-ifort11.1-debug" --check --type=debug
 #--scratch=$SCRATCH_DIR 
 cd $TMP_DIR/build
 #make depend
