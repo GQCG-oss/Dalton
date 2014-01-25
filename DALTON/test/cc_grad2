@@ -106,7 +106,6 @@ cat > cc_grad2.dal <<'%EOF%'
  2
 *CCFOP
 .DIPMOM
-*DERIVATIVES
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
