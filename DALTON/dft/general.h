@@ -210,10 +210,10 @@ void dft_lin_respab_b_slave (real* work, integer* lwork, integer* iprint);
 void dft_wake_slaves(DFTPropEvalMaster);
 typedef struct {
     void*        data;
-    int          count;
+    integer      count;
     MPI_Datatype type;
 } SyncData;
-void mpi_sync_data(const SyncData* data, int count);
+void mpi_sync_data(const SyncData* data, integer count);
 #else
 #define dft_wake_slaves(a)
 #endif
