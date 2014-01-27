@@ -5539,12 +5539,12 @@ module cc_debug_routines_module
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
-    !$OMP& d1,d2,t21,t22,w1,w2,w3,w4,w5,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
-    !$OMP& skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
-    !$OMP& ns2,ns3,nc,nc2) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
-    !$OMP& vvf,goooo,Lvoov,pno_o2,govov,&
-    !$OMP& oof, maxsize, nspaces, ovf, gvvov, s_idx,o1,&
-    !$OMP& s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
+    !$OMP d1,d2,t21,t22,w1,w2,w3,w4,w5,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
+    !$OMP skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
+    !$OMP ns2,ns3,nc,nc2) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
+    !$OMP vvf,goooo,Lvoov,pno_o2,govov,&
+    !$OMP oof, maxsize, nspaces, ovf, gvvov, s_idx,o1,&
+    !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
     call init_threadmemvar()
 
     call mem_alloc( w1, maxsize )
@@ -6251,11 +6251,11 @@ module cc_debug_routines_module
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE) &
-    !$OMP& REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
-    !$OMP& SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
-    !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
-    !$OMP& lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
-    !$OMP& alloc)
+    !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
+    !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
+    !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
+    !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
+    !$OMP alloc)
     call init_threadmemvar()
 
     !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
@@ -6520,8 +6520,8 @@ module cc_debug_routines_module
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,pno_gvvvv_size)&
-    !$OMP& SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2)&
-    !$OMP& PRIVATE(counter,virteival,U,PD,doit)
+    !$OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2)&
+    !$OMP PRIVATE(counter,virteival,U,PD,doit)
     call init_threadmemvar()
 
     if(fj)then
