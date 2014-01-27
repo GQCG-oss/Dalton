@@ -4,14 +4,14 @@ MODULE IchorEriCoulombintegralOBSGeneralModSeg1Prim
 use IchorprecisionModule
 use IchorCommonModule
 use IchorMemory
-use AGC_OBS_VERTICALRECURRENCEMODASeg1Prim
-use AGC_OBS_VERTICALRECURRENCEMODBSeg1Prim
-use AGC_OBS_VERTICALRECURRENCEMODDSeg1Prim
-use AGC_OBS_VERTICALRECURRENCEMODCSeg1Prim
-use AGC_OBS_VERTICALRECURRENCEMODA
-use AGC_OBS_VERTICALRECURRENCEMODB
-use AGC_OBS_VERTICALRECURRENCEMODC
-use AGC_OBS_VERTICALRECURRENCEMODD
+use AGC_CPU_OBS_VERTICALRECURRENCEMODASeg1Prim
+use AGC_CPU_OBS_VERTICALRECURRENCEMODBSeg1Prim
+use AGC_CPU_OBS_VERTICALRECURRENCEMODDSeg1Prim
+use AGC_CPU_OBS_VERTICALRECURRENCEMODCSeg1Prim
+use AGC_CPU_OBS_VERTICALRECURRENCEMODA
+use AGC_CPU_OBS_VERTICALRECURRENCEMODB
+use AGC_CPU_OBS_VERTICALRECURRENCEMODC
+use AGC_CPU_OBS_VERTICALRECURRENCEMODD
 use AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
 use AGC_OBS_TRANSFERRECURRENCEMODAtoDSeg1Prim
 use AGC_OBS_TRANSFERRECURRENCEMODBtoCSeg1Prim
@@ -105,7 +105,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim0(nPasses,nPrimP,nPrimQ,&
+        call VerticalRecurrenceCPUSeg1Prim0(nPasses,nPrimP,nPrimQ,&
                & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&
                & PpreExpFac,QpreExpFac,LOCALINTS(1:nPasses*1))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -120,7 +120,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*4))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -141,7 +141,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*10))
 #ifdef VAR_DEBUGICHOR
@@ -175,7 +175,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -209,7 +209,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -230,7 +230,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -264,7 +264,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -298,7 +298,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -325,7 +325,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -365,7 +365,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -405,7 +405,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -451,7 +451,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -497,7 +497,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
@@ -543,7 +543,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -570,7 +570,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -610,7 +610,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -650,7 +650,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -696,7 +696,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
@@ -742,7 +742,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*120))
 #ifdef VAR_DEBUGICHOR
@@ -788,7 +788,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -815,7 +815,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -855,7 +855,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
@@ -895,7 +895,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
@@ -941,7 +941,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*120))
 #ifdef VAR_DEBUGICHOR
@@ -987,7 +987,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*165))
 #ifdef VAR_DEBUGICHOR
@@ -1033,7 +1033,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*4))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -1054,7 +1054,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim2D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim2D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -1081,7 +1081,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim1C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim1C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*4))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -1102,7 +1102,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -1123,7 +1123,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -1150,7 +1150,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -1177,7 +1177,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -1204,7 +1204,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -1231,7 +1231,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*4))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -1252,7 +1252,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*10))
 #ifdef VAR_DEBUGICHOR
@@ -1286,7 +1286,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -1326,7 +1326,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*10))
 #ifdef VAR_DEBUGICHOR
@@ -1360,7 +1360,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -1394,7 +1394,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -1434,7 +1434,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -1474,7 +1474,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -1514,7 +1514,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -1554,7 +1554,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*10))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -1581,7 +1581,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -1621,7 +1621,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -1667,7 +1667,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -1707,7 +1707,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -1747,7 +1747,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -1793,7 +1793,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -1839,7 +1839,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -1885,7 +1885,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
@@ -1931,7 +1931,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*10))
 #ifdef VAR_DEBUGICHOR
@@ -1965,7 +1965,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -2005,7 +2005,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -2045,7 +2045,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -2085,7 +2085,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -2125,7 +2125,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -2165,7 +2165,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -2199,7 +2199,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -2239,7 +2239,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -2279,7 +2279,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -2319,7 +2319,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -2359,7 +2359,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
@@ -2399,7 +2399,7 @@ CONTAINS
           call ichorquit('nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceSeg1Prim3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPUSeg1Prim3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
         !No reason for the Electron Transfer Recurrence Relation 
@@ -2426,7 +2426,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -2466,7 +2466,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -2512,7 +2512,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -2552,7 +2552,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -2592,7 +2592,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
@@ -2638,7 +2638,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -2684,7 +2684,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
@@ -2730,7 +2730,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*120))
 #ifdef VAR_DEBUGICHOR
@@ -2776,7 +2776,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
@@ -2816,7 +2816,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -2862,7 +2862,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -2908,7 +2908,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*35))
 #ifdef VAR_DEBUGICHOR
@@ -2948,7 +2948,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -2994,7 +2994,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
@@ -3040,7 +3040,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*56))
 #ifdef VAR_DEBUGICHOR
@@ -3080,7 +3080,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*84))
 #ifdef VAR_DEBUGICHOR
@@ -3126,7 +3126,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPassestoo small',-1)
         ENDIF
 #endif
-        call VerticalRecurrence7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceCPU7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPasses*120))
 #ifdef VAR_DEBUGICHOR
