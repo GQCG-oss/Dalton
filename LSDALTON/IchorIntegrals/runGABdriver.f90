@@ -21,6 +21,7 @@ PROGRAM TUV
   character(len=15),pointer :: uniqeparamNAME(:)
   character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
   character(len=4) :: SPEC
+  character(len=3) :: ARCSTRING
   logical :: BUILD(0:2,0:2),Gen,Seg,SegP,segQ,Seg1Prim,UNIQUE
   integer,pointer :: UniquenTUVs(:)
   !TODO
@@ -28,6 +29,7 @@ PROGRAM TUV
   !remove LOCALINTS = TMParray2
   !add PrimitiveContractionSeg to Transfer or Vertical 
   !
+  ARCSTRING = 'CPU'
   LUMOD2=2
   open(unit = LUMOD2, file="GAB_OBS_DRIVER.f90",status="unknown")
   WRITE(LUMOD2,'(A)')'MODULE IchorEriGabintegralOBSGeneralMod'
@@ -55,18 +57,18 @@ PROGRAM TUV
   !Since we need primitivecontractiongenXXX
   WRITE(LUMOD3,'(A)')'use IchorEriCoulombintegralOBSGeneralModGen'
 
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODA'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODB'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODD'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODC'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODA'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODB'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODD'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODC'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODASeg'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODBSeg'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODDSeg'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODCSeg'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODA'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODB'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODD'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODC'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODA'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODB'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODD'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODC'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSeg'
 
   WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoCGen'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoDGen'
@@ -814,10 +816,10 @@ contains
     IF(AngmomP.EQ.0)THEN
        IF(Gen)THEN
           call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimP*nPasses',nTUV,LUMOD3)
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrence0(nPasses,nPrimP,nPrimP,&'
+          WRITE(LUMOD3,'(A)')'        call VerticalRecurrence'//ARCSTRING//'0(nPasses,nPrimP,nPrimP,&'
        ELSEIF(Seg)THEN
           call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrenceSeg0(nPasses,nPrimP,nPrimP,&'
+          WRITE(LUMOD3,'(A)')'        call VerticalRecurrence'//ARCSTRING//'Seg0(nPasses,nPrimP,nPrimP,&'
           Contracted = .TRUE.
        ENDIF
        WRITE(LUMOD3,'(A)')'               & reducedExponents,TABFJW,Pcent,Pcent,integralPrefactor,&'
@@ -839,9 +841,9 @@ contains
           !A Vertical recurrence
           call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimP*nPasses',nTUV,LUMOD3)
           IF(AngmomPQ.LT.10)THEN
-             WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'A(nPasses,nPrimP,nPrimP,reducedExponents,&'
+             WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'A(nPasses,nPrimP,nPrimP,reducedExponents,&'
           ELSE
-             WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'A(nPasses,nPrimP,nPrimP,reducedExponents,&'
+             WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'A(nPasses,nPrimP,nPrimP,reducedExponents,&'
           ENDIF
 !          WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Pexp,Acenter,Pcent,Pcent,integralPrefactor,PpreExpFac,PpreExpFac,',STRINGOUT,')'
           WRITE(LUMOD3,'(A)')'               & TABFJW,Pexp,Acenter,Pcent,Pcent,integralPrefactor,PpreExpFac,PpreExpFac,&'
@@ -907,9 +909,9 @@ contains
           !B Vertical recurrence
           call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimP*nPasses',nTUV,LUMOD3)
           IF(AngmomPQ.LT.10)THEN
-             WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'B(nPasses,nPrimP,nPrimP,reducedExponents,&'
+             WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'B(nPasses,nPrimP,nPrimP,reducedExponents,&'
           ELSE
-             WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'B(nPasses,nPrimP,nPrimP,reducedExponents,&'
+             WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'B(nPasses,nPrimP,nPrimP,reducedExponents,&'
           ENDIF
           WRITE(LUMOD3,'(A)')'               & TABFJW,Pexp,Bcenter,Pcent,Pcent,integralPrefactor,PpreExpFac,PpreExpFac,&'
           call initString(15)
