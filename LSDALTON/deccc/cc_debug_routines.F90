@@ -995,12 +995,12 @@ module cc_debug_routines_module
        if (.not.(ccmodel==MODEL_RPA)) then
          call array_free(pgmo_diag)
          call array_free(pgmo_up)
+         call mem_dealloc(MOinfo%dimInd1)
+         call mem_dealloc(MOinfo%dimInd2)
+         call mem_dealloc(MOinfo%StartInd1)
+         call mem_dealloc(MOinfo%StartInd2)
+         call mem_dealloc(MOinfo%packInd)
        endif
-       call mem_dealloc(MOinfo%dimInd1)
-       call mem_dealloc(MOinfo%dimInd2)
-       call mem_dealloc(MOinfo%StartInd1)
-       call mem_dealloc(MOinfo%StartInd2)
-       call mem_dealloc(MOinfo%packInd)
        call mem_dealloc(govov)
        !if (.not.(ccmodel==MODEL_RPA)) call mem_dealloc(govov)
      end if
@@ -2816,7 +2816,7 @@ module cc_debug_routines_module
         case(MODEL_RPA)
           ! JOHANNES here you should implement your own routine to get
           ! MaxAllowedDimAlpha MaxAllowedDimGamma
-          call get_MO_and_AO_batches_size(small_frag,ntot,nbas,nocc,nvir, &
+          call get_AO_batches_size_rpa(small_frag,ntot,nbas,nocc,nvir, &
                  & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem)
           !Just for making the test case not fail
           print *, 'JOHANNES here you should implement your own routine to get'
@@ -2975,10 +2975,10 @@ module cc_debug_routines_module
       if (.not.(ccmodel==MODEL_RPA)) then
         call array_zero(pgmo_diag)
         call array_zero(pgmo_up)
-      endif
 
-      MOinfo%nbatch = Nbatch
-      call get_MO_batches_info(MOinfo, dimP, ntot)
+        MOinfo%nbatch = Nbatch
+        call get_MO_batches_info(MOinfo, dimP, ntot)
+      endif
     end if
 
     ! Sanity checks for matrix sizes which need to be filled:
@@ -3363,6 +3363,202 @@ module cc_debug_routines_module
     MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
 
   end subroutine get_mem_MO_CCSD_residual
+
+  !> Purpose: Calculate MO batches size based on available memory
+  !           and memory requirements in MO-RPA residual routine.
+  !           Calculate Max. AO batches based on MO batches size,
+  !           Min. AO batches size, available memory and mem. 
+  !           requirements in get_packed_gmo routine.
+  !
+  !> Author:  Johannes Rekkedal
+  !> Date:    January 2014
+  subroutine get_AO_batches_size_rpa(small_frag,ntot,nbas,nocc,nvir, &
+             & dimMO,Nbatch,MaxAlpha,MaxGamma,MyLsItem)
+    
+    implicit none
+  
+    !> performed MO-based CCSD calculation ?
+    logical, intent(inout) :: small_frag
+    !> number of orbitals:
+    integer, intent(in) :: ntot, nbas, nocc, nvir
+    !> MO batches stuff:
+    integer, intent (inout) :: dimMO, Nbatch
+    !> AO batches stuff:
+    integer, intent (inout) :: MaxAlpha, MaxGamma
+    type(lsitem), intent(inout) :: MyLsItem
+    
+    real(realk) :: MemNeed, MemFree
+    integer(kind=long) :: min_mem
+    integer :: MinAOBatch
+
+    call get_mem_MO_RPA_residual(MemNeed,ntot,nbas,nocc,nvir,1) 
+    dimMO = ntot
+
+    ! Get minimum mem. required to get gmo:
+    call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+    call get_currently_available_memory(MemFree)
+    call get_mem_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MinAObatch,MinAObatch,MinAObatch)
+
+    MaxGamma = MinAObatch
+    MaxAlpha = MinAObatch
+    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxGamma<=nbas)) 
+      MaxGamma = MaxGamma + 1
+       call get_mem_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MaxAlpha,MaxGamma,MinAObatch)  
+    end do
+    if (MaxGamma>=nbas) then
+      MaxGamma = nbas
+    else if (MaxGamma<=MinAObatch) then
+      MaxGamma = MinAObatch
+    else 
+      MaxGamma = MaxGamma - 1
+    end if
+    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAlpha<=nbas)) 
+      MaxAlpha = MaxAlpha + 1
+       call get_mem_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MaxAlpha,MaxGamma,MinAObatch)  
+    end do
+    if (MaxAlpha>=nbas) then
+      MaxAlpha = nbas
+    else if (MaxAlpha<=MinAObatch) then
+      MaxAlpha = MinAObatch
+    else 
+      MaxAlpha = MaxAlpha - 1
+    end if
+
+    ! sanity check:
+    call get_mem_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MaxAlpha,MaxGamma,MinAObatch)  
+    call get_currently_available_memory(MemFree)
+    if ((MemFree-MemNeed)<=0.0E0_realk) then
+      small_frag = .false.
+      return
+    end if
+
+
+
+  end subroutine get_AO_batches_size_RPA
+
+  !> Purpose: Get memory required in get_ccsd_residual_small_frag 
+  !           depending on MO batch dimension.
+  !           Get min. required memory when X = 1 
+  !
+  !> Author:  Johannes Rekkedal
+  !> Date:    January 2014
+  subroutine get_mem_MO_RPA_residual(MemOut,M,N,O,V,X)
+
+    implicit none 
+   
+    ! M: tot number of MO
+    ! N: tot number of AO
+    ! O: number of occ. orbs.
+    ! V: number of virt. orbs.
+    ! X: dimension of MO batch.
+    integer,  intent(in) :: M, N, O, V, X
+    ! memory needed:
+    real(realk), intent(inout) :: MemOut
+    ! intermediate memory:
+    integer :: MemNeed, nnod, nTileMax, nMOB
+
+    nMOB = (M-1)/X + 1
+    nnod = 1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
+
+    ! Packed gmo diag blocks:
+    !nTileMax = (nMOB-1)/nnod + 3
+    !MemNeed = nTileMax*X*(X+1)*M*(M+1)/4
+    !! Packed gmo upper blocks:
+    !nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
+    !MemNeed = MemNeed + nTileMax*X*X*M*(M+1)/2
+    nTileMax = nMOB/nnod + 3
+    MemNeed = 3*nTileMax*O*V
+
+    ! Working arrays:
+    MemNeed = MemNeed + 5*O**2*V**2
+    !MemNeed = MemNeed + ntileMax
+    !MemNeed = MemNeed + max(X*O*V*M, O*O*V*V, X*X*M*M, X*O*O*M)
+    !MemNeed = MemNeed + max(O**4, V*O**3, V*V*O*O, X*X*M*M, X*O*O*V, X*O*V*V)
+    !MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M)
+    !MemNeed = MemNeed + max(X*O*V*M, O*O*V*V, X*X*M*M, X*O*O*M)
+
+    ! T1-Transfo. matrices:
+    !MemNeed = MemNeed + V*M + O*M
+  
+    ! Batch of MO int:
+    MemNeed = MemNeed + X*X*M*M
+    
+    ! Intermediates (B2prep, u2, G_Pi, H_aQ):
+    !MemNeed = MemNeed + O**4 + O*O*V*V + X*O + V*X
+    
+    ! T1-transformed integrals:
+    !MemNeed = MemNeed + O**4 + 2*V*O**3 + 3*O*O*V*V 
+
+    ! Fock Matrix:
+    MemNeed = MemNeed + 3*N*N
+
+    MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
+
+  end subroutine get_mem_MO_RPA_residual
+
+  !> Purpose: Get memory required in get_gmo depending on AO 
+  !           batch dimension.
+  !           Get min. required memory: AlphaDim = GammaDim = MinDimAO
+  !
+  !> Author:  Johannes Rekkedal
+  !> Date:    January 2014
+  subroutine get_mem_gmo(MemOut,M,N,O,V,X,nMOB,AlphaDim,GammaDim,MinDimAO)
+
+    implicit none 
+   
+    ! M: tot number of MO
+    ! N: tot number of AO
+    ! O: number of occ. orbs.
+    ! V: number of virt. orbs.
+    ! X: dimension of MO batch.
+    ! nMOB: number of MO batches.
+    integer,  intent(in) :: M, N, O, V, X, nMOB
+    !> AO stuff:
+    integer, intent(in) :: AlphaDim, GammaDim, MinDimAO
+    !> memory needed:
+    real(realk), intent(inout) :: MemOut
+    ! intermediate memory:
+    integer :: MemNeed, nnod, nTileMax
+
+    nnod = 1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
+
+    ! Transfo. matrices:
+    MemNeed = N*M + AlphaDim*X + GammaDim*X
+  
+    ! AO stuff:
+    MemNeed = MemNeed + 4*N + N*N*AlphaDim*GammaDim 
+    
+   ! ! Packed gmo diag blocks:
+   ! nTileMax = (nMOB-1)/nnod + 3
+   ! MemNeed = MEmNeed + nTileMax*X*(X+1)*M*(M+1)/4
+   ! ! Packed gmo upper blocks:
+   ! nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
+   ! MemNeed = MEmNeed + nTileMax*X*X*M*(M+1)/2
+
+    ! Gmo stuff:
+    MemNeed = MemNeed + O**2*V**2 
+
+    ! MO stuff:
+    !MemNeed = MemNeed + X*X*M*M + 5*nMOB*nMOB + 1
+    
+    ! Working arrays:
+    MemNeed = MemNeed + max(M*N*AlphaDim*GammaDim, M*M*GammaDim*X)
+    MemNeed = MemNeed + max(M*M*AlphaDim*GammaDim, M*M*X*X)
+    
+    MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
+  
+  end subroutine get_mem_gmo
+
 
 
   !> Purpose: Transform AO int. into MO int. in batches
