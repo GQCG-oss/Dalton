@@ -1,9 +1,9 @@
-MODULE AGC_OBS_VERTICALRECURRENCEMODDSegP
+MODULE AGC_CPU_OBS_VERTICALRECURRENCEMODDSegQ
  use IchorPrecisionModule
   
  CONTAINS
 
-subroutine VerticalRecurrenceSegP1D(nPasses,nPrimP,nPrimQ,&
+subroutine VerticalRecurrenceCPUSegQ1D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,&
          & integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)
   implicit none
@@ -13,7 +13,7 @@ subroutine VerticalRecurrenceSegP1D(nPasses,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(4,nPrimQ,nPasses)
+  real(realk),intent(inout) :: AUXarray(4,nPrimP,nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt
   real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd
@@ -42,16 +42,14 @@ subroutine VerticalRecurrenceSegP1D(nPasses,nPrimP,nPrimQ,&
      invexpQ(iPrimQ) = D1/Qexp(iPrimQ)
   ENDDO
   DO iPassQ = 1,nPasses
-   DO iPrimQ=1, nPrimQ
-    AUXarray(1,iPrimQ,iPassQ)=0.0E0_realk
-    AUXarray(2,iPrimQ,iPassQ)=0.0E0_realk
-    AUXarray(3,iPrimQ,iPassQ)=0.0E0_realk
-    AUXarray(4,iPrimQ,iPassQ)=0.0E0_realk
-   ENDDO
    Dx = -Dcenter(1)
    Dy = -Dcenter(2)
    Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
+    AUXarray(1,iPrimP,iPassQ)=0.0E0_realk
+    AUXarray(2,iPrimP,iPassQ)=0.0E0_realk
+    AUXarray(3,iPrimP,iPassQ)=0.0E0_realk
+    AUXarray(4,iPrimP,iPassQ)=0.0E0_realk
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
@@ -94,16 +92,16 @@ subroutine VerticalRecurrenceSegP1D(nPasses,nPrimP,nPrimQ,&
      PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
      TMP1 = PREF*RJ000(0)
      TMP2 = PREF*RJ000(1)
-     AUXarray(1,iPrimQ,iPassQ) = AUXarray(1,iPrimQ,iPassQ) + TMP1
-     AUXarray(2,iPrimQ,iPassQ) = AUXarray(2,iPrimQ,iPassQ) + Xqd*TMP1 + alphaXpq*TMP2
-     AUXarray(3,iPrimQ,iPassQ) = AUXarray(3,iPrimQ,iPassQ) + Yqd*TMP1 + alphaYpq*TMP2
-     AUXarray(4,iPrimQ,iPassQ) = AUXarray(4,iPrimQ,iPassQ) + Zqd*TMP1 + alphaZpq*TMP2
+     AUXarray(1,iPrimP,iPassQ) = AUXarray(1,iPrimP,iPassQ) + TMP1
+     AUXarray(2,iPrimP,iPassQ) = AUXarray(2,iPrimP,iPassQ) + Xqd*TMP1 + alphaXpq*TMP2
+     AUXarray(3,iPrimP,iPassQ) = AUXarray(3,iPrimP,iPassQ) + Yqd*TMP1 + alphaYpq*TMP2
+     AUXarray(4,iPrimP,iPassQ) = AUXarray(4,iPrimP,iPassQ) + Zqd*TMP1 + alphaZpq*TMP2
     enddo
    enddo
   enddo
 end subroutine
 
-subroutine VerticalRecurrenceSegP2D(nPasses,nPrimP,nPrimQ,&
+subroutine VerticalRecurrenceCPUSegQ2D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
@@ -113,7 +111,7 @@ subroutine VerticalRecurrenceSegP2D(nPasses,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(   10,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(   10,nPrimP*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(    4)
@@ -146,25 +144,20 @@ subroutine VerticalRecurrenceSegP2D(nPasses,nPrimP,nPrimQ,&
      invexpQ(iPrimQ) = D1/Qexp(iPrimQ)
   ENDDO
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,   10
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
-   ENDDO
-   iP = (iPassQ-1)*nPrimQ
+   iP = (iPassQ-1)*nPrimP
    Dx = -Dcenter(1)
    Dy = -Dcenter(2)
    Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
+    iP = iP + 1
+    DO iTUV=1,   10
+     AUXarray(iTUV,iP)=0.0E0_realk
+    ENDDO
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
     mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -230,7 +223,7 @@ subroutine VerticalRecurrenceSegP2D(nPasses,nPrimP,nPrimQ,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP3D(nPasses,nPrimP,nPrimQ,&
+subroutine VerticalRecurrenceCPUSegQ3D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
@@ -240,7 +233,7 @@ subroutine VerticalRecurrenceSegP3D(nPasses,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(   20,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(   20,nPrimP*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(   10)
@@ -274,25 +267,20 @@ subroutine VerticalRecurrenceSegP3D(nPasses,nPrimP,nPrimQ,&
      invexpQ(iPrimQ) = D1/Qexp(iPrimQ)
   ENDDO
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,   20
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
-   ENDDO
-   iP = (iPassQ-1)*nPrimQ
+   iP = (iPassQ-1)*nPrimP
    Dx = -Dcenter(1)
    Dy = -Dcenter(2)
    Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
+    iP = iP + 1
+    DO iTUV=1,   20
+     AUXarray(iTUV,iP)=0.0E0_realk
+    ENDDO
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
     mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -385,7 +373,7 @@ subroutine VerticalRecurrenceSegP3D(nPasses,nPrimP,nPrimQ,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP4D(nPasses,nPrimP,nPrimQ,&
+subroutine VerticalRecurrenceCPUSegQ4D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
@@ -395,7 +383,7 @@ subroutine VerticalRecurrenceSegP4D(nPasses,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(   35,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(   35,nPrimP*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(   20)
@@ -430,25 +418,20 @@ subroutine VerticalRecurrenceSegP4D(nPasses,nPrimP,nPrimQ,&
      invexpQ(iPrimQ) = D1/Qexp(iPrimQ)
   ENDDO
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,   35
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
-   ENDDO
-   iP = (iPassQ-1)*nPrimQ
+   iP = (iPassQ-1)*nPrimP
    Dx = -Dcenter(1)
    Dy = -Dcenter(2)
    Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
+    iP = iP + 1
+    DO iTUV=1,   35
+     AUXarray(iTUV,iP)=0.0E0_realk
+    ENDDO
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
     mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -586,7 +569,7 @@ subroutine VerticalRecurrenceSegP4D(nPasses,nPrimP,nPrimQ,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP5D(nPasses,nPrimP,nPrimQ,&
+subroutine VerticalRecurrenceCPUSegQ5D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
@@ -596,7 +579,7 @@ subroutine VerticalRecurrenceSegP5D(nPasses,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(   56,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(   56,nPrimP*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(   35)
@@ -632,25 +615,20 @@ subroutine VerticalRecurrenceSegP5D(nPasses,nPrimP,nPrimQ,&
      invexpQ(iPrimQ) = D1/Qexp(iPrimQ)
   ENDDO
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,   56
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
-   ENDDO
-   iP = (iPassQ-1)*nPrimQ
+   iP = (iPassQ-1)*nPrimP
    Dx = -Dcenter(1)
    Dy = -Dcenter(2)
    Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
+    iP = iP + 1
+    DO iTUV=1,   56
+     AUXarray(iTUV,iP)=0.0E0_realk
+    ENDDO
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
     mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -860,7 +838,7 @@ subroutine VerticalRecurrenceSegP5D(nPasses,nPrimP,nPrimQ,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP6D(nPasses,nPrimP,nPrimQ,&
+subroutine VerticalRecurrenceCPUSegQ6D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
@@ -870,7 +848,7 @@ subroutine VerticalRecurrenceSegP6D(nPasses,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(   84,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(   84,nPrimP*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(   56)
@@ -907,25 +885,20 @@ subroutine VerticalRecurrenceSegP6D(nPasses,nPrimP,nPrimQ,&
      invexpQ(iPrimQ) = D1/Qexp(iPrimQ)
   ENDDO
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,   84
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
-   ENDDO
-   iP = (iPassQ-1)*nPrimQ
+   iP = (iPassQ-1)*nPrimP
    Dx = -Dcenter(1)
    Dy = -Dcenter(2)
    Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
+    iP = iP + 1
+    DO iTUV=1,   84
+     AUXarray(iTUV,iP)=0.0E0_realk
+    ENDDO
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
     mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -1244,7 +1217,7 @@ subroutine VerticalRecurrenceSegP6D(nPasses,nPrimP,nPrimQ,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP7D(nPasses,nPrimP,nPrimQ,&
+subroutine VerticalRecurrenceCPUSegQ7D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
@@ -1254,7 +1227,7 @@ subroutine VerticalRecurrenceSegP7D(nPasses,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(  120,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(  120,nPrimP*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(   84)
@@ -1292,25 +1265,20 @@ subroutine VerticalRecurrenceSegP7D(nPasses,nPrimP,nPrimQ,&
      invexpQ(iPrimQ) = D1/Qexp(iPrimQ)
   ENDDO
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,  120
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
-   ENDDO
-   iP = (iPassQ-1)*nPrimQ
+   iP = (iPassQ-1)*nPrimP
    Dx = -Dcenter(1)
    Dy = -Dcenter(2)
    Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
+    iP = iP + 1
+    DO iTUV=1,  120
+     AUXarray(iTUV,iP)=0.0E0_realk
+    ENDDO
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
     mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -1787,7 +1755,7 @@ subroutine VerticalRecurrenceSegP7D(nPasses,nPrimP,nPrimQ,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP8D(nPasses,nPrimP,nPrimQ,&
+subroutine VerticalRecurrenceCPUSegQ8D(nPasses,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
@@ -1797,7 +1765,7 @@ subroutine VerticalRecurrenceSegP8D(nPasses,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(  165,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(  165,nPrimP*nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(  120)
@@ -1836,25 +1804,20 @@ subroutine VerticalRecurrenceSegP8D(nPasses,nPrimP,nPrimQ,&
      invexpQ(iPrimQ) = D1/Qexp(iPrimQ)
   ENDDO
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,  165
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
-   ENDDO
-   iP = (iPassQ-1)*nPrimQ
+   iP = (iPassQ-1)*nPrimP
    Dx = -Dcenter(1)
    Dy = -Dcenter(2)
    Dz = -Dcenter(3)
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
+    iP = iP + 1
+    DO iTUV=1,  165
+     AUXarray(iTUV,iP)=0.0E0_realk
+    ENDDO
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
     mPZ = -Pcent(3,iPrimP)
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)

@@ -1,9 +1,9 @@
-MODULE AGC_OBS_VERTICALRECURRENCEMODBSegP
+MODULE AGC_CPU_OBS_VERTICALRECURRENCEMODBSeg
  use IchorPrecisionModule
   
  CONTAINS
 
-subroutine VerticalRecurrenceSegP1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPUSeg1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&
          & QpreExpFac,AUXarray)
   implicit none
@@ -13,7 +13,7 @@ subroutine VerticalRecurrenceSegP1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Bcenter(3)
-  real(realk),intent(inout) :: AUXarray(4,nPrimQ,nPasses)
+  real(realk),intent(inout) :: AUXarray(4,nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt
   real(realk) :: Bx,By,Bz,Xpb,Ypb,Zpb
@@ -42,12 +42,10 @@ subroutine VerticalRecurrenceSegP1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   By = -Bcenter(2)
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
-   DO iPrimQ=1, nPrimQ
-    AUXarray(1,iPrimQ,iPassQ)=0.0E0_realk
-    AUXarray(2,iPrimQ,iPassQ)=0.0E0_realk
-    AUXarray(3,iPrimQ,iPassQ)=0.0E0_realk
-    AUXarray(4,iPrimQ,iPassQ)=0.0E0_realk
-   ENDDO
+   AUXarray(1,iPassQ)=0.0E0_realk
+   AUXarray(2,iPassQ)=0.0E0_realk
+   AUXarray(3,iPassQ)=0.0E0_realk
+   AUXarray(4,iPassQ)=0.0E0_realk
    DO iPrimP=1, nPrimP
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
@@ -92,16 +90,16 @@ subroutine VerticalRecurrenceSegP1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
      PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac
      TMP1 = PREF*RJ000(0)
      TMP2 = PREF*RJ000(1)
-     AUXarray(1,iPrimQ,iPassQ) = AUXarray(1,iPrimQ,iPassQ) + TMP1
-     AUXarray(2,iPrimQ,iPassQ) = AUXarray(2,iPrimQ,iPassQ) + Xpb*TMP1 + alphaXpq*TMP2
-     AUXarray(3,iPrimQ,iPassQ) = AUXarray(3,iPrimQ,iPassQ) + Ypb*TMP1 + alphaYpq*TMP2
-     AUXarray(4,iPrimQ,iPassQ) = AUXarray(4,iPrimQ,iPassQ) + Zpb*TMP1 + alphaZpq*TMP2
+     AUXarray(1,iPassQ) = AUXarray(1,iPassQ) + TMP1
+     AUXarray(2,iPassQ) = AUXarray(2,iPassQ) + Xpb*TMP1 + alphaXpq*TMP2
+     AUXarray(3,iPassQ) = AUXarray(3,iPassQ) + Ypb*TMP1 + alphaYpq*TMP2
+     AUXarray(4,iPassQ) = AUXarray(4,iPassQ) + Zpb*TMP1 + alphaZpq*TMP2
     enddo
    enddo
   enddo
 end subroutine
 
-subroutine VerticalRecurrenceSegP2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPUSeg2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -111,7 +109,7 @@ subroutine VerticalRecurrenceSegP2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Bcenter(3)
-  real(realk),intent(inout) :: AUXarray(   10,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(   10,nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(    4)
@@ -144,16 +142,11 @@ subroutine VerticalRecurrenceSegP2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   By = -Bcenter(2)
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,   10
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
+   iP = iPassQ
+   DO iTUV=1,   10
+    AUXarray(iTUV,iPassQ)=0.0E0_realk
    ENDDO
-   iP = (iPassQ-1)*nPrimQ
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
@@ -164,7 +157,6 @@ subroutine VerticalRecurrenceSegP2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Ypb = Pcent(2,iPrimP) + By
     Zpb = Pcent(3,iPrimP) + Bz
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -213,20 +205,20 @@ subroutine VerticalRecurrenceSegP2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
      tmpArray2(4,2) = Zpb*tmpArray1(1,2) + alphaZpq*TmpArray1(1,3)
      TwoTerms(1) = inv2expP*(TMPAuxArray(1) + alphaP*TmpArray1(1,2))
      do iTUV = 1,    4
-      AuxArray(iTUV,IP) = AuxArray(iTUV,IP) + TMPAuxarray(iTUV)
+      AuxArray(iTUV,IPassQ) = AuxArray(iTUV,IPassQ) + TMPAuxarray(iTUV)
      enddo
-     AuxArray(5,IP) = AuxArray(5,IP) + Xpb*TMPAuxArray(2) + alphaXpq*TmpArray2(2,2) + TwoTerms(1)
-     AuxArray(6,IP) = AuxArray(6,IP) + Xpb*TMPAuxArray(3) + alphaXpq*TmpArray2(3,2)
-     AuxArray(7,IP) = AuxArray(7,IP) + Xpb*TMPAuxArray(4) + alphaXpq*TmpArray2(4,2)
-     AuxArray(8,IP) = AuxArray(8,IP) + Ypb*TMPAuxArray(3) + alphaYpq*TmpArray2(3,2) + TwoTerms(1)
-     AuxArray(9,IP) = AuxArray(9,IP) + Ypb*TMPAuxArray(4) + alphaYpq*TmpArray2(4,2)
-     AuxArray(10,IP) = AuxArray(10,IP) + Zpb*TMPAuxArray(4) + alphaZpq*TmpArray2(4,2) + TwoTerms(1)
+     AuxArray(5,IPassQ) = AuxArray(5,IPassQ) + Xpb*TMPAuxArray(2) + alphaXpq*TmpArray2(2,2) + TwoTerms(1)
+     AuxArray(6,IPassQ) = AuxArray(6,IPassQ) + Xpb*TMPAuxArray(3) + alphaXpq*TmpArray2(3,2)
+     AuxArray(7,IPassQ) = AuxArray(7,IPassQ) + Xpb*TMPAuxArray(4) + alphaXpq*TmpArray2(4,2)
+     AuxArray(8,IPassQ) = AuxArray(8,IPassQ) + Ypb*TMPAuxArray(3) + alphaYpq*TmpArray2(3,2) + TwoTerms(1)
+     AuxArray(9,IPassQ) = AuxArray(9,IPassQ) + Ypb*TMPAuxArray(4) + alphaYpq*TmpArray2(4,2)
+     AuxArray(10,IPassQ) = AuxArray(10,IPassQ) + Zpb*TMPAuxArray(4) + alphaZpq*TmpArray2(4,2) + TwoTerms(1)
     ENDDO
    ENDDO
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPUSeg3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -236,7 +228,7 @@ subroutine VerticalRecurrenceSegP3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Bcenter(3)
-  real(realk),intent(inout) :: AUXarray(   20,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(   20,nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(   10)
@@ -270,16 +262,11 @@ subroutine VerticalRecurrenceSegP3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   By = -Bcenter(2)
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,   20
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
+   iP = iPassQ
+   DO iTUV=1,   20
+    AUXarray(iTUV,iPassQ)=0.0E0_realk
    ENDDO
-   iP = (iPassQ-1)*nPrimQ
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
@@ -290,7 +277,6 @@ subroutine VerticalRecurrenceSegP3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Ypb = Pcent(2,iPrimP) + By
     Zpb = Pcent(3,iPrimP) + Bz
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -362,24 +348,24 @@ subroutine VerticalRecurrenceSegP3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
      TwoTerms(2) = inv2expP*(TMPAuxArray(3) + alphaP*TmpArray2(3,2))
      TwoTerms(3) = inv2expP*(TMPAuxArray(4) + alphaP*TmpArray2(4,2))
      do iTUV = 1,   10
-      AuxArray(iTUV,IP) = AuxArray(iTUV,IP) + TMPAuxarray(iTUV)
+      AuxArray(iTUV,IPassQ) = AuxArray(iTUV,IPassQ) + TMPAuxarray(iTUV)
      enddo
-     AuxArray(11,IP) = AuxArray(11,IP) + Xpb*TMPAuxArray(5) + alphaXpq*TmpArray3(5,2) + 2*TwoTerms(1)
-     AuxArray(12,IP) = AuxArray(12,IP) + Ypb*TMPAuxArray(5) + alphaYpq*TmpArray3(5,2)
-     AuxArray(13,IP) = AuxArray(13,IP) + Zpb*TMPAuxArray(5) + alphaZpq*TmpArray3(5,2)
-     AuxArray(14,IP) = AuxArray(14,IP) + Xpb*TMPAuxArray(8) + alphaXpq*TmpArray3(8,2)
-     AuxArray(15,IP) = AuxArray(15,IP) + Xpb*TMPAuxArray(9) + alphaXpq*TmpArray3(9,2)
-     AuxArray(16,IP) = AuxArray(16,IP) + Xpb*TMPAuxArray(10) + alphaXpq*TmpArray3(10,2)
-     AuxArray(17,IP) = AuxArray(17,IP) + Ypb*TMPAuxArray(8) + alphaYpq*TmpArray3(8,2) + 2*TwoTerms(2)
-     AuxArray(18,IP) = AuxArray(18,IP) + Zpb*TMPAuxArray(8) + alphaZpq*TmpArray3(8,2)
-     AuxArray(19,IP) = AuxArray(19,IP) + Ypb*TMPAuxArray(10) + alphaYpq*TmpArray3(10,2)
-     AuxArray(20,IP) = AuxArray(20,IP) + Zpb*TMPAuxArray(10) + alphaZpq*TmpArray3(10,2) + 2*TwoTerms(3)
+     AuxArray(11,IPassQ) = AuxArray(11,IPassQ) + Xpb*TMPAuxArray(5) + alphaXpq*TmpArray3(5,2) + 2*TwoTerms(1)
+     AuxArray(12,IPassQ) = AuxArray(12,IPassQ) + Ypb*TMPAuxArray(5) + alphaYpq*TmpArray3(5,2)
+     AuxArray(13,IPassQ) = AuxArray(13,IPassQ) + Zpb*TMPAuxArray(5) + alphaZpq*TmpArray3(5,2)
+     AuxArray(14,IPassQ) = AuxArray(14,IPassQ) + Xpb*TMPAuxArray(8) + alphaXpq*TmpArray3(8,2)
+     AuxArray(15,IPassQ) = AuxArray(15,IPassQ) + Xpb*TMPAuxArray(9) + alphaXpq*TmpArray3(9,2)
+     AuxArray(16,IPassQ) = AuxArray(16,IPassQ) + Xpb*TMPAuxArray(10) + alphaXpq*TmpArray3(10,2)
+     AuxArray(17,IPassQ) = AuxArray(17,IPassQ) + Ypb*TMPAuxArray(8) + alphaYpq*TmpArray3(8,2) + 2*TwoTerms(2)
+     AuxArray(18,IPassQ) = AuxArray(18,IPassQ) + Zpb*TMPAuxArray(8) + alphaZpq*TmpArray3(8,2)
+     AuxArray(19,IPassQ) = AuxArray(19,IPassQ) + Ypb*TMPAuxArray(10) + alphaYpq*TmpArray3(10,2)
+     AuxArray(20,IPassQ) = AuxArray(20,IPassQ) + Zpb*TMPAuxArray(10) + alphaZpq*TmpArray3(10,2) + 2*TwoTerms(3)
     ENDDO
    ENDDO
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPUSeg4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -389,7 +375,7 @@ subroutine VerticalRecurrenceSegP4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Bcenter(3)
-  real(realk),intent(inout) :: AUXarray(   35,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(   35,nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(   20)
@@ -424,16 +410,11 @@ subroutine VerticalRecurrenceSegP4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   By = -Bcenter(2)
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,   35
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
+   iP = iPassQ
+   DO iTUV=1,   35
+    AUXarray(iTUV,iPassQ)=0.0E0_realk
    ENDDO
-   iP = (iPassQ-1)*nPrimQ
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
@@ -444,7 +425,6 @@ subroutine VerticalRecurrenceSegP4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Ypb = Pcent(2,iPrimP) + By
     Zpb = Pcent(3,iPrimP) + Bz
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -556,29 +536,29 @@ subroutine VerticalRecurrenceSegP4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
      TwoTerms(2) = inv2expP*(TMPAuxArray(8) + alphaP*TmpArray3(8,2))
      TwoTerms(3) = inv2expP*(TMPAuxArray(10) + alphaP*TmpArray3(10,2))
      do iTUV = 1,   20
-      AuxArray(iTUV,IP) = AuxArray(iTUV,IP) + TMPAuxarray(iTUV)
+      AuxArray(iTUV,IPassQ) = AuxArray(iTUV,IPassQ) + TMPAuxarray(iTUV)
      enddo
-     AuxArray(21,IP) = AuxArray(21,IP) + Xpb*TMPAuxArray(11) + alphaXpq*TmpArray4(11,2) + 3*TwoTerms(1)
-     AuxArray(22,IP) = AuxArray(22,IP) + Ypb*TMPAuxArray(11) + alphaYpq*TmpArray4(11,2)
-     AuxArray(23,IP) = AuxArray(23,IP) + Zpb*TMPAuxArray(11) + alphaZpq*TmpArray4(11,2)
-     AuxArray(24,IP) = AuxArray(24,IP) + Xpb*TMPAuxArray(14) + alphaXpq*TmpArray4(14,2) + TwoTerms(2)
-     AuxArray(25,IP) = AuxArray(25,IP) + Ypb*TMPAuxArray(13) + alphaYpq*TmpArray4(13,2)
-     AuxArray(26,IP) = AuxArray(26,IP) + Xpb*TMPAuxArray(16) + alphaXpq*TmpArray4(16,2) + TwoTerms(3)
-     AuxArray(27,IP) = AuxArray(27,IP) + Xpb*TMPAuxArray(17) + alphaXpq*TmpArray4(17,2)
-     AuxArray(28,IP) = AuxArray(28,IP) + Xpb*TMPAuxArray(18) + alphaXpq*TmpArray4(18,2)
-     AuxArray(29,IP) = AuxArray(29,IP) + Xpb*TMPAuxArray(19) + alphaXpq*TmpArray4(19,2)
-     AuxArray(30,IP) = AuxArray(30,IP) + Xpb*TMPAuxArray(20) + alphaXpq*TmpArray4(20,2)
-     AuxArray(31,IP) = AuxArray(31,IP) + Ypb*TMPAuxArray(17) + alphaYpq*TmpArray4(17,2) + 3*TwoTerms(2)
-     AuxArray(32,IP) = AuxArray(32,IP) + Zpb*TMPAuxArray(17) + alphaZpq*TmpArray4(17,2)
-     AuxArray(33,IP) = AuxArray(33,IP) + Ypb*TMPAuxArray(19) + alphaYpq*TmpArray4(19,2) + TwoTerms(3)
-     AuxArray(34,IP) = AuxArray(34,IP) + Ypb*TMPAuxArray(20) + alphaYpq*TmpArray4(20,2)
-     AuxArray(35,IP) = AuxArray(35,IP) + Zpb*TMPAuxArray(20) + alphaZpq*TmpArray4(20,2) + 3*TwoTerms(3)
+     AuxArray(21,IPassQ) = AuxArray(21,IPassQ) + Xpb*TMPAuxArray(11) + alphaXpq*TmpArray4(11,2) + 3*TwoTerms(1)
+     AuxArray(22,IPassQ) = AuxArray(22,IPassQ) + Ypb*TMPAuxArray(11) + alphaYpq*TmpArray4(11,2)
+     AuxArray(23,IPassQ) = AuxArray(23,IPassQ) + Zpb*TMPAuxArray(11) + alphaZpq*TmpArray4(11,2)
+     AuxArray(24,IPassQ) = AuxArray(24,IPassQ) + Xpb*TMPAuxArray(14) + alphaXpq*TmpArray4(14,2) + TwoTerms(2)
+     AuxArray(25,IPassQ) = AuxArray(25,IPassQ) + Ypb*TMPAuxArray(13) + alphaYpq*TmpArray4(13,2)
+     AuxArray(26,IPassQ) = AuxArray(26,IPassQ) + Xpb*TMPAuxArray(16) + alphaXpq*TmpArray4(16,2) + TwoTerms(3)
+     AuxArray(27,IPassQ) = AuxArray(27,IPassQ) + Xpb*TMPAuxArray(17) + alphaXpq*TmpArray4(17,2)
+     AuxArray(28,IPassQ) = AuxArray(28,IPassQ) + Xpb*TMPAuxArray(18) + alphaXpq*TmpArray4(18,2)
+     AuxArray(29,IPassQ) = AuxArray(29,IPassQ) + Xpb*TMPAuxArray(19) + alphaXpq*TmpArray4(19,2)
+     AuxArray(30,IPassQ) = AuxArray(30,IPassQ) + Xpb*TMPAuxArray(20) + alphaXpq*TmpArray4(20,2)
+     AuxArray(31,IPassQ) = AuxArray(31,IPassQ) + Ypb*TMPAuxArray(17) + alphaYpq*TmpArray4(17,2) + 3*TwoTerms(2)
+     AuxArray(32,IPassQ) = AuxArray(32,IPassQ) + Zpb*TMPAuxArray(17) + alphaZpq*TmpArray4(17,2)
+     AuxArray(33,IPassQ) = AuxArray(33,IPassQ) + Ypb*TMPAuxArray(19) + alphaYpq*TmpArray4(19,2) + TwoTerms(3)
+     AuxArray(34,IPassQ) = AuxArray(34,IPassQ) + Ypb*TMPAuxArray(20) + alphaYpq*TmpArray4(20,2)
+     AuxArray(35,IPassQ) = AuxArray(35,IPassQ) + Zpb*TMPAuxArray(20) + alphaZpq*TmpArray4(20,2) + 3*TwoTerms(3)
     ENDDO
    ENDDO
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPUSeg5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -588,7 +568,7 @@ subroutine VerticalRecurrenceSegP5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Bcenter(3)
-  real(realk),intent(inout) :: AUXarray(   56,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(   56,nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(   35)
@@ -624,16 +604,11 @@ subroutine VerticalRecurrenceSegP5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   By = -Bcenter(2)
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,   56
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
+   iP = iPassQ
+   DO iTUV=1,   56
+    AUXarray(iTUV,iPassQ)=0.0E0_realk
    ENDDO
-   iP = (iPassQ-1)*nPrimQ
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
@@ -644,7 +619,6 @@ subroutine VerticalRecurrenceSegP5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Ypb = Pcent(2,iPrimP) + By
     Zpb = Pcent(3,iPrimP) + Bz
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -822,35 +796,35 @@ subroutine VerticalRecurrenceSegP5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
      TwoTerms(5) = inv2expP*(TMPAuxArray(19) + alphaP*TmpArray4(19,2))
      TwoTerms(6) = inv2expP*(TMPAuxArray(20) + alphaP*TmpArray4(20,2))
      do iTUV = 1,   35
-      AuxArray(iTUV,IP) = AuxArray(iTUV,IP) + TMPAuxarray(iTUV)
+      AuxArray(iTUV,IPassQ) = AuxArray(iTUV,IPassQ) + TMPAuxarray(iTUV)
      enddo
-     AuxArray(36,IP) = AuxArray(36,IP) + Xpb*TMPAuxArray(21) + alphaXpq*TmpArray5(21,2) + 4*TwoTerms(1)
-     AuxArray(37,IP) = AuxArray(37,IP) + Ypb*TMPAuxArray(21) + alphaYpq*TmpArray5(21,2)
-     AuxArray(38,IP) = AuxArray(38,IP) + Zpb*TMPAuxArray(21) + alphaZpq*TmpArray5(21,2)
-     AuxArray(39,IP) = AuxArray(39,IP) + Xpb*TMPAuxArray(24) + alphaXpq*TmpArray5(24,2) + 2*TwoTerms(2)
-     AuxArray(40,IP) = AuxArray(40,IP) + Ypb*TMPAuxArray(23) + alphaYpq*TmpArray5(23,2)
-     AuxArray(41,IP) = AuxArray(41,IP) + Xpb*TMPAuxArray(26) + alphaXpq*TmpArray5(26,2) + 2*TwoTerms(3)
-     AuxArray(42,IP) = AuxArray(42,IP) + Xpb*TMPAuxArray(27) + alphaXpq*TmpArray5(27,2) + TwoTerms(4)
-     AuxArray(43,IP) = AuxArray(43,IP) + Zpb*TMPAuxArray(24) + alphaZpq*TmpArray5(24,2)
-     AuxArray(44,IP) = AuxArray(44,IP) + Ypb*TMPAuxArray(26) + alphaYpq*TmpArray5(26,2)
-     AuxArray(45,IP) = AuxArray(45,IP) + Xpb*TMPAuxArray(30) + alphaXpq*TmpArray5(30,2) + TwoTerms(6)
-     AuxArray(46,IP) = AuxArray(46,IP) + Xpb*TMPAuxArray(31) + alphaXpq*TmpArray5(31,2)
-     AuxArray(47,IP) = AuxArray(47,IP) + Xpb*TMPAuxArray(32) + alphaXpq*TmpArray5(32,2)
-     AuxArray(48,IP) = AuxArray(48,IP) + Xpb*TMPAuxArray(33) + alphaXpq*TmpArray5(33,2)
-     AuxArray(49,IP) = AuxArray(49,IP) + Xpb*TMPAuxArray(34) + alphaXpq*TmpArray5(34,2)
-     AuxArray(50,IP) = AuxArray(50,IP) + Xpb*TMPAuxArray(35) + alphaXpq*TmpArray5(35,2)
-     AuxArray(51,IP) = AuxArray(51,IP) + Ypb*TMPAuxArray(31) + alphaYpq*TmpArray5(31,2) + 4*TwoTerms(4)
-     AuxArray(52,IP) = AuxArray(52,IP) + Zpb*TMPAuxArray(31) + alphaZpq*TmpArray5(31,2)
-     AuxArray(53,IP) = AuxArray(53,IP) + Ypb*TMPAuxArray(33) + alphaYpq*TmpArray5(33,2) + 2*TwoTerms(5)
-     AuxArray(54,IP) = AuxArray(54,IP) + Ypb*TMPAuxArray(34) + alphaYpq*TmpArray5(34,2) + TwoTerms(6)
-     AuxArray(55,IP) = AuxArray(55,IP) + Ypb*TMPAuxArray(35) + alphaYpq*TmpArray5(35,2)
-     AuxArray(56,IP) = AuxArray(56,IP) + Zpb*TMPAuxArray(35) + alphaZpq*TmpArray5(35,2) + 4*TwoTerms(6)
+     AuxArray(36,IPassQ) = AuxArray(36,IPassQ) + Xpb*TMPAuxArray(21) + alphaXpq*TmpArray5(21,2) + 4*TwoTerms(1)
+     AuxArray(37,IPassQ) = AuxArray(37,IPassQ) + Ypb*TMPAuxArray(21) + alphaYpq*TmpArray5(21,2)
+     AuxArray(38,IPassQ) = AuxArray(38,IPassQ) + Zpb*TMPAuxArray(21) + alphaZpq*TmpArray5(21,2)
+     AuxArray(39,IPassQ) = AuxArray(39,IPassQ) + Xpb*TMPAuxArray(24) + alphaXpq*TmpArray5(24,2) + 2*TwoTerms(2)
+     AuxArray(40,IPassQ) = AuxArray(40,IPassQ) + Ypb*TMPAuxArray(23) + alphaYpq*TmpArray5(23,2)
+     AuxArray(41,IPassQ) = AuxArray(41,IPassQ) + Xpb*TMPAuxArray(26) + alphaXpq*TmpArray5(26,2) + 2*TwoTerms(3)
+     AuxArray(42,IPassQ) = AuxArray(42,IPassQ) + Xpb*TMPAuxArray(27) + alphaXpq*TmpArray5(27,2) + TwoTerms(4)
+     AuxArray(43,IPassQ) = AuxArray(43,IPassQ) + Zpb*TMPAuxArray(24) + alphaZpq*TmpArray5(24,2)
+     AuxArray(44,IPassQ) = AuxArray(44,IPassQ) + Ypb*TMPAuxArray(26) + alphaYpq*TmpArray5(26,2)
+     AuxArray(45,IPassQ) = AuxArray(45,IPassQ) + Xpb*TMPAuxArray(30) + alphaXpq*TmpArray5(30,2) + TwoTerms(6)
+     AuxArray(46,IPassQ) = AuxArray(46,IPassQ) + Xpb*TMPAuxArray(31) + alphaXpq*TmpArray5(31,2)
+     AuxArray(47,IPassQ) = AuxArray(47,IPassQ) + Xpb*TMPAuxArray(32) + alphaXpq*TmpArray5(32,2)
+     AuxArray(48,IPassQ) = AuxArray(48,IPassQ) + Xpb*TMPAuxArray(33) + alphaXpq*TmpArray5(33,2)
+     AuxArray(49,IPassQ) = AuxArray(49,IPassQ) + Xpb*TMPAuxArray(34) + alphaXpq*TmpArray5(34,2)
+     AuxArray(50,IPassQ) = AuxArray(50,IPassQ) + Xpb*TMPAuxArray(35) + alphaXpq*TmpArray5(35,2)
+     AuxArray(51,IPassQ) = AuxArray(51,IPassQ) + Ypb*TMPAuxArray(31) + alphaYpq*TmpArray5(31,2) + 4*TwoTerms(4)
+     AuxArray(52,IPassQ) = AuxArray(52,IPassQ) + Zpb*TMPAuxArray(31) + alphaZpq*TmpArray5(31,2)
+     AuxArray(53,IPassQ) = AuxArray(53,IPassQ) + Ypb*TMPAuxArray(33) + alphaYpq*TmpArray5(33,2) + 2*TwoTerms(5)
+     AuxArray(54,IPassQ) = AuxArray(54,IPassQ) + Ypb*TMPAuxArray(34) + alphaYpq*TmpArray5(34,2) + TwoTerms(6)
+     AuxArray(55,IPassQ) = AuxArray(55,IPassQ) + Ypb*TMPAuxArray(35) + alphaYpq*TmpArray5(35,2)
+     AuxArray(56,IPassQ) = AuxArray(56,IPassQ) + Zpb*TMPAuxArray(35) + alphaZpq*TmpArray5(35,2) + 4*TwoTerms(6)
     ENDDO
    ENDDO
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPUSeg6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -860,7 +834,7 @@ subroutine VerticalRecurrenceSegP6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Bcenter(3)
-  real(realk),intent(inout) :: AUXarray(   84,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(   84,nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(   56)
@@ -897,16 +871,11 @@ subroutine VerticalRecurrenceSegP6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   By = -Bcenter(2)
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,   84
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
+   iP = iPassQ
+   DO iTUV=1,   84
+    AUXarray(iTUV,iPassQ)=0.0E0_realk
    ENDDO
-   iP = (iPassQ-1)*nPrimQ
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
@@ -917,7 +886,6 @@ subroutine VerticalRecurrenceSegP6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Ypb = Pcent(2,iPrimP) + By
     Zpb = Pcent(3,iPrimP) + Bz
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -1197,42 +1165,42 @@ subroutine VerticalRecurrenceSegP6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
      TwoTerms(8) = inv2expP*(TMPAuxArray(34) + alphaP*TmpArray5(34,2))
      TwoTerms(9) = inv2expP*(TMPAuxArray(35) + alphaP*TmpArray5(35,2))
      do iTUV = 1,   56
-      AuxArray(iTUV,IP) = AuxArray(iTUV,IP) + TMPAuxarray(iTUV)
+      AuxArray(iTUV,IPassQ) = AuxArray(iTUV,IPassQ) + TMPAuxarray(iTUV)
      enddo
-     AuxArray(57,IP) = AuxArray(57,IP) + Xpb*TMPAuxArray(36) + alphaXpq*TmpArray6(36,2) + 5*TwoTerms(1)
-     AuxArray(58,IP) = AuxArray(58,IP) + Ypb*TMPAuxArray(36) + alphaYpq*TmpArray6(36,2)
-     AuxArray(59,IP) = AuxArray(59,IP) + Zpb*TMPAuxArray(36) + alphaZpq*TmpArray6(36,2)
-     AuxArray(60,IP) = AuxArray(60,IP) + Xpb*TMPAuxArray(39) + alphaXpq*TmpArray6(39,2) + 3*TwoTerms(2)
-     AuxArray(61,IP) = AuxArray(61,IP) + Ypb*TMPAuxArray(38) + alphaYpq*TmpArray6(38,2)
-     AuxArray(62,IP) = AuxArray(62,IP) + Xpb*TMPAuxArray(41) + alphaXpq*TmpArray6(41,2) + 3*TwoTerms(3)
-     AuxArray(63,IP) = AuxArray(63,IP) + Xpb*TMPAuxArray(42) + alphaXpq*TmpArray6(42,2) + 2*TwoTerms(4)
-     AuxArray(64,IP) = AuxArray(64,IP) + Zpb*TMPAuxArray(39) + alphaZpq*TmpArray6(39,2)
-     AuxArray(65,IP) = AuxArray(65,IP) + Ypb*TMPAuxArray(41) + alphaYpq*TmpArray6(41,2)
-     AuxArray(66,IP) = AuxArray(66,IP) + Xpb*TMPAuxArray(45) + alphaXpq*TmpArray6(45,2) + 2*TwoTerms(5)
-     AuxArray(67,IP) = AuxArray(67,IP) + Xpb*TMPAuxArray(46) + alphaXpq*TmpArray6(46,2) + TwoTerms(6)
-     AuxArray(68,IP) = AuxArray(68,IP) + Zpb*TMPAuxArray(42) + alphaZpq*TmpArray6(42,2)
-     AuxArray(69,IP) = AuxArray(69,IP) + Xpb*TMPAuxArray(48) + alphaXpq*TmpArray6(48,2) + TwoTerms(7)
-     AuxArray(70,IP) = AuxArray(70,IP) + Ypb*TMPAuxArray(45) + alphaYpq*TmpArray6(45,2)
-     AuxArray(71,IP) = AuxArray(71,IP) + Xpb*TMPAuxArray(50) + alphaXpq*TmpArray6(50,2) + TwoTerms(9)
-     AuxArray(72,IP) = AuxArray(72,IP) + Xpb*TMPAuxArray(51) + alphaXpq*TmpArray6(51,2)
-     AuxArray(73,IP) = AuxArray(73,IP) + Xpb*TMPAuxArray(52) + alphaXpq*TmpArray6(52,2)
-     AuxArray(74,IP) = AuxArray(74,IP) + Xpb*TMPAuxArray(53) + alphaXpq*TmpArray6(53,2)
-     AuxArray(75,IP) = AuxArray(75,IP) + Xpb*TMPAuxArray(54) + alphaXpq*TmpArray6(54,2)
-     AuxArray(76,IP) = AuxArray(76,IP) + Xpb*TMPAuxArray(55) + alphaXpq*TmpArray6(55,2)
-     AuxArray(77,IP) = AuxArray(77,IP) + Xpb*TMPAuxArray(56) + alphaXpq*TmpArray6(56,2)
-     AuxArray(78,IP) = AuxArray(78,IP) + Ypb*TMPAuxArray(51) + alphaYpq*TmpArray6(51,2) + 5*TwoTerms(6)
-     AuxArray(79,IP) = AuxArray(79,IP) + Zpb*TMPAuxArray(51) + alphaZpq*TmpArray6(51,2)
-     AuxArray(80,IP) = AuxArray(80,IP) + Ypb*TMPAuxArray(53) + alphaYpq*TmpArray6(53,2) + 3*TwoTerms(7)
-     AuxArray(81,IP) = AuxArray(81,IP) + Ypb*TMPAuxArray(54) + alphaYpq*TmpArray6(54,2) + 2*TwoTerms(8)
-     AuxArray(82,IP) = AuxArray(82,IP) + Ypb*TMPAuxArray(55) + alphaYpq*TmpArray6(55,2) + TwoTerms(9)
-     AuxArray(83,IP) = AuxArray(83,IP) + Ypb*TMPAuxArray(56) + alphaYpq*TmpArray6(56,2)
-     AuxArray(84,IP) = AuxArray(84,IP) + Zpb*TMPAuxArray(56) + alphaZpq*TmpArray6(56,2) + 5*TwoTerms(9)
+     AuxArray(57,IPassQ) = AuxArray(57,IPassQ) + Xpb*TMPAuxArray(36) + alphaXpq*TmpArray6(36,2) + 5*TwoTerms(1)
+     AuxArray(58,IPassQ) = AuxArray(58,IPassQ) + Ypb*TMPAuxArray(36) + alphaYpq*TmpArray6(36,2)
+     AuxArray(59,IPassQ) = AuxArray(59,IPassQ) + Zpb*TMPAuxArray(36) + alphaZpq*TmpArray6(36,2)
+     AuxArray(60,IPassQ) = AuxArray(60,IPassQ) + Xpb*TMPAuxArray(39) + alphaXpq*TmpArray6(39,2) + 3*TwoTerms(2)
+     AuxArray(61,IPassQ) = AuxArray(61,IPassQ) + Ypb*TMPAuxArray(38) + alphaYpq*TmpArray6(38,2)
+     AuxArray(62,IPassQ) = AuxArray(62,IPassQ) + Xpb*TMPAuxArray(41) + alphaXpq*TmpArray6(41,2) + 3*TwoTerms(3)
+     AuxArray(63,IPassQ) = AuxArray(63,IPassQ) + Xpb*TMPAuxArray(42) + alphaXpq*TmpArray6(42,2) + 2*TwoTerms(4)
+     AuxArray(64,IPassQ) = AuxArray(64,IPassQ) + Zpb*TMPAuxArray(39) + alphaZpq*TmpArray6(39,2)
+     AuxArray(65,IPassQ) = AuxArray(65,IPassQ) + Ypb*TMPAuxArray(41) + alphaYpq*TmpArray6(41,2)
+     AuxArray(66,IPassQ) = AuxArray(66,IPassQ) + Xpb*TMPAuxArray(45) + alphaXpq*TmpArray6(45,2) + 2*TwoTerms(5)
+     AuxArray(67,IPassQ) = AuxArray(67,IPassQ) + Xpb*TMPAuxArray(46) + alphaXpq*TmpArray6(46,2) + TwoTerms(6)
+     AuxArray(68,IPassQ) = AuxArray(68,IPassQ) + Zpb*TMPAuxArray(42) + alphaZpq*TmpArray6(42,2)
+     AuxArray(69,IPassQ) = AuxArray(69,IPassQ) + Xpb*TMPAuxArray(48) + alphaXpq*TmpArray6(48,2) + TwoTerms(7)
+     AuxArray(70,IPassQ) = AuxArray(70,IPassQ) + Ypb*TMPAuxArray(45) + alphaYpq*TmpArray6(45,2)
+     AuxArray(71,IPassQ) = AuxArray(71,IPassQ) + Xpb*TMPAuxArray(50) + alphaXpq*TmpArray6(50,2) + TwoTerms(9)
+     AuxArray(72,IPassQ) = AuxArray(72,IPassQ) + Xpb*TMPAuxArray(51) + alphaXpq*TmpArray6(51,2)
+     AuxArray(73,IPassQ) = AuxArray(73,IPassQ) + Xpb*TMPAuxArray(52) + alphaXpq*TmpArray6(52,2)
+     AuxArray(74,IPassQ) = AuxArray(74,IPassQ) + Xpb*TMPAuxArray(53) + alphaXpq*TmpArray6(53,2)
+     AuxArray(75,IPassQ) = AuxArray(75,IPassQ) + Xpb*TMPAuxArray(54) + alphaXpq*TmpArray6(54,2)
+     AuxArray(76,IPassQ) = AuxArray(76,IPassQ) + Xpb*TMPAuxArray(55) + alphaXpq*TmpArray6(55,2)
+     AuxArray(77,IPassQ) = AuxArray(77,IPassQ) + Xpb*TMPAuxArray(56) + alphaXpq*TmpArray6(56,2)
+     AuxArray(78,IPassQ) = AuxArray(78,IPassQ) + Ypb*TMPAuxArray(51) + alphaYpq*TmpArray6(51,2) + 5*TwoTerms(6)
+     AuxArray(79,IPassQ) = AuxArray(79,IPassQ) + Zpb*TMPAuxArray(51) + alphaZpq*TmpArray6(51,2)
+     AuxArray(80,IPassQ) = AuxArray(80,IPassQ) + Ypb*TMPAuxArray(53) + alphaYpq*TmpArray6(53,2) + 3*TwoTerms(7)
+     AuxArray(81,IPassQ) = AuxArray(81,IPassQ) + Ypb*TMPAuxArray(54) + alphaYpq*TmpArray6(54,2) + 2*TwoTerms(8)
+     AuxArray(82,IPassQ) = AuxArray(82,IPassQ) + Ypb*TMPAuxArray(55) + alphaYpq*TmpArray6(55,2) + TwoTerms(9)
+     AuxArray(83,IPassQ) = AuxArray(83,IPassQ) + Ypb*TMPAuxArray(56) + alphaYpq*TmpArray6(56,2)
+     AuxArray(84,IPassQ) = AuxArray(84,IPassQ) + Zpb*TMPAuxArray(56) + alphaZpq*TmpArray6(56,2) + 5*TwoTerms(9)
     ENDDO
    ENDDO
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP7B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPUSeg7B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -1242,7 +1210,7 @@ subroutine VerticalRecurrenceSegP7B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Bcenter(3)
-  real(realk),intent(inout) :: AUXarray(  120,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(  120,nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(   84)
@@ -1280,16 +1248,11 @@ subroutine VerticalRecurrenceSegP7B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   By = -Bcenter(2)
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,  120
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
+   iP = iPassQ
+   DO iTUV=1,  120
+    AUXarray(iTUV,iPassQ)=0.0E0_realk
    ENDDO
-   iP = (iPassQ-1)*nPrimQ
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
@@ -1300,7 +1263,6 @@ subroutine VerticalRecurrenceSegP7B(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Ypb = Pcent(2,iPrimP) + By
     Zpb = Pcent(3,iPrimP) + Bz
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -1730,50 +1692,50 @@ subroutine VerticalRecurrenceSegP7B(nPasses,nPrimP,nPrimQ,reducedExponents,&
      TwoTerms(12) = inv2expP*(TMPAuxArray(55) + alphaP*TmpArray6(55,2))
      TwoTerms(13) = inv2expP*(TMPAuxArray(56) + alphaP*TmpArray6(56,2))
      do iTUV = 1,   84
-      AuxArray(iTUV,IP) = AuxArray(iTUV,IP) + TMPAuxarray(iTUV)
+      AuxArray(iTUV,IPassQ) = AuxArray(iTUV,IPassQ) + TMPAuxarray(iTUV)
      enddo
-     AuxArray(85,IP) = AuxArray(85,IP) + Xpb*TMPAuxArray(57) + alphaXpq*TmpArray7(57,2) + 6*TwoTerms(1)
-     AuxArray(86,IP) = AuxArray(86,IP) + Ypb*TMPAuxArray(57) + alphaYpq*TmpArray7(57,2)
-     AuxArray(87,IP) = AuxArray(87,IP) + Zpb*TMPAuxArray(57) + alphaZpq*TmpArray7(57,2)
-     AuxArray(88,IP) = AuxArray(88,IP) + Xpb*TMPAuxArray(60) + alphaXpq*TmpArray7(60,2) + 4*TwoTerms(2)
-     AuxArray(89,IP) = AuxArray(89,IP) + Ypb*TMPAuxArray(59) + alphaYpq*TmpArray7(59,2)
-     AuxArray(90,IP) = AuxArray(90,IP) + Xpb*TMPAuxArray(62) + alphaXpq*TmpArray7(62,2) + 4*TwoTerms(3)
-     AuxArray(91,IP) = AuxArray(91,IP) + Xpb*TMPAuxArray(63) + alphaXpq*TmpArray7(63,2) + 3*TwoTerms(4)
-     AuxArray(92,IP) = AuxArray(92,IP) + Zpb*TMPAuxArray(60) + alphaZpq*TmpArray7(60,2)
-     AuxArray(93,IP) = AuxArray(93,IP) + Ypb*TMPAuxArray(62) + alphaYpq*TmpArray7(62,2)
-     AuxArray(94,IP) = AuxArray(94,IP) + Xpb*TMPAuxArray(66) + alphaXpq*TmpArray7(66,2) + 3*TwoTerms(5)
-     AuxArray(95,IP) = AuxArray(95,IP) + Xpb*TMPAuxArray(67) + alphaXpq*TmpArray7(67,2) + 2*TwoTerms(6)
-     AuxArray(96,IP) = AuxArray(96,IP) + Zpb*TMPAuxArray(63) + alphaZpq*TmpArray7(63,2)
-     AuxArray(97,IP) = AuxArray(97,IP) + Xpb*TMPAuxArray(69) + alphaXpq*TmpArray7(69,2) + 2*TwoTerms(7)
-     AuxArray(98,IP) = AuxArray(98,IP) + Ypb*TMPAuxArray(66) + alphaYpq*TmpArray7(66,2)
-     AuxArray(99,IP) = AuxArray(99,IP) + Xpb*TMPAuxArray(71) + alphaXpq*TmpArray7(71,2) + 2*TwoTerms(8)
-     AuxArray(100,IP) = AuxArray(100,IP) + Xpb*TMPAuxArray(72) + alphaXpq*TmpArray7(72,2) + TwoTerms(9)
-     AuxArray(101,IP) = AuxArray(101,IP) + Zpb*TMPAuxArray(67) + alphaZpq*TmpArray7(67,2)
-     AuxArray(102,IP) = AuxArray(102,IP) + Xpb*TMPAuxArray(74) + alphaXpq*TmpArray7(74,2) + TwoTerms(10)
-     AuxArray(103,IP) = AuxArray(103,IP) + Xpb*TMPAuxArray(75) + alphaXpq*TmpArray7(75,2) + TwoTerms(11)
-     AuxArray(104,IP) = AuxArray(104,IP) + Ypb*TMPAuxArray(71) + alphaYpq*TmpArray7(71,2)
-     AuxArray(105,IP) = AuxArray(105,IP) + Xpb*TMPAuxArray(77) + alphaXpq*TmpArray7(77,2) + TwoTerms(13)
-     AuxArray(106,IP) = AuxArray(106,IP) + Xpb*TMPAuxArray(78) + alphaXpq*TmpArray7(78,2)
-     AuxArray(107,IP) = AuxArray(107,IP) + Xpb*TMPAuxArray(79) + alphaXpq*TmpArray7(79,2)
-     AuxArray(108,IP) = AuxArray(108,IP) + Xpb*TMPAuxArray(80) + alphaXpq*TmpArray7(80,2)
-     AuxArray(109,IP) = AuxArray(109,IP) + Xpb*TMPAuxArray(81) + alphaXpq*TmpArray7(81,2)
-     AuxArray(110,IP) = AuxArray(110,IP) + Xpb*TMPAuxArray(82) + alphaXpq*TmpArray7(82,2)
-     AuxArray(111,IP) = AuxArray(111,IP) + Xpb*TMPAuxArray(83) + alphaXpq*TmpArray7(83,2)
-     AuxArray(112,IP) = AuxArray(112,IP) + Xpb*TMPAuxArray(84) + alphaXpq*TmpArray7(84,2)
-     AuxArray(113,IP) = AuxArray(113,IP) + Ypb*TMPAuxArray(78) + alphaYpq*TmpArray7(78,2) + 6*TwoTerms(9)
-     AuxArray(114,IP) = AuxArray(114,IP) + Zpb*TMPAuxArray(78) + alphaZpq*TmpArray7(78,2)
-     AuxArray(115,IP) = AuxArray(115,IP) + Ypb*TMPAuxArray(80) + alphaYpq*TmpArray7(80,2) + 4*TwoTerms(10)
-     AuxArray(116,IP) = AuxArray(116,IP) + Ypb*TMPAuxArray(81) + alphaYpq*TmpArray7(81,2) + 3*TwoTerms(11)
-     AuxArray(117,IP) = AuxArray(117,IP) + Ypb*TMPAuxArray(82) + alphaYpq*TmpArray7(82,2) + 2*TwoTerms(12)
-     AuxArray(118,IP) = AuxArray(118,IP) + Ypb*TMPAuxArray(83) + alphaYpq*TmpArray7(83,2) + TwoTerms(13)
-     AuxArray(119,IP) = AuxArray(119,IP) + Ypb*TMPAuxArray(84) + alphaYpq*TmpArray7(84,2)
-     AuxArray(120,IP) = AuxArray(120,IP) + Zpb*TMPAuxArray(84) + alphaZpq*TmpArray7(84,2) + 6*TwoTerms(13)
+     AuxArray(85,IPassQ) = AuxArray(85,IPassQ) + Xpb*TMPAuxArray(57) + alphaXpq*TmpArray7(57,2) + 6*TwoTerms(1)
+     AuxArray(86,IPassQ) = AuxArray(86,IPassQ) + Ypb*TMPAuxArray(57) + alphaYpq*TmpArray7(57,2)
+     AuxArray(87,IPassQ) = AuxArray(87,IPassQ) + Zpb*TMPAuxArray(57) + alphaZpq*TmpArray7(57,2)
+     AuxArray(88,IPassQ) = AuxArray(88,IPassQ) + Xpb*TMPAuxArray(60) + alphaXpq*TmpArray7(60,2) + 4*TwoTerms(2)
+     AuxArray(89,IPassQ) = AuxArray(89,IPassQ) + Ypb*TMPAuxArray(59) + alphaYpq*TmpArray7(59,2)
+     AuxArray(90,IPassQ) = AuxArray(90,IPassQ) + Xpb*TMPAuxArray(62) + alphaXpq*TmpArray7(62,2) + 4*TwoTerms(3)
+     AuxArray(91,IPassQ) = AuxArray(91,IPassQ) + Xpb*TMPAuxArray(63) + alphaXpq*TmpArray7(63,2) + 3*TwoTerms(4)
+     AuxArray(92,IPassQ) = AuxArray(92,IPassQ) + Zpb*TMPAuxArray(60) + alphaZpq*TmpArray7(60,2)
+     AuxArray(93,IPassQ) = AuxArray(93,IPassQ) + Ypb*TMPAuxArray(62) + alphaYpq*TmpArray7(62,2)
+     AuxArray(94,IPassQ) = AuxArray(94,IPassQ) + Xpb*TMPAuxArray(66) + alphaXpq*TmpArray7(66,2) + 3*TwoTerms(5)
+     AuxArray(95,IPassQ) = AuxArray(95,IPassQ) + Xpb*TMPAuxArray(67) + alphaXpq*TmpArray7(67,2) + 2*TwoTerms(6)
+     AuxArray(96,IPassQ) = AuxArray(96,IPassQ) + Zpb*TMPAuxArray(63) + alphaZpq*TmpArray7(63,2)
+     AuxArray(97,IPassQ) = AuxArray(97,IPassQ) + Xpb*TMPAuxArray(69) + alphaXpq*TmpArray7(69,2) + 2*TwoTerms(7)
+     AuxArray(98,IPassQ) = AuxArray(98,IPassQ) + Ypb*TMPAuxArray(66) + alphaYpq*TmpArray7(66,2)
+     AuxArray(99,IPassQ) = AuxArray(99,IPassQ) + Xpb*TMPAuxArray(71) + alphaXpq*TmpArray7(71,2) + 2*TwoTerms(8)
+     AuxArray(100,IPassQ) = AuxArray(100,IPassQ) + Xpb*TMPAuxArray(72) + alphaXpq*TmpArray7(72,2) + TwoTerms(9)
+     AuxArray(101,IPassQ) = AuxArray(101,IPassQ) + Zpb*TMPAuxArray(67) + alphaZpq*TmpArray7(67,2)
+     AuxArray(102,IPassQ) = AuxArray(102,IPassQ) + Xpb*TMPAuxArray(74) + alphaXpq*TmpArray7(74,2) + TwoTerms(10)
+     AuxArray(103,IPassQ) = AuxArray(103,IPassQ) + Xpb*TMPAuxArray(75) + alphaXpq*TmpArray7(75,2) + TwoTerms(11)
+     AuxArray(104,IPassQ) = AuxArray(104,IPassQ) + Ypb*TMPAuxArray(71) + alphaYpq*TmpArray7(71,2)
+     AuxArray(105,IPassQ) = AuxArray(105,IPassQ) + Xpb*TMPAuxArray(77) + alphaXpq*TmpArray7(77,2) + TwoTerms(13)
+     AuxArray(106,IPassQ) = AuxArray(106,IPassQ) + Xpb*TMPAuxArray(78) + alphaXpq*TmpArray7(78,2)
+     AuxArray(107,IPassQ) = AuxArray(107,IPassQ) + Xpb*TMPAuxArray(79) + alphaXpq*TmpArray7(79,2)
+     AuxArray(108,IPassQ) = AuxArray(108,IPassQ) + Xpb*TMPAuxArray(80) + alphaXpq*TmpArray7(80,2)
+     AuxArray(109,IPassQ) = AuxArray(109,IPassQ) + Xpb*TMPAuxArray(81) + alphaXpq*TmpArray7(81,2)
+     AuxArray(110,IPassQ) = AuxArray(110,IPassQ) + Xpb*TMPAuxArray(82) + alphaXpq*TmpArray7(82,2)
+     AuxArray(111,IPassQ) = AuxArray(111,IPassQ) + Xpb*TMPAuxArray(83) + alphaXpq*TmpArray7(83,2)
+     AuxArray(112,IPassQ) = AuxArray(112,IPassQ) + Xpb*TMPAuxArray(84) + alphaXpq*TmpArray7(84,2)
+     AuxArray(113,IPassQ) = AuxArray(113,IPassQ) + Ypb*TMPAuxArray(78) + alphaYpq*TmpArray7(78,2) + 6*TwoTerms(9)
+     AuxArray(114,IPassQ) = AuxArray(114,IPassQ) + Zpb*TMPAuxArray(78) + alphaZpq*TmpArray7(78,2)
+     AuxArray(115,IPassQ) = AuxArray(115,IPassQ) + Ypb*TMPAuxArray(80) + alphaYpq*TmpArray7(80,2) + 4*TwoTerms(10)
+     AuxArray(116,IPassQ) = AuxArray(116,IPassQ) + Ypb*TMPAuxArray(81) + alphaYpq*TmpArray7(81,2) + 3*TwoTerms(11)
+     AuxArray(117,IPassQ) = AuxArray(117,IPassQ) + Ypb*TMPAuxArray(82) + alphaYpq*TmpArray7(82,2) + 2*TwoTerms(12)
+     AuxArray(118,IPassQ) = AuxArray(118,IPassQ) + Ypb*TMPAuxArray(83) + alphaYpq*TmpArray7(83,2) + TwoTerms(13)
+     AuxArray(119,IPassQ) = AuxArray(119,IPassQ) + Ypb*TMPAuxArray(84) + alphaYpq*TmpArray7(84,2)
+     AuxArray(120,IPassQ) = AuxArray(120,IPassQ) + Zpb*TMPAuxArray(84) + alphaZpq*TmpArray7(84,2) + 6*TwoTerms(13)
     ENDDO
    ENDDO
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrenceSegP8B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPUSeg8B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -1783,7 +1745,7 @@ subroutine VerticalRecurrenceSegP8B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)
   real(realk),intent(in) :: Bcenter(3)
-  real(realk),intent(inout) :: AUXarray(  165,nPrimQ*nPasses)
+  real(realk),intent(inout) :: AUXarray(  165,nPasses)
   !local variables
   integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
   real(realk) :: TMPAUXarray(  120)
@@ -1822,16 +1784,11 @@ subroutine VerticalRecurrenceSegP8B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   By = -Bcenter(2)
   Bz = -Bcenter(3)
   DO iPassQ = 1,nPasses
-   iP = (iPassQ-1)*nPrimQ
-   DO iPrimQ=1, nPrimQ
-    iP = iP + 1
-    DO iTUV=1,  165
-     AUXarray(iTUV,iP)=0.0E0_realk
-    ENDDO
+   iP = iPassQ
+   DO iTUV=1,  165
+    AUXarray(iTUV,iPassQ)=0.0E0_realk
    ENDDO
-   iP = (iPassQ-1)*nPrimQ
    DO iPrimP=1, nPrimP
-    iP = (iPassQ-1)*nPrimQ
     Pexpfac = PpreExpFac(iPrimP)
     mPX = -Pcent(1,iPrimP)
     mPY = -Pcent(2,iPrimP)
@@ -1842,7 +1799,6 @@ subroutine VerticalRecurrenceSegP8B(nPasses,nPrimP,nPrimQ,reducedExponents,&
     Ypb = Pcent(2,iPrimP) + By
     Zpb = Pcent(3,iPrimP) + Bz
     DO iPrimQ=1, nPrimQ
-   iP = iP + 1
      Xpq = mPX + Qcent(1,iPrimQ,iPassQ)
      Ypq = mPY + Qcent(2,iPrimQ,iPassQ)
      Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)
@@ -2484,53 +2440,53 @@ subroutine VerticalRecurrenceSegP8B(nPasses,nPrimP,nPrimQ,reducedExponents,&
      TwoTerms(17) = inv2expP*(TMPAuxArray(83) + alphaP*TmpArray7(83,2))
      TwoTerms(18) = inv2expP*(TMPAuxArray(84) + alphaP*TmpArray7(84,2))
      do iTUV = 1,  120
-      AuxArray(iTUV,IP) = AuxArray(iTUV,IP) + TMPAuxarray(iTUV)
+      AuxArray(iTUV,IPassQ) = AuxArray(iTUV,IPassQ) + TMPAuxarray(iTUV)
      enddo
-     AuxArray(121,IP) = AuxArray(121,IP) + Xpb*TMPAuxArray(85) + alphaXpq*TmpArray8(85,2) + 7*TwoTerms(1)
-     AuxArray(122,IP) = AuxArray(122,IP) + Ypb*TMPAuxArray(85) + alphaYpq*TmpArray8(85,2)
-     AuxArray(123,IP) = AuxArray(123,IP) + Zpb*TMPAuxArray(85) + alphaZpq*TmpArray8(85,2)
-     AuxArray(124,IP) = AuxArray(124,IP) + Xpb*TMPAuxArray(88) + alphaXpq*TmpArray8(88,2) + 5*TwoTerms(2)
-     AuxArray(125,IP) = AuxArray(125,IP) + Ypb*TMPAuxArray(87) + alphaYpq*TmpArray8(87,2)
-     AuxArray(126,IP) = AuxArray(126,IP) + Xpb*TMPAuxArray(90) + alphaXpq*TmpArray8(90,2) + 5*TwoTerms(3)
-     AuxArray(127,IP) = AuxArray(127,IP) + Xpb*TMPAuxArray(91) + alphaXpq*TmpArray8(91,2) + 4*TwoTerms(4)
-     AuxArray(128,IP) = AuxArray(128,IP) + Zpb*TMPAuxArray(88) + alphaZpq*TmpArray8(88,2)
-     AuxArray(129,IP) = AuxArray(129,IP) + Ypb*TMPAuxArray(90) + alphaYpq*TmpArray8(90,2)
-     AuxArray(130,IP) = AuxArray(130,IP) + Xpb*TMPAuxArray(94) + alphaXpq*TmpArray8(94,2) + 4*TwoTerms(5)
-     AuxArray(131,IP) = AuxArray(131,IP) + Xpb*TMPAuxArray(95) + alphaXpq*TmpArray8(95,2) + 3*TwoTerms(6)
-     AuxArray(132,IP) = AuxArray(132,IP) + Zpb*TMPAuxArray(91) + alphaZpq*TmpArray8(91,2)
-     AuxArray(133,IP) = AuxArray(133,IP) + Xpb*TMPAuxArray(97) + alphaXpq*TmpArray8(97,2) + 3*TwoTerms(7)
-     AuxArray(134,IP) = AuxArray(134,IP) + Ypb*TMPAuxArray(94) + alphaYpq*TmpArray8(94,2)
-     AuxArray(135,IP) = AuxArray(135,IP) + Xpb*TMPAuxArray(99) + alphaXpq*TmpArray8(99,2) + 3*TwoTerms(8)
-     AuxArray(136,IP) = AuxArray(136,IP) + Xpb*TMPAuxArray(100) + alphaXpq*TmpArray8(100,2) + 2*TwoTerms(9)
-     AuxArray(137,IP) = AuxArray(137,IP) + Zpb*TMPAuxArray(95) + alphaZpq*TmpArray8(95,2)
-     AuxArray(138,IP) = AuxArray(138,IP) + Xpb*TMPAuxArray(102) + alphaXpq*TmpArray8(102,2) + 2*TwoTerms(10)
-     AuxArray(139,IP) = AuxArray(139,IP) + Xpb*TMPAuxArray(103) + alphaXpq*TmpArray8(103,2) + 2*TwoTerms(11)
-     AuxArray(140,IP) = AuxArray(140,IP) + Ypb*TMPAuxArray(99) + alphaYpq*TmpArray8(99,2)
-     AuxArray(141,IP) = AuxArray(141,IP) + Xpb*TMPAuxArray(105) + alphaXpq*TmpArray8(105,2) + 2*TwoTerms(12)
-     AuxArray(142,IP) = AuxArray(142,IP) + Xpb*TMPAuxArray(106) + alphaXpq*TmpArray8(106,2) + TwoTerms(13)
-     AuxArray(143,IP) = AuxArray(143,IP) + Zpb*TMPAuxArray(100) + alphaZpq*TmpArray8(100,2)
-     AuxArray(144,IP) = AuxArray(144,IP) + Xpb*TMPAuxArray(108) + alphaXpq*TmpArray8(108,2) + TwoTerms(14)
-     AuxArray(145,IP) = AuxArray(145,IP) + Xpb*TMPAuxArray(109) + alphaXpq*TmpArray8(109,2) + TwoTerms(15)
-     AuxArray(146,IP) = AuxArray(146,IP) + Xpb*TMPAuxArray(110) + alphaXpq*TmpArray8(110,2) + TwoTerms(16)
-     AuxArray(147,IP) = AuxArray(147,IP) + Ypb*TMPAuxArray(105) + alphaYpq*TmpArray8(105,2)
-     AuxArray(148,IP) = AuxArray(148,IP) + Xpb*TMPAuxArray(112) + alphaXpq*TmpArray8(112,2) + TwoTerms(18)
-     AuxArray(149,IP) = AuxArray(149,IP) + Xpb*TMPAuxArray(113) + alphaXpq*TmpArray8(113,2)
-     AuxArray(150,IP) = AuxArray(150,IP) + Xpb*TMPAuxArray(114) + alphaXpq*TmpArray8(114,2)
-     AuxArray(151,IP) = AuxArray(151,IP) + Xpb*TMPAuxArray(115) + alphaXpq*TmpArray8(115,2)
-     AuxArray(152,IP) = AuxArray(152,IP) + Xpb*TMPAuxArray(116) + alphaXpq*TmpArray8(116,2)
-     AuxArray(153,IP) = AuxArray(153,IP) + Xpb*TMPAuxArray(117) + alphaXpq*TmpArray8(117,2)
-     AuxArray(154,IP) = AuxArray(154,IP) + Xpb*TMPAuxArray(118) + alphaXpq*TmpArray8(118,2)
-     AuxArray(155,IP) = AuxArray(155,IP) + Xpb*TMPAuxArray(119) + alphaXpq*TmpArray8(119,2)
-     AuxArray(156,IP) = AuxArray(156,IP) + Xpb*TMPAuxArray(120) + alphaXpq*TmpArray8(120,2)
-     AuxArray(157,IP) = AuxArray(157,IP) + Ypb*TMPAuxArray(113) + alphaYpq*TmpArray8(113,2) + 7*TwoTerms(13)
-     AuxArray(158,IP) = AuxArray(158,IP) + Zpb*TMPAuxArray(113) + alphaZpq*TmpArray8(113,2)
-     AuxArray(159,IP) = AuxArray(159,IP) + Ypb*TMPAuxArray(115) + alphaYpq*TmpArray8(115,2) + 5*TwoTerms(14)
-     AuxArray(160,IP) = AuxArray(160,IP) + Ypb*TMPAuxArray(116) + alphaYpq*TmpArray8(116,2) + 4*TwoTerms(15)
-     AuxArray(161,IP) = AuxArray(161,IP) + Ypb*TMPAuxArray(117) + alphaYpq*TmpArray8(117,2) + 3*TwoTerms(16)
-     AuxArray(162,IP) = AuxArray(162,IP) + Ypb*TMPAuxArray(118) + alphaYpq*TmpArray8(118,2) + 2*TwoTerms(17)
-     AuxArray(163,IP) = AuxArray(163,IP) + Ypb*TMPAuxArray(119) + alphaYpq*TmpArray8(119,2) + TwoTerms(18)
-     AuxArray(164,IP) = AuxArray(164,IP) + Ypb*TMPAuxArray(120) + alphaYpq*TmpArray8(120,2)
-     AuxArray(165,IP) = AuxArray(165,IP) + Zpb*TMPAuxArray(120) + alphaZpq*TmpArray8(120,2) + 7*TwoTerms(18)
+     AuxArray(121,IPassQ) = AuxArray(121,IPassQ) + Xpb*TMPAuxArray(85) + alphaXpq*TmpArray8(85,2) + 7*TwoTerms(1)
+     AuxArray(122,IPassQ) = AuxArray(122,IPassQ) + Ypb*TMPAuxArray(85) + alphaYpq*TmpArray8(85,2)
+     AuxArray(123,IPassQ) = AuxArray(123,IPassQ) + Zpb*TMPAuxArray(85) + alphaZpq*TmpArray8(85,2)
+     AuxArray(124,IPassQ) = AuxArray(124,IPassQ) + Xpb*TMPAuxArray(88) + alphaXpq*TmpArray8(88,2) + 5*TwoTerms(2)
+     AuxArray(125,IPassQ) = AuxArray(125,IPassQ) + Ypb*TMPAuxArray(87) + alphaYpq*TmpArray8(87,2)
+     AuxArray(126,IPassQ) = AuxArray(126,IPassQ) + Xpb*TMPAuxArray(90) + alphaXpq*TmpArray8(90,2) + 5*TwoTerms(3)
+     AuxArray(127,IPassQ) = AuxArray(127,IPassQ) + Xpb*TMPAuxArray(91) + alphaXpq*TmpArray8(91,2) + 4*TwoTerms(4)
+     AuxArray(128,IPassQ) = AuxArray(128,IPassQ) + Zpb*TMPAuxArray(88) + alphaZpq*TmpArray8(88,2)
+     AuxArray(129,IPassQ) = AuxArray(129,IPassQ) + Ypb*TMPAuxArray(90) + alphaYpq*TmpArray8(90,2)
+     AuxArray(130,IPassQ) = AuxArray(130,IPassQ) + Xpb*TMPAuxArray(94) + alphaXpq*TmpArray8(94,2) + 4*TwoTerms(5)
+     AuxArray(131,IPassQ) = AuxArray(131,IPassQ) + Xpb*TMPAuxArray(95) + alphaXpq*TmpArray8(95,2) + 3*TwoTerms(6)
+     AuxArray(132,IPassQ) = AuxArray(132,IPassQ) + Zpb*TMPAuxArray(91) + alphaZpq*TmpArray8(91,2)
+     AuxArray(133,IPassQ) = AuxArray(133,IPassQ) + Xpb*TMPAuxArray(97) + alphaXpq*TmpArray8(97,2) + 3*TwoTerms(7)
+     AuxArray(134,IPassQ) = AuxArray(134,IPassQ) + Ypb*TMPAuxArray(94) + alphaYpq*TmpArray8(94,2)
+     AuxArray(135,IPassQ) = AuxArray(135,IPassQ) + Xpb*TMPAuxArray(99) + alphaXpq*TmpArray8(99,2) + 3*TwoTerms(8)
+     AuxArray(136,IPassQ) = AuxArray(136,IPassQ) + Xpb*TMPAuxArray(100) + alphaXpq*TmpArray8(100,2) + 2*TwoTerms(9)
+     AuxArray(137,IPassQ) = AuxArray(137,IPassQ) + Zpb*TMPAuxArray(95) + alphaZpq*TmpArray8(95,2)
+     AuxArray(138,IPassQ) = AuxArray(138,IPassQ) + Xpb*TMPAuxArray(102) + alphaXpq*TmpArray8(102,2) + 2*TwoTerms(10)
+     AuxArray(139,IPassQ) = AuxArray(139,IPassQ) + Xpb*TMPAuxArray(103) + alphaXpq*TmpArray8(103,2) + 2*TwoTerms(11)
+     AuxArray(140,IPassQ) = AuxArray(140,IPassQ) + Ypb*TMPAuxArray(99) + alphaYpq*TmpArray8(99,2)
+     AuxArray(141,IPassQ) = AuxArray(141,IPassQ) + Xpb*TMPAuxArray(105) + alphaXpq*TmpArray8(105,2) + 2*TwoTerms(12)
+     AuxArray(142,IPassQ) = AuxArray(142,IPassQ) + Xpb*TMPAuxArray(106) + alphaXpq*TmpArray8(106,2) + TwoTerms(13)
+     AuxArray(143,IPassQ) = AuxArray(143,IPassQ) + Zpb*TMPAuxArray(100) + alphaZpq*TmpArray8(100,2)
+     AuxArray(144,IPassQ) = AuxArray(144,IPassQ) + Xpb*TMPAuxArray(108) + alphaXpq*TmpArray8(108,2) + TwoTerms(14)
+     AuxArray(145,IPassQ) = AuxArray(145,IPassQ) + Xpb*TMPAuxArray(109) + alphaXpq*TmpArray8(109,2) + TwoTerms(15)
+     AuxArray(146,IPassQ) = AuxArray(146,IPassQ) + Xpb*TMPAuxArray(110) + alphaXpq*TmpArray8(110,2) + TwoTerms(16)
+     AuxArray(147,IPassQ) = AuxArray(147,IPassQ) + Ypb*TMPAuxArray(105) + alphaYpq*TmpArray8(105,2)
+     AuxArray(148,IPassQ) = AuxArray(148,IPassQ) + Xpb*TMPAuxArray(112) + alphaXpq*TmpArray8(112,2) + TwoTerms(18)
+     AuxArray(149,IPassQ) = AuxArray(149,IPassQ) + Xpb*TMPAuxArray(113) + alphaXpq*TmpArray8(113,2)
+     AuxArray(150,IPassQ) = AuxArray(150,IPassQ) + Xpb*TMPAuxArray(114) + alphaXpq*TmpArray8(114,2)
+     AuxArray(151,IPassQ) = AuxArray(151,IPassQ) + Xpb*TMPAuxArray(115) + alphaXpq*TmpArray8(115,2)
+     AuxArray(152,IPassQ) = AuxArray(152,IPassQ) + Xpb*TMPAuxArray(116) + alphaXpq*TmpArray8(116,2)
+     AuxArray(153,IPassQ) = AuxArray(153,IPassQ) + Xpb*TMPAuxArray(117) + alphaXpq*TmpArray8(117,2)
+     AuxArray(154,IPassQ) = AuxArray(154,IPassQ) + Xpb*TMPAuxArray(118) + alphaXpq*TmpArray8(118,2)
+     AuxArray(155,IPassQ) = AuxArray(155,IPassQ) + Xpb*TMPAuxArray(119) + alphaXpq*TmpArray8(119,2)
+     AuxArray(156,IPassQ) = AuxArray(156,IPassQ) + Xpb*TMPAuxArray(120) + alphaXpq*TmpArray8(120,2)
+     AuxArray(157,IPassQ) = AuxArray(157,IPassQ) + Ypb*TMPAuxArray(113) + alphaYpq*TmpArray8(113,2) + 7*TwoTerms(13)
+     AuxArray(158,IPassQ) = AuxArray(158,IPassQ) + Zpb*TMPAuxArray(113) + alphaZpq*TmpArray8(113,2)
+     AuxArray(159,IPassQ) = AuxArray(159,IPassQ) + Ypb*TMPAuxArray(115) + alphaYpq*TmpArray8(115,2) + 5*TwoTerms(14)
+     AuxArray(160,IPassQ) = AuxArray(160,IPassQ) + Ypb*TMPAuxArray(116) + alphaYpq*TmpArray8(116,2) + 4*TwoTerms(15)
+     AuxArray(161,IPassQ) = AuxArray(161,IPassQ) + Ypb*TMPAuxArray(117) + alphaYpq*TmpArray8(117,2) + 3*TwoTerms(16)
+     AuxArray(162,IPassQ) = AuxArray(162,IPassQ) + Ypb*TMPAuxArray(118) + alphaYpq*TmpArray8(118,2) + 2*TwoTerms(17)
+     AuxArray(163,IPassQ) = AuxArray(163,IPassQ) + Ypb*TMPAuxArray(119) + alphaYpq*TmpArray8(119,2) + TwoTerms(18)
+     AuxArray(164,IPassQ) = AuxArray(164,IPassQ) + Ypb*TMPAuxArray(120) + alphaYpq*TmpArray8(120,2)
+     AuxArray(165,IPassQ) = AuxArray(165,IPassQ) + Zpb*TMPAuxArray(120) + alphaZpq*TmpArray8(120,2) + 7*TwoTerms(18)
     ENDDO
    ENDDO
   ENDDO
