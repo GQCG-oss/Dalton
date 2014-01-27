@@ -174,52 +174,55 @@ integer :: nPrimA,nPrimB,nContA,nAtomsA,nAtomsB,nAtomsC,nAtomsD,nOrbA
 integer :: nDimA,nOrbCompA,nContB,nOrbB,nDimB
 integer :: nPrimC,nContC,nPrimD,nContD,nOrbC,nOrbD,nOrbCompB,nOrbCompC,nDimC
 integer :: nDimD,nOrbCompD,INTPRINT,maxangmomABCD
-integer,pointer :: Piprim1(:),Piprim2(:),Qiprim1(:),Qiprim2(:)
-integer,pointer :: OrderdListA(:),OrderdListB(:),OrderdListC(:),OrderdListD(:)
+integer,allocatable :: Piprim1(:),Piprim2(:),Qiprim1(:),Qiprim2(:)
+integer,allocatable :: OrderdListA(:),OrderdListB(:),OrderdListC(:),OrderdListD(:)
 logical :: Psegmented,Qsegmented,PQorder,Spherical,SameLHSaos,SameRHSaos,SameODs
 logical :: TriangularLHSAtomLoop,TriangularRHSAtomLoop,PermuteRHS,CSScreen
 logical :: TriangularODAtomLoop
 logical :: NOTDoSSSS,Segmented,PermuteLHSTypes,PermuteRHSTypes,PermuteODTypes
-real(realk),pointer :: expP(:),Pcent(:),PpreExpFac(:),Pdistance12Pass(:,:),LocalInt(:)
-real(realk),pointer :: expQ(:),PcentPass(:,:),PpreExpFacPass(:,:),inversexpP(:),LocalIntPass(:,:)
-real(realk),pointer :: QpreExpFac(:),Qcent(:)
-REAL(realk),pointer :: TABFJW(:,:),reducedExponents(:),integralPrefactor(:)
+real(realk),allocatable :: expP(:),Pcent(:),PpreExpFac(:),Pdistance12Pass(:,:),LocalInt(:)
+real(realk),allocatable :: expQ(:),PcentPass(:,:),PpreExpFacPass(:,:),inversexpP(:),LocalIntPass(:,:)
+real(realk),allocatable :: QpreExpFac(:),Qcent(:)
+REAL(realk),allocatable :: TABFJW(:,:),reducedExponents(:),integralPrefactor(:)
 real(realk) :: AcenterSpec(3),BcenterSpec(3),CcenterSpec(3),DcenterSpec(3)
 real(realk) :: Pdistance12(3),Qdistance12(3)
-real(realk),pointer :: expA(:),ContractCoeffA(:,:),Acenter(:,:)
-real(realk),pointer :: expB(:),ContractCoeffB(:,:),Bcenter(:,:)
-real(realk),pointer :: expC(:),ContractCoeffC(:,:),Ccenter(:,:)
-real(realk),pointer :: expD(:),ContractCoeffD(:,:),Dcenter(:,:)
-integer,pointer :: startOrbitalA(:),startOrbitalB(:)
-integer,pointer :: startOrbitalC(:),startOrbitalD(:)
+real(realk),allocatable :: expA(:),ContractCoeffA(:,:),Acenter(:,:)
+real(realk),allocatable :: expB(:),ContractCoeffB(:,:),Bcenter(:,:)
+real(realk),allocatable :: expC(:),ContractCoeffC(:,:),Ccenter(:,:)
+real(realk),allocatable :: expD(:),ContractCoeffD(:,:),Dcenter(:,:)
+integer,allocatable :: startOrbitalA(:),startOrbitalB(:)
+integer,allocatable :: startOrbitalC(:),startOrbitalD(:)
 !Tmporary array used in the innermost routines 
 integer :: TMParray1maxsize,TMParray2maxsize
 integer :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
-!real(realk),pointer :: TmpArray1(:)
-!real(realk),pointer :: TmpArray2(:)
+!real(realk),allocatable :: TmpArray1(:)
+!real(realk),allocatable :: TmpArray2(:)
 !Batch info
 integer :: iBatchC,iBatchD,nBatchA,nBatchB,nBatchC,nBatchD
-integer,pointer :: BatchIndexOfTypeA(:)
-integer,pointer :: BatchIndexOfTypeB(:)
-integer,pointer :: BatchIndexOfTypeC(:)
-integer,pointer :: BatchIndexOfTypeD(:)
+integer,allocatable :: BatchIndexOfTypeA(:)
+integer,allocatable :: BatchIndexOfTypeB(:)
+integer,allocatable :: BatchIndexOfTypeC(:)
+integer,allocatable :: BatchIndexOfTypeD(:)
 integer :: iBatchIndexOfTypeA,iBatchIndexOfTypeB,iBatchIndexOfTypeC,iBatchIndexOfTypeD
 !Screening variables
-real(realk),pointer :: MaxGabForTypeAB(:,:),MaxGabForTypeCD(:,:)
-real(realk),pointer :: BATCHGAB(:,:),BATCHGCD(:,:),BATCHGAB2(:,:),BATCHGCD2(:,:)
-logical,pointer :: noScreenAB(:,:),noScreenCD(:,:),noScreenCD2(:,:)
+real(realk),allocatable :: MaxGabForTypeAB(:,:),MaxGabForTypeCD(:,:)
+real(realk),allocatable,target :: BATCHGAB(:,:)
+real(realk),allocatable :: BATCHGAB2(:,:),BATCHGCD2(:,:)
+real(realk),pointer :: BATCHGCD(:,:)
+logical,allocatable :: noScreenAB(:,:),noScreenCD(:,:),noScreenCD2(:,:)
 integer :: nBatchAGAB,nBatchBGAB,nBatchCGCD,nBatchDGCD
 real(realk) :: GABELM
 !Passes
 integer :: nPasses,iPass,MaxPasses!,nPassLoop,nPassesInPassLoop,iPassTMP !,ndimPass
 !integer :: iPassLoop
-integer,pointer :: IatomAPass(:),IatomBPass(:)
+integer,allocatable :: IatomAPass(:),IatomBPass(:)
 integer :: MaxTotalAngmom,IAngmomTypes
 !ODscreening
 real(realk) :: ExtentOfTypeA(ntypesA),ExtentOfTypeB(ntypesB),extentA,extentB,extentC,extentD
 real(realk) :: ExtentOfTypeC(ntypesC),ExtentOfTypeD(ntypesD)
-real(realk) :: sumExtent2AB,sumExtent2CD
+real(realk) :: sumExtent2AB,sumExtent2CD,Tstart,Tend
 logical :: ODscreen,QQRscreen
+character(len=16)  :: TYPESTRING
 ! POSSIBLE IMPROVEMENTS / TO DO / TODO LIST:
 ! FFFF
 ! FUSE LOOPS IN TRANSFER
@@ -245,66 +248,88 @@ call build_ichor_AOextent(MaxnAtomsD,MaxnprimD,MaxnContD,ntypesD,exponentsOfType
 call set_ichor_memvar(MaxMemAllocated,MemAllocated)
 INTPRINT=IchorDebugSpec
 IF(INTPRINT.GT.50)WRITE(LUPRI,'(A)') ' IchorEri'
-call mem_ichor_alloc(OrderdListA,nTypesA)
+allocate(OrderdListA(nTypesA))
+call mem_ichor_alloc(OrderdListA)
 call GenerateOrderdListOfTypes(lupri,nTypesA,AngmomOfTypeA,OrderdListA)
-call mem_ichor_alloc(OrderdListB,nTypesB)
+allocate(OrderdListB(nTypesB))
+call mem_ichor_alloc(OrderdListB)
 call GenerateOrderdListOfTypes(lupri,nTypesB,AngmomOfTypeB,OrderdListB)
-call mem_ichor_alloc(OrderdListC,nTypesC)
+allocate(OrderdListC(nTypesC))
+call mem_ichor_alloc(OrderdListC)
 call GenerateOrderdListOfTypes(lupri,nTypesC,AngmomOfTypeC,OrderdListC)
-call mem_ichor_alloc(OrderdListD,nTypesD)
+allocate(OrderdListD(nTypesD))
+call mem_ichor_alloc(OrderdListD)
 call GenerateOrderdListOfTypes(lupri,nTypesD,AngmomOfTypeD,OrderdListD)
 PQorder=.FALSE.
 IF(CSScreen)THEN
-   call mem_ichor_alloc(BatchIndexOfTypeA,nTypesA)
+   allocate(BatchIndexOfTypeA(nTypesA))
+   call mem_ichor_alloc(BatchIndexOfTypeA)
    call ConstructBatchIndexOfType(BatchIndexOfTypeA,nTypesA,nAtomsOfTypeA,nBatchA)
-   call mem_ichor_alloc(BatchIndexOfTypeB,nTypesB)
+   allocate(BatchIndexOfTypeB(nTypesB))
+   call mem_ichor_alloc(BatchIndexOfTypeB)
    call ConstructBatchIndexOfType(BatchIndexOfTypeB,nTypesB,nAtomsOfTypeB,nBatchB)
    call RetrieveGabDimFromIchorSaveGabModule(nBatchAGAB,nBatchBGAB,IchorGabID1)
-   call mem_ichor_alloc(BATCHGAB,nBatchA,nBatchB)
+   allocate(BATCHGAB(nBatchA,nBatchB))
+   call mem_ichor_alloc(BATCHGAB)
    IF(nBatchA.NE.endBatchA-startBatchA+1)call ichorQuit('Screening Dim Mismatch1',-1)
    IF(nBatchB.NE.endBatchB-startBatchB+1)call ichorQuit('Screening Dim Mismatch2',-1)
    IF(nBatchAGAB.NE.nBatchA.OR.nBatchBGAB.NE.nBatchB)THEN
       !WARNING BATCHCALC NOT FULL INTEGRAL IS CALCULATED
-      call mem_ichor_alloc(BATCHGAB2,nBatchAGAB,nBatchBGAB)
+      allocate(BATCHGAB2(nBatchAGAB,nBatchBGAB))
+      call mem_ichor_alloc(BATCHGAB2)
       call RetrieveGabFromIchorSaveGabModule(nBatchAGAB,nBatchBGAB,IchorGabID1,BATCHGAB2)
       call ExtractBatchGabFromFullGab(nBatchA,nBatchB,BATCHGAB,nBatchAGAB,nBatchBGAB,BATCHGAB2,&
            & startBatchA,endBatchA,startBatchB,endBatchB)
       call mem_ichor_dealloc(BATCHGAB2)
+      deallocate(BATCHGAB2)
    ELSE
       call RetrieveGabFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID1,BATCHGAB)
    ENDIF
 
-   call mem_ichor_alloc(MaxGabForTypeAB,nTypesB,nTypesA)
+   allocate(MaxGabForTypeAB(nTypesB,nTypesA))
+   call mem_ichor_alloc(MaxGabForTypeAB)
    call ObtainMaxGabForType(MaxGabForTypeAB,nTypesA,nTypesB,nAtomsOfTypeA,&
         & nAtomsOfTypeB,BatchIndexOfTypeA,BatchIndexOfTypeB,BATCHGAB,&
         & nBatchA,nBatchB)
    IF(IchorGabID1.EQ.IchorGabID2)THEN
       BATCHGCD => BATCHGAB
-      MaxGabForTypeCD => MaxGabForTypeAB
-      BatchIndexOfTypeC => BatchIndexOfTypeA
-      BatchIndexOfTypeD => BatchIndexOfTypeB
+      allocate(MaxGabForTypeCD(nTypesC,nTypesD))
+      call mem_ichor_alloc(MaxGabForTypeCD)
+      MaxGabForTypeCD = MaxGabForTypeAB
+      allocate(BatchIndexOfTypeC(nTypesC))
+      call mem_ichor_alloc(BatchIndexOfTypeC)
+      BatchIndexOfTypeC = BatchIndexOfTypeA
+      allocate(BatchIndexOfTypeD(nTypesD))
+      call mem_ichor_alloc(BatchIndexOfTypeD)
+      BatchIndexOfTypeD = BatchIndexOfTypeB
       nBatchC = nBatchA
       nBatchD = nBatchB
    ELSE
-      call mem_ichor_alloc(BatchIndexOfTypeC,nTypesC)
+      allocate(BatchIndexOfTypeC(nTypesC))
+      call mem_ichor_alloc(BatchIndexOfTypeC)
       call ConstructBatchIndexOfType(BatchIndexOfTypeC,nTypesC,nAtomsOfTypeC,nBatchC)
-      call mem_ichor_alloc(BatchIndexOfTypeD,nTypesD)
+      allocate(BatchIndexOfTypeD(nTypesD))
+      call mem_ichor_alloc(BatchIndexOfTypeD)
       call ConstructBatchIndexOfType(BatchIndexOfTypeD,nTypesD,nAtomsOfTypeD,nBatchD)
-      call mem_ichor_alloc(BATCHGCD,nBatchC,nBatchD)
+      allocate(BATCHGCD(nBatchC,nBatchD))
+      call mem_ichor_alloc(BATCHGCD)
       IF(nBatchC.NE.endBatchC-startBatchC+1)call ichorQuit('Screening Dim Mismatch3',-1)
       IF(nBatchD.NE.endBatchD-startBatchD+1)call ichorQuit('Screening Dim Mismatch4',-1)
       call RetrieveGabDimFromIchorSaveGabModule(nBatchCGCD,nBatchDGCD,IchorGabID2)      
       IF(nBatchCGCD.NE.nBatchC.OR.nBatchDGCD.NE.nBatchD)THEN
          !WARNING BATCHCALC NOT FULL INTEGRAL IS CALCULATED
-         call mem_ichor_alloc(BATCHGCD2,nBatchCGCD,nBatchDGCD)
+         allocate(BATCHGCD2(nBatchCGCD,nBatchDGCD))
+         call mem_ichor_alloc(BATCHGCD2)
          call RetrieveGabFromIchorSaveGabModule(nBatchCGCD,nBatchDGCD,IchorGabID1,BATCHGCD2)
          call ExtractBatchGabFromFullGab(nBatchC,nBatchD,BATCHGCD,nBatchCGCD,nBatchDGCD,BATCHGCD2,&
               & startBatchC,endBatchC,startBatchD,endBatchD)
          call mem_ichor_dealloc(BATCHGCD2)
+         deallocate(BATCHGCD2)
       ELSE
          call RetrieveGabFromIchorSaveGabModule(nBatchC,nBatchD,IchorGabID2,BATCHGCD)
       ENDIF
-      call mem_ichor_alloc(MaxGabForTypeCD,nTypesC,nTypesD)
+      allocate(MaxGabForTypeCD(nTypesC,nTypesD))
+      call mem_ichor_alloc(MaxGabForTypeCD)
       call ObtainMaxGabForType(MaxGabForTypeCD,nTypesC,nTypesD,nAtomsOfTypeC,&
            & nAtomsOfTypeD,BatchIndexOfTypeC,BatchIndexOfTypeD,BATCHGCD,&
            & nBatchC,nBatchD)
@@ -318,7 +343,8 @@ ELSE
    iBatchIndexOfTypeB = 0
    iBatchIndexOfTypeD = 0
    iBatchIndexOfTypeC = 0
-   call mem_ichor_alloc(BATCHGAB,nBatchA,nBatchB)
+   allocate(BATCHGAB(nBatchA,nBatchB))
+   call mem_ichor_alloc(BATCHGAB)
    BATCHGCD => BATCHGAB
 ENDIF
 IF(CSScreen.OR.ODscreen)THEN
@@ -355,10 +381,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
   ENDIF
   nOrbD = nContD*nOrbCompD
   nDimD = nContD*nOrbCompD*nAtomsD
-  call mem_ichor_alloc(expD,nPrimD)
-  call mem_ichor_alloc(ContractCoeffD,nPrimD,nContD)
-  call mem_ichor_alloc(Dcenter,3,nAtomsD)
-  call mem_ichor_alloc(StartOrbitalD,nAtomsD)
+  allocate(expD(nPrimD))
+  call mem_ichor_alloc(expD)
+  allocate(ContractCoeffD(nPrimD,nContD))
+  call mem_ichor_alloc(ContractCoeffD)
+  allocate(Dcenter(3,nAtomsD))
+  call mem_ichor_alloc(Dcenter)
+  allocate(StartOrbitalD(nAtomsD))
+  call mem_ichor_alloc(StartOrbitalD)
   call build_exp_ContractCoeff_center(nPrimD,nContD,nAtomsD,ntypesD,iTypeD,&
        & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,startOrbitalOfTypeD,&
        & expD,ContractCoeffD,Dcenter,StartOrbitalD,MaxnAtomsD,MaxnprimD,MaxnContD,lupri)
@@ -382,10 +412,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
    ENDIF
    nOrbC = nContC*nOrbCompC
    nDimC = nOrbC*nAtomsC
-   call mem_ichor_alloc(expC,nPrimC)
-   call mem_ichor_alloc(ContractCoeffC,nPrimC,nContC)
-   call mem_ichor_alloc(Ccenter,3,nAtomsC)
-   call mem_ichor_alloc(StartOrbitalC,nAtomsC)
+   allocate(expC(nPrimC))
+   call mem_ichor_alloc(expC)
+   allocate(ContractCoeffC(nPrimC,nContC))
+   call mem_ichor_alloc(ContractCoeffC)
+   allocate(Ccenter(3,nAtomsC))
+   call mem_ichor_alloc(Ccenter)
+   allocate(StartOrbitalC(nAtomsC))
+   call mem_ichor_alloc(StartOrbitalC)
    call build_exp_ContractCoeff_center(nPrimC,nContC,nAtomsC,ntypesC,iTypeC,&
         & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters,startOrbitalOfTypeC,&
         & expC,ContractCoeffC,Ccenter,StartOrbitalC,MaxnAtomsC,MaxnprimC,MaxnContC,lupri)
@@ -396,18 +430,23 @@ DO IAngmomTypes = 0,MaxTotalAngmom
    AngmomQ = AngmomC + AngmomD
    nPrimQ = nPrimC*nPrimD
    nContQ = nContC*nContD
-   call mem_ichor_alloc(Qiprim1,nPrimQ) !not used
-   call mem_ichor_alloc(Qiprim2,nPrimQ) !not used
+   allocate(Qiprim1(nPrimQ))
+   call mem_ichor_alloc(Qiprim1) !not used
+   allocate(Qiprim2(nPrimQ))
+   call mem_ichor_alloc(Qiprim2) !not used
    IF (nContQ.EQ. 1)THEN
       Qsegmented = .TRUE.
    ELSE
       Qsegmented = .FALSE.
    ENDIF
-   call mem_ichor_alloc(expQ,nPrimQ)
+   allocate(expQ(nPrimQ))
+   call mem_ichor_alloc(expQ)
    call build_expP(nPrimC,nPrimD,expC,expD,expQ)
 
-   call mem_ichor_alloc(noScreenCD,nAtomsC,nAtomsD)
-   call mem_ichor_alloc(noScreenCD2,nAtomsC,nAtomsD)
+   allocate(noScreenCD(nAtomsC,nAtomsD))
+   call mem_ichor_alloc(noScreenCD)
+   allocate(noScreenCD2(nAtomsC,nAtomsD))
+   call mem_ichor_alloc(noScreenCD2)
    IF(ODScreen)THEN
       call ODscreen_noScreen(nAtomsC,nAtomsD,Ccenter,Dcenter,sumextent2CD,noScreenCD)
 !      call loutput(noscreenCD,nAtomsC,nAtomsD,6)
@@ -432,10 +471,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
     ENDIF
     nOrbB = nContB*nOrbCompB
     nDimB = nOrbB*nAtomsB
-    call mem_ichor_alloc(expB,nPrimB)
-    call mem_ichor_alloc(ContractCoeffB,nPrimB,nContB)
-    call mem_ichor_alloc(Bcenter,3,nAtomsB)
-    call mem_ichor_alloc(StartOrbitalB,nAtomsB)
+    allocate(expB(nPrimB))
+    call mem_ichor_alloc(expB)
+    allocate(ContractCoeffB(nPrimB,nContB))
+    call mem_ichor_alloc(ContractCoeffB)
+    allocate(Bcenter(3,nAtomsB))
+    call mem_ichor_alloc(Bcenter)
+    allocate(StartOrbitalB(nAtomsB))
+    call mem_ichor_alloc(StartOrbitalB)
     call build_exp_ContractCoeff_center(nPrimB,nContB,nAtomsB,ntypesB,iTypeB,&
          & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,startOrbitalOfTypeB,&
          & expB,ContractCoeffB,Bcenter,StartOrbitalB,MaxnAtomsB,MaxnprimB,MaxnContB,lupri)
@@ -468,10 +511,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       ENDIF
       nOrbA = nContA*nOrbCompA
       nDimA = nContA*nOrbCompA*nAtomsA
-      call mem_ichor_alloc(expA,nPrimA)
-      call mem_ichor_alloc(ContractCoeffA,nPrimA,nContA)
-      call mem_ichor_alloc(Acenter,3,nAtomsA)
-      call mem_ichor_alloc(StartOrbitalA,nAtomsA)
+      allocate(expA(nPrimA))
+      call mem_ichor_alloc(expA)
+      allocate(ContractCoeffA(nPrimA,nContA))
+      call mem_ichor_alloc(ContractCoeffA)
+      allocate(Acenter(3,nAtomsA))
+      call mem_ichor_alloc(Acenter)
+      allocate(StartOrbitalA(nAtomsA))
+      call mem_ichor_alloc(StartOrbitalA)
       call build_exp_ContractCoeff_center(nPrimA,nContA,nAtomsA,ntypesA,iTypeA,&
            & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,startOrbitalOfTypeA,&
            & expA,ContractCoeffA,Acenter,StartOrbitalA,MaxnAtomsA,MaxnprimA,MaxnContA,lupri)
@@ -480,15 +527,19 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       sumExtent2AB = (extentA + extentB)*(extentA + extentB)
       nPrimP = nPrimA*nPrimB
       nContP = nContA*nContB
-      call mem_ichor_alloc(Piprim1,nPrimP) !not used
-      call mem_ichor_alloc(Piprim2,nPrimP) !not used
+      allocate(Piprim1(nPrimP))
+      call mem_ichor_alloc(Piprim1) !not used
+      allocate(Piprim2(nPrimP))
+      call mem_ichor_alloc(Piprim2) !not used
       IF (nContP.EQ. 1)THEN
          Psegmented = .TRUE.
       ELSE
          Psegmented = .FALSE.
       ENDIF
-      call mem_ichor_alloc(expP,nPrimP)
-      call mem_ichor_alloc(inversexpP,nPrimP)
+      allocate(expP(nPrimP))
+      call mem_ichor_alloc(expP)
+      allocate(inversexpP(nPrimP))
+      call mem_ichor_alloc(inversexpP)
       call build_expQ_inverseexpQ(nPrimA,nPrimB,expA,expB,expP,inversexpP)
       ! DONE TYPE P CALC ===========================
       
@@ -498,17 +549,21 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       IF(maxangmomABCD.NE.oldmaxangmomABCD)THEN
        IF(oldmaxangmomABCD.NE.-25)THEN
           call mem_ichor_dealloc(TABFJW)
+          deallocate(TABFJW)
        ENDIF
        nTABFJW1 = AngmomA + AngmomB + AngmomQ + 3 
        !only need + 3 after Branos change in BUILD_RJ000 
        nTABFJW2 = 1200
        !TABFJW(0:nTABFJW1,0:nTABFJW2)
-       call mem_ichor_alloc(TABFJW,nTABFJW1,nTABFJW2,.TRUE.,.TRUE.)
+       allocate(TABFJW(0:nTABFJW1,0:nTABFJW2))
+       call mem_ichor_alloc(TABFJW)
        CALL GAMMATABULATION(lupri,maxangmomABCD,nTABFJW1,nTABFJW2,TABFJW)  
        oldmaxangmomABCD = maxangmomABCD
       ENDIF
-      call mem_ichor_alloc(reducedExponents,nPrimP*nPrimQ)
-      call mem_ichor_alloc(integralPrefactor,nPrimP*nPrimQ)
+      allocate(reducedExponents(nPrimP*nPrimQ))
+      call mem_ichor_alloc(reducedExponents)
+      allocate(integralPrefactor(nPrimP*nPrimQ))
+      call mem_ichor_alloc(integralPrefactor)
       call build_reducedExponents_integralPrefactorQP(nPrimP,nPrimQ,expQ,expP,&
            & reducedExponents,integralPrefactor)
       ! DONE TYPE PQ CALC ===========================
@@ -523,9 +578,12 @@ DO IAngmomTypes = 0,MaxTotalAngmom
               & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
          nLocalInt = nOrbA*nOrbB*nOrbC*nOrbD
       ENDIF
-      call mem_ichor_alloc(QpreExpFac,nPrimQ)
-      call mem_ichor_alloc(Qcent,3*nPrimQ)      
-      CALL MEM_ICHOR_ALLOC(LocalIntPass,nOrbA*nAtomsA*nOrbB*nAtomsB,nOrbC*nOrbD)
+      allocate(QpreExpFac(nPrimQ))
+      call mem_ichor_alloc(QpreExpFac)
+      allocate(Qcent(3*nPrimQ))
+      call mem_ichor_alloc(Qcent)
+      allocate(LocalIntPass(nOrbA*nAtomsA*nOrbB*nAtomsB,nOrbC*nOrbD))
+      CALL MEM_ICHOR_ALLOC(LocalIntPass)
       !calc       
       IF (INTPRINT .GE. 10) THEN
          call PrintTypeExpInfo(nPrimP,nPrimQ,reducedExponents,integralPrefactor,lupri)
@@ -534,7 +592,8 @@ DO IAngmomTypes = 0,MaxTotalAngmom
               & expC,ContractCoeffC,expD,ContractCoeffD,&
               & nAtomsA,nAtomsB,nAtomsC,nAtomsD,Acenter,Bcenter,Ccenter,Dcenter,lupri)
       ENDIF
-      call mem_ichor_alloc(noScreenAB,nAtomsA,nAtomsB)
+      allocate(noScreenAB(nAtomsA,nAtomsB))
+      call mem_ichor_alloc(noScreenAB)
       IF(ODScreen)THEN
          call ODscreen_noScreen(nAtomsA,nAtomsB,Acenter,Bcenter,sumextent2AB,noScreenAB)
       ELSE
@@ -568,11 +627,16 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       !look at possible things for SSSP type things.... 
       
       !LinK: Form active Dmat 1,2 or 4 matrices (D_BD(nDimB,nDimD),D_AD(nDimA,nDimD),D_BC(nDimB,nDimC),D_AC(nDimA,nDimC))
-      call mem_ichor_alloc(IatomAPass,nAtomsA*nAtomsB)
-      call mem_ichor_alloc(IatomBPass,nAtomsA*nAtomsB)
-      call mem_ichor_alloc(PpreExpFacPass,nPrimP,nAtomsA*nAtomsB)
-      call mem_ichor_alloc(PcentPass,3*nPrimP,nAtomsA*nAtomsB)
-      call mem_ichor_alloc(Pdistance12Pass,3,nAtomsA*nAtomsB)
+      allocate(IatomAPass(nAtomsA*nAtomsB))
+      call mem_ichor_alloc(IatomAPass)
+      allocate(IatomBPass(nAtomsA*nAtomsB))
+      call mem_ichor_alloc(IatomBPass)
+      allocate(PpreExpFacPass(nPrimP,nAtomsA*nAtomsB))
+      call mem_ichor_alloc(PpreExpFacPass)
+      allocate(PcentPass(3*nPrimP,nAtomsA*nAtomsB))
+      call mem_ichor_alloc(PcentPass)
+      allocate(Pdistance12Pass(3,nAtomsA*nAtomsB))
+      call mem_ichor_alloc(Pdistance12Pass)
       CALL Build_pcent_Pdistance12_PpreExpFac(nPrimA,nPrimB,natomsA,natomsB,nContA,nContB,&
            & inversexpP,expA,expB,Acenter,Bcenter,ContractCoeffA,ContractCoeffB,PSegmented,&
            & PcentPass,Pdistance12Pass,PpreExpFacPass,INTPRINT)
@@ -580,11 +644,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
          iBatchIndexOfTypeD = BatchIndexOfTypeD(ItypeD)
          iBatchIndexOfTypeC = BatchIndexOfTypeC(ItypeC)
       ENDIF
-      !     call IchorTimer('START',TSTART,TEND,LUPRI)
+      call IchorTimer('START',TSTART,TEND,LUPRI)
       IF(NOTDoSSSS)THEN
-         CALL MEM_ICHOR_ALLOC(LocalInt,nOrbA*nOrbB*nOrbC*nOrbD)
-         call mem_ichor_alloc(PpreExpFac,nPrimP)
-         call mem_ichor_alloc(Pcent,3*nPrimP)
+         allocate(LocalInt(nOrbA*nOrbB*nOrbC*nOrbD))
+         CALL MEM_ICHOR_ALLOC(LocalInt)
+         allocate(PpreExpFac(nPrimP))
+         call mem_ichor_alloc(PpreExpFac)
+         allocate(Pcent(3*nPrimP))
+         call mem_ichor_alloc(Pcent)
          WRITE(lupri,*)'CALC TYPE:',ItypeA,ItypeB,ItypeC,ItypeD
          WRITE(lupri,*)'CALC  Ang:',AngmomA,AngmomB,AngmomC,AngmomD
          call IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
@@ -609,9 +676,13 @@ DO IAngmomTypes = 0,MaxTotalAngmom
               & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,OutputStorage,&
               & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
               & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize)
+
          CALL Mem_ichor_dealloc(LocalInt)
+         deallocate(LocalInt)
          call mem_ichor_dealloc(pcent)
+         deallocate(pcent)
          call mem_ichor_dealloc(PpreExpFac)
+         deallocate(PpreExpFac)
       ELSE
          call IchorsegsegSSSSIntegralLoop(nAtomsA,nPrimA,startOrbitalA,&
               & iBatchIndexOfTypeA,nBatchA,&
@@ -628,14 +699,23 @@ DO IAngmomTypes = 0,MaxTotalAngmom
               & LocalIntPass,OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
               & OutputStorage,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri)
       ENDIF
-      !       call IchorTimer('TYPE',TSTART,TEND,LUPRI)
+      call build_TYPESTRING(TYPESTRING,AngmomA,AngmomB,AngmomC,AngmomD,&
+           & nTypesA,nTypesB,nTypesC,nTypesD,ItypeA,ItypeB,ItypeC,ItypeD)
+      call IchorTimer(TYPESTRING,TSTART,TEND,LUPRI)
       call mem_ichor_dealloc(Qcent)
+      deallocate(Qcent)
       call mem_ichor_dealloc(QpreExpFac)
+      deallocate(QpreExpFac)
       call mem_ichor_dealloc(PpreExpFacPass)
+      deallocate(PpreExpFacPass)
       call mem_ichor_dealloc(PcentPass)
+      deallocate(PcentPass)
       call mem_ichor_dealloc(Pdistance12Pass)
+      deallocate(Pdistance12Pass)
       call mem_ichor_dealloc(IatomBPass) 
+      deallocate(IatomBPass) 
       call mem_ichor_dealloc(IatomAPass) 
+      deallocate(IatomAPass) 
       IF(PermuteODTypes)THEN
          !place (ABCD) in (CDAB) and possible (DCAB),(CDBA),(DCBA)
          call PermuteODtypesSub(OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputStorage,&
@@ -646,23 +726,39 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       ENDIF
 
       call mem_ichor_dealloc(reducedExponents)
+      deallocate(reducedExponents)
       call mem_ichor_dealloc(integralPrefactor)
+      deallocate(integralPrefactor)
       call mem_ichor_dealloc(noScreenAB)
+      deallocate(noScreenAB)
       CALL MEM_ICHOR_deALLOC(LocalIntPass)
+      deallocate(LocalIntPass)
       call mem_ichor_dealloc(expP)
+      deallocate(expP)
       call mem_ichor_dealloc(Piprim1)
+      deallocate(Piprim1)
       call mem_ichor_dealloc(Piprim2)
+      deallocate(Piprim2)
       call mem_ichor_dealloc(inversexpP)    
+      deallocate(inversexpP)    
       call mem_ichor_dealloc(expA)
+      deallocate(expA)
       call mem_ichor_dealloc(ContractCoeffA)
+      deallocate(ContractCoeffA)
       call mem_ichor_dealloc(Acenter)
+      deallocate(Acenter)
       call mem_ichor_dealloc(StartOrbitalA)
+      deallocate(StartOrbitalA)
      ENDIF
     ENDDO !typeA
     call mem_ichor_dealloc(expB)
+    deallocate(expB)
     call mem_ichor_dealloc(ContractCoeffB)
+    deallocate(ContractCoeffB)
     call mem_ichor_dealloc(Bcenter)
+    deallocate(Bcenter)
     call mem_ichor_dealloc(StartOrbitalB)
+    deallocate(StartOrbitalB)
    ENDDO !typeB
    IF(PermuteRHSTypes)THEN
       !place (ABCD) in (ABDC)
@@ -671,49 +767,117 @@ DO IAngmomTypes = 0,MaxTotalAngmom
            & TriangularRHSAtomLoop,lupri)
    ENDIF
    call mem_ichor_dealloc(noScreenCD)
+   deallocate(noScreenCD)
    call mem_ichor_dealloc(noScreenCD2)
+   deallocate(noScreenCD2)
    call mem_ichor_dealloc(expQ)
+   deallocate(expQ)
    call mem_ichor_dealloc(Qiprim1) 
+   deallocate(Qiprim1) 
    call mem_ichor_dealloc(Qiprim2) 
+   deallocate(Qiprim2) 
    
    call mem_ichor_dealloc(expC)
+   deallocate(expC)
    call mem_ichor_dealloc(ContractCoeffC)
+   deallocate(ContractCoeffC)
    call mem_ichor_dealloc(Ccenter)
+   deallocate(Ccenter)
    call mem_ichor_dealloc(StartOrbitalC)
+   deallocate(StartOrbitalC)   
   ENDDO !typeC
   call mem_ichor_dealloc(expD)
+  deallocate(expD)
   call mem_ichor_dealloc(ContractCoeffD)
+  deallocate(ContractCoeffD)
   call mem_ichor_dealloc(Dcenter)
+  deallocate(Dcenter)
   call mem_ichor_dealloc(StartOrbitalD)
+  deallocate(StartOrbitalD)
  ENDDO !typeD
 ENDDO 
 call mem_ichor_dealloc(TABFJW)
+deallocate(TABFJW)
 
 call mem_ichor_dealloc(BATCHGAB)
+deallocate(BATCHGAB)
 IF(CSScreen)THEN
    call mem_ichor_dealloc(BatchIndexOfTypeA)
+   deallocate(BatchIndexOfTypeA)
    call mem_ichor_dealloc(BatchIndexOfTypeB)
+   deallocate(BatchIndexOfTypeB)
    call mem_ichor_dealloc(MaxGabForTypeAB)
+   deallocate(MaxGabForTypeAB)
    IF(IchorGabID1.EQ.IchorGabID2)THEN
       !nothing
    ELSE
       call mem_ichor_dealloc(BatchIndexOfTypeC)
+      deallocate(BatchIndexOfTypeC)
       call mem_ichor_dealloc(BatchIndexOfTypeD)
+      deallocate(BatchIndexOfTypeD)
       call mem_ichor_dealloc(BATCHGCD)
+      deallocate(BATCHGCD)
       call mem_ichor_dealloc(MaxGabForTypeCD)
+      deallocate(MaxGabForTypeCD)
    ENDIF
 ENDIF
 
 call mem_ichor_dealloc(OrderdListA)
+deallocate(OrderdListA)
 call mem_ichor_dealloc(OrderdListB)
+deallocate(OrderdListB)
 call mem_ichor_dealloc(OrderdListC)
+deallocate(OrderdListC)
 call mem_ichor_dealloc(OrderdListD)
+deallocate(OrderdListD)
 call retrieve_ichor_memvar(MaxMemAllocated,MemAllocated)
 IF(INTPRINT.GT.3)THEN
    call stats_ichor_mem(lupri)
 ENDIF
 
 end subroutine IchorEri
+
+subroutine build_TYPESTRING(TYPESTRING,AngmomA,AngmomB,AngmomC,AngmomD,&
+     & nTypesA,nTypesB,nTypesC,nTypesD,ItypeA,ItypeB,ItypeC,ItypeD)
+  implicit none
+  character(len=16),intent(inout)  :: TYPESTRING
+  integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
+  integer,intent(in) :: nTypesA,nTypesB,nTypesC,nTypesD
+  integer,intent(in) :: ItypeA,ItypeB,ItypeC,ItypeD
+  integer :: n  
+  TYPESTRING(1:3) = 'ANG'
+  WRITE(TYPESTRING(4:4),'(A1)') AngmomA
+  WRITE(TYPESTRING(5:5),'(A1)') AngmomB
+  WRITE(TYPESTRING(6:6),'(A1)') AngmomC
+  WRITE(TYPESTRING(7:7),'(A1)') AngmomD
+  TYPESTRING(8:8) = 'T'
+  n=9
+  call typeAspec(ItypeA,nTypesA,n,TYPESTRING)
+  call typeAspec(ItypeB,nTypesB,n,TYPESTRING)
+  call typeAspec(ItypeC,nTypesC,n,TYPESTRING)
+  call typeAspec(ItypeD,nTypesD,n,TYPESTRING)
+end subroutine build_TYPESTRING
+
+subroutine typeAspec(ItypeA,nTypesA,n,TYPESTRING)
+  integer,intent(in) :: ItypeA,nTypesA
+  integer,intent(inout) :: n
+  character(len=16),intent(inout)  :: TYPESTRING
+  IF(nTypesA.LT.10)THEN
+     WRITE(TYPESTRING(n:n),'(A1)') ItypeA
+     n=n+1
+  ELSEIF(nTypesA.LT.100)THEN
+     IF(ItypeA.LT.10)THEN
+        TYPESTRING(n:n) = '0'
+        WRITE(TYPESTRING(n+1:n+1),'(A1)') ItypeA
+     ELSE
+        WRITE(TYPESTRING(n:n+1),'(A1)') ItypeA
+     ENDIF
+     n=n+2
+  ELSE
+     TYPESTRING(n:n+1) = '  '
+     n=n+2
+  ENDIF
+end subroutine typeAspec
 
 subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      & iBatchIndexOfTypeA,expA,ContractCoeffA,AngmomA,Acenter,nBatchA,nOrbA,&
@@ -789,8 +953,8 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   integer :: iBatchD,IatomD,IatomC,startC,IPass,IatomB,IatomA,nPasses,startD
   real(realk) :: DcenterSpec(3),CcenterSpec(3),AcenterSpec(3),BcenterSpec(3),GABELM
   logical :: PermuteRHS
-  real(realk),pointer :: TmpArray1(:),TmpArray2(:)
-  real(realk),pointer :: BasisCont1(:),BasisCont2(:),BasisCont3(:)
+  real(realk),allocatable :: TmpArray1(:),TmpArray2(:)
+  real(realk),allocatable :: BasisCont1(:),BasisCont2(:),BasisCont3(:)
   integer :: iOrbQ,iOrbB,iOrbA,iOrbD,iOrbC,I4,I3,I2,startA,startB,ndim,nOrbQ
 #ifdef VAR_OMP
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
@@ -898,18 +1062,6 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
              & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
              & BasisCont3maxsize,BasisCont1,BasisCont2,BasisCont3)
         !output private LocalInt(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP)
-        print*,'LOOP ipass',ipass,'iatoma',iatoma,'iatomB',iatomb,'angmom:',AngmomA,ANGMOMB,AngmomC,ANGMOMD,nContP
-        IF((AngmomA.Eq.0.AND.ANGMOMB.EQ.0).AND.(AngmomC.Eq.2.AND.ANGMOMD.EQ.2))THEN
-           IF(nContP.Eq.1)THEN
-              print*,'LOOP SSDD ipass',ipass
-              call output(LocalInt,1,nContQ,1,25,nContQ,25,1,6)            
-           ENDIF
-        ELSEIF((AngmomA.Eq.0.AND.ANGMOMB.EQ.0).AND.(AngmomC.Eq.1.AND.ANGMOMD.EQ.2))THEN
-           IF(nContP.Eq.1)THEN
-              print*,'LOOP SSPD ipass',ipass
-              call output(LocalInt,1,nContQ,1,15,nContQ,15,1,6)            
-           ENDIF
-        ENDIF
         IF(Qsegmented.AND.Psegmented)THEN
          IF(TotalAngmom.NE.0)THEN
           call DistributeToLocalIntPassSeg(LocalInt,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&

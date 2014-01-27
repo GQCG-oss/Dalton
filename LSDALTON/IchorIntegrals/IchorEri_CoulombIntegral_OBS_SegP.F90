@@ -1431,8 +1431,6 @@ CONTAINS
         call VerticalRecurrenceSegP4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
                & TMParray2(1:nPrimQ*nPasses*35))
-        print*,'TMParray2(1:nPrimQ*nPasses*35) nPrimQ,35  nPasses=',nPasses
-        call output(TMParray2,1,nPrimQ,1,35,nPrimQ,35,1,6)
         !No reason for the Electron Transfer Recurrence Relation 
 !#ifdef VAR_DEBUGICHOR
         IF(nContQ*nPasses*35.GT.TMParray1maxsize)THEN
@@ -1443,8 +1441,6 @@ CONTAINS
             & TMParray1(1:nContQ*nPasses*35),nPrimP,nPrimQ,nPasses,&
               & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)
 
-         print*,'TMParray1(1:nContQ*nPasses*35) nContQ,35  nPasses=',nPasses
-        call output(TMParray1,1,nContQ,1,35,nContQ,35,1,6)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
 !#ifdef VAR_DEBUGICHOR
@@ -1454,8 +1450,6 @@ CONTAINS
 !#endif
         call HorizontalRR_RHS_Q4C2D2CtoD(nContQ,nPasses,1,Qdistance12,TMParray1(1:nContQ*nPasses*35),&
             & TMParray2(1:nContQ*nPasses*36),lupri)
-         print*,'TMParray2(1:nContQ*nPasses*36) nContQ,36  nPasses=',nPasses
-        call output(TMParray2,1,nContQ,1,36,nContQ,36,1,6)
 !#ifdef VAR_DEBUGICHOR
         IF(nContQ*nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQ*nPassestoo small',-1)
@@ -1463,8 +1457,6 @@ CONTAINS
 !#endif
         call SphericalContractOBS2_maxAngQ4_maxAngC2(1,nContQ*nPasses,TMParray2(1:nContQ*nPasses*36),&
             & LOCALINTS(1:nContQ*nPasses*25))
-        print*,'LOCALINTS(1:nContQ*nPasses*25) nContQ,25  nPasses=',nPasses
-        call output(LOCALINTS,1,nContQ,1,25,nContQ,25,1,6)
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
