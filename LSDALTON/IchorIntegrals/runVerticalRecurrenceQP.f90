@@ -20,9 +20,14 @@ CONTAINS
     integer :: LUMODB1,LUMODB2,LUMODB3,LUMODB4,LUMODB5
     integer :: LUMODC1,LUMODC2,LUMODC3,LUMODC4,LUMODC5
     integer :: LUMODD1,LUMODD2,LUMODD3,LUMODD4,LUMODD5
-    integer :: non1Prim(16),pure1Prim(4),ia,ib,ic,id,GPUrun
-    logical :: Gen,SegQ,SegP,Seg,Seg1Prim,CPU
+    integer :: non1Prim(16),pure1Prim(4),ia,ib,ic,id,GPUrun,K
+    logical :: Gen,SegQ,SegP,Seg,Seg1Prim,CPU,nPrimnTUV,DoOpenMP
+    logical :: Collapse
     character(len=3) :: ARCSTRING
+    
+    nPrimnTUV = .FALSE.
+    DoOpenMP = .TRUE.
+    Collapse = .TRUE.
     DO GPUrun = 1,1!2
        CPU = .TRUE.
        IF(GPUrun.EQ.2)CPU = .FALSE.
@@ -112,17 +117,20 @@ CONTAINS
        WRITE(LUMODA5,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim0(nPasses,nPrimP,nPrimQ,&'
        do IA=1,5
           WRITE(IA,'(A)')'         & reducedExponents,TABFJW,&'
-          WRITE(IA,'(A)')'         & Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
+          WRITE(IA,'(A)')'         & Pcent,Qcent,integralPrefactor,&'
+          WRITE(IA,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&'
           WRITE(IA,'(A)')'         & AUXarray)'
           WRITE(IA,'(A)')'  implicit none'
           WRITE(IA,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ'
+          WRITE(IA,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
+          WRITE(IA,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
        enddo
        do IA=1,4
           WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: reducedExponents(nPrimQ,nPrimP)'
           WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)'
-          WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)'
+          WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
           WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: TABFJW(0:3,0:1200)'
-          WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)'
+          WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)'
        enddo
        WRITE(LUMODA1,'(A)')'  real(realk),intent(inout) :: AUXarray(nPrimQ,nPrimP,nPasses)'
        WRITE(LUMODA2,'(A)')'  real(realk),intent(inout) :: AUXarray(nPrimP,nPasses)'
@@ -131,9 +139,9 @@ CONTAINS
 
        WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: reducedExponents(1)'
        WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: integralPrefactor(1)'
-       WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: Pcent(3),Qcent(3,nPasses)'
+       WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)'
        WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: TABFJW(0:3,0:1200)'
-       WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(nPasses),PpreExpFac(1)'
+       WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
        WRITE(LUMODA5,'(A)')'  real(realk),intent(inout) :: AUXarray(nPasses)'
 
        do IA=1,5
@@ -156,43 +164,69 @@ CONTAINS
           WRITE(IA,'(A)')'!  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk'
           WRITE(IA,'(A)')'  Real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL,Pexpfac'
           WRITE(IA,'(A)')'  Real(realk) :: W2,W3,PX,PY,PZ,PQX,PQY,PQZ,squaredDistance,RJ000'
-          WRITE(IA,'(A)')'  Integer :: IPNT,iPassQ,iPrimP,iPrimQ,iPQ'
+          WRITE(IA,'(A)')'  Integer :: IPNT,iPassP,iPrimP,iPrimQ,iPQ,iAtomA,iAtomB'
        enddo
 
+       IF(DoOpenMP)THEN
+          !OPENMP
+          do IA=1,5
+             WRITE(IA,'(A)')'!$OMP DO &'
+             WRITE(IA,'(A)')'!$OMP PRIVATE(iPassP,iAtomA,iAtomB,px,py,pz,pqx,pqy,pqz,&'
+             WRITE(IA,'(A)')'!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
+          enddo
+          do IA=1,4
+             WRITE(IA,'(A)')'!$OMP         Pexpfac,iPrimP,iPrimQ,&'             
+          enddo
+          do IA=1,5
+             WRITE(IA,'(A)')'!$OMP         RWVAL,GVAL,AUXarray) '
+             WRITE(IA,'(A)')'!!$OMP SHARED(nPasses,iAtomApass,iAtomBpass,PpreExpFac,&'
+          enddo
+          do IA=1,4
+             WRITE(IA,'(A)')'!!$OMP        nPrimP,nPrimQ,&'
+          enddo
+          do IA=1,5
+             WRITE(IA,'(A)')'!!$OMP        QpreExpFac,Pcent,Qcent,reducedExponents,TABFJW,&'
+             WRITE(IA,'(A)')'!!$OMP        integralPrefactor)'
+          enddo
+       ENDIF
        do IA=1,4
-          WRITE(IA,'(A)')'  DO iPassQ = 1,nPasses'
+          WRITE(IA,'(A)')'  DO iPassP = 1,nPasses'
+          WRITE(IA,'(A)')'   iAtomA = iAtomApass(iPassP)'
+          WRITE(IA,'(A)')'   iAtomB = iAtomBpass(iPassP)'
        enddo
        !seg
-       WRITE(LUMODA4,'(A)')'   AUXarray(iPassQ)=0.0E0_realk'
+       WRITE(LUMODA4,'(A)')'   AUXarray(iPassP)=0.0E0_realk'
        !segP
        WRITE(LUMODA3,'(A)')'   DO iPrimQ=1, nPrimQ'
-       WRITE(LUMODA3,'(A)')'    AUXarray(iPrimQ,iPassQ)=0.0E0_realk'
+       WRITE(LUMODA3,'(A)')'    AUXarray(iPrimQ,iPassP)=0.0E0_realk'
        WRITE(LUMODA3,'(A)')'   ENDDO'
        do IA=1,4
           WRITE(IA,'(A)')'   DO iPrimP=1, nPrimP'
        enddo
        !segQ
-       WRITE(LUMODA2,'(A)')'    AUXarray(iPrimP,iPassQ)=0.0E0_realk'
+       WRITE(LUMODA2,'(A)')'    AUXarray(iPrimP,iPassP)=0.0E0_realk'
        do IA=1,4
-          WRITE(IA,'(A)')'    Pexpfac = PpreExpFac(iPrimP)'
-          WRITE(IA,'(A)')'    px = Pcent(1,iPrimP)'
-          WRITE(IA,'(A)')'    py = Pcent(2,iPrimP)'
-          WRITE(IA,'(A)')'    pz = Pcent(3,iPrimP)'
+          WRITE(IA,'(A)')'    Pexpfac = PpreExpFac(iPrimP,iAtomA,iAtomB)'
+          WRITE(IA,'(A)')'    px = Pcent(1,iPrimP,iAtomA,iAtomB)'
+          WRITE(IA,'(A)')'    py = Pcent(2,iPrimP,iAtomA,iAtomB)'
+          WRITE(IA,'(A)')'    pz = Pcent(3,iPrimP,iAtomA,iAtomB)'
           WRITE(IA,'(A)')'    DO iPrimQ=1, nPrimQ'
-          WRITE(IA,'(A)')'     pqx = px - Qcent(1,iPrimQ,iPassQ)'
-          WRITE(IA,'(A)')'     pqy = py - Qcent(2,iPrimQ,iPassQ)'
-          WRITE(IA,'(A)')'     pqz = pz - Qcent(3,iPrimQ,iPassQ)'
+          WRITE(IA,'(A)')'     pqx = px - Qcent(1,iPrimQ)'
+          WRITE(IA,'(A)')'     pqy = py - Qcent(2,iPrimQ)'
+          WRITE(IA,'(A)')'     pqz = pz - Qcent(3,iPrimQ)'
           WRITE(IA,'(A)')'     squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz'
           WRITE(IA,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
        enddo
 
-       WRITE(LUMODA5,'(A)')'  DO iPassQ = 1,nPasses'
-       WRITE(LUMODA5,'(A)')'   px = Pcent(1)'
-       WRITE(LUMODA5,'(A)')'   py = Pcent(2)'
-       WRITE(LUMODA5,'(A)')'   pz = Pcent(3)'
-       WRITE(LUMODA5,'(A)')'   pqx = px - Qcent(1,iPassQ)'
-       WRITE(LUMODA5,'(A)')'   pqy = py - Qcent(2,iPassQ)'
-       WRITE(LUMODA5,'(A)')'   pqz = pz - Qcent(3,iPassQ)'
+       WRITE(LUMODA5,'(A)')'  DO iPassP = 1,nPasses'
+       WRITE(LUMODA5,'(A)')'   iAtomA = iAtomApass(iPassP)'
+       WRITE(LUMODA5,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+       WRITE(LUMODA5,'(A)')'   px = Pcent(1,iAtomA,iAtomB)'
+       WRITE(LUMODA5,'(A)')'   py = Pcent(2,iAtomA,iAtomB)'
+       WRITE(LUMODA5,'(A)')'   pz = Pcent(3,iAtomA,iAtomB)'
+       WRITE(LUMODA5,'(A)')'   pqx = px - Qcent(1)'
+       WRITE(LUMODA5,'(A)')'   pqy = py - Qcent(2)'
+       WRITE(LUMODA5,'(A)')'   pqz = pz - Qcent(3)'
        WRITE(LUMODA5,'(A)')'   squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz'
        WRITE(LUMODA5,'(A)')'   WVAL = reducedExponents(1)*squaredDistance'
 
@@ -220,25 +254,29 @@ CONTAINS
           WRITE(IA,'(A)')'      RJ000 = SQRT(PID4/WVAL)'
           WRITE(IA,'(A)')'     ENDIF'
        enddo
-       WRITE(LUMODA1,'(A)')'     AUXarray(iPrimQ,iPrimP,iPassQ)=integralPrefactor(iPrimQ,iPrimP)*&'
-       WRITE(LUMODA1,'(A)')'          & QpreExpFac(iPrimQ,iPassQ)*Pexpfac*RJ000'
+       WRITE(LUMODA1,'(A)')'     AUXarray(iPrimQ,iPrimP,iPassP)=integralPrefactor(iPrimQ,iPrimP)*&'
+       WRITE(LUMODA1,'(A)')'          & QpreExpFac(iPrimQ)*Pexpfac*RJ000'
 
-       WRITE(LUMODA2,'(A)')'     AUXarray(iPrimP,iPassQ)=AUXarray(iPrimP,iPassQ) + integralPrefactor(iPrimQ,iPrimP)*&'
-       WRITE(LUMODA2,'(A)')'          & QpreExpFac(iPrimQ,iPassQ)*Pexpfac*RJ000'
+       WRITE(LUMODA2,'(A)')'     AUXarray(iPrimP,iPassP)=AUXarray(iPrimP,iPassP) + integralPrefactor(iPrimQ,iPrimP)*&'
+       WRITE(LUMODA2,'(A)')'          & QpreExpFac(iPrimQ)*Pexpfac*RJ000'
 
-       WRITE(LUMODA3,'(A)')'     AUXarray(iPrimQ,iPassQ)=AUXarray(iPrimQ,iPassQ)+integralPrefactor(iPrimQ,iPrimP)*&'
-       WRITE(LUMODA3,'(A)')'          & QpreExpFac(iPrimQ,iPassQ)*Pexpfac*RJ000'
+       WRITE(LUMODA3,'(A)')'     AUXarray(iPrimQ,iPassP)=AUXarray(iPrimQ,iPassP)+integralPrefactor(iPrimQ,iPrimP)*&'
+       WRITE(LUMODA3,'(A)')'          & QpreExpFac(iPrimQ)*Pexpfac*RJ000'
 
-       WRITE(LUMODA4,'(A)')'     AUXarray(iPassQ)=AUXarray(iPassQ) + integralPrefactor(iPrimQ,iPrimP)*&'
-       WRITE(LUMODA4,'(A)')'          & QpreExpFac(iPrimQ,iPassQ)*Pexpfac*RJ000'
+       WRITE(LUMODA4,'(A)')'     AUXarray(iPassP)=AUXarray(iPassP) + integralPrefactor(iPrimQ,iPrimP)*&'
+       WRITE(LUMODA4,'(A)')'          & QpreExpFac(iPrimQ)*Pexpfac*RJ000'
        do IA=1,4
           WRITE(IA,'(A)')'    enddo'
           WRITE(IA,'(A)')'   enddo'
           WRITE(IA,'(A)')'  enddo'
        enddo
-       WRITE(LUMODA5,'(A)')'     AUXarray(iPassQ)=integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)*RJ000'
+       WRITE(LUMODA5,'(A)')'     AUXarray(iPassP)=integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)*RJ000'
        WRITE(LUMODA5,'(A)')'  enddo'
-
+       IF(DoOpenMP)THEN
+          do IA=1,5
+             WRITE(IA,'(A)')'!$OMP END DO'
+          enddo
+       ENDIF
        WRITE(LUMODA1,'(A)')'end subroutine VerticalRecurrence'//ARCSTRING//'0'
        WRITE(LUMODA2,'(A)')'end subroutine VerticalRecurrence'//ARCSTRING//'SegQ0'
        WRITE(LUMODA3,'(A)')'end subroutine VerticalRecurrence'//ARCSTRING//'SegP0'
@@ -258,8 +296,9 @@ CONTAINS
        WRITE(LUMODA4,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        WRITE(LUMODA5,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim1A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        do IA=1,5
-          WRITE(IA,'(A)')'         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&'
-          WRITE(IA,'(A)')'         & QpreExpFac,AUXarray)'
+          WRITE(IA,'(A)')'         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&'
+          WRITE(IA,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
+          WRITE(IA,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
        enddo
        WRITE(LUMODB1,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'1B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        WRITE(LUMODB2,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegQ1B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
@@ -267,8 +306,9 @@ CONTAINS
        WRITE(LUMODB4,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        WRITE(LUMODB5,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim1B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        do IB=6,10
-          WRITE(IB,'(A)')'         & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&'
-          WRITE(IB,'(A)')'         & QpreExpFac,AUXarray)'
+          WRITE(IB,'(A)')'         & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&'
+          WRITE(IB,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
+          WRITE(IB,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
        enddo
 
        WRITE(LUMODC1,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'1C(nPasses,nPrimP,nPrimQ,&'
@@ -279,7 +319,8 @@ CONTAINS
 
        do IC=11,15
           WRITE(IC,'(A)')'         & reducedExponents,TABFJW,Qexp,Ccenter,Pcent,Qcent,&'
-          WRITE(IC,'(A)')'         & integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)'
+          WRITE(IC,'(A)')'         & integralPrefactor,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
+          WRITE(IC,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
        enddo
 
        WRITE(LUMODD1,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'1D(nPasses,nPrimP,nPrimQ,&'
@@ -289,12 +330,15 @@ CONTAINS
        WRITE(LUMODD5,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim1D(nPasses,nPrimP,nPrimQ,&'
        do ID=16,20
           WRITE(ID,'(A)')'         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,&'
-          WRITE(ID,'(A)')'         & integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)'
+          WRITE(ID,'(A)')'         & integralPrefactor,&'
+          WRITE(ID,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)'
        enddo
 
        do I=1,20
           WRITE(I,'(A)')'  implicit none'
           WRITE(I,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ'
+          WRITE(I,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
+          WRITE(I,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
        enddo
        !C and D
        !    do I=11,20
@@ -317,18 +361,18 @@ CONTAINS
        WRITE(LUMODD5,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Qexp(1)'
        do J=1,16
           I = non1Prim(J)
-          WRITE(I,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)'
-          WRITE(I,'(A)')'  real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)'
+          WRITE(I,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
+          WRITE(I,'(A)')'  real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)'
        enddo
-       WRITE(LUMODA5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-       WRITE(LUMODB5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-       WRITE(LUMODC5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-       WRITE(LUMODD5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
+       WRITE(LUMODA5,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
+       WRITE(LUMODB5,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
+       WRITE(LUMODC5,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
+       WRITE(LUMODD5,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
        do IA=1,5
-          WRITE(IA,'(A)')'  real(realk),intent(in) :: Acenter(3)'
+          WRITE(IA,'(A)')'  real(realk),intent(in) :: Acenter(3,nAtomsA)'
        enddo
        do IB=6,10
-          WRITE(IB,'(A)')'  real(realk),intent(in) :: Bcenter(3)'
+          WRITE(IB,'(A)')'  real(realk),intent(in) :: Bcenter(3,nAtomsB)'
        enddo
        !    do IC=11,15
        !       WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3,nAtomsC)'
@@ -365,7 +409,7 @@ CONTAINS
        !==================================================================================================
        do I=1,20
           WRITE(I,'(A)')'  !local variables'
-          WRITE(I,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,ipnt'
+          WRITE(I,'(A)')'  integer :: iPassP,iPrimP,iPrimQ,ipnt,iAtomA,iAtomB'
        enddo
        !    do I=11,15
        !       WRITE(I,'(A)')'  integer :: iAtomC'
@@ -430,16 +474,6 @@ CONTAINS
           WRITE(I,'(A)')'  !i = 0 last 2 term vanish'
           WRITE(I,'(A)')'  !We include scaling of RJ000 '
        enddo
-       do I=1,5
-          WRITE(I,'(A)')'  Ax = -Acenter(1)'
-          WRITE(I,'(A)')'  Ay = -Acenter(2)'
-          WRITE(I,'(A)')'  Az = -Acenter(3)'
-       enddo
-       do I=6,10
-          WRITE(I,'(A)')'  Bx = -Bcenter(1)'
-          WRITE(I,'(A)')'  By = -Bcenter(2)'
-          WRITE(I,'(A)')'  Bz = -Bcenter(3)'
-       enddo
        do J=9,16
           I=non1Prim(J)
           WRITE(I,'(A)')'  DO iPrimQ=1, nPrimQ'
@@ -448,27 +482,68 @@ CONTAINS
        enddo
        WRITE(LUMODC5,'(A)')'  invexpQ = D1/Qexp(1)'
        WRITE(LUMODD5,'(A)')'  invexpQ = D1/Qexp(1)'
+       IF(DoOpenMP)THEN
+          !OPENMP
+          do IA=1,20
+             WRITE(IA,'(A)')'!$OMP DO &'
+             WRITE(IA,'(A)')'!$OMP PRIVATE(iPassP,iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
+             WRITE(IA,'(A)')'!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
+          enddo
+          !non 1prim
+          do J=1,16
+             I = non1Prim(J)
+              WRITE(I,'(A)')'!$OMP         iPrimP,iPrimQ,&'             
+          enddo
+          do IA=1,5   !A
+             WRITE(IA,'(A)')'!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,invexpP,&'             
+          enddo
+          do IA=6,10  !B
+             WRITE(IA,'(A)')'!$OMP         Bx,By,Bz,Xpb,Ypb,Zpb,alphaP,invexpP,&'             
+          enddo
+          do IA=11,15 !C
+             WRITE(IA,'(A)')'!$OMP         Cx,Cy,Cz,Xqc,Yqc,Zqc,alphaQ,&'             
+          enddo
+          do IA=16,20 !C
+             WRITE(IA,'(A)')'!$OMP         Dx,Dy,Dz,Xqd,Yqd,Zqd,alphaQ,&'   
+          enddo
+          do IA=1,20
+             WRITE(IA,'(A)')'!$OMP         Pexpfac,mPX,mPY,mPZ,RWVAL,GVAL,&'
+             WRITE(IA,'(A)')'!$OMP         alphaXpq,alphaYpq,alphaZpq) '
+          enddo
+       ENDIF
        do I=1,20
-          WRITE(I,'(A)')'  DO iPassQ = 1,nPasses'
+          WRITE(I,'(A)')'  DO iPassP = 1,nPasses'
+          WRITE(I,'(A)')'   iAtomA = iAtomApass(iPassP)'
+          WRITE(I,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+       enddo
+       do I=1,5
+          WRITE(I,'(A)')'   Ax = -Acenter(1,iAtomA)'
+          WRITE(I,'(A)')'   Ay = -Acenter(2,iAtomA)'
+          WRITE(I,'(A)')'   Az = -Acenter(3,iAtomA)'
+       enddo
+       do I=6,10
+          WRITE(I,'(A)')'   Bx = -Bcenter(1,iAtomB)'
+          WRITE(I,'(A)')'   By = -Bcenter(2,iAtomB)'
+          WRITE(I,'(A)')'   Bz = -Bcenter(3,iAtomB)'
        enddo
        !seg
        do I=4,19,5
-          WRITE(I,'(A)')'   AUXarray(1,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'   AUXarray(2,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'   AUXarray(3,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'   AUXarray(4,iPassQ)=0.0E0_realk'
+          WRITE(I,'(A)')'   AUXarray(1,iPassP)=0.0E0_realk'
+          WRITE(I,'(A)')'   AUXarray(2,iPassP)=0.0E0_realk'
+          WRITE(I,'(A)')'   AUXarray(3,iPassP)=0.0E0_realk'
+          WRITE(I,'(A)')'   AUXarray(4,iPassP)=0.0E0_realk'
        enddo
        !segP
        do I=3,18,5
           WRITE(I,'(A)')'   DO iPrimQ=1, nPrimQ'
-          WRITE(I,'(A)')'    AUXarray(1,iPrimQ,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(2,iPrimQ,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(3,iPrimQ,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(4,iPrimQ,iPassQ)=0.0E0_realk'
+          WRITE(I,'(A)')'    AUXarray(1,iPrimQ,iPassP)=0.0E0_realk'
+          WRITE(I,'(A)')'    AUXarray(2,iPrimQ,iPassP)=0.0E0_realk'
+          WRITE(I,'(A)')'    AUXarray(3,iPrimQ,iPassP)=0.0E0_realk'
+          WRITE(I,'(A)')'    AUXarray(4,iPrimQ,iPassP)=0.0E0_realk'
           WRITE(I,'(A)')'   ENDDO'
        enddo
        do I=11,15
-          !       WRITE(I,'(A)')'   iAtomC = iPassQ - ((iPassQ-1)/nAtomsC)*nAtomsC'
+          !       WRITE(I,'(A)')'   iAtomC = iPassP - ((iPassP-1)/nAtomsC)*nAtomsC'
           !       WRITE(I,'(A)')'   Cx = -Ccenter(1,iAtomC)'
           !       WRITE(I,'(A)')'   Cy = -Ccenter(2,iAtomC)'
           !       WRITE(I,'(A)')'   Cz = -Ccenter(3,iAtomC)'
@@ -477,7 +552,7 @@ CONTAINS
           WRITE(I,'(A)')'   Cz = -Ccenter(3)'
        enddo
        do I=16,20
-          !       WRITE(I,'(A)')'   iAtomD = (iPassQ-1)/nAtomsC+1'
+          !       WRITE(I,'(A)')'   iAtomD = (iPassP-1)/nAtomsC+1'
           !       WRITE(I,'(A)')'   Dx = -Dcenter(1,iAtomD)'
           !       WRITE(I,'(A)')'   Dy = -Dcenter(2,iAtomD)'
           !       WRITE(I,'(A)')'   Dz = -Dcenter(3,iAtomD)'
@@ -491,17 +566,17 @@ CONTAINS
        enddo
        !segQ
        do I=2,17,5
-          WRITE(I,'(A)')'    AUXarray(1,iPrimP,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(2,iPrimP,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(3,iPrimP,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(4,iPrimP,iPassQ)=0.0E0_realk'
+          WRITE(I,'(A)')'    AUXarray(1,iPrimP,iPassP)=0.0E0_realk'
+          WRITE(I,'(A)')'    AUXarray(2,iPrimP,iPassP)=0.0E0_realk'
+          WRITE(I,'(A)')'    AUXarray(3,iPrimP,iPassP)=0.0E0_realk'
+          WRITE(I,'(A)')'    AUXarray(4,iPrimP,iPassP)=0.0E0_realk'
        enddo
        do J=1,16
           I = non1Prim(J)
-          WRITE(I,'(A)')'    Pexpfac = PpreExpFac(iPrimP)'
-          WRITE(I,'(A)')'    mPX = -Pcent(1,iPrimP)'
-          WRITE(I,'(A)')'    mPY = -Pcent(2,iPrimP)'
-          WRITE(I,'(A)')'    mPZ = -Pcent(3,iPrimP)'
+          WRITE(I,'(A)')'    Pexpfac = PpreExpFac(iPrimP,iAtomA,iAtomB)'
+          WRITE(I,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+          WRITE(I,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+          WRITE(I,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
        enddo
        do J=1,8
           I = non1Prim(J)
@@ -509,65 +584,64 @@ CONTAINS
        enddo
        do J=1,4
           I = pure1Prim(J)
-          WRITE(I,'(A)')'    Pexpfac = PpreExpFac(1)'
-          WRITE(I,'(A)')'    mPX = -Pcent(1)'
-          WRITE(I,'(A)')'    mPY = -Pcent(2)'
-          WRITE(I,'(A)')'    mPZ = -Pcent(3)'
+          WRITE(I,'(A)')'    Pexpfac = PpreExpFac(iAtomA,iAtomB)'
+          WRITE(I,'(A)')'    mPX = -Pcent(1,iAtomA,iAtomB)'
+          WRITE(I,'(A)')'    mPY = -Pcent(2,iAtomA,iAtomB)'
+          WRITE(I,'(A)')'    mPZ = -Pcent(3,iAtomA,iAtomB)'
        enddo
        do J=1,2
           I = pure1Prim(J)
           WRITE(I,'(A)')'    invexpP = D1/Pexp(1)'
        enddo
        do I=1,4
-          WRITE(I,'(A)')'    Xpa = Pcent(1,iPrimP) + Ax'
-          WRITE(I,'(A)')'    Ypa = Pcent(2,iPrimP) + Ay'
-          WRITE(I,'(A)')'    Zpa = Pcent(3,iPrimP) + Az'
+          WRITE(I,'(A)')'    Xpa = Pcent(1,iPrimP,iAtomA,iAtomB) + Ax'
+          WRITE(I,'(A)')'    Ypa = Pcent(2,iPrimP,iAtomA,iAtomB) + Ay'
+          WRITE(I,'(A)')'    Zpa = Pcent(3,iPrimP,iAtomA,iAtomB) + Az'
        enddo
-       WRITE(LUMODA5,'(A)')'    Xpa = Pcent(1) + Ax'
-       WRITE(LUMODA5,'(A)')'    Ypa = Pcent(2) + Ay'
-       WRITE(LUMODA5,'(A)')'    Zpa = Pcent(3) + Az'
+       WRITE(LUMODA5,'(A)')'    Xpa = Pcent(1,iAtomA,iAtomB) + Ax'
+       WRITE(LUMODA5,'(A)')'    Ypa = Pcent(2,iAtomA,iAtomB) + Ay'
+       WRITE(LUMODA5,'(A)')'    Zpa = Pcent(3,iAtomA,iAtomB) + Az'
        do I=6,9
-          WRITE(I,'(A)')'    Xpb = Pcent(1,iPrimP) + Bx'
-          WRITE(I,'(A)')'    Ypb = Pcent(2,iPrimP) + By'
-          WRITE(I,'(A)')'    Zpb = Pcent(3,iPrimP) + Bz'
+          WRITE(I,'(A)')'    Xpb = Pcent(1,iPrimP,iAtomA,iAtomB) + Bx'
+          WRITE(I,'(A)')'    Ypb = Pcent(2,iPrimP,iAtomA,iAtomB) + By'
+          WRITE(I,'(A)')'    Zpb = Pcent(3,iPrimP,iAtomA,iAtomB) + Bz'
        enddo
-       WRITE(LUMODB5,'(A)')'    Xpb = Pcent(1) + Bx'
-       WRITE(LUMODB5,'(A)')'    Ypb = Pcent(2) + By'
-       WRITE(LUMODB5,'(A)')'    Zpb = Pcent(3) + Bz'
-
+       WRITE(LUMODB5,'(A)')'    Xpb = Pcent(1,iAtomA,iAtomB) + Bx'
+       WRITE(LUMODB5,'(A)')'    Ypb = Pcent(2,iAtomA,iAtomB) + By'
+       WRITE(LUMODB5,'(A)')'    Zpb = Pcent(3,iAtomA,iAtomB) + Bz'
        do J=1,16
           I=non1Prim(J)
           WRITE(I,'(A)')'    DO iPrimQ=1, nPrimQ'
-          WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)'
-          WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)'
-          WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)'
+          WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ)'
+          WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ)'
+          WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ)'
        enddo
        do J=1,4
           I=pure1Prim(J)
-          WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPassQ)'
-          WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPassQ)'
-          WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPassQ)'
+          WRITE(I,'(A)')'     Xpq = mPX + Qcent(1)'
+          WRITE(I,'(A)')'     Ypq = mPY + Qcent(2)'
+          WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3)'
        enddo
        do J=9,12
           I=non1Prim(J)
-          WRITE(I,'(A)')'     Xqc = Qcent(1,iPrimQ,iPassQ) + Cx'
-          WRITE(I,'(A)')'     Yqc = Qcent(2,iPrimQ,iPassQ) + Cy'
-          WRITE(I,'(A)')'     Zqc = Qcent(3,iPrimQ,iPassQ) + Cz'
+          WRITE(I,'(A)')'     Xqc = Qcent(1,iPrimQ) + Cx'
+          WRITE(I,'(A)')'     Yqc = Qcent(2,iPrimQ) + Cy'
+          WRITE(I,'(A)')'     Zqc = Qcent(3,iPrimQ) + Cz'
        enddo
        I=pure1Prim(3)
-       WRITE(I,'(A)')'     Xqc = Qcent(1,iPassQ) + Cx'
-       WRITE(I,'(A)')'     Yqc = Qcent(2,iPassQ) + Cy'
-       WRITE(I,'(A)')'     Zqc = Qcent(3,iPassQ) + Cz'
+       WRITE(I,'(A)')'     Xqc = Qcent(1) + Cx'
+       WRITE(I,'(A)')'     Yqc = Qcent(2) + Cy'
+       WRITE(I,'(A)')'     Zqc = Qcent(3) + Cz'
        do J=13,16
           I=non1Prim(J)
-          WRITE(I,'(A)')'     Xqd = Qcent(1,iPrimQ,iPassQ) + Dx'
-          WRITE(I,'(A)')'     Yqd = Qcent(2,iPrimQ,iPassQ) + Dy'
-          WRITE(I,'(A)')'     Zqd = Qcent(3,iPrimQ,iPassQ) + Dz'
+          WRITE(I,'(A)')'     Xqd = Qcent(1,iPrimQ) + Dx'
+          WRITE(I,'(A)')'     Yqd = Qcent(2,iPrimQ) + Dy'
+          WRITE(I,'(A)')'     Zqd = Qcent(3,iPrimQ) + Dz'
        enddo
        I=pure1Prim(4)
-       WRITE(I,'(A)')'     Xqd = Qcent(1,iPassQ) + Dx'
-       WRITE(I,'(A)')'     Yqd = Qcent(2,iPassQ) + Dy'
-       WRITE(I,'(A)')'     Zqd = Qcent(3,iPassQ) + Dz'
+       WRITE(I,'(A)')'     Xqd = Qcent(1) + Dx'
+       WRITE(I,'(A)')'     Yqd = Qcent(2) + Dy'
+       WRITE(I,'(A)')'     Zqd = Qcent(3) + Dz'
 
        do J=1,8
           I=non1Prim(J)
@@ -633,11 +707,11 @@ CONTAINS
        enddo
        do J=1,16
           I=non1Prim(J)
-          WRITE(I,'(A)')'     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac'
+          WRITE(I,'(A)')'     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ)*Pexpfac'
        enddo
        do J=1,4
           I=pure1Prim(J)
-          WRITE(I,'(A)')'     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)'
+          WRITE(I,'(A)')'     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)'
        enddo
        do I=1,20
           WRITE(I,'(A)')'     TMP1 = PREF*RJ000(0)'
@@ -645,88 +719,88 @@ CONTAINS
        enddo
        !standard
        do I=1,16,5
-          WRITE(I,'(A)')'     AUXarray(1,iPrimQ,iPrimP,iPassQ) = TMP1'
+          WRITE(I,'(A)')'     AUXarray(1,iPrimQ,iPrimP,iPassP) = TMP1'
        enddo
        !segQ
        do I=2,17,5
-          WRITE(I,'(A)')'     AUXarray(1,iPrimP,iPassQ) = AUXarray(1,iPrimP,iPassQ) + TMP1'
+          WRITE(I,'(A)')'     AUXarray(1,iPrimP,iPassP) = AUXarray(1,iPrimP,iPassP) + TMP1'
        enddo
        !segP
        do I=3,18,5
-          WRITE(I,'(A)')'     AUXarray(1,iPrimQ,iPassQ) = AUXarray(1,iPrimQ,iPassQ) + TMP1'
+          WRITE(I,'(A)')'     AUXarray(1,iPrimQ,iPassP) = AUXarray(1,iPrimQ,iPassP) + TMP1'
        enddo
        !seg
        do I=4,19,5
-          WRITE(I,'(A)')'     AUXarray(1,iPassQ) = AUXarray(1,iPassQ) + TMP1'
+          WRITE(I,'(A)')'     AUXarray(1,iPassP) = AUXarray(1,iPassP) + TMP1'
        enddo
        !seg1Prim
        do I=5,20,5
-          WRITE(I,'(A)')'     AUXarray(1,iPassQ) = TMP1'
+          WRITE(I,'(A)')'     AUXarray(1,iPassP) = TMP1'
        enddo
 
-       WRITE(LUMODA1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xpa*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODA1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassQ) = Ypa*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODA1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassQ) = Zpa*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODA2,'(A)')'     AUXarray(2,iPrimP,iPassQ) = AUXarray(2,iPrimP,iPassQ) + Xpa*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODA2,'(A)')'     AUXarray(3,iPrimP,iPassQ) = AUXarray(3,iPrimP,iPassQ) + Ypa*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODA2,'(A)')'     AUXarray(4,iPrimP,iPassQ) = AUXarray(4,iPrimP,iPassQ) + Zpa*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODA3,'(A)')'     AUXarray(2,iPrimQ,iPassQ) = AUXarray(2,iPrimQ,iPassQ) + Xpa*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODA3,'(A)')'     AUXarray(3,iPrimQ,iPassQ) = AUXarray(3,iPrimQ,iPassQ) + Ypa*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODA3,'(A)')'     AUXarray(4,iPrimQ,iPassQ) = AUXarray(4,iPrimQ,iPassQ) + Zpa*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODA4,'(A)')'     AUXarray(2,iPassQ) = AUXarray(2,iPassQ) + Xpa*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODA4,'(A)')'     AUXarray(3,iPassQ) = AUXarray(3,iPassQ) + Ypa*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODA4,'(A)')'     AUXarray(4,iPassQ) = AUXarray(4,iPassQ) + Zpa*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODA5,'(A)')'     AUXarray(2,iPassQ) = Xpa*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODA5,'(A)')'     AUXarray(3,iPassQ) = Ypa*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODA5,'(A)')'     AUXarray(4,iPassQ) = Zpa*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODA1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassP) = Xpa*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODA1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassP) = Ypa*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODA1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassP) = Zpa*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODA2,'(A)')'     AUXarray(2,iPrimP,iPassP) = AUXarray(2,iPrimP,iPassP) + Xpa*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODA2,'(A)')'     AUXarray(3,iPrimP,iPassP) = AUXarray(3,iPrimP,iPassP) + Ypa*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODA2,'(A)')'     AUXarray(4,iPrimP,iPassP) = AUXarray(4,iPrimP,iPassP) + Zpa*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODA3,'(A)')'     AUXarray(2,iPrimQ,iPassP) = AUXarray(2,iPrimQ,iPassP) + Xpa*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODA3,'(A)')'     AUXarray(3,iPrimQ,iPassP) = AUXarray(3,iPrimQ,iPassP) + Ypa*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODA3,'(A)')'     AUXarray(4,iPrimQ,iPassP) = AUXarray(4,iPrimQ,iPassP) + Zpa*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODA4,'(A)')'     AUXarray(2,iPassP) = AUXarray(2,iPassP) + Xpa*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODA4,'(A)')'     AUXarray(3,iPassP) = AUXarray(3,iPassP) + Ypa*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODA4,'(A)')'     AUXarray(4,iPassP) = AUXarray(4,iPassP) + Zpa*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODA5,'(A)')'     AUXarray(2,iPassP) = Xpa*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODA5,'(A)')'     AUXarray(3,iPassP) = Ypa*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODA5,'(A)')'     AUXarray(4,iPassP) = Zpa*TMP1 + alphaZpq*TMP2'
 
-       WRITE(LUMODB1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xpb*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODB1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassQ) = Ypb*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODB1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassQ) = Zpb*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODB2,'(A)')'     AUXarray(2,iPrimP,iPassQ) = AUXarray(2,iPrimP,iPassQ) + Xpb*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODB2,'(A)')'     AUXarray(3,iPrimP,iPassQ) = AUXarray(3,iPrimP,iPassQ) + Ypb*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODB2,'(A)')'     AUXarray(4,iPrimP,iPassQ) = AUXarray(4,iPrimP,iPassQ) + Zpb*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODB3,'(A)')'     AUXarray(2,iPrimQ,iPassQ) = AUXarray(2,iPrimQ,iPassQ) + Xpb*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODB3,'(A)')'     AUXarray(3,iPrimQ,iPassQ) = AUXarray(3,iPrimQ,iPassQ) + Ypb*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODB3,'(A)')'     AUXarray(4,iPrimQ,iPassQ) = AUXarray(4,iPrimQ,iPassQ) + Zpb*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODB4,'(A)')'     AUXarray(2,iPassQ) = AUXarray(2,iPassQ) + Xpb*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODB4,'(A)')'     AUXarray(3,iPassQ) = AUXarray(3,iPassQ) + Ypb*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODB4,'(A)')'     AUXarray(4,iPassQ) = AUXarray(4,iPassQ) + Zpb*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODB5,'(A)')'     AUXarray(2,iPassQ) = Xpb*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODB5,'(A)')'     AUXarray(3,iPassQ) = Ypb*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODB5,'(A)')'     AUXarray(4,iPassQ) = Zpb*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODB1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassP) = Xpb*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODB1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassP) = Ypb*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODB1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassP) = Zpb*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODB2,'(A)')'     AUXarray(2,iPrimP,iPassP) = AUXarray(2,iPrimP,iPassP) + Xpb*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODB2,'(A)')'     AUXarray(3,iPrimP,iPassP) = AUXarray(3,iPrimP,iPassP) + Ypb*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODB2,'(A)')'     AUXarray(4,iPrimP,iPassP) = AUXarray(4,iPrimP,iPassP) + Zpb*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODB3,'(A)')'     AUXarray(2,iPrimQ,iPassP) = AUXarray(2,iPrimQ,iPassP) + Xpb*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODB3,'(A)')'     AUXarray(3,iPrimQ,iPassP) = AUXarray(3,iPrimQ,iPassP) + Ypb*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODB3,'(A)')'     AUXarray(4,iPrimQ,iPassP) = AUXarray(4,iPrimQ,iPassP) + Zpb*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODB4,'(A)')'     AUXarray(2,iPassP) = AUXarray(2,iPassP) + Xpb*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODB4,'(A)')'     AUXarray(3,iPassP) = AUXarray(3,iPassP) + Ypb*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODB4,'(A)')'     AUXarray(4,iPassP) = AUXarray(4,iPassP) + Zpb*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODB5,'(A)')'     AUXarray(2,iPassP) = Xpb*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODB5,'(A)')'     AUXarray(3,iPassP) = Ypb*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODB5,'(A)')'     AUXarray(4,iPassP) = Zpb*TMP1 + alphaZpq*TMP2'
 
-       WRITE(LUMODC1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xqc*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODC1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassQ) = Yqc*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODC1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassQ) = Zqc*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODC2,'(A)')'     AUXarray(2,iPrimP,iPassQ) = AUXarray(2,iPrimP,iPassQ) + Xqc*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODC2,'(A)')'     AUXarray(3,iPrimP,iPassQ) = AUXarray(3,iPrimP,iPassQ) + Yqc*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODC2,'(A)')'     AUXarray(4,iPrimP,iPassQ) = AUXarray(4,iPrimP,iPassQ) + Zqc*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODC3,'(A)')'     AUXarray(2,iPrimQ,iPassQ) = AUXarray(2,iPrimQ,iPassQ) + Xqc*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODC3,'(A)')'     AUXarray(3,iPrimQ,iPassQ) = AUXarray(3,iPrimQ,iPassQ) + Yqc*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODC3,'(A)')'     AUXarray(4,iPrimQ,iPassQ) = AUXarray(4,iPrimQ,iPassQ) + Zqc*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODC4,'(A)')'     AUXarray(2,iPassQ) = AUXarray(2,iPassQ) + Xqc*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODC4,'(A)')'     AUXarray(3,iPassQ) = AUXarray(3,iPassQ) + Yqc*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODC4,'(A)')'     AUXarray(4,iPassQ) = AUXarray(4,iPassQ) + Zqc*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODC5,'(A)')'     AUXarray(2,iPassQ) = Xqc*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODC5,'(A)')'     AUXarray(3,iPassQ) = Yqc*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODC5,'(A)')'     AUXarray(4,iPassQ) = Zqc*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODC1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassP) = Xqc*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODC1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassP) = Yqc*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODC1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassP) = Zqc*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODC2,'(A)')'     AUXarray(2,iPrimP,iPassP) = AUXarray(2,iPrimP,iPassP) + Xqc*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODC2,'(A)')'     AUXarray(3,iPrimP,iPassP) = AUXarray(3,iPrimP,iPassP) + Yqc*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODC2,'(A)')'     AUXarray(4,iPrimP,iPassP) = AUXarray(4,iPrimP,iPassP) + Zqc*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODC3,'(A)')'     AUXarray(2,iPrimQ,iPassP) = AUXarray(2,iPrimQ,iPassP) + Xqc*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODC3,'(A)')'     AUXarray(3,iPrimQ,iPassP) = AUXarray(3,iPrimQ,iPassP) + Yqc*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODC3,'(A)')'     AUXarray(4,iPrimQ,iPassP) = AUXarray(4,iPrimQ,iPassP) + Zqc*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODC4,'(A)')'     AUXarray(2,iPassP) = AUXarray(2,iPassP) + Xqc*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODC4,'(A)')'     AUXarray(3,iPassP) = AUXarray(3,iPassP) + Yqc*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODC4,'(A)')'     AUXarray(4,iPassP) = AUXarray(4,iPassP) + Zqc*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODC5,'(A)')'     AUXarray(2,iPassP) = Xqc*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODC5,'(A)')'     AUXarray(3,iPassP) = Yqc*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODC5,'(A)')'     AUXarray(4,iPassP) = Zqc*TMP1 + alphaZpq*TMP2'
 
-       WRITE(LUMODD1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xqd*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODD1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassQ) = Yqd*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODD1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassQ) = Zqd*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODD2,'(A)')'     AUXarray(2,iPrimP,iPassQ) = AUXarray(2,iPrimP,iPassQ) + Xqd*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODD2,'(A)')'     AUXarray(3,iPrimP,iPassQ) = AUXarray(3,iPrimP,iPassQ) + Yqd*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODD2,'(A)')'     AUXarray(4,iPrimP,iPassQ) = AUXarray(4,iPrimP,iPassQ) + Zqd*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODD3,'(A)')'     AUXarray(2,iPrimQ,iPassQ) = AUXarray(2,iPrimQ,iPassQ) + Xqd*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODD3,'(A)')'     AUXarray(3,iPrimQ,iPassQ) = AUXarray(3,iPrimQ,iPassQ) + Yqd*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODD3,'(A)')'     AUXarray(4,iPrimQ,iPassQ) = AUXarray(4,iPrimQ,iPassQ) + Zqd*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODD4,'(A)')'     AUXarray(2,iPassQ) = AUXarray(2,iPassQ) + Xqd*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODD4,'(A)')'     AUXarray(3,iPassQ) = AUXarray(3,iPassQ) + Yqd*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODD4,'(A)')'     AUXarray(4,iPassQ) = AUXarray(4,iPassQ) + Zqd*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODD5,'(A)')'     AUXarray(2,iPassQ) = Xqd*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODD5,'(A)')'     AUXarray(3,iPassQ) = Yqd*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODD5,'(A)')'     AUXarray(4,iPassQ) = Zqd*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODD1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassP) = Xqd*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODD1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassP) = Yqd*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODD1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassP) = Zqd*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODD2,'(A)')'     AUXarray(2,iPrimP,iPassP) = AUXarray(2,iPrimP,iPassP) + Xqd*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODD2,'(A)')'     AUXarray(3,iPrimP,iPassP) = AUXarray(3,iPrimP,iPassP) + Yqd*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODD2,'(A)')'     AUXarray(4,iPrimP,iPassP) = AUXarray(4,iPrimP,iPassP) + Zqd*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODD3,'(A)')'     AUXarray(2,iPrimQ,iPassP) = AUXarray(2,iPrimQ,iPassP) + Xqd*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODD3,'(A)')'     AUXarray(3,iPrimQ,iPassP) = AUXarray(3,iPrimQ,iPassP) + Yqd*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODD3,'(A)')'     AUXarray(4,iPrimQ,iPassP) = AUXarray(4,iPrimQ,iPassP) + Zqd*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODD4,'(A)')'     AUXarray(2,iPassP) = AUXarray(2,iPassP) + Xqd*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODD4,'(A)')'     AUXarray(3,iPassP) = AUXarray(3,iPassP) + Yqd*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODD4,'(A)')'     AUXarray(4,iPassP) = AUXarray(4,iPassP) + Zqd*TMP1 + alphaZpq*TMP2'
+       WRITE(LUMODD5,'(A)')'     AUXarray(2,iPassP) = Xqd*TMP1 + alphaXpq*TMP2'
+       WRITE(LUMODD5,'(A)')'     AUXarray(3,iPassP) = Yqd*TMP1 + alphaYpq*TMP2'
+       WRITE(LUMODD5,'(A)')'     AUXarray(4,iPassP) = Zqd*TMP1 + alphaZpq*TMP2'
 
 
        do J=1,16
@@ -736,10 +810,237 @@ CONTAINS
        enddo
        do I=1,20
           WRITE(I,'(A)')'  enddo'
+          IF(DoOpenMP)WRITE(I,'(A)')'!$OMP END DO'
           WRITE(I,'(A)')'end subroutine'
        enddo
 
 
+       !============================================================================================================
+       !         BuildRj000 angmom > 2
+       !============================================================================================================
+
+       DO JMAX=2,MaxAngmomQP
+          nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
+          nTUVPLUS = (JMAX+2)*(JMAX+3)*(JMAX+4)/6   
+          allocate(TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
+          TUVINDEX = 0
+          allocate(TINDEX(nTUVPLUS))
+          allocate(UINDEX(nTUVPLUS))
+          allocate(VINDEX(nTUVPLUS))
+          allocate(JINDEX(nTUVPLUS))
+
+          nTUVprev3 = (JMAX-2)*(JMAX-1)*(JMAX)/6
+          nTUVprev2 = (JMAX-1)*(JMAX)*(JMAX+1)/6
+          nTUVprev = (JMAX)*(JMAX+1)*(JMAX+2)/6
+          ituv = 0 
+          TUVINDEX = 0
+          DO J = 0, JMAX
+             DO Tp=J,0,-1       
+                DO Up=J-Tp,0,-1
+                   Vp=J-Tp-Up
+                   ituv = ituv + 1 
+                   TUVINDEX(Tp,Up,Vp) = ituv
+                   TINDEX(iTUV) = Tp
+                   UINDEX(iTUV) = Up
+                   VINDEX(iTUV) = Vp
+                   JINDEX(iTUV) = J
+                ENDDO
+             ENDDO
+          ENDDO
+
+          do IA=1,5
+             WRITE(IA,'(A)')''
+          enddo
+          WRITE(LUMODA1,'(A,I1,A)')'subroutine BuildRJ000'//ARCSTRING,JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+          WRITE(LUMODA2,'(A,I1,A)')'subroutine BuildRJ000'//ARCSTRING//'SegQ',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+          WRITE(LUMODA3,'(A,I1,A)')'subroutine BuildRJ000'//ARCSTRING//'SegP',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+          WRITE(LUMODA4,'(A,I1,A)')'subroutine BuildRJ000'//ARCSTRING//'Seg',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+          WRITE(LUMODA5,'(A,I1,A)')'subroutine BuildRJ000'//ARCSTRING//'Seg1Prim',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+          do I=1,5
+             WRITE(I,'(A)')'         & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
+             WRITE(I,'(A)')'         & RJ000array)'
+          enddo
+          do I=1,5
+             WRITE(I,'(A)')'  implicit none'
+             WRITE(I,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ'
+             WRITE(I,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
+             WRITE(I,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
+             WRITE(I,'(A,I2,A)')'  REAL(REALK),intent(in) :: TABFJW(0:',JMAX+3,',0:1200)'
+          enddo
+          do I=1,4
+             WRITE(I,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP)'
+          enddo
+          WRITE(LUMODA5,'(A)')'  real(realk),intent(in) :: reducedExponents(1)'
+          do I=1,4
+             WRITE(I,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
+          enddo
+          WRITE(LUMODA5,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)'
+          do I=1,4
+             WRITE(I,'(A,I2,A)')'  real(realk),intent(inout) :: RJ000array(0:',JMAX+3,',nPrimQ,nPrimP,nPasses)'
+          enddo
+          WRITE(LUMODA5,'(A,I2,A)')'  real(realk),intent(inout) :: RJ000array(0:',JMAX+3,',nPasses)'
+          !==================================================================================================
+          do I=1,4
+             WRITE(I,'(A)')'  !local variables'
+             WRITE(I,'(A)')'  integer :: iPassP,iPrimP,iPrimQ,ipnt,iAtomA,iAtomB'
+          enddo
+          WRITE(LUMODA5,'(A)')'  !local variables'
+          WRITE(LUMODA5,'(A)')'  integer :: iPassP,ipnt,iAtomA,iAtomB'
+          do I=1,5
+             WRITE(I,'(A)')'  real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq'
+             WRITE(I,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
+             WRITE(I,'(A,I2,A)')'  real(realk) :: RJ000(0:',JMAX+3,')'
+             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
+             WRITE(I,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
+             WRITE(I,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
+             WRITE(I,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
+             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
+             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+             WRITE(I,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
+             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
+             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+          enddo
+          ! ======================================================================
+          !    iPassP Loop 
+          ! ======================================================================
+          IF(DoOpenMP)THEN
+             !OPENMP
+             do IA=1,5
+                WRITE(IA,'(A)')'!$OMP DO &'
+                WRITE(IA,'(A)')'!$OMP PRIVATE(iPassP,iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
+                WRITE(IA,'(A)')'!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
+             enddo
+             do I=1,4
+                WRITE(I,'(A)')'!$OMP         iPrimP,iPrimQ,&'             
+             enddo
+             do IA=1,5
+                WRITE(IA,'(A)')'!$OMP         mPX,mPY,mPZ,RWVAL,GVAL)'
+             enddo
+          ENDIF
+          do I=1,5
+             WRITE(I,'(A)')'  DO iPassP = 1,nPasses'
+             WRITE(I,'(A)')'   iAtomA = iAtomApass(iPassP)'
+             WRITE(I,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+          enddo
+          do I=1,4
+             WRITE(I,'(A)')'   DO iPrimP=1, nPrimP'
+             WRITE(I,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+             WRITE(I,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+             WRITE(I,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
+          enddo
+          ! ======================================================================
+          !    iPrimQ Loop 
+          ! ======================================================================
+          do I=1,4
+             WRITE(I,'(A)')'    DO iPrimQ=1, nPrimQ'
+          enddo
+          do I=1,4
+             WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ)'
+             WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ)'
+             WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ)'
+          enddo
+          WRITE(LUMODA5,'(A)')'     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)'
+          WRITE(LUMODA5,'(A)')'     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)'
+          WRITE(LUMODA5,'(A)')'     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)'
+          do I=1,5
+             WRITE(I,'(A)')'     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq'
+          enddo
+          do I=1,4
+             WRITE(I,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
+          enddo
+          WRITE(LUMODA5,'(A)')'     WVAL = reducedExponents(1)*squaredDistance'
+          do I=1,5
+             !          WRITE(I,'(A)')'     !  0 < WVAL < 0.000001'
+             !          WRITE(I,'(A)')'!     IF (ABS(WVAL) .LT. SMALL) THEN'     
+             !          WRITE(I,'(A)')'!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT'
+             !          DO J=1,JMAX
+             !             WRITE(I,'(A,I1,A,ES23.16,A)')'!      RJ000(',J,')= ',1.0d0/(2*J + 1),'_realk'
+             !          ENDDO
+             WRITE(I,'(A)')'     !  0 < WVAL < 12 '
+             WRITE(I,'(A)')'     IF (WVAL .LT. D12) THEN'
+             WRITE(I,'(A)')'      IPNT = NINT(D100*WVAL)'
+             WRITE(I,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
+             WRITE(I,'(A)')'      W2    = WDIFF*WDIFF'
+             WRITE(I,'(A)')'      W3    = W2*WDIFF'
+             WRITE(I,'(A)')'      W2    = W2*D05'
+             WRITE(I,'(A)')'      W3    = W3*COEF3'
+          enddo
+          do I=1,4
+             DO J=0,JMAX
+                WRITE(I,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000Array(',J,',iPrimQ,iPrimP,iPassP) = TABFJW(',J,',IPNT)-TABFJW(',J+1,',IPNT)*WDIFF+TABFJW(',J+2,',IPNT)*W2+TABFJW(',J+3,',IPNT)*W3'
+             ENDDO
+          enddo
+          DO J=0,JMAX
+             WRITE(LUMODA5,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000Array(',J,',iPassP) = TABFJW(',J,',IPNT)-TABFJW(',J+1,',IPNT)*WDIFF+TABFJW(',J+2,',IPNT)*W2+TABFJW(',J+3,',IPNT)*W3'
+          ENDDO
+          do I=1,5
+             WRITE(I,'(A)')'     !  12 < WVAL <= (2J+36) '
+             WRITE(I,'(A)')'     ELSE IF (WVAL.LE.D2JP36) THEN'
+             WRITE(I,'(A)')'      REXPW = D05*EXP(-WVAL)'
+             WRITE(I,'(A)')'      RWVAL = D1/WVAL'
+             WRITE(I,'(A)')'      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))'
+          enddo
+          do I=1,5
+             WRITE(I,'(A)')'      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
+             DO J=1,JMAX
+                WRITE(I,'(A,I2,A,I2,A,I2,A)')'      RJ000(',J,') = RWVAL*((',J,' - D05)*RJ000(',J-1,')-REXPW)'          
+             ENDDO
+          enddo
+          do I=1,4
+             WRITE(I,'(A)')'      RJ000Array(0,iPrimQ,iPrimP,iPassP) = RJ000(0)'
+             DO J=1,JMAX
+                WRITE(I,'(A,I2,A,I2,A)')'      RJ000Array(',J,',iPrimQ,iPrimP,iPassP) = RJ000(',J,')'
+             ENDDO
+          enddo
+          WRITE(LUMODA5,'(A)')'      RJ000Array(0,iPassP) = RJ000(0)'
+          DO J=1,JMAX
+             WRITE(LUMODA5,'(A,I2,A,I2,A)')'      RJ000Array(',J,',iPassP) = RJ000(',J,')'
+          ENDDO
+          do I=1,5
+             WRITE(I,'(A)')'     !  (2J+36) < WVAL '
+             WRITE(I,'(A)')'     ELSE'
+             WRITE(I,'(A)')'      RWVAL = PID4/WVAL'
+             WRITE(I,'(A)')'      RJ000(0) = SQRT(RWVAL)'
+             !        WRITE(I,'(A)')'        RJ000(0,ipq,ipassq) = SQRT(RWVAL)'
+             WRITE(I,'(A)')'      RWVAL = RWVAL*PID4I'
+             DO J=1,JMAX
+                WRITE(I,'(A,I2,A,I2,A,I2,A)')'      RJ000(',J,') = RWVAL*(',J,' - D05)*RJ000(',J-1,')'
+             ENDDO
+          enddo
+          do I=1,4
+             WRITE(I,'(A)')'      RJ000Array(0,iPrimQ,iPrimP,iPassP) = RJ000(0)'
+             DO J=1,JMAX
+                WRITE(I,'(A,I2,A,I2,A)')'      RJ000Array(',J,',iPrimQ,iPrimP,iPassP) = RJ000(',J,')'
+             ENDDO
+          enddo
+          WRITE(LUMODA5,'(A)')'      RJ000Array(0,iPassP) = RJ000(0)'
+          DO J=1,JMAX
+             WRITE(LUMODA5,'(A,I2,A,I2,A)')'      RJ000Array(',J,',iPassP) = RJ000(',J,')'
+          ENDDO
+          do I=1,5             
+             WRITE(I,'(A)')'     ENDIF'
+          enddo
+          do I=1,4
+             WRITE(I,'(A)')'    ENDDO'
+             WRITE(I,'(A)')'   ENDDO'
+          enddo
+          do I=1,5
+             WRITE(I,'(A)')'  ENDDO'
+             IF(DoOpenMP)WRITE(I,'(A)')'!$OMP END DO'
+             WRITE(I,'(A)')' end subroutine'
+          enddo
+          deallocate(TUVINDEX)
+          deallocate(TINDEX)
+          deallocate(UINDEX)
+          deallocate(VINDEX)
+          deallocate(JINDEX)
+       ENDDO
        !============================================================================================================
        !         VerticalRecurrence GENERAL
        !============================================================================================================
@@ -782,7 +1083,8 @@ CONTAINS
           WRITE(LUMODA4,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
           WRITE(LUMODA5,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
           do I=1,5
-             WRITE(I,'(A)')'         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
+             WRITE(I,'(A)')'         & RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
+             WRITE(I,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
              WRITE(I,'(A)')'         & AUXarray)'
           enddo
 
@@ -792,7 +1094,8 @@ CONTAINS
           WRITE(LUMODB4,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg',JMAX,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
           WRITE(LUMODB5,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim',JMAX,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
           do I=6,10
-             WRITE(I,'(A)')'         & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
+             WRITE(I,'(A)')'         & RJ000Array,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
+             WRITE(I,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
              WRITE(I,'(A)')'         & AUXarray)'
           enddo
 
@@ -802,7 +1105,8 @@ CONTAINS
           WRITE(LUMODC4,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
           WRITE(LUMODC5,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
           do I=11,15
-             WRITE(I,'(A)')'         & reducedExponents,TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&'
+             WRITE(I,'(A)')'         & reducedExponents,RJ000Array,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&'
+             WRITE(I,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
              WRITE(I,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
           enddo
 
@@ -812,19 +1116,27 @@ CONTAINS
           WRITE(LUMODD4,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
           WRITE(LUMODD5,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
           do I=16,20
-             WRITE(I,'(A)')'         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&'
+             WRITE(I,'(A)')'         & reducedExponents,RJ000Array,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&'
+             WRITE(I,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
              WRITE(I,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
           enddo
           do I=1,20
              WRITE(I,'(A)')'  implicit none'
              WRITE(I,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ'
+             WRITE(I,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
+             WRITE(I,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
           enddo
           !C and D
           !       do I=11,20
           !          WRITE(I,'(A)')'  integer,intent(in) :: nAtomsC,nAtomsD'
           !       enddo
-          do I=1,20
-             WRITE(I,'(A,I2,A)')'  REAL(REALK),intent(in) :: TABFJW(0:',JMAX+3,',0:1200)'
+          do J=1,16
+             I = non1Prim(J)
+             WRITE(I,'(A,I2,A)')'  REAL(REALK),intent(in) :: RJ000Array(0:',JMAX+3,',nPrimQ,nPrimP,nPasses)'
+          enddo
+          do J=1,4
+             I = pure1Prim(J)
+             WRITE(I,'(A,I2,A)')'  REAL(REALK),intent(in) :: RJ000Array(0:',JMAX+3,',nPasses)'
           enddo
           do J=1,8
              I = non1Prim(J)
@@ -840,18 +1152,18 @@ CONTAINS
           WRITE(LUMODD5,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Qexp(1)'
           do J=1,16
              I = non1Prim(J)
-             WRITE(I,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)'
-             WRITE(I,'(A)')'  real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)'
+             WRITE(I,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
+             WRITE(I,'(A)')'  real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)'
           enddo
-          WRITE(LUMODA5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-          WRITE(LUMODB5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-          WRITE(LUMODC5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-          WRITE(LUMODD5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
+          WRITE(LUMODA5,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
+          WRITE(LUMODB5,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
+          WRITE(LUMODC5,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
+          WRITE(LUMODD5,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
           do IA=1,5
-             WRITE(IA,'(A)')'  real(realk),intent(in) :: Acenter(3)'
+             WRITE(IA,'(A)')'  real(realk),intent(in) :: Acenter(3,nAtomsA)'
           enddo
           do IB=6,10    
-             WRITE(IB,'(A)')'  real(realk),intent(in) :: Bcenter(3)'
+             WRITE(IB,'(A)')'  real(realk),intent(in) :: Bcenter(3,nAtomsB)'
           enddo
           !       do IC=11,15
           !          WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3,nAtomsC)'
@@ -887,7 +1199,7 @@ CONTAINS
           !==================================================================================================
           do I=1,20
              WRITE(I,'(A)')'  !local variables'
-             WRITE(I,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV'
+             WRITE(I,'(A)')'  integer :: iPassP,iPrimP,iPrimQ,ipnt,IP,iTUV,iAtomA,iAtomB'
           enddo
           !       do I=11,15
           !          WRITE(I,'(A)')'  integer :: iAtomC'
@@ -920,33 +1232,34 @@ CONTAINS
              WRITE(I,'(A)')'  real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd'
           enddo
           do I=1,10
-             WRITE(I,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP,RJ000(0:',JMAX,')'
+             WRITE(I,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP'
           enddo
           do J=9,16
              I=non1Prim(J)
-             WRITE(I,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),inv2expQ,alphaQ,RJ000(0:',JMAX,')'
+             WRITE(I,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),inv2expQ,alphaQ'
           enddo
-          WRITE(LUMODC5,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ,inv2expQ,alphaQ,RJ000(0:',JMAX,')'
-          WRITE(LUMODD5,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ,inv2expQ,alphaQ,RJ000(0:',JMAX,')'
+          WRITE(LUMODC5,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ,inv2expQ,alphaQ'
+          WRITE(LUMODD5,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ,inv2expQ,alphaQ'
           do I=1,20
              WRITE(I,'(A,i4,A)')'  real(realk) :: TwoTerms(',MAX(1,nTUVprev2-nTUVprev3),')'
              WRITE(I,'(A)')'  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq'
-             WRITE(I,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
-             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
-             WRITE(I,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
-             WRITE(I,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
-             WRITE(I,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
-             WRITE(I,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+!             WRITE(I,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
+!             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk'
+             WRITE(I,'(A)')'  real(realk),parameter :: D2=2.0E0_realk,D05 =0.5E0_realk'
+!             WRITE(I,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
+             WRITE(I,'(A)')'  real(realk),parameter :: D1=1.0E0_realk'
+!             WRITE(I,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
+!             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+!             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+!             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
+!             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+!             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+!             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+!             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+!             WRITE(I,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
+!             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+!             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
+!             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
           enddo
           do I=1,20
              C = JMAX+2
@@ -981,16 +1294,6 @@ CONTAINS
           do I=1,20
              WRITE(I,'(A)')'  !We include scaling of RJ000 '
           enddo
-          do I=1,5
-             WRITE(I,'(A)')'  Ax = -Acenter(1)'
-             WRITE(I,'(A)')'  Ay = -Acenter(2)'
-             WRITE(I,'(A)')'  Az = -Acenter(3)'
-          enddo
-          do I=6,10
-             WRITE(I,'(A)')'  Bx = -Bcenter(1)'
-             WRITE(I,'(A)')'  By = -Bcenter(2)'
-             WRITE(I,'(A)')'  Bz = -Bcenter(3)'
-          enddo
           do J=9,16
              I=non1Prim(J)
              WRITE(I,'(A)')'  DO iPrimQ=1, nPrimQ'
@@ -1000,42 +1303,82 @@ CONTAINS
           WRITE(LUMODC5,'(A)')'  invexpQ = D1/Qexp(1)'
           WRITE(LUMODD5,'(A)')'  invexpQ = D1/Qexp(1)'
           ! ======================================================================
-          !    iPassQ Loop 
+          !    iPassP Loop 
           ! ======================================================================
+          IF(DoOpenMP)THEN
+             !OPENMP
+             do IA=1,20
+                WRITE(IA,'(A)')'!$OMP DO &'
+                WRITE(IA,'(A)')'!$OMP PRIVATE(iPassP,iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
+             enddo
+             !non 1prim
+             do J=1,16
+                I = non1Prim(J)
+                WRITE(I,'(A)')'!$OMP         iPrimP,iPrimQ,&'             
+             enddo
+             do IA=1,5   !A
+                WRITE(IA,'(A)')'!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,invexpP,inv2expP,&'             
+             enddo
+             do IA=6,10  !B
+                WRITE(IA,'(A)')'!$OMP         Bx,By,Bz,Xpb,Ypb,Zpb,alphaP,invexpP,inv2expP,&'             
+             enddo
+             do IA=11,15 !C
+                WRITE(IA,'(A)')'!$OMP         Cx,Cy,Cz,Xqc,Yqc,Zqc,alphaQ,inv2expQ,&'             
+             enddo
+             do IA=16,20 !C
+                WRITE(IA,'(A)')'!$OMP         Dx,Dy,Dz,Xqd,Yqd,Zqd,alphaQ,inv2expQ,&'   
+             enddo
+             do IA=1,20
+                WRITE(IA,'(A)')'!$OMP         Pexpfac,mPX,mPY,mPZ,&'
+                WRITE(IA,'(A)')'!$OMP         alphaXpq,alphaYpq,alphaZpq,TwoTerms,iP) '
+             enddo
+          ENDIF
           do I=1,20
-             WRITE(I,'(A)')'  DO iPassQ = 1,nPasses'
+             WRITE(I,'(A)')'  DO iPassP = 1,nPasses'
+             WRITE(I,'(A)')'   iAtomA = iAtomApass(iPassP)'
+             WRITE(I,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+          enddo
+          do I=1,5
+             WRITE(I,'(A)')'   Ax = -Acenter(1,iAtomA)'
+             WRITE(I,'(A)')'   Ay = -Acenter(2,iAtomA)'
+             WRITE(I,'(A)')'   Az = -Acenter(3,iAtomA)'
+          enddo
+          do I=6,10
+             WRITE(I,'(A)')'   Bx = -Bcenter(1,iAtomB)'
+             WRITE(I,'(A)')'   By = -Bcenter(2,iAtomB)'
+             WRITE(I,'(A)')'   Bz = -Bcenter(3,iAtomB)'
           enddo
           !general
           do I=1,16,5
-             WRITE(I,'(A)')'   iP = (iPassQ-1)*nPrimQ*nPrimP'
+             WRITE(I,'(A)')'   iP = (iPassP-1)*nPrimQ*nPrimP'
           enddo
           !segQ
           do I=2,17,5
-             WRITE(I,'(A)')'   iP = (iPassQ-1)*nPrimP'
+             WRITE(I,'(A)')'   iP = (iPassP-1)*nPrimP'
           enddo
           !segP
           do I=3,18,5
-             WRITE(I,'(A)')'   iP = (iPassQ-1)*nPrimQ'
+             WRITE(I,'(A)')'   iP = (iPassP-1)*nPrimQ'
              WRITE(I,'(A)')'   DO iPrimQ=1, nPrimQ'
              WRITE(I,'(A)')'    iP = iP + 1'
              WRITE(I,'(A,i5)')'    DO iTUV=1,',nTUV
              WRITE(I,'(A)')'     AUXarray(iTUV,iP)=0.0E0_realk'
              WRITE(I,'(A)')'    ENDDO'
              WRITE(I,'(A)')'   ENDDO'
-             WRITE(I,'(A)')'   iP = (iPassQ-1)*nPrimQ'
+             WRITE(I,'(A)')'   iP = (iPassP-1)*nPrimQ'
           enddo
           !seg
           do I=4,19,5
-             WRITE(I,'(A)')'   iP = iPassQ'
+             WRITE(I,'(A)')'   iP = iPassP'
              WRITE(I,'(A,i5)')'   DO iTUV=1,',nTUV
-             WRITE(I,'(A)')'    AUXarray(iTUV,iPassQ)=0.0E0_realk'
+             WRITE(I,'(A)')'    AUXarray(iTUV,iPassP)=0.0E0_realk'
              WRITE(I,'(A)')'   ENDDO'
           enddo
           do I=5,20,5
-             WRITE(I,'(A)')'   iP = iPassQ'
+             WRITE(I,'(A)')'   iP = iPassP'
           enddo
           do I=11,15
-             !          WRITE(I,'(A)')'   iAtomC = iPassQ - ((iPassQ-1)/nAtomsC)*nAtomsC'
+             !          WRITE(I,'(A)')'   iAtomC = iPassP - ((iPassP-1)/nAtomsC)*nAtomsC'
              !          WRITE(I,'(A)')'   Cx = -Ccenter(1,iAtomC)'
              !          WRITE(I,'(A)')'   Cy = -Ccenter(2,iAtomC)'
              !          WRITE(I,'(A)')'   Cz = -Ccenter(3,iAtomC)'
@@ -1044,7 +1387,7 @@ CONTAINS
              WRITE(I,'(A)')'   Cz = -Ccenter(3)'
           enddo
           do I=16,20
-             !          WRITE(I,'(A)')'   iAtomD = (iPassQ-1)/nAtomsC+1'
+             !          WRITE(I,'(A)')'   iAtomD = (iPassP-1)/nAtomsC+1'
              !          WRITE(I,'(A)')'   Dx = -Dcenter(1,iAtomD)'
              !          WRITE(I,'(A)')'   Dy = -Dcenter(2,iAtomD)'
              !          WRITE(I,'(A)')'   Dz = -Dcenter(3,iAtomD)'
@@ -1061,7 +1404,7 @@ CONTAINS
           enddo
           !segP
           do I=3,18,5
-             WRITE(I,'(A)')'    iP = (iPassQ-1)*nPrimQ'
+             WRITE(I,'(A)')'    iP = (iPassP-1)*nPrimQ'
           enddo
           !segQ
           do I=2,17,5
@@ -1072,10 +1415,10 @@ CONTAINS
           enddo
           do J=1,16
              I = non1Prim(J)
-             WRITE(I,'(A)')'    Pexpfac = PpreExpFac(iPrimP)'
-             WRITE(I,'(A)')'    mPX = -Pcent(1,iPrimP)'
-             WRITE(I,'(A)')'    mPY = -Pcent(2,iPrimP)'
-             WRITE(I,'(A)')'    mPZ = -Pcent(3,iPrimP)'
+             WRITE(I,'(A)')'    Pexpfac = PpreExpFac(iPrimP,iAtomA,iAtomB)'
+             WRITE(I,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+             WRITE(I,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+             WRITE(I,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
           enddo
           do J=1,8
              I = non1Prim(J)
@@ -1084,10 +1427,10 @@ CONTAINS
           enddo
           do J=1,4
              I = pure1Prim(J)
-             WRITE(I,'(A)')'    Pexpfac = PpreExpFac(1)'
-             WRITE(I,'(A)')'    mPX = -Pcent(1)'
-             WRITE(I,'(A)')'    mPY = -Pcent(2)'
-             WRITE(I,'(A)')'    mPZ = -Pcent(3)'
+             WRITE(I,'(A)')'    Pexpfac = PpreExpFac(iAtomA,iAtomB)'
+             WRITE(I,'(A)')'    mPX = -Pcent(1,iAtomA,iAtomB)'
+             WRITE(I,'(A)')'    mPY = -Pcent(2,iAtomA,iAtomB)'
+             WRITE(I,'(A)')'    mPZ = -Pcent(3,iAtomA,iAtomB)'
           enddo
           do J=1,2
              I = pure1Prim(J)
@@ -1096,21 +1439,21 @@ CONTAINS
           enddo
 
           do I=1,4
-             WRITE(I,'(A)')'    Xpa = Pcent(1,iPrimP) + Ax'
-             WRITE(I,'(A)')'    Ypa = Pcent(2,iPrimP) + Ay'
-             WRITE(I,'(A)')'    Zpa = Pcent(3,iPrimP) + Az'
+             WRITE(I,'(A)')'    Xpa = Pcent(1,iPrimP,iAtomA,iAtomB) + Ax'
+             WRITE(I,'(A)')'    Ypa = Pcent(2,iPrimP,iAtomA,iAtomB) + Ay'
+             WRITE(I,'(A)')'    Zpa = Pcent(3,iPrimP,iAtomA,iAtomB) + Az'
           enddo
-          WRITE(LUMODA5,'(A)')'    Xpa = Pcent(1) + Ax'
-          WRITE(LUMODA5,'(A)')'    Ypa = Pcent(2) + Ay'
-          WRITE(LUMODA5,'(A)')'    Zpa = Pcent(3) + Az'
+          WRITE(LUMODA5,'(A)')'    Xpa = Pcent(1,iAtomA,iAtomB) + Ax'
+          WRITE(LUMODA5,'(A)')'    Ypa = Pcent(2,iAtomA,iAtomB) + Ay'
+          WRITE(LUMODA5,'(A)')'    Zpa = Pcent(3,iAtomA,iAtomB) + Az'
           do I=6,9
-             WRITE(I,'(A)')'    Xpb = Pcent(1,iPrimP) + Bx'
-             WRITE(I,'(A)')'    Ypb = Pcent(2,iPrimP) + By'
-             WRITE(I,'(A)')'    Zpb = Pcent(3,iPrimP) + Bz'
+             WRITE(I,'(A)')'    Xpb = Pcent(1,iPrimP,iAtomA,iAtomB) + Bx'
+             WRITE(I,'(A)')'    Ypb = Pcent(2,iPrimP,iAtomA,iAtomB) + By'
+             WRITE(I,'(A)')'    Zpb = Pcent(3,iPrimP,iAtomA,iAtomB) + Bz'
           enddo
-          WRITE(LUMODB5,'(A)')'    Xpb = Pcent(1) + Bx'
-          WRITE(LUMODB5,'(A)')'    Ypb = Pcent(2) + By'
-          WRITE(LUMODB5,'(A)')'    Zpb = Pcent(3) + Bz'
+          WRITE(LUMODB5,'(A)')'    Xpb = Pcent(1,iAtomA,iAtomB) + Bx'
+          WRITE(LUMODB5,'(A)')'    Ypb = Pcent(2,iAtomA,iAtomB) + By'
+          WRITE(LUMODB5,'(A)')'    Zpb = Pcent(3,iAtomA,iAtomB) + Bz'
 
           ! ======================================================================
           !    iPrimQ Loop 
@@ -1134,36 +1477,36 @@ CONTAINS
 
           do J=1,16
              I=non1Prim(J)
-             WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)'
-             WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)'
-             WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)'
+             WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ)'
+             WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ)'
+             WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ)'
           enddo
           do J=1,4
              I=pure1Prim(J)
-             WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPassQ)'
-             WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPassQ)'
-             WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPassQ)'
+             WRITE(I,'(A)')'     Xpq = mPX + Qcent(1)'
+             WRITE(I,'(A)')'     Ypq = mPY + Qcent(2)'
+             WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3)'
           enddo
           do J=9,12
              I=non1Prim(J)
-             WRITE(I,'(A)')'     Xqc = Qcent(1,iPrimQ,iPassQ) + Cx'
-             WRITE(I,'(A)')'     Yqc = Qcent(2,iPrimQ,iPassQ) + Cy'
-             WRITE(I,'(A)')'     Zqc = Qcent(3,iPrimQ,iPassQ) + Cz'
+             WRITE(I,'(A)')'     Xqc = Qcent(1,iPrimQ) + Cx'
+             WRITE(I,'(A)')'     Yqc = Qcent(2,iPrimQ) + Cy'
+             WRITE(I,'(A)')'     Zqc = Qcent(3,iPrimQ) + Cz'
           enddo
           I=pure1Prim(3)
-          WRITE(I,'(A)')'     Xqc = Qcent(1,iPassQ) + Cx'
-          WRITE(I,'(A)')'     Yqc = Qcent(2,iPassQ) + Cy'
-          WRITE(I,'(A)')'     Zqc = Qcent(3,iPassQ) + Cz'       
+          WRITE(I,'(A)')'     Xqc = Qcent(1) + Cx'
+          WRITE(I,'(A)')'     Yqc = Qcent(2) + Cy'
+          WRITE(I,'(A)')'     Zqc = Qcent(3) + Cz'       
           do J=13,16
              I=non1Prim(J)
-             WRITE(I,'(A)')'     Xqd = Qcent(1,iPrimQ,iPassQ) + Dx'
-             WRITE(I,'(A)')'     Yqd = Qcent(2,iPrimQ,iPassQ) + Dy'
-             WRITE(I,'(A)')'     Zqd = Qcent(3,iPrimQ,iPassQ) + Dz'
+             WRITE(I,'(A)')'     Xqd = Qcent(1,iPrimQ) + Dx'
+             WRITE(I,'(A)')'     Yqd = Qcent(2,iPrimQ) + Dy'
+             WRITE(I,'(A)')'     Zqd = Qcent(3,iPrimQ) + Dz'
           enddo
           I=pure1Prim(4)
-          WRITE(I,'(A)')'     Xqd = Qcent(1,iPassQ) + Dx'
-          WRITE(I,'(A)')'     Yqd = Qcent(2,iPassQ) + Dy'
-          WRITE(I,'(A)')'     Zqd = Qcent(3,iPassQ) + Dz'
+          WRITE(I,'(A)')'     Xqd = Qcent(1) + Dx'
+          WRITE(I,'(A)')'     Yqd = Qcent(2) + Dy'
+          WRITE(I,'(A)')'     Zqd = Qcent(3) + Dz'
           do J=1,8
              I=non1Prim(J)
              WRITE(I,'(A)')'     alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP'    
@@ -1194,89 +1537,33 @@ CONTAINS
              WRITE(I,'(A)')'     alphaYpq = alphaQ*Ypq'
              WRITE(I,'(A)')'     alphaZpq = alphaQ*Zpq'
           enddo
-          do I=1,200
-             WRITE(I,'(A)')'     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq'
-          enddo
           do J=1,16
              I=non1Prim(J)
-             WRITE(I,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
+             WRITE(I,'(A)')'     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ)*Pexpfac'
           enddo
           do J=1,4
              I=pure1Prim(J)
-             WRITE(I,'(A)')'     WVAL = reducedExponents(1)*squaredDistance'
-          enddo
-          do I=1,20
-             !          WRITE(I,'(A)')'     !  0 < WVAL < 0.000001'
-             !          WRITE(I,'(A)')'!     IF (ABS(WVAL) .LT. SMALL) THEN'     
-             !          WRITE(I,'(A)')'!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT'
-             !          DO J=1,JMAX
-             !             WRITE(I,'(A,I1,A,ES23.16,A)')'!      RJ000(',J,')= ',1.0d0/(2*J + 1),'_realk'
-             !          ENDDO
-             WRITE(I,'(A)')'     !  0 < WVAL < 12 '
-             WRITE(I,'(A)')'     IF (WVAL .LT. D12) THEN'
-             WRITE(I,'(A)')'      IPNT = NINT(D100*WVAL)'
-             WRITE(I,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
-             WRITE(I,'(A)')'      W2    = WDIFF*WDIFF'
-             WRITE(I,'(A)')'      W3    = W2*WDIFF'
-             WRITE(I,'(A)')'      W2    = W2*D05'
-             WRITE(I,'(A)')'      W3    = W3*COEF3'
-             DO J=0,JMAX
-                WRITE(I,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000(',J,') = TABFJW(',J,',IPNT)-TABFJW(',J+1,',IPNT)*WDIFF+TABFJW(',J+2,',IPNT)*W2+TABFJW(',J+3,',IPNT)*W3'
-             ENDDO
-             !     WRITE(I,'(A)')'        DO J=0,JMAX'
-             !      WRITE(I,'(A)')'           R = TABFJW(J,IPNT)'
-             !      WRITE(I,'(A)')'           R = R -TABFJW(J+1,IPNT)*WDIFF'
-             !      WRITE(I,'(A)')'           R = R + TABFJW(J+2,IPNT)*W2'
-             !      WRITE(I,'(A)')'           R = R + TABFJW(J+3,IPNT)*W3'
-             !      WRITE(I,'(A)')'           RJ000(J,ipq,ipassq) = R'
-             !     WRITE(I,'(A)')'        ENDDO'
-             WRITE(I,'(A)')'     !  12 < WVAL <= (2J+36) '
-             WRITE(I,'(A)')'     ELSE IF (WVAL.LE.D2JP36) THEN'
-             WRITE(I,'(A)')'      REXPW = D05*EXP(-WVAL)'
-             WRITE(I,'(A)')'      RWVAL = D1/WVAL'
-             WRITE(I,'(A)')'      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))'
-             WRITE(I,'(A)')'      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
-             !        WRITE(I,'(A)')'        RJ000(0,ipq,ipassq) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
-             DO J=1,JMAX
-                WRITE(I,'(A,I2,A,I2,A,I2,A)')'      RJ000(',J,') = RWVAL*((',J,' - D05)*RJ000(',J-1,')-REXPW)'          
-             ENDDO
-             !        WRITE(I,'(A)')'        DO J=1,JMAX'
-             !        WRITE(I,'(A)')'           RJ000(J,ipq,ipassq) = RWVAL*((J - D05)*RJ000(J-1,ipq,ipassq)-REXPW)'
-             !        WRITE(I,'(A)')'        ENDDO'
-             WRITE(I,'(A)')'     !  (2J+36) < WVAL '
-             WRITE(I,'(A)')'     ELSE'
-             WRITE(I,'(A)')'      RWVAL = PID4/WVAL'
-             WRITE(I,'(A)')'      RJ000(0) = SQRT(RWVAL)'
-             !        WRITE(I,'(A)')'        RJ000(0,ipq,ipassq) = SQRT(RWVAL)'
-             WRITE(I,'(A)')'      RWVAL = RWVAL*PID4I'
-             DO J=1,JMAX
-                WRITE(I,'(A,I2,A,I2,A,I2,A)')'      RJ000(',J,') = RWVAL*(',J,' - D05)*RJ000(',J-1,')'
-             ENDDO
-             !        WRITE(I,'(A)')'        DO J = 1, JMAX'
-             !        WRITE(I,'(A)')'           RJ000(J,ipq,ipassq) = RWVAL*(J - D05)*RJ000(J-1,ipq,ipassq)'
-             !        WRITE(I,'(A)')'        ENDDO'
-             WRITE(I,'(A)')'     ENDIF'
-          enddo
-          do J=1,16
-             I=non1Prim(J)
-             WRITE(I,'(A)')'     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac'
-          enddo
-          do J=1,4
-             I=pure1Prim(J)
-             WRITE(I,'(A)')'     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)'
+             WRITE(I,'(A)')'     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)'
           enddo
           !gen og seg
           DO I=1,16,5
-             WRITE(I,'(A)')'     Auxarray(1,IP) = PREF*RJ000(0)'
-             WRITE(I+1,'(A)')'     TMPAuxarray(1) = PREF*RJ000(0)'
-             WRITE(I+2,'(A)')'     TMPAuxarray(1) = PREF*RJ000(0)'
-             WRITE(I+3,'(A)')'     TMPAuxarray(1) = PREF*RJ000(0)'
-             WRITE(I+4,'(A)')'     TMPAuxarray(1) = PREF*RJ000(0)'
+             WRITE(I,'(A)')'     Auxarray(1,IP) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)'   !gen
+             WRITE(I+1,'(A)')'     TMPAuxarray(1) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)' !seg
+             WRITE(I+2,'(A)')'     TMPAuxarray(1) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)' !seg
+             WRITE(I+3,'(A)')'     TMPAuxarray(1) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)' !seg
+             WRITE(I+4,'(A)')'     TMPAuxarray(1) = PREF*RJ000Array(0,iPassP)'               !seg1prim
           ENDDO
           !seg TMPAuxarray
-          do I=1,20
+          do K=1,16
+             I=non1Prim(K)
              DO J=2,JMAX+1
-                WRITE(I,'(A,I2,A,I2,A)')'     TMParray1(1,',J,') = PREF*RJ000(',J-1,')'
+                WRITE(I,'(A,I2,A,I2,A)')'     TMParray1(1,',J,') = PREF*RJ000Array(',J-1,',iPrimQ,iPrimP,iPassP)'
+             ENDDO
+          enddo
+          do K=1,4
+             I=pure1Prim(K)
+             DO J=2,JMAX+1
+                WRITE(I,'(A,I2,A,I2,A)')'     TMParray1(1,',J,') = PREF*RJ000Array(',J-1,',iPassP)'
              ENDDO
           enddo
           do I=1,20
@@ -1442,6 +1729,7 @@ CONTAINS
           enddo
           do I=1,20
              WRITE(I,'(A)')'  ENDDO'
+             IF(DoOpenMP)WRITE(I,'(A)')'!$OMP END DO'
              WRITE(I,'(A)')' end subroutine'
           enddo
           deallocate(TUVINDEX)
@@ -1887,9 +2175,9 @@ IF(J.EQ.1)THEN
          IF(ituvP0.EQ.nTUVprev+1)THEN
             WRITE(lupri,'(A,I5)')'     do iTUV = 1,',nTUVprev
             IF(Seg1Prim)THEN
-               WRITE(lupri,'(A)')'      AuxArray(iTUV,IPassQ) = TMPAuxarray(iTUV)'
+               WRITE(lupri,'(A)')'      AuxArray(iTUV,IPassP) = TMPAuxarray(iTUV)'
             ELSEIF(Seg)THEN
-               WRITE(lupri,'(A)')'      AuxArray(iTUV,IPassQ) = AuxArray(iTUV,IPassQ) + TMPAuxarray(iTUV)'
+               WRITE(lupri,'(A)')'      AuxArray(iTUV,IPassP) = AuxArray(iTUV,IPassP) + TMPAuxarray(iTUV)'
             ELSE !segQ or SegP
                WRITE(lupri,'(A)')'      AuxArray(iTUV,IP) = AuxArray(iTUV,IP) + TMPAuxarray(iTUV)'
             ENDIF
@@ -1899,7 +2187,7 @@ IF(J.EQ.1)THEN
          call AddToString('AuxArray(')
          call AddToString(ituvP0)
          IF(Seg)THEN
-            call AddToString(',IPassQ)')
+            call AddToString(',IPassP)')
          ELSE !segQ or SegP or Gen
             call AddToString(',IP)')
          ENDIF
@@ -1908,7 +2196,7 @@ IF(J.EQ.1)THEN
             call AddToString('AuxArray(')
             call AddToString(ituvP0)
             IF(Seg)THEN
-               call AddToString(',IPassQ)')
+               call AddToString(',IPassP)')
             ELSE !segQ or SegP or Gen
                call AddToString(',IP)')
             ENDIF
