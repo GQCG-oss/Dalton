@@ -6,9 +6,6 @@
 
 module dec_workarounds_module
   use precision
-#ifdef VAR_MPI
-  use infpar_module
-#endif
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
@@ -37,11 +34,9 @@ module dec_workarounds_module
     real(realk),intent(in)    :: source(:)
     real(realk), intent(in), optional :: scal1,scal2
     integer :: block,i
-    integer, parameter :: k = 100000
+    integer, parameter :: k = 1000000
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     procedure(subblock_op), pointer :: op_blocks
-
-    print *,"subblock workaround with",op
 
     select case(op)
     case("+")
@@ -58,7 +53,7 @@ module dec_workarounds_module
     do i = 1, nel, k
       block = k
       if( (nel-i)<k .and. mod(nel-i+1,k)/=0 ) block=mod(nel,k)
-      if(infpar%mynum == 0 ) print *,"begin",i,"end",i+block-1,"length",block,"of",nel
+      !if(infpar%mynum == 0 ) print *,"begin",i,"end",i+block-1,"length",block,"of",nel
       call op_blocks(drain(i:i+block-1),source(i:i+block-1),block,scal1=scal1,scal2=scal2)
     enddo
 #else
