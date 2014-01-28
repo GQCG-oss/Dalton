@@ -433,11 +433,13 @@ module cc_debug_routines_module
 
 
      ! Get MO int. (govov) for RPA:
-     govov = array_minit( [nocc,nvirt,nocc,nvirt], 4, local=.true., atype='TDAR' )
-     call array_zero(govov)
+     if (ccmodel==MODEL_RPA) then
+       govov = array_minit([nocc,nvirt,nocc,nvirt],4,local=.true.,atype='TDAR')
+       call array_zero(govov)
 
-     if (ccmodel==MODEL_RPA) call  wrapper_to_get_t1_free_gmo(nbasis,nocc,nvirt, &
-                                   & Co%val,Cv2%val,govov,ccmodel,mylsitem)
+       call  wrapper_to_get_t1_free_gmo(nbasis,nocc,nvirt,Co%val,Cv2%val,&
+             & govov,ccmodel,mylsitem)
+     end if
 
 
      ! readme : the iteration sequence is universal and may be used for all

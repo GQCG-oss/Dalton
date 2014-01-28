@@ -2120,7 +2120,6 @@ contains
       startt=MPI_wtime()
 #endif
 
-
       call get_cnd_terms_mo(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
            &scheme,lock_outside,els2add)
 
@@ -2950,8 +2949,6 @@ contains
      endif
 
 
-
-      !call print_norm(omega2)
 
 
 
