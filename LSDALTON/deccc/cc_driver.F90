@@ -100,6 +100,9 @@ contains
 #ifdef VAR_MPI
     if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
 #endif
+    ! temporary default for moccsd:
+    if (DECinfo%MOCCSD) local = .true.
+
 
 
     if(DECinfo%CCDEBUG)then
@@ -499,6 +502,8 @@ contains
 #ifdef VAR_MPI
     if(infpar%lg_nodtot>1)local=.false.
 #endif
+    ! temporary default for moccsd:
+    if (DECinfo%MOCCSD) local = .true.
 
     ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
     ! from previous fragment calculations to describe long-range
@@ -1369,6 +1374,12 @@ contains
     logical,intent(in)                        :: longrange_singles
     logical,intent(in)                        :: local
     !
+    !> Do an MO-based CCSD calculation?
+    logical :: mo_ccsd
+    !> full set of MO integrals (non-T1-transformed)
+    type(array) :: pgmo_diag, pgmo_up
+    type(MObatchInfo) :: MOinfo
+    !
     !work stuff
     real(realk),pointer :: Co_d(:,:),Cv_d(:,:),Co2_d(:,:), Cv2_d(:,:),focc(:),fvirt(:)
     real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:),Uocc(:,:),Uvirt(:,:)
@@ -1649,6 +1660,22 @@ contains
     call mem_alloc( c, DECinfo%ccMaxIter                    )
 
 
+    !> MO-based CCSD and RPA integral calculation:
+    !    non T1-transformed MO integrals
+    !    MO-CCSD => full set (pq|rs)
+    !    RPA     => only (ia|jb)
+
+    mo_ccsd = .false.
+    if (DECinfo%MOCCSD.and.(nb<=DECinfo%Max_num_MO)) mo_ccsd = .true.
+
+    ! Check if there is enough memory to performed an MO-CCSD calculation.
+    !   YES: get gmo and packed them
+    !   NO: returns mo_ccsd == .false. and switch to standard CCSD.
+    if (mo_ccsd.or.(CCmodel==MODEL_RPA)) then
+      call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
+                          & nb,no,nv,CCmodel,MOinfo)
+    end if
+
 
     ! readme : the iteration sequence is universal and may be used for all
     !          iterative cc models (linear or non-linear) and is
@@ -1732,8 +1759,9 @@ contains
        case(MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT) !CC2 or  CCSD or CCSD(T)
 
           call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2(iter),t2(iter),&
-             & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
-             & xv,yo,yv,nb,MyLsItem,omega1(iter),iter,local,restart)
+               & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
+               & MyLsItem,omega1(iter),t1(iter),pgmo_diag,pgmo_up,MOinfo,&
+               & mo_ccsd,iter,local,restart)
 
        case(MODEL_RPA)
           call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
@@ -2045,6 +2073,17 @@ contains
     call array_free(Cv2)
     call array_free(fock)
 
+    ! free memory from MO-based CCSD
+    if (mo_ccsd) then
+      call array_free(pgmo_diag)
+      call array_free(pgmo_up)
+      call mem_dealloc(MOinfo%dimInd1)
+      call mem_dealloc(MOinfo%dimInd2)
+      call mem_dealloc(MOinfo%StartInd1)
+      call mem_dealloc(MOinfo%StartInd2)
+      call mem_dealloc(MOinfo%dimTot)
+      call mem_dealloc(MOinfo%tileInd)
+    end if
 
     !transform back to original basis   
     if(DECinfo%use_singles)then

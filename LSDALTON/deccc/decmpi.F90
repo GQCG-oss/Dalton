@@ -1013,6 +1013,88 @@ contains
   end subroutine mpi_communicate_ccsdpt_calcdata
 
 
+  !> Purpose: Get job list to have a good load balance in the
+  !           main loop of the MO-CCSD residual calculations
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    January 2014
+  subroutine get_mo_ccsd_joblist(MOinfo, joblist)
+
+    implicit none
+
+    type(MObatchInfo), intent(in) :: MOinfo
+    integer, intent(inout) :: joblist(:)
+
+    integer, pointer :: workloads(:), easytrace(:), work_in_node(:)
+    integer :: nnod, njob, swap, i, j, next_nod, ijob
+
+    nnod = infpar%lg_nodtot
+    njob = MOinfo%Nbatch
+
+    call mem_alloc(workloads,njob)
+    call mem_alloc(easytrace,njob)
+    call mem_alloc(work_in_node,nnod)
+ 
+    workloads=MOinfo%dimTot
+ 
+    ! Associate a number to each job:
+    do i = 1, njob
+      easytrace(i) = i
+    end do
+
+    ! Sort the jobs according to their size, and keep track of indices
+    do i=1,njob
+      do j=i+1,njob
+        if( workloads(j) > workloads(i) )then
+
+          swap=workloads(j)
+          workloads(j)=workloads(i)
+          workloads(i)=swap
+
+          swap=easytrace(j)
+          easytrace(j)=easytrace(i)
+          easytrace(i)=swap
+        endif
+      enddo
+    enddo
+
+    ! Associate a rank node to each job:
+    work_in_node = 0
+    next_nod = 1
+    do ijob=1,njob
+
+      joblist(ijob) = next_nod
+      work_in_node(next_nod) = work_in_node(next_nod) + workloads(ijob)
+
+      ! get node with smallest work:
+      next_nod = 1
+      do i=2, nnod
+        if (work_in_node(i)<work_in_node(next_nod)) next_nod = i
+      end do
+    end do
+
+    ! go back to initial order:
+    do i=1,njob
+      do j=i+1,njob
+        if( easytrace(j) < easytrace(i) )then
+          swap=joblist(j)
+          joblist(j)=joblist(i)
+          joblist(i)=swap
+
+          swap=easytrace(j)
+          easytrace(j)=easytrace(i)
+          easytrace(i)=swap
+        endif
+      enddo
+    enddo
+
+    call mem_dealloc(workloads)
+    call mem_dealloc(easytrace)
+    call mem_dealloc(work_in_node)
+
+  end subroutine get_mo_ccsd_joblist
+
+
   !> \brief get a suitable job distribution in mpi calculations
   !> \author Patrick Ettenhuber
   !> \date March 2012
@@ -1684,30 +1766,26 @@ contains
   !> Author:  Pablo Baudin
   !> Date:    December 2013
   subroutine mpi_communicate_get_gmo_data(small_frag,MyLsItem,Co,Cv, &
-             & ntot,nbas,nocc,nvir,ccmodel)
+             & pgmo_diag,pgmo_up,nbas,nocc,nvir,ccmodel)
 
     implicit none
-
+     
     !> number of orbitals:
-    integer, intent(inout) :: nbas, nocc, nvir,ccmodel
+    integer :: nbas, nocc, nvir
+    !> CC model:
+    integer ::  ccmodel
     !> SCF transformation matrices:
-    real(realk),pointer, intent(inout) :: Co(:,:), Cv(:,:)
+    real(realk), pointer  :: Co(:,:), Cv(:,:)
     !> performed MO-based CCSD calculation ?
-    logical, intent(inout) :: small_frag
-    !> array with packed gmo on output:
-    !real(realk), pointer, intent(inout) :: pack_gmo(:)
-    integer(kind=long) :: pack_gmosize
-    !> how to pack integrals:
-    integer :: pack_scheme
-    type(lsitem),intent(inout):: mylsitem
+    logical :: small_frag
+    !> array with gmo on output:
+    type(array) :: pgmo_diag, pgmo_up
+    !> LS item information
+    type(lsitem) :: MyLsItem
 
-    !> variables used for MO batch and integral transformation
-    integer :: ntot ! total number of MO
-    real(realk), pointer :: Cov(:,:), CP(:,:), CQ(:,:)
-    real(realk), pointer :: gmo(:), tmp1(:), tmp2(:)
-    integer(kind=long) :: gmosize, min_mem, tmp_size
-    integer :: Nbatch, PQ_batch, dimP, dimQ
-    integer :: P_sta, P_end, Q_sta, Q_end, dimPack, ipack
+    integer :: pgmo_diag_addr(infpar%lg_nodtot)   
+    integer :: pgmo_up_addr(infpar%lg_nodtot)   
+    integer :: ntot
     logical :: master
 
     master = (infpar%lg_mynum == infpar%master)
@@ -1717,7 +1795,6 @@ contains
     call ls_mpi_buffer(nbas,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(nvir,infpar%master)
-    call ls_mpi_buffer(ntot,infpar%master)
     call ls_mpi_buffer(ccmodel,infpar%master)
     if(.not.master)then
       call mem_alloc(Co,nbas,nocc)
@@ -1725,11 +1802,146 @@ contains
     endif
     call ls_mpi_buffer(Co,nbas,nocc,infpar%master)
     call ls_mpi_buffer(Cv,nbas,nvir,infpar%master)
+
+    if (ccmodel==MODEL_CCSD) then 
+      if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
+      call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
+
+      if (master) pgmo_up_addr=pgmo_up%addr_p_arr
+      call ls_mpi_buffer(pgmo_up_addr,infpar%lg_nodtot,infpar%master)
+    end if
+
     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
+    if (.not.master.and.ccmodel==MODEL_CCSD) then
+      pgmo_diag = get_arr_from_parr(pgmo_diag_addr(infpar%lg_mynum+1))
+      pgmo_up   = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
+    endif
 
   end subroutine mpi_communicate_get_gmo_data
+
+
+  !> Purpose: Communicate data to the slaves needed to calculate 
+  !           MO-CCSD residual.
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    January 2014
+  subroutine mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
+             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
+             & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock)
+
+    implicit none
+     
+    !> MO pack integrals; amplitudes and residuals:
+    integer :: nbas, nocc, nvir, iter
+    type(array) :: pgmo_diag, pgmo_up
+    type(array) :: govov
+    type(array) :: t1
+    type(array) :: omega1
+    type(array) :: t2
+    type(array) :: omega2
+     
+    !> Long-range correction to Fock matrix
+    type(array) :: deltafock
+    !> occupied-occupied block of the t1-fock matrix
+    type(array) :: ppfock
+    !> virtual-virtual block of the t1-fock matrix
+    type(array) :: qqfock
+    !> occupied-virtual block of the t1-fock matrix
+    type(array) :: pqfock
+    !> virtual-occupied block of the t1-fock matrix
+    type(array) :: qpfock
+    !> transformation matrices from AO to t1-MO:
+    real(realk), pointer :: lampo(:,:), lampv(:,:)
+    real(realk), pointer :: lamho(:,:), lamhv(:,:)
+     
+    !> LS item with information needed for integrals
+    type(lsitem) :: MyLsItem
+     
+    !> Batches info:
+    type(MObatchInfo) :: MOinfo
+
+    integer :: pgmo_diag_addr(infpar%lg_nodtot)   
+    integer :: pgmo_up_addr(infpar%lg_nodtot)   
+    integer :: ntot, k
+    integer(kind=long) :: nelms
+    logical :: master
+
+    master = (infpar%lg_mynum == infpar%master)
+
+    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpi_buffer(nbas,infpar%master)
+    call ls_mpi_buffer(nocc,infpar%master)
+    call ls_mpi_buffer(nvir,infpar%master)
+    call ls_mpi_buffer(iter,infpar%master)
+    call ls_mpi_buffer(MOinfo%nbatch,infpar%master)
+    if (.not.master) then
+      call mem_alloc(lampo,nbas,nocc)
+      call mem_alloc(lampv,nbas,nvir)
+      call mem_alloc(lamho,nbas,nocc)
+      call mem_alloc(lamhv,nbas,nvir)
+      call mem_alloc(MOinfo%dimInd1,MOinfo%nbatch)
+      call mem_alloc(MOinfo%dimInd2,MOinfo%nbatch)
+      call mem_alloc(MOinfo%StartInd1,MOinfo%nbatch)
+      call mem_alloc(MOinfo%StartInd2,MOinfo%nbatch)
+      call mem_alloc(MOinfo%dimTot,MOinfo%nbatch)
+      call mem_alloc(MOinfo%tileInd,MOinfo%nbatch)
+    end if
+    !call ls_mpi_buffer(lampo,nbas,nocc,infpar%master)
+    !call ls_mpi_buffer(lampv,nbas,nvir,infpar%master)
+    !call ls_mpi_buffer(lamho,nbas,nocc,infpar%master)
+    !call ls_mpi_buffer(lamhv,nbas,nvir,infpar%master)
+    call ls_mpi_buffer(MOinfo%dimInd1,MOinfo%nbatch,infpar%master)
+    call ls_mpi_buffer(MOinfo%dimInd2,MOinfo%nbatch,infpar%master)
+    call ls_mpi_buffer(MOinfo%StartInd1,MOinfo%nbatch,infpar%master)
+    call ls_mpi_buffer(MOinfo%StartInd2,MOinfo%nbatch,infpar%master)
+    call ls_mpi_buffer(MOinfo%dimTot,MOinfo%nbatch,infpar%master)
+    call ls_mpi_buffer(MOinfo%tileInd,MOinfo%nbatch,infpar%master)
+
+    if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
+    call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
+
+    if (master) pgmo_up_addr=pgmo_up%addr_p_arr
+    call ls_mpi_buffer(pgmo_up_addr,infpar%lg_nodtot,infpar%master)
+
+    call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+    !communicate rest of the quantities, master here, slaves back in the slave
+    !routine, due to crappy pointer/non-pointer issues (->allocations)
+    if(master)then
+
+      !split messages in 2GB parts, compare to counterpart in
+      !ccsd_data_preparation
+      k=250000000
+
+      !nelms = nbas*nbas
+      !call ls_mpibcast_chunks(deltafock%elm1,nelms,infpar%master,infpar%lg_comm,k)
+        
+      !nelms = nocc*nocc
+      !call ls_mpibcast_chunks(ppfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      !nelms = nvir*nvir
+      !call ls_mpibcast_chunks(qqfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
+        
+      nelms = nvir*nocc
+      !call ls_mpibcast_chunks(pqfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      !call ls_mpibcast_chunks(qpfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast_chunks(t1%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      !call ls_mpibcast_chunks(omega1%elm1,nelms,infpar%master,infpar%lg_comm,k)
+
+      nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
+      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      !call ls_mpibcast_chunks(omega2%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      if (iter/=1) then
+        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      endif
+    else
+      pgmo_diag = get_arr_from_parr(pgmo_diag_addr(infpar%lg_mynum+1))
+      pgmo_up   = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
+    endif
+
+  end subroutine mpi_communicate_moccsd_data
 
 
   !> \brief Copy DEC setting structure to buffer (master)

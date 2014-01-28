@@ -1071,9 +1071,11 @@ module dec_typedef_module
     !> MO index corresponding to the starting point of each batch:
     integer, pointer :: StartInd1(:) 
     integer, pointer :: StartInd2(:) 
-    !> starting index of each batch in the packed array:
-    integer, pointer :: packInd(:) 
-    
+    !> Total dimension of the batch
+    integer, pointer :: dimTot(:)
+    !> Tile index for pdm arrays
+    integer, pointer :: tileInd(:)
+
   end type MObatchInfo
 
   !> AO Integral batch info:
