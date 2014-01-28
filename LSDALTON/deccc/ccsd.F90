@@ -38,9 +38,11 @@ module ccsd_module
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
+  use dec_workarounds_module
 #ifdef VAR_MPI
   use decmpi_module!, only: mpi_communicate_ccsd_calcdata,distribute_mpi_jobs
 #endif
+
     use dec_fragment_utils
     use ri_simple_operations
     use array2_simple_operations!, only: array2_init, array2_add,&
@@ -1900,8 +1902,8 @@ contains
     if( Ccmodel>MODEL_CC2 .and. scheme==3 )then
 #if VAR_MPI
       if(lock_outside)then
-        call arr_lock_wins(gvoova,'s',mode)
-        call arr_lock_wins(gvvooa,'s',mode)
+        !call arr_lock_wins(gvoova,'s',mode)
+        !call arr_lock_wins(gvvooa,'s',mode)
       endif
 #endif
       call array_gather(1.0E0_realk,gvoova,0.0E0_realk,gvoov%d,o2v2)
@@ -1976,7 +1978,7 @@ contains
        call mem_alloc(w1,maxsize64,comm=infpar%pc_comm,local=.true.)
 #endif
     else
-       call mem_alloc(w1,maxsize64)
+       call mem_alloc(w1,maxsize64,simple=.true.)
     endif
 
 
@@ -1986,7 +1988,12 @@ contains
      !DEBUG PRINT NORM OMEGA
       write(msg,*)"NORM(omega2 after main loop):"
       if(scheme==4.or.scheme==3)then
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(w1%d,'=',omega2%elm1,o2v2)
+#else
         w1%d(1_long:o2v2) = omega2%elm1(1_long:o2v2)
+#endif
+
 #ifdef VAR_MPI
         call lsmpi_local_reduction(w1%d,o2v2,infpar%master,double_2G_nel)
 #endif
@@ -2023,12 +2030,20 @@ contains
    endif
 #endif
 
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+    call assign_in_subblocks(w1%d,'=',w1%d,w1%n,scal2=0.0E0_realk)
+#else
     w1%d=0.0E0_realk
+#endif
 
     !reorder integral for use within the solver and the c and d terms
     if(iter==1.and.scheme==4)then
       call array_reorder_4d(1.0E0_realk,govov%elm1,no,no,nv,nv,[1,4,2,3],0.0E0_realk,w1%d)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+      call assign_in_subblocks(govov%elm1,'=',w1%d,o2v2)
+#else
       govov%elm1(1_long:o2v2) = w1%d(1_long:o2v2)
+#endif
 #ifdef VAR_MPI
       if(.not.local)then
         govov%itype     = TILED_DIST
@@ -2058,7 +2073,11 @@ contains
 #endif
         write(msg,*)"NORM(omega2 after B2.2):"
         if(scheme==4.or.scheme==3)then
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+          call assign_in_subblocks(omega2%elm1,'=',w1%d,o2v2)
+#else
           w1%d(1_long:o2v2) = omega2%elm1(1_long:o2v2)
+#endif
 #ifdef VAR_MPI
           call lsmpi_local_reduction(w1%d,o2v2,infpar%master,double_2G_nel)
 #endif
@@ -2072,8 +2091,8 @@ contains
 #ifdef VAR_MPI
       if(scheme==3)then
         if(lock_outside)then
-          call arr_unlock_wins(gvoova)
-          call arr_unlock_wins(gvvooa)
+          call arr_unlock_wins(gvoova,.true.)
+          call arr_unlock_wins(gvvooa,.true.)
         endif
         gvoova%elm1 => gvoov%d
         gvvooa%elm1 => gvvoo%d
@@ -2108,7 +2127,11 @@ contains
 #endif
         write(msg,*)"NORM(omega2 after CND):"
         if(scheme==4)then
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+          call assign_in_subblocks(w1%d,'=',omega2%elm1,o2v2)
+#else
           w1%d(1_long:o2v2) = omega2%elm1(1_long:o2v2)
+#endif
 #ifdef VAR_MPI
           call lsmpi_local_reduction(w1%d,o2v2,infpar%master,double_2G_nel)
 #endif
@@ -2429,9 +2452,13 @@ contains
       endif
 
       !INTRODUCE PERMUTATION
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+      call assign_in_subblocks(w1,'=',omega2%elm1,o2v2)
+#else
       !$OMP WORKSHARE
       w1(1_long:o2v2) = omega2%elm1(1_long:o2v2)
       !$OMP END WORKSHARE
+#endif
 
       if(pd) then 
         write(msg,*)"NORM(w1):"
@@ -3136,9 +3163,13 @@ contains
     enddo
 
     if(s==4.or.s==3)then
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+      call assign_in_subblocks(om2%elm1,'+',w1,o2v2)
+#else
       !$OMP WORKSHARE
       om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
       !$OMP END WORKSHARE
+#endif
     elseif(s==2)then
 #ifdef VAR_MPI
       if(lock_outside)call arr_lock_wins(om2,'s',mode)
@@ -3676,17 +3707,23 @@ contains
 
     if(s==4.or.s==3)then
        if( w )then
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+          call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
+#else
           !$OMP WORKSHARE
           omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
           !$OMP END WORKSHARE
+#endif
        endif
     elseif(s==2)then
 #ifdef VAR_MPI
        if( t .and. lock_outside )call arr_lock_wins(omega,'s',mode)
        if( w ) then
+          print *,"if DONE124 is not printed, this is a prob"
           !$OMP WORKSHARE
           w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
           !$OMP END WORKSHARE
+          print *,"DONE124"
        endif
        if( lspdm_use_comm_proc )call lsmpi_barrier(infpar%pc_comm)
        if( t )call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
@@ -3758,9 +3795,13 @@ contains
        endif
        if(s==4.or.s==3)then
          if( w ) then
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+            call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
+#else
             !$OMP WORKSHARE
             omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
             !$OMP END WORKSHARE
+#endif
          endif
        elseif(s==2)then
          if( w ) then

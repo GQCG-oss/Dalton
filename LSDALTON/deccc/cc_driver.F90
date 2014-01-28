@@ -1566,6 +1566,8 @@ contains
        if(DECinfo%frozencore) then
           ! Fock matrix from input MOs
           ifock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
+          !print *,"DEBUGGGING: zero iFOck instead of calculating it"
+          !call array_zero(ifock)
           call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
           ! Correction to actual Fock matrix
           delta_fock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
