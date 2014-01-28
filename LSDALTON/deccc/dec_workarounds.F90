@@ -121,4 +121,7 @@ module dec_workarounds_module
     endif
   end subroutine subtract_subblock
 #endif
+  subroutine dec_workarounds_dummy
+    implicit none
+  end subroutine dec_workarounds_dummy
 end module dec_workarounds_module
