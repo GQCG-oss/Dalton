@@ -1,9 +1,9 @@
-MODULE AGC_OBS_VERTICALRECURRENCEMODB
+MODULE AGC_CPU_OBS_VERTICALRECURRENCEMODB
  use IchorPrecisionModule
   
  CONTAINS
 
-subroutine VerticalRecurrence1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPU1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&
          & QpreExpFac,AUXarray)
   implicit none
@@ -95,7 +95,7 @@ subroutine VerticalRecurrence1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   enddo
 end subroutine
 
-subroutine VerticalRecurrence2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPU2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -208,7 +208,7 @@ subroutine VerticalRecurrence2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrence3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPU3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -349,7 +349,7 @@ subroutine VerticalRecurrence3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPU4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -536,7 +536,7 @@ subroutine VerticalRecurrence4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPU5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -796,7 +796,7 @@ subroutine VerticalRecurrence5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrence6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPU6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -1166,7 +1166,7 @@ subroutine VerticalRecurrence6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrence7B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPU7B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
@@ -1695,7 +1695,7 @@ subroutine VerticalRecurrence7B(nPasses,nPrimP,nPrimQ,reducedExponents,&
   ENDDO
  end subroutine
 
-subroutine VerticalRecurrence8B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+subroutine VerticalRecurrenceCPU8B(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none

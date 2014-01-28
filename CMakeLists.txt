@@ -51,6 +51,7 @@ option(ENABLE_LSEEK          "Enable lseek"                                     
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
 option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
+option(ENABLE_OPENRSP        "Enable OpenRSP"                                   OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
@@ -101,6 +102,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 
 # set definitions
 include(Definitions)
+if(ENABLE_OPENRSP)
+    include(DefinitionsOpenRSP)
+endif()
 
 # forward CPP directly to the code
 set(CPP)

@@ -56,10 +56,10 @@ C
       DIMENSION XLAMDP(*),XLAMDH(*),WORK(LWORK)
 C
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
-CCN #include <infind.h> not compatible with R12!
+CCN #include "infind.h" not compatible with R12!
 #include "ccisao.h"
 #include "r12int.h"
 #include "blocks.h"
@@ -726,7 +726,7 @@ C
       DIMENSION AOINT(NNBAST,NBAST)
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -796,7 +796,7 @@ C
       DIMENSION CMO(NBAST,NORBT)
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -852,7 +852,7 @@ C
       DIMENSION FCKFIELD(NORBT,NORBT)
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -1076,7 +1076,7 @@ C
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -1146,7 +1146,7 @@ C
       DIMENSION AOINT(NNBAST,NBAST)
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -1233,7 +1233,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -1305,7 +1305,7 @@ C
       LOGICAL LDBG1, LDBG2
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -1698,7 +1698,7 @@ C
       DIMENSION T3BAR(NT1AMX,NT1AMX,NT1AMX)
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -1762,7 +1762,7 @@ C
       DIMENSION T2AM(NT1AMX,NT1AMX),OMEGA2(NT1AMX,NT1AMX)
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -1805,7 +1805,7 @@ C
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -1889,7 +1889,7 @@ C
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
 #include "priunit.h"
 COMMENT COMMENT COMMENT
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 COMMENT COMMENT COMMENT
 #include "ccsdinp.h"
@@ -1957,7 +1957,7 @@ C
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
 C
 #include "priunit.h"
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
@@ -2212,7 +2212,7 @@ C
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
 C
 #include "priunit.h"
-C#include <inforb.h>
+C#include "inforb.h"
 #include "ccorb.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"

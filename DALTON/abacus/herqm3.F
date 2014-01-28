@@ -4435,15 +4435,15 @@ C
 C     Calculates the electric field from the PCM charges at the
 C     polarizable points
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <inftap.h>
-#include <pcmdef.h>
-#include <orgcom.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "inftap.h"
+#include "pcmdef.h"
+#include "orgcom.h"
+#include "pcm.h"
+#include "pcmlog.h"
 #include "nuclei.h"
  
       PARAMETER  (D0 = 0.0D0)
@@ -4515,15 +4515,15 @@ C  /* Deck GIVEMY */
 C
 C     Transfer the induced dipole moments to pcm
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <inftap.h>
-#include <pcmdef.h>
-#include <orgcom.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "inftap.h"
+#include "pcmdef.h"
+#include "orgcom.h"
+#include "pcm.h"
+#include "pcmlog.h"
 #include "nuclei.h"
  
       PARAMETER  (D0 = 0.0D0)
@@ -4578,8 +4578,8 @@ C     1: initialized
 C     0: not converged
 C    -1: converged 
 
-#include <implicit.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "qm3.h"
 
       DO 100 I=1,NSTATES
          ICQM3(I) = 1
@@ -4593,12 +4593,12 @@ C  /* Deck MMPCM_FIXMOM */
       SUBROUTINE MMPCM_FIXMOM()
 C*************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  MYIND(3,MXQM3)
 C

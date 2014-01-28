@@ -21,7 +21,11 @@ if(ENABLE_GEN1INT)
 endif()
 
 if(ENABLE_PELIB)
-    set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
+    if(ENABLE_OPENRSP)
+        set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER -DBUILD_OPENRSP")
+    else()
+        set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
+    endif()
     if(ENABLE_GEN1INT)
         set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DBUILD_GEN1INT")
     else()
@@ -54,6 +58,10 @@ if(ENABLE_PELIB)
         )
 endif()
 
+if(ENABLE_OPENRSP)
+    include(LibsOpenRSP)
+endif()
+
 if(ENABLE_PCMSOLVER)
     set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
     if(MPI_FOUND)
@@ -82,6 +90,7 @@ if(ENABLE_PCMSOLVER)
         ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
 	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
 	stdc++
+    z
         ${DALTON_LIBS}
         )
 endif()

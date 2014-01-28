@@ -893,9 +893,9 @@ module cc_debug_routines_module
            elseif(CCmodel==MODEL_RPA) then
              !Here the energy is computed not in P U [bar P]
              !but in the AOS
-              ccenergy = RPA_energy(t2(iter),gmo)
-              sosex = SOSEX_contribution(t2(iter),gmo)
-              ccenergy=ccenergy+sosex
+              !ccenergy = RPA_energy(t2(iter),govov)
+              !sosex = SOSEX_contribution(t2(iter),govov)
+              !ccenergy=ccenergy+sosex
            else
               print *, 'MODEL = ', DECinfo%cc_models(DECinfo%ccmodel)
               call lsquit('ccsolver_debug: Energy for model is not implemented!',-1)
@@ -992,13 +992,15 @@ module cc_debug_routines_module
 
      ! free memory
      if (small_frag.or.(ccmodel==MODEL_RPA)) then
-       call array_free(pgmo_diag)
-       call array_free(pgmo_up)
-       call mem_dealloc(MOinfo%dimInd1)
-       call mem_dealloc(MOinfo%dimInd2)
-       call mem_dealloc(MOinfo%StartInd1)
-       call mem_dealloc(MOinfo%StartInd2)
-       call mem_dealloc(MOinfo%packInd)
+       if (.not.(ccmodel==MODEL_RPA)) then
+         call array_free(pgmo_diag)
+         call array_free(pgmo_up)
+         call mem_dealloc(MOinfo%dimInd1)
+         call mem_dealloc(MOinfo%dimInd2)
+         call mem_dealloc(MOinfo%StartInd1)
+         call mem_dealloc(MOinfo%StartInd2)
+         call mem_dealloc(MOinfo%packInd)
+       endif
        call mem_dealloc(govov)
        !if (.not.(ccmodel==MODEL_RPA)) call mem_dealloc(govov)
      end if
@@ -2814,7 +2816,7 @@ module cc_debug_routines_module
         case(MODEL_RPA)
           ! JOHANNES here you should implement your own routine to get
           ! MaxAllowedDimAlpha MaxAllowedDimGamma
-          call get_MO_and_AO_batches_size(small_frag,ntot,nbas,nocc,nvir, &
+          call get_AO_batches_size_rpa(small_frag,ntot,nbas,nocc,nvir, &
                  & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem)
           !Just for making the test case not fail
           print *, 'JOHANNES here you should implement your own routine to get'
@@ -2823,16 +2825,18 @@ module cc_debug_routines_module
           call lsquit('only RPA and CCSD model should use this routine',DECinfo%output)
       end select
 
-      ! Declare PDM arrays for packed integrals:
-      pgmo_dims = ntot*(ntot+1)*dimP*(dimP+1)/4
-      !pgmo_diag = array_minit(pgmo_dims,2,local=local,atype='LDAR')
-      pgmo_diag = array_minit([pgmo_dims,Nbatch],2,local=local, &
-                & atype='TDAR',tdims=[pgmo_dims,1])
+      if (.not.(ccmodel==MODEL_RPA)) then
+        ! Declare PDM arrays for packed integrals:
+        pgmo_dims = ntot*(ntot+1)*dimP*(dimP+1)/4
+        !pgmo_diag = array_minit(pgmo_dims,2,local=local,atype='LDAR')
+        pgmo_diag = array_minit([pgmo_dims,Nbatch],2,local=local, &
+        & atype='TDAR',tdims=[pgmo_dims,1])
 
-      pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
-      !pgmo_up   = array_minit(pgmo_dims,2,local=local,atype='LDAR')
-      pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
-                & local=local,atype='TDAR',tdims=[pgmo_dims,1])
+        pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
+        !pgmo_up   = array_minit(pgmo_dims,2,local=local,atype='LDAR')
+        pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
+        & local=local,atype='TDAR',tdims=[pgmo_dims,1])
+      endif
     end if
     !======================================================================
 
@@ -2968,11 +2972,13 @@ module cc_debug_routines_module
     end if
 
     if (master) then 
-      call array_zero(pgmo_diag)
-      call array_zero(pgmo_up)
+      if (.not.(ccmodel==MODEL_RPA)) then
+        call array_zero(pgmo_diag)
+        call array_zero(pgmo_up)
 
-      MOinfo%nbatch = Nbatch
-      call get_MO_batches_info(MOinfo, dimP, ntot)
+        MOinfo%nbatch = Nbatch
+        call get_MO_batches_info(MOinfo, dimP, ntot)
+      endif
     end if
 
     ! Sanity checks for matrix sizes which need to be filled:
@@ -3357,6 +3363,202 @@ module cc_debug_routines_module
     MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
 
   end subroutine get_mem_MO_CCSD_residual
+
+  !> Purpose: Calculate MO batches size based on available memory
+  !           and memory requirements in MO-RPA residual routine.
+  !           Calculate Max. AO batches based on MO batches size,
+  !           Min. AO batches size, available memory and mem. 
+  !           requirements in get_packed_gmo routine.
+  !
+  !> Author:  Johannes Rekkedal
+  !> Date:    January 2014
+  subroutine get_AO_batches_size_rpa(small_frag,ntot,nbas,nocc,nvir, &
+             & dimMO,Nbatch,MaxAlpha,MaxGamma,MyLsItem)
+    
+    implicit none
+  
+    !> performed MO-based CCSD calculation ?
+    logical, intent(inout) :: small_frag
+    !> number of orbitals:
+    integer, intent(in) :: ntot, nbas, nocc, nvir
+    !> MO batches stuff:
+    integer, intent (inout) :: dimMO, Nbatch
+    !> AO batches stuff:
+    integer, intent (inout) :: MaxAlpha, MaxGamma
+    type(lsitem), intent(inout) :: MyLsItem
+    
+    real(realk) :: MemNeed, MemFree
+    integer(kind=long) :: min_mem
+    integer :: MinAOBatch
+
+    call get_mem_MO_RPA_residual(MemNeed,ntot,nbas,nocc,nvir,1) 
+    dimMO = ntot
+
+    ! Get minimum mem. required to get gmo:
+    call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+    call get_currently_available_memory(MemFree)
+    call get_mem_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MinAObatch,MinAObatch,MinAObatch)
+
+    MaxGamma = MinAObatch
+    MaxAlpha = MinAObatch
+    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxGamma<=nbas)) 
+      MaxGamma = MaxGamma + 1
+       call get_mem_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MaxAlpha,MaxGamma,MinAObatch)  
+    end do
+    if (MaxGamma>=nbas) then
+      MaxGamma = nbas
+    else if (MaxGamma<=MinAObatch) then
+      MaxGamma = MinAObatch
+    else 
+      MaxGamma = MaxGamma - 1
+    end if
+    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAlpha<=nbas)) 
+      MaxAlpha = MaxAlpha + 1
+       call get_mem_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MaxAlpha,MaxGamma,MinAObatch)  
+    end do
+    if (MaxAlpha>=nbas) then
+      MaxAlpha = nbas
+    else if (MaxAlpha<=MinAObatch) then
+      MaxAlpha = MinAObatch
+    else 
+      MaxAlpha = MaxAlpha - 1
+    end if
+
+    ! sanity check:
+    call get_mem_gmo(MemNeed,ntot,nbas,nocc,nvir,dimMO,Nbatch, &
+                           & MaxAlpha,MaxGamma,MinAObatch)  
+    call get_currently_available_memory(MemFree)
+    if ((MemFree-MemNeed)<=0.0E0_realk) then
+      small_frag = .false.
+      return
+    end if
+
+
+
+  end subroutine get_AO_batches_size_RPA
+
+  !> Purpose: Get memory required in get_ccsd_residual_small_frag 
+  !           depending on MO batch dimension.
+  !           Get min. required memory when X = 1 
+  !
+  !> Author:  Johannes Rekkedal
+  !> Date:    January 2014
+  subroutine get_mem_MO_RPA_residual(MemOut,M,N,O,V,X)
+
+    implicit none 
+   
+    ! M: tot number of MO
+    ! N: tot number of AO
+    ! O: number of occ. orbs.
+    ! V: number of virt. orbs.
+    ! X: dimension of MO batch.
+    integer,  intent(in) :: M, N, O, V, X
+    ! memory needed:
+    real(realk), intent(inout) :: MemOut
+    ! intermediate memory:
+    integer :: MemNeed, nnod, nTileMax, nMOB
+
+    nMOB = (M-1)/X + 1
+    nnod = 1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
+
+    ! Packed gmo diag blocks:
+    !nTileMax = (nMOB-1)/nnod + 3
+    !MemNeed = nTileMax*X*(X+1)*M*(M+1)/4
+    !! Packed gmo upper blocks:
+    !nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
+    !MemNeed = MemNeed + nTileMax*X*X*M*(M+1)/2
+    nTileMax = nMOB/nnod + 3
+    MemNeed = 3*nTileMax*O*V
+
+    ! Working arrays:
+    MemNeed = MemNeed + 5*O**2*V**2
+    !MemNeed = MemNeed + ntileMax
+    !MemNeed = MemNeed + max(X*O*V*M, O*O*V*V, X*X*M*M, X*O*O*M)
+    !MemNeed = MemNeed + max(O**4, V*O**3, V*V*O*O, X*X*M*M, X*O*O*V, X*O*V*V)
+    !MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M)
+    !MemNeed = MemNeed + max(X*O*V*M, O*O*V*V, X*X*M*M, X*O*O*M)
+
+    ! T1-Transfo. matrices:
+    !MemNeed = MemNeed + V*M + O*M
+  
+    ! Batch of MO int:
+    MemNeed = MemNeed + X*X*M*M
+    
+    ! Intermediates (B2prep, u2, G_Pi, H_aQ):
+    !MemNeed = MemNeed + O**4 + O*O*V*V + X*O + V*X
+    
+    ! T1-transformed integrals:
+    !MemNeed = MemNeed + O**4 + 2*V*O**3 + 3*O*O*V*V 
+
+    ! Fock Matrix:
+    MemNeed = MemNeed + 3*N*N
+
+    MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
+
+  end subroutine get_mem_MO_RPA_residual
+
+  !> Purpose: Get memory required in get_gmo depending on AO 
+  !           batch dimension.
+  !           Get min. required memory: AlphaDim = GammaDim = MinDimAO
+  !
+  !> Author:  Johannes Rekkedal
+  !> Date:    January 2014
+  subroutine get_mem_gmo(MemOut,M,N,O,V,X,nMOB,AlphaDim,GammaDim,MinDimAO)
+
+    implicit none 
+   
+    ! M: tot number of MO
+    ! N: tot number of AO
+    ! O: number of occ. orbs.
+    ! V: number of virt. orbs.
+    ! X: dimension of MO batch.
+    ! nMOB: number of MO batches.
+    integer,  intent(in) :: M, N, O, V, X, nMOB
+    !> AO stuff:
+    integer, intent(in) :: AlphaDim, GammaDim, MinDimAO
+    !> memory needed:
+    real(realk), intent(inout) :: MemOut
+    ! intermediate memory:
+    integer :: MemNeed, nnod, nTileMax
+
+    nnod = 1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
+
+    ! Transfo. matrices:
+    MemNeed = N*M + AlphaDim*X + GammaDim*X
+  
+    ! AO stuff:
+    MemNeed = MemNeed + 4*N + N*N*AlphaDim*GammaDim 
+    
+   ! ! Packed gmo diag blocks:
+   ! nTileMax = (nMOB-1)/nnod + 3
+   ! MemNeed = MEmNeed + nTileMax*X*(X+1)*M*(M+1)/4
+   ! ! Packed gmo upper blocks:
+   ! nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
+   ! MemNeed = MEmNeed + nTileMax*X*X*M*(M+1)/2
+
+    ! Gmo stuff:
+    MemNeed = MemNeed + O**2*V**2 
+
+    ! MO stuff:
+    !MemNeed = MemNeed + X*X*M*M + 5*nMOB*nMOB + 1
+    
+    ! Working arrays:
+    MemNeed = MemNeed + max(M*N*AlphaDim*GammaDim, M*M*GammaDim*X)
+    MemNeed = MemNeed + max(M*M*AlphaDim*GammaDim, M*M*X*X)
+    
+    MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
+  
+  end subroutine get_mem_gmo
+
 
 
   !> Purpose: Transform AO int. into MO int. in batches
@@ -5533,12 +5735,12 @@ module cc_debug_routines_module
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
-    !$OMP& d1,d2,t21,t22,w1,w2,w3,w4,w5,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
-    !$OMP& skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
-    !$OMP& ns2,ns3,nc,nc2) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
-    !$OMP& vvf,goooo,Lvoov,pno_o2,govov,&
-    !$OMP& oof, maxsize, nspaces, ovf, gvvov, s_idx,o1,&
-    !$OMP& s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
+    !$OMP d1,d2,t21,t22,w1,w2,w3,w4,w5,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
+    !$OMP skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
+    !$OMP ns2,ns3,nc,nc2) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
+    !$OMP vvf,goooo,Lvoov,pno_o2,govov,&
+    !$OMP oof, maxsize, nspaces, ovf, gvvov, s_idx,o1,&
+    !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
     call init_threadmemvar()
 
     call mem_alloc( w1, maxsize )
@@ -6229,7 +6431,7 @@ module cc_debug_routines_module
     real(realk) :: norm,thr
     real(realk),parameter :: p10 = 1.0E0_realk
     real(realk),parameter :: nul = 0.0E0_realk
-    logical :: alloc
+    logical :: keep_pair
     integer :: allremoved, ofmindim, ofmaxdim, allocpcount
 
     if( DECinfo%noPNOoverlaptrunc ) then
@@ -6245,11 +6447,11 @@ module cc_debug_routines_module
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE) &
-    !$OMP& REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
-    !$OMP& SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
-    !$OMP& PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
-    !$OMP& lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
-    !$OMP& alloc)
+    !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
+    !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
+    !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
+    !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
+    !$OMP keep_pair)
     call init_threadmemvar()
 
     !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
@@ -6267,9 +6469,9 @@ module cc_debug_routines_module
         pno_S(c)%ns1 = ns1
         pno_S(c)%ns2 = ns2
 
-        alloc = ( pno_cv(i)%allocd .and. pno_cv(j)%allocd )
+        keep_pair = ( pno_cv(i)%allocd .and. pno_cv(j)%allocd )
 
-        if( alloc )then
+        if( keep_pair )then
 
           call mem_alloc(pno_S(c)%d,ns1,ns2)
 
@@ -6324,7 +6526,7 @@ module cc_debug_routines_module
             ofmaxdim   = ofmaxdim   + maxdim
             allremoved = allremoved + remove
 
-            alloc = ( red1 > 0 .and. red2 > 0 )
+            keep_pair = ( red1 > 0 .and. red2 > 0 )
 
             if(red1/=diag.or.red2/=diag)call &
             &lsquit("ERROR(get_pno_overlap_matrices)calculated wrong dimensions",-1)
@@ -6332,7 +6534,7 @@ module cc_debug_routines_module
 
             call mem_dealloc( pno_S(c)%d )
        
-            if( alloc )then
+            if( keep_pair )then
               call mem_alloc( pno_S(c)%s1, ns1,  red1 )
               call mem_alloc( pno_S(c)%s2, red2, ns2  )
               call mem_alloc( pno_S(c)%d,  red1, red2 )
@@ -6356,7 +6558,7 @@ module cc_debug_routines_module
           endif
 
 
-          if( alloc ) then
+          if( keep_pair ) then
 
             pno_S(c)%n = 2
             call mem_alloc(pno_S(c)%iaos,pno_S(c)%n)
@@ -6364,7 +6566,7 @@ module cc_debug_routines_module
 
           endif
 
-          pno_S(c)%allocd = alloc
+          pno_S(c)%allocd = keep_pair
 
         else
 
@@ -6514,8 +6716,8 @@ module cc_debug_routines_module
 
     call mem_TurnONThread_Memory()
     !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,pno_gvvvv_size)&
-    !$OMP& SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2)&
-    !$OMP& PRIVATE(counter,virteival,U,PD,doit)
+    !$OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2)&
+    !$OMP PRIVATE(counter,virteival,U,PD,doit)
     call init_threadmemvar()
 
     if(fj)then

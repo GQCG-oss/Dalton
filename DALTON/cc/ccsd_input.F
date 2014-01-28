@@ -4166,7 +4166,7 @@ C=====================================================================*
 C#if defined (IMPLICIT_NONE)
 C      IMPLICIT NONE  
 C#else
-#  include <implicit.h>
+#  include "implicit.h"
 C#endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -5582,13 +5582,13 @@ c /* deck cc_crinp */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
 #include "ccsections.h"
 #include "cccrinf.h"
-C#include <ccrspprp.h>
+C#include "ccrspprp.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -6282,7 +6282,7 @@ c /* deck CC_4RINP */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -6615,7 +6615,7 @@ c /* deck CC_5RINP */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -7129,7 +7129,7 @@ c /* deck cc_exlrinp */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -7505,7 +7505,7 @@ C           -----------------------------------------------------------
 C#if defined (IMPLICIT_NONE)
 C      IMPLICIT NONE  
 C#else
-#  include <implicit.h>
+#  include "implicit.h"
 C#endif
 #include "priunit.h"
 #include "cctm.h"
@@ -7845,7 +7845,7 @@ C           _______________________________________________
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccmcdinf.h"
@@ -9709,12 +9709,12 @@ C     Alfredo Sanchez de Meras. May 2008
 C
 C     Purpose: Read input for CC Active section
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*7 WORD
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <center.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "center.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_ACTINP')

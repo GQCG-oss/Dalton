@@ -27,10 +27,10 @@ C
 C Linux version, Melo, azua, giribet, alejandrito, 
 C  aucar, romero, homero,bart y lisa
 C
-#include <inftap.h>
-#include <inforb.h>
-#include <priunit.h>
-c#include <symmet.h>
+#include "inftap.h"
+#include "inforb.h"
+#include "priunit.h"
+c#include "symmet.h"
 
 C ------------------------------------------------------
 C        DOUBLE PRECISION matrix
