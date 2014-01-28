@@ -6431,7 +6431,7 @@ module cc_debug_routines_module
     real(realk) :: norm,thr
     real(realk),parameter :: p10 = 1.0E0_realk
     real(realk),parameter :: nul = 0.0E0_realk
-    logical :: alloc
+    logical :: keep_pair
     integer :: allremoved, ofmindim, ofmaxdim, allocpcount
 
     if( DECinfo%noPNOoverlaptrunc ) then
@@ -6451,7 +6451,7 @@ module cc_debug_routines_module
     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
     !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
     !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
-    !$OMP alloc)
+    !$OMP keep_pair)
     call init_threadmemvar()
 
     !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
@@ -6469,9 +6469,9 @@ module cc_debug_routines_module
         pno_S(c)%ns1 = ns1
         pno_S(c)%ns2 = ns2
 
-        alloc = ( pno_cv(i)%allocd .and. pno_cv(j)%allocd )
+        keep_pair = ( pno_cv(i)%allocd .and. pno_cv(j)%allocd )
 
-        if( alloc )then
+        if( keep_pair )then
 
           call mem_alloc(pno_S(c)%d,ns1,ns2)
 
@@ -6526,7 +6526,7 @@ module cc_debug_routines_module
             ofmaxdim   = ofmaxdim   + maxdim
             allremoved = allremoved + remove
 
-            alloc = ( red1 > 0 .and. red2 > 0 )
+            keep_pair = ( red1 > 0 .and. red2 > 0 )
 
             if(red1/=diag.or.red2/=diag)call &
             &lsquit("ERROR(get_pno_overlap_matrices)calculated wrong dimensions",-1)
@@ -6534,7 +6534,7 @@ module cc_debug_routines_module
 
             call mem_dealloc( pno_S(c)%d )
        
-            if( alloc )then
+            if( keep_pair )then
               call mem_alloc( pno_S(c)%s1, ns1,  red1 )
               call mem_alloc( pno_S(c)%s2, red2, ns2  )
               call mem_alloc( pno_S(c)%d,  red1, red2 )
@@ -6558,7 +6558,7 @@ module cc_debug_routines_module
           endif
 
 
-          if( alloc ) then
+          if( keep_pair ) then
 
             pno_S(c)%n = 2
             call mem_alloc(pno_S(c)%iaos,pno_S(c)%n)
@@ -6566,7 +6566,7 @@ module cc_debug_routines_module
 
           endif
 
-          pno_S(c)%allocd = alloc
+          pno_S(c)%allocd = keep_pair
 
         else
 
