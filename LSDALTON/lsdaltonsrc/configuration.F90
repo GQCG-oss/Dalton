@@ -2786,7 +2786,7 @@ implicit none
         & 'Level shifting by ||Dorth|| ratio  ',&
         & 'No level shifting                  ',&
         & 'Van Lenthe fixed level shifts      '/)
-   integer :: nocc,nvirt
+   integer :: nocc,nvirt,nthreads_test
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 integer, external :: OMP_GET_NESTED
@@ -3491,6 +3491,25 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('Combining diagonalization and CSR is inefficient!',-1)
       endif
    endif
+
+!OpenMP sanity check: -DVAR_OMP should be set if openMP is active
+!==================
+#ifndef VAR_OMP
+!OpenMP should be turned off
+nthreads_test = 0
+!$OMP PARALLEL SHARED(nthreads_test)
+
+!$OMP CRITICAL
+nthreads_test = nthreads_test + 1
+!$OMP END CRITICAL
+
+!$OMP END PARALLEL 
+IF(nthreads_test.NE.1)THEN
+   print*,'OpenMP compilation inconsistency: use -DVAR_OMP when using -openmp/-fopenmp flag'
+   call lsquit('OpenMP compilation inconsistency: use -DVAR_OMP',-1)
+ENDIF
+#endif
+
 
 !SCALAPACK sanity check:
 !==================
