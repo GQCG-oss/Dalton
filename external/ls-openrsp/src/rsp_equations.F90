@@ -28,11 +28,11 @@
 !                                       dirac/trunk               revision 10659
 
 
-module rsp_equations
+module lsdalton_rsp_equations
 
    use precision
-   use matrix_defop  !matrix type and operators
-   use rsp_contribs  !integrals and integral contractions
+   use lsdalton_matrix_defop  !matrix type and operators
+   use lsdalton_rsp_contribs  !integrals and integral contractions
    use RSPsolver, only: rsp_molcfg
    implicit none
 

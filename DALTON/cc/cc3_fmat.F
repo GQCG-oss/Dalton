@@ -1921,7 +1921,7 @@ C
 #include "distcl.h"
 #include "cbieri.h"
 #include "eribuf.h"
-C#include <cclr.h>
+C#include "cclr.h"
 C
       INTEGER ISYMB, LWORK, LU3SRTR, LUCKJDR
       INTEGER KEND1, LWRK1, KEND2, LWRK2, KENDSV, LWRKSV
@@ -2112,7 +2112,7 @@ C
 #include "ccorb.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
-C#include <cclr.h>
+C#include "cclr.h"
 C
       INTEGER ISYMT2, ISYINT, LWORK, LENSQ, ISYMB, ISYMC
       INTEGER INDSQ(LENSQ,6)

@@ -1545,7 +1545,7 @@ C
      &            IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
      &            WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &            DUMMY,.FALSE.)
+     &            DUMMY,.FALSE.,.false.)
       FAC=-ALPHA2/(4*REFSPIN)
       CALL DSCAL(9,FAC,GC2,1)
       IF (IPRINT .GT. 2) THEN

@@ -20,25 +20,26 @@ fi
 cat > LSDALTON_interest.info <<'%EOF%'
    LSDALTON_interest
    -------------
-   Molecule:         1 HCN molecule
-   Wave Function:    HF/cc-pVQZ
-   Test Purpose:     Check .INTEREST  Keyword (test interest interface)
+   Molecule:         5 HCN molecules placed 20 atomic units apart
+   Wave Function:    B3LYP/STO-2G
+   Test Purpose:     Check Link integrals
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > LSDALTON_interest.mol <<'%EOF%'
-ATOMBASIS
-2 HCN molecules placed 20 atomic units apart
-STRUCTURE IS NOT OPTIMIZED. 
+BASIS
+6-31G**
+HCN molecule
+STRUCTURE IS NOT OPTIMIZED. Cartesian
 Atomtypes=3 Nosymmetry Cartesian
-Charge=1. Atoms=1 Basis=cc-pVDZ
-H   0.000   0.000  -1.000 
-Charge=7. Atoms=1 Basis=cc-pVDZ
-N   0.000   0.000   1.800
-Charge=6. Atoms=1 Basis=cc-pVDZ
-C   0.000   0.000   0.000
+Charge=1. Atoms=1
+H   0.0   0.0    -1.0 
+Charge=7. Atoms=1
+N   0.0   0.0     1.5
+Charge=6. Atoms=1
+C   0.0   0.0     0.0
 %EOF%
 
 #######################################################################
@@ -48,24 +49,19 @@ cat > LSDALTON_interest.dal <<'%EOF%'
 **GENERAL
 .NOGCBASIS
 **INTEGRALS
-.UNCONT
-.NOFAMILY
-.NOLINK
-.NOJENGINE
 .INTEREST
-#.LINSCAPRINT
-#1000
+.DEBUGCCFRAGMENT
 **WAVE FUNCTIONS
 .HF
-*DENSOPT
-.RH
-.DIIS
-.START
-H1DIAG
-.MAXIT
-1
 **INFO
 .DEBUG_MPI_MEM
+.DEBUG_SCF_MEM
+*DENSOPT
+.CONVTHR
+5.0d-5
+.START
+H1DIAG
+.VanLenthe
 *END OF INPUT
 %EOF%
 
@@ -83,7 +79,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final HF energy\: * \-182\.084318799" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-91\.4344682[0-1]" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"

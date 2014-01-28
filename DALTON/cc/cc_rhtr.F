@@ -1330,7 +1330,7 @@ C
 C-------------------------------------
 C     C1 transformed Fock Matrix.
 C     first make
-C     F-dot: F`ai = SUM-k-(Lai,kk-bar).
+C     F-dot: F'ai = SUM-k-(Lai,kk-bar).
 C-------------------------------------
 C
       ISYFCK = ISYMTR

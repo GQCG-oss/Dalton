@@ -260,7 +260,7 @@
       PARAMETER (k1=16.0E0_realk)
       PARAMETER (k2=4.0E0_realk/3.0E0_realk)
       PARAMETER (k3=-4.0E0_realk)
-
+      NUCDEP = 1000000
       NVER=0
 !AMT  Determine which flavour of DFT-D we are to run (2,3,3+BJ)
       IF (SETTING%SCHEME%DFT%DO_DFTD2) THEN

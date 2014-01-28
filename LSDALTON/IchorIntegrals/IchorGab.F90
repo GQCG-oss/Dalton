@@ -142,6 +142,7 @@ real(realk),pointer :: expA(:),ContractCoeffA(:,:),Acenter(:,:)
 real(realk),pointer :: expB(:),ContractCoeffB(:,:),Bcenter(:,:)
 integer,pointer :: StartOrbitalA(:),StartOrbitalB(:)
 integer :: TMParray1maxsize,TMParray2maxsize,IAngmomTypes,MaxTotalAngmomAB
+integer :: BasisContmaxsize
 !real(realk) :: SYMFAC,SYMFAC2
 real(realk),pointer :: TmpArray1(:)
 real(realk),pointer :: TmpArray2(:)
@@ -151,6 +152,9 @@ call mem_ichor_alloc(OrderdListA,nTypesA)
 call GenerateOrderdListOfTypes(lupri,nTypesA,AngmomOfTypeA,OrderdListA)
 call mem_ichor_alloc(OrderdListB,nTypesB)
 call GenerateOrderdListOfTypes(lupri,nTypesB,AngmomOfTypeB,OrderdListB)
+
+!TODO 
+! Can you set Rpq = 0 always? does it affect Gab matrix?
 
 ! GAMMATABULATION 
 !     is this needed for (SSSS) ? is it better to build it several times for 
@@ -261,22 +265,18 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
     call mem_ichor_alloc(PpreExpFac,nPrimP)
     !       call IchorTimer('START',TSTART,TEND,LUPRI)
     call IchorGabIntegral_OBS_general_size(TMParray1maxsize,&
-        &TMParray2maxsize,AngmomA,AngmomB,nPrimP,nContP,Psegmented)
+        & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&
+        & nPrimP,nContP,nPrimB,Psegmented)
     MaxPasses = 1
     !possibly change MaxPasses according to Sizes!
-    TMParray1maxsize = TMParray1maxsize
-    TMParray2maxsize = TMParray2maxsize
-    call mem_ichor_alloc(TmpArray1,TMParray1maxsize)
-    call mem_ichor_alloc(TmpArray2,TMParray2maxsize) 
     call GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
      & nAtomsA,nAtomsB,nContB,nContP,nTABFJW1,nTABFJW2,AngmomA,AngmomB,&
      & TMParray1maxsize,TMParray2maxsize,iBatchIndexOfTypeA,&
      & iBatchIndexOfTypeB,OutputDim1,OutputDim2,expB,ContractCoeffB,&
      & Bcenter,expA,ContractCoeffA,Acenter,expP,TABFJW,&
-     & reducedExponents,integralPrefactor,pcent,PpreExpFac,TmpArray1,TmpArray2,&
-     & OutputStorage,Psegmented,PQorder,Spherical,TriangularLHSAtomLoop)
-    call mem_ichor_dealloc(TmpArray1)
-    call mem_ichor_dealloc(TmpArray2)
+     & reducedExponents,integralPrefactor,pcent,PpreExpFac,&
+     & OutputStorage,Psegmented,PQorder,Spherical,TriangularLHSAtomLoop,&
+     & BasisContmaxsize)
     call mem_ichor_dealloc(pcent)
     call mem_ichor_dealloc(PpreExpFac)
     call mem_ichor_dealloc(reducedExponents)
@@ -320,68 +320,108 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
      & TMParray1maxsize,TMParray2maxsize,iBatchIndexOfTypeA,&
      & iBatchIndexOfTypeB,OutputDim1,OutputDim2,expB,ContractCoeffB,&
      & Bcenter,expA,ContractCoeffA,Acenter,expP,TABFJW,&
-     & reducedExponents,integralPrefactor,pcent,PpreExpFac,TmpArray1,TmpArray2,&
-     & OutputStorage,Psegmented,PQorder,Spherical,TriangularLHSAtomLoop)
+     & reducedExponents,integralPrefactor,pcent,PpreExpFac,&
+     & OutputStorage,Psegmented,PQorder,Spherical,TriangularLHSAtomLoop,&
+     & BasisContmaxsize)
   implicit none
   integer,intent(in) :: nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,nAtomsA
   integer,intent(in) :: nAtomsB,nContB,nContP,nTABFJW1,nTABFJW2,AngmomA,AngmomB,TMParray1maxsize,TMParray2maxsize
   integer,intent(in) :: iBatchIndexOfTypeA,iBatchIndexOfTypeB
-  integer,intent(in) :: OutputDim1,OutputDim2
+  integer,intent(in) :: OutputDim1,OutputDim2,BasisContmaxsize
   real(realk),intent(in) :: expB(nPrimB),ContractCoeffB(nPrimB,nContB),Bcenter(3,nAtomsB)
   real(realk),intent(in) :: expA(nPrimA),ContractCoeffA(nPrimA,nContA),Acenter(3,nAtomsA)
   real(realk),intent(in) :: expP(nPrimP),TABFJW(0:nTABFJW1,0:nTABFJW2)
   real(realk),intent(in) :: reducedExponents(nPrimP*nPrimP)
   real(realk),intent(in) :: integralPrefactor(nPrimP*nPrimP)
   real(realk),intent(inout) :: pcent(3*nPrimP),PpreExpFac(nPrimP)
-  real(realk),intent(inout) :: TmpArray1(TMParray1maxsize)
-  real(realk),intent(inout) :: TmpArray2(TMParray2maxsize)
+!  real(realk),intent(inout) :: TmpArray1(TMParray1maxsize)
+!  real(realk),intent(inout) :: TmpArray2(TMParray2maxsize)
   real(realk),intent(inout) :: OutputStorage(OutputDim1,OutputDim2)
   logical,intent(in) :: Psegmented,PQorder,Spherical,TriangularLHSAtomLoop
   !local variables
   real(realk) :: CDAB(1),BcenterSpec(3),AcenterSpec(3),Pdistance12(3)
-  integer :: IatomB,iBatchA,IatomA,iBatchB,nPasses,MaxPasses
-!$OMP PARALLEL DO DEFAULT(none) IF(nAtomsB.GT.1) PRIVATE(IatomB,BcenterSpec,iBatchA,IatomA,&
-!$OMP nPasses,MaxPasses,AcenterSpec,pcent,Pdistance12,PpreExpFac,TmpArray1,TmpArray2,&
-!$OMP iBatchB,CDAB) SHARED(Bcenter,expB,ContractCoeffA,ContractCoeffB,expP,TABFJW,&
-!$OMP reducedExponents,integralPrefactor,&
-!$OMP OutputStorage,Acenter,expA,nAtomsB,nAtomsA,TriangularLHSAtomLoop,&
-!$OMP nPrimA,nPrimB,nContA,nContB,nPrimP,PSegmented,INTPRINT,lupri,nContP,nTABFJW1,&
-!$OMP nTABFJW2,AngmomA,AngmomB,PQorder,Spherical,TMParray1maxsize,TMParray2maxsize,&
-!$OMP iBatchIndexOfTypeB,iBatchIndexOfTypeA) SCHEDULE(DYNAMIC,1)
-    DO IatomB = 1,nAtomsB
-       iBatchB = iBatchIndexOfTypeB + IatomB
-       BcenterSpec(1) = Bcenter(1,IatomB)
-       BcenterSpec(2) = Bcenter(2,IatomB)
-       BcenterSpec(3) = Bcenter(3,IatomB)
-       MaxPasses = 1
-       nPasses = 1
-       iBatchA = iBatchIndexOfTypeA
-       DO IatomA = 1,nAtomsA
-          iBatchA = iBatchA + 1
-          IF(TriangularLHSAtomLoop.AND.IatomB.GT.IatomA)CYCLE
-          AcenterSpec(1) = Acenter(1,IatomA)
-          AcenterSpec(2) = Acenter(2,IatomA)
-          AcenterSpec(3) = Acenter(3,IatomA)
-          !sort combined atom list with respect to distance ? which distance AB,CD,PQ 
-          !only difference is the centers involved. 
-          !iPass = IatomA + (IatomB-1)*nAtomsA !for now
-          CALL Build_qcent_Qdistance12_QpreExpFac(nPrimA,nPrimB,&
-               & nContA,nContB,expA,expB,AcenterSpec,BcenterSpec,ContractCoeffA,&
-               & ContractCoeffB,PSegmented,&
-               & pcent,Pdistance12,PpreExpFac,INTPRINT)
-          call IchorGabIntegral_OBS_general(nPrimA,nPrimB,nPrimP,&
-               & nPasses,MaxPasses,intprint,lupri,nContA,nContB,nContP,expP,&
-               & ContractCoeffA,ContractCoeffB,&
-               & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-               & expA,expB,Psegmented,reducedExponents,integralPrefactor,&
-               & AngmomA,AngmomB,Pdistance12,PQorder,CDAB,&
-               & AcenterSpec,BcenterSpec,Spherical,&
-               & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
-          OutputStorage(iBatchA,iBatchB) = CDAB(1)
-       ENDDO !iAtomB
-    ENDDO !iAtomA
-!$OMP END PARALLEL DO
-  end subroutine GabIntLoop
+  integer :: IatomB,iBatchA,IatomA,iBatchB,nPasses,MaxPasses,iPass,nPass
+  real(realk),allocatable :: TmpArray1(:),TmpArray2(:),BasisCont(:)
+  integer,allocatable :: iPassA(:),iPassB(:)
+  IF(TriangularLHSAtomLoop)THEN
+     allocate(iPassA(nAtomsA*nAtomsB+1/2))
+     allocate(iPassB(nAtomsA*nAtomsB+1/2))
+     iPass = 0
+     DO IatomB = 1,nAtomsB
+        DO IatomA = IatomB,nAtomsA
+           iPass = iPass+1
+           iPassA(iPass) = IatomA
+           iPassB(iPass) = IatomB
+        ENDDO
+     ENDDO
+     nPass = iPass
+  ELSE
+     nPass = nAtomsA*nAtomsB
+  ENDIF
+!!$OMP PARALLEL DEFAULT(none) PRIVATE(iPass,IatomB,BcenterSpec,iBatchA,IatomA,&
+!!$OMP nPasses,MaxPasses,AcenterSpec,pcent,Pdistance12,PpreExpFac,TmpArray1,TmpArray2,&
+!!$OMP iBatchB,CDAB,BasisCont) SHARED(Bcenter,expB,ContractCoeffA,ContractCoeffB,expP,TABFJW,&
+!!$OMP reducedExponents,integralPrefactor,iPassA,iPassB,OutputStorage,Acenter,&
+!!$OMP expA) FIRSTPRIVATE(nPass,nAtomsB,nAtomsA,TriangularLHSAtomLoop,&
+!!$OMP nPrimA,nPrimB,nContA,nContB,nPrimP,PSegmented,INTPRINT,lupri,nContP,nTABFJW1,&
+!!$OMP nTABFJW2,AngmomA,AngmomB,PQorder,Spherical,TMParray1maxsize,TMParray2maxsize,&
+!!$OMP iBatchIndexOfTypeB,iBatchIndexOfTypeA,BasisContmaxsize)
+!  call mem_ichor_alloc(TmpArray1,TMParray1maxsize)
+!  call mem_ichor_alloc(TmpArray2,TMParray2maxsize) 
+!!$OMP CRITICAL
+  allocate(TmpArray1(TMParray1maxsize))
+  allocate(TmpArray2(TMParray2maxsize))
+  allocate(BasisCont(BasisContmaxsize))
+!!$OMP END CRITICAL
+  MaxPasses = 1
+  nPasses = 1
+!!$OMP DO SCHEDULE(DYNAMIC,1)
+  DO IPass = 1,nPass
+     IF(TriangularLHSAtomLoop)THEN
+        IatomA = iPassA(iPass)
+        IatomB = iPassB(iPass)
+     ELSE
+        IatomA = iPass - ((iPass-1)/nAtomsA)*nAtomsA
+        IatomB = (iPass-1)/nAtomsA+1
+     ENDIF
+     iBatchB = iBatchIndexOfTypeB + IatomB
+     BcenterSpec(1) = Bcenter(1,IatomB)
+     BcenterSpec(2) = Bcenter(2,IatomB)
+     BcenterSpec(3) = Bcenter(3,IatomB)
+     iBatchA = iBatchIndexOfTypeA+IatomA
+     AcenterSpec(1) = Acenter(1,IatomA)
+     AcenterSpec(2) = Acenter(2,IatomA)
+     AcenterSpec(3) = Acenter(3,IatomA)
+     CALL Build_qcent_Qdistance12_QpreExpFac(nPrimA,nPrimB,&
+          & nContA,nContB,expA,expB,AcenterSpec,BcenterSpec,ContractCoeffA,&
+          & ContractCoeffB,PSegmented,&
+          & pcent,Pdistance12,PpreExpFac,INTPRINT)
+     call IchorGabIntegral_OBS_general(nPrimA,nPrimB,nPrimP,&
+          & nPasses,MaxPasses,intprint,lupri,nContA,nContB,nContP,expP,&
+          & ContractCoeffA,ContractCoeffB,&
+          & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+          & expA,expB,Psegmented,reducedExponents,integralPrefactor,&
+          & AngmomA,AngmomB,Pdistance12,PQorder,CDAB,&
+          & AcenterSpec,BcenterSpec,Spherical,&
+          & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+          & BasisContmaxsize,BasisCont)
+     OutputStorage(iBatchA,iBatchB) = CDAB(1)
+  ENDDO
+!!$OMP END DO NOWAIT
+
+!  call mem_ichor_dealloc(TmpArray1)
+!  call mem_ichor_dealloc(TmpArray2)
+!!$OMP CRITICAL
+  deallocate(TmpArray1)
+  deallocate(TmpArray2)
+  deallocate(BasisCont)
+!!$OMP END CRITICAL
+!!$OMP END PARALLEL
+  IF(TriangularLHSAtomLoop)THEN
+     deallocate(iPassA)
+     deallocate(iPassB)
+  ENDIF
+end subroutine GabIntLoop
 
 subroutine AddUpperTriAngular(MAT,nBatchA,lupri)
 implicit none

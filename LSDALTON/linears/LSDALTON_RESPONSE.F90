@@ -22,9 +22,9 @@ use response_wrapper_module,only: get_dipole_moment, &
      & gammaresponse_driver, dtparesponse_driver, &
      & nmrshieldresponse_driver, get_excitation_energies
 use lstiming,      only: lstimer
-use rsp_contribs,  only: rsp_oneave
+use lsdalton_rsp_contribs,  only: rsp_oneave
 use rspsolver,     only: rsp_molcfg, init_rsp_molcfg
-use rsp_equations, only: rsp_eq_sol_empty
+use lsdalton_rsp_equations, only: rsp_eq_sol_empty
 use rsp_util,      only: util_save_MOinfo,util_free_MOstuff
 !use molecule_type, only: MOLECULE_PT,MOLECULEINFO
 !use matrix_defop,  only: operator(*)

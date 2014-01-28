@@ -50,7 +50,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -106,13 +106,13 @@ C
 *---------------------------------------------------------------------*
       ELSEIF(LABELA(2:8).EQ.'DIPLEN '.AND.LABELB(1:5).EQ.'1DHAM') THEN
 
-        WRITE(LABSOP,'(A2,A5,A1)') LABELB(7:8), ' DPG ', LABELA(1:1)
+        WRITE(LABSOP,'(A3,A4,A1)') LABELB(6:8), 'DPG ', LABELA(1:1)
         FOUND = .TRUE.
         ISIGN = -1
 
       ELSEIF(LABELB(2:8).EQ.'DIPLEN '.AND.LABELA(1:5).EQ.'1DHAM') THEN
 
-        WRITE(LABSOP,'(A2,A5,A1)') LABELA(7:8), ' DPG ', LABELB(1:1)
+        WRITE(LABSOP,'(A3,A4,A1)') LABELA(6:8), 'DPG ', LABELB(1:1)
         FOUND = .TRUE.
         ISIGN = -1
 
@@ -121,13 +121,13 @@ C
 *---------------------------------------------------------------------*
       ELSEIF(LABELA(3:8).EQ.'SECMOM'.AND.LABELB(1:5).EQ.'1DHAM') THEN
 
-        WRITE(LABSOP,'(A2,A4,A2)') LABELB(7:8), 'QDG ', LABELA(1:2)
+        WRITE(LABSOP,'(A3,A3,A2)') LABELB(6:8), 'QDG', LABELA(1:2)
         FOUND = .TRUE.
         ISIGN = -1
 
       ELSEIF(LABELB(3:8).EQ.'SECMOM'.AND.LABELA(1:5).EQ.'1DHAM') THEN
 
-        WRITE(LABSOP,'(A2,A4,A2)') LABELA(7:8), 'QDG ', LABELB(1:2)
+        WRITE(LABSOP,'(A3,A3,A2)') LABELA(6:8), 'QDG', LABELB(1:2)
         FOUND = .TRUE.
         ISIGN = -1
 

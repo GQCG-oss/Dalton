@@ -479,6 +479,13 @@ SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 nbast1 = getNbasis(AO1,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
 nbast2 = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(2)%p,LUPRI)
 
+!print *,"nbast1:",nbast1
+!print *,"nbast2:",nbast2
+!print *,"AO1:",AO1
+!print *,"AO2:",AO2
+!print *,"h%nrow:",h%nrow
+!print *,"h€ncol:",h%ncol
+
 IF(nBast1.NE.h%nrow)CALL LSQUIT('dim1 mismatch in II_get_nucel_mat_mixed',-1)
 IF(nBast2.NE.h%ncol)CALL LSQUIT('dim2 mismatch in II_get_nucel_mat_mixed',-1)
 
@@ -2466,9 +2473,7 @@ IF (dogeoderiv) THEN
      call lsquit('Error in II_get_4center_eri_diff - only first order geometrical derivative integrals implemented',lupri)
   ENDIF
 
-  !Simen Hack - GeoDerivSpec currently not working with family-type basis sets
-  nofamily = setting%scheme%nofamily
-  setting%scheme%nofamily = .TRUE.
+  IF (.NOT.setting%scheme%nofamily) CALL LSQUIT('II_get_4center_eri_diff only working with .NOFAMILY keyword option',-1)
 ELSE
   intSpec = RegularSpec
 ENDIF
@@ -2520,7 +2525,6 @@ ELSE
        call mem_dealloc(integrals)
      ENDIF
     ENDIF
-    setting%scheme%nofamily = nofamily
   ENDIF
   IF (dirac_format) THEN
    DO n=1,dim5
@@ -5455,6 +5459,7 @@ CONTAINS
      implicit none
      type(matrix),intent(in)    :: D     !level 3 matrix input 
      type(matrix),intent(inout) :: D2 !level 2 matrix input 
+     type(matrix)               :: D2purify !level 2 McWeeny purified matrix
      type(lssetting) :: setting
      integer :: n2,n3,AO3,AO2,lupri,luerr
      logical :: McWeeny,GCAO2,GCAO3
@@ -5475,11 +5480,17 @@ CONTAINS
      IF (McWeeny) THEN
        CALL mat_init(S22,n2,n2)
        CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-       CALL McWeeney_purify(S22,D2,purify_failed)
+       CALL mat_init(D2purify,n2,n2)
+       CALL mat_assign(D2purify,D2)
+       CALL McWeeney_purify(S22,D2purify,purify_failed)
        IF (purify_failed) THEN
-         CALL LSQUIT('McWeeney_purify failed in transform_D3_to_D2',-1)
+         write(lupri,'(1X,A)') 'McWeeny purification failed for ADMM D2 matrix- reverting to the non-purified D2'
+       ELSE
+         write(lupri,'(1X,A)') 'McWeeny purified ADMM D2 matrix'
+         CALL mat_assign(D2,D2purify)
        ENDIF
        CALL mat_free(S22)
+       CALL mat_free(D2purify)
      ENDIF
       CALL mat_free(T23)
       CALL mat_free(S23)

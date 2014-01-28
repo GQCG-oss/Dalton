@@ -197,7 +197,7 @@ C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 #include "efield.h"
 #include "ccom.h"
 #include "qm3.h"
-      PARAMETER (NTABLE = 101)
+      PARAMETER (NTABLE = 104)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
@@ -211,22 +211,23 @@ C
 C
       DIMENSION QMTEST(NMMBA1)
 C
-#include "shells.h"
-#include "symmet.h"
-#include "pgroup.h"
-#include "nuclei.h"
-#include "huckel.h"
-#include "cbihr1.h"
-#include "orgcom.h"
-!
-#include "elweak.h"
-#include "drw2el.h"
-#include "codata.h"
-#include "gtensor.h"
-#include "pcmdef.h"
-#include "pcm.h"
-#include "pcmlog.h"
+#include <shells.h>
+#include <symmet.h>
+#include <pgroup.h>
+#include <nuclei.h>
+#include <huckel.h>
+#include <cbihr1.h>
+#include <elweak.h>
+#include <drw2el.h>
+#include <codata.h>
+#include <orgcom.h>
+#include <gtensor.h>
+#include <chrnos.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
 C
+C Bin Gao, December 17, 2009; adds integrals S2MBRA, S2MKET, and S2MMIX
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP', !   1: 4
      &            'SPNORB ', 'SECMOM ', 'THETA  ', 'CARMOM ', !   5: 8
      &            'SPHMOM ', 'SOLVENT', 'FERMI C', 'PSO    ', !   9:12
@@ -252,7 +253,7 @@ C
      &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ', !  89:92
      &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2', !  93:96
      &            'MAGQDP ', 'DERANGM', 'DIPANH ', 'POPOVLP', !  97:100
-     &            'KINADIA'/                                  ! 101
+     &            'KINADIA', 'S2MBRA ', 'S2MKET ', 'S2MMIX '/ ! 101:104
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
@@ -286,7 +287,7 @@ C
      &             71,72,73,74,75,76,77,78,79,80,
      &             81,82,83,84,85,86,87,88,89,90,
      &             91,92, 1,94,95,96,97,98,99,100,
-     &             101), I
+     &             101,102,103,104), I
          END IF
       END DO
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -2326,7 +2327,6 @@ C
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          ANTI = .FALSE.
       GOTO 200
-C
 C     Adiabatic kinetic energy KINADIAB
 C     -------------------------
 C     (from nuclear second derivatives, with specified isotopes)
@@ -2343,6 +2343,88 @@ C
          INTREP(1) = 0
          ANTI = .FALSE.
       GO TO 200
+C copied from linsca abacus/her1pro.F, Bin Gao, December 17, 2009
+C 
+C     Second order contribution from overlap matrix to magnetic properties
+cdj bra, ket, and mixed bra-ket contributions separately
+C
+  102 CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' bra part'
+         INTTYP = 104
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = '<<S/B2XX'
+         LABINT(2) = '<<S/B2XY'
+         LABINT(3) = '<<S/B2XZ'
+         LABINT(4) = '<<S/B2YY'
+         LABINT(5) = '<<S/B2YZ'
+         LABINT(6) = '<<S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+  103 CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' ket part'
+         INTTYP = 105
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = '>>S/B2XX'
+         LABINT(2) = '>>S/B2XY'
+         LABINT(3) = '>>S/B2XZ'
+         LABINT(4) = '>>S/B2YY'
+         LABINT(5) = '>>S/B2YZ'
+         LABINT(6) = '>>S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+  104 CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' mixed bra-ket part'
+         INTTYP = 106
+         NOPTYP = 9
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = '<>S/B2XX'
+         LABINT(2) = '<>S/B2XY'
+         LABINT(3) = '<>S/B2XZ'
+         LABINT(4) = '<>S/B2YX'
+         LABINT(5) = '<>S/B2YY'
+         LABINT(6) = '<>S/B2YZ'
+         LABINT(7) = '<>S/B2ZX'
+         LABINT(8) = '<>S/B2ZY'
+         LABINT(9) = '<>S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(5) = 0
+         INTREP(6) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(7) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(8) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(9) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
 C
   200 CONTINUE
 C
@@ -3666,9 +3748,10 @@ C  /* Deck dpgtyp */
                      DO 400 LCOOR = 1, 3
                         ITYP = ITYP + 1
                         IXY = IXY + 1
-                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
-     &                                 CHRNOS(MOD(ISCOOR,10))//' DPG '//
-     &                                 CHRXYZ(LCOOR)
+                        LABINT(ITYP) = CHRNOS(ISCOOR/100)
+     &                               //CHRNOS(MOD(ISCOOR,100)/10)
+     &                               //CHRNOS(MOD((MOD(ISCOOR,100)),10))
+     &                               //'DPG '//CHRXYZ(LCOOR)
 CCH                     wrong copy & paste from QUGTYP ??
 CCH                     IAX = IBTXOR(ISYMAX(LCOOR,1),ISYMAX(MCOOR,1))
 CCH
@@ -3715,8 +3798,12 @@ C  /* Deck qugtyp */
                      DO 400 MCOOR = LCOOR, 3
                         ITYP = ITYP + 1
                         IXY = IXY + 1
-                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
-     &                                 CHRNOS(MOD(ISCOOR,10))//'QDG '//
+Cgb                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
+Cgb     &                                 CHRNOS(MOD(ISCOOR,10))//'QDG '//
+Cgb     &                                 CHRXYZ(LCOOR)//CHRXYZ(MCOOR)
+                        LABINT(ITYP) = CHRNOS(ISCOOR/100)//
+     &                                 CHRNOS(MOD(ISCOOR,100)/10)//
+     &                                 CHRNOS(MOD(ISCOOR,10))//'QDG'//
      &                                 CHRXYZ(LCOOR)//CHRXYZ(MCOOR)
                         IAX = IBTXOR(ISYMAX(LCOOR,1),ISYMAX(MCOOR,1))
                         INTREP(ITYP) = IBTXOR(IREP,IAX)

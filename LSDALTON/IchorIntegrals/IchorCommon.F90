@@ -543,9 +543,9 @@ end subroutine copy_noScreen
 SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
      & nBatchB,nBatchA,iBatchIndexOfTypeA,iBatchIndexOfTypeB,BATCHGAB,&
      & THRESHOLD_CS,GABELM,nPasses,IatomAPass,IatomBPass,&
-     & TriangularAtomLoop,TriangularODAtomLoop,iAtomC,iAtomD,noScreenABin) 
+     & TriangularLHSAtomLoop,TriangularODAtomLoop,iAtomC,iAtomD,noScreenABin) 
   implicit none
-  logical,intent(in) :: CSScreen,TriangularAtomLoop,TriangularODAtomLoop
+  logical,intent(in) :: CSScreen,TriangularLHSAtomLoop,TriangularODAtomLoop
   integer,intent(in) :: nAtomsA,nAtomsB,iAtomC,iAtomD
   integer,intent(in) :: iBatchIndexOfTypeA,nBatchB,nBatchA
   integer,intent(in) :: iBatchIndexOfTypeB
@@ -566,7 +566,7 @@ SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
   IF(CSScreen)THEN
      DO IatomA = IatomAstart,nAtomsA
         iBatchA = iBatchIndexOfTypeA + IatomA
-        IF(TriangularAtomLoop)IatomBend = IatomA !Restrict AtomB =< AtomA
+        IF(TriangularLHSAtomLoop)IatomBend = IatomA !Restrict AtomB =< AtomA
         DO IatomB = 1,IatomBend
            IF(TriangularODAtomLoop)THEN !If AtomC=AtomA restrict AtomD =< AtomB
               IF(IatomA.GT.iAtomC.OR.((IatomA.EQ.iAtomC).AND.(IatomB.GE.IatomD)))THEN
@@ -591,7 +591,7 @@ SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
      ENDDO
   ELSE
      DO IatomA = IatomAstart,nAtomsA
-        IF(TriangularAtomLoop)IatomBend = IatomA !Restrict AtomB =< AtomA
+        IF(TriangularLHSAtomLoop)IatomBend = IatomA !Restrict AtomB =< AtomA
         DO IatomB = 1,IatomBend
            IF(TriangularODAtomLoop)THEN !If AtomC=AtomA restrict AtomD =< AtomB
               IF(IatomA.GT.iAtomC.OR.((IatomA.EQ.iAtomC).AND.(IatomB.GE.IatomD)))THEN
@@ -929,11 +929,11 @@ subroutine ichorzero(dx, length)
   real(realk), intent(inout) :: dx(length)
   !local
   integer                  :: i
-!$OMP PARALLEL DO PRIVATE(I) FIRSTPRIVATE(length) SHARED(dx) SCHEDULE(DYNAMIC,13)
+!!$OMP PARALLEL DO PRIVATE(I) FIRSTPRIVATE(length) SHARED(dx) SCHEDULE(DYNAMIC,13)
   do i = 1, length
      dx(i) = 0.0E0_realk
   enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
 end subroutine ichorzero
 
 subroutine ichorzero5(OutputStorage, Dim1,Dim2,Dim3,Dim4,Dim5)
