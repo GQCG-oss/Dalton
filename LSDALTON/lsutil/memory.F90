@@ -2261,20 +2261,22 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
   &available",-1)
 #endif
 END SUBROUTINE lsmpi_local_allocate_I8V8
-SUBROUTINE lsmpi_allocate_d(A,n1,comm,local) 
+SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple) 
 implicit none
 integer(kind=8),intent(in)          :: n1
-logical,intent(in),optional         :: local
+logical,intent(in),optional         :: local,simple
 type(mpi_realk)                     :: A
 integer(kind=ls_mpik),optional,intent(in)    ::comm
 integer (kind=ls_mpik)              :: IERR,info
 integer (kind=long)                 :: nsize
 character(120)                      :: errmsg
-logical                             :: loc
+logical                             :: loc,simp
 #ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
 #endif
 
+simp = .false.
+if(present(simple))simp = simple
 
 if(present(comm))then
 #ifdef VAR_MPI
@@ -2334,18 +2336,28 @@ if(present(comm))then
   &available",-1)
 #endif
 else
+  !if no communicator is given and simple option is chosen, do a normal alloc
+  if(simp)then
+    call mem_alloc(A%d,n1)
+    A%c = c_null_ptr
+    A%n = n1
+    A%w = 0
+    A%t = 0
+  else
+  !if no communicator is given the default is to use MPI_alloc_mem with mpi
 #ifdef VAR_MPI
-  call mem_alloc(A%d,A%c,n1)
-  A%n = n1
-  A%w = 0
-  A%t = 1
+    call mem_alloc(A%d,A%c,n1)
+    A%n = n1
+    A%w = 0
+    A%t = 1
 #else
-  call mem_alloc(A%d,n1)
-  A%c = c_null_ptr
-  A%n = n1
-  A%w = 0
-  A%t = 0
+    call mem_alloc(A%d,n1)
+    A%c = c_null_ptr
+    A%n = n1
+    A%w = 0
+    A%t = 0
 #endif
+  endif
 endif
 END SUBROUTINE lsmpi_allocate_d
 SUBROUTINE lsmpi_local_allocate_dV8(A,cip,n1,win,comm,n2) 
