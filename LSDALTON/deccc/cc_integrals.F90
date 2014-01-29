@@ -871,9 +871,9 @@ contains
 
         if (.not.mo_ccsd) return
 
-        if (print_debug) write(DECinfo%output,*) & 
-                 & 'BATCH: Number of MO batches      = ', Nbatch, &
-                 & 'with maximum size', dimP
+        if (print_debug) write(DECinfo%output,'(a,I4,a,I4)') & 
+                 & ' BATCH: Number of MO batches      = ', Nbatch, &
+                 & ' with maximum size', dimP
 
         ! Declare PDM arrays for packed integrals:
         pgmo_dims = ntot*(ntot+1)*dimP*(dimP+1)/4
@@ -881,10 +881,12 @@ contains
                   & atype='TDAR',tdims=[pgmo_dims,1])
         call array_zero(pgmo_diag)
      
-        pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
-        pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
-                  & local=local,atype='TDAR',tdims=[pgmo_dims,1])
-        call array_zero(pgmo_up)
+        if (Nbatch>1) then ! to avoid memory pb in dealloc:
+          pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
+          pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
+                    & local=local,atype='TDAR',tdims=[pgmo_dims,1])
+          call array_zero(pgmo_up)
+        end if
 
       case(MODEL_RPA)
 
@@ -910,7 +912,7 @@ contains
     StartUpSlaves: if(master.and.nnod>1) then
       call ls_mpibcast(CCGETGMO,infpar%master,infpar%lg_comm)
       call mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
-           & pgmo_diag,pgmo_up,nb,no,nv,ccmodel)
+           & pgmo_diag,pgmo_up,nb,no,nv,Nbatch,ccmodel)
     endif StartUpSlaves
      
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -936,9 +938,9 @@ contains
          & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma, &
          & nbatchesGamma,orb2BatchGamma,'R')
 
-    if (print_debug) write(DECinfo%output,*) & 
-               & 'BATCH: Number of Gamma batches   = ', nbatchesGamma, &
-               & 'with maximum size', MaxActualDimGamma 
+    if (print_debug) write(DECinfo%output,'(a,I4,a,I4)') & 
+               & ' BATCH: Number of Gamma batches   = ', nbatchesGamma, &
+               & ' with maximum size', MaxActualDimGamma 
 
 
     ! Translate batchindex to orbital index
@@ -968,9 +970,9 @@ contains
          & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha, &
          & nbatchesAlpha,orb2BatchAlpha,'R')
 
-    if (print_debug) write(DECinfo%output,*) & 
-        & 'BATCH: Number of Alpha batches   = ', nbatchesAlpha, &
-        & 'with maximum size',MaxActualDimAlpha
+    if (print_debug) write(DECinfo%output,'(a,I4,a,I4)') & 
+        & ' BATCH: Number of Alpha batches   = ', nbatchesAlpha, &
+        & ' with maximum size',MaxActualDimAlpha
 
 
     ! Translate batchindex to orbital index
@@ -1915,6 +1917,8 @@ subroutine cc_gmo_data_slave()
 
   !> number of orbitals:
   integer :: nb, no, nv
+  !> number of MO batch
+  integer :: nbatch
   !> CC model:
   integer ::  ccmodel
   !> SCF transformation matrices:
@@ -1930,7 +1934,7 @@ subroutine cc_gmo_data_slave()
   
 
   call mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
-       & pgmo_diag,pgmo_up,nb,no,nv,ccmodel)
+       & pgmo_diag,pgmo_up,nb,no,nv,nbatch,ccmodel)
   
   ! the slave call the routine to get MO int.
   call get_t1_free_gmo(mo_ccsd,MyLsItem,Co,Cv,govov, &
