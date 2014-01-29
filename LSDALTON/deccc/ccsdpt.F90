@@ -76,7 +76,7 @@ contains
     integer :: i,j,k,idx,tuple_type
     !> mpi stuff
 #ifdef VAR_MPI
-    integer :: b_size,ntasks,nodtotal,ij,ij_count,i_old,j_old
+    integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
 #endif
     !> orbital energies
@@ -206,20 +206,20 @@ contains
     ! create job distribution list
     ! first, determine common batch size from number of tasks and nodes
 
-    ! in the ij matrix, ntasks is the number of elements in the lower triangular matrix
+    ! in the ij matrix, njobs is the number of elements in the lower triangular matrix
     ! always an even number [ n(n+1) is always an even number ]
-    ntasks = int((nocc**2 + nocc)/2)
-    b_size = int(ntasks/nodtotal)
+    njobs = int((nocc**2 + nocc)/2)
+    b_size = int(njobs/nodtotal)
 
     ! ij_array stores all jobs for composite ij indices in descending order
-    call mem_alloc(ij_array,ntasks)
-    ! init list (one more than b_size since mod(ntasks,nodtotal) is not necessearily zero
+    call mem_alloc(ij_array,njobs)
+    ! init list (one more than b_size since mod(njobs,nodtotal) is not necessearily zero
     call mem_alloc(jobs,b_size + 1)
 
     ! create ij_array
-    call create_ij_array_ccsdpt(ntasks,nocc,ij_array)
+    call create_ij_array_ccsdpt(njobs,nocc,ij_array)
     ! fill the list
-    call job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
+    call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
     ! release ij_array
     call mem_dealloc(ij_array)
@@ -641,14 +641,14 @@ contains
   !> \brief: create ij_array for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine create_ij_array_ccsdpt(ntasks,no,ij_array)
+  subroutine create_ij_array_ccsdpt(njobs,no,ij_array)
 
     implicit none
 
-    !> batch size (without remainder contribution)
-    integer, intent(in) :: ntasks,no
-    !> jobs array
-    integer, dimension(ntasks), intent(inout) :: ij_array
+    !> njobs and nocc
+    integer, intent(in) :: njobs,no
+    !> ij_array
+    integer, dimension(njobs), intent(inout) :: ij_array
     !> integers
     integer :: counter,offset,fill_1,fill_2
 
@@ -686,7 +686,7 @@ contains
        if (fill_1 .eq. 0) then
 
           ! this is largest possible job, i.e., the (no,no)-th entry in the ij matrix
-          ij_array(counter) = ntasks
+          ij_array(counter) = njobs
           ! increment counter
           counter = counter + 1
 
@@ -698,7 +698,7 @@ contains
 
                 ! this is the largest i-value, for which we have to do k number of jobs, 
                 ! that is, we are at the no'th row essentially moving from right towards left.
-                ij_array(counter) = ntasks - fill_1
+                ij_array(counter) = njobs - fill_1
                 ! increment counter
                 counter = counter + 1
 
@@ -707,9 +707,9 @@ contains
                 ! we loop through the i-values keeping the j-value (and k-range) fixed
                 ! we thus loop from i == no up towards the diagonal of the lower triangular matrix
                 offset = offset + (no - fill_2)
-                ! 'ntasks - fill_1' gives the current column, while 'offset' moves us up through the rows
+                ! 'njobs - fill_1' gives the current column, while 'offset' moves us up through the rows
                 ! while staying below or on the diagonal.(still row-major numbering)
-                ij_array(counter) = ntasks - fill_1 - offset
+                ij_array(counter) = njobs - fill_1 - offset
                 ! increment counter
                 counter = counter + 1
 
@@ -727,14 +727,14 @@ contains
   !> \brief: make job distribution list for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
+  subroutine job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
     implicit none
 
-    !> batch size (without remainder contribution) 
-    integer, intent(in) :: b_size,ntasks
+    !> batch size (without remainder contribution) and njobs 
+    integer, intent(in) :: b_size,njobs
     !> ij_array
-    integer, dimension(ntasks), intent(inout) :: ij_array
+    integer, dimension(njobs), intent(inout) :: ij_array
     !> jobs array
     integer, dimension(b_size+1), intent(inout) :: jobs
     !> integers
@@ -745,7 +745,7 @@ contains
     nodtotal = infpar%lg_nodtot
 
     ! fill the jobs array with values of ij stored in ij_array
-    ! there are (nocc**2 + nocc)/2 tasks in total (ntasks)
+    ! there are (nocc**2 + nocc)/2 jobs in total (njobs)
 
     ! the below algorithm distributes the jobs evenly among the nodes.
 
@@ -753,7 +753,7 @@ contains
 
        fill_sum = infpar%lg_mynum + 1 + fill*nodtotal
 
-       if (fill_sum .le. ntasks) then
+       if (fill_sum .le. njobs) then
 
           jobs(fill + 1) = ij_array(infpar%lg_mynum + 1 + fill*nodtotal) 
 

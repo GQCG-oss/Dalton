@@ -434,7 +434,7 @@ C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *      ' >>> BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
      *      '                   current maximum number MXAOVC =',KAOVEC,
-     &      '  Increase MXAOVC; make depend; make'
+     &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
             END IF
 C
@@ -499,7 +499,7 @@ C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *      ' >>> BASLIB error, number of AO-blocks for PAOSET ',INTORB,
      *      '                   current maximum number MXAOVC =',KAOVEC,
-     &      '  Increase MXAOVC; make depend; make'
+     &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
          END IF
 C
