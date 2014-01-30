@@ -898,6 +898,8 @@ contains
        ! Avoid infinite loop
        if(nreass>5) then
           if(count(which_hydrogens)==natoms) then
+             print*,'Orbital assignment failed because there are only hydrogen atoms!'
+             print*,'For development & debug purposes the keyword PUREHYDROGENDEBUG can be used.'
              call lsquit('Orbital assignment failed because there are only hydrogen atoms!',-1)
           else 
              write(DECinfo%output,*) 'WARNING: Reassignment procedure failed!'
