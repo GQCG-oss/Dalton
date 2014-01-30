@@ -517,7 +517,7 @@ contains
     integer :: i,j,atom,central_atom,n,norbital_extent,nbasis,heavyatom,ni
     integer, pointer :: list_of_atoms_to_consider(:)
     real(realk) :: error,charge,mindist,twall,tcpu,maxlowdin
-    logical :: keepon
+    logical :: keepon,ReAssignVirtHydrogenOrbs
     real(realk), pointer :: ShalfC(:,:)
     real(realk), pointer :: lowdin_charge(:,:)
     integer, pointer :: atomic_idx(:,:), countOcc(:), countUnocc(:),central_atom2(:)
@@ -526,6 +526,7 @@ contains
     integer,pointer :: MyHeavyAtom(:),nhydrogens(:),CentralHydrogen(:)
     real(realk),pointer :: tmplowdin_charge(:)
     integer,pointer :: tmpatomic_idx(:)
+    integer :: nunoccperatom
 
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -539,7 +540,9 @@ contains
     call mem_alloc(lowdin_charge,natoms,nbasis)
     call mem_alloc(ShalfC,nbasis,nbasis)
     call mem_alloc(atomic_idx,natoms,nbasis)
-    call mem_alloc(central_atom2,nbasis)
+    if(DECinfo%Distance) then
+       call mem_alloc(central_atom2,nbasis)
+    endif
 
     ! Get Lowdin matrix S^{1/2} C
     call Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
@@ -578,7 +581,7 @@ contains
           !central atom determined from shortest distance from MO
           central_atom = central_atom2(i)
           IF(atomic_idx(1,i).EQ.central_atom)THEN
-             !do nothing the closest atom is also the one with the largest Lowdin charge             
+             !do nothing the closest atom is also the one with the largest Lowdin charge
           ELSE
              !we reorder the lowdin_charge(:,i) list to put the central atom on top
              call mem_alloc(tmplowdin_charge,nAtoms)
@@ -638,7 +641,9 @@ contains
           write(DECinfo%output,'(1X,a,100i5)')    'ATOMS  : ', list_of_atoms_to_consider
           write(DECinfo%output,'(1X,a,100f10.3)') 'LOWDIN : ', lowdin_charge(1:norbital_extent,i)
           write(DECinfo%output,'(1X,a,i6)') 'Central Atom : ', central_atom
-          write(DECinfo%output,'(1X,a,i6)') 'Central Atom : ', central_atom2(i)
+          if(DECinfo%Distance) then
+             write(DECinfo%output,'(1X,a,i6)') 'Central Atom : ', central_atom2(i)
+          endif
           write(DECinfo%output,*)
        end if
 
@@ -655,47 +660,45 @@ contains
 
     end do OrbitalLoop
 
+    IF(.NOT.decinfo%PureHydrogendebug)THEN
+     ! *******************************************************************************
+     ! *                   Assign each hydrogen atom to a heavy atom                 *
+     ! *******************************************************************************
+     ! Note: "Heavy atom" is anything that is not hydrogen
 
-
-
-    ! *******************************************************************************
-    ! *                   Assign each hydrogen atom to a heavy atom                 *
-    ! *******************************************************************************
-    ! Note: "Heavy atom" is anything that is not hydrogen
-
-    ! Which atoms are hydrogens?
-    call mem_alloc(which_hydrogens,natoms)
-    which_hydrogens=.false.
-    do atom=1,natoms
+     ! Which atoms are hydrogens?
+     call mem_alloc(which_hydrogens,natoms)
+     which_hydrogens=.false.
+     do atom=1,natoms
        if(myLsitem%input%molecule%Atom(atom)%atomic_number==1) then
           which_hydrogens(atom)=.true.
        end if
-    end do
+     end do
 
 
-    ! For each hydrogen atom, find nearest heavy atom
-    ! -----------------------------------------------
-    ! nearest heavy atom for hydrogen atom (zero for heavy atom)
-    call mem_alloc(MyHeavyAtom,natoms)   
-    ! number of hydrogens for each heavy atom 
-    ! (zero for hydrogen atom or heavy atom with no hydrogen neighbours)
-    call mem_alloc(nhydrogens,natoms)    
-    ! For each heavy atom, choose one hydrogen to be the central one 
-    ! (zero for hydrogen atom or heavy atom with no hydrogen neighbours)
-    call mem_alloc(centralHydrogen,natoms)
-    nhydrogens=0
-    MyHeavyAtom=0
-    centralHydrogen=0
+     ! For each hydrogen atom, find nearest heavy atom
+     ! -----------------------------------------------
+     ! nearest heavy atom for hydrogen atom (zero for heavy atom)
+     call mem_alloc(MyHeavyAtom,natoms)   
+     ! number of hydrogens for each heavy atom 
+     ! (zero for hydrogen atom or heavy atom with no hydrogen neighbours)
+     call mem_alloc(nhydrogens,natoms)    
+     ! For each heavy atom, choose one hydrogen to be the central one 
+     ! (zero for hydrogen atom or heavy atom with no hydrogen neighbours)
+     call mem_alloc(centralHydrogen,natoms)
+     nhydrogens=0
+     MyHeavyAtom=0
+     centralHydrogen=0
 
 
 
 
-    AbsorbHydrogenAtoms: if(DECinfo%AbsorbHatoms) then 
+     AbsorbHydrogenAtoms: if(DECinfo%AbsorbHatoms) then 
        ! Reassign orbitals originally assigned to hydrogen
        call reassign_orbitals(nocc,OccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
        call reassign_orbitals(nunocc,UnOccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
 
-    else ! we want fragments of hydrogen atoms
+     else ! we want fragments of hydrogen atoms
 
 
        ! Very special case: Only hydrogen atoms in molecule
@@ -763,9 +766,26 @@ contains
 
        end if OnlyHydrogen
 
-    end if AbsorbHydrogenAtoms
-
-
+     end if AbsorbHydrogenAtoms
+    ELSE       
+       do i=1,nocc
+          OccOrbitals(i)%centralatom = i
+       enddo
+       nunoccperatom = nunocc/nocc
+       do i=1,nunocc
+          ReAssignVirtHydrogenOrbs = .TRUE.
+          do j=1,nocc
+             IF(UnOccOrbitals(i)%centralatom.EQ.j)THEN
+                ReAssignVirtHydrogenOrbs = .FALSE.                
+             ENDIF
+          enddo
+          IF(ReAssignVirtHydrogenOrbs)THEN
+             do j=1,nocc   
+                UnOccOrbitals(i)%centralatom = (nunocc-1)/nunoccperatom + 1
+             enddo
+          ENDIF
+       enddo
+    ENDIF !PUREHYDROGENS
     ! ******************************************************************************************
     ! * Reassign 2: Ensure that all atoms have both occupied and unoccupied orbitals assigned  *
     ! ******************************************************************************************
@@ -778,7 +798,6 @@ contains
     do i=offset+1,nocc
        countocc(OccOrbitals(i)%centralatom) = countocc(OccOrbitals(i)%centralatom)+1
     end do
-
     do i=1,nunocc
        countunocc(UnoccOrbitals(i)%centralatom) = countunocc(UnoccOrbitals(i)%centralatom)+1
     end do
@@ -791,7 +810,6 @@ contains
        if( countocc(i)/=0 .or. countunocc(i)/=0 ) dofrag(i)=.true.
     end do
 
-
     ! Now reassign to ensure that all atomic fragment have both occupied and unoccupied orbitals
     keepon = .true.
     nreass=0  ! number of reassigment steps
@@ -800,7 +818,7 @@ contains
 
        ReassignAtomLoop: do atom=1,natoms
 
-          ! Reassign occupied orbitals
+          ! Reassign occupied orbitals          
           OccReassign: if(dofrag(atom) .and. countocc(atom)==0) then
 
              ! Atom is supposed to be central in an atomic fragment but
@@ -880,6 +898,8 @@ contains
        ! Avoid infinite loop
        if(nreass>5) then
           if(count(which_hydrogens)==natoms) then
+             print*,'Orbital assignment failed because there are only hydrogen atoms!'
+             print*,'For development & debug purposes the keyword PUREHYDROGENDEBUG can be used.'
              call lsquit('Orbital assignment failed because there are only hydrogen atoms!',-1)
           else 
              write(DECinfo%output,*) 'WARNING: Reassignment procedure failed!'
@@ -895,15 +915,18 @@ contains
        write(DECinfo%output,*) 'Number of reassignment steps: ', nreass
     end if
 
-
-    call mem_dealloc(nhydrogens)
-    call mem_dealloc(which_hydrogens)
-    call mem_dealloc(MyHeavyAtom)
+    IF(.NOT.DECinfo%PureHydrogenDebug)THEN
+       call mem_dealloc(which_hydrogens)
+       call mem_dealloc(MyHeavyAtom)
+       call mem_dealloc(nhydrogens)
+       call mem_dealloc(centralHydrogen)
+    ENDIF
     call mem_dealloc(dofrag)
     call mem_dealloc(lowdin_charge)
     call mem_dealloc(atomic_idx)
-    call mem_dealloc(central_atom2)
-    call mem_dealloc(centralHydrogen)
+    if(DECinfo%Distance) then
+       call mem_dealloc(central_atom2)
+    endif
     call mem_dealloc(countOcc)
     call mem_dealloc(countUnocc)
 
