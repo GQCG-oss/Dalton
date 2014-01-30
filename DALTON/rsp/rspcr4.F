@@ -234,7 +234,6 @@ C
 #include "indcr.h"
 #include "infdim.h"
 C
-C      CALL QENTER('CRLRV2')
       CALL QENTER('CRLRV3')
 C
 C   Initialize variables
@@ -245,7 +244,7 @@ C
 C   Check number of two index linear vector equations
 C
 
-C      IF (NLRLB2 .LE. 0) GO TO 9999
+      IF (NLRLB2 .LE. 0) GO TO 9999
 
 C
 C   Loop over number of two-index vectors

@@ -1568,11 +1568,11 @@ C add X2init both permutation to GT3
       KFREE = KAVEC
       LFREE = LWRK - KFREE + 1
 
-      CALL CRLRV3( WRK(IG), BQRLB(MSYMB, IBOP),
-     *CQRLB(MSYMC,ICOP), FREQB, FREQC,
-     *CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
-     *XINDX, MJWOP, WRK(1 + MZYVAR(MSYMA)),
-     *LWRK - 1 - MZYVAR(MSYMA) )
+!                           CALL CRLRV3( WRK(IG), BQRLB(MSYMB, IBOP),
+!     *                     CQRLB(MSYMC,ICOP), FREQB, FREQC,
+!     *                     CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
+!     *                     XINDX, MJWOP, WRK(1 + MZYVAR(MSYMA)),
+!     *                     LWRK - 1 - MZYVAR(MSYMA) )
 
 !!!!!!!!!!  Continuation with normal program
 C

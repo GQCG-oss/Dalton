@@ -928,6 +928,7 @@ C
 C PURPOSE:
 C CALCULATION OF FIRST HYPERPOLARIZABILITIES AND RELATED PROPERTIES
 C
+      INTEGER     IG
       CHARACTER*1 ALABP, BLABP, CLABP
       CHARACTER*8 BLANK, LABEL
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
@@ -957,12 +958,23 @@ C
 C
 C     Local variables:
 C
-      INTEGER IG
-      DIMENSION GT3(MZYVAR(1)), GX2BC(MZYVAR(1)), GX2CB(MZYVAR(1))
       DIMENSION HYPVAL(MXQROP), MJWOP(2,MAXWOP,8)
       LOGICAL   DIPLEN, DOCAL, FOUND, CONV, DFTADX
 C
       CALL QENTER('QRHYP')
+
+C      opening new files for quadratic writing response, will put
+C      in global scope later
+
+      LUE3VEC = -1
+      LUX2VEC = -1
+      CALL GPOPEN(LUE3VEC,'E3VEC','NEW',' ','UNFORMATTED',IDUMMY,
+     &      .FALSE.)
+      CALL GPOPEN(LUX2VEC,'X2VEC','NEW',' ','UNFORMATTED',IDUMMY,
+     &      .FALSE.)
+      WRITE(LUE3VEC) 'EOFLABEL'
+      WRITE(LUX2VEC) 'EOFLABEL'
+
       IF (SOCOLL) CALL SOINIT
       IF (SSCOLL) CALL SSINIT(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,
      &                        SPNSU1,SPNSU2,SPNSU)
@@ -1251,8 +1263,15 @@ C
      *                            -FREQB,-FREQC,XINDX,
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
      &                           CMO,FC,FV)
-                              CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),
-     &                        1,GT3,1)
+
+C Save results from T3DRV in E3VEC for later equation solving
+                              WRITE(LUPRI,*) 'ignat'
+                              CALL WRTRSP(LUE3VEC, MZYVAR(MSYMA),
+     *                        WRK(KX3WRK),
+     *                        BQRLB(MSYMB,IBOP), CQRLB(MSYMC,ICOP),
+     *                        FREQ1, FREQ2, KSYMOP,
+     *                        KSYMOP, D0, ANTSYM)
+
                               IF (E3TEST) THEN
                                  CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),1,
      *                                      WRK(1),1)
@@ -1376,8 +1395,15 @@ C
      *                              UDV,PV,
      *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
-                           CALL DCOPY(MZYVAR(MSYMA),WRK(KB2C),
-     *                     1,GX2BC,1) 
+C Save results from X2INIT for later storing quadratic repsonce vectors
+
+                           CALL WRTRSP(LUX2VEC, MZYVAR(MSYMA),
+     *                     WRK(KB2C),
+     *                     BQRLB(MSYMB,IBOP), CQRLB(MSYMC,ICOP),
+     *                     FREQ1, FREQ2, KSYMOP,
+     *                     KSYMOP, D0, ANTSYM)
+
+
                            DO 920 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1484,9 +1510,14 @@ C
      *                           UDV,PV,
      *                           CQRLB(MSYMC,ICOP),MSYMC,IRANKC,
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
+C Save from X2INIT for later storing, permutated case switch B and C
+                           CALL WRTRSP(LUX2VEC, MZYVAR(MSYMA),
+     *                     WRK(KC2B),
+     *                     CQRLB(MSYMC,ICOP), BQRLB(MSYMB,IBOP),
+     *                     FREQ2, FREQ1, KSYMOP,
+     *                     KSYMOP, D0, ANTSYM)
 
-                           CALL DCOPY(MZYVAR(MSYMA),WRK(KC2B),
-     *                     1,GX2CB,1) 
+
                            DO 930 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1539,42 +1570,38 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               CALL FLSHFO(LUPRI)
   930                      CONTINUE
 
-!!!!!!!! Where the magic happends to get the response vector
-      WRITE(LUPRI,*) 'ignat'
-      WRITE(LUPRI,*) 'MZYVAR(MSYMA)'
-      WRITE(LUPRI,*) MZYVAR(MSYMA)
+C Read in E3VEC and X2VEC using modified REARSP subroutine, and solve
+C new differential equations
+                           !E3VEC first
+                           CALL READE3(LUE3VEC, MZYVAR(MSYMA),
+     *                     WRK(KX3WRK), BQRLB(MSYMB,IBOP),
+     *                     CQRLB(MSYMC,COP),
+     *                     FREQ1, FREQ2, KSYMOP,KSYMOP, D0, ANTSYM)
 
-      WRITE(LUPRI,*) 'Starting do loop for all 3, labels', 
-     *BQRLB(MSYMB,IBOP), CQRLB(MSYMC,ICOP)
+!                           CALL READX2(LUX2VEC, MZYVAR(MSYMA),
+!     *                     WRK(KB2C), BQRLB(MSYMB,IBOP),
+!     *                     CQRLB(MSYMC,ICOP),
+!     *                     FREQ1, FREQ2, KSYMOP,KSYMOP, D0, ANTSYM,
+!     *                     .TRUE.)
 
-      DO IG = 1, MZYVAR(MSYMA)
-      WRITE(LUPRI,*) GT3(IG), GX2BC(IG), GX2CB(IG) 
-      END DO
+!                           CALL READX2(LUX2VEC, MZYVAR(MSYMA),
+!     *                     WRK(KC2B), CQRLB(MSYMC,ICOP),
+!     *                     BQRLB(MSYMB,IBOP),
+!     *                     FREQ2, FREQ1, KSYMOP,KSYMOP, D0, ANTSYM,
+!     *                     .FALSE.)
 
-C add X2init both permutation to GT3
-      CALL DAXPY( MZYVAR(MSYMA),1.0D0, GX2BC,1, GX2CB, 1)
-      CALL DAXPY( MZYVAR(MSYMA),1.0D0, GX2CB,1, GT3,1 )
-
-      WRITE(LUPRI,*) 'print sum of all 3 vectors: GT3'
-      WRITE(LUPRI,*) 'put GT3 in WRK(1:KZYVAR)'
-      !Put right hand in WRK beginning
-      DO IG = 1, MZYVAR(MSYMA)
-      WRITE(LUPRI,*) GT3(IG)
-      WRK(IG) = GT3(IG)
-      END DO
-
-      !Allocate new WRK array for CRLRV3
-      KFREE = KAVEC + MZYVAR(MSYMA)
-      KFREE = KAVEC
-      LFREE = LWRK - KFREE + 1
-
-      CALL CRLRV3( WRK(IG), BQRLB(MSYMB, IBOP),
-     *CQRLB(MSYMC,ICOP), FREQB, FREQC,
-     *CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
-     *XINDX, MJWOP, WRK(1 + MZYVAR(MSYMA)),
-     *LWRK - 1 - MZYVAR(MSYMA) )
-
-!!!!!!!!!!  Continuation with normal program
+                           WRITE(LUPRI,*) 'Test printing out whole A'
+                           WRITE(LUPRI,*) 'Len of MSYMA:',MZYVAR(MSYMA)
+                           !DO IG = 1 , MZYVAR(MSYMA)
+                           !WRITE(LUPRI,*) WRK(KX3WRK + IG -1)
+                           !END DO
+!                           CALL X2INIT(1,MZYVAR(MSYMA),MZYVAR(MSYMC),
+!     *                              MSYMA,ISPINA,MSYMC,ISPINC,
+!     *                              WRK(KAVEC),VECC,WRK(KB2C),XINDX,
+!     *                              UDV,PV,
+!     *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
+!     *                              CMO,MJWOP,WRK(KFREE),LFREE)
+C Save results from X2INIT for later storing quadratic repsonce vectors
 C
 C A2TEST
 C
