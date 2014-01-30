@@ -1436,10 +1436,6 @@ contains
        print *, "Error: Wrong dim transformed_mo C(4)"
     end if
 
-    
-
-
-
     call get_mp2f12_AO_transform_MO(MySetting,transformed_mo, C(1)%n1,C(1)%n2,C(2)%n1,C(2)%n2,C(3)%n1, &
          & C(3)%n2,C(4)%n1,C(4)%n2, C(1)%cmat,C(2)%cmat,C(3)%cmat,C(4)%cmat,intType,intSpec) 
 

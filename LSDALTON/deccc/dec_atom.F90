@@ -1170,7 +1170,7 @@ contains
     
     !F12-Ccabs
     if(DECinfo%F12) then
-       call create_f12_cabs_and_ri_fragment_info(fragment)
+      call create_f12_cabs_and_ri_fragment_info(fragment)
     endif
     
 #endif

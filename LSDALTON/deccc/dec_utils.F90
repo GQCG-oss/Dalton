@@ -2136,9 +2136,9 @@ contains
     ! Internal control of whether basis info is set or not
     fragment%BasisInfoIsSet=.false.
 
-   ! if(DECinfo%F12) then
-   !    call atomic_fragment_free_f12(fragment)
-   ! end if
+   if(DECinfo%F12) then
+       call atomic_fragment_free_f12(fragment)
+    end if
     
   end subroutine atomic_fragment_free_basis_info
 
