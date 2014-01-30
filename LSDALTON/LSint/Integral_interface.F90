@@ -5198,10 +5198,14 @@ real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
-real(realk)         :: lambda, constrain_factor
+real(realk)         :: lambda, constrain_factor, scaling_factor
 logical             :: const_electrons
+logical             :: scaleXC2
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
+const_electrons = setting%scheme%ADMM_CONST_EL
+scaleXC2 = setting%scheme%ADMMQ_ScaleXC2
+
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
 ELSE
@@ -5277,8 +5281,13 @@ ENDIF
        
 ! Get the scaling factor derived from constraining the total charge
 constrain_factor = 1.0E0_realk
+
+! calculate Lambda for debugging purpose only, we overwrite the constants after anyway
+   call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
+            &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
 lambda = 0E0_realk  
-const_electrons = setting%scheme%ADMM_CONST_EL
+
+
 IF (const_electrons) THEN   
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
             &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
@@ -5327,7 +5336,12 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 
 !Level 2 XC matrix
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
+IF (scaleXC2) THEN
+   EX2 = constrain_factor**(4./3.)*EX2            ! RE-SCALING EXC2 TO FIT k2
+   call mat_scal(constrain_factor**(4./3.),F2(1)) ! RE-SCALING XC2 TO FIT k2  
+ENDIF
 call mat_daxpy(-GGAXfactor,F2(1),k2_xc2)
+
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                           & AO2,AO3,GC2,GC3,constrain_factor)
@@ -5377,12 +5391,16 @@ IF (const_electrons) THEN
   CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AO2,AO3,GC2,GC3,constrain_factor)
 
   CALL mat_mul(S32,T23,'n','n',-1E0_realk,0E0_realk,tmp33)
-  call mat_scal(constrain_factor, tmp33)
+  call mat_scal(constrain_factor*constrain_factor, tmp33)
   call mat_daxpy(1E0_realk,S33,tmp33)
   
   write(lupri,*) 'debug:LAMBDA ',2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
   write(lupri,*) 'debug:constrain_factor ',constrain_factor
-  call mat_scal(2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons, tmp33)
+  scaling_factor = 4E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
+  IF (scaleXC2) THEN
+     scaling_factor = scaling_factor - 4E0_realk*EX2(1) / 3E0_realk / nelectrons
+  ENDIF		    
+  call mat_scal(scaling_factor, tmp33)
   call mat_daxpy(1E0_realk,tmp33,dXC)
   
   CALL mat_free(S33)
@@ -5412,7 +5430,7 @@ CONTAINS
       integer      :: nelectrons
       logical      :: DEBUG_ADMM_CONST
 
-      DEBUG_ADMM_CONST = .FALSE.
+      DEBUG_ADMM_CONST = .TRUE.
       CALL mat_init(T23,n2,n3)
       CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,1E0_realk)
      
@@ -5598,9 +5616,11 @@ character(len=80)   :: WORD
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
 real(realk)         :: lambda, constrain_factor,nrm
-logical             :: const_electrons,DEBUG_ADMM_CONST
+logical             :: const_electrons,DEBUG_ADMM_CONST,scaleXC2
 integer             :: iAtom,iX
 !
+const_electrons = setting%scheme%ADMM_CONST_EL
+scaleXC2 = setting%scheme%ADMMQ_ScaleXC2
 DEBUG_ADMM_CONST = .FALSE.
 call lstimer('START',ts,te,lupri)
 IF (setting%scheme%cam) THEN
@@ -5638,12 +5658,15 @@ DO idmat=1,ndrhs
    AO3 = AORdefault ! assuming optlevel.EQ.3
 
    ! Get the scaling factor derived from constraining the total charge
-   const_electrons = setting%scheme%ADMM_CONST_EL
    IF (const_electrons) THEN   
       call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
                & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
                & nbast2,nbast,AO2,AO3,GC2,GC3)
    ELSE
+	! calculate Lambda for debugging purpose only, we overwrite the constants after anyway
+      call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
+               & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
+               & nbast2,nbast,AO2,AO3,GC2,GC3)
       constrain_factor = 1.0E0_realk
       lambda = 0E0_realk  
    ENDIF
@@ -5941,10 +5964,11 @@ CONTAINS
       logical                    :: DEBUG_ADMM_CONST
       Type(matrix),pointer       :: Sa(:),S32x(:),S23x(:),S33x(:),S22x(:) ! derivative along x,y and z for each atom
       Type(matrix),pointer       :: D3x(:),D3x1(:),D3x3(:)
-      Logical                    :: const_electrons
+      Logical                    :: const_electrons,scaleXC2
       !
       DEBUG_ADMM_CONST = .FALSE.
       const_electrons = setting%scheme%ADMM_CONST_EL
+      scaleXC2 =  setting%scheme%ADMMQ_ScaleXC2
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(T23,n2,n3)
       call mat_zero(T23)

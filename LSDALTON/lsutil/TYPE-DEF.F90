@@ -184,6 +184,7 @@ LOGICAL     :: ADMM_DFBASIS
 LOGICAL     :: ADMM_JKBASIS
 LOGICAL     :: ADMM_MCWEENY
 LOGICAL     :: ADMM_CONST_EL
+LOGICAL     :: ADMMQ_ScaleXC2
 LOGICAL     :: SR_EXCHANGE
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
@@ -331,6 +332,7 @@ LOGICAL     :: ADMM_DFBASIS
 LOGICAL     :: ADMM_JKBASIS
 LOGICAL     :: ADMM_MCWEENY
 LOGICAL     :: ADMM_CONST_EL
+LOGICAL     :: ADMMQ_ScaleXC2
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
 REAL(REALK) :: CAMalpha
