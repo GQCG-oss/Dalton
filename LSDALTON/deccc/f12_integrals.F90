@@ -236,7 +236,7 @@ contains
     call mem_alloc(V1ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
 
     call mem_alloc(V2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)  
-    call mem_alloc(Gijpq,  nocvAOS, nocvAOS, noccEOS, noccEOS)    
+    call mem_alloc(Gijpq,  noccEOS, noccEOS, nocvAOS, nocvAOS)    
     call mem_alloc(Rijpq,  noccEOS, noccEOS, nocvAOS, nocvAOS)
 
     call mem_alloc(V3ijkl, noccEOS, noccEOS, noccEOS, noccEOS)  

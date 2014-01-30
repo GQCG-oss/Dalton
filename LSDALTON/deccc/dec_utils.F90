@@ -2136,9 +2136,9 @@ contains
     ! Internal control of whether basis info is set or not
     fragment%BasisInfoIsSet=.false.
 
-    if(DECinfo%F12) then
-       call atomic_fragment_free_f12(fragment)
-    end if
+   ! if(DECinfo%F12) then
+   !    call atomic_fragment_free_f12(fragment)
+   ! end if
     
   end subroutine atomic_fragment_free_basis_info
 
@@ -4457,7 +4457,6 @@ contains
 
     ! MODIFY FOR NEW CORRECTION
     if(DECInfo%F12debug) then
-       print *, "(DEC_driver) Total energy for MP2-F12: ", energies(FRAGMODEL_F12)
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a,g20.10)') 'MP2F12-V_gr_term occupied correlation energy : ', energies(FRAGMODEL_F12)
        write(DECinfo%output,*)       
