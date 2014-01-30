@@ -1227,13 +1227,21 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
                   &ADMM has been previously defined.',lupri)
            ENDIF
            INTEGRAL%ADMM_CONST_EL   = .TRUE.
-        CASE ('.ADMMQ-Scale');
+        CASE ('.ADMMQ-ScaleXC2');
            IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
                   &ADMM has been previously defined.',lupri)
            ENDIF
            INTEGRAL%ADMM_CONST_EL    = .TRUE.
            INTEGRAL%ADMMQ_ScaleXC2   = .TRUE.
+        CASE ('.ADMMQ-ScaleE');
+           IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
+                  &ADMM has been previously defined.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_CONST_EL    = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2   = .FALSE.
+	   INTEGRAL%ADMMQ_ScaleE     = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.

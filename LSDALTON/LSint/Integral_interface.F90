@@ -5200,11 +5200,12 @@ character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
 real(realk)         :: lambda, constrain_factor, scaling_factor
 logical             :: const_electrons
-logical             :: scaleXC2
+logical             :: scaleXC2, scale_finalE
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
 const_electrons = setting%scheme%ADMM_CONST_EL
 scaleXC2 = setting%scheme%ADMMQ_ScaleXC2
+scale_finalE = setting%scheme%ADMMQ_ScaleE
 
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
@@ -5341,6 +5342,11 @@ IF (scaleXC2) THEN
    call mat_scal(constrain_factor**(4./3.),F2(1)) ! RE-SCALING XC2 TO FIT k2  
 ENDIF
 call mat_daxpy(-GGAXfactor,F2(1),k2_xc2)
+IF (scale_finalE) THEN ! RE-SCALING ONLY K3 and EX2 BUT NOT THE DENSITY, NOR THE xc2 matrix alone
+   EX2 = constrain_factor**(4.E0_realk)*EX2
+   call mat_scal(constrain_factor**(4.E0_realk),k2_xc2) 
+ENDIF
+
 
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
@@ -5550,6 +5556,7 @@ CONTAINS
    Logical :: onMaster
    real(realk) :: lambda
    Logical     :: const_electrons
+   Logical     :: scale_finalE
    
    onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
    
@@ -5576,7 +5583,9 @@ CONTAINS
    ! Lagrangian multiplier for conservation of the total nb. of electrons
    ! constrain_factor = 1 / (1-lambda)
    const_electrons = setting%scheme%ADMM_CONST_EL
-   IF (const_electrons) THEN
+   scale_finalE = setting%scheme%ADMMQ_ScaleE
+
+   IF (const_electrons .AND. .NOT.(scale_finalE)) THEN
       call mat_scal(constrain_factor,T23)
    ENDIF
    END SUBROUTINE get_T23
