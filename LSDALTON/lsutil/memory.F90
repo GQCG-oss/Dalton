@@ -450,32 +450,34 @@ TYPE(lattice_cell_info_t) :: lattice_cellitem
 longintbuffersize = 76
 
 #if defined (VAR_XLF) || defined (VAR_G95) || defined (VAR_CRAY)
-print*,'Warning set sizes of Types Manual!'
-print*,'This is error prone - verify that the hardcoded sizes are up to date!'
+#ifdef VAR_LSDEBUG
+print*,'DEBUG: Warning set sizes of Types Manual!'
+print*,'DEBUG: This is error prone - verify that the hardcoded sizes are up to date!'
+#endif
 mem_AOBATCHsize=496
-mem_DECORBITALsize=88
-mem_DECFRAGsize=4004
-mem_BATCHTOORBsize=28
+mem_DECORBITALsize=64
+mem_DECFRAGsize=9016
+mem_BATCHTOORBsize=56
 mem_DECAOBATCHINFOsize=20
-mem_MYPOINTERsize=48
-mem_ARRAY2size=44
-mem_ARRAY4size=256
-mem_ARRAYsize=1280
-mem_MP2DENSsize=252
+mem_MYPOINTERsize=72
+mem_ARRAY2size=80
+mem_ARRAY4size=384
+mem_ARRAYsize=1360
+mem_MP2DENSsize=504
 mem_TRACEBACKsize=12
-mem_MP2GRADsize=388
+mem_MP2GRADsize=848
 mem_ODBATCHsize=88
-mem_LSAOTENSORsize=432
-mem_SLSAOTENSORsize=256
+mem_LSAOTENSORsize=304
+mem_SLSAOTENSORsize=184
 mem_GLOBALLSAOTENSORsize=20
-mem_ATOMTYPEITEMsize=56264
+mem_ATOMTYPEITEMsize=38264
 mem_ATOMITEMsize=216
-mem_LSMATRIXsize=80
-mem_MATRIXsize=1264
-mem_OVERLAPsize=2904
+mem_LSMATRIXsize=56
+mem_MATRIXsize=368
+mem_OVERLAPsize=2272
 #ifdef MOD_UNRELEASED
-mem_lvec_datasize=1264
-mem_lattice_cellsize=1264
+mem_lvec_datasize=1944
+mem_lattice_cellsize=104
 #endif
 #else
 !implemented for VAR_PGF90 VAR_GFORTRAN VAR_IFORT we think!
@@ -504,7 +506,35 @@ mem_OVERLAPsize=sizeof(OVERLAPitem)
 #ifdef MOD_UNRELEASED
 mem_lvec_datasize=sizeof(lvec_dataitem)
 mem_lattice_cellsize=sizeof(lattice_cellitem)
+
 #endif
+
+!print *,sizeof(AOBATCHitem)
+!print *,sizeof(DECORBITALitem)
+!print *,sizeof(DECFRAGitem)
+!print *,sizeof(BATCHTOORBitem)
+!print *,sizeof(DECAOBATCHINFOitem)
+!print *,sizeof(MYPOINTERitem)
+!print *,sizeof(ARRAY2item)
+!print *,sizeof(ARRAY4item)
+!print *,sizeof(ARRAYitem)
+!print *,sizeof(MP2DENSitem)
+!print *,sizeof(TRACEBACKitem)
+!print *,sizeof(MP2GRADitem)
+!print *,sizeof(ODBATCHitem)
+!print *,sizeof(LSAOTENSORitem)
+!print *,sizeof(SLSAOTENSORitem)
+!print *,sizeof(GLOBALLSAOTENSORitem)
+!print *,sizeof(ATOMTYPEITEMitem)
+!print *,sizeof(ATOMITEMitem)
+!print *,sizeof(LSMATRIXitem)
+!print *,sizeof(MATRIXitem)
+!print *,sizeof(OVERLAPitem)
+!#ifdef MOD_UNRELEASED
+!print *,sizeof(lvec_dataitem)
+!print *,sizeof(lattice_cellitem)
+!#endif
+
 #endif
 end subroutine set_sizes_of_types
 
