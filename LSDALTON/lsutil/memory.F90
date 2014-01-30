@@ -508,32 +508,33 @@ mem_lvec_datasize=sizeof(lvec_dataitem)
 mem_lattice_cellsize=sizeof(lattice_cellitem)
 
 #endif
-print *,sizeof(AOBATCHitem)
-print *,sizeof(DECORBITALitem)
-print *,sizeof(DECFRAGitem)
-print *,sizeof(BATCHTOORBitem)
-print *,sizeof(DECAOBATCHINFOitem)
-print *,sizeof(MYPOINTERitem)
-print *,sizeof(ARRAY2item)
-print *,sizeof(ARRAY4item)
-print *,sizeof(ARRAYitem)
-print *,sizeof(MP2DENSitem)
-print *,sizeof(TRACEBACKitem)
-print *,sizeof(MP2GRADitem)
-print *,sizeof(ODBATCHitem)
-print *,sizeof(LSAOTENSORitem)
-print *,sizeof(SLSAOTENSORitem)
-print *,sizeof(GLOBALLSAOTENSORitem)
-print *,sizeof(ATOMTYPEITEMitem)
-print *,sizeof(ATOMITEMitem)
-print *,sizeof(LSMATRIXitem)
-print *,sizeof(MATRIXitem)
-print *,sizeof(OVERLAPitem)
-#ifdef MOD_UNRELEASED
-print *,sizeof(lvec_dataitem)
-print *,sizeof(lattice_cellitem)
 
-#endif
+!print *,sizeof(AOBATCHitem)
+!print *,sizeof(DECORBITALitem)
+!print *,sizeof(DECFRAGitem)
+!print *,sizeof(BATCHTOORBitem)
+!print *,sizeof(DECAOBATCHINFOitem)
+!print *,sizeof(MYPOINTERitem)
+!print *,sizeof(ARRAY2item)
+!print *,sizeof(ARRAY4item)
+!print *,sizeof(ARRAYitem)
+!print *,sizeof(MP2DENSitem)
+!print *,sizeof(TRACEBACKitem)
+!print *,sizeof(MP2GRADitem)
+!print *,sizeof(ODBATCHitem)
+!print *,sizeof(LSAOTENSORitem)
+!print *,sizeof(SLSAOTENSORitem)
+!print *,sizeof(GLOBALLSAOTENSORitem)
+!print *,sizeof(ATOMTYPEITEMitem)
+!print *,sizeof(ATOMITEMitem)
+!print *,sizeof(LSMATRIXitem)
+!print *,sizeof(MATRIXitem)
+!print *,sizeof(OVERLAPitem)
+!#ifdef MOD_UNRELEASED
+!print *,sizeof(lvec_dataitem)
+!print *,sizeof(lattice_cellitem)
+!#endif
+
 #endif
 end subroutine set_sizes_of_types
 
