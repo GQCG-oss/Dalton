@@ -226,6 +226,9 @@ module dec_typedef_module
      !> Use F12 correction
      logical :: F12DEBUG
 
+     !> Debug keyword to specify pure hydrogen atoms
+     logical :: PUREHYDROGENdebug
+
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split
