@@ -1330,7 +1330,7 @@ contains
   !> Brief: Get <1,2|INTSPEC|3,4> MO integrals wrapper.
   !> Author: Yang M. Wang
   !> Data: Nov 2013
-  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,T)
+  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,transformed_mo)
     implicit none
 
     !> Atomic fragment to be determined  (NOT pair fragment)
@@ -1358,7 +1358,7 @@ contains
     !> Integral Operator Type 
     Character, intent(in) :: intSpec(5) ! NB! Intent in because its read as a string!
     ! <n1,n2|INTSPEC|n3,n4> integrals stored in the order (n1,n2,n3,n4)
-    real(realk), intent(inout) :: T(:,:,:,:)
+    real(realk), intent(inout) :: transformed_mo(:,:,:,:)
 
     !> MO trans coefficient for orbitals in <1,2|INTSPEC|3,4>
     type(ctype), dimension(4) :: C
@@ -1368,7 +1368,7 @@ contains
 
     !> MO trans coefficient dimensions
     integer :: n11,n12,n21,n22,n31,n32,n41,n42
-
+    
     !> MO coefficient matrix for the occupied EOS
     real(realk), target, intent(in) :: CoccEOS(:,:) !CoccEOS(nbasis,noccEOS)
     !> MO coefficient matrix for the occupied AOS
@@ -1416,14 +1416,31 @@ contains
           C(i)%cmat => Cri
           C(i)%n1 = ncabsAO
           C(i)%n2 = ncabsAO 
-       elseif(intType(i).EQ.'a') then !Virt - MOs
-          C(i)%cmat => CvirtAOS
-          C(i)%n1 = nbasis
-          C(i)%n2 = nvirtAOS
-       endif
+          endif
     enddo
 
-    call get_mp2f12_AO_transform_MO(MySetting,T, C(1)%n1,C(1)%n2,C(2)%n1,C(2)%n2,C(3)%n1, &
+    !> Consistency check   
+    if(size(transformed_mo,1) .NE. C(1)%n2) then
+       print *, "Error: Wrong dim transformed_mo C(1)"
+    end if
+
+    if(size(transformed_mo,2) .NE. C(2)%n2) then
+       print *, "Error: Wrong dim transformed_mo C(2)"
+    end if
+    
+    if(size(transformed_mo,3) .NE. C(3)%n2) then
+       print *, "Error: Wrong dim transformed_mo C(3)"
+    end if
+    
+    if(size(transformed_mo,4) .NE. C(4)%n2) then
+       print *, "Error: Wrong dim transformed_mo C(4)"
+    end if
+
+    
+
+
+
+    call get_mp2f12_AO_transform_MO(MySetting,transformed_mo, C(1)%n1,C(1)%n2,C(2)%n1,C(2)%n2,C(3)%n1, &
          & C(3)%n2,C(4)%n1,C(4)%n2, C(1)%cmat,C(2)%cmat,C(3)%cmat,C(4)%cmat,intType,intSpec) 
 
   end subroutine get_mp2f12_MO
@@ -1432,7 +1449,7 @@ contains
   !> Brief: Get <1,2|INTSPEC|3,4> MO integrals stored in the order (1,2,3,4).
   !> Author: Yang M. Wang
   !> Data: Nov 2013
-  subroutine get_mp2f12_AO_transform_MO(MySetting,T,n11,n12,n21,n22,n31,n32,n41,n42, &
+  subroutine get_mp2f12_AO_transform_MO(MySetting,transformed_mo,n11,n12,n21,n22,n31,n32,n41,n42, &
        & C1,C2,C3,C4,INTTYPE,INTSPEC) 
     implicit none
 
@@ -1452,7 +1469,7 @@ contains
     real(realk),intent(in),dimension(n31,n32) :: C3
     real(realk),intent(in),dimension(n41,n42) :: C4
     ! <n1,n2|INTSPEC|n3,n4> integrals stored in the order (n1,n2,n3,n4)
-    real(realk), intent(inout) :: T(n11,n21,n31,n41)  
+    real(realk), intent(inout) :: transformed_mo(n12,n22,n32,n42)  
     !> Dummy integral stored in the order (n3,n2,n4,n1)
     real(realk), pointer :: kjli(:,:,:,:)  
     !> Dummy MO coefficients
@@ -1700,7 +1717,7 @@ contains
     end do BatchGamma
 
     !> Reorder tmp(k,j,l,i) -> tmp(i,j,k,l)
-    call array_reorder_4d(1.0E0_realk,kjli,n32,n22,n42,n12,[4,2,1,3],0.0E0_realk,T)
+    call array_reorder_4d(1.0E0_realk,kjli,n32,n22,n42,n12,[4,2,1,3],0.0E0_realk,transformed_mo)
 
     ! Free and nullify stuff
     ! **********************
