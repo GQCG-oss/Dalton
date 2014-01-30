@@ -195,7 +195,8 @@ module lsmpi_type
 
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-  integer,parameter     :: SPLIT_MPI_MSG = 2147483640
+  !integer,parameter     :: SPLIT_MPI_MSG = 2147483640
+  integer,parameter     :: SPLIT_MPI_MSG = 1000000000
 
   !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
@@ -542,7 +543,6 @@ contains
         k=SPLIT_MPI_MSG
         do i=1,n,k
           n4=k
-          !if((n-i)<k)n4=mod(n,k)
           if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
           call ls_mpibcast_integerV(buffertmp(i:i+n4-1),n4,master,comm)
         enddo
