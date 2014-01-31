@@ -15,6 +15,6 @@
 !     NWOPH  = NWOPT + no. of active-active rotations needed for Hessian
 !     NVARH  = NCONF + NWOPH
 !
-      PARAMETER ( MAXWOP = 230000 )
+      PARAMETER ( MAXWOP = 300000 )
       COMMON /INFVAR/ NCONF,NWOPT,NVAR,JWOPSY,NWOPH,NVARH,NCDETS,       &
      &                JWOP(2,MAXWOP)

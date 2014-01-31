@@ -5640,12 +5640,17 @@ C
 #include "optinf.h"
       PARAMETER (DP25=0.25D0)
       LOGICAL REJGEO
-      THDE = 1.0D-10
+C
+C     Define threshold for numerical noise in Delta energy
+C     by using that SCF/MCSCF/DFT energies are of quadratic
+C     accuracy in the wave function gradient norm.
+C
+      THDE = MAX(1.D-10,10.0D0*GRDNRM**2)
 C
 C     CC energies are less precise and we have to decrease the
 C     energy threshold
 C
-      IF (DOCCSD) THDE = 1.0D-8
+      IF (DOCCSD) THDE = 1.0D-2*THDE
 C
       ERGDIF = ENERGY - ERGOLD
       REJGEO = .FALSE.
@@ -6325,12 +6330,9 @@ C
             ELSE
                IMODE = 1
             END IF
-            IF (IPRINT .GT. 5) THEN
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Making image function by changing ' //
-     &              'the sign of mode ',IMODE
-               WRITE(LUPRI,*)
-            END IF
+            IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A,I3/)')
+     &         ' Making image function by changing'
+     &         //' the sign of mode ',IMODE
             CALL MAKIMG(NCART,NVEC,MXCOOR,EVAL,GRDDIA,
      &           STPDIA,IMODE,.FALSE.)
          END IF
@@ -6354,7 +6356,10 @@ C
  30      CONTINUE
             STPDIA(I) = -GRDDIA(I)/EVAL_EFF
          END DO
-         IF (INDTOT_eff .NE. INDTOT) THEN
+         IF (INDTOT .ne. INDHES(0) .AND. .NOT.NOBRKS) THEN
+            INDTOT_eff = INDTOT ! Do not reset INDTOT because we probably want to break symmetry
+                                ! Instead we reset INDTOT_eff because it is used below
+         ELSE IF (INDTOT_eff .NE. INDTOT) THEN
             WRITE(LUPRI,'(/A,I3,A,I3/A/A)')
      &      ' Calculated Hessian index',INDTOT,
      &        ' is reset to effective Hessian index',INDTOT_eff,
