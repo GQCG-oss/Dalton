@@ -37,7 +37,7 @@ C
 C PURPOSE:
 C DRIVER ROUTINE FOR QUADRATIC RESPONSE
 C
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
 #include "mxcent.h"
@@ -153,7 +153,7 @@ C
 #include "implicit.h"
 #include "iratdef.h"
 C
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
 C VECTOR TO STORE NPPCNV(8)
@@ -1667,7 +1667,7 @@ C
 C
       LOGICAL FOUND, CONV
       CHARACTER*8 BLANK, LABEL
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),VECB(*),VECC(*),WRK(*)
 C
       PARAMETER (BLANK = '        ')
@@ -3219,7 +3219,7 @@ C
       LOGICAL FOUND, CONV
       CHARACTER*8 BLANK
       PARAMETER ( D1 = 1.0D0, BLANK = '        ', D0 = 0.0D0 )
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),VECA(*),VECB(*),MJWOP(*),WRK(*)
 C
 #include "infrsp.h"
