@@ -190,7 +190,7 @@ contains
   !> keeping full AO integrals in memory. Only for testing.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine full_canonical_mp2_f12(MyMolecule,MyLsitem,Dmat,energy)
+  subroutine full_canonical_mp2_f12(MyMolecule,MyLsitem,Dmat,mp2_energy)
 
     implicit none
     !> Full molecule info
@@ -200,7 +200,10 @@ contains
     !> HF density matrix
     type(matrix),intent(in) :: Dmat
     !> Canonical MP2 correlation energy
-    real(realk),intent(inout) :: energy
+    real(realk),intent(inout) :: mp2_energy
+    !> Canonical MP2-F12 correlation energy
+    real(realk) :: mp2f12_energy
+
     real(realk),pointer :: gao(:,:,:,:)
     real(realk),pointer :: gmo(:,:,:,:)
     real(realk),pointer :: Ripjq(:,:,:,:)
@@ -411,7 +414,7 @@ contains
        enddo
        ! Calculate canonical MP2 energy
        ! ******************************
-       energy = 0.0E0_realk
+       mp2_energy = 0.0E0_realk
        do J=1,nocc
           do B=1,nvirt
              do I=1,nocc
@@ -422,15 +425,13 @@ contains
                         & - MyMolecule%qqfock(A,A) - MyMolecule%qqfock(B,B)
 
                    ! Energy = sum_{AIBJ} (AI|BJ) * [ 2(AI|BJ) - (BI|AJ) ] / (epsI + epsJ - epsA - epsB)
-                   energy = energy + gmo(A,I,B,J)*(2E0_realk*gmo(A,I,B,J)-gmo(B,I,A,J))/eps
+                   mp2_energy = mp2_energy + gmo(A,I,B,J)*(2E0_realk*gmo(A,I,B,J)-gmo(B,I,A,J))/eps
 
                 end do
              end do
           end do
        end do
-       !write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
-       !print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
-
+   
     else
        !  THIS PIECE OF CODE IS MORE GENERAL AS IT DOES NOT REQUIRE CANONICAL ORBITALS
        !    ! Get full MP2 (as specified in input)
@@ -444,7 +445,7 @@ contains
 
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
 
-       energy=0.0E0_realk
+       mp2_energy = 0.0E0_realk
        do j=1,nocc
           do b=1,nvirt
              do i=1,nocc
@@ -452,13 +453,11 @@ contains
                    ! Energy = sum_{ijab} ( Taibj) * (ai | bj)
                    Taibj(a,i,b,j) = array4Taibj%val(a,i,b,j)
                    Gtmp = 2.0E0_realk * gmo(a,i,b,j) - gmo(b,i,a,j)
-                   energy = energy + Taibj(a,i,b,j) * Gtmp
+                   mp2_energy = mp2_energy + Taibj(a,i,b,j) * Gtmp
                 end do
              end do
           end do
        end do
-       !write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
-       !print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
     endif
 
     call mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
@@ -615,40 +614,7 @@ contains
           print *, "norm1D(Frm)", norm1D(Frm%elms)
           print *, "norm1D(Fcp)", norm1D(Fcp%elms)
           print *,'-----------------------------------------' 
-
-!!$          print *, '----------------------------------------'
-!!$          print *, '          B6ijkl - Terms              '   
-!!$          print *, '----------------------------------------'
-!!$          do i=1, nocc
-!!$             do j=1, nocc
-!!$                if( abs(Bijij_term6(i,j)) > 1E-10) then
-!!$                   print *, i,j,i,j, Bijij_term6(i,j)
-!!$                endif
-!!$             enddo
-!!$          enddo
-
-          
-!!$          do i=1, nocc
-!!$             do j=1, nocc
-!!$                do r=1, ncabsAO
-!!$                   do l=1, nocc
-!!$                      if(Tirjk(i,r,j,l) > 1E-10) then
-!!$                         print *, "i r j k   Tirjk",i,r,j,l,Tirjk(i,r,j,l) 
-!!$                      endif
-!!$                   enddo
-!!$                enddo
-!!$             enddo
-!!$          enddo
-             
-!!$          do i=1, nocc
-!!$             do r=1, ncabsAO
-!!$                if(hJir%elms(i,r) > 1E-10) then
-!!$                   print *, "i r hJir", hJir%elms(i,r)
-!!$                endif
-!!$             enddo
-!!$          enddo
-          
-          
+         
        endif
 
     else
@@ -729,7 +695,7 @@ contains
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
            print *, 'E23_Bsum: ',  E23_debug
-          print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
+           !print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
           print *, '----------------------------------------'
        endif
     else
@@ -794,17 +760,17 @@ contains
     
     if(DECinfo%F12DEBUG) then
 
-       print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+       print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', mp2_energy
        write(*,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21_debug
        write(*,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22_debug
        write(*,*) 'TOYCODE: F12 E23 CORRECTION TO ENERGY = ',E23_debug
        write(*,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21_debug+E22_debug+E23_debug
-       write(*,*) 'TOYCODE: MP2-F12 ENERGY = ',energy+E21_debug+E22_debug+E23_debug
+       write(*,*) 'TOYCODE: MP2-F12 ENERGY = ',mp2_energy+E21_debug+E22_debug+E23_debug
        
     else
 
-       write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
-       print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+       write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', mp2_energy
+       print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', mp2_energy
 
        write(*,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
        write(DECinfo%output,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
@@ -814,14 +780,16 @@ contains
        write(*,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21+E22
        write(DECinfo%output,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ', E21+E22       
 
+
+       ! Total MP2-F12 correlation energy
+       ! Getting this energy 
+
+       mp2f12_energy = 0.0E0_realk
+       mp2f12_energy = mp2_energy + E21 + E22
+       print *, 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', mp2f12_energy
+       write(DECinfo%output,*) 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', mp2f12_energy
+
     endif
-
-    ! Total MP2-F12 correlation energy
-    ! Getting this energy 
-
-    energy = energy + E21 + E22
-    print *, 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', energy
-    write(DECinfo%output,*) 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', energy
 
     call array4_free(array4Taibj)
     call mem_dealloc(gmo)
