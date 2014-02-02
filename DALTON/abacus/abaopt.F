@@ -2239,9 +2239,7 @@ C            CALL NUMDRV(WORK(1),LWORK,IPRUSR,WRKDLM)
 C
 C     We check to see if there is any properties to be calculated
 C
-         WRITE(LUPRI,*) 'Do we pass this point: Before EXEABA?'
          CALL EXEABA(WORK,LWORK-1,WRKDLM)
-         WRITE(LUPRI,*) 'Do we pass this point: After EXEABA?'
 C
 C     We also check to see if we have requested a RESPONSE calculations
 C
