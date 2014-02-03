@@ -705,10 +705,10 @@ contains
          2.0E0_realk,w3,tl,w4,dim1,0.0E0_realk,omegw,tl)
 
 !#ifdef VAR_MPI
-    write(msg,*) 'Norm of omegw',infpar%lg_mynum
+!    write(msg,*) 'Norm of omegw',infpar%lg_mynum
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
-    call print_norm(omegw,i8*tl*nvirt*nocc,msg)
+!    call print_norm(omegw,i8*tl*nvirt*nocc,msg)
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
     !stop
