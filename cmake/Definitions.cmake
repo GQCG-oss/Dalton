@@ -8,6 +8,10 @@ if(ENABLE_GEN1INT)
 #   add_definitions(-DBUILD_GEN1INT_LSDALTON)
 endif()
 
+if(ENABLE_CHEMSHELL)
+    add_definitions(-DVAR_CHEMSHELL)
+endif()
+
 add_definitions(-DVAR_MFDS)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 add_definitions(-DIMPLICIT_NONE)
