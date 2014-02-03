@@ -47,7 +47,7 @@ implicit none
         integer       :: LENOUT,LENWRK,IOS,i
         character(len=132) :: filename, filestatus, fileformat 
         character(len=20) :: outfil
-        character(len=60) :: wrkdir
+        character(len=200) :: wrkdir
         logical :: fileexists
         do I=1,132
            filestatus(I:I) = ' '
@@ -128,7 +128,7 @@ implicit none
             CALL GETENV ('WRKDIR',WRKDIR)
 #endif
             LENWRK = 0
-            DO I = 1, 60
+            DO I = 1, 200
                IF (WRKDIR(I:I) .EQ. ' ') exit
                LENWRK = LENWRK + 1
             END DO
