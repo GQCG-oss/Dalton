@@ -70,6 +70,7 @@ cat > drpa_grad_ch4.dal <<'%EOF%'
 .HURWITZ
 *CCFOP
 .DIPMOM
+*DERIVA
 **END OF DALTON INPUT
 %EOF%
 #######################################################################

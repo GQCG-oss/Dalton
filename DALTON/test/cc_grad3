@@ -90,6 +90,7 @@ cat > cc_grad3.dal <<'%EOF%'
 .FROIMP
 2
 0
+*DERIVATIVES
 **END OF DALTON INPUT
 %EOF%
 #######################################################################

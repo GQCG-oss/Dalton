@@ -71,6 +71,7 @@ cat > cc_grad_ccpt_hf.dal <<%EOF%
 .FROIMP
 1 0 0 0
 0 0 0 0
+*DERIVA
 **END OF DALTON INPUT
 %EOF%
 #######################################################################

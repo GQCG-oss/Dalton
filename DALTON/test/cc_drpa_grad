@@ -66,6 +66,7 @@ cat > cc_drpa_grad.dal <<'%EOF%'
  1.0d-10
 .PRINT
  2
+*DERIVA
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
