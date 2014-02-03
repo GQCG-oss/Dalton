@@ -814,6 +814,7 @@ C        ... write SIRIFC and CI info for WESTA program
          FLAG(25) = .TRUE.
          FLAG(26) = .TRUE.
       END IF
+      IF (DOMP2 .OR. DONEVPT) FLAG(25) = .TRUE.  ! SIRIFC is now needed for MP2 /Feb.2014
       IF (RNABAC .AND. SUPSYM) THEN
          SUPSYM = .FALSE.
          NWARN = NWARN + 1
@@ -1918,6 +1919,7 @@ C  *END OF (marks end of keyword input)
 C
 C******************************************
 C List of internal control flags for SIRIUS
+C -- saved in FLAG(1:NFLAG) in infinp.h --
 C******************************************
 C
 C Updated: 1-Oct-1987 ha
