@@ -143,6 +143,7 @@ contains
     DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
     DECinfo%F12                     = .false.
     DECinfo%F12debug                = .false.
+    DECinfo%PureHydrogenDebug       = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -463,6 +464,8 @@ contains
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
+       case('.PUREHYDROGENDEBUG')     
+          DECinfo%PureHydrogenDebug       = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
