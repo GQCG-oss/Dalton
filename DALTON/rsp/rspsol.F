@@ -112,7 +112,6 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
-      use polarizable_embedding, only: pe_master
 C
 C
 #include "implicit.h"
@@ -376,69 +375,19 @@ C
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
-     &      ' CONTRIBUTIONS FROM QMMMLTR TO LINEAR TRANSFORMATION'
-         CALL QMMMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
+     *   ' CONTRIBUTIONS FROM QMMMLNO TO LINEAR TRANSFORMATION'
+         CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
-     &               WRK(KDVT),WRK(KDVTTR),
-     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+     &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          IF (IPQMMM .GT. 1) CALL TIMER('QMMMLNO',TIMSTR,TIMEND)
-      ELSE IF (peqm .and. .not. (nasht == 0 .and. trplet)) THEN
-        if (ncsim > 0) then
-           call quit('PE response calc. not implemented for ncsim > 0.')
-        end if
-
-        call memget('REAL', kuev, n2orbx*nosim, wrk, kfree, lfree)
-        call memget('REAL', kev, nnorbx, wrk, kfree, lfree)
-        call memget('REAL', kevao, nnbasx*nosim, wrk, kfree, lfree)
-        call memget('REAL', kdao, nnbasx*nosim, wrk, kfree, lfree)
-        call memget('REAL', kudvao, n2basx, wrk, kfree, lfree)
-        call memget('REAL', kudcao, n2basx, wrk, kfree, lfree)
-        call memget('REAL', kubv, n2orbx*nosim, wrk, kfree, lfree)
-
-        call rspzym(nosim, bovecs, wrk(kubv))
-
-        call dscal(n2orbx*nosim, -2.0d0, wrk(kubv), 1)
-
-        do i = 1, nosim
-            jubv = kubv + (i-1)*n2orbx
-            jdao = kdao + (i-1)*nnbasx
-            call deq27(cmo, wrk(jubv), udv, wrk(kudcao), wrk(kudvao),
-     &                 wrk(kfree), lfree)
-            ! factor 1/2 probably related to factor 2 above?
-            if (nasht > 0) call daxpy(n2basx, 0.5d0, wrk(kudvao), 1,
-     &                                wrk(kudcao), 1)
-            call dgefsp(nbast, wrk(kudcao), wrk(jdao))
-        end do
-
-        call memrel('RSPSLV.pe_master', wrk, 1, kudvao, kfree, lfree)
-
-        call pe_master(runtype='response',
-     &                 denmats=wrk(kdao:kdao+nosim*nnbasx-1),
-     &                 fckmats=wrk(kevao:kevao+nosim*nnbasx-1),
-     &                 nmats=nosim, dalwrk=wrk(kfree:lfree))
-
-        call memrel('RSPSLV.pe_master', wrk, 1, kdao, kfree, lfree)
-
-        do i = 1, nosim
-            juev = kuev + (i-1)*n2orbx
-            jevao = kevao + (i-1)*nnbasx
-            call uthu(wrk(jevao), wrk(kev), cmo, wrk(kfree),
-     &                nbast, norbt)
-            call dsptsi(norbt, wrk(kev), wrk(juev))
-        end do
-
-        call slvsor(.true., .true., nosim, udv, evecs, wrk(kuev))
-
-        call memrel('RSPSLV.pe_master', wrk, 1, kuev, kfree, lfree)
-      ELSE IF (FLAG(16)) THEN
+      ENDIF
+      IF (FLAG(16)) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
          CALL SLVLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               WRK(KDVT),WRK(KDVTTR),
      &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-      ELSE
-         CALL QUIT('Programming error in RSPSLV ')
       END IF
 C
       IF ((NCSIM.GT.0).AND.(IPRRSP.GT.101)) THEN
@@ -451,8 +400,8 @@ C
      *                                       KZVAR,2*NOSIM,-1,LUPRI)
       END IF
       IF (SLVANT) THEN
-         WRITE(LUPRI,*)' TEST calculation with .SLVANT finished'
-         CALL QUIT(' RSPSLV; TEST calculation with .SLVANT finished')
+         WRITE(LUPRI,*)' TEST CALCULATION : SLVANT = ', SLVANT
+         CALL QUIT(' RSPSLV; TEST calculation with SLVANT finished ')
       END IF
       CALL MEMREL('RSPSLV',WRK,1,KFRSAV,KFREE,LFREE)
       IPRRSP = IPRSAV
@@ -671,8 +620,6 @@ C
          END IF
          TLM   = TN(LM) - SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
 C
-C        edh: Txc = < g(l)sum(lm,pq)< 0(L)|Te|0 > + < 0|Te|0(R) > )tpq Epq  
-C
          JRXC  = KRXC
          DO 200 ICSIM = 1,NCSIM
             TTT = SLVELM(DTV(1,ICSIM),WRK(KRLMAC),WRK(KRLM),TAC)
@@ -738,9 +685,9 @@ C     ... orbital part of sigma vector(s)
 C
       IF (KZWOPT .GT. 0) THEN
          JRXC   = KRXC
-         CALL DSPTSI(NORBT,WRK(KRYC),WRK(KURYC))    ! Tyo = tilde{T}g = - 2 sum(lm,pq)g(l)<T(lm)> Q(pq)Epq 
+         CALL DSPTSI(NORBT,WRK(KRYC),WRK(KURYC))
          DO 800 ICSIM = 1,NCSIM
-            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KURXC)) ! Txo = 2 sum{lm,pq}g(l)<Q(lm)>Epq
+            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KURXC))
             IF (TRPLET) THEN
                CALL SLVSOR(.TRUE.,.FALSE.,1,UDVTR,
      *                     SVEC(1,ICSIM),WRK(KURXC))
@@ -1142,7 +1089,7 @@ C
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
       IF ( KZCONF.GT.0 .AND. IREFSY.EQ.KSYMST) THEN
-        IF (NCREF .NE. KZCONF) CALL QUIT('SLVLNO: NCREF .ne. KZCONF')
+         IF (NCREF .NE. KZCONF) CALL QUIT('SLVLNO: NCREF .ne. KZCONF')
 C
 C        ... test orthogonality
 C

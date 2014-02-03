@@ -126,16 +126,6 @@ C
       CALL FLSHFO(LUW4)
       CALL FLSHFO(LUPRI)
       CALL FLSHFO(LUSTAT)
-#ifdef MAGNUS_PLEASE_FIX
-! *********************************************************************
-! *** Save intermolecular part of two-electron Fock matrix and quit ***
-! *********************************************************************
-      if (pe_twoint) then
-          call pe_twoints(nbast, nisht, norbt, work)
-          iconv = 1
-          goto 8000
-      end if
-#endif
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions

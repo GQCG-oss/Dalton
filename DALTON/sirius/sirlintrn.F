@@ -454,6 +454,7 @@ C
          CALL SOLLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KWSOL),LWSOL)
+         CALL GETTIM(T5,W5)
       ELSEIF (PCM) THEN
          MXSIM = MAX(NOSIM,NCSIM)
          KVTEX = KWSOL
@@ -462,19 +463,11 @@ C
          CALL PCMLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KVTEX),WRK(KWPCM),LWPCM)
-      ELSEIF (QMMM) THEN
-         CALL QMMMLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
-     &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
-     &              WRK(K3A),L3A)
-      else if (peqm) then
-#ifdef MAGNUS_PLEASE_FIX
-         CALL pe_lin(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
-     &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
-     &              WRK(K3A),L3A)
-#endif
+         CALL GETTIM(T5,W5)
+      ELSE
+         T5 = T4
+         W5 = W4
       END IF
-      CALL FLSHFO(LUPRI)
-      CALL GETTIM(T5,W5)
 C
 C---------------------------
 C CBN 03.01.06

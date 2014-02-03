@@ -535,16 +535,8 @@ C
      *      ,EPSOL
          END IF
          IF (QM3 .OR. QMMM) THEN
-          WRITE(LUPRI,'(/A)') ' QM/MM response calculation'
+          WRITE(LUPRI,*) 'QM/MM response calculation'
          END IF
-
-         IF (PEQM) THEN
-            WRITE(LUPRI,'(/A/A)')
-     &         ' Polarizable Embedding response calculation',
-     &         ' Environment is modeled using'//
-     &            ' the polarizable embedding scheme (PE library)'
-         ENDIF
-
          IF (QRSHG) THEN
             WRITE (LUPRI,'(A,L2)')
      &      ' Second harmonic generation                     : SHG    ='
@@ -581,6 +573,10 @@ C
      *      ' Test of contributions from A2 terms.'
          IF (X2TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from X2 terms.'
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
+         END IF
       END IF
 C
 C *** END OF HYPINP
@@ -1008,16 +1004,8 @@ C
          END IF
 
          IF (QM3 .OR. QMMM) THEN
-          WRITE(LUPRI,'(/A)') ' QM/MM response calculation'
+          WRITE(LUPRI,*) 'QM/MM response calculation'
          END IF
-
-         IF (PEQM) THEN
-            WRITE(LUPRI,'(/A/A)')
-     &         ' Polarizable Embedding response calculation',
-     &         ' Environment is modeled using'//
-     &            ' the polarizable embedding scheme (PE library)'
-         END IF
-
          IF (MCDCAL) THEN
             WRITE (LUPRI,'(A,L1)')
      *       ' B of Magnetic Circular Dichroism requested    : MCDCAL ='
@@ -1049,6 +1037,10 @@ C
      *      ,MAXITO
          IF (E3TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from E3 and S3 terms.'
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
+         END IF
       END IF
 C
 C *** END OF SMOINP

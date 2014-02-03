@@ -2607,11 +2607,9 @@ C     Multiplication factor for DS in the localspin model
       GO TO 100
 C
  8000 CONTINUE
-
 !     No QC if PE library is used
-!     IF (PEQM) FLAG(21) = .FALSE.  !! second order PE is now OK
+      IF (PEQM) FLAG(21) = .FALSE.
 C     if long-range WFT short-range DFT, process functional keywords :
-
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
 #else
@@ -5354,41 +5352,18 @@ C          to get here unless someone modifies SIRIUS incorrectly
             IF (WFTYPE .EQ. ' ') WFTYPE='HF-srDFT'
             WRITE (IWUNIT,1053) ' HF-srDFT hybrid calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
-     &      'Time-dependent HF-srDFT calculation (response properties).'
+     *      'Time-dependent HF-srDFT calculation (response properties).'
          ELSE IF (DODFT) THEN
-            if (PEQM) then
-                if (wftype == ' ') then
-                    wftype = 'PE-KS-DFT'
-                    write(iwunit,1053)
-     &                      ' Polarizable Embedding KS-DFT calculation.'
-                end if
-                if (dorsp) write(iwunit,1050)
-     &              'Time-dependent Polarizable Embedding KS-DFT'//
-     &              ' calculation (PE-TDDFT)'
-            else
-                IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
-                WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
-                IF ( DORSP ) WRITE (IWUNIT,1050)
-     &              'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
-            end if
+            IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
+            WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
+            IF ( DORSP ) WRITE (IWUNIT,1050)
+     *         'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
          ELSE
-            if (PEQM) then
-                if (wftype == ' ') then
-                    wftype = 'PE-HF'
-                    write(iwunit,1053)
-     &                       ' Polarizable Embedding Hartree-Fock'//
-     &                       ' calculation.'
-                end if
-                if (dorsp) write(iwunit,1050)
-     &              'Time-dependent Polarizable Embedding KS-DFT'//
-     &              ' calculation (PE-TDDFT)'
-            else
-                IF (WFTYPE .EQ. ' ') WFTYPE='HF'
-                WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
-                IF ( DORSP ) WRITE (IWUNIT,1050)
-     *              'Time-dependent Hartree-Fock calculation '//
-     *              '(random phase approximation).'
-            end if
+            IF (WFTYPE .EQ. ' ') WFTYPE='HF'
+            WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
+            IF ( DORSP ) WRITE (IWUNIT,1050)
+     *         'Time-dependent Hartree-Fock calculation '//
+     *         '(random phase approximation).'
          END IF
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE
@@ -5522,7 +5497,7 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
-       IF (PEQM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE-QM'
+       IF (PEQM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
       END IF
 C
 C ***** Wave function specifications

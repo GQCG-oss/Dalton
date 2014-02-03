@@ -346,8 +346,6 @@ csonia 04/10/95
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ',EDNUC
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ',ESOLT
-      else if (peqm) then
-        continue
       ELSE IF (MMPCM) THEN
          WRITE(LUPRI,'(/5X,A/)') 'QM/MM/PCM calculation converged :'
          WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3

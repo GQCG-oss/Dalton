@@ -1698,13 +1698,6 @@ C
          ELSE
             CALL HEADER(' Linear Response single residue calculation',0)
          END IF
-
-         IF (PEQM) THEN
-            WRITE(LUPRI,'(A)') ' PE-QM response calculation'
-            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
-     &                  ' the polarizable embedding scheme (PE library)'
-         END IF
-
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
             WRITE(LUPRI,'(A/A,F8.4)')
      *      ' Equilibrium continuum solvent model requested.',
@@ -1718,6 +1711,15 @@ C
      *      ,EPSTAT,
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
+         END IF
+
+         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
+            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+         ENDIF
+
+         IF (PEQM) THEN
+           WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
          END IF
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
@@ -1738,26 +1740,6 @@ C
             WRITE(LUPRI,'(A,F8.4)')
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
-         END IF
-
-         IF (QM3) WRITE(LUPRI,'(A)')
-     &      ' QM/MM response calculation (model "QM3")'
-
-         IF (QMMM) WRITE(LUPRI,'(A)')
-     &      ' QM/MM response calculation (model "QMMM")'
-
-         IF (QMNPMM) WRITE(LUPRI,'(A)')
-     &      ' QM/NP/MM response calculation'
-
-C
-         IF (QM3 .OR. QMMM .OR. QMNPMM .OR. PCM .OR.PEQM
-     &       .AND. (SOPPA .AND. .NOT. SOPRPA)) THEN
-               WRITE (LUPRI,'(//A/A/A)') 'RSPPP-ERROR: Full '//
-     &     'embedding model SOPPA response is not implemented.',
-     &     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))',
-     &     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-               CALL QUIT(
-     &     'Full embedding SOPPA is not implemented, see output')
          END IF
 C
          IF (DOESA) THEN
@@ -2287,10 +2269,7 @@ C
      *      ,EPSINF
          END IF
 
-         IF (QM3) THEN
-           WRITE(LUPRI,'(A)') ' QM/MM response calculation type "QM3"'
-         END IF
-         IF (QMMM) THEN
+         IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
          
@@ -2299,9 +2278,8 @@ C
          END IF    
 
          IF (PEQM) THEN
-            WRITE(LUPRI,'(A/A)') ' PE-QM response calculation',
-     &         ' Environment is modeled using'//
-     &            ' the polarizable embedding scheme (PE library)'
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
          END IF
 
          IF (CHANNEL_CALC) THEN
@@ -4382,22 +4360,6 @@ C
       END IF
 Cjje
 C
-      
-c      WRITE(LUPRI,*) 'NCONRF............................ =' , NCONRF
-c      WRITE(LUPRI,*) 'Configuration variables (KZCONF).. =' , KZCONF
-c      WRITE(LUPRI,*) '# of configurations (NCONF)....... =' , NCONF
-c      write(lupri,*) 'QMMM', QMMM 
-      IF ((NCONRF .GT. 1) .AND. QMMM) THEN     ! edh: Find MCSCF specific variable Note that NCONRF = 1 for HF calc. => NOT APPROPRIATE!! 
-c         write(lupri,*) 'Do correction to Fock matrix from PE'
-c         WRITE(LUPRI,*) 'KZCONF > 0 Found: Expects QMMM MCSCF'
-c         WRITE(LUPRI,*) 'Going to PCM-like implementation'
-         CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI) 
-         CALL READT (LUSIFC,NNORBT,WRK)
-         DO I = 1,NNORBT
-             FC(I) = FC(I) - WRK(I)
-         ENDDO
-      END IF
-
       IF (SOPPA) THEN
 C
          IF (CCPPA) THEN
@@ -4915,7 +4877,6 @@ C
          ENDIF
 
          IF (PEQM) THEN
-            WRITE(LUPRI,'(A)') ' PE-QM response calculation'
             WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          END IF

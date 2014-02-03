@@ -1478,10 +1478,6 @@ C
 
       IF (QMMM) WRITE(LUPRI,*) 'QMMM calculation'
 
-      if (peqm) then
-        write(lupri,'(a)') ' PE-QM calculation'
-      end if
-
       CALL HEADER('The following molecular properties will be'//
      *            ' calculated in this run:',0)
       WRITE (LUPRI,'(A,I5/)') ' Default print level:    ',IPRDEF

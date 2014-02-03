@@ -293,8 +293,6 @@ C
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
 
-      real*8, dimension(1) :: pe_energy
-      real*8, dimension(:), allocatable :: pefock
       ! rcpmat is used on branch qmcmm, please do not remove
       DIMENSION RCPMAT(*)
 C
@@ -339,7 +337,6 @@ Cholesky
 #include "choscf.h"
 C
 #include "center.h"
-#include "nuclei.h"
 C
 Cholesky
 C
@@ -759,7 +756,6 @@ c        density
        
          IF (.NOT. MMPCM) THEN ! do as we usually do ...
            ESOLT = D0
-
            IF (QM3 .AND. .NOT. DOCCSD) THEN
              CALL MEMGET2('REAL','FCQM3',KFCSOL,NNBAST,WRK,KFREE,LFREE)
              CALL DZERO(WRK(KFCSOL),NNBAST)
@@ -794,18 +790,15 @@ c        density
      &                   WRK(KFCSOL),DUMMY,TNLM,.FALSE.,ESOLT,
      &                   WRK(KFREE),LFREE,IPR_DIIS)
              CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DIIS_CTL.SOLFCK',WRK,KFRSAV,
-     &          KFCSOL,KFREE,LFREE)
+             CALL MEMREL('DISCTL.SOLFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+
            ELSE IF (PCM) THEN
              CALL MEMGET2('REAL','FCPCM',KFCSOL,NNBASX,WRK,KFREE,LFREE)
              CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
      &                   DUMMY,.FALSE.,ESOLT,WRK(KFREE),
      &                   LFREE,IPR_DIIS)
              CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DIIS_CTL.PCMFCK',WRK,KFRSAV,
-     &          KFCSOL,KFREE,LFREE)
            END IF
-
          ELSE  ! the mmpcm interface is only implemented for hf/dft so
 C                no reference to doccsd
 C          parameters on input: MXITMP and THRSMP
@@ -813,7 +806,7 @@ C          parameters on input: MXITMP and THRSMP
            XTEST1 = D0
            CALL MEMGET2('REAL','FCSOL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
            CALL MEMGET2('REAL','MMPCM',KMMPCM,NNBAST,WRK,KFREE,LFREE)
-           DO, ITER = 1, MXITMP
+           DO 998 ITER = 1, MXITMP
 C            First the MM part ...
              CALL DZERO(WRK(KFCSOL),NNBAST)
              CALL DZERO(WRK(KMMPCM),NNBAST)
@@ -842,16 +835,16 @@ C            Now the PCM part ...
                GOTO 999
              ELSE 
                XTEST1 = XTEST2
-             END IF
-           END DO ! ITER = 1, MXITMP
+             ENDIF
+ 998       CONTINUE
  999       CONTINUE
            IF (.NOT. LCONV) write(lupri,*) 'MMPCM not converged !'
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
          ENDIF
 C
          IF (PEQM) THEN
-           CALL MEMGET2('REAL','F_PE', KFPE, NNBASX, WRK, KFREE, LFREE)
-           CALL MEMGET2('REAL','E_PE', KEPE,      1, WRK, KFREE, LFREE)
+           CALL MEMGET('REAL', KFPE, NNBASX, WRK, KFREE, LFREE)
+           CALL MEMGET('REAL', KEPE, 1, WRK, KFREE, LFREE)
            IF (NASHT == 0 .OR. HSFOCK) THEN
              CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE),
      &                        WRK(KFREE), LFREE-KFREE+1)
@@ -861,7 +854,7 @@ C
            END IF
            ESOLT = WRK(KEPE)
            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
-     &                        + WRK(KFPE:KFPE+NNBASX-1)
+     &                          + WRK(KFPE:KFPE+NNBASX-1)
            CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, KFRSAV, KFPE,
      &                 KFREE, LFREE)
          END IF
@@ -921,9 +914,6 @@ C           this also includes the case of MMPCM
      &                 '@',ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,
      &                 IOPRHF,(NISH(I),I=1,NSYM)
                END IF
-            else if (peqm) then
-               write (luw4,'(a,i3,1p,2g20.12,d15.5,d12.2)')
-     &                '@',itdiis,emcscf,esolt,grdnrm,emcdif
             ELSE
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(A,I3,1P,G22.12,D15.5,D12.2,I5)')
@@ -1441,39 +1431,7 @@ C
          CALL DAXPY(NNBAST,D1,H1AO,1,DCAO,1)
          CALL UTHUB(DCAO,FCAO,CMO,WRK(KFREE),
      &              NSYM,NBAS,NORB)
-       END IF
-
-#ifdef MAGNUS_PLEASE_FIX
-
-       ! needed to get specific PE energy contributions for printout
-       ! when converged
-       if (peqm) then
-         if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
-           call pe_master(runtype='energy',
-     &                    denmats=daosav(:,1), nmats=1,
-     &                    dalwrk=wrk(kfree:lfree))
-         else
-           call pe_master(runtype='energy',
-     &                    denmats=(daosav(:,1) + daosav(:,2)),
-     &                    nmats=1, dalwrk=wrk(kfree:lfree))
-         end if
-       end if
-       if (pe_mep) then
-        call pe_master(runtype='mep', denmats=daosav(:,1), nmats=1,
-     &                 dalwrk=wrk(kfree:lfree))
-       end if
-       ! save density matrix 
-       if (pe_savden) then
-        if (nsym > 1) then
-            call quit('PEQM cannot be combined with symmetry.')
-        end if
-        call pe_save_density(daosav(:,1), fcao(1:norbt*(norbt+1)/2),
-     &                       cmo(1:nbast*norbt), nbast, nisht, norbt,
-     &                       cord(:,1:natoms), charge(1:natoms),
-     &                       wrk(kfree:lfree))
-       end if
-#endif
-
+      END IF
 C
 C      if qm3 .or. pcm then also mmpcm automatically
        IF (IPRENR .GT. 0) THEN
