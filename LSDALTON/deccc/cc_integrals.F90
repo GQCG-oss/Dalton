@@ -854,8 +854,9 @@ contains
     nullify(MOinfo%DimInd2)
     nullify(MOinfo%StartInd1)
     nullify(MOinfo%StartInd2)
-    if (nnod>1) nullify(tasks)
-  
+#ifdef VAR_MPI
+    nullify(tasks)
+#endif
 
     !======================================================================
     !                      Get Dimension of batches                       !
@@ -910,6 +911,7 @@ contains
     ! MPI: Waking slaves up:
 #ifdef VAR_MPI
     StartUpSlaves: if(master.and.nnod>1) then
+      write(DECinfo%output,'(a,I4)') ' Waking up the slaves for MO int calc.',nnod
       call ls_mpibcast(CCGETGMO,infpar%master,infpar%lg_comm)
       call mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
            & pgmo_diag,pgmo_up,nb,no,nv,Nbatch,ccmodel)
@@ -1251,6 +1253,25 @@ contains
     else 
       dimMO = dimMO - 1
     end if
+
+    ! Check that every nodes will have a job in residual calc.
+    ! But the dimension of the batch must stay above 10 MOs.
+#ifdef VAR_MPI
+    magic  = 2 
+    nnod   = infpar%lg_nodtot
+    Nbatch = ((ntot-1)/dimMO+1)
+    Nbatch = Nbatch*(Nbatch+1)/2
+
+    do while (Nbatch<magic*nnod.and.dimMO>10.and.nnod>1)
+      dimMO = dimMO-1
+      Nbatch = ((ntot-1)/dimMO+1)
+      Nbatch = Nbatch*(Nbatch+1)/2
+      if (dimMO<10) then 
+        MaxAlpha = dimMO
+        exit
+      end if
+    end do
+#endif
 
     ! sanity check:
     call get_mem_MO_CCSD_residual(MemNeed,ntot,nb,no,nv,dimMO) 
