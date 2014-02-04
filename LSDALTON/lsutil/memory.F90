@@ -1445,18 +1445,14 @@ write(myoutput,*) 'LSDALTON is quitting because there is too little memory avail
 write(myoutput,*) 'The program was trying to allocate ',error_size*1E-9,&
     &' MB in addition to the ',max_mem_used_global*1E-9,' MB already allocated.'
 write(myoutput,*) 'Increase available memory if possible (eg. through your submit script or you),'
-write(myoutput,*) 'may try to distribute memory over more nodes (eg. by using ScaLapack/PBLAS). See 
-the'
+write(myoutput,*) 'may try to distribute memory over more nodes (eg. by using ScaLapack/PBLAS). See the'
 write(myoutput,*) 'LSDALTON manual or consult the Dalton Forum for details.'
 write(myoutput,*)
-write(myoutput,*) 'LSDALTON provide no a priori estimate of the memory it needs, but the memory stat
-istics'
-write(myoutput,*) 'from similar calculations on smaller systems may hopefully give you some clues as
- to what'
+write(myoutput,*) 'LSDALTON provide no a priori estimate of the memory it needs, but the memory statistics'
+write(myoutput,*) 'from similar calculations on smaller systems may hopefully give you some clues as to what'
 write(myoutput,*) 'memory requirements are needed.'
 write(myoutput,*)
-write(myoutput,*) 'Printing memory statistics for the current calculation before quitting LSDALTON..
-.'
+write(myoutput,*) 'Printing memory statistics for the current calculation before quitting LSDALTON...'
 
 call stats_mem(myoutput)
 
@@ -5503,7 +5499,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      logical,intent(inout) :: MemFound
      character(len=90) :: command,string
      integer :: funit,i,length, endpos, startpos, ios
-     integer(kind=8) :: memInt
+     integer(kind=8) :: memInt,nsize
      logical :: file_exist,doublecheck
      real(realk) :: ConvertToGB
      string=''
@@ -5560,6 +5556,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
          if(.not. doublecheck)then
            print *,"not the correct format of /proc/meminfo --> check and update get_available_memory_specific"
            print *,"in lsutil/memory.f90"
+           nsize = 0
            call memory_error_quit('not the correct format of /proc/meminfo',nsize)
          endif
 
