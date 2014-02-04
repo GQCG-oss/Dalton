@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -434,7 +434,7 @@ C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *      ' >>> BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
      *      '                   current maximum number MXAOVC =',KAOVEC,
-     &      '  Increase MXAOVC; make depend; make'
+     &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
             END IF
 C
@@ -499,7 +499,7 @@ C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *      ' >>> BASLIB error, number of AO-blocks for PAOSET ',INTORB,
      *      '                   current maximum number MXAOVC =',KAOVEC,
-     &      '  Increase MXAOVC; make depend; make'
+     &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
          END IF
 C

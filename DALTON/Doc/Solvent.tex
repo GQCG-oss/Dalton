@@ -1,4 +1,156 @@
-\chapter{Solvent calculations}\label{ch:solvent}
+\chapter{Continuum solvation calculations}\label{ch:solvent}
+
+In {\dalton} it is possible to describe the solvent implicitly by two
+different models, the polarizable continuum model (PCM, section
+\ref{sec:pcm}) or the Multiconfigurational Self-Consistent Reaction
+Field model (MCSCRF, section \ref{sec:mcscrf}).
+
+\section{Polarizable Continuum Model}
+\label{sec:pcm}
+
+This chapter describes how to run calculation using the integral
+equation formulation of the polarizable continuum model (IEF-PCM)
+implemented in {\dalton}\index{PCM}. IEF-PCM is implemented for SCF,
+DFT and MCSCF~\cite{cammi02}. For calculating molecular properties
+using MCSCF, linear~\cite{cammi03} and quadratic
+response~\cite{frediani05} IEF-PCM is implemented. At the HF/DFT level
+of theory, PCM is implemented up to cubic response~\cite{ferrighi07}.
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item PCM-MCSCF: R.~Cammi, L.~Frediani, B.~Mennucci, J.~Tomasi, K.~Ruud, and K.~V.~Mikkelsen.\newblock {\em J.~Chem.~Phys.}, {\bf 117}, 13 (2002).
+\item PCM linear response: R.~Cammi, L.~Frediani, B.~Mennucci, and K.~Ruud.\newblock {\em J.~Chem.~Phys.}, {\bf 119}, 5818 (2003).
+\item PCM quadratic response: L.~Frediani, H.~{\AA}gren, L.~Ferrighi, and K.~Ruud.\newblock {\em J.~Chem.~Phys.}, {\bf 123}, 144117 (2005).
+\item PCM cubic response: L.~Ferrighi, L.~Frediani, and K.~Ruud.\newblock {\em J.~Phys.~Chem.~B.}, {\bf 111} 8965 (2007).
+\end{list}
+}}
+\end{center}
+
+\subsection{Input description}\label{sec:pcminp}
+
+The necessary input for a PCM calculation is given in the
+\Sec{*DALTON} input module. The most simple input file for a PCM
+calculation in {\dalton} will look like
+\begin{verbatim}
+**DALTON INPUT
+.RUN WAVEFUNCTION
+*PCM
+.SOLVNT
+WATER
+*PCMCAV
+**WAVEFUNCTION
+.HF
+**END OF
+\end{verbatim}
+An input file for a one-photon absorption DFT calculation for a
+molecule solvated in methanol can look like
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+*PCM
+.SOLVNT
+CH3OH
+.NEQRSP
+*PCMCAV
+**WAVEFUNCTION
+.DFT
+B3LYP
+**RESPONSE
+*LINEAR
+.SINGLE
+.ROOTS
+5
+**END OF
+\end{verbatim}
+The solvent is given with its formula, in this case \verb|CH3OH|, but
+it is totally equivalent to specify it by its name
+\verb|METHANOL|. See Section~\ref{subsec:pcm} for a complete list of
+solvents supported by {\dalton}, and details about other
+keywords. With the keyword \Key{NEQRSP} we are specifying that the
+non-equilibrium contributions of the solvent to the response
+calculation are used.
+
+In the above example we are using the default way of creating the PCM
+cavity, that is putting a sphere on every atom with radii depending on
+the chemical element. It is also possible to add spheres with a
+specific radii to specific atoms. Then we have to use the \Key{ICESPH}
+keyword with method 2, as well as the \Key{NESFP} keyword where we
+specify the number of spheres. In the \Sec{PCMCAV} section, that have
+to be located directly after the \Sec{PCM} section, we specify on
+which atoms we will put spheres (\Key{INA}), and the radii of the
+spheres (\Key{RIN}). As an example we can calculate the one-photon
+absorption in pyridine solvated in water. The molecule input is given
+as
+\begin{verbatim}
+ATOMBASIS
+Structure of pyridine
+---------------------
+AtomTypes=3 Nosymmetry Angstrom
+  Charge=7.0    Atoms=1 Basis=aug-cc-pVDZ
+N       0.000000        0.000000        1.412474
+  Charge=6.0    Atoms=5 Basis=aug-cc-pVDZ
+C       0.000000        1.139102        0.718724
+C       0.000000       -1.139102        0.718724
+C       0.000000        1.193314       -0.670333
+C       0.000000       -1.193314       -0.670333
+C       0.000000        0.000000       -1.379701
+  Charge=1.0    Atoms=5 Basis=aug-cc-pVDZ
+H       0.000000        2.053276        1.301957
+H       0.000000       -2.053276        1.301957
+H       0.000000        2.148080       -1.178005
+H       0.000000       -2.148080       -1.178005
+H       0.000000        0.000000       -2.461606
+\end{verbatim}
+We want to put a sphere on every atom except the hydrogens. The
+nitrogen will get a sphere with radius 1.7 \angstrom{} while the carbon
+atoms will get spheres with radii 1.9 \angstrom{}. The maximum area of
+the tesserea has been reduced from the default 0.4 to 0.3 by the
+\Key{AREATS} keyword. The input would then look like
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+*PCM
+.SOLVNT
+WATER
+.ICESPH
+2
+.NESFP
+6
+.NEQRSP
+*PCMCAV
+.INA
+1
+2
+3
+4
+5
+6
+.RIN
+1.7
+1.9
+1.9
+1.9
+1.9
+1.9
+.AREATS
+0.3  
+**WAVEFUNCTION
+.DFT
+B3LYP
+**RESPONSE
+*LINEAR
+.SINGLE
+.ROOTS
+2
+**END OF
+\end{verbatim}
+
+\section{Multiconfigurational Self-Consistent Reaction Field}\label{sec:mcscrf}
 
 This chapter describes the 
 Multiconfigurational Self-Consistent Reaction Field (MCSCRF) model
@@ -8,7 +160,7 @@ properties that may be evaluated with the present MCSCRF
 implementation. The second section gives two input examples for
 MCSCRF calculations.
 
-\section{General considerations}\label{sec:solventimpl}
+\subsection{General considerations}\label{sec:solventimpl}
 
 {\dalton} has the possibility of modeling the effect of a
 surrounding linear, homogeneous dielectric
@@ -38,7 +190,7 @@ disabled in direct calculations when the solvent model is employed.
 As regards molecular properties, the solvent model has so far been
 extended to singlet linear, quadratic and cubic response, and  triplet
 linear response\index{linear response}\index{quadratic response}\index{cubic response}\index{triplet response}\index{response!linear}\index{response!quadratic}\index{response!cubic}\index{response!triplet}
-in the {\resp} program, both using equilibrium and non-equilibrium
+in the {\resp} module, both using equilibrium and non-equilibrium
 solvation. A number of properties and excitation energies can
 be calculated with the (MC)SCRF model, and several studies of such
 properties have been presented, and we refer to these papers for an
@@ -55,7 +207,7 @@ cannot be expected to be in equilibrium with the charge distribution
 of the solvent, {\it e.g.\/} when comparing with experiments where light has
 been used as a perturbation.
 
-In the \aba\ program, the solvent model has been implemented for
+In the \aba\ module, the solvent model has been implemented for
 geometric distortions and nuclear shieldings and
 magnetizabilities\index{nuclear shielding}\index{magnetizability},
 and of course all the
@@ -73,7 +225,7 @@ program~\cite{kvmpjkrthjcp106,poakvmkrthjpc100}. Properties not
 included in this list are thus not trustworthy with the current
 version of {\dalton}.
 
-\section{Input description}\label{sec:solventinp}
+\subsection{Input description}\label{sec:solventinp}
 
 \begin{center}
 \fbox{
@@ -166,7 +318,7 @@ include all terms up to $L=10$, as can be seen from the keyword
 \Key{MAX L}. Note that this number cannot be larger than the number given for
 \Key{SOLVENT} in the \Sec{ONEINT} input module.
 
-\subsection{Geometry optimization}\label{sec:solventgeoopt}
+\subsubsection{Geometry optimization}\label{sec:solventgeoopt}
 
 In the present release of the {\dalton} program, there are certain
 limitations imposed on the optimizing geometries using the solvent
@@ -202,7 +354,7 @@ would look like:
 \end{verbatim}
 
 
-\subsection{Non-equilibrium solvation}\label{sec:solvnoneqrsp}
+\subsubsection{Non-equilibrium solvation}\label{sec:solvnoneqrsp}
 
 This example describes calculations for non-equilibrium\index{non-equilibrium solvation}\index{solvation!non-equilibrium}
 solvation. Usually one starts with a calculation of a reference state

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1153,6 +1153,7 @@ C     Local arrays
       DIMENSION BUF(LBUF), DBUF(LBUF,3), QBUF(LBUF,6), IBUF(LBUF)
       DIMENSION ITMPMO(2*MXCORB)
       EQUIVALENCE (BUF,DBUF,QBUF,ITMPMO)
+      INTEGER   IJ(NNBASX) ! automatic array, for INOAUX
       LOGICAL   OPEND, FEXIST, ERRSTP
 C
       CALL QENTER('RDONEL')
@@ -1238,12 +1239,15 @@ C        Read one electron part, in symmetry blocked triangular form
      *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
             CALL QUIT('RDONEL ERROR, LBONEL .ne. LBUF for key DIPOLMOM')
          END IF
+         IF (NOAUXB) THEN
+            CALL SET_INOAUX(IJ)
+         END IF
   501    READ (LUONEL) DBUF,IBUF,NUT
          IF (NUT.EQ.0)   GO TO 501
          IF (NUT.LT.0)   GO TO 502
          IF (NOAUXB) THEN
             DO I=1,NUT
-               CALL INOAUX(IBUF(I),IR12)
+               IR12 = IJ( IBUF(I) )
                IF (IR12 .GT. 0) THEN
                   A(IR12,1) = DBUF(I,1)
                   A(IR12,2) = DBUF(I,2)
@@ -1269,12 +1273,15 @@ C        Read one electron part, in symmetry blocked triangular form
      *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
             CALL QUIT('RDONEL ERROR, LBONEL .ne. LBUF for key QUADRP')
          END IF
+         IF (NOAUXB) THEN
+            CALL SET_INOAUX(IJ)
+         END IF
   601    READ (LUONEL) QBUF,IBUF,NUT
          IF (NUT.EQ.0)   GO TO 601
          IF (NUT.LT.0)   GO TO 602
          IF (NOAUXB) THEN
             DO I=1,NUT
-               CALL INOAUX(IBUF(I),IR12)
+               IR12 = IJ( IBUF(I) )
                IF (IR12 .GT. 0) THEN
                   DO ICOMP = 1,6
                      A(IR12,ICOMP) = QBUF(I,ICOMP)
@@ -1320,11 +1327,14 @@ C        Read one electron part, in symmetry blocked triangular form
      *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
             CALL QUIT('ERROR RDONEL, LBONEL .gt. LBUF')
          END IF
+         IF (NOAUXB) THEN
+            CALL SET_INOAUX(IJ)
+         END IF
          CALL DZERO(A,NNBAST)
  2100    READ (LUONEL) (BUF(I),I=1,LBONEL),(IBUF(I),I=1,LBONEL),LENGTH
          IF (NOAUXB) THEN
             DO I = 1, LENGTH
-               CALL INOAUX(IBUF(I),IR12)
+               IR12 = IJ( IBUF(I) )
                IF (IR12 .GT. 0) A( IR12 , 1 ) = BUF(I)
             END DO
          ELSE
@@ -1436,20 +1446,17 @@ C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
       LL = IJ(LL)
       RETURN
       END
-C  /* Deck inoaux */
-      SUBROUTINE INOAUX(II,JJ)
+C  /* Deck set_inoaux */
+      SUBROUTINE SET_INOAUX(IJ)
 #include "implicit.h"
 #include "priunit.h"
 #include "ccorb.h"
 C ... only used in RDONEL when called from cc/ routines,
 C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
-#include "maxorb.h"
 #include "r12int.h"
-      LOGICAL FIRST
-      DATA FIRST /.TRUE./
-      DIMENSION IJ(MXORBT)
-      SAVE IJ
-      IF (FIRST) THEN
+
+      DIMENSION IJ(*)
+
          KL = 0
          MN = 0
          DO ISYM = 1, NSYM
@@ -1465,9 +1472,7 @@ C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
                END DO
             END DO
          END DO
-         FIRST = .FALSE.
-      END IF
-      JJ = IJ(II)
+
       RETURN
       END
 C  /* Deck rdsupm */
@@ -2207,8 +2212,8 @@ C   INFPRI : IPRI6
 C
 #include "maxorb.h"
 #include "mxcent.h"
-Clf#include <pcmdef.h>
-Clf#include <pcm.h>
+Clf#include "pcmdef.h"
+Clf#include "pcm.h"
 #include "pcmlog.h"
 #include "infinp.h"
 #include "infvar.h"

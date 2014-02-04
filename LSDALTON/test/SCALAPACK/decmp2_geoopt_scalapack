@@ -61,6 +61,8 @@ TIGHT
 .DEBUG_MPI_MEM
 **DEC
 .FROZENCORE
+.MEMORY
+2.0
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -84,7 +86,7 @@ else
 fi
 
 # Final DEC-MP2 energy
-CRIT1=`$GREP "Energy at final geometry is *: *\-77.1954" $log | wc -l`
+CRIT1=`$GREP "Energy at final geometry is *: *\-77.195" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="Final DEC-MP2 ENERGY NOT CORRECT -"

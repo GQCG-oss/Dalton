@@ -110,6 +110,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Reading molecular geometry:
 CRIT1=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT2=`$GREP "4 * x * 1\.2634502500" $log | wc -l`
@@ -272,26 +277,23 @@ ERROR[18]="CIOSLOWSKI CHARGES NOT CORRECT"
 
 
 # Static polarizabilities:
-CRIT1=`$GREP "Ex * 12\.1243(1|2)[0-9] * (0| )\.000000( |E\+00) * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT2=`$GREP "Ey * (0| )\.000000( |E\+00) * 28\.32671[0-9] * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT3=`$GREP "Ez * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00) * 10\.07596[0-9]" $log | wc -l`
+CRIT1=`$GREP "Ex * 12\.1243.. * 0*\.000000 * 0*\.000000" $log | wc -l`
+CRIT2=`$GREP "Ey * 0*\.000000 * 28\.3267.. * 0*\.000000" $log | wc -l`
+CRIT3=`$GREP "Ez * 0*\.000000 * 0*\.000000 * 10\.0759.." $log | wc -l`
 TEST[19]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
-CTRL[19]=3
+CTRL[19]=6
 ERROR[19]="STATIC POLARIZABILITIES NOT CORRECT"
 
 # Dynamic polarizabilities:
-CRIT1=`$GREP "Ex * 12\.1243.. * (0| )\.000000( |E\+00) * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT2=`$GREP "Ey * (0| )\.000000( |E\+00) * 28\.3267.. * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT3=`$GREP "Ez * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00) * 10\.0759[5-7]." $log | wc -l`
-CRIT4=`$GREP "Ex * 12\.2173. * (0| )\.000000( |E\+00) * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT5=`$GREP "Ey * (0| )\.000000( |E\+00) * 29\.354(1|2). * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT6=`$GREP "Ez * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00) * 10\.1308." $log | wc -l`
-CRIT7=`$GREP "Ex * 12\.3778[8-9] * (0| )\.000000( |E\+00) * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT8=`$GREP "Ey * (0| )\.000000( |E\+00) * 31\.4860. * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT9=`$GREP "Ez * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00) * 10\.2033." $log | wc -l`
+CRIT1=`$GREP "Ex * 12\.2173. * 0*\.000000 * 0*\.000000" $log | wc -l`
+CRIT2=`$GREP "Ey * 0*\.000000 * 29\.3541. * 0*\.000000" $log | wc -l`
+CRIT3=`$GREP "Ez * 0*\.000000 * 0*\.000000 * 10\.1308." $log | wc -l`
+CRIT4=`$GREP "Ex * 12\.3778. * 0*\.000000 * 0*\.000000" $log | wc -l`
+CRIT5=`$GREP "Ey * 0*\.000000 * 31\.4860. * 0*\.000000" $log | wc -l`
+CRIT6=`$GREP "Ez * 0*\.000000 * 0*\.000000 * 10\.2033." $log | wc -l`
 TEST[20]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
-              $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
-CTRL[20]=12
+              $CRIT6`
+CTRL[20]=6
 ERROR[20]="DYNAMIC POLARIZABILITIES NOT CORRECT"
 
 # Rotational constants:
@@ -356,7 +358,7 @@ ERROR[27]="LINEAR RESPONSE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 5 6 7 8 9 10 11 12 13 14 15 16 18 19 20 21 22 23 24 25 27
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

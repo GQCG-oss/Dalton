@@ -124,6 +124,16 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+if $GREP -q "ERI does not work with Cartesian basis." $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Basis set
 CRIT1=`$GREP "O * 1 * 8\.0000 * 44 * 27 * \[11s7p2d\|6s5p1d\]" $log | wc -l`
 CRIT2=`$GREP "H * 2 * 1\.0000 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
@@ -179,25 +189,25 @@ CTRL[5]=9
 ERROR[5]="CALCULATION OF PROPERTIES NOT SET UP CORRECTLY"
 
 # Polarizability tensor freq1
-CRIT1=`$GREP "Ex * 6\.11454[6-8] * (0| )\.000000( |E\+00) * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT2=`$GREP "Ey * (0| )\.000000( |E\+00) * 8\.33546[3-5] * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT3=`$GREP "Ez * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00) * 7\.224[78]" $log | wc -l`
+CRIT1=`$GREP "Ex * 6\.11454. * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00)" $log | wc -l`
+CRIT2=`$GREP "Ey * (0| )\.000000( |E\+00) * 8\.33546. * (0| )\.000000( |E\+00)" $log | wc -l`
+CRIT3=`$GREP "Ez * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00) * 7\.22480." $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="POLARIZABILITY TENSOR FREQ1 NOT CORRECT"
 
 # Polarizability tensor freq2
-CRIT1=`$GREP "Ex * 6\.18999[6-8] * (0| )\.000000( |E\+00) * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT2=`$GREP "Ey * (0| )\.000000( |E\+00) * 8\.38640[5-7] * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT3=`$GREP "Ez * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00) * 7\.28754[3-5]" $log | wc -l`
+CRIT1=`$GREP "Ex * 6\.18999. * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00)" $log | wc -l`
+CRIT2=`$GREP "Ey * (0| )\.000000( |E\+00) * 8\.38640. * (0| )\.000000( |E\+00)" $log | wc -l`
+CRIT3=`$GREP "Ez * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00) * 7\.28754." $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="POLARIZABILITY TENSOR FREQ2 NOT CORRECT"
 
 # Polarizability tensor freq3
-CRIT1=`$GREP "Ex * 6\.44686[5-7] * (0| )\.000000( |E\+00) * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT2=`$GREP "Ey * (0| )\.000000( |E\+00) * 8\.5448(5|6)(0|9) * (0| )\.000000(|E\+00)" $log | wc -l`
-CRIT3=`$GREP "Ez * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00) * 7\.48864[0-1]" $log | wc -l`
+CRIT1=`$GREP "Ex * 6\.44686. * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00)" $log | wc -l`
+CRIT2=`$GREP "Ey * (0| )\.000000( |E\+00) * 8\.5448(5|6). * (0| )\.000000( |E\+00)" $log | wc -l`
+CRIT3=`$GREP "Ez * (0| )\.000000( |E\+00) * (0| )\.000000( |E\+00) * 7\.48864." $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="POLARIZABILITY TENSOR FREQ3 NOT CORRECT"
@@ -335,7 +345,7 @@ ERROR[11]="OSCILLATOR AND ROTATIONAL STRENGTHS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

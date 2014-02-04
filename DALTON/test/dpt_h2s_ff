@@ -99,6 +99,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #First-order DPT energy corrections calculated
 #       !  First-order DPT corrections to the ground-state energy  !
 #        DPTFLD:     -0.106118498792    (ZDIPLEN )
@@ -150,7 +155,7 @@ ERROR[5]="DPT correction to finite field not correct for CCSD(T)"
 PASSED=1
 for i in 1 2 3 4 5
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

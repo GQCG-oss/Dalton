@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -540,11 +540,13 @@ C  /* Deck execc */
 #include "implicit.h"
       DIMENSION WORK(0:LMWORK)
 #include "priunit.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "mxcent.h"
 #include "siripc.h"
 #include "inftra.h"
-#include "gnrinf.h"
-#include "mxcent.h"
 #include "optinf.h"
+#include "nuclei.h"
 C
 C     Run Coupled Cluster program
 C
@@ -555,6 +557,20 @@ C
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
          CALL ER2INI
+      END IF
+
+!
+!     The CC module uses a lot of static allocation for pointer arrays.
+!     To minimize the static allocation in Dalton we use a smaller
+!     max number of orbitals in CC than the global MXCORB. /hjaaj Sep 2013
+!
+      IF (NBASIS .GT. MXCORB_CC) THEN
+         WRITE (LUPRI,'(//A,I6/A,I6/A)')
+     &  ' ERROR Too many orbitals for CC module:',NBASIS,
+     &  ' ERROR Limit is MXCORB_CC in maxorb.h :',MXCORB_CC,
+     %  ' ERROR To proceed increase MXCORB_CC in maxorb.h and recompile'
+         CALL QUIT('Too many orbitals for CC module.'//
+     &      'Increase MXCORB_CC in maxorb.h and recompile.')
       END IF
 
       ! ITRNMR > 0 required for proper restart of CPHF solver
@@ -679,6 +695,7 @@ C
       end if
 
       IPRINT = IPRUSR
+      IPRUSR_orig = IPRUSR
 C
       WLKREJ = .FALSE.
       IF (OPTNEW) THEN
@@ -689,24 +706,32 @@ C
          DOWALK = .FALSE.
          CALL OPTMIN(WORK(1),LMWORK,WRKDLM)
       ELSE IF (OPTWLK) THEN
+         IF (QM3)
+     &      CALL QUIT('ERROR: .WALK is not implemented for .QM3')
          RNHERM = .TRUE.
          RNABAC = .TRUE.
-         IF (.NOT. NMWALK) THEN
+         IF (NMWALK) THEN
+            CALL TITLER('Commencing numerical differentiation '//
+     &         'based on .NMDDRV',' ',200)
+            MOLGRD = .FALSE.
+         ELSE IF (IWKTYP .EQ. 6) THEN
+            CALL TITLER('Commencing numerical differentiation '//
+     &         'based on .WALK',' ',200)
             DOWALK = .TRUE.
             MOLGRD = .TRUE.
             MOLHES = .TRUE.
          ELSE
-            MOLGRD = .FALSE.
+            CALL TITLER(
+     &      'Commencing geometry optimization based on .WALK',' ',200)
+            DOWALK = .TRUE.
+            MOLGRD = .TRUE.
+            MOLHES = .TRUE.
          END IF
          START  = .TRUE.
          GEOCNV = .FALSE.
          NEWWLK = .TRUE.
          IPREAD_orig = IPREAD
          IPREAD_reduced = -2
-         CALL TITLER('Commencing geometry optimization using .WALK',
-     &   ' ',200)
-         IF (QM3)
-     &      CALL QUIT('Geometry optimization not implemented for .QM3')
 C        ---------------------------------------
 C        loop over geometries
 C        ---------------------------------------
@@ -927,19 +952,27 @@ C
 C        ---------------------------------------------------------------
 C
          IF (GEOCNV) THEN
-            CALL TITLER('Geometry walk has converged',' ',200)
+            IPRUSR = IPRUSR_orig
+            IF (IWKTYP .EQ. 6) THEN
+              CALL TITLER('Nummerical differentiation finished',' ',200)
+            ELSE
+              CALL TITLER('Geometry walk has converged',' ',200)
+            END IF
 C
 C     We need to read in starting geometry before doing the vibrational
 C     analysis in a ROA calculation, K.Ruud and G.Hangartner, Oct.-96
 C
             WRINDX = .TRUE.
             IF (IWKTYP .EQ. 6 .AND. NUMHES) THEN
+               NEWGEO = .TRUE.
                CALL ABAINP('**PROPE',WORK(1),LMWORK)
                CALL VIBCTL(WORK(1),LMWORK)
             ELSE IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.
                SOLVNT = .FALSE.
+               IPREAD = IPREAD_orig
                CALL EXEHER(WORK(0),LMWORK,WRKDLM)
+               NEWGEO = .TRUE.
                CALL EXESIR(WORK(0),LMWORK,WRKDLM)
                SOLVNT = FLAG(16)
               IF (SOLVNT) THEN
@@ -971,6 +1004,8 @@ C
                CALL NUCPRO(WORK(1),LMWORK)
               END IF
             END IF
+            NEWGEO = .TRUE. ! EXESIR resets NEWGEO to .false.
+                            ! but we need to copy abacus info to slaves
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL EXEABA(WORK(0),LMWORK,WRKDLM)
 C
@@ -1000,6 +1035,49 @@ C
                GOTO 133
             END IF
  134        CONTINUE 
+
+#ifdef BUILD_OPENRSP
+C added by Bin Gao, April 2, 2009
+C for response theory in atomic orbital basis
+            REWIND(LUCMD)
+C search for $RESPON in input (legacy driver)
+            DO
+               READ (LUCMD,'(A7)',END=135) WORD
+               IF (WORD .EQ. '$RESPON') THEN
+                  CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
+                  EXIT
+               END IF
+            END DO
+ 135        CONTINUE
+C
+C     Search for **OPENRSP input
+C
+            REWIND (LUCMD)
+            DO
+               READ (LUCMD,'(A)',END=137) WORD
+               IF (WORD .EQ. '**OPENR') THEN
+                  CALL OPENRSP_DRIVER(WORK(10),LMWORK-9)
+                  EXIT
+               END IF
+            END DO
+ 137        CONTINUE
+#endif
+
+#ifdef BUILD_TDRSP
+C added by Bin Gao, March 21, 2010
+C solves the equation of motion of reduced single-electron density matrix in real time domain
+            rewind( LUCMD )
+C tries to find $TDRSP input
+            do while ( .true. )
+              read( LUCMD, '(A6)', end=136 ) WORD
+              if ( WORD .eq. '$TDRSP' ) then
+                call tdrsp_driver( WORK(10), LMWORK-9 )
+                exit
+              end if
+            end do
+136         continue
+#endif
+
             IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
          ELSE IF (ITERNR .GT. ITERMX) THEN
             CALL TITLER('WARNING - Geometry not converged',' ',200)
@@ -1068,7 +1146,57 @@ C
             CALL TITLER(
      &         'End of Dynamic Property Section (RESPONS)',' ',200)
          END IF
-C
+
+#ifdef BUILD_OPENRSP
+C added by Bin Gao, April 2, 2009
+C for response theory in atomic orbital basis
+         IF (LUCMD .LT. 0) THEN
+            CALL GPOPEN(LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
+     &                  IDUMMY, .FALSE.)
+         END IF
+         REWIND(LUCMD)
+C search for $RESPON in input
+         DO
+            READ (LUCMD,'(A7)',END=145) WORD
+            IF (WORD .EQ. '$RESPON') then
+               CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
+               EXIT
+            END IF
+         END DO
+ 145     CONTINUE
+!        search **OPENRSP in input, then run openrsp
+         rewind (lucmd)
+         do
+            read (lucmd, '(a)', end=147) word
+            if (word == '**OPENR') then
+               call read_openrsp_input('DALTON.INP', lucmd)
+               exit
+            end if
+         end do
+         call openrsp_driver(work(10), lmwork-9)
+ 147     if (lucmd > 0) call gpclose(lucmd, 'KEEP')
+#endif
+
+#ifdef BUILD_TDRSP
+C added by Bin Gao, March 21, 2010
+C solves the equation of motion of reduced single-electron density matrix in real time domain
+         if ( LUCMD .lt. 0 ) then
+           call GPOPEN( LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
+     &                  IDUMMY, .FALSE. )
+         end if
+         rewind( LUCMD )
+C tries to find $TDRSP input
+         do while ( .true. )
+           read( LUCMD, '(A)', end=146 ) WORD
+           if ( WORD .eq. '$TDRSP' ) then
+             call tdrsp_driver( WORK(10), LMWORK-9 )
+             exit
+           end if
+         end do
+146      if ( LUCMD .gt. 0 ) call GPCLOSE( LUCMD, 'KEEP' )
+#endif
+
+
          IF (RNABAC) THEN
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL WLKINI
@@ -1123,10 +1251,6 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-      use polarizable_embedding, only: pe_dalton_input
-#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1241,6 +1365,7 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
       DKHINT = .FALSE.
+      PEQM   = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       IF (NODTOT.GE.1) THEN
@@ -1487,14 +1612,14 @@ C        '.DOUGLA'
             DKTRAN = .TRUE.
          GOTO 100
 !        .PEQM
- 133     continue
+ 133     CONTINUE
 #if defined (BUILD_PELIB)
-            peqm = .true.
+            PEQM = .TRUE.
 #else
-            write(lupri,*) 'ERROR: PE library not enabled.'
-            call quit('ERROR: PE library not enabled.')
+            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
+            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
 #endif
-         goto 100
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1545,10 +1670,16 @@ C     ... default print level for statistics /hjaaj apr 2000
       END IF
 #endif
       IF (OPTWLK) THEN
-         WRITE (LUPRI,'(4X,A/6X,A,I5/6X,A,I5)')
-     &      'Geometry optimization',
+         IF (NMWALK) THEN
+            WRITE (LUPRI,'(4X,A/6X,A,I5)') 
+     &      'Numerical derivatives will be calculated',
+     &        'Number of different geometries:', ITERMX
+         ELSE
+            WRITE (LUPRI,'(4X,A/6X,A,I5/6X,A,I5)')
+     &      'Geometry walk module activated.',
      &        'Starting at iteration:', ITERNR,
-     &        'Maximum number of iterations:', ITERMX
+     &        'Maximum number of steps:', ITERMX
+         END IF
       ELSE IF (ITERNR .GT. 0) THEN
          NINFO = NINFO + 1
          WRITE (LUPRI,'(4X,A/4X,A/6X,A/4X,A)') SEPARATOR,
@@ -1600,19 +1731,18 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (RNABAC) WRITE (LUPRI,'(4X,A)')
      &     'Static molecular property section will be executed'//
      &          ' (ABACUS module)'
-      IF (NMWALK) WRITE (LUPRI,'(4X,A)') 
-     &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
-#if defined (BUILD_PELIB)
-        if (peqm) write(lupri,'(4x,a)')
+      IF (PEQM) WRITE(LUPRI,'(4X,A)')
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
-#endif
 C
 Cholesky
-      IF (CHOINT) WRITE (LUPRI,'(4X,A)')
+      IF (CHOINT) THEN
+        IF (PARCAL) CALL PARQUIT('CHOLESKY')
+        WRITE (LUPRI,'(4X,A)')
      &  'Cholesky decomposition-based calculation will be done'
+      ENDIF
 Cholesky
 C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
@@ -1701,14 +1831,13 @@ C     "*QMMM  " input
       GO TO 200
 
 !     "*PEQM  " input
-   10 continue
+   10 CONTINUE
 #if defined (BUILD_PELIB)
-        call pe_dalton_input(word, lucmd, lupri)
+        CALL PE_IFC_DALINP_READER(WORD)
 #else
-        call quit('ERROR: PE library not enabled.')
+        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
 #endif
-      goto 200
-
+      GOTO 200
 C
 C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
    11 CONTINUE

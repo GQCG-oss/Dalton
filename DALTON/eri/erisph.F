@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -315,14 +315,14 @@ C  /* Deck sphadr */
       INTEGER FUNCTION KSQADR(L,X,Y,Z,C)
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxdr.h"
-      LOGICAL FIRST
+      PARAMETER (MXDR=4)
       INTEGER A, B, C, D, X, Y, Z
-      INTEGER ACOEF(0:MXQN-1,0:MXDR), BCOEF(0:MXQN-1,0:MXDR)
 #include "ccom.h"
 C
+      LOGICAL FIRST
+      INTEGER ACOEF(0:MXQN-1,0:MXDR), BCOEF(0:MXQN-1,0:MXDR)
       SAVE FIRST, ACOEF, BCOEF, NHOLD
-      DATA FIRST,NHOLD /.TRUE.,0/
+      DATA FIRST, NHOLD /.TRUE.,0/
 C
       IF (FIRST .OR. NHTYP.NE.NHOLD) THEN
          DO J = 0, MXQN - 1
@@ -336,6 +336,9 @@ C
          NHOLD = NHTYP
       END IF 
       D = X + Y + Z
+      IF (D .GT. MXDR) THEN
+         CALL QUIT('ERROR: increase MXDR in erisph.F')
+      END IF
       IXYZ = Y + Y**2 + 2*Y*Z + Z*(3 + Z)
       KSQADR = (ACOEF(L,D) + BCOEF(L,D)*IXYZ)/24 + NSPHAD(L,C,D)
       RETURN

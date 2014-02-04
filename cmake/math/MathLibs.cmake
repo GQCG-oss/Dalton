@@ -1,7 +1,23 @@
 if(ENABLE_64BIT_INTEGERS)
-    set(MATH_LIB_SEARCH_ORDER MKL)
+    set(MATH_LIB_SEARCH_ORDER MKL ACML)
+    if(NOT ENABLE_BUILTIN_BLAS AND NOT ENABLE_BUILTIN_LAPACK)
+        if(NOT HAVE_BLAS AND NOT HAVE_LAPACK)
+            message(STATUS "Since you specified 64bit integers the math lib search order is (only) ${MATH_LIB_SEARCH_ORDER}")
+            message(STATUS "This is because apart from MKL and ACML default math library installations are built for 32bit integers")
+            message(STATUS "If you know that the library you want to use provides 64bit integers, you can select the library")
+            message(STATUS "with -D BLAS_TYPE=X or -D LAPACK_TYPE X (X: MKL ESSL ATLAS ACML SYSTEM_NATIVE)")
+            message(STATUS "or by redefining MATH_LIB_SEARCH_ORDER")
+        endif()
+    endif()
 else()
     set(MATH_LIB_SEARCH_ORDER MKL ESSL ATLAS ACML SYSTEM_NATIVE)
+    if(NOT ENABLE_BUILTIN_BLAS AND NOT ENABLE_BUILTIN_LAPACK)
+        if(NOT HAVE_BLAS AND NOT HAVE_LAPACK)
+            message(STATUS "Math lib search order is ${MATH_LIB_SEARCH_ORDER}")
+            message(STATUS "You can select a specific type by defining for instance -D BLAS_TYPE=ATLAS or -D LAPACK_TYPE=ACML")
+            message(STATUS "or by redefining MATH_LIB_SEARCH_ORDER")
+        endif()
+    endif()
 endif()
 
 #-------------------------------------------------------------------------------
@@ -131,13 +147,13 @@ else()
 endif()
 
 # first try this MKL BLAS combination with SGI MPT
-set(MKL_BLAS_LIBS  ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_sgimpt_lib}   guide pthread m)
+set(MKL_BLAS_LIBS  ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_sgimpt_lib}   guide pthread m)
 # now with Intel MPI
-set(MKL_BLAS_LIBS2 ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_intelmpi_lib} guide pthread m)
+set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_intelmpi_lib} guide pthread m)
 # newer MKL BLAS versions do not have libguide
-set(MKL_BLAS_LIBS3 ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_sgimpt_lib}         pthread m)
+set(MKL_BLAS_LIBS3 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_sgimpt_lib}         pthread m)
 # now with Intel MPI
-set(MKL_BLAS_LIBS4 ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_intelmpi_lib}       pthread m)
+set(MKL_BLAS_LIBS4 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_intelmpi_lib}       pthread m)
 # ancient MKL BLAS
 set(MKL_BLAS_LIBS5 mkl guide m)
 

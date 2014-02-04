@@ -1,5 +1,5 @@
 C     used for transfer of NMR shieldings between routines (SIGMA)
-      LOGICAL         DONS 
+      LOGICAL         DONS
       REAL*8          SIGMAD, SIGMAS, SIGMAR, SIGMAT,
      &                SIGMADZ, SIGMASFTP, SIGMASFTM
       COMMON /SIGMA/  SIGMAD(3,MXCOOR), SIGMAS(3,MXCOOR),

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1617,7 +1617,7 @@ C
                NLOC1 = NOCC1
             END IF
 C
-            CALL LOC_LOWDIN(IPRSOS,CLOCV(1,(I-1)*NV2LOC + 1),NVIRT,NLOC1,
+           CALL LOC_LOWDIN(IPRSOS,CLOCV(1,(I-1)*NV2LOC + 1),NVIRT,NLOC1,
      &                  LFLAG,WORK(KWORK1),LWORK1)
          END DO
 C
@@ -2468,7 +2468,7 @@ C           2 save orbital energies in ORVAL
 C
 #include "implicit.h"
 #include "priunit.h"
-ckr#include <bassel.h>
+ckr#include "bassel.h"
 #include "cbieri.h"
 #include "inforb.h"
 #include "inftap.h"
@@ -2598,7 +2598,7 @@ Cend-PFP
 #include "codata.h"
 C from codata: XTANG
 CPFP with g77
-C#include <molde.h>
+C#include "molde.h"
 Cend-PFP
 C
 C      CHARACTER*2 ASYMB

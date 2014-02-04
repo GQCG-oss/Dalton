@@ -1,4 +1,4 @@
-\chapter{Coupled-cluster calculations, CC}\label{ch:CC}
+\chapter{Coupled cluster calculations, CC}\label{ch:CC}
 \index{Coupled Cluster}
 \index{CCS}
 \index{CC2}
@@ -7,37 +7,35 @@
 \index{CCSD(T)}
 \index{CC3}
 
-The coupled cluster program {\cc} is designed for large-scale
+The coupled cluster module {\cc} is designed for large-scale
 correlated calculations of energies and properties using a
 hierarchy of coupled cluster models: CCS, CC2, CCSD, and CC3, as well as standard methods such as MP2 and CCSD(T).
 %\typeout{SONIA: Mention CCSD(T) more explicitly as well???}
-The program offers almost the same options as the other
-parts of the Dalton program for SCF and MCSCF wave functions.
+The module offers almost the same options as the other
+parts of the \dalton\ program for SCF and MCSCF wave functions.
 It thus contains a wave function optimization section and 
 a response function section
 where linear, quadratic and cubic response functions and electronic
 transition properties are calculated.
-For CC3 however, it is only possible to calculate the wave function and 
-singlet excitation energies\index{response function}.
 At the moment, molecular gradients are available 
-up to the CCSD(T) level~\cite{??}\index{gradient} for ground states.  
+up to the CCSD(T) level\index{molecular gradient!Coupled Cluster} for ground states.  
 London orbitals have so far not been implemented 
 for the calculation of magnetic
-properties\index{magnetic properties}\index{London orbitals}.
+properties\index{magnetic properties!Coupled Cluster}\index{London orbitals!Coupled Cluster}.
 However, gauge-invariant magnetic properties can be calculated using the
 CTOCD-DZ method~\cite{ctocd,pccpcctocd}.
 In the manual, more details can be found about the specific implementations.
 
-An additional feature of the program is that all levels of correlation
+An additional feature of the module is that all levels of correlation
 treatment have been implemented using integral-direct techniques making
 it possible to run calculations using large basis
-sets~\cite{directCC}\index{integral direct}.
+sets~\cite{directCC}\index{integral direct!Coupled Cluster}.
 
 In this chapter the general structure of the input for the
-coupled cluster program is described.
-The complete input for the coupled cluster program appears as
-sections in the input for the \sir\ program, with the general
-input in the input section \Sec{CC INPUT}. In order to get into the CC program
+coupled cluster module is described.
+The complete input for the coupled cluster module appears as
+sections in the input for the \sir\ module, with the general
+input in the input section \Sec{CC INPUT}. In order to get into the \cc\ module
 one has to specify the \Key{CC} keyword in the general input
 section of \sir\ \Sec{*WAVE FUNCTIONS}. For instance, a minimal
 input file for a CCSD(T) energy calculation would be:
@@ -53,7 +51,7 @@ input file for a CCSD(T) energy calculation would be:
 
 Several models can be calculated at the same time by specifying more models
 in the CC input section. 
-The models supported in the CC program are 
+The models supported in the \cc\ module are 
 CCS\cite{Christiansen:CPL243},
 MP2\cite{Moller34},
 CC2\cite{Christiansen:CPL243},
@@ -67,4 +65,4 @@ the various input sections in the *CC INPUT section
 as detailed in the following sections.
 
 There is also a possibility for performing cavity coupled cluster
-self-consistent-reaction field calculations for solvent modeling~\cite{???}.
+self-consistent-reaction field calculations for solvent modeling.

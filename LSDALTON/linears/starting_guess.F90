@@ -138,9 +138,11 @@ subroutine get_initial_dens(H1,S,D,ls,config)
 
      ! Quit in case orbitals on file are not localized lcv basis and we are
      ! trying to restart lcm calculation for which lcv is needed.
-     if (config%decomp%cfg_lcm .and. (.not.lcv_on_file)) &
-        &  call lsquit("CAN NOT RESTART .LCM calculation, LCV basis NOT ON FILE",config%lupri)
-
+     if (config%opt%cfg_start_guess=='TRILEVEL') then
+        if (config%decomp%cfg_lcm .and. (.not.lcv_on_file))then
+           call lsquit("CAN NOT RESTART TRILEVEL .LCM calculation, LCV basis NOT ON FILE",config%lupri)
+        endif
+     endif
 
      if (gcbasis .and. .not. config%decomp%cfg_gcbasis) then
         WRITE(config%lupri,*) 'Your dens.restart was constructed using the grand-canonical (GC) basis,'
@@ -169,7 +171,9 @@ subroutine get_initial_dens(H1,S,D,ls,config)
      else
         call lsquit('Basis check is messed up!!',config%lupri)
      endif
-     IF (config%diag%CFG_restart .AND. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) THEN
+     IF (config%diag%CFG_restart .AND. &
+          & ((config%optinfo%optimize .OR. config%dynamics%do_dynamics)&
+          & .OR.config%diag%CFG_purifyrestart)) THEN
         !Using the density matrix from the previous geometry iteration in the current
         !geometry iteration speeds up geometry optimization significantly. 
         !Note that in some (early) geometry iterations this might lead to problems in SCF 

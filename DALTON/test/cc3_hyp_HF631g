@@ -100,6 +100,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2 and CC3 energies:
 CRIT1=`$GREP "Total SCF   energy: * -99\.8705133766" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * -99\.9862038852" $log | wc -l`
@@ -109,7 +114,7 @@ CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 # CC3 hyperpolarizability :
-CRIT1=`$GREP  "XDIPLEN *\(unrel\.\) *(-|-0)\.2000 *ZDIPLEN *\(unrel\.\) *(|0)\.1000 *XDIPLEN *\(unrel\.\) *(|0)\.1000 *-1\.7420603" $log | wc -l`
+CRIT1=`$GREP  "XDIPLEN *\(unrel\.\) *(-|-0)\.2000 *ZDIPLEN *\(unrel\.\) *( |0)\.1000 *XDIPLEN *\(unrel\.\) *( |0)\.1000 *-1\.7420603" $log | wc -l`
 TEST[2]=$CRIT1
 CTRL[2]=1
 ERROR[2]="CC3 HYPERPOLARIZABILITY NOT CORRECT"

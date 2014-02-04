@@ -88,6 +88,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF energy:
 CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-2.8615219(8|9)." | wc -l`
 TEST[1]=`expr $CRIT1`
@@ -118,14 +123,14 @@ CRIT2=`$GREP " 0      2.08922          2.08922          2.08922          2.08922
 CRIT3=`$GREP " 2      19.5593          19.5593          19.5593          19.5593 " $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[4]=3
-ERROR[4]="CCS LENGTH SUM RULE NOT CORRECT
+ERROR[4]="CCS LENGTH SUM RULE NOT CORRECT"
 
 
 
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

@@ -14,7 +14,10 @@ module profile_int
   use daltoninfo       
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
-  
+  use ProfileIchorMod
+#ifdef MOD_UNRELEASED
+  use dal_interface, only: di_decpackedJ,di_decpackedJold
+#endif
 private
 public :: di_profile_lsint
 
@@ -54,7 +57,11 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
 #endif
   WRITE(lupri,*)' '
   WRITE(lupri,*)'============================================='
-
+  WRITE(lupri,*)'config%prof%Ichor',config%prof%Ichor
+  IF(config%prof%Ichor)THEN
+     call profile_Ichor(LUPRI,LUPRI,ls%SETTING,config)
+     RETURN
+  ENDIF
   IF(config%prof%Overlap)THEN
      CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
      call mat_init(S,nbast,nbast)
@@ -96,6 +103,16 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      CALL mat_free(H1)
      CALL mat_free(S)
   endif
+  print*,'config%prof%IchorDEC',config%prof%IchorDEC
+#ifdef VAR_ICHOR
+  IF(config%prof%IchorDEC)THEN
+     print*,'call di_decpackedJOLD'
+     call di_decpackedJOLD(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
+     print*,'call di_decpackedJ'
+     call di_decpackedJ(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
+     RETURN
+  ENDIF
+#endif
      
 !#ifdef VAR_OMP
 !  DO I = 1,2
@@ -173,6 +190,29 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      enddo
      call mem_dealloc(Dvec)
      call mem_dealloc(Evec)
+  ENDIF
+  IF(config%prof%NEGRAD)THEN
+     call mem_alloc(GRAD,3,natoms)
+     call mem_alloc(Dvecp,1)
+     call mat_init(TMP,nbast,nbast)
+     call mat_assign(TMP,D(1))
+     !we need a nonsym matrix
+     TMP%elms(2) = TMP%elms(2)+0.7654E0_realk
+     TMP%elms(nbast) = TMP%elms(nbast)-0.7654E0_realk
+     TMP%elms(2*nbast-1) = TMP%elms(nbast)+0.2654E0_realk
+     TMP%elms(nbast*nbast-1) = TMP%elms(nbast)-0.3654E0_realk
+     TMP%elms((nbast-1)*nbast-1) = TMP%elms(nbast)-0.4654E0_realk
+     Dvecp(1)%p => TMP
+     CALL II_get_ne_gradient(Grad,Dvecp,1,ls%setting,lupri,6)
+     WRITE(lupri,*)'NEGRAD gradX=',grad(1,1)
+     WRITE(lupri,*)'NEGRAD gradY=',grad(2,1)
+     WRITE(lupri,*)'NEGRAD gradZ=',grad(3,1)
+     WRITE(6,*)'NEGRAD gradX=',grad(1,1)
+     WRITE(6,*)'NEGRAD gradY=',grad(2,1)
+     WRITE(6,*)'NEGRAD gradZ=',grad(3,1)
+     call mem_dealloc(GRAD)
+     call mem_dealloc(Dvecp)
+     CALL LSTIMER('NEGRADPROF',ts,te,lupri)
   ENDIF
   IF(config%prof%Exchangegrad)THEN
      call mem_alloc(GRAD,3,natoms)

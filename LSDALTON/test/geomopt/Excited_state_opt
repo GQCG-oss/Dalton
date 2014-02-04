@@ -51,6 +51,7 @@ cat > Excited_state_opt.dal <<'%EOF%'
 **OPTIMI
 .BAKER
 .LOOSE
+.NOHOPE
 **WAVE FUNCTIONS
 .DFT
 B3LYP

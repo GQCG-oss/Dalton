@@ -91,6 +91,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #           Total SCF   energy:                  -108.9541307667
 #           Total MP2   energy:                  -109.2604217706
 #           Total CC2   energy:                  -109.2654618636
@@ -151,7 +156,7 @@ ERROR[2]="CC2 GAMMA DISPERSION COEFFICIENTS NOT CORRECT"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

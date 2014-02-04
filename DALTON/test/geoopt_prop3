@@ -95,6 +95,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Reading molecular geometry:
 CRIT1=`$GREP "1 * x *  (0| )\.0000000000" $log | wc -l`
 CRIT2=`$GREP "4 * x * 1\.2634502500" $log | wc -l`
@@ -225,7 +230,7 @@ CRIT2=`$GREP "Diamagnetic contribution\: * \-18\.6591 * \-1472\.39.. * \-88\.66.
 CRIT3=`$GREP "Paramagnetic contribution\: * 20\.111. * 158(6|7)\..... * 95\.57.." $log | wc -l`
 CRIT4=`$GREP "1st anisotropy\: * \-7\.2079 * \-568\.77.. * \-34\.252." $log | wc -l`
 CRIT5=`$GREP "2nd anisotropy\: * 7\.12(5|6). * 562\.3(0|1).. * 33\.863." $log | wc -l`
-CRIT6=`$GREP "Bx * 1\.5069110....[0-9] * (\-0|\-|0| )\.000000000000 * (\-0|\-|0| )\.000000000000" $log | wc -l`
+CRIT6=`$GREP "Bx * 1\.506911.....[0-9] * (\-0|\-|0| )\.000000000000 * (\-0|\-|0| )\.000000000000" $log | wc -l`
 CRIT7=`$GREP "By * (\-0|\-|0| )\.000000000000 * 6\.202894...... * (\-0|\-|0| )\.000000000000" $log | wc -l`
 CRIT8=`$GREP "Bz * (\-0|\-|0| )\.000000000000 * (\-0|\-|0| )\.000000000000 * \-3\.3529579....[0-9]" $log | wc -l`
 TEST[16]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
@@ -287,7 +292,7 @@ ERROR[20]="GEOMETRY OPTIMIZATION FAILED"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi

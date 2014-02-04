@@ -9,7 +9,7 @@ rm -rf $SCRATCH_DIR
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
-git checkout Dalton2013_release
+#git checkout Dalton2013_release
 git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 source /com/gfortran/4.4.3/bin/gfortranvars.sh
 source /com/OpenMPI/1.6.3/gnu/bin/openmpi.sh
@@ -20,9 +20,9 @@ export OMP_NUM_THREADS=1
 export MATH_ROOT=/com/intel/Compiler/11.1/064/mkl
 #-DENABLE_INTERNAL_MATH=1 
 export DALTON_TMPDIR=$SCRATCH_DIR
-export DALTON_NR_MPI_PROCS=5
+export DALTON_NUM_MPI_PROCS=5
 export CTEST_PROJECT_NAME=LSDALTON
-FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DCMAKE_BUILD_TYPE=Debug -DENABLE_CODE_COVERAGE=1 -DENABLE_TIMINGS=1 -DENABLE_BLAS=ON -DENABLE_LAPACK=ON -DENABLE_RELEASE=1 -DBUILDNAME=RB-Grendel-linux-gfortran443-debugMPI /home/tkjaer/NightlyTestingCdash/tmp/DaltonGfortranDebugMPI
+FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DCMAKE_BUILD_TYPE=Debug -DENABLE_CODE_COVERAGE=1 -DENABLE_TIMINGS=1 -DENABLE_BLAS=ON -DENABLE_LAPACK=ON -DENABLE_RELEASE=1 -DBUILDNAME=MB-Grendel-linux-gfortran443-debugMPI /home/tkjaer/NightlyTestingCdash/tmp/DaltonGfortranDebugMPI
 #cp /home/tkjaer/NightlyTestingCdash/git_revision_info.f90 $TMP_DIR/lsutil/.
 #cp /home/tkjaer/NightlyTestingCdash/compilation_info.f90 $TMP_DIR/lsutil/.
 #make depend

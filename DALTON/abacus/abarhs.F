@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -438,7 +438,7 @@ C
      &          HESFS1(*)
       LOGICAL   DERIV(3), NOORBI, LONDON, DOSFD, DOREAL, DOIMAG,
      &          DOBRHS, DOPRHS, ANTI, DDFOCK, PERTUR, DOTD, FEXIST,
-     &          NOBLK, OLDDX, FOUND, PANTI, DIA2SO, ZFS2EL
+     &          NOBLK, OLDDX, FOUND, PANTI, DIA2SO, ZFS2EL, LDUMMY
 C
 C Used from common blocks:
 C   CBIRHS : *
@@ -848,7 +848,7 @@ C
      &                        LWRK,ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
      &                        TKTIME,RETUR,IPRINT,IPRTYP,
      &                        IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                        DUMMY)
+     &                        DUMMY,LDUMMY)
                   HFXMU = HFXM0
                   IF (HFXMU.NE.D0) THEN
                      KFCTMP = KLAST
@@ -866,7 +866,7 @@ C
      &                    LWRK,ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
      &                    TKTIME,RETUR,IPRINT,IPRTYP,
      &                    IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                    DUMMY)
+     &                    DUMMY,LDUMMY)
                      CALL DAXPY(NFMAT*N2BASX,1D0,WORK(KFCTMP),1,
      &                    WORK(KFMAT),1)
                      HFXFAC = HFXFC0
@@ -889,7 +889,7 @@ C                IF (.NOT.DOERIP) THEN
      &                          RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
      &                          WORK(KNPRIM),WORK(KNCONT),
      &                          WORK(KIORBS),IDUMMY,IDUMMY,DUMMY,
-     &                          DUMMY,DUMMY,DUMMY,.FALSE.)
+     &                          DUMMY,DUMMY,DUMMY,.FALSE.,.false.)
                     HFXMU = HFXM0
                     IF (HFXMU.NE.D0) THEN
                        HFXFC0 = HFXFAC
@@ -902,7 +902,7 @@ C                IF (.NOT.DOERIP) THEN
      &                             RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
      &                             WORK(KNPRIM),WORK(KNCONT),
      &                             WORK(KIORBS),IDUMMY,IDUMMY,DUMMY,
-     &                             DUMMY,DUMMY,DUMMY,.FALSE.)
+     &                             DUMMY,DUMMY,DUMMY,.FALSE.,.false.)
                        HFXFAC = HFXFC0
                     END IF
 C                ELSE

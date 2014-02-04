@@ -8,15 +8,15 @@ export LD_LIBRARY_PATH=/com/intel/Compiler/11.1/064/mkl/lib/em64t:/com/intel/Com
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
-git checkout Dalton2013_release
+#git checkout Dalton2013_release
 git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 export OMP_NUM_THREADS=1
 source /com/intel/Compiler/11.1/064/bin/intel64/ifortvars_intel64.sh
 #cd $TMP_DIR/LSDALTON
 export DALTON_TMPDIR=$SCRATCH_DIR
-export DALTON_NR_MPI_PROCS=1
+export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
-./setup --fc=ifort --cc=icc -D BUILDNAME="RB-Grendel-linux-ifort11.1-debug" --check --type=debug
+./setup --fc=ifort --cc=icc -D BUILDNAME="MB-Grendel-linux-ifort11.1-debug" --check --type=debug
 #--scratch=$SCRATCH_DIR 
 cd $TMP_DIR/build
 #make depend

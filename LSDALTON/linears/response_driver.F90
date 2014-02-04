@@ -7,16 +7,18 @@
 !> \date 2010-01
 module response_driver_module
 
+#ifdef VAR_RSP
   use decompMod, only: DecompItem
-  use matrix_defop
   !use scf_config, only: AOR_stacksize, cfg_rsp_imfreqs_specified, cfg_rsp_complex
   use precision
-  use rsp_contribs
-  use rsp_equations
+  use TYPEDEFTYPE, only: LSSETTING
+  use matrix_module
+  use lsdalton_matrix_defop
+  use lsdalton_rsp_contribs
+  use lsdalton_rsp_equations
   use RSPsolver, only: rsp_init, rsp_solver, rsp_molcfg  
   use RSPsymsolver, only: rsp_sym_init, rsp_sym_solver
   use matrix_operations, only: mat_write_to_disk, mat_read_from_disk
-  use TYPEDEFTYPE, only: LSSETTING
   use memory_handling
 
   implicit none
@@ -1019,7 +1021,6 @@ Contains
     enddo
 
     deallocate(rsp_results)
-
   end subroutine rspfunc_or_transmoment
 
 
@@ -1143,7 +1144,6 @@ Contains
     MyRspFunc%trans_moment_order = 0
     MyRspFunc%ExNumber1 = 0
     MyRspFunc%ExNumber2 = 0
-
   end subroutine initialize_RspFunc
 
 
@@ -1348,7 +1348,6 @@ Contains
 
     ! Free B(1) matrix
     B(1)=0
-
   end subroutine transition_moment_density_matrix
 
   !> \brief Subroutine for calculating first order properties such as dipole and gradient.
@@ -1415,7 +1414,6 @@ Contains
 
     ! Free W if used
     if(pdbs(1)) W=0
-
 
   end subroutine Get_first_order_property
 
@@ -1604,7 +1602,6 @@ Contains
     ! Free matrices
     Db(:)=0
     if(isdef(Fb(1))) Fb(:)=0
-
 
   end subroutine linear_response
 
@@ -2031,7 +2028,6 @@ Contains
     if(isdef(Zbc(1))) Zbc(1)=0
     if(isdef(Wbc(1))) Wbc(1)=0
 
-
   end subroutine quadratic_response_2nplus1
 
 
@@ -2328,7 +2324,6 @@ Contains
 
     if(isdef(Sb(1))) Sb(:)=0
     if(isdef(Sc(1))) Sc(:)=0
-
 
   end subroutine quadratic_response_nplus1
 
@@ -3156,7 +3151,6 @@ Contains
     if(isdef(Sab(1,1))) Sab(:,:)=0
     if(isdef(Sac(1,1))) Sac(:,:)=0
     if(isdef(Sad(1,1))) Sad(:,:)=0
-
   end subroutine cubic_response
 
 
@@ -3355,7 +3349,6 @@ Contains
             & comp=(/first_compA, first_compD/), &
             &  freq=(/freqA, freqD/) )
     end if
-
   end subroutine cubic_response_dens_and_fock
 
 
@@ -3383,7 +3376,7 @@ Contains
          & Sab(MyRspFunc%dims(1),MyRspFunc%dims(2)), &
          & Sac(MyRspFunc%dims(1),MyRspFunc%dims(3)), &
          & Sad(MyRspFunc%dims(1),MyRspFunc%dims(4))
-    logical                        :: AeqB, AeqC, AeqD, BeqC, BeqD, CeqD,pdbs(4)
+   logical                        :: AeqB, AeqC, AeqD, BeqC, BeqD, CeqD,pdbs(4)
     integer :: nA, nB, nC, nD, first_compA,first_compB, first_compC, first_compD,i,j
 
 
@@ -3526,7 +3519,6 @@ Contains
           end do
        enddo
     end if IfSad
-
 
   end subroutine cubic_response_overlap
 
@@ -3871,8 +3863,6 @@ Contains
     if(isdef(Ybcd)) Ybcd=0
     if(isdef(Zbcd)) Zbcd=0
 
-
-
   end subroutine cubic_response_multiplier_contribs
 
 
@@ -3887,7 +3877,6 @@ Contains
 
   subroutine get_W_matrix(F,D,S,MyRspFunc,order,pdbs,W,ops,Dx,Fx,Sx,&
        Dy,Fy,Sy,Dxy,Fxy)
-
     implicit none
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
@@ -3984,7 +3973,6 @@ Contains
        CALL lsQUIT('get_W_matrix: Only up to second order W matrices have been implemented.',-1)
 
     end select
-
   end subroutine get_W_matrix
 
 
@@ -4354,7 +4342,6 @@ Contains
 
 
     write(lupri,*)
-
   end subroutine print_response_func
 
 
@@ -4404,7 +4391,12 @@ Contains
          .and. frequencies_identical) identical = .true.
 
     return
-
   end function Identical_operators
+#else
+  CONTAINS
+  subroutine response_driver_dummy_sub()
+    implicit none
+  end subroutine response_driver_dummy_sub
+#endif
 
 end module response_driver_module

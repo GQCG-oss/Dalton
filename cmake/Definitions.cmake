@@ -34,8 +34,13 @@ if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_64BITS)
 endif()
 
+if(ENABLE_OPENACC)
+    add_definitions(-DVAR_OPENACC)
+endif()
+
 if(ENABLE_CSR)
     add_definitions(-DVAR_MKL)
+    add_definitions(-DVAR_CSR)
 endif()
 
 if(ENABLE_SCALAPACK)
@@ -48,4 +53,12 @@ endif()
 
 if(ENABLE_DEBUGPBC)
     add_definitions(-DDEBUGPBC)
+endif()
+
+if(ENABLE_RSP)
+    add_definitions(-DVAR_RSP)
+endif()
+
+if(ENABLE_ICHOR)
+    add_definitions(-DVAR_ICHOR)
 endif()

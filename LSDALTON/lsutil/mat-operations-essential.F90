@@ -337,8 +337,8 @@ end type matrixmembuf
          !to be free'ed, the matrix must be in the same location where it was init'ed.
          !If not, it is probably a duplicate (like 'a' in (/a,b,c/)), in which case
          !we may end up double-free'ing, so err
-         if (.not.ASSOCIATED(a%init_self_ptr,a)) &
-             & call lsQUIT('Error in mat_free: matrix moved or duplicated',-1)
+         !if (.not.ASSOCIATED(a%init_self_ptr,a)) &
+         !    & call lsQUIT('Error in mat_free: matrix moved or duplicated',-1)
          nullify(a%init_self_ptr)
          !look at magic tag to verify matrix is initialized, then clear tag
          if (a%init_magic_tag.NE.mat_init_magic_value) &
@@ -1731,6 +1731,7 @@ end type matrixmembuf
       case(mtype_unres_dense)
          call mat_unres_dense_section(A,from_row,to_row,from_col,to_col,Asec)
       case(mtype_scalapack)
+#ifdef VAR_SCALAPACK
          write(*,'(A)') 'Fallback mat_section for mtype_scalapack'
          call mem_alloc(Afull,A%nrow,A%ncol)
          call mat_dense_init(B,A%nrow,A%ncol)
@@ -1749,6 +1750,9 @@ end type matrixmembuf
          call mat_set_from_full(Bsecfull,1E0_realk,Asec)
          call mem_dealloc(Bsecfull)
          write(*,'(A)') 'debug: fallback mat_section finished'
+#else
+         call lsquit('matrix type scalapack requires VAR_SCALAPACK',-1)
+#endif
       case default
          call lsquit("mat_section not implemented for this type of matrix",-1)
       end select

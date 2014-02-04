@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -43,8 +43,8 @@ c NCOMP (INPUT)  : number of independent perturbation (3)
 #include "nuclei.h"
 #include "qm3.h"
 #include "inforb.h"
-C#include <infpri.h>
-C#include <infvar.h>
+C#include "infpri.h"
+C#include "infvar.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
@@ -251,13 +251,13 @@ c NCOMP (INPUT)  : number of independent perturbation (3)
 #include "nuclei.h"
 #include "qm3.h"
 #include "inforb.h"
-Cahs#include <infpar.h>
-Cahs#include <mtags.h>
+Cahs#include "infpar.h"
+Cahs#include "mtags.h"
 Cahs#if defined(VAR_MPI)
-Cahs#include <mpif.h>
+Cahs#include "mpif.h"
 Cahs#endif
-C#include <infpri.h>
-C#include <infvar.h>
+C#include "infpri.h"
+C#include "infvar.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL

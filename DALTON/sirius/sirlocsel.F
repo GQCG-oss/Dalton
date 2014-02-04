@@ -77,7 +77,7 @@ C
 C#######################################################################
 C /* Deck locr2 */
 C      SUBROUTINE LOCR2(CMO,WORK,LWORK)
-C#include <implicit.h>
+C#include "implicit.h"
 C      INTEGER LWORK
 C      REAL*8  WORK(LWORK)
 C      REAL*8  CMO(*)
@@ -85,12 +85,12 @@ CC
 CC  Localize orbitals of a given core hole by minimizing average distance
 CC  to the center.
 CC
-C#include <inforb.h>
-C#include <inftap.h>
-C#include <dummy.h>
-C#include <orgcom.h>
-C#include <infloc.h>
-C#include <wrkrsp.h>
+C#include "inforb.h"
+C#include "inftap.h"
+C#include "dummy.h"
+C#include "orgcom.h"
+C#include "infloc.h"
+C#include "wrkrsp.h"
 CC
 CC  External
 CC

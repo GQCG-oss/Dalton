@@ -128,6 +128,17 @@ C
 C
       IF ( IPRSOP .GE. 6 ) THEN
 C
+C---------------------------------------------------
+C        Allocation of work space for trial vectors.
+C---------------------------------------------------
+C
+         KTRIAL  = 1
+         KEND1   = KTRIAL + MAX(LTR1,LTR2)
+         LWORK1  = LWORK  - KEND1
+C
+         CALL SO_MEMMAX ('SO_TRIAL1',LWORK1)
+         IF (LWORK1 .LT. 0) CALL STOPIT('SO_TRIAL1',' ',KEND1,LWORK)
+C
 C------------------------------------------
 C        Write new trial vectors to output.
 C------------------------------------------

@@ -8,6 +8,11 @@ MODULE lsdalton_rsp_mod
 !>
 !> PROPERTIES SECTION
 !>
+use precision
+use configurationType, only: configitem
+use TYPEDEFTYPE,   only: LSSETTING,lsitem
+use matrix_module, only: matrix
+#ifdef VAR_RSP
 use response_wrapper_module,only: get_dipole_moment, &
      & calculate_and_store_transition_density_matrices, &
      & oparesponse_driver, tparesponse_driver,&
@@ -16,19 +21,16 @@ use response_wrapper_module,only: get_dipole_moment, &
      & alpharesponse_driver, betaresponse_driver, &
      & gammaresponse_driver, dtparesponse_driver, &
      & nmrshieldresponse_driver, get_excitation_energies
-use precision
-use configurationType, only: configitem
 use lstiming,      only: lstimer
-use rsp_contribs,  only: rsp_oneave
+use lsdalton_rsp_contribs,  only: rsp_oneave
 use rspsolver,     only: rsp_molcfg, init_rsp_molcfg
-use rsp_equations, only: rsp_eq_sol_empty
+use lsdalton_rsp_equations, only: rsp_eq_sol_empty
 use rsp_util,      only: util_save_MOinfo,util_free_MOstuff
-use TYPEDEFTYPE,   only: LSSETTING,lsitem
 !use molecule_type, only: MOLECULE_PT,MOLECULEINFO
 !use matrix_defop,  only: operator(*)
-use matrix_module, only: matrix
 use memory_handling, only: mem_alloc,mem_dealloc
 use integralinterfaceMod, only: ii_get_molecular_gradient
+#endif
 
 private
 public :: lsdalton_response, get_excitation_energy, &
@@ -36,13 +38,14 @@ public :: lsdalton_response, get_excitation_energy, &
 contains
   SUBROUTINE lsdalton_response(ls,config,F,D,S)
     implicit none
-    integer                 :: lu_pri,luerr,nbast
     TYPE(lsitem),target     :: ls
     type(configItem),target :: config
+    TYPE(Matrix)            :: F,D,S
+#ifdef VAR_RSP
+    integer                 :: lu_pri,luerr,nbast
     logical                 :: dodft
     real(realk)             :: Tstart,Tend,t1,t2 !,ten,tstr,E,gradnrm
     real(realk)             :: DipoleMoment(3)
-    TYPE(Matrix)            :: F,D,S
     type(rsp_molcfg)        :: molcfg
     ! Molecular gradient
     real(realk), pointer   :: Grad(:,:)
@@ -176,18 +179,20 @@ contains
     ! Clear saved solutions of response equations, stored in
     call rsp_eq_sol_empty()  !rsp_eq_sol in module rsp_equations
 
-
+#endif
   END SUBROUTINE LSDALTON_RESPONSE
 
 !    nexci = molcfg%decomp%cfg_rsp_nexcit
   SUBROUTINE get_excitation_energy(ls,config,F,D,S,ExcitE,nexcit)
     implicit none
-    integer                 :: lupri,luerr,nbast,nexcit
     TYPE(lsitem),target     :: ls
     type(configItem),target :: config
     TYPE(Matrix)            :: F,D,S
-    type(rsp_molcfg)        :: molcfg
     real(realk)             :: ExcitE
+    integer                 :: nexcit
+#ifdef VAR_RSP
+    integer                 :: lupri,luerr,nbast
+    type(rsp_molcfg)        :: molcfg
     real(realk),pointer     :: Excit(:)
     !integer
     integer :: i
@@ -228,19 +233,21 @@ contains
 !    ! Clear saved solutions of response equations, stored in
 !    call rsp_eq_sol_empty()  !rsp_eq_sol in module rsp_equations
 !    we keep them for calculation of EXCITED_STATE_GRADIENT
-
+#endif
   END SUBROUTINE GET_EXCITATION_ENERGY
 
   SUBROUTINE GET_EXCITED_STATE_GRADIENT(ls,config,F,D,S,Grad,Natoms)
     implicit none
-    integer                 :: lupri,luerr,nbast,Natoms
-    real(realk)             :: Grad(3,Natoms)
     TYPE(lsitem),target     :: ls
     type(configItem),target :: config
+    TYPE(Matrix)            :: F,D,S
+    integer                 :: Natoms
+    real(realk)             :: Grad(3,Natoms)
+#ifdef VAR_RSP
+    integer                 :: lupri,luerr,nbast
     logical                 :: dodft
     real(realk)             :: Tstart,Tend,t1,t2 !,ten,tstr,E,gradnrm
     real(realk)             :: DipoleMoment(3)
-    TYPE(Matrix)            :: F,D,S
     type(rsp_molcfg)        :: molcfg
     ! Molecular gradient
 
@@ -263,12 +270,14 @@ contains
     endif
 !    ! Clear saved solutions of response equations, stored in
     call rsp_eq_sol_empty()  !rsp_eq_sol in module rsp_equations
-
+#endif
   END SUBROUTINE GET_EXCITED_STATE_GRADIENT
 
   SUBROUTINE LS_rsp_eq_sol_empty
+#ifdef VAR_RSP
     ! Clear saved solutions of response equations, stored in
     call rsp_eq_sol_empty()  !rsp_eq_sol in module rsp_equations
+#endif
   END SUBROUTINE LS_RSP_EQ_SOL_EMPTY
 
 end MODULE lsdalton_rsp_mod

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -117,7 +117,7 @@ C
 #include "primit.h"
 #include "pcmdef.h"
 #include "pcm.h"
-Clf#include <pcmlog.h>
+Clf#include "pcmlog.h"
 #include "symmet.h"
 #include "ecpinf.h"
 #include "expopt.h"
@@ -342,7 +342,7 @@ C
             ELSE IF (PROPTY) THEN
 C...           modified by Bin Gao, Jan. 18, 2011
 C...           ECP will be computed through Gen1Int library
-C...#ifndef BUILD_GEN1INT
+C...#if !defined(BUILD_GEN1INT)
                IF (ECP) CALL QUIT(
      &            'ECP not implemented yet in ONEPR1 for "PROPTY" !')
 C...#endif
@@ -363,7 +363,7 @@ C...#endif
 C...           modified by Bin Gao, Jul. 8, 2011
 C...           also needs ECPINT to debug the results from Gen1Int
 C...           ECP in Gen1Int library is not efficient, backs to ECPINT temporarily
-C...#ifndef BUILD_GEN1INT
+C...#if !defined(BUILD_GEN1INT)
                IF (ECP) THEN
                   CALL ECPINT(CORAX,CORAY,CORAZ,CORBX,CORBY,CORBZ,
      &                 EXPA,EXPB,JMAXA,JMAXB,CONTA,CONTB,ADER,

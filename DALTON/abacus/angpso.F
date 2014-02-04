@@ -1,12 +1,36 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+
       SUBROUTINE ANGPSO(xmos,llwork,PRT,char1,char2,Av)
 C
 C Linux version, Melo, azua, giribet, alejandrito, 
 C  aucar, romero, homero,bart y lisa
 C
-#include <inftap.h>
-#include <inforb.h>
-#include <priunit.h>
-c#include <symmet.h>
+#include "inftap.h"
+#include "inforb.h"
+#include "priunit.h"
+c#include "symmet.h"
 
 C ------------------------------------------------------
 C        DOUBLE PRECISION matrix
@@ -58,7 +82,7 @@ C       LEO DALTON.CM  y saco nbas(naos)
 C ------------------------------------------------------
        naos = NBAST 
        nmos= naos
-       nelec=10
+c       nelec=10
 c       write(*,*) 'nelec = NOCCT ?. elec. cpa closed: ', NOCCT, nelec
 c       write(*,*) ' NBAST', NBAST
  
@@ -136,6 +160,7 @@ c       write(lupri,*) 'Llamando Cuenta para : ', LABEL(j),'  ', LABEL(k)
             write(lupri,*) '< ',LABEL(j),' >< ',LABEL(k),'>' 
         ENDIF 
         S1 = 0.0
+c jix : on NaN issue . should be  nelec/2
         do i1 = 1,NOCCT
            IF (B0(1).Eq.'ORBITAL') then
 C              write(lupri,*) 'Orbital : ',i1, '  Valor', ORBC(i1)
@@ -254,10 +279,11 @@ C -------------------------------------------------
 C     PARAMETOS DE LEO AOPROPER
 C -------------------------------------------------
       CHARACTER*8  STARS, LABEL, B(4)
-      double precision xx(5000000) , A(n,n)
+      double precision A(n,n)
       integer*4 nelem,  mu, nu
       PARAMETER (STARS = '********')
       PARAMETER (LUINP222 = 222)
+      real(8), allocatable :: xx(:)
 C ===================================================
 C ------------------------------------------------
 C       LEO AOPROPER Y ARMO EL VECTOR xx 
@@ -279,6 +305,7 @@ C          WRITE (*, '(5X,I5,3X,4(2X,A8))')  IREC, B
            IF (B(4).EQ.LABEL) then
               IF (B(3).EQ.'SYMMETRI') then
                  nelem = n*(n+1)/2
+                 allocate(xx(nelem))
                  read (LUINP222,end=3,err=2) (xx(i),i=1,nelem)
 C                 write(*,*) 'Found : ', B ,' on FILE AOPPROPER'
                  k = 1
@@ -290,9 +317,10 @@ C                      write(*,*) mu, nu, a(mu,nu)
                      k = k + 1 
                      enddo
                  enddo
+                 deallocate(xx)
               ELSE
                  nelem = n*(n+1)/2
-C                 nelem = n*(n-1)/2
+                 allocate(xx(nelem))
                  read (LUINP222,end=3,err=2) (xx(i),i=1,nelem)
 C                 write(*,*) 'Found : ', B ,' on FILE AOPPROPER'
                  k = 1
@@ -308,6 +336,7 @@ C                        write(*,*) mu, nu, a(mu,nu)
 C                      ENDIF
                     enddo
                  enddo   
+                 deallocate(xx)
               ENDIF  
            ENDIF   
       GO TO 1
@@ -407,6 +436,7 @@ C       write(*,*) 'delta'
 C          write(*,*) delta(i,a)
           enddo
        enddo
+C jix : on NaN issue : should be  nelec/2 
        do a = 1,noc
           do i = 1,nmos
           ORBC(a) = ORBC(a) + gama(a,i)*delta(i,a)

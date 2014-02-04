@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1189,7 +1189,7 @@ C
       INTEGER KDSRHF, K3OINT, NTOT, NUMDIS, IOPT
       INTEGER KLAMPB, KLAMHB, KT1AM, ISYMLP, K3OINT2
       INTEGER KOOOO, ISYMB2
-      INTEGER INDEXA(MXCORB)
+      INTEGER INDEXA(MXCORB_CC)
       INTEGER ISYMC2,ISYMC,IDLSTC,ISYMBC,MAXBC,KLAMPC,KLAMHC,IDUM
 C
 #if defined (SYS_CRAY)
@@ -1921,7 +1921,7 @@ C
 #include "distcl.h"
 #include "cbieri.h"
 #include "eribuf.h"
-C#include <cclr.h>
+C#include "cclr.h"
 C
       INTEGER ISYMB, LWORK, LU3SRTR, LUCKJDR
       INTEGER KEND1, LWRK1, KEND2, LWRK2, KENDSV, LWRKSV
@@ -1930,7 +1930,7 @@ C
       INTEGER KFREE, LFREE, NTOSYM, ISYMD1, NTOT, ILLL
       INTEGER KRECNR, NUMDIS, IDEL2, IDEL, ISYMD, ISYDIS
       INTEGER ISYAIK, KXINT, KLAMPB, KLAMHB, ISYCKJ, KCKJ
-      INTEGER INDEXA(MXCORB),IDUM
+      INTEGER INDEXA(MXCORB_CC),IDUM
 C
 #if defined (SYS_CRAY)
 #else
@@ -2112,7 +2112,7 @@ C
 #include "ccorb.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
-C#include <cclr.h>
+C#include "cclr.h"
 C
       INTEGER ISYMT2, ISYINT, LWORK, LENSQ, ISYMB, ISYMC
       INTEGER INDSQ(LENSQ,6)

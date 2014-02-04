@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -41,7 +41,7 @@ c/* Deck CC_BMATRIX */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -57,13 +57,8 @@ c/* Deck CC_BMATRIX */
       INTEGER IBTRAN(3,NBTRAN)
       INTEGER IBDOTS(MXVEC,NBTRAN)
       
-#if defined (SYS_CRAY) 
-      REAL WORK(LWORK) 
-      REAL BCONS(MXVEC,NBTRAN)
-#else 
-      DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION BCONS(MXVEC,NBTRAN)
-#endif 
+      REAL*8 WORK(LWORK) 
+      REAL*8 BCONS(MXVEC,NBTRAN)
 
       INTEGER MAXBTRAN, NTRAN, ISTART, IBATCH, NBATCH
 
@@ -166,7 +161,7 @@ c/* Deck CC_BMAT */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -244,13 +239,14 @@ c/* Deck CC_BMAT */
 
       CHARACTER*(3) LIST, LIST2A, LIST2B
       CHARACTER*(10) MODEL, MODELW, CDUMMY
-      INTEGER INDEXA(MXCORB)
+      INTEGER INDEXA(MXCORB_CC)
       INTEGER INTMED1(2,2*MAXSIM), NINT1
       INTEGER INTMEDA(2,MAXSIM), NINTA
       INTEGER INTMED2(4,MAXSIM), NINT2
       INTEGER I1HGH(0:MAXSIM), I2HGH(0:MAXSIM), NBATCH
-      INTEGER IOFFCD(0:MAXSIM+1), IT2F(MXCORB,2*MAXSIM)
-      INTEGER IADRD(MXCORB,2*MAXSIM)
+      INTEGER IOFFCD(0:MAXSIM+1)
+      INTEGER IADRD(MXCORB_CC,2*MAXSIM) ! big static array :-(
+      INTEGER IT2F(MXCORB_CC,2*MAXSIM)  ! big static array :-(
       INTEGER KLAMP(2*MAXSIM), KLAMH(2*MAXSIM), KDENS(2*MAXSIM)
       INTEGER KFOCK(2*MAXSIM), KRHO2(2*MAXSIM), KRIM(2*MAXSIM)
       INTEGER KFOCKOO(2*MAXSIM), KFOCKOV(2*MAXSIM), KFOCKVV(2*MAXSIM)
@@ -2444,7 +2440,7 @@ c/* Deck CCBMAT2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -2455,7 +2451,7 @@ c/* Deck CCBMAT2 */
 #include "ccsections.h"
 #include "ccslvinf.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 
 
 * local parameters:
@@ -3032,7 +3028,7 @@ c/* Deck CCBPRE1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -3197,7 +3193,7 @@ c/* Deck CCBPRE2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3354,7 +3350,7 @@ c/* Deck CCBINT1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3531,7 +3527,7 @@ c/* Deck CCBINT2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3678,7 +3674,7 @@ c/* Deck CCBINT3 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3842,7 +3838,7 @@ c/* Deck CCBOPEN*/
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -4005,7 +4001,7 @@ c/* Deck CCBSAVE*/
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -4147,7 +4143,7 @@ c/* Deck CCB_22CD */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -4334,7 +4330,7 @@ c/* Deck CCB_CDBAR */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -5450,7 +5446,7 @@ c/* Deck CC_BTST */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -5752,7 +5748,7 @@ C  /* Deck ccb_cdsort */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -5873,7 +5869,7 @@ C  /* Deck cc_cdb */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -6120,7 +6116,7 @@ c /* deck cc_aibj */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -6278,7 +6274,7 @@ C  /* Deck ccbpre1int */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -42,7 +42,7 @@ c/* Deck CC_FMATRIX */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -132,12 +132,12 @@ Cholesky
         NTRAN  = MIN(NFTRAN-(ISTART-1),MAXFTRAN)
 
         KIADRBFD    = 1
-        KIADRZ0     = KIADRBFD    + MXCORB*NTRAN
-        KIADRPQ0    = KIADRZ0     + MXCORB*NTRAN
-        KIADRPQR    = KIADRPQ0    + MXCORB*NTRAN
-        KIADRPQMO   = KIADRPQR    + MXCORB*NTRAN
-        KIADRBFI    = KIADRPQMO   + MXCORB*NTRAN
-        KRHO1       = KIADRBFI    + MXCORB*NTRAN
+        KIADRZ0     = KIADRBFD    + MXCORB_CC*NTRAN
+        KIADRPQ0    = KIADRZ0     + MXCORB_CC*NTRAN
+        KIADRPQR    = KIADRPQ0    + MXCORB_CC*NTRAN
+        KIADRPQMO   = KIADRPQR    + MXCORB_CC*NTRAN
+        KIADRBFI    = KIADRPQMO   + MXCORB_CC*NTRAN
+        KRHO1       = KIADRBFI    + MXCORB_CC*NTRAN
         KRHO2       = KRHO1       + NTRAN
         KFIM        = KRHO2       + NTRAN
         KMGDL       = KFIM        + NTRAN
@@ -327,7 +327,7 @@ c/* Deck CC_FTRAN */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -363,12 +363,12 @@ c/* Deck CC_FTRAN */
       FILFMA      = 'CC__FMAT'
 
       KIADRBFD    = 1
-      KIADRZ0     = KIADRBFD    + MXCORB*NFTRAN
-      KIADRPQ0    = KIADRZ0     + MXCORB*NFTRAN
-      KIADRPQR    = KIADRPQ0    + MXCORB*NFTRAN
-      KIADRPQMO   = KIADRPQR    + MXCORB*NFTRAN
-      KIADRBFI    = KIADRPQMO   + MXCORB*NFTRAN
-      KRHO1       = KIADRBFI    + MXCORB*NFTRAN
+      KIADRZ0     = KIADRBFD    + MXCORB_CC*NFTRAN
+      KIADRPQ0    = KIADRZ0     + MXCORB_CC*NFTRAN
+      KIADRPQR    = KIADRPQ0    + MXCORB_CC*NFTRAN
+      KIADRPQMO   = KIADRPQR    + MXCORB_CC*NFTRAN
+      KIADRBFI    = KIADRPQMO   + MXCORB_CC*NFTRAN
+      KRHO1       = KIADRBFI    + MXCORB_CC*NFTRAN
       KRHO2       = KRHO1       + NFTRAN
       KFIM        = KRHO2       + NFTRAN
       KMGDL       = KFIM        + NFTRAN
@@ -495,7 +495,7 @@ c/* Deck CC_FMATNEW */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -520,7 +520,7 @@ c/* Deck CC_FMATNEW */
 #include "dummy.h"
 #include "r12int.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -605,14 +605,14 @@ C     DOUBLE PRECISION ECURRSAV
       CHARACTER*(10) MODEL, MODELW, CDUMMY
       CHARACTER*(3) APROXR12
       LOGICAL LLSAME, CCSDR12, OSQSAV, OORSAV
-      INTEGER INDEXA(MXCORB)
+      INTEGER INDEXA(MXCORB_CC)
       INTEGER INTMEDR(2,MAXSIM), NINTR, IINTR
       INTEGER INTMEDL(4,MAXSIM), NINTL, IINTL
       INTEGER INTMED2(4,MAXSIM), NINT2, IINT2
       INTEGER IRHGH(0:MAXSIM), I2HGH(0:MAXSIM), IOFFCD(0:MAXSIM+1)
-      INTEGER IADRBFD(MXCORB,NFTRAN), IADRZ0(MXCORB,NFTRAN)
-      INTEGER IADRPQ0(MXCORB,NFTRAN), IADRPQR(MXCORB,NFTRAN)
-      INTEGER IADRPQMO(MXCORB,NFTRAN),IADRBFI(MXCORB,NFTRAN)
+      INTEGER IADRBFD(MXCORB_CC,NFTRAN), IADRZ0(MXCORB_CC,NFTRAN)
+      INTEGER IADRPQ0(MXCORB_CC,NFTRAN), IADRPQR(MXCORB_CC,NFTRAN)
+      INTEGER IADRPQMO(MXCORB_CC,NFTRAN),IADRBFI(MXCORB_CC,NFTRAN)
       INTEGER KRHO1(NFTRAN),KFIM(NFTRAN),KMGDL(NFTRAN),KRIM(NFTRAN)
       INTEGER KZDEN(NFTRAN),KGIM(NFTRAN)
       INTEGER KLAMPA(NFTRAN),KLAMHA(NFTRAN),KRHO2(NFTRAN),KCTR2(NFTRAN)
@@ -2692,7 +2692,7 @@ C  /* Deck ccfpreint */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -2711,8 +2711,8 @@ C  /* Deck ccfpreint */
       CHARACTER*(*) FILYIM,FILXIM,FILMGD,FILPQ,FILPQMO,FNBDZ0,FILZDN,
      &              FILMIM
       INTEGER LWORK,IDLSTL,IDLSTR,NINT2,LENX,LENY,LENMGD,LENM,IOPTRSP
-      INTEGER IADRPQ(MXCORB,*), IADRZ0(MXCORB,*), INTMED2(4,*)
-      INTEGER IADRPQMO(MXCORB,*), LENZDN
+      INTEGER IADRPQ(MXCORB_CC,*), IADRZ0(MXCORB_CC,*), INTMED2(4,*)
+      INTEGER IADRPQMO(MXCORB_CC,*), LENZDN
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK), XLAMDP(*), XLAMDH(*)
@@ -3105,7 +3105,7 @@ c/* Deck CCFOPEN*/
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3291,7 +3291,7 @@ c/* Deck CCFSAVE*/
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3454,7 +3454,7 @@ c/* Deck CCFPRE2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3655,7 +3655,7 @@ c/* Deck CCFINT2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3676,8 +3676,8 @@ c/* Deck CCFINT2 */
       INTEGER ISYCTR, ISYMGD, ISYABK, ISYZT0, ISYZT1, LEN0, LEN1
       INTEGER KDSRHA, KMGD, KEND1, LWRK1, IADR, IOPT
       INTEGER KPINT0, KQINT0, KPINT1, KQINT1, KWINT1
-      INTEGER IADRPQ0(MXCORB),IADRPQR(MXCORB)
-      INTEGER IADRBFI(MXCORB),IADRZ0(MXCORB)
+      INTEGER IADRPQ0(MXCORB_CC),IADRPQR(MXCORB_CC)
+      INTEGER IADRBFI(MXCORB_CC),IADRZ0(MXCORB_CC)
 
 
 #if defined (SYS_CRAY)
@@ -3848,7 +3848,7 @@ c/* Deck CCFMAT2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "dummy.h"
@@ -3860,7 +3860,7 @@ c/* Deck CCFMAT2 */
 #include "ccfield.h"
 #include "ccslvinf.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -3873,7 +3873,7 @@ c/* Deck CCFMAT2 */
       CHARACTER*(*) LISTL, LISTR, FNBFI, BFFIL
       CHARACTER*(*) CTFIL, CBAFIL, DTFIL, DBAFIL
       INTEGER IDLSTL, IDLSTR, ISYRES, ISYCTR, ISYAMP, LWORK
-      INTEGER LUBFI, IADRBFI(MXCORB), IOFFCD
+      INTEGER LUBFI, IADRBFI(MXCORB_CC), IOFFCD
       INTEGER LUC, LUCBAR, LUD, LUDBAR, LUBF, LENBF, IINTR
       INTEGER IOPTTCME
 C
@@ -4759,7 +4759,7 @@ c/* Deck CC_ZETADEN */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -4960,7 +4960,7 @@ C  /* Deck cc_bfif */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -5045,7 +5045,7 @@ C  /* Deck cc_bfifsort */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

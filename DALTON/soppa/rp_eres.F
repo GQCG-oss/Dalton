@@ -7,6 +7,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, October 1995
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
+C     PFP & SPAS, November 2013: triplet excitation energies
 C
 C     PURPOSE: Driver routine for making a linear transformation of
 C              a trialvector with the SOPPA hessian matricx E[2]. 
@@ -26,12 +27,7 @@ C
 C
 #include "maxorb.h"
 #include "maxash.h"
-CSPAS:12/11-2003: we need MXCOOR for eribuf.h
 #include "mxcent.h"
-CKeinSPASmehr
-CSPAS:10/11-2003: is merged with maxorb.h
-C#include <mxorb.h>
-CKeinSPASmehr
 #include "aovec.h"
 #include "iratdef.h"
 #include "eribuf.h"
@@ -211,15 +207,24 @@ C
          IF (DIRECT) THEN
             NTOSYM = 1
             DTIME     = SECOND()
-C           CALL HERDI1(WORK(KEND2),LWORK2,IPRINT)
-            CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
-     &                  KODPP1,KODPP2,KRDPP1,KRDPP2,
-     &                  KFREE,LFREE,KEND2,
-     &                  WORK(KEND2),LWORK2,IPRERI)
-            KEND2  = KFREE
-            LWORK2 = LFREE
-            DTIME     = SECOND()  - DTIME
-            SOTIME(8) = SOTIME(8) + DTIME
+            IF (HERDIR) THEN
+               CALL HERDI1(WORK(KEND2),LWRK2,IPRINT)
+            ELSE
+               KCCFB1 = KEND2
+               KINDXB = KCCFB1 + MXPRIM*MXCONT
+               KEND2  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
+               LWORK2  = LWORK  - KEND2
+
+               CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
+     &                     KODPP1,KODPP2,KRDPP1,KRDPP2,KFREE,LFREE,
+     &                     KEND2,WORK(KCCFB1),WORK(KINDXB),WORK(KEND2),
+     &                     LWORK2,IPRINT)
+
+               KEND2  = KFREE
+               LWORK2 = LFREE
+               DTIME     = SECOND()  - DTIME
+               SOTIME(8) = SOTIME(8) + DTIME
+            ENDIF
          ELSE
             NTOSYM = NSYM
          ENDIF
@@ -231,7 +236,7 @@ C
 C
          DO 210 ISYMD1 = 1,NTOSYM
 C
-            IF (DIRECT) THEN
+            IF (DIRECT) THEN  ! CC code has a HERDIR test, why is that not here? Compare with ccsd_energy.F
                NTOT = MXCALL
             ELSE
                NTOT = NBAS(ISYMD1)
@@ -249,19 +254,25 @@ C
                   LWORK2 = LWORKSV
 C
                   DTIME     = SECOND()
-C                 CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
-C    &                             IPRINT)
-                  CALL ERIDI2(ILLL,INDEXA,NUMDIS,
-     &                        WORK(KODCL1),WORK(KODCL2),
-     &                        WORK(KODBC1),WORK(KODBC2),
-     &                        WORK(KRDBC1),WORK(KRDBC2),
-     &                        WORK(KODPP1),WORK(KODPP2),
-     &                        WORK(KRDPP1),WORK(KRDPP2),
-     &                        WORK(KEND2), LWORK2,IPRERI)
-                  DTIME     = SECOND()  - DTIME
-                  SOTIME(9) = SOTIME(9) + DTIME
+                  IF (HERDIR) THEN
+                    CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
+     &                          IPRINT)
+                  ELSE
 C
-                  LRECNR = ( (NBUF -1) / IRAT ) + 1
+                     CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
+     &                           WORK(KODCL1),WORK(KODCL2),
+     &                           WORK(KODBC1),WORK(KODBC2),
+     &                           WORK(KRDBC1),WORK(KRDBC2),
+     &                           WORK(KODPP1),WORK(KODPP2),
+     &                           WORK(KRDPP1),WORK(KRDPP2),
+     &                           WORK(KCCFB1),WORK(KINDXB), 
+     &                           WORK(KEND2),LWORK2,IPRINT)
+C
+                     DTIME     = SECOND()  - DTIME
+                     SOTIME(9) = SOTIME(9) + DTIME
+                  ENDIF
+C
+                  LRECNR = ((NBUFX(0) - 1)/IRAT) +1
 C
                   KRECNR  = KEND2
                   KEND2   = KRECNR + LRECNR
@@ -275,9 +286,15 @@ C
                   NUMDIS = 1
                ENDIF
 C
-C--------------------------------------------------------
+C-------------------------------------------------------------------------------------------------
 C              Loop over number of distributions in disk.
-C--------------------------------------------------------
+C              In the case of ERI 
+C                 there are more than one distribution and IDEL2 loops over them and
+C                 the actual index of the delta orbital IDEL is then obtain from the array INDEXA.
+C              In the case of a not direct calculation
+C                 there is only one distribution on the disk, which implies that IDEL2 is always 1
+C                 and that IDEL is systematically incremented by one each time.
+C-------------------------------------------------------------------------------------------------
 C
                DO 230 IDEL2 = 1,NUMDIS
 C
@@ -313,8 +330,6 @@ C                 Read in batch of integrals.
 C--------------------------------------------
 C
                   DTIME      = SECOND()
-CSPAS:14/11-2003:I am not sure whether it should be IDEL2 here or not,
-Cbecause it is a new argument
                   CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND3),LWORK3,
      &                        WORK(KRECNR),DIRECT)
                   DTIME      = SECOND()   - DTIME
@@ -351,9 +366,20 @@ C                 Calculate the AO-Fock matrix.
 C----------------------------------------------
 C
                   DTIME      = SECOND()
-                  CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
-     &                           WORK(KEND4),LWORK4,IDEL,ISYMD,.FALSE.,
-     &                           DUMMY,ISYMTR)
+                  IF (TRIPLET) THEN
+C
+                     CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
+     &                               WORK(KFOCK),WORK(KEND4),
+     &                               LWORK4,IDEL,ISYMD,ISYMTR)
+C
+                  ELSE
+C
+                     CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
+     &                              WORK(KFOCK),WORK(KEND4),
+     &                              LWORK4,IDEL,ISYMD,.FALSE.,
+     &                              DUMMY,ISYMTR)
+C
+                  END IF
                   DTIME      = SECOND()   - DTIME
                   SOTIME(11) = SOTIME(11) + DTIME
 C
@@ -453,6 +479,8 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('RP_ERES')
 C

@@ -7,12 +7,9 @@ install(
     ${INSTALL_DIRECTORY}
     )
 
-foreach(
-    EXECUTABLE
-    dalton.x
-    )
+foreach(_executable dalton.x lsdalton.x lslib_tester.x)
     install(
-        TARGETS ${EXECUTABLE}
+        TARGETS ${_executable}
         DESTINATION ${INSTALL_DIRECTORY}
         PERMISSIONS
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
@@ -21,27 +18,30 @@ foreach(
         )
 endforeach()
 
-install(
-    FILES ${CMAKE_BINARY_DIR}/dalton
-    DESTINATION ${INSTALL_DIRECTORY}
-    PERMISSIONS
-    OWNER_READ OWNER_WRITE OWNER_EXECUTE
-    GROUP_READ             GROUP_EXECUTE
-    WORLD_READ             WORLD_EXECUTE
-    )
+foreach(_script dalton lsdalton)
+    install(
+        FILES ${CMAKE_BINARY_DIR}/${_script}
+        DESTINATION ${INSTALL_DIRECTORY}
+        PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ             GROUP_EXECUTE
+        WORLD_READ             WORLD_EXECUTE
+        )
+endforeach()
 
-install(
-    DIRECTORY ${PROJECT_SOURCE_DIR}/basis
-    DESTINATION ${INSTALL_DIRECTORY}
-    PATTERN .git EXCLUDE
-    )
+foreach(_directory ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR}/tools)
+    install(
+        DIRECTORY ${_directory}
+        DESTINATION ${INSTALL_DIRECTORY}
+        )
+endforeach()
 
 # write git hash to build dir
-file(WRITE ${PROJECT_BINARY_DIR}/GIT_HASH "${GIT_REVISION}")
+file(WRITE ${CMAKE_BINARY_DIR}/GIT_HASH "${GIT_REVISION}")
 
 # copy version info to install dir
 install(
-    FILES ${PROJECT_BINARY_DIR}/GIT_HASH ${PROJECT_SOURCE_DIR}/VERSION
+    FILES ${CMAKE_BINARY_DIR}/GIT_HASH ${CMAKE_SOURCE_DIR}/VERSION
     DESTINATION ${INSTALL_DIRECTORY}
     PERMISSIONS
     OWNER_READ OWNER_WRITE

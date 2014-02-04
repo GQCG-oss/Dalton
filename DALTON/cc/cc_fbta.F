@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -39,7 +39,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -102,24 +102,24 @@ C
         ISTART      = 1
         IEND        = ISTART    + NTRAN
         IADRE0      = IEND      + NTRAN
-        IADRE1      = IADRE0    + MXCORB*NTRAN
-        IADRPQ0     = IADRE1    + MXCORB*NTRAN
-        IADRPQ1     = IADRPQ0   + MXCORB*NTRAN
-        IADRPQMO    = IADRPQ1   + MXCORB*NTRAN
-        IADRPQA0    = IADRPQMO  + MXCORB*NTRAN
-        IADRPQA1    = IADRPQA0  + MXCORB*NTRAN
-        IADPQAMO    = IADRPQA1  + MXCORB*NTRAN
-        IADRBFA     = IADPQAMO  + MXCORB*NTRAN
-        IADRBFQA    = IADRBFA   + MXCORB*NTRAN
-        IADRBZA     = IADRBFQA  + MXCORB*NTRAN
-        IADRBZQA    = IADRBZA   + MXCORB*NTRAN
+        IADRE1      = IADRE0    + MXCORB_CC*NTRAN
+        IADRPQ0     = IADRE1    + MXCORB_CC*NTRAN
+        IADRPQ1     = IADRPQ0   + MXCORB_CC*NTRAN
+        IADRPQMO    = IADRPQ1   + MXCORB_CC*NTRAN
+        IADRPQA0    = IADRPQMO  + MXCORB_CC*NTRAN
+        IADRPQA1    = IADRPQA0  + MXCORB_CC*NTRAN
+        IADPQAMO    = IADRPQA1  + MXCORB_CC*NTRAN
+        IADRBFA     = IADPQAMO  + MXCORB_CC*NTRAN
+        IADRBFQA    = IADRBFA   + MXCORB_CC*NTRAN
+        IADRBZA     = IADRBFQA  + MXCORB_CC*NTRAN
+        IADRBZQA    = IADRBZA   + MXCORB_CC*NTRAN
 C
-        IT2DEL0     = IADRBZQA  + MXCORB*NTRAN
-        IT2DELB     = IT2DEL0   + MXCORB*1
-        IT2DELA     = IT2DELB   + MXCORB*NTRAN
-        IT2DELBA    = IT2DELA   + MXCORB*NTRAN
+        IT2DEL0     = IADRBZQA  + MXCORB_CC*NTRAN
+        IT2DELB     = IT2DEL0   + MXCORB_CC*1
+        IT2DELA     = IT2DELB   + MXCORB_CC*NTRAN
+        IT2DELBA    = IT2DELA   + MXCORB_CC*NTRAN
 C
-        KCMOPQ      = IT2DELBA  + MXCORB*NTRAN
+        KCMOPQ      = IT2DELBA  + MXCORB_CC*NTRAN
         KCMOHQ      = KCMOPQ    + NTRAN
         KLAMDPQ     = KCMOHQ    + NTRAN
         KLAMDHQ     = KLAMDPQ   + NTRAN
@@ -290,9 +290,9 @@ c /* deck cc_fbta1 */
 *                  IFBDOTS. Scalar results are returned in the FBCONS matrix
 *
 *    IT2DEL0,IT2DELB  -- integer scratch arrays of dimensions
-*                        MXCORB and MXCORB x NFBTRAN  (integrals)
+*                        MXCORB_CC and MXCORB_CC x NFBTRAN  (integrals)
 *    IT2DELA,IT2DELBA -- integer scratch arrays of dimensions
-*                        MXCORB x NFBTRAN       (integrals)
+*                        MXCORB_CC x NFBTRAN       (integrals)
 *    operator labels:
 *
 *           HAM0     : unperturbed Hamiltonian (1-el & 2-el part)
@@ -309,7 +309,7 @@ c /* deck cc_fbta1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "dummy.h"
@@ -413,10 +413,10 @@ C      PARAMETER (LUFBTA  = 89)
       INTEGER IFBDOTS(MXVEC,NFBTRAN)             
       INTEGER ISTART(NFBTRAN), IEND(NFBTRAN)
 C
-      INTEGER IT2DEL0(MXCORB)                 !the 3-MO integrals g(0)
-      INTEGER IT2DELB(MXCORB,NFBTRAN)         !the 3-MO integrals g(1)
-      INTEGER IT2DELA(MXCORB,NFBTRAN)         !the 3-MO integrals g(0A) 
-      INTEGER IT2DELBA(MXCORB,NFBTRAN)        !the 3-MO integrals g(1A) 
+      INTEGER IT2DEL0(MXCORB_CC)                 !the 3-MO integrals g(0)
+      INTEGER IT2DELB(MXCORB_CC,NFBTRAN)         !the 3-MO integrals g(1)
+      INTEGER IT2DELA(MXCORB_CC,NFBTRAN)         !the 3-MO integrals g(0A) 
+      INTEGER IT2DELBA(MXCORB_CC,NFBTRAN)        !the 3-MO integrals g(1A) 
 
       INTEGER KRAIM(NFBTRAN), KFAIM(NFBTRAN)      !calR,calF
       INTEGER KRQAIM(NFBTRAN), KFQAIM(NFBTRAN)    !calR-bar,calF-bar
@@ -446,17 +446,17 @@ C
 cs pointers for quantities on file (for each del or f, and in some cases ITRAN)
 cs integer arrays addresses
 
-      INTEGER IADRE0(MXCORB,NFBTRAN),  IADRE1(MXCORB,NFBTRAN)   
-      INTEGER IADRBFA(MXCORB,NFBTRAN), IADRBFQA(MXCORB,NFBTRAN)
-      INTEGER IADRBZA(MXCORB,NFBTRAN), IADRBZQA(MXCORB,NFBTRAN)
+      INTEGER IADRE0(MXCORB_CC,NFBTRAN),  IADRE1(MXCORB_CC,NFBTRAN)   
+      INTEGER IADRBFA(MXCORB_CC,NFBTRAN), IADRBFQA(MXCORB_CC,NFBTRAN)
+      INTEGER IADRBZA(MXCORB_CC,NFBTRAN), IADRBZQA(MXCORB_CC,NFBTRAN)
 
-      INTEGER IADRPQ0(MXCORB,NFBTRAN), IADRPQ1(MXCORB,NFBTRAN) 
-      INTEGER IADRPQMO(MXCORB,NFBTRAN)                        
+      INTEGER IADRPQ0(MXCORB_CC,NFBTRAN), IADRPQ1(MXCORB_CC,NFBTRAN) 
+      INTEGER IADRPQMO(MXCORB_CC,NFBTRAN)                        
 
-      INTEGER IADRPQA0(MXCORB,NFBTRAN), IADRPQA1(MXCORB,NFBTRAN)
-      INTEGER IADPQAMO(MXCORB,NFBTRAN)                          
+      INTEGER IADRPQA0(MXCORB_CC,NFBTRAN), IADRPQA1(MXCORB_CC,NFBTRAN)
+      INTEGER IADPQAMO(MXCORB_CC,NFBTRAN)                          
 
-      INTEGER INDEXA(MXCORB), IGAM(MXCORB)                     
+      INTEGER INDEXA(MXCORB_CC), IGAM(MXCORB_CC)                     
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)

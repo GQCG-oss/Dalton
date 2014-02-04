@@ -12,8 +12,8 @@
       DOUBLE PRECISION BSMFR
 #endif
 
-      COMMON /CCINFTPA/  BSMFR(MXSMSEL), ISMSEL(MXSMSEL,2), 
-     *                 IASMOP(MXSMOP), IBSMOP(MXSMOP), 
+      COMMON /CCINFTPA/  BSMFR(MXSMSEL), ISMSEL(MXSMSEL,2),
+     *                 IASMOP(MXSMOP), IBSMOP(MXSMOP),
      *                 NSMSEL, IPRSM, NSMOPER,
      *                 SELSMST, HALFFR, LTPA_USE_X2, LTPA_USE_O2
 

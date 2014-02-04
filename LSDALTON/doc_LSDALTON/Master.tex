@@ -3,6 +3,7 @@
 \usepackage{makeidx}
 \usepackage{supertabular}
 \usepackage{color}
+\usepackage{amsmath}
 
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
@@ -23,6 +24,7 @@
 % apsrev entries in the text need definitions of these commands
 \newcommand{\bibfnamefont}[1]{#1}
 \newcommand{\bibnamefont}[1]{#1}
+
 
 \typeout{***               }
 \typeout{***   Modification history: }
@@ -123,13 +125,15 @@ escapeinside={\%*}{*}           % if you want to add a comment within your code
 %
 %           
 %\renewcommand{\thetable}{\Roman{table}}
-\newcommand{\lsdalton}{{\sc lsdalton}}
-\newcommand{\dalton}{{\sc dalton}}
-\newcommand{\resp}{{\sc response}\index{\sc response}}
-\newcommand{\response}{{\sc response}\index{\sc response}}
-\newcommand{\mol}{{\sc molecule}\index{\sc molecule}}
-\newcommand{\molecule}{{\sc molecule}\index{\sc molecule}}
-\newcommand{\cc}{{\sc cc}\index{\sc cc}}
+\newcommand{\insertref}{{\sc Insert reference here!!! }}
+\newcommand{\latestrelease}{DALTON2013}
+\newcommand{\lsdalton}{{\sc lsDalton}}
+\newcommand{\dalton}{{\sc Dalton}}
+\newcommand{\resp}{{\sc Response}\index{\sc Response}}
+\newcommand{\response}{{\sc Response}\index{\sc Response}}
+\newcommand{\mol}{{\sc Molecule}\index{\sc Molecule}}
+\newcommand{\molecule}{{\sc Molecule}\index{\sc Molecule}}
+\newcommand{\cc}{{\sc CC}\index{\sc CC}}
 \newcommand{\OM}{\mbox{1-matrix}}
 \newcommand{\TM}{\mbox{2-matrix}}
 \newcommand{\grp}[1]{\mbox{$\cal #1$}}
@@ -147,6 +151,7 @@ escapeinside={\%*}{*}           % if you want to add a comment within your code
 \newcommand{\OP}{\mbox{one-particle}}
 \newcommand{\COP}{\mbox{One-particle}}
 \newcommand{\OEL}{\mbox{one-electron}}
+\newcommand{\eqtext}[1]{\text{#1}}
 \newcommand{\usp}[2]{(#1$s$~#2$p$)}
 \newcommand{\uspd}[3]{(#1$s$~#2$p$~#3$d$)}
 \newcommand{\uspdf}[4]{(#1$s$~#2$p$~#3$d$~#4$f$)}
@@ -181,29 +186,33 @@ escapeinside={\%*}{*}           % if you want to add a comment within your code
 %
 \baselineskip=15pt
 %
-\title{DALTON2013 -- LSDALTON Program Manual}
+\title{{\latestrelease} -- \lsdalton\ Program Manual}
 
 %
-\author{S.~Coriani,
-P.~Ettenhuber, 
-T.~Helgaker,\\ 
+\author{V.~Bakken,
+R.~Bast,
+S.~Coriani,
+P.~Ettenhuber, \\
+T.~Helgaker,
 S.~H{\o}st,  
 I.-M.~H{\o}yvik,
 B.~Jans{\'i}k,\\
 P.~J{\o}rgensen, 
-J. Kauczor,
+J.~Kauczor,
 T.~Kj{\ae}rgaard,\\
-K. Kristensen,
+A.~Krapp,
+K.~Kristensen,
 P.~Merlot,
-J.~Olsen, \\ 
+C.~Nygaard, \\
+J.~Olsen, 
 S.~Reine,
-P.~Sa{\l}ek,
-A. Thorvaldsen, \\
-L. Th{\o}gersen, 
-V. Rybkin,
-V. Bakken,\\
-M. Watson,
- A. Krapp,
+V.~Rybkin,
+P.~Sa{\l}ek, \\
+A.~Teale,
+E.~Tellgren,
+A.~Thorvaldsen, \\
+L.~Th{\o}gersen,  
+M.~Watson,
 and M.~Ziolkowski}
 %
 \date{\mbox{\ }}
@@ -213,14 +222,19 @@ and M.~Ziolkowski}
 %\mbox{ }\newline
 %\end{titlepage}
 
+\pagenumbering{roman}
+\tableofcontents
+
 \include{Preface}
+\pagenumbering{arabic}
 \part{\lsdalton\ Installation Guide}
+
 \include{Install}
-\include{Maintain}
+%\include{Maintain}
 \part{\lsdalton\ User's Guide}
 \include{Starting}
 \include{Interfacing}
-\include{Recommendations}
+%\include{Recommendations}
 %\include{wfguide}
 %\include{walkchap}
 %\include{vibchap}

@@ -86,7 +86,7 @@ CONTAINS
       TYPE(gen_mm_paras),  INTENT(IN)  :: LHS, RHS
       TYPE(LHS_RHS_type),  INTENT(IN)  :: id
       INTEGER,       INTENT(IN)  :: weight
-      TYPE(T_pair_single), INTENT(OUT) :: T_pair
+      TYPE(T_pair_single), INTENT(INOUT) :: T_pair
 
       T_pair%N_or_T = 'N' ! not used for T contractions, so null
       ! init. normalisation scalar for other options

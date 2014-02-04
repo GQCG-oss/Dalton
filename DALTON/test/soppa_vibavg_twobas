@@ -64,6 +64,8 @@ C2v
 .HF
 .MP2
 *SCF INPUT
+.MAX ERR
+10
 .THRESH
 1.0D-6
 **EACH STEP
@@ -90,6 +92,11 @@ if [ `uname` = Linux ]; then
    GREP="egrep -a"
 else
    GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
 fi
 
 # Initial symmetry
@@ -171,7 +178,7 @@ TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT37 \+ $CRIT38 \+ $CRIT39 \+ $CRIT40 \+ $CRIT41 \+ $CRIT42 \+ \
 		$CRIT43 \+ $CRIT44 \+ $CRIT45 \+ $CRIT46 \+ $CRIT47 \+ $CRIT48 \+ \
 		$CRIT49 \+ $CRIT50 \+ $CRIT51 \+ $CRIT52 \+ $CRIT53`
-CTRL[3]=106
+CTRL[3]=140
 ERROR[3]="Equilibrium coupling constants NOT CORRECT"
 
 # Vibrationally averaged coupling constants
@@ -217,13 +224,13 @@ TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ \
 		$CRIT25 \+ $CRIT26 \+ $CRIT27 \+ $CRIT28 \+ $CRIT29 \+ $CRIT30 \+ \
 		$CRIT31 \+ $CRIT32 \+ $CRIT33 \+ $CRIT34 \+ $CRIT35 \+ $CRIT36`
-CTRL[4]=72
+CTRL[4]=84
 ERROR[4]="Vibrational average NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
       echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} );"
       PASSED=0
    fi

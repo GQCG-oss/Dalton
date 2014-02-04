@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -9805,7 +9805,9 @@ C
             LWRK3    = LWORK    - KEND3
 C
             KINTVI = KEND3
-            KTRVI6 = KINTVI + MAX(NCKA(ISYCKBD0),NCKA(ISYCKBDL1R))
+!           Symmetry bug fix, filip, 05.09.2013
+!           KTRVI6 = KINTVI + MAX(NCKA(ISYCKBD0),NCKA(ISYCKBDL1R))
+            KTRVI6 = KINTVI + NCKAMAX
             KEND4  = KTRVI6 + NCKATR(ISYCKBD0) 
             LWRK4  = LWORK  - KEND4
            
@@ -11317,7 +11319,7 @@ C
 #include "ccorb.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
-C#include <cclr.h>
+C#include "cclr.h"
 C
       INTEGER AIBJCK_PERM
 C

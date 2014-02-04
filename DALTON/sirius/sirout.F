@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -56,9 +56,6 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -345,7 +342,6 @@ csonia 04/10/95
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Charge contribution:    ',ECHART
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Dipole contribution:    ',EDIPT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Quadrupole contribution:',EQUADT
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Octuple contribution:   ',EOCTUP
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Electronic Pol. energy: ',EDELD
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ',EDNUC
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
@@ -359,10 +355,8 @@ csonia 04/10/95
       ELSE IF (QMNPMM) THEN
          call quit('not implemented in this version')
 !        CALL SCF_QMNPMM_OUT()
-#if defined (BUILD_PELIB)
-      else if (peqm) then
-         continue
-#endif
+      ELSE IF (PEQM) THEN
+         CONTINUE
       ELSE
         ESOLT = D0
       END IF
@@ -412,9 +406,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,0)
          END IF
          IF (FLAG(16)) WRITE (LUPRI,5025) ESOLT
-#if defined (BUILD_PELIB)
-         if (peqm) write(lupri,5026) esolt
-#endif
+         IF (PEQM) WRITE(LUPRI,5026) ESOLT
          WRITE (LUPRI,5030) GRDNRM
       END IF
 
@@ -445,9 +437,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *       /'@    Nuclear repulsion:',T31,F20.12,
      *       /'@    Electronic energy:',T31,F20.12)
  5025 FORMAT( '@    Solvation  energy:',T31,F20.12)
-#if defined (BUILD_PELIB)
  5026 FORMAT( '@    Embedding energy:',T31,F20.12)
-#endif
  5030 FORMAT(/'@    Final gradient norm:',T31,F20.12)
 C
 C       stamp date, time, and hostname to LUPRI

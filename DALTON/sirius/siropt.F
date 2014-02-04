@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2836,25 +2836,7 @@ Ckr
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
       END IF
-C--------------
-C CBN+JK, 03.01.06
-C-------------------
-C Write qm3 solvent part of the Fock matrix to interface file
-
-      IF (QM3) THEN
-         KTMAT = KWRK1
-         KFSOLAO = KTMAT + NNORBT
-         KUCMO = KFSOLAO + NNBASX
-         KWRK2 = KUCMO + NORBT*NBAST
-         LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WR_SIRIFC-QM3',KWRK2,LFREE)
-         CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IPRSOL)
-         CALL UPKCMO(CMO,WRK(KUCMO))
-         CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
-     &             NBAST,NORBT)
-         WRITE (LUSIFC) LAB123,TABLE(7)
-         CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
-      END IF
+C
 C--------------
 C CBN+JK, 03.01.06
 C-------------------

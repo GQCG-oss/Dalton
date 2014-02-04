@@ -1,290 +1,52 @@
 \chapter{Installation}\label{ch:install}
 
+\section{Installation instructions}\index{installation instructions}
+
+\dalton\ is configured using CMake, typically via the setup script,
+and subsequently compiled using make or gmake.
+
+Please consult \verb|http://daltonprogram.org/installation/2013/| for details.
+Help and support from the Dalton community is available at \verb|http://daltonprogram.org/forum|.
+
 \section{Hardware/software
 supported}\label{sec:hardsoft}\index{hardware/software support}
 
-{\dalton} can be run on a variety of systems running the UNIX
-operating system. The current release of the program supports
-%Cray-UNICOS\index{Cray},
-%Cray-T3D/E\index{Cray!T3D}\index{Cray!T3E}\index{Cray},
-%HP-UX,
-IBM-AIX\index{IBM-AIX},
-Linux\index{Linux} using gfortran, pgf90/95 or ifort, and 
-MacOS X (darwin)\index{MacOSX} using xlf/xlc or gfortran/gcc.
-%We furthermore note that response calculations involving the
-%spin--orbit\index{spin-orbit} operator only will work on some of these
-%computers (more details are given in the file
-%\verb|dalton/test/KNOWN_PROBLEMS|).
+{\dalton} can be run on a variety of systems running the UNIX operating system.
+The current release of the program supports Linux\index{Linux}, Cray\index{Cray}, SGI\index{SGI},
+and MacOS\index{MacOSX} using GNU or Intel compilers (we plan to publish patches
+for PGI and XL compilers)..
 
-The program is written in FORTRAN~77\index{FORTRAN~77}, 
-FORTRAN~90\index{FORTRAN~90} and C~\index{C}, with
-machine dependencies isolated using C preprocessor directives\index{C preprocessor}.  
-All floating-point computations are performed in 64-bit precision, 
-but if 32-bit integers are available the code will take advantage of this to reduce storage
+The program is written in FORTRAN~77\index{FORTRAN~77},
+FORTRAN~90\index{FORTRAN~90} and C\index{C}, with machine dependencies
+isolated using C preprocessor directives\index{C preprocessor}.  All
+floating-point computations are performed in 64-bit precision, but if 32-bit
+integers are available the code will take advantage of this to reduce storage
 requirements in some sections.
 
-The program should be easily portable to other UNIX
-platforms\index{porting}.
-Users who port the codes to other platforms are encouraged to
-communicate any required changes in the original source with the
-appropriate C preprocessor directives to the authors.
+The program should be portable to other UNIX platforms\index{porting}.  Users
+who port the codes to other platforms are encouraged to communicate any
+required changes in the original source with the appropriate C preprocessor
+directives to the authors.
 
 \section{Source files}\label{sec:source}
 
-{\dalton} is distributed as a \verb|tar| file obtainable from
-the {\dalton} homepage\\
-(\verb|http://www.daltonprogram.org|) if the
-license agreement for the program has been completed and returned to
-the authors.  If you have accessed this documentation off the
-\verb|tar|\index{tar-file} file you will
-already know how to extract the required directory structure, but
-for completeness, assuming the \verb|tar| file is called
-\verb|dalton.tar.gz|\index{tar-file}, the commands
+The \latestrelease\ program suite is distributed as a \verb|tar|
+file obtainable from
+the Dalton homepage at \verb|http://www.daltonprogram.org|.
+After you have downloaded the file extract it with:
 \begin{verbatim}
-gunzip dalton.tar.gz
-tar xf dalton.tar
+tar xvzf DALTON-2013.*-Source.tar.gz
 \end{verbatim}
-will produce the following subdirectory structure in the current
-directory:
-\begin{verbatim}
-dalton/abacus    dalton/densfit    dalton/eri       dalton/pdpack     dalton/test_cc
-dalton/amfi      dalton/dft        dalton/gp        dalton/rsp        dalton/tools
-dalton/basis     dalton/dftxcfun   dalton/include   dalton/sirius
-dalton/cc        dalton/Doc        dalton/lucita    dalton/soppa
-dalton/choles    dalton/Doc_cc     dalton/modules   dalton/test
-\end{verbatim}
-Most of the subdirectories contain source code for the different sections
-constituting the program (\verb|abacus|, \verb|amfi|, \verb|cc|, \verb|choles|, \verb|densfit|,
-\verb|dft|, \verb|eri|, \verb|gp|, \verb|lucita|,\verb|rsp| and \verb|sirius|, and \verb|soppa|). Furthermore,
-there's a directory containing
-various public domain routines (\verb|pdpack|), a directory with the
-necessary include files containing common blocks and
-machine dependent routines (\verb|include|), a directory 
-which will (after compilation) contain necessary module files (\verb|modules|), 
-a directory containing all the basis sets supplied with this distribution (\verb|basis|), a
-fairly large set of test jobs including reference output files
-(\verb|test|, \verb|test_cc|), a directory containing some useful pre- and
-post-processing programs supplied to us from various users
-(\verb|tools|), and finally this documentation (\verb|Doc|). 
+Most of the extracted subdirectories under \verb|DALTON/*| contain source code for the different
+sections constituting the \dalton\ program (not listed here).
+Furthermore, there is a
+directory containing various public domain routines (\verb|pdpack|), a
+directory with the necessary include files containing common blocks and machine
+dependent routines (\verb|include|), a directory containing all the basis sets
+supplied with this distribution (\verb|basis|), a fairly large set of test jobs
+including reference output files (\verb|test|, \verb|test_cc|), a directory
+containing some useful pre- and post-processing programs supplied to us from
+various users (\verb|tools|), and finally this documentation (\verb|Doc|). 
 
-In addition to the directories, the main dalton directory will
-contain several files including a shell script (\verb|configure|)
-which will build a suitable \verb|Makefile.config| for use when
-installing the program. The \verb|configure| script will also create a
-\verb|Makefile| and a run script \verb|bin/dalton| from the skeletal files
-(\verb|Makefile.in| and \verb|dalton.gnr|) that are present in the
-directory.
-
-
-\section{Installing the program using the
-Makefile}\label{sec:Makefile}
-\index{Makefile}
-\index{installation!Makefile}
-\index{installation!Makefile.config}
-
-The program is easily installed through the use of the supplied
-\verb|configure| script\index{configure script}. Based on the
-automatically guessed architecture, the
-script will try to build a suitable
-\verb|Makefile.config|\index{Makefile.config} on the
-basis of what kind of mathematical libraries are found, and user
-input. Thus, to execute the script, type
-\begin{verbatim}
-> ./configure
-\end{verbatim}
-
-\bigskip
-
-If the automatic hosttype detection (which usually works fine for most common
-platforms) is not correct, the user may provide the correct \verb|<architecture>|\ type 
-to the script by typing
-\begin{verbatim}
-> ./configure -<architecture>
-\end{verbatim}
-
-\bigskip
-
-Although this script in most cases is capable of making a correct
-\verb|Makefile.config|, we always recommend users to check the created
-\verb|Makefile.config| against local system set-up. 
-
-During the execution of the \verb|configure| script, you will be
-asked a few questions, most of which require a quite obvious
-answer. Let us only comment upon five of the questions asked:
-
-\begin{enumerate}
-\item 64-bit integers\index{64-bit integers}\index{installation!64-bit}:
-When installing \dalton\ on a 64-bit architecture (for example Linux x86\_64) 
-the user will be asked if 64-bit integers should be used throughout the program. 
-\dalton\ is designed such that it can be excuted with either 32-bit or 64-bit 
-integers but in some cases it may be advantageous and/or compulsory 
-to use 64-bit integers, e.g., memory allocation for more than 16Gbytes  
-of scratch-memory (see also next paragraph) and execution of some modules 
-with more than 255 basis functions.
-
-\item Scratch memory\index{scratch memory}\index{installation!memory}
-size: Dalton uses approximately 6.5 Mwords (54 Mbytes)
-in static memory allocations. The program defines a large scratch-memory
-array, from which it allocates space for temporary arrays
-during the execution of the program. This value is given in Words, and
-should be chosen according to available memory on your computer.
-\verb|WRKMEM| may be changed at execution time by supplying a
-different value for \verb|WRKMEM| through the shell script running
-{\dalton}.
-
-\item Default basis set library
-\index{basis set!library}
-\index{installation!basis set library}
-location: This defines the directory where the program will look for the
-basis sets supplied with the distribution, and this need to be
-changed according to the local directory structure. We recommend
-that the basis sets in this directory are {\em not} changed, but
-that changes to the basis set rather is done in a separate
-directory, and then supply this basis set directory to the program
-at execution time using the \verb|dalton -b basdir| option.
-
-{\sc NOTE TO SYSTEM ADMINISTRATORS:} Supplied with {\dalton} is an
-extensive basis set library. This basis set directory must be made
-readable to all users. {\sc END NOTE}
-
-\item Default scratch
-space\index{scratch space}\index{installation!scratch space}:
-Determines the default head scratch
-directory where temporary files will be placed. This value will be put
-in the \verb|dalton| run script. However, note that jobs will be run in
-a subdirectory of this head scratch-directory, according to the name
-of the job files. If \verb|/work| or \verb|/scratch| is defined in the
-local directory structure, the script will normally suggest
-\verb|/work/$USER| or  \verb|/scratch/$USER| as default head scratch space.
-
-\item Default install 
-directory\index{install directory}\index{installation!install directory}:
-Denotes the directory where the {\dalton} executable and the
-\verb|dalton| run script will be moved to.
-Default: a subdirectory {\tt ./bin} to the main \dalton\ directory.
-\end{enumerate}
-
-Compiler options will be supplied in \verb|Makefile.config|, in the manner
-we use ourselves. {\em These options often do not include aggressive
-optimization\index{optimization (f90)}, as
-it is our experience that
-the code is optimized incorrectly if the optimization is too
-aggressive.} The proper options to the C preprocessor for an ordinary
-installation of the program are also supplied with
-\verb|Makefile.config|\index{Makefile.config}.
-
-The \verb|configure| script attempts to detect mathematical libraries
-available on the system and use them whenever possible. {\dalton} can
-use third-party BLAS and LAPACK libraries or libraries providing
-equivalent functionality like ESSL on AIX, ATLAS, ACML, MKL on Intel
-architectures.
-You will be asked which one you want of the found libraries.
-You can also point the \verb|configure|
-script to the location of the preferred libraries by setting
-\verb|LIBDIR| environment variable before running the script. For
-example, if one has high-performance BLAS routines in \verb|mylibs|
-subdirectory of the user's home directory, \verb|configure| script can
-be instructed to use them as follows:
-\begin{verbatim}
-env LIBDIR=\$HOME/mylibs ./configure
-\end{verbatim}
-
-
-NOTE: If problems with I/O\index{I/O-problems} are experienced on
-any computer,
-manifesting themselves as error messages saying that a read statement
-has passed the EOF mark, the *.F files in the gp directories should be
-touched, and the code rebuilt using the additional C preprocessor
-directive \verb|VAR_MFDS| ("MFDS" for Multi File Data Sets).
-
-When  \verb|Makefile.config|\index{Makefile.config} has been properly
-created and checked
-to agree with local system set-up, all that is needed
-to build an executable\index{building an executable} version of the
-code is to type
-(in the same directory as the \verb|Makefile.config| file):
-\begin{verbatim}
-> make
-\end{verbatim}
-
-NOTE: If you encounter a (similar) error message as described in the following during the 
-compilation of a parallel \dalton\ version, please follow one of the advices given below. 
-\begin{verbatim}
-> make
-> lot's of output ...
-> Error:
-> ... This module file was not generated by any release of this compiler.   [MPI]
->   use mpi
-> ------^
-\end{verbatim}
-The error message arises due to a mismatch between the F90 compiler which 
-has been used to compile the \verb|mpi.mod|\index{mpi.mod} module of your MPI-library 
-and the F90 compiler which has been chosen to compile \dalton. 
-Two possible solutions are:
-\begin{enumerate}
-\item add the C preprocessor directive \verb|VAR_USE_MPIF|\ to \verb|CPPFLAGS|\ in \verb|Makefile.config|\index{Makefile.config} 
-and recompile \dalton.
-\item ask your local system administrator to provide you with a MPI-library which has been 
-set up and compiled with the identical F90 compiler version which you have chosen for \dalton.
-\end{enumerate}
-Although most likely being more cumbersome, we recommend solution 2. The simple solution 1 bypasses the 
-F90 type checking and argument list checking functionalities of F90 which is preferable in order to 
-easily identify programming bugs.
-
-For MacOS X\index{MacOSX}, the program may be installed either with the IBM
-xlf compiler for best performance or with the gfortran/ifort compiler. Be sure
-to use the latest Xcode from \verb|http://developer.apple.com/|.
-
-\section{Running the {\dalton} test suite}\label{sec:testsuite}
-\index{test suite}\index{installation!test suite}
-
-To check that {\dalton} has been successfully installed, a fairly
-elaborate automatic test suite is provided in the distribution. A test
-script, all the test jobs and reference output files can be found in
-the \verb|dalton/test| directory. It is highly recommended that all
-these tests be run once the program has been compiled. Depending on
-your hardware, this usually takes 2---12 hours.
-
-The tests can be run one by one or in groups, by using the test script
-\verb|TEST|. Try \verb|TEST -h| to see the different options this
-script takes. Also, have a look at \verb|CONTENTS|
-for short descriptions of the various tests. To run the
-complete test suite, simply go to the \verb|dalton/test| directory and
-type:
-\begin{verbatim}
-> ./TEST all
-\end{verbatim}
-You can follow the progress of the tests directly, but all messages
-are also printed to a log (\verb|TESTLOG| by default). After all the
-tests have completed you should hopefully be presented with the
-message ``ALL TESTS ENDED PROPERLY!''. If not, you will be given a
-list of the tests that failed to run correctly. Please consult the file
-\verb|KNOWN_PROBLEMS| too see if these tests have documented problems
-on your particular platform.
-
-Any tests that fail will leave behind the \verb|.mol| and \verb|.dal|
-input-files (these are described in more detail in
-Chapter~\ref{ch:starting}), and the output-file from the test
-calculation which will have the extension \verb|.log| ({\dalton}
-output-files usually have the extension \verb|.out|). For all
-successful tests all files, except the output-file (\verb|.log|),
-will be deleted as soon as the output has been checked, unless
-\verb|TEST| is being run with the option \verb|-keep|.
-
-If most of the tests fail, it is quite likely that there's something
-\index{troubleshooting}\index{installation!troubleshooting}
-wrong with the installation. Look carefully through
-\verb|Makefile.config|, and consider turning down or even off
-optimization.
-
-If there's only a few tests that fail, and {\dalton} seems to exit
-normally in each case, there may just be some issues with numerical
-accuracy. Different machines give slightly different results, and
-while we've tried to allow for some slack in the tests, it may be
-that your machine yields numbers just outside the intervals we've
-specified as acceptable. A closer comparison of the results with
-numbers in the test script and/or the reference output files should
-reveal whether this is actually the case. If numerical (in)accuracy is
-the culprit, feel free to send your output-file(s) to
-\verb|dalton-admin@kjemi.uio.no| so that we can adjust the numerical
-intervals accordingly.
+In addition to the above directories, the main dalton directory contain several
+files that support the CMake build mechanism (\verb|CMakeLists.txt| and \verb|cmake/*|).

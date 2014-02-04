@@ -85,6 +85,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # B3LYP energy
 CRIT1=`$GREP "Final * DFT energy\: * -92\.0988233" $log | wc -l`
 TEST[1]=$CRIT1
@@ -113,7 +118,7 @@ ERROR[3]="POLARIZABILTY NOT CORRECT"
 PASSED=1
 for i in 1 2 3
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

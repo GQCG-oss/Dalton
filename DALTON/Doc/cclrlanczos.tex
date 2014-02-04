@@ -1,0 +1,88 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Calculation of linear response properties using an asymmetric Lanczos algorithm: \Sec{CCLRLCZ}}\label{sec:cclrlanczos}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\index{linear response}
+%\index{response!linear}
+%\index{excitation energy!Coupled Cluster}
+%\index{excited state!Coupled Cluster}
+
+This section describes how to perform a calculation of (damped) 
+linear response properties using an asymmetric Lanczos algorithm, 
+instead of the standard iterative algorithm used in all other CC response sections.
+
+{\bf Note that this is still highly experimental code, by no means optimized or efficient.}
+
+For understanding the theoretical background for some
+aspects of the method see Refs.\ \cite{Coriani:JCTC8,Coriani:PRA85}.
+
+The properties that can be addressed with the current implementation are
+\begin{itemize}
+\item Global excitation energy spectrum (excitation energies and oscillator strengths) for a 
+specific Cartesian component of the electric dipole operator;
+\item Diagonal ($xx$, $yy$ or $zz$) component of the Damped 
+Real dipole polarizability (for a given damping parameter);
+\item Diagonal ($xx$, $yy$ or $zz$) component of the Damped 
+Imaginary  dipole polarizability (for a given damping parameter);
+\item Absorption Cross section spectrum / Dispersion profile for a selected 
+laser frequency interval
+\item Sum rules $S(n)$, $L(n)$ and $I(n)$ for $n=2,0,...,-6$
+\end{itemize}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item S.~Coriani, O.~Christiansen, T.~Fransson and P.~Norman \newblock {\em Phys. Rev. A}, {\bf 85},\hspace{0.25em}022507, (2012).
+\item S. Coriani, T. Fransson, O. Christiansen and P.~Norman, \newblock {\em J. Chem. Theory Comp.}, {\bf 8},\hspace{0.25em}1616, (2012).
+\end{list}
+}}
+\end{center}
+
+The method is  implemented for the iterative CC models CCS, CC2 and CCSD (for 
+singlet states only).
+
+\begin{description}
+
+\item[\Key{OPERAT}] \verb| |\newline
+   \verb|READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+%   \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
+ %  \verb|  READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+  % \verb|END DO|
+
+Read the wished pair of operator labels. Note that ONLY \verb|LABELA=LABELB| 
+works in current implementation, and only for one pair at a time
+(i.e. you need to run 3 jobs if you want both $xx$, $yy$ and $zz$ components.
+
+\item[\Key{CHAINL}] \verb| |\newline
+      \verb|READ (LUCMD,'(4I)') JCHAIN |\newline
+      
+Read the wished maximum dimension of the Lanczos chain (the ``chain length''). 
+This length is reset if it is found larger than the 
+excitation space for the considered system.      
+
+\item[\Key{FREQ I}] \verb| |\newline
+      \verb|READ(LUCMD,*) (FREQ_RANGE(I), I=1,3) |\newline
+      
+Read the  frequency interval within which to generate the absorption cross section spectrum.
+\verb|FREQ_RANGE(1)| = start frequency;  \verb|FREQ_RANGE(2)| = end frequency, 
+\verb|FREQ_RANGE(3)| = frequency step.
+
+\item[\Key{DAMPING}] \verb| |\newline
+      \verb| READ (LUCMD,*) NDAMP |\newline
+      \verb| READ (LUCMD,*) (DAMPING(I),I=1,NDAMP) |\newline
+      
+Read the wished number of damping parameters (\verb|NDAMP|) and 
+the their values (\verb|DAMPING(I)|). 
+If nothing is specified, a default value of 1000 cm$^{-1}$ (0.004556 a.u.) 
+will be used.
+
+\item[\Key{SUMRULES}] \verb| |\newline
+%      \verb| READ (LUCMD,*) NDAMP |\newline
+%      \verb| READ (LUCMD,*) (DAMPING(I),I=1,NDAMP) |\newline
+
+
+\end{description}
