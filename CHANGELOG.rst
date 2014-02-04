@@ -48,3 +48,8 @@ LSDALTON
 - Fixed a bug for lsdalton geometry optimization and dynamics related to 
   screening. The initial Cauchy-Schwartz screening matrices were incorrectly
   used in each subsequent geometry step
+- print sensible error message when running out of memory
+- added funcitonality to search through several basis-set libraries
+- increased max length of WRKDIR from 60 to 200
+
+
