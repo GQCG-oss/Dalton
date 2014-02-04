@@ -604,15 +604,15 @@ contains
           print *,'-----------------------------------------'
           print *,'        Get all F12 Fock integrals       '
           print *,'-----------------------------------------'
-          print *, "norm1D(hJir)", norm1D(hJir%elms)
-          print *, "norm1D(Krr)", norm1D(Krr%elms)
-          print *, "norm1D(Frr)", norm1D(Frr%elms)
-          print *, "norm1D(Fac)", norm1D(Fac%elms)
-          print *, "norm1D(Fpp)", norm1D(Fpp%elms)
-          print *, "norm1D(Fii)", norm1D(Fii%elms)
-          print *, "norm1D(Fmm)", norm1D(Fmm%elms)
-          print *, "norm1D(Frm)", norm1D(Frm%elms)
-          print *, "norm1D(Fcp)", norm1D(Fcp%elms)
+          print *, "norm2D(hJir)", norm1D(hJir%elms)
+          print *, "norm2D(Krr)", norm1D(Krr%elms)
+          print *, "norm2D(Frr)", norm1D(Frr%elms)
+          print *, "norm2D(Fac)", norm1D(Fac%elms)
+          print *, "norm2D(Fpp)", norm1D(Fpp%elms)
+          print *, "norm2D(Fii)", norm1D(Fii%elms)
+          print *, "norm2D(Fmm)", norm1D(Fmm%elms)
+          print *, "norm2D(Frm)", norm1D(Frm%elms)
+          print *, "norm2D(Fcp)", norm1D(Fcp%elms)
           print *,'-----------------------------------------' 
          
        endif

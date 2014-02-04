@@ -840,6 +840,21 @@ contains
     ncabsMO  = size(MyMolecule%Ccabs,2)
     nocvfull = nocc + nvirt
 
+   if(DECinfo%F12debug) then
+       print *, "--------------------------"
+       print *, "Molecule_mo_f12"
+       print *, "--------------------------"
+       print *, "nbasis: ", nbasis
+       print *, "nocc: ", nocc
+       print *, "nvirt: ", nvirt
+       print *, "--------------------------"
+       print *, "ncabsAO: ", ncabsAO
+       print *, "ncabsMO: ", ncabsMO
+       print *, "nocvfull: ", nocc+nvirt
+       print *, "--------------------------"
+    end if
+
+
     call mem_alloc(hJir,nocc,ncabsAO) 
     call mem_alloc(Krs,ncabsAO,ncabsAO)
     call mem_alloc(Fac,nvirt,ncabsMO)

@@ -389,7 +389,9 @@ contains
 
        call get_f12_single_fragment_energy(MyFragment)
 
-       !> Free density matrix
+       !> Free cabs after each calculation
+       call free_cabs()
+
        ! call mem_dealloc(dens)
        ! call mat_free(Dmat)
     endif
@@ -970,6 +972,7 @@ contains
        call get_f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
      
        !> Free density matrix
+       call free_cabs()
        ! call mem_dealloc(dens)
        ! call mat_free(Dmat)
     endif
