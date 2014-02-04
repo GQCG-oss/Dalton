@@ -54,7 +54,7 @@
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
         ibtshr = shiftr(i, j)
 #else
-        ibtshr = ishft(i, j)
+        ibtshr = ishft(i, -j)
 #endif
 
       end function
