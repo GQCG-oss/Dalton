@@ -6,4 +6,4 @@
 	url = git://repo.ctcc.no/xcfun
 [submodule "external/pelib"]
 	path = external/pelib
-	url = git@repo.ctcc.no:pelib.git
+	url = git://repo.ctcc.no/pelib.git

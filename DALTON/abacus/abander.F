@@ -1318,8 +1318,8 @@ cC
 cC     pario.h will no longer be needed as an include file when locking RMA
 cC     operations become available.
 cC
-c#include <dummy.h>
-c#include <pario.h>
+c#include "dummy.h"
+c#include "pario.h"
 c#endif
 #include "infpar.h"
 #include "inforb.h"
@@ -1807,8 +1807,8 @@ cC
 cC     pario.h will no longer be needed as an include file when locking RMA
 cC     operations become available.
 cC
-c#include <dummy.h>
-c#include <pario.h>
+c#include "dummy.h"
+c#include "pario.h"
 c#endif
 #include "abainf.h"
 #include "cbinum.h"
@@ -2379,9 +2379,11 @@ C
 C
 C     *** If there are possibilities for  new symmetry. ***
 C
+      IF (MAXREP .gt. 0) THEN
       IF (((NMORDR+NAORDR).GT.1).OR.(NPRPDR)) THEN
          NEWSYM = .TRUE.
          DOHUCKEL = .TRUE.
+      END IF
       END IF
 C
 C     *** For higher order derivatives. ****
@@ -2492,8 +2494,8 @@ C
 C
 C     /* Deck nmpres */
 c      SUBROUTINE NMPRES
-c#include <implicit.h>
-c#include <priunit.h>
+c#include "implicit.h"
+c#include "priunit.h"
 c
 C
 C

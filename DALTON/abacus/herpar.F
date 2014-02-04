@@ -1250,7 +1250,6 @@ C     This is a slave in a parallel run; check for programming error
       END IF
 
       CALL QENTER('HER_NODSTR')
-      iprint = 2 ! DEBUG hjaaj
 
       IF (IPRINT .GE. 2) THEN
          CALL TITLER('Output from HER_NODSTR','*',103)
@@ -1579,11 +1578,11 @@ C
 #include "cbisol.h"
 #include "incore.h"
 C
-!     IF (IPRINT .GT. 2) THEN
+      IF (IPRINT .GT. 2) THEN
          CALL TITLER('Output from HER_RVINIT','*',103)
          WRITE(LUPRI,*) 'Set Common blocks is ',set_cb_blocks
          WRITE(LUPRI,*) 'IPRINT            is ',IPRINT
-!     END IF
+      END IF
 
 !     part - 1 - receive data on common blocks
 !     ----------------------------------------
@@ -2621,11 +2620,9 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-      WRITE(LUPRI,'(//4(/5X,A))')
+      WRITE(LUPRI,'(//2(/5X,A))')
      &  'FOR RECOMPILATION:',
-     &  'Change parameter in infpar.h and execute:',
-     &  '   make depend',
-     &  '   make'
+     &  'Change parameter in infpar.h and rebuild with make'
 C
       RETURN
       END

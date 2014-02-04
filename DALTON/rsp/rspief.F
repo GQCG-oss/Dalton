@@ -813,21 +813,21 @@ C     ... end of IEFLNO.
 C  /* Deck pcm_comp_pot */
       SUBROUTINE PCM_COMP_POT(MOCOEF, DENMAT, DENTRP, BOVECS, 
      &                        XJSQ, XJSQT, NOSIM, KSYMP, WORK, LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <thrzer.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <qm3.h>
-#include <orgcom.h>
-#include <dftcom.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "thrzer.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "qm3.h"
+#include "orgcom.h"
+#include "dftcom.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infvar.h"
 
       DIMENSION MOCOEF(*), DENMAT(*), DENTRP(*), BOVECS(*),
      &          XJSQ(*), XJSQT(*), WORK(*)
@@ -865,7 +865,7 @@ C  /* Deck pcm_comp_pot */
 
 C  /* Deck pcm_comp_nuc_pot */
       SUBROUTINE PCM_COMP_NUC_POT(VSN)
-#include <implicit.h>
+#include "implicit.h"
       CALL COMP_NUC_POT_CAV(VSN, .TRUE., .FALSE.,.FALSE.)
       RETURN
       END
@@ -873,7 +873,7 @@ C  /* Deck pcm_comp_nuc_pot */
 C /* Deck pcm_comp_el_pot */
       SUBROUTINE PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, NBAS, NSYM, NNBASX,
      &                           KSYMP, WORK, LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(*), DENMAT(*), VSE(*)
       KDEN = 1
       KFREE = KDEN + NNBASX
@@ -947,7 +947,7 @@ C      iprrsp = 1
 C /* Deck pcm_comp_mm_pot */
       SUBROUTINE PCM_COMP_MM_POT(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM, 
      &                           ZMM, SOURCE, NSOURCES, TYPE)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*3 TYPE
       IF (TYPE .EQ. 'CHG') THEN
          CALL PCM_COMP_POT_CHG(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
@@ -970,7 +970,7 @@ Clf
 C /* Deck pcm_comp_mm_pot1 */
       SUBROUTINE PCM_COMP_MM_POT1(VCAV, NTS, XTS, YTS, ZTS,
      &                            WORK, LWORK)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*3 TYPE
       DIMENSION WORK(*), VCAV(*), XTS(*), YTS(*), ZTS(*)
 
@@ -992,7 +992,7 @@ C /* Deck pcm_comp_mm_pot1 */
 C /* Deck pcm_comp_mm_pot */
       SUBROUTINE PCM_COMP_POT_CHG(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
      &                            ZMM, SOURCE, NSITES)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VCAV(*), XTS(*), YTS(*), ZTS(*),XMM(*),YMM(*),ZMM(*),
      &          SOURCE(*)
       DO IATOM = 1, NSITES
@@ -1012,7 +1012,7 @@ C /* Deck pcm_comp_mm_pot */
 C /* Deck pcm_comp_pot_dip */
       SUBROUTINE PCM_COMP_POT_DIP(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
      &                            ZMM, SOURCE, NSITES)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VCAV(*), XTS(*), YTS(*), ZTS(*), 
      &          XMM(*), YMM(*),ZMM(*),
      &          SOURCE(*)
@@ -1038,8 +1038,8 @@ C /* Deck pcm_read_mm_indip */
 C
       SUBROUTINE PCM_READ_MM_INDIP(NOSIMMM, KXMM, KYMM, KZMM, KSOURCES, 
      &           NSOURCES, WORK, KFREE, LWORK)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL FILE_EXIST
       DIMENSION WORK(*)
       INQUIRE(FILE='MYFPCM',EXIST=FILE_EXIST)
@@ -1085,11 +1085,11 @@ C
 C     Arnfinn Apr. -09
 C     Make the file QFQM3 with induced charges for use 
 C     by QM3 response calculations.
-#include <implicit.h>
-#include <priunit.h>
-C#include <mxcent.h>
-C#include <pcmdef.h>
-C#include <pcm.h>
+#include "implicit.h"
+#include "priunit.h"
+C#include "mxcent.h"
+C#include "pcmdef.h"
+C#include "pcm.h"
 
       LOGICAL FILE_EXIST
       DIMENSION XTSCOR(*),YTSCOR(*),ZTSCOR(*),QSE1(*),QSMM1(*)

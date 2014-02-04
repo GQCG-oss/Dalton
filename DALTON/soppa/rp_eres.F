@@ -30,7 +30,7 @@ CSPAS:12/11-2003: we need MXCOOR for eribuf.h
 #include "mxcent.h"
 CKeinSPASmehr
 CSPAS:10/11-2003: is merged with maxorb.h
-C#include <mxorb.h>
+C#include "mxorb.h"
 CKeinSPASmehr
 #include "aovec.h"
 #include "iratdef.h"

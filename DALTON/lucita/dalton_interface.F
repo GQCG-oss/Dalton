@@ -3096,7 +3096,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
         if (NACTEL.gt.MXTNEL) then
          write(lupri,*) 'Number of active electrons exceeds '
          write(lupri,*) 'the orbital space.'
-         write(lupri,*) 'Consider Pauli큦 famous principle and restart!'
+         write(lupri,*) 'Consider Paulis famous principle and restart!'
          Call Abend2( 'Quitting.' )
         end if
 *
@@ -3307,7 +3307,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
         if (NACTEL.gt.MXTNEL) then
          write(lupri,*) 'Number of active electrons exceeds '
          write(lupri,*) 'the orbital space.'
-         write(lupri,*) 'Consider Pauli큦 famous principle and restart!'
+         write(lupri,*) 'Consider Paulis famous principle and restart!'
          Call Abend2( 'Quitting.' )
         end if
 *
@@ -3520,7 +3520,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
         if (NACTEL.gt.MXTNEL) then
          write(lupri,*) 'Number of active electrons exceeds '
          write(lupri,*) 'the orbital space.'
-         write(lupri,*) 'Consider Pauli큦 famous principle and restart!'
+         write(lupri,*) 'Consider Paulis famous principle and restart!'
          Call Abend2( 'Quitting.' )
         end if
 *
@@ -3629,7 +3629,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
         if (NACTEL.gt.MXTNEL) then
          write(lupri,*) 'Number of active electrons exceeds '
          write(lupri,*) 'the orbital space.'
-         write(lupri,*) 'Consider Pauli큦 famous principle and restart!'
+         write(lupri,*) 'Consider Paulis famous principle and restart!'
          Call Abend2( 'Quitting.' )
         end if
 *

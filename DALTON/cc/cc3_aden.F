@@ -11319,7 +11319,7 @@ C
 #include "ccorb.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
-C#include <cclr.h>
+C#include "cclr.h"
 C
       INTEGER AIBJCK_PERM
 C

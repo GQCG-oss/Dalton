@@ -288,9 +288,9 @@ C     The active orbitals are ordered following their occupation number
 C
 C--- Cele Next Work
 C
-C      Questo pezzo e' da rivedere: l'ordinamento viene fatto bene,
+C      Questo pezzo e da rivedere: lordinamento viene fatto bene,
 C      ma con il nuovo ordinamento la sub rofour non fornisce la buona
-C      matrice densita' : approfondire.
+C      matrice densita, approfondire.
 C
 C      do ia=1,nasht
 C       do ja=ia+1,nasht
@@ -4962,7 +4962,7 @@ C
 C Manu: for NEVPT2-srDFT
 #include "inftap.h"
 #include "infinp.h"
-C#include <priunit.h>
+C#include "priunit.h"
       DIMENSION NEEDTP(-4:6) ! for NXTH2M
       allocatable h2m(:,:)
       ALLOCATABLE CMO(:)

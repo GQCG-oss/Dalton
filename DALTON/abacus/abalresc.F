@@ -46,8 +46,8 @@ C jim  aca van las opctiones para LRESC , aun no las defino todas
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
      &            '.DIAM1S'/
 C
-c#include <dorps.h>
-c#include <spnout.h>
+c#include "dorps.h"
+c#include "spnout.h"
 C
 c      write(lupri,*) ' LRSCOPTS :  called with : ' , WORD
 

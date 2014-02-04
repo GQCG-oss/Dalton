@@ -43,7 +43,7 @@ C  /* Deck cc_bfif1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "dummy.h"

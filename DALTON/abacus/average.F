@@ -40,17 +40,17 @@ C...
 C...  This subroutine was written by Juan Ignacio Melo using
 C...  the subroutine ABACTOCD  as a model (2012)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <trkoor.h>
-c#include <sigma.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cbilnr.h>
-c#include <suscpt.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "trkoor.h"
+c#include "sigma.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cbilnr.h"
+c#include "suscpt.h"
+#include "infpri.h"
       LOGICAL FOUND
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL1,LISTA1(10)
@@ -60,22 +60,22 @@ c#include <suscpt.h>
       DIMENSION SIGMAMV(9),SIGMADW(9)
       PARAMETER (D05=0.5D0,D025=0.25)
 C
-#include <cbiexc.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <abainf.h>
-#include <gnrinf.h>
-c#include <infsop.h>
-#include <ibtfun.h>
+#include "cbiexc.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "abainf.h"
+#include "gnrinf.h"
+c#include "infsop.h"
+#include "ibtfun.h"
 C
 #include "lrescinf.h"
 #include "chrxyz.h"

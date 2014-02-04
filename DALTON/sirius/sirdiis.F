@@ -327,9 +327,9 @@ C
 Cholesky
 C
 C------------------------
-C#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
+C#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
 C
       PARAMETER (THDDEF = 1.0D-5)
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, DM1 = -1.0D0)
@@ -2432,8 +2432,8 @@ C
 C     In: F apk,D apk and S unp
 C     Out: SDF-FDS
 
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DOUBLE PRECISION F(NNBAST),D(NNBAST),SAOUNP(NBAST,NBAST)
       DOUBLE PRECISION COMM(NBAST,NBAST),WRK(*)
       PARAMETER (D1=1.0D0, D0=0.0D0, DM1=-1.0D0)
