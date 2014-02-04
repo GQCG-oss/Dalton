@@ -65,7 +65,7 @@ C
 #include "iratdef.h"
 #include "ccorb.h"
 C
-C   #include <infind.h> replaced by: #include <ccisao.h>
+C   #include "infind.h" replaced by: #include <ccisao.h>
 C   C. Haettig 13.08.2004
 C
 #include "ccisao.h"
@@ -82,7 +82,7 @@ C
 #include "eribuf.h"
 #include "ccslvinf.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 #include "ccnoddy.h"
 #include "r12int.h"
 #include "ccr12int.h"

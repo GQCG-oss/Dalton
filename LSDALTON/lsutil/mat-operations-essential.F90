@@ -337,8 +337,8 @@ end type matrixmembuf
          !to be free'ed, the matrix must be in the same location where it was init'ed.
          !If not, it is probably a duplicate (like 'a' in (/a,b,c/)), in which case
          !we may end up double-free'ing, so err
-         if (.not.ASSOCIATED(a%init_self_ptr,a)) &
-             & call lsQUIT('Error in mat_free: matrix moved or duplicated',-1)
+         !if (.not.ASSOCIATED(a%init_self_ptr,a)) &
+         !    & call lsQUIT('Error in mat_free: matrix moved or duplicated',-1)
          nullify(a%init_self_ptr)
          !look at magic tag to verify matrix is initialized, then clear tag
          if (a%init_magic_tag.NE.mat_init_magic_value) &

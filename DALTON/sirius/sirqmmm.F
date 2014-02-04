@@ -3867,7 +3867,7 @@ C ----
 #if defined(VAR_MPI)
 #include "mpif.h"
 #endif
-C#include <cbiher.h>
+C#include "cbiher.h"
 C defined parallel calculation types  
 #include "iprtyp.h"
 

@@ -479,6 +479,13 @@ SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 nbast1 = getNbasis(AO1,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
 nbast2 = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(2)%p,LUPRI)
 
+!print *,"nbast1:",nbast1
+!print *,"nbast2:",nbast2
+!print *,"AO1:",AO1
+!print *,"AO2:",AO2
+!print *,"h%nrow:",h%nrow
+!print *,"h€ncol:",h%ncol
+
 IF(nBast1.NE.h%nrow)CALL LSQUIT('dim1 mismatch in II_get_nucel_mat_mixed',-1)
 IF(nBast2.NE.h%ncol)CALL LSQUIT('dim2 mismatch in II_get_nucel_mat_mixed',-1)
 
@@ -2466,9 +2473,7 @@ IF (dogeoderiv) THEN
      call lsquit('Error in II_get_4center_eri_diff - only first order geometrical derivative integrals implemented',lupri)
   ENDIF
 
-  !Simen Hack - GeoDerivSpec currently not working with family-type basis sets
-  nofamily = setting%scheme%nofamily
-  setting%scheme%nofamily = .TRUE.
+  IF (.NOT.setting%scheme%nofamily) CALL LSQUIT('II_get_4center_eri_diff only working with .NOFAMILY keyword option',-1)
 ELSE
   intSpec = RegularSpec
 ENDIF
@@ -2520,7 +2525,6 @@ ELSE
        call mem_dealloc(integrals)
      ENDIF
     ENDIF
-    setting%scheme%nofamily = nofamily
   ENDIF
   IF (dirac_format) THEN
    DO n=1,dim5

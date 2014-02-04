@@ -143,6 +143,7 @@ contains
     DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
     DECinfo%F12                     = .false.
     DECinfo%F12debug                = .false.
+    DECinfo%PureHydrogenDebug       = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -201,7 +202,7 @@ contains
   !> configuration structure accordingly.
   !> \author Kasper Kristensen
   !> \date September 2010
-  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc)
+  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc,doF12)
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
@@ -215,6 +216,8 @@ contains
     !> Is this a full calculation (fullcalc=true, input **CC) 
     !> or a DEC calculation (fullcalc=false, input=**DEC)
     logical,intent(in) :: fullcalc
+    !> do we do F12 calc (is a CABS basis required?)
+    logical,intent(inout) :: doF12
     logical,save :: already_called = .false.
     integer :: fotlevel
 
@@ -264,7 +267,6 @@ contains
 
        ! See explanation of DEC parameters in type DEC_settings
        DEC_INPUT_INFO: SELECT CASE(WORD)
-
 
 
           ! ****************************************************************************
@@ -457,8 +459,13 @@ contains
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
-       case('.F12'); DECinfo%F12=.true.
-       case('.F12DEBUG'); DECinfo%F12DEBUG=.true.
+       case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
+       case('.F12DEBUG')     
+          DECinfo%F12=.true.
+          DECinfo%F12DEBUG=.true.
+          doF12 = .TRUE.
+       case('.PUREHYDROGENDEBUG')     
+          DECinfo%PureHydrogenDebug       = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
