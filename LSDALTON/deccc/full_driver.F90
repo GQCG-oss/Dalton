@@ -305,10 +305,12 @@ contains
     type(matrix) :: Fac
     Real(realk)  :: E21, E21_debug, E22, E22_debug, E23_debug, Gtmp
     type(array4) :: array4Taibj,array4gmo
+!    logical :: fulldriver 
+!    fulldriver = .TRUE.
+!    call init_cabs(fulldriver)
 
     ! Init stuff
     ! **********
-    call init_cabs
     nbasis = MyMolecule%nbasis
     nocc   = MyMolecule%nocc
     nvirt  = MyMolecule%nunocc
@@ -756,7 +758,7 @@ contains
     call free_4Center_F12_integrals(&
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
-    call free_cabs
+    call free_cabs()
     
     if(DECinfo%F12DEBUG) then
 
@@ -1316,9 +1318,11 @@ contains
     real(realk),pointer :: Vijja(:,:,:)
     real(realk),pointer :: Viaji(:,:,:)
     real(realk),pointer :: Viajj(:,:,:)
+!    logical :: fulldriver 
+!    fulldriver = .TRUE.
+!    call init_cabs(fulldriver)
 
     ! Init dimensions
-    call init_cabs
     nocc = MyMolecule%nocc
     nvirt = MyMolecule%nunocc
     nbasis = MyMolecule%nbasis
@@ -1517,7 +1521,7 @@ contains
     call free_4Center_F12_integrals(&
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
-    call free_cabs
+    call free_cabs()
 
   end subroutine full_get_ccsd_f12_energy
 #endif
