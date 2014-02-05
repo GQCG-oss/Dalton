@@ -124,7 +124,9 @@ contains
     real(realk), pointer :: Fab(:,:)
     !> Fock Fpq
     real(realk), pointer :: Fpq(:,:)
-
+    !> Cijab
+    real(realk), pointer :: Cijab(:,:,:,:)
+    
     ! ***********************************************************
     ! Allocating for X matrix
     ! ***********************************************************
@@ -323,6 +325,11 @@ contains
     end do
 
     ! ***********************************************************
+    ! Creating the C matrix 
+    ! ***********************************************************
+    call mem_alloc(Cijab, noccEOS, noccEOS, noccAOS, noccAOS)  
+
+    ! ***********************************************************
     ! Creating the V matrix 
     ! ***********************************************************
     !> Get integrals <ij|f12*r^-1|kl> stored as (i,j,k,l)  (Note INTSPEC is always stored as (2,4,1,3) )      
@@ -386,11 +393,6 @@ contains
     ! ***********************************************************
     ! Creating the F matrix 
     ! ***********************************************************
-    print *,"size of Fij(1)", size(Fij,1)
-    print *,"size of Fij(2)", size(Fij,2)
-    print *,"size of Myfragment%ppfock(1)", size(Myfragment%ppfock,1)
-    print *,"size of Myfragment%ppfock(2)", size(Myfragment%ppfock,2)
-
     ! Creating a Fij MO matrix 
     call mem_alloc(Fij, noccAOS, noccAOS)
     Fij = 0E0_realk 
@@ -412,13 +414,6 @@ contains
           Fab(a,b) = MyFragment%qqfock(ix,iy)
        end do
     end do
-  
-!!$    do i=1, noccAOS
-!!$       Fpq(i,i) = Myfragment%ppfock(i,i)
-!!$    enddo
-!!$    do a=1, nvirtAOS
-!!$       Fpq(noccAOS+a,noccAOS+a) = Myfragment%qqfock(a,a)
-!!$    enddo
     
     ! ***********************************************************
     ! Creating the X matrix 
@@ -830,6 +825,7 @@ contains
        write(*,*) 'WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY = ', E_21
        write(*,*) 'WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY = ', E_22
        write(*,*) 'WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY = ', E_23
+       write(*,*) 'WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
        write(*,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
        write(*,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
     end if
@@ -838,6 +834,7 @@ contains
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY = ', E_21
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY = ', E_22
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY = ', E_23
+    write(DECinfo%output,*) 'WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
     write(DECinfo%output,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
     
@@ -850,10 +847,12 @@ contains
     !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
     ! call free_cabs()
 
- 
+    !> C-term
     call mem_dealloc(Fij)
     call mem_dealloc(Fab)
-
+    call mem_dealloc(Cijab)
+    
+    !> Coeff
     call mem_dealloc(CoccEOS)
     call mem_dealloc(CoccAOS)
     call mem_dealloc(CocvAOS)
@@ -861,6 +860,7 @@ contains
     call mem_dealloc(Cri)
     call mem_dealloc(CvirtAOS)
 
+    !> V-terms
     call mem_dealloc(V1ijkl)
 
     call mem_dealloc(V2ijkl)
@@ -873,6 +873,7 @@ contains
 
     call mem_dealloc(V4ijkl)
 
+    !> X-terms
     call mem_dealloc(X1ijkl)
     call mem_dealloc(X2ijkl)
     call mem_dealloc(X3ijkl)

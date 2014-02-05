@@ -40,7 +40,7 @@ contains
   !> \author Marcin Ziolkowski
   !> \param molecule Full molecule info
   !> \param mylsitem Integral program input
-  subroutine molecule_init_from_files(molecule,mylsitem)
+  subroutine molecule_init_from_files(molecule,mylsitem,D)
 
     implicit none
     type(fullmolecule), intent(inout) :: molecule
@@ -49,20 +49,23 @@ contains
     integer :: r,iset,itype
     logical :: status_info
     real(realk) :: memory_use, tcpu, twall
-
+    
+    !> Density Matrix 
+    type(matrix), optional, intent(in) :: D  ! Needed for creating the hJir MO-matrix
+    
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    ! Init basic info (molecular dimensions etc.)
+    call molecule_init_basics(molecule,mylsitem)       
+
+    ! Get Fock, overlap, and MO coefficient matrices.
+    call molecule_get_reference_state(molecule,mylsitem)
+    call molecule_get_overlap(molecule,mylsitem)
+    call molecule_mo_fock(molecule)
+   
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule)
     end if
-    
-    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-       call dec_get_CABS_orbitals(molecule,mylsitem)
-       call dec_get_RI_orbitals(molecule,mylsitem)
-    end if
-    
-    ! Init basic info (molecular dimensions etc.)
-    call molecule_init_basics(molecule,mylsitem)
 
     ! Skip read-in of info for molecule if requested (only for testing)
     if(DECinfo%SkipReadIn) then
@@ -71,11 +74,18 @@ contains
        return
     end if
 
-    ! Get Fock, overlap, and MO coefficient matrices.
-    call molecule_get_reference_state(molecule,mylsitem)
-    call molecule_get_overlap(molecule,mylsitem)
-    call molecule_mo_fock(molecule)
-
+     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+       !> Sanity check 
+       if(.NOT. present(D)) then
+          call lsquit("ERROR: (molecule_init_from_files) : Density needs to be persent for F12 calc",-1)
+       end if
+       call dec_get_CABS_orbitals(molecule,mylsitem)
+       call dec_get_RI_orbitals(molecule,mylsitem)
+       
+       !> F12 Fock matrices in MO basis
+       call molecule_mo_f12(molecule,mylsitem,D)
+    end if
+    
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
   end subroutine molecule_init_from_files
@@ -115,22 +125,21 @@ contains
 
     ! Fock matrix in MO basis
     call molecule_mo_fock(molecule)
-    
-    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-       call dec_get_CABS_orbitals(molecule,mylsitem)
-       call dec_get_RI_orbitals(molecule,mylsitem)
-    end if
-    
+ 
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule)
     end if
-    
-    ! F12 Fock matrices in MO basis
-    if(DECinfo%F12) then
-       call molecule_mo_f12(molecule,mylsitem,D)
-    endif
-    
+     
     call molecule_get_carmom(molecule,mylsitem)
+       
+    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+       call dec_get_CABS_orbitals(molecule,mylsitem)
+       call dec_get_RI_orbitals(molecule,mylsitem)
+  
+       !> F12 Fock matrices in MO basis
+       call molecule_mo_f12(molecule,mylsitem,D)
+    end if
+    
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
   end subroutine molecule_init_from_inputs
