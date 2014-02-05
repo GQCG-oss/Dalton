@@ -180,34 +180,42 @@ fi
 #
 # Energy
 #
-CRIT1=`$GREP "Monopoles    * (\-|\-0)\.027419385..." $log | wc -l`
-CRIT2=`$GREP "Dipoles      *  (|0)\.006745604..." $log | wc -l`
-CRIT3=`$GREP "Quadrupoles  * (\-|\-0)\.008870857..." $log | wc -l`
-CRIT4=`$GREP "Octopoles    * (\-|\-0)\.002629365..." $log | wc -l`
-CRIT5=`$GREP "Electronic   * (\-|\-0)\.083331704..." $log | wc -l`
-CRIT6=`$GREP "Nuclear      *  (|0)\.080323648..." $log | wc -l`
-CRIT7=`$GREP "Multipole    *  (|0)\.000247468..." $log | wc -l`
-CRIT8=`$GREP "Dispersion 6 * (\-|\-0)\.005696684..." $log | wc -l`
-CRIT9=`$GREP "Repulsion 12 *  (|0)\.008622159..." $log | wc -l`
-CRIT10=`$GREP "Total PE energy: * (\-|\-0)\.032009116..." $log | wc -l`
-CRIT11=`$GREP "Final HF energy: * (\-190)\.796578677..." $log | wc -l`
+CRIT1=`$GREP "Monopoles    * (\-|\-0)\.029792078..." $log | wc -l`
+CRIT2=`$GREP "Dipoles      *  (|0)\.007131056..." $log | wc -l`
+CRIT3=`$GREP "Quadrupoles  * (\-|\-0)\.008490348..." $log | wc -l`
+CRIT4=`$GREP "Octopoles    * (\-|\-0)\.002961458..." $log | wc -l`
+CRIT5=`$GREP "Electronic   * (\-|\-0)\.088593360..." $log | wc -l`
+CRIT6=`$GREP "Nuclear      *  (|0)\.085210618..." $log | wc -l`
+CRIT7=`$GREP "Multipole    *  (|0)\.000260931..." $log | wc -l`
+CRIT8=`$GREP "Dispersion 6 * (\-|\-0)\.006448469..." $log | wc -l`
+CRIT9=`$GREP "Repulsion 12 *  (|0)\.010358616..." $log | wc -l`
+CRIT10=`$GREP "Total PE energy: * (\-|\-0)\.033324493..." $log | wc -l`
+CRIT11=`$GREP "Final HF energy: * (\-190)\.797256088..." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11`
-CTRL[1]=12
+CTRL[1]=11
 ERROR[1]="ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
 # Final geometry
 #
-CRIT1=`$GREP "C * (\-|\-0)\.277893.... * (\-|\-1)\.036588.... *  0\.001171...." $log | wc -l`
-CRIT2=`$GREP "C *  2\.409289.... * (\-|\-1)\.740596.... * (\-|\-0)\.000152...." $log | wc -l`
-CRIT3=`$GREP "C *  3\.073491.... * (\-|\-4)\.158469.... * (\-|\-0)\.000258...." $log | wc -l`
-CRIT4=`$GREP "O * (\-|\-1)\.034501.... *  1\.111327.... *  0\.000628...." $log | wc -l`
-CRIT5=`$GREP "H * (\-|\-1)\.633739.... * (\-|\-2)\.585933.... *  0\.002639...." $log | wc -l`
-CRIT6=`$GREP "H *  3\.763306.... * (\-|\-0)\.221717.... * (\-|\-0)\.001116...." $log | wc -l`
-CRIT7=`$GREP "H *  1\.690524.... * (\-|-5)\.651746.... *  0\.000773...." $log | wc -l`
-CRIT8=`$GREP "H *  5\.021385.... * (\-|\-4)\.733145.... * (\-|\-0)\.001425...." $log | wc -l`
-TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
-CTRL[2]=32
+CRIT1=`$GREP "bond distance\: * C * C * 1\.4682.." $log | wc -l 
+CRIT2=`$GREP "bond distance\: * C * C * 1\.3260.." $log | wc -l
+CRIT3=`$GREP "bond distance\: * O * C * 1\.2060.." $log | wc -l
+CRIT4=`$GREP "bond distance\: * H * C * 1\.0888.." $log | wc -l
+CRIT5=`$GREP "bond distance\: * H * C * 1\.0785.." $log | wc -l
+CRIT6=`$GREP "bond distance\: * H * C * 1\.0767.." $log | wc -l
+CRIT7=`$GREP "bond distance\: * H * C * 1\.0743.." $log | wc -l
+CRIT8=`$GREP "bond angle\: * C * C * O * 123\.62." $log | wc -l  
+CRIT9=`$GREP "bond angle\: * C * C * H * 117\.01." $log | wc -l
+CRIT10=`$GREP "bond angle\: * O * C * H * 119\.37." $log | wc -l
+CRIT11=`$GREP "bond angle\: * C * C * C * 119\.06." $log | wc -l
+CRIT12=`$GREP "bond angle\: * C * C * H * 116\.78." $log | wc -l
+CRIT13=`$GREP "bond angle\: * C * C * H * 123\.14." $log | wc -l
+CRIT14=`$GREP "bond angle\: * C * C * H * 121\.72." $log | wc -l
+CRIT15=`$GREP "bond angle\: * C * C * H * 122\.65." $log | wc -l
+CRIT16=`$GREP "bond angle\: * H * C * H * 116\.61." $log | wc -l
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ CRIT15 \+ $CRIT16`
+CTRL[2]=16
 ERROR[2]="OPTIMIZED GEOMETRY NOT CORRECT"
 
 
