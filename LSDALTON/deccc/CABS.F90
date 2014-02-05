@@ -7,7 +7,6 @@ MODULE CABS_operations
   use matrix_operations
   use integralinterfaceMod
   use lstiming
-  use IFCORE
 SAVE
 logical  :: CMO_CABS_save_created
 TYPE(Matrix) :: CMO_CABS_save
