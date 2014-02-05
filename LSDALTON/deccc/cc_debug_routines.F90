@@ -790,6 +790,11 @@ module cc_debug_routines_module
         if(DECinfo%PL>1) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+        !HACK to get CCD
+        if(DECinfo%CCDHACK)then
+          omega1(iter)%val = 0.0E0_realk
+        endif
+
         ! check for the convergence
         one_norm1 = 0.0E0_realk
         one_norm2 = 0.0E0_realk
