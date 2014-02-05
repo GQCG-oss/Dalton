@@ -24,6 +24,7 @@ use integralinterfaceMod, only: II_get_molecular_gradient,&
 use lsdalton_rsp_mod,only: get_excitation_energy, GET_EXCITED_STATE_GRADIENT
 use dec_main_mod!, only: get_total_mp2energy_from_inputs, get_mp2gradient_and_energy_from_inputs
 use optimlocMOD, only: optimloc
+use screen_mod, only: screen_free, screen_init
 private
 public :: Get_Energy, Get_Gradient, get_num_grad
 !
@@ -71,7 +72,9 @@ contains
        !call mat_zero(D)
        !
        call typedef_free_setting(ls%setting)
+       call screen_free()
        call typedef_init_setting(ls%setting)
+       call screen_init()
        ! Empirical dispersion correction in case of dft
        !CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
 
