@@ -1635,15 +1635,62 @@ integer(kind=8),intent(in) :: error_size
 character(*),intent(in) :: mylabel
 !> Unit number for lsquit output 
 integer :: myoutput
+character(8) :: ERR,GLOB
 
 myoutput=6
 
 ! Memory statistics
 
+IF (error_size.LT.0) THEN
+  write(ERR,'(A8)') ' < zero '
+ELSEIF (error_size.LT.1000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E0," B "
+ELSEIF (error_size.LT.1000000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E-3," kB"
+ELSEIF (error_size.LT.1000000000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E-6," MB"
+#ifdef VAR_INT64
+ELSEIF (error_size.LT.1000000000000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+ELSEIF (error_size.LT.1000000000000000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E-12," TB"
+ELSEIF (error_size.LT.1000000000000000000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E-15," PB"
+ELSE
+  write(ERR,'(F5.1,A3)') error_size*1E-18," EB"
+ENDIF
+#else
+ELSE
+  write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+ENDIF
+#endif
+
+IF (max_mem_used_global.LT.0) THEN
+  write(GLOB,'(A8)') ' < zero '
+ELSEIF (max_mem_used_global.LT.1000) THEN
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0," B "
+ELSEIF (max_mem_used_global.LT.1000000) THEN
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3," kB"
+ELSEIF (max_mem_used_global.LT.1000000000) THEN
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6," MB"
+#ifdef VAR_INT64
+ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12," TB"
+ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15," PB"
+ELSE
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18," EB"
+ENDIF
+#else
+ELSE
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9," GB"
+ENDIF
+#endif
+
 write(myoutput,*) 
 write(myoutput,*) 'LSDALTON is quitting because there is too little memory available!'
-write(myoutput,*) 'The program was trying to allocate ',error_size*1E-9,&
-    &' MB in addition to the ',max_mem_used_global*1E-9,' MB already allocated.'
+write(myoutput,*) 'The program was trying to allocate ',ERR,&
+    &' in addition to the ',GLOB,' already allocated.'
 write(myoutput,*) 'Increase available memory if possible (eg. through your submit script or you),'
 write(myoutput,*) 'may try to distribute memory over more nodes (eg. by using ScaLapack/PBLAS). See the'
 write(myoutput,*) 'LSDALTON manual or consult the Dalton Forum for details.'

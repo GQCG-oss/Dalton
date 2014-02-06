@@ -2697,13 +2697,22 @@ contains
                & is not in bookkeeping list',-1)
        end if
 
+
+       !F12 restart from file
+       if(DECinfo%F12) then     
+          print *, "Restart from F12 file" 
+          !call atomic_fragment_init_f12(fragments(MyAtom),MyMolecule)
+       endif
+    
+
        call fragment_read_data(funit,fragments(MyAtom),&
             & OccOrbitals,UnoccOrbitals,MyMolecule,Mylsitem,DoBasis)
 
     end do
 
-    call lsclose(funit,'KEEP')
 
+    call lsclose(funit,'KEEP')
+ 
   end subroutine restart_atomic_fragments_from_file
 
 
