@@ -1680,6 +1680,7 @@ ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15," PB"
 ELSE
   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18," EB"
+ENDIF
 #else
 ELSE
   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9," GB"
