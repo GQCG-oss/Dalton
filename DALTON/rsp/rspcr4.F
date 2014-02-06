@@ -197,8 +197,8 @@ C
 
 C      SUBROUTINE CRLRV2(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
 C     &                  WRK,LWRK)
-      SUBROUTINE CRLRV3( VEC,LAB1,LAB2,FREQ1,FREQ2,
-     &    CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
+      SUBROUTINE CRLRV3(VEC,LABB, LABC, FREQB,FREQC,
+     ^CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
      &                  WRK,LWRK)
 
 C
@@ -210,12 +210,14 @@ C
 #include "implicit.h"
 #include "iratdef.h"
 C
-      CHARACTER*8 LAB1, LAB2
+      CHARACTER*8 LABB,LABC
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*), FOCK(*), VEC(*)
+      DOUBLE PRECISION FREQB, FREQC
 C
       LOGICAL FOUND, CONV
       PARAMETER (D0 = 0.0D0)
+
 C
 #include "priunit.h"
 #include "infpri.h"
@@ -234,7 +236,14 @@ C
 #include "indcr.h"
 #include "infdim.h"
 C
+      INTEGER IG
+
       CALL QENTER('CRLRV3')
+
+      WRITE(LUPRI,*) 'last 5 numbers should not be part of this vector'
+      DO IG = 1, MZYVAR(1) + 5
+      WRITE(LUPRI,*) VEC(IG)
+      END DO
 C
 C   Initialize variables
 C
@@ -244,7 +253,7 @@ C
 C   Check number of two index linear vector equations
 C
 
-      IF (NLRLB2 .LE. 0) GO TO 9999
+      WRITE(LUPRI,*) "NLRLB2" , NLRLB2
 
 C
 C   Loop over number of two-index vectors
@@ -264,12 +273,12 @@ C         KSYMOP=ISMCR2(ILRLB2,3)
          !CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
          CALL SETZY(MJWOP)
 C
-         WRITE (LUPRI,'(//A,I3/A,A/A,A/1P,A,D15.6,/A,D15.6)')
-     *   ' CRLRV3 -- linear response calc for sym:',KSYMOP,
-     *   ' CRLRV3 -- operator label1: ',LAB1,
-     *   ' CRLRV3 -- operator label2: ',LAB2,
-     *   ' CRLRV3 -- freqr1 :',FREQ1,
-     *   ' CRLRV3 -- freqr2 :',FREQ2
+         WRITE (LUPRI,'(//A,I3/A,A/A,A/1P,A,D15.6,/A,D15.6)') 
+     *   ' CRLRV3 -- linear response calc for sym:',KSYMOP ,
+     *   ' CRLRV3 -- operator label1: ',LABB ,
+     *   ' CRLRV3 -- operator label2: ',LABC ,
+     *   ' CRLRV3 -- freqr1 :',FREQB ,
+     *   ' CRLRV3 -- freqr2 :',FREQC
 C
 C   Allocate core memory for
 C   KGD two-index response vector
@@ -339,23 +348,17 @@ C
          KEXSIM = 1
          KEXCNV = KEXSIM
          CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-     *               .TRUE.,CRLB2(ILRLB2,1),CRLB2(ILRLB2,2),WRK(KGD),
+     *               .TRUE., LABB , LABC , VEC,
      *               WRK(KREDGD),WRK(KREDE),WRK(KREDS),WRK(KIBTYP),
      *               WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),XINDX,
      *               WRK(KWRK1),LWRK1)
          CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
      *                     WRK(KBVECS),WRK(KWRKE),1,0)
-C
-         IF (INVEXP) THEN
-            WRITE(LUPRI,'(/A)') '*** GETNXY, INVEXP = TRUE'
-            CALL GETNXY(WRK(KEIVAL),WRK(KGD),
-     *                  CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
-         END IF 
-C
-C         CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),
-C     *               CRLB2(ILRLB2,1),CRLB2(ILRLB2,2),
-C     *               CRFRQ2(ILRLB2,1),CRFRQ2(ILRLB2,2),
-C     *               ISMCR2(ILRLB2,1),ISMCR2(ILRLB2,2),WRK(KRESID),D0)
+
+         CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),
+     *               LABB, LABC,
+     *               FREQB, FREQC,
+     *               ISMCR2(ILRLB2,1),ISMCR2(ILRLB2,2),WRK(KRESID),D0)
          CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),
      *               LAB1, LAB2, 
      *               FREQ1, FREQ2,
