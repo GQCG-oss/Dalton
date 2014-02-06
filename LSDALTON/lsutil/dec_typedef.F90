@@ -158,7 +158,7 @@ module dec_typedef_module
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
      !> if mpich is used CCSD has some special treats that can be used
-     logical :: CCSD_MPICH
+     logical :: CCSD_NO_DEBUG_COMM
      !> prevent canonicalization in the ccsolver
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out

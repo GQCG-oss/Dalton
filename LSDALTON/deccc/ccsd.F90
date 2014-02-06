@@ -1054,7 +1054,7 @@ contains
 #ifdef VAR_MPI
     lg_me                    = infpar%lg_mynum
     lg_nnod                  = infpar%lg_nodtot
-    lock_outside             = DECinfo%CCSD_MPICH
+    lock_outside             = DECinfo%CCSD_NO_DEBUG_COMM
     mode                     = MPI_MODE_NOCHECK
 
     parent                   = (infpar%parent_comm==MPI_COMM_NULL)

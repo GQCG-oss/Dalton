@@ -66,7 +66,7 @@ contains
     DECinfo%CCSDnosaferun        = .false.
     DECinfo%solver_par           = .false.
     DECinfo%CCSDpreventcanonical = .false.
-    DECinfo%CCSD_MPICH           = .false.
+    DECinfo%CCSD_NO_DEBUG_COMM   = .true.
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%use_pnos             = .false.
@@ -422,20 +422,20 @@ contains
 
        !CCSD SPECIFIC KEYWORDS
        !**********************
-       case('.CCDEBUG');                DECinfo%CCDEBUG              = .true.
-       case('.CCSOLVER_LOCAL');         DECinfo%solver_par           = .false.
-       case('.CCSDDYNAMIC_LOAD');       DECinfo%dyn_load             = .true.
-       case('.CCSDNO_RESTART');         DECinfo%CCSDno_restart       = .true.
-       case('.CCSD_WITH_MPICH');        DECinfo%CCSD_MPICH           = .true.
-       case('.SPAWN_COMM_PROC');        DECinfo%spawn_comm_proc      = .true.
-       case('.CCSDMULTIPLIERS');        DECinfo%CCSDmultipliers      = .true.
-       case('.USE_PNOS');               DECinfo%use_pnos             = .true.
-       case('.NOPNOTRAFO');             DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
-       case('.NOPNOTRUNCATION');        DECinfo%noPNOtrunc           = .true.
-       case('.NOPNOOVERLAPTRUNCATION'); DECinfo%noPNOoverlaptrunc    = .true.
-       case('.MOCCSD');                 DECinfo%MOCCSD               = .true.
-       case('.PNOTRIANGULAR');          DECinfo%PNOtriangular        = .true.
-       case('.CCSDPREVENTCANONICAL');   DECinfo%CCSDpreventcanonical = .true.
+       case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
+       case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
+       case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
+       case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
+       case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM           = .false.
+       case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
+       case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
+       case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
+       case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
+       case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
+       case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
+       case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
+       case('.PNOTRIANGULAR');            DECinfo%PNOtriangular        = .true.
+       case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
 
        case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
        case('.EOSPNOTHR');     read(input,*) DECinfo%EOSPNOthr
