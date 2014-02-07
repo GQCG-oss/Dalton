@@ -6,16 +6,17 @@ quantum chemical software package; locating equilibrium
 geometries\index{equilibrium structure} and
 transition structures\index{transition state} of molecules. In
 {\dalton} this is done using either second-order trust-region\index{second-order optimization}\index{geometry optimization!second-order}\index{trust region}
-optimizations~\cite{tuhjahjajpjjcp84} (energies, gradients and
-Hessians are calculated) or a variety of first-order\index{first-order optimization}\index{geometry optimization!first-order}
-methods~\cite{Fletcher} (only energies and gradients are
+optimizations~\cite{tuhjahjajpjjcp84} (energies, molecular gradients and
+molecular Hessians are calculated\index{molecular gradient}\index{molecular Hessian})
+or a variety of first-order\index{first-order optimization}\index{geometry optimization!first-order}
+methods~\cite{Fletcher} (only energies and molecular gradients are
 calculated). These methods
 have been implemented for Hartree--Fock, Density Functional Theory,
-MCSCF  and various Coupled-Cluster wave functions. For other
+MCSCF  and various Coupled Cluster wave functions. For other
 non-variational wave functions---such as CI---the program can 
 only do first-order geometry optimizations using a
-numerically\index{numerical gradient}
-calculated gradient. This will be invoked automatically by the program
+numerically\index{numerical gradient}\index{molecular gradient!numerical}
+calculated molecular gradient. This will be invoked automatically by the program
 in case of a non-variational wave function. Some comments connected to
 such geometry optimizations are collected in Sec.~\ref{sec:nonvargeom}.
 
@@ -198,9 +199,9 @@ optimization~\cite{Fletcher} in redundant internal
 coordinates~\cite{gfxfzpwtppjacs114,ppgfjcp96,vbthjcp117}\index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
 using the BFGS\index{BFGS update}\index{Hessian update!BFGS}
 Hessian update. This means that
-only the energy and the gradient are calculated in each iteration, and
-an approximate Hessian is obtained using the gradients and the
-displacements. The initial Hessian is diagonal in the redundant
+only the energy and the molecular gradient are calculated in each iteration, and
+an approximate molecular Hessian is obtained using the gradients and the
+displacements. The initial molecular Hessian is diagonal in the redundant
 internal coordinates~\cite{rlabgkpamcpl241}.
 To obtain the properties at the optimized 
 geometry, the Hessian has to be calculated. By looking at the
@@ -235,7 +236,7 @@ calculated at the new geometry. If this deviation is larger than a
 given threshold, the step will be reduced through a decrease in the
 trust radius and a simple line search will be performed. A quadratic
 function is fitted 
-to the rejected energy and the previous energy and gradient. The
+to the rejected energy and the previous energy and molecular gradient. The
 minimum of this function is then used as the new step, and this
 process may be repeated.
 
@@ -261,11 +262,11 @@ set of convergence criteria\index{convergence!geometry, criteria}. These will be
 set automatically depending on the accuracy of the wave function
 using three different criteria, namely the change in energy
 between two iterations, the norm of the molecular
-gradient\index{norm of gradient} and the norm of the
-step\index{norm of step}. The convergence threshold for the change
+gradient\index{molecular gradient!norm of} and the norm of the
+step\index{step!norm of}. The convergence threshold for the change
 in energy is the maximum of $1.0\cdot 10^{-6}$ Hartree and two times the
 convergence threshold for the wave function, whereas for the norm of
-the gradient and step it is the maximum of $1.0\cdot 10^{-4}$ a.u.\ and
+the molecular gradient and step it is the maximum of $1.0\cdot 10^{-4}$ a.u.\ and
 two times the 
 convergence threshold for the wave function. Two out of these
 three criteria have to decrease below their threshold before the program
@@ -278,7 +279,7 @@ should keep in mind that while second-order methods are rather
 insensitive to changes in these thresholds due to their quadratic
 convergence, first-order methods may run into severe trouble if the
 criteria are too close to the accuracy of the wave function and the
-gradient. The quickest way to get somewhat looser convergence
+molecular gradient. The quickest way to get somewhat looser convergence
 criteria, is to use the keyword \Key{BAKER} enforcing the convergence
 criteria of Baker\cite{Baker} (see the Reference Manual for
 details). This will normally give energies converged to within
@@ -286,10 +287,10 @@ $1.0\cdot 10^{-6}$ Hartree.
 
 In case of non-variational\index{non-variational wave functions}
 wave functions, where a numerical 
-gradient\index{numerical gradient} is used, the threshold for
+gradient\index{molecular gradient!numerical} is used, the threshold for
 convergence is reset to 
 $1.0\cdot 10^{-4}$ a.u., due to possible numerical
-instabilities\index{numerical gradient} occurring in the 
+instabilities occurring in the 
 finite difference\index{finite difference} methods employed to
 determine the molecular gradient\index{molecular gradient}.
 
@@ -724,8 +725,8 @@ state\index{transition state} towards a minimum. One of the
 most successful ways of doing this is the Intrinsic Reaction Coordinate (IRC)
 approach~\cite{kfacr14}\index{IRC}\index{intrinsic reaction
 coordinate}. The IRC is calculated by taking small steps along the
-negative gradient in a mass-weighted 
-coordinate\index{mass-weighted coordinates} system. In {\dalton}, the
+negative molecular gradient in a mass-weighted 
+coordinate\index{coordinates!mass-weighted} system. In {\dalton}, the
 size of the step is adjusted with the use of the trust-region based
 algorithm. In order to get a sufficiently accurate potential energy surface,
 rather small steps must be taken, and the default trust radius is thus reset
@@ -984,7 +985,7 @@ structure.
 \section{Geometry optimization using non-variational wave
 functions}\label{sec:nonvargeom}
 
-\dalton\ does not have any support for the calculation of molecular
+\dalton\ does not have any support for the analytical calculation of molecular
 gradients and Hessians for the non-variational wave functions 
 CI and NEVPT2\index{CI}\index{Configuration Interaction}\index{NEVPT2}. However, in order to
 exploit the facilities of the first-order
@@ -1010,10 +1011,10 @@ numerical gradient can be controlled through the keyword
 \Key{DISPLA} in the \Sec{OPTIMI} input module. Default value is
 $1.0\cdot 10^{-3}$ a.u. By default, the threshold for convergence
 of the geometry will be changed because of estimated inaccuracies
-in the numerical gradients. However, if the threshold for
+in the numerical molecular gradients. However, if the threshold for
 convergence is altered manually, this user supplied threshold for
 convergence will be used also in geometry optimizations using
-numerical gradients\index{numerical gradient}. Note that due to
-the possibility of larger numerical errors in the gradient, too
+numerical molecular gradients\index{molecular gradient!numerical}. Note that due to
+the possibility of larger numerical errors in the molecular gradient, too
 tight convergence criteria for an optimized geometry may make it
 difficult for the program to obtain a converged geometry.

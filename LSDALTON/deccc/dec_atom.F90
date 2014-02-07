@@ -35,6 +35,7 @@ module atomic_fragment_operations
   ! F12 DEPENDENCIES 
   ! *****************************************
   use CABS_operations
+  use f12_routines_module
 
 contains
 
@@ -411,36 +412,52 @@ contains
     do j=1,ncabsAO
        do i=1, fragment%noccEOS
           ix = fragment%idxo(i)
-          fragment%hJir(i,j) = MyMolecule%hJir(ix,j)
+          fragment%hJir(i,:) = MyMolecule%hJir(ix,:)
        enddo
     enddo
 
+    print *,"norm2D(MyMolecule%hJir)", norm2D(MyMolecule%hJir) 
+    
     ! Krs
     call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
     call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
 
+
+    print *,"norm2D(MyMolecule%Krs)", norm2D(MyMolecule%Krs) 
+ 
     ! Frs
     call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
     call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
 
+    print *,"norm2D(MyMolecule%Frs)", norm2D(MyMolecule%Frs) 
+ 
+
     ! Frm
     call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
     do i=1, fragment%noccAOS
-       iy = fragment%occAOSidx(i) 
-       fragment%Frm(:,i) = MyMolecule%Frm(:,i)
+       iy = fragment%idxo(i) 
+       fragment%Frm(:,i) = MyMolecule%Frm(:,iy)
     enddo
+
+    print *,"norm2D(MyMolecule%Frm)", norm2D(MyMolecule%Frm) 
 
     ! Fcp in the order of the index (occ to virt)
     call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
     do i=1, fragment%noccAOS
-       iy = fragment%occAOSidx(i)  
-       fragment%Fcp(:,i) = MyMolecule%Fcp(:,i)
+       iy = fragment%idxo(i)  
+       fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy)
     enddo
-    do i=noccAOS+1, nocvAOS
-       iy = fragment%unoccAOSidx(i)  
-       fragment%Fcp(:,i) = MyMolecule%Fcp(:,i)
+  
+    do i=fragment%noccAOS+1, fragment%nunoccAOS+fragment%noccAOS
+       iy = fragment%idxu(i-fragment%noccAOS)  
+       fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy+noccAOS)
     enddo
 
+    print *,"norm2D(MyMolecule%Fcp)", norm2D(MyMolecule%Fcp) 
+    
+    print *,"norm2D(fragment%Fcp)", norm2D(fragment%Fcp) 
+
+    
   end subroutine atomic_fragment_init_f12
 
   !> \brief Initialize atomic fragments by simply including neighbouring atoms within
@@ -2680,13 +2697,22 @@ contains
                & is not in bookkeeping list',-1)
        end if
 
+
+       !F12 restart from file
+       if(DECinfo%F12) then     
+          print *, "Restart from F12 file" 
+          !call atomic_fragment_init_f12(fragments(MyAtom),MyMolecule)
+       endif
+    
+
        call fragment_read_data(funit,fragments(MyAtom),&
             & OccOrbitals,UnoccOrbitals,MyMolecule,Mylsitem,DoBasis)
 
     end do
 
-    call lsclose(funit,'KEEP')
 
+    call lsclose(funit,'KEEP')
+ 
   end subroutine restart_atomic_fragments_from_file
 
 

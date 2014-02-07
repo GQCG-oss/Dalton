@@ -124,7 +124,9 @@ contains
     real(realk), pointer :: Fab(:,:)
     !> Fock Fpq
     real(realk), pointer :: Fpq(:,:)
-
+    !> Cijab
+    real(realk), pointer :: Cijab(:,:,:,:)
+    
     ! ***********************************************************
     ! Allocating for X matrix
     ! ***********************************************************
@@ -188,7 +190,7 @@ contains
     !> number of CABS MO orbitals
     integer :: ncabsMO
 
-    integer :: ix, i, j, m, n, k, l, p, q, c, r, s, t, a
+    integer :: ix, iy, i, j, m, n, k, l, p, q, c, r, s, t, a, b
 
     real(realk) :: V1energy, V2energy, V3energy, V4energy
     real(realk) :: X1energy, X2energy, X3energy, X4energy
@@ -282,11 +284,6 @@ contains
     call mem_alloc(B9ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     call mem_alloc(Rijca, noccEOS, noccEOS, ncabsMO, nvirtAOS)
 
-    ! Allocating memory for F matrix
-    call mem_alloc(Fij,  noccEOS,  noccEOS)
-    call mem_alloc(Fab, nvirtAOS, nvirtAOS)    
-    call mem_alloc(Fpq,  nocvAOS,  nocvAOS)    
-
     ! Creating a CoccEOS matrix 
     call mem_alloc(CoccEOS, MyFragment%nbasis, noccEOS)
     do i=1, MyFragment%noccEOS
@@ -326,6 +323,11 @@ contains
     do i=1, ncabsAO
        Cri(:,i) = MyFragment%Cri(:,i)
     end do
+
+    ! ***********************************************************
+    ! Creating the C matrix 
+    ! ***********************************************************
+    call mem_alloc(Cijab, noccEOS, noccEOS, noccAOS, noccAOS)  
 
     ! ***********************************************************
     ! Creating the V matrix 
@@ -391,19 +393,27 @@ contains
     ! ***********************************************************
     ! Creating the F matrix 
     ! ***********************************************************
-    ! Get integrals <i|F|j> stored as (i,j) !Fij
-    Fij = Myfragment%ppfock
-    ! Get integrals <a|F|b> stored as (a,b) !Fab
-    Fab = Myfragment%qqfock
-
-    Fpq = 0E0_realk
-    
+    ! Creating a Fij MO matrix 
+    call mem_alloc(Fij, noccAOS, noccAOS)
+    Fij = 0E0_realk 
     do i=1, noccAOS
-       Fpq(i,i) = Myfragment%ppfock(i,i)
-    enddo
+       do j=1, noccAOS      
+          ix = MyFragment%idxo(i)
+          iy = MyFragment%idxo(j)
+          Fij(i,j) = MyFragment%ppfock(ix,iy)
+       end do
+    end do
+
+   ! Creating a Fab MO matrix 
+    call mem_alloc(Fab, nvirtAOS, nvirtAOS)
+    Fab = 0E0_realk 
     do a=1, nvirtAOS
-       Fpq(noccAOS+a,noccAOS+a) = Myfragment%qqfock(a,a)
-    enddo
+       do b=1, nvirtAOS
+          ix = MyFragment%idxu(a)
+          iy = MyFragment%idxu(b)
+          Fab(a,b) = MyFragment%qqfock(ix,iy)
+       end do
+    end do
     
     ! ***********************************************************
     ! Creating the X matrix 
@@ -517,7 +527,8 @@ contains
        print *, '----------------------------------------'   
        print *, '(B6 Term):'
        print *, '----------------------------------------'
-       print *, 'norm2D(Fpq):',   norm2D(Fpq)
+       print *, 'norm2D(Fij):',   norm2D(Fij)
+       print *, 'norm2D(Fab):',   norm2D(Fab)
        print *, 'norm4D(Rijpa):', norm4D(Rijpa)
        print *, '----------------------------------------'   
        print *, '(B7 Term):'
@@ -542,6 +553,8 @@ contains
     ! *************************************************
     !       Dgemms to get the different B terms       
     ! ************************************************
+   
+    !> term2
     !> B2ijkl
     B2ijkl = 0.0E0_realk
     m = noccEOS   ! <k h r> <rl R2 ij> = <kl B2  ij>    m k k n
@@ -550,6 +563,7 @@ contains
     !> dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
     call dgemm('N','N',m,n,k,1.0E0_realk,Myfragment%hJir,m,R2rlij,k,0.0E0_realk,B2ijkl,m)
     
+    !> term3
     !> B3ijkl Brute force
     B3ijkl = 0.0E0_realk
     do i=1, noccEOS
@@ -565,6 +579,7 @@ contains
        enddo
     enddo
     
+    !> term4
     !> B4ijkl Brute force
     B4ijkl = 0.0E0_realk
     do i=1, noccEOS
@@ -588,6 +603,7 @@ contains
        enddo
     enddo
 
+    !> term5
     !> B5ijkl Brute force with memory savings
     B5ijkl = 0.0E0_realk
     do i=1, noccEOS
@@ -611,6 +627,8 @@ contains
        enddo
     enddo
 
+    !> term6
+    !> Need to change this and separate this into two parts one for the Fij and one for the Fab
     !> B6ijkl Brute force with memory savings
     B6ijkl = 0.0E0_realk
     do i=1, noccEOS
@@ -618,20 +636,33 @@ contains
           tmp  = 0.0E0_realk
           tmp2 = 0.0E0_realk
           do a=1, nvirtAOS
-             do p=1, nocvAOS
-                tmp = tmp + Rijpa(i,j,p,a)*Fpq(p,p)*Rijpa(i,j,p,a) + &
-                     & Rijpa(j,i,p,a)*Fpq(p,p)*Rijpa(j,i,p,a) 
-
-                tmp2 = tmp2 + Rijpa(j,i,p,a)*Fpq(p,p)*Rijpa(i,j,p,a) + &
-                     & Rijpa(i,j,p,a)*Fpq(p,p)*Rijpa(j,i,p,a) 
-                
+          
+             do p=1, noccAOS
+                do q=1, noccAOS
+                   tmp = tmp + Rijpa(i,j,p,a)*Fij(q,p)*Rijpa(i,j,q,a) + &
+                        & Rijpa(j,i,p,a)*Fij(q,p)*Rijpa(j,i,q,a) 
+                   
+                   tmp2 = tmp2 + Rijpa(j,i,p,a)*Fij(q,p)*Rijpa(i,j,q,a) + &
+                        & Rijpa(i,j,q,a)*Fij(q,p)*Rijpa(j,i,q,a) 
+                enddo
              enddo
+             
+             do p=1, nvirtAOS
+                do q=1, nvirtAOS
+                   tmp = tmp + Rijpa(i,j,p+noccAOS,a)*Fab(q,p)*Rijpa(i,j,q+noccAOS,a) + &
+                        & Rijpa(j,i,p+noccAOS,a)*Fab(q,p)*Rijpa(j,i,q+noccAOS,a) 
+
+                   tmp2 = tmp2 + Rijpa(j,i,p+noccAOS,a)*Fab(q,p)*Rijpa(i,j,q+noccAOS,a) + &
+                        & Rijpa(i,j,p+noccAOS,a)*Fab(q,p)*Rijpa(j,i,q+noccAOS,a) 
+                enddo
+          enddo
+
           enddo
           B6ijkl(i,j,i,j) = tmp
           B6ijkl(i,j,j,i) = tmp2
        enddo
     enddo
-    
+   
     !> B7ijkl Brute force with memory savings
     B7ijkl = 0.0E0_realk
     do i=1, noccEOS
@@ -788,22 +819,24 @@ contains
     if(.not. DECinfo%onlyoccpart) then
     end if
     
-    print *,   '----------------- DEC-MP2F12 CALCULATION ----------------'
-    write(*,*) 'WANGY TOYCODE: MP2 CORRELATION ENERGY = ', MP2energy
-    write(*,*) 'WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY = ', E_21
-    write(*,*) 'WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY = ', E_22
-    write(*,*) 'WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY = ', E_23
-    write(*,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
-    write(*,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
-
+    if(DECinfo%F12debug) then
+       print *,   '----------------- DEC-MP2F12 CALCULATION ----------------'
+       write(*,*) 'WANGY TOYCODE: MP2 CORRELATION ENERGY = ', MP2energy
+       write(*,*) 'WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY = ', E_21
+       write(*,*) 'WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY = ', E_22
+       write(*,*) 'WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY = ', E_23
+       write(*,*) 'WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
+       write(*,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
+       write(*,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
+    end if
     
     write(DECinfo%output,*) 'WANGY TOYCODE: MP2 CORRELATION ENERGY = ', MP2energy
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY = ', E_21
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY = ', E_22
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY = ', E_23
+    write(DECinfo%output,*) 'WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
     write(DECinfo%output,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
-
     
     Myfragment%energies(FRAGMODEL_F12) = E_F12
 
@@ -812,12 +845,14 @@ contains
     ! ***********************************************************
 
     !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
-    call free_cabs()
+    ! call free_cabs()
 
+    !> C-term
     call mem_dealloc(Fij)
     call mem_dealloc(Fab)
-    call mem_dealloc(Fpq)
-
+    call mem_dealloc(Cijab)
+    
+    !> Coeff
     call mem_dealloc(CoccEOS)
     call mem_dealloc(CoccAOS)
     call mem_dealloc(CocvAOS)
@@ -825,6 +860,7 @@ contains
     call mem_dealloc(Cri)
     call mem_dealloc(CvirtAOS)
 
+    !> V-terms
     call mem_dealloc(V1ijkl)
 
     call mem_dealloc(V2ijkl)
@@ -837,6 +873,7 @@ contains
 
     call mem_dealloc(V4ijkl)
 
+    !> X-terms
     call mem_dealloc(X1ijkl)
     call mem_dealloc(X2ijkl)
     call mem_dealloc(X3ijkl)
@@ -1023,94 +1060,98 @@ contains
     call mem_alloc(V4ijkl, noccEOS, noccEOS, noccEOS, noccEOS) 
     
     ! ***********************************************************
-    ! Creating the V matrix 
-    ! ***********************************************************
-    !> Get integrals <ij|f12*r^-1|kl> stored as (i,j,k,l)  (Note INTSPEC is always stored as (2,4,1,3) )      
-    ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
+!!$    ! Creating the V matrix 
+!!$    ! ***********************************************************
+!!$    !> Get integrals <ij|f12*r^-1|kl> stored as (i,j,k,l)  (Note INTSPEC is always stored as (2,4,1,3) )      
+!!$    ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
+!!$
+!!$    !> V1ijrkl
+!!$    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRRF',V1ijkl)
+!!$
+!!$    !> Gijrp <ij|f12|pq> stored as (i,j,p,q)
+!!$    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRC',Gijpq)
+!!$
+!!$    !> Rijpq <ij|r^-1|pq> stored as (i,j,p,q)
+!!$    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRG',Rijpq)
+!!$
+!!$    !> Gijmc <ij|r^-1|mc> stored as (i,j,m,c) where c = cabs
+!!$    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting, &
+!!$        & CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRC',Gijmc)    
+!!$
+!!$    !> Rijmc <ij|f12|mc> stored as (i,j,m,c) where c = cabs 
+!!$    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
+!!$
+!!$    m = noccEOS*noccEOS  ! <ij G pq> <pq R kl> = <m V2 n> 
+!!$    k = nocvAOS*nocvAOS  
+!!$    n = noccEOS*noccEOS
+!!$
+!!$    !>    dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+!!$    call dgemm('N','T',m,n,k,1.0E0_realk,Rijpq,m,Gijpq,n,0.0E0_realk,V2ijkl,m)
+!!$    
+!!$    m = noccEOS*noccEOS  ! <ij G mc> <mc R kl> = <m V3  n> 
+!!$    k = ncabsMO*noccEOS  
+!!$    n = noccEOS*noccEOS
+!!$
+!!$    !>    dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+!!$    call dgemm('N','T',m,n,k,1.0E0_realk,Gijmc,m,Rijmc,n,0.0E0_realk,V3ijkl,m)
+!!$
+!!$    !> Creating the V4ijkl = V3jilk !
+!!$    call array_reorder_4d(1.0E0_realk,V3ijkl,noccEOS,noccEOS,noccEOS,noccEOS,[2,1,4,3],0.0E0_realk,V4ijkl)
+!!$    
+!!$    if(DECinfo%F12debug) then
+!!$       print *, '----------------------------------------'
+!!$       print *, '   Pairfragment V matrix - Terms        '
+!!$       print *, '----------------------------------------'
+!!$       print *, 'norm4D(V1ijkl):', norm4D(V1ijkl)
+!!$       print *, '----------------------------------------'   
+!!$       print *, '(V2 Term):'
+!!$       print *, '----------------------------------------'   
+!!$       print *, 'norm4D(V2ijkl):', norm4D(V2ijkl)
+!!$       print *, 'norm4D(Gijpq):', norm4D(Gijpq)
+!!$       print *, 'norm4D(Rijpq):', norm4D(Rijpq)
+!!$       print *, '----------------------------------------'   
+!!$       print *, '(V3 Term):'
+!!$       print *, '----------------------------------------'   
+!!$       print *, 'norm4D(V3ijkl):', norm4D(V3ijkl)  
+!!$       print *, 'norm4D(Gijmc):', norm4D(Gijmc)
+!!$       print *, 'norm4D(Rijmc):', norm4D(Rijmc)
+!!$       print *, '----------------------------------------'   
+!!$       print *, '(V4 Term):'
+!!$       print *, '----------------------------------------'
+!!$       print *, 'norm4D(V4ijkl):', norm4D(V4ijkl)  
+!!$    end if
+!!$
+!!$    call get_mp2f12_pf_E21(V1ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V1energy, 1.0E0_realk)
+!!$    call get_mp2f12_pf_E21(V2ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V2energy, -1.0E0_realk)
+!!$    call get_mp2f12_pf_E21(V3ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V3energy, -1.0E0_realk)
+!!$    call get_mp2f12_pf_E21(V4ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V1energy, -1.0E0_realk)
+!!$
 
-    !> V1ijrkl
-    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiii','RRRRF',V1ijkl)
+    E_21 = 0.0E0_realk
 
-    !> Gijrp <ij|f12|pq> stored as (i,j,p,q)
-    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRC',Gijpq)
-
-    !> Rijpq <ij|r^-1|pq> stored as (i,j,p,q)
-    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRG',Rijpq)
-
-    !> Gijmc <ij|r^-1|mc> stored as (i,j,m,c) where c = cabs
-    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting, &
-        & CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRC',Gijmc)    
-
-    !> Rijmc <ij|f12|mc> stored as (i,j,m,c) where c = cabs 
-    call get_mp2f12_MO(PairFragment,PairFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
-
-    m = noccEOS*noccEOS  ! <ij G pq> <pq R kl> = <m V2 n> 
-    k = nocvAOS*nocvAOS  
-    n = noccEOS*noccEOS
-
-    !>    dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
-    call dgemm('N','T',m,n,k,1.0E0_realk,Rijpq,m,Gijpq,n,0.0E0_realk,V2ijkl,m)
-    
-    m = noccEOS*noccEOS  ! <ij G mc> <mc R kl> = <m V3  n> 
-    k = ncabsMO*noccEOS  
-    n = noccEOS*noccEOS
-
-    !>    dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
-    call dgemm('N','T',m,n,k,1.0E0_realk,Gijmc,m,Rijmc,n,0.0E0_realk,V3ijkl,m)
-
-    !> Creating the V4ijkl = V3jilk !
-    call array_reorder_4d(1.0E0_realk,V3ijkl,noccEOS,noccEOS,noccEOS,noccEOS,[2,1,4,3],0.0E0_realk,V4ijkl)
-    
-    if(DECinfo%F12debug) then
-       print *, '----------------------------------------'
-       print *, '   Pairfragment V matrix - Terms        '
-       print *, '----------------------------------------'
-       print *, 'norm4D(V1ijkl):', norm4D(V1ijkl)
-       print *, '----------------------------------------'   
-       print *, '(V2 Term):'
-       print *, '----------------------------------------'   
-       print *, 'norm4D(V2ijkl):', norm4D(V2ijkl)
-       print *, 'norm4D(Gijpq):', norm4D(Gijpq)
-       print *, 'norm4D(Rijpq):', norm4D(Rijpq)
-       print *, '----------------------------------------'   
-       print *, '(V3 Term):'
-       print *, '----------------------------------------'   
-       print *, 'norm4D(V3ijkl):', norm4D(V3ijkl)  
-       print *, 'norm4D(Gijmc):', norm4D(Gijmc)
-       print *, 'norm4D(Rijmc):', norm4D(Rijmc)
-       print *, '----------------------------------------'   
-       print *, '(V4 Term):'
-       print *, '----------------------------------------'
-       print *, 'norm4D(V4ijkl):', norm4D(V4ijkl)  
-    end if
-
-    call get_mp2f12_pf_E21(V1ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V1energy, 1.0E0_realk)
-    call get_mp2f12_pf_E21(V2ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V2energy, -1.0E0_realk)
-    call get_mp2f12_pf_E21(V3ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V3energy, -1.0E0_realk)
-    call get_mp2f12_pf_E21(V4ijkl, Fragment1, Fragment2, PairFragment, noccEOS, V1energy, -1.0E0_realk)
-
-    E_21 = V1energy + V2energy + V3energy + V4energy
-
-    !  if(DECinfo%F12debug) then
-    print *, '----------------------------------------'
-    print *, ' (Pair Fragment Energies for V-matrix): '
-    print *, '----------------------------------------'
-    print *, "E_21_pf_V_term1:", V1energy
-    print *, "E_21_pf_V_term2:", V2energy
-    print *, "E_21_pf_V_term3:", V3energy
-    print *, "E_21_pf_V_term4:", V4energy
-    print *, '----------------------------------------'
-    print *, "E_21_pf_Vsum:", E_21
-    !  end if
+!!$    E_21 = V1energy + V2energy + V3energy + V4energy
+!!$
+!!$    !  if(DECinfo%F12debug) then
+!!$    print *, '----------------------------------------'
+!!$    print *, ' (Pair Fragment Energies for V-matrix): '
+!!$    print *, '----------------------------------------'
+!!$    print *, "E_21_pf_V_term1:", V1energy
+!!$    print *, "E_21_pf_V_term2:", V2energy
+!!$    print *, "E_21_pf_V_term3:", V3energy
+!!$    print *, "E_21_pf_V_term4:", V4energy
+!!$    print *, '----------------------------------------'
+!!$    print *, "E_21_pf_Vsum:", E_21
+!!$    !  end if
 
     ! Input for Dec Driver
     pairfragment%energies(FRAGMODEL_OCCMP2) = E_21
 
     ! Free memory
-    call free_cabs()
+    ! call free_cabs()
+
     call mem_dealloc(dopair_occ)
 
-     call mem_dealloc(CoccEOS)
+    call mem_dealloc(CoccEOS)
     call mem_dealloc(CoccAOS)
     call mem_dealloc(CocvAOS)
     call mem_dealloc(Ccabs)
