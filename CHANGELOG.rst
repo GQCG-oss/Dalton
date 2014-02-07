@@ -3,6 +3,13 @@
 2013.2 (this will be the next patch)
 ====================================
 
+COMMON
+------
+
+- Recognize CYGWIN as a LINUX and UNIX system, for proper definition of compilation flags
+- Define M_PI in C-code if not already defined (problem seen with Cygwin)
+
+
 DALTON
 ------
 
@@ -10,7 +17,7 @@ DALTON
 - More efficient evaluation of numerical Hessian when C1 symmetry
   (in each geometry step start wave function optimization from a
   converged wave function from a neighboring geometry rather than from scratch each time).
-- Fix of error which sometimes caused a geometry optimization to stop with " *** ERROR, Wrong interval in WLKBIS (WLKSTL)".
+- Fix of error which sometimes caused a geometry optimization to stop with " *** ERROR, Wrong interval in WLKBIS".
 
 
 LSDALTON
