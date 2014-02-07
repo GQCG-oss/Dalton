@@ -126,7 +126,7 @@ C
 #include "infpri.h"
 #include "cbgetdis.h"
 #include "dftcom.h" 
-! gnrinf.h: QM3, PEQM
+! gnrinf.h: QM3
 #include "gnrinf.h"
 #include "wrkrsp.h"
 C ---
@@ -454,7 +454,6 @@ C
          CALL SOLLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KWSOL),LWSOL)
-         CALL GETTIM(T5,W5)
       ELSEIF (PCM) THEN
          MXSIM = MAX(NOSIM,NCSIM)
          KVTEX = KWSOL
@@ -463,11 +462,9 @@ C
          CALL PCMLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KVTEX),WRK(KWPCM),LWPCM)
-         CALL GETTIM(T5,W5)
-      ELSE
-         T5 = T4
-         W5 = W4
       END IF
+      CALL FLSHFO(LUPRI)
+      CALL GETTIM(T5,W5)
 C
 C---------------------------
 C CBN 03.01.06

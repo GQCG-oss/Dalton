@@ -1476,7 +1476,10 @@ C
          DARWIN = .FALSE.
       END IF
 
-      IF (QMMM) WRITE(LUPRI,*) 'QMMM calculation'
+      IF (QMMM) WRITE(LUPRI,'(5X,A)') ' QMMM calculation'
+
+      IF (PEQM) WRITE(LUPRI,'(5X,A)') ' Environment is modeled using'//
+     &          ' the polarizable embedding scheme (PE library).'
 
       CALL HEADER('The following molecular properties will be'//
      *            ' calculated in this run:',0)
@@ -1881,18 +1884,13 @@ CAMT quit here to catch this...
             CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
       ENDIF
 CAMT--------------
-      IF (PEQM) THEN
-        WRITE(LUPRI,'(6X,A)') 'Environment is modeled using'//
-     &                 ' the polarizable embedding scheme (PE library).'
-        IF (POLAR) THEN
+      IF (PEQM .AND. POLAR) THEN
          WRITE (LUPRI,'(4A)') 'ERROR: .POLARI and .PEQM are not',
      &                       'compatible. Please use either .ALPHA',
      &                       'or the RESPONSE module and set frequency',
      &                       'to zero.'
          CALL QUIT('ERROR: .POLARI and .PEQM are not compatible'//
      &             ' (see output file for more details)')
-
-        END IF
       END IF
 
 C

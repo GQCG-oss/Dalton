@@ -2607,8 +2607,10 @@ C     Multiplication factor for DS in the localspin model
       GO TO 100
 C
  8000 CONTINUE
+
 !     No QC if PE library is used
-      IF (PEQM) FLAG(21) = .FALSE.
+!     IF (PEQM) FLAG(21) = .FALSE.  !! no second order PE is now OK
+
 C     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
@@ -5352,28 +5354,28 @@ C          to get here unless someone modifies SIRIUS incorrectly
             IF (WFTYPE .EQ. ' ') WFTYPE='HF-srDFT'
             WRITE (IWUNIT,1053) ' HF-srDFT hybrid calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
-     *      'Time-dependent HF-srDFT calculation (response properties).'
+     &      'Time-dependent HF-srDFT calculation (response properties).'
          ELSE IF (DODFT) THEN
-            IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
-            WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
-            IF ( DORSP ) WRITE (IWUNIT,1050)
-     *         'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
+             IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
+             WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
+             IF ( DORSP ) WRITE (IWUNIT,1050)
+     &           'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
          ELSE
-            IF (WFTYPE .EQ. ' ') WFTYPE='HF'
-            WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
-            IF ( DORSP ) WRITE (IWUNIT,1050)
-     *         'Time-dependent Hartree-Fock calculation '//
-     *         '(random phase approximation).'
+             IF (WFTYPE .EQ. ' ') WFTYPE='HF'
+             WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
+             IF ( DORSP ) WRITE (IWUNIT,1050)
+     &           'Time-dependent Hartree-Fock calculation '//
+     &           '(random phase approximation).'
          END IF
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE
          WRITE (IWUNIT,1050) 'No wave function optimization.'
          IF ( DORSP ) WRITE (IWUNIT,1050)
-     *      'Response calculation.'
+     &      'Response calculation.'
       END IF
       IF (NUMRUN_LOCAL .GT. 0) THEN
          WRITE(IWUNIT,1050)
-     *      'This is a combination run starting with'
+     &      'This is a combination run starting with'
          IF (DOSCF) THEN
             IF (HSROHF) THEN
                WRITE(IWUNIT,1054) 'a restricted, high spin open shell'
@@ -5497,7 +5499,7 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
-       IF (PEQM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
+       IF (PEQM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE-QM'
       END IF
 C
 C ***** Wave function specifications

@@ -1020,7 +1020,7 @@ C              .PROP2Average
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('CHANGES OF DEFAULTS FOR RSPINP:',0)
          IF (INPTES) WRITE(LUPRI,'(///A//)')
-     *      ' ************ INPUT TEST *************'
+     *      ' ************ INPUT TEST ONLY *************'
          IF (TDA) WRITE(LUPRI,'(/A,L1)')
      *      ' TAMM-DANCOFF APPROXIMATION (B = 0). TDA=',TDA
          IF (DODFT .AND. CISRPA)
@@ -1687,7 +1687,6 @@ C ------------------
          THCPP = THCPP*THR_REDFAC
       END IF
 C
-      IF (ICHANG .GT. 0) THEN
       IF (NPPTOT .EQ. 0) THEN
          NINFO = NINFO + 1
          WRITE (LUPRI,'(/3A)') '@INFO: ',WORD1,
@@ -1698,48 +1697,61 @@ C
          ELSE
             CALL HEADER(' Linear Response single residue calculation',0)
          END IF
+
+         IF (PEQM) WRITE(LUPRI,'(/A)')
+     &      ' Environment is modeled using'//
+     &         ' the polarizable embedding scheme (PE library)'
+
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
             WRITE(LUPRI,'(A/A,F8.4)')
-     *      ' Equilibrium continuum solvent model requested.',
-     *      ' Dielectric constant                            : EPSOL  ='
-     *      ,EPSOL
+     &      ' Equilibrium continuum solvent model requested.',
+     &      '    Dielectric constant                         : EPSOL  ='
+     &      ,EPSOL
          END IF
          IF (FLAG(16) .AND. INERSI) THEN
-            WRITE(LUPRI,'(A,2(/A,F8.4))')
-     *      ' Non-equilibrium continuum solvent model requested.',
-     *      ' Static dielectric constant                     : EPSTAT ='
-     *      ,EPSTAT,
-     *      ' Optical dielectric constant                    : EPSOL  ='
-     *      ,EPSOL
-         END IF
-
-         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
-            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-         ENDIF
-
-         IF (PEQM) THEN
-           WRITE(LUPRI,'(A)') ' Environment is modeled using'//
-     &                  ' the polarizable embedding scheme (PE library)'
+            WRITE(LUPRI,'(/A,2(/A,F8.4))')
+     &      ' Non-equilibrium continuum solvent model requested.',
+     &      '    Static dielectric constant                  : EPSTAT ='
+     &      ,EPSTAT,
+     &      '    Optical dielectric constant                 : EPSOL  ='
+     &      ,EPSOL
          END IF
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Equilibrium PCM solvent model requested        : SOLVNT ='
-     *      ,PCM
-            WRITE(LUPRI,'(A,F8.4)')
-     *      ' Dielectric constant                            : EPSOL  ='
-     *      ,EPS
+            WRITE(LUPRI,'(/A,L1/A,F8.4)')
+     &      ' Equilibrium PCM solvent model requested        : PCM    ='
+     &      ,PCM,
+     &      '    Dielectric constant                         : EPSOL  ='
+     &      ,EPS
          END IF
          IF (PCM .AND. NEQRSP) THEN
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Non-equilibrium PCM solvent model requested    : INERSI ='
-     *      ,PCM
-            WRITE(LUPRI,'(A,F8.4)')
-     *      ' Static dielectric constant                     : EPSTAT ='
-     *      ,EPS
-            WRITE(LUPRI,'(A,F8.4)')
-     *      ' Optical dielectric constant                    : EPSOL  ='
-     *      ,EPSINF
+            WRITE(LUPRI,'(/A,L1,2(/A,F8.4))')
+     &      ' Non-equilibrium PCM solvent model requested    : INERSI ='
+     &      ,PCM,
+     &      '    Static dielectric constant                  : EPSTAT ='
+     &      ,EPS,
+     &      '    Optical dielectric constant                 : EPSOL  ='
+     &      ,EPSINF
+         END IF
+
+         IF (QM3) WRITE(LUPRI,'(A)')
+     &      ' QM/MM response calculation (model "QM3")'
+
+         IF (QMMM) WRITE(LUPRI,'(A)')
+     &      ' QM/MM response calculation (model "QMMM")'
+
+         IF (QMNPMM) WRITE(LUPRI,'(A)')
+     &      ' QM/NP/MM response calculation'
+
+C
+         IF (QM3 .OR. QMMM .OR. QMNPMM .OR. PCM .OR. PEQM
+     &       .AND. (SOPPA .AND. .NOT. SOPRPA)) THEN
+               WRITE (LUPRI,'(//A/A/A)') 'RSPPP-ERROR: Full '//
+     &     'embedding model SOPPA response is not implemented.',
+     &     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))',
+     &     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
+               CALL QUIT(
+     &     'Full embedding SOPPA is not implemented, see output')
          END IF
 C
          IF (DOESA) THEN
@@ -1781,7 +1793,7 @@ C
          IF ( ABCHK.AND.ABSYM ) THEN
             ABCHK =.FALSE.
             NWARN = NWARN + 1
-            WRITE(LUPRI,'(/A,/A)')'@*******WARNING***********',
+            WRITE(LUPRI,'(/A,/A)')'@ **WARNING**',
      *      ' ABCHK AND ABSYM CANNOT BOTH BE TRUE. ABCHK RESET TO FALSE'
          END IF
          IF (ANTTES) WRITE(LUPRI,'(/A,L1)')
@@ -1818,7 +1830,6 @@ C
             TRPFLG = .TRUE.
          END IF
        END IF
-      END IF
       END IF
 C
 C  *** END OF PPINP
@@ -2269,7 +2280,11 @@ C
      *      ,EPSINF
          END IF
 
-         IF (QM3 .OR. QMMM) THEN
+         IF (QM3) THEN
+           WRITE(LUPRI,'(A)') ' QM/MM response calculation type "QM3"'
+         END IF
+
+         IF (QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
          
@@ -2278,8 +2293,9 @@ C
          END IF    
 
          IF (PEQM) THEN
-            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
-     &                  ' the polarizable embedding scheme (PE library)'
+            WRITE(LUPRI,'(A/A)') ' PE-QM response calculation',
+     &         ' Environment is modeled using'//
+     &            ' the polarizable embedding scheme (PE library)'
          END IF
 
          IF (CHANNEL_CALC) THEN
@@ -4358,8 +4374,7 @@ C
             FC(I) = FC(I) + WAVFCK(I)
          ENDDO
       END IF
-Cjje
-C
+
       IF (SOPPA) THEN
 C
          IF (CCPPA) THEN
@@ -4877,6 +4892,7 @@ C
          ENDIF
 
          IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' PE-QM response calculation'
             WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          END IF

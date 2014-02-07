@@ -434,7 +434,7 @@ C
 C        CALL NEORED (ICTL,NCSIM,NOSIM,BVECS,SVECS,BETVAL,
 C    *                G,IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
 C
-         IF (P6FLAG(51)) THEN
+         IF (P6FLAG(51)) THEN                         ! edh checks symmetry of reduced matrix
 C           check symmetry of REDL
             CALL NEORED_CHK(IBNDX,WRK(KWRK1),LWRK1)
          END IF
@@ -734,13 +734,7 @@ C
 #include "infdim.h"
 #include "inftap.h"
 #include "infpri.h"
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
 #include "gnrinf.h"
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
 C
 C     local variables:
 C
@@ -775,7 +769,7 @@ C     ... symmetrize CI vector
 C----------------------
 C CBN+JK 03.01.06
 C----------------------
-      IF (SOLVNT .OR. PCM .OR. QM3) DOPHP = .FALSE.
+      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM) DOPHP = .FALSE.
 C-----------------------
 C CBN+JK 03.01.06
 C----------------------
