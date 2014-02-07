@@ -46,8 +46,6 @@ private
 
 contains
 
-
-
   !> \brief Construct new atomic fragment based on info in occ_atoms and Unocc_atoms,
   !> and calculate fragment energy. Energy contributions from each individual orbital
   !> is also calculated and stored in MyFragment%OccContribs and MyFragment%VirtContribs for
@@ -145,16 +143,12 @@ contains
          & MyMolecule%nocc, UnoccAOS, &
          & occAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,MyFragment,DoBasis,.false.)
 
-
     ! Calculate fragment energies
     call atomic_fragment_energy_and_prop(MyFragment)
 
     call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output)
 
-
   end subroutine get_fragment_and_Energy_orb_specific
-
-
 
 
   !> \brief Wrapper for atomic_driver with the following special features:
@@ -195,8 +189,8 @@ contains
     ! Init fragment basis information
     call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
          & UnoccOrbitals,MyMolecule,mylsitem,MyFragment)
-
-
+    
+ 
     ! Attach fragments singles amplitudes to fragment structure
     ! if long-range singles polarization effects are requested.
     if(DECinfo%SinglesPolari) then
@@ -206,7 +200,7 @@ contains
     ! Call main driver to get energy (and possibly density or gradient)
     call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
          & MyFragment,grad=grad)
-
+    
     ! Update full molecular singles amplitudes with (virt EOS,occ EOS) fragment contributions
     if(DECinfo%SinglesPolari) then
        ! Extract (virt EOS,occ EOS) indices from fragment
@@ -271,7 +265,11 @@ contains
     type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2
     real(realk) :: tcpu, twall,debugenergy
 
+    ! type(matrix) :: Dmat
+    ! real(realk),pointer :: dens(:,:)
+
     call LSTIMER('START',tcpu,twall,DECinfo%output)
+
 
     ! Which model? MP2,CC2, CCSD etc.
     WhichCCmodel: select case(MyFragment%ccmodel)
@@ -381,9 +379,21 @@ contains
     ! see dec_readme file and FRAGMODEL_* definitions in dec_typedef.F90.
 
 #ifdef MOD_UNRELEASED
-    if(DECinfo%f12) then    
-       print *, "---------------F12-energy-single-fragment-------------"
-       call f12_single_fragment_energy(MyFragment)
+    if(DECinfo%F12) then    
+      
+       ! Get the wrong density matrix (Not equal to the one for the fullmolecule)
+       ! call mat_init(Dmat, myfragment%nbasis,myfragment%nbasis)
+       ! call mem_alloc(dens, myfragment%nbasis, myfragment%nbasis)
+       ! call get_density_from_occ_orbitals( myfragment%nbasis,myfragment%noccAOS,Myfragment%Co,dens)
+       ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
+
+       call get_f12_single_fragment_energy(MyFragment)
+
+       !> Free cabs after each calculation
+       call free_cabs()
+
+       ! call mem_dealloc(dens)
+       ! call mat_free(Dmat)
     endif
 #endif
     call LSTIMER('SINGLE L.ENERGY',tcpu,twall,DECinfo%output)
@@ -872,8 +882,10 @@ contains
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
 
-    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    !type(matrix) :: Dmat
+    !real(realk),pointer :: dens(:,:)
 
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     WhichCCmodel: if(PairFragment%ccmodel==MODEL_NONE) then ! SKip calculation
        return
@@ -946,9 +958,23 @@ contains
     ! see dec_readme file.
 
 #ifdef MOD_UNRELEASED
-    if(DECinfo%f12) then    
-       print *, "---------------F12-energy-pair-fragment-------------"
-       call f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
+    if(DECinfo%F12) then
+       print *, "*******************************************"
+       print *, "       F12 energy pair fragment          "  
+       print *, "*******************************************"
+       
+       ! Get density matrix
+       ! call mem_alloc(dens,Pairfragment%nbasis,Pairfragment%nbasis)
+       ! call get_density_from_occ_orbitals(Pairfragment%nbasis,Pairfragment%noccAOS, &
+       !     & Pairfragment%Co,dens)
+       ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
+       
+       call get_f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
+     
+       !> Free density matrix
+       call free_cabs()
+       ! call mem_dealloc(dens)
+       ! call mat_free(Dmat)
     endif
 #endif
     call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)
@@ -2106,7 +2132,6 @@ contains
       & Occ_Atoms,nocc,nunocc,OccOrbitals,UnoccOrbitals, &
       & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
-
  ! Information for fragment-adapted orbitals
  ! *****************************************
  ! For practical reasons we now simply repeat the MP2 calculation to get all AOS amplitudes
@@ -2560,6 +2585,7 @@ end subroutine optimize_atomic_fragment
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_orig, &
                & OccAOS_orig,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
                & AtomicFragment,.true.,.false.)
+
           call atomic_fragment_energy_and_prop(AtomicFragment)
           exit REDUCTION_LOOP
        end if
@@ -2962,7 +2988,6 @@ end subroutine optimize_atomic_fragment
   end subroutine Expandfragment
 
 
-
   !> \brief Set logical vectors defining fragment to contain a fixed number of AOS atoms
   !> based on a prioritized track list.
   !> \date April 2013
@@ -3076,7 +3101,6 @@ end subroutine optimize_atomic_fragment
   end subroutine ReduceSpace_orbitalspecific
 
 
-
   !> \brief For a given model, get the occupied, virtual and Lagragian fragment energies
   !> to use for fragment optimization, i.e. simply copy the relevant energies from
   !> "fragment%energies" to fragment%EoccFOP, fragment%EvirtFOP, and fragment%LagFOP.
@@ -3135,8 +3159,6 @@ end subroutine optimize_atomic_fragment
     end select
 
   end subroutine get_occ_virt_lag_energies_fragopt
-
-
 
 
   !> \brief After the fragment optimization, make sure that the energies stored

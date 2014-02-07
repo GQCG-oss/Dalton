@@ -21,6 +21,7 @@ PROGRAM TUV
   character(len=15),pointer :: uniqeparamNAME(:)
   character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
   character(len=4) :: SPEC
+  character(len=3) :: ARCSTRING
   logical :: BUILD(0:2,0:2,0:2,0:2),Gen,Seg,SegP,segQ,Seg1Prim,UNIQUE
   integer,pointer :: UniquenTUVs(:)
   !TODO
@@ -74,35 +75,36 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'use IchorCommonModule'
      WRITE(ILUMOD,'(A)')'use IchorMemory'
   ENDDO
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODA'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODASegQ'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODASegP'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODASeg'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODASeg1Prim'
+  ARCSTRING = 'CPU'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODA'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASegQ'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASegP'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASeg'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASeg1Prim'
 
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODB'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODBSegQ'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODBSegP'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODBSeg'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODBSeg1Prim'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODB'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSegQ'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSegP'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSeg'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSeg1Prim'
 
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODD'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODDSegQ'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODDSegP'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODDSeg'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODDSeg1Prim'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODD'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSegQ'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSegP'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSeg'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSeg1Prim'
 
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODC'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODCSegQ'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODCSegP'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODCSeg'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODCSeg1Prim'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODC'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSegQ'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSegP'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSeg'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSeg1Prim'
   !also needed by the Segs
   DO ILUMOD=4,7
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODA'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODB'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODC'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODD'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODA'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODB'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODC'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODD'
   ENDDO
   WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoCGen'
   WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoDGen'
@@ -1475,7 +1477,7 @@ contains
     IF(AngmomPQ.EQ.0)THEN
        IF(Gen)THEN
           call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&'
+          WRITE(LUMOD3,'(A)')'        call VerticalRecurrence'//ARCSTRING//'0(nPasses,nPrimP,nPrimQ,&'
           WRITE(LUMOD3,'(A)')'               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&'
           call initString(15)
           call AddToString('& PpreExpFac,QpreExpFac,')
@@ -1487,7 +1489,7 @@ contains
 !          WRITE(LUMOD3,'(A,A9,A,I4,A)')'               & PpreExpFac,QpreExpFac,',STRINGOUT,'(1:nPrimP*nPrimQ*nPasses*',nTUV,'))'
        ELSEIF(Seg)THEN
           call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrenceSeg0(nPasses,nPrimP,nPrimQ,&'
+          WRITE(LUMOD3,'(A)')'        call VerticalRecurrence'//ARCSTRING//'Seg0(nPasses,nPrimP,nPrimQ,&'
           WRITE(LUMOD3,'(A)')'               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&'
           call initString(15)
           call AddToString('& PpreExpFac,QpreExpFac,')
@@ -1500,7 +1502,7 @@ contains
           Contracted = .TRUE.
        ELSEIF(SegQ)THEN
           call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrenceSegQ0(nPasses,nPrimP,nPrimQ,&'
+          WRITE(LUMOD3,'(A)')'        call VerticalRecurrence'//ARCSTRING//'SegQ0(nPasses,nPrimP,nPrimQ,&'
           WRITE(LUMOD3,'(A)')'               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&'
           call initString(15)
           call AddToString('& PpreExpFac,QpreExpFac,')
@@ -1513,7 +1515,7 @@ contains
           Contracted = .TRUE.
        ELSEIF(SegP)THEN
           call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrenceSegP0(nPasses,nPrimP,nPrimQ,&'
+          WRITE(LUMOD3,'(A)')'        call VerticalRecurrence'//ARCSTRING//'SegP0(nPasses,nPrimP,nPrimQ,&'
           WRITE(LUMOD3,'(A)')'               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&'
           call initString(15)
           call AddToString('& PpreExpFac,QpreExpFac,')
@@ -1526,7 +1528,7 @@ contains
           Contracted = .TRUE.
        ELSEIF(Seg1Prim)THEN
           call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrenceSeg1Prim0(nPasses,nPrimP,nPrimQ,&'
+          WRITE(LUMOD3,'(A)')'        call VerticalRecurrence'//ARCSTRING//'Seg1Prim0(nPasses,nPrimP,nPrimQ,&'
           WRITE(LUMOD3,'(A)')'               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&'
           call initString(15)
           call AddToString('& PpreExpFac,QpreExpFac,')
@@ -1552,54 +1554,54 @@ contains
                    !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
                    IF(Gen)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ELSEIF(Seg)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegQ)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'SegQ',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegP)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'SegP',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(Seg1Prim)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg1Prim',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ENDIF
                 ELSE
                    call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                 ENDIF
              ELSE
                 IF(AngmomQ.EQ.0)THEN
                    !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
                    IF(Gen)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ELSEIF(Seg)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegQ)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'SegQ',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegP)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'SegP',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(Seg1Prim)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg1Prim',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ENDIF
                 ELSE
                    call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                 ENDIF
              ENDIF
              WRITE(LUMOD3,'(A)')'               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
@@ -1722,54 +1724,54 @@ contains
                    !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
                    IF(Gen)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ELSEIF(Seg)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegQ)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'SegQ',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegP)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'SegP',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(Seg1Prim)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg1Prim',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ENDIF
                 ELSE
                    call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                 ENDIF
              ELSE
                 IF(AngmomQ.EQ.0)THEN
                    !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
                    IF(Gen)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ELSEIF(Seg)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegQ)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'SegQ',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegP)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'SegP',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(Seg1Prim)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg1Prim',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ENDIF
                 ELSE
                    call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                 ENDIF
              ENDIF
              WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
@@ -1898,54 +1900,54 @@ contains
                    !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
                    IF(Gen)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ELSEIF(Seg)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegQ)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'SegQ',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegP)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'SegP',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(Seg1Prim)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg1Prim',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ENDIF
                 ELSE
                    call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                 ENDIF
              ELSE
                 IF(AngmomP.EQ.0)THEN
                    !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
                    IF(Gen)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ELSEIF(Seg)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegQ)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'SegQ',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegP)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'SegP',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(Seg1Prim)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg1Prim',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ENDIF
                 ELSE
                    call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                 ENDIF
              ENDIF
 !             WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
@@ -1971,10 +1973,10 @@ contains
 
 
              !             IF(AngmomPQ.LT.10)THEN
-             !                WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
+             !                WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
              !                WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
              !             ELSE
-             !                WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
+             !                WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
              !                WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
              !             ENDIF
              !swap 
@@ -2079,54 +2081,54 @@ contains
                    !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
                    IF(Gen)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ELSEIF(Seg)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegQ)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'SegQ',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegP)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'SegP',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(Seg1Prim)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg1Prim',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ENDIF
                 ELSE
                    call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                 ENDIF
              ELSE
                 IF(AngmomP.EQ.0)THEN
                    !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
                    IF(Gen)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                    ELSEIF(Seg)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegQ)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'SegQ',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(SegP)THEN
                       call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'SegP',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ELSEIF(Seg1Prim)THEN
                       call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING//'Seg1Prim',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                       Contracted = .TRUE.
                    ENDIF
                 ELSE
                    call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
-                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
                 ENDIF
              ENDIF
 !             WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
@@ -2153,10 +2155,10 @@ contains
 
 
              !             IF(AngmomPQ.LT.10)THEN
-             !                WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
+             !                WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
              !                WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
              !             ELSE
-             !                WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
+             !                WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
              !                WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
              !             ENDIF
              !swap 
@@ -3285,9 +3287,9 @@ contains
        stop 'this should never happenA'
     ELSE
        IF(AngmomPQ.LT.10)THEN
-          WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+          WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        ELSE
-          WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+          WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        ENDIF
        WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
     ENDIF
@@ -3597,9 +3599,9 @@ contains
        stop 'this should never happenA'
     ELSE
        IF(AngmomPQ.LT.10)THEN
-          WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+          WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        ELSE
-          WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
+          WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence'//ARCSTRING,AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
        ENDIF
        WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
     ENDIF

@@ -2032,8 +2032,582 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
               end if ! debug print for co-worker-id luci_master+1
 !#undef LUCI_DEBUG
 #endif
-            end if
+#ifdef STEFAN_PLEASE_FIX
+<<<<<<< HEAD
+=======
+        ELSE
+          CALL QUIT('LUCITA out-of-core not implemented yet, sorry!')
+        END IF
+*
+* ===============
+* . DIRAC format
+* ===============
+*
+      else if (INTIMP.eq.6.and.NOINT.eq.0) then
+        call quit('*** error in intim: dirac integral interface
+     & missing ***')
+!       call rdint_dirac(KINT1,KINT2,DOUGRP,IPRNT)
+      END IF
+*
+*. Change one-electron integrals to inactive fock matrix
+      IF(NOINT.EQ.0) THEN
+
+        call dcopy(nint1,work(kint1),1,work(kint1o),1)
+
+        IF(IUSE_PH.EQ.1) THEN
+           CALL FI(WORK(KINT1),ECORE_HEX,1)
+        ELSE
+           ECORE_HEX = 0.0D0
+        END IF
+      END IF
+
+      ECORE_ORIG = ECORE
+      ECORE      = ECORE + ECORE_HEX
+#ifdef LUCI_DEBUG
+      if(luci_myproc.eq.luci_master)then
+        write(lupri,'(/2x,e15.8)') 'Updated core energy: ',ECORE
+      end if
 #endif
+*
+      END
+***********************************************************************
+*
+*  Create usual input file for LUCITA by writing keywords and
+*  values to unit ..
+*
+      subroutine luciwrt(IPLOCAL,NSHPGS,MXPNGAS,MXPIRR,MXPICI,
+     &                   NGAS,NSYM,NCISPC,NSEQ,TYPELUC,MAXIT,
+     &                   MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
+     &                   IRREP,NROOT,MULTIP,MS2,NELGS,
+     &                   CALSIZ,IVFLEV,
+     &                   IUSE_PH,IDEMOL,IRSTRT,MXCIVL,
+     &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
+     &                   IPRXT,IPRRSP,IPRDEN,IPROCC,IPRNCIV)
+*
+      implicit real*8 (A-H,O-Z)
+*
+#include "priunit.h"
+#include "units.inc"
+#include "parluci.h"
+*
+      logical      MSCOMB
+      character*2  TYPELUC(MXSEQ)
+      character*3  CALSIZ
+      character*72 HESTR
+      CHARACTER    LUCIAIN_MPIN*7, NLUCIAIN_MPI*11
+      INTEGER      LUCIAIN_MPIL
+      dimension    NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
+*
+*-----------------------------------------------------------------*
+*  Print input for LUCITA input file           
+*-----------------------------------------------------------------*
+*
+!     IPLOCAL = 5
+      if (IPLOCAL.ge.5) then
+         write(lupri,*) '==========================================='
+         write(lupri,*) '  Input written to file LUCIAIN     '
+         write(lupri,*) '==========================================='
+*
+         write(lupri,'(A13)') '* &LUCIA &END'
+*
+         if (CALSIZ.eq.'NOR') then
+           write(lupri,'(A6)') 'MEGACI'
+         else
+           write(lupri,'(A6)') 'TERACI'
+         end if
+*
+         write(lupri,'(A6)') 'DALTON'
+*
+         write(lupri,'(A3)') 'D2H'
+*
+         write(lupri,'(A6)') 'NIRREP'
+         write(lupri,'(1X,I3)') NSYM
+*
+         write(lupri,'(A6)') 'IREFSM'
+         write(lupri,'(1X,I3)') IRREP
+*
+         write(lupri,'(A5)') 'GASSH'
+         write(lupri,'(1X,I3)') NGAS
+*
+         HESTR = ' '
+         write (HESTR,'(A,I1,A)') '(1X,',NSYM-1,'(I3,A1),I3)'
+         if (NSYM.eq.1) write (HESTR,'(A)') '(I4)'
+         do IGAS = 1,NGAS,1
+            write(lupri,HESTR)
+     &      (NSHPGS(IGAS,ISYM),',',ISYM=1,NSYM-1),NSHPGS(IGAS,NSYM)
+         end do
+*
+         write(lupri,'(A6)') 'NACTEL'
+         write(lupri,'(1X,I3)') NACTEL
+*
+         write(lupri,'(A6)') 'GASSPC'
+         write(lupri,'(1X,I3)') NCISPC
+         do ISPC=1,NCISPC,1
+            write(lupri,'(1X,2I3)')
+     &           (NELGS(IGAS,1,ISPC),NELGS(IGAS,2,ISPC),IGAS=1,NGAS)
+         end do
+*
+         write(lupri,'(A6)') 'SEQUEN'
+         do ICISPC=1,NCISPC,1
+            write(lupri,'(1X,I3)') NSEQ
+            do ISEQ=1,NSEQ,1
+               if (TYPELUC(ISEQ).eq.'CI') then
+                  write(lupri,'(1X,A3,I3)') 'CI,',MAXIT
+               else if (TYPELUC(ISEQ).eq.'PT') then
+                  write(lupri,'(1X,A6,I3)') 'PERTU,',MAXIT
+               else if (TYPELUC(ISEQ).eq.'VF') then
+                  write(lupri,'(1X,A8,I3)') 'VECFREE,',IVFLEV
+               end if
+            end do
+         end do
+*
+         write(lupri,'(A6)') 'RESTRT'
+         write(lupri,'(1X,I3)') IRSTRT
+*
+         write(lupri,'(A5)') 'MULTS'
+         write(lupri,'(1X,I3)') MULTIP
+*
+         write(lupri,'(A3)') 'MS2'
+         write(lupri,'(1X,I3)') MS2
+*
+         if (MSCOMB) then
+            write(lupri,'(A6)') 'MSCOMB'
+            write(lupri,'(F4.1)') SCOMB
+         end if
+*
+         write(lupri,'(A5)') 'ROOTS'
+         write(lupri,'(1X,I3)') NROOT
+
+         write(lupri,'(A5)') 'MXCIV'
+         write(lupri,'(1X,I3)') MXCIVL
+*
+         write(lupri,'(A5)') 'DENSI'
+         write(lupri,'(1X,I3)') IDEMOL
+*
+         write(lupri,'(A5)') 'NOCSF'
+*
+         write(lupri,'(A6)') 'IPRSTR'
+         write(lupri,'(1X,I3)') IPRSTR
+         write(lupri,'(A6)') 'IPRCIX'
+         write(lupri,'(1X,I3)') IPRCIX
+         write(lupri,'(A6)') 'IPRORB'
+         write(lupri,'(1X,I3)') IPRORB
+         write(lupri,'(A6)') 'IPRDIA'
+         write(lupri,'(1X,I3)') IPRDIA
+         write(lupri,'(A5)') 'IPRXT'
+         write(lupri,'(1X,I3)') IPRXT
+         write(lupri,'(A6)') 'IPRRSP'
+         write(lupri,'(1X,I3)') IPRRSP
+         write(lupri,'(A6)') 'IPRDEN'
+         write(lupri,'(1X,I3)') IPRDEN
+         write(lupri,'(A6)') 'IPROCC'
+         write(lupri,'(1X,I3)') IPROCC
+         write(lupri,'(A6)') 'PRNCIV'
+         write(lupri,'(1X,I3,A)') IPRNCIV
+*
+         write(lupri,'(A6)') 'RESDIM'
+         write(lupri,'(1X,I8)') IRESDIM
+*
+         write(lupri,'(A6)') 'LCSBLK'
+         write(lupri,'(I20)') LCSBLK
+*
+         if (IUSE_PH.eq.1) then
+            write(lupri,'(A6)') 'USE_PH'
+            write(lupri,'(A6)') 'ADVICE'
+         end if
+*
+         if (CALSIZ.ne.'NOR') then
+            write(lupri,'(A6)') 'CLSSEL'
+         end if
+*
+         write(lupri,'(A12)') 'END OF INPUT'
+*
+      end if
+*
+*--------------------------------------------------
+* Write to file LUCIAIN
+*--------------------------------------------------
+      LUCIAIN_MPIN = "LUCIAIN"
+      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUCIAIN_MPI,'(A7,A1,I1)') LUCIAIN_MPIN,'.',LUCI_MYPROC
+         LUCIAIN_MPIL=9
+      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUCIAIN_MPI,'(A7,A1,I2)') LUCIAIN_MPIN,'.',LUCI_MYPROC
+         LUCIAIN_MPIL=10
+      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUCIAIN_MPI,'(A7,A1,I3)') LUCIAIN_MPIN,'.',LUCI_MYPROC
+         LUCIAIN_MPIL=11
+      ELSE
+         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+      ENDIF
+
+      open(unit=LUINP,file=NLUCIAIN_MPI(1:LUCIAIN_MPIL),
+     &     status='UNKNOWN',form='FORMATTED')
+         Rewind(LUINP)
+         write(LUINP,'(A13)') '* &LUCIA &END'
+*
+         if (CALSIZ.eq.'NOR') then
+           write(LUINP,'(A6)') 'MEGACI'
+         else
+           write(LUINP,'(A6)') 'TERACI'
+         end if
+*
+         write(LUINP,'(A6)') 'DALTON'
+*
+         write(LUINP,'(A3)') 'D2H'
+*
+         write(LUINP,'(A6)') 'NIRREP'
+         write(LUINP,'(1X,I3)') NSYM
+*
+         write(LUINP,'(A6)') 'IREFSM'
+         write(LUINP,'(1X,I3)') IRREP
+*
+         write(LUINP,'(A5)') 'GASSH'
+         write(LUINP,'(1X,I3)') NGAS
+*
+         HESTR = ' '
+         write (HESTR,'(A,I1,A)') '(1X,',NSYM-1,'(I3,A1),I3)'
+         if (NSYM.eq.1) write (HESTR,'(A)') '(1X,I3)'
+         do IGAS = 1,NGAS,1
+            write(LUINP,HESTR)
+     &      (NSHPGS(IGAS,ISYM),',',ISYM=1,NSYM-1),NSHPGS(IGAS,NSYM)
+         end do
+*
+         write(LUINP,'(A6)') 'NACTEL'
+         write(LUINP,'(I4)') NACTEL
+*
+         write(LUINP,'(A6)') 'GASSPC'
+         write(LUINP,'(I4)') NCISPC
+         do ISPC=1,NCISPC,1
+            write(LUINP,'(1X,2I3)')
+     &           (NELGS(IGAS,1,ISPC),NELGS(IGAS,2,ISPC),IGAS=1,NGAS)
+         end do
+*
+         write(LUINP,'(A6)') 'SEQUEN'
+         do ICISPC=1,NCISPC,1
+            write(LUINP,'(1X,I3)') NSEQ
+            do ISEQ=1,NSEQ,1
+               if (TYPELUC(ISEQ).eq.'CI') then
+                  write(LUINP,'(1X,A3,I3)') 'CI,',MAXIT
+               else if (TYPELUC(ISEQ).eq.'PT') then
+                  write(LUINP,'(1X,A6,I3)') 'PERTU,',MAXIT
+               else if (TYPELUC(ISEQ).eq.'VF') then
+                  write(LUINP,'(1X,A8,I3)') 'VECFREE,',IVFLEV
+               end if
+            end do
+         end do
+*
+         if (IRSTRT.eq.1) then
+           write(LUINP,'(A6)') 'RESTRT'
+         end if
+*
+         write(LUINP,'(A5)') 'MULTS'
+         write(LUINP,'(1X,I3)') MULTIP
+*
+         write(LUINP,'(A3)') 'MS2'
+         write(LUINP,'(1X,I3)') MS2
+*
+         if (MSCOMB) then
+            write(LUINP,'(A6)') 'MSCOMB'
+            write(LUINP,'(F4.1)') SCOMB
+         end if
+*
+         write(LUINP,'(A5)') 'ROOTS'
+         write(LUINP,'(1X,I3)') NROOT
+
+         write(LUINP,'(A5)') 'MXCIV'
+         write(LUINP,'(1X,I3)') MXCIVL
+*
+         write(LUINP,'(A5)') 'DENSI'
+         write(LUINP,'(1X,I3)') IDEMOL
+*
+         write(LUINP,'(A5)') 'NOCSF'
+*
+         write(LUINP,'(A6)') 'IPRSTR'
+         write(LUINP,'(1X,I3)') IPRSTR
+         write(LUINP,'(A6)') 'IPRCIX'
+         write(LUINP,'(1X,I3)') IPRCIX
+         write(LUINP,'(A6)') 'IPRORB'
+         write(LUINP,'(1X,I3)') IPRORB
+         write(LUINP,'(A6)') 'IPRDIA'
+         write(LUINP,'(1X,I3)') IPRDIA
+         write(LUINP,'(A5)') 'IPRXT'
+         write(LUINP,'(1X,I3)') IPRXT
+         write(LUINP,'(A6)') 'IPRRSP'
+         write(LUINP,'(1X,I3)') IPRRSP
+         write(LUINP,'(A6)') 'IPRDEN'
+         write(LUINP,'(1X,I3)') IPRDEN
+         write(LUINP,'(A6)') 'IPROCC'
+         write(LUINP,'(1X,I3)') IPROCC
+         write(LUINP,'(A6)') 'PRNCIV'
+         write(LUINP,'(1X,I3)') IPRNCIV
+*
+         write(LUINP,'(A6)') 'RESDIM'
+         write(LUINP,'(1X,I8)') IRESDIM
+*
+         write(LUINP,'(A6)') 'LCSBLK'
+         write(LUINP,'(I20)') LCSBLK
+*
+         if (IUSE_PH.eq.1) then
+            write(LUINP,'(A6)') 'USE_PH'
+            write(LUINP,'(A6)') 'ADVICE'
+         end if
+*
+         if (CALSIZ.ne.'NOR') then
+            write(LUINP,'(A6)') 'CLSSEL'
+         end if
+*
+         write(LUINP,'(A12)') 'END OF INPUT'
+*
+      close (unit=LUINP)
+*
+      end
+***********************************************************************
+*  Conversion routine from 'dummy' DALTON input for LUCITA to
+*  true LUCITA input. This routine creates the required
+*  default settings and processes the input already given by
+*  DALTON.
+*************************************************************
+*
+      subroutine dalton2lucita(IRREP,NROOT,MULTIP,MXHOL1,MXELR3,INACOB,
+     &                         IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
+     &                         TYPE,WAFFCT,CALSIZ,PRILUC,NINOBS,
+     &                         NGAS,NCISPC,IPRT)
+*
+      use lucita_cfg
+      implicit real*8 (A-H,O-Z)
+#include "priunit.h"
+#include "mxpdim.inc"
+#include "lucinp.inc"
+#include "SysDef.inc"
+*
+#include "inforb.h"
+#include "parluci.h"
+*
+      logical MSCOMB
+*
+      character*2 TYPELUC(MXSEQ)
+      character*3 CALSIZ
+      character*6 TYPE, WAFFCT, PRILUC
+*
+      dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
+      dimension IHELP(4),NINOBS(MXPIRR)
+*
+*
+!     NSYM = NSMOB ! transfer number of symmetries from lucinp.inc
+!     print *, '*** note from stefan: is it not dangerous 
+!    &to re-set NSYM here in dalton2lucita??? NSYM is global in sirius!'
+!     print *,'NSMOB is',NSMOB
+!
+!     set IRESDIM independent from ci type
+      IRESDIM = 100 000
+*
+*------------------------------------------------------------------*
+*  Create default settings for LUCITA
+*------------------------------------------------------------------*
+*
+*------------------------------------------------------------------*
+*  Import required information from Dalton
+*------------------------------------------------------------------*
+      call set_nracte_wf(type,WAFFCT,NACRAS)
+!     print *, ' stefan: define NACRAS for proper FCI/SDCI!!!***'
+*
+*.................................................................
+*  1) Inactive space as GAS 1 (if stated in input)
+*.................................................................
+*
+*
+*     inactive shells and total number of inactive orbitals
+      nsum    =  0
+      iretish = -1
+      if(inacob .eq. 1)then
+        call icopy(nsym,nish_lucita,1,ninobs,1)
+        nsum = 0
+        do isym = 1, nsym
+          nsum = nsum + ninobs(isym)
+        end do
+      end if
+      if(nsum.gt.0) iretish = 0
+*
+*.................................................................
+*  2) TYPE dependencies (keywords depending on type of CI chosen)
+*.................................................................
+*         ................
+      if (TYPE.eq.'FCI   ') then
+*         ................
+*
+*  NGSSH, NGAS
+        if (INACOB.eq.0) then
+          NGAS = 1
+          do ISYM=1,NSYM,1
+            NSHPGS(1,ISYM) = NORB(ISYM)
+          end do
+        else if (INACOB.eq.1) then
+          NGAS = 2
+          do ISYM=1,NSYM,1
+            NSHPGS(1,ISYM) = NINOBS(ISYM)
+            NSHPGS(2,ISYM) = NORB(ISYM) - NINOBS(ISYM)
+          end do
+        end if
+*
+*  NACTEL
+        NTOCCH = 0
+        NTOCCR = 0
+        if (NACTEL.eq.-1) then
+          if (WAFFCT.eq.'HF_SCF') then
+            do ISYM=1,NSYM,1
+              NTOCCH = NTOCCH + 2*NOCC(ISYM)
+            end do
+            NACTEL = NTOCCH
+          else if (WAFFCT.eq.'RASSCF') then
+            do ISYM=1,NSYM,1
+              NTOCCR = NTOCCR + 2*NISH(ISYM)
+            end do
+            NOCCIM = NTOCCR + NACRAS
+            NACTEL = NOCCIM
+          end if
+          write(lupri,'(A42,I3/)')
+     &      ' Number of active electrons ........... ',NACTEL
+        end if
+        NTOOB = 0
+        do ISYM=1,NSYM,1
+          NTOOB = NTOOB + NORB(ISYM)
+        end do
+        MXTNEL = 2*NTOOB
+        if (NACTEL.gt.MXTNEL) then
+         write(lupri,*) 'Number of active electrons exceeds '
+         write(lupri,*) 'the orbital space.'
+         write(lupri,*) 'Consider Paulis famous principle and restart!'
+         Call Abend2( 'Quitting.' )
+        end if
+*
+*  GASSPC, NCISPC
+        NCISPC = 1
+        ICISPC = 1
+        if (INACOB.eq.0) then
+          NELGS(1,1,ICISPC) = NACTEL
+          NELGS(1,2,ICISPC) = NACTEL
+        else if (INACOB.eq.1) then
+          NELGS(1,1,ICISPC) = 2*NSUM
+          NELGS(1,2,ICISPC) = 2*NSUM
+          NELGS(2,1,ICISPC) = NACTEL
+          NELGS(2,2,ICISPC) = NACTEL
+        end if
+*
+*  MULTS (just a check for consistence)
+        call evenodd(IEONAC,NACTEL)
+        call evenodd(IEOMUL,MULTIP)
+        if (IEONAC.eq.2.and.IEOMUL.eq.2) then
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Number of active electrons: ',NACTEL
+           write(lupri,*) 'Read a book about fermions.'
+           Call Abend2( 'quitting' )
+        else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Number of active electrons: ',NACTEL
+           write(lupri,*) 'Read a book about fermions.'
+           Call Abend2( 'quitting' )
+        else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
+           if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
+              Call Abend2( 'quitting' )
+           end if
+        else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
+           if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
+              Call Abend2( 'quitting' )
+           end if
+        end if
+*
+*  MS2
+        MS2 = MULTIP - 1           ! MS(MAX) = S set by default
+*
+*  MSCOMB      Spin combinations (sign for)
+        MSCOMB = .false.
+        SCOMB = 0.
+        if (MULTIP.ge.2.and.MS2.eq.0) then
+          SCOMB = 1.0
+          MSCOMB = .true.
+        end if
+*
+*  SEQUEN
+*  We will support CI, PERTUrbation theory, and VECFREE calculations
+        NSEQ = 1
+        TYPELUC(NSEQ) = 'CI'
+        MAXIT = IMAXCIITER
+*
+*  DENSIty matrices
+*   IDEMOL will be written directly to output
+*
+*  LCSBLK
+        LCSBLK = 100000
+*
+*  USE_PH
+        IUSE_PH = 1
+*
+*
+*              ..............
+      else if (TYPE.eq.'SDCI  ') then
+*              ..............
+*
+*  NGSSH, NGAS
+        if (INACOB.eq.0) then
+          if (WAFFCT.eq.'HF_SCF') then
+            NGAS = 2
+            do ISYM=1,NSYM,1
+              NSHPGS(1,ISYM) = NOCC(ISYM)
+              NSHPGS(2,ISYM) = NSSH(ISYM)
+              if (NSHPGS(2,ISYM).gt.MXTSOB) then
+                call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
+     &                        MXTSOB,NGAS,IPRT)
+              else
+                do IGAS=3,NGAS,1
+                  NSHPGS(IGAS,ISYM) = 0
+                end do
+              end if
+            end do
+          else if (WAFFCT.eq.'RASSCF') then
+            if (IRETISH.eq.-1) then
+              NGAS = 2
+              do ISYM=1,NSYM,1
+                NSHPGS(1,ISYM) = NASH(ISYM)
+                NSHPGS(2,ISYM) = NSSH(ISYM)
+                if (NSHPGS(2,ISYM).gt.MXTSOB) then
+                  call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
+     &                          MXTSOB,NGAS,IPRT)
+                else
+                  do IGAS=3,NGAS,1
+                    NSHPGS(IGAS,ISYM) = 0
+                  end do
+                end if
+              end do
+            else if (IRETISH.eq.0) then
+              NGAS = 3
+              do ISYM=1,NSYM,1
+                NSHPGS(1,ISYM) = NISH(ISYM)
+                NSHPGS(2,ISYM) = NASH(ISYM)
+                NSHPGS(3,ISYM) = NSSH(ISYM)
+                if (NSHPGS(3,ISYM).gt.MXTSOB) then
+                  call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
+     &                          MXTSOB,NGAS,IPRT)
+                else
+                  do IGAS=4,NGAS,1
+                    NSHPGS(IGAS,ISYM) = 0
+                  end do
+                end if
+              end do
+            else
+              write(lupri,*) 'IRETISH has unallowed value.'
+              write(lupri,*) 'IRETISH = ',IRETISH
+              Call Abend2('Quitting.')
+>>>>>>> origin/master
+#endif  /* STEFAN_PLEASE_FIX */
+            end if
+#endif   /* VAR_MPI */
             
             if(.not.orbital_trial_vector.and..not.ci_trial_vector)then
 !             put 1e- and 2e-integrals to file
@@ -2062,6 +2636,75 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
                 CALL READT(LUINT_LUCITA, nint1, work(kint2))
                 CALL READT(LUINT_LUCITA, nint2, work(kint2))
               end if
+#ifdef STEFAN_PLEASE_FIX
+<<<<<<< HEAD
+=======
+            end do
+          end if
+        end if
+*
+*  NACTEL
+        NTOCCH = 0
+        NTOCCR = 0
+        if (NACTEL.eq.-1) then
+          if (WAFFCT.eq.'HF_SCF') then
+            do ISYM=1,NSYM,1
+              NTOCCH = NTOCCH + 2*NOCC(ISYM)
+            end do
+            NACTEL = NTOCCH
+          else if (WAFFCT.eq.'RASSCF') then
+            do ISYM=1,NSYM,1
+              NTOCCR = NTOCCR + 2*NISH(ISYM)
+            end do
+            NOCCIM = NTOCCR + NACRAS
+            NACTEL = NOCCIM
+          end if
+          write(lupri,'(A42,I3/)')
+     &      ' Number of active electrons ........... ',NACTEL
+        end if
+        NTOOB = 0
+        do ISYM=1,NSYM,1
+          NTOOB = NTOOB + NORB(ISYM)
+        end do
+        MXTNEL = 2*NTOOB
+        if (NACTEL.gt.MXTNEL) then
+         write(lupri,*) 'Number of active electrons exceeds '
+         write(lupri,*) 'the orbital space.'
+         write(lupri,*) 'Consider Paulis famous principle and restart!'
+         Call Abend2( 'Quitting.' )
+        end if
+*
+*  GASSPC, NCISPC
+        NCISPC = 1                  ! might well be made more flexible
+        NOCCEL = 0
+        if (INACOB.eq.0) then
+          if (WAFFCT.eq.'HF_SCF') then
+            do ISYM=1,NSYM,1
+              NOCCEL = NOCCEL + 2*NOCC(ISYM)
+            end do
+            NIMN = max(0,NOCCEL-2)
+            NIMX = NOCCEL
+            NEMN = NOCCEL
+            NEMX = NOCCEL
+            do ICISPC=1,NCISPC,1
+              NELGS(1,1,ICISPC) = NIMN
+              NELGS(1,2,ICISPC) = NIMX
+              do IGS=2,NGAS-1,1
+                NELGS(IGS,1,ICISPC) = NEMN - 2
+                NELGS(IGS,2,ICISPC) = NEMX
+              end do
+              NELGS(NGAS,1,ICISPC) = NEMN
+              NELGS(NGAS,2,ICISPC) = NEMX
+            end do
+          else if (WAFFCT.eq.'RASSCF') then
+            if (IRETISH.eq.-1) then
+              NOCCEL = NACRAS
+            else
+              do ISYM=1,NSYM,1
+                NOCCEL = NOCCEL + 2*NISH(ISYM)
+              end do
+>>>>>>> origin/master
+#endif  /* STEFAN_PLEASE_FIX */
             end if
           else
 !           read 1e- and 2e-integrals from file
@@ -2088,11 +2731,218 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
         ECORE_ORIG = ECORE
         ECORE      = ECORE + ECORE_HEX
 
+#ifdef STEFAN_PLEASE_FIX
+<<<<<<< HEAD
 #ifdef LUCI_DEBUG
         if(luci_myproc.eq.luci_master)then
           write(lupri,'(/2x,a,e15.8)') 'Updated core energy: ',ECORE
         end if
 #endif
+=======
+!       print *, ' shells per gas space in dalton2lucita:ngas,nsym',
+!    &  ngas, nsym
+!       do j = 1, ngas
+!         print *, ' nshpgs per gas: ',
+!    &    (nshpgs(j,i),i=1,nsym)
+!       end do
+
+*  NACTEL
+        NTOOB = 0
+        do ISYM=1,NSYM,1
+          NTOOB = NTOOB + NORB(ISYM)
+        end do
+        MXTNEL = 2*NTOOB
+        if (NACTEL.gt.MXTNEL) then
+         write(lupri,*) 'Number of active electrons exceeds '
+         write(lupri,*) 'the orbital space.'
+         write(lupri,*) 'Consider Paulis famous principle and restart!'
+         Call Abend2( 'Quitting.' )
+        end if
+*
+*  GASSPC, NCISPC
+        do ICISPC=1,NCISPC,1
+          do IGAS=1,NGAS,1
+            do i = 1, 2
+              nelgs(igas,i,icispc) = ngso_lucita(igas,i)
+            end do
+          end do
+        end do
+        if (NACTEL.ne.NELGS(NGAS,2,NCISPC)) then
+          write(lupri,*) 'I am sure that fascinating discussions about'
+          write(lupri,*) 'the energy of such a wave function exist,'
+          write(lupri,*) 'but I am just a dumb program, so I will stop.'
+          write(lupri,*)
+          write(lupri,*) 'Number of active electrons does not match'
+          write(lupri,*) 'total number of electrons in GAS spaces.'
+          Call Abend2( 'Quitting.' )
+        end if
+*
+*  MULTS (just a check for consistence)
+        call evenodd(IEONAC,NACTEL)
+        call evenodd(IEOMUL,MULTIP)
+        if (IEONAC.eq.2.and.IEOMUL.eq.2) then
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Read a book about fermions.'
+           Call Abend2( 'quitting' )
+        else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Read a book about fermions.'
+           Call Abend2( 'quitting' )
+        else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
+           if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
+              Call Abend2( 'quitting' )
+           end if
+        else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
+           if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active'
+              write(lupri,*) 'electrons.'
+              Call Abend2( 'quitting' )
+           end if
+        end if
+*
+*  MS2
+        MS2 = MULTIP - 1           ! MS(MAX) = S set by default
+*
+*  MSCOMB      Spin combinations (sign for)
+        MSCOMB = .false.
+        SCOMB = 0.
+        if (MULTIP.ge.2.and.MS2.eq.0) then
+          SCOMB = 1.0
+          MSCOMB = .true.
+        end if
+*
+*  SEQUEN
+*  We will support CI, PERTUrbation theory, and VECFREE calculations
+        NSEQ = 1
+        TYPELUC(NSEQ) = 'CI'
+        MAXIT = IMAXCIITER
+*
+*  DENSIty matrices
+*   IDEMOL will be written directly to output
+*
+*  LCSBLK
+        LCSBLK = 100000
+*
+*  USE_PH
+        IUSE_PH = 1
+*
+*
+*              ................
+      else if (TYPE.eq.'RASCI ') then
+*              ................
+*
+*  NGSSH, NGAS
+*
+!       synchronize module lucita_orbital_spaces (initialized after input ci/mcscf reading) 
+!       and internal lucita common blocks
+
+        do isym = 1, nsym
+          nshpgs(1,isym) = nas1_lucita(isym)
+          nshpgs(2,isym) = nas2_lucita(isym)
+          nshpgs(3,isym) = nas3_lucita(isym)
+        end do
+
+        ngas         = 3
+        ngas_tmp_ras = 3
+        do isym = 1, nsym
+          if(nshpgs(ngas_tmp_ras,isym) .gt. mxtsob)then
+            call gassplit(nshpgs(1,isym),ngas_tmp_ras,mxpngas,
+     &                    mxtsob,ngas,iprt)
+          end if
+        end do
+*
+*  NACTEL
+        NTOOB = 0
+        do ISYM=1,NSYM,1
+          NTOOB = NTOOB + NORB(ISYM)
+        end do
+        MXTNEL = 2*NTOOB
+        if (NACTEL.gt.MXTNEL) then
+         write(lupri,*) 'Number of active electrons exceeds '
+         write(lupri,*) 'the orbital space.'
+         write(lupri,*) 'Consider Paulis famous principle and restart!'
+         Call Abend2( 'Quitting.' )
+        end if
+*
+*  GASSPC, NCISPC
+        ICISPC = 1
+        NCISPC = 1
+        MXELR1 = 0
+        MXELR2 = 0
+        do ISYM=1,NSYM,1
+          MXELR1 = MXELR1 + 2*NSHPGS(1,ISYM)
+          MXELR2 = MXELR2 + 2*NSHPGS(2,ISYM)
+        end do
+*
+        NFMN = 0
+        NFMX = 0
+        NIMX = MXELR1 + NFMX
+        NIMN = NIMX - MXHOL1
+        NEMN = NACTEL + NFMX
+        NEMX = NACTEL + NFMX
+        NAMX = NEMX
+        NAMN = NAMX - MXELR3
+*
+        do ICISPC=1,NCISPC,1
+          NELGS(1,1,ICISPC) = NIMN
+          NELGS(1,2,ICISPC) = NIMX
+          NELGS(2,1,ICISPC) = NAMN
+          NELGS(2,2,ICISPC) = NAMX
+          NELGS(3,1,ICISPC) = NEMN
+          NELGS(3,2,ICISPC) = NEMX
+        end do
+        NACTEL = NACTEL+NFMX
+        if (NACTEL.ne.NELGS(NGAS,2,NCISPC)) then
+          write(lupri,*) 'I am sure that fascinating discussions about'
+          write(lupri,*) 'the energy of such a wave function exist,'
+          write(lupri,*) 'but I am just a dumb program, so I will stop.'
+          write(lupri,*)
+          write(lupri,*) 'Number of active electrons does not match'
+          write(lupri,*) 'total number of electrons in GAS spaces.'
+          Call Abend2( 'Quitting.' )
+        end if
+*
+*  MULTS (just a check for consistence)
+        call evenodd(IEONAC,NACTEL)
+        call evenodd(IEOMUL,MULTIP)
+        if (IEONAC.eq.2.and.IEOMUL.eq.2) then
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Read a book about fermions.'
+           Call Abend2( 'quitting' )
+        else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
+           write(lupri,*) 'Illegal spin multiplicity given.'
+           write(lupri,*) 'Read a book about fermions.'
+           Call Abend2( 'quitting' )
+        else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
+           if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active electrons.'
+              Call Abend2( 'quitting' )
+           end if
+        else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
+           if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
+              write(lupri,*) 'Illegal spin multiplicity given.'
+              write(lupri,*) 'Compare with number of active electrons.'
+              Call Abend2( 'quitting' )
+           end if
+        end if
+*
+*  MS2
+        MS2 = MULTIP - 1           ! MS(MAX) = S set by default
+*
+*  MSCOMB      Spin combinations (sign for)
+        MSCOMB = .false.
+        SCOMB = 0.
+        if (MULTIP.ge.2.and.MS2.eq.0) then
+          SCOMB = 1.0
+          MSCOMB = .true.
+        end if
+>>>>>>> origin/master
+#endif  /* STEFAN_PLEASE_FIX */
       else
 
       end if ! citask_id switch

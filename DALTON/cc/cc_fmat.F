@@ -42,7 +42,7 @@ c/* Deck CC_FMATRIX */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -327,7 +327,7 @@ c/* Deck CC_FTRAN */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -495,7 +495,7 @@ c/* Deck CC_FMATNEW */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -520,7 +520,7 @@ c/* Deck CC_FMATNEW */
 #include "dummy.h"
 #include "r12int.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -2692,7 +2692,7 @@ C  /* Deck ccfpreint */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -3105,7 +3105,7 @@ c/* Deck CCFOPEN*/
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3291,7 +3291,7 @@ c/* Deck CCFSAVE*/
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3454,7 +3454,7 @@ c/* Deck CCFPRE2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3655,7 +3655,7 @@ c/* Deck CCFINT2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3848,7 +3848,7 @@ c/* Deck CCFMAT2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "dummy.h"
@@ -3860,7 +3860,7 @@ c/* Deck CCFMAT2 */
 #include "ccfield.h"
 #include "ccslvinf.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -4759,7 +4759,7 @@ c/* Deck CC_ZETADEN */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -4960,7 +4960,7 @@ C  /* Deck cc_bfif */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -5045,7 +5045,7 @@ C  /* Deck cc_bfifsort */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

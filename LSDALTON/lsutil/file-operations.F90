@@ -45,11 +45,11 @@ implicit none
         character(len=*), intent(in) :: formin 
         integer       :: FILELEN, STATLEN, FORMLEN, iunit
         integer       :: LENOUT,LENWRK,IOS,i
-        character(len=132) :: filename, filestatus, fileformat 
+        character(len=200) :: filename, filestatus, fileformat 
         character(len=20) :: outfil
-        character(len=60) :: wrkdir
+        character(len=200) :: wrkdir
         logical :: fileexists
-        do I=1,132
+        do I=1,200
            filestatus(I:I) = ' '
            filename(I:I) = ' '
            fileformat(I:I) = ' '
@@ -128,7 +128,7 @@ implicit none
             CALL GETENV ('WRKDIR',WRKDIR)
 #endif
             LENWRK = 0
-            DO I = 1, 60
+            DO I = 1, 200
                IF (WRKDIR(I:I) .EQ. ' ') exit
                LENWRK = LENWRK + 1
             END DO
@@ -419,7 +419,7 @@ implicit none
      !> Status - 'KEEP' or 'DELETE'
      character(len=*) :: disp
      logical :: fileexists, fileopen,file_exsist
-     character(len=132) :: returnfilename
+     character(len=200) :: returnfilename
      integer :: ios
 !
 !     We first deal with the unit number

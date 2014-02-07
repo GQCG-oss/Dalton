@@ -600,8 +600,8 @@ end subroutine ls_dcopy
 #endif
 
       CALL ls_GETTIM(CTOT,WTOT)
-      CALL ls_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
-      CALL ls_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
+      CALL ls_TIMTXT('>>>> Total CPU  time used in LSDALTON:',CTOT,LUPRIN)
+      CALL ls_TIMTXT('>>>> Total wall time used in LSDALTON:',WTOT,LUPRIN)
       CALL ls_FLSHFO(LUPRIN)
 
 #ifdef VAR_MPI
@@ -614,6 +614,27 @@ end subroutine ls_dcopy
       STOP 100
 #endif
       end subroutine lsquit
+
+      !> \brief Print Stack
+      !> \author T. Kjaergaard
+      !> \date Jan 2014
+      subroutine LsTraceBack(text)
+        use precision
+#ifdef VAR_IFORT
+#ifndef VAR_INT64
+        use IFCORE
+        implicit none
+        !> Text string to be printed
+        CHARACTER(len=*), intent(in) :: TEXT
+        WRITE (*,'(/2A/)')"TRACEBACKQQ INFO:",TEXT
+        CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE=-1)
+#else
+        WRITE (*,'(/2A/)')"LsTraceBack do not work using -int64"
+#endif
+#else
+        WRITE (*,'(/2A/)')"LsTraceBack do not work unless ifort is used"
+#endif
+      end subroutine LsTraceBack
 
       !> \brief Print a header. Based on HEADER by T. Helgaker
       !> \author S. Host

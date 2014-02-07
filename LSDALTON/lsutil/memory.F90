@@ -450,32 +450,34 @@ TYPE(lattice_cell_info_t) :: lattice_cellitem
 longintbuffersize = 76
 
 #if defined (VAR_XLF) || defined (VAR_G95) || defined (VAR_CRAY)
-print*,'Warning set sizes of Types Manual!'
-print*,'This is error prone - verify that the hardcoded sizes are up to date!'
+#ifdef VAR_LSDEBUG
+print*,'DEBUG: Warning set sizes of Types Manual!'
+print*,'DEBUG: This is error prone - verify that the hardcoded sizes are up to date!'
+#endif
 mem_AOBATCHsize=496
-mem_DECORBITALsize=88
-mem_DECFRAGsize=4004
-mem_BATCHTOORBsize=28
+mem_DECORBITALsize=64
+mem_DECFRAGsize=9016
+mem_BATCHTOORBsize=56
 mem_DECAOBATCHINFOsize=20
-mem_MYPOINTERsize=48
-mem_ARRAY2size=44
-mem_ARRAY4size=256
-mem_ARRAYsize=1280
-mem_MP2DENSsize=252
+mem_MYPOINTERsize=72
+mem_ARRAY2size=80
+mem_ARRAY4size=384
+mem_ARRAYsize=1360
+mem_MP2DENSsize=504
 mem_TRACEBACKsize=12
-mem_MP2GRADsize=388
+mem_MP2GRADsize=848
 mem_ODBATCHsize=88
-mem_LSAOTENSORsize=432
-mem_SLSAOTENSORsize=256
+mem_LSAOTENSORsize=304
+mem_SLSAOTENSORsize=184
 mem_GLOBALLSAOTENSORsize=20
-mem_ATOMTYPEITEMsize=56264
+mem_ATOMTYPEITEMsize=38264
 mem_ATOMITEMsize=216
-mem_LSMATRIXsize=80
-mem_MATRIXsize=1264
-mem_OVERLAPsize=2904
+mem_LSMATRIXsize=56
+mem_MATRIXsize=368
+mem_OVERLAPsize=2272
 #ifdef MOD_UNRELEASED
-mem_lvec_datasize=1264
-mem_lattice_cellsize=1264
+mem_lvec_datasize=1944
+mem_lattice_cellsize=104
 #endif
 #else
 !implemented for VAR_PGF90 VAR_GFORTRAN VAR_IFORT we think!
@@ -504,7 +506,35 @@ mem_OVERLAPsize=sizeof(OVERLAPitem)
 #ifdef MOD_UNRELEASED
 mem_lvec_datasize=sizeof(lvec_dataitem)
 mem_lattice_cellsize=sizeof(lattice_cellitem)
+
 #endif
+
+!print *,sizeof(AOBATCHitem)
+!print *,sizeof(DECORBITALitem)
+!print *,sizeof(DECFRAGitem)
+!print *,sizeof(BATCHTOORBitem)
+!print *,sizeof(DECAOBATCHINFOitem)
+!print *,sizeof(MYPOINTERitem)
+!print *,sizeof(ARRAY2item)
+!print *,sizeof(ARRAY4item)
+!print *,sizeof(ARRAYitem)
+!print *,sizeof(MP2DENSitem)
+!print *,sizeof(TRACEBACKitem)
+!print *,sizeof(MP2GRADitem)
+!print *,sizeof(ODBATCHitem)
+!print *,sizeof(LSAOTENSORitem)
+!print *,sizeof(SLSAOTENSORitem)
+!print *,sizeof(GLOBALLSAOTENSORitem)
+!print *,sizeof(ATOMTYPEITEMitem)
+!print *,sizeof(ATOMITEMitem)
+!print *,sizeof(LSMATRIXitem)
+!print *,sizeof(MATRIXitem)
+!print *,sizeof(OVERLAPitem)
+!#ifdef MOD_UNRELEASED
+!print *,sizeof(lvec_dataitem)
+!print *,sizeof(lattice_cellitem)
+!#endif
+
 #endif
 end subroutine set_sizes_of_types
 
@@ -1598,19 +1628,79 @@ end subroutine collect_thread_memory
   !> It prints a memory statistics summary and quits LSDALTON.
   !> \author Kasper Kristensen
   !> \date April 2013
-subroutine memory_error_quit(mylabel)
+subroutine memory_error_quit(mylabel,error_size)
 implicit none
 !> Label for routine where memory allocation failed
+integer(kind=8),intent(in) :: error_size
 character(*),intent(in) :: mylabel
 !> Unit number for lsquit output 
 integer :: myoutput
+character(8) :: ERR,GLOB
 
 myoutput=6
 
 ! Memory statistics
+
+IF (error_size.LT.0) THEN
+  write(ERR,'(A8)') ' < zero '
+ELSEIF (error_size.LT.1000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E0," B "
+ELSEIF (error_size.LT.1000000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E-3," kB"
+ELSEIF (error_size.LT.1000000000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E-6," MB"
+#ifdef VAR_INT64
+ELSEIF (error_size.LT.1000000000000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+ELSEIF (error_size.LT.1000000000000000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E-12," TB"
+ELSEIF (error_size.LT.1000000000000000000) THEN
+  write(ERR,'(F5.1,A3)') error_size*1E-15," PB"
+ELSE
+  write(ERR,'(F5.1,A3)') error_size*1E-18," EB"
+ENDIF
+#else
+ELSE
+  write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+ENDIF
+#endif
+
+IF (max_mem_used_global.LT.0) THEN
+  write(GLOB,'(A8)') ' < zero '
+ELSEIF (max_mem_used_global.LT.1000) THEN
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0," B "
+ELSEIF (max_mem_used_global.LT.1000000) THEN
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3," kB"
+ELSEIF (max_mem_used_global.LT.1000000000) THEN
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6," MB"
+#ifdef VAR_INT64
+ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12," TB"
+ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15," PB"
+ELSE
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18," EB"
+ENDIF
+#else
+ELSE
+  write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9," GB"
+ENDIF
+#endif
+
 write(myoutput,*) 
-write(myoutput,*) 'Printing memory statistics before quitting LSDALTON...'
+write(myoutput,*) 'LSDALTON is quitting because there is too little memory available!'
+write(myoutput,*) 'The program was trying to allocate ',ERR,&
+    &' in addition to the ',GLOB,' already allocated.'
+write(myoutput,*) 'Increase available memory if possible (eg. through your submit script or you),'
+write(myoutput,*) 'may try to distribute memory over more nodes (eg. by using ScaLapack/PBLAS). See the'
+write(myoutput,*) 'LSDALTON manual or consult the Dalton Forum for details.'
 write(myoutput,*) 
+write(myoutput,*) 'LSDALTON provide no a priori estimate of the memory it needs, but the memory statistics'
+write(myoutput,*) 'from similar calculations on smaller systems may hopefully give you some clues as to what'
+write(myoutput,*) 'memory requirements are needed.'
+write(myoutput,*) 
+write(myoutput,*) 'Printing memory statistics for the current calculation before quitting LSDALTON...'
+
 call stats_mem(myoutput)
 
 ! Quit
@@ -1632,7 +1722,7 @@ integer (kind=long) :: nsize
 !$OMP END CRITICAL
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_1dim',IERR,n
-     CALL memory_error_quit('Error in real_allocate_1dim')
+     CALL memory_error_quit('Error in real_allocate_1dim',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1648,7 +1738,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_1dim_sp',IERR,n
-     CALL memory_error_quit('Error in real_allocate_1dim_sp')
+     CALL memory_error_quit('Error in real_allocate_1dim_sp',nsize)
    ENDIF
    nsize = size(A,KIND=long)*4
    call mem_allocated_mem_real(nsize)
@@ -1666,7 +1756,7 @@ integer (kind=long) :: nsize
    IF (IERR.NE. 0) THEN
      write(*,'("ERROR(real_allocate_1dim_int64),status=",I6," n=",I15," GBallocd=",f19.10)')&
      &IERR,n,1.0E-9_realk*mem_allocated_global
-     CALL memory_error_quit('Error in real_allocate_1dim_int64')
+     CALL memory_error_quit('Error in real_allocate_1dim_int64',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1682,7 +1772,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_2dim',IERR,n1,n2
-     call memory_error_quit('Error in real_allocate_2dim')
+     call memory_error_quit('Error in real_allocate_2dim',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1698,7 +1788,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_2dim_sp',IERR,n1,n2
-     call memory_error_quit('Error in real_allocate_2dim_sp')
+     call memory_error_quit('Error in real_allocate_2dim_sp',nsize)
    ENDIF
    nsize = size(A,KIND=long)*4
    call mem_allocated_mem_real(nsize)
@@ -1721,7 +1811,7 @@ Logical :: First, Second
       ALLOCATE(A(0:n1,0:n2),STAT = IERR)
       IF (IERR.NE. 0) THEN
           write(*,*) 'Error1 in real_allocate_2dim_zero',IERR,n1,n2
-          CALL MEMORY_ERROR_QUIT('Error1 in real_allocate_2dim_zero')
+          CALL MEMORY_ERROR_QUIT('Error1 in real_allocate_2dim_zero',nsize)
       ENDIF
    Else
 ! Only one
@@ -1729,19 +1819,19 @@ Logical :: First, Second
            ALLOCATE(A(0:n1,n2),STAT = IERR)
            IF (IERR.NE. 0) THEN
                write(*,*) 'Error2 in real_allocate_2dim_zero',IERR,n1,n2
-               CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero')
+               CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize)
            ENDIF
         Else
            If (Second) then
               ALLOCATE(A(n1,0:n2),STAT = IERR)
               IF (IERR.NE. 0) THEN
                   write(*,*) 'Error2 in real_allocate_2dim_zero',IERR,n1,n2
-                  CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero')
+                  CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize)
               ENDIF
            Else
 ! None :: an error, should be at least one.
               write(*,*) 'Error2 in real_allocate_2dim_zero'
-              CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero')
+              CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize)
            Endif
         Endif
    Endif
@@ -1759,7 +1849,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2,n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_3dim',IERR,n1,n2,n3
-     CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim')
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1775,7 +1865,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2,n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_3dim_sp',IERR,n1,n2,n3
-     CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim_sp')
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim_sp',nsize)
    ENDIF
    nsize = size(A,KIND=long)*4
    call mem_allocated_mem_real(nsize)
@@ -1800,7 +1890,7 @@ integer             :: i1,i2,i3
    ALLOCATE(A(i1:n1,i2:n2,i3:n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_3dim',IERR,n1,n2,n3
-     CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim')
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1816,7 +1906,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2,n3,n4),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_4dim',IERR,n1,n2,n3,n4
-     CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim')
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1832,7 +1922,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2,n3,n4,n5),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_5dim',IERR,n1,n2,n3,n4,n5
-     CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim')
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1862,7 +1952,7 @@ integer             :: i1,i2,i3,i4,i5
    ALLOCATE(A(i1:n1,i2:n2,i3:n3,i4:n4,i5:n5),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_5dim_zero',IERR,n1,n2,n3,n4,n5
-     CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim_zero')
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim_zero',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1896,7 +1986,7 @@ integer             :: i1,i2,i3,i4,i5,i6,i7
    ALLOCATE(A(i1:n1,i2:n2,i3:n3,i4:n4,i5:n5,i6:n6,i7:n7),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_7dim_zero',IERR,n1,n2,n3,n4,n5,n6,n7
-     CALL MEMORY_ERROR_QUIT('Error in real_allocate_7dim_zero')
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_7dim_zero',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1913,12 +2003,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in real_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in real_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_1dim',IERR
-     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_1dim')
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_1dim',nsize)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_1dim
@@ -1932,12 +2022,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in real_deallocate_1dim_sp - memory previously released')
+      call memory_error_quit('Error in real_deallocate_1dim_sp - memory previously released',nsize)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_1dim_sp',IERR
-     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_1dim_sp')
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_1dim_sp',nsize)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_1dim_sp
@@ -1952,12 +2042,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in real_deallocate_2dim - memory previously released')
+      call memory_error_quit('Error in real_deallocate_2dim - memory previously released',nsize)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_2dim',IERR
-     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_2dim')
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_2dim',nsize)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_2dim
@@ -1971,12 +2061,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in real_deallocate_2dim_sp - memory previously released')
+      call memory_error_quit('Error in real_deallocate_2dim_sp - memory previously released',nsize)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_2dim_sp',IERR
-     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_2dim_sp')
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_2dim_sp',nsize)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_2dim_sp
@@ -1991,12 +2081,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in real_deallocate_3dim - memory previously released')
+      call memory_error_quit('Error in real_deallocate_3dim - memory previously released',nsize)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_3dim',IERR
-     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_3dim')
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_3dim',nsize)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_3dim
@@ -2010,12 +2100,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in real_deallocate_3dim_sp - memory previously released')
+      call memory_error_quit('Error in real_deallocate_3dim_sp - memory previously released',nsize)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_3dim_sp',IERR
-     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_3dim_sp')
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_3dim_sp',nsize)
    ENDIF
    nullify(A)
  END SUBROUTINE real_deallocate_3dim_sp
@@ -2029,12 +2119,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in real_deallocate_4dim - memory previously released')
+      call memory_error_quit('Error in real_deallocate_4dim - memory previously released',nsize)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_4dim',IERR
-     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_4dim')
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_4dim',nsize)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_4dim
@@ -2048,12 +2138,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in real_deallocate_5dim - memory previously released')
+      call memory_error_quit('Error in real_deallocate_5dim - memory previously released',nsize)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_5dim',IERR
-     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_5dim')
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_5dim',nsize)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_5dim
@@ -2067,12 +2157,12 @@ nsize = size(A,KIND=long)*mem_realsize
 call mem_deallocated_mem_real(nsize)
 if (.not.ASSOCIATED(A)) then
    print *,'Memory previously released!!'
-   call memory_error_quit('Error in real_deallocate_5dim - memory previously released')
+   call memory_error_quit('Error in real_deallocate_5dim - memory previously released',nsize)
 endif
 DEALLOCATE(A,STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in real_deallocate_7dim',IERR
-   CALL MEMORY_ERROR_QUIT('Error in real_deallocate_7dim')
+   CALL MEMORY_ERROR_QUIT('Error in real_deallocate_7dim',nsize)
 ENDIF
 nullify(A)
 END SUBROUTINE real_deallocate_7dim
@@ -2094,7 +2184,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_dV8):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
     endif
 
    bytes =n*lsmpi_len_realk
@@ -2106,7 +2196,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_allocate_dV8):error in alloc",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
 
    call c_f_pointer(cip,A,[n])
@@ -2138,7 +2228,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_dV4):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
     endif
 
    bytes =n*lsmpi_len_realk
@@ -2152,7 +2242,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_allocate_dV4):error in alloc",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
 
    call c_f_pointer(cip,A,[n])
@@ -2187,7 +2277,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int4,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
     endif
 
    bytes =n1*lsmpi_int4
@@ -2199,7 +2289,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int4,lb,bytes
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_local_allocate_I4V4):error in alloc",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
    assoc = n1
    if(present(n2))assoc=n2
@@ -2235,7 +2325,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
     endif
 
    bytes =n1*lsmpi_int8
@@ -2247,7 +2337,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_local_allocate_I8V8):error in alloc",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
    assoc = n1
    if(present(n2))assoc=n2
@@ -2261,20 +2351,22 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
   &available",-1)
 #endif
 END SUBROUTINE lsmpi_local_allocate_I8V8
-SUBROUTINE lsmpi_allocate_d(A,n1,comm,local) 
+SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple) 
 implicit none
 integer(kind=8),intent(in)          :: n1
-logical,intent(in),optional         :: local
+logical,intent(in),optional         :: local,simple
 type(mpi_realk)                     :: A
 integer(kind=ls_mpik),optional,intent(in)    ::comm
 integer (kind=ls_mpik)              :: IERR,info
 integer (kind=long)                 :: nsize
 character(120)                      :: errmsg
-logical                             :: loc
+logical                             :: loc,simp
 #ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
 #endif
 
+simp = .false.
+if(present(simple))simp = simple
 
 if(present(comm))then
 #ifdef VAR_MPI
@@ -2289,7 +2381,7 @@ if(present(comm))then
     if(IERR/=0)then
       write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
           & lsmpi_type_get_extent",I5)') IERR
-      call memory_error_quit(errmsg)
+      call memory_error_quit(errmsg,nsize)
     endif
 
 #ifdef VAR_HAVE_MPI3
@@ -2320,7 +2412,7 @@ if(present(comm))then
 
     IF (IERR.NE. 0) THEN
       write (errmsg,'("ERROR(lsmpi_allocate_d):error in alloc",I5)') IERR
-      CALL memory_error_quit(errmsg)
+      CALL memory_error_quit(errmsg,nsize)
     ENDIF
 
     call c_f_pointer(A%c,A%d,[n1])
@@ -2334,18 +2426,28 @@ if(present(comm))then
   &available",-1)
 #endif
 else
+  !if no communicator is given and simple option is chosen, do a normal alloc
+  if(simp)then
+    call mem_alloc(A%d,n1)
+    A%c = c_null_ptr
+    A%n = n1
+    A%w = 0
+    A%t = 0
+  else
+  !if no communicator is given the default is to use MPI_alloc_mem with mpi
 #ifdef VAR_MPI
-  call mem_alloc(A%d,A%c,n1)
-  A%n = n1
-  A%w = 0
-  A%t = 1
+    call mem_alloc(A%d,A%c,n1)
+    A%n = n1
+    A%w = 0
+    A%t = 1
 #else
-  call mem_alloc(A%d,n1)
-  A%c = c_null_ptr
-  A%n = n1
-  A%w = 0
-  A%t = 0
+    call mem_alloc(A%d,n1)
+    A%c = c_null_ptr
+    A%n = n1
+    A%w = 0
+    A%t = 0
 #endif
+  endif
 endif
 END SUBROUTINE lsmpi_allocate_d
 SUBROUTINE lsmpi_local_allocate_dV8(A,cip,n1,win,comm,n2) 
@@ -2371,7 +2473,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
     endif
 
    bytes =n1*lsmpi_len_realk
@@ -2383,7 +2485,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in alloc",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
    assoc = n1
    if(present(n2))assoc=n2
@@ -2419,7 +2521,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_local_allocate_dV4):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
     endif
 
    bytes =n1*lsmpi_len_realk
@@ -2431,7 +2533,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_local_allocate_dV4):error in alloc",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
 
    assoc = n1
@@ -2471,7 +2573,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_i8V):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
    endif
 
    bytes =n*lsmpi_intlen
@@ -2485,7 +2587,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_allocate_i8V):error in alloc",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
    call c_f_pointer(cip,A,[n])
 
@@ -2521,7 +2623,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_i4V):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
    endif
 
    bytes =n*lsmpi_intlen
@@ -2535,7 +2637,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_allocate_i4V):error in alloc",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
    call c_f_pointer(cip,A,[n])
 
@@ -2564,7 +2666,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_i8V):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
    endif
 
    nsize = size(A)*lsmpi_intlen
@@ -2572,13 +2674,13 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('ERROR(mpi_deallocate_i8V): memory previously released')
+      call memory_error_quit('ERROR(mpi_deallocate_i8V): memory previously released',nsize)
    endif
 
    call MPI_FREE_MEM(A,IERR)
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_deallocate_i8V):error in MPI_FREE_MEM",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
 
    nullify(A)
@@ -2604,7 +2706,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_i4V):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
    endif
 
    nsize = size(A)*lsmpi_intlen
@@ -2612,13 +2714,13 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_intlen,lb,bytes
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('ERROR(mpi_deallocate_i4V): memory previously released')
+      call memory_error_quit('ERROR(mpi_deallocate_i4V): memory previously released',nsize)
    endif
 
    call MPI_FREE_MEM(A,IERR)
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_deallocate_i4V):error in MPI_FREE_MEM",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
 
    nullify(A)
@@ -2644,7 +2746,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_dV):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
    endif
 
    nsize = size(A)*lsmpi_len_realk
@@ -2652,14 +2754,14 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('ERROR(mpi_deallocate_dV): memory previously released')
+      call memory_error_quit('ERROR(mpi_deallocate_dV): memory previously released',nsize)
    endif
 
    call MPI_FREE_MEM(A,IERR)
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_allocate_dV):error in MPI_FREE_MEM",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
 
    nullify(A)
@@ -2697,7 +2799,7 @@ elseif(A%t==2)then
 
     if(IERR/=0)then
       write (errmsg,'("ERROR(mpi_deallocate_d):error in lsmpi_type_get_extent",I5)') IERR
-      call memory_error_quit(errmsg)
+      call memory_error_quit(errmsg,nsize)
     endif
 
     nsize = size(A%d)*lsmpi_len_realk
@@ -2705,14 +2807,14 @@ elseif(A%t==2)then
 
     if (.not.associated(A%d)) then
        print *,'Memory previously released!!'
-       call memory_error_quit('ERROR(mpi_deallocate_d): memory previously released')
+       call memory_error_quit('ERROR(mpi_deallocate_d): memory previously released',nsize)
     endif
 
     call MPI_WIN_FREE(A%w,IERR)
 
     IF (IERR.NE. 0) THEN
       write (errmsg,'("ERROR(mpi_deallocate_d):error in MPI_FREE_MEM",I5)') IERR
-      CALL memory_error_quit(errmsg)
+      CALL memory_error_quit(errmsg,nsize)
     ENDIF
 
     nullify(A%d)
@@ -2751,7 +2853,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_dV):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
    endif
 
    nsize = size(A)*lsmpi_len_realk
@@ -2759,14 +2861,14 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('ERROR(mpi_deallocate_dV): memory previously released')
+      call memory_error_quit('ERROR(mpi_deallocate_dV): memory previously released',nsize)
    endif
 
    call MPI_WIN_FREE(win,IERR)
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_local_allocate_dV):error in MPI_FREE_MEM",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
 
    nullify(A)
@@ -2792,7 +2894,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_I8V):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
    endif
 
    nsize = size(A)*lsmpi_int8
@@ -2800,14 +2902,14 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('ERROR(mpi_deallocate_I8V): memory previously released')
+      call memory_error_quit('ERROR(mpi_deallocate_I8V): memory previously released',nsize)
    endif
 
    call MPI_WIN_FREE(win,IERR)
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_local_allocate_I8V):error in MPI_FREE_MEM",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
 
    nullify(A)
@@ -2833,7 +2935,7 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int4,lb,bytes
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_I4V):error in&
           & lsmpi_type_get_extent",I5)') IERR
-     call memory_error_quit(errmsg)
+     call memory_error_quit(errmsg,nsize)
    endif
 
    nsize = size(A)*lsmpi_int4
@@ -2841,14 +2943,14 @@ integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int4,lb,bytes
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('ERROR(mpi_deallocate_I4V): memory previously released')
+      call memory_error_quit('ERROR(mpi_deallocate_I4V): memory previously released',nsize)
    endif
 
    call MPI_WIN_FREE(win,IERR)
 
    IF (IERR.NE. 0) THEN
      write (errmsg,'("ERROR(mpi_local_allocate_I4V):error in MPI_FREE_MEM",I5)') IERR
-     CALL memory_error_quit(errmsg)
+     CALL memory_error_quit(errmsg,nsize)
    ENDIF
 
    nullify(A)
@@ -2871,7 +2973,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in complex_allocate_1dim',IERR,n
-     CALL memory_error_quit('Error in complex_allocate_1dim')
+     CALL memory_error_quit('Error in complex_allocate_1dim',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_complexsize
    call mem_allocated_mem_complex(nsize)
@@ -2887,7 +2989,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in complex_allocate_2dim',IERR,n1,n2
-     CALL MEMORY_ERROR_QUIT('Error in complex_allocate_2dim')
+     CALL MEMORY_ERROR_QUIT('Error in complex_allocate_2dim',nsize)
    ENDIF
    nsize = size(A,KIND=long)*mem_complexsize
    call mem_allocated_mem_complex(nsize)
@@ -2904,12 +3006,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_complex(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in complex_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in complex_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in complex_deallocate_1dim',IERR
-     CALL MEMORY_ERROR_QUIT('Error in complex_deallocate_1dim')
+     CALL MEMORY_ERROR_QUIT('Error in complex_deallocate_1dim',nsize)
    ENDIF
    nullify(A)
 END SUBROUTINE complex_deallocate_1dim
@@ -2923,12 +3025,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_complex(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in complex_deallocate_2dim - memory previously released')
+      call memory_error_quit('Error in complex_deallocate_2dim - memory previously released',nsize)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in complex_deallocate_2dim',IERR
-     CALL MEMORY_ERROR_QUIT('Error in complex_deallocate_2dim')
+     CALL MEMORY_ERROR_QUIT('Error in complex_deallocate_2dim',nsize)
    ENDIF
    nullify(A)
 END SUBROUTINE complex_deallocate_2dim
@@ -2952,7 +3054,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int8_allocate_1dim',IERR,n
-     call memory_error_quit('Error in int8_allocate_1dim')
+     call memory_error_quit('Error in int8_allocate_1dim',nsize)
    ENDIF
    nsize = size(I,KIND=long)*mem_int8size
    call mem_allocated_mem_integer(nsize)
@@ -2976,7 +3078,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int4_allocate_1dim',IERR,n
-     call memory_error_quit('Error in int4_allocate_1dim')
+     call memory_error_quit('Error in int4_allocate_1dim',nsize)
    ENDIF
    nsize = size(I,KIND=long)*mem_int4size
    call mem_allocated_mem_integer(nsize)
@@ -3002,7 +3104,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int32_allocateS_1dim',IERR,n
-     call memory_error_quit('Error in int32_allocateS_1dim')
+     call memory_error_quit('Error in int32_allocateS_1dim',nsize)
    ENDIF
    nsize = size(I,KIND=long)*mem_shortintsize
    call mem_allocated_mem_integer(nsize)
@@ -3030,7 +3132,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int4_allocate_2dim',IERR,n1,n2
-     call memory_error_quit('Error in int4_allocate_2dim')
+     call memory_error_quit('Error in int4_allocate_2dim',nsize)
    ENDIF
    nsize = size(I,KIND=long)*mem_int4size
    call mem_allocated_mem_integer(nsize)
@@ -3056,7 +3158,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int8_allocate_2dim',IERR,n1,n2
-     call memory_error_quit('Error in int8_allocate_2dim')
+     call memory_error_quit('Error in int8_allocate_2dim',nsize)
    ENDIF
    nsize = size(I,KIND=long)*mem_int8size
    call mem_allocated_mem_integer(nsize)
@@ -3072,7 +3174,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in shortint_allocate_2dim',IERR,n1,n2
-     call memory_error_quit('Error in shortint_allocate_2dim')
+     call memory_error_quit('Error in shortint_allocate_2dim',nsize)
    ENDIF
    nsize = size(I,KIND=long)*mem_shortintsize
    call mem_allocated_mem_integer(nsize)
@@ -3088,7 +3190,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2,n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int_allocate_3dim',IERR,n1,n2,n3
-     call memory_error_quit('Error in int_allocate_3dim')
+     call memory_error_quit('Error in int_allocate_3dim',nsize)
    ENDIF
    nsize = size(I,KIND=long)*mem_intsize
    call mem_allocated_mem_integer(nsize)
@@ -3117,7 +3219,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2,n3,n4),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int8_allocate_4dim',IERR,n1,n2,n3,n4
-     call memory_error_quit('Error in int8_allocate_4dim')
+     call memory_error_quit('Error in int8_allocate_4dim',nsize)
    ENDIF
    nsize = size(I,KIND=long)*mem_int8size
    call mem_allocated_mem_integer(nsize)
@@ -3141,7 +3243,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2,n3,n4),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int4_allocate_4dim',IERR,n1,n2,n3,n4
-     call memory_error_quit('Error in int4_allocate_4dim')
+     call memory_error_quit('Error in int4_allocate_4dim',nsize)
    ENDIF
    nsize = size(I,KIND=long)*mem_int4size
    call mem_allocated_mem_integer(nsize)
@@ -3162,7 +3264,7 @@ nullify(I)
 ALLOCATE(I(i1:n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in int_allocate_1dim',IERR,n
-   call memory_error_quit('Error in int_allocate_1dim')
+   call memory_error_quit('Error in int_allocate_1dim',nsize)
 ENDIF
 nsize = size(I,KIND=long)*mem_intsize
 call mem_allocated_mem_integer(nsize)
@@ -3183,7 +3285,7 @@ nullify(I)
 ALLOCATE(I(i1:n1,i2:n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int_allocate_2dim',IERR,n1,n2
-     call memory_error_quit('Error in int_allocate_2dim')
+     call memory_error_quit('Error in int_allocate_2dim',nsize)
    ENDIF
    nsize = size(I,KIND=long)*mem_intsize
    call mem_allocated_mem_integer(nsize)
@@ -3206,7 +3308,7 @@ nullify(I)
 ALLOCATE(I(i1:n1,i2:n2,i3:n3),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in int_allocate_3dim',IERR,n1,n2,n3
-   call memory_error_quit('Error in int_allocate_3dim')
+   call memory_error_quit('Error in int_allocate_3dim',nsize)
 ENDIF
 nsize = size(I,KIND=long)*mem_intsize
 call mem_allocated_mem_integer(nsize)
@@ -3231,7 +3333,7 @@ nullify(I)
 ALLOCATE(I(i1:n1,i2:n2,i3:n3,i4:n4),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in int_allocate_4dim_zero',IERR,n1,n2,n3,n4
-   call memory_error_quit('Error in int_allocate_4dim_zero')
+   call memory_error_quit('Error in int_allocate_4dim_zero',nsize)
 ENDIF
 nsize = size(I,KIND=long)*mem_intsize
 call mem_allocated_mem_integer(nsize)
@@ -3247,12 +3349,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in int8_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in int8_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_1dim',nsize)
    ENDIF
    nullify(I)
 END SUBROUTINE int8_deallocate_1dim
@@ -3266,12 +3368,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in int4_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in int4_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_1dim',nsize)
    ENDIF
    nullify(I)
 END SUBROUTINE int4_deallocate_1dim
@@ -3285,12 +3387,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in int4_deallocate_2dim - memory previously released')
+      call memory_error_quit('Error in int4_deallocate_2dim - memory previously released',nsize)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_deallocate_2dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_2dim')
+      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_2dim',nsize)
    ENDIF
    nullify(I)
 END SUBROUTINE int4_deallocate_2dim
@@ -3303,12 +3405,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in int8_deallocate_2dim - memory previously released')
+      call memory_error_quit('Error in int8_deallocate_2dim - memory previously released',nsize)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_deallocate_2dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_2dim')
+      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_2dim',nsize)
    ENDIF
    nullify(I)
 END SUBROUTINE int8_deallocate_2dim
@@ -3322,12 +3424,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in shortint_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in shortint_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in shortint_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in shortint_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in shortint_deallocate_1dim',nsize)
    ENDIF
    nullify(I)
 END SUBROUTINE shortint_deallocate_1dim
@@ -3341,12 +3443,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in shortint_deallocate_2dim - memory previously released')
+      call memory_error_quit('Error in shortint_deallocate_2dim - memory previously released',nsize)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in shortint_deallocate_2dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in shortint_deallocate_2dim')
+      CALL MEMORY_ERROR_QUIT('Error in shortint_deallocate_2dim',nsize)
    ENDIF
    nullify(I)
 END SUBROUTINE shortint_deallocate_2dim
@@ -3360,12 +3462,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in int4_deallocate_3dim - memory previously released')
+      call memory_error_quit('Error in int4_deallocate_3dim - memory previously released',nsize)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_deallocate_3dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_3dim')
+      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_3dim',nsize)
    ENDIF
    nullify(I)
 END SUBROUTINE int4_deallocate_3dim
@@ -3378,12 +3480,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in int8_deallocate_3dim - memory previously released')
+      call memory_error_quit('Error in int8_deallocate_3dim - memory previously released',nsize)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_deallocate_3dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_3dim')
+      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_3dim',nsize)
    ENDIF
    nullify(I)
 END SUBROUTINE int8_deallocate_3dim
@@ -3397,12 +3499,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in int4_deallocate_4dim - memory previously released')
+      call memory_error_quit('Error in int4_deallocate_4dim - memory previously released',nsize)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_deallocate_4dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_4dim')
+      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_4dim',nsize)
    ENDIF
    nullify(I)
 END SUBROUTINE int4_deallocate_4dim
@@ -3415,12 +3517,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in int8_deallocate_4dim - memory previously released')
+      call memory_error_quit('Error in int8_deallocate_4dim - memory previously released',nsize)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_deallocate_4dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_4dim')
+      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_4dim',nsize)
    ENDIF
    nullify(I)
 END SUBROUTINE int8_deallocate_4dim
@@ -3446,7 +3548,7 @@ integer (kind=long) :: nsize
    ALLOCATE(C(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in char_allocate_1dim_n8',IERR,n
-      CALL MEMORY_ERROR_QUIT('Error in char_allocate_1dim_n8')
+      CALL MEMORY_ERROR_QUIT('Error in char_allocate_1dim_n8',nsize)
    ENDIF
    nsize = mem_complexsize*size(C,KIND=long)
    call mem_allocated_mem_character(nsize)
@@ -3463,12 +3565,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_character(nsize)
    if (.not.ASSOCIATED(C)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in char_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in char_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(C,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in char_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in char_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in char_deallocate_1dim',nsize)
    ENDIF
 END SUBROUTINE char_deallocate_1dim
 !----- ALLOCATE LOGICAL POINTERS -----!
@@ -3501,7 +3603,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_1dim',IERR,n
-     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim')
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -3517,7 +3619,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_1dim',IERR,n
-     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim')
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -3536,7 +3638,7 @@ if(z1)i1=0
 ALLOCATE(L(i1:n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in logic_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
 ENDIF
 nsize = size(L,KIND=long)*mem_logicalsize
 call mem_allocated_mem_logical(nsize)
@@ -3555,7 +3657,7 @@ if(z1)i1=0
 ALLOCATE(L(i1:n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in logic_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
 ENDIF
 nsize = size(L,KIND=long)*mem_logicalsize
 call mem_allocated_mem_logical(nsize)
@@ -3571,7 +3673,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_2dim',IERR,n1,n2
-     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim')
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim',nsize)
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -3586,7 +3688,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_2dim',IERR,n1,n2
-     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim')
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim',nsize)
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -3602,7 +3704,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n1,n2,n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_3dim',IERR,n1,n2,n3
-     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim')
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim',nsize)
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -3617,7 +3719,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n1,n2,n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_3dim',IERR,n1,n2,n3
-     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim')
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim',nsize)
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -3635,12 +3737,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in logic_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in logic_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(L)
 END SUBROUTINE logic4_deallocate_1dim
@@ -3654,12 +3756,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in logic_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in logic_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(L)
 END SUBROUTINE logic8_deallocate_1dim
@@ -3673,12 +3775,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in logic_deallocate_2dim - memory previously released')
+      call memory_error_quit('Error in logic_deallocate_2dim - memory previously released',nsize)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_2dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_2dim')
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_2dim',nsize)
    ENDIF
    NULLIFY(L)
 END SUBROUTINE logic4_deallocate_2dim
@@ -3692,12 +3794,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in logic_deallocate_2dim - memory previously released')
+      call memory_error_quit('Error in logic_deallocate_2dim - memory previously released',nsize)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_2dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_2dim')
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_2dim',nsize)
    ENDIF
    NULLIFY(L)
 END SUBROUTINE logic8_deallocate_2dim
@@ -3711,12 +3813,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in logic_deallocate_3dim - memory previously released')
+      call memory_error_quit('Error in logic_deallocate_3dim - memory previously released',nsize)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_3dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_3dim')
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_3dim',nsize)
    ENDIF
    NULLIFY(L)
  END SUBROUTINE logic4_deallocate_3dim
@@ -3730,12 +3832,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in logic_deallocate_3dim - memory previously released')
+      call memory_error_quit('Error in logic_deallocate_3dim - memory previously released',nsize)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_3dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_3dim')
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_3dim',nsize)
    ENDIF
    NULLIFY(L)
  END SUBROUTINE logic8_deallocate_3dim
@@ -3753,7 +3855,7 @@ nullify(AOBATCHITEM)
 ALLOCATE(AOBATCHITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in AOBATCH_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in AOBATCH_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in AOBATCH_allocate_1dim',nsize)
 ENDIF
 nsize = size(AOBATCHITEM,KIND=long)*mem_AOBATCHsize
 call mem_allocated_mem_AOBATCH(nsize)
@@ -3768,12 +3870,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_AOBATCH(nsize)
    if (.not.ASSOCIATED(AOBATCHITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in AOBATCH_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in AOBATCH_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(AOBATCHITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in AOBATCH_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in AOBATCH_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in AOBATCH_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(AOBATCHITEM)
 END SUBROUTINE AOBATCH_deallocate_1dim
@@ -3790,7 +3892,7 @@ nullify(OVERLAPITEM)
 ALLOCATE(OVERLAPITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in OVERLAP_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in OVERLAP_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in OVERLAP_allocate_1dim',nsize)
 ENDIF
 nsize = size(OVERLAPITEM,KIND=long)*mem_OVERLAPsize 
 call mem_allocated_mem_OVERLAPT(nsize)
@@ -3805,12 +3907,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_OVERLAPT(nsize)
    if (.not.ASSOCIATED(OVERLAPITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in OVERLAP_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in OVERLAP_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(OVERLAPITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in OVERLAP_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in OVERLAP_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in OVERLAP_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(OVERLAPITEM)
 END SUBROUTINE OVERLAPT_deallocate_1dim
@@ -3827,7 +3929,7 @@ nullify(DECORBITALITEM)
 ALLOCATE(DECORBITALITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in DECORBITAL_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in DECORBITAL_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in DECORBITAL_allocate_1dim',nsize)
 ENDIF
 nsize = size(DECORBITALITEM,KIND=long)*mem_DECORBITALsize
 call mem_allocated_mem_DECORBITAL(nsize)
@@ -3842,12 +3944,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_DECORBITAL(nsize)
    if (.not.ASSOCIATED(DECORBITALITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in DECORBITAL_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in DECORBITAL_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(DECORBITALITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in DECORBITAL_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in DECORBITAL_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in DECORBITAL_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(DECORBITALITEM)
 END SUBROUTINE DECORBITAL_deallocate_1dim
@@ -3865,7 +3967,7 @@ nullify(DECFRAGITEM)
 ALLOCATE(DECFRAGITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in DECFRAG_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in DECFRAG_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in DECFRAG_allocate_1dim',nsize)
 ENDIF
 nsize = size(DECFRAGITEM,KIND=long)*mem_DECFRAGsize
 call mem_allocated_mem_DECFRAG(nsize)
@@ -3880,12 +3982,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_DECFRAG(nsize)
    if (.not.ASSOCIATED(DECFRAGITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in DECFRAG_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in DECFRAG_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(DECFRAGITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in DECFRAG_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in DECFRAG_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in DECFRAG_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(DECFRAGITEM)
 END SUBROUTINE DECFRAG_deallocate_1dim
@@ -3903,7 +4005,7 @@ nullify(BATCHTOORBITEM)
 ALLOCATE(BATCHTOORBITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in BATCHTOORB_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in BATCHTOORB_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in BATCHTOORB_allocate_1dim',nsize)
 ENDIF
 nsize = size(BATCHTOORBITEM,KIND=long)*mem_BATCHTOORBsize
 call mem_allocated_mem_BATCHTOORB(nsize)
@@ -3918,12 +4020,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_BATCHTOORB(nsize)
    if (.not.ASSOCIATED(BATCHTOORBITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in BATCHTOORB_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in BATCHTOORB_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(BATCHTOORBITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in BATCHTOORB_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in BATCHTOORB_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in BATCHTOORB_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(BATCHTOORBITEM)
 END SUBROUTINE BATCHTOORB_deallocate_1dim
@@ -3940,7 +4042,7 @@ nullify(DECAOBATCHINFOITEM)
 ALLOCATE(DECAOBATCHINFOITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in DECAOBATCHINFO_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in DECAOBATCHINFO_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in DECAOBATCHINFO_allocate_1dim',nsize)
 ENDIF
 nsize = size(DECAOBATCHINFOITEM,KIND=long)*mem_DECAOBATCHINFOsize
 call mem_allocated_mem_DECAOBATCHINFO(nsize)
@@ -3955,12 +4057,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_DECAOBATCHINFO(nsize)
    if (.not.ASSOCIATED(DECAOBATCHINFOITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in DECAOBATCHINFO_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in DECAOBATCHINFO_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(DECAOBATCHINFOITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in DECAOBATCHINFO_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in DECAOBATCHINFO_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in DECAOBATCHINFO_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(DECAOBATCHINFOITEM)
 END SUBROUTINE DECAOBATCHINFO_deallocate_1dim
@@ -3977,7 +4079,7 @@ nullify(MYPOINTERITEM)
 ALLOCATE(MYPOINTERITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MYPOINTER_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_allocate_1dim',nsize)
 ENDIF
 nsize = size(MYPOINTERITEM,KIND=long)*mem_MYPOINTERsize
 call mem_allocated_mem_MYPOINTER(nsize)
@@ -3992,12 +4094,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_MYPOINTER(nsize)
    if (.not.ASSOCIATED(MYPOINTERITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in MYPOINTER_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in MYPOINTER_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(MYPOINTERITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MYPOINTER_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(MYPOINTERITEM)
 END SUBROUTINE MYPOINTER_deallocate_1dim
@@ -4013,7 +4115,7 @@ nullify(MYPOINTERITEM)
 ALLOCATE(MYPOINTERITEM(n1,n2),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MYPOINTER_allocate_2dim',IERR,n1,n2
-   CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_allocate_2dim')
+   CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_allocate_2dim',nsize)
 ENDIF
 nsize = size(MYPOINTERITEM,KIND=long)*mem_MYPOINTERsize
 call mem_allocated_mem_MYPOINTER(nsize)
@@ -4028,12 +4130,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_MYPOINTER(nsize)
    if (.not.ASSOCIATED(MYPOINTERITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in MYPOINTER_deallocate_2dim - memory previously released')
+      call memory_error_quit('Error in MYPOINTER_deallocate_2dim - memory previously released',nsize)
    endif
    DEALLOCATE(MYPOINTERITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MYPOINTER_deallocate_2dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_deallocate_2dim')
+      CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_deallocate_2dim',nsize)
    ENDIF
    NULLIFY(MYPOINTERITEM)
 END SUBROUTINE MYPOINTER_deallocate_2dim
@@ -4051,7 +4153,7 @@ nullify(ARRAY2ITEM)
 ALLOCATE(ARRAY2ITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ARRAY2_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in ARRAY2_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in ARRAY2_allocate_1dim',nsize)
 ENDIF
 nsize = size(ARRAY2ITEM,KIND=long)*mem_ARRAY2size
 call mem_allocated_mem_ARRAY2(nsize)
@@ -4066,12 +4168,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ARRAY2(nsize)
    if (.not.ASSOCIATED(ARRAY2ITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in ARRAY2_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in ARRAY2_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(ARRAY2ITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ARRAY2_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in ARRAY2_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in ARRAY2_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(ARRAY2ITEM)
 END SUBROUTINE ARRAY2_deallocate_1dim
@@ -4088,7 +4190,7 @@ nullify(ARRAY4ITEM)
 ALLOCATE(ARRAY4ITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ARRAY4_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in ARRAY4_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in ARRAY4_allocate_1dim',nsize)
 ENDIF
 nsize = size(ARRAY4ITEM,KIND=long)*mem_ARRAY4size
 call mem_allocated_mem_ARRAY4(nsize)
@@ -4103,12 +4205,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ARRAY4(nsize)
    if (.not.ASSOCIATED(ARRAY4ITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in ARRAY4_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in ARRAY4_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(ARRAY4ITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ARRAY4_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in ARRAY4_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in ARRAY4_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(ARRAY4ITEM)
 END SUBROUTINE ARRAY4_deallocate_1dim
@@ -4125,7 +4227,7 @@ nullify(ARRAYITEM)
 ALLOCATE(ARRAYITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ARRAY_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in ARRAY_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in ARRAY_allocate_1dim',nsize)
 ENDIF
 nsize = size(ARRAYITEM,KIND=long)*mem_ARRAYsize
 call mem_allocated_mem_ARRAY(nsize)
@@ -4140,12 +4242,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ARRAY(nsize)
    if (.not.ASSOCIATED(ARRAYITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in ARRAY_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in ARRAY_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(ARRAYITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ARRAY_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in ARRAY_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in ARRAY_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(ARRAYITEM)
 END SUBROUTINE ARRAY_deallocate_1dim
@@ -4162,7 +4264,7 @@ nullify(MP2DENSITEM)
 ALLOCATE(MP2DENSITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MP2DENS_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in MP2DENS_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in MP2DENS_allocate_1dim',nsize)
 ENDIF
 nsize = size(MP2DENSITEM,KIND=long)*mem_MP2DENSsize
 call mem_allocated_mem_MP2DENS(nsize)
@@ -4177,12 +4279,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_MP2DENS(nsize)
    if (.not.ASSOCIATED(MP2DENSITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in MP2DENS_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in MP2DENS_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(MP2DENSITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MP2DENS_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in MP2DENS_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in MP2DENS_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(MP2DENSITEM)
 END SUBROUTINE MP2DENS_deallocate_1dim
@@ -4199,7 +4301,7 @@ nullify(TRACEBACKITEM)
 ALLOCATE(TRACEBACKITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in TRACEBACK_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in TRACEBACK_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in TRACEBACK_allocate_1dim',nsize)
 ENDIF
 nsize = size(TRACEBACKITEM,KIND=long)*mem_TRACEBACKsize
 call mem_allocated_mem_TRACEBACK(nsize)
@@ -4214,12 +4316,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_TRACEBACK(nsize)
    if (.not.ASSOCIATED(TRACEBACKITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in TRACEBACK_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in TRACEBACK_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(TRACEBACKITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in TRACEBACK_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in TRACEBACK_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in TRACEBACK_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(TRACEBACKITEM)
 END SUBROUTINE TRACEBACK_deallocate_1dim
@@ -4236,7 +4338,7 @@ nullify(MP2GRADITEM)
 ALLOCATE(MP2GRADITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MP2GRAD_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in MP2GRAD_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in MP2GRAD_allocate_1dim',nsize)
 ENDIF
 nsize = size(MP2GRADITEM,KIND=long)*mem_MP2GRADsize
 call mem_allocated_mem_MP2GRAD(nsize)
@@ -4251,12 +4353,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_MP2GRAD(nsize)
    if (.not.ASSOCIATED(MP2GRADITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in MP2GRAD_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in MP2GRAD_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(MP2GRADITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MP2GRAD_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in MP2GRAD_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in MP2GRAD_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(MP2GRADITEM)
 END SUBROUTINE MP2GRAD_deallocate_1dim
@@ -4275,7 +4377,7 @@ nullify(ODBATCHITEM)
 ALLOCATE(ODBATCHITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ODBATCH_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in ODBATCH_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in ODBATCH_allocate_1dim',nsize)
 ENDIF
 nsize = size(ODBATCHITEM,KIND=long)*mem_ODBATCHsize
 call mem_allocated_mem_ODBATCH(nsize)
@@ -4290,12 +4392,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ODBATCH(nsize)
    if (.not.ASSOCIATED(ODBATCHITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in ODBATCH_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in ODBATCH_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(ODBATCHITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ODBATCH_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in ODBATCH_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in ODBATCH_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(ODBATCHITEM)
 END SUBROUTINE ODBATCH_deallocate_1dim
@@ -4312,7 +4414,7 @@ nullify(LSAOTENSORITEM)
 ALLOCATE(LSAOTENSORITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in LSAOTENSOR_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in LSAOTENSOR_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in LSAOTENSOR_allocate_1dim',nsize)
 ENDIF
 nsize = size(LSAOTENSORITEM,KIND=long)*mem_LSAOTENSORsize
 call mem_allocated_mem_LSAOTENSOR(nsize)
@@ -4327,12 +4429,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_LSAOTENSOR(nsize)
    if (.not.ASSOCIATED(LSAOTENSORITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in LSAOTENSOR_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in LSAOTENSOR_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(LSAOTENSORITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in LSAOTENSOR_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in LSAOTENSOR_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in LSAOTENSOR_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(LSAOTENSORITEM)
 END SUBROUTINE LSAOTENSOR_deallocate_1dim
@@ -4349,7 +4451,7 @@ nullify(SLSAOTENSORITEM)
 ALLOCATE(SLSAOTENSORITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in SLSAOTENSOR_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in SLSAOTENSOR_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in SLSAOTENSOR_allocate_1dim',nsize)
 ENDIF
 nsize = size(SLSAOTENSORITEM,KIND=long)*mem_SLSAOTENSORsize
 call mem_allocated_mem_SLSAOTENSOR(nsize)
@@ -4364,12 +4466,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_SLSAOTENSOR(nsize)
    if (.not.ASSOCIATED(SLSAOTENSORITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in SLSAOTENSOR_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in SLSAOTENSOR_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(SLSAOTENSORITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in SLSAOTENSOR_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in SLSAOTENSOR_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in SLSAOTENSOR_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(SLSAOTENSORITEM)
 END SUBROUTINE SLSAOTENSOR_deallocate_1dim
@@ -4386,7 +4488,7 @@ nullify(GLOBALLSAOTENSORITEM)
 ALLOCATE(GLOBALLSAOTENSORITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in GLOBALLSAOTENSOR_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in GLOBALLSAOTENSOR_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in GLOBALLSAOTENSOR_allocate_1dim',nsize)
 ENDIF
 nsize = size(GLOBALLSAOTENSORITEM,KIND=long)*mem_GLOBALLSAOTENSORsize
 call mem_allocated_mem_GLOBALLSAOTENSOR(nsize)
@@ -4401,12 +4503,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_GLOBALLSAOTENSOR(nsize)
    if (.not.ASSOCIATED(GLOBALLSAOTENSORITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in GLOBALLSAOTENSOR_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in GLOBALLSAOTENSOR_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(GLOBALLSAOTENSORITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in GLOBALLSAOTENSOR_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in GLOBALLSAOTENSOR_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in GLOBALLSAOTENSOR_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(GLOBALLSAOTENSORITEM)
 END SUBROUTINE GLOBALLSAOTENSOR_deallocate_1dim
@@ -4423,7 +4525,7 @@ nullify(ATOMTYPEITEMITEM)
 ALLOCATE(ATOMTYPEITEMITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ATOMTYPEITEM_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in ATOMTYPEITEM_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in ATOMTYPEITEM_allocate_1dim',nsize)
 ENDIF
 nsize = size(ATOMTYPEITEMITEM,KIND=long)*mem_ATOMTYPEITEMsize
 call mem_allocated_mem_ATOMTYPEITEM(nsize)
@@ -4438,12 +4540,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ATOMTYPEITEM(nsize)
    if (.not.ASSOCIATED(ATOMTYPEITEMITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in ATOMTYPEITEM_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in ATOMTYPEITEM_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(ATOMTYPEITEMITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ATOMTYPEITEM_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in ATOMTYPEITEM_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in ATOMTYPEITEM_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(ATOMTYPEITEMITEM)
 END SUBROUTINE ATOMTYPEITEM_deallocate_1dim
@@ -4460,7 +4562,7 @@ nullify(ATOMITEMITEM)
 ALLOCATE(ATOMITEMITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ATOMITEM_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in ATOMITEM_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in ATOMITEM_allocate_1dim',nsize)
 ENDIF
 nsize = size(ATOMITEMITEM,KIND=long)*mem_ATOMITEMsize
 call mem_allocated_mem_ATOMITEM(nsize)
@@ -4475,12 +4577,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ATOMITEM(nsize)
    if (.not.ASSOCIATED(ATOMITEMITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in ATOMITEM_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in ATOMITEM_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(ATOMITEMITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ATOMITEM_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in ATOMITEM_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in ATOMITEM_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(ATOMITEMITEM)
 END SUBROUTINE ATOMITEM_deallocate_1dim
@@ -4497,7 +4599,7 @@ nullify(LSMATRIXITEM)
 ALLOCATE(LSMATRIXITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in LSMATRIX_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_allocate_1dim',nsize)
 ENDIF
 nsize = size(LSMATRIXITEM,KIND=long)*mem_LSMATRIXsize
 call mem_allocated_mem_LSMATRIX(nsize)
@@ -4512,12 +4614,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_LSMATRIX(nsize)
    if (.not.ASSOCIATED(LSMATRIXITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in LSMATRIX_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in LSMATRIX_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(LSMATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in LSMATRIX_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(LSMATRIXITEM)
 END SUBROUTINE LSMATRIX_deallocate_1dim
@@ -4532,7 +4634,7 @@ END SUBROUTINE LSMATRIX_deallocate_1dim
 !ALLOCATE(LSMATRIXITEM(n),STAT = IERR)
 !IF (IERR.NE. 0) THEN
 !   write(*,*) 'Error in LSMATRIX_allocate_1dim',IERR,n
-!   CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_allocate_1dim')
+!   CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_allocate_1dim',nsize)
 !ENDIF
 !nsize = size(LSMATRIXITEM,KIND=long)*8
 !call mem_allocated_mem_LSMATRIX(nsize)
@@ -4547,12 +4649,12 @@ END SUBROUTINE LSMATRIX_deallocate_1dim
 !   call mem_deallocated_mem_LSMATRIX(nsize)
 !   if (.not.ASSOCIATED(LSMATRIXITEM)) then
 !      print *,'Memory previously released!!'
-!      call memory_error_quit('Error in LSMATRIX_deallocate_1dim - memory previously released')
+!      call memory_error_quit('Error in LSMATRIX_deallocate_1dim - memory previously released',nsize)
 !   endif
 !   DEALLOCATE(LSMATRIXITEM,STAT = IERR)
 !   IF (IERR.NE. 0) THEN
 !      write(*,*) 'Error in LSMATRIX_deallocate_1dim',IERR
-!      CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_deallocate_1dim')
+!      CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_deallocate_1dim',nsize)
 !   ENDIF
 !   NULLIFY(LSMATRIXITEM)
 !END SUBROUTINE LSMATRIXP_deallocate_1dim
@@ -4569,7 +4671,7 @@ nullify(MATRIXITEM)
 ALLOCATE(MATRIXITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MATRIX_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in MATRIX_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in MATRIX_allocate_1dim',nsize)
 ENDIF
 nsize = size(MATRIXITEM,KIND=long)*mem_MATRIXsize
 call mem_allocated_mem_type_matrix(nsize)
@@ -4584,12 +4686,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_type_matrix(nsize)
    if (.not.ASSOCIATED(MATRIXITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in MATRIX_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in MATRIX_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(MATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MATRIX_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in MATRIX_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in MATRIX_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(MATRIXITEM)
 END SUBROUTINE MATRIX_deallocate_1dim
@@ -4604,7 +4706,7 @@ nullify(MATRIXITEM)
 ALLOCATE(MATRIXITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MATRIX_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in MATRIX_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in MATRIX_allocate_1dim',nsize)
 ENDIF
 nsize = size(MATRIXITEM,KIND=long)*8
 call mem_allocated_mem_type_matrix(nsize)
@@ -4619,12 +4721,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_type_matrix(nsize)
    if (.not.ASSOCIATED(MATRIXITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in MATRIX_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in MATRIX_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(MATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MATRIX_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in MATRIX_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in MATRIX_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(MATRIXITEM)
 END SUBROUTINE MATRIXP_deallocate_1dim
@@ -4640,7 +4742,7 @@ nullify(Lvec_dataITEM)
 ALLOCATE(Lvec_dataITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in Lvec_data_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in Lvec_data_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in Lvec_data_allocate_1dim',nsize)
 ENDIF
 nsize = size(Lvec_dataITEM,KIND=long)*mem_Lvec_datasize
 call mem_allocated_mem_Lvec_data(nsize)
@@ -4655,12 +4757,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_Lvec_data(nsize)
    if (.not.ASSOCIATED(Lvec_dataITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in Lvec_data_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in Lvec_data_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(Lvec_dataITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in Lvec_data_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in Lvec_data_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in Lvec_data_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(Lvec_dataITEM)
 END SUBROUTINE Lvec_data_deallocate_1dim
@@ -4675,7 +4777,7 @@ nullify(Lattice_cellITEM)
 ALLOCATE(Lattice_cellITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in Lattice_cell_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in Lattice_cell_allocate_1dim')
+   CALL MEMORY_ERROR_QUIT('Error in Lattice_cell_allocate_1dim',nsize)
 ENDIF
 nsize = size(Lattice_cellITEM,KIND=long)*mem_Lattice_cellsize
 call mem_allocated_mem_Lattice_cell(nsize)
@@ -4690,12 +4792,12 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_Lattice_cell(nsize)
    if (.not.ASSOCIATED(Lattice_cellITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in Lattice_cell_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in Lattice_cell_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(Lattice_cellITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in Lattice_cell_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in Lattice_cell_deallocate_1dim')
+      CALL MEMORY_ERROR_QUIT('Error in Lattice_cell_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(Lattice_cellITEM)
 END SUBROUTINE Lattice_cell_deallocate_1dim
@@ -4715,14 +4817,14 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         if (mem_tp_allocated_real < 0) then
            write(*,*) 'Real memory negative! mem_tp_allocated_real =', mem_tp_allocated_real
            write(*,*) 'Real memory negative! nsize =', nsize
-           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
         endif
         max_mem_tp_used_real = MAX(max_mem_tp_used_real,mem_tp_allocated_real)
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',nsize)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      else
@@ -4730,14 +4832,14 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         if (mem_allocated_real < 0) then
            write(*,*) 'Real memory negative! mem_allocated_real =', mem_allocated_real
            write(*,*) 'Real memory negative! nsize =', nsize
-           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
         endif
         max_mem_used_real = MAX(max_mem_used_real,mem_allocated_real)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      endif
@@ -4751,25 +4853,25 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_tp_allocated_real = mem_tp_allocated_real - nsize
         if (mem_tp_allocated_real < 0) then
            write(*,*) 'Real memory negative! mem_tp_allocated_real =', mem_tp_allocated_real
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_real - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_real - something wrong with deallocation!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_real - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_real - something wrong with deallocation!',nsize)
         endif
      ELSE
         mem_allocated_real = mem_allocated_real - nsize
         if (mem_allocated_real < 0) then
            write(*,*) 'Real memory negative! mem_allocated_real =', mem_allocated_real
-           call memory_error_quit('Error in mem_deallocated_mem_real - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_deallocated_mem_real - something wrong with deallocation!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_deallocated_mem_real - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_deallocated_mem_real - something wrong with deallocation!',nsize)
         endif
      ENDIF
 
@@ -4783,14 +4885,14 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         if (mem_tp_allocated_mpi < 0) then
            write(*,*) 'Real memory negative! mem_tp_allocated_mpi =', mem_tp_allocated_mpi
            write(*,*) 'Real memory negative! nsize =', nsize
-           call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!',nsize)
         endif
         max_mem_tp_used_mpi = MAX(max_mem_tp_used_mpi,mem_tp_allocated_mpi)
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call memory_error_quit('Error in mem_tp_allocated_mem_tp_mpi - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_allocated_mem_tp_mpi - probably integer overflow!',nsize)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      else
@@ -4798,14 +4900,14 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         if (mem_allocated_mpi < 0) then
            write(*,*) 'Real memory negative! mem_allocated_mpi =', mem_allocated_mpi
            write(*,*) 'Real memory negative! nsize =', nsize
-           call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!',nsize)
         endif
         max_mem_used_mpi = MAX(max_mem_used_mpi,mem_allocated_mpi)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!',nsize)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      endif
@@ -4819,25 +4921,25 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_tp_allocated_mpi = mem_tp_allocated_mpi - nsize
         if (mem_tp_allocated_mpi < 0) then
            write(*,*) 'Real memory negative! mem_tp_allocated_mpi =', mem_tp_allocated_mpi
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_mpi - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_mpi - something wrong with deallocation!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_mpi - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_mpi - something wrong with deallocation!',nsize)
         endif
      ELSE
         mem_allocated_mpi = mem_allocated_mpi - nsize
         if (mem_allocated_mpi < 0) then
            write(*,*) 'Real memory negative! mem_allocated_mpi =', mem_allocated_mpi
-           call memory_error_quit('Error in mem_deallocated_mem_mpi - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_deallocated_mem_mpi - something wrong with deallocation!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_deallocated_mem_mpi - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_deallocated_mem_mpi - something wrong with deallocation!',nsize)
         endif
      ENDIF
 
@@ -4852,14 +4954,14 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         if (mem_tp_allocated_complex < 0) then
            write(*,*) 'Complex memory negative! mem_tp_allocated_complex =', mem_tp_allocated_complex
            write(*,*) 'Complex memory negative! nsize =', nsize
-           call memory_error_quit('Error in mem_allocated_mem_complex - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_complex - probably integer overflow!',nsize)
         endif
         max_mem_tp_used_complex = MAX(max_mem_tp_used_complex,mem_tp_allocated_complex)
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call memory_error_quit('Error in mem_tp_allocated_mem_tp_complex - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_allocated_mem_tp_complex - probably integer overflow!',nsize)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      else
@@ -4867,14 +4969,14 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         if (mem_allocated_complex < 0) then
            write(*,*) 'Complex memory negative! mem_allocated_Complex =', mem_allocated_complex
            write(*,*) 'Complex memory negative! nsize =', nsize
-           call memory_error_quit('Error in mem_allocated_mem_Complex - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_Complex - probably integer overflow!',nsize)
         endif
         max_mem_used_Complex = MAX(max_mem_used_Complex,mem_allocated_Complex)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_allocated_mem_Complex - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_Complex - probably integer overflow!',nsize)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      endif
@@ -4888,25 +4990,25 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_tp_allocated_complex = mem_tp_allocated_complex - nsize
         if (mem_tp_allocated_complex < 0) then
            write(*,*) 'Complex memory negative! mem_tp_allocated_complex =', mem_tp_allocated_complex
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_complex - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_complex - something wrong with deallocation!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_complex - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_complex - something wrong with deallocation!',nsize)
         endif
      ELSE
         mem_allocated_complex = mem_allocated_complex - nsize
         if (mem_allocated_complex < 0) then
            write(*,*) 'Real memory negative! mem_allocated_complex =', mem_allocated_complex
-           call memory_error_quit('Error in mem_deallocated_mem_complex - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_deallocated_mem_complex - something wrong with deallocation!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_deallocated_mem_complex - something wrong with deallocation!')
+           call memory_error_quit('Error in mem_deallocated_mem_complex - something wrong with deallocation!',nsize)
         endif
      ENDIF
 
@@ -4943,7 +5045,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
 #ifdef VAR_OMP
            print*,'Local: OMP THREAD ID:',OMP_GET_THREAD_NUM()
 #endif
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integer - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integer - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
@@ -4951,17 +5053,17 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
 #ifdef VAR_OMP
            print*,'Global: OMP THREAD ID:',OMP_GET_THREAD_NUM()
 #endif
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integer - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integer - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_integer = mem_allocated_integer - nsize
         if (mem_allocated_integer < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_integer1 - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_integer1 - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_integer2 - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_integer2 - probably integer overflow!',nsize)
         endif
      ENDIF
   end subroutine mem_deallocated_mem_integer
@@ -4990,22 +5092,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN !we add to thread private variables
         mem_tp_allocated_character = mem_tp_allocated_character - nsize
         if (mem_tp_allocated_character < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_character - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_character - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_character - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_character - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_character = mem_allocated_character - nsize
         if (mem_allocated_character < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_character - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_character - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_character - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_character - probably integer overflow!',nsize)
         endif
      ENDIF
   end subroutine mem_deallocated_mem_character
@@ -5034,22 +5136,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_logical = mem_tp_allocated_logical - nsize
         if (mem_tp_allocated_logical < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_logical = mem_allocated_logical - nsize
         if (mem_allocated_logical < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_logical
@@ -5078,22 +5180,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_AOBATCH = mem_tp_allocated_AOBATCH - nsize
         if (mem_tp_allocated_AOBATCH < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_AOBATCH - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_AOBATCH - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_AOBATCH - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_AOBATCH - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_AOBATCH = mem_allocated_AOBATCH - nsize
         if (mem_allocated_AOBATCH < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_AOBATCH - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_AOBATCH - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_AOBATCH - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_AOBATCH - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_AOBATCH
@@ -5122,22 +5224,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_OVERLAPT = mem_tp_allocated_OVERLAPT - nsize
         if (mem_tp_allocated_OVERLAPT < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_OVERLAPT - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_OVERLAPT - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_OVERLAPT - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_OVERLAPT - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_OVERLAPT = mem_allocated_OVERLAPT - nsize
         if (mem_allocated_OVERLAPT < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_OVERLAPT - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_OVERLAPT - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_OVERLAPT - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_OVERLAPT - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_OVERLAPT
@@ -5166,22 +5268,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_DECORBITAL = mem_tp_allocated_DECORBITAL - nsize
         if (mem_tp_allocated_DECORBITAL < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECORBITAL - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECORBITAL - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECORBITAL - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECORBITAL - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_DECORBITAL = mem_allocated_DECORBITAL - nsize
         if (mem_allocated_DECORBITAL < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_DECORBITAL - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_DECORBITAL - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_DECORBITAL - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_DECORBITAL - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_DECORBITAL
@@ -5214,22 +5316,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_DECFRAG = mem_tp_allocated_DECFRAG - nsize
         if (mem_tp_allocated_DECFRAG < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECFRAG - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECFRAG - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECFRAG - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECFRAG - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_DECFRAG = mem_allocated_DECFRAG - nsize
         if (mem_allocated_DECFRAG < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_DECFRAG - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_DECFRAG - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_DECFRAG - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_DECFRAG - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_DECFRAG
@@ -5259,22 +5361,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_BATCHTOORB = mem_tp_allocated_BATCHTOORB - nsize
         if (mem_tp_allocated_BATCHTOORB < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_BATCHTOORB - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_BATCHTOORB - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_BATCHTOORB - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_BATCHTOORB - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_BATCHTOORB = mem_allocated_BATCHTOORB - nsize
         if (mem_allocated_BATCHTOORB < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_BATCHTOORB - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_BATCHTOORB - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_BATCHTOORB - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_BATCHTOORB - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_BATCHTOORB
@@ -5303,22 +5405,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_DECAOBATCHINFO = mem_tp_allocated_DECAOBATCHINFO - nsize
         if (mem_tp_allocated_DECAOBATCHINFO < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECAOBATCHINFO - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECAOBATCHINFO - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECAOBATCHINFO - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECAOBATCHINFO - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_DECAOBATCHINFO = mem_allocated_DECAOBATCHINFO - nsize
         if (mem_allocated_DECAOBATCHINFO < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_DECAOBATCHINFO - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_DECAOBATCHINFO - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_DECAOBATCHINFO - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_DECAOBATCHINFO - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_DECAOBATCHINFO
@@ -5348,22 +5450,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_MYPOINTER = mem_tp_allocated_MYPOINTER - nsize
         if (mem_tp_allocated_MYPOINTER < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MYPOINTER - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MYPOINTER - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MYPOINTER - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MYPOINTER - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_MYPOINTER = mem_allocated_MYPOINTER - nsize
         if (mem_allocated_MYPOINTER < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_MYPOINTER - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_MYPOINTER - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_MYPOINTER - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_MYPOINTER - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_MYPOINTER
@@ -5393,22 +5495,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ARRAY2 = mem_tp_allocated_ARRAY2 - nsize
         if (mem_tp_allocated_ARRAY2 < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY2 - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY2 - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY2 - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY2 - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_ARRAY2 = mem_allocated_ARRAY2 - nsize
         if (mem_allocated_ARRAY2 < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ARRAY2 - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY2 - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ARRAY2 - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY2 - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ARRAY2
@@ -5438,22 +5540,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ARRAY4 = mem_tp_allocated_ARRAY4 - nsize
         if (mem_tp_allocated_ARRAY4 < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY4 - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY4 - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY4 - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY4 - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_ARRAY4 = mem_allocated_ARRAY4 - nsize
         if (mem_allocated_ARRAY4 < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ARRAY4 - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY4 - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ARRAY4 - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY4 - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ARRAY4
@@ -5482,22 +5584,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ARRAY = mem_tp_allocated_ARRAY - nsize
         if (mem_tp_allocated_ARRAY < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_ARRAY = mem_allocated_ARRAY - nsize
         if (mem_allocated_ARRAY < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ARRAY - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ARRAY - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ARRAY
@@ -5526,22 +5628,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_MP2DENS = mem_tp_allocated_MP2DENS - nsize
         if (mem_tp_allocated_MP2DENS < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2DENS - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2DENS - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2DENS - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2DENS - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_MP2DENS = mem_allocated_MP2DENS - nsize
         if (mem_allocated_MP2DENS < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_MP2DENS - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_MP2DENS - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_MP2DENS - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_MP2DENS - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_MP2DENS
@@ -5572,22 +5674,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_TRACEBACK = mem_tp_allocated_TRACEBACK - nsize
         if (mem_tp_allocated_TRACEBACK < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_TRACEBACK - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_TRACEBACK - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_TRACEBACK - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_TRACEBACK - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_TRACEBACK = mem_allocated_TRACEBACK - nsize
         if (mem_allocated_TRACEBACK < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_TRACEBACK - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_TRACEBACK - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_TRACEBACK - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_TRACEBACK - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_TRACEBACK
@@ -5617,22 +5719,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_MP2GRAD = mem_tp_allocated_MP2GRAD - nsize
         if (mem_tp_allocated_MP2GRAD < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2GRAD - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2GRAD - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2GRAD - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2GRAD - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_MP2GRAD = mem_allocated_MP2GRAD - nsize
         if (mem_allocated_MP2GRAD < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_MP2GRAD - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_MP2GRAD - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_MP2GRAD - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_MP2GRAD - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_MP2GRAD
@@ -5663,22 +5765,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ODBATCH = mem_tp_allocated_ODBATCH - nsize
         if (mem_tp_allocated_ODBATCH < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ODBATCH - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ODBATCH - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ODBATCH - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ODBATCH - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_ODBATCH = mem_allocated_ODBATCH - nsize
         if (mem_allocated_ODBATCH < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ODBATCH - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ODBATCH - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ODBATCH - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ODBATCH - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ODBATCH
@@ -5707,22 +5809,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_LSAOTENSOR = mem_tp_allocated_LSAOTENSOR - nsize
         if (mem_tp_allocated_LSAOTENSOR < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSAOTENSOR - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSAOTENSOR - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_LSAOTENSOR = mem_allocated_LSAOTENSOR - nsize
         if (mem_allocated_LSAOTENSOR < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_LSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_LSAOTENSOR - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_LSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_LSAOTENSOR - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_LSAOTENSOR
@@ -5751,22 +5853,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_SLSAOTENSOR = mem_tp_allocated_SLSAOTENSOR - nsize
         if (mem_tp_allocated_SLSAOTENSOR < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_SLSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_SLSAOTENSOR - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_SLSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_SLSAOTENSOR - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_SLSAOTENSOR = mem_allocated_SLSAOTENSOR - nsize
         if (mem_allocated_SLSAOTENSOR < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_SLSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_SLSAOTENSOR - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_SLSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_SLSAOTENSOR - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_SLSAOTENSOR
@@ -5795,22 +5897,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_GLOBALLSAOTENSOR = mem_tp_allocated_GLOBALLSAOTENSOR - nsize
         if (mem_tp_allocated_GLOBALLSAOTENSOR < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_GLOBALLSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_GLOBALLSAOTENSOR - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_GLOBALLSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_GLOBALLSAOTENSOR - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_GLOBALLSAOTENSOR = mem_allocated_GLOBALLSAOTENSOR - nsize
         if (mem_allocated_GLOBALLSAOTENSOR < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_GLOBALLSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_GLOBALLSAOTENSOR - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_GLOBALLSAOTENSOR - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_GLOBALLSAOTENSOR - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_GLOBALLSAOTENSOR
@@ -5839,22 +5941,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ATOMTYPEITEM = mem_tp_allocated_ATOMTYPEITEM - nsize
         if (mem_tp_allocated_ATOMTYPEITEM < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMTYPEITEM - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMTYPEITEM - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMTYPEITEM - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMTYPEITEM - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_ATOMTYPEITEM = mem_allocated_ATOMTYPEITEM - nsize
         if (mem_allocated_ATOMTYPEITEM < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ATOMTYPEITEM - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ATOMTYPEITEM - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ATOMTYPEITEM - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ATOMTYPEITEM - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ATOMTYPEITEM
@@ -5883,22 +5985,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ATOMITEM = mem_tp_allocated_ATOMITEM - nsize
         if (mem_tp_allocated_ATOMITEM < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMITEM - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMITEM - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMITEM - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMITEM - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_ATOMITEM = mem_allocated_ATOMITEM - nsize
         if (mem_allocated_ATOMITEM < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ATOMITEM - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ATOMITEM - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ATOMITEM - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ATOMITEM - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ATOMITEM
@@ -5927,22 +6029,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_LSMATRIX = mem_tp_allocated_LSMATRIX - nsize
         if (mem_tp_allocated_LSMATRIX < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSMATRIX - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSMATRIX - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSMATRIX - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSMATRIX - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_LSMATRIX = mem_allocated_LSMATRIX - nsize
         if (mem_allocated_LSMATRIX < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_LSMATRIX - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_LSMATRIX - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_LSMATRIX - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_LSMATRIX - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_LSMATRIX
@@ -5973,12 +6075,12 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_overlap = mem_tp_allocated_overlap - nsize
         if (mem_tp_allocated_overlap < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_overlap - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_overlap - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_overlap = mem_allocated_overlap - nsize
         if (mem_allocated_overlap < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_overlap - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_overlap - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_overlap
@@ -6003,12 +6105,12 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_IntWork = mem_tp_allocated_IntWork - nsize
         if (mem_tp_allocated_IntWork < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_IntWork - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_IntWork - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_IntWork = mem_allocated_IntWork - nsize
         if (mem_allocated_IntWork < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_IntWork - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_IntWork - probably integer overflow!',nsize)
         endif
      ENDIF
      call mem_deallocated_mem_real(nsize)
@@ -6033,12 +6135,12 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_linkshell = mem_tp_allocated_linkshell - nsize
         if (mem_tp_allocated_linkshell < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_linkshell - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_linkshell - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_linkshell = mem_allocated_linkshell - nsize
         if (mem_allocated_linkshell < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_linkshell - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_linkshell - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_linkshell
@@ -6062,12 +6164,12 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_integralitem = mem_tp_allocated_integralitem - nsize
         if (mem_tp_allocated_integralitem < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integralitem - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integralitem - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_integralitem = mem_allocated_integralitem - nsize
         if (mem_allocated_integralitem < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_integralitem - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_integralitem - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_integralitem
@@ -6090,12 +6192,12 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_integrand = mem_tp_allocated_integrand - nsize
         if (mem_tp_allocated_integrand < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integrand - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integrand - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_integrand = mem_allocated_integrand - nsize
         if (mem_allocated_integrand < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_integrand - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_integrand - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_integrand
@@ -6118,12 +6220,12 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ODitem = mem_tp_allocated_ODitem - nsize
         if (mem_tp_allocated_ODitem < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ODitem - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ODitem - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_ODitem = mem_allocated_ODitem - nsize
         if (mem_allocated_ODitem < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ODitem - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ODitem - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ODitem
@@ -6140,7 +6242,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
            mem_tp_allocated_global = mem_tp_allocated_global  + nsize
            if (mem_tp_allocated_global < 0) then
               write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-              call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!')
+              call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',nsize)
            endif
            max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
         ENDIF
@@ -6152,7 +6254,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
            mem_allocated_global = mem_allocated_global  + nsize
            if (mem_allocated_global < 0) then
               write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-              call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!')
+              call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
            endif
            max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
         ENDIF
@@ -6166,25 +6268,25 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_FMM = mem_tp_allocated_FMM - nsize
         if (mem_tp_allocated_FMM < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_FMM - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_FMM - probably integer overflow!',nsize)
         endif
         IF(global)THEN
            !Count also the total memory:
            mem_tp_allocated_global = mem_tp_allocated_global - nsize
            if (mem_tp_allocated_global < 0) then
-              call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!')
+              call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
            endif
         ENDIF
      ELSE
         mem_allocated_FMM = mem_allocated_FMM - nsize
         if (mem_allocated_FMM < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_FMM - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_FMM - probably integer overflow!',nsize)
         endif
         IF(global)THEN
            !Count also the total memory:
            mem_allocated_global = mem_allocated_global - nsize
            if (mem_allocated_global < 0) then
-              call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!')
+              call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
            endif
         ENDIF
      ENDIF
@@ -6201,7 +6303,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',nsize)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      ELSE
@@ -6212,7 +6314,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
@@ -6224,22 +6326,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_lstensor = mem_tp_allocated_lstensor - nsize
         if (mem_tp_allocated_lstensor < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_lstensor - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_lstensor - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_lstensor = mem_allocated_lstensor - nsize
         if (mem_allocated_lstensor < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_lstensor - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_lstensor - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_lstensor
@@ -6256,7 +6358,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call memory_error_quit('Error in mem_tp_allocated_mem_type_matrix - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_allocated_mem_type_matrix - probably integer overflow!',nsize)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      ELSE
@@ -6266,7 +6368,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_allocated_mem_type_matrix - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_type_matrix - probably integer overflow!',nsize)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
@@ -6290,22 +6392,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_type_matrix = mem_tp_allocated_type_matrix - nsize
         if (mem_tp_allocated_type_matrix < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_type_matrix - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_type_matrix - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_type_matrix - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_type_matrix - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_type_matrix = mem_allocated_type_matrix - nsize
         if (mem_allocated_type_matrix < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_type_matrix - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_type_matrix - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
         endif
      ENDIF
      IF(present(nsizeFULL))THEN
@@ -6332,7 +6434,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',nsize)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      ELSE
@@ -6343,7 +6445,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
@@ -6355,22 +6457,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_lvec_data = mem_tp_allocated_lvec_data - nsize
         if (mem_tp_allocated_lvec_data < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_lvec_data - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_lvec_data - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_lvec_data = mem_allocated_lvec_data - nsize
         if (mem_allocated_lvec_data < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_lvec_data - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_lvec_data - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_lvec_data
@@ -6385,7 +6487,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',nsize)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      ELSE
@@ -6396,7 +6498,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!')
+           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
@@ -6408,22 +6510,22 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_lattice_cell = mem_tp_allocated_lattice_cell - nsize
         if (mem_tp_allocated_lattice_cell < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_lattice_cell - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_lattice_cell - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
         endif
      ELSE
         mem_allocated_lattice_cell = mem_allocated_lattice_cell - nsize
         if (mem_allocated_lattice_cell < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_lattice_cell - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_lattice_cell - probably integer overflow!',nsize)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_lattice_cell
@@ -6508,7 +6610,7 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      logical,intent(inout) :: MemFound
      character(len=90) :: command,string
      integer :: funit,i,length, endpos, startpos, ios
-     integer(kind=8) :: memInt
+     integer(kind=8) :: memInt,intZero
      logical :: file_exist,doublecheck
      real(realk) :: ConvertToGB
      string=''
@@ -6565,7 +6667,8 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
          if(.not. doublecheck)then
            print *,"not the correct format of /proc/meminfo --> check and update get_available_memory_specific"
            print *,"in lsutil/memory.f90"
-           call memory_error_quit('not the correct format of /proc/meminfo')
+           intZero = 0
+           call memory_error_quit('not the correct format of /proc/meminfo',intZero)
          endif
 
          do i=endpos-1,1,-1

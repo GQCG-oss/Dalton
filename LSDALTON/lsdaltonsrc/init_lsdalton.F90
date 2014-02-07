@@ -164,9 +164,10 @@ SUBROUTINE print_intro(lupri)
   integer,intent(in)        :: lupri
   integer                   :: I
 
+#ifdef BINARY_INFO_AVAILABLE
 ! sets DALTON_VERSION
 #include "dalton_config.h"
-
+#endif
   WRITE(LUPRI,*)' '
   WRITE(LUPRI,*)'    ******************************************************************    '
   WRITE(LUPRI,*)'    **********  LSDALTON - An electronic structure program  **********    '
@@ -174,7 +175,11 @@ SUBROUTINE print_intro(lupri)
   WRITE(LUPRI,*)' '
   write(LUPRI,*)' '
 
+#ifdef BINARY_INFO_AVAILABLE
   WRITE (LUPRI,'(5X,A)')' This is output from LSDALTON '//DALTON_VERSION
+#else
+  WRITE (LUPRI,'(5X,A)')' This is output from LSDALTON '
+#endif
   write(LUPRI,*)' '
   write(lupri,*)' '
 

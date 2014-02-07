@@ -47,7 +47,7 @@ contains
   subroutine mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
   implicit none
   real(realk),intent(INOUT) :: Vijij(nocc,nocc)
-  real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+  real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
   real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
   integer,intent(IN)        :: nocc,nvirt
   !
@@ -55,7 +55,7 @@ contains
   real(realk) :: tmp
 
   ! Setting Ciajb = 0
-  !Ciajb = 0.0E0_realk
+  ! Ciajb = 0.0E0_realk
 
   do j=1,nocc
    do i=1,nocc
@@ -75,7 +75,7 @@ contains
   subroutine mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
   implicit none
   real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
-  real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+  real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
   real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
   integer,intent(IN)        :: nocc,nvirt
   !
@@ -83,7 +83,7 @@ contains
   real(realk) :: tmp
 
   ! Setting Ciajb = 0
-  !Ciajb = 0.0E0_realk
+  ! Ciajb = 0.0E0_realk
 
   do j=1,nocc
    do i=1,nocc
@@ -851,6 +851,360 @@ end subroutine mp2f12_Xijijfull
   ENDDO
 
   end subroutine mp2f12_Bijij
+
+  subroutine mp2f12_Bijij_term1(Bijij,Bjiij,nocc,Dijkl)
+    implicit none
+    Integer,intent(IN)      :: nocc
+    Real(realk),intent(OUT) :: Bijij(nocc,nocc)
+    Real(realk),intent(OUT) :: Bjiij(nocc,nocc)
+    Real(realk),intent(IN)  :: Dijkl(nocc,nocc,nocc,nocc) !The double commutator [[T,g],g]    !
+    Integer :: i,j
+
+    Bijij = 0.0E0_realk
+    Bjiij = 0.0E0_realk
+
+    DO j=1,nocc
+       DO i=1,nocc
+          !> Stored as i,j,k,l in Yang notation and j,l,i,k or i,k,j,l in Thomas Notation
+          !> We still use the mulliken notation <ab ij> = (ai bj)
+          Bijij(i,j) = Dijkl(i,i,j,j)
+          Bjiij(i,j) = Dijkl(i,j,j,i)
+       ENDDO
+    ENDDO
+  end subroutine mp2f12_Bijij_term1
+
+ subroutine mp2f12_Bijij_term2(Bijij,Bjiij,nocc,ncabsAO,Tirjk,hJ)
+    implicit none
+    Integer,intent(IN)      :: nocc,ncabsAO
+    Real(realk),intent(OUT) :: Bijij(nocc,nocc)
+    Real(realk),intent(OUT) :: Bjiij(nocc,nocc)
+    Real(realk),intent(IN)  :: Tirjk(nocc,ncabsAO,nocc,nocc) !The Gaussian geminal operator squared g^2
+    Real(realk),intent(IN)  :: hJ(nocc,ncabsAO) !(h+J)
+    Integer :: i,j,p,r
+
+    Bijij = 0.0E0_realk
+    Bjiij = 0.0E0_realk
+
+    DO j=1,nocc
+       DO p=1,ncabsAO
+          DO i=1,nocc
+             Bijij(i,j) = Bijij(i,j) + Tirjk(i,p,j,j)*hJ(i,p)
+             Bjiij(i,j) = Bjiij(i,j) + Tirjk(j,p,i,j)*hJ(i,p) 
+          ENDDO
+       ENDDO
+    ENDDO
+
+!!$    do i=1, nocc
+!!$       do r=1, ncabsAO
+!!$          if(hJ(i,r) > 1E-10) then
+!!$             print *, "i r hJir", i, r, hJ(i,r)
+!!$          endif
+!!$       enddo
+!!$    enddo
+          
+
+!!$    print *, '----------------------------------------'
+!!$    print *, '          B ijij                        '   
+!!$    print *, '----------------------------------------'
+!!$    
+!!$    DO i=1,nocc
+!!$       DO j=1,nocc
+!!$          print *, i," ", j," ", Bijij(i,j)
+!!$       ENDDO
+!!$    ENDDO
+!!$
+!!$    print *, '----------------------------------------'
+!!$    print *, '          B ijji                        '   
+!!$    print *, '----------------------------------------'
+!!$
+!!$    DO i=1,nocc
+!!$       DO j=1,nocc
+!!$          print *, i," ", j," ", Bjiij(i,j)
+!!$       ENDDO
+!!$    ENDDO
+
+  end subroutine mp2f12_Bijij_term2
+
+ subroutine mp2f12_Bijij_term3(Bijij,Bjiij,nocc,ncabsAO,Tijkr,hJ)
+    implicit none
+    Integer,intent(IN)      :: nocc,ncabsAO
+    Real(realk),intent(OUT) :: Bijij(nocc,nocc)
+    Real(realk),intent(OUT) :: Bjiij(nocc,nocc)
+    Real(realk),intent(IN)  :: Tijkr(nocc,nocc,nocc,ncabsAO) !The Gaussian geminal operator squared g^2
+    Real(realk),intent(IN)  :: hJ(nocc,ncabsAO) !(h+J)
+    Integer :: i,j,p
+
+    Bijij = 0.0E0_realk
+    Bjiij = 0.0E0_realk
+
+    DO j=1,nocc
+       DO p=1,ncabsAO
+          DO i=1,nocc
+             Bijij(i,j) = Bijij(i,j) + Tijkr(i,i,j,p)*hJ(j,p)
+             Bjiij(i,j) = Bjiij(i,j) + Tijkr(i,j,i,p)*hJ(j,p)
+          ENDDO
+       ENDDO
+    ENDDO
+
+  end subroutine mp2f12_Bijij_term3
+
+  subroutine mp2f12_Bijij_term4(Bijij,Bjiij,nocc,noccfull,ncabsAO,Girjs,K)
+    implicit none
+    Integer,intent(IN)      :: nocc,noccfull,ncabsAO
+    Real(realk),intent(OUT) :: Bijij(nocc,nocc)
+    Real(realk),intent(OUT) :: Bjiij(nocc,nocc)
+  
+    Real(realk),intent(IN)  :: Girjs(nocc,ncabsAO,nocc,ncabsAO) !The Gaussian geminal operator g
+    Real(realk),intent(IN)  :: K(ncabsAO,ncabsAO) !exchange matrix  
+
+    Integer :: r,q,j,p,i
+
+    Bijij = 0.0E0_realk
+    Bjiij = 0.0E0_realk
+    
+    !> Term 4 Krr
+    DO r=1,ncabsAO
+       DO q=1,ncabsAO
+          DO j=1,nocc
+             DO p=1,ncabsAO
+                DO i=1,nocc
+                   Bijij(i,j) = Bijij(i,j) + (Girjs(i,r,j,p)*K(q,p)*Girjs(i,r,j,q) &
+                        &  + Girjs(i,p,j,r)*K(q,p)*Girjs(i,q,j,r))
+                   Bjiij(i,j) = Bjiij(i,j) + (Girjs(j,r,i,p)*K(q,p)*Girjs(i,r,j,q) &
+                        & + Girjs(j,p,i,r)*K(q,p)*Girjs(i,q,j,r))
+                ENDDO
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+
+  end subroutine mp2f12_Bijij_term4
+
+  subroutine mp2f12_Bijij_term5(Bijij,Bjiij,nocc,noccfull,ncabsAO,Girjm,Grimj,Frr)
+    implicit none
+    Integer,intent(IN)      :: nocc,noccfull,ncabsAO
+    Real(realk),intent(OUT) :: Bijij(nocc,nocc)
+    Real(realk),intent(OUT) :: Bjiij(nocc,nocc)
+  
+    Real(realk),intent(IN)  :: Girjm(nocc,ncabsAO,nocc,noccfull)
+    Real(realk),intent(IN)  :: Grimj(ncabsAO,nocc,noccfull,nocc)
+    Real(realk),intent(IN)  :: Frr(ncabsAO,ncabsAO) !Fock matrix in RI MO basis
+
+    Integer :: i,j,l,m,n,o,p,q,r,s,t
+
+    Bijij = 0.0E0_realk
+    Bjiij = 0.0E0_realk
+
+    DO m=1,noccfull
+       DO q=1,ncabsAO
+          DO j=1,nocc
+             DO p=1,ncabsAO
+                DO i=1,nocc
+                   Bijij(i,j) = Bijij(i,j) - (Girjm(i,p,j,m)*Frr(q,p)*Grimj(q,i,m,j) &
+                        & + Girjm(j,p,i,m)*Frr(q,p)*Grimj(q,j,m,i))
+                   Bjiij(i,j) = Bjiij(i,j) - (Girjm(j,p,i,m)*Frr(q,p)*Grimj(q,i,m,j) &
+                        & + Girjm(i,p,j,m)*Frr(q,p)*Grimj(q,j,m,i))
+                ENDDO
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+
+  end subroutine mp2f12_Bijij_term5
+  
+  subroutine mp2f12_Bijij_term6(Bijij,Bjiij,nocc,noccfull,ncabsAO,nvirt,nbasis,Gipja,Gpiaj,Fpp)
+    implicit none
+    Integer,intent(IN)      :: nocc,noccfull,nvirt,nbasis,ncabsAO
+    Real(realk),intent(OUT) :: Bijij(nocc,nocc)
+    Real(realk),intent(OUT) :: Bjiij(nocc,nocc)
+
+    Real(realk),intent(IN)  :: Gipja(nocc,nbasis,nocc,nvirt)
+    Real(realk),intent(IN)  :: Gpiaj(nbasis,nocc,nvirt,nocc)
+    Real(realk),intent(IN)  :: Fpp(nbasis,nbasis) !Fock matrix in RI MO basis
+
+    Integer :: a,q,j,p,i
+
+    Bijij = 0.0E0_realk
+    Bjiij = 0.0E0_realk
+
+
+         
+    !> Term 6 Fpp
+    DO a=1,nvirt
+       DO q=1,nbasis
+          DO j=1,nocc
+             DO p=1,nbasis
+                DO i=1,nocc
+                   Bijij(i,j) = Bijij(i,j) - (Gipja(i,p,j,a)*Fpp(q,p)*Gpiaj(q,i,a,j) &
+                        & + Gipja(j,p,i,a)*Fpp(q,p)*Gpiaj(q,j,a,i))
+
+                   Bjiij(i,j) = Bjiij(i,j) - (Gipja(j,p,i,a)*Fpp(q,p)*Gpiaj(q,i,a,j) &
+                        & + Gipja(i,p,j,a)*Fpp(q,p)*Gpiaj(q,j,a,i))
+                ENDDO
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+!!$
+
+!!$    print *, '----------------------------------------'
+!!$    print *, '          Fpq - Terms                   '   
+!!$    print *, '----------------------------------------'
+!!$    do i=1, nbasis
+!!$       do j=1, nbasis
+!!$          if( abs(Fpp(i,j)) > 1E-10) then
+!!$             print *, i,j, Fpp(i,j)
+!!$          endif
+!!$       enddo
+!!$    enddo
+!!$    print *, '----------------------------------------'
+!!$    print *, '          Gipja                         '   
+!!$    print *, '----------------------------------------'
+!!$    do i=1, nocc
+!!$       do j=1, nocc
+!!$          do p=1, nbasis
+!!$             do a=1, nvirt
+!!$                if( abs(Gipja(i,p,j,a)) > 1E-10) then
+!!$                   print *, i,p,j,a,Gipja(i,p,j,a)
+!!$                endif
+!!$             enddo
+!!$          enddo
+!!$       enddo
+!!$    enddo
+!!$
+!!$    print *, '----------------------------------------'
+!!$    print *, '          Gpiaj                         '   
+!!$    print *, '----------------------------------------'
+!!$    do i=1, nocc
+!!$       do j=1, nocc
+!!$          do p=1, nbasis
+!!$             do a=1, nvirt
+!!$                if( abs(Gpiaj(p,i,a,j)) > 1E-10) then
+!!$                   print *, p,i,a,j, Gpiaj(p,i,a,j)
+!!$                endif
+!!$             enddo
+!!$          enddo
+!!$       enddo
+!!$    enddo
+!!$
+!!$
+!!$    print *, '----------------------------------------'
+!!$    print *, '          Term 6                        '   
+!!$    print *, '----------------------------------------'
+!!$
+!!$    do i=1, nocc
+!!$       do j=1, nocc
+!!$          if(abs(Bijij(i,j)) > 1E-10) then 
+!!$             print *,"i j Bijij(i,j)",i,j,Bijij(i,j) 
+!!$          endif
+!!$       enddo
+!!$    enddo
+
+
+  end subroutine mp2f12_Bijij_term6
+
+  subroutine mp2f12_Bijij_term7(Bijij,Bjiij,nocc,noccfull,ncabs,Gicjm,Gcimj,Fmm)
+    implicit none
+    Integer,intent(IN)      :: nocc,noccfull,ncabs
+    Real(realk),intent(OUT) :: Bijij(nocc,nocc)
+    Real(realk),intent(OUT) :: Bjiij(nocc,nocc)
+
+    Real(realk),intent(IN)  :: Gicjm(nocc,ncabs,nocc,noccfull)
+    Real(realk),intent(IN)  :: Gcimj(ncabs,nocc,noccfull,nocc)
+    Real(realk),intent(IN)  :: Fmm(noccfull,noccfull) !Fock matrix in RI MO basis
+
+    Integer :: n,m,j,a,i
+
+    Bijij = 0.0E0_realk
+    Bjiij = 0.0E0_realk
+
+    !> Term 7 Fmm
+    DO n=1,noccfull
+       DO m=1,noccfull
+          DO j=1,nocc
+             DO a=1,ncabs
+                DO i=1,nocc
+                   Bijij(i,j) = Bijij(i,j) + (Gicjm(i,a,j,m)*Fmm(n,m)*Gcimj(a,i,n,j) &
+                        & + Gicjm(j,a,i,m)*Fmm(n,m)*Gcimj(a,j,n,i))
+                   Bjiij(i,j) = Bjiij(i,j) + (Gicjm(j,a,i,m)*Fmm(n,m)*Gcimj(a,i,n,j) &
+                        & + Gicjm(i,a,j,m)*Fmm(n,m)*Gcimj(a,j,n,i))
+                ENDDO
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+
+  end subroutine mp2f12_Bijij_term7
+
+  subroutine mp2f12_Bijij_term8(Bijij,Bjiij,nocc,noccfull,ncabsAO,ncabs,Gicjm,Gcirj,Frm)
+    implicit none
+    Integer,intent(IN)      :: nocc,noccfull,ncabs,ncabsAO
+    Real(realk),intent(OUT) :: Bijij(nocc,nocc)
+    Real(realk),intent(OUT) :: Bjiij(nocc,nocc)
+
+    Real(realk),intent(IN)  :: Gicjm(nocc,ncabs,nocc,noccfull)
+    Real(realk),intent(IN)  :: Gcirj(ncabs,nocc,ncabsAO,nocc)
+
+    Real(realk),intent(IN)  :: Frm(ncabsAO,noccfull) !Fock matrix in RI MO basis
+
+    real(realk),parameter :: D2=2.0E0_realk
+    Integer :: p,m,j,a,i
+
+    Bijij = 0.0E0_realk
+    Bjiij = 0.0E0_realk
+
+    !> Term 8 Frm
+    DO p=1,ncabsAO
+       DO m=1,noccfull
+          DO j=1,nocc
+             DO a=1,ncabs
+                DO i=1,nocc
+                   Bijij(i,j) = Bijij(i,j) - D2*(Gicjm(i,a,j,m)*Frm(p,m)*Gcirj(a,i,p,j) &
+                        &  + Gicjm(j,a,i,m)*Frm(p,m)*Gcirj(a,j,p,i))
+                   Bjiij(i,j) = Bjiij(i,j) - D2*(Gicjm(j,a,i,m)*Frm(p,m)*Gcirj(a,i,p,j) &
+                        & + Gicjm(i,a,j,m)*Frm(p,m)*Gcirj(a,j,p,i))
+                ENDDO
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+
+  end subroutine mp2f12_Bijij_term8
+
+  subroutine mp2f12_Bijij_term9(Bijij,Bjiij,nocc,noccfull,nvirt,ncabs,nbasis,Gipja,Gciaj,Fcp)
+    implicit none
+    Integer,intent(IN)      :: nocc,noccfull,nvirt,ncabs,nbasis
+    Real(realk),intent(OUT) :: Bijij(nocc,nocc)
+    Real(realk),intent(OUT) :: Bjiij(nocc,nocc)
+
+    Real(realk),intent(IN)  :: Gipja(nocc,nbasis,nocc,nvirt)
+    Real(realk),intent(IN)  :: Gciaj(ncabs,nocc,nvirt,nocc)
+    
+    Real(realk),intent(IN)  :: Fcp(ncabs,nbasis) !Fock matrix in RI MO basis
+    
+    real(realk),parameter :: D2=2.0E0_realk
+    Integer :: p,b,j,a,i
+
+    Bijij = 0.0E0_realk
+    Bjiij = 0.0E0_realk
+
+    !> Term 9 Fcp
+    DO p=1,nbasis
+       DO b=1,nvirt
+          DO j=1,nocc
+             DO a=1,ncabs
+                DO i=1,nocc
+                   Bijij(i,j) = Bijij(i,j) - D2*(Gipja(i,p,j,b)*Fcp(a,p)*Gciaj(a,i,b,j) &
+                        & + Gipja(j,p,i,b)*Fcp(a,p)*Gciaj(a,j,b,i))
+                   Bjiij(i,j) = Bjiij(i,j) - D2*(Gipja(j,p,i,b)*Fcp(a,p)*Gciaj(a,i,b,j) &
+                        & + Gipja(i,p,j,b)*Fcp(a,p)*Gciaj(a,j,b,i))
+                ENDDO
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+
+  end subroutine mp2f12_Bijij_term9
 
   !maybe i and j is reverted
   !> \brief Viija contribution for CCSD-f12

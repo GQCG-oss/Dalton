@@ -856,7 +856,7 @@ C     ---------------------------------------------------------------------
 C     Get KT1B and KT2B vectors
 C
 C     For non-Cacuhy calculations (LCAUCHY = .FALSE., NCAU = 0) the
-C     loop below is dúmmy.
+C     loop below is dummy.
 C
 C     For Cacuhy calculations (LCAUCHY = .TRUE., NCAU >= 0) 
 C     KT1B and KT2B correspond to singles and doubles part of Cauchy
