@@ -3,21 +3,19 @@
 !
 !dalton_copyright_end
 
-module parallel_models
+module parallel_models_lucita
 
   implicit none
 
-  public check_parallel_models
+  public check_lucita_models
 
   private
 
   save
 
-  logical, public :: lucita_models_enabled = .false.
-
 contains
 
-  subroutine check_parallel_models()
+  subroutine check_lucita_models()
 !******************************************************************************
 !
 !    purpose: check for existing/enabled parallel communication/file-I/O models
@@ -48,7 +46,7 @@ contains
     end if
   end if
 
-  end subroutine check_parallel_models
+  end subroutine check_lucita_models
 
 !*******************************************************************************
-end module parallel_models
+end module parallel_models_lucita

@@ -773,6 +773,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/lucita/vector_exchange_file_type.F90
     DALTON/lucita/lucita_mcscf_vector_exchange.F90
     DALTON/lucita/lucita_mcscf_srdftci_cfg.F90
+    DALTON/lucita/parallel_models_lucita.F90
     DALTON/abacus/parallel_models_mpi.F90
     DALTON/abacus/parallel_communication_models_mpi.F90
     DALTON/gp/one_sided_communication_wrappers.F90

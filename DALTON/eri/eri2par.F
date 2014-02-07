@@ -969,6 +969,7 @@ C
 #ifdef MOD_XCINT
       use xcint_integrator, only: xc_integrate_worker
 #endif
+      use parallel_models_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
@@ -1159,7 +1160,6 @@ C
          GO TO 100
       END IF ! IPRTYP .gt. 0
 
-      call check_parallel_models()
 !     release memory
       if(allocated(work)) deallocate(work)
 C
