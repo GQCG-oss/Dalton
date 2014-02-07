@@ -62,8 +62,6 @@ contains
     integer                          :: select_sync
 !-------------------------------------------------------------------------------
 
-#ifndef STEFAN_PLEASE_FIX
-! to Stefan: this is from hjaaj-srdft branch, the #else is from master 20. Jan. 2014
       select_sync = 0     
 
       do ! loop over synchronization processes
@@ -75,34 +73,6 @@ contains
         select case(sync_ctrl_array(select_sync))
           case(.true.)
 !           select synchronization module
-#else
-      select case(need_sync)
-        case(.true.)
-!         select synchronization module
-#ifdef LUCI_DEBUG
-          print *,' *** select_sync = ***',select_sync
-#endif
-          select case(select_sync)
-            case(1) ! CI default settings and input variables
-              call sync_coworkers_ci_cfg()
-            case(2) ! MCSCF default settings and input variables
-            case(3) ! synchronize 1-el (i|j) and 2-el (ab|cd) integrals
-              if(present(xarray1) .and. present(xarray2))then
-                call sync_coworkers_ij_abcd(xarray1,xarray2)
-              else
-                call quit('*** sync_coworkers_cfg: sync of 1-/2-el integrals requires& 
-&the output arrays in the argument list.***')
-              end if
-            case(4) ! distribute previous solution vector (i.e., we restart a CI run)
-            case(5) ! synchronize with current expansion point (CEP) vector (MCSCF run)
-            case(6) ! set current CI task
-              call sync_coworkers_citask()
-            case default ! no option found, quit.
-              print *,' *** sync_coworkers_cfg: synchronization module does not exist, program exits. ***'
-              call quit('*** sync_coworkers_cfg: unknown synchronization module.***')
-          end select
-        case default ! .false.
-#endif
 #ifdef LUCI_DEBUG
             print *,' *** select_sync = ***',select_sync
 #endif
