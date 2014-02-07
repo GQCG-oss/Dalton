@@ -829,7 +829,7 @@ contains
        write(*,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
        write(*,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
     end if
-    
+    print*,'DECinfo%output',DECinfo%output
     write(DECinfo%output,*) 'WANGY TOYCODE: MP2 CORRELATION ENERGY = ', MP2energy
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY = ', E_21
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY = ', E_22

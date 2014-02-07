@@ -523,6 +523,8 @@ contains
     call ls_mpibcast(MyMolecule%ncore,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nval,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
 
     ! Allocate pointers if local master
     if(.not. gm) then
@@ -531,6 +533,10 @@ contains
        call mem_alloc(MyMolecule%atom_end,MyMolecule%natoms)
        call mem_alloc(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%nocc)
        call mem_alloc(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%nunocc)
+       IF(DECinfo%F12)THEN
+          call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
+          call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+       ENDIF
        call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc)
@@ -538,6 +544,16 @@ contains
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%nunocc)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
+       IF(DECinfo%F12)THEN
+          call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
+          call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
+          call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+          call mem_alloc(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+          call mem_alloc(MyMolecule%Fac,MyMolecule%nunocc,MyMolecule%nCabsMO)
+          !Warning MyMolecule%Frm is allocated with noccfull ?????
+          call mem_alloc(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc)
+          call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsMO,MyMolecule%nbasis)
+       ENDIF
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms)
     end if
@@ -554,6 +570,10 @@ contains
     ! -------------
     call ls_mpibcast(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
+    IF(DECinfo%F12)THEN
+       call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+    ENDIF
     call ls_mpibcast(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -561,6 +581,16 @@ contains
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    IF(DECinfo%F12)THEN
+       call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Fac,MyMolecule%nunocc,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
+       !Warning MyMolecule%Frm is allocated with noccfull ?????
+       call ls_mpibcast(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsMO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+    ENDIF
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
 

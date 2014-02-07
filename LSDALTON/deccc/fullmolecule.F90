@@ -171,6 +171,8 @@ contains
     molecule%nunocc = molecule%nbasis - molecule%nocc
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%nocc - molecule%ncore
+    molecule%nCabsAO = 0
+    molecule%nCabsMO = 0
 
     ! Which basis functions are on which atoms?
     call molecule_get_atomic_sizes(molecule,mylsitem)
@@ -845,8 +847,8 @@ contains
     nocc     = MyMolecule%nocc
     nvirt    = MyMolecule%nunocc
     noccfull = nocc
-    ncabsAO  = size(MyMolecule%Ccabs,1)    
-    ncabsMO  = size(MyMolecule%Ccabs,2)
+    ncabsAO  = MyMolecule%nCabsAO    
+    ncabsMO  = MyMolecule%nCabsMO
     nocvfull = nocc + nvirt
 
    if(DECinfo%F12debug) then
@@ -1030,6 +1032,8 @@ contains
     integer :: ncabsAO,ncabs
 
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    molecule%nCabsAO = ncabsAO
+    molecule%nCabsMO = ncabs
     call mat_init(CMO_cabs,nCabsAO,nCabs)
 
     call init_cabs(DECinfo%full_molecular_cc)
@@ -1055,7 +1059,8 @@ contains
     integer :: ncabsAO,ncabs
 
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-
+    molecule%nCabsAO = ncabsAO
+    molecule%nCabsMO = ncabs
     call mat_init(CMO_RI,ncabsAO,ncabsAO)
 
     call init_ri(DECinfo%full_molecular_cc)
