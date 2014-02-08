@@ -33,7 +33,6 @@ contains
     logical :: file_open
 !-------------------------------------------------------------------------------
 
-  if(lucita_models_enabled)then
 !   possibly free ttss-type used in LUCITA/MCSCF-LUCITA
     call ttss_free(ttss_info)
 !   possibly free communicator + file type used in LUCITA/MCSCF-LUCITA
@@ -44,7 +43,6 @@ contains
       inquire(unit=lupri,opened=file_open)
       if(file_open) close(lupri,status="keep")
     end if
-  end if
 
   end subroutine check_lucita_models
 
