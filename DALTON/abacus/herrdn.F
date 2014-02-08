@@ -919,7 +919,7 @@ C
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
      &            KBLOCK,KPRIM,DOOWN)
 
-#if defined(xBUILD_GEN1INT)
+#if defined(BUILD_GEN1INT)
 C...  added by Bin Gao, Feb. 16, 2011
 C...  initializes Gen1Int interface
       call gen1int_host_init(1, NONTYP, KATOM, NONT, IQM(:,1),

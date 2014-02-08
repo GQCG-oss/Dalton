@@ -2629,8 +2629,7 @@ C
  8000 CONTINUE
 
 !     No QC if PE library is used
-!     IF (PEQM) FLAG(21) = .FALSE.  !! no second order PE is now OK
-
+      IF (PEQM) FLAG(21) = .FALSE.
 C     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)

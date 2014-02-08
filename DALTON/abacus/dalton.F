@@ -38,10 +38,6 @@ C=========================================================================
 C
       use parallel_models_mpi
 C
-#ifdef BUILD_GEN1INT
-C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
-!      use gen1int_interface
-#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "mtags.h"
@@ -622,7 +618,7 @@ C
 #if defined(BUILD_GEN1INT)
 C...  added by Bin Gao, May 13, 2012
 C...  terminates Gen1Int interface
-!     call gen1int_host_finalize()
+      call gen1int_host_finalize()
 #endif
 
       call parallel_models_finalize_mpi(nodtot+1)
