@@ -411,7 +411,8 @@ contains
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
     do j=1,ncabsAO
        do i=1, fragment%noccEOS
-          ix = fragment%idxo(i)
+!          ix = fragment%idxo(i)
+          ix = fragment%occEOSidx(i)
           fragment%hJir(i,:) = MyMolecule%hJir(ix,:)
        enddo
     enddo
@@ -435,7 +436,8 @@ contains
     ! Frm
     call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
     do i=1, fragment%noccAOS
-       iy = fragment%idxo(i) 
+!       iy = fragment%idxo(i)
+       iy = fragment%occAOSidx(i)
        fragment%Frm(:,i) = MyMolecule%Frm(:,iy)
     enddo
 
@@ -444,13 +446,15 @@ contains
     ! Fcp in the order of the index (occ to virt)
     call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
     do i=1, fragment%noccAOS
-       iy = fragment%idxo(i)  
+!       iy = fragment%idxo(i)  
+       iy = fragment%occAOSidx(i)
        fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy)
     enddo
   
     do i=fragment%noccAOS+1, fragment%nunoccAOS+fragment%noccAOS
-       iy = fragment%idxu(i-fragment%noccAOS)  
-       fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy+noccAOS)
+!       iy = fragment%idxu(i-fragment%noccAOS)  
+       iy = fragment%unoccAOSidx(i-fragment%noccAOS)
+       fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy+MyMolecule%nocc)
     enddo
 
     print *,"norm2D(MyMolecule%Fcp)", norm2D(MyMolecule%Fcp) 
