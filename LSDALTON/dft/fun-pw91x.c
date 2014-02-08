@@ -81,11 +81,11 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb)/2;
 #endif
 #include <math.h>
 #include <stddef.h>
-#include "general.h"
+#include "lsdalton_general.h"
 
 #define __CVERSION__
  
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 /* INTERFACE PART */
 static integer pw91x_isgga(void) { return 1; }
@@ -103,7 +103,6 @@ static void pw91x_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional PW91xFunctional = {
   "PW91x",       /* name */
   pw91x_isgga,   /* gga-corrected */
-   1,
   pw91x_read,
   NULL,
   pw91x_energy,

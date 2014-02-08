@@ -75,11 +75,11 @@ K(rhoa,grada,rhob,gradb,gradab):=0.5*(Ea(2*rhoa)+Eb(2*rhob));
 #endif
 #include <math.h>
 #include <stddef.h>
-#include "general.h"
+#include "lsdalton_general.h"
 
 #define __CVERSION__
  
-#include "functionals.h"
+#include "lsdalton_functionals.h"
  
 /* INTERFACE PART */
 static integer mpbex_isgga(void) { return 1; } /* FIXME: detect! */
@@ -97,7 +97,6 @@ static void mpbex_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional mPBExFunctional = {
   "mPBEx",       /* name */
   mpbex_isgga,   /* gga-corrected */
-   1,
   mpbex_read,
   NULL,
   mpbex_energy,

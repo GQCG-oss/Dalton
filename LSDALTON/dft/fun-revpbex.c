@@ -71,11 +71,11 @@ K(rhoa,grada,rhob,gradb,gradab):=0.5*(Ea(2*rhoa)+Eb(2*rhob));
 #endif
 #include <math.h>
 #include <stddef.h>
-#include "general.h"
+#include "lsdalton_general.h"
 
 #define __CVERSION__
  
-#include "functionals.h"
+#include "lsdalton_functionals.h"
  
 /* INTERFACE PART */
 static integer revpbe_isgga(void) { return 1; } /* FIXME: detect! */
@@ -93,7 +93,6 @@ static void revpbe_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional revPBExFunctional = {
   "revPBEx",       /* name */
   revpbe_isgga,   /* gga-corrected */
-   1,
   revpbe_read,
   NULL,
   revpbe_energy,

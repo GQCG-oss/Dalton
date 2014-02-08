@@ -89,11 +89,11 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb);
 #endif
 #include <math.h>
 #include <stddef.h>
-#include "general.h"
+#include "lsdalton_general.h"
 
 #define __CVERSION__
  
-#include "functionals.h"
+#include "lsdalton_functionals.h"
  
 /* INTERFACE PART */
 static integer lg93_isgga(void) { return 1; } /* FIXME: detect! */
@@ -111,7 +111,6 @@ static void lg93_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional LG93xFunctional = {
   "LG93x",       /* name */
   lg93_isgga,   /* gga-corrected */
-   1,
   lg93_read,
   NULL,
   lg93_energy,

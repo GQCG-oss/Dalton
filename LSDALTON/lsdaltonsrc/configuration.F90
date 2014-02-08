@@ -839,9 +839,9 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
-if(config%solver%do_dft)THEN
+if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
-   call init_dftfunc(config%integral%DFT)
+   call init_dftfunc(config%integral%DFT,config%integral%ADMM_FUNC)
 endif
 
 END SUBROUTINE read_dalton_input
@@ -1229,6 +1229,8 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
                   &ADMM has been previously defined.',lupri)
            ENDIF
            INTEGRAL%ADMM_CONST_EL   = .TRUE.
+        CASE ('.ADMM-FUNC');
+           READ(LUCMD,*) INTEGRAL%ADMM_FUNC
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
