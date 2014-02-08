@@ -5287,6 +5287,7 @@ ENDIF
        
 ! Get the scaling factor derived from constraining the total charge
 
+constrain_factor = 1.0E0_realk
 ! calculate Lambda for debugging purpose only, we overwrite the constants after anyway
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
             &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
