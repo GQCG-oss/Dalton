@@ -242,7 +242,7 @@
       REAL(REALK) :: S6, RS6, S18, RS18, ALP, ALP6, ALP8, E6, E8
       logical     :: L_GRAD
       INTEGER     :: LUPRI, NVER, NDERIV, IPRLOC, IOFF, IATOM
-      INTEGER     :: NUCDEP, J
+      INTEGER     :: J
 !AMT External c-code routines for functional dependent PARAMETER setup
       !DFT-D2
       REAL(REALK), EXTERNAL  ::     DFT_D2_S6, DFT_D2_RS6, DFT_D2_ALP 
@@ -260,7 +260,6 @@
       PARAMETER (k1=16.0E0_realk)
       PARAMETER (k2=4.0E0_realk/3.0E0_realk)
       PARAMETER (k3=-4.0E0_realk)
-
       NVER=0
 !AMT  Determine which flavour of DFT-D we are to run (2,3,3+BJ)
       IF (SETTING%SCHEME%DFT%DO_DFTD2) THEN
@@ -412,16 +411,6 @@
      &                      N_ELEM,N_ELEM_D2,MX_CORD,NATOMS,&
      &                      RCOV,R2R4,LUPRI)
           ENDIF
-        ENDIF
-
-        IPRLOC=0
-        IF (IPRLOC.GT.1) THEN
-          CALL LSHEADER(LUPRI,'Cart. DFT-D Gradient Contribution')
-          IOFF = 0
-          DO IATOM = 1, NUCDEP
-            WRITE (LUPRI, '(1X,A6,F17.10,2F24.10)') IATOM, (GRADFTD(IOFF+J),J=1,3)
-                   IOFF = IOFF + 3
-          END DO
         ENDIF
 
       ENDIF

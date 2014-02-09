@@ -839,9 +839,9 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
-if(config%solver%do_dft)THEN
+if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
-   call init_dftfunc(config%integral%DFT)
+   call init_dftfunc(config%integral%DFT,config%integral%ADMM_FUNC)
 endif
 
 END SUBROUTINE read_dalton_input
@@ -1229,6 +1229,23 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
                   &ADMM has been previously defined.',lupri)
            ENDIF
            INTEGRAL%ADMM_CONST_EL   = .TRUE.
+        CASE ('.ADMM-FUNC');
+           READ(LUCMD,*) INTEGRAL%ADMM_FUNC
+        CASE ('.ADMMQ-ScaleXC2');
+           IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
+                  &ADMM has been previously defined.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_CONST_EL    = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2   = .TRUE.
+        CASE ('.ADMMQ-ScaleE');
+           IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
+                  &ADMM has been previously defined.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_CONST_EL    = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2   = .FALSE.
+	   INTEGRAL%ADMMQ_ScaleE     = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
@@ -2786,7 +2803,7 @@ implicit none
         & 'Level shifting by ||Dorth|| ratio  ',&
         & 'No level shifting                  ',&
         & 'Van Lenthe fixed level shifts      '/)
-   integer :: nocc,nvirt
+   integer :: nocc,nvirt,nthreads_test
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 integer, external :: OMP_GET_NESTED
@@ -3491,6 +3508,25 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('Combining diagonalization and CSR is inefficient!',-1)
       endif
    endif
+
+!OpenMP sanity check: -DVAR_OMP should be set if openMP is active
+!==================
+#ifndef VAR_OMP
+!OpenMP should be turned off
+nthreads_test = 0
+!$OMP PARALLEL SHARED(nthreads_test)
+
+!$OMP CRITICAL
+nthreads_test = nthreads_test + 1
+!$OMP END CRITICAL
+
+!$OMP END PARALLEL 
+IF(nthreads_test.NE.1)THEN
+   print*,'OpenMP compilation inconsistency: use -DVAR_OMP when using -openmp/-fopenmp flag'
+   call lsquit('OpenMP compilation inconsistency: use -DVAR_OMP',-1)
+ENDIF
+#endif
+
 
 !SCALAPACK sanity check:
 !==================

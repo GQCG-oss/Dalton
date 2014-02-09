@@ -15,6 +15,7 @@ LSDALTON=$SCRIPT_DIR/lsdalton.x
 LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
 DALMPI=$SCRIPT_DIR/lsdalton.x
 MPIRUN=@MPIEXEC@
+INSTALL_BASDIR=$SCRIPT_DIR/basis
 
 if [ -z "$DALTON_TMPDIR" ]; then
     scratch_dir_candidates="/global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
@@ -27,8 +28,10 @@ if [ -z "$DALTON_TMPDIR" ]; then
     done
 fi
 
-WRKDIR=`pwd`
-export WRKDIR
+WRKDIR=`pwd`; export WRKDIR
+# always search for basis sets in job work directory
+# (before standard dalton basis library in INSTALL_BASDIR, appended below)
+BASDIR=$WRKDIR
 #
 paramlist="$*"
 # default extensions
@@ -115,7 +118,7 @@ backup () {
 #
 while [ -n "`echo $1 | grep '^-'`" ]; do
     case $1 in
-      -b ) BASDIR="$2"; export BASDIR; shift;;
+      -b ) BASDIR="$2:$BASDIR"; shift;;
       -d ) optd=1;;
       -D ) optD=0;;
       -pg ) optpg=1;;
@@ -132,12 +135,21 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -M ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
       -t ) DALTON_TMPDIR=$2; shift;;
-      -w ) WRKDIR="`pwd`/$2"; shift;;
+      -w ) WRKDIR=$2; shift;;
       -exe ) DALTON=$2; DALMPI=$2; shift;;
       * ) usage; exit 1;;
    esac
    shift
 done
+
+# append default basis set directory
+len_INSTALL_BASDIR=`echo $INSTALL_BASDIR | wc -c`
+if [ $len_INSTALL_BASDIR -gt 1 ]; then
+   # do not count newline char
+   BASDIR="$BASDIR:$INSTALL_BASDIR"
+fi
+export BASDIR
+
 # check for correct input
 if [ -z "$1" ]; then
    echo 'Input file[s] not specified'

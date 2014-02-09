@@ -384,12 +384,14 @@ contains
        ! Get the wrong density matrix (Not equal to the one for the fullmolecule)
        ! call mat_init(Dmat, myfragment%nbasis,myfragment%nbasis)
        ! call mem_alloc(dens, myfragment%nbasis, myfragment%nbasis)
-       !  call get_density_from_occ_orbitals( myfragment%nbasis,myfragment%noccAOS,Myfragment%Co,dens)
+       ! call get_density_from_occ_orbitals( myfragment%nbasis,myfragment%noccAOS,Myfragment%Co,dens)
        ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
 
        call get_f12_single_fragment_energy(MyFragment)
 
-       !> Free density matrix
+       !> Free cabs after each calculation
+       call free_cabs()
+
        ! call mem_dealloc(dens)
        ! call mat_free(Dmat)
     endif
@@ -970,6 +972,7 @@ contains
        call get_f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
      
        !> Free density matrix
+       call free_cabs()
        ! call mem_dealloc(dens)
        ! call mat_free(Dmat)
     endif

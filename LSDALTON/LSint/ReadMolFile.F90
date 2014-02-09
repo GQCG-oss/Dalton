@@ -1398,7 +1398,7 @@ IF (ATOMBASIS) THEN
       ELSE
          IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
          IF (IPOS3 .LT. 10) THEN
-            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
+            WRITE (StringFormat,'(A2,I1,A1)') '(A', IPOS3 - 1 ,')'
          ELSE
             WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
          ENDIF

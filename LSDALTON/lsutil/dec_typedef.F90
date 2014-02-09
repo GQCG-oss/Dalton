@@ -226,6 +226,9 @@ module dec_typedef_module
      !> Use F12 correction
      logical :: F12DEBUG
 
+     !> Debug keyword to specify pure hydrogen atoms
+     logical :: PUREHYDROGENdebug
+
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split
@@ -499,6 +502,10 @@ module dec_typedef_module
      integer :: nval
      !> Number of unoccupied orbitals
      integer :: nunocc
+     !> Number of cabs AO orbitals
+     integer :: nCabsAO
+     !> Number of cabs MO orbitals
+     integer :: nCabsMO
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()
@@ -584,13 +591,13 @@ module dec_typedef_module
      !> CC model to use for fragment (see MODEL_* in this file)
      integer :: ccmodel
 
-     !> Occupied orbital EOS indices 
+     !> Occupied orbital EOS indices in the full basis 
      integer, pointer :: occEOSidx(:) => null()
-     !> Unoccupied orbital EOS indices 
+     !> Unoccupied orbital EOS indices in the full basis 
      integer, pointer :: unoccEOSidx(:) => null()
      !> Occupied AOS orbital indices (only valence orbitals for frozen core approx)
      integer, pointer :: occAOSidx(:) => null()
-     !> Unoccupied AOS orbital indices 
+     !> Unoccupied AOS orbital indices in the full basis  
      integer, pointer :: unoccAOSidx(:) => null()
      !> Core orbitals indices (only used for frozen core approx, 
      !> otherwise there are included in the occAOSidx list).
@@ -1071,9 +1078,11 @@ module dec_typedef_module
     !> MO index corresponding to the starting point of each batch:
     integer, pointer :: StartInd1(:) 
     integer, pointer :: StartInd2(:) 
-    !> starting index of each batch in the packed array:
-    integer, pointer :: packInd(:) 
-    
+    !> Total dimension of the batch
+    integer, pointer :: dimTot(:)
+    !> Tile index for pdm arrays
+    integer, pointer :: tileInd(:)
+
   end type MObatchInfo
 
   !> AO Integral batch info:

@@ -233,10 +233,10 @@ rotational {\em g} tensor (Ref.~\cite{spascpl260}). London orbitals are automati
 disabled in SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} calculations.
 
 \item[\Key{MOLGRA}] Invokes the calculation of the analytical
-molecular gradient as \index{gradient}described in Ref.~\cite{tuhjahjajpjjcp84}.
+molecular gradient as \index{molecular gradient}described in Ref.~\cite{tuhjahjajpjjcp84}.
 
 \item[\Key{MOLHES}] Invokes the calculation of the analytical
-molecular Hessian\index{Hessian} and gradient\index{gradient} as
+molecular Hessian\index{molecular Hessian} and gradient\index{molecular gradient} as
 described in Ref.~\cite{tuhjahjajpjjcp84}.
 
 %\item[\Key{NACME}] Invokes the calculation of non-adiabatic
@@ -298,7 +298,7 @@ perturbatively.
 coupling constants\index{nuclear quadrupole coupling}\index{NQCC}.
 
 \item[\Key{NUMHES}] In VROA or Raman intensity calculations, use the
-  numerical Hessian calculated from the analytical gradients instead
+  numerical molecular Hessian calculated from the analytical molecular gradients instead
   of a fully analytical molecular Hessian calculation in the final
   geometry.
 
@@ -1430,7 +1430,7 @@ requires the \Key{FBOVIR}, \Key{FBSETV} or \Key{FBSTVO} keyword in the
 \subsection{Nuclear contributions: \Sec{NUCREP}}
 
 Directives affecting the nuclear contribution to the molecular
-gradient\index{gradient} and molecular Hessian\index{Hessian}
+gradient\index{molecular gradient} and molecular Hessian\index{molecular Hessian}
 calculation appear in the
 \verb|*NUCREP| section.
 \begin{description}
@@ -1453,8 +1453,8 @@ of the nuclear contributions. Mainly for debugging purposes.
 \subsection{One-electron integrals: \Sec{ONEINT}}
 
 Directives affecting the calculation of one-electron integrals in the
-calculation of molecular gradients\index{gradient} and molecular
-Hessians\index{Hessian} appear in the
+calculation of molecular gradients\index{molecular gradient} and molecular
+Hessians\index{molecular Hessian} appear in the
 \verb|*ONEINT| section.
 \begin{description}
 \item[\Key{NCLONE}] Calculate only the classical contributions to the
@@ -1463,29 +1463,29 @@ nuclear-attraction integrals.
 \item[\Key{NODC}] Do not calculate contributions from the inactive
 one-electron density matrix. This will give wrong results for the
 total molecular gradient and
-Hessian\index{gradient}\index{Hessian}. Mainly for debugging
+Hessian\index{molecular gradient}\index{molecular Hessian}. Mainly for debugging
 purposes.
 
 \item[\Key{NODV}] Do not calculate contributions from the active
 one-electron density matrix. This will give wrong results for the
-total molecular gradient and Hessian\index{gradient}\index{Hessian}. Mainly for debugging purposes.
+total molecular gradient and Hessian\index{molecular gradient}\index{molecular Hessian}. Mainly for debugging purposes.
 
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD,*) IPRINT|
 
  Set print level in the calculation of one-electron contributions to
-the molecular gradient and Hessian\index{gradient}\index{Hessian}.  Read one more line containing
+the molecular gradient and Hessian\index{molecular gradient}\index{molecular Hessian}.  Read one more line containing
 print level. Default value is the value of \verb|IPRDEF| from the
 general input module.
 
 \item[\Key{SKIP}] Skip the calculation of one-electron integral
-contributions to the molecular gradient and Hessian\index{gradient}\index{Hessian}. This will give
+contributions to the molecular gradient and Hessian\index{molecular gradient}\index{molecular Hessian}. This will give
 wrong total results for these properties. Mainly for debugging
 purposes.
 
 \item[\Key{STOP}] Stop the entire calculation after the
 one-electron integral contributions to the molecular gradients and
-Hessians has been evaluated\index{gradient}\index{Hessian}. Mainly for debugging purposes.
+Hessians has been evaluated\index{molecular gradient}\index{molecular Hessian}. Mainly for debugging purposes.
 \end{description}
 
 \subsection{Relaxation contribution to Hessian: \Sec{RELAX}}
@@ -1992,8 +1992,8 @@ threshold. Default is~$1\cdot10^{-4}$.
 \subsection{Two-electron contributions: \Sec{TWOEXP}}
 
 Directives affecting the calculation of two-electron derivative
-integral contributions to the molecular gradient\index{gradient} and
-Hessian\index{Hessian} appear in
+integral contributions to the molecular gradient\index{molecular gradient} and
+Hessian\index{molecular Hessian} appear in
 the \verb|*TWOEXP| section.
 
 \begin{description}

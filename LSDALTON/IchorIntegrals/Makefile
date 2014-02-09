@@ -8,26 +8,26 @@ INCLUDES := $(INCLUDES)
 
 F90_OBJS = \
         IchorPresicion.o \
-        AGC_VerticalRecurrenceQPA.o \
-        AGC_VerticalRecurrenceQPB.o \
-        AGC_VerticalRecurrenceQPC.o \
-        AGC_VerticalRecurrenceQPD.o \
-        AGC_VerticalRecurrenceQPASegQ.o \
-        AGC_VerticalRecurrenceQPBSegQ.o \
-        AGC_VerticalRecurrenceQPCSegQ.o \
-        AGC_VerticalRecurrenceQPDSegQ.o \
-        AGC_VerticalRecurrenceQPASegP.o \
-        AGC_VerticalRecurrenceQPBSegP.o \
-        AGC_VerticalRecurrenceQPCSegP.o \
-        AGC_VerticalRecurrenceQPDSegP.o \
-        AGC_VerticalRecurrenceQPASeg.o \
-        AGC_VerticalRecurrenceQPBSeg.o \
-        AGC_VerticalRecurrenceQPCSeg.o \
-        AGC_VerticalRecurrenceQPDSeg.o \
-        AGC_VerticalRecurrenceQPASeg1Prim.o \
-        AGC_VerticalRecurrenceQPBSeg1Prim.o \
-        AGC_VerticalRecurrenceQPCSeg1Prim.o \
-        AGC_VerticalRecurrenceQPDSeg1Prim.o \
+        AGC_CPU_VerticalRecurrenceQPA.o \
+        AGC_CPU_VerticalRecurrenceQPB.o \
+        AGC_CPU_VerticalRecurrenceQPC.o \
+        AGC_CPU_VerticalRecurrenceQPD.o \
+        AGC_CPU_VerticalRecurrenceQPASegQ.o \
+        AGC_CPU_VerticalRecurrenceQPBSegQ.o \
+        AGC_CPU_VerticalRecurrenceQPCSegQ.o \
+        AGC_CPU_VerticalRecurrenceQPDSegQ.o \
+        AGC_CPU_VerticalRecurrenceQPASegP.o \
+        AGC_CPU_VerticalRecurrenceQPBSegP.o \
+        AGC_CPU_VerticalRecurrenceQPCSegP.o \
+        AGC_CPU_VerticalRecurrenceQPDSegP.o \
+        AGC_CPU_VerticalRecurrenceQPASeg.o \
+        AGC_CPU_VerticalRecurrenceQPBSeg.o \
+        AGC_CPU_VerticalRecurrenceQPCSeg.o \
+        AGC_CPU_VerticalRecurrenceQPDSeg.o \
+        AGC_CPU_VerticalRecurrenceQPASeg1Prim.o \
+        AGC_CPU_VerticalRecurrenceQPBSeg1Prim.o \
+        AGC_CPU_VerticalRecurrenceQPCSeg1Prim.o \
+        AGC_CPU_VerticalRecurrenceQPDSeg1Prim.o \
         AGC_TransferRecurrenceAtoCGen.o \
         AGC_TransferRecurrenceAtoDGen.o \
         AGC_TransferRecurrenceDtoAGen.o \

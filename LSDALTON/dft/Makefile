@@ -32,6 +32,12 @@ FUNFILES = \
 	fun-pw91c.c	\
 	fun-pz81.c	\
 	fun-slater.c	\
+	fun-fun-revpbex.c	\
+	fun-fun-rpbex.c  	\
+	fun-fun-mpbex.c  	\
+	fun-fun-pw91x.c  	\
+	fun-fun-g96.c    	\
+	fun-fun-lg93.c   	\
 	fun-vwn.c
 
 CFILES =\
