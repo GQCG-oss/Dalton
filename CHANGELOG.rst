@@ -18,6 +18,7 @@ DALTON
   (in each geometry step start wave function optimization from a
   converged wave function from a neighboring geometry rather than from scratch each time).
 - Fix of error which sometimes caused a geometry optimization to stop with " *** ERROR, Wrong interval in WLKBIS".
+- Fix of a bug which occasionally caused DALTON to abort a .STEX calculation
 
 
 LSDALTON
