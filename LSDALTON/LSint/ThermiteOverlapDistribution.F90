@@ -3165,7 +3165,6 @@ Integer :: CSscreenLOG,tenminusmaxgab
 
 call mem_alloc(ODtoFTUVindex,OD%nbatches)
 call mem_alloc(nPrimOD,OD%nbatches)
-call mem_alloc(FTUVtoPassIndex,OD%nbatches)
 call mem_alloc(Identifier,OD%nbatches)
 call mem_alloc(UniqeIdentfiers,OD%nbatches)
 call mem_alloc(FTUVprim,OD%nbatches)
@@ -3239,6 +3238,8 @@ DO I=1,NFTUVbatches
   Alloc%maxPrimTUVRHS = max(np*nTUV,FTUVprimPass(I)*nTUV,Alloc%maxPrimTUVRHS)
 ENDDO
 
+call mem_dealloc(FTUVprimPass)
+
 !Initialize FTUV-batches
 call INIT_BUFCOUNTERS(4)
 DO iPassType=1,nPassTypes
@@ -3250,6 +3251,7 @@ DO iPassType=1,nPassTypes
 ENDDO
 CALL ALLOC_ODFTUV_BUFFERS
 
+call mem_alloc(FTUVtoPassIndex,NFTUVbatches)
 call mem_alloc(F,NFTUVbatches)
 I = 0
 DO iPassType=1,nPassTypes
@@ -3285,7 +3287,6 @@ call mem_dealloc(FTUVPassType)
 call mem_dealloc(FTUVminAng)
 call mem_dealloc(FTUVmaxAng)
 call mem_dealloc(FTUVntuv)
-call mem_dealloc(FTUVprimPass)
 call mem_dealloc(offPrim)
 
 END SUBROUTINE SET_FTUVbatches
