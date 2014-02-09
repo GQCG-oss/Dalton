@@ -11,13 +11,14 @@ DALTON
   (in each geometry step start wave function optimization from a
   converged wave function from a neighboring geometry rather than from scratch each time).
 - Fix of error which sometimes caused a geometry optimization to stop with " *** ERROR, Wrong interval in WLKBIS (WLKSTL)".
-- Document changes here.
 
 
 LSDALTON
 --------
 
-- Document changes here.
+- Print sensible error message when running out of memory.
+- Added funcitonality to search through several basis-set libraries.
+- Increased max length of WRKDIR from 60 to 200.
 
 
 2013.1 (2013-12-19)
@@ -49,8 +50,3 @@ LSDALTON
 - Fixed a bug for lsdalton geometry optimization and dynamics related to 
   screening. The initial Cauchy-Schwartz screening matrices were incorrectly
   used in each subsequent geometry step
-- print sensible error message when running out of memory
-- added funcitonality to search through several basis-set libraries
-- increased max length of WRKDIR from 60 to 200
-
-
