@@ -5691,6 +5691,9 @@ DO idmat=1,ndrhs
       call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
                & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
                & nbast2,nbast,AO2,AO3,GC2,GC3)
+   ELSE
+      constrain_factor = 1.0E0_realk
+      lambda = 0E0_realk  
    ENDIF
 
    !!We transform the full Density to a level 2 density D2
