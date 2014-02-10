@@ -58,7 +58,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_VIRTpT4  = 14  ! Fourth order (T) contribution, virt partitioning scheme
   integer,parameter :: FRAGMODEL_OCCpT5   = 15  ! Fifth order (T) contribution, occ partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
-  integer,parameter :: FRAGMODEL_F12      = 17  ! MP2-F12 energy correction
+  integer,parameter :: FRAGMODEL_MP2f12   = 17  ! MP2-F12 energy correction
 
 
   !> \author Kasper Kristensen
