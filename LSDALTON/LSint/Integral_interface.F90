@@ -5407,7 +5407,7 @@ IF (const_electrons) THEN
   
   write(lupri,*) 'debug:LAMBDA ',4E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
   write(lupri,*) 'debug:constrain_factor ',constrain_factor
-  scaling_factor = 4E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons ! PROBLEM
+  scaling_factor = 2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
   !energy_factor = 2E0_realk / mat_trAB(D,S33) *fac * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
   energy_factor = 4E0_realk / nelectrons *fac * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
 
