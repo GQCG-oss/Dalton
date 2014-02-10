@@ -75,17 +75,12 @@ contains
        !
        call typedef_free_setting(ls%setting)
        call screen_free()
-<<<<<<< HEAD
        call screen_init()
        ls%lupri = lupri
        ls%luerr = luerr
        ls%optlevel = 3
        call typedef_init_setting(ls%setting)
 
-=======
-       call typedef_init_setting(ls%setting)
-       call screen_init()
->>>>>>> origin/Dalton2013_release
        ! Empirical dispersion correction in case of dft
        !CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
 
