@@ -836,7 +836,8 @@ contains
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
     write(DECinfo%output,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
     
-    Myfragment%energies(FRAGMODEL_F12) = E_F12
+    !> Setting the MP2-F12 correction
+    Myfragment%energies(FRAGMODEL_MP2f12) = E_F12
 
     ! ***********************************************************
     ! Free Memory
