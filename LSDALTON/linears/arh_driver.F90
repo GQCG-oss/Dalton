@@ -66,14 +66,7 @@ contains
       type(debugItem)             :: debug
       type(DDitem)                :: DD
 
-
-
     ndim = decomp%S%nrow
-    call mat_init(x,ndim,ndim)
-    call mat_init(wrk,ndim,ndim)
-    call mat_init(wrk2,ndim,ndim)
-
-     
     !write (arh%lupri,*) 'Incoming density, arh_get_density, OAO basis:'
     !call MAT_PRINT(D, 1, D%nrow, 1, D%ncol, arh%LUPRI)
 
@@ -88,10 +81,10 @@ contains
        endif
     endif
  
-     !write(arh%lupri,*) 'F, AO:'
-     !call mat_print(F,1,ndim,1,ndim,arh%lupri)
-     !write(arh%lupri,*) 'D, AO:'
-     !call mat_print(Dnew,1,ndim,1,ndim,arh%lupri)
+    !write(arh%lupri,*) 'F, AO:'
+    !call mat_print(F,1,ndim,1,ndim,arh%lupri)
+    !write(arh%lupri,*) 'D, AO:'
+    !call mat_print(Dnew,1,ndim,1,ndim,arh%lupri)
 
     if (arh%step_accepted) call get_oao_transformed_matrices(decomp,F,Dnew)
 
@@ -124,8 +117,10 @@ contains
     !call mat_print(decomp%FU,1,ndim,1,ndim,arh%lupri)
     !write(arh%lupri,*) 'DU:'
     !call mat_print(decomp%DU,1,ndim,1,ndim,arh%lupri)
+    call mat_init(wrk,ndim,ndim)
     call get_OAO_gradient(decomp%FU, decomp%DU, wrk) !wrk = gradient
     call mat_scal(0.25E0_realk,wrk) !To match linear transformation, also divided by 4!
+
 
     arh%OAO_gradnrm = sqrt(mat_sqnorm2(wrk)) 
     arh%OAO_gradnrm_exist = .true.
@@ -133,6 +128,8 @@ contains
     write (arh%lupri,*) 'OAO gradnorm', arh%OAO_gradnrm
     davidCFG%arh_gradnorm=arh%OAO_gradnrm
 
+    call mat_init(wrk2,ndim,ndim)
+    call mat_init(x,ndim,ndim)
     if (arh%cfg_nodamp) then
        call arh_PCG(arh, decomp, wrk, x, 0.0E0_realk, arh_antisymmetric,fifoqueue)
     else if (arh%cfg_arh_truncate .or. arh%cfg_arh_crop) then
@@ -194,26 +191,26 @@ contains
            call mem_dealloc(weights)
         endif
      endif
+     call mat_free(x)
+     call mat_free(wrk)
 
      !Stinne 24/1-07: Why tranform to AO basis? We already calculated the corresponding Fock matrix...
      !30/1-07: Because otherwise a wrong density is written in dens.restart!!
      call x_from_oao_basis(decomp,wrk2, Dnew) 
 
-    if (associated(arh%fifometric)) then
-       deallocate(arh%fifometric)
-       nullify(arh%fifometric)
-    endif
-    if (associated(arh%inv_fifometric)) then
-       deallocate(arh%inv_fifometric)
-       nullify(arh%inv_fifometric)
-    endif
-    if (associated(arh%fifoM)) then
-       deallocate(arh%fifoM)
-       nullify(arh%fifoM)
-    endif
-    call mat_free(x)
-    call mat_free(wrk)
-    call mat_free(wrk2)
+     if (associated(arh%fifometric)) then
+        deallocate(arh%fifometric)
+        nullify(arh%fifometric)
+     endif
+     if (associated(arh%inv_fifometric)) then
+        deallocate(arh%inv_fifometric)
+        nullify(arh%inv_fifometric)
+     endif
+     if (associated(arh%fifoM)) then
+        deallocate(arh%fifoM)
+        nullify(arh%fifoM)
+     endif
+     call mat_free(wrk2)
    end subroutine arh_get_density
 
 subroutine arh_davidson_solver(CFG,arh,decomp,wrk,X,SCF_iteration,H1,wrk2,ls)
@@ -899,7 +896,6 @@ end subroutine linesearch_thresholds
       write(arh%lupri,*) 'Number of densities in queue:', ndens
    endif
    done = .false.
-
    !The SCF energy from the previous iteration is found in the queue:
    rowdim = Grad%nrow
    coldim = Grad%ncol
@@ -921,8 +917,8 @@ end subroutine linesearch_thresholds
       maxvec = max_it
    endif
    if (arh%cfg_arh_newdamp) then
-      call mat_init(xF,rowdim,coldim)
-      call mat_init(sigmaF,rowdim,coldim)
+!      call mat_init(xF,rowdim,coldim)
+!      call mat_init(sigmaF,rowdim,coldim)
       call mem_alloc(arh%Ared,maxvec+1,maxvec+1)
       call mem_alloc(arh%Gred,maxvec+1)
       call mem_alloc(arh%Sred,maxvec+1,maxvec+1)
@@ -936,10 +932,6 @@ end subroutine linesearch_thresholds
       dampdim = maxvec
    endif
       
-   call mat_init(scrmat,rowdim,coldim)
-   call mat_init(res,rowdim,coldim)
-   call mat_init(resP,rowdim,coldim)
-
    mu = 0.0E0_realk 
    if (arh%cfg_fixed_shift) mu = -arh%cfg_fixed_shift_param
 
@@ -990,6 +982,7 @@ end subroutine linesearch_thresholds
    endif
 
    !First linear transformation:
+   call mat_init(scrmat,rowdim,coldim)
    call arh_lintrans(arh,decomp,x,symm,0.0E0_realk,scrmat,fifoqueue)
 
    if (arh%cfg_arh_truncate) then
@@ -1033,10 +1026,12 @@ end subroutine linesearch_thresholds
       call main_levelshift(lshift,arh%Ared,arh%Sred,arh%Gred,maxvec,lub,1,rowdim,coldim,mu,vectorsubspace=vectorsubspace)
    endif
    write(arh%lupri,*) 'First mu:', mu 
+   call mat_init(res,rowdim,coldim)
    call mat_add(-1E0_realk,Grad,-1E0_realk, scrmat, res) !res = 1st residual
    call mat_daxpy(mu,x,res)
 
    !Preconditioning:
+   call mat_init(resP,rowdim,coldim)
    call arh_precond(arh,decomp,res,symm,mu,resP)
 
    arh%CROPmat(1,1) = mat_dotproduct(res,resP)
@@ -1052,6 +1047,10 @@ end subroutine linesearch_thresholds
    !   debug%final_redspace_eival = arh%Ared(2,2)
    !endif
 
+   if (arh%cfg_arh_newdamp) then
+      call mat_init(xF,rowdim,coldim)
+      call mat_init(sigmaF,rowdim,coldim)
+   endif
    j = 0 ; l = 0 ; i = 0
    if (arh%lshift_by_hlgap) then
       k = 1
@@ -1106,6 +1105,12 @@ end subroutine linesearch_thresholds
       !call arh_crop_setup_redsp(vectorsubspace,i,symm,Grad,mu,b_current,scrmat,resP,xF,sigmaF)
       call arh_crop_setup_redsp(arh,decomp,lub,lusigma,vectorsubspace,i,symm,Grad,mu,x,scrmat,resP,res,xF,sigmaF)
    enddo
+   call mat_free(resP)
+   call mat_free(res)
+   if (arh%cfg_arh_newdamp) then
+      call mat_free(xF)
+      call mat_free(sigmaF)
+   endif
 
    arh%current_mu = mu
 
@@ -1118,6 +1123,7 @@ end subroutine linesearch_thresholds
    if (arh%cfg_arh_crop) call mat_scal(-1.0E0_realk,x) !HACK!!!!
 
    call arh_get_TR_denom(arh, Grad, x, scrmat, decomp%cfg_unres, mu)
+   call mat_free(scrmat)
 
    if (arh%cfg_arh_truncate) then
       call modfifo_free(vectorsubspace)
@@ -1129,17 +1135,10 @@ end subroutine linesearch_thresholds
    INQUIRE(file='xsave',EXIST=fileexists,OPENED=fileopened)
    if (fileexists.AND.fileopened) call LSCLOSE(xsave_lu,'DELETE')
 
-   if (arh%cfg_arh_newdamp) then
-      call mat_free(xF)
-      call mat_free(sigmaF)
-   endif
    call mem_dealloc(arh%Ared)
    call mem_dealloc(arh%Gred)
    call mem_dealloc(arh%Sred)
    call mem_dealloc(arh%CROPmat)
-   call mat_free(scrmat)
-   call mat_free(res)
-   call mat_free(resP)
    end subroutine arh_crop_solver
 
 !> \brief Set the parameters that must be passed to level shift module
