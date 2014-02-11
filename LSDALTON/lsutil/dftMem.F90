@@ -47,6 +47,7 @@ subroutine init_dftmemvar()
 implicit none
 mem_allocated_dft = 0
 max_mem_used_dft = 0 
+call set_mem_XCcalc(mem_allocated_dft,max_mem_used_dft)
 mem_dft_InsideOMPsection=.FALSE.
 call init_dft_threadmemvar()
 end subroutine init_dftmemvar
@@ -91,6 +92,7 @@ subroutine stats_dft_mem(lupri)
        &- Should be zero - A leakage is present")') mem_allocated_dft
   ENDIF
   call print_dft_maxmem(lupri,max_mem_used_dft,'XC')
+  call set_mem_XCcalc(mem_allocated_dft,max_mem_used_dft)
 end subroutine stats_dft_mem
 
 !> \brief Print current and max. amount of memory allocated, for debuggin

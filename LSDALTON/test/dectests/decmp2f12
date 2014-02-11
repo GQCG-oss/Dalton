@@ -107,6 +107,12 @@ TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="MP2-F12 corrected correlation energy is not correct"
 
+# TOTAL MP2-F12 CORRELATION ENERGY
+CRIT1=`$GREP "E: Total MP2-F12 energy: *\-76.437697" $log | wc -l`
+TEST[4]=`expr   $CRIT1`
+CTRL[4]=1
+ERROR[4]="MP2-F12 corrected correlation energy is not correct"
+
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
 TEST[5]=`expr  $CRIT1`                                                    

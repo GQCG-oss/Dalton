@@ -3128,7 +3128,7 @@ end subroutine optimize_atomic_fragment
 #ifdef MOD_UNRELEASED         
        if(Decinfo%F12) then
           ! MP2-F12: MP2 + F12-correction
-          fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCMP2) + fragment%energies(FRAGMODEL_F12)
+          fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCMP2) + fragment%energies(FRAGMODEL_MP2f12)
        endif
 #endif
 
@@ -3192,7 +3192,7 @@ end subroutine optimize_atomic_fragment
 #ifdef MOD_UNRELEASED 
        if(DECinfo%F12) then
           ! MP2-F12: MP2 + F12-correction
-          fragment%energies(FRAGMODEL_F12) = fragment%EoccFOP
+          fragment%energies(FRAGMODEL_MP2f12) = fragment%EoccFOP
        endif
 #endif
     case(MODEL_CC2)
