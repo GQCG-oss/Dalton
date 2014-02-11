@@ -207,7 +207,6 @@ C
 C   Purpose: use RSPCTL and RSPEVE to solve the eigenvalue problem
 C            to get the two-index response vectors
 C
-C
 #include "implicit.h"
 #include "iratdef.h"
 C
@@ -237,10 +236,8 @@ C
 #include "indcr.h"
 #include "infdim.h"
 C
-      INTEGER IG
 
       CALL QENTER('CRLRV3')
-
 C
 C   Initialize variables
 C
@@ -249,94 +246,73 @@ C
 C
 C   Check number of two index linear vector equations
 C
+      KSYMOP=1
 
-      WRITE(LUPRI,*) "NLRLB2" , NLRLB2
-
+      CALL SETZY(MJWOP)
 C
-C   Loop over number of two-index vectors
-C   Define symmetry dependent variables
-C   Allocate core memory
-C   Read XY vector from LUXYVE and check norm of vector
-C   Solve ( E[2] - w*S[2] ) * Nxy = XY
-C
-C      DO 100 ILRLB2 = 1,NLRLB2
-C
-C   Define symmetry dependent variables
-C
-C         KSYMOP=ISMCR2(ILRLB2,3)
-         KSYMOP=1
-
-         !This line requires LUINDF MMOL INFO something
-         !CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
-         CALL SETZY(MJWOP)
-C
-         WRITE (LUPRI,'(//A,I3/A,A/A,A/1P,A,D15.6,/A,D15.6)') 
-     *   ' CRLRV3 -- linear response calc for sym:',KSYMOP ,
-     *   ' CRLRV3 -- operator label1: ',LABB ,
-     *   ' CRLRV3 -- operator label2: ',LABC ,
-     *   ' CRLRV3 -- freqr1 :',FREQB ,
-     *   ' CRLRV3 -- freqr2 :',FREQC
+      WRITE (LUPRI,'(//A,I3/A,A/A,A/1P,A,D15.6,/A,D15.6)') 
+     *' CRLRV3 -- linear response calc for sym:',KSYMOP ,
+     *' CRLRV3 -- operator label1: ',LABB ,
+     *' CRLRV3 -- operator label2: ',LABC ,
+     *' CRLRV3 -- freqr1 :',FREQB ,
+     *' CRLRV3 -- freqr2 :',FREQC
 C
 C   Allocate core memory for
 C   KGD two-index response vector
 C   KEIVEC frequency
 C
-         KREDE  = 1
-         KREDS  = KREDE  + MAXRM*MAXRM
-         KIBTYP = KREDS  + MAXRM*MAXRM
-         KEIVAL = KIBTYP + MAXRM
-         KRESID = KEIVAL + 1
-         KEIVEC = KRESID + 1
-         KREDGD = KEIVEC + MAXRM
-         KGD    = KREDGD + MAXRM
-         KWRK1  = KGD    + KZYVAR
-         LWRK1  = LWRK   - KWRK1
-         IF (LWRK1.LT.0) CALL ERRWRK('CRLRV3',KWRK1-1,LWRK)
+      KREDE  = 1
+      KREDS  = KREDE  + MAXRM*MAXRM
+      KIBTYP = KREDS  + MAXRM*MAXRM
+      KEIVAL = KIBTYP + MAXRM
+      KRESID = KEIVAL + 1
+      KEIVEC = KRESID + 1
+      KREDGD = KEIVEC + MAXRM
+      KGD    = KREDGD + MAXRM
+      KWRK1  = KGD    + KZYVAR
+      LWRK1  = LWRK   - KWRK1
+      IF (LWRK1.LT.0) CALL ERRWRK('CRLRV3',KWRK1-1,LWRK)
 C
 C   Reuse space for solution vectors.
 C
-         KBVECS = KGD
-         KWRKE  = KWRK1
-         WRK(KEIVAL) = FREQ1 + FREQ2
+      KBVECS = KGD
+      KWRKE  = KWRK1
+      WRK(KEIVAL) = FREQ1 + FREQ2
 
 
-         KZRED  = 0
-         KZYRED = 0
-         KEXSIM = 1
-         KEXCNV = KEXSIM
-         CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-     *               .TRUE., LABB , LABC , VEC,
-     *               WRK(KREDGD),WRK(KREDE),WRK(KREDS),WRK(KIBTYP),
-     *               WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),XINDX,
-     *               WRK(KWRK1),LWRK1)
-         CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
-     *                     WRK(KBVECS),WRK(KWRKE),1,0)
+      KZRED  = 0
+      KZYRED = 0
+      KEXSIM = 1
+      KEXCNV = KEXSIM
+      CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+     *            .TRUE., LABB , LABC , VEC,
+     *            WRK(KREDGD),WRK(KREDE),WRK(KREDS),WRK(KIBTYP),
+     *            WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),XINDX,
+     *            WRK(KWRK1),LWRK1)
+      CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
+     *                  WRK(KBVECS),WRK(KWRKE),1,0)
 
-         
-         CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),
-     *               LABB, LABC,
-     *               FREQB, FREQC,
-     *               1, 1 ,WRK(KRESID),D0)
-         VAL = DNRM2(KZYVAR,WRK(KBVECS),1)
+      
+      CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),
+     *            LABB, LABC,
+     *            FREQB, FREQC,
+     *            1, 1 ,WRK(KRESID),D0)
+      VAL = DNRM2(KZYVAR,WRK(KBVECS),1)
 
 C
-  200    WRITE(LUPRI,'(2A12,2A10,A20,/A42,A22)')
-     *   CRLB2(ILRLB2,1),CRLB2(ILRLB2,2),'freq1','freq2','Norm',
-     *   ' -----------------------------------------',
-     *   '----------------------'
-         WRITE(LUPRI,'(F34.6,F10.6,F20.8)') 
-     *          CRFRQ2(ILRLB2,1),CRFRQ2(ILRLB2,2),VAL
-         IF (IPRRSP.GT.10 .AND. (.NOT.FOUND)) THEN
-            WRITE(LUPRI,'(/A)') '     Final result in CRVEC3 '
-            WRITE(LUPRI,'(A)')  '     ====================== '
-            WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
-            CALL OUTPUT(WRK(KBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-         END IF
-C  100 CONTINUE
-C
-C *** end of CRLRV2 --
-C
-C 9999 CALL QEXIT('CRLRV2')
+  200 WRITE(LUPRI,'(2A12,2A10,A20,/A42,A22)')
+     *CRLB2(ILRLB2,1),CRLB2(ILRLB2,2),'freq1','freq2','Norm',
+     *' -----------------------------------------',
+     *'----------------------'
+      WRITE(LUPRI,'(F34.6,F10.6,F20.8)') 
+     *       CRFRQ2(ILRLB2,1),CRFRQ2(ILRLB2,2),VAL
+      IF (IPRRSP.GT.10 .AND. (.NOT.FOUND)) THEN
+         WRITE(LUPRI,'(/A)') '     Final result in CRVEC3 '
+         WRITE(LUPRI,'(A)')  '     ====================== '
+         WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
+         CALL OUTPUT(WRK(KBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
+      END IF
+
  9999 CALL QEXIT('CRLRV3')
       RETURN
       END

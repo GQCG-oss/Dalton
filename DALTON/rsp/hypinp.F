@@ -55,7 +55,7 @@ C
      *            '.TSTJEP', '.SHG   ', '.POCKEL', '.OPTREF',
      *            '.FREQUE', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
      *            '.ASPIN ', '.BSPIN ', '.CSPIN ', '.SOSHIE',
-     *            '.SOSPIN', '.IGNAT '/
+     *            '.SOSPIN', '.QLOP '/
 C
 C READ quadratic response INPUT
 C
@@ -65,7 +65,7 @@ C
       HYPCAL = .TRUE.
       BCFREQ = .FALSE.
       COMFREQ= .FALSE.
-      IGNAT = .FALSE.
+      QLOP = .FALSE.
       WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
@@ -392,7 +392,7 @@ C
                   SSCOLL = .TRUE.
                GO TO 100
  30            CONTINUE
-                  IGNAT = .TRUE.
+                  QLOP = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

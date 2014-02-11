@@ -957,7 +957,6 @@ C
 C
 C     Local variables:
 C
-      INTEGER IG
       DIMENSION GT3(MZYVAR(1)), GXBC(MZYVAR(1)), GXCB(MZYVAR(1))
       DIMENSION GA1(MZYVAR(1)), GNA(MZYVAR(1)), GBC(MZYVAR(1))
       DOUBLE PRECISION GSUM1, GSUM2
@@ -1256,7 +1255,7 @@ C
      *                            -FREQB,-FREQC,XINDX,
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
      &                           CMO,FC,FV)
-                              IF (IGNAT) THEN
+                              IF (QLOP) THEN
                               CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),
      &                        1,GT3,1)
                               END IF
@@ -1383,7 +1382,7 @@ C
      *                              UDV,PV,
      *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
-                           IF (IGNAT) THEN
+                           IF (QLOP) THEN
                            CALL DCOPY(MZYVAR(MSYMA),WRK(KB2C),
      *                     1,GXBC,1) 
                            END IF
@@ -1493,7 +1492,7 @@ C
      *                           UDV,PV,
      *                           CQRLB(MSYMC,ICOP),MSYMC,IRANKC,
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
-                           IF (IGNAT) THEN
+                           IF (QLOP) THEN
                            CALL DCOPY(MZYVAR(MSYMA),WRK(KC2B),
      *                     1,GXCB,1) 
                            END IF
@@ -1548,76 +1547,10 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   930                      CONTINUE
-      IF (IGNAT) THEN
-
-! Where the magic happends to get the response vector for CRLRV3
-
-      WRITE(LUPRI,*) 'MZYVAR(MSYMA)'
-      WRITE(LUPRI,*) MZYVAR(MSYMA)
-
-      MZYMAX = MAXVAL(MZYVAR)
-      KFREE = 1
-      LFREE = LWRK
-      CALL MEMGET2('REAL','KAVEC',KAVEC,MZYMAX,WRK,KFREE,LFREE)
-
-      WRITE(LUPRI,*) 'Starting do loop for all 3, labels', 
-     *BQRLB(MSYMB,IBOP), CQRLB(MSYMC,ICOP), FREQB, FREQC
-
-      DO IG = 1, MZYVAR(MSYMA)
-      WRITE(LUPRI,*) GT3(IG), GXBC(IG), GXCB(IG) 
-      END DO
-
-C add X2init both permutation, Final result in WRK(KAVEC)
-
-      CALL DAXPY( MZYVAR(MSYMA),1.0D0, GXBC,1, GXCB, 1)
-      CALL DAXPY( MZYVAR(MSYMA),-1.0D0, GT3,1, GXCB,1 )
-      CALL DCOPY( MZYVAR(MSYMA),GXCB,1, WRK(KAVEC),1 ) 
-
-      WRITE(LUPRI,*) 'print sum of all 3 vectors: GT3'
-      WRITE(LUPRI,*) 'put GT3 in WRK(1:KZYVAR)'
-
-
-      WRITE(LUPRI,*) 'VALUE OF WRK(KAVEC) AFTER COPING:', WRK(KAVEC)
-      WRITE(LUPRI,*) 'KAVEC:' , KAVEC
-
-!Call RSPCTL, right hand side is our vec from T3DRV + X2 + X2
-
-      WRITE(LUPRI,*) "MSYMB, IBOP", MSYMB, IBOP
-      WRITE(LUPRI,*) "MSYMC, ICOP", MSYMC, ICOP
-
-      CALL CRLRV3( WRK(KAVEC), BQRLB(MSYMB,IBOP),CQRLB(MSYMC,ICOP)
-     *,FREQB, FREQC, 
-     *CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
-     *XINDX, MJWOP, WRK(KAVEC + MZYVAR(1)), LWRK )
-
-!!!!!!!!!!  Continuation with normal program
-      END IF
 C
 C A2TEST
 C
                            DO 940 IAOP = 1,NAQROP(MSYMA)
-!Make sure to run our test instead of original, add option here later
-!from input.dal to run only this
-                              IF ( IGNAT ) THEN
-      CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,UDV,PV,XINDX,
-     &            ANTSYM,WRK,LWRK)
-      CALL DCOPY( MZYVAR(MSYMA),WRK,
-     &1,GA1,1) 
-      CALL REARSP(LURSP,MZYVAR(1),GBC, BQRLB(MSYMB,IBOP),
-     &CQRLB(MSYMC,ICOP), 
-     &FREQB,FREQC,1,1, 1.0D-2,FOUND,CONV,ANTSYM)
-
-      CALL REARSP(LURSP,MZYVAR(1),GNA, AQRLB(MSYMA,IAOP),
-     &BLANK,
-     &FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
-
-      GSUM1 = DDOT(MZYVAR(1),GNA, 1, GXCB, 1)
-      GSUM2 = DDOT(MZYVAR(1),GA1, 1, GBC, 1)
-
-      WRITE(LUPRI,*) "GSUM1, GSUM2:", GSUM1, GSUM2
-
-! End of checking the independent resusults 
-                              ELSE
                               KA2B = 1
                               KFREE = KA2B + MZYVAR(MSYMC)
                               LFREE = LWRK - KFREE + 1
@@ -1661,10 +1594,7 @@ C
      *                           VAL,HYPVAL(IAOP)
                               END IF
                               CALL FLSHFO(LUPRI)
-                           END IF
  940                       CONTINUE
-
-
                            DO 950 IAOP = 1,NAQROP(MSYMA)
 C
                               DIPLEN = .FALSE.
@@ -1715,6 +1645,41 @@ C
      *                             SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,
      *                             SPNSD,SPNSU1,SPNSU2,SPNSU)
  950                       CONTINUE
+                        IF (QLOP) THEN
+C Subsection to save quadratic response vector on file for second order
+C density perturbation, for later python / loprop usage
+      !Allocate memory for vector called in CRLRV3
+                        MZYMAX = MAXVAL(MZYVAR)
+                        KFREE = 1
+                        LFREE = LWRK
+                        CALL MEMGET2('REAL','KAVEC',KAVEC,MZYMAX,
+     &                  WRK,KFREE,LFREE)
+C Add individual contributions from T3DRV, and both X2INIT contributions
+                        CALL DAXPY( MZYVAR(MSYMA),1.0D0, GXBC,1, GXCB,1)
+                        CALL DAXPY( MZYVAR(MSYMA),-1.0D0, GT3,1, GXCB,1)
+                        CALL DCOPY( MZYVAR(MSYMA),GXCB,1, WRK(KAVEC),1) 
+!Call RSPCTL through CRLRV3, right hand side is our vec from T3DRV + X2 + X2
+
+                        CALL CRLRV3( WRK(KAVEC), BQRLB(MSYMB,IBOP),
+     &                  CQRLB(MSYMC,ICOP),FREQB, FREQC, 
+     &                  CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
+     &                  XINDX, MJWOP, WRK(KAVEC + MZYVAR(1)), LWRK )
+                           DO 960 IAOP = 1,NAQROP(MSYMA)
+C QLOP specifies to save quadratic RSPVEC for loprop/python usage 
+                              CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,
+     &                        UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+                              CALL DCOPY( MZYVAR(MSYMA),WRK,1,GA1,1)
+                              CALL REARSP(LURSP,MZYVAR(1),GBC,
+     &                        BQRLB(MSYMB,IBOP),CQRLB(MSYMC,ICOP),
+     &                        FREQB,FREQC,1,1, 1.0D-2,FOUND,CONV,ANTSYM)
+                              CALL REARSP(LURSP,MZYVAR(1),GNA,
+     &                        AQRLB(MSYMA,IAOP),BLANK,
+     &                        FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
+                              GSUM1 = DDOT(MZYVAR(1),GNA,1,GXCB,1)
+                              GSUM2 = DDOT(MZYVAR(1),GA1,1,GBC,1)
+                              WRITE(LUPRI,*) "GSUM1, GSUM2", GSUM1,GSUM2
+ 960                       CONTINUE
+                        END IF
  800                    CONTINUE
  700                 CONTINUE
  600              CONTINUE
