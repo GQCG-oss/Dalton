@@ -590,10 +590,23 @@ end subroutine ls_dcopy
       CALL ls_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
       CALL ls_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
       CALL ls_FLSHFO(LUPRIN)
-
-#ifdef VAR_MPI
-      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
-#endif
+!It may seem like a good idea to wake up the slaves so that the slaves can all call mpi_finalize and quit. However in the case of MPI the lsquit can be called in many ways.
+! Option 1: The Master is awake and the slaves are sleeping. Master calls lsquit
+!           Here it can make sense to wake up the slaves and have the slaves 
+!           call mpi_finalize and quit
+! Option 2: The Master and the Slaves are awake. Master calls lsquit
+!           In this case Master should not broadcast a wake up call as the 
+!           slaves are already sleeping - so it does not make sense 
+!           and the calculation will hang in the MPI broadcast routine. 
+!           The MPI slaves will wait in some reduction routine or something
+!           While the Master i waiting in the bcast routine 
+! Option 3: The Master and the Slaves are awake. Slave calls lsquit
+!           Clearly it should not wake up the other slaves
+!
+!If master and slaves calls EXIT directly the mpiexec should kill the slaves!
+!#ifdef VAR_MPI
+!      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
+!#endif
       !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
 #ifdef VAR_IFORT
       CALL TRACEBACKQQ()
