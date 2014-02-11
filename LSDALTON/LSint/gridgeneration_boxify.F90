@@ -426,11 +426,12 @@ IF(GridBox%npoints.LT.maxnbuflen)THEN
    call BOX_NactOrbGETBLOCKS(RSHEL,MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,&
         & atomcenterX,atomcenterY,atomcenterZ,NactBast,NSTART,&
         & GridBox%minR,GridBox%maxR,LUPRI)
-   IF(MIN(MXBLLEN,GridBox%npoints)*NactBast.LT.MAX(BoxMemRequirement,100000000))THEN
+   IF(MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast.LT.MAX(BoxMemRequirement,10000000))THEN
       RETURN
-   ELSE
-      print*,'BoxMemRequirement',BoxMemRequirement,'NBAST',NBAST,100000000
-      print*,'MXBLLEN*NactBast',MXBLLEN*NactBast,'NactBast',NactBast
+!   ELSE
+!      continue to divide
+!      print*,'BoxMemRequirement',BoxMemRequirement,'NBAST',NBAST,100000000
+!      print*,'MXBLLEN*NactBast',MXBLLEN*NactBast,'NactBast',NactBast
    ENDIF
 ENDIF
 minR(1) = gridBox%minR(1)
