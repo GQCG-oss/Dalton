@@ -1582,10 +1582,14 @@ C add X2init both permutation, Final result in WRK(KAVEC)
       WRITE(LUPRI,*) 'KAVEC:' , KAVEC
 
 !Call RSPCTL, right hand side is our vec from T3DRV + X2 + X2
-      CALL CRLRV3( WRK(KAVEC), BQRLB(MSYMB, IBOP),
-     *CQRLB(MSYMC,ICOP), FREQB, FREQC,
+
+      WRITE(LUPRI,*) "MSYMB, IBOP", MSYMB, IBOP
+      WRITE(LUPRI,*) "MSYMC, ICOP", MSYMC, ICOP
+
+      CALL CRLRV3( WRK(KAVEC), BQRLB(MSYMB,IBOP),CQRLB(MSYMC,ICOP)
+     *,FREQB, FREQC, 
      *CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
-     *XINDX, MJWOP, WRK, LWRK )
+     *XINDX, MJWOP, WRK(KAVEC + MZYVAR(1)), LWRK )
 
 !!!!!!!!!!  Continuation with normal program
       END IF
@@ -1596,22 +1600,27 @@ C
 !Make sure to run our test instead of original, add option here later
 !from input.dal to run only this
                               IF ( IGNAT ) THEN
+      CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,UDV,PV,XINDX,
+     &            ANTSYM,WRK,LWRK)
+      CALL DCOPY( MZYVAR(MSYMA),WRK,
+     &1,GA1,1) 
+      CALL REARSP(LURSP,MZYVAR(1),GBC, BQRLB(MSYMB,IBOP),
+     &CQRLB(MSYMC,ICOP), 
+     &FREQB,FREQC,1,1, 1.0D-2,FOUND,CONV,ANTSYM)
 
-               CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,UDV,PV,XINDX,
-     &                     ANTSYM,WRK,LWRK)
-               CALL DCOPY( MZYVAR(MSYMA),WRK(1:MZYVAR(1))
-     &         ,1,GA1,1) 
-               CALL REARSP(LURSP,MZYVAR(1),GBC, BQRLB(MSYMB,IBOP),
-     &         CQRLB(MSYMC,ICOP), 
-     &         FREQB,FREQC,MSYMB,MSYMC,RSD,FOUND,CONV,ANTSYM)
+      CALL REARSP(LURSP,MZYVAR(1),GNA, AQRLB(MSYMA,IAOP),
+     &BLANK,
+     &FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
 
-               CALL REARSP(LURSP,MZYVAR(1),GNA, AQRLB(MSYMA,IAOP),
-     &         BLANK,
-     &         FREQA,D0,MSYMA,MSYMB,RSD,FOUND,CONV,ANTSYM)
-               GSUM1 = DDOT(MZYVAR(1),GNA, 1, GT3, 1)
-               GSUM2 = DDOT(MZYVAR(1),GA1, 1, GBC, 1)
+      DO IG=1,170
+      WRITE(LUPRI,*) "GNA(IG)", GNA(IG)
+      END DO
 
-               WRITE(LUPRI,*) "GSUM1, GSUM2:", GSUM1, GSUM2
+
+      GSUM1 = DDOT(MZYVAR(1),GNA, 1, GT3, 1)
+      GSUM2 = DDOT(MZYVAR(1),GA1, 1, GBC, 1)
+
+      WRITE(LUPRI,*) "GSUM1, GSUM2:", GSUM1, GSUM2
 
 ! End of checking the independent resusults 
                               ELSE

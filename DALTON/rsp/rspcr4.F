@@ -197,9 +197,10 @@ C
 
 C      SUBROUTINE CRLRV2(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
 C     &                  WRK,LWRK)
-      SUBROUTINE CRLRV3(VEC,LABB, LABC, FREQB,FREQC,
-     ^CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
-     &                  WRK,LWRK)
+      SUBROUTINE CRLRV3(VEC, 
+     *LABB, LABC, FREQB, FREQC, 
+     *CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
+     *                  WRK,LWRK)
 
 C
 C
@@ -240,7 +241,6 @@ C
 
       CALL QENTER('CRLRV3')
 
-      WRITE(LUPRI,*) 'last 5 numbers should not be part of this vector'
 C
 C   Initialize variables
 C
@@ -297,49 +297,9 @@ C   Reuse space for solution vectors.
 C
          KBVECS = KGD
          KWRKE  = KWRK1
-C
-C         WRK(KEIVAL) = CRFRQ2(ILRLB2,1) + CRFRQ2(ILRLB2,2)
          WRK(KEIVAL) = FREQ1 + FREQ2
-C
-!         CALL REARSP(LURSP,KLEN,WRK(KGD),
-!     &               CRLB2(ILRLB2,1),CRLB2(ILRLB2,2),
-!     *               CRFRQ2(ILRLB2,1),CRFRQ2(ILRLB2,2),
-!     *               ISMCR2(ILRLB2,1),ISMCR2(ILRLB2,2),
-!     *               THCLR,FOUND,CONV,ANTSYM)
-!         IF (FOUND .AND. CONV) THEN
-!            WRITE(LUPRI,'(/A)')
-!     *           ' Solution vector already on file'
-!            GO TO 200
-!         END IF 
-!C
-!C    Read XY vector from disk
-!C
-!         CALL READDX(LUXYVE,ILRLB2,IRAT*KZYVAR,WRK(KGD))
-!C
-!         IF (IPRRSP.GT.10) THEN
-!            WRITE(LUPRI,'(/A)') '     XY vector in CRLRV2 '
-!            WRITE(LUPRI,'(A)')  '     =================== '
-!            WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
-!            CALL OUTPUT(WRK(KGD),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-!         END IF
-!C
-!C    Check norm of XY vector
-!C
-!         GDNORM = DNRM2(KZYVAR,WRK(KGD),1)
-!         IF (GDNORM .LT. THRNRM) THEN
-!            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
-!            WRITE (LUPRI,*) '     property vector is only',GDNORM
-!            CALL DZERO(WRK(KBVECS),KZYVAR)
-!            CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),
-!     *                  CRLB2(ILRLB2,1),CRLB2(ILRLB2,2),
-!     *                  CRFRQ2(ILRLB2,1),CRFRQ2(ILRLB2,2),
-!     *                  ISMCR2(ILRLB2,1),ISMCR2(ILRLB2,2),D0,D0)
-!            GO TO 100
-!         END IF
-C
-C    Solve ( E[2] - w*S[2] ) * Nxy = XY
-C    If INVEXP the linear equation is solved by matrix inversion
-C
+
+
          KZRED  = 0
          KZYRED = 0
          KEXSIM = 1
@@ -352,14 +312,11 @@ C
          CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
      *                     WRK(KBVECS),WRK(KWRKE),1,0)
 
+         
          CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),
      *               LABB, LABC,
      *               FREQB, FREQC,
-     *               ISMCR2(ILRLB2,1),ISMCR2(ILRLB2,2),WRK(KRESID),D0)
-         CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),
-     *               LAB1, LAB2, 
-     *               FREQ1, FREQ2,
-     *               ISMCR2(ILRLB2,1),ISMCR2(ILRLB2,2),WRK(KRESID),D0)
+     *               1, 1 ,WRK(KRESID),D0)
          VAL = DNRM2(KZYVAR,WRK(KBVECS),1)
 
 C
