@@ -1256,8 +1256,10 @@ C
      *                            -FREQB,-FREQC,XINDX,
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
      &                           CMO,FC,FV)
+                              IF (IGNAT) THEN
                               CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),
      &                        1,GT3,1)
+                              END IF
                               IF (E3TEST) THEN
                                  CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),1,
      *                                      WRK(1),1)
@@ -1381,8 +1383,10 @@ C
      *                              UDV,PV,
      *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
+                           IF (IGNAT) THEN
                            CALL DCOPY(MZYVAR(MSYMA),WRK(KB2C),
      *                     1,GXBC,1) 
+                           END IF
                            DO 920 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1489,9 +1493,10 @@ C
      *                           UDV,PV,
      *                           CQRLB(MSYMC,ICOP),MSYMC,IRANKC,
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
-
+                           IF (IGNAT) THEN
                            CALL DCOPY(MZYVAR(MSYMA),WRK(KC2B),
      *                     1,GXCB,1) 
+                           END IF
                            DO 930 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1543,6 +1548,7 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   930                      CONTINUE
+      IF (IGNAT) THEN
 
 ! Where the magic happends to get the response vector for CRLRV3
 
@@ -1582,34 +1588,30 @@ C add X2init both permutation, Final result in WRK(KAVEC)
      *XINDX, MJWOP, WRK, LWRK )
 
 !!!!!!!!!!  Continuation with normal program
+      END IF
 C
 C A2TEST
 C
                            DO 940 IAOP = 1,NAQROP(MSYMA)
 !Make sure to run our test instead of original, add option here later
 !from input.dal to run only this
-                              IF ( .TRUE. ) THEN
-      CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,UDV,PV,XINDX,
-     &            ANTSYM,WRK,LWRK)
-      CALL DCOPY( MZYVAR(MSYMA),WRK
-     &,1,GA1,1) 
+                              IF ( IGNAT ) THEN
 
-      CALL REARSP(LURSP,MZYVAR(1),GBC, BQRLB(MSYMB,IBOP),
-     &CQRLB(MSYMC,ICOP), 
-     &FREQB,FREQC,MSYMB,MSYMC,RSD,FOUND,CONV,ANTSYM)
+               CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,UDV,PV,XINDX,
+     &                     ANTSYM,WRK,LWRK)
+               CALL DCOPY( MZYVAR(MSYMA),WRK(1:MZYVAR(1))
+     &         ,1,GA1,1) 
+               CALL REARSP(LURSP,MZYVAR(1),GBC, BQRLB(MSYMB,IBOP),
+     &         CQRLB(MSYMC,ICOP), 
+     &         FREQB,FREQC,MSYMB,MSYMC,RSD,FOUND,CONV,ANTSYM)
 
-      DO IG=1,170
-      WRITE(LUPRI,*) "GBC(IG)", GBC(IG)
-      END DO
+               CALL REARSP(LURSP,MZYVAR(1),GNA, AQRLB(MSYMA,IAOP),
+     &         BLANK,
+     &         FREQA,D0,MSYMA,MSYMB,RSD,FOUND,CONV,ANTSYM)
+               GSUM1 = DDOT(MZYVAR(1),GNA, 1, GT3, 1)
+               GSUM2 = DDOT(MZYVAR(1),GA1, 1, GBC, 1)
 
-      CALL REARSP(LURSP,MZYVAR(1),GNA, AQRLB(MSYMA,IAOP),
-     &BLANK,
-     &FREQA,D0,MSYMA,MSYMB,RSD,FOUND,CONV,ANTSYM)
-
-
-      GSUM1 = DDOT(MZYVAR(1),GNA, 1, GT3, 1)
-      GSUM2 = DDOT(MZYVAR(1),GBC, 1, GA1, 1)
-      WRITE(LUPRI,*) "GSUM1, GSUM2:", GSUM1, GSUM2
+               WRITE(LUPRI,*) "GSUM1, GSUM2:", GSUM1, GSUM2
 
 ! End of checking the independent resusults 
                               ELSE
