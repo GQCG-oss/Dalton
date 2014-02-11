@@ -1,7 +1,7 @@
 #!/bin/sh
 
 info="
-   dft_qr_sym
+   dft_qr_ignat
    ------------------
    Molecule:         H2O
    Wave Functions:   DFT B3LYP / STO-3G
@@ -12,11 +12,12 @@ molecule="BASIS
 3-21G
 Water
 STO-3G basis
-    2    2  X  Z
+    2    0  X  Z
         8.    1
 O      .0000   -.2249  0.0000000000
-        1.    1
+        1.    2
 H     1.4523    .8996   .0000000000
+H    -1.4523    .8996   .0000000000
 "
 
 dalton="**DALTON INPUT
