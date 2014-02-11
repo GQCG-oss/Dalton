@@ -960,7 +960,7 @@ C
       INTEGER IG
       DIMENSION GT3(MZYVAR(1)), GXBC(MZYVAR(1)), GXCB(MZYVAR(1))
       DIMENSION GA1(MZYVAR(1)), GNA(MZYVAR(1)), GBC(MZYVAR(1))
-      DIMENSION GSUM1(MZYVAR(1)), GSUM2(MZYVAR(1))
+      DOUBLE PRECISION GSUM1, GSUM2
       DIMENSION HYPVAL(MXQROP), MJWOP(2,MAXWOP,8)
       LOGICAL   DIPLEN, DOCAL, FOUND, CONV, DFTADX
 C
@@ -1589,22 +1589,27 @@ C
 !Make sure to run our test instead of original, add option here later
 !from input.dal to run only this
                               IF ( .TRUE. ) THEN
+      CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,UDV,PV,XINDX,
+     &            ANTSYM,WRK,LWRK)
+      CALL DCOPY( MZYVAR(MSYMA),WRK
+     &,1,GA1,1) 
 
-               CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,UDV,PV,XINDX,
-     &                     ANTSYM,WRK,LWRK)
-               CALL DCOPY( MZYVAR(MSYMA),WRK(1:MZYVAR(1))
-     &         ,1,GA1,1) 
-               CALL REARSP(LURSP,MZYVAR(1),GBC, BQRLB(MSYMB,IBOP),
-     &         CQRLB(MSYMC,ICOP), 
-     &         FREQB,FREQC,MSYMB,MSYMC,RSD,FOUND,CONV,ANTSYM)
+      CALL REARSP(LURSP,MZYVAR(1),GBC, BQRLB(MSYMB,IBOP),
+     &CQRLB(MSYMC,ICOP), 
+     &FREQB,FREQC,MSYMB,MSYMC,RSD,FOUND,CONV,ANTSYM)
 
-               CALL REARSP(LURSP,MZYVAR(1),GNA, AQRLB(MSYMA,IAOP),
-     &         BLANK,
-     &         FREQA,D0,MSYMA,MSYMB,RSD,FOUND,CONV,ANTSYM)
-               GSUM1 = DDOT(MZYVAR(1),GNA, 1, GT3, 1)
-               GSUM2 = DDOT(MZYVAR(1),GA1, 1, GBC, 1)
+      DO IG=1,170
+      WRITE(LUPRI,*) "GBC(IG)", GBC(IG)
+      END DO
 
-               WRITE(LUPRI,*) "GSUM1, GSUM2:", GSUM1, GSUM2
+      CALL REARSP(LURSP,MZYVAR(1),GNA, AQRLB(MSYMA,IAOP),
+     &BLANK,
+     &FREQA,D0,MSYMA,MSYMB,RSD,FOUND,CONV,ANTSYM)
+
+
+      GSUM1 = DDOT(MZYVAR(1),GNA, 1, GT3, 1)
+      GSUM2 = DDOT(MZYVAR(1),GBC, 1, GA1, 1)
+      WRITE(LUPRI,*) "GSUM1, GSUM2:", GSUM1, GSUM2
 
 ! End of checking the independent resusults 
                               ELSE

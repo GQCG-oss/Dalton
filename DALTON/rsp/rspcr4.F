@@ -241,9 +241,6 @@ C
       CALL QENTER('CRLRV3')
 
       WRITE(LUPRI,*) 'last 5 numbers should not be part of this vector'
-      DO IG = 1, MZYVAR(1) + 5
-      WRITE(LUPRI,*) VEC(IG)
-      END DO
 C
 C   Initialize variables
 C
@@ -373,7 +370,7 @@ C
          WRITE(LUPRI,'(F34.6,F10.6,F20.8)') 
      *          CRFRQ2(ILRLB2,1),CRFRQ2(ILRLB2,2),VAL
          IF (IPRRSP.GT.10 .AND. (.NOT.FOUND)) THEN
-            WRITE(LUPRI,'(/A)') '     Final result in CRVEC2 '
+            WRITE(LUPRI,'(/A)') '     Final result in CRVEC3 '
             WRITE(LUPRI,'(A)')  '     ====================== '
             WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
             CALL OUTPUT(WRK(KBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
