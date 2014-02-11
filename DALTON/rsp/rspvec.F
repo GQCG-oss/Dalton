@@ -1570,8 +1570,7 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
 C add X2init both permutation, Final result in WRK(KAVEC)
 
       CALL DAXPY( MZYVAR(MSYMA),1.0D0, GXBC,1, GXCB, 1)
-      CALL DAXPY( MZYVAR(MSYMA),1.0D0, GT3,1, GXCB,1 )
-
+      CALL DAXPY( MZYVAR(MSYMA),-1.0D0, GT3,1, GXCB,1 )
       CALL DCOPY( MZYVAR(MSYMA),GXCB,1, WRK(KAVEC),1 ) 
 
       WRITE(LUPRI,*) 'print sum of all 3 vectors: GT3'
@@ -1612,12 +1611,7 @@ C
      &BLANK,
      &FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
 
-      DO IG=1,170
-      WRITE(LUPRI,*) "GNA(IG)", GNA(IG)
-      END DO
-
-
-      GSUM1 = DDOT(MZYVAR(1),GNA, 1, GT3, 1)
+      GSUM1 = DDOT(MZYVAR(1),GNA, 1, GXCB, 1)
       GSUM2 = DDOT(MZYVAR(1),GA1, 1, GBC, 1)
 
       WRITE(LUPRI,*) "GSUM1, GSUM2:", GSUM1, GSUM2
