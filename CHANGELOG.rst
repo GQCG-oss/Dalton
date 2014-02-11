@@ -27,7 +27,10 @@ LSDALTON
 - Print sensible error message when running out of memory.
 - Added funcitonality to search through several basis-set libraries.
 - Increased max length of WRKDIR from 60 to 200.
-
+- Fixed a bug related to improber shutdown of MPI calculation. In the case
+  of wrong LSDALTON.INP for instance the calculation will issue a error 
+  statement and afterward hang forever in a MPI call. 
+ 
 
 
 
