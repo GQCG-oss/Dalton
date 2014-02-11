@@ -392,21 +392,10 @@ contains
     nocvAOS  = fragment%noccAOS + fragment%nunoccAOS
     nvirtAOS = fragment%nunoccAOS
   
-    ncabsAO = size(fragment%Ccabs,1)    
-    ncabsMO = size(fragment%Ccabs,2)    
-
-    !CABS MO and RI AO
+    !CABS MO and RI AO (Fragment ncabsMO = Molecule ncabsMO) Needs to be changed
     ncabsAO = size(MyMolecule%Ccabs,1)
     ncabsMO = size(MyMolecule%Ccabs,2)
     
-    !call mem_alloc(fragment%Ccabs,ncabsAO,ncabsMO)
-    !call dcopy(ncabsAO*ncabsMO,Mymolecule%Ccabs,1,fragment%Ccabs,1)
-
-    !RI MO and RI AO
-    ncabsAO = size(Mymolecule%Ccabs,1) 
-    !call mem_alloc(fragment%Cri,ncabsAO,ncabsAO)
-    !call dcopy(ncabsAO*ncabsAO,Mymolecule%Cri,1,fragment%Cri,1)
-
     ! hJir
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
     do j=1,ncabsAO
