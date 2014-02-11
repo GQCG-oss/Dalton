@@ -5205,7 +5205,7 @@ real(realk)         :: GGAXfactor,fac
 real(realk)         :: lambda, constrain_factor, scaling_factor, energy_factor, printConstFactor, printLambda
 logical             :: const_electrons
 logical             :: scaleXC2, scale_finalE
-
+real(realk)         :: tracek2d2,tracex2d2,tracex3d3
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
 const_electrons = setting%scheme%ADMM_CONST_EL
@@ -5317,6 +5317,8 @@ call mat_zero(F2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,F2)
 call mat_zero(k2_xc2)
 call mat_daxpy(1E0_realk,F2(1),k2_xc2)
+tracek2d2 = mat_trAB(F2(1),D2(1))
+write(*,*)     "Tr(k2d2)=", traceK2D2
 call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AO2,AO3,GC2,GC3,constrain_factor)
 fac = 1E0_realk
@@ -5343,6 +5345,9 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 
 !Level 2 XC matrix
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
+tracex2d2 = mat_trAB(F2(1),D2(1))
+write(*,*)     "Tr(x2d2)=", traceX2D2
+write(*,*)     "Ex2", ex2
 IF (scaleXC2) THEN
    EX2 = constrain_factor**(4./3.)*EX2            ! RE-SCALING EXC2 TO FIT k2
    call mat_scal(constrain_factor**(4./3.),F2(1)) ! RE-SCALING XC2 TO FIT k2  
@@ -5371,6 +5376,9 @@ setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 CALL mat_init(F3(1),nbast,nbast)
 CALL mat_zero(F3(1))
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
+tracex3d3 = mat_trAB(F3(1),D)
+write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
+write(*,*)     "Ex3 (not Ex3*2)", ex3
 CALL mat_daxpy(GGAXfactor,F3(1),dXC)
 
 
@@ -5405,11 +5413,11 @@ IF (const_electrons) THEN
   call mat_scal(constrain_factor*constrain_factor, tmp33)
   call mat_daxpy(1E0_realk,S33,tmp33)
   
-  write(lupri,*) 'debug:LAMBDA ',4E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
+  write(lupri,*) 'debug:LAMBDA ',2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
   write(lupri,*) 'debug:constrain_factor ',constrain_factor
   scaling_factor = 2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
-  !energy_factor = 2E0_realk / mat_trAB(D,S33) *fac * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
-  energy_factor = 4E0_realk / nelectrons *fac * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+  !energy_factor = 1E0_realk / mat_trAB(D,S33) *fac * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+  energy_factor = 2E0_realk / nelectrons *fac * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
 
   IF (scaleXC2) THEN
      scaling_factor = scaling_factor - 4E0_realk*EX2(1) / 3E0_realk / nelectrons

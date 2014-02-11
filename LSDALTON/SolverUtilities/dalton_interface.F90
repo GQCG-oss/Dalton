@@ -2184,6 +2184,8 @@ CONTAINS
             Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM
             call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
             Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat)
+           write(lupri,*) "ADMM K2 exact exchange energy contribution: Ek2=",Etotal(idmat)
+            Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
             EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
             write(lupri,*) "ADMM exchange energy contribution: ",EADMM
             call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
