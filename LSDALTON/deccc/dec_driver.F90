@@ -460,6 +460,11 @@ contains
     case(MODEL_MP2)
        ! MP2, use occ energy
        Ecorr = energies(FRAGMODEL_OCCMP2)
+#ifdef MOD_UNRELEASED
+       if(DECinfo%F12) then
+          Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
+       endif
+#endif 
     case(MODEL_RPA)
        ! RPA, use occ energy
        Ecorr = energies(FRAGMODEL_OCCRPA)

@@ -612,7 +612,11 @@ contains
     character(4)  :: at
     logical :: loc
 
+    ! Sanity check
     !if(arr%initialized)call lsquit("ERROR(array_minit):array already initialized",-1) 
+    do i=1, nmodes
+      if (dims(i) == 0) call lsquit("ERROR(array_minit): 0 dimendion not allowed",-1)
+    end do
 
     !set defaults
     loc = .true.
@@ -694,7 +698,11 @@ contains
     character(4)  :: at
     logical :: loc
  
+    ! Sanity check
     if(arr%initialized)call lsquit("ERROR(array_ainit):array already initialized",-1) 
+    do i=1, nmodes
+      if (dims(i) == 0) call lsquit("ERROR(array_minit): 0 dimendion not allowed",-1)
+    end do
  
     !set defaults
     loc = .true.

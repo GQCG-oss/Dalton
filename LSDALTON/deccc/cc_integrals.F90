@@ -854,8 +854,9 @@ contains
     nullify(MOinfo%DimInd2)
     nullify(MOinfo%StartInd1)
     nullify(MOinfo%StartInd2)
-    if (nnod>1) nullify(tasks)
-  
+#ifdef VAR_MPI
+    nullify(tasks)
+#endif
 
     !======================================================================
     !                      Get Dimension of batches                       !
@@ -871,9 +872,9 @@ contains
 
         if (.not.mo_ccsd) return
 
-        if (print_debug) write(DECinfo%output,*) & 
-                 & 'BATCH: Number of MO batches      = ', Nbatch, &
-                 & 'with maximum size', dimP
+        if (print_debug) write(DECinfo%output,'(a,I4,a,I4)') & 
+                 & ' BATCH: Number of MO batches      = ', Nbatch, &
+                 & ' with maximum size', dimP
 
         ! Declare PDM arrays for packed integrals:
         pgmo_dims = ntot*(ntot+1)*dimP*(dimP+1)/4
@@ -881,10 +882,12 @@ contains
                   & atype='TDAR',tdims=[pgmo_dims,1])
         call array_zero(pgmo_diag)
      
-        pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
-        pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
-                  & local=local,atype='TDAR',tdims=[pgmo_dims,1])
-        call array_zero(pgmo_up)
+        if (Nbatch>1) then ! to avoid memory pb in dealloc:
+          pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
+          pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
+                    & local=local,atype='TDAR',tdims=[pgmo_dims,1])
+          call array_zero(pgmo_up)
+        end if
 
       case(MODEL_RPA)
 
@@ -908,9 +911,10 @@ contains
     ! MPI: Waking slaves up:
 #ifdef VAR_MPI
     StartUpSlaves: if(master.and.nnod>1) then
+      write(DECinfo%output,'(a,I4)') ' Waking up the slaves for MO int calc.',nnod
       call ls_mpibcast(CCGETGMO,infpar%master,infpar%lg_comm)
       call mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
-           & pgmo_diag,pgmo_up,nb,no,nv,ccmodel)
+           & pgmo_diag,pgmo_up,nb,no,nv,Nbatch,ccmodel)
     endif StartUpSlaves
      
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -936,9 +940,9 @@ contains
          & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma, &
          & nbatchesGamma,orb2BatchGamma,'R')
 
-    if (print_debug) write(DECinfo%output,*) & 
-               & 'BATCH: Number of Gamma batches   = ', nbatchesGamma, &
-               & 'with maximum size', MaxActualDimGamma 
+    if (print_debug) write(DECinfo%output,'(a,I4,a,I4)') & 
+               & ' BATCH: Number of Gamma batches   = ', nbatchesGamma, &
+               & ' with maximum size', MaxActualDimGamma 
 
 
     ! Translate batchindex to orbital index
@@ -968,9 +972,9 @@ contains
          & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha, &
          & nbatchesAlpha,orb2BatchAlpha,'R')
 
-    if (print_debug) write(DECinfo%output,*) & 
-        & 'BATCH: Number of Alpha batches   = ', nbatchesAlpha, &
-        & 'with maximum size',MaxActualDimAlpha
+    if (print_debug) write(DECinfo%output,'(a,I4,a,I4)') & 
+        & ' BATCH: Number of Alpha batches   = ', nbatchesAlpha, &
+        & ' with maximum size',MaxActualDimAlpha
 
 
     ! Translate batchindex to orbital index
@@ -1231,6 +1235,11 @@ contains
     integer(kind=long) :: min_mem
     integer :: MinAOBatch, na, ng, nnod, magic
 
+    nnod = 1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
+
     !===========================================================
     ! Get MO batche size depending on MO-ccsd residual routine.
     dimMO = 1
@@ -1249,6 +1258,22 @@ contains
     else 
       dimMO = dimMO - 1
     end if
+
+    ! Check that every nodes will have a job in residual calc.
+    ! But the dimension of the batch must stay above 10 MOs.
+    magic  = 1
+    Nbatch = ((ntot-1)/dimMO+1)
+    Nbatch = Nbatch*(Nbatch+1)/2
+
+    do while (Nbatch<magic*nnod.and.dimMO>10.and.nnod>1)
+      dimMO = dimMO-1
+      Nbatch = ((ntot-1)/dimMO+1)
+      Nbatch = Nbatch*(Nbatch+1)/2
+      if (dimMO<10) then 
+        MaxAlpha = dimMO
+        exit
+      end if
+    end do
 
     ! sanity check:
     call get_mem_MO_CCSD_residual(MemNeed,ntot,nb,no,nv,dimMO) 
@@ -1296,9 +1321,7 @@ contains
     end if
 
     ! Check that every nodes has a job:
-#ifdef VAR_MPI
     magic = 2 
-    nnod  = infpar%lg_nodtot
     ng    = ((nb-1)/MaxGamma+1)
     na    = ((nb-1)/MaxAlpha+1)
 
@@ -1310,11 +1333,13 @@ contains
     if (na*ng<magic*nnod.and.(MaxAlpha==MinAObatch).and.nnod>1)then
       do while(na*ng<magic*nnod)
         MaxGamma = MaxGamma - 1
-        if (MaxGamma<1) exit
+        if (MaxGamma<MinAObatch) then
+          MaxGamma = MinAObatch
+          exit
+        end if
+        ng    = ((nb-1)/MaxGamma+1)
       end do
-      if (MaxGamma<MinAObatch) MaxGamma = MinAObatch
     endif
-#endif
 
     ! sanity check:
     call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
@@ -1915,6 +1940,8 @@ subroutine cc_gmo_data_slave()
 
   !> number of orbitals:
   integer :: nb, no, nv
+  !> number of MO batch
+  integer :: nbatch
   !> CC model:
   integer ::  ccmodel
   !> SCF transformation matrices:
@@ -1930,7 +1957,7 @@ subroutine cc_gmo_data_slave()
   
 
   call mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
-       & pgmo_diag,pgmo_up,nb,no,nv,ccmodel)
+       & pgmo_diag,pgmo_up,nb,no,nv,nbatch,ccmodel)
   
   ! the slave call the routine to get MO int.
   call get_t1_free_gmo(mo_ccsd,MyLsItem,Co,Cv,govov, &

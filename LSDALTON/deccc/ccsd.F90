@@ -7008,17 +7008,11 @@ subroutine moccsd_data_slave()
   
   !==============================================================================
   ! Initialize arrays:
-  deltafock = array_ainit( [nbas,nbas], 2, local=local, atype='LDAR' )
-  ppfock = array_ainit( [nocc,nocc], 2, local=local, atype='LDAR' )
-  pqfock = array_ainit( [nocc,nvir], 2, local=local, atype='LDAR' )
-  qpfock = array_ainit( [nvir,nocc], 2, local=local, atype='LDAR' )
-  qqfock = array_ainit( [nvir,nvir], 2, local=local, atype='LDAR' )
-
   t1     = array_ainit( [nvir,nocc], 2, local=local, atype='LDAR' )
   omega1 = array_ainit( [nvir,nocc], 2, local=local, atype='LDAR' )
   t2     = array_ainit( [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
   omega2 = array_ainit( [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
-  govov = array_ainit( [nocc,nvir,nocc,nvir], 4, local=local, atype='LDAR' )
+  govov  = array_ainit( [nocc,nvir,nocc,nvir], 4, local=local, atype='LDAR' )
 
   !==============================================================================
   ! Receive data from master:
@@ -7027,23 +7021,11 @@ subroutine moccsd_data_slave()
   !ccsd_data_preparation
   k=250000000
 
-  !nelms = nbas*nbas
-  !call ls_mpibcast_chunks(deltafock%elm1,nelms,infpar%master,infpar%lg_comm,k)
-    
-  !nelms = nocc*nocc
-  !call ls_mpibcast_chunks(ppfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
-  !nelms = nvir*nvir
-  !call ls_mpibcast_chunks(qqfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
-    
   nelms = nvir*nocc
-  !call ls_mpibcast_chunks(pqfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
-  !call ls_mpibcast_chunks(qpfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
   call ls_mpibcast_chunks(t1%elm1,nelms,infpar%master,infpar%lg_comm,k)
-  !call ls_mpibcast_chunks(omega1%elm1,nelms,infpar%master,infpar%lg_comm,k)
 
   nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
   call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
-  !call ls_mpibcast_chunks(omega2%elm1,nelms,infpar%master,infpar%lg_comm,k)
   if (iter/=1) then
     call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
   else
@@ -7059,10 +7041,6 @@ subroutine moccsd_data_slave()
 
   ! deallocate slave stuff:
   call ls_free(MyLsItem)
-  call mem_dealloc(lampo)
-  call mem_dealloc(lampv)
-  call mem_dealloc(lamho)
-  call mem_dealloc(lamhv)
   call mem_dealloc(MOinfo%dimInd1)
   call mem_dealloc(MOinfo%dimInd2)
   call mem_dealloc(MOinfo%StartInd1)
@@ -7070,11 +7048,6 @@ subroutine moccsd_data_slave()
   call mem_dealloc(MOinfo%dimTot)
   call mem_dealloc(MOinfo%tileInd)
 
-  call array_free(deltafock)
-  call array_free(ppfock)
-  call array_free(pqfock)
-  call array_free(qpfock)
-  call array_free(qqfock)
   call array_free(t1)
   call array_free(omega1)
   call array_free(t2)

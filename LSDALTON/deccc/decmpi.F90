@@ -523,6 +523,8 @@ contains
     call ls_mpibcast(MyMolecule%ncore,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nval,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
 
     ! Allocate pointers if local master
     if(.not. gm) then
@@ -531,6 +533,10 @@ contains
        call mem_alloc(MyMolecule%atom_end,MyMolecule%natoms)
        call mem_alloc(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%nocc)
        call mem_alloc(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%nunocc)
+       IF(DECinfo%F12)THEN
+          call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
+          call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+       ENDIF
        call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc)
@@ -538,6 +544,16 @@ contains
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%nunocc)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
+       IF(DECinfo%F12)THEN
+          call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
+          call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
+          call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+          call mem_alloc(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+          call mem_alloc(MyMolecule%Fac,MyMolecule%nunocc,MyMolecule%nCabsMO)
+          !Warning MyMolecule%Frm is allocated with noccfull ?????
+          call mem_alloc(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc)
+          call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsMO,MyMolecule%nbasis)
+       ENDIF
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms)
     end if
@@ -554,6 +570,10 @@ contains
     ! -------------
     call ls_mpibcast(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
+    IF(DECinfo%F12)THEN
+       call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+    ENDIF
     call ls_mpibcast(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -561,6 +581,16 @@ contains
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    IF(DECinfo%F12)THEN
+       call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Fac,MyMolecule%nunocc,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
+       !Warning MyMolecule%Frm is allocated with noccfull ?????
+       call ls_mpibcast(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsMO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+    ENDIF
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
 
@@ -1765,19 +1795,21 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    December 2013
-  subroutine mpi_communicate_get_gmo_data(small_frag,MyLsItem,Co,Cv, &
-             & pgmo_diag,pgmo_up,nbas,nocc,nvir,ccmodel)
+  subroutine mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
+             & pgmo_diag,pgmo_up,nbas,nocc,nvir,nbatch,ccmodel)
 
     implicit none
      
     !> number of orbitals:
     integer :: nbas, nocc, nvir
+    !> Number of MO batches
+    integer :: nbatch
     !> CC model:
     integer ::  ccmodel
     !> SCF transformation matrices:
     real(realk), pointer  :: Co(:,:), Cv(:,:)
     !> performed MO-based CCSD calculation ?
-    logical :: small_frag
+    logical :: mo_ccsd
     !> array with gmo on output:
     type(array) :: pgmo_diag, pgmo_up
     !> LS item information
@@ -1791,10 +1823,11 @@ contains
     master = (infpar%lg_mynum == infpar%master)
 
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpi_buffer(small_frag,infpar%master)
+    call ls_mpi_buffer(mo_ccsd,infpar%master)
     call ls_mpi_buffer(nbas,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(nvir,infpar%master)
+    call ls_mpi_buffer(nbatch,infpar%master)
     call ls_mpi_buffer(ccmodel,infpar%master)
     if(.not.master)then
       call mem_alloc(Co,nbas,nocc)
@@ -1807,8 +1840,10 @@ contains
       if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
       call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
 
-      if (master) pgmo_up_addr=pgmo_up%addr_p_arr
-      call ls_mpi_buffer(pgmo_up_addr,infpar%lg_nodtot,infpar%master)
+      if (nbatch>1) then 
+        if (master) pgmo_up_addr=pgmo_up%addr_p_arr
+        call ls_mpi_buffer(pgmo_up_addr,infpar%lg_nodtot,infpar%master)
+      end if
     end if
 
     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
@@ -1816,7 +1851,7 @@ contains
 
     if (.not.master.and.ccmodel==MODEL_CCSD) then
       pgmo_diag = get_arr_from_parr(pgmo_diag_addr(infpar%lg_mynum+1))
-      pgmo_up   = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
+      if (nbatch>1) pgmo_up   = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
     endif
 
   end subroutine mpi_communicate_get_gmo_data
@@ -1877,10 +1912,6 @@ contains
     call ls_mpi_buffer(iter,infpar%master)
     call ls_mpi_buffer(MOinfo%nbatch,infpar%master)
     if (.not.master) then
-      call mem_alloc(lampo,nbas,nocc)
-      call mem_alloc(lampv,nbas,nvir)
-      call mem_alloc(lamho,nbas,nocc)
-      call mem_alloc(lamhv,nbas,nvir)
       call mem_alloc(MOinfo%dimInd1,MOinfo%nbatch)
       call mem_alloc(MOinfo%dimInd2,MOinfo%nbatch)
       call mem_alloc(MOinfo%StartInd1,MOinfo%nbatch)
@@ -1888,10 +1919,6 @@ contains
       call mem_alloc(MOinfo%dimTot,MOinfo%nbatch)
       call mem_alloc(MOinfo%tileInd,MOinfo%nbatch)
     end if
-    !call ls_mpi_buffer(lampo,nbas,nocc,infpar%master)
-    !call ls_mpi_buffer(lampv,nbas,nvir,infpar%master)
-    !call ls_mpi_buffer(lamho,nbas,nocc,infpar%master)
-    !call ls_mpi_buffer(lamhv,nbas,nvir,infpar%master)
     call ls_mpi_buffer(MOinfo%dimInd1,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%dimInd2,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%StartInd1,MOinfo%nbatch,infpar%master)
@@ -1902,9 +1929,11 @@ contains
     if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
     call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
 
-    if (master) pgmo_up_addr=pgmo_up%addr_p_arr
-    call ls_mpi_buffer(pgmo_up_addr,infpar%lg_nodtot,infpar%master)
-
+    if (MOinfo%nbatch>1) then 
+      if (master) pgmo_up_addr=pgmo_up%addr_p_arr
+      call ls_mpi_buffer(pgmo_up_addr,infpar%lg_nodtot,infpar%master)
+    end if
+ 
     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
@@ -1916,29 +1945,17 @@ contains
       !ccsd_data_preparation
       k=250000000
 
-      !nelms = nbas*nbas
-      !call ls_mpibcast_chunks(deltafock%elm1,nelms,infpar%master,infpar%lg_comm,k)
-        
-      !nelms = nocc*nocc
-      !call ls_mpibcast_chunks(ppfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
-      !nelms = nvir*nvir
-      !call ls_mpibcast_chunks(qqfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
-        
       nelms = nvir*nocc
-      !call ls_mpibcast_chunks(pqfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
-      !call ls_mpibcast_chunks(qpfock%elm1,nelms,infpar%master,infpar%lg_comm,k)
       call ls_mpibcast_chunks(t1%elm1,nelms,infpar%master,infpar%lg_comm,k)
-      !call ls_mpibcast_chunks(omega1%elm1,nelms,infpar%master,infpar%lg_comm,k)
 
       nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
       call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
-      !call ls_mpibcast_chunks(omega2%elm1,nelms,infpar%master,infpar%lg_comm,k)
       if (iter/=1) then
         call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
       endif
     else
       pgmo_diag = get_arr_from_parr(pgmo_diag_addr(infpar%lg_mynum+1))
-      pgmo_up   = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
+      if (MOinfo%nbatch>1) pgmo_up = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
     endif
 
   end subroutine mpi_communicate_moccsd_data
@@ -2013,6 +2030,7 @@ contains
     call ls_mpi_buffer(DECitem%fock_with_ri,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
+    call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)

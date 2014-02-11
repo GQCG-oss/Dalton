@@ -1662,18 +1662,17 @@ contains
     call mem_alloc( c, DECinfo%ccMaxIter                    )
 
 
-    !> MO-based CCSD and RPA integral calculation:
-    !    non T1-transformed MO integrals
-    !    MO-CCSD => full set (pq|rs)
-    !    RPA     => only (ia|jb)
-
+    !============================================================================!
+    !                          MO-CCSD initialization                            !
+    !____________________________________________________________________________!
+    !
     mo_ccsd = .false.
     if (DECinfo%MOCCSD.and.(nb<=DECinfo%Max_num_MO)) mo_ccsd = .true.
-
+    !
     ! Check if there is enough memory to performed an MO-CCSD calculation.
-    !   YES: get gmo and packed them
-    !   NO: returns mo_ccsd == .false. and switch to standard CCSD.
-    if (mo_ccsd.or.(CCmodel==MODEL_RPA)) then
+    !   YES: get full set of t1 free gmo and pack them
+    !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
+    if (mo_ccsd) then
       call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
                           & nb,no,nv,CCmodel,MOinfo)
     end if
@@ -2077,8 +2076,8 @@ contains
 
     ! free memory from MO-based CCSD
     if (mo_ccsd) then
+      if (pgmo_diag%dims(2)>1) call array_free(pgmo_up)
       call array_free(pgmo_diag)
-      call array_free(pgmo_up)
       call mem_dealloc(MOinfo%dimInd1)
       call mem_dealloc(MOinfo%dimInd2)
       call mem_dealloc(MOinfo%StartInd1)
