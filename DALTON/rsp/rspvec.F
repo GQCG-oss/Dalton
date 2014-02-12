@@ -1677,6 +1677,8 @@ C QLOP specifies to save quadratic RSPVEC for loprop/python usage
      &                        FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
                               GSUM1 = DDOT(MZYVAR(1),GNA,1,GXCB,1)
                               GSUM2 = DDOT(MZYVAR(1),GA1,1,GBC,1)
+                              WRITE(LUPRI,*) "FREQB, FREQC", FREQB,FREQC
+                              WRITE(LUPRI,*) "FREQA" , FREQA
                               WRITE(LUPRI,*) "GSUM1, GSUM2", GSUM1,GSUM2
  960                       CONTINUE
                         END IF

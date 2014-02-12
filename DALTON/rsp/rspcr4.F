@@ -277,7 +277,7 @@ C   Reuse space for solution vectors.
 C
       KBVECS = KGD
       KWRKE  = KWRK1
-      WRK(KEIVAL) = FREQ1 + FREQ2
+      WRK(KEIVAL) = FREQB + FREQC
 
 
       KZRED  = 0
