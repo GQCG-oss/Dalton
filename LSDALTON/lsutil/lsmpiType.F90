@@ -4060,6 +4060,37 @@ contains
 #endif
   end subroutine lsmpi_reduction_realkT8
 
+  subroutine lsmpi_reduce_realk_min(buffer,dest,comm)
+    implicit none
+    real(realk), intent(inout):: buffer
+    integer(kind=ls_mpik),intent(in) :: comm,dest
+    integer(kind=ls_mpik) :: one_el, IERR
+    real(realk) :: sendbuffer
+    IERR = 0
+    one_el = int(1,kind=ls_mpik)
+#ifdef VAR_MPI
+
+    sendbuffer = buffer
+    CALL MPI_REDUCE(sendbuffer,BUFFER,one_el,MPI_DOUBLE_PRECISION,MPI_MIN,&
+           & dest,comm, IERR)
+#endif
+  end subroutine lsmpi_reduce_realk_min
+  subroutine lsmpi_reduce_realk_max(buffer,dest,comm)
+    implicit none
+    real(realk), intent(inout):: buffer
+    integer(kind=ls_mpik),intent(in) :: comm,dest
+    integer(kind=ls_mpik) :: one_el, IERR
+    real(realk) :: sendbuffer
+    IERR = 0
+    one_el = int(1,kind=ls_mpik)
+#ifdef VAR_MPI
+
+    sendbuffer = buffer
+    CALL MPI_REDUCE(sendbuffer,BUFFER,one_el,MPI_DOUBLE_PRECISION,MPI_MAX,&
+           & dest,comm, IERR)
+#endif
+  end subroutine lsmpi_reduce_realk_max
+
   ! MPI all reduce within local group (infpar%lg_comm communicator)
   subroutine lsmpi_allreduce_int8V_wrapper8(rbuffer,n1,comm)
     implicit none
