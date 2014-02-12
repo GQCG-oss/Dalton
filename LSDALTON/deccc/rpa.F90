@@ -740,12 +740,13 @@ contains
 #ifdef VAR_MPI
     call lsmpi_barrier(infpar%lg_comm)
     write(*,*) 'DEBUG 20 in residualpar'
-    write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
+    !write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
    ! if(master) write(*,*) 'omegaw1'
    ! if(master) write(*,*) omegaw1%elm4
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
-    call print_norm(omegaw1,msg)
+    !call print_norm(omegaw1,msg)
+    write(*,*) 'DEBUG 21 in residualpar'
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
     !stop
@@ -763,8 +764,8 @@ contains
       !call array4_reorder(omega2,[2,1,4,3])
       call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
 
-      write(msg,*) 'Norm of omega2'
-      call print_norm(omega2%val,i8*dim1*dim1,msg)
+     ! write(msg,*) 'Norm of omega2'
+     ! call print_norm(omega2%val,i8*dim1*dim1,msg)
 !      write(*,*) 'checkpoint 3',infpar%lg_mynum
       !call array4_reorder(omega2,[2,1,4,3])
       call array4_reorder(omega2,[1,3,2,4])
