@@ -957,8 +957,13 @@ C
 C
 C     Local variables:
 C
-      DIMENSION GT3(MZYVAR(1)), GXBC(MZYVAR(1)), GXCB(MZYVAR(1))
-      DIMENSION GA1(MZYVAR(1)), GNA(MZYVAR(1)), GBC(MZYVAR(1))
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: GT3
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: GXBC
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: GXCB
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: GNA
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: GBC
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: GA1
+
       DOUBLE PRECISION GSUM1, GSUM2
       DIMENSION HYPVAL(MXQROP), MJWOP(2,MAXWOP,8)
       LOGICAL   DIPLEN, DOCAL, FOUND, CONV, DFTADX
@@ -1256,6 +1261,7 @@ C
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
      &                           CMO,FC,FV)
                               IF (QLOP) THEN
+                              ALLOCATE(GT3(MZYVAR(MSYMA)))
                               CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),
      &                        1,GT3,1)
                               END IF
@@ -1383,6 +1389,7 @@ C
      *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
                            IF (QLOP) THEN
+                           ALLOCATE(GXBC(MZYVAR(MSYMA)))
                            CALL DCOPY(MZYVAR(MSYMA),WRK(KB2C),
      *                     1,GXBC,1) 
                            END IF
@@ -1493,6 +1500,7 @@ C
      *                           CQRLB(MSYMC,ICOP),MSYMC,IRANKC,
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
                            IF (QLOP) THEN
+                           ALLOCATE(GXCB(MZYVAR(MSYMA)))
                            CALL DCOPY(MZYVAR(MSYMA),WRK(KC2B),
      *                     1,GXCB,1) 
                            END IF
@@ -1649,11 +1657,13 @@ C
 C Subsection to save quadratic response vector on file for second order
 C density perturbation, for later python / loprop usage
       !Allocate memory for vector called in CRLRV3
-                        MZYMAX = MAXVAL(MZYVAR)
                         KFREE = 1
                         LFREE = LWRK
-                        CALL MEMGET2('REAL','KAVEC',KAVEC,MZYMAX,
+                        CALL MEMGET2('REAL','KAVEC',KAVEC,MZYVAR(MSYMA),
      &                  WRK,KFREE,LFREE)
+                        ALLOCATE(GA1(MZYVAR(MSYMA)))
+                        ALLOCATE(GNA(MZYVAR(MSYMA)))
+                        ALLOCATE(GBC(MZYVAR(MSYMA)))
 C Add individual contributions from T3DRV, and both X2INIT contributions
                         CALL DAXPY( MZYVAR(MSYMA),1.0D0, GXBC,1, GXCB,1)
                         CALL DAXPY( MZYVAR(MSYMA),-1.0D0, GT3,1, GXCB,1)
@@ -1663,24 +1673,29 @@ C Add individual contributions from T3DRV, and both X2INIT contributions
                         CALL CRLRV3( WRK(KAVEC), BQRLB(MSYMB,IBOP),
      &                  CQRLB(MSYMC,ICOP),FREQB, FREQC, 
      &                  CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
-     &                  XINDX, MJWOP, WRK(KAVEC + MZYVAR(1)), LWRK )
+     &                  XINDX, MJWOP, WRK(KAVEC + MZYVAR(MSYMA)), LWRK )
                            DO 960 IAOP = 1,NAQROP(MSYMA)
 C QLOP specifies to save quadratic RSPVEC for loprop/python usage 
                               CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,
      &                        UDV,PV,XINDX,ANTSYM,WRK,LWRK)
                               CALL DCOPY( MZYVAR(MSYMA),WRK,1,GA1,1)
-                              CALL REARSP(LURSP,MZYVAR(1),GBC,
+                              CALL REARSP(LURSP,MZYVAR(MSYMA),GBC,
      &                        BQRLB(MSYMB,IBOP),CQRLB(MSYMC,ICOP),
      &                        FREQB,FREQC,1,1, 1.0D-2,FOUND,CONV,ANTSYM)
-                              CALL REARSP(LURSP,MZYVAR(1),GNA,
+                              CALL REARSP(LURSP,MZYVAR(MSYMA),GNA,
      &                        AQRLB(MSYMA,IAOP),BLANK,
      &                        FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
-                              GSUM1 = DDOT(MZYVAR(1),GNA,1,GXCB,1)
-                              GSUM2 = DDOT(MZYVAR(1),GA1,1,GBC,1)
-                              WRITE(LUPRI,*) "FREQB, FREQC", FREQB,FREQC
-                              WRITE(LUPRI,*) "FREQA" , FREQA
+                              GSUM1 = DDOT(MZYVAR(MSYMA),GNA,1,GXCB,1)
+                              GSUM2 = DDOT(MZYVAR(MSYMA),GA1,1,GBC,1)
                               WRITE(LUPRI,*) "GSUM1, GSUM2", GSUM1,GSUM2
  960                       CONTINUE
+                           DEALLOCATE(GT3)
+                           DEALLOCATE(GXBC)
+                           DEALLOCATE(GXCB)
+                           DEALLOCATE(GA1)
+                           DEALLOCATE(GNA)
+                           DEALLOCATE(GBC)
+C Add individual contributions from T3DRV, and both X2INIT contributions
                         END IF
  800                    CONTINUE
  700                 CONTINUE
