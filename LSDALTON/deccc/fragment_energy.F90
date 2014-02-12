@@ -3124,6 +3124,14 @@ end subroutine optimize_atomic_fragment
        fragment%LagFOP = fragment%energies(FRAGMODEL_LAGMP2)
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCMP2)
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTMP2)
+
+#ifdef MOD_UNRELEASED         
+       if(Decinfo%F12) then
+          ! MP2-F12: MP2 + F12-correction
+          fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCMP2) + fragment%energies(FRAGMODEL_MP2f12)
+       endif
+#endif
+
     case(MODEL_CC2)
        ! CC2
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCC2)
@@ -3151,7 +3159,7 @@ end subroutine optimize_atomic_fragment
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCCSD) + fragment%energies(FRAGMODEL_VIRTpT)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
-!endif mod_unreleased
+       !endif mod_unreleased
 #endif
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
@@ -3174,13 +3182,19 @@ end subroutine optimize_atomic_fragment
     ! MODIFY FOR NEW MODEL 
     ! If you implement a new model, please set fragment%energies(?) for your model,
     ! see FRAGMODEL_* definitions in dec_typedef.F90 to determine the "?".
-
+    
     select case(fragment%ccmodel)
     case(MODEL_MP2)
        ! MP2
        fragment%energies(FRAGMODEL_LAGMP2) = fragment%LagFOP 
        fragment%energies(FRAGMODEL_OCCMP2) = fragment%EoccFOP
        fragment%energies(FRAGMODEL_VIRTMP2) = fragment%EvirtFOP 
+#ifdef MOD_UNRELEASED 
+       if(DECinfo%F12) then
+          ! MP2-F12: MP2 + F12-correction
+          fragment%energies(FRAGMODEL_MP2f12) = fragment%EoccFOP
+       endif
+#endif
     case(MODEL_CC2)
        ! CC2
        fragment%energies(FRAGMODEL_OCCCC2) = fragment%EoccFOP

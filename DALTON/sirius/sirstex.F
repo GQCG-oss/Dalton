@@ -162,9 +162,9 @@ C  Allocate memory
 C
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDEN ,2*N2BASX,WORK,KFREE,LFREE) !maybe a multiple of
-      CALL MEMGET('REAL',KFSTX,2*N2BASX,WORK,KFREE,LFREE) !n2basx
+      CALL MEMGET2('REAL','CMO' ,KCMO ,NCMOT   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DEN' ,KDEN ,2*N2BASX,WORK,KFREE,LFREE) !maybe a multiple of
+      CALL MEMGET2('REAL','FSTX',KFSTX,2*N2BASX,WORK,KFREE,LFREE) !n2basx
 C
 C  Augment basis set
 C
@@ -352,7 +352,7 @@ C
      *      NCDETS_,NCMOT_,NNASHX_,NNASHY_,NNORBT_,N2ORBT_,
      *      NSYM_,MULD2H_, NRHF_,NFRO_,
      *      NISH_,NASH_,NORB_,NBAS_
-         CALL MEMGET('REAL',KCMO,NCMOT_,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO',KCMO,NCMOT_,WORK,KFREE,LFREE)
          CALL READT(LUSIFC,NCMOT_,WORK(KCMO))
       ELSE
          CALL QUIT('ERROR (AUGORB) MO''s not found on SIRIFC')
@@ -379,8 +379,8 @@ C
 C
 C   Need AO overlap matrix
 C
-      CALL MEMGET('REAL',KAOTR,NNBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAOSQ,N2BAS(1),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','AOTR',KAOTR,NNBAST,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','AOSQ',KAOSQ,N2BAS(1),WORK,KFREE,LFREE)
       CALL RDONEL('OVERLAP ',.TRUE.,WORK(KAOTR),NNBAST)
 C
 C  Copy old orbitals to CMO with new dimensions
@@ -437,7 +437,7 @@ C Orthonormalize new orbitals using Gram-Schmidt
 C
       OLFLAG = FLAG(32)
       FLAG(32) = .FALSE.
-      CALL MEMGET('REAL',KS,N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','S',KS,N2BASX,WORK,KFREE,LFREE)
       CALL ORTHO(CMO,WORK(KS),WORK(KFREE),LFREE)
       FLAG(32) = OLFLAG
       IF (IPRSTX.GT.10) THEN
@@ -539,7 +539,7 @@ C
 C
 C Extract occupied orbitals
 C
-      CALL MEMGET('REAL',KMOOCC,NBAST*NOCCT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','MOOCC',KMOOCC,NBAST*NOCCT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KMOOCC),NBAST*NOCCT)
       IF (IPRSTX.GT.10) THEN
          call header('APPOCC input:occupied orbitals  ',LUPRI)
@@ -617,7 +617,7 @@ C
          READ (LUSIFC) ! 3. CMO
          READ (LUSIFC) ! 4. REF
          READ (LUSIFC) ! 5. DV
-         CALL MEMGET('REAL',KF,N2ORBT_,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','F',KF,N2ORBT_,WORK,KFREE,LFREE)
          CALL READT(LUSIFC,N2ORBT_,WORK(KF))
       END IF
       CALL GPCLOSE(LUSIFC,'KEEP')
@@ -625,10 +625,12 @@ C
          CALL HEADER('APPENE:F',LUPRI)
          CALL OUTPTB(WORK(KF),NORB_,NSYM_,1,LUPRI)
       END IF
-      CALL MEMGET('REAL',KEVEC,NORB_(1)*NBAS_(1),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEVAL,NORB_(1)*NBAS_(1),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSCR,NORB_(1),WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',ISCR,NORB_(1),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EVEC',KEVEC,NORB_(1)*NBAS_(1),
+     &   WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EVAL',KEVAL,NORB_(1)*NBAS_(1),
+     &   WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SCR ',KSCR,NORB_(1),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ISCR',ISCR,NORB_(1),WORK,KFREE,LFREE)
 C
 C Extract Fock matrix diagonal
 C
@@ -686,8 +688,8 @@ C#######################################################################
 C
 C Allocate gound and final state orbitals
 C
-      CALL MEMGET('REAL',KGS,NDIMT*NOCCT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCH,NDIMT*NOCCT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GS',KGS,NDIMT*NOCCT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CH',KCH,NDIMT*NOCCT,WORK,KFREE,LFREE)
 C
 C Read ground state orbitals
 C
@@ -711,7 +713,7 @@ C
       END IF
       READ(LUSTEX)  ! orbital energies
       READ(LUSTEX)  ! orbital indices
-      CALL MEMGET('REAL',KMOVLP,N2OCCX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','MOVLP',KMOVLP,N2OCCX,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KMOVLP),N2OCCX)
       IF (STEXMO) THEN
 C
@@ -728,8 +730,8 @@ C
 C
 C Read AO overlap matrix
 C
-         CALL MEMGET('REAL',KAOTR,NNBAST,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KAOSQ,N2BAST,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','AOTR',KAOTR,NNBAST,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','AOSQ',KAOSQ,N2BAST,WORK,KFREE,LFREE)
          CALL RDONEL('OVERLAP ',.TRUE.,WORK(KAOTR),NNBAST)
          IF (IPRSTX.GT.0) THEN
             CALL HEADER('AO overlap from RDONEL',LUPRI)
@@ -830,7 +832,7 @@ C
 C
 C Loop over holes
 C
-      CALL MEMGET('REAL',KDCORR,N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DCORR',KDCORR,N2BASX,WORK,KFREE,LFREE)
       ICOFF=0
       IDOFF=0
       CALL DZERO(WORK(KDCORR),N2BASX)
@@ -938,9 +940,9 @@ c     print *,'stxfck: allocated memory ',kfree
 C
 C ***** one-electron part in WRK(KH1AO)
 C
-      CALL MEMGET('REAL',KH1AO,N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H1AO',KH1AO,N2BASX,WORK,KFREE,LFREE)
       CALL SIRH1(WORK(KH1AO),WORK(KFREE),LFREE)
-      CALL MEMGET('REAL',KTMP,NNBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TMP',KTMP,NNBASX,WORK,KFREE,LFREE)
       CALL PKSYM1(WORK(KTMP),WORK(KH1AO),NBAS,NSYM,-1)
       CALL DSPTGE(NBAST,WORK(KTMP),WORK(KH1AO))
       IF (DEBUG) THEN
@@ -1048,7 +1050,7 @@ C#######################################################################
       READ(LUSTEX) !ch orbitals
       READ(LUSTEX) !ch orbital energies
       READ(LUSTEX) !ch orbital indices 
-      CALL MEMGET('REAL',KMOV,N2OCCX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','MOV',KMOV,N2OCCX,WORK,KFREE,LFREE)
       CALL READT(LUSTEX,N2OCCX,WORK(KMOV))
       CALL GPCLOSE(LUSTEX, 'KEEP')
 C
@@ -1086,7 +1088,7 @@ c     IF (NASHT2.EQ.1.or.NASHT2.EQ.2) THEN
 !
 ! Write to file
 !
-      CALL MEMGET('REAL',KTRI,NNBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TRI',KTRI,NNBASX,WORK,KFREE,LFREE)
       CALL DGETSP(NBAST,F,WORK(KTRI))
 !
 ! Transform to MO
@@ -1296,6 +1298,7 @@ C        ... DMAT(i,j) = DMAT(j,i) has been used above
 C#######################################################################
       SUBROUTINE APPPRP(LUSTXF,WORK,KFREE,LFREE)
 #include "implicit.h"
+#include "priunit.h"
       INTEGER LUSTXF, KFREE, LFREE
       REAL*8 WORK(*)
 #include "inftap.h"
@@ -1309,7 +1312,7 @@ C#######################################################################
 #include "dipole.h"
       LOGICAL FNDLB2,DEBUG
       EXTERNAL FNDLB2
-      CHARACTER*7 RTNLBL(2)
+      CHARACTER*8 RTNLBL(2)
       PARAMETER (NPROP = 9)
       CHARACTER*8 PROP(NPROP)
       INTEGER SYMPRP(NPROP)
@@ -1320,8 +1323,8 @@ C#######################################################################
       DATA ANTISY/
      &   .FALSE., .FALSE., .FALSE.,
      &   .TRUE., .TRUE., .TRUE.,
-     &   .TRUE., .TRUE., .TRUE.
-     &   /
+     &   .TRUE., .TRUE., .TRUE./
+
       CALL QENTER('APPPRP')
       CALL FLSHFO(LUPRI)
       DEBUG=IPRSTX.GT.10
@@ -1366,8 +1369,8 @@ C#######################################################################
 !
 ! Copy overlap and h1 integrals to LUSTXF
 !
-      CALL MEMGET('REAL',KAONNT,NNBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAONNX,NNBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','AONNT',KAONNT,NNBAST,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','AONNX',KAONNX,NNBASX,WORK,KFREE,LFREE)
 
       CALL RDONEL('OVERLAP ',.TRUE.,WORK(KAONNT),NNBAST)
       CALL DZERO(WORK(KAONNX),NNBASX)
@@ -1385,7 +1388,7 @@ C#######################################################################
 ! Copy property integrals to LUSTXF
 !
       REWIND LUPROP
-      CALL MEMGET('REAL',KPRP,NNBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PRP',KPRP,NNBASX,WORK,KFREE,LFREE)
       if (debug) write(LUPRI,*) 'kprp,kfree,lfree',kprp,kfree,lfree
       DO IPROP=1,NPROP
          IF (FNDLB2(PROP(IPROP),RTNLBL,LUPROP)) THEN
@@ -1400,7 +1403,7 @@ C#######################################################################
                CALL WRITT(LUSTXF,NNBASX,WORK(KPRP))
             END IF
          ELSE
-            CALL QUIT('APPPRP:ERROR READING INTEGRALS FROM LUPROP:'//
+            CALL QUIT('APPPRP: ERROR READING INTEGRALS FROM LUPROP:'//
      &                PROP(IPROP))
          END IF
       END DO
@@ -1421,8 +1424,8 @@ C#######################################################################
 !
 ! Append nuclear dipole moments  (need to initialize common dipole.h)
 !
-      CALL MEMGET('REAL',KCSTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSCTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CSTRA',KCSTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SCTRA',KSCTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
       CALL DIPNUC(WORK(KCSTRA),WORK(KSCTRA),0,.FALSE.)
       CALL WRITT(LUSTXF,3,DIPMN)
       IF (IPRSTX.GT.0) THEN
@@ -1529,7 +1532,7 @@ C
 C     OPEN(LUIT1,FORM='UNFORMATTED',STATUS='OLD')
       REWIND LUIT1
       IF (FNDLAB(LABEL,LUIT1)) THEN
-         CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO',KCMO,NCMOT,WORK,KFREE,LFREE)
          CALL READT(LUIT1,NCMOT,WORK(KCMO))
          IF (IPRSTX.GT.10) THEN
             call prorb(work(kcmo),.false.,LUPRI)
@@ -1542,7 +1545,7 @@ C
 C
 C Get AO overlap
 C
-      CALL MEMGET('REAL',KAOTR,NNBAST,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','AOTR',KAOTR,NNBAST,WORK,KFREE,LFREE)
       CALL RDONEL('OVERLAP ',.TRUE.,WORK(KAOTR),NNBAST)
       IF (DEBUG) THEN
          call header('LTRA:overlap',LUPRI)
@@ -1551,7 +1554,7 @@ C
 C
 C Form SAO CM
 C
-      CALL MEMGET('REAL',KAOSQ,N2BAST,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','AOSQ',KAOSQ,N2BAST,WORK,KFREE,LFREE)
       DO ISYM=1,NSYM
          NBASI=NBAS(ISYM)
          NORBI=NORB(ISYM)
@@ -1575,7 +1578,7 @@ C
 C
 C Left transform input matrix
 C
-      CALL MEMGET('REAL',KMO,NORBT*NOCCT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','MO',KMO,NORBT*NOCCT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KMO),NORBT*NOCCT)
       if (debug) write(LUPRI,*)'kmo kfree lfree',kmo,kfree,lfree
       IF (IPRSTX.GT.10) THEN
@@ -1622,7 +1625,7 @@ C     OPEN(LUIT1,FORM='UNFORMATTED',STATUS='OLD')
       REWIND LUIT1
       if (debug) write(LUPRI,*)'fndlab label luit1 ',label,luit1
       IF (FNDLAB(LABEL,LUIT1)) THEN
-         CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO',KCMO,NCMOT,WORK,KFREE,LFREE)
          CALL READT(LUIT1,NCMOT,WORK(KCMO))
          if (debug) call prorb(work(kcmo),.false.,LUPRI)
       ELSE
@@ -1632,8 +1635,8 @@ C     CLOSE(LUIT1)
 C
 C Form square and transform
 C
-      CALL MEMGET('REAL',KPRPSQ,N2BASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPRPMO,N2ORBX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PRPSQ',KPRPSQ,N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PRPMO',KPRPMO,N2ORBX,WORK,KFREE,LFREE)
       IF (ANTI) THEN
          CALL DAPTGE(NBAST,PRPTR,WORK(KPRPSQ))
       ELSE
@@ -1730,10 +1733,10 @@ C
       NMO2=NMO-NMO1
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('REAL',K1A,NMO1*NMO1,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',K1B,NMO1*NMO2,WORK,KFREE,LFREE)
-      NTMP=NAO*MAX(NMO1,NMO2)
-      CALL MEMGET('REAL',KTMP,NTMP,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','1A',K1A,NMO1*NMO1,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','1B',K1B,NMO1*NMO2,WORK,KFREE,LFREE)
+      LTMP=NAO*MAX(NMO1,NMO2)
+      CALL MEMGET2('REAL','TMP',KTMP,LTMP,WORK,KFREE,LFREE)
 C
 C  <1|A>
 C
@@ -1781,7 +1784,7 @@ C
 C           S = ( 1-<A|1><1|A>      - <A|1><1|B> )
 C               (  -<B|1><1|A>    1 - <B|1><1|B> )
 C
-      CALL MEMGET('REAL',KS,NMO*NMO,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','S',KS,NMO*NMO,WORK,KFREE,LFREE)
       CALL DUNIT(WORK(KS),NMO)
       ISAA = KS
       ISBA = KS + NMO1
@@ -1810,7 +1813,7 @@ C
 C
 C Diagonalize MO overlap
 C
-      CALL MEMGET('REAL',KEIG,NMO,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NMO,WORK,KFREE,LFREE)
       CALL DSYEV(
      &   'V','U',NMO,WORK(KS),NMO,WORK(KEIG),WORK(KFREE),LFREE,INFO
      &   ) 
@@ -1907,10 +1910,10 @@ C
 C 1. Form MO overlap <A|1>, <1|B>
 C
 C
-      CALL MEMGET('REAL',KA1,NMO1*NMO1,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',K1B,NMO1*NMO2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','A1',KA1,NMO1*NMO1,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','1B',K1B,NMO1*NMO2,WORK,KFREE,LFREE)
       NTMP=NAO*MAX(NMO1,NMO2)
-      CALL MEMGET('REAL',KTMP,NTMP,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TMP',KTMP,NTMP,WORK,KFREE,LFREE)
 C
 C  <A|1>
 C
@@ -1955,8 +1958,8 @@ C
 C
 C    SBB = MATMUL (TRANPOSE(S1B), S1B))
 C
-      CALL MEMGET('REAL',KSBB,NMO2*NMO2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KUBB,NMO2*NMO2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SBB',KSBB,NMO2*NMO2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UBB',KUBB,NMO2*NMO2,WORK,KFREE,LFREE)
       CALL DGEMM('T','N',NMO2,NMO2,NMO1,1.D0,
      &           WORK(K1B),NMO1,
      &           WORK(K1B),NMO1,0.D0,
@@ -2013,7 +2016,7 @@ C   The transpose
 C   <A|1><1|B> forms right-hand side vectors for the solution of
 C   U(A,B)
 C
-      CALL MEMGET('REAL',KA11B,NMO1*NMO2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','A11B',KA11B,NMO1*NMO2,WORK,KFREE,LFREE)
       CALL DGEMM('N','N',NMO1,NMO2,NMO1,1.D0,
      &           WORK(KA1),NMO1,
      &           WORK(K1B),NMO1,0.D0,
@@ -2032,7 +2035,7 @@ C
       END IF
 C              UBB UAB+ = - <B|1><1|A>
 C     
-      CALL MEMGET('INTE',KIPIV,NMO2,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IPIV',KIPIV,NMO2,WORK,KFREE,LFREE)
       LUBB = KTMP
       CALL DCOPY(NMO2*NMO2,WORK(KUBB),1,WORK(LUBB),1)
       CALL DGETRF(!NOTE LU-DECOMPOSES UBB
@@ -2092,8 +2095,8 @@ C
       !
       ! Test if matrix is unitary
       !
-         CALL MEMGET('REAL',KU,NMO*NMO,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',K1,NMO*NMO,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','U',KU,NMO*NMO,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','1',K1,NMO*NMO,WORK,KFREE,LFREE)
          IAA = KU
          IBA = KU + NMO1
          IAB = KU + NMO1*NMO
@@ -2138,7 +2141,7 @@ C  I/O  :
       CALL QENTER('MATFUN')
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('REAL',KEIG,N,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,N,WORK,KFREE,LFREE)
       CALL DSYEV(
      &   'V','U',N,A,N,WORK(KEIG),WORK(KFREE),LFREE,INFO
      &   )
@@ -2166,7 +2169,7 @@ C            print *,'eig ',eig
             END IF
             CALL DSCAL(N,EIG,FA(1,I),1)
          END DO
-         CALL MEMGET('REAL',KTMP,N*N,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','TMP',KTMP,N*N,WORK,KFREE,LFREE)
          CALL DGEMM('N','T',N,N,N,1.D0,
      &              A,N,
      &              FA,N,0.D0,
@@ -2234,8 +2237,9 @@ C Allocate
 C
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('REAL',KVWMAT,N2BASX*2*NAUGER,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','VWMAT',KVWMAT,N2BASX*2*NAUGER,
+     &   WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO,NCMOT,WORK,KFREE,LFREE)
 C
 C Augment
 C
@@ -2428,7 +2432,7 @@ C Write to file AUGER
 C
       STRCOU(1:8)='(IJ|**) '
       STREXC(1:8)='(I*|*J) '
-      CALL MEMGET('REAL',KVWMO,N2ORBX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','VWMO',KVWMO,N2ORBX,WORK,KFREE,LFREE)
 CVC
       LUAUG=-1
       write(LUPRI,*) ' apre unita',luaug
@@ -2622,7 +2626,7 @@ C     OPEN(LUIT1,FORM='UNFORMATTED',STATUS='OLD')
       REWIND LUIT1
       if (debug) write(LUPRI,*)'GENTRA fndlab: label luit1 ',label,luit1
       IF (FNDLAB(LABEL,LUIT1)) THEN
-         CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO',KCMO,NCMOT,WORK,KFREE,LFREE)
          CALL READT(LUIT1,NCMOT,WORK(KCMO))
          if (debug) call prorb(work(kcmo),.false.,LUPRI)
       ELSE

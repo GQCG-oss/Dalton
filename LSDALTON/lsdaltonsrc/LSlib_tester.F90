@@ -2,21 +2,21 @@
 PROGRAM lslib_test
 use precision
 implicit none
-logical :: OnMaster
+logical :: OnMaster,meminfo_slaves
 Integer :: lupri,luerr
 luerr          = 0
 lupri          = 0
 ! setup the calculation 
 call lslib_init(OnMaster,lupri,luerr)
 
-IF(OnMaster) call LSlib_test_driver(OnMaster,lupri,luerr)
+IF(OnMaster) call LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
 
 ! free everything take time and close the files
-call lslib_free(OnMaster,lupri,luerr)
+call lslib_free(OnMaster,lupri,luerr,meminfo_slaves)
 
 CONTAINS
 
-SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr)
+SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
   use files
   use lsmpi_type, only: lsmpi_finalize
 #ifdef LSLIB_RESTART
@@ -30,9 +30,11 @@ SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr)
   use integralinterfaceMod
   use memory_handling
 #endif
+  use lslib_state, only: config
   implicit none
   logical, intent(in) :: OnMaster
   integer, intent(inout) :: lupri, luerr
+  logical, intent(out) :: meminfo_slaves
   Integer             :: nbast,natoms,nelectrons,i,j,k,l,n,m,o,x,y,z,iGrad,iHess,iCubic,ij,nDerivPacked
 #ifdef LSLIB_RESTART
   type(matrix) :: D
@@ -1292,6 +1294,8 @@ deallocate(Fmat)
 deallocate(Dmat)
 deallocate(Smat)
 deallocate(DFD)
+
+meminfo_slaves = config%mpi_mem_monitor
 
 write(lupri,'(A)') ''
 write(lupri,'(A)') '*** LSlib tester completed ***'

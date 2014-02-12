@@ -730,7 +730,6 @@ contains
     enddo
     
     if(DECinfo%F12debug) then
-
        print *, '----------------------------------------'
        print *, '    B matrix - Terms for testing        '   
        print *, '----------------------------------------'
@@ -743,7 +742,6 @@ contains
        print *, 'norm4D(B7ijij):', norm4D(B7ijkl)
        print *, 'norm4D(B8ijij):', norm4D(B8ijkl)
        print *, 'norm4D(B9ijij):', norm4D(B9ijkl)
-
     end if
 
     call get_mp2f12_sf_E21(V1ijkl, noccEOS, V1energy,  1.0E0_realk)
@@ -829,7 +827,7 @@ contains
        write(*,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
        write(*,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
     end if
-    
+    print*,'DECinfo%output',DECinfo%output
     write(DECinfo%output,*) 'WANGY TOYCODE: MP2 CORRELATION ENERGY = ', MP2energy
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY = ', E_21
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY = ', E_22
@@ -838,7 +836,8 @@ contains
     write(DECinfo%output,*) 'WANGY TOYCODE: F12 CORRECTION TO ENERGY = ', E_F12
     write(DECinfo%output,*) 'WANGY TOYCODE: MP2-F12 CORRELATION ENERGY = ', MP2energy+E_F12
     
-    Myfragment%energies(FRAGMODEL_F12) = E_F12
+    !> Setting the MP2-F12 correction
+    Myfragment%energies(FRAGMODEL_MP2f12) = E_F12
 
     ! ***********************************************************
     ! Free Memory

@@ -1235,6 +1235,11 @@ contains
     integer(kind=long) :: min_mem
     integer :: MinAOBatch, na, ng, nnod, magic
 
+    nnod = 1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
+
     !===========================================================
     ! Get MO batche size depending on MO-ccsd residual routine.
     dimMO = 1
@@ -1256,9 +1261,7 @@ contains
 
     ! Check that every nodes will have a job in residual calc.
     ! But the dimension of the batch must stay above 10 MOs.
-#ifdef VAR_MPI
-    magic  = 2 
-    nnod   = infpar%lg_nodtot
+    magic  = 1
     Nbatch = ((ntot-1)/dimMO+1)
     Nbatch = Nbatch*(Nbatch+1)/2
 
@@ -1271,7 +1274,6 @@ contains
         exit
       end if
     end do
-#endif
 
     ! sanity check:
     call get_mem_MO_CCSD_residual(MemNeed,ntot,nb,no,nv,dimMO) 
@@ -1319,9 +1321,7 @@ contains
     end if
 
     ! Check that every nodes has a job:
-#ifdef VAR_MPI
     magic = 2 
-    nnod  = infpar%lg_nodtot
     ng    = ((nb-1)/MaxGamma+1)
     na    = ((nb-1)/MaxAlpha+1)
 
@@ -1333,11 +1333,13 @@ contains
     if (na*ng<magic*nnod.and.(MaxAlpha==MinAObatch).and.nnod>1)then
       do while(na*ng<magic*nnod)
         MaxGamma = MaxGamma - 1
-        if (MaxGamma<1) exit
+        if (MaxGamma<MinAObatch) then
+          MaxGamma = MinAObatch
+          exit
+        end if
+        ng    = ((nb-1)/MaxGamma+1)
       end do
-      if (MaxGamma<MinAObatch) MaxGamma = MinAObatch
     endif
-#endif
 
     ! sanity check:
     call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
