@@ -1325,11 +1325,13 @@ contains
     ng    = ((nb-1)/MaxGamma+1)
     na    = ((nb-1)/MaxAlpha+1)
 
+    ! Number of Alpha batches must be at least magic*nnod
     if (na*ng<magic*nnod.and.(MaxAlpha>MinAObatch).and.nnod>1)then
       MaxAlpha = (nb/(magic*nnod))
       if (MaxAlpha<MinAObatch) MaxAlpha = MinAObatch
     end if
 
+    na    = ((nb-1)/MaxAlpha+1)
     if (na*ng<magic*nnod.and.(MaxAlpha==MinAObatch).and.nnod>1)then
       do while(na*ng<magic*nnod)
         MaxGamma = MaxGamma - 1
@@ -1891,7 +1893,7 @@ contains
     else
   
       ! get batch from pdm:
-      ncopy = dimP*dimQ*ntot*ntot
+      ncopy = dimP*dimQ*ntot*(ntot+1)/2
       if (nnod>1) then
         call array_get_tile(pack_gmo,tile,tmp,ncopy)
       else

@@ -30,7 +30,7 @@ LSDALTON
 - Fixed a bug related to improber shutdown of MPI calculation. In the case
   of wrong LSDALTON.INP for instance the calculation will issue a error 
   statement and afterward hang forever in a MPI call. 
- 
+- Fixed a OpenMP bug in the calculation of how much memory there should be used during an exchange-correlation calculation - resulting in huge memory usage for large molecular system.   
 
 
 
