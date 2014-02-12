@@ -17,33 +17,31 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decmp2f12.info <<'%EOF%'
+cat > decmp2f12_h2.info <<'%EOF%'
    MP2-F12 energy for full molecule
    --------------------------------
-   Molecule:         H2O
+   Molecule:         H2
    Wave Function:    MP2-F12 / 6-31G
-   Test Purpose:     Test DEC MP2-F12 energy using toy code (Yang W)
+   Test Purpose:     Test DEC MP2-F12 h2 energy using toy code (Yang W)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decmp2f12.mol <<'%EOF%'
+cat > decmp2f12_h2.mol <<'%EOF%'
 BASIS
 6-31G Aux=cc-pVDZ CABS=aug-cc-pVDZ
 %cc-pVDZ, cc-pVTZ
 
-Atomtypes=2 Charge=0 Nosymmetry Angstrom
-Charge=8.0 Atoms=1
-O    0.0000     0.0000  0.1173
+Atomtypes=1 Charge=0 Nosymmetry Angstrom
 Charge=1.0 Atoms=2
-H    0.0000     0.7572  -0.4692
-H    0.0000     -0.7572 -0.4692
+H    0.0000     0.7572 -0.4692
+H    0.0000    -0.7572 -0.4692
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decmp2f12.dal <<'%EOF%'
+cat > decmp2f12_h2.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -56,6 +54,7 @@ ATOMS
 .NOGCBASIS
 **DEC
 .SimulateFull
+.PUREHYDROGENDEBUG
 .MP2
 .F12debug
 .CANONICAL
@@ -72,8 +71,8 @@ ATOMS
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >decmp2f12.check
-cat >>decmp2f12.check <<'%EOF%'
+echo $CHECK_SHELL >decmp2f12_h2.check
+cat >>decmp2f12_h2.check <<'%EOF%'
 
 log=$1
 
@@ -84,31 +83,31 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-75.983974" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-0.994849" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # STANDARD MP2 CORRELATION ENERGY
-CRIT1=`$GREP "MP2 CORRECTION TO ENERGY : * \-0.12885[0-1]" $log | wc -l`
+CRIT1=`$GREP "MP2 CORRECTION TO ENERGY : * \-0.030059" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="MP2 correlation energy is not correct"
 
 # F12 CONTRIBUTION TO CORRELATION ENERGY
-CRIT1=`$GREP "F12 CORRECTION TO ENERGY : * \-0.3248716" $log | wc -l`
+CRIT1=`$GREP "F12 CORRECTION TO ENERGY : * \-0.012347" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
 ERROR[3]="F12 correction energy is not correct"
 
 # MP2-F12 CORRELATION ENERGY
-CRIT1=`$GREP "MP2-F12 CORRELATION ENERGY : *\-0.453722" $log | wc -l`
+CRIT1=`$GREP "MP2-F12 CORRELATION ENERGY : *\-0.042407" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="MP2-F12 corrected correlation energy is not correct"
 
 # TOTAL MP2-F12 CORRELATION ENERGY
-CRIT1=`$GREP "E: Total MP2-F12 energy: *\-76.437697" $log | wc -l`
+CRIT1=`$GREP "E: Total MP2-F12 energy: *\-1.037257" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="MP2-F12 corrected correlation energy is not correct"
