@@ -67,6 +67,9 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    type(matrix), pointer :: Dpointer, Fpointer
    LOGICAL :: dalink, incremental,onmaster,cs00,NotLastSCFLevel,gradalloc
    real(realk) :: acceptratio, limitratio
+   real(realk) :: h
+   type(matrix) :: Dtest
+   !
    ndmat = 1
    OnMaster=.true.
    NotLastSCFLevel = config%opt%purescf.OR.config%integral%LOW_ACCURACY_START
@@ -228,6 +231,60 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
          ls%setting%scheme%DALINK = dalink     !Turn DaLink back on, if requested:
          ls%setting%scheme%DFT%CS00 = CS00
       else
+
+
+ !        ! START DEBUG: PATRICK
+ !         call mat_init(Dtest,D(1)%nrow,D(1)%ncol)
+ !         call mat_assign(Dtest,D(1))
+
+ !        h=1E-5_realk
+ !         dalink = ls%setting%scheme%DALINK
+ !         ls%setting%scheme%DALINK = .false.
+ !         cs00 = ls%setting%scheme%DFT%CS00
+ !         ls%setting%scheme%DFT%CS00 = .FALSE.
+ !         D(1)%elms(1)= D(1)%elms(1)-h
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT DENSITY MAT for D(1,1)min"
+ !        call mat_print(D(1),1,D(1)%nrow,1,D(1)%ncol,config%lupri)
+ !         CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)         
+ !         call mat_assign(D(1),Dtest)
+ !         ls%setting%scheme%DALINK = dalink     !Turn DaLink back on, if requested:
+ !         ls%setting%scheme%DFT%CS00 = CS00
+ !      write(config%lupri,*) "** DEBUG ADMM - PRINT ENERGY for D(1,1)min"
+ !      write(config%lupri,*) "Emin", E(1)
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT FOCK MAT for D(1,1)min"
+ !        call mat_print(F(1),1,F(1)%nrow,1,F(1)%ncol,config%lupri)
+
+
+ !         dalink = ls%setting%scheme%DALINK
+ !         ls%setting%scheme%DALINK = .false.
+ !         cs00 = ls%setting%scheme%DFT%CS00
+ !         ls%setting%scheme%DFT%CS00 = .FALSE.
+ !         D(1)%elms(1)= D(1)%elms(1)+1E0_realk*h
+ !         CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)         
+ !         call mat_assign(D(1),Dtest)
+ !         ls%setting%scheme%DALINK = dalink     !Turn DaLink back on, if requested:
+ !         ls%setting%scheme%DFT%CS00 = CS00
+ !      write(config%lupri,*) "** DEBUG ADMM - PRINT ENERGY for D(1,1)max"
+ !      write(config%lupri,*) "Emax",E(1)
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT DENSITY MAT for D(1,1)max"
+ !        call mat_print(D(1),1,D(1)%nrow,1,D(1)%ncol,config%lupri)
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT FOCK MAT for D(1,1)max"
+ !        call mat_print(F(1),1,F(1)%nrow,1,F(1)%ncol,config%lupri)
+
+ !  ! back to original density
+ !         CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)
+
+ !      write(config%lupri,*) "** DEBUG ADMM - PRINT ENERGY for D0"
+ !      write(config%lupri,*) "Eexact",E(1)
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT DENSITY MAT for D0"
+ !        call mat_print(D(1),1,D(1)%nrow,1,D(1)%ncol,config%lupri)
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT FOCK MAT for D0"
+ !        call mat_print(F(1),1,F(1)%nrow,1,F(1)%ncol,config%lupri)
+
+ !         call mat_free(Dtest)
+ ! call lsquit('Stop SCF after first iteration for DEBUGGING ADMM',-1)
+ !        ! END  DEBUG: PATRICK
+
          CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)
       endif
       CALL LSTIMER('FCK_FO ',TIMSTR,TIMEND,config%LUPRI)
