@@ -3857,6 +3857,13 @@ contains
     
     call array4_free(JAIB)
 
+#ifdef VAR_MPI
+
+    ! here, synchronize all procs
+    call lsmpi_barrier(infpar%lg_comm)
+
+#endif
+
     call LSTIMER('CCSD(T) INT',tcpu,twall,DECinfo%output)
 
   end subroutine get_CCSDpT_integrals
