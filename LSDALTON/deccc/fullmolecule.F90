@@ -67,6 +67,8 @@ contains
        call dec_get_canonical_orbitals(molecule)
     end if
 
+    call molecule_get_carmom(molecule,mylsitem)
+
     ! Skip read-in of info for molecule if requested (only for testing)
     if(DECinfo%SkipReadIn) then
        write(DECinfo%output,*) 'WARNING: I do NOT read in the molecular info files &

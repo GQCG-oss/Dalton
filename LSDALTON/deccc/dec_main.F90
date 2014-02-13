@@ -102,7 +102,6 @@ contains
     type(fullmolecule) :: Molecule
     integer :: nbasis
 
-    print *, 'Hartree-Fock info is read from file...'
     
     ! Minor tests
     ! ***********
@@ -119,12 +118,15 @@ contains
       return
     endif
 
+    print *, 'Hartree-Fock info is read from file...'
+
     ! Get density matrix
     Molecule%nbasis = get_num_basis_functions(mylsitem)
     call dec_get_density_matrix_from_file(Molecule%nbasis,D)
     
     ! Get informations about full molecule by reading from file
     call molecule_init_from_files(molecule,mylsitem,D)
+    print *,"from files done calling dec_main_prog"
  
     !> F12
     !call molecule_init_f12(molecule,mylsitem,D)
