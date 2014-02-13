@@ -391,66 +391,87 @@ contains
     nunoccAOS = fragment%nunoccAOS  
     nocvAOS  = fragment%noccAOS + fragment%nunoccAOS
     nvirtAOS = fragment%nunoccAOS
-  
-    !CABS MO and RI AO (Fragment ncabsMO = Molecule ncabsMO) Needs to be changed
-    ncabsAO = size(MyMolecule%Ccabs,1)
-    ncabsMO = size(MyMolecule%Ccabs,2)
+    
+    if(DECinfo%f12debug) then
+       !CABS MO and RI AO (Fragment ncabsMO = Molecule ncabsMO) Needs to be changed
+       !ncabsAO = size(MyMolecule%Ccabs,1)
+       !ncabsMO = size(MyMolecule%Ccabs,2)
+       !print *, "associated(MyMolecule%Ccabs)", associated(MyMolecule%Ccabs)
+       !print *, "size(MyMolecule%Ccabs,2)", size(MyMolecule%Ccabs,2)
+    endif
+
+    if(DECinfo%f12debug) then
+       print *, "associated(fragment%Ccabs)", associated(fragment%Ccabs)
+       print *, "size(fragment%Ccabs,2)", size(fragment%Ccabs,2)
+    endif
+
+    ncabsAO  = size(fragment%Ccabs,1)
+    ncabsMO = size(fragment%Ccabs,2)
+
+    if(DECinfo%F12debug) then
+       print *, "---------------------------------------"
+       print *, " atomic_fragment_init_f12 dec_atom.F90 "
+       print *, "---------------------------------------"
+       print *, "nbasis: ", nbasis
+       print *, "noccEOS: ", noccEOS
+       print *, "nunoccEOS: ", nunoccEOS
+       print *, "---------------------------------------"
+       print *, "nocvAOS", nocvAOS
+       print *, "noccAOS", noccAOS
+       print *, "nvirtAOS", nvirtAOS
+       print *, "ncabsAO", ncabsAO
+       print *, "ncabsMO", ncabsMO
+       print *, "---------------------------------------"
+    end if 
     
     ! hJir
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
     do j=1,ncabsAO
        do i=1, fragment%noccEOS
-!          ix = fragment%idxo(i)
           ix = fragment%occEOSidx(i)
           fragment%hJir(i,:) = MyMolecule%hJir(ix,:)
        enddo
     enddo
-
-    print *,"norm2D(MyMolecule%hJir)", norm2D(MyMolecule%hJir) 
-    
+  
     ! Krs
     call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
     call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
 
-
-    print *,"norm2D(MyMolecule%Krs)", norm2D(MyMolecule%Krs) 
- 
     ! Frs
     call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
     call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
 
-    print *,"norm2D(MyMolecule%Frs)", norm2D(MyMolecule%Frs) 
- 
-
     ! Frm
     call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
     do i=1, fragment%noccAOS
-!       iy = fragment%idxo(i)
        iy = fragment%occAOSidx(i)
        fragment%Frm(:,i) = MyMolecule%Frm(:,iy)
     enddo
 
-    print *,"norm2D(MyMolecule%Frm)", norm2D(MyMolecule%Frm) 
-
     ! Fcp in the order of the index (occ to virt)
     call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
     do i=1, fragment%noccAOS
-!       iy = fragment%idxo(i)  
        iy = fragment%occAOSidx(i)
        fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy)
     enddo
   
     do i=fragment%noccAOS+1, fragment%nunoccAOS+fragment%noccAOS
-!       iy = fragment%idxu(i-fragment%noccAOS)  
        iy = fragment%unoccAOSidx(i-fragment%noccAOS)
        fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy+MyMolecule%nocc)
     enddo
 
-    print *,"norm2D(MyMolecule%Fcp)", norm2D(MyMolecule%Fcp) 
-    
-    print *,"norm2D(fragment%Fcp)", norm2D(fragment%Fcp) 
+    if(DECinfo%F12debug) then
+       print *, "---------------------------------------"
+       print *, " atomic_fragment_init_f12 dec_atom.F90 "
+       print *, "---------------------------------------"
+       print *,"norm2D(fragment%hJir)", norm2D(fragment%hJir)
+       print *,"norm2D(fragment%Krs)" , norm2D(fragment%Krs) 
+       print *,"norm2D(fragment%Frs)" , norm2D(fragment%Frs) 
+       print *,"norm2D(fragment%Frm)" , norm2D(fragment%Frm) 
+       print *,"norm2D(fragment%Fcp)" , norm2D(fragment%Fcp) 
+       print *, "---------------------------------------"
+    endif
 
-    
   end subroutine atomic_fragment_init_f12
 
   !> \brief Initialize atomic fragments by simply including neighbouring atoms within
@@ -1159,7 +1180,6 @@ contains
     ! Basis info
     call atomic_fragment_basis(fragment,MyMolecule)
 
-
     ! lsitem
 #ifdef VAR_MPI
     ! Quick fix such that lsitem is never constructed for global master
@@ -1168,21 +1188,33 @@ contains
        call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
             fragment%natoms,DECinfo%output,0)
 
-       !F12-Ccabs
+       !Build F12 Ccabs and Ri for a fragment
        if(DECinfo%F12) then
+          print *, "create_f12_cabs_and_ri_fragment_info(fragment)"
           call create_f12_cabs_and_ri_fragment_info(fragment)
        end if
     end if
 
+    !F12-calculation F12-Fock terms
+    if(DECinfo%F12) then     
+       call atomic_fragment_init_f12(fragment,MyMolecule)
+    endif !F12
+
 #else
     call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
          fragment%natoms,DECinfo%output,0)
-    
-    !F12-Ccabs
+
+    !Build F12 Cabs and Ri for a fragment
     if(DECinfo%F12) then
-      call create_f12_cabs_and_ri_fragment_info(fragment)
+       print *, "create_f12_cabs_and_ri_fragment_info(fragment)"
+       call create_f12_cabs_and_ri_fragment_info(fragment)
     endif
-    
+
+    !F12-calculation F12-Fock terms
+    if(DECinfo%F12) then     
+       call atomic_fragment_init_f12(fragment,MyMolecule)
+    endif !F12
+
 #endif
 
     ! Basis info has now been set
@@ -2208,11 +2240,6 @@ contains
     integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
 
-    !F12-calculation F12-Fock terms
-    if(DECinfo%F12) then     
-       call atomic_fragment_init_f12(fragment,MyMolecule)
-    endif !F12
-
     ! allocate C^o(nbasis,occ) C^v(nbasis,unocc)
     call mem_alloc(fragment%CoLOC, fragment%nbasis,  fragment%noccLOC   )
     call mem_alloc(fragment%CvLOC, fragment%nbasis,  fragment%nunoccLOC )
@@ -2690,19 +2717,16 @@ contains
                & is not in bookkeeping list',-1)
        end if
 
-
        !F12 restart from file
        if(DECinfo%F12) then     
           print *, "Restart from F12 file" 
-          !call atomic_fragment_init_f12(fragments(MyAtom),MyMolecule)
+          call atomic_fragment_init_f12(fragments(MyAtom),MyMolecule)
        endif
     
-
        call fragment_read_data(funit,fragments(MyAtom),&
             & OccOrbitals,UnoccOrbitals,MyMolecule,Mylsitem,DoBasis)
 
     end do
-
 
     call lsclose(funit,'KEEP')
  
