@@ -312,6 +312,8 @@ contains
     ! ovoo pointers
     real(realk), pointer, dimension(:,:) :: ovoo_ptr_12, ovoo_ptr_13, ovoo_ptr_21
     real(realk), pointer, dimension(:,:) :: ovoo_ptr_23, ovoo_ptr_31, ovoo_ptr_32
+    ! vvvo pointers
+    real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_2, vvvo_ptr_3
 #endif
     type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     type(array)                 :: vvvo_pdm ! v^3 tiles from cbai, 1 == i, 2 == j, 3 == k
@@ -456,6 +458,7 @@ contains
 #ifdef VAR_OPENACC
                         call abij_ptr_alias_case_1(i,k,vvoo,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31)
                         call jaik_ptr_alias_case_1(i,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31)
+                        call cbai_ptr_alias_case_1(i,k,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_3,.true.)
 #endif
      
                         ! iik,iki
@@ -496,7 +499,7 @@ contains
 #ifdef VAR_OPENACC
                         call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31,&
                                              & ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31,&
-                                             & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,3),&
+                                             & vvvo_ptr_1,vvvo_ptr_3,&
                                              & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
 #else
                         call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo%val(:,:,i,i),vvoo%val(:,:,i,k),vvoo%val(:,:,k,i),&
@@ -510,6 +513,7 @@ contains
 #ifdef VAR_OPENACC
                         call abij_ptr_alias_case_2(i,j,vvoo,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23)
                         call jaik_ptr_alias_case_2(i,j,ovoo,ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23)
+                        call cbai_ptr_alias_case_2(i,j,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_2,.true.)
 #endif
      
                         ! ijj.jji
@@ -550,7 +554,7 @@ contains
 #ifdef VAR_OPENACC
                         call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23,&
                                              & ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23,&
-                                             & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,2),&
+                                             & vvvo_ptr_1,vvvo_ptr_2,&
                                              & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
 #else
                         call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,j,i),vvoo%val(:,:,j,j),&
@@ -566,6 +570,7 @@ contains
                                                  & vvoo_ptr_23,vvoo_ptr_31,vvoo_ptr_32)
                         call jaik_ptr_alias_case_3(i,j,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
                                                  & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32)
+                        call cbai_ptr_alias_case_3(i,j,k,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,.true.)
 #endif
      
                         ! ijk.jki
@@ -624,7 +629,7 @@ contains
                         call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_21,&
                                              & vvoo_ptr_23,vvoo_ptr_31,vvoo_ptr_32,ovoo_ptr_12,ovoo_ptr_13,&
                                              & ovoo_ptr_21,ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32,&
-                                             & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,2),vvvo_pdm%elm4(:,:,:,3),&
+                                             & vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,&
                                              & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
 #else
                         call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,i,k),&
@@ -668,6 +673,8 @@ contains
     ! ovoo pointers
     real(realk), pointer, dimension(:,:) :: ovoo_ptr_12, ovoo_ptr_13, ovoo_ptr_21
     real(realk), pointer, dimension(:,:) :: ovoo_ptr_23, ovoo_ptr_31, ovoo_ptr_32
+    ! vvvo pointers
+    real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_2, vvvo_ptr_3
 #endif
     type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     !> triples amplitudes and 3d work array
@@ -726,6 +733,7 @@ contains
 #ifdef VAR_OPENACC
                        call abij_ptr_alias_case_1(i,k,vvoo,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31)
                        call jaik_ptr_alias_case_1(i,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31)
+                       call cbai_ptr_alias_case_1(i,k,vvvo,vvvo_ptr_1,vvvo_ptr_3,.false.)
 #endif
 
                        ! iik,iki
@@ -766,7 +774,7 @@ contains
 #ifdef VAR_OPENACC
                        call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31,&
                                             & ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31,&
-                                            & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,k),&
+                                            & vvvo_ptr_1,vvvo_ptr_3,&
                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
 #else
                        call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo%val(:,:,i,i),vvoo%val(:,:,i,k),vvoo%val(:,:,k,i),&
@@ -780,6 +788,7 @@ contains
 #ifdef VAR_OPENACC
                        call abij_ptr_alias_case_2(i,j,vvoo,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23)
                        call jaik_ptr_alias_case_2(i,j,ovoo,ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23)
+                       call cbai_ptr_alias_case_2(i,j,vvvo,vvvo_ptr_1,vvvo_ptr_2,.false.)
 #endif
     
                        ! ijj.jji
@@ -820,7 +829,7 @@ contains
 #ifdef VAR_OPENACC    
                        call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23,&
                                             & ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23,&
-                                            & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,j),&
+                                            & vvvo_ptr_1,vvvo_ptr_2,&
                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
 #else
                        call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,j,i),vvoo%val(:,:,j,j),&
@@ -836,6 +845,7 @@ contains
                                                  & vvoo_ptr_23,vvoo_ptr_31,vvoo_ptr_32)
                        call jaik_ptr_alias_case_3(i,j,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
                                                  & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32)
+                       call cbai_ptr_alias_case_3(i,j,k,vvvo,vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,.false.)
 #endif
     
                        ! ijk.jki
@@ -894,7 +904,7 @@ contains
                        call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_21,&
                                             & vvoo_ptr_23,vvoo_ptr_31,vvoo_ptr_32,ovoo_ptr_12,ovoo_ptr_13,&
                                             & ovoo_ptr_21,ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32,&
-                                            & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,j),vvvo%elm4(:,:,:,k),&
+                                            & vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,&
                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
 #else
                        call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,i,k),vvoo%val(:,:,j,i),&
@@ -913,6 +923,104 @@ contains
            end do irun_ser
 
   end subroutine ijk_loop_ser
+
+
+  !> \brief: alias the pointers for use with openacc (case 1)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine cbai_ptr_alias_case_1(oindex1,oindex3,vvvo,vvvo_ptr_1,vvvo_ptr_3,par)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex3
+    type(array), intent(inout) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    ! pointers
+    real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_3
+    ! logical distinguishing between serial and parallel run
+    logical, intent(in) :: par
+
+#ifdef VAR_OPENACC
+    if (par) then
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,1)
+       vvvo_ptr_3 => vvvo%elm4(:,:,:,3)
+
+    else
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,oindex1)
+       vvvo_ptr_3 => vvvo%elm4(:,:,:,oindex3)
+
+    end if
+#endif
+
+  end subroutine cbai_ptr_alias_case_1
+
+
+  !> \brief: alias the pointers for use with openacc (case 2)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine cbai_ptr_alias_case_2(oindex1,oindex2,vvvo,vvvo_ptr_1,vvvo_ptr_2,par)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2
+    type(array), intent(inout) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    ! pointers
+    real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_2
+    ! logical distinguishing between serial and parallel run
+    logical, intent(in) :: par
+
+#ifdef VAR_OPENACC
+    if (par) then
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,1)
+       vvvo_ptr_2 => vvvo%elm4(:,:,:,2)
+
+    else
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,oindex1)
+       vvvo_ptr_2 => vvvo%elm4(:,:,:,oindex2)
+
+    end if
+#endif
+
+  end subroutine cbai_ptr_alias_case_2
+
+
+  !> \brief: alias the pointers for use with openacc (case 3)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine cbai_ptr_alias_case_3(oindex1,oindex2,oindex3,vvvo,vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,par)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2,oindex3
+    type(array), intent(inout) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    ! pointers
+    real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_2, vvvo_ptr_3
+    ! logical distinguishing between serial and parallel run
+    logical, intent(in) :: par
+
+#ifdef VAR_OPENACC
+    if (par) then
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,1)
+       vvvo_ptr_2 => vvvo%elm4(:,:,:,2)
+       vvvo_ptr_3 => vvvo%elm4(:,:,:,3)
+
+    else
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,oindex1)
+       vvvo_ptr_2 => vvvo%elm4(:,:,:,oindex2)
+       vvvo_ptr_3 => vvvo%elm4(:,:,:,oindex3)
+
+    end if
+#endif
+
+  end subroutine cbai_ptr_alias_case_3
 
 
   !> \brief: alias the pointers for use with openacc (case 1)
