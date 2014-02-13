@@ -461,12 +461,20 @@ contains
                         call cbai_ptr_alias_case_1(i,k,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_3,.true.)
 #endif
 
+#ifdef VAR_OPENACC
+                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
+                                                & ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
+                                                & ccsd_doubles_portions%elm4(:,:,:,3),&
+                                                & vvvo_ptr_1,vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,&
+                                                & ovoo_ptr_31,trip_tmp,trip_ampl)
+#else
                         call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
                                                 & ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
                                                 & ccsd_doubles_portions%elm4(:,:,:,3),&
                                                 & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,3),&
                                                 & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
                                                 & trip_tmp,trip_ampl)
+#endif
      
                         ! generate triples amplitudes from trip arrays
      
@@ -494,13 +502,21 @@ contains
                         call cbai_ptr_alias_case_2(i,j,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_2,.true.)
 #endif
 
+#ifdef VAR_OPENACC
+                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
+                                                & ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions%elm4(:,:,:,1),&
+                                                & ccsd_doubles_portions%elm4(:,:,:,2),&
+                                                & vvvo_ptr_1,vvvo_ptr_2,ovoo_ptr_12,ovoo_ptr_21,&
+                                                & ovoo_ptr_23,trip_tmp,trip_ampl)
+#else
                         call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
                                                 & ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions%elm4(:,:,:,1),&
                                                 & ccsd_doubles_portions%elm4(:,:,:,2),&
                                                 & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,2),&
                                                 & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
                                                 & trip_tmp,trip_ampl)
-     
+#endif
+
                         ! generate triples amplitudes from trip arrays
      
                         call trip_denom(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
@@ -529,6 +545,15 @@ contains
                         call cbai_ptr_alias_case_3(i,j,k,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,.true.)
 #endif
 
+#ifdef VAR_OPENACC
+                        call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,i,k),&
+                                                & ccsd_doubles%val(:,:,j,i),ccsd_doubles%val(:,:,j,k),&
+                                                & ccsd_doubles%val(:,:,k,i),ccsd_doubles%val(:,:,k,j),&
+                                                & ccsd_doubles_portions%elm4(:,:,:,1),ccsd_doubles_portions%elm4(:,:,:,2),&
+                                                & ccsd_doubles_portions%elm4(:,:,:,3),vvvo_ptr_1,&
+                                                & vvvo_ptr_2,vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
+                                                & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32,trip_tmp,trip_ampl)
+#else
                         call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,i,k),&
                                                 & ccsd_doubles%val(:,:,j,i),ccsd_doubles%val(:,:,j,k),&
                                                 & ccsd_doubles%val(:,:,k,i),ccsd_doubles%val(:,:,k,j),&
@@ -538,7 +563,8 @@ contains
                                                 & ovoo%val(:,:,i,j),ovoo%val(:,:,i,k),ovoo%val(:,:,j,i),&
                                                 & ovoo%val(:,:,j,k),ovoo%val(:,:,k,i),ovoo%val(:,:,k,j),&
                                                 & trip_tmp,trip_ampl)
-     
+#endif
+
                         ! generate triples amplitudes from trip arrays
      
                         call trip_denom(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
@@ -656,13 +682,21 @@ contains
                        call cbai_ptr_alias_case_1(i,k,vvvo,vvvo_ptr_1,vvvo_ptr_3,.false.)
 #endif
 
+#ifdef VAR_OPENACC
+                       call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
+                                               & ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
+                                               & ccsd_doubles_portions%elm4(:,:,:,3),&
+                                               & vvvo_ptr_1,vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,&
+                                               & ovoo_ptr_31,trip_tmp,trip_ampl)
+#else
                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
                                                & ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
                                                & ccsd_doubles_portions%elm4(:,:,:,3),&
                                                & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,k),&
                                                & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
                                                & trip_tmp,trip_ampl)
-    
+#endif
+ 
                        ! generate triples amplitudes from trip arrays
     
                        call trip_denom(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
@@ -689,13 +723,21 @@ contains
                        call cbai_ptr_alias_case_2(i,j,vvvo,vvvo_ptr_1,vvvo_ptr_2,.false.)
 #endif
 
+#ifdef VAR_OPENACC
+                       call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
+                                               & ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions%elm4(:,:,:,1),&
+                                               & ccsd_doubles_portions%elm4(:,:,:,2),&
+                                               & vvvo_ptr_1,vvvo_ptr_2,ovoo_ptr_12,ovoo_ptr_21,&
+                                               & ovoo_ptr_23,trip_tmp,trip_ampl)
+#else
                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
                                                & ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions%elm4(:,:,:,1),&
                                                & ccsd_doubles_portions%elm4(:,:,:,2),&
                                                & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,j),&
                                                & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
                                                & trip_tmp,trip_ampl)
-    
+#endif
+
                        ! generate triples amplitudes from trip arrays
     
                        call trip_denom(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
@@ -724,6 +766,15 @@ contains
                        call cbai_ptr_alias_case_3(i,j,k,vvvo,vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,.false.)
 #endif
 
+#ifdef VAR_OPENACC
+                       call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,i,k),&
+                                               & ccsd_doubles%val(:,:,j,i),ccsd_doubles%val(:,:,j,k),&
+                                               & ccsd_doubles%val(:,:,k,i),ccsd_doubles%val(:,:,k,j),&
+                                               & ccsd_doubles_portions%elm4(:,:,:,1),ccsd_doubles_portions%elm4(:,:,:,2),&
+                                               & ccsd_doubles_portions%elm4(:,:,:,3),vvvo_ptr_1,&
+                                               & vvvo_ptr_2,vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
+                                               & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32,trip_tmp,trip_ampl)
+#else
                        call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,i,k),&
                                                & ccsd_doubles%val(:,:,j,i),ccsd_doubles%val(:,:,j,k),&
                                                & ccsd_doubles%val(:,:,k,i),ccsd_doubles%val(:,:,k,j),&
@@ -733,7 +784,8 @@ contains
                                                & ovoo%val(:,:,i,j),ovoo%val(:,:,i,k),ovoo%val(:,:,j,i),&
                                                & ovoo%val(:,:,j,k),ovoo%val(:,:,k,i),ovoo%val(:,:,k,j),&
                                                & trip_tmp,trip_ampl)
- 
+#endif
+
                        ! generate triples amplitudes from trip arrays
     
                        call trip_denom(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
