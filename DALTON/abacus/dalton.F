@@ -545,9 +545,6 @@ C
          IPRTYP = ENDING_SIGNAL
          CALL MPIXBCAST(IPRTYP,1,'INTEGER',MYNUM)
 
-!        check for open parallel models (e.g. those that are used in lucita)
-         call check_parallel_models()
-
          CALL GPCLOSE(LUCME,'KEEP')
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUNMPF,'KEEP')
