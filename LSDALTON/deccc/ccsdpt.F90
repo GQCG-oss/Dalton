@@ -314,6 +314,10 @@ contains
     real(realk), pointer, dimension(:,:) :: ovoo_ptr_23, ovoo_ptr_31, ovoo_ptr_32
     ! vvvo pointers
     real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_2, vvvo_ptr_3
+    ! ccsd t2 pointers
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_21
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32
+    real(realk), pointer, dimension(:,:,:) :: ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3
 #endif
     type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     type(array)                 :: vvvo_pdm ! v^3 tiles from cbai, 1 == i, 2 == j, 3 == k
@@ -459,13 +463,15 @@ contains
                         call abij_ptr_alias_case_1(i,k,vvoo,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31)
                         call jaik_ptr_alias_case_1(i,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31)
                         call cbai_ptr_alias_case_1(i,k,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_3,.true.)
+                        call ccsd_t2_ptr_alias_case_1(i,k,ccsd_doubles,ccsd_doubles_portions,&
+                                                    & ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_31,&
+                                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_3)
 #endif
 
 #ifdef VAR_OPENACC
-                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
-                                                & ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
-                                                & ccsd_doubles_portions%elm4(:,:,:,3),&
-                                                & vvvo_ptr_1,vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,&
+                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_31,&
+                                                & ccsd_ov2_ptr_1,ccsd_ov2_ptr_3,vvvo_ptr_1,&
+                                                & vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,&
                                                 & ovoo_ptr_31,trip_tmp,trip_ampl)
 #else
                         call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
@@ -500,13 +506,15 @@ contains
                         call abij_ptr_alias_case_2(i,j,vvoo,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23)
                         call jaik_ptr_alias_case_2(i,j,ovoo,ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23)
                         call cbai_ptr_alias_case_2(i,j,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_2,.true.)
+                        call ccsd_t2_ptr_alias_case_2(i,j,ccsd_doubles,ccsd_doubles_portions,&
+                                                    & ccsd_v2_ptr_12,ccsd_v2_ptr_21,ccsd_v2_ptr_23,&
+                                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2)
 #endif
 
 #ifdef VAR_OPENACC
-                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
-                                                & ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions%elm4(:,:,:,1),&
-                                                & ccsd_doubles_portions%elm4(:,:,:,2),&
-                                                & vvvo_ptr_1,vvvo_ptr_2,ovoo_ptr_12,ovoo_ptr_21,&
+                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_21,ccsd_v2_ptr_23,&
+                                                & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,vvvo_ptr_1,&
+                                                & vvvo_ptr_2,ovoo_ptr_12,ovoo_ptr_21,&
                                                 & ovoo_ptr_23,trip_tmp,trip_ampl)
 #else
                         call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
@@ -543,14 +551,16 @@ contains
                         call jaik_ptr_alias_case_3(i,j,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
                                                  & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32)
                         call cbai_ptr_alias_case_3(i,j,k,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,.true.)
+                        call ccsd_t2_ptr_alias_case_3(i,j,k,ccsd_doubles,ccsd_doubles_portions,&
+                                                    & ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_21,&
+                                                    & ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32,&
+                                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3)
 #endif
 
 #ifdef VAR_OPENACC
-                        call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,i,k),&
-                                                & ccsd_doubles%val(:,:,j,i),ccsd_doubles%val(:,:,j,k),&
-                                                & ccsd_doubles%val(:,:,k,i),ccsd_doubles%val(:,:,k,j),&
-                                                & ccsd_doubles_portions%elm4(:,:,:,1),ccsd_doubles_portions%elm4(:,:,:,2),&
-                                                & ccsd_doubles_portions%elm4(:,:,:,3),vvvo_ptr_1,&
+                        call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_13,&
+                                                & ccsd_v2_ptr_21,ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32,&
+                                                & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3,vvvo_ptr_1,&
                                                 & vvvo_ptr_2,vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
                                                 & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32,trip_tmp,trip_ampl)
 #else
@@ -621,6 +631,10 @@ contains
     real(realk), pointer, dimension(:,:) :: ovoo_ptr_23, ovoo_ptr_31, ovoo_ptr_32
     ! vvvo pointers
     real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_2, vvvo_ptr_3
+    ! ccsd t2 pointers
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_21
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32
+    real(realk), pointer, dimension(:,:,:) :: ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3
 #endif
     type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     !> triples amplitudes and 3d work array
@@ -680,13 +694,15 @@ contains
                        call abij_ptr_alias_case_1(i,k,vvoo,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31)
                        call jaik_ptr_alias_case_1(i,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31)
                        call cbai_ptr_alias_case_1(i,k,vvvo,vvvo_ptr_1,vvvo_ptr_3,.false.)
+                       call ccsd_t2_ptr_alias_case_1(i,k,ccsd_doubles,ccsd_doubles_portions,&
+                                                   & ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_31,&
+                                                   & ccsd_ov2_ptr_1,ccsd_ov2_ptr_3)
 #endif
 
 #ifdef VAR_OPENACC
-                       call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
-                                               & ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
-                                               & ccsd_doubles_portions%elm4(:,:,:,3),&
-                                               & vvvo_ptr_1,vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,&
+                       call trip_generator_case1(i,k,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_31,&
+                                               & ccsd_ov2_ptr_1,ccsd_ov2_ptr_3,vvvo_ptr_1,&
+                                               & vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,&
                                                & ovoo_ptr_31,trip_tmp,trip_ampl)
 #else
                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
@@ -721,13 +737,15 @@ contains
                        call abij_ptr_alias_case_2(i,j,vvoo,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23)
                        call jaik_ptr_alias_case_2(i,j,ovoo,ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23)
                        call cbai_ptr_alias_case_2(i,j,vvvo,vvvo_ptr_1,vvvo_ptr_2,.false.)
+                       call ccsd_t2_ptr_alias_case_2(i,j,ccsd_doubles,ccsd_doubles_portions,&
+                                                   & ccsd_v2_ptr_12,ccsd_v2_ptr_21,ccsd_v2_ptr_23,&
+                                                   & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2)
 #endif
 
 #ifdef VAR_OPENACC
-                       call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
-                                               & ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions%elm4(:,:,:,1),&
-                                               & ccsd_doubles_portions%elm4(:,:,:,2),&
-                                               & vvvo_ptr_1,vvvo_ptr_2,ovoo_ptr_12,ovoo_ptr_21,&
+                       call trip_generator_case2(i,j,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_21,ccsd_v2_ptr_23,&
+                                               & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,vvvo_ptr_1,&
+                                               & vvvo_ptr_2,ovoo_ptr_12,ovoo_ptr_21,&
                                                & ovoo_ptr_23,trip_tmp,trip_ampl)
 #else
                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
@@ -764,14 +782,16 @@ contains
                        call jaik_ptr_alias_case_3(i,j,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
                                                  & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32)
                        call cbai_ptr_alias_case_3(i,j,k,vvvo,vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,.false.)
+                       call ccsd_t2_ptr_alias_case_3(i,j,k,ccsd_doubles,ccsd_doubles_portions,&
+                                                   & ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_21,&
+                                                   & ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32,&
+                                                   & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3)
 #endif
 
 #ifdef VAR_OPENACC
-                       call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,i,k),&
-                                               & ccsd_doubles%val(:,:,j,i),ccsd_doubles%val(:,:,j,k),&
-                                               & ccsd_doubles%val(:,:,k,i),ccsd_doubles%val(:,:,k,j),&
-                                               & ccsd_doubles_portions%elm4(:,:,:,1),ccsd_doubles_portions%elm4(:,:,:,2),&
-                                               & ccsd_doubles_portions%elm4(:,:,:,3),vvvo_ptr_1,&
+                       call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_13,&
+                                               & ccsd_v2_ptr_21,ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32,&
+                                               & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3,vvvo_ptr_1,&
                                                & vvvo_ptr_2,vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
                                                & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32,trip_tmp,trip_ampl)
 #else
@@ -815,6 +835,111 @@ contains
            end do irun_ser
 
   end subroutine ijk_loop_ser
+
+
+  !> \brief: alias the pointers for use with openacc (case 1)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine ccsd_t2_ptr_alias_case_1(oindex1,oindex3,ccsd_t2,ccsd_t2_portions,&
+                                    & ccsd_v2_ptr_11,ccsd_v2_ptr_13,ccsd_v2_ptr_31,&
+                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_3)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex3
+    !> ccsd t2 amplitudes
+    type(array4), intent(inout) :: ccsd_t2
+    !> portions of the t2 amplitudes
+    type(array), intent(inout)  :: ccsd_t2_portions
+    !> nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_11, ccsd_v2_ptr_13, ccsd_v2_ptr_31
+    !> no*nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:,:) :: ccsd_ov2_ptr_1,ccsd_ov2_ptr_3
+
+#ifdef VAR_OPENACC
+    ! nv**2 pointers
+    ccsd_v2_ptr_11 => ccsd_t2%val(:,:,oindex1,oindex1)
+    ccsd_v2_ptr_13 => ccsd_t2%val(:,:,oindex1,oindex3)
+    ccsd_v2_ptr_31 => ccsd_t2%val(:,:,oindex3,oindex1)
+    ! no*nv**2 pointers
+    ccsd_ov2_ptr_1 => ccsd_t2_portions%elm4(:,:,:,1)
+    ccsd_ov2_ptr_3 => ccsd_t2_portions%elm4(:,:,:,3)
+#endif
+
+  end subroutine ccsd_t2_ptr_alias_case_1
+
+
+  !> \brief: alias the pointers for use with openacc (case 2)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine ccsd_t2_ptr_alias_case_2(oindex1,oindex2,ccsd_t2,ccsd_t2_portions,&
+                                    & ccsd_v2_ptr_12,ccsd_v2_ptr_21,ccsd_v2_ptr_22,&
+                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2
+    !> ccsd t2 amplitudes
+    type(array4), intent(inout) :: ccsd_t2
+    !> portions of the t2 amplitudes
+    type(array), intent(inout)  :: ccsd_t2_portions
+    !> nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_12, ccsd_v2_ptr_21, ccsd_v2_ptr_22
+    !> no*nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:,:) :: ccsd_ov2_ptr_1,ccsd_ov2_ptr_2
+
+#ifdef VAR_OPENACC
+    ! nv**2 pointers
+    ccsd_v2_ptr_12 => ccsd_t2%val(:,:,oindex1,oindex2)
+    ccsd_v2_ptr_21 => ccsd_t2%val(:,:,oindex2,oindex1)
+    ccsd_v2_ptr_22 => ccsd_t2%val(:,:,oindex2,oindex2)
+    ! no*nv**2 pointers
+    ccsd_ov2_ptr_1 => ccsd_t2_portions%elm4(:,:,:,1)
+    ccsd_ov2_ptr_2 => ccsd_t2_portions%elm4(:,:,:,2)
+#endif
+
+  end subroutine ccsd_t2_ptr_alias_case_2
+
+
+  !> \brief: alias the pointers for use with openacc (case 3)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine ccsd_t2_ptr_alias_case_3(oindex1,oindex2,oindex3,ccsd_t2,ccsd_t2_portions,&
+                                    & ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_21,&
+                                    & ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32,&
+                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2,oindex3
+    !> ccsd t2 amplitudes
+    type(array4), intent(inout) :: ccsd_t2
+    !> portions of the t2 amplitudes
+    type(array), intent(inout)  :: ccsd_t2_portions
+    !> nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_12, ccsd_v2_ptr_13, ccsd_v2_ptr_21
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_23, ccsd_v2_ptr_31, ccsd_v2_ptr_32
+    !> no*nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:,:) :: ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3
+
+#ifdef VAR_OPENACC
+    ! nv**2 pointers
+    ccsd_v2_ptr_12 => ccsd_t2%val(:,:,oindex1,oindex2)
+    ccsd_v2_ptr_13 => ccsd_t2%val(:,:,oindex1,oindex3)
+    ccsd_v2_ptr_21 => ccsd_t2%val(:,:,oindex2,oindex1)
+    ccsd_v2_ptr_23 => ccsd_t2%val(:,:,oindex2,oindex3)
+    ccsd_v2_ptr_31 => ccsd_t2%val(:,:,oindex3,oindex1)
+    ccsd_v2_ptr_32 => ccsd_t2%val(:,:,oindex3,oindex2)
+    ! no*nv**2 pointers
+    ccsd_ov2_ptr_1 => ccsd_t2_portions%elm4(:,:,:,1)
+    ccsd_ov2_ptr_2 => ccsd_t2_portions%elm4(:,:,:,2)
+    ccsd_ov2_ptr_3 => ccsd_t2_portions%elm4(:,:,:,3)
+#endif
+
+  end subroutine ccsd_t2_ptr_alias_case_3
 
 
   !> \brief: alias the pointers for use with openacc (case 1)
