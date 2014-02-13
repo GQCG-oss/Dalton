@@ -1144,22 +1144,31 @@ DO i=1,ncarmom
    call Mat_free(carnucmom(i))
    !write(*,*) 'DEBUG segmentation fault',i+1,ncarmom
 enddo
+write(*,*) 'debug free carnucmom '
 call mem_dealloc(carnucmom)
+write(*,*) 'debug dealloc carnucmom '
 
 call mem_dealloc(nucmomtmp)
+write(*,*) 'debug dealloc nucmomtmp '
 !write(lupri,*) 'nucmom before transformation'
 DO i=1,(lmax+1)**2
+  write(*,*) 'nucmom(i)',i
   nucmom(i) = sphnucmom(i)%elms(1)
+  write(*,*) 'nucmom done '
 !  write(lupri,*) nucmom(i)
 ENDDO
+write(*,*) 'debug nucmom(i)=sphnucmom '
 
 DO i=1,nsphmom
    call Mat_free(sphnucmom(i))
 enddo
+write(*,*) 'debug free sphnucmom '
 !deallocate(sphnucmom)
 call mem_dealloc(sphnucmom)
+write(*,*) 'debug dealloc sphnucmom '
 
 call pbc_multipl_moment_order(nucmom,lmax)
+write(*,*) 'debug multipl_moment_order'
 call pbc_redefine_q(nucmom,lmax)
 write(lupri,*) 'charge nuclei',nucmom(1)
 write(*,*) 'charge nuclei',nucmom(1)

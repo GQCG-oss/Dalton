@@ -5202,10 +5202,10 @@ real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
-real(realk)         :: lambda, constrain_factor, scaling_factor, energy_factor
+real(realk)         :: lambda, constrain_factor, scaling_ADMMQ,scaling_ADMMQs, scaling_ADMMP, printConstFactor, printLambda
 logical             :: const_electrons
 logical             :: scaleXC2, scale_finalE
-
+real(realk)         :: tracek2d2,tracex2d2,tracex3d3
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
 const_electrons = setting%scheme%ADMM_CONST_EL
@@ -5288,11 +5288,11 @@ ENDIF
 ! Get the scaling factor derived from constraining the total charge
 
 ! calculate Lambda for debugging purpose only, we overwrite the constants after anyway
-   call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
-            &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
-lambda = 0E0_realk  
-constrain_factor = 1.0E0_realk
+   call get_Lagrange_multiplier_charge_conservation_for_coefficients(printLambda,&
+            &printConstFactor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
 
+constrain_factor = 1.0E0_realk
+lambda = 0E0_realk 
 IF (const_electrons) THEN   
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
             &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
@@ -5317,6 +5317,8 @@ call mat_zero(F2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,F2)
 call mat_zero(k2_xc2)
 call mat_daxpy(1E0_realk,F2(1),k2_xc2)
+tracek2d2 = mat_trAB(F2(1),D2(1))
+write(*,*)     "Tr(k2d2)=", traceK2D2
 call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AO2,AO3,GC2,GC3,constrain_factor)
 fac = 1E0_realk
@@ -5343,6 +5345,9 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 
 !Level 2 XC matrix
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
+tracex2d2 = mat_trAB(F2(1),D2(1))
+write(*,*)     "Tr(x2d2)=", traceX2D2
+write(*,*)     "Ex2", ex2
 IF (scaleXC2) THEN
    EX2 = constrain_factor**(4./3.)*EX2            ! RE-SCALING EXC2 TO FIT k2
    call mat_scal(constrain_factor**(4./3.),F2(1)) ! RE-SCALING XC2 TO FIT k2  
@@ -5355,6 +5360,7 @@ endif
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                           & AO2,AO3,GC2,GC3,constrain_factor)
+ 
 call mat_daxpy(-GGAXfactor*fac,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
@@ -5370,6 +5376,9 @@ setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 CALL mat_init(F3(1),nbast,nbast)
 CALL mat_zero(F3(1))
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
+tracex3d3 = mat_trAB(F3(1),D)
+write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
+write(*,*)     "Ex3 (not Ex3*2)", ex3
 CALL mat_daxpy(GGAXfactor,F3(1),dXC)
 
 
@@ -5377,7 +5386,7 @@ EdXC = (EX3(1)- fac*EX2(1))*GGAXfactor
 
 !Restore dft functional to original
 IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
-         
+
 !the remainder =================================================
 !call mat_zero(TMPF)
 !call II_get_exchange_mat(LUPRI,LUERR,SETTING,TMP,1,Dsym,TMPF)
@@ -5403,22 +5412,24 @@ IF (const_electrons) THEN
   CALL mat_mul(S32,T23,'n','n',-1E0_realk,0E0_realk,tmp33)
   call mat_scal(constrain_factor*constrain_factor, tmp33)
   call mat_daxpy(1E0_realk,S33,tmp33)
-  
-  write(lupri,*) 'debug:LAMBDA ',4E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
+
+  write(lupri,*) 'debug:LAMBDA ',2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
   write(lupri,*) 'debug:constrain_factor ',constrain_factor
-  scaling_factor = 4E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons ! PROBLEM
-  energy_factor = 2E0_realk / mat_trAB(D,S33) *fac * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+  scaling_ADMMQ = 2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
+
   IF (scaleXC2) THEN
-     scaling_factor = scaling_factor - 4E0_realk*EX2(1) / 3E0_realk / nelectrons
-  ENDIF		    
+     scaling_ADMMQs = scaling_ADMMQ - 2E0_realk/3E0_realk*EX2(1)/nelectrons
+  ENDIF
   IF (scale_finalE) THEN
-     call mat_scal(energy_factor, tmp33)
+     !scaling_ADMMP = 1E0_realk / mat_trAB(D,S33) * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+     scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+     call mat_scal(scaling_ADMMP, tmp33)
   ELSE
-     call mat_scal(scaling_factor, tmp33)
-  ENDIF		    
+     call mat_scal(scaling_ADMMQ, tmp33)
+  ENDIF
 
   call mat_daxpy(1E0_realk,tmp33,dXC)
-  
+
   CALL mat_free(S33)
   CALL mat_free(S32)
   CALL mat_free(T23)
@@ -5468,8 +5479,8 @@ CONTAINS
            
       nelectrons = setting%molecule(1)%p%nelectrons
          
-      !lambda = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
-       lambda = 1E0_realk - sqrt(1.0E0_realk*trace/traceDS)
+      lambda = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
+      !lambda = 1E0_realk - sqrt(1.0E0_realk*trace/traceDS)
       
       ! Scaling factor for the constrained reduced density matrix
       constrain_factor = 1.0E0_realk / (1E0_realk - lambda)
@@ -5689,10 +5700,6 @@ DO idmat=1,ndrhs
                & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
                & nbast2,nbast,AO2,AO3,GC2,GC3)
    ELSE
-	! calculate Lambda for debugging purpose only, we overwrite the constants after anyway
-      call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
-               & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
-               & nbast2,nbast,AO2,AO3,GC2,GC3)
       constrain_factor = 1.0E0_realk
       lambda = 0E0_realk  
    ENDIF
