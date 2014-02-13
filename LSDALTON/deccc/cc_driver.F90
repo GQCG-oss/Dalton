@@ -1871,8 +1871,8 @@ contains
        call print_norm(omega2(iter),one_norm2,.true.)
        one_norm_total = one_norm1 + one_norm2
        two_norm_total = sqrt(one_norm_total)
-       !if(iter==3)then
-       !  print*,"SETTING TWONORM TO QUIT";two_norm_total=0.9E-5_realk
+       !if(iter==5)then
+       !  print*,"SETTING TWONORM TO QUIT";two_norm_total=0.9*DECinfo%ccConvergenceThreshold
        !endif
        ! simple crop diagnostics
        if(two_norm_total < prev_norm) then

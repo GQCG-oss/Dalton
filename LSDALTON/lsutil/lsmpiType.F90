@@ -649,14 +649,10 @@ contains
       real(realk) :: buffer(:,:)
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,count,datatype
-      integer :: I,J,offset
-      IERR=0
-      DATATYPE = MPI_DOUBLE_PRECISION
-      COUNT = SIZE(buffer(:,:),kind=ls_mpik)
-      if(COUNT.NE.nbuf1*nbuf2)call lsquit('lsmpi error in ls_mpibcast_realkM',-1)
-      CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      real(realk),pointer :: buf(:)
+      call ass_8D2to1(buffer,buf,[i8*nbuf1,i8*nbuf2])
+      call ls_mpibcast_realkV_wrapper8(buf,(i8*nbuf1)*nbuf2,master,comm)
+      buf => null()
 #endif
     end subroutine ls_mpibcast_realkM
 
@@ -666,17 +662,12 @@ contains
       integer :: nbuf1,nbuf2,nbuf3
       real(realk) :: buffer(:,:,:)
       integer(kind=ls_mpik) :: comm   ! communicator
+      real(realk),pointer :: buf(:)
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,count,datatype
-      integer :: I,J,K,offset
-      IERR=0
-      DATATYPE = MPI_DOUBLE_PRECISION
-      COUNT = SIZE(buffer(:,:,:),kind=ls_mpik)
-      if(COUNT.NE.nbuf1*nbuf2*nbuf3)THEN
-         call lsquit('lsmpi error in ls_mpibcast_realkT',-1)
-      endif
-      CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      call ass_8D3to1(buffer,buf,[i8*nbuf1,i8*nbuf2,i8*nbuf3])
+      call ls_mpibcast_realkV_wrapper8(buf,((i8*nbuf1)*nbuf2)*nbuf3,master,comm)
+      buf => null()
 #endif
     end subroutine ls_mpibcast_realkT
 
@@ -686,18 +677,11 @@ contains
       integer :: nbuf1,nbuf2,nbuf3,nbuf4
       real(realk) :: buffer(:,:,:,:)
       integer(kind=ls_mpik) :: comm   ! communicator
+      real(realk),pointer :: buf(:)
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,count,datatype
-      integer :: I,J,K,offset
-      IERR=0
-      DATATYPE = MPI_DOUBLE_PRECISION
-      COUNT = SIZE(buffer)
-      if(COUNT.NE.nbuf1*nbuf2*nbuf3*nbuf4)THEN
-         call lsquit('lsmpi error in ls_mpibcast_realkQ',-1)
-      endif
-      COUNT = nbuf1*nbuf2*nbuf3*nbuf4
-      CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      call ass_8D3to1(buffer,buf,[i8*nbuf1,i8*nbuf2,i8*nbuf3,i8*nbuf4])
+      call ls_mpibcast_realkV_wrapper8(buf,(((i8*nbuf1)*nbuf2)*nbuf3)*nbuf4,master,comm)
+      buf => null()
 #endif
     end subroutine ls_mpibcast_realkQ
 
@@ -4061,6 +4045,37 @@ contains
     nullify(buf)
 #endif
   end subroutine lsmpi_reduction_realkT8
+
+  subroutine lsmpi_reduce_realk_min(buffer,dest,comm)
+    implicit none
+    real(realk), intent(inout):: buffer
+    integer(kind=ls_mpik),intent(in) :: comm,dest
+    integer(kind=ls_mpik) :: one_el, IERR
+    real(realk) :: sendbuffer
+    IERR = 0
+    one_el = int(1,kind=ls_mpik)
+#ifdef VAR_MPI
+
+    sendbuffer = buffer
+    CALL MPI_REDUCE(sendbuffer,BUFFER,one_el,MPI_DOUBLE_PRECISION,MPI_MIN,&
+           & dest,comm, IERR)
+#endif
+  end subroutine lsmpi_reduce_realk_min
+  subroutine lsmpi_reduce_realk_max(buffer,dest,comm)
+    implicit none
+    real(realk), intent(inout):: buffer
+    integer(kind=ls_mpik),intent(in) :: comm,dest
+    integer(kind=ls_mpik) :: one_el, IERR
+    real(realk) :: sendbuffer
+    IERR = 0
+    one_el = int(1,kind=ls_mpik)
+#ifdef VAR_MPI
+
+    sendbuffer = buffer
+    CALL MPI_REDUCE(sendbuffer,BUFFER,one_el,MPI_DOUBLE_PRECISION,MPI_MAX,&
+           & dest,comm, IERR)
+#endif
+  end subroutine lsmpi_reduce_realk_max
 
   ! MPI all reduce within local group (infpar%lg_comm communicator)
   subroutine lsmpi_allreduce_int8V_wrapper8(rbuffer,n1,comm)
