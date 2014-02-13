@@ -5202,7 +5202,7 @@ real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
-real(realk)         :: lambda, constrain_factor, scaling_factor, energy_factor, printConstFactor, printLambda
+real(realk)         :: lambda, constrain_factor, scaling_ADMMQ,scaling_ADMMQs, scaling_ADMMP, printConstFactor, printLambda
 logical             :: const_electrons
 logical             :: scaleXC2, scale_finalE
 real(realk)         :: tracek2d2,tracex2d2,tracex3d3
@@ -5386,7 +5386,7 @@ EdXC = (EX3(1)- fac*EX2(1))*GGAXfactor
 
 !Restore dft functional to original
 IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
-         
+
 !the remainder =================================================
 !call mat_zero(TMPF)
 !call II_get_exchange_mat(LUPRI,LUERR,SETTING,TMP,1,Dsym,TMPF)
@@ -5412,24 +5412,24 @@ IF (const_electrons) THEN
   CALL mat_mul(S32,T23,'n','n',-1E0_realk,0E0_realk,tmp33)
   call mat_scal(constrain_factor*constrain_factor, tmp33)
   call mat_daxpy(1E0_realk,S33,tmp33)
-  
+
   write(lupri,*) 'debug:LAMBDA ',2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
   write(lupri,*) 'debug:constrain_factor ',constrain_factor
-  scaling_factor = 2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
-  !energy_factor = 1E0_realk / mat_trAB(D,S33) *fac * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
-  energy_factor = 2E0_realk / nelectrons *fac * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+  scaling_ADMMQ = 2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
 
   IF (scaleXC2) THEN
-     scaling_factor = scaling_factor - 4E0_realk*EX2(1) / 3E0_realk / nelectrons
-  ENDIF		    
+     scaling_ADMMQs = scaling_ADMMQ - 2E0_realk/3E0_realk*EX2(1)/nelectrons
+  ENDIF
   IF (scale_finalE) THEN
-     call mat_scal(energy_factor, tmp33)
+     !scaling_ADMMP = 1E0_realk / mat_trAB(D,S33) * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+     scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+     call mat_scal(scaling_ADMMP, tmp33)
   ELSE
-     call mat_scal(scaling_factor, tmp33)
-  ENDIF		    
+     call mat_scal(scaling_ADMMQ, tmp33)
+  ENDIF
 
   call mat_daxpy(1E0_realk,tmp33,dXC)
-  
+
   CALL mat_free(S33)
   CALL mat_free(S32)
   CALL mat_free(T23)

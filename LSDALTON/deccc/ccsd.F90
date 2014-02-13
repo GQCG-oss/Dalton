@@ -3723,11 +3723,9 @@ contains
 #ifdef VAR_MPI
        if( t .and. lock_outside )call arr_lock_wins(omega,'s',mode)
        if( w ) then
-          print *,"if DONE124 is not printed, this is a prob"
           !$OMP WORKSHARE
           w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
           !$OMP END WORKSHARE
-          print *,"DONE124"
        endif
        if( lspdm_use_comm_proc )call lsmpi_barrier(infpar%pc_comm)
        if( t )call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
