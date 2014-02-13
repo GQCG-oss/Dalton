@@ -2,7 +2,9 @@
 MODULE IIDFTKSM
 use precision
 use TYPEDEFTYPE, only: LSSETTING
-use IIDFTINT, only: II_DFTINT, II_DFTDISP, TEST_NELECTRONS
+!AMT use IIDFTINT, only: II_DFTINT, II_DFTDISP, TEST_NELECTRONS
+use IIDFTINT, only: II_DFTINT, TEST_NELECTRONS
+use IIDFTD, only: DFT_D_LSDAL_IFC
 use dft_type
 use dft_memory_handling
 use IIDFTKSMWORK
@@ -429,6 +431,7 @@ LOGICAL :: UNRES
 !
 REAL(REALK)      :: ELE
 INTEGER          :: I,J,KMAX,MXPRIM
+INTEGER          :: NDERIV
 LOGICAL          :: DOGGA,USE_MPI,DOMETA
 INTEGER          :: GRDONE,NHTYP
 REAL(REALK)      :: SUM,NELE
@@ -473,8 +476,11 @@ IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
 IF (setting%node.EQ.infpar%master) THEN
 #endif
    ! add eventually empirical dispersion correction \Andreas Krapp Only Master
-   CALL II_DFTDISP(SETTING,DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,1,LUPRI,IPRINT)
-
+   !AMT CALL II_DFTDISP(SETTING,DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,1,LUPRI,IPRINT)
+   !AMT
+   NDERIV=1
+   CALL DFT_D_LSDAL_IFC(SETTING,DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,NDERIV,LUPRI)
+   !AMT
 #ifdef VAR_MPI
 ENDIF
 #endif
@@ -1169,7 +1175,7 @@ CALL ls_mpi_buffer(NBAST,infpar%master)
 CALL ls_mpi_buffer(NMO,infpar%master)
 CALL ls_mpi_buffer(SameCmat,infpar%master)
 call mem_dft_alloc(CMAT1,NBAST,NMO)
-CALL ls_mpi_buffer(CMAT2,NBAST,NMO,infpar%master)
+CALL ls_mpi_buffer(CMAT1,NBAST,NMO,infpar%master)
 IF(.NOT.SameCmat)THEN
    call mem_dft_alloc(CMAT2,NBAST,NMO)
    CALL ls_mpi_buffer(CMAT2,NBAST,NMO,infpar%master)

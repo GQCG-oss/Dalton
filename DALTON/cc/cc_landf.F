@@ -2133,11 +2133,11 @@ C     Purpose: To transpose the occupied indices of the intermediates
 C              entering some of the terms in the 2.1-block.
 C
 C
-C#include <implicit.h>
+C#include "implicit.h"
       IMPLICIT NONE
 #include "priunit.h"
 #include "ccorb.h"
-C#include <ccsdsym.h>
+C#include "ccsdsym.h"
 
       INTEGER LWORK,ISYINT
       INTEGER IT2BCD(8,8),NT2BCD(8),IT1AM(8,8),NT1AM(8),MVIR(8)
@@ -2630,7 +2630,7 @@ C
 #include "ccsdinp.h"
 #include "ccsections.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 #include "ccfield.h"
 #include "leinf.h"
 C
@@ -2754,7 +2754,7 @@ C
 #include "ccfield.h"
 #include "leinf.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_LCC2FF')
@@ -2855,7 +2855,7 @@ C
 #include "ccfield.h"
 #include "leinf.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 C
       LOGICAL ETRAN,FCKCON
 C

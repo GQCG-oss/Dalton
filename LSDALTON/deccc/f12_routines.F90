@@ -5,7 +5,7 @@
 module f12_routines_module
   use fundamental
   use precision
-  use typedeftype!,only:lsitem
+  use typedeftype!, only:lsitem
   use typedef
   use dec_typedef_module
   use matrix_module
@@ -14,19 +14,356 @@ module f12_routines_module
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
-  use dec_fragment_utils
   use CABS_operations
 
 #ifdef MOD_UNRELEASED
   use full_f12contractions
 #endif 
-  use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
-  
-  public :: MO_transform_AOMatrix
+  use ccintegrals  
+ 
+
+  public :: MO_transform_AOMatrix, get_F12_mixed_MO_Matrices_real, get_F12_mixed_MO_Matrices, free_F12_mixed_MO_Matrices, &
+       & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D ! atomic_fragment_free_f12, atomic_fragment_init_f12
+
   private
-
+  
 contains
+  function norm1D(A)
+    implicit none
+    real(realk), intent(in) :: A(:)
+    integer :: m,i
+    real(realk) :: norm1D   
+    
+    norm1D = 0.0E0_realk
+    
+    m = size(A,1)
+    do i=1,m
+       norm1D = norm1D + A(i)
+    enddo
+  end function norm1D
 
+
+  !> Takes the norm of a matrix 
+  function norm2D(A)
+    implicit none
+    real(realk), intent(in) :: A(:,:)
+    integer :: m,n,i,j
+    real(realk) :: norm2D   
+    
+    norm2D = 0.0E0_realk
+    
+    m = size(A,1)
+    n = size(A,2)
+    
+    do j=1,n
+       do i=1,m
+          norm2D = norm2D + A(i,j)
+       enddo
+    enddo
+    
+  end function norm2D
+
+  function norm4D(A)
+    implicit none
+    real(realk), intent(in) :: A(:,:,:,:)
+    integer :: m,n,p,q,i,j,k,l
+    real(realk) :: norm4D   
+    
+    norm4D = 0.0E0_realk
+    
+    m = size(A,1)
+    n = size(A,2)
+    p = size(A,3)
+    q = size(A,4)
+  
+    do l=1,q
+       do k=1,p
+          do j=1,n
+             do i=1,m 
+                norm4D = norm4D + A(i,j,k,l)
+             enddo
+          enddo
+       enddo
+    enddo
+
+  end function norm4D
+
+
+  !> Needs documentation
+  subroutine get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
+       & nocc,noccfull,nvirt,ncabs,HJir_real,Krr_real,Frr_real,Fac_real,Fii_real,Frm_real,Fcp_real)
+
+    implicit none
+    !> Fragmet molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> Lsitem structure
+    type(lsitem), intent(inout) :: MyLsitem
+    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
+    type(matrix), intent(in) :: Dmat
+  
+    real(realk), intent(inout) :: HJir_real(nocc,ncabsAO) 
+    real(realk), intent(inout) :: Krr_real(ncabsAO,ncabsAO)
+    real(realk), intent(inout) :: Frr_real(ncabsAO,ncabsAO)
+    real(realk), intent(inout) :: Fac_real(nvirt,ncabs)
+    real(realk), intent(inout) :: Fii_real(nocc,nocc)
+    real(realk), intent(inout) :: Frm_real(ncabsAO,nocc)
+    real(realk), intent(inout) :: Fcp_real(ncabs,nbasis)
+
+    type(matrix) :: HJir
+    type(matrix) :: Krr
+    type(matrix) :: Frr
+    type(matrix) :: Fac
+    type(matrix) :: Fii
+    type(matrix) :: Frm
+    type(matrix) :: Fcp
+
+    !> Temp
+    type(matrix) :: HJrc
+    type(matrix) :: Kcc
+    type(matrix) :: Fcc
+    type(matrix) :: Frc  
+   
+    !> Mixed regular/CABS one-electron and Coulomb matrix (h+J) combination in AO basis
+    !> hJir
+    call mat_init(HJrc,nbasis,ncabsAO)
+    call get_AO_hJ(nbasis,ncabsAO,HJrc,Dmat,MyLsitem,'RCRRC')
+    call mat_init(HJir,nocc,ncabsAO)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'ir',HJrc,HJir)
+    call mat_to_full(HJir,1.0E0_realk,HJir_real)
+    call mat_free(HJrc)
+    call mat_free(HJir)
+
+    !> Mixed CABS/CABS exchange matrix
+    !> Krr
+    call mat_init(Kcc,ncabsAO,ncabsAO)
+    call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
+    call mat_init(Krr,ncabsAO,ncabsAO)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'rr',Kcc,Krr)
+    call mat_free(Kcc)
+    call mat_to_full(Krr,1.0E0_realk,Krr_real)
+    call mat_free(Krr)
+    
+    !> Mixed CABS/CABS Fock matrix
+    !> Frr
+    call mat_init(Fcc,ncabsAO,ncabsAO)
+    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    call mat_init(Frr,ncabsAO,ncabsAO)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'rr',Fcc,Frr)
+    call mat_free(Fcc)   
+    call mat_to_full(Frr,1.0E0_realk,Frr_real)
+    call mat_free(Frr)
+    
+    !> Mixed AO/CABS Fock matrix
+    !> Fac
+    call mat_init(Frc,nbasis,ncabsAO)
+    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    call mat_init(Fac,nvirt,ncabs)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'ac',Frc,Fac)    
+    call mat_free(Frc)
+    call mat_to_full(Fac,1.0E0_realk,Fac_real)
+    call mat_free(Fac)
+
+    !> Mixed AO/AO full MO Fock matrix
+    !> Temp Fcc
+    call mat_init(Fcc,nbasis,nbasis)
+    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')
+
+    !> Fii 
+    call mat_init(Fii,nocc,nocc)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'ii',Fcc,Fii)
+    call mat_to_full(Fii,1.0E0_realk,Fii_real)
+    call mat_free(Fii)
+
+    !> Free temp Fcc
+    call mat_free(Fcc)
+
+    !> Mixed CABS/AO MO Fock matrix
+    !> Temp Fcc
+    call mat_init(Fcc,ncabsAO,nbasis)
+    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CRRRC')
+  
+    !> Frm
+    call mat_init(Frm,ncabsAO,noccfull)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'rm',Fcc,Frm)
+    call mat_to_full(Frm,1.0E0_realk,Frm_real)
+    call mat_free(Frm)
+    
+    !> Fcp
+    call mat_init(Fcp,ncabs,nbasis)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'cp',Fcc,Fcp)
+    call mat_to_full(Fcp,1.0E0_realk,Fcp_real)
+    call mat_free(Fcp)
+
+    !> Free Temp Fcc
+    call mat_free(Fcc) 
+
+!!$    print *, '****************************************'
+!!$    print *, '(Norm of HJir_real):', norm2(HJir_real)       
+!!$    print *, '(Norm of HJir):', sqrt(mat_sqnorm2(HJir))
+!!$    print *, '****************************************'
+        
+  end subroutine get_F12_mixed_MO_Matrices_real
+
+  !> Need documentation...
+  subroutine get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
+       & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> Lsitem structure
+    type(lsitem), intent(inout) :: Mylsitem
+    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
+    type(matrix) :: Dmat,K
+    type(matrix) :: HJir
+    type(matrix) :: Krr
+    type(matrix) :: Frr
+    type(matrix) :: Frc
+    type(matrix) :: Fpp
+    type(matrix) :: Fmm
+    type(matrix) :: Frm
+    type(matrix) :: Fcp
+    type(matrix) :: Fii
+    type(matrix) :: Fac
+
+    ! Temp
+    type(matrix) :: HJrc
+    type(matrix) :: Kcc
+    type(matrix) :: Fcc
+
+    ! Mixed regular/CABS one-electron and Coulomb matrix (h+J) combination in AO basis
+    call mat_init(HJrc,nbasis,ncabsAO)
+    call get_AO_hJ(nbasis,ncabsAO,HJrc,Dmat,MyLsitem,'RCRRC')
+    call mat_init(HJir,nocc,ncabsAO)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'ir',HJrc,HJir)
+  
+!!$    print *, '---------------------------------------------------'
+!!$    print *, '---------------------------------------------------'
+!!$    print *, '         Inside get_F12_mixed_MO_Matrices          '   
+!!$    print *, '---------------------------------------------------'
+!!$    print *, '---------------------------------------------------'
+!!$    print *, 'nbabsis:', nbasis
+!!$    print *, 'ncabsAO:', ncabsAO
+!!$    print *, 'nocc:   ', nocc
+!!$    print *, 'noccfull:', noccfull
+!!$    print *, 'nvirt:  ', nvirt
+!!$    print *, 'sqrt(mat_sqnorm2(Dmat)):', sqrt(mat_sqnorm2(Dmat))
+!!$    print *, 'sqrt(mat_sqnorm2(HJrc)):', sqrt(mat_sqnorm2(HJrc))
+!!$    print *, 'sqrt(mat_sqnorm2(HJir)):', sqrt(mat_sqnorm2(HJir))
+    
+    call mat_free(HJrc)
+
+    ! Mixed CABS/CABS exchange matrix
+    call mat_init(Kcc,ncabsAO,ncabsAO)
+    call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
+    call mat_init(Krr,ncabsAO,ncabsAO)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'rr',Kcc,Krr)
+    call mat_free(Kcc)
+
+    ! Mixed CABS/CABS Fock matrix
+    call mat_init(Fcc,ncabsAO,ncabsAO)
+    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    call mat_init(Frr,ncabsAO,ncabsAO)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'rr',Fcc,Frr)
+    call mat_free(Fcc)
+
+    ! Mixed AO/CABS Fock matrix
+    call mat_init(Frc,nbasis,ncabsAO)
+    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    call mat_init(Fac,nvirt,ncabs)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'ac',Frc,Fac)
+    call mat_free(Frc)
+
+    ! Mixed AO/AO full MO Fock matrix
+    call mat_init(Fcc,nbasis,nbasis)
+    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')
+    !Fpp
+    call mat_init(Fpp,nbasis,nbasis)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'pp',Fcc,Fpp)
+    !Fii
+    call mat_init(Fii,nocc,nocc)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'ii',Fcc,Fii)
+    !Fmm
+    call mat_init(Fmm,noccfull,noccfull)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'mm',Fcc,Fmm)
+    call mat_free(Fcc)
+
+    ! Mixed CABS/AO MO Fock matrix
+    call mat_init(Fcc,ncabsAO,nbasis)
+    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CRRRC')
+    !Frm
+    call mat_init(Frm,ncabsAO,noccfull)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'rm',Fcc,Frm)
+    !Fcc
+    call mat_init(Fcp,ncabs,nbasis)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'cp',Fcc,Fcp)
+    call mat_free(Fcc)
+  end subroutine get_F12_mixed_MO_Matrices
+
+  subroutine free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+
+    implicit none
+    type(matrix) :: HJir
+    type(matrix) :: Krr
+    type(matrix) :: Frr
+    type(matrix) :: Frc
+    type(matrix) :: Frm
+    type(matrix) :: Fcp
+    type(matrix) :: Fpp
+    type(matrix) :: Fmm
+    type(matrix) :: Fii
+    type(matrix) :: Fac
+
+    call mat_free(HJir)
+    call mat_free(Krr)
+    call mat_free(Frr)
+    call mat_free(Fac)
+    call mat_free(Fii)
+    call mat_free(Fpp)
+    call mat_free(Fmm)
+    call mat_free(Frm)
+    call mat_free(Fcp)
+
+  end subroutine free_F12_mixed_MO_Matrices
+
+  subroutine free_F12_mixed_MO_Matrices_real(HJir,Krr,Frr,Fac,Fii,Frm,Fcp)
+
+    implicit none  
+    real(realk), pointer :: HJir(:,:) 
+    real(realk), pointer :: Krr(:,:)
+    real(realk), pointer :: Frr(:,:)
+    real(realk), pointer :: Fac(:,:)
+    real(realk), pointer :: Fii(:,:)
+    real(realk), pointer :: Frm(:,:)
+    real(realk), pointer :: Fcp(:,:)
+
+    call mem_dealloc(HJir)
+    call mem_dealloc(Krr)
+    call mem_dealloc(Frr)
+    call mem_dealloc(Fac)
+    call mem_dealloc(Fii)
+    call mem_dealloc(Frm)
+    call mem_dealloc(Fcp)
+
+  end subroutine free_F12_mixed_MO_Matrices_real
+
+  !> Need documentation...
   subroutine MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
        & Cocc,Cvirt,inputstring,matAO,matMO)
     implicit none
@@ -96,7 +433,7 @@ contains
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
           call dcopy(noccfull*nbasis,Cocc,1,CMO(i)%elms,1)
-          call dcopy(nvirt*nbasis,Cvirt,1,CMO(i)%elms(noccfull*nbasis+1),1)
+          call dcopy(nvirt*nbasis,Cvirt,1,CMO(i)%elms(noccfull*nbasis+1:nbasis*nbasis),1)
        elseif(string(i).EQ.'a')then !virtual
           call dcopy(ndim2(i)*ndim1(i),Cvirt,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'c')then !cabs
@@ -120,5 +457,129 @@ contains
     enddo
 
   end subroutine MO_transform_AOMatrix
- 
+
+!!$  !> \brief Initialize atomic fragment based on a list of specific AOS orbitals for F12-related matrices
+!!$  !> \author Yang Min Wang
+!!$  subroutine atomic_fragment_init_f12(fragment, MyMolecule)
+!!$    type(fullmolecule), intent(in) :: MyMolecule
+!!$    type(decfrag), intent(inout) :: fragment
+!!$    
+!!$    !> F12 Specific Variables
+!!$    integer :: nbasis, noccEOS, nunoccEOS, noccfull, nocvAOS, nvirtAOS, ncabsAO, ncabsMO
+!!$    integer :: noccAOS, nunoccAOS
+!!$    integer :: ix, iy
+!!$
+!!$    ncabsAO = size(MyMolecule%Ccabs,1)
+!!$    ncabsMO = size(MyMolecule%Ccabs,2)
+!!$
+!!$    call mem_alloc(fragment%Ccabs,ncabsAO,ncabsMO)
+!!$    call dcopy(ncabsAO*ncabsMO,Mymolecule%Ccabs,1,fragment%Ccabs,1)
+!!$    
+!!$    call mem_alloc(fragment%Cri,ncabsAO,ncabsAO)
+!!$    call dcopy(ncabsAO*ncabsAO,Mymolecule%Cri,1,fragment%Cri,1)
+!!$    
+!!$    ! ============================================================
+!!$    !                        F12-Specific                        !
+!!$    ! ============================================================
+!!$    !> F12 Specific Variables
+!!$    nbasis   = fragment%nbasis
+!!$    noccEOS  = fragment%noccEOS
+!!$    nunoccEOS = fragment%nunoccEOS
+!!$ 
+!!$    noccAOS  = fragment%noccAOS
+!!$    nunoccAOS = fragment%nunoccAOS  
+!!$    nocvAOS  = fragment%noccAOS + fragment%nunoccAOS
+!!$    nvirtAOS = fragment%nunoccAOS
+!!$    ncabsAO = size(fragment%Ccabs,1)    
+!!$    ncabsMO = size(fragment%Ccabs,2)    
+!!$    
+!!$      
+!!$       ! ************************************************************
+!!$       ! Creating a CocvAOS matrix 
+!!$       ! ************************************1***********************
+!!$       !do i=1, Fragment%noccAOS
+!!$       !   CocvAOS(:,i) = Fragment%Co(:,i)
+!!$       !end do
+!!$       
+!!$       print *,"nbasis:   ", nbasis
+!!$       print *,"noccEOS:  ", noccEOS
+!!$       print *,"nunoccEOS:", nunoccEOS
+!!$       
+!!$       print *,"nocvAOS:  ", nocvAOS
+!!$       print *,"noccAOS: ",  noccAOS
+!!$       print *,"nunoccAOS: ", nvirtAOS
+!!$       print *,"ncabsAO:  ", ncabsAO
+!!$       print *,"ncabsMO:  ", ncabsMO
+!!$
+!!$       ! Be carefull about defining what is EOS and AOS space
+!!$       ! At the moment we have a EOS partitioning scheme not a CABS, they will 
+!!$       ! eventually be dependent on the EOS i, j, because we will project out 
+!!$       ! from the i and j and create the CABS 
+!!$       ! We have partitioned the EOS space
+!!$       
+!!$       ! hJir
+!!$       call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
+!!$       do j=1,ncabsAO
+!!$          do i=1, fragment%noccEOS
+!!$             ix = fragment%idxo(i)
+!!$             fragment%hJir(i,j) = MyMolecule%hJir(ix,j)
+!!$          enddo
+!!$       enddo
+!!$       print *,"norm2(MyMolecule%hJir): ",norm2(MyMolecule%hJir)
+!!$       print *,"norm2(fragment%hJir):   ",norm2(fragment%hJir)
+!!$
+!!$  end subroutine atomic_fragment_init_f12
+!!$  
+!!$  !> \brief Free the f12 fragment free matrices
+!!$  !> \author Yang Min Wang
+!!$  subroutine atomic_fragment_free_f12(fragment)
+!!$    
+!!$    implicit none
+!!$    !> Atomic fragment to be freed
+!!$    type(decfrag),intent(inout) :: fragment
+!!$    
+!!$    print *, "------------atomic_fragment_free_f12(fragment)----------"
+!!$    
+!!$    if(associated(fragment%hJir)) then
+!!$       call mem_dealloc(fragment%hJir)
+!!$       fragment%hJir => null()
+!!$    end if
+!!$    
+!!$    if(associated(fragment%Krs)) then
+!!$       call mem_dealloc(fragment%Krs)
+!!$       fragment%Krs => null()
+!!$    end if
+!!$    
+!!$    if(associated(fragment%Frs)) then
+!!$       call mem_dealloc(fragment%Frs)
+!!$       fragment%Frs => null()
+!!$    end if
+!!$
+!!$    if(associated(fragment%Fac)) then
+!!$       call mem_dealloc(fragment%Fac)
+!!$       fragment%Fac => null()
+!!$    end if
+!!$    
+!!$    if(associated(fragment%Fpq)) then
+!!$       call mem_dealloc(fragment%Fpq)
+!!$       fragment%Fpq => null()
+!!$    end if
+!!$    
+!!$    if(associated(fragment%Fij)) then
+!!$       call mem_dealloc(fragment%Fij)
+!!$       fragment%Fij => null()
+!!$    end if
+!!$    
+!!$    if(associated(fragment%Fmn)) then
+!!$       call mem_dealloc(fragment%Fmn)
+!!$       fragment%Fmn => null()
+!!$    end if
+!!$    
+!!$  end subroutine atomic_fragment_free_f12
+
+
+
+
+
+
 end module f12_routines_module

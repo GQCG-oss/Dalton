@@ -37,7 +37,7 @@ c /* deck ccder1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "mxcent.h"
@@ -704,7 +704,7 @@ c /* deck ccgeth2d */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -858,7 +858,7 @@ C        REWIND (LU2DER)
      &            RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
      &            WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &            DUMMY,RELCAL)
+     &            DUMMY,RELCAL,.false.)
 
       TIM1 = SECOND()
 

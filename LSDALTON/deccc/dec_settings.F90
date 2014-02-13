@@ -76,6 +76,7 @@ contains
     DECinfo%EOSPNOthr            = 1.0E-5
     DECinfo%noPNOoverlaptrunc    = .false.
     DECinfo%PNOoverlapthr        = 1.0E-5
+    DECinfo%PNOtriangular        = .false.
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
     DECinfo%MOCCSD               = .false.
@@ -142,6 +143,7 @@ contains
     DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
     DECinfo%F12                     = .false.
     DECinfo%F12debug                = .false.
+    DECinfo%PureHydrogenDebug       = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -200,7 +202,7 @@ contains
   !> configuration structure accordingly.
   !> \author Kasper Kristensen
   !> \date September 2010
-  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc)
+  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc,doF12)
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
@@ -214,6 +216,8 @@ contains
     !> Is this a full calculation (fullcalc=true, input **CC) 
     !> or a DEC calculation (fullcalc=false, input=**DEC)
     logical,intent(in) :: fullcalc
+    !> do we do F12 calc (is a CABS basis required?)
+    logical,intent(inout) :: doF12
     logical,save :: already_called = .false.
     integer :: fotlevel
 
@@ -263,7 +267,6 @@ contains
 
        ! See explanation of DEC parameters in type DEC_settings
        DEC_INPUT_INFO: SELECT CASE(WORD)
-
 
 
           ! ****************************************************************************
@@ -416,23 +419,34 @@ contains
 #endif
 
 #ifdef MOD_UNRELEASED
-       case('.CCDEBUG'); DECinfo%CCDEBUG=.true.
-       case('.CCSOLVER_LOCAL'); DECinfo%solver_par=.false.
-       case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
-       case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
-       case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.
-       case('.SPAWN_COMM_PROC'); DECinfo%spawn_comm_proc=.true.
-       case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
-       case('.USE_PNOS'); DECinfo%use_pnos=.true.
-       case('.NOPNOTRAFO'); DECinfo%noPNOtrafo=.true.; DECinfo%noPNOtrunc=.true.
-       case('.NOPNOTRUNCATION'); DECinfo%noPNOtrunc=.true.
-       case('.PNOTHR'); read(input,*) DECinfo%simplePNOthr
-       case('.EOSPNOTHR'); read(input,*) DECinfo%EOSPNOthr
-       case('.NOPNOOVERLAPTRUNCATION'); DECinfo%noPNOoverlaptrunc=.true.
+
+       !CCSD SPECIFIC KEYWORDS
+       !**********************
+       case('.CCDEBUG');                DECinfo%CCDEBUG              = .true.
+       case('.CCSOLVER_LOCAL');         DECinfo%solver_par           = .false.
+       case('.CCSDDYNAMIC_LOAD');       DECinfo%dyn_load             = .true.
+       case('.CCSDNO_RESTART');         DECinfo%CCSDno_restart       = .true.
+       case('.CCSD_WITH_MPICH');        DECinfo%CCSD_MPICH           = .true.
+       case('.SPAWN_COMM_PROC');        DECinfo%spawn_comm_proc      = .true.
+       case('.CCSDMULTIPLIERS');        DECinfo%CCSDmultipliers      = .true.
+       case('.USE_PNOS');               DECinfo%use_pnos             = .true.
+       case('.NOPNOTRAFO');             DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
+       case('.NOPNOTRUNCATION');        DECinfo%noPNOtrunc           = .true.
+       case('.NOPNOOVERLAPTRUNCATION'); DECinfo%noPNOoverlaptrunc    = .true.
+       case('.MOCCSD');                 DECinfo%MOCCSD               = .true.
+       case('.PNOTRIANGULAR');          DECinfo%PNOtriangular        = .true.
+       case('.CCSDPREVENTCANONICAL');   DECinfo%CCSDpreventcanonical = .true.
+
+       case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
+       case('.EOSPNOTHR');     read(input,*) DECinfo%EOSPNOthr
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
-       case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
+
+
+
+       !OTHER STUFF
+       !***********
+
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
-       case('.MOCCSD'); DECinfo%MOCCSD=.true.
        case('.MAX_NUM_MO'); read(input,*) DECinfo%Max_num_MO
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
@@ -445,8 +459,18 @@ contains
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
-       case('.F12'); DECinfo%F12=.true.
-       case('.F12DEBUG'); DECinfo%F12DEBUG=.true.
+
+#ifdef MOD_UNRELEASED    
+       case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
+       case('.F12DEBUG')     
+          DECinfo%F12=.true.
+          DECinfo%F12DEBUG=.true.
+          doF12 = .TRUE.
+          !endif mod_unreleased
+#endif
+       case('.PUREHYDROGENDEBUG')     
+          DECinfo%PureHydrogenDebug       = .true.
+
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -677,8 +701,10 @@ contains
     write(lupri,*) 'use_crop ', DECitem%use_crop
     write(lupri,*) 'simulate_eri ', DECitem%simulate_eri
     write(lupri,*) 'fock_with_ri ', DECitem%fock_with_ri
+#ifdef MOD_UNRELEASED    
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
+#endif
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
     write(lupri,*) 'manual_batchsizes ', DECitem%manual_batchsizes

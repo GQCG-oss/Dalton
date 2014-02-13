@@ -1024,7 +1024,6 @@ contains
          real(realk)               :: err, testnorm, norm1, norm2
          TYPE(matrix)              :: FX, XF(1), G_xc, Dmat, scr1_mat(1)
 
-
       if (.not. present(fifoqueue) .and. arh%set_arhterms .and. &
         & .not. arh%set_do_2nd_order) then
          WRITE(arh%LUPRI,'(/A)') &
@@ -1430,12 +1429,6 @@ contains
    !ndim = G%nrow
    rowdim = G%nrow
    coldim = G%ncol
-   if (.not. arh%cfg_arh_truncate) then
-      call mat_init(xvec, rowdim,coldim)
-      call mat_init(scr2, rowdim,coldim)
-   endif
-   call mat_init(scr, rowdim,coldim)
-   call mat_init(r_newP, rowdim,coldim)
    if (arh%cfg_arh_truncate) then
       redsize = vectorsubspace%offset
    else
@@ -1443,8 +1436,6 @@ contains
    endif
 
    call mem_alloc(ResRed,redsize+2,redsize+2)
-   call mem_alloc(RHS,redsize+2)
-   call mem_alloc(IPIV,redsize+2)
    !Set up intermediate 'residual subspace' with proper dimension:
 
    ResRed(1:redsize,1:redsize) = arh%CROPmat(1:redsize,1:redsize)
@@ -1456,7 +1447,14 @@ contains
    endif
 
    !Preconditioning of r_n+1:
+   call mat_init(r_newP, rowdim,coldim)
    call arh_precond(arh,decomp,r_new,symm,mu,r_newP)
+
+   if (.not. arh%cfg_arh_truncate) then
+!      call mat_init(xvec, rowdim,coldim)
+      call mat_init(scr2, rowdim,coldim)
+   endif
+   call mat_init(scr, rowdim,coldim)
 
    !Diagonal elements:
    ResRed(redsize+1,redsize+1) = mat_dotproduct(r_new,r_newP)
@@ -1472,16 +1470,24 @@ contains
          call mat_daxpy(mu,xpointer,scr)
       else
          OnMaster = .TRUE.
-         call mat_read_from_disk(lub,xvec,OnMaster)
+         call mat_read_from_disk(lub,scr2,OnMaster)
+         call mat_add(-1E0_realk,G,mu, scr2, scr) !scr = i'th residual 
          call mat_read_from_disk(lusigma,scr2,OnMaster)
+         call mat_daxpy(-1E0_realk,scr2,scr)
          !call get_sigma(lusigma,sigma_n)
-         call mat_add(-1E0_realk,G,-1E0_realk, scr2, scr) !scr = i'th residual 
-         call mat_daxpy(mu,xvec,scr)
+!         call mat_read_from_disk(lub,xvec,OnMaster)
+!         call mat_read_from_disk(lusigma,scr2,OnMaster)
+!         call mat_add(-1E0_realk,G,-1E0_realk, scr2, scr) !scr = i'th residual 
+!         call mat_daxpy(mu,xvec,scr)
       endif
 
       ResRed(redsize+1,i) = mat_dotproduct(r_newP,scr)
       ResRed(i,redsize+1) = ResRed(redsize+1,i)
    enddo 
+!   if (.not. arh%cfg_arh_truncate) then
+!      call mat_free(xvec)
+!   endif
+   call mat_free(r_newP)
    do i = 1, redsize+1  !'Augmented dimension':
       ResRed(redsize+2,i) = -1.0E0_realk
       ResRed(i,redsize+2) = ResRed(redsize+2,i)
@@ -1493,10 +1499,15 @@ contains
       !call ls_flshfo(arh%lupri)
    endif
 
+   call mem_alloc(RHS,redsize+2)
+   call mem_alloc(IPIV,redsize+2)
    RHS = 0.0E0_realk ; RHS(redsize+2) = -1.0E0_realk
 
    !Solve set of linear equations CROPmat*c = RHS:
    call DGESV(redsize+2, 1, ResRed, redsize+2, IPIV, RHS, redsize+2, IERR) !Solution vector is found in RHS.
+
+   call mem_dealloc(ResRed)
+   call mem_dealloc(IPIV)
    if (IERR /= 0) then
       WRITE(arh%LUPRI,'(/A, i4)') &
       &     'Problem in DGESV, IERR = ', IERR
@@ -1528,6 +1539,11 @@ contains
          call mat_daxpy(RHS(i),scr2,sigma)
       endif
    enddo
+   call mem_dealloc(RHS)
+   if (.not. arh%cfg_arh_truncate) then
+      call mat_free(scr2)
+   endif
+   call mat_free(scr)
 
    if (arh%cfg_arh_truncate .and. arh%cfg_arh_newdamp) then
       qsize = vectorsubspace%queuesize-1
@@ -1573,15 +1589,6 @@ contains
       endif
    endif
 
-   if (.not. arh%cfg_arh_truncate) then
-      call mat_free(xvec)
-      call mat_free(scr2)
-   endif
-   call mat_free(scr)
-   call mat_free(r_newP)
-   call mem_dealloc(ResRed)
-   call mem_dealloc(RHS)
-   call mem_dealloc(IPIV)
    end subroutine arh_crop_intermed_sub
 
    !> \brief Set up reduced space in CROP scheme
@@ -1642,11 +1649,6 @@ contains
    rowdim = G%nrow
    coldim = G%ncol
    qsize = vectorsubspace%queuesize-1
-   if (.not. arh%cfg_arh_truncate) then
-      call mat_init(xvec,rowdim,coldim)
-      call mat_init(scr2,rowdim,coldim)
-   endif
-
    if (arh%cfg_arh_newdamp) then
       Asize = qsize+1
    else
@@ -1762,6 +1764,10 @@ contains
       arh%CROPmat(redsize+1,redsize+1) = mat_dotproduct(scr,resP)
       rewind(lusigma) ; rewind(lub)
    endif
+   if (.not. arh%cfg_arh_truncate) then
+      call mat_init(xvec,rowdim,coldim)
+      call mat_init(scr2,rowdim,coldim)
+   endif
    do i = 1, redsize  
       if (arh%cfg_arh_truncate) then
          call get_from_modFIFO(vectorsubspace, i, xpointer, sigmapointer)
@@ -1780,6 +1786,10 @@ contains
          arh%CROPmat(i,redsize+1) = arh%CROPmat(redsize+1,i)
       endif
    enddo 
+   if (.not. arh%cfg_arh_truncate) then
+      call mat_free(xvec)
+      call mat_free(scr2)
+   endif
    !Explicitly calculate upper half: 
    if (.not. arh%cfg_arh_truncate) then
       rewind(lub)
@@ -1855,10 +1865,6 @@ contains
       call mem_dealloc(tempmat)
    endif
 
-   if (.not. arh%cfg_arh_truncate) then
-      call mat_free(xvec)
-      call mat_free(scr2)
-   endif
    !call mat_free(res)
    !call mat_free(scr)
 

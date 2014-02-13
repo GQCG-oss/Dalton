@@ -12,6 +12,8 @@ logical  :: CMO_CABS_save_created
 TYPE(Matrix) :: CMO_CABS_save
 logical  :: CMO_RI_save_created
 TYPE(Matrix) :: CMO_RI_save
+logical  :: Save_activated_cabs
+logical  :: Save_activated_ri
 CONTAINS
   subroutine determine_CABS_nbast(nbast_cabs,nnull,SETTING,lupri)
     implicit none
@@ -24,14 +26,31 @@ CONTAINS
     nnull = nbast_cabs-MIN(nbast_cabs,nbast)
   end subroutine determine_CABS_nbast
 
-  subroutine init_cabs()
+  subroutine init_cabs(Fulldriver)
     implicit none
+    logical,intent(in),optional :: Fulldriver
     CMO_CABS_save_created = .FALSE.
-    CMO_RI_save_created = .FALSE.
+    IF(present(Fulldriver))THEN
+       Save_activated_cabs = Fulldriver
+    ELSE
+       Save_activated_cabs = .FALSE.
+    ENDIF
   end subroutine init_cabs
+
+  subroutine init_ri(Fulldriver)
+    implicit none
+    logical,intent(in),optional :: Fulldriver
+    CMO_RI_save_created = .FALSE.
+    IF(present(Fulldriver))THEN
+       Save_activated_ri = Fulldriver
+    ELSE
+       Save_activated_ri = .FALSE.
+    ENDIF
+  end subroutine init_ri
 
   subroutine free_cabs()
     implicit none
+    print*,'FREE CABS'
     IF(CMO_CABS_save_created)THEN
        call mat_free(CMO_CABS_save)
     ENDIF
@@ -40,9 +59,12 @@ CONTAINS
        call mat_free(CMO_RI_save)
     ENDIF
     CMO_RI_save_created = .FALSE.
+    Save_activated_ri = .FALSE.
+    Save_activated_cabs = .FALSE.
   end subroutine free_cabs
 
   subroutine build_CABS_MO(CMO_cabs,nbast_cabs,SETTING,lupri)
+    implicit none
     integer :: lupri,nbast_cabs
     TYPE(LSSETTING) :: SETTING
     TYPE(MATRIX)    :: CMO_cabs
@@ -52,8 +74,9 @@ CONTAINS
     type(matrix) :: tmp_cabs,Vnull,tmp2
     real(realk),pointer :: SV(:),optwrk(:)
     integer,pointer :: IWORK(:)
-    integer     :: lwork,nbast,nnull,luerr
+    integer     :: lwork,nbast,nnull,luerr,IERR,INFO,I
     logical  :: ODSCREEN
+
     IERR=0
 
     IF(CMO_CABS_save_created)THEN
@@ -145,17 +168,21 @@ CONTAINS
        call test_CABS_MO_orthonomality(CMO_cabs,SETTING,lupri)
        call mat_free(S_minus_sqrt_cabs)
        call mat_free(Vnull)       
-
-       CMO_CABS_save_created = .TRUE.
-       CALL MAT_INIT(CMO_CABS_save,CMO_cabs%nrow,CMO_cabs%ncol)
-       call mat_assign(CMO_CABS_save,CMO_cabs)
+       
+       IF(Save_activated_cabs)THEN
+          CMO_CABS_save_created = .TRUE.
+          CALL MAT_INIT(CMO_CABS_save,CMO_cabs%nrow,CMO_cabs%ncol)
+          call mat_assign(CMO_CABS_save,CMO_cabs)
+       ENDIF
        print*,'BUILD CABS'
+
        CALL LSTIMER('build_CABS_MO',TIMSTR,TIMEND,lupri)       
        SETTING%SCHEME%OD_SCREEN = ODSCREEN
     ENDIF
   end subroutine build_CABS_MO
 
   subroutine build_RI_MO(CMO_RI,nbast_cabs,SETTING,lupri)
+    implicit none
     integer :: lupri,nbast_cabs
     TYPE(LSSETTING) :: SETTING
     TYPE(MATRIX)    :: CMO_RI
@@ -164,7 +191,7 @@ CONTAINS
     type(matrix) :: S,Smix,S_cabs,tmp,S_minus_sqrt,S_minus_sqrt_cabs
     type(matrix) :: tmp_cabs,tmp2
     real(realk),pointer :: SV(:),optwrk(:)
-    integer     :: lwork,nbast,nnull,luerr
+    integer     :: lwork,nbast,nnull,luerr,IERR,INFO,I
     IF(CMO_RI_save_created)THEN
        call mat_assign(CMO_RI,CMO_RI_save)
     ELSE
@@ -177,9 +204,11 @@ CONTAINS
        CALL mat_free(S_cabs)
        call mat_free(tmp_cabs)
 
-       CMO_RI_save_created = .TRUE.
-       CALL MAT_INIT(CMO_RI_save,CMO_RI%nrow,CMO_RI%ncol)
-       call mat_assign(CMO_RI_save,CMO_RI)
+       IF(Save_activated_ri)THEN
+          CMO_RI_save_created = .TRUE.
+          CALL MAT_INIT(CMO_RI_save,CMO_RI%nrow,CMO_RI%ncol)
+          call mat_assign(CMO_RI_save,CMO_RI)
+       ENDIF
        CALL LSTIMER('build_RI_MO',TIMSTR,TIMEND,lupri)
     ENDIF
   end subroutine build_RI_MO
@@ -209,7 +238,7 @@ CONTAINS
     call mat_identity(tmp2)
     call mat_add(1E0_realk,tmp,-1E0_realk,tmp2,tmp3)
     
-    IF(sqrt(mat_sqnorm2(tmp3)/tmp%nrow).GT.1.0E-12)THEN
+    IF(sqrt(mat_sqnorm2(tmp3)/tmp%nrow).GT.1.0E-10)THEN
        write(lupri,*)'sqrt(Ccabs^T*Scabs*Ccabs - I)',sqrt(mat_sqnorm2(tmp3)/tmp%nrow)  
        call mat_print(tmp,1,tmp%nrow,1,tmp%ncol,lupri)
        call lsquit('CABS not Orthonormal',-1)
@@ -239,7 +268,7 @@ CONTAINS
     call mat_init (tmp, nbast, Cmo_cabs%ncol)
     call mat_mul(Cmo,Smix,'T','N',1.0E0_realk,0.0E0_realk,tmp2)
     call mat_mul(tmp2,Cmo_cabs,'N','N',1.0E0_realk,0.0E0_realk,tmp)  
-    IF(sqrt(mat_sqnorm2(tmp)/tmp%nrow).GT.1.0E-12)THEN
+    IF(sqrt(mat_sqnorm2(tmp)/tmp%nrow).GT.1.0E-10)THEN
        write(lupri,*)'Ccabs^T*Scabs*Ccabs = '  
        call mat_print(tmp,1,tmp%nrow,1,tmp%ncol,lupri)
        call lsquit('CABS not Orthogonal to MOs',-1)

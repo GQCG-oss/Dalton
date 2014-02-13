@@ -2,18 +2,17 @@
 PROGRAM lslib_test
 use precision
 implicit none
-real(realk) :: t1,t2
 logical :: OnMaster,meminfo_slaves
 Integer :: lupri,luerr
 luerr          = 0
 lupri          = 0
 ! setup the calculation 
-call lsinit_all(OnMaster,lupri,luerr,t1,t2)
+call lslib_init(OnMaster,lupri,luerr)
 
 IF(OnMaster) call LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
 
 ! free everything take time and close the files
-call lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
+call lslib_free(OnMaster,lupri,luerr,meminfo_slaves)
 
 CONTAINS
 
@@ -31,10 +30,11 @@ SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceMod
   use memory_handling
 #endif
+  use lslib_state, only: config
   implicit none
   logical, intent(in) :: OnMaster
-  logical, intent(out):: meminfo_slaves
   integer, intent(inout) :: lupri, luerr
+  logical, intent(out) :: meminfo_slaves
   Integer             :: nbast,natoms,nelectrons,i,j,k,l,n,m,o,x,y,z,iGrad,iHess,iCubic,ij,nDerivPacked
 #ifdef LSLIB_RESTART
   type(matrix) :: D
@@ -54,7 +54,6 @@ SUBROUTINE LSlib_test_driver(OnMaster,lupri,luerr,meminfo_slaves)
 CALL LSlib_get_dimensions(nbast,natoms,nelectrons,lupri,luerr)
 write(lupri,'(A,I8,A,I8,A,I8)') 'Starting lslib_test with nbast =',nbast,', natoms =', natoms,&
      &                          ' and nelectrons =', nelectrons
-
 
 !* Allocations
 nullify(h1)
@@ -262,7 +261,7 @@ call daxpy(nbast*nbast,1.0_realk,h1,1,Fmat(1,1,2),1)
 
 ! Get the Fock matrix (not a valid AO density matrix so do not test # of electrons)
 !ToDo Make II_get_Fock work with ADMM
-!CALL LSlib_get_Fock(TempMat,Dmat,nbast,2,.TRUE.,lupri,luerr,.FALSE.)
+CALL LSlib_get_Fock(Fmat,Dmat,nbast,2,.TRUE.,lupri,luerr,.FALSE.,h1)
 
 tmp1 = 0.0_realk
 tmp2 = 0.0_realk
@@ -409,6 +408,7 @@ write(lupri,'(A80,2F18.10)') 'Exchange AO-matrix matrix from eri (Dirac): RMS an
 !*****************************************************************************
 !******                             nn gradient
 !*****************************************************************************
+
 
 call ls_dzero(TempGrad,natoms*3)
 CALL LSlib_get_nn_gradient(TempGrad(1,1,1),natoms,lupri,luerr)
@@ -1295,7 +1295,7 @@ deallocate(Dmat)
 deallocate(Smat)
 deallocate(DFD)
 
-meminfo_slaves = .FALSE.
+meminfo_slaves = config%mpi_mem_monitor
 
 write(lupri,'(A)') ''
 write(lupri,'(A)') '*** LSlib tester completed ***'

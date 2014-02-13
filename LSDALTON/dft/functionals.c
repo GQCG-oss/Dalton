@@ -104,6 +104,25 @@ Functional* available_functionals[] = {
     &PZ81Functional,
     &PBEcFunctional,
     &PbexFunctional,
+    &revPBExFunctional,
+    &rPBExFunctional,
+    &mPBExFunctional,
+    &PW91xFunctional,
+    &G96xFunctional,
+    &LG93xFunctional,
+    &OPTXFunctional,
+    &admmLDAXFunctional,
+    &admmPBEXFunctional,
+    &admmREVPBEXFunctional,
+    &admmRPBEXFunctional,
+    &admmMPBEXFunctional,
+    &admmPW91XFunctional,
+    &admmG96XFunctional,
+    &admmLG93XFunctional,
+    &admmKT1XFunctional,
+    &admmKT2XFunctional,
+    &admmKT3XFunctional,
+    &admmOPTXFunctional,
     &SlaterFunctional,
     &VWN3Functional,
     &VWN5Functional,
@@ -327,3 +346,832 @@ dft_isgga_(void)
 integer
 dft_isgga__(void)
 { return selected_func->is_gga(); }
+
+
+/* DFT-D2 Functional Dependent Parameter Setup */
+
+/* check if for the functional used the DFT-D2 corr. is defined */
+integer
+dft_d2_check_(void)
+{
+    integer res = 0;
+    /*fun_printf("\n     Check Disp: This is a DFT calculation of type: %s",
+ *  *  *                selected_func->name);*/
+    if (strcasecmp(selected_func->name, "BP86")==0) res = 1;
+    if (strcasecmp(selected_func->name, "BLYP")==0) res = 1;
+    if (strcasecmp(selected_func->name, "PBE")==0) res = 1;
+    if (strcasecmp(selected_func->name, "B3LYP")==0) res = 1;
+    if (strcasecmp(selected_func->name, "B97-D")==0) res = 1;
+    if (strcasecmp(selected_func->name, "B2PLYP")==0) res = 1;
+    if (strcasecmp(selected_func->name, "B2GPPLYP")==0) res = 1;
+    if (strcasecmp(selected_func->name, "PBE0")==0) res = 1;
+    /* Functionals parameterized but not setup in Dalton */
+    if (strcasecmp(selected_func->name, "REVPBE")==0) res = 1;
+    if (strcasecmp(selected_func->name, "PW6B95")==0) res = 1;
+    if (strcasecmp(selected_func->name, "TPSS")==0) res = 1;
+    if (strcasecmp(selected_func->name, "TPSS0")==0) res = 1;
+    if (strcasecmp(selected_func->name, "DSD-BLYP")==0) res = 1;
+    /*Now quit outside based on results*/
+    /*if (res == 0) { 
+ *  *  *        dalton_quit("DFT-D2 correction not defined for the chosen functional"); 
+ *   *   *            }*/
+    return res;
+}
+
+
+/* give the s6 factor for the functional, needed in the DFT-D2 corr. */
+real
+dft_d2_s6_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "BP86")==0) res = 1.05;
+    if (strcasecmp(selected_func->name, "BLYP")==0) res = 1.20;
+    if (strcasecmp(selected_func->name, "PBE")==0) res = 0.75;
+    if (strcasecmp(selected_func->name, "B3LYP")==0) res = 1.05;
+    if (strcasecmp(selected_func->name, "B97-D")==0) res = 1.25;
+    if (strcasecmp(selected_func->name, "B2PLYP")==0) res = 0.55;
+    if (strcasecmp(selected_func->name, "B2GPPLYP")==0) res = 0.4;
+    if (strcasecmp(selected_func->name, "PBE0")==0) res = 0.6;
+    /* Functionals parameterized but not setup in Dalton */
+    if (strcasecmp(selected_func->name, "REVPBE")==0) res = 1.25;
+    if (strcasecmp(selected_func->name, "PW6B95")==0) res = 0.5;
+    if (strcasecmp(selected_func->name, "TPSS")==0) res = 1.0;
+    if (strcasecmp(selected_func->name, "TPSS0")==0) res = 0.85;
+    if (strcasecmp(selected_func->name, "DSD-BLYP")==0) res = 0.41;
+
+    /* Now quit outside based on results*/
+    /*if (res == 0) {
+ *  *       dalton_quit("DFT-D2 s_6 not defined for the chosen functional");
+ *   *        *           }*/
+    return res;
+}
+
+
+/* give the alpha factor for the functional, needed in the DFT-D2 corr. */
+real
+dft_d2_alp_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "BP86")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "BLYP")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "PBE")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "B3LYP")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "B97-D")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "B2PLYP")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "B2GPPLYP")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "PBE0")==0) res = 20.0;
+    /* Functionals parameterized but not setup in Dalton */
+    if (strcasecmp(selected_func->name, "REVPBE")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "PW6B95")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "TPSS")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "TPSS0")==0) res = 20.0;
+    if (strcasecmp(selected_func->name, "DSD-BLYP")==0) res = 60.0;
+
+    if (res == 0) {
+      dalton_quit("DFT-D2 alpha not defined for the chosen functional");
+    }
+    return res;
+}
+
+
+/* give the alpha factor for the functional, needed in the DFT-D2 corr. */
+real
+dft_d2_rs6_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "BP86")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "BLYP")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "PBE")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "B3LYP")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "B97-D")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "B2PLYP")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "B2GPPLYP")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "PBE0")==0) res = 1.10;
+    /* Functionals parameterized but not setup in Dalton */
+    if (strcasecmp(selected_func->name, "REVPBE")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "PW6B95")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "TPSS")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "TPSS0")==0) res = 1.10;
+    if (strcasecmp(selected_func->name, "DSD-BLYP")==0) res = 1.10;
+
+    if (res == 0) {
+      dalton_quit("DFT-D2 rs_6 not defined for the chosen functional");
+    }
+    return res;
+}
+/* DFT-D2 Functional Dependent Parameter End*/
+
+
+
+/* DFT-D3 Functional Dependent Parameter Setup */
+integer
+dft_d3_check_(void)
+{
+    integer res = 0;
+    /*fun_printf("\n     Check Disp: This is a DFT calculation of type: %s",
+ *  *  *                selected_func->name);*/
+    if (strcasecmp(selected_func->name, "Slater")==0)    res = 1;
+    if (strcasecmp(selected_func->name, "BLYP")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "BP86")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "B97-D")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "rev-PBE")==0)   res = 1;
+    if (strcasecmp(selected_func->name, "PBE")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)    res = 1;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0) res = 1;
+    if (strcasecmp(selected_func->name, "rPBE")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "TPSS")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "PBE0")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "REBPBE38")==0)  res = 1;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)    res = 1;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "B2-PLYP")==0)   res = 1;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)    res = 1;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0) res = 1;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "HF")==0)        res = 1;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)    res = 1;
+    if (strcasecmp(selected_func->name, "BPBE")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "B1B95")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "BOP")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "OLYP")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "OPBE")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "SSB")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "revSSB")==0)    res = 1;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)    res = 1;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)   res = 1;
+    if (strcasecmp(selected_func->name, "PBE38")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)   res = 1;
+    if (strcasecmp(selected_func->name, "MPWB1K")==0)    res = 1;
+    if (strcasecmp(selected_func->name, "BMK")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0) res = 1;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)   res = 1;
+    if (strcasecmp(selected_func->name, "M05")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "M052X")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "M06-L")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "M06")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "M062X")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "M06HF")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)   res = 1;
+    /* Now handle this quit outside*/
+    /*if (res == 0) {
+ *  *  *       dalton_quit("DFT-D3 alpha not defined for the chosen functional");
+ *   *   *           }*/
+    return res;
+}
+
+
+/* give the s6 factor for the functional, needed in the DFT-D3 corr. */
+real
+dft_d3_s6_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "Slater")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "BLYP")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "BP86")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "B97-D")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "rev-PBE")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "PBE")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0) res = 1.0;
+    if (strcasecmp(selected_func->name, "rPBE")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "TPSS")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "PBE0")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "REBPBE38")==0)  res = 1.0;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "B2-PLYP")==0)   res = 0.64;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)    res = 0.82;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0) res = 0.56;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)     res = 0.75;
+    if (strcasecmp(selected_func->name, "HF")==0)        res = 1.0;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "BPBE")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "B1B95")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "BOP")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "OLYP")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "OPBE")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "SSB")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "revSSB")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "PBE38")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "MPWB1K")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "BMK")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0) res = 1.0;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "M05")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "M052X")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "M06-L")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "M06")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "M062X")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "M06HF")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)   res = 1.0;
+
+    if (res == 0.0) {
+      dalton_quit("DFT-D3 s_6 not defined for the chosen functional");
+    }
+    return res;
+}
+
+
+
+/* give the alpha factor for the functional, needed in the DFT-D3 corr. */
+real
+dft_d3_alp_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "Slater")==0)    res = 14.0;
+    if (strcasecmp(selected_func->name, "BLYP")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "BP86")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "B97-D")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "rev-PBE")==0)   res = 14.0;
+    if (strcasecmp(selected_func->name, "PBE")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)    res = 14.0;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0) res = 14.0;
+    if (strcasecmp(selected_func->name, "rPBE")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "TPSS")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "PBE0")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "REBPBE38")==0)  res = 14.0;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)    res = 14.0;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "B2-PLYP")==0)   res = 14.0;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)    res = 14.0;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0) res = 14.0;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "HF")==0)        res = 14.0;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)    res = 14.0;
+    if (strcasecmp(selected_func->name, "BPBE")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "B1B95")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "BOP")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "OLYP")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "OPBE")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "SSB")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "revSSB")==0)    res = 14.0;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)    res = 14.0;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)   res = 14.0;
+    if (strcasecmp(selected_func->name, "PBE38")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)   res = 14.0;
+    if (strcasecmp(selected_func->name, "MPWB1K")==0)    res = 14.0;
+    if (strcasecmp(selected_func->name, "BMK")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0) res = 14.0;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)   res = 14.0;
+    if (strcasecmp(selected_func->name, "M05")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "M052X")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "M06-L")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "M06")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "M062X")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "M06HF")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)   res = 14.0;
+
+    if (res == 0) {
+      dalton_quit("DFT-D3 alpha not defined for the chosen functional");
+    }
+    return res;
+}
+
+
+/* give the rs18 factor for the functional, needed in the DFT-D3 corr. */
+real
+dft_d3_rs18_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "Slater")==0)    res = 0.687;
+    if (strcasecmp(selected_func->name, "BLYP")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "BP86")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "B97-D")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "rev-PBE")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "PBE")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0) res = 1.0;
+    if (strcasecmp(selected_func->name, "rPBE")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "TPSS")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "PBE0")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "REBPBE38")==0)  res = 1.0;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "B2-PLYP")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0) res = 1.0;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "HF")==0)        res = 1.0;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "BPBE")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "B1B95")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "BOP")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "OLYP")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "OPBE")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "SSB")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "revSSB")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "PBE38")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "MPWB1K")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "BMK")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0) res = 1.0;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "M05")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "M052X")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "M06-L")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "M06")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "M062X")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "M06HF")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)   res = 1.0;
+
+    if (res == 0.0) {
+      dalton_quit("DFT-D3 rs_18 not defined for the chosen functional");
+    }
+    return res;
+}
+
+
+/* give the rs6 factor for the functional, needed in the DFT-D3 corr. */
+real
+dft_d3_rs6_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "Slater")==0)    res = 0.999;
+    if (strcasecmp(selected_func->name, "BLYP")==0)      res = 1.094;
+    if (strcasecmp(selected_func->name, "BP86")==0)      res = 1.139;
+    if (strcasecmp(selected_func->name, "B97-D")==0)     res = 0.892;
+    if (strcasecmp(selected_func->name, "rev-PBE")==0)   res = 0.923;
+    if (strcasecmp(selected_func->name, "PBE")==0)       res = 1.217;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)    res = 1.345;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0) res = 1.224;
+    if (strcasecmp(selected_func->name, "rPBE")==0)      res = 0.872;
+    if (strcasecmp(selected_func->name, "TPSS")==0)      res = 1.166;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)     res = 1.261;
+    if (strcasecmp(selected_func->name, "PBE0")==0)      res = 1.287;
+    if (strcasecmp(selected_func->name, "REBPBE38")==0)  res = 1.021;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)    res = 1.532;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)     res = 1.252;
+    if (strcasecmp(selected_func->name, "B2-PLYP")==0)   res = 1.427;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)    res = 1.557;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0) res = 1.586;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)     res = 1.541;
+    if (strcasecmp(selected_func->name, "HF")==0)        res = 1.158;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)    res = 1.239;
+    if (strcasecmp(selected_func->name, "BPBE")==0)      res = 1.087;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)     res = 1.370;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)     res = 1.223;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)     res = 1.660;
+    if (strcasecmp(selected_func->name, "B1B95")==0)     res = 1.613;
+    if (strcasecmp(selected_func->name, "BOP")==0)       res = 0.929;
+    if (strcasecmp(selected_func->name, "OLYP")==0)      res = 0.806;
+    if (strcasecmp(selected_func->name, "OPBE")==0)      res = 0.837;
+    if (strcasecmp(selected_func->name, "SSB")==0)       res = 1.215;
+    if (strcasecmp(selected_func->name, "revSSB")==0)    res = 1.221;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)     res = 1.128;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)    res = 1.176;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)   res = 0.949;
+    if (strcasecmp(selected_func->name, "PBE38")==0)     res = 1.333;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)   res = 1.605;
+    if (strcasecmp(selected_func->name, "MPWB1K")==0)    res = 1.671;
+    if (strcasecmp(selected_func->name, "BMK")==0)       res = 1.931;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0) res = 1.378;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)   res = 1.355;
+    if (strcasecmp(selected_func->name, "M05")==0)       res = 1.373;
+    if (strcasecmp(selected_func->name, "M052X")==0)     res = 1.417;
+    if (strcasecmp(selected_func->name, "M06-L")==0)     res = 1.581;
+    if (strcasecmp(selected_func->name, "M06")==0)       res = 1.325;
+    if (strcasecmp(selected_func->name, "M062X")==0)     res = 1.619;
+    if (strcasecmp(selected_func->name, "M06HF")==0)     res = 1.446;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)     res = 1.235;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)   res = 1.221;
+
+    if (res == 0) {
+      dalton_quit("DFT-D3 rs_6 not defined for the chosen functional");
+    }
+    return res;
+}
+
+
+
+/* give the s18 factor for the functional, needed in the DFT-D3 corr. */
+real
+dft_d3_s18_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "Slater")==0)    res = -1.957;
+    if (strcasecmp(selected_func->name, "BLYP")==0)      res = 1.682;
+    if (strcasecmp(selected_func->name, "BP86")==0)      res = 1.683;
+    if (strcasecmp(selected_func->name, "B97-D")==0)     res = 0.909;
+    if (strcasecmp(selected_func->name, "rev-PBE")==0)   res = 1.010;
+    if (strcasecmp(selected_func->name, "PBE")==0)       res = 0.722;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)    res = 0.612;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0) res = 0.901;
+    if (strcasecmp(selected_func->name, "rPBE")==0)      res = 0.514;
+    if (strcasecmp(selected_func->name, "TPSS")==0)      res = 1.105;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)     res = 1.703;
+    if (strcasecmp(selected_func->name, "PBE0")==0)      res = 0.928;
+    if (strcasecmp(selected_func->name, "REBPBE38")==0)  res = 0.862;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)    res = 0.862;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)     res = 1.242;
+    if (strcasecmp(selected_func->name, "B2-PLYP")==0)   res = 1.022;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)    res = 0.705;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0) res = 0.760;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)     res = 0.879;
+    if (strcasecmp(selected_func->name, "HF")==0)        res = 1.746;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)    res = 1.098;
+    if (strcasecmp(selected_func->name, "BPBE")==0)      res = 2.033;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)     res = 1.442;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)     res = 1.219;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)     res = 0.550;
+    if (strcasecmp(selected_func->name, "B1B95")==0)     res = 1.868;
+    if (strcasecmp(selected_func->name, "BOP")==0)       res = 1.975;
+    if (strcasecmp(selected_func->name, "OLYP")==0)      res = 1.764;
+    if (strcasecmp(selected_func->name, "OPBE")==0)      res = 2.055;
+    if (strcasecmp(selected_func->name, "SSB")==0)       res = 0.663;
+    if (strcasecmp(selected_func->name, "revSSB")==0)    res = 0.560;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)     res = 1.494;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)    res = 1.775;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)   res = 0.792;
+    if (strcasecmp(selected_func->name, "PBE38")==0)     res = 0.998;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)   res = 1.118;
+    if (strcasecmp(selected_func->name, "MPWB1K")==0)    res = 1.061;
+    if (strcasecmp(selected_func->name, "BMK")==0)       res = 2.168;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0) res = 1.217;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)   res = 1.279;
+    if (strcasecmp(selected_func->name, "M05")==0)       res = 0.595;
+    if (strcasecmp(selected_func->name, "M052X")==0)     res = 0.000;
+    if (strcasecmp(selected_func->name, "M06-L")==0)     res = 0.000;
+    if (strcasecmp(selected_func->name, "M06")==0)       res = 0.000;
+    if (strcasecmp(selected_func->name, "M062X")==0)     res = 0.000;
+    if (strcasecmp(selected_func->name, "M06HF")==0)     res = 0.000;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)     res = 0.673;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)   res = 1.206;
+
+    if (res == 0) {
+      dalton_quit("DFT-D3 s_18 not defined for the chosen functional");
+    }
+    return res;
+}
+/* DFT-D3 Functional Dependent Parameter End */
+
+
+
+/* DFT-D3-BJ Functional Dependent Parameter Setup */
+integer
+dft_d3bj_check_(void)
+{
+    integer res = 0;
+    /*fun_printf("\n     Check Disp: This is a DFT calculation of type: %s",
+ *  *  *                selected_func->name);*/
+    if (strcasecmp(selected_func->name, "BP86")==0)        res = 1;
+    if (strcasecmp(selected_func->name, "BLYP")==0)        res = 1;
+    if (strcasecmp(selected_func->name, "revPBE")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "B97-D")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "PBE")==0)         res = 1;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0)   res = 1;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "TPSS")==0)        res = 1;
+    if (strcasecmp(selected_func->name, "HF")==0)          res = 1;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "PBE0")==0)        res = 1;
+    if (strcasecmp(selected_func->name, "revPBE38")==0)    res = 1;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "B2PLYP")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "DSD-BLYP")==0)    res = 1;
+    if (strcasecmp(selected_func->name, "DSD-BLYP-FC")==0) res = 1;
+    if (strcasecmp(selected_func->name, "BOP")==0)         res = 1;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "OLYP")==0)        res = 1;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "BPBE")==0)        res = 1;
+    if (strcasecmp(selected_func->name, "OPBE")==0)        res = 1;
+    if (strcasecmp(selected_func->name, "SSB")==0)         res = 1;
+    if (strcasecmp(selected_func->name, "revSSB")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "B1B95")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "BMK")==0)         res = 1;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0)   res = 1;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0)   res = 1;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)       res = 1;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)      res = 1;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)     res = 1;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)       res = 1;
+    /* Now handle this quit outside */
+    /*if (res == 0) {
+ *  *  *       dalton_quit("DFT-D3 alpha not defined for the chosen functional");
+ *   *   *           }*/
+    return res;
+}
+
+
+/* give the s6 factor for the functional, needed in the DFT-D3-BJ corr. */
+real
+dft_d3bj_s6_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "BP86")==0)        res = 1.0;
+    if (strcasecmp(selected_func->name, "BLYP")==0)        res = 1.0;
+    if (strcasecmp(selected_func->name, "revPBE")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "B97-D")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "PBE")==0)         res = 1.0;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "TPSS")==0)        res = 1.0;
+    if (strcasecmp(selected_func->name, "HF")==0)          res = 1.0;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "PBE0")==0)        res = 1.0;
+    if (strcasecmp(selected_func->name, "revPBE38")==0)    res = 1.0;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "B2PLYP")==0)      res = 0.64;
+    if (strcasecmp(selected_func->name, "DSD-BLYP")==0)    res = 0.50;
+    if (strcasecmp(selected_func->name, "DSD-BLYP-FC")==0) res = 0.50;
+    if (strcasecmp(selected_func->name, "BOP")==0)         res = 1.0;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "OLYP")==0)        res = 1.0;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "BPBE")==0)        res = 1.0;
+    if (strcasecmp(selected_func->name, "OPBE")==0)        res = 1.0;
+    if (strcasecmp(selected_func->name, "SSB")==0)         res = 1.0;
+    if (strcasecmp(selected_func->name, "revSSB")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)      res = 1.0;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "B1B95")==0)       res = 1.0;
+    if (strcasecmp(selected_func->name, "BMK")==0)         res = 1.0;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0)   res = 1.0;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0)   res = 0.560;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)       res = 0.750;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)      res = 0.820;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)     res = 1.0;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)       res = 1.0;
+
+    if (res == 0) {
+      dalton_quit("DFT-D3-BJ s_6 not defined for the chosen functional");
+    }
+    return res;
+}
+
+
+
+/* give the alpha factor for the functional, needed in the DFT-D3-BJ corr. */
+real
+dft_d3bj_alp_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "BP86")==0)        res = 14.0;
+    if (strcasecmp(selected_func->name, "BLYP")==0)        res = 14.0;
+    if (strcasecmp(selected_func->name, "revPBE")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "B97-D")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "PBE")==0)         res = 14.0;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0)   res = 14.0;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "TPSS")==0)        res = 14.0;
+    if (strcasecmp(selected_func->name, "HF")==0)          res = 14.0;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "PBE0")==0)        res = 14.0;
+    if (strcasecmp(selected_func->name, "revPBE38")==0)    res = 14.0;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "B2PLYP")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "DSD-BLYP")==0)    res = 14.0;
+    if (strcasecmp(selected_func->name, "DSD-BLYP-FC")==0) res = 14.0;
+    if (strcasecmp(selected_func->name, "BOP")==0)         res = 14.0;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "OLYP")==0)        res = 14.0;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "BPBE")==0)        res = 14.0;
+    if (strcasecmp(selected_func->name, "OPBE")==0)        res = 14.0;
+    if (strcasecmp(selected_func->name, "SSB")==0)         res = 14.0;
+    if (strcasecmp(selected_func->name, "revSSB")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "B1B95")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "BMK")==0)         res = 14.0;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0)   res = 14.0;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0)   res = 14.0;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)       res = 14.0;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)      res = 14.0;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)     res = 14.0;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)       res = 14.0;
+
+    if (res == 0) {
+      dalton_quit("DFT-D3-BJ alpha not defined for the chosen functional");
+    }
+    return res;
+}
+
+
+/* give the rs18 factor for the functional, needed in the DFT-D3-BJ corr. */
+real
+dft_d3bj_rs18_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "BP86")==0)        res = 4.8516;
+    if (strcasecmp(selected_func->name, "BLYP")==0)        res = 4.2359;
+    if (strcasecmp(selected_func->name, "revPBE")==0)      res = 3.5016;
+    if (strcasecmp(selected_func->name, "B97-D")==0)       res = 3.2297;
+    if (strcasecmp(selected_func->name, "PBE")==0)         res = 4.4407;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0)   res = 4.5062;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)       res = 4.4211;
+    if (strcasecmp(selected_func->name, "TPSS")==0)        res = 4.4752;
+    if (strcasecmp(selected_func->name, "HF")==0)          res = 2.8830;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)       res = 4.5865;
+    if (strcasecmp(selected_func->name, "PBE0")==0)        res = 4.8593;
+    if (strcasecmp(selected_func->name, "revPBE38")==0)    res = 3.9446;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)      res = 6.3750;
+    if (strcasecmp(selected_func->name, "B2PLYP")==0)      res = 5.0570;
+    if (strcasecmp(selected_func->name, "DSD-BLYP")==0)    res = 6.0519;
+    if (strcasecmp(selected_func->name, "DSD-BLYP-FC")==0) res = 5.9807;
+    if (strcasecmp(selected_func->name, "BOP")==0)         res = 3.5043;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)      res = 4.5323;
+    if (strcasecmp(selected_func->name, "OLYP")==0)        res = 2.8065;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)      res = 6.1742;
+    if (strcasecmp(selected_func->name, "BPBE")==0)        res = 4.3908;
+    if (strcasecmp(selected_func->name, "OPBE")==0)        res = 2.9444;
+    if (strcasecmp(selected_func->name, "SSB")==0)         res = 5.2170;
+    if (strcasecmp(selected_func->name, "revSSB")==0)      res = 4.0986;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)       res = 4.3153;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)      res = 4.4693;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)       res = 4.9615;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)     res = 3.7619;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)       res = 4.6550;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)     res = 6.4177;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)       res = 7.7627;
+    if (strcasecmp(selected_func->name, "B1B95")==0)       res = 5.5545;
+    if (strcasecmp(selected_func->name, "BMK")==0)         res = 5.9197;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0)   res = 5.4743;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)     res = 5.0987;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0)   res = 6.3332;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)       res = 6.5745;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)      res = 7.3141;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)     res = 4.3359;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)       res = 4.1906;
+
+    if (res == 0) {
+      dalton_quit("DFT-D3-BJ rs_18 not defined for the chosen functional");
+    }
+    return res;
+}
+
+
+/* give the rs6 factor for the functional, needed in the DFT-D3-BJ corr. */
+real
+dft_d3bj_rs6_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "BP86")==0)        res = 0.3946;
+    if (strcasecmp(selected_func->name, "BLYP")==0)        res = 0.4298;
+    if (strcasecmp(selected_func->name, "revPBE")==0)      res = 0.5238;
+    if (strcasecmp(selected_func->name, "B97-D")==0)       res = 0.5545;
+    if (strcasecmp(selected_func->name, "PBE")==0)         res = 0.4289;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0)   res = 0.4613;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)       res = 0.3981;
+    if (strcasecmp(selected_func->name, "TPSS")==0)        res = 0.4535;
+    if (strcasecmp(selected_func->name, "HF")==0)          res = 0.3385;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)       res = 0.3768;
+    if (strcasecmp(selected_func->name, "PBE0")==0)        res = 0.4145;
+    if (strcasecmp(selected_func->name, "revPBE38")==0)    res = 0.4309;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)      res = 0.2076;
+    if (strcasecmp(selected_func->name, "B2PLYP")==0)      res = 0.3065;
+    if (strcasecmp(selected_func->name, "DSD-BLYP")==0)    res = 0.0000;
+    if (strcasecmp(selected_func->name, "DSD-BLYP-FC")==0) res = 0.0009;
+    if (strcasecmp(selected_func->name, "BOP")==0)         res = 0.4870;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)      res = 0.4831;
+    if (strcasecmp(selected_func->name, "OLYP")==0)        res = 0.5299;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)      res = 0.4466;
+    if (strcasecmp(selected_func->name, "BPBE")==0)        res = 0.4567;
+    if (strcasecmp(selected_func->name, "OPBE")==0)        res = 0.5512;
+    if (strcasecmp(selected_func->name, "SSB")==0)         res = -0.0952;
+    if (strcasecmp(selected_func->name, "revSSB")==0)      res = 0.4720;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)       res = 0.4634;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)      res = 0.4312;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)       res = 0.2793;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)     res = 0.4679;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)       res = 0.4529;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)     res = 0.1955;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)       res = 0.1805;
+    if (strcasecmp(selected_func->name, "B1B95")==0)       res = 0.2092;
+    if (strcasecmp(selected_func->name, "BMK")==0)         res = 0.1940;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0)   res = 0.3708;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)     res = 0.3919;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0)   res = 0.0000;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)       res = 0.0000;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)      res = 0.0000;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)     res = 0.3563;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)       res = 0.7461;
+
+    if (res == 0) {
+      dalton_quit("DFT-D3-BJ rs_6 not defined for the chosen functional");
+    }
+    return res;
+}
+
+
+/* give the s18 factor for the functional, needed in the DFT-D3-BJ corr. */
+real
+dft_d3bj_s18_(void)
+{
+    real res = 0.0;
+
+    if (strcasecmp(selected_func->name, "BP86")==0)        res = 3.2822;
+    if (strcasecmp(selected_func->name, "BLYP")==0)        res = 2.6996;
+    if (strcasecmp(selected_func->name, "revPBE")==0)      res = 2.3550;
+    if (strcasecmp(selected_func->name, "B97-D")==0)       res = 2.2609;
+    if (strcasecmp(selected_func->name, "PBE")==0)         res = 0.7875;
+    if (strcasecmp(selected_func->name, "rpw86-pbe")==0)   res = 1.3845;
+    if (strcasecmp(selected_func->name, "B3LYP")==0)       res = 1.9889;
+    if (strcasecmp(selected_func->name, "TPSS")==0)        res = 1.9435;
+    if (strcasecmp(selected_func->name, "HF")==0)          res = 0.9171;
+    if (strcasecmp(selected_func->name, "TPSS0")==0)       res = 1.2576;
+    if (strcasecmp(selected_func->name, "PBE0")==0)        res = 1.2177;
+    if (strcasecmp(selected_func->name, "revPBE38")==0)    res = 1.4760;
+    if (strcasecmp(selected_func->name, "PW6B95")==0)      res = 0.7257;
+    if (strcasecmp(selected_func->name, "B2PLYP")==0)      res = 0.9147;
+    if (strcasecmp(selected_func->name, "DSD-BLYP")==0)    res = 0.2130;
+    if (strcasecmp(selected_func->name, "DSD-BLYP-FC")==0) res = 0.2112;
+    if (strcasecmp(selected_func->name, "BOP")==0)         res = 3.2950;
+    if (strcasecmp(selected_func->name, "MPWLYP")==0)      res = 2.0077;
+    if (strcasecmp(selected_func->name, "OLYP")==0)        res = 2.6205;
+    if (strcasecmp(selected_func->name, "PBEsol")==0)      res = 2.9491;
+    if (strcasecmp(selected_func->name, "BPBE")==0)        res = 4.0728;
+    if (strcasecmp(selected_func->name, "OPBE")==0)        res = 3.3816;
+    if (strcasecmp(selected_func->name, "SSB")==0)         res = -0.1744;
+    if (strcasecmp(selected_func->name, "revSSB")==0)      res = 0.4389;
+    if (strcasecmp(selected_func->name, "OTPSS")==0)       res = 2.7465;
+    if (strcasecmp(selected_func->name, "B3PW91")==0)      res = 2.8524;
+    if (strcasecmp(selected_func->name, "BHLYP")==0)       res = 1.0354;
+    if (strcasecmp(selected_func->name, "revPBE0")==0)     res = 1.7588;
+    if (strcasecmp(selected_func->name, "TPSSh")==0)       res = 2.2382;
+    if (strcasecmp(selected_func->name, "MPW1B95")==0)     res = 1.0508;
+    if (strcasecmp(selected_func->name, "PWB6K")==0)       res = 0.9383;
+    if (strcasecmp(selected_func->name, "B1B95")==0)       res = 1.4507;
+    if (strcasecmp(selected_func->name, "BMK")==0)         res = 2.0860;
+    if (strcasecmp(selected_func->name, "CAM-B3LYP")==0)   res = 2.0674;
+    if (strcasecmp(selected_func->name, "LC-wPBE")==0)     res = 1.8541;
+    if (strcasecmp(selected_func->name, "B2GP-PLYP")==0)   res = 0.2597;
+    if (strcasecmp(selected_func->name, "PTPSS")==0)       res = 0.2804;
+    if (strcasecmp(selected_func->name, "PWPB95")==0)      res = 0.2904;
+    if (strcasecmp(selected_func->name, "HCTH120")==0)     res = 1.0821;
+    if (strcasecmp(selected_func->name, "DFTB3")==0)       res = 3.2090;
+
+    if (res == 0) {
+      dalton_quit("DFT-D3-BJ s_18 not defined for the chosen functional");
+    }
+    return res;
+}
+/* DFT-D3-BJ Functional Dependent Parameter End */
+
+
+
+
+
+
+

@@ -9,9 +9,36 @@ if(ENABLE_SCALASCA)
         ${CMAKE_SOURCE_DIR}/LSDALTON/scalasca.in
         ${PROJECT_BINARY_DIR}/scalascaCC.sh
         )
+    set(SCALASCA_INSTRUMENT ${CMAKE_CXX_COMPILER})
+    configure_script(
+        ${CMAKE_SOURCE_DIR}/LSDALTON/scalasca.in
+        ${PROJECT_BINARY_DIR}/scalascaCXX.sh
+        )
     unset(SCALASCA_INSTRUMENT)
     SET(CMAKE_Fortran_COMPILER "${PROJECT_BINARY_DIR}/scalascaf90.sh")
     SET(CMAKE_C_COMPILER "${PROJECT_BINARY_DIR}/scalascaCC.sh")
+    SET(CMAKE_CXX_COMPILER "${PROJECT_BINARY_DIR}/scalascaCXX.sh")
+endif()
+if(ENABLE_VAMPIRTRACE)
+#    set(VAMPIRTRACE_INSTRUMENT ${CMAKE_Fortran_COMPILER})
+#    configure_script(
+#        ${CMAKE_SOURCE_DIR}/LSDALTON/vampirtrace.in
+#        ${PROJECT_BINARY_DIR}/vampirtracef90.sh
+#        )
+#    set(VAMPIRTRACE_INSTRUMENT ${CMAKE_C_COMPILER})
+#    configure_script(
+#        ${CMAKE_SOURCE_DIR}/LSDALTON/vampirtrace.in
+#        ${PROJECT_BINARY_DIR}/vampirtraceCC.sh
+#        )
+#    set(VAMPIRTRACE_INSTRUMENT ${CMAKE_CXX_COMPILER})
+#    configure_script(
+#        ${CMAKE_SOURCE_DIR}/LSDALTON/vampirtrace.in
+#        ${PROJECT_BINARY_DIR}/vampirtraceCXX.sh
+#        )
+#    unset(VAMPIRTRACE_INSTRUMENT)
+    SET(CMAKE_Fortran_COMPILER "vtfort")
+    SET(CMAKE_C_COMPILER "vtcc")
+    SET(CMAKE_CXX_COMPILER "vtc++")
 endif()
 
 add_library(

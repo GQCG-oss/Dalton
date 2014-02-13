@@ -27,7 +27,6 @@ use ls_util, only: ls_print_gradient
 use molecule_typetype, only: moleculeinfo
 use optimlocMOD, only: optimloc
 use screen_mod, only: screen_free, screen_init
-use io, only: io_init, io_free
 private
 public :: Get_Energy, Get_Gradient, get_num_grad
 !

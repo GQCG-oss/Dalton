@@ -58,7 +58,7 @@ c /* deck cclr_fa */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "iratdef.h"

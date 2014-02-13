@@ -598,10 +598,15 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 			!Converts D(k) to D^0l
 			call kspc_2_rspc_loop_k(nfdensity,Bz%Nk,D_k,lattice,kvec,bz%kpnt(kpt)%weight,&
-                          & BZ%NK_nosym,ndim,kpt,lupri)
+                          & BZ%NK_nosym,ndim,kpt,diis_exit,lupri)
 
 		enddo !kpt
 		CALL LSTIMER('k point energy',TST,TET,LUPRI)
+
+                if(diis_exit) then
+                  write(lupri,*) 'Max Density elements for each layer'
+                  call print_maxdens(nfdensity,lattice,lupri)
+                endif
 
 		if(associated(weight)) call mem_dealloc(weight)
 

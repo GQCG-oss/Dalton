@@ -58,7 +58,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_VIRTpT4  = 14  ! Fourth order (T) contribution, virt partitioning scheme
   integer,parameter :: FRAGMODEL_OCCpT5   = 15  ! Fifth order (T) contribution, occ partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
-  integer,parameter :: FRAGMODEL_F12      = 17  ! MP2-F12 energy correction
+  integer,parameter :: FRAGMODEL_MP2f12   = 17  ! MP2-F12 energy correction
 
 
   !> \author Kasper Kristensen
@@ -176,6 +176,8 @@ module dec_typedef_module
      real(realk) :: PNOoverlapthr
      !> this defines the PNO threshold used for the EOS adapted space
      real(realk) :: EOSPNOthr
+     !> use triangular counting in th occupied indices
+     logical :: PNOtriangular
      !> Use MO-based algorithm to solve the CCSD equations
      logical :: MOCCSD
      !> Maximum number of MOs until which an MO-CCSD calculation should be
@@ -223,6 +225,9 @@ module dec_typedef_module
      !> ************
      !> Use F12 correction
      logical :: F12DEBUG
+
+     !> Debug keyword to specify pure hydrogen atoms
+     logical :: PUREHYDROGENdebug
 
      !> MPI settings
      !> ************
@@ -497,6 +502,10 @@ module dec_typedef_module
      integer :: nval
      !> Number of unoccupied orbitals
      integer :: nunocc
+     !> Number of cabs AO orbitals
+     integer :: nCabsAO
+     !> Number of cabs MO orbitals
+     integer :: nCabsMO
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()
@@ -510,7 +519,9 @@ module dec_typedef_module
      !> Virtual MO coefficients (mu,a)
      real(realk), pointer :: Cv(:,:) => null()
      !> CABS MO coefficients (mu,x)
-     real(realk), pointer :: cabsMOs(:,:) => null()
+     real(realk), pointer :: Ccabs(:,:) => null()
+     !> RI MO coefficients 
+     real(realk), pointer :: Cri(:,:) => null() 
 
      !> Fock matrix (AO basis)
      real(realk), pointer :: fock(:,:) => null()
@@ -527,6 +538,24 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+     
+
+     !> Occ-Occ Fock matrix in MO basis
+     real(realk), pointer :: Fij(:,:) => null()
+
+     !> Occ-CABS (one-electron + coulomb matrix) in MO basis
+     real(realk), pointer :: hJir(:,:) => null() 
+      !> Cabs ri-Cabs ri exchange matrix in MO basis
+     real(realk), pointer :: Krs(:,:) => null() 
+     !> Cabs ri-Cabs ri Fock matrix in MO basis
+     real(realk), pointer :: Frs(:,:) => null() 
+     !> Virt-Cabs Fock matrix in MO basis
+     real(realk), pointer :: Fac(:,:) => null() 
+     !> Cabs ri-Occ Fock matrix in MO basis  
+     real(realk), pointer :: Frm(:,:) => null()
+     !> Cabs-(Occ+virt) Fock matrix in MO basis
+     real(realk), pointer :: Fcp(:,:) => null()
+
 
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()
@@ -562,13 +591,13 @@ module dec_typedef_module
      !> CC model to use for fragment (see MODEL_* in this file)
      integer :: ccmodel
 
-     !> Occupied orbital EOS indices 
+     !> Occupied orbital EOS indices in the full basis 
      integer, pointer :: occEOSidx(:) => null()
-     !> Unoccupied orbital EOS indices 
+     !> Unoccupied orbital EOS indices in the full basis 
      integer, pointer :: unoccEOSidx(:) => null()
      !> Occupied AOS orbital indices (only valence orbitals for frozen core approx)
      integer, pointer :: occAOSidx(:) => null()
-     !> Unoccupied AOS orbital indices 
+     !> Unoccupied AOS orbital indices in the full basis  
      integer, pointer :: unoccAOSidx(:) => null()
      !> Core orbitals indices (only used for frozen core approx, 
      !> otherwise there are included in the occAOSidx list).
@@ -659,9 +688,12 @@ module dec_typedef_module
      !> Virtual MO coefficients
      real(realk), pointer :: Cv(:,:) => null()
      !> Cabs MO coefficients
-     real(realk),pointer :: cabsMOs(:,:) => null()     
+     real(realk),pointer :: Ccabs(:,:) => null()     
      !> Core MO coefficients 
      real(realk),pointer :: CoreMO(:,:) => null()
+     !> RI Mo coefficients
+     real(realk),pointer :: Cri(:,:) => null()
+
 
      !> AO Fock matrix
      real(realk), pointer :: fock(:,:) => null()
@@ -672,6 +704,23 @@ module dec_typedef_module
      !> Core-core block of Fock matrix in MO basis  (subset of ppfock when frozen core is NOT used)
      real(realk), pointer :: ccfock(:,:) => null()
 
+
+     !> Occ-Occ Fock matrix in MO basis
+     real(realk), pointer :: Fij(:,:) => null()
+  
+     !> Occ-CABS (one-electron + coulomb matrix) in MO basis
+     real(realk), pointer :: hJir(:,:) => null() 
+      !> Cabs ri-Cabs ri exchange matrix in MO basis
+     real(realk), pointer :: Krs(:,:) => null() 
+     !> Cabs ri-Cabs ri Fock matrix in MO basis
+     real(realk), pointer :: Frs(:,:) => null() 
+     !> Virt-Cabs Fock matrix in MO basis
+     real(realk), pointer :: Fac(:,:) => null() 
+     !> Cabs ri-Occ Fock matrix in MO basis  
+     real(realk), pointer :: Frm(:,:) => null()
+     !> Cabs-(Occ+virt) Fock matrix in MO basis
+     real(realk), pointer :: Fcp(:,:) => null()
+     
      ! Information for local orbitals
      ! ******************************
      !> Local occupied MO coefficients
@@ -1029,9 +1078,11 @@ module dec_typedef_module
     !> MO index corresponding to the starting point of each batch:
     integer, pointer :: StartInd1(:) 
     integer, pointer :: StartInd2(:) 
-    !> starting index of each batch in the packed array:
-    integer, pointer :: packInd(:) 
-    
+    !> Total dimension of the batch
+    integer, pointer :: dimTot(:)
+    !> Tile index for pdm arrays
+    integer, pointer :: tileInd(:)
+
   end type MObatchInfo
 
   !> AO Integral batch info:

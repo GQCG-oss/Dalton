@@ -30,6 +30,12 @@ set(DFTFUNC_SOURCES
     LSDALTON/dft/fun-pz81.c
     LSDALTON/dft/fun-slater.c
     LSDALTON/dft/fun-vwn.c
+    LSDALTON/dft/fun-revpbex.c
+    LSDALTON/dft/fun-rpbex.c
+    LSDALTON/dft/fun-mpbex.c
+    LSDALTON/dft/fun-pw91x.c
+    LSDALTON/dft/fun-g96.c
+    LSDALTON/dft/fun-lg93.c
     LSDALTON/dft/functionals.c
     LSDALTON/dft/general.c
     )
@@ -73,7 +79,6 @@ set(DEC_SOURCES
     LSDALTON/deccc/rpa.F90
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/f12_routines.F90
-    LSDALTON/deccc/wangy_playground.F90 
     LSDALTON/deccc/cc_driver.F90
     LSDALTON/deccc/cc_debug_routines.F90
     LSDALTON/deccc/cc_integrals.F90
@@ -87,6 +92,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/dec_main.F90
     LSDALTON/deccc/dec_settings.F90
     LSDALTON/deccc/dec_utils.F90
+    LSDALTON/deccc/dec_workarounds.F90
     LSDALTON/deccc/full_driver_f12contractions.F90
     LSDALTON/deccc/fullmolecule.F90
     LSDALTON/deccc/mp2_gradient.F90
@@ -242,26 +248,26 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_Seg.F90
     LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_general.F90
     LSDALTON/IchorIntegrals/IchorGab.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPA.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPB.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPC.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPD.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPASegQ.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPBSegQ.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPCSegQ.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPDSegQ.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPASegP.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPBSegP.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPCSegP.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPDSegP.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPASeg.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPBSeg.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPCSeg.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPDSeg.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPASeg1Prim.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPBSeg1Prim.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPCSeg1Prim.F90
-    LSDALTON/IchorIntegrals/AGC_VerticalRecurrenceQPDSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPA.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPB.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPC.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPD.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPASegQ.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPBSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPCSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPDSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPASegP.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPBSegP.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPCSegP.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPDSegP.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPASeg.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPBSeg.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPCSeg.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPDSeg.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPASeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPBSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPCSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPDSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCGen.F90
     LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDGen.F90
     LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoAGen.F90
@@ -343,6 +349,7 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ls_IntegralInterface.F90
     LSDALTON/LSint/pari.F90
     LSDALTON/LSint/lsmpi.F90
+    LSDALTON/LSint/II_dft_dftd.F90
     )
 #####################################################
 #WARNING: READ ME BEFORE ADDING FILES TO LSUTIL
