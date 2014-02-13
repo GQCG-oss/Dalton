@@ -4472,9 +4472,9 @@ contains
        write(DECinfo%output,'(13X,a)') '**********************************************************'
        write(DECinfo%output,'(13X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
        write(DECinfo%output,'(13X,a)') '**********************************************************'
-       write(DECinfo%output,'(1X,a,g20.10)') 'MP2 CORRECTION TO ENERGY : ', energies(FRAGMODEL_OCCMP2)  
-       write(DECinfo%output,'(1X,a,g20.10)') 'F12 CORRECTION TO ENERGY : ', energies(FRAGMODEL_MP2f12)
-       write(DECinfo%output,'(1X,a,g20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+       write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY : ', energies(FRAGMODEL_OCCMP2)  
+       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY : ', energies(FRAGMODEL_MP2f12)
+       write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
             & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
        write(DECinfo%output,*)       
     endif
