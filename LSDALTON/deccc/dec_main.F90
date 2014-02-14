@@ -126,7 +126,6 @@ contains
     
     ! Get informations about full molecule by reading from file
     call molecule_init_from_files(molecule,mylsitem,D)
-    print *,"from files done calling dec_main_prog"
  
     !> F12
     !call molecule_init_f12(molecule,mylsitem,D)

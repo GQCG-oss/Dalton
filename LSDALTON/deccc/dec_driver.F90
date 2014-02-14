@@ -255,12 +255,12 @@ contains
 
     ! Internal control of first order property keywords
     ! (Necessary because these must be false during fragment optimization.)
-    dens_save = DECinfo%MP2density
-    FO_save = DECinfo%first_order
-    grad_save = DECinfo%gradient
-    DECinfo%MP2density=.false.
-    DECinfo%first_order=.false.
-    DECinfo%gradient=.false.
+    dens_save           = DECinfo%MP2density
+    FO_save             = DECinfo%first_order
+    grad_save           = DECinfo%gradient
+    DECinfo%MP2density  = .false.
+    DECinfo%first_order = .false.
+    DECinfo%gradient    = .false.
 
     call LSTIMER('DEC INIT',tcpu,twall,DECinfo%output)
 
@@ -1064,6 +1064,7 @@ contains
     ! Initialize job list for atomic fragment optimizations
     call create_dec_joblist_fragopt(natoms,nocc,nunocc,MyMolecule%DistanceTable,&
          & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
+
     if(DECinfo%DECrestart) then
        write(DECinfo%output,*) 'Restarting atomic fragment optimizations....'
        call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
