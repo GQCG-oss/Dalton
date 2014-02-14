@@ -158,7 +158,7 @@ module dec_typedef_module
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
      !> if mpich is used CCSD has some special treats that can be used
-     logical :: CCSD_MPICH
+     logical :: CCSD_NO_DEBUG_COMM
      !> prevent canonicalization in the ccsolver
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out
@@ -185,6 +185,8 @@ module dec_typedef_module
      integer :: Max_num_MO
      !> do not update the singles residual
      logical :: CCDhack
+     !> Crash Calc Debug keyword - to test restart option
+     logical :: CRASHCALC
      !> Debug CC driver
      logical :: cc_driver_debug
      !> Integer specifying which scheme to use in CCSD calculations (debug)

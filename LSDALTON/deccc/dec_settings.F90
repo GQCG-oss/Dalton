@@ -49,6 +49,7 @@ contains
 
 
     ! -- Debug modes
+    DECinfo%CRASHCALC            = .false.
     DECinfo%cc_driver_debug      = .false.
     DECinfo%CCDEBUG              = .false.
     DECinfo%manual_batchsizes    = .false.
@@ -66,7 +67,7 @@ contains
     DECinfo%CCSDnosaferun        = .false.
     DECinfo%solver_par           = .false.
     DECinfo%CCSDpreventcanonical = .false.
-    DECinfo%CCSD_MPICH           = .false.
+    DECinfo%CCSD_NO_DEBUG_COMM   = .true.
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%use_pnos             = .false.
@@ -422,20 +423,20 @@ contains
 
        !CCSD SPECIFIC KEYWORDS
        !**********************
-       case('.CCDEBUG');                DECinfo%CCDEBUG              = .true.
-       case('.CCSOLVER_LOCAL');         DECinfo%solver_par           = .false.
-       case('.CCSDDYNAMIC_LOAD');       DECinfo%dyn_load             = .true.
-       case('.CCSDNO_RESTART');         DECinfo%CCSDno_restart       = .true.
-       case('.CCSD_WITH_MPICH');        DECinfo%CCSD_MPICH           = .true.
-       case('.SPAWN_COMM_PROC');        DECinfo%spawn_comm_proc      = .true.
-       case('.CCSDMULTIPLIERS');        DECinfo%CCSDmultipliers      = .true.
-       case('.USE_PNOS');               DECinfo%use_pnos             = .true.
-       case('.NOPNOTRAFO');             DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
-       case('.NOPNOTRUNCATION');        DECinfo%noPNOtrunc           = .true.
-       case('.NOPNOOVERLAPTRUNCATION'); DECinfo%noPNOoverlaptrunc    = .true.
-       case('.MOCCSD');                 DECinfo%MOCCSD               = .true.
-       case('.PNOTRIANGULAR');          DECinfo%PNOtriangular        = .true.
-       case('.CCSDPREVENTCANONICAL');   DECinfo%CCSDpreventcanonical = .true.
+       case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
+       case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
+       case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
+       case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
+       case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM           = .false.
+       case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
+       case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
+       case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
+       case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
+       case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
+       case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
+       case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
+       case('.PNOTRIANGULAR');            DECinfo%PNOtriangular        = .true.
+       case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
 
        case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
        case('.EOSPNOTHR');     read(input,*) DECinfo%EOSPNOthr
@@ -528,6 +529,8 @@ contains
           DECinfo%SkipFull=.true.
        case('.ERRORFACTOR') 
           read(input,*) DECinfo%EerrFactor
+       case('.CRASHCALC') 
+          DECinfo%CRASHCALC= .true.
        case('.CCDRIVERDEBUG')
           DECinfo%cc_driver_debug=.true.
 #endif
@@ -688,6 +691,7 @@ contains
     write(lupri,*) 'CCDEBUG ', DECitem%CCDEBUG
     write(lupri,*) 'CCSDno_restart ', DECitem%CCSDno_restart
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
+    write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
     write(lupri,*) 'en_mem ', DECitem%en_mem
     write(lupri,*) 'precondition_with_full ', DECitem%precondition_with_full
