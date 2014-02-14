@@ -688,15 +688,17 @@ contains
 
     ! How many occ/unocc orbitals assigned to each atom
     natoms = MyMolecule%natoms
-    call mem_alloc(nocc_per_atom,natoms)
-    call mem_alloc(nunocc_per_atom,natoms)
-    nocc_per_atom=get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
-    nunocc_per_atom=get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
+    call mem_alloc( nocc_per_atom,   natoms )
+    call mem_alloc( nunocc_per_atom, natoms )
+
+    nocc_per_atom   = get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
+    nunocc_per_atom = get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
 
     ! Determine logical vectors describing which atoms to include in fragment,
     ! i.e., atoms where the distance to MyAtom is smaller than init_radius
-    call mem_alloc(occ_atoms,natoms)
-    call mem_alloc(unocc_atoms,natoms)
+    call mem_alloc( occ_atoms,   natoms )
+    call mem_alloc( unocc_atoms, natoms )
+
     call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,MyMolecule%distancetable(:,MyAtom),&
          & init_radius,Occ_atoms, Unocc_atoms)
 
@@ -1036,7 +1038,7 @@ contains
     end if
 
     ! FO Fock matrices
-    call get_fragment_FO_fock(MyFragment)
+    call get_fragment_FA_fock(MyFragment)
 
     ! Make fragment pointers point to FOs for both MO coefficients and Fock matrices
     call fragment_basis_point_to_FOs(Myfragment)
@@ -2005,7 +2007,7 @@ contains
     end if
 
     ! FO Fock matrices
-    call get_fragment_FO_fock(fragmentPQ)
+    call get_fragment_FA_fock(fragmentPQ)
 
     ! Make pointers for MO coeff and Fock matrices point to FO quantities
     call fragment_basis_point_to_FOs(fragmentPQ)
@@ -2014,23 +2016,57 @@ contains
 
 
   !> \brief Allocate and calculate occ-occ and virt-virt blocks of Fock matrix in FO basis
-  !> as CoccFO^T FAO CoccFO
+  !> as CoccFA^T FAO CoccFA
   !> \author Kasper Kristensen
   !> \date November 2013
-  subroutine get_fragment_FO_fock(myfragment)
+  subroutine get_fragment_FA_fock(myfragment)
     implicit none
     type(decfrag),intent(inout) :: myfragment
    
-    ! Occ space
-    call mem_alloc(Myfragment%ppfockFA,Myfragment%noccFA,Myfragment%noccFA)
+    ! Occ space, check the allocation status of the corresponding arrays
+    !********************************************************************
+    if(.not.associated(Myfragment%ppfockFA))then
+
+      call mem_alloc(Myfragment%ppfockFA,Myfragment%noccFA,Myfragment%noccFA)
+
+    else
+
+      if(size(Myfragment%ppfockFA)/=Myfragment%noccFA**2)then
+
+        call mem_dealloc(Myfragment%ppfockFA)
+        call mem_alloc(Myfragment%ppfockFA,Myfragment%noccFA,Myfragment%noccFA)
+
+      endif
+
+    endif
+
     call dec_simple_basis_transform1(Myfragment%nbasis,Myfragment%noccFA,&
          & Myfragment%CoFA,Myfragment%fock,Myfragment%ppfockFA)
-    ! Virt space
-    call mem_alloc(Myfragment%qqfockFA,Myfragment%nunoccFA,Myfragment%nunoccFA)
+
+
+
+
+    ! Virt space, same check
+    !************************
+    if(.not.associated(Myfragment%qqfockFA))then
+
+      call mem_alloc(Myfragment%qqfockFA,Myfragment%nunoccFA,Myfragment%nunoccFA)
+
+    else
+
+      if(size(Myfragment%qqfockFA)/=Myfragment%nunoccFA**2)then
+
+        call mem_dealloc(Myfragment%qqfockFA)
+        call mem_alloc(Myfragment%qqfockFA,Myfragment%nunoccFA,Myfragment%nunoccFA)
+
+      endif
+
+    endif
+
     call dec_simple_basis_transform1(Myfragment%nbasis,Myfragment%nunoccFA,&
          & Myfragment%CvFA,Myfragment%fock,Myfragment%qqfockFA)
  
-  end subroutine get_fragment_FO_fock
+  end subroutine get_fragment_FA_fock
 
 
   !> Special case for pair_fragment_adapted_transformation_matrices where
@@ -2061,7 +2097,7 @@ contains
     fragmentPQ%CvFA = fragmentPQ%Cv
 
     ! FO Fock matrices
-    call get_fragment_FO_fock(fragmentPQ)
+    call get_fragment_FA_fock(fragmentPQ)
 
     fragmentPQ%FAset=.true.
 
@@ -2433,8 +2469,13 @@ contains
     ! Make MO coeff and Fock matrices point to local orbital quantities unless we use fragment-adapted
     ! orbitals
     if(fragment%fragmentadapted .and. fragment%FAset) then
+
+       if(.not.associated(fragment%ppfock).or..not.associated(fragment%qqfock))then
+         call get_fragment_FA_fock(fragment)
+       endif
        ! Fragment-adapted
        call fragment_basis_point_to_FOs(Fragment)
+
     else
        ! Local orbitals
        call fragment_basis_point_to_LOs(Fragment)
@@ -2677,6 +2718,8 @@ contains
     ! Open file
     call lsopen(funit,FileName,'OLD','UNFORMATTED')
 
+    write(*,             '(" Restarting with ",I4," converged atomic fragments")')ndone
+    write(DECinfo%output,'(" Restarting with ",I4," converged atomic fragments")')ndone
 
     ! Read the fragments which were done
     do i=1,ndone
@@ -2867,6 +2910,7 @@ contains
        read(runit) fragment%noccFA
        read(runit) fragment%nunoccFA
     end if
+
 
     ! Correlation density
     if(fragment%CDset) then
@@ -3984,6 +4028,7 @@ contains
     GetStandardFrag: do atom=1,natoms
 
        if(.not. which_fragments(atom)) cycle
+
 
        ! Set occupied AOS logical vector
        ! ===============================

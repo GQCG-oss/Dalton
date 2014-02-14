@@ -615,7 +615,7 @@ contains
         DATATYPE = MPI_DOUBLE_PRECISION
         COUNT = SIZE(buffer,kind=ls_mpik)
         if(COUNT.NE.n)THEN
-           call lsquit('lsmpi error in ls_mpibcast_realkV',-1)
+           call lsquit('lsmpi error in ls_mpibcast_realkV_wrapper8',-1)
         endif
         CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
