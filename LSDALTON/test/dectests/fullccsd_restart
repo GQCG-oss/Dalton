@@ -58,8 +58,8 @@ TRILEVEL
 **CC
 .CRASHCALC
 .FrozenCore
-.CCSDforce_scheme
-2
+!.CCSDforce_scheme
+!2
 .CCSD
 .ccThr
 1e-7
@@ -86,8 +86,8 @@ TRILEVEL
 **CC
 .RESTART
 .FrozenCore
-.CCSDforce_scheme
-2
+!.CCSDforce_scheme
+!2
 .CCSD
 .ccThr
 1e-7
