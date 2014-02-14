@@ -51,6 +51,7 @@ add_dalton_test(energy_hsrohf_qc    "dalton;energy;short;parallel")
 add_dalton_test(energy_lucita_gasci "dalton;energy;short;parallel")
 add_dalton_test(energy_stex         "dalton;energy;short;parallel")
 add_dalton_test(energy_scsmp2       "dalton;energy;short;parallel")
+add_dalton_test(energy_localize_selected         "dalton;energy;short")
 
 add_dalton_test(energy_corehole     "dalton;medium")
 add_dalton_test(energy_solv         "dalton;medium")
