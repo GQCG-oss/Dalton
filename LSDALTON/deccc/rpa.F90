@@ -719,6 +719,7 @@ contains
     !call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
     call array_two_dim_1batch(omegaw1,[4,2,3,1],'a',omegw,2,fai,tl,.false.,debug=.true.)
 #ifdef VAR_MPI
+
     call lsmpi_barrier(infpar%lg_comm)
     !write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
    ! if(master) write(*,*) 'omegaw1'
@@ -739,7 +740,7 @@ contains
       !write(*,*) 'order of omega2',size(omega2%val(:,1,1,1))
       !write(*,*) 'order of omega2',size(omega2%val(1,:,1,1))
       !write(*,*) 'order of omega2',size(omega2%val(1,1,:,1))
-      !write(*,*) 'order of omega2',size(omega2%val(1,1,1,:))
+      write(*,*) 'Master writes this'
       !call array4_reorder(omega2,[2,1,4,3])
       call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
 
