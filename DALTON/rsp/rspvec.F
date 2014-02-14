@@ -1715,12 +1715,14 @@ C Add individual contributions from T3DRV, and both X2INIT contributions
      &               SPNSU2,SPNSU,WRK(KCSTRA),WRK(KSCTRA))
       END IF
 
-      DEALLOCATE(GT3)
-      DEALLOCATE(GXBC)
-      DEALLOCATE(GXCB)
-      DEALLOCATE(GA1)
-      DEALLOCATE(GNA)
-      DEALLOCATE(GBC)
+      IF (QLOP) THEN
+         DEALLOCATE(GT3)
+         DEALLOCATE(GXBC)
+         DEALLOCATE(GXCB)
+         DEALLOCATE(GA1)
+         DEALLOCATE(GNA)
+         DEALLOCATE(GBC)
+      END IF
 
       CALL GPCLOSE(LURSPRES,'KEEP')
       CALL QEXIT('QRHYP')
