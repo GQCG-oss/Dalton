@@ -49,6 +49,7 @@ contains
 
 
     ! -- Debug modes
+    DECinfo%CRASHCALC            = .false.
     DECinfo%cc_driver_debug      = .false.
     DECinfo%CCDEBUG              = .false.
     DECinfo%manual_batchsizes    = .false.
@@ -528,6 +529,8 @@ contains
           DECinfo%SkipFull=.true.
        case('.ERRORFACTOR') 
           read(input,*) DECinfo%EerrFactor
+       case('.CRASHCALC') 
+          DECinfo%CRASHCALC= .true.
        case('.CCDRIVERDEBUG')
           DECinfo%cc_driver_debug=.true.
 #endif
@@ -688,6 +691,7 @@ contains
     write(lupri,*) 'CCDEBUG ', DECitem%CCDEBUG
     write(lupri,*) 'CCSDno_restart ', DECitem%CCSDno_restart
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
+    write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
     write(lupri,*) 'en_mem ', DECitem%en_mem
     write(lupri,*) 'precondition_with_full ', DECitem%precondition_with_full
