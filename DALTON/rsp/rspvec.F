@@ -970,6 +970,15 @@ C
 C
       CALL QENTER('QRHYP')
 
+      IF (QLOP) THEN
+         MZYMAX = MAXVAL(MZYVAR)
+         ALLOCATE(GT3(MZYMAX))
+         ALLOCATE(GXBC(MZYMAX))
+         ALLOCATE(GXCB(MZYMAX))
+         ALLOCATE(GA1(MZYMAX))
+         ALLOCATE(GNA(MZYMAX))
+         ALLOCATE(GBC(MZYMAX))
+      END IF
 
 
       IF (SOCOLL) CALL SOINIT
@@ -1261,9 +1270,8 @@ C
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
      &                           CMO,FC,FV)
                               IF (QLOP) THEN
-                              ALLOCATE(GT3(MZYVAR(MSYMA)))
-                              CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),
-     &                        1,GT3,1)
+                                 CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),
+     &                           1,GT3,1)
                               END IF
                               IF (E3TEST) THEN
                                  CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),1,
@@ -1389,9 +1397,8 @@ C
      *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
                            IF (QLOP) THEN
-                           ALLOCATE(GXBC(MZYVAR(MSYMA)))
-                           CALL DCOPY(MZYVAR(MSYMA),WRK(KB2C),
-     *                     1,GXBC,1) 
+                              CALL DCOPY(MZYVAR(MSYMA),WRK(KB2C),
+     *                        1,GXBC,1) 
                            END IF
                            DO 920 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
@@ -1500,9 +1507,8 @@ C
      *                           CQRLB(MSYMC,ICOP),MSYMC,IRANKC,
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
                            IF (QLOP) THEN
-                           ALLOCATE(GXCB(MZYVAR(MSYMA)))
-                           CALL DCOPY(MZYVAR(MSYMA),WRK(KC2B),
-     *                     1,GXCB,1) 
+                              CALL DCOPY(MZYVAR(MSYMA),WRK(KC2B),
+     *                        1,GXCB,1) 
                            END IF
                            DO 930 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
@@ -1661,9 +1667,6 @@ C density perturbation, for later python / loprop usage
                         LFREE = LWRK
                         CALL MEMGET2('REAL','KAVEC',KAVEC,MZYVAR(MSYMA),
      &                  WRK,KFREE,LFREE)
-                        ALLOCATE(GA1(MZYVAR(MSYMA)))
-                        ALLOCATE(GNA(MZYVAR(MSYMA)))
-                        ALLOCATE(GBC(MZYVAR(MSYMA)))
 C Add individual contributions from T3DRV, and both X2INIT contributions
                         CALL DAXPY( MZYVAR(MSYMA),1.0D0, GXBC,1, GXCB,1)
                         CALL DAXPY( MZYVAR(MSYMA),-1.0D0, GT3,1, GXCB,1)
@@ -1689,12 +1692,6 @@ C QLOP specifies to save quadratic RSPVEC for loprop/python usage
                               GSUM2 = DDOT(MZYVAR(MSYMA),GA1,1,GBC,1)
                               WRITE(LUPRI,*) "GSUM1, GSUM2", GSUM1,GSUM2
  960                       CONTINUE
-                           DEALLOCATE(GT3)
-                           DEALLOCATE(GXBC)
-                           DEALLOCATE(GXCB)
-                           DEALLOCATE(GA1)
-                           DEALLOCATE(GNA)
-                           DEALLOCATE(GBC)
 C Add individual contributions from T3DRV, and both X2INIT contributions
                         END IF
  800                    CONTINUE
@@ -1717,6 +1714,14 @@ C Add individual contributions from T3DRV, and both X2INIT contributions
          CALL SPNSO(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,SPNSU1,
      &               SPNSU2,SPNSU,WRK(KCSTRA),WRK(KSCTRA))
       END IF
+
+      DEALLOCATE(GT3)
+      DEALLOCATE(GXBC)
+      DEALLOCATE(GXCB)
+      DEALLOCATE(GA1)
+      DEALLOCATE(GNA)
+      DEALLOCATE(GBC)
+
       CALL GPCLOSE(LURSPRES,'KEEP')
       CALL QEXIT('QRHYP')
       RETURN
