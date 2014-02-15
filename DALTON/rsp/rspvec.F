@@ -1677,14 +1677,14 @@ C Add individual contributions from T3DRV, and both X2INIT contributions
      &                  CQRLB(MSYMC,ICOP),FREQB, FREQC, 
      &                  CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
      &                  XINDX, MJWOP, WRK(KAVEC + MZYVAR(MSYMA)), LWRK )
+                          CALL REARSP(LURSP,MZYVAR(MSYMA),GBC,
+     &                    BQRLB(MSYMB,IBOP),CQRLB(MSYMC,ICOP),
+     &                    FREQB,FREQC,1,1, 1.0D-2,FOUND,CONV,ANTSYM)
                            DO 960 IAOP = 1,NAQROP(MSYMA)
 C QLOP specifies to save quadratic RSPVEC for loprop/python usage 
                               CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,
      &                        UDV,PV,XINDX,ANTSYM,WRK,LWRK)
                               CALL DCOPY( MZYVAR(MSYMA),WRK,1,GA1,1)
-                              CALL REARSP(LURSP,MZYVAR(MSYMA),GBC,
-     &                        BQRLB(MSYMB,IBOP),CQRLB(MSYMC,ICOP),
-     &                        FREQB,FREQC,1,1, 1.0D-2,FOUND,CONV,ANTSYM)
                               CALL REARSP(LURSP,MZYVAR(MSYMA),GNA,
      &                        AQRLB(MSYMA,IAOP),BLANK,
      &                        FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
