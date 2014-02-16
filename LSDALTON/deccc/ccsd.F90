@@ -2412,7 +2412,7 @@ contains
     type(array),intent(inout) :: omega2
     integer, intent(in) :: s
     logical, intent(in) :: pd
-    logical,intent(in) :: lock_outside
+    logical,intent(inout) :: lock_outside
     integer :: no2,nv2,v2o,o2v
     logical :: master 
     real(realk),pointer :: w2(:),w3(:)
@@ -2425,6 +2425,7 @@ contains
     real(realk) :: nrm
     integer(kind=8) :: w3size
     integer(kind=ls_mpik) :: mode
+    logical :: lock_safe
 
     master       = .true.
     nrm          = 0.0E0_realk
@@ -2488,6 +2489,8 @@ contains
        nnod             = infpar%lg_nodtot
        me               = infpar%lg_mynum
        mode             = int(MPI_MODE_NOCHECK,kind=ls_mpik)
+       lock_safe        = lock_outside
+       lock_outside     = .false.
       
       !Setting transformation variables for each rank
       !**********************************************
@@ -2543,9 +2546,10 @@ contains
         call lsmpi_local_reduction(w1,o2v2,infpar%master)
         call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
       else
-        call arr_lock_wins(omega2,'s',mode)
+        !call arr_lock_wins(omega2,'s',mode)
         call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1,tl1)
-        call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,lock_outside)
+        print *,infpar%lg_mynum,"fai",fai1,"tl",tl1,size(w1),tl1*no
+        call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,.false.)
       endif
 
 
@@ -2621,6 +2625,7 @@ contains
       endif
 
       call mem_dealloc(w3)
+      lock_outside     = lock_safe
 #endif
     endif
     
