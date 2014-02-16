@@ -2034,8 +2034,17 @@ contains
     if(fragment%FAset) then
        call mem_dealloc(fragment%CoFA)
        call mem_dealloc(fragment%CvFA)
-       call mem_dealloc(fragment%ppfockFA)
-       call mem_dealloc(fragment%qqfockFA)
+
+       !Check if associated because that might be different on master and slaves
+       !due to the "Expensive Box"
+       if(associated(fragment%ppfockFA))then
+         call mem_dealloc(fragment%ppfockFA)
+       endif
+
+       if(associated(fragment%qqfockFA))then
+         call mem_dealloc(fragment%qqfockFA)
+       endif
+
        if(.not. fragment%pairfrag) then
           call mem_dealloc(fragment%CDocceival)
           call mem_dealloc(fragment%CDunocceival)

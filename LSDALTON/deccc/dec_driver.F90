@@ -269,6 +269,9 @@ contains
     ! ********************************************************
     call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
          & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
+
+
+    !Crash calculation on purpose to test restart option
     IF(DECinfo%CRASHCALC)THEN
        print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
        print*,'This keyword is only used for debug and testing purposes'
@@ -278,6 +281,8 @@ contains
        WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
        call lsquit('Crashed Calculation due to .CRASHCALC keyword',DECinfo%output)
     ENDIF
+
+
     ! Send CC models to use for all pairs based on estimates
     if(esti) then
 #ifdef VAR_MPI
