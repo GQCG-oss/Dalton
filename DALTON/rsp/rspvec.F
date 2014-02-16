@@ -1051,6 +1051,7 @@ C    *                      ' FREQUENCY ',TRFREQ(ICFRNU-NEXLB2-NLRLBL),
                      END IF
                      DO 700 IBOP = 1,NBQROP(MSYMB)
                         DO 800 IBFR = 1,NBQRFR
+                          CALL DZERO(HYPVAL,NAQROP(MSYMA))
 C
 C  Check for special processes.
 C
@@ -1282,6 +1283,7 @@ C
                               CALL FLSHFO(LUPRI)
                               IF (ITSTLP.NE.0)
      *                           CALL QUIT('QRHYP:TSTJEP COMPLETED')
+                              IF (QLOP) GOTO 911
                               DO 910 IAOP = 1,NAQROP(MSYMA)
                                  IF ( ISPINA.EQ.0 ) THEN
                                     IAFRNU = NEXLB2 + INQRLR(
@@ -1348,6 +1350,7 @@ c                                   END IF
                                  END IF
                                  CALL FLSHFO(LUPRI)
   910                         CONTINUE
+  911                         CONTINUE
                            END IF
 C
 C  B[2] Nc term
@@ -1400,6 +1403,7 @@ C
                               CALL DCOPY(MZYVAR(MSYMA),WRK(KB2C),
      *                        1,GXBC,1) 
                            END IF
+                           IF (QLOP) GOTO 921
                            DO 920 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1460,6 +1464,7 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   920                      CONTINUE
+  921                      CONTINUE
 C
 C  C[2] Nb term
 C  Calculate C[2] Nb and store in WRK(KC2B)
@@ -1510,6 +1515,7 @@ C
                               CALL DCOPY(MZYVAR(MSYMA),WRK(KC2B),
      *                        1,GXCB,1) 
                            END IF
+                           IF (QLOP) GOTO 931
                            DO 930 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1561,6 +1567,7 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   930                      CONTINUE
+  931                      CONTINUE
 C
 C A2TEST
 C
@@ -1609,6 +1616,45 @@ C
                               END IF
                               CALL FLSHFO(LUPRI)
  940                       CONTINUE
+                        IF (QLOP) THEN
+C Subsection to save quadratic response vector on file for second order
+C density perturbation, for later python / loprop usage
+      !Allocate memory for vector called in CRLRV3
+                        KFREE = 1
+                        LFREE = LWRK
+                        CALL MEMGET2('REAL','KAVEC',KAVEC,MZYVAR(MSYMA),
+     &                  WRK,KFREE,LFREE)
+C Add individual contributions from T3DRV, and both X2INIT contributions
+                        CALL DAXPY( MZYVAR(MSYMA),1.0D0, GXBC,1, GXCB,1)
+                        CALL DAXPY( MZYVAR(MSYMA),-1.0D0, GT3,1, GXCB,1)
+                        CALL DCOPY( MZYVAR(MSYMA),GXCB,1, WRK(KAVEC),1) 
+!Call RSPCTL through CRLRV3, right hand side is our vec from T3DRV + X2 + X2
+
+                        CALL CRLRV3( WRK(KAVEC), BQRLB(MSYMB,IBOP),
+     &                  CQRLB(MSYMC,ICOP),FREQB, FREQC, 
+     &                  CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
+     &                  XINDX, MJWOP, WRK(KAVEC + MZYVAR(MSYMA)), LWRK )
+                          CALL REARSP(LURSP,MZYVAR(MSYMA),GBC,
+     &                    BQRLB(MSYMB,IBOP),CQRLB(MSYMC,ICOP),
+     &                    FREQB,FREQC,1,1, 1.0D-2,FOUND,CONV,ANTSYM)
+
+C Add individual contributions from T3DRV, and both X2INIT contributions
+
+                           DO 960 IAOP = 1,NAQROP(MSYMA)
+C QLOP specifies to save quadratic RSPVEC for loprop/python usage 
+                              CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,
+     &                        UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+                              CALL DCOPY( MZYVAR(MSYMA),WRK,1,GA1,1)
+        call qenter('A:'//AQRLB(MSYMA,IAOP)//BLANK)
+                              CALL REARSP(LURSP,MZYVAR(MSYMA),GNA,
+     &                        AQRLB(MSYMA,IAOP),BLANK,
+     &                        FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
+        call qexit('A:'//AQRLB(MSYMA,IAOP)//BLANK)
+                              GSUM1 = DDOT(MZYVAR(MSYMA),GNA,1,GXCB,1)
+                              GSUM2 = DDOT(MZYVAR(MSYMA),GA1,1,GBC,1)
+                              WRITE(LUPRI,*) "GSUM1, GSUM2", GSUM1,GSUM2
+                              HYPVAL(IAOP) = HYPVAL(IAOP) + GSUM2
+ 960                       CONTINUE
                            DO 950 IAOP = 1,NAQROP(MSYMA)
 C
                               DIPLEN = .FALSE.
@@ -1659,40 +1705,6 @@ C
      *                             SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,
      *                             SPNSD,SPNSU1,SPNSU2,SPNSU)
  950                       CONTINUE
-                        IF (QLOP) THEN
-C Subsection to save quadratic response vector on file for second order
-C density perturbation, for later python / loprop usage
-      !Allocate memory for vector called in CRLRV3
-                        KFREE = 1
-                        LFREE = LWRK
-                        CALL MEMGET2('REAL','KAVEC',KAVEC,MZYVAR(MSYMA),
-     &                  WRK,KFREE,LFREE)
-C Add individual contributions from T3DRV, and both X2INIT contributions
-                        CALL DAXPY( MZYVAR(MSYMA),1.0D0, GXBC,1, GXCB,1)
-                        CALL DAXPY( MZYVAR(MSYMA),-1.0D0, GT3,1, GXCB,1)
-                        CALL DCOPY( MZYVAR(MSYMA),GXCB,1, WRK(KAVEC),1) 
-!Call RSPCTL through CRLRV3, right hand side is our vec from T3DRV + X2 + X2
-
-                        CALL CRLRV3( WRK(KAVEC), BQRLB(MSYMB,IBOP),
-     &                  CQRLB(MSYMC,ICOP),FREQB, FREQC, 
-     &                  CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
-     &                  XINDX, MJWOP, WRK(KAVEC + MZYVAR(MSYMA)), LWRK )
-                          CALL REARSP(LURSP,MZYVAR(MSYMA),GBC,
-     &                    BQRLB(MSYMB,IBOP),CQRLB(MSYMC,ICOP),
-     &                    FREQB,FREQC,1,1, 1.0D-2,FOUND,CONV,ANTSYM)
-                           DO 960 IAOP = 1,NAQROP(MSYMA)
-C QLOP specifies to save quadratic RSPVEC for loprop/python usage 
-                              CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,
-     &                        UDV,PV,XINDX,ANTSYM,WRK,LWRK)
-                              CALL DCOPY( MZYVAR(MSYMA),WRK,1,GA1,1)
-                              CALL REARSP(LURSP,MZYVAR(MSYMA),GNA,
-     &                        AQRLB(MSYMA,IAOP),BLANK,
-     &                        FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
-                              GSUM1 = DDOT(MZYVAR(MSYMA),GNA,1,GXCB,1)
-                              GSUM2 = DDOT(MZYVAR(MSYMA),GA1,1,GBC,1)
-                              WRITE(LUPRI,*) "GSUM1, GSUM2", GSUM1,GSUM2
- 960                       CONTINUE
-C Add individual contributions from T3DRV, and both X2INIT contributions
                         END IF
  800                    CONTINUE
  700                 CONTINUE
