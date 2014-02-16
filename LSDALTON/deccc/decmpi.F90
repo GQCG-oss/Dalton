@@ -744,10 +744,10 @@ contains
           call mem_alloc(MyFragment%CoFA,MyFragment%nbasis,MyFragment%noccFA)
           nullify(MyFragment%CvFA)
           call mem_alloc(MyFragment%CvFA,MyFragment%nbasis,MyFragment%nunoccFA)
-          nullify(MyFragment%ppfockFA)
-          call mem_alloc(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA)
-          nullify(MyFragment%qqfockFA)
-          call mem_alloc(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA)
+          !nullify(MyFragment%ppfockFA)
+          !call mem_alloc(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA)
+          !nullify(MyFragment%qqfockFA)
+          !call mem_alloc(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA)
           if(.not. MyFragment%pairfrag) then
              nullify(MyFragment%CDocceival)
              call mem_alloc(MyFragment%CDocceival,MyFragment%noccFA)
@@ -771,8 +771,8 @@ contains
     if(MyFragment%FAset) then
        call ls_mpi_buffer(MyFragment%CoFA,MyFragment%nbasis,MyFragment%noccFA,master)
        call ls_mpi_buffer(MyFragment%CvFA,MyFragment%nbasis,MyFragment%nunoccFA,master)
-       call ls_mpi_buffer(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA,master)
-       call ls_mpi_buffer(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA,master)
+       !call ls_mpi_buffer(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA,master)
+       !call ls_mpi_buffer(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA,master)
        if(.not. MyFragment%pairfrag) then
           call ls_mpi_buffer(MyFragment%CDocceival,MyFragment%noccFA,master)
           call ls_mpi_buffer(MyFragment%CDunocceival,MyFragment%nunoccFA,master)
@@ -871,12 +871,12 @@ contains
     if(.not. AddToBuffer) then
        
        ! Point to FO data
-       if(MyFragment%fragmentadapted) then
-          call fragment_basis_point_to_FOs(MyFragment)
-       else
+       !if(MyFragment%fragmentadapted) then
+       !   call fragment_basis_point_to_FOs(MyFragment)
+       !else
           ! Point to local orbital data
           call fragment_basis_point_to_LOs(MyFragment)
-       end if
+       !end if
     end if
 
   End subroutine mpicopy_fragment
@@ -2001,7 +2001,7 @@ contains
     call ls_mpi_buffer(DECitem%dyn_load,Master)
     call ls_mpi_buffer(DECitem%CCDEBUG,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
-    call ls_mpi_buffer(DECitem%CCSD_MPICH,Master)
+    call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%MOCCSD,Master)
@@ -2015,6 +2015,7 @@ contains
     call ls_mpi_buffer(DECitem%PNOoverlapthr,Master)
     call ls_mpi_buffer(DECitem%PNOtriangular,Master)
     call ls_mpi_buffer(DECitem%CCSDmultipliers,Master)
+    call ls_mpi_buffer(DECitem%CRASHCALC,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
     call ls_mpi_buffer(DECitem%en_mem,Master)
     call ls_mpi_buffer(DECitem%precondition_with_full,Master)

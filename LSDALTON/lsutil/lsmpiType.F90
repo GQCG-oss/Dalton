@@ -615,7 +615,7 @@ contains
         DATATYPE = MPI_DOUBLE_PRECISION
         COUNT = SIZE(buffer,kind=ls_mpik)
         if(COUNT.NE.n)THEN
-           call lsquit('lsmpi error in ls_mpibcast_realkV',-1)
+           call lsquit('lsmpi error in ls_mpibcast_realkV_wrapper8',-1)
         endif
         CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
@@ -679,7 +679,7 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       real(realk),pointer :: buf(:)
 #ifdef VAR_MPI
-      call ass_8D3to1(buffer,buf,[i8*nbuf1,i8*nbuf2,i8*nbuf3,i8*nbuf4])
+      call ass_8D4to1(buffer,buf,[i8*nbuf1,i8*nbuf2,i8*nbuf3,i8*nbuf4])
       call ls_mpibcast_realkV_wrapper8(buf,(((i8*nbuf1)*nbuf2)*nbuf3)*nbuf4,master,comm)
       buf => null()
 #endif
