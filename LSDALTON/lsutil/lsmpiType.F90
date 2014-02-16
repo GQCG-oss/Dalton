@@ -4475,8 +4475,8 @@ contains
 #ifdef VAR_MPI
     real(realk),pointer :: buf(:)
     integer(kind=8) :: n
-    n=n1*n2
-    call ass_D2to1(buffer,buf,[n1,n2])
+    n=(i8*n1)*n2
+    call ass_8D2to1(buffer,buf,[i8*n1,i8*n2])
     call lsmpi_local_reduction_realkVN8(buf,n,master)
     nullify(buf)
 #endif
@@ -4491,8 +4491,8 @@ contains
 #ifdef VAR_MPI
     real(realk),pointer :: buf(:)
     integer(kind=8) :: n
-    n=n1*n2*n3
-    call ass_D3to1(buffer,buf,[n1,n2,n3])
+    n=(i8*n1)*n2*n3
+    call ass_8D3to1(buffer,buf,[i8*n1,i8*n2,i8*n3])
     call lsmpi_local_reduction_realkVN8(buf,n,master)
     nullify(buf)
 #endif
@@ -4507,8 +4507,8 @@ contains
 #ifdef VAR_MPI
     real(realk),pointer :: buf(:)
     integer(kind=8) :: n
-    n=n1*n2*n3*n4
-    call ass_D4to1(buffer,buf,[n1,n2,n3,n4])
+    n=((i8*n1)*n2)*n3*n4
+    call ass_8D4to1(buffer,buf,[i8*n1,i8*n2,i8*n3,i8*n4])
     call lsmpi_local_reduction_realkVN8(buf,n,master)
     nullify(buf)
 #endif

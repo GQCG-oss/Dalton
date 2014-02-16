@@ -362,17 +362,15 @@ contains
     call ls_mpi_buffer(bat%MaxAllowedDimGamma,master)
     call ls_mpi_buffer(bat%virtbatch,master)
 
+    call ls_mpi_buffer(bat%size1,4,master)
+    call ls_mpi_buffer(bat%size2,4,master)
+    call ls_mpi_buffer(bat%size3,4,master)
+
     ! Finalize MPI buffer
     ! *******************
     ! MASTER: Send stuff to slaves and deallocate temp. buffers
     ! SLAVE: Deallocate buffer etc.
     call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
-
-    ! Copy 64 bit integers in their own bcast to minimize buffer complications...
-    call ls_mpibcast(bat%size1,4,master,infpar%lg_comm)
-    call ls_mpibcast(bat%size2,4,master,infpar%lg_comm)
-    call ls_mpibcast(bat%size3,4,master,infpar%lg_comm)
-
 
   end subroutine mpi_communicate_mp2_int_and_amp
 
@@ -842,6 +840,10 @@ contains
           call mem_alloc(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore)
           call mem_alloc(MyFragment%ppfockLOC,MyFragment%noccLOC,MyFragment%noccLOC)
           call mem_alloc(MyFragment%qqfockLOC,MyFragment%nunoccLOC,MyFragment%nunoccLOC)
+          if(MyFragment%FAset) then
+            call mem_alloc(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA)
+            call mem_alloc(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA)
+          endif
        end if
        call ls_mpi_buffer(MyFragment%S,MyFragment%nbasis,MyFragment%nbasis,master)
        call ls_mpi_buffer(MyFragment%CoLOC,MyFragment%nbasis,MyFragment%noccLOC,master)
@@ -851,6 +853,10 @@ contains
        call ls_mpi_buffer(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore,master)
        call ls_mpi_buffer(MyFragment%ppfockLOC,MyFragment%noccLOC,MyFragment%noccLOC,master)
        call ls_mpi_buffer(MyFragment%qqfockLOC,MyFragment%nunoccLOC,MyFragment%nunoccLOC,master)
+       if(MyFragment%FAset) then
+         call ls_mpi_buffer(MyFragment%ppfockFA,MyFragment%noccFA,MyFragment%noccFA,master)
+         call ls_mpi_buffer(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA,master)
+       endif
 
 
        ! INTEGRAL LSITEM
@@ -871,12 +877,12 @@ contains
     if(.not. AddToBuffer) then
        
        ! Point to FO data
-       !if(MyFragment%fragmentadapted) then
-       !   call fragment_basis_point_to_FOs(MyFragment)
-       !else
+       if(MyFragment%fragmentadapted.and.DoBasis) then
+          call fragment_basis_point_to_FOs(MyFragment)
+       else
           ! Point to local orbital data
           call fragment_basis_point_to_LOs(MyFragment)
-       !end if
+       end if
     end if
 
   End subroutine mpicopy_fragment
