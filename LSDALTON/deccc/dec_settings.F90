@@ -404,6 +404,7 @@ contains
        !CCSD testing
        case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
           read(input,*) DECinfo%en_mem
+       case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
@@ -427,7 +428,6 @@ contains
        case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
        case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
-       case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM           = .false.
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
