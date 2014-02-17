@@ -243,6 +243,7 @@ C   Initialize variables
 C
       THCRSP = THCLR
       MAXIT  = MAXITL
+      FOUND = .FALSE.
 C
 C   Check number of two index linear vector equations
 C
@@ -301,11 +302,11 @@ C
 
 C
   200 WRITE(LUPRI,'(2A12,2A10,A20,/A42,A22)')
-     *CRLB2(ILRLB2,1),CRLB2(ILRLB2,2),'freq1','freq2','Norm',
+     *LABB,LABC,'freq1','freq2','Norm',
      *' -----------------------------------------',
      *'----------------------'
       WRITE(LUPRI,'(F34.6,F10.6,F20.8)') 
-     *       CRFRQ2(ILRLB2,1),CRFRQ2(ILRLB2,2),VAL
+     *       FREQB,FREQC,VAL
       IF (IPRRSP.GT.10 .AND. (.NOT.FOUND)) THEN
          WRITE(LUPRI,'(/A)') '     Final result in CRVEC3 '
          WRITE(LUPRI,'(A)')  '     ====================== '
