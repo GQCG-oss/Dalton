@@ -1690,7 +1690,7 @@ C        ... determinant basis
 !
            call define_lucita_cfg_dynamic(irsym,       ! rhs symmetry ! swap see subroutine below
      &                                    ilsym,       ! lhs symmetry ! swap see subroutine below
-     &                                    -1,          ! no istaci
+     &                                     0,          ! no istaci
      &                                    ispin1,      ! spin for operator
      &                                    ispin2,      ! spin for operator
      &                                    1,           ! one root

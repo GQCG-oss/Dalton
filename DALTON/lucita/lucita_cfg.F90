@@ -54,7 +54,7 @@ module lucita_cfg
   integer, public :: lucita_cfg_el_operator_level    =  2
   integer, public :: lucita_cfg_csym                 =  1 
   integer, public :: lucita_cfg_hcsym                =  1
-  integer, public :: lucita_cfg_icstate              = -1
+  integer, public :: lucita_cfg_icstate              =  0
   integer, public :: lucita_cfg_spin1_2el_op         = -1
   integer, public :: lucita_cfg_spin2_2el_op         = -1
   integer, public :: lucita_cfg_nr_roots             =  1

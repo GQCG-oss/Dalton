@@ -297,7 +297,7 @@ c
           if(ci_program .eq. 'LUCITA   ')then
             call define_lucita_cfg_dynamic(lsym,        ! rhs symmetry ! swap see subroutine below
      &                                     lsym,        ! lhs symmetry ! swap see subroutine below
-     &                                     -1,          ! no istaci
+     &                                      0,          ! no istaci
      &                                     0,           ! spin for operator
      &                                     0,           ! spin for operator
      &                                     1,           ! one root
@@ -635,7 +635,7 @@ C *** Construct diagonal of CI matrix
         LW1   = LFREE - KW1
         call define_lucita_cfg_dynamic(icsym,   ! rhs symmetry
      &                                 icsym,   ! lhs symmetry
-     &                                 -1,      ! no istaci
+     &                                  0,      ! no istaci
      &                                  0,      ! spin for operator
      &                                  0,      ! spin for operator
      &                                  1,      ! one root
@@ -1231,7 +1231,7 @@ C        .. change from CSf basis to determinant basis
 
           call define_lucita_cfg_dynamic(icsym,   ! rhs symmetry
      &                                   ihcsym,  ! lhs symmetry
-     &                                   -1,      ! no istaci
+     &                                    0,      ! no istaci
      &                                   ispin1,  ! spin for operator
      &                                   ispin2,  ! spin for operator
      &                                    1,      ! one root

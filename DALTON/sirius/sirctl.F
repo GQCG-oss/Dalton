@@ -788,7 +788,7 @@ C             HFSRDFT call, we assume the HFSRDFT is done by now!)
 !       step 1: dynamic variables
         call define_lucita_cfg_dynamic(gasci_input_ptg_symmetry,
      &                                 gasci_input_ptg_symmetry,
-     &                                 -1,
+     &                                  0, ! no istaci; converge all roots being asked for
      &                                  0,
      &                                  0,
      &                                  gasci_input_nr_roots,

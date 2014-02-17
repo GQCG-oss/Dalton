@@ -317,6 +317,7 @@ C
           NFINDM = MIN(NDIM,6*NROOTSL)
 
           ninvec = min(NFINDM,4*nrootsl)
+          write(luwrt,*) ' ninvec again',ninvec
 
           IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
@@ -436,7 +437,9 @@ C
          end do 
          nnashx = (ntoob*(ntoob+1))/2
 
-         allocate(fsr(ntoob**2))
+         write(luwrt,*) 'ntoob**2, norbt_internal',
+     &                   ntoob**2, norbt_internal
+         allocate(fsr(max(ntoob**2,nnorbt_internal)))
          fsr              = 0.0d0
 
          call dzero(work(KRHO1_ens),ntoob**2)
@@ -450,16 +453,14 @@ C
      &        form='unformatted',action='write',position='rewind')
 
 !        debug print
-!        call wrtvcd(vec1,lu1,-1,-1)
-!        write(luwrt,*) 'calc ensemble dens for ... roots',nrootsl
+         call wrtvcd(vec1,lu1,-1,-1)
 
          call rewine(lu1,-1)
 
 ! Manu+Odile march 2013: testing a simple two-state ensemble CI-srDFT with w=0
 
 !        weights(1) = 1.0d0
-         write(luwrt,*) 'weights(1)',weights(1)
-         write(luwrt,*) 'weights(2)',weights(2)
+!        write(luwrt,*) 'weights(1:nroots)',weights(1:nrootsl)
 
 
 !        calculate ensemble density matrix
@@ -486,12 +487,14 @@ C
 
 !********************
 !!! Odile+Manu debug
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
            CALL HEADER(
      &     'lucita: individual one-el. density matrix, active part',-1)
            CALL OUTPUT(work(krho1),1,ntoob,1,ntoob,ntoob,ntoob,
      &                 -11,luwrt)
            write(luwrt,*) 'weights(i)',weights(i)
+#undef LUCI_DEBUG
 #endif
 !!!!
 !********************
@@ -506,19 +509,21 @@ C
          CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
      &               -11,luwrt)
          call lucita_putdens_generic(work(krho1_ens),work(krho2),
-     &                               fsr,xxdummy,xxdummy,i12,2,1,i)
+     &                              fsr,xxdummy,xxdummy,i12,2,1,nrootsl)
 !                                                            2: density matrix
 !                                                            1: rhotype
+#ifdef LUCI_DEBUG
          CALL HEADER(
      &   'lucita: ensemble one-el. density matrix, ap reord   ',-1)
          CALL OUTPAK(work(krho1_ens),ntoob,-1,LUPRI)
+#endif
 
 
 !        reset i12 to allow for 1 and most likely 2-electron contributions
          i12 = i12_save
 !        ispnden  = 0
 
-         deallocate(fsr)
+!        deallocate(fsr)
          close(luci_cvec,status='keep')
 
 !        dump ensemble density on file
@@ -527,7 +532,7 @@ C
 !        calculate ensemble srDFT contributions
 !        --------------------------------------
 
-         allocate(fsr(nnorbt_internal))
+!        allocate(fsr(nnorbt_internal))
          fsr = 0.0d0
 
          IDUM = 0

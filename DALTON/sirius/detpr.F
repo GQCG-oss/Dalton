@@ -139,7 +139,7 @@ C           ... use determinant expansion
 
            call define_lucita_cfg_dynamic(lsym,        ! rhs symmetry
      &                                    lsym,        ! lhs symmetry
-     &                                    -1,          ! no istaci
+     &                                     0,          ! no istaci
      &                                     0,           ! spin for operator
      &                                     0,           ! spin for operator
      &                                     1,           ! one root
