@@ -1642,6 +1642,7 @@ C QLOP specifies to save quadratic RSPVEC for loprop/python usage
                               HYPVAL(IAOP) = HYPVAL(IAOP)
      &                              + DDOT(MZYVAR(MSYMA),GA1,1,GBC,1)
  960                       CONTINUE
+                        END IF
                            DO 950 IAOP = 1,NAQROP(MSYMA)
 C
                               DIPLEN = .FALSE.
@@ -1692,7 +1693,6 @@ C
      *                             SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,
      *                             SPNSD,SPNSU1,SPNSU2,SPNSU)
  950                       CONTINUE
-                        END IF
  800                    CONTINUE
  700                 CONTINUE
  600              CONTINUE
