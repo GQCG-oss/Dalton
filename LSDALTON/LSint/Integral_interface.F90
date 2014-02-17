@@ -90,7 +90,7 @@ MODULE IntegralInterfaceMOD
        & II_get_coulomb_mat_full, II_get_coulomb_mat_mixed_full,&
        & II_get_jengine_mat_full, II_get_exchange_mat_full,&
        & ii_get_exchange_mat_mixed_full, II_get_exchange_mat1_full,&
-       & II_get_exchange_mat_regular_full, II_get_admm_exchange_mat,&
+       & II_get_exchange_mat_regular_full, II_get_admm_exchange_mat,get_T23,&
        & II_get_ADMM_K_gradient, II_get_coulomb_mat,ii_get_exchange_mat_mixed,&
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
        & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI
@@ -5568,57 +5568,57 @@ CONTAINS
      CALL mat_free(T23)
      CALL mat_free(S23)
    END SUBROUTINE TRANSFORMED_F2_TO_F3
-   
-   SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,&
-                     & AO2,AO3,GCAO2,GCAO3,constrain_factor)
-   use io
-   implicit none
-   TYPE(lssetting),intent(inout) :: setting
-   TYPE(MATRIX),intent(inout)    :: T23
-   Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
-   Logical,intent(IN)            :: GCAO2,GCAO3
-   real(realk),intent(IN)        :: constrain_factor
-   !
-   TYPE(MATRIX) :: S23,S22,S22inv
-   Character(80) :: Filename = 'ADMM_T23'
-   Logical :: onMaster
-   real(realk) :: lambda
-   Logical     :: const_electrons
-   Logical     :: scale_finalE
-   
-   onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-   
-   IF (io_file_exist(Filename,setting%IO)) THEN
-     call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-   ELSE
-     CALL mat_init(S22,n2,n2)
-     CALL mat_init(S22inv,n2,n2)
-     CALL mat_init(S23,n2,n3)
-     
-     CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-     CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-    
-     CALL mat_inv(S22,S22inv)
-     CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
-     
-     CALL mat_free(S22inv)
-     CALL mat_free(S23)
-     CALL mat_free(S22)
-     call io_add_filename(setting%IO,Filename,LUPRI)
-     call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-   ENDIF
-   ! IF constraining the total charge
-   ! Lagrangian multiplier for conservation of the total nb. of electrons
-   ! constrain_factor = 1 / (1-lambda)
-   const_electrons = setting%scheme%ADMM_CONST_EL
-   scale_finalE = setting%scheme%ADMMQ_ScaleE
-
-   IF (const_electrons .AND. .NOT.(scale_finalE)) THEN
-      call mat_scal(constrain_factor,T23)
-   ENDIF
-   END SUBROUTINE get_T23
 !CONTAINS END
 END SUBROUTINE II_get_admm_exchange_mat
+
+SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,&
+                  & AO2,AO3,GCAO2,GCAO3,constrain_factor)
+use io
+implicit none
+TYPE(lssetting),intent(inout) :: setting
+TYPE(MATRIX),intent(inout)    :: T23
+Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
+Logical,intent(IN)            :: GCAO2,GCAO3
+real(realk),intent(IN)        :: constrain_factor
+!
+TYPE(MATRIX) :: S23,S22,S22inv
+Character(80) :: Filename = 'ADMM_T23'
+Logical :: onMaster
+real(realk) :: lambda
+Logical     :: const_electrons
+Logical     :: scale_finalE
+
+onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
+
+IF (io_file_exist(Filename,setting%IO)) THEN
+  call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+ELSE
+  CALL mat_init(S22,n2,n2)
+  CALL mat_init(S22inv,n2,n2)
+  CALL mat_init(S23,n2,n3)
+  
+  CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+  CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+ 
+  CALL mat_inv(S22,S22inv)
+  CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
+  
+  CALL mat_free(S22inv)
+  CALL mat_free(S23)
+  CALL mat_free(S22)
+  call io_add_filename(setting%IO,Filename,LUPRI)
+  call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+ENDIF
+! IF constraining the total charge
+! Lagrangian multiplier for conservation of the total nb. of electrons
+! constrain_factor = 1 / (1-lambda)
+const_electrons = setting%scheme%ADMM_CONST_EL
+scale_finalE = setting%scheme%ADMMQ_ScaleE
+
+IF (const_electrons .AND. .NOT.(scale_finalE)) THEN
+   call mat_scal(constrain_factor,T23)
+ENDIF
+END SUBROUTINE get_T23
 
 !> \brief Calculates the ADMM exchange contribution to the molecular gradient
 !> \author S. Reine and P. Merlot
@@ -6106,50 +6106,6 @@ CONTAINS
       CALL mat_free(tmp23)
    END SUBROUTINE TRANSFORM_D3_TO_D2
    
-   SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,&
-                     & AO2,AO3,GCAO2,GCAO3,constrain_factor)
-   use io
-   implicit none
-   TYPE(lssetting),intent(inout) :: setting
-   TYPE(MATRIX),intent(inout)    :: T23
-   Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
-   Logical,intent(IN)            :: GCAO2,GCAO3
-   real(realk),intent(IN)        :: constrain_factor
-   !
-   TYPE(MATRIX) :: S23,S22,S22inv
-   Character(80) :: Filename = 'ADMM_T23'
-   Logical :: onMaster
-   real(realk) :: lambda
-   Logical     :: const_electrons
-   
-   onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-   
-   IF (io_file_exist(Filename,setting%IO)) THEN
-     call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-   ELSE
-     CALL mat_init(S22,n2,n2)
-     CALL mat_init(S22inv,n2,n2)
-     CALL mat_init(S23,n2,n3)
-     
-     CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-     CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-     CALL mat_inv(S22,S22inv)
-     CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
-     
-     CALL mat_free(S22inv)
-     CALL mat_free(S23)
-     CALL mat_free(S22)
-     call io_add_filename(setting%IO,Filename,LUPRI)
-     call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-   ENDIF
-   ! IF constraining the total charge
-   ! Lagrangian multiplier for conservation of the total nb. of electrons
-   ! constrain_factor = 1 / (1-lambda)
-   const_electrons = setting%scheme%ADMM_CONST_EL
-   IF (const_electrons) THEN
-      call mat_scal(constrain_factor,T23)
-   ENDIF
-   END SUBROUTINE get_T23
 !CONTAINS END
 END SUBROUTINE II_get_ADMM_K_gradient
 
