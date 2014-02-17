@@ -460,6 +460,8 @@ contains
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
+       case('.CRASHCALC') 
+          DECinfo%CRASHCALC= .true.
 
 #ifdef MOD_UNRELEASED    
        case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
@@ -529,8 +531,6 @@ contains
           DECinfo%SkipFull=.true.
        case('.ERRORFACTOR') 
           read(input,*) DECinfo%EerrFactor
-       case('.CRASHCALC') 
-          DECinfo%CRASHCALC= .true.
        case('.CCDRIVERDEBUG')
           DECinfo%cc_driver_debug=.true.
 #endif
