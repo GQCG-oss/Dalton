@@ -414,11 +414,16 @@ contains
           ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
+       case('.CRASHCALC') 
+          DECinfo%CRASHCALC= .true.
+
+
 #ifndef VAR_MPI
           print *, 'WARNING: You have specified MPI groupsize - but this is a serial run!'
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
+
 
 #ifdef MOD_UNRELEASED
 
@@ -460,17 +465,13 @@ contains
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
-       case('.CRASHCALC') 
-          DECinfo%CRASHCALC= .true.
 
-#ifdef MOD_UNRELEASED    
        case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
           !endif mod_unreleased
-#endif
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
 
