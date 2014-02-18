@@ -516,7 +516,8 @@ C
      &                      NVAR,NROOT,MAXVEC,NINVEC,APROJ,AVEC,WORK,
      &                      IPRTXX,NPRDIM,H0,IPNTR,
      &                      NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,THRES_E,
-     &                      IROOTHOMING,LUWRTOUT,IBLOCKL,NBLOCKDN,
+     &                      IROOTHOMING,LUWRTOUT,c_state_of_interest,
+     &                      IBLOCKL,NBLOCKDN,
      &                      RCCTOS,LU1LIST,LU2LIST,
      &                      LU3LIST,LU4LIST,LU5LIST,LU6LIST,LU7LIST,
      &                      LUCLIST,NBATV,LBATV,LEBATV,I1BATV,IBATV,
@@ -596,6 +597,7 @@ C
       real(8), intent(out) :: root_residual(nroot)
       integer, intent(out) :: root_converged(nroot)
       integer, intent(out) :: nfinal_vec
+      integer, intent(in)  :: c_state_of_interest
 
       LOGICAL CONVER
       REAL*8 INPRDD, INPROD 
@@ -671,7 +673,7 @@ C
       THRQC  = THRES_E
 !     energy change
 !     THRQE  = THRES_E * 1.0d-08
-      THRQE  = THRES_E * THRES_E
+      THRQE  = THRES_E
 C
 C     ===================
 C      Initial iteration
@@ -869,6 +871,11 @@ C
      &                         MY_LU2_OFF,MY_LU1_OFF,MY_LU5_OFF,
      &                         tmp_space0,ILU2,ILU1,ILU5)
 *
+        if(c_state_of_interest /= 0)then
+          if(root_converged(abs(c_state_of_interest)) == 0)then ! desired root converged - we are done!
+            conver = .true. 
+          end if
+        end if
 *
         IF( ITER .GT. MAXIT) GOTO 100
 *

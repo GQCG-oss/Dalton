@@ -29,7 +29,7 @@
      &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRTXX,
      &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &                  E_CONV,IROOTHOMING,LUWRTOUT)
+     &                  E_CONV,IROOTHOMING,LUWRTOUT,c_state_of_interest)
 *
 * Iterative eigen solver, requires two blocks in core
 *
@@ -88,6 +88,7 @@
       real(8), intent(out) :: root_residual(nroot)
       integer, intent(out) :: root_converged(nroot)
       integer, intent(out) :: nfinal_vec
+      integer, intent(in)  :: c_state_of_interest
 
       LOGICAL CONVER,LUCEND
       REAL*8 INPRDD, INPROD
@@ -331,6 +332,11 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
             root_converged(IROOT) = iroot
             CONVER = .FALSE.
          END IF
+         if(c_state_of_interest /= 0)then
+           if(root_converged(abs(c_state_of_interest)) == 0)then ! desired root converged - we are done!
+             conver = .true. 
+           end if
+         end if
          IF( ITER .GT. MAXIT) GOTO 100
 * =====================================================================
 *. 1.2 : Multiply with inverse Hessian approximation to get new directio
@@ -454,7 +460,6 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
 *
          END IF
   100 CONTINUE
-  101 CONTINUE
 *
       IF( CONVER ) THEN
          GOTO  1001

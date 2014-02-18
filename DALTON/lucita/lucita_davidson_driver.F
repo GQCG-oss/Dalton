@@ -317,7 +317,9 @@ C
           NFINDM = MIN(NDIM,6*NROOTSL)
 
           ninvec = min(NFINDM,4*nrootsl)
-          write(luwrt,*) ' ninvec again',ninvec
+!!!! DEBUG
+!         NFINDM = 12; ninvec = 12 
+!!!! DEBUG
 
           IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
@@ -682,7 +684,8 @@ C     Hamiltonian is totally symmetric)
      &                 MAXVEC,ninvec,SCR1(KAPROJ),SCR1(KAVEC),
      &                 SCR1(KWORK),IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
-     &                 luwrt,IBLOCKAR,IBLKDSTND,
+     &                 luwrt,c_state_of_interest,
+     &                 IBLOCKAR,IBLKDSTND,
      &                 RCCTOS,
      &                 LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                 LU6LIST,LU7LIST,LUCLIST,NBATCH_par,
@@ -699,7 +702,8 @@ C     Hamiltonian is totally symmetric)
      &             LUDIA,NROOTSL,
      &             MAXVEC,ninvec,SCR1(KAPROJ),SCR1(KAVEC),
      &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
-     &             H0SCR,-1,EIGSHF,THRES_E,IROOTHOMING,luwrt)
+     &             H0SCR,-1,EIGSHF,THRES_E,IROOTHOMING,luwrt,
+     &             c_state_of_interest)
 #else
 #ifndef blubb2
        CALL blubb_MICDV4(VEC1,VEC2,C2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),

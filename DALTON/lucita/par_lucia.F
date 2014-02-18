@@ -192,8 +192,8 @@ C
 C
 C     check for convergence
 C
-      IF(RNORM .lt. TEST .OR. ( ITER .gt. 2 .and. 
-     &  ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
+      IF(RNORM .lt. TEST)then ! .OR. ( ITER .gt. 2 .and. 
+!    &  ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
 C
         RTCNV(IROOT) = 0
       ELSE
