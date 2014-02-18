@@ -30,6 +30,12 @@ set(DFTFUNC_SOURCES
     LSDALTON/dft/fun-pz81.c
     LSDALTON/dft/fun-slater.c
     LSDALTON/dft/fun-vwn.c
+    LSDALTON/dft/fun-revpbex.c
+    LSDALTON/dft/fun-rpbex.c
+    LSDALTON/dft/fun-mpbex.c
+    LSDALTON/dft/fun-pw91x.c
+    LSDALTON/dft/fun-g96.c
+    LSDALTON/dft/fun-lg93.c
     LSDALTON/dft/functionals.c
     LSDALTON/dft/general.c
     )

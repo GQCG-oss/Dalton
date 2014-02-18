@@ -23,6 +23,15 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     endif()
 endif()
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
+    add_definitions(-DSYS_CYGWIN)
+    add_definitions(-DSYS_LINUX)
+    add_definitions(-DSYS_UNIX)
+    # fixme: HAVE_NO_LSEEK64 should be tested by cmake
+    #        now just trying to get it compiled
+    # add_definitions(-DHAVE_NO_LSEEK64)
+endif()
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
     add_definitions(-DSYS_AIX)
     add_definitions(-DSYS_UNIX)

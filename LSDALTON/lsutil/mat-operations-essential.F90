@@ -305,7 +305,11 @@ end type matrixmembuf
          if (mat_mem_monitor) then
             no_of_matrices = no_of_matrices + 1
             !write(mat_lu,*) 'Init: matrices allocated:', no_of_matrices
-            if (no_of_matrices > max_no_of_matrices) max_no_of_matrices = no_of_matrices
+            if (no_of_matrices > max_no_of_matrices)then
+               max_no_of_matrices = no_of_matrices!
+!               WRITE(mat_lu,*)'increase max_no_of_matrices to ',no_of_matrices
+!               call LsTraceBack('increase max_no_of_matrices')
+            endif
          endif
          nullify(A%elms)
          nullify(A%elmsb)

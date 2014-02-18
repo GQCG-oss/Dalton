@@ -28,8 +28,8 @@ functionality. {\dalton} will, however, automatically revert to
 {\twoint} for any two-electron integral not available in {\eri}:
 {{\eri} cannot be used in parallel
 calculations and it contains only first-derivatives (for
-the Hartree--Fock gradient), thus it cannot be used to calculate
-Hessians or to calculate MCSCF gradients.}
+the Hartree--Fock molecular gradient), thus it cannot be used to calculate
+molecular Hessians or to calculate MCSCF molecular gradients.}
 
     Input to integral evaluation is
 indicated by the keyword \Sec{*INTEGRALS}, and the section may be
@@ -860,7 +860,7 @@ matrices, irrespective of their inherent Hermiticity or
 anti-Hermiticity.
 
 \item[\Key{RANGMO}] Calculate the diamagnetic magnetizability integrals using the CTOCD-DZ method,
-\index{CTOCD-DZ, CTOCD-DZ diamagnetic magnetizability} see Ref.~\cite{paololazz1,paololazz2}.
+\index{CTOCD-DZ!diamagnetic magnetizability} see Ref.~\cite{paololazz1,paololazz2}.
 The gauge origin is, as default, in the center of mass. 
 
 \begin{list}{}{}
@@ -895,7 +895,7 @@ representation~\cite{tbphkkrjcp110}.
 
 \item[\Key{RPSO}] Calculate the diamagnetic nuclear shielding tensor 
 integrals using the CTOCD-DZ method,
-\index{CTOCD-DZ,CTOCD-DZ diamagnetic nuclear shieldings}  
+\index{CTOCD-DZ!diamagnetic nuclear shieldings}  
 see Ref.~\cite{paololazz1,paololazz2,ctocd}. 
 The gauge origin is, as default, at the center of mass. 
 Setting the gauge origin somewhere else will give wrong results in calculations using symmetry.

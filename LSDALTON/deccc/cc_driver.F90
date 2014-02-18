@@ -1871,9 +1871,19 @@ contains
        call print_norm(omega2(iter),one_norm2,.true.)
        one_norm_total = one_norm1 + one_norm2
        two_norm_total = sqrt(one_norm_total)
-       !if(iter==3)then
-       !  print*,"SETTING TWONORM TO QUIT";two_norm_total=0.9E-5_realk
-       !endif
+
+       !intentionally crash the calculation prematurely
+       if(iter==5.and.DECinfo%CRASHCALC.and.DECinfo%full_molecular_cc)then
+         print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
+         print*,'This keyword is only used for debug and testing purposes'
+         print*,'We want to be able to test the .RESTART keyword'
+         print*,'In the CC case only quit prematurely, then this keyword is even more handy'
+         WRITE(DECinfo%output,*)'Calculation was intentionally crashed due to keyword .CRASHCALC'
+         WRITE(DECinfo%output,*)'This keyword is only used for debug and testing purposes'
+         WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
+         print*,"SETTING TWONORM TO QUIT";two_norm_total=0.9*DECinfo%ccConvergenceThreshold
+       endif
+
        ! simple crop diagnostics
        if(two_norm_total < prev_norm) then
           crop_ok=.true.

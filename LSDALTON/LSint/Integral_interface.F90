@@ -90,7 +90,7 @@ MODULE IntegralInterfaceMOD
        & II_get_coulomb_mat_full, II_get_coulomb_mat_mixed_full,&
        & II_get_jengine_mat_full, II_get_exchange_mat_full,&
        & ii_get_exchange_mat_mixed_full, II_get_exchange_mat1_full,&
-       & II_get_exchange_mat_regular_full, II_get_admm_exchange_mat,&
+       & II_get_exchange_mat_regular_full, II_get_admm_exchange_mat,get_T23,&
        & II_get_ADMM_K_gradient, II_get_coulomb_mat,ii_get_exchange_mat_mixed,&
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
        & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI
@@ -5201,11 +5201,17 @@ logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
 character(21)       :: L2file,L3file
-real(realk)         :: GGAXfactor
-real(realk)         :: lambda, constrain_factor
+real(realk)         :: GGAXfactor,fac
+real(realk)         :: lambda, constrain_factor, scaling_ADMMQ,scaling_ADMMQs, scaling_ADMMP, printConstFactor, printLambda
 logical             :: const_electrons
+logical             :: scaleXC2, scale_finalE
+real(realk)         :: tracek2d2,tracex2d2,tracex3d3
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
+const_electrons = setting%scheme%ADMM_CONST_EL
+scaleXC2 = setting%scheme%ADMMQ_ScaleXC2
+scale_finalE = setting%scheme%ADMMQ_ScaleE
+
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
 ELSE
@@ -5280,9 +5286,13 @@ ELSE
 ENDIF
        
 ! Get the scaling factor derived from constraining the total charge
+
+! calculate Lambda for debugging purpose only, we overwrite the constants after anyway
+   call get_Lagrange_multiplier_charge_conservation_for_coefficients(printLambda,&
+            &printConstFactor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
+
 constrain_factor = 1.0E0_realk
-lambda = 0E0_realk  
-const_electrons = setting%scheme%ADMM_CONST_EL
+lambda = 0E0_realk 
 IF (const_electrons) THEN   
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
             &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
@@ -5307,9 +5317,13 @@ call mat_zero(F2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,F2)
 call mat_zero(k2_xc2)
 call mat_daxpy(1E0_realk,F2(1),k2_xc2)
+tracek2d2 = mat_trAB(F2(1),D2(1))
+write(*,*)     "Tr(k2d2)=", traceK2D2
 call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AO2,AO3,GC2,GC3,constrain_factor)
-call mat_daxpy(1E0_realk,TMPF,F)
+fac = 1E0_realk
+IF (scale_finalE) fac = constrain_factor**(4.E0_realk)
+call mat_daxpy(fac,TMPF,F)
 CALL lstimer('AUX-EX',ts,te,lupri)
 call mat_zero(F2(1))
 
@@ -5331,11 +5345,23 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 
 !Level 2 XC matrix
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
-call mat_daxpy(-GGAXfactor,F2(1),k2_xc2)
+tracex2d2 = mat_trAB(F2(1),D2(1))
+write(*,*)     "Tr(x2d2)=", traceX2D2
+write(*,*)     "Ex2", ex2
+IF (scaleXC2) THEN
+   EX2 = constrain_factor**(4./3.)*EX2            ! RE-SCALING EXC2 TO FIT k2
+   call mat_scal(constrain_factor**(4./3.),F2(1)) ! RE-SCALING XC2 TO FIT k2  
+ENDIF
+IF (.NOT.(scale_finalE)) THEN
+   call mat_daxpy(-GGAXfactor,F2(1),k2_xc2)
+endif
+
+
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                           & AO2,AO3,GC2,GC3,constrain_factor)
-call mat_daxpy(-GGAXfactor,TMPF,dXC)
+ 
+call mat_daxpy(-GGAXfactor*fac,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
 !Re-set to default (level 3) grid
@@ -5350,14 +5376,17 @@ setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 CALL mat_init(F3(1),nbast,nbast)
 CALL mat_zero(F3(1))
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
+tracex3d3 = mat_trAB(F3(1),D)
+write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
+write(*,*)     "Ex3 (not Ex3*2)", ex3
 CALL mat_daxpy(GGAXfactor,F3(1),dXC)
 
 
-EdXC = (EX3(1)-EX2(1))*GGAXfactor
+EdXC = (EX3(1)- fac*EX2(1))*GGAXfactor
 
 !Restore dft functional to original
 IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
-         
+
 !the remainder =================================================
 !call mat_zero(TMPF)
 !call II_get_exchange_mat(LUPRI,LUERR,SETTING,TMP,1,Dsym,TMPF)
@@ -5381,14 +5410,26 @@ IF (const_electrons) THEN
   CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AO2,AO3,GC2,GC3,constrain_factor)
 
   CALL mat_mul(S32,T23,'n','n',-1E0_realk,0E0_realk,tmp33)
-  call mat_scal(constrain_factor, tmp33)
+  call mat_scal(constrain_factor*constrain_factor, tmp33)
   call mat_daxpy(1E0_realk,S33,tmp33)
-  
+
   write(lupri,*) 'debug:LAMBDA ',2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
   write(lupri,*) 'debug:constrain_factor ',constrain_factor
-  call mat_scal(2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons, tmp33)
+  scaling_ADMMQ = 2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
+
+  IF (scaleXC2) THEN
+     scaling_ADMMQs = scaling_ADMMQ - 2E0_realk/3E0_realk*EX2(1)/nelectrons
+  ENDIF
+  IF (scale_finalE) THEN
+     !scaling_ADMMP = 1E0_realk / mat_trAB(D,S33) * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+     scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+     call mat_scal(scaling_ADMMP, tmp33)
+  ELSE
+     call mat_scal(scaling_ADMMQ, tmp33)
+  ENDIF
+
   call mat_daxpy(1E0_realk,tmp33,dXC)
-  
+
   CALL mat_free(S33)
   CALL mat_free(S32)
   CALL mat_free(T23)
@@ -5411,17 +5452,19 @@ CONTAINS
       integer                    :: n2,n3,AO3,AO2,lupri,luerr
       logical                    :: GCAO2,GCAO3
       !
-      TYPE(MATRIX) :: temp,S23,T23
-      real(realk)  :: trace
+      TYPE(MATRIX) :: temp,S23,T23,S33
+      real(realk)  :: trace, traceDS
       integer      :: nelectrons
       logical      :: DEBUG_ADMM_CONST
 
-      DEBUG_ADMM_CONST = .FALSE.
+      DEBUG_ADMM_CONST = .TRUE.
       CALL mat_init(T23,n2,n3)
       CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,1E0_realk)
      
       CALL mat_init(S23,n2,n3)
+      CALL mat_init(S33,n3,n3)
       CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+      CALL II_get_mixed_overlap(lupri,luerr,setting,S33,AO3,AO3,GCAO3,GCAO3)
       ! The lagrangian multiplier
       ! lambda = 1 - sqrt[ 2/N Tr(D3 S32 T23) ] 
       CALL mat_init(temp,n3,n3)
@@ -5429,17 +5472,22 @@ CONTAINS
       CALL mat_free(S23)
       CALL mat_free(T23)
       trace = mat_trAB(D3,temp)
+      traceDS = mat_trAB(D3,S33)
+      CALL mat_free(S33)
       CALL mat_free(temp)
 
-      
-      nelectrons = setting%molecule(1)%p%nelectrons    
+           
+      nelectrons = setting%molecule(1)%p%nelectrons
+         
       lambda = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
+      !lambda = 1E0_realk - sqrt(1.0E0_realk*trace/traceDS)
       
       ! Scaling factor for the constrained reduced density matrix
       constrain_factor = 1.0E0_realk / (1E0_realk - lambda)
       if(DEBUG_ADMM_CONST) then
          write(*,*)     "Tr(D S32 T23)=", trace
          write(lupri,*) "Tr(D S32 T23)=", trace
+         write(lupri,*) "Tr(D3 S33)=", traceDS
          write(*,*)     "nelectrons=", nelectrons
          write(lupri,*) "nelectrons=", nelectrons
          write(*,*)     "lambda=", lambda
@@ -5520,54 +5568,57 @@ CONTAINS
      CALL mat_free(T23)
      CALL mat_free(S23)
    END SUBROUTINE TRANSFORMED_F2_TO_F3
-   
-   SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,&
-                     & AO2,AO3,GCAO2,GCAO3,constrain_factor)
-   use io
-   implicit none
-   TYPE(lssetting),intent(inout) :: setting
-   TYPE(MATRIX),intent(inout)    :: T23
-   Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
-   Logical,intent(IN)            :: GCAO2,GCAO3
-   real(realk),intent(IN)        :: constrain_factor
-   !
-   TYPE(MATRIX) :: S23,S22,S22inv
-   Character(80) :: Filename = 'ADMM_T23'
-   Logical :: onMaster
-   real(realk) :: lambda
-   Logical     :: const_electrons
-   
-   onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-   
-   IF (io_file_exist(Filename,setting%IO)) THEN
-     call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-   ELSE
-     CALL mat_init(S22,n2,n2)
-     CALL mat_init(S22inv,n2,n2)
-     CALL mat_init(S23,n2,n3)
-     
-     CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-     CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-    
-     CALL mat_inv(S22,S22inv)
-     CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
-     
-     CALL mat_free(S22inv)
-     CALL mat_free(S23)
-     CALL mat_free(S22)
-     call io_add_filename(setting%IO,Filename,LUPRI)
-     call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-   ENDIF
-   ! IF constraining the total charge
-   ! Lagrangian multiplier for conservation of the total nb. of electrons
-   ! constrain_factor = 1 / (1-lambda)
-   const_electrons = setting%scheme%ADMM_CONST_EL
-   IF (const_electrons) THEN
-      call mat_scal(constrain_factor,T23)
-   ENDIF
-   END SUBROUTINE get_T23
 !CONTAINS END
 END SUBROUTINE II_get_admm_exchange_mat
+
+SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,&
+                  & AO2,AO3,GCAO2,GCAO3,constrain_factor)
+use io
+implicit none
+TYPE(lssetting),intent(inout) :: setting
+TYPE(MATRIX),intent(inout)    :: T23
+Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
+Logical,intent(IN)            :: GCAO2,GCAO3
+real(realk),intent(IN)        :: constrain_factor
+!
+TYPE(MATRIX) :: S23,S22,S22inv
+Character(80) :: Filename = 'ADMM_T23'
+Logical :: onMaster
+real(realk) :: lambda
+Logical     :: const_electrons
+Logical     :: scale_finalE
+
+onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
+
+IF (io_file_exist(Filename,setting%IO)) THEN
+  call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+ELSE
+  CALL mat_init(S22,n2,n2)
+  CALL mat_init(S22inv,n2,n2)
+  CALL mat_init(S23,n2,n3)
+  
+  CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+  CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+ 
+  CALL mat_inv(S22,S22inv)
+  CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
+  
+  CALL mat_free(S22inv)
+  CALL mat_free(S23)
+  CALL mat_free(S22)
+  call io_add_filename(setting%IO,Filename,LUPRI)
+  call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+ENDIF
+! IF constraining the total charge
+! Lagrangian multiplier for conservation of the total nb. of electrons
+! constrain_factor = 1 / (1-lambda)
+const_electrons = setting%scheme%ADMM_CONST_EL
+scale_finalE = setting%scheme%ADMMQ_ScaleE
+
+IF (const_electrons .AND. .NOT.(scale_finalE)) THEN
+   call mat_scal(constrain_factor,T23)
+ENDIF
+END SUBROUTINE get_T23
 
 !> \brief Calculates the ADMM exchange contribution to the molecular gradient
 !> \author S. Reine and P. Merlot
@@ -5602,9 +5653,11 @@ character(len=80)   :: WORD
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
 real(realk)         :: lambda, constrain_factor,nrm
-logical             :: const_electrons,DEBUG_ADMM_CONST
+logical             :: const_electrons,DEBUG_ADMM_CONST,scaleXC2
 integer             :: iAtom,iX
 !
+const_electrons = setting%scheme%ADMM_CONST_EL
+scaleXC2 = setting%scheme%ADMMQ_ScaleXC2
 DEBUG_ADMM_CONST = .FALSE.
 call lstimer('START',ts,te,lupri)
 IF (setting%scheme%cam) THEN
@@ -5642,7 +5695,6 @@ DO idmat=1,ndrhs
    AO3 = AORdefault ! assuming optlevel.EQ.3
 
    ! Get the scaling factor derived from constraining the total charge
-   const_electrons = setting%scheme%ADMM_CONST_EL
    IF (const_electrons) THEN   
       call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
                & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
@@ -5945,10 +5997,11 @@ CONTAINS
       logical                    :: DEBUG_ADMM_CONST
       Type(matrix),pointer       :: Sa(:),S32x(:),S23x(:),S33x(:),S22x(:) ! derivative along x,y and z for each atom
       Type(matrix),pointer       :: D3x(:),D3x1(:),D3x3(:)
-      Logical                    :: const_electrons
+      Logical                    :: const_electrons,scaleXC2
       !
       DEBUG_ADMM_CONST = .FALSE.
       const_electrons = setting%scheme%ADMM_CONST_EL
+      scaleXC2 =  setting%scheme%ADMMQ_ScaleXC2
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(T23,n2,n3)
       call mat_zero(T23)
@@ -6053,50 +6106,6 @@ CONTAINS
       CALL mat_free(tmp23)
    END SUBROUTINE TRANSFORM_D3_TO_D2
    
-   SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,&
-                     & AO2,AO3,GCAO2,GCAO3,constrain_factor)
-   use io
-   implicit none
-   TYPE(lssetting),intent(inout) :: setting
-   TYPE(MATRIX),intent(inout)    :: T23
-   Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
-   Logical,intent(IN)            :: GCAO2,GCAO3
-   real(realk),intent(IN)        :: constrain_factor
-   !
-   TYPE(MATRIX) :: S23,S22,S22inv
-   Character(80) :: Filename = 'ADMM_T23'
-   Logical :: onMaster
-   real(realk) :: lambda
-   Logical     :: const_electrons
-   
-   onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-   
-   IF (io_file_exist(Filename,setting%IO)) THEN
-     call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-   ELSE
-     CALL mat_init(S22,n2,n2)
-     CALL mat_init(S22inv,n2,n2)
-     CALL mat_init(S23,n2,n3)
-     
-     CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-     CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-     CALL mat_inv(S22,S22inv)
-     CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
-     
-     CALL mat_free(S22inv)
-     CALL mat_free(S23)
-     CALL mat_free(S22)
-     call io_add_filename(setting%IO,Filename,LUPRI)
-     call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-   ENDIF
-   ! IF constraining the total charge
-   ! Lagrangian multiplier for conservation of the total nb. of electrons
-   ! constrain_factor = 1 / (1-lambda)
-   const_electrons = setting%scheme%ADMM_CONST_EL
-   IF (const_electrons) THEN
-      call mat_scal(constrain_factor,T23)
-   ENDIF
-   END SUBROUTINE get_T23
 !CONTAINS END
 END SUBROUTINE II_get_ADMM_K_gradient
 

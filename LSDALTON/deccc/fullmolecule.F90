@@ -40,7 +40,7 @@ contains
   !> \author Marcin Ziolkowski
   !> \param molecule Full molecule info
   !> \param mylsitem Integral program input
-  subroutine molecule_init_from_files(molecule,mylsitem)
+  subroutine molecule_init_from_files(molecule,mylsitem,D)
 
     implicit none
     type(fullmolecule), intent(inout) :: molecule
@@ -49,33 +49,45 @@ contains
     integer :: r,iset,itype
     logical :: status_info
     real(realk) :: memory_use, tcpu, twall
-
+    
+    !> Density Matrix 
+    type(matrix), optional, intent(in) :: D  ! Needed for creating the hJir MO-matrix
+    
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
-       call dec_get_canonical_orbitals(molecule)
-    end if
-    
-    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-       call dec_get_CABS_orbitals(molecule,mylsitem)
-       call dec_get_RI_orbitals(molecule,mylsitem)
-    end if
-    
     ! Init basic info (molecular dimensions etc.)
-    call molecule_init_basics(molecule,mylsitem)
-
+    call molecule_init_basics(molecule,mylsitem)       
+    
     ! Skip read-in of info for molecule if requested (only for testing)
     if(DECinfo%SkipReadIn) then
        write(DECinfo%output,*) 'WARNING: I do NOT read in the molecular info files &
             & as requested in the input!'
        return
     end if
-
+    
     ! Get Fock, overlap, and MO coefficient matrices.
     call molecule_get_reference_state(molecule,mylsitem)
     call molecule_get_overlap(molecule,mylsitem)
     call molecule_mo_fock(molecule)
+    
+    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
+       call dec_get_canonical_orbitals(molecule)
+    end if
 
+    call molecule_get_carmom(molecule,mylsitem)
+
+    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+       !> Sanity check 
+       if(.NOT. present(D)) then
+          call lsquit("ERROR: (molecule_init_from_files) : Density needs to be persent for F12 calc",-1)
+       end if
+       call dec_get_CABS_orbitals(molecule,mylsitem)
+       call dec_get_RI_orbitals(molecule,mylsitem)
+       
+       !> F12 Fock matrices in MO basis
+       call molecule_mo_f12(molecule,mylsitem,D)
+    end if
+    
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
   end subroutine molecule_init_from_files
@@ -115,22 +127,21 @@ contains
 
     ! Fock matrix in MO basis
     call molecule_mo_fock(molecule)
-    
-    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-       call dec_get_CABS_orbitals(molecule,mylsitem)
-       call dec_get_RI_orbitals(molecule,mylsitem)
-    end if
-    
+ 
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule)
     end if
-    
-    ! F12 Fock matrices in MO basis
-    if(DECinfo%F12) then
-       call molecule_mo_f12(molecule,mylsitem,D)
-    endif
-    
+     
     call molecule_get_carmom(molecule,mylsitem)
+       
+    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+       call dec_get_CABS_orbitals(molecule,mylsitem)
+       call dec_get_RI_orbitals(molecule,mylsitem)
+  
+       !> F12 Fock matrices in MO basis
+       call molecule_mo_f12(molecule,mylsitem,D)
+    end if
+    
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
   end subroutine molecule_init_from_inputs
@@ -162,6 +173,8 @@ contains
     molecule%nunocc = molecule%nbasis - molecule%nocc
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%nocc - molecule%ncore
+    molecule%nCabsAO = 0
+    molecule%nCabsMO = 0
 
     ! Which basis functions are on which atoms?
     call molecule_get_atomic_sizes(molecule,mylsitem)
@@ -836,9 +849,24 @@ contains
     nocc     = MyMolecule%nocc
     nvirt    = MyMolecule%nunocc
     noccfull = nocc
-    ncabsAO  = size(MyMolecule%Ccabs,1)    
-    ncabsMO  = size(MyMolecule%Ccabs,2)
+    ncabsAO  = MyMolecule%nCabsAO    
+    ncabsMO  = MyMolecule%nCabsMO
     nocvfull = nocc + nvirt
+
+   if(DECinfo%F12debug) then
+       print *, "--------------------------"
+       print *, "Molecule_mo_f12"
+       print *, "--------------------------"
+       print *, "nbasis: ", nbasis
+       print *, "nocc: ", nocc
+       print *, "nvirt: ", nvirt
+       print *, "--------------------------"
+       print *, "ncabsAO: ", ncabsAO
+       print *, "ncabsMO: ", ncabsMO
+       print *, "nocvfull: ", nocc+nvirt
+       print *, "--------------------------"
+    end if
+
 
     call mem_alloc(hJir,nocc,ncabsAO) 
     call mem_alloc(Krs,ncabsAO,ncabsAO)
@@ -853,7 +881,7 @@ contains
          & nocc,noccfull,nvirt,ncabsMO,hJir,Krs,Frs,Fac,Fij,Frm,Fcp)
 
     !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
-    call free_cabs()
+    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
 
     ! Mixed regular/CABS one-electron  and Coulomb matrix (h+J) combination in AO basis
     call mem_alloc(MyMolecule%hJir,nocc,ncabsAO) 
@@ -1006,11 +1034,13 @@ contains
     integer :: ncabsAO,ncabs
 
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    molecule%nCabsAO = ncabsAO
+    molecule%nCabsMO = ncabs
     call mat_init(CMO_cabs,nCabsAO,nCabs)
 
-    call init_cabs()
+    call init_cabs(DECinfo%full_molecular_cc)
     call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    call free_cabs()
+    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
 
     ! NB! Memory leak need to be freed somewhere
     call mem_alloc(molecule%Ccabs,ncabsAO,nCabs)
@@ -1028,15 +1058,16 @@ contains
     type(lsitem), intent(inout) :: mylsitem
 
     type(matrix) :: CMO_RI
-    integer :: ncabsAO,ncabs,lupri
+    integer :: ncabsAO,ncabs
 
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-
+    molecule%nCabsAO = ncabsAO
+    molecule%nCabsMO = ncabs
     call mat_init(CMO_RI,ncabsAO,ncabsAO)
 
-    call init_cabs()
-    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,lupri)
-    call free_cabs()
+    call init_ri(DECinfo%full_molecular_cc)
+    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
+    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
 
     ! NB! Memory leak need to be freed somewhere
     call mem_alloc(molecule%Cri,ncabsAO,ncabsAO) 
