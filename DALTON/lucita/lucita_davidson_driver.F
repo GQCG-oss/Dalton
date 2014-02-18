@@ -281,7 +281,7 @@
 C
 C
       DIMENSION VEC1(*),VEC2(*),C2(*)
-      PARAMETER( LLWRK = 100000)
+      PARAMETER( LLWRK = 500000)
       integer, allocatable  :: iscr1(:)
       real(8), allocatable  :: scr1(:)
       real(8), allocatable  :: fsr(:)
@@ -336,33 +336,36 @@ C
           TEST = 1.0D-10
 !test     inideg  = -1
           irootsi =  1
-          DO ! 100 IROOTSI = 1, ninvec
+
+          DO
 
             if(irootsi > ninvec) exit
 *. Number of degenerate elements
             NDEG = 1
             XVAL = SCR1(IBASE)
    90       CONTINUE
-            IF(IBASE-1+NDEG+1.LE.NFINDA) THEN
-              IF (ABS(SCR1(IBASE-1+NDEG+1)-XVAL).LE.TEST) THEN
+            IF(IBASE-1+NDEG+1 <= NFINDA) THEN
+              IF (ABS(SCR1(IBASE-1+NDEG+1)-XVAL) <= TEST) THEN
                 NDEG = NDEG + 1
                 GOTO 90
               END IF
             END IF
-*
+
+#ifdef TEST_THIS_VERSION_DEGENERACIES
+
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
               WRITE(luwrt,*) ' NOTE! degenerate initial vectors for CI'
               WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
 !old          NDEG = 1
             END IF
 
-*. Initial guess in compressed form in SCR1
+!  Initial guess in compressed form in SCR1
             SCALE = 1.0D0/SQRT(DFLOAT(NDEG))
             DO 250 II = 1,NDEG
-*. Anti symmetric combination
+!  Anti symmetric combination
               IF(INIDEG.EQ.-1) THEN
                 SCR1(II) = (-1.0D0)**II * SCALE
-*. Symmetric combination
+!  Symmetric combination
               ELSE IF (INIDEG.EQ.1.OR.INIDEG.EQ.0) THEN
 !               SCR1(II) =  SCALE
                 SCR1(II) = (-1.0D0)**(II-1) * SCALE
@@ -389,9 +392,41 @@ C
      &                       LUDIA,JPACK)
               END IF
             end do
-            IBASE   = IBASE   + NDEG
+
+#else
+            IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
+              WRITE(luwrt,*) ' NOTE! degenerate initial vectors for CI'
+              WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
+              NDEG = 1
+            END IF
+
+*. Initial guess in compressed form in SCR1
+            SCALE = 1.0D0/SQRT(DFLOAT(NDEG))
+            DO 250 II = 1,NDEG
+*. Anti symmetric combination
+              IF(INIDEG.EQ.-1) THEN
+                SCR1(II) = (-1.0D0)**II * SCALE
+*. Symmetric combination
+              ELSE IF (INIDEG.EQ.1.OR.INIDEG.EQ.0) THEN
+                SCR1(II) =  SCALE
+              END IF
+  250       CONTINUE
+            IF(IDIAG.EQ.2) THEN
+              JPACK = 1
+            ELSE
+              JPACK = 0
+            END IF
+#ifdef VAR_MPI
+            CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
+     &                      IBLOCKAR,IBLKDSTND,NUM_BLOCKS2,JPACK,
+     &                      IROOTSI,LU1LIST)
+#else
+            CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
+     &                  LUDIA,JPACK)
+#endif
+#endif
+            ibase   = ibase   + ndeg
             irootsi = irootsi + ndeg 
-! 100     continue
           end do
         ELSE
 * =====================================
@@ -646,10 +681,10 @@ C        eliminate local memory
          WRITE(luwrt,'(6I8)')KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
       END IF
       IF( KLFREE-1 .GT. LLWRK) THEN
-         WRITE(luwrt,'(A,2I5)' )
+         WRITE(luwrt,'(A,2I14)' )
      &   ' Not enough memory in CIEIG5 : neeeded and available ',
      &     KLFREE-1, LLWRK
-         WRITE(luwrt,'(A,2I5)' )
+         WRITE(luwrt,'(A,I14)' )
      &   ' Increase parameter LLWRK in CIEIG5 to   ', KLFREE-1
          call quit( ' insufficient memory in cieig5 ' )
        END IF
