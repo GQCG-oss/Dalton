@@ -19,6 +19,10 @@ typedef int integer; */
    typedef int integer;
 #endif
 
+#if !defined(M_PI)
+#define M_PI		3.14159265358979323846
+#endif
+
 #if !defined(RESTRICT)
 #define RESTRICT
 #endif
@@ -78,7 +82,7 @@ struct DftDensity_ {
 
 /* FirstDrv: matrix of first order derivatives with respect to two
  * parameters: density rho and SQUARE of the gradient of density grho.
- * zeta_i = |\nabla\rho_i|%G￿%@
+ * zeta_i = |\nabla\rho_i|
  * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
  */
 
@@ -95,14 +99,14 @@ typedef struct {
 typedef struct {
     real fR; /* d/drho  F */
     real fZ; /* d/dzeta F */
-    real fRR; /* d/drho%G￿%@ F */
+    real fRR; /* d/drho^2 F */
     real fRZ; /* d/(drho dzeta) F */
-    real fZZ; /* d/dzeta%G￿%@ F */
+    real fZZ; /* d/dzeta^2 F */
     /* additional derivatives required by  */
     /* general linear response scheme     */
     real fRG; /* d/(drho dgamma) F */
     real fZG; /* d/(dzeta dgamma) F */
-    real fGG; /* d/dzgamma%G￿%@ F */
+    real fGG; /* d/dzgamma^2 F */
     real fG;  /* d/dgamma F */
 } SecondDrv;
 
@@ -113,17 +117,17 @@ typedef struct {
     real fR;   /* d/drho  F */
     real fZ;   /* d/dzeta F */
     real fG;   /* d/dgamma F */
-    real fRR[2];  /* d/drho%G￿%@ F */
+    real fRR[2];  /* d/drho^2 F */
     real fRZ[2];  /* d/(drho dzeta) F */
-    real fZZ[2];  /* d/dzeta%G￿%@ F */
+    real fZZ[2];  /* d/dzeta^2 F */
     real fRG[2];  /* d/(drho dgamma) F */
-    real fRRR[2]; /* d/drho%G￿%@ F */
-    real fRRZ[2][2]; /* d/(drho%G￿%@ dzeta) F */
+    real fRRR[2]; /* d/drho^2 F */
+    real fRRZ[2][2]; /* d/(drho^2 dzeta) F */
     /* two forms of fRRG needed as the formulae is non symmetric */
-    real fRRG[2];     /* d/(drho? dgamma) F */
-    real fRRGX[2][2]; /* d/(drho? dgamma) F */
-    real fRZZ[2][2]; /* d/(drho dzeta%G￿%@) F */
-    real fZZZ[2]; /* d/dzeta%G￿%@ F */
+    real fRRG[2];     /* d/(drho^2 dgamma) F */
+    real fRRGX[2][2]; /* d/(drho^2 dgamma) F */
+    real fRZZ[2][2]; /* d/(drho dzeta^2 F */
+    real fZZZ[2]; /* d/dzeta^3 F */
 } ThirdDrv;
 
 
@@ -131,13 +135,13 @@ typedef struct {
     real fR;   /* d/drho  F */
     real fZ;   /* d/dzeta F */
 
-    real fRR;  /* d/drho%G￿%@ F */
+    real fRR;  /* d/drho^2 F */
     real fRZ;  /* d/(drho dzeta) F */
-    real fZZ;  /* d/dzeta%G￿%@ F */
+    real fZZ;  /* d/dzeta^2 F */
 
-    real fRRR; /* d/drho%G￿%@ F */
-    real fRRZ; /* d/(drho%G￿%@ dzeta) F */
-    real fRZZ; /* d/(drho dzeta%G￿%@) F */
+    real fRRR; /* d/drho^3 F */
+    real fRRZ; /* d/(drho^2 dzeta) F */
+    real fRZZ; /* d/(drho dzeta^2 F */
     real fZZZ;
 
     real fRRRR;
@@ -195,15 +199,15 @@ typedef void (*DFTPropEvalMaster)(void);
 typedef void (*DFTPropEvalSlave)(real* work, integer* lwork, const integer* iprint);
 #if defined(VAR_MPI)
 #include <mpi.h>
-void dft_kohn_sham_slave(real* work, integer* lwork, const integer* iprint);
-void dft_lin_resp_slave (real* work, integer* lwork, const integer* iprint);
-void dft_lin_respf_slave (real* work, integer* lwork, const integer* iprint);
-void dft_lin_respao_slave (real* work, integer* lwork, const integer* iprint);
-void dft_kohn_shamab_slave(real* work, integer* lwork, const integer* iprint);
-void dft_lin_respab_slave (real* work, integer* lwork, const integer* iprint);
-void dft_mol_grad_slave (real* work, integer* lwork, const integer* iprint);
-void dft_qr_resp_slave  (real* work, integer* lwork, const integer* iprint);
-void dft_cr_resp_slave(real* work, integer* lwork, const integer* iprint);
+void dft_kohn_sham_slave    (real* work, integer* lwork, const integer* iprint);
+void dft_lin_resp_slave     (real* work, integer* lwork, const integer* iprint);
+void dft_lin_respf_slave    (real* work, integer* lwork, const integer* iprint);
+void dft_kohn_shamab_slave  (real* work, integer* lwork, const integer* iprint);
+void dft_lin_respab_slave   (real* work, integer* lwork, const integer* iprint);
+void dft_lin_respao_slave   (real* work, integer* lwork, const integer* iprint);
+void dft_mol_grad_slave     (real* work, integer* lwork, const integer* iprint);
+void dft_qr_resp_slave      (real* work, integer* lwork, const integer* iprint);
+void dft_cr_resp_slave      (real* work, integer* lwork, const integer* iprint);
 
 void dft_wake_slaves(DFTPropEvalMaster);
 typedef struct {
@@ -222,18 +226,18 @@ void* dal_malloc_(size_t sz, const char *func, unsigned line);
 
 integer fort_print(const char* format, ...);
 /* FORTRAN FUNCTION PROTOTYPES */
-void ls_dzero_(real* arr, const integer* len);
-void dunit_(real* arr, const integer* len);
+void FSYM(ls_dzero)(real* arr, const integer* len);
+void FSYM(dunit) (real* arr, const integer* len);
 void FSYM(outmat)(const real* mat, const integer* rowlow, const integer* rowhi,
 	     const integer* collow, const integer* colhi,
              const integer* rowdim, const integer* coldim);
-void getrho_(const real*dmat, const real* atv, real* rho, real* dmagao, 
+void FSYM(getrho)(const real*dmat, const real* atv, real* rho, real* dmagao, 
 	     const real* densthr);
-void dftgrd_(real* work, integer* lwork, const integer* d1, const integer* log1);
-void FSYM(dftdns)(real* dmat, real* work, integer *lwork,integer* iprint);
-void gtdmso_(real* udv, real* cmo, real* di, real* dv, real* work);
+void FSYM(dftgrd)(real* work, integer* lwork, const integer* d1, const integer* log1);
+void FSYM(dftdns)(real* dmat, real* work, integer *lwork, integer* iprint);
+void FSYM(gtdmso)(real* udv, real* cmo, real* di, real* dv, real* work);
 void FSYM(dftdnsab)(real* dmata,real* dmatb, real* work,
-		    integer* lwork, integer* iprint);
+                   integer* lwork, integer* iprint);
 void udftmolgrdab_(real* gao, real* damta, real* dmatb, real* rha, real* rhb, 
                    real* vra, real* vrb, real* vza, real* vzb, real* vzg); 
 integer FSYM2(ishell_cnt)(void);
@@ -289,8 +293,8 @@ void FSYM2(dft_get_ao_dens_matab)(real* cmo, real* dmata, real* dmatb,
                                   real* work, integer* lwork);
 
 /* useful  constants for fortran interfacing */
-extern const integer  ZEROI, ONEI, THREEI, FOURI;
-extern const real ZEROR, ONER, TWOR, FOURR;
+extern const integer ZEROI, ONEI, THREEI, FOURI;
+extern const real    ZEROR, ONER, TWOR,   FOURR;
 
 #if !defined __inline__
 /* inline some stuff whenever possible */

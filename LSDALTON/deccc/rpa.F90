@@ -388,13 +388,13 @@ contains
 
     !Sckdl = array4_init([nvirt,nocc,nvirt,nocc])
     Sckdl = array4_duplicate(t2)
-    Dckbj = array4_init([nvirt,nocc,nocc,nvirt])
-
+    call array4_reorder(Sckdl,[2,1,4,3])
+    Dckbj = array4_init([nocc,nvirt,nvirt,nocc])
 
 
     do a=1,nvirt
      do i=1,nocc
-        Sckdl%val(a,i,a,i)=Sckdl%val(a,i,a,i)+1._realk
+        Sckdl%val(i,a,i,a)=Sckdl%val(i,a,i,a)+1._realk
      enddo
     enddo
 
@@ -404,9 +404,12 @@ contains
     call dgemm('n','n',dim1,dim1,dim1, &
          1.0E0_realk,gmo,dim1,Sckdl%val,dim1,0.0E0_realk,Dckbj%val,dim1)
 
+    call array4_reorder(omega2,[2,1,4,3])
     call dgemm('n','n',dim1,dim1,dim1, &
          2.0E0_realk,Sckdl%val,dim1,Dckbj%val,dim1,1.0E0_realk,omega2%val,dim1)
-    
+
+    call array4_reorder(omega2,[2,1,4,3])
+   
 
     call array4_free(Dckbj)
     call array4_free(Sckdl)
@@ -461,6 +464,7 @@ contains
 
     write(*,*) 'JOHANNES PAR addres'
     call RPA_residual_addpar(omega2,Sckdl,gmo,noc,nvir)
+    write(*,*) 'JOHANNES added'
 
     ! MPI: here you should start the slaves!!
 
@@ -590,6 +594,7 @@ contains
    
 
     omegaw1 = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
+
 !#ifdef VAR_MPI
 !    if(master) then
 !      call array4_reorder(omega2,[1,3,2,4])
@@ -599,6 +604,7 @@ contains
 !      !call print_norm(omegaw1,msg)
 !    endif
 !#else
+
     call array4_reorder(omega2,[1,3,2,4])
     call array_convert(omega2%val,omegaw1)
 !#endif
@@ -633,7 +639,10 @@ contains
     !In this u2 is array4, hence I use t_par
 !    write(*,*) 'before array two_dim',infpar%lg_mynum
 !    call lsmpi_barrier(infpar%lg_comm)
-    call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
+
+    !call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
+    call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.true.)
+
     !In this u2 is array and no need for t_par
     !call array_two_dim_1batch(u2,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
 
@@ -679,7 +688,8 @@ contains
 
 !#ifdef VAR_MPI
     !call array_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
-    call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
+    !call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
+    call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
 !    write(msg,*) 'Norm of w4',infpar%lg_mynum
 !#else
 !    write(msg,*) 'Norm of w4'
@@ -706,15 +716,17 @@ contains
 !#endif
     
 
-    call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
+    !call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
+    call array_two_dim_1batch(omegaw1,[4,2,3,1],'a',omegw,2,fai,tl,.false.,debug=.true.)
 #ifdef VAR_MPI
+
     call lsmpi_barrier(infpar%lg_comm)
-  !  write(*,*) 'checkpoint 2',infpar%lg_mynum
+    !write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
    ! if(master) write(*,*) 'omegaw1'
    ! if(master) write(*,*) omegaw1%elm4
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
-!    call print_norm(omegaw1,msg)
+    !call print_norm(omegaw1,msg)
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
     !stop
@@ -723,11 +735,19 @@ contains
 !#ifdef VAR_MPI
     if(master) then
       !call array_convert(omegaw1,omega2%val)
+      !call array4_reorder(omega2,[1,3,2,4])
+      !call array4_reorder(omega2,[1,3,2,4])
+      !write(*,*) 'order of omega2',size(omega2%val(:,1,1,1))
+      !write(*,*) 'order of omega2',size(omega2%val(1,:,1,1))
+      !write(*,*) 'order of omega2',size(omega2%val(1,1,:,1))
+      write(*,*) 'Master writes this'
+      !call array4_reorder(omega2,[2,1,4,3])
       call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
 
-!      write(msg,*) 'Norm of omega2'
-!      call print_norm(omega2%val,i8*dim1*dim1,msg)
+     ! write(msg,*) 'Norm of omega2'
+     ! call print_norm(omega2%val,i8*dim1*dim1,msg)
 !      write(*,*) 'checkpoint 3',infpar%lg_mynum
+      !call array4_reorder(omega2,[2,1,4,3])
       call array4_reorder(omega2,[1,3,2,4])
     endif
 !#else

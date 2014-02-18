@@ -701,7 +701,9 @@ which is multiplied with an angular grid (Lebedev-grids).
 The angular grids are by default pruned for radial points close to the nucleus,  
 following Murray, Handy and Laming.~\cite{dft-int:pruning} 
 Grid weights for the grid points are calculated following different schemes (see below). 
-Grid points with weights below $10^{-20}$ are disregarded.  
+Grid points with weights below $10^{-20}$ are disregarded. The default settings 
+corresponds to \Key{GRID4}, but with the BLOCKSSF rather than the BLOCK partitioning scheme
+(see details below).
 Please note that the grid construction routines in the \lsdalton\
 program changed compared to the \dalton\ program which may result in small deviations in the number of grid points etc.
 \begin{description}

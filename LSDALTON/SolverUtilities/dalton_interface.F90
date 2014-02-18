@@ -2183,7 +2183,9 @@ CONTAINS
             CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
             Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM
             call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
-            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat)
+            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+           write(lupri,*) "ADMM K2 exact exchange energy contribution: Ek2=",Etotal(idmat)
+            Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
             EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
             write(lupri,*) "ADMM exchange energy contribution: ",EADMM
             call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
@@ -2715,13 +2717,16 @@ CONTAINS
             type(lssetting) :: setting
             integer :: n2,n3,AO3,AO2,lupri,luerr
             logical :: McWeeny,GCAO2,GCAO3
+            real(realk)                :: constrain_factor
             !
             TYPE(MATRIX) :: S22,S23,T23
             Logical :: purify_failed
             !
+            constrain_factor = 1.0E0_realk
             call mat_init(T23,n2,n3)
             call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,&
+                         &GCAO2,GCAO3,constrain_factor)
             call mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
             call mat_mul(S23,T23,'n','t',1E0_realk,0E0_realk,D2)
 
@@ -2738,42 +2743,6 @@ CONTAINS
             call mat_free(S23)
         END SUBROUTINE TRANSFORM_D3_TO_D2
         
-        SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
-            use io
-            implicit none
-            TYPE(lssetting),intent(inout) :: setting
-            TYPE(MATRIX),intent(inout)    :: T23
-            Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
-            Logical,intent(IN)            :: GCAO2,GCAO3
-            !
-            TYPE(MATRIX) :: S23,S22,S22inv
-            Character(80) :: Filename = 'ADMM_T23'
-            Logical :: onMaster
-
-            onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-
-!           IF (io_file_exist(Filename,setting%IO)) THEN
-            IF (.FALSE.) THEN
-                call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-            ELSE
-                call mat_init(S22,n2,n2)
-                call mat_init(S22inv,n2,n2)
-                call mat_init(S23,n2,n3)
-
-                call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-                call II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-
-                call mat_inv(S22,S22inv)
-                call mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
-
-                call mat_free(S22inv)
-                call mat_free(S23)
-                call mat_free(S22)
-                call io_add_filename(setting%IO,Filename,LUPRI)
-                call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-            ENDIF
-        END SUBROUTINE get_T23
-        
         SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
             implicit none
             type(matrix),intent(inout) :: F  !level 3 matrix output 
@@ -2781,11 +2750,14 @@ CONTAINS
             type(lssetting) :: setting
             Integer :: n2,n3,AO2,AO3,lupri,luerr
             Logical :: GCAO2,GCAO3
+            real(realk)                :: constrain_factor
             !
             type(matrix) :: S23,T23
+            constrain_factor = 1.0E0_realk
             call mat_init(T23,n2,n3)
             call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,&
+                         &GCAO2,GCAO3,constrain_factor)
             call mat_mul(F2,T23,'n','n',1E0_realk,0E0_realk,S23)
             call mat_mul(T23,S23,'t','n',1E0_realk,0E0_realk,F)
             call mat_free(T23)

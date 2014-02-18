@@ -84,3 +84,16 @@ implementation. However note that these are not optimized and you will sacrifice
 performance. This should be the last resort if nothing else is available::
 
   $ ./setup --blas=builtin --lapack=builtin
+
+LSDALTON/ScaLAPACK/Intel/MKL
+---------
+
+If you compile with Intel compilers and have the MKL library available, you
+can chose to compile LSDALTON using the ScaLAPACK library provided by Intel. 
+In this case you should set the MATH_ROOT enviromental variable and use 
+the --scalapack flag which will automatically link to the MKL libraries.
+
+You should not use the --mkl flag for this setup::
+
+  $ ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --scalapack
+

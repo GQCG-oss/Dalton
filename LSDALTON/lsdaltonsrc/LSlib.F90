@@ -29,28 +29,36 @@ logical :: dodft
 
 call lsinit_all(OnMaster,lupri,luerr,tstart,tend)
 
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-doDFT = config%opt%calctype.EQ.config%opt%dftcalc
-call ls_init(ls,lupri,luerr,nbasis,config%integral,dodft,.false.,.false.)
-state_set = .TRUE.
+IF (OnMaster) THEN
+  call config_set_default_config(config)
+  call config_read_input(config,lupri,luerr)
+  doDFT = config%opt%calctype.EQ.config%opt%dftcalc
+  call ls_init(ls,lupri,luerr,nbasis,config%integral,dodft,.false.,.false.)
+  state_set = .TRUE.
+ENDIF
 
 END SUBROUTINE LSlib_init
 
-SUBROUTINE LSlib_free(OnMaster,lupri,luerr)
+SUBROUTINE LSlib_free(OnMaster,lupri,luerr,meminfo_slaves)
 use precision
 use lslib_state
 use configuration, only: config_shutdown, config_free
 use daltoninfo, only: ls_free
 implicit none
-logical,intent(IN)        :: OnMaster
-integer,intent(IN)        :: lupri,luerr
+logical,intent(IN) :: OnMaster
+integer,intent(IN) :: lupri,luerr
+Logical,optional   :: meminfo_slaves
+logical :: memslave
 
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
-call lsfree_all(OnMaster,lupri,luerr,tstart,tend,.FALSE.)
-state_set = .FALSE.
+IF (OnMaster) THEN
+  call ls_free(ls)
+  call config_shutdown(config)
+  call config_free(config)
+  state_set = .FALSE.
+ENDIF
+memslave = .FALSE.
+IF (present(meminfo_slaves)) memslave = meminfo_slaves
+call lsfree_all(OnMaster,lupri,luerr,tstart,tend,memslave)
 
 END SUBROUTINE LSlib_free
 
