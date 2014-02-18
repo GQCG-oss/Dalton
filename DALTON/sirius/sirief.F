@@ -527,13 +527,20 @@ C
 C Computation of UMAT
 C
       CALL DZERO(WORK(1,1),NTS*NTS)
+      umat = 0.0d0
       DO ISYM = 0, MAXREP
          DO JSYM = 0, MAXREP
             UMAT(ISYM, JSYM) = ONE * PT(IBTAND(ISYM,JSYM))
          ENDDO
       ENDDO
 
-      
+      write(lupri, *) "UMAT"
+      do i = 0, maxrep 
+        write(lupri, *) (umat(i, j), j = 0, 7)
+      end do
+
+      write(lupri, *) "DMAT"
+      call OUTPUT(dmat,1,nts,1,nts,nts,nts,1,LUPRI)
 
 C
 C Computation of WORK = DMAT * UMAT
@@ -591,6 +598,8 @@ C
             ENDDO
          ENDDO
       ENDDO
+      write(lupri, *) "Block diagonal, DMAT"
+      call OUTPUT(dmat,1,nts,1,nts,nts,nts,1,LUPRI)
 C         
 C     Check that we have done the block-diagonalization in the proper way 
 C (this test will be skipped after debugging)  
