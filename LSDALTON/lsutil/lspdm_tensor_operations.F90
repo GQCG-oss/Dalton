@@ -135,7 +135,7 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_ARRAY_ZERO          = 19
   integer,parameter :: JOB_GET_CC_ENERGY       = 20
   integer,parameter :: JOB_GET_FRAG_CC_ENERGY  = 21
-  integer,parameter :: JOB_CHANGE_INIT_TYPE    = 22
+  integer,parameter :: JOB_CHANGE_ACCESS_TYPE  = 22
   integer,parameter :: JOB_ARRAY_SCALE         = 23
   integer,parameter :: JOB_INIT_ARR_PC         = 24
   integer,parameter :: JOB_TEST_ARRAY          = 25
@@ -821,20 +821,20 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_MPI
     !check if the init-types are the same
-    if(arr1%init_type/=arr2%init_type)then
+    if(arr1%access_type/=arr2%access_type)then
       call lsquit("ERROR(array_ddot_par):different init types of the&
       & arrays is not possible",DECinfo%output)
     endif
 
     !check if the destination to collet the resut makes sense in connection with
-    !the init_type
-    if(arr1%init_type==MASTER_INIT.and.dest/=0)then
+    !the access_type
+    if(arr1%access_type==MASTER_ACCESS.and.dest/=0)then
       call lsquit("ERROR(array_ddot_par): the choice of destnation is&
       & useless",DECinfo%output)
     endif
 
     !get the slaves to this routine
-    if(arr1%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
+    if(arr1%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(infpar%lg_comm,JOB_DDOT_PAR,arr1,arr2)
     endif
     
@@ -888,18 +888,18 @@ module lspdm_tensor_operations_module
     integer :: lt
 #ifdef VAR_MPI
 
-    !check if the init_types are the same
-    if(x%init_type/=y%init_type)then
+    !check if the access_types are the same
+    if(x%access_type/=y%access_type)then
       call lsquit("ERROR(array_add_par):different init types&
       & impossible",DECinfo%output)
     endif
 
-    !IF NOT MASTER_INIT all processes should know b on call-time, else b is
+    !IF NOT MASTER_ACCESS all processes should know b on call-time, else b is
     !broadcasted here
-    if(x%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
+    if(x%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(infpar%lg_comm,JOB_ADD_PAR,x,y)
       call ls_mpibcast(b,infpar%master,infpar%lg_comm)
-    elseif(x%init_type==MASTER_INIT.and.infpar%lg_mynum/=infpar%master)then
+    elseif(x%access_type==MASTER_ACCESS.and.infpar%lg_mynum/=infpar%master)then
       call ls_mpibcast(b,infpar%master,infpar%lg_comm)
     endif
 
@@ -941,14 +941,14 @@ module lspdm_tensor_operations_module
     integer :: lt
 #ifdef VAR_MPI
 
-    !check for the same init_types
-    if(from%init_type/=to_ar%init_type)then
+    !check for the same access_types
+    if(from%access_type/=to_ar%access_type)then
       call lsquit("ERROR(array_cp_tiled):different init types&
       & impossible",DECinfo%output)
     endif
 
     !get the slaves
-    if(from%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
+    if(from%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(infpar%lg_comm,JOB_CP_ARR,from,to_ar)
     endif
 
@@ -979,7 +979,7 @@ module lspdm_tensor_operations_module
     integer :: lt
 #ifdef VAR_MPI
     !get the slaves here
-    if(a%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
+    if(a%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(infpar%lg_comm,JOB_ARRAY_ZERO,a)
     endif
 
@@ -1000,7 +1000,7 @@ module lspdm_tensor_operations_module
     type(array) :: arr
     !> number of modes and the dimensions of the array
     integer,intent(in) :: nmodes,dims(nmodes)
-    !> integer specifying the init_type of the array
+    !> integer specifying the access_type of the array
     integer,intent(in) :: pdm
     integer(kind=long) :: i,j
     integer :: addr,tdimdummy(nmodes)
@@ -1045,7 +1045,7 @@ module lspdm_tensor_operations_module
     addr                    = p_arr%curr_addr_on_node
     p_arr%arrays_in_use     = p_arr%arrays_in_use + 1
 
-    p_arr%a(addr)%init_type = pdm
+    p_arr%a(addr)%access_type = pdm
 
     !SET MODE
     p_arr%a(addr)%mode = nmodes
@@ -1081,22 +1081,22 @@ module lspdm_tensor_operations_module
     
     !if master init only master has to init the addresses addresses before
     !pdm syncronization
-    if(lg_master .and. p_arr%a(addr)%init_type==MASTER_INIT.and.parent)then
+    if(lg_master .and. p_arr%a(addr)%access_type==MASTER_ACCESS.and.parent)then
       call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 #ifdef VAR_MPI
       call pdm_array_sync(infpar%lg_comm,JOB_INIT_ARR_REPLICATED,p_arr%a(addr),loc_addr=.false.)
 #endif
     endif
 
-    if(pc_master .and.  p_arr%a(addr)%init_type==MASTER_INIT.and.lspdm_use_comm_proc)then
+    if(pc_master .and.  p_arr%a(addr)%access_type==MASTER_ACCESS.and.lspdm_use_comm_proc)then
       call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
 #ifdef VAR_MPI
       call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_REPLICATED,p_arr%a(addr),loc_addr=.true.)
 #endif
     endif
 
-    !if all_init all have to have the addresses allocated
-    if(p_arr%a(addr)%init_type==ALL_INIT)then
+    !if ALL_ACCESS all have to have the addresses allocated
+    if(p_arr%a(addr)%access_type==ALL_ACCESS)then
       if(parent)call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
       if(lspdm_use_comm_proc)call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
     endif
@@ -1140,7 +1140,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
 
     !get the slaves
-    if(infpar%lg_mynum==infpar%master.and.arr%init_type==MASTER_INIT)then
+    if(infpar%lg_mynum==infpar%master.and.arr%access_type==MASTER_ACCESS)then
       call pdm_array_sync(infpar%lg_comm,JOB_GET_NORM_REPLICATED,arr)
     endif
 
@@ -1170,16 +1170,16 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
 
     !give meaningful quit statement for useless input
-    if(present(fromnode).and.arr%init_type==MASTER_INIT)then
+    if(present(fromnode).and.arr%access_type==MASTER_ACCESS)then
       call lsquit("ERROR(array_sync_replicated): This combintion of input&
       &elements does not give sense",DECinfo%output)
       ! why would you want to collect the data on a node you cannot direcly
       ! access, or if you can access the data in the calling subroutine on the
-      ! specified node, why is the init_tyep MASTER_INIT?
+      ! specified node, why is the init_tyep MASTER_ACCESS?
     endif
 
     ! get slaves
-    if(infpar%lg_mynum==infpar%master.and.arr%init_type==MASTER_INIT)then
+    if(infpar%lg_mynum==infpar%master.and.arr%access_type==MASTER_ACCESS)then
       call pdm_array_sync(infpar%lg_comm,JOB_SYNC_REPLICATED,arr)
     endif
 
@@ -1268,11 +1268,12 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief initialized a distributed tiled array
-  function array_init_tiled(dims,nmodes,pdm,tdims,zeros_in_tiles,ps_d)result(arr)
+  function array_init_tiled(dims,nmodes,at,it,pdm,tdims,zeros_in_tiles,ps_d)result(arr)
     implicit none
     type(array) :: arr
     integer,intent(in) :: nmodes,dims(nmodes)
-    integer :: pdm
+    character(4) :: at
+    integer :: it, pdm
     integer,optional :: tdims(nmodes)
     logical, optional :: zeros_in_tiles
     logical, optional :: ps_d
@@ -1322,7 +1323,7 @@ module lspdm_tensor_operations_module
     addr                    = p_arr%curr_addr_on_node
     p_arr%arrays_in_use     = p_arr%arrays_in_use + 1
 
-    p_arr%a(addr)%init_type=pdm
+    p_arr%a(addr)%access_type=pdm
 
     !INITIALIZE TILE STRUCTURE, if master from basics, if slave most is already
     !there
@@ -1360,9 +1361,11 @@ module lspdm_tensor_operations_module
       call array_default_batches(dims,nmodes,dflt,div)
     endif
     call arr_set_tdims(p_arr%a(addr),dflt,p_arr%a(addr)%mode)
-    if(p_arr%a(addr)%init_type>=1) p_arr%a(addr)%itype=TILED_DIST
-    if(p_arr%a(addr)%init_type==0) p_arr%a(addr)%itype=TILED
-    
+    if (lg_master) then 
+      p_arr%a(addr)%itype=it
+      p_arr%a(addr)%atype=at
+    end if    
+
     !divide A into tiles, according to dimensions
     !begin with counting the number of tiles needed in each mode
     dflt=0
@@ -1400,14 +1403,14 @@ module lspdm_tensor_operations_module
     endif
     
     !if master init only master has to get addresses
-    if(lg_master .and. p_arr%a(addr)%init_type==MASTER_INIT.and.parent)then
+    if(lg_master .and. p_arr%a(addr)%access_type==MASTER_ACCESS.and.parent)then
       call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 #ifdef VAR_MPI
       call pdm_array_sync(infpar%lg_comm,JOB_INIT_ARR_TILED,p_arr%a(addr))
 #endif
     endif
     ! get child processes
-    if(pc_master .and.  p_arr%a(addr)%init_type==MASTER_INIT.and.lspdm_use_comm_proc)then
+    if(pc_master .and.  p_arr%a(addr)%access_type==MASTER_ACCESS.and.lspdm_use_comm_proc)then
       call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
 #ifdef VAR_MPI
       call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_TILED,p_arr%a(addr),loc_addr=.true.)
@@ -1419,11 +1422,12 @@ module lspdm_tensor_operations_module
        call ls_mpibcast(infobuf,2,infpar%master,infpar%pc_comm)
        lg_me = infobuf(1); pseudo_dense = (infobuf(2) == 1)
     endif
+    call ls_mpibcast(p_arr%a(addr)%itype,infpar%master,infpar%lg_comm)
+    call ls_mpibcast(p_arr%a(addr)%atype,4,infpar%master,infpar%lg_comm)
 #endif
-    
 
-    !if all_init only all have to know the addresses
-    if(p_arr%a(addr)%init_type==ALL_INIT)call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
+    !if ALL_ACCESS only all have to know the addresses
+    if(p_arr%a(addr)%access_type==ALL_ACCESS)call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 
     call get_distribution_info(p_arr%a(addr))
 #ifdef VAR_MPI
@@ -1446,11 +1450,11 @@ module lspdm_tensor_operations_module
       call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
     endif
 #endif
-
+ 
     call arr_init_lock_set(p_arr%a(addr))
     call memory_allocate_tiles(p_arr%a(addr))
 
-    if(pseudo_dense .and. lg_me == 0)then
+    if(pseudo_dense .and. lg_master)then
       call memory_allocate_array_dense(p_arr%a(addr))
     endif
 
@@ -3569,7 +3573,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
     parent = (infpar%parent_comm == MPI_COMM_NULL)
 
-    if( arr%init_type==MASTER_INIT &
+    if( arr%access_type==MASTER_ACCESS &
     &   .and.infpar%lg_mynum==infpar%master &
     &   .and. parent                          )then
 
@@ -3612,16 +3616,16 @@ module lspdm_tensor_operations_module
       lg_me   = buf(1)
       lg_nnod = buf(2)
     endif
-    
-    if(arr%itype/=NO_PDM)then
+ 
+    if(arr%access_type==NO_PDM_ACCESS.or.arr%atype=='RTAR')then
+      arr%offset       = 0
+      p_arr%new_offset = 0
+      arr%nlti         = arr%ntiles
+    else
       arr%offset       = p_arr%new_offset
       p_arr%new_offset = mod(p_arr%new_offset+arr%ntiles,lg_nnod)
       arr%nlti         = arr%ntiles/lg_nnod
       if(mod(arr%ntiles,lg_nnod)>mod(lg_me+lg_nnod-arr%offset,lg_nnod))arr%nlti=arr%nlti+1
-    else
-      arr%offset       = 0
-      p_arr%new_offset = 0
-      arr%nlti         = arr%ntiles
     endif
 #endif
   end subroutine get_distribution_info
@@ -3665,7 +3669,7 @@ module lspdm_tensor_operations_module
     integer(kind=ls_mpik) :: dest
 #ifdef VAR_MPI
     gtnr=globtinr
-    if(arr%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
+    if(arr%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(infpar%lg_comm,JOB_PRINT_TI_NRM,arr)
     endif
     call ls_mpibcast(gtnr,infpar%master,infpar%lg_comm)
@@ -3701,7 +3705,7 @@ module lspdm_tensor_operations_module
     real(realk) :: nrm
     integer :: i,j,should
 #ifdef VAR_MPI
-    if(infpar%lg_mynum==infpar%master.and.arr%init_type==MASTER_INIT) then
+    if(infpar%lg_mynum==infpar%master.and.arr%access_type==MASTER_ACCESS) then
       call pdm_array_sync(infpar%lg_comm,JOB_GET_NRM2_TILED,arr)
     endif
     nrm=0.0E0_realk
@@ -3710,27 +3714,27 @@ module lspdm_tensor_operations_module
         nrm = nrm +(arr%ti(i)%t(j) * arr%ti(i)%t(j))
       enddo
     enddo
-    if(arr%init_type==MASTER_INIT)call lsmpi_local_reduction(nrm,infpar%master)
-    if(arr%init_type==ALL_INIT)call lsmpi_allreduce(nrm,infpar%lg_comm)
+    if(arr%access_type==MASTER_ACCESS)call lsmpi_local_reduction(nrm,infpar%master)
+    if(arr%access_type==ALL_ACCESS)call lsmpi_allreduce(nrm,infpar%lg_comm)
 #else
     nrm = 0.0E0_realk
 #endif
   end function array_tiled_pdm_get_nrm2
 
-   subroutine change_init_type_td(arr,totype)
+   subroutine change_access_type_td(arr,totype)
      implicit none
      type(array),intent(inout) :: arr
      integer,intent(in) :: totype
 #ifdef VAR_MPI
      if(totype/=REPLICATED.and.totype/=DENSE.and.totype/=TILED_DIST.and.totype/=TILED)then
-       call lsquit("ERROR(change_init_type_td): wrong type given",-1)
+       call lsquit("ERROR(change_access_type_td): wrong type given",-1)
      endif
-     if(infpar%lg_mynum==infpar%master.and.arr%init_type==MASTER_INIT) then
-       call pdm_array_sync(infpar%lg_comm,JOB_CHANGE_INIT_TYPE,arr)
+     if(infpar%lg_mynum==infpar%master.and.arr%access_type==MASTER_ACCESS) then
+       call pdm_array_sync(infpar%lg_comm,JOB_CHANGE_access_type,arr)
      endif
-     arr%init_type=totype
+     arr%access_type=totype
 #endif
-   end subroutine change_init_type_td
+   end subroutine change_access_type_td
 
 
 
@@ -3781,7 +3785,11 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    dest=get_residence_of_tile(globtilenr,arr)
+    if (arr%atype=='RTAR') then
+      dest=infpar%lg_mynum
+    else
+      dest=get_residence_of_tile(globtilenr,arr)
+    end if
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
     call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
@@ -4171,7 +4179,11 @@ module lspdm_tensor_operations_module
     integer(kind=MPI_ADDRESS_KIND) ::offset
     ls = .false.
     if(present(lock_set))ls=lock_set
-    source=get_residence_of_tile(globtilenr,arr)
+    if (arr%atype=='RTAR') then
+      source=infpar%lg_mynum
+    else
+      source=get_residence_of_tile(globtilenr,arr)
+    end if
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
     call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
@@ -4321,7 +4333,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
     integer     :: i
 
-    if(arr%init_type==MASTER_INIT)then
+    if(arr%access_type==MASTER_ACCESS)then
       call PDM_ARRAY_SYNC(infpar%lg_comm,JOB_ARRAY_SCALE,arr)
       call ls_mpibcast(sc,infpar%master,infpar%lg_comm)
     endif
@@ -4339,7 +4351,7 @@ module lspdm_tensor_operations_module
       logical :: parent
 #ifdef VAR_MPI
       parent = (infpar%parent_comm == MPI_COMM_NULL)
-      if(lspdm_use_comm_proc.and.parent.and.arr%init_type==MASTER_INIT)then
+      if(lspdm_use_comm_proc.and.parent.and.arr%access_type==MASTER_ACCESS)then
         call pdm_array_sync(infpar%pc_comm,JOB_PC_ALLOC_DENSE,arr,loc_addr=.true.)
       endif
 #endif
@@ -4352,7 +4364,7 @@ module lspdm_tensor_operations_module
       logical :: parent
 #ifdef VAR_MPI
       parent = (infpar%parent_comm == MPI_COMM_NULL)
-      if(lspdm_use_comm_proc.and.parent.and.arr%init_type==MASTER_INIT)then
+      if(lspdm_use_comm_proc.and.parent.and.arr%access_type==MASTER_ACCESS)then
         call pdm_array_sync(infpar%pc_comm,JOB_PC_DEALLOC_DENSE,arr,loc_addr=.true.)
       endif
 #endif
