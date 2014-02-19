@@ -79,7 +79,7 @@ if(ENABLE_CODE_COVERAGE)
 endif()
 
 set(CMAKE_Fortran_MODULE_DIRECTORY
-    ${PROJECT_BINARY_DIR}/modules
+    ${PROJECT_BINARY_DIR}#/modules
     )
 
 include_directories(
