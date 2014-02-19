@@ -27,6 +27,8 @@ set(CMAKE_MODULE_PATH
     )
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                           OFF)
+option(ENABLE_OPENACC        "Enable OpenACC"                                   OFF)
+option(ENABLE_COLLAPSE       "Enable COLLAPSE clause for reorderings"           OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
@@ -48,6 +50,7 @@ option(ENABLE_LSEEK          "Enable lseek"                                     
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
 option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
+option(ENABLE_OPENRSP        "Enable OpenRSP"                                   OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
@@ -89,6 +92,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/LSDALTON/dft
     ${CMAKE_SOURCE_DIR}/LSDALTON/geomopt
     ${CMAKE_Fortran_MODULE_DIRECTORY}
+    ${PROJECT_BINARY_DIR}
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -97,6 +101,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 
 # set definitions
 include(Definitions)
+if(ENABLE_OPENRSP)
+    include(DefinitionsOpenRSP)
+endif()
 
 # forward CPP directly to the code
 set(CPP)
@@ -114,6 +121,10 @@ configure_script(
 configure_script(
     ${CMAKE_SOURCE_DIR}/LSDALTON/lsdalton.in
     ${CMAKE_BINARY_DIR}/lsdalton
+    )
+configure_script(
+    ${CMAKE_SOURCE_DIR}/DALTON/dalton_config.in
+    ${CMAKE_BINARY_DIR}/dalton_config.h
     )
 
 # if BLAS and/or LAPACK not found, add own sources to the list of

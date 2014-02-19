@@ -47,7 +47,7 @@ C  /* Deck cc_e21con */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

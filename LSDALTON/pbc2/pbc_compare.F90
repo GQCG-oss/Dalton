@@ -1,6 +1,6 @@
 #ifdef MOD_UNRELEASED
 SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
-           nfsze,lmax,bz,tlat,lupri,luerr)
+           & nfsze,lmax,bz,tlat,lupri,luerr)
   USE TYPEDEF
   USE precision
   USE matrix_module
@@ -193,22 +193,22 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
  enddo
   
    call pbc_overlap_k(lupri,luerr,setting,molecule%natoms,ndim,ll,&
-                    refcell,numrealvec,ovl)
+                    & refcell,numrealvec,ovl)
 
    call pbc_kinetic_k(lupri,luerr,setting,molecule%natoms,ndim,&
-   ll,refcell,numrealvec,nfdensity,f_1)
+   & ll,refcell,numrealvec,nfdensity,f_1)
 
    !ll%nf=5
 
    call pbc_nucattrc_k(lupri,luerr,setting,molecule%natoms,ndim,&
-     ll,refcell,numrealvec,nfdensity,f_1)
+     & ll,refcell,numrealvec,nfdensity,f_1)
 
    call pbc_exact_xc_k(lupri,luerr,setting,molecule%natoms,ndim,&
-     ll,refcell,numrealvec,nfdensity,g_2)
+     & ll,refcell,numrealvec,nfdensity,g_2)
 
 
   call pbc_electron_rep_k(lupri,luerr,setting,molecule%natoms,ndim,&
-     ll,refcell,numrealvec,nfdensity,g_2)
+     & ll,refcell,numrealvec,nfdensity,g_2)
 
    !This is needed to form fck
   call pbc_comp_nucmom(refcell,nucmom,lmax,lupri)
@@ -216,10 +216,10 @@ SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
   !fixme nucmom 
 !   call lsquit('fixme nucmom no value assigned to this variable',-1)
    call pbc_ff_fck(ll%tlmax,tlat,ll%lmax,ndim,ll,nfdensity,nucmom,&
-                   g_2,E_ff,E_nn,lupri)
+                   & g_2,E_ff,E_nn,lupri)
 
   CALL pbc_nucpot(lupri,luerr,setting,molecule%natoms,ll,&
-                  refcell,numrealvec,E_nuc)
+                  & refcell,numrealvec,E_nuc)
 #ifdef DEBUGPBC
    do n1=1,numrealvec
        call mat_free(nfdensity(n1))

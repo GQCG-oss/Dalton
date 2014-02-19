@@ -34,7 +34,7 @@ SUBDIRS = lsutil xcfun_host pdpack interest/lib $(FMMDIR) IchorIntegrals LSint p
 
 PDLIB = pdpack/pdlib.a
 
-OBJPRG = lsdaltonsrc/lsdalton_wrapper.o
+OBJPRG = lsdaltonsrc/lsdalton_wrapper.f90
 
 #
 #     Most common build of LSDalton

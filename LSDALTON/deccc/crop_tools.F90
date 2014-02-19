@@ -469,7 +469,11 @@ module crop_tools_module
        end if
        write(DECinfo%output,'(a,i5)') 'Number of CC iterations  =', li
      else
-       print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)', 'converged cc fragment job',li,tnorm,ce
+       print '(1X,a,1X,i4,1X,a,1X,g19.9)', 'Fragment CC converged after',li,'iterations with norm',tnorm
+       if(li==DECinfo%ccMaxIter)then
+         call lsquit("ERROR(print_ccjob_summary): ccequations not converged in&
+         & current fragment, the dec calculation becomes meaningless",-1)
+       endif
      endif
   end subroutine print_ccjob_summary
 

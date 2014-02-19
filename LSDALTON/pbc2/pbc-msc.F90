@@ -752,11 +752,13 @@ SUBROUTINE print_bands(bz,nbast,mattxt)
 	iunit=-1
 	CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
 	nline='no'
-	DO k=1,bz%nk
+	DO k=1,(bz%nk+1)/2
                 nonsingdim=nbast-bz%kpnt(k)%nsingular
 		nline='no'
 		call pbc_get_kpoint(k,kvec)
-		write(iunit,101,advance=nline) kvec(1) !must convert to k point value
+                kpt=kvec(1)**2+kvec(2)**2+kvec(3)**2
+                kpt=sqrt(kpt)
+		write(iunit,101,advance=nline) kpt !must convert to kpoint angle
 		101 FORMAT(E12.4)
 		DO i=1,nbast
 			if(i .eq. nonsingdim) nline = 'yes'

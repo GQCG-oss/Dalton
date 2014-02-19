@@ -39,14 +39,14 @@ c /* deck cc_mcdcal */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"                      
 #include "ccorb.h"
 #include "ccsdsym.h"                     
 #include "ccroper.h"
-C#include <ccropr2.h>
+C#include "ccropr2.h"
 #include "ccmcdinf.h"
 #include "ccexci.h"
 #include "cclists.h"

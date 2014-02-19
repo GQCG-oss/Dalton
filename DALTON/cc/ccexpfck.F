@@ -40,7 +40,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -442,7 +442,7 @@ c            CALL CC_PRONELAO(WORK(K1INT),ISYFCK)
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

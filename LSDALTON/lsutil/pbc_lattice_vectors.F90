@@ -46,7 +46,11 @@ IF(IPOS .gt. 0) THEN
     call LSQUIT('Incorrect input for lattice vectors',lupri)
   ENDIF
   READ(TEMPLINE(IPOS+IPOS2:80),*) ll%ldef%avec(1,1),ll%ldef%avec(2,1),ll%ldef%avec(3,1), activedim
-if(activedim=='inactive') ll%ldef%is_active(1)= .false.
+if(activedim=='inactive') then !ll%ldef%is_active(1)= .false.
+    write(*,*) 'First lattice vector must be active in PBC'
+    write(lupri,*) 'First lattice vector must be active in PBC'
+    call LSQUIT('Incorrect input for lattice vectors',lupri)
+endif
 ELSE
     call LSQUIT('Incorrect input for lattice vectors',lupri)
 ENDIF
@@ -73,6 +77,12 @@ IF(IPOS .gt. 0) THEN
   ENDIF
  READ(TEMPLINE(IPOS+IPOS2:80),*) ll%ldef%avec(1,3),ll%ldef%avec(2,3),ll%ldef%avec(3,3), activedim
  if(activedim=='inactive') ll%ldef%is_active(3)= .false.
+ if(.not.ll%ldef%is_active(2) .and.ll%ldef%is_active(3))then
+   write(*,*) 'For two dimensional PBC the first two &
+     & lattice vectors have to be active'
+    call LSQUIT('Incorrect input for lattice vectors',lupri)
+ endif
+
 ENDIF
 
 if(angstrom) then

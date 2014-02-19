@@ -383,7 +383,7 @@ C        2) get T1B-transformed integrals needed in construction of W3
 C           ( <mu3|[[H^0,T1B],T2^0]|HF> term).
 C
 C        For non-Cacuhy calculations (LCAUCHY = .FALSE., NCAU = 0) the
-C        loop below is dúmmy.
+C        loop below is dummy.
 C
 C        For Cacuhy calculations (LCAUCHY = .TRUE., NCAU >= 0) 
 C        KT1B and KT2B correspond to singles and doubles part of Cauchy

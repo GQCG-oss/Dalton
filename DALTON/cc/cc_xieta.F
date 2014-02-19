@@ -41,7 +41,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -433,7 +433,7 @@ c /* deck cc_xieta1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "aovec.h"
@@ -462,7 +462,7 @@ c /* deck cc_xieta1 */
 #include "dummy.h"
 #include "ccsections.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 #include "ccnoddy.h"
 #include "cch2d.h"
 #include "ccrc1rsp.h"
@@ -4176,7 +4176,7 @@ c /* deck ccxiintao */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -5424,7 +5424,7 @@ c /* deck cceta2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -6402,7 +6402,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -6748,7 +6748,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -6877,7 +6877,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

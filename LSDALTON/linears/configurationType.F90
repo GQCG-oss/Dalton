@@ -112,6 +112,8 @@ type ConfigItem
    logical  :: DoPLT
    !> Information about PLT calculation (only used if doPLT=true)
    type(pltinfo) :: PLT
+   !> Should we do an F12 calc which requires a CABS basis
+   logical              :: doF12
 end type ConfigItem
 
 type LowAccuracyStartType

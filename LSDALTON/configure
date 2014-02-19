@@ -167,8 +167,8 @@ case $WHICH in
     linux)    liblist='libacml.a libmkl_p3.a libatlas.a libblas.a'
               complist='ifort ifc pgf77 gfortran'
               compf90list='ifort ifc pgf90 gfortran'
-              ccmplist='icc ecpc pgCC g++'
-              cxxcmplist='icpc ecc pgcc gcc';;
+              ccmplist='icc ecpc pgcc gcc'
+              cxxcmplist='icpc ecc pgCC g++';;
     darwin)   liblist='libatlas.a libblas.a'
               complist='gfortran gfortran-mp-4.7 gfortran-mp-4.8'
               compf90list='gfortran gfortran-mp-4.7 gfortran-mp-4.8'
@@ -411,15 +411,15 @@ for comp in $cxxcmplist; do
         if [ -f $ac_dir/$ac_word ]; then
           get_yes_or_no "   $comp Compiler $ac_dir/$ac_word found, use this compiler?" y
           if [ $answer = 'y' ]; then
-            ac_cv_prog_C=$ac_word
+            ac_cv_prog_CXX=$ac_word
             g2clib=`find $ac_dir/lib/ -name libg2c.a -print`
             break
           fi
         fi
     done
     IFS="$ac_save_ifs"
-    test -z "$ac_cv_prog_C" && ac_cv_prog_C=""
-    CXX="$ac_cv_prog_C"
+    test -z "$ac_cv_prog_CXX" && ac_cv_prog_CXX=""
+    CXX="$ac_cv_prog_CXX"
     if test -n "$CXX"; then
         $ECHO "\n   Compiler $CXX found and accepted.\n"
         break
@@ -1075,6 +1075,7 @@ F77            = $F77
 F90            = $F90
 FLNK           = $F90
 CC             = $CC
+CXX            = $CXX
 RM             = rm -f
 FFLAGS         = $opt
 F90OPTFLAGS    = $f90opt
@@ -1186,6 +1187,9 @@ $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F
 
 .c.o:
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c
+
+.cpp.o:
+$tab\$(CXX) \$(INCLUDES) \$(CPPFLAGS) \$(CXXFLAGS) -c \$*.cpp
 EOF
 fi
 #

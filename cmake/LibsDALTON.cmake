@@ -21,7 +21,11 @@ if(ENABLE_GEN1INT)
 endif()
 
 if(ENABLE_PELIB)
-    set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
+    if(ENABLE_OPENRSP)
+        set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER -DBUILD_OPENRSP")
+    else()
+        set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
+    endif()
     if(ENABLE_GEN1INT)
         set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DBUILD_GEN1INT")
     else()
@@ -52,6 +56,10 @@ if(ENABLE_PELIB)
         ${PROJECT_BINARY_DIR}/external/lib/libpelib.a
         ${DALTON_LIBS}
         )
+endif()
+
+if(ENABLE_OPENRSP)
+    include(LibsOpenRSP)
 endif()
 
 add_executable(

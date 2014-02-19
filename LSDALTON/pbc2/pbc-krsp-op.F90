@@ -120,7 +120,7 @@ COMPLEX(complexk)             :: phase
 END SUBROUTINE pbc_trans_mat_to_kspc
 
 SUBROUTINE transformk_2_realmat(kdep_tmp,bz,rspcdensity,&
-                                nbast,lattindex,lupri)
+                                & nbast,lattindex,lupri)
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: nbast,lupri
   TYPE(BZgrid_t),intent(in) :: bz
@@ -166,7 +166,7 @@ SUBROUTINE transformk_2_realmat(kdep_tmp,bz,rspcdensity,&
     if(abs(DIMAG(work(j,i))) .gt. 1E-5) then
       write(*,*) 'ERROR, complex realspace density:', work(i,j),i,j
       write(lupri,*) 'ERROR, complex realspace density:',&
-      work(i,j),i,j,int(lattindex(1))
+      & work(i,j),i,j,int(lattindex(1))
       call LSQUIT('COMPLEX REALSPACE density',lupri)
     endif
     rspcdensity(i,j)=real(work(i,j),realk)
@@ -194,14 +194,19 @@ END SUBROUTINE transformk_2_realmat
 !> \param weight_k 	        weight for k
 !>  \param volbz                The volum to divide in the integral
 !> \param k		        integer,which k point we use
-SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k,lupri)
+SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast&
+           & ,k,diis_exit,lupri)
   IMPLICIT NONE
   INTEGER,intent(in)           :: nbast,k,Nk,lupri
   integer                      :: volbz
   COMPLEX(complexk),intent(in) :: kmat(nbast,nbast)
-  TYPE(lvec_list_t),intent(IN) :: ll
+!  TYPE(lvec_list_t),intent(IN) :: ll
+! YOU ARE CHANGING THE LL VARIABLE - SO YOU CANNOT HAVE IT INTENT(IN)
+! TK - PLEASE REMOVE THIS AS IN INDICATION THAT YOU ACKNOWLEDGE THIS FACT
+  TYPE(lvec_list_t),intent(INOUT) :: ll
   TYPE(matrix), intent(inout)  :: density(size(ll%lvec))
   REAL(realk),intent(in)       :: kvec(3),weight_k
+  LOGICAL,INTENT(IN)           :: diis_exit
                     !LOCAL Variables
   TYPE(matrix)                 :: tmp_density
   REAL(realk),pointer                  :: worktmp(:,:)
@@ -252,13 +257,49 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast,k,lup
        if(k==Nk)then
          !if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
          call mat_abs_max_elm(density(layer),maxdens)
-         if(maxdens .gt. 1e-12)then
+         if (maxdens .gt. 1e-12)then
            write(lupri,*) ' max density element for&
              &layer', l1,l2,l3,maxdens
          endif
+       endif
+     endif
+
+       if(diis_exit)then
+         if(ll%lvec(layer)%Kx_computed .and. .not. ll%lvec(layer)%J_computed)then
+           ll%lvec(layer)%dm_computed=.true.
+           if(density(layer)%init_magic_tag .NE. mat_init_magic_value) THEN
+             call mat_init(density(layer),nbast,nbast)
+             call mat_zero(density(layer))
+           endif
+
+           call mat_zero(tmp_density)
+
+           phase1=kvec(1)*ll%lvec(layer)%std_coord(1)
+           phase2=kvec(2)*ll%lvec(layer)%std_coord(2)
+           phase3=kvec(3)*ll%lvec(layer)%std_coord(3)
+           phase=CMPLX(0.,(phase1+phase2+phase3),COMPLEXK)
+           Do i=1,nbast
+           Do j=1,nbast
+
+           work(i,j)= kmat(i,j)*exp(phase)*weight_k/volbz
+
+           ENDDO
+           ENDDO
+           !call write_matrix(work,nbast,nbast)
+           worktmp(:,:)=real(work(:,:),realk)
+           call mat_set_from_full(worktmp,1.0_realk,tmp_density)
+           call mat_daxpy(1.D0,tmp_density,density(layer))
+
+           if(k==Nk)then
+             !if (l1 == ll%ndmat .or. l2 == ll%ndmat .or. l3== ll%ndmat)then
+             call mat_abs_max_elm(density(layer),maxdens)
+             if (maxdens .gt. 1e-12)then
+               write(lupri,*) ' max density element for&
+                 &layer', l1,l2,l3,maxdens
+             endif
+           endif
          endif
        endif
-
     ! else
 
     !   ! For the computations it can be conevenient to have 

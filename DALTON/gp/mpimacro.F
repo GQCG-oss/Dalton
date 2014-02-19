@@ -74,11 +74,9 @@ C
      &  'ERROR: Number of MPI slave nodes allocated has exceeded',
      &  'hardcoded limit. Reduce number of nodes or recompile program.',
      &  'Allocated (NODTOT) :',NODTOT,'Limit (MAXNOD)     :',MAXNOD
-        WRITE(LUPRI,'(//4(/5X,A))')
+        WRITE(LUPRI,'(//2(/5X,A))')
      &  'FOR RECOMPILATION:',
-     &  'Increase parameter MAXNOD in infpar.h and execute:',
-     &  '   make depend',
-     &  '   make'
+     &  'Increase parameter MAXNOD in infpar.h and rebuild with make'
         CALL QUIT('MPI ERROR: Number of nodes requested is too large.')
       ENDIF
 C

@@ -110,9 +110,31 @@ void dqdx(int type,
       return dispatch<8>(type,q,x);
     case 9:
       return dispatch<9>(type,q,x);
+    case 10:
+      return dispatch<10>(type,q,x);
+    case 11:
+      return dispatch<11>(type,q,x);
+    case 12:
+      return dispatch<12>(type,q,x);
+    case 13:
+      return dispatch<13>(type,q,x);
+    case 14:
+      return dispatch<14>(type,q,x);
+    case 15:
+      return dispatch<15>(type,q,x);
+    case 16:
+      return dispatch<16>(type,q,x);
+    case 17:
+      return dispatch<17>(type,q,x);
+    case 18:
+      return dispatch<18>(type,q,x);
+    case 19:
+      return dispatch<19>(type,q,x);
+    case 20:
+      return dispatch<20>(type,q,x);
     default:
       assert(order >= 0 && "Invalid order in dqdx");
-      assert(order <= 9 && "Invalid order in dqdx");
+      assert(order <= 20 && "Invalid order in dqdx");
     };
 }
 

@@ -11,7 +11,8 @@ module II_XC_interfaceModule
 !  use memory_handling
   use lstiming
   use IIDFTKSM
-  use IIDFTINT, only: II_DFTDISP
+  !AMT use IIDFTINT, only: II_DFTDISP
+  use IIDFTD, only: DFT_D_LSDAL_IFC
   use DFT_type
   use GCtransMod
   private
@@ -120,7 +121,11 @@ call mem_dft_dealloc(DmatAO)
 
 IF(SETTING%SCHEME%DFT%DODISP) THEN 
     ! add empirical dispersion correction \Andreas Krapp
-   CALL II_DFTDISP(SETTING,DUMMY,1,1,0,LUPRI,1)
+   !AMT CALL II_DFTDISP(SETTING,DUMMY,1,1,0,LUPRI,1)
+   !AMT 
+   CALL DFT_D_LSDAL_IFC(SETTING,DUMMY,1,1,0,LUPRI)
+   !AMT
+
    do idmat = 1,ndmat2
       EDFT2(idmat) = EDFT2(idmat) + SETTING%EDISP
    enddo
@@ -344,7 +349,10 @@ SETTING%scheme%DFT%RHOTHR = RHOTHR
 
 IF(SETTING%SCHEME%DFT%DODISP) THEN 
     ! add empirical dispersion correction \Andreas Krapp
-   CALL II_DFTDISP(SETTING,DUMMY,1,1,0,LUPRI,1)
+   !AMT CALL II_DFTDISP(SETTING,DUMMY,1,1,0,LUPRI,1)
+   !AMT
+   CALL DFT_D_LSDAL_IFC(SETTING,DUMMY,1,1,0,LUPRI)
+   !AMT
    do idmat = 1,ndmat2
       EDFT2(idmat) = EDFT2(idmat) + SETTING%EDISP
    enddo

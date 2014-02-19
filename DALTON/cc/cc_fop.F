@@ -97,7 +97,7 @@ C
 #include "maxaqn.h"
 #include "symmet.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 #include "ccqrinf.h"
 C
       LOGICAL CCMMCONV,DIELCONV,CCDC
@@ -5454,9 +5454,9 @@ C
       DIMENSION INDEXA(MXCORB_CC)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
 #include "ccorb.h"
-CCN#include <infind.h> 
+CCN#include "infind.h" 
 #include "ccisao.h"
-celena#include <ccisao.h> sonst falscher Wert fuer ISAO() in D2h
+celena#include "ccisao.h" sonst falscher Wert fuer ISAO() in D2h
 !CCN:                    Nicht, wenn man ISAO() NACH IJKAUX() aufruft!
 #include "r12int.h"
 #include "blocks.h"

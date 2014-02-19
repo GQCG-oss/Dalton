@@ -61,6 +61,8 @@ TIGHT
 .PRINTFRAGS
 .DECPRINT
 3
+.MPISPLIT
+0
 .CCSDpreventcanonical
 .CCSD
 .CCDEBUG
@@ -98,7 +100,7 @@ CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # CCSD ENERGY
-CRIT1=`$GREP "Correlation energy  : * \-0\.00186" $log | wc -l`
+CRIT1=`$GREP "Correlation energy  : * \-0\.0018[5-6]" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy is not correct"

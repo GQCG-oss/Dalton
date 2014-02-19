@@ -1,4 +1,4 @@
-!Monitor memory
+!Monitor memory NON THREAD SAFE
 MODULE IchorMemory
   use IchorCommonModule
   use IchorprecisionModule
@@ -8,6 +8,8 @@ MODULE IchorMemory
    public stats_ichor_mem
    public mem_ichor_alloc
    public mem_ichor_dealloc
+   public ADD_OMP_MEM
+   public REMOVE_OMP_MEM
 !GLOBAL VARIABLES
    integer(KIND=long),save :: mem_allocated_ichor, max_mem_used_ichor  !Count all memory
    !Count 'real' memory, integral code
@@ -123,10 +125,8 @@ SUBROUTINE real_allocate_1dim(A,n)
   REAL(REALK),pointer :: A(:)
   integer :: IERR
   integer (kind=long) :: nsize
-  !$OMP CRITICAL
   nullify(A)
   ALLOCATE(A(n),STAT = IERR)
-  !$OMP END CRITICAL
   IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_1dim',IERR,n
      CALL ichorquit('Error in real_allocate_1dim',-1)
@@ -150,6 +150,22 @@ SUBROUTINE real_allocate_2dim(A,n1,n2)
   nsize = size(A,KIND=long)*mem_realsize
   call mem_allocated_ichor_mem_real(nsize)
 END SUBROUTINE real_allocate_2dim
+
+SUBROUTINE ADD_OMP_MEM(nsize1)
+  implicit none
+  integer :: nsize1
+  integer (kind=long) :: nsize
+  nsize = nsize1
+  call mem_allocated_ichor_mem_real2(nsize)
+END SUBROUTINE ADD_OMP_MEM
+
+SUBROUTINE REMOVE_OMP_MEM(nsize1)
+  implicit none
+  integer :: nsize1
+  integer (kind=long) :: nsize
+  nsize = nsize1
+  call mem_deallocated_ichor_mem_real2(nsize)
+END SUBROUTINE REMOVE_OMP_MEM
 
 SUBROUTINE real_allocate_2dim_zero(A,n1,n2,z1,z2)
   ! Allocates 2d arrays starting from zero index
@@ -640,6 +656,22 @@ END SUBROUTINE logic_deallocate_2dim
       call IchorQuit('Error in mem_deallocated_ichor_mem_real - something wrong with deallocation!',-1)
    endif
  end subroutine mem_deallocated_ichor_mem_real
+
+ subroutine mem_allocated_ichor_mem_real2(nsize)
+   implicit none
+   integer (kind=long), intent(in) :: nsize
+   mem_allocated_real = mem_allocated_real + nsize
+   max_mem_used_real = MAX(max_mem_used_real,mem_allocated_real)
+   mem_allocated_ichor = mem_allocated_ichor  + nsize
+   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+ end subroutine mem_allocated_ichor_mem_real2
+
+ subroutine mem_deallocated_ichor_mem_real2(nsize)
+   implicit none
+   integer (kind=long), intent(in) :: nsize
+   mem_allocated_real = mem_allocated_real - nsize
+   mem_allocated_ichor = mem_allocated_ichor - nsize
+ end subroutine mem_deallocated_ichor_mem_real2
  
  subroutine mem_allocated_ichor_mem_integer(nsize)
    implicit none

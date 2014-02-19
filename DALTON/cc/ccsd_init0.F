@@ -42,7 +42,8 @@ C
 C
 #include "ccorb.h"        
 #include "ccsections.h"   
-#include "maxorb.h"      ! needed by ccpack.h
+#include "maxorb.h"      
+! maxorb.h needed by ccpack.h
 #include "ccpack.h"       
 #include "ccroper.h"      
 #include "ccrspprp.h"      

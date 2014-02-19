@@ -2468,7 +2468,7 @@ C           2 save orbital energies in ORVAL
 C
 #include "implicit.h"
 #include "priunit.h"
-ckr#include <bassel.h>
+ckr#include "bassel.h"
 #include "cbieri.h"
 #include "inforb.h"
 #include "inftap.h"
@@ -2598,7 +2598,7 @@ Cend-PFP
 #include "codata.h"
 C from codata: XTANG
 CPFP with g77
-C#include <molde.h>
+C#include "molde.h"
 Cend-PFP
 C
 C      CHARACTER*2 ASYMB

@@ -36,7 +36,7 @@ c/* Deck CC_GATHEROO */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -79,7 +79,7 @@ c/* Deck CC_GATHEROV */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -122,7 +122,7 @@ c/* Deck CC_GATHERVV */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -171,7 +171,7 @@ c/* Deck CC_XBAR */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -241,7 +241,7 @@ c/* Deck CC_YBAR */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"

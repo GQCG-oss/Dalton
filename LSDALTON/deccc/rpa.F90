@@ -329,10 +329,12 @@ contains
     type(array4) :: tmp
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
+    character(ARR_MSG_LEN) :: msg
 
 
     ! 1
     call array2_transpose(qfock)
+    
     call array4_reorder(t2,[3,4,1,2])
     tmp = array4_init([nvirt,nocc,nvirt,nocc])
     call array4_contract1(t2,qfock,tmp,.true.)
@@ -386,13 +388,13 @@ contains
 
     !Sckdl = array4_init([nvirt,nocc,nvirt,nocc])
     Sckdl = array4_duplicate(t2)
-    Dckbj = array4_init([nvirt,nocc,nocc,nvirt])
-
+    call array4_reorder(Sckdl,[2,1,4,3])
+    Dckbj = array4_init([nocc,nvirt,nvirt,nocc])
 
 
     do a=1,nvirt
      do i=1,nocc
-        Sckdl%val(a,i,a,i)=Sckdl%val(a,i,a,i)+1._realk
+        Sckdl%val(i,a,i,a)=Sckdl%val(i,a,i,a)+1._realk
      enddo
     enddo
 
@@ -402,9 +404,12 @@ contains
     call dgemm('n','n',dim1,dim1,dim1, &
          1.0E0_realk,gmo,dim1,Sckdl%val,dim1,0.0E0_realk,Dckbj%val,dim1)
 
+    call array4_reorder(omega2,[2,1,4,3])
     call dgemm('n','n',dim1,dim1,dim1, &
          2.0E0_realk,Sckdl%val,dim1,Dckbj%val,dim1,1.0E0_realk,omega2%val,dim1)
-    
+
+    call array4_reorder(omega2,[2,1,4,3])
+   
 
     call array4_free(Dckbj)
     call array4_free(Sckdl)
@@ -419,7 +424,9 @@ contains
 
     implicit none
     type(array4), intent(inout) :: omega2,t2
+    !type(array), intent(inout) :: omega2,t2
     real(realk),pointer, intent(inout) :: gmo(:)
+    !type(array), intent(inout) :: gmo
     type(array2), intent(inout) :: pfock,qfock
     integer, intent(in) :: nocc,nvirt
     type(array4) :: tmp
@@ -432,7 +439,7 @@ contains
     integer :: nvir,noc
     logical :: master
     character(ARR_MSG_LEN) :: msg
-    type(array4) :: Sckdl
+    type(array) :: Sckdl
     
 
    nvir=nvirt
@@ -441,17 +448,24 @@ contains
     call cpu_time(starttime)
 
     call RPA_fock_partdeb(omega2,t2,pfock,qfock,nocc,nvirt)
-    Sckdl = array4_duplicate(t2)
+    Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+    !call copy_array(t2,Sckdl)
+    call array4_reorder(t2,[1,3,2,4])
+    call array_convert(t2%val,Sckdl)
+    !Sckdl = array4_duplicate(t2)
+    call array4_reorder(t2,[1,3,2,4])
 
     do a=1,nvirt
      do i=1,nocc
-        Sckdl%val(a,i,a,i)=Sckdl%val(a,i,a,i)+1._realk
+        Sckdl%elm4(a,a,i,i)=Sckdl%elm4(a,a,i,i)+1._realk
+        !remember to change to a,a,i,i,when t2 = array
      enddo
     enddo
 
+    write(*,*) 'JOHANNES PAR addres'
     call RPA_residual_addpar(omega2,Sckdl,gmo,noc,nvir)
+    write(*,*) 'JOHANNES added'
 
-    write(*,*) 'JOHANNES PAR res'
     ! MPI: here you should start the slaves!!
 
     !call lsmpi_barrier(infpar%lg_comm)
@@ -545,11 +559,13 @@ contains
   subroutine RPA_residual_addpar(omega2,u2,gmo,nocc,nvirt)
 
     implicit none
-    type(array4), intent(inout) :: omega2,u2
-    !type(array), intent(inout) :: omega2,u2
+    type(array4), intent(inout) :: omega2!,u2
+    type(array), intent(inout) :: u2 !,omega2
     real(realk), intent(inout),pointer :: gmo(:)
+    !type(array), intent(inout):: gmo
     integer,intent(inout) :: nocc,nvirt
-    type(array4) :: Sckdl,Dckbj
+    !type(array4) :: Sckdl,Dckbj
+    type(array) :: Sckdl,Dckbj
     type(array) :: t_par,omegaw1
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k,dim1
@@ -557,10 +573,9 @@ contains
     real(realk) :: starttime,stoptime
     real(realk),pointer :: w2(:),w3(:),omegw(:),w4(:)
     character(ARR_MSG_LEN) :: msg
-#ifdef VAR_MPI
     logical :: master
-#endif
 
+    master=.true.
 #ifdef VAR_MPI
     master        = .false.
     mynum         = infpar%lg_mynum
@@ -569,6 +584,7 @@ contains
 #endif
 
 
+    dim1=nocc*nvirt
 #ifdef VAR_MPI
     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
       call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
@@ -578,22 +594,27 @@ contains
    
 
     omegaw1 = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
-#ifdef VAR_MPI
-    if(master) then
-      call array4_reorder(omega2,[1,3,2,4])
-      call array_convert(omega2%val,omegaw1)
-    endif
-#else
+
+!#ifdef VAR_MPI
+!    if(master) then
+!      call array4_reorder(omega2,[1,3,2,4])
+!      call array_convert(omega2%val,omegaw1)
+!      !write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
+!      write(*,*) 'itype omegaw1=',omegaw1%itype
+!      !call print_norm(omegaw1,msg)
+!    endif
+!#else
+
     call array4_reorder(omega2,[1,3,2,4])
     call array_convert(omega2%val,omegaw1)
-#endif
+!#endif
 
-#ifdef VAR_MPI
-    call lsmpi_barrier(infpar%lg_comm)
-#endif
 
     call mo_work_dist(nvirt*nocc,fai,tl)
     !call mem_alloc(w2,tl*nocc*nvirt)
+!#ifdef VAR_MPI
+!    write(*,*) 'size of tile',tl,fai,infpar%lg_mynum,nvirt*nocc!*nvirt*nocc
+!#endif
     call mem_alloc(w2,tl*nocc*nvirt)
     call mem_alloc(w3,tl*nocc*nvirt)
     call mem_alloc(w4,nocc*nvirt*nocc*nvirt)
@@ -601,20 +622,44 @@ contains
     !call mem_alloc(omegw,tl*tl)
 
     t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
-    call array4_reorder(u2,[1,3,2,4])
-    call array_convert(u2%val,t_par)
+    !call array4_reorder(u2,[1,3,2,4])
+    !call copy_array(u2,t_par)
+    call array_convert(u2%elm4,t_par)
 
-    write(*,*) 'in residue dim t_par', t_par%tdim
+!#ifdef VAR_MPI
+!    write(msg,*) 'Norm of t_par',infpar%lg_mynum
+!    call print_norm(t_par,msg)
+!     write(*,*) 'itype t_par=',t_par%itype
+!#endif
 
-    call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
+    !write(*,*) 'in residue dim t_par', t_par%tdim
 
-    !write(msg,*) 'Norm of t_par',infpar%lg_mynum
-    !call lsmpi_barrier(infpar%lg_comm)
-    !call sleep(1)
-    !call lsmpi_barrier(infpar%lg_comm)
-    !call print_norm(t_par,msg)
-    !call sleep(1)
-    !call lsmpi_barrier(infpar%lg_comm)
+    
+!#ifdef VAR_MPI
+    !In this u2 is array4, hence I use t_par
+!    write(*,*) 'before array two_dim',infpar%lg_mynum
+!    call lsmpi_barrier(infpar%lg_comm)
+
+    !call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
+    call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.true.)
+
+    !In this u2 is array and no need for t_par
+    !call array_two_dim_1batch(u2,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
+
+!    if(master) then
+!      write(msg,*) 'Norm of t_par',infpar%lg_mynum
+!      call print_norm(t_par,msg)
+!    endif
+!#endif
+!#ifdef VAR_MPI
+!    write(msg,*) 'Norm of w2',infpar%lg_mynum
+!#else
+!    write(msg,*) 'Norm of w2'
+!#endif
+!    call print_norm(w2,i8*dim1*tl,msg)
+!#ifdef VAR_MPI
+!    call lsmpi_barrier(infpar%lg_comm)
+!#endif
 
  !   write(*,*) 'checkpoint 1',infpar%lg_mynum
   !  call sleep(1)
@@ -629,20 +674,30 @@ contains
     !call lsmpi_barrier(infpar%lg_comm)
 
 
-    !gmo_CKLD We need it to be g_CKDL
     omegw=0.0_realk
-    !omegaw1=0.0_realk
 
-    dim1=nocc*nvirt
-       !When fock part is parallelized instead of zero 1.0_realk
+    !When fock part is parallelized instead of zero 1.0_realk
     call dgemm('n','n',tl,dim1,dim1, &
          1.0E0_realk,w2,tl,gmo,dim1,0.0E0_realk,w3,tl)
+!#ifdef VAR_MPI
+!    write(msg,*) 'Norm of w3',infpar%lg_mynum
+!#else
+!    write(msg,*) 'Norm of w3'
+!#endif
+!    call print_norm(w3,i8*tl*nvirt*nocc,msg)
 
-    call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
-    !write(msg,*) 'Norm of w4',infpar%lg_mynum
+!#ifdef VAR_MPI
+    !call array_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
+    !call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
+    call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
+!    write(msg,*) 'Norm of w4',infpar%lg_mynum
+!#else
+!    write(msg,*) 'Norm of w4'
+
+!#endif
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
-    !call print_norm(w4,i8*dim1*dim1,msg)
+!    call print_norm(w4,i8*dim1*dim1,msg)
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
     !stop
@@ -650,45 +705,58 @@ contains
     call dgemm('n','n',tl,dim1,dim1, &
          2.0E0_realk,w3,tl,w4,dim1,0.0E0_realk,omegw,tl)
 
-#ifdef VAR_MPI
-    write(msg,*) 'Norm of omegw',infpar%lg_mynum
-    call sleep(1)
-    call lsmpi_barrier(infpar%lg_comm)
-    call print_norm(omegw,i8*tl*nvirt*nocc,msg)
-    call sleep(1)
-    call lsmpi_barrier(infpar%lg_comm)
+!#ifdef VAR_MPI
+!    write(msg,*) 'Norm of omegw',infpar%lg_mynum
+    !call sleep(1)
+    !call lsmpi_barrier(infpar%lg_comm)
+!    call print_norm(omegw,i8*tl*nvirt*nocc,msg)
+    !call sleep(1)
+    !call lsmpi_barrier(infpar%lg_comm)
     !stop
-#endif
+!#endif
     
 
-    call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
+    !call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
+    call array_two_dim_1batch(omegaw1,[4,2,3,1],'a',omegw,2,fai,tl,.false.,debug=.true.)
 #ifdef VAR_MPI
+
     call lsmpi_barrier(infpar%lg_comm)
-  !  write(*,*) 'checkpoint 2',infpar%lg_mynum
-    write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
-    call sleep(1)
-    call lsmpi_barrier(infpar%lg_comm)
-    call print_norm(omegaw1,msg)
-    call sleep(1)
-    call lsmpi_barrier(infpar%lg_comm)
+    !write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
+   ! if(master) write(*,*) 'omegaw1'
+   ! if(master) write(*,*) omegaw1%elm4
+    !call sleep(1)
+    !call lsmpi_barrier(infpar%lg_comm)
+    !call print_norm(omegaw1,msg)
+    !call sleep(1)
+    !call lsmpi_barrier(infpar%lg_comm)
     !stop
 #endif
 
-#ifdef VAR_MPI
+!#ifdef VAR_MPI
     if(master) then
       !call array_convert(omegaw1,omega2%val)
+      !call array4_reorder(omega2,[1,3,2,4])
+      !call array4_reorder(omega2,[1,3,2,4])
+      !write(*,*) 'order of omega2',size(omega2%val(:,1,1,1))
+      !write(*,*) 'order of omega2',size(omega2%val(1,:,1,1))
+      !write(*,*) 'order of omega2',size(omega2%val(1,1,:,1))
+      write(*,*) 'Master writes this'
+      !call array4_reorder(omega2,[2,1,4,3])
       call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
 
-      write(*,*) 'checkpoint 3',infpar%lg_mynum
+     ! write(msg,*) 'Norm of omega2'
+     ! call print_norm(omega2%val,i8*dim1*dim1,msg)
+!      write(*,*) 'checkpoint 3',infpar%lg_mynum
+      !call array4_reorder(omega2,[2,1,4,3])
       call array4_reorder(omega2,[1,3,2,4])
     endif
-#else
-
-    call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
-
-    call array4_reorder(omega2,[1,3,2,4])
-
-#endif
+!#else
+!
+!    call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
+!
+!    call array4_reorder(omega2,[1,3,2,4])
+!
+!#endif
 
 
     call array_free(t_par)
@@ -797,12 +865,14 @@ end module rpa_module
 subroutine rpa_res_slave()
   use dec_typedef_module
   use typedeftype,only:lsitem
+  use tensor_interface_module
   use decmpi_module,only:rpa_res_communicate_data
   use infpar_module
   use rpa_module
   implicit none
   !> number of orbitals:
-  type(array4) :: omega2,t2
+  type(array) :: t2
+  type(array4) :: omega2!,t2
   real(realk),pointer :: gmo(:)
   type(array2)  :: pfock,qfock
   integer :: nbas, nocc, nvirt

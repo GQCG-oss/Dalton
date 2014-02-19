@@ -55,6 +55,7 @@ cat > LSlib_cam_dfJ_aK.dal <<'%EOF%'
 **INTEGRALS
 .ADMM-JK
 .DENSFIT
+.NOFAMILY
 *END OF INPUT
 %EOF%
 

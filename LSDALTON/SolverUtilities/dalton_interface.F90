@@ -2137,7 +2137,7 @@ CONTAINS
       type(lsitem) :: ls
       real(realk), INTENT(INOUT) :: Etotal(ndmat)
       !
-      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp
+      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp,EK3,EK2
       integer nbast, lupri,luerr,idmat
       logical :: Dsym,ADMMexchange
       TYPE(Matrix) :: K(ndmat),dXC(ndmat)
@@ -2180,10 +2180,24 @@ CONTAINS
             call mat_init(dXC(idmat),nbast,nbast)
             call mat_zero(K(idmat))
             call mat_zero(dXC(idmat))
-            CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
+
+            ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
+            call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),ndmat,Dsym,K(idmat))
+            EK3 = mat_dotproduct(K(idmat),D(idmat))
+            call mat_zero(K(idmat))
+
+            call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
             Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM
+            EK2 = mat_dotproduct(K(idmat),D(idmat))
             call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
-            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat)
+            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+            write(*,*)     "E(K3)= ",EK3
+            write(lupri,*) "E(K3)= ",EK3
+            write(*,*)     "E(k2)= ",EK2
+            write(lupri,*) "E(k2)= ",EK2
+            write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
+            write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
+            Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
             EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
             write(lupri,*) "ADMM exchange energy contribution: ",EADMM
             call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
@@ -2715,13 +2729,16 @@ CONTAINS
             type(lssetting) :: setting
             integer :: n2,n3,AO3,AO2,lupri,luerr
             logical :: McWeeny,GCAO2,GCAO3
+            real(realk)                :: constrain_factor
             !
             TYPE(MATRIX) :: S22,S23,T23
             Logical :: purify_failed
             !
+            constrain_factor = 1.0E0_realk
             call mat_init(T23,n2,n3)
             call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,&
+                         &GCAO2,GCAO3,constrain_factor)
             call mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
             call mat_mul(S23,T23,'n','t',1E0_realk,0E0_realk,D2)
 
@@ -2738,42 +2755,6 @@ CONTAINS
             call mat_free(S23)
         END SUBROUTINE TRANSFORM_D3_TO_D2
         
-        SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
-            use io
-            implicit none
-            TYPE(lssetting),intent(inout) :: setting
-            TYPE(MATRIX),intent(inout)    :: T23
-            Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
-            Logical,intent(IN)            :: GCAO2,GCAO3
-            !
-            TYPE(MATRIX) :: S23,S22,S22inv
-            Character(80) :: Filename = 'ADMM_T23'
-            Logical :: onMaster
-
-            onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-
-!           IF (io_file_exist(Filename,setting%IO)) THEN
-            IF (.FALSE.) THEN
-                call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-            ELSE
-                call mat_init(S22,n2,n2)
-                call mat_init(S22inv,n2,n2)
-                call mat_init(S23,n2,n3)
-
-                call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-                call II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-
-                call mat_inv(S22,S22inv)
-                call mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
-
-                call mat_free(S22inv)
-                call mat_free(S23)
-                call mat_free(S22)
-                call io_add_filename(setting%IO,Filename,LUPRI)
-                call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-            ENDIF
-        END SUBROUTINE get_T23
-        
         SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
             implicit none
             type(matrix),intent(inout) :: F  !level 3 matrix output 
@@ -2781,11 +2762,14 @@ CONTAINS
             type(lssetting) :: setting
             Integer :: n2,n3,AO2,AO3,lupri,luerr
             Logical :: GCAO2,GCAO3
+            real(realk)                :: constrain_factor
             !
             type(matrix) :: S23,T23
+            constrain_factor = 1.0E0_realk
             call mat_init(T23,n2,n3)
             call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,&
+                         &GCAO2,GCAO3,constrain_factor)
             call mat_mul(F2,T23,'n','n',1E0_realk,0E0_realk,S23)
             call mat_mul(T23,S23,'t','n',1E0_realk,0E0_realk,F)
             call mat_free(T23)
@@ -3166,7 +3150,6 @@ CONTAINS
       real(realk) :: t1,t2
       call mem_alloc(Dfull,D%nrow,D%ncol)
       call mat_to_full(D,1E0_realk,DFULL)
-      call LSTIMER('START',t1,t2,LUPRI)
       iprint = 0
       INTSPEC(1) = 'R' 
       INTSPEC(2) = 'R'
@@ -3174,7 +3157,9 @@ CONTAINS
       INTSPEC(4) = 'R'
       INTSPEC(5) = 'C' !operator
       SameMOL = .TRUE.
+      call LSTIMER('START',t1,t2,LUPRI)
       call SCREEN_ICHORERI_DRIVER(lupri,luerr,ls%setting,INTSPEC,SameMOL)
+      call LSTIMER('SCREENDECJ',t1,t2,LUPRI)
 
       !step 1 Orbital to Batch information
       iAO = 1 !the center that the batching should occur on. 
@@ -3197,6 +3182,7 @@ CONTAINS
       WRITE(lupri,*)'nbatchesofAOS',nbatchesofAOS
       dim1 = nbast
       dim2 = nbast
+      call LSTIMER('START',t1,t2,LUPRI)
       BatchGamma: do gammaB = 1,nbatchesofAOS        ! batches of AO batches
         dimGamma = AObatchinfo(gammaB)%dim          ! Dimension of gamma batch
         GammaStart = AObatchinfo(gammaB)%orbstart   ! First orbital index in gamma batch
@@ -3210,7 +3196,7 @@ CONTAINS
           AOAlphaStart = AObatchinfo(alphaB)%AOstart  ! First AO batch index in alpha batch
           AOAlphaEnd = AObatchinfo(alphaB)%AOEnd      ! Last AO batch index in alpha batch
 
-          !calc (beta,delta,alphaB,gammaB) 
+          !calc (beta,delta,alphaB,gammaB)
           call MAIN_ICHORERI_DRIVER(lupri,iprint,ls%setting,dim1,dim2,dimAlpha,dimGamma,&
                & Integral,INTSPEC,.FALSE.,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
                & AOGammaStart,AOGammaEnd)
@@ -3247,12 +3233,12 @@ CONTAINS
           ENDDO
         ENDDO BatchAlpha
       ENDDO BatchGamma
+      call LSTIMER('DECJ   ',t1,t2,LUPRI)
       call mem_dealloc(AObatchinfo)
       call mat_init(Jdec,nbast,nbast)
       call mat_set_from_full(JdecFULL,1.0E0_realk,Jdec)
       call mem_dealloc(JdecFull)
       call mem_dealloc(DFULL)
-      call LSTIMER('DECJ   ',t1,t2,LUPRI)
 
       call mat_init(J,nbast,nbast)
       call mat_zero(J)
@@ -3435,7 +3421,6 @@ CONTAINS
       call mat_free(J)
       call mat_free(Jdec)
       call mat_free(tempm3)
-
     END SUBROUTINE DI_DECPACKEDJOLD
 
 #endif

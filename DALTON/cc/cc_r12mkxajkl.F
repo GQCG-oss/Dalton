@@ -2247,7 +2247,7 @@ C  /* Deck r12exdens*/
 #include "ccfro.h"
 #include "inftap.h"
 #include "ccsdinp.h"
-ccc#include <inforb.h>
+ccc#include "inforb.h"
       integer kcmo,lwork,kfrsav,kfree,lfree,kfvao,kfcao,kdcao,kdvao,kdv
       integer pq,kcao,isym,ioff,ioff1,kexia,isymi,NNORB1
       integer kctao,koff,index,ISYMAI,isyma,nnbast

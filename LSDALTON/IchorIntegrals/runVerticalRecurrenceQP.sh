@@ -4,55 +4,56 @@ ifort -c -g -check all -debug all Strings.f90
 ifort -g -check all -debug all -o runVerticalRecurrenceQP.x runVerticalRecurrenceQP.f90 Strings.o
 ./runVerticalRecurrenceQP.x 
 
-ifort -g -check all -debug all -o runVerticalRecurrenceQPAoutput2.x runVerticalRecurrenceQPAoutput2.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPBoutput2.x runVerticalRecurrenceQPBoutput2.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPCoutput2.x runVerticalRecurrenceQPCoutput2.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPDoutput2.x runVerticalRecurrenceQPDoutput2.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPA.x runVerticalRecurrenceCPUQPA.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPB.x runVerticalRecurrenceCPUQPB.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPC.x runVerticalRecurrenceCPUQPC.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPD.x runVerticalRecurrenceCPUQPD.F90 mathfile.o IchorPresicion.o
 
-ifort -g -check all -debug all -o runVerticalRecurrenceQPAoutput2SegQ.x runVerticalRecurrenceQPAoutput2SegQ.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPBoutput2SegQ.x runVerticalRecurrenceQPBoutput2SegQ.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPCoutput2SegQ.x runVerticalRecurrenceQPCoutput2SegQ.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPDoutput2SegQ.x runVerticalRecurrenceQPDoutput2SegQ.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPASegQ.x runVerticalRecurrenceCPUQPASegQ.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPBSegQ.x runVerticalRecurrenceCPUQPBSegQ.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPCSegQ.x runVerticalRecurrenceCPUQPCSegQ.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPDSegQ.x runVerticalRecurrenceCPUQPDSegQ.F90 mathfile.o IchorPresicion.o
 
-ifort -g -check all -debug all -o runVerticalRecurrenceQPAoutput2SegP.x runVerticalRecurrenceQPAoutput2SegP.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPBoutput2SegP.x runVerticalRecurrenceQPBoutput2SegP.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPCoutput2SegP.x runVerticalRecurrenceQPCoutput2SegP.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPDoutput2SegP.x runVerticalRecurrenceQPDoutput2SegP.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPASegP.x runVerticalRecurrenceCPUQPASegP.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPBSegP.x runVerticalRecurrenceCPUQPBSegP.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPCSegP.x runVerticalRecurrenceCPUQPCSegP.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPDSegP.x runVerticalRecurrenceCPUQPDSegP.F90 mathfile.o IchorPresicion.o
 
-ifort -g -check all -debug all -o runVerticalRecurrenceQPAoutput2Seg.x runVerticalRecurrenceQPAoutput2Seg.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPBoutput2Seg.x runVerticalRecurrenceQPBoutput2Seg.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPCoutput2Seg.x runVerticalRecurrenceQPCoutput2Seg.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPDoutput2Seg.x runVerticalRecurrenceQPDoutput2Seg.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPASeg.x runVerticalRecurrenceCPUQPASeg.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPBSeg.x runVerticalRecurrenceCPUQPBSeg.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPCSeg.x runVerticalRecurrenceCPUQPCSeg.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPDSeg.x runVerticalRecurrenceCPUQPDSeg.F90 mathfile.o IchorPresicion.o
 
-ifort -g -check all -debug all -o runVerticalRecurrenceQPAoutput2Seg1Prim.x runVerticalRecurrenceQPAoutput2Seg1Prim.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPBoutput2Seg1Prim.x runVerticalRecurrenceQPBoutput2Seg1Prim.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPCoutput2Seg1Prim.x runVerticalRecurrenceQPCoutput2Seg1Prim.F90 mathfile.o IchorPresicion.o
-ifort -g -check all -debug all -o runVerticalRecurrenceQPDoutput2Seg1Prim.x runVerticalRecurrenceQPDoutput2Seg1Prim.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPASeg1Prim.x runVerticalRecurrenceCPUQPASeg1Prim.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPBSeg1Prim.x runVerticalRecurrenceCPUQPBSeg1Prim.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPCSeg1Prim.x runVerticalRecurrenceCPUQPCSeg1Prim.F90 mathfile.o IchorPresicion.o
+ifort -g -check all -debug all -o runVerticalRecurrenceCPUQPDSeg1Prim.x runVerticalRecurrenceCPUQPDSeg1Prim.F90 mathfile.o IchorPresicion.o
 #echo 'doing vec reort'
 #ifort -O3 -xHost -vec-report4 -o runVerticalRecurrenceQPAoutput.x runVerticalRecurrenceQPAoutput.F90 mathfile.o IchorPresicion.o
-#cp runVerticalRecurrenceQPAoutput2.F90 AGC_VerticalRecurrenceQPA.F90
-#cp runVerticalRecurrenceQPBoutput2.F90 AGC_VerticalRecurrenceQPB.F90
-#cp runVerticalRecurrenceQPCoutput2.F90 AGC_VerticalRecurrenceQPC.F90
-#cp runVerticalRecurrenceQPDoutput2.F90 AGC_VerticalRecurrenceQPD.F90
+cp runVerticalRecurrenceCPUQPA.F90 AGC_CPU_VerticalRecurrenceQPA.F90
+cp runVerticalRecurrenceCPUQPB.F90 AGC_CPU_VerticalRecurrenceQPB.F90
+cp runVerticalRecurrenceCPUQPC.F90 AGC_CPU_VerticalRecurrenceQPC.F90
+cp runVerticalRecurrenceCPUQPD.F90 AGC_CPU_VerticalRecurrenceQPD.F90
 
-#cp runVerticalRecurrenceQPAoutput2SegQ.F90 AGC_VerticalRecurrenceQPASegQ.F90
-#cp runVerticalRecurrenceQPBoutput2SegQ.F90 AGC_VerticalRecurrenceQPBSegQ.F90
-#cp runVerticalRecurrenceQPCoutput2SegQ.F90 AGC_VerticalRecurrenceQPCSegQ.F90
-#cp runVerticalRecurrenceQPDoutput2SegQ.F90 AGC_VerticalRecurrenceQPDSegQ.F90
+cp runVerticalRecurrenceCPUQPASegQ.F90 AGC_CPU_VerticalRecurrenceQPASegQ.F90
+cp runVerticalRecurrenceCPUQPBSegQ.F90 AGC_CPU_VerticalRecurrenceQPBSegQ.F90
+cp runVerticalRecurrenceCPUQPCSegQ.F90 AGC_CPU_VerticalRecurrenceQPCSegQ.F90
+cp runVerticalRecurrenceCPUQPDSegQ.F90 AGC_CPU_VerticalRecurrenceQPDSegQ.F90
 
-#cp runVerticalRecurrenceQPAoutput2SegP.F90 AGC_VerticalRecurrenceQPASegP.F90
-#cp runVerticalRecurrenceQPBoutput2SegP.F90 AGC_VerticalRecurrenceQPBSegP.F90
-#cp runVerticalRecurrenceQPCoutput2SegP.F90 AGC_VerticalRecurrenceQPCSegP.F90
-#cp runVerticalRecurrenceQPDoutput2SegP.F90 AGC_VerticalRecurrenceQPDSegP.F90
+cp runVerticalRecurrenceCPUQPASegP.F90 AGC_CPU_VerticalRecurrenceQPASegP.F90
+cp runVerticalRecurrenceCPUQPBSegP.F90 AGC_CPU_VerticalRecurrenceQPBSegP.F90
+cp runVerticalRecurrenceCPUQPCSegP.F90 AGC_CPU_VerticalRecurrenceQPCSegP.F90
+cp runVerticalRecurrenceCPUQPDSegP.F90 AGC_CPU_VerticalRecurrenceQPDSegP.F90
 
-#cp runVerticalRecurrenceQPAoutput2Seg.F90 AGC_VerticalRecurrenceQPASeg.F90
-#cp runVerticalRecurrenceQPBoutput2Seg.F90 AGC_VerticalRecurrenceQPBSeg.F90
-#cp runVerticalRecurrenceQPCoutput2Seg.F90 AGC_VerticalRecurrenceQPCSeg.F90
-#cp runVerticalRecurrenceQPDoutput2Seg.F90 AGC_VerticalRecurrenceQPDSeg.F90
+cp runVerticalRecurrenceCPUQPASeg.F90 AGC_CPU_VerticalRecurrenceQPASeg.F90
+cp runVerticalRecurrenceCPUQPBSeg.F90 AGC_CPU_VerticalRecurrenceQPBSeg.F90
+cp runVerticalRecurrenceCPUQPCSeg.F90 AGC_CPU_VerticalRecurrenceQPCSeg.F90
+cp runVerticalRecurrenceCPUQPDSeg.F90 AGC_CPU_VerticalRecurrenceQPDSeg.F90
 
-#cp runVerticalRecurrenceQPAoutput2Seg1Prim.F90 AGC_VerticalRecurrenceQPASeg1Prim.F90
-#cp runVerticalRecurrenceQPBoutput2Seg1Prim.F90 AGC_VerticalRecurrenceQPBSeg1Prim.F90
-#cp runVerticalRecurrenceQPCoutput2Seg1Prim.F90 AGC_VerticalRecurrenceQPCSeg1Prim.F90
-#cp runVerticalRecurrenceQPDoutput2Seg1Prim.F90 AGC_VerticalRecurrenceQPDSeg1Prim.F90
+cp runVerticalRecurrenceCPUQPASeg1Prim.F90 AGC_CPU_VerticalRecurrenceQPASeg1Prim.F90
+cp runVerticalRecurrenceCPUQPBSeg1Prim.F90 AGC_CPU_VerticalRecurrenceQPBSeg1Prim.F90
+cp runVerticalRecurrenceCPUQPCSeg1Prim.F90 AGC_CPU_VerticalRecurrenceQPCSeg1Prim.F90
+cp runVerticalRecurrenceCPUQPDSeg1Prim.F90 AGC_CPU_VerticalRecurrenceQPDSeg1Prim.F90
+
 
 

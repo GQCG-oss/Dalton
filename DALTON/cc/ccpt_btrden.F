@@ -402,7 +402,7 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
 C
-C#include <leinf.h>
+C#include "leinf.h"
 C
       if (locdbg) then
         write(lupri,*) ' Backtransform (T) density aijk '
@@ -534,7 +534,7 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
 C
-C#include <leinf.h>
+C#include "leinf.h"
 C
       if (locdbg) then
         write(lupri,*) ' Backtransform (T) densities iajk and iajb'

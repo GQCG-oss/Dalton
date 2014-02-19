@@ -793,24 +793,35 @@ C
 C     
 C     READ IN GD VECTOR FROM LUGDVE
 C     
-            CALL READT(LUGDVE,KZVAR,WRK(KGD))
+C added by Bin Gao, June 4, 2009
+C for general GD vectors
+            if ( NABATY(IOP) .le. -2 ) then
+              call READT( LUGDVE, KZYVAR, WRK(KGD) )
+              DFTIMG = .true.
+            else if ( NABATY(IOP) .ge. 2 ) then
+              call READT( LUGDVE, KZYVAR, WRK(KGD) )
+              DFTIMG = .false.
+            else
+              CALL READT(LUGDVE,KZVAR,WRK(KGD))
 C     
-            IF (NABATY(IOP).EQ.-1) THEN
-                DFTIMG = .TRUE.
-            ELSE
-                DFTIMG = .FALSE.
-            END IF
-            IF (NABATY(IOP).EQ.1) THEN
-               CALL DCOPY(KZVAR,WRK(KGD),1,WRK(KGD+KZVAR),1)
-               CALL DSCAL(KZVAR,DM1,WRK(KGD+KZVAR),1)
-            ELSE IF (NABATY(IOP).EQ.-1) THEN
-               CALL DCOPY(KZVAR,WRK(KGD),1,WRK(KGD+KZVAR),1)
-            ELSE
-               WRITE(LUPRI,'(/2A,I5,A,I5)')
-     *              ' NABATY(IOP) NOT AN ALLOWED VALUE'
-     *              ,' IOP=',IOP,'  NABATY(IOP)=',NABATY(IOP)
-               CALL QUIT(' RSPLLE: INCORRECT NABATY(IOP)')
-            END IF
+              IF (NABATY(IOP).EQ.-1) THEN
+                  DFTIMG = .TRUE.
+              ELSE
+                  DFTIMG = .FALSE.
+              END IF
+              IF (NABATY(IOP).EQ.1) THEN
+                 CALL DCOPY(KZVAR,WRK(KGD),1,WRK(KGD+KZVAR),1)
+                 CALL DSCAL(KZVAR,DM1,WRK(KGD+KZVAR),1)
+              ELSE IF (NABATY(IOP).EQ.-1) THEN
+                 CALL DCOPY(KZVAR,WRK(KGD),1,WRK(KGD+KZVAR),1)
+              ELSE
+                 WRITE(LUPRI,'(/2A,I5,A,I5)')
+     *                ' NABATY(IOP) NOT AN ALLOWED VALUE'
+     *                ,' IOP=',IOP,'  NABATY(IOP)=',NABATY(IOP)
+                 CALL QUIT(' RSPLLE: INCORRECT NABATY(IOP)')
+              END IF
+            end if
+
             DO I = 1,NFREQ
                WRK(KEIVAL-1+I) = FREQ(I)
             END DO
@@ -840,7 +851,10 @@ C
                      CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
      *                    MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
                   END IF
-                  NATSYM = 1.0D0
+C added by Bin Gao, June 5, 2009
+C for general case
+                  ANTSYM = sign( DM1, dble( NABATY(IOP) ) )
+C                  NATSYM = 1.0D0
                   CALL WRTRSP(LURSP,KZYVAR,WRK(IBV),LABEL,
      &                 BLANK,WRK(KEIVAL-1+IVEC),D0,KSYMOP,0,
      &                 WRK(KRESID-1+IVEC),ANTSYM)

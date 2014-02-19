@@ -49,6 +49,8 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 	COMPLEX(complexk),POINTER  :: sabk_tmp(:,:),sabk2(:,:)
 	COMPLEX(complexk) :: alpha,beta
 	INTEGER :: info,i,j,lwork,nonsingdim
+        INTEGER,save :: kp=0
+        kp=kp+1
 
 	nsingular = 0
 	lwork=10*Ndim-1
@@ -64,6 +66,11 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 	beta=CMPLX(0.0_realk,0.0_realk,complexk)
 
 	Sk(:,:)=sabk(:,:)
+
+       ! if(kp==1) then
+       !   write(*,*) 'S gamma ='
+       !   call write_zmatrix(sabk,ndim,ndim)
+       ! endif
 
 	diag(:)=CMPLX(0.0_realk,0.0_realk,complexk)
 	! calculate spectral decomposition S = V^H\sigma V  
@@ -94,6 +101,7 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 		w(j)=wtemp
 	end do
 
+
 	! remove linear dependencies in v (sk)
 	do i=1,ndim
 		if(w(i) .lt. singular_threshh) then
@@ -104,6 +112,7 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 		else
 			diag(i)=cmplx(1.0_realk/sqrt(w(i)),0.0_realk,complexk)
 		endif
+                !if(kp==1) write(*,*) w(i),'big sigma'
 	enddo
 
 	write(*,*) 'number of singulars',nsingular
@@ -139,9 +148,9 @@ SUBROUTINE pbc_spectral_decomp_ovl(Sabk,U,is_singular,Ndim,nsingular,&
 		enddo
 
 		call zgemm('N','N',ndim,ndim,ndim,alpha,sk,ndim,&
-			sigma,ndim,beta,sabk_tmp,ndim)
+			& sigma,ndim,beta,sabk_tmp,ndim)
 		call zgemm('N','C',ndim,ndim,ndim,alpha,sabk_tmp,ndim,&
-			sk,ndim,beta,sabk2,ndim)
+			& sk,ndim,beta,sabk2,ndim)
 
 		write(*,*) wtemp**2*singular_threshh,'should be max error in S matrix'
 		do i=1,ndim
@@ -185,9 +194,9 @@ SUBROUTINE pbc_unitary_transform(Ndim,nonsingdim,kfock,Uk,tfock)
   beta=CMPLX(0._realk,0._realk,complexk)
   call mem_alloc(tmp,ndim,nonsingdim)
   call zgemm('N','N',Ndim,Nonsingdim,Ndim,alpha,kfock,Ndim,&
-             Uk,Ndim,beta,tmp,Ndim)
+             & Uk,Ndim,beta,tmp,Ndim)
   call zgemm('C','N',Nonsingdim,Nonsingdim,Ndim,alpha,Uk,Ndim,&
-             tmp,Ndim,beta,tfock,Nonsingdim)
+             & tmp,Ndim,beta,tfock,Nonsingdim)
   call mem_dealloc(tmp)
 
 END SUBROUTINE pbc_unitary_transform
@@ -215,9 +224,9 @@ SUBROUTINE transform_toMOfock(C_tmp,fock,fockMO,ndim,lupri)
 	fockMO=cmplx(0.0_realk,0.0_realk,complexk)
 	fockMOtmp=cmplx(0.0_realk,0.0_realk,complexk)
 	call zgemm('C','N',ndim,ndim,ndim,alpha,C_tmp,ndim,fock,ndim,&
-		beta,fockMOtmp,ndim)
+		& beta,fockMOtmp,ndim)
 	call zgemm('N','N',ndim,ndim,ndim,alpha,fockMOtmp,ndim,C_tmp,ndim,&
-		beta,fockMO,ndim)
+		& beta,fockMO,ndim)
 
 	call mem_dealloc(fockmotmp)
 
@@ -279,6 +288,8 @@ SUBROUTINE solve_kfcsc_mat(ndim,fock_old,C_tmp,Uk,eigv,nsingular,lupri)
 	COMPLEX(complexk),POINTER :: tfock(:,:),work(:)
 	REAL(realk),POINTER :: rwork(:)
 	COMPLEX(COMPLEXK) :: alpha,beta
+        integer, save :: kp=0
+        kp=kp+1
 
 	nonsingdim=ndim-nsingular
 
@@ -299,15 +310,17 @@ SUBROUTINE solve_kfcsc_mat(ndim,fock_old,C_tmp,Uk,eigv,nsingular,lupri)
 	! solve fc = ce 
 	call zheev('V','U',nonsingdim,tfock,nonsingdim,eigv,work,lwork,rwork,info)
 	if(info .ne. 0) then
-		write(lupri,*) 'ERROR: zheev problems, info=', info
+		write(lupri,*) 'ERROR: zheev problems, info=', info,kp
 		call write_zmatrix(tfock,nonsingdim,nonsingdim)
-		write(*,*) 'ERROR: zheev problems, info=', info
+		write(*,*) 'ERROR: zheev problems, info=', info,kp
+		!call write_zmatrix(uk,nonsingdim,nonsingdim)
+		write(lupri,*) 'ERROR: zheev problems, info=', info,kp
 		call LSQUIT('pbc_solve_kfcsc_mat: INFO not zero,', &
 			& ' while solving eigenvalue',lupri)
 	endif
 	!Transform back to C=Uc
 	call zgemm('N','N',ndim,nonsingdim,nonsingdim,alpha,Uk,ndim,&
-		tfock,nonsingdim,beta,C_tmp(:,1:nonsingdim),ndim)
+		& tfock,nonsingdim,beta,C_tmp(:,1:nonsingdim),ndim)
 	c_tmp(:,nonsingdim+1:ndim)=cmplx(0._realk,0._realk,complexk)
 
 	call mem_dealloc(work)
@@ -329,7 +342,7 @@ END SUBROUTINE solve_kfcsc_mat
 !> \param lupri 			Logical print unit.
 !> \param luerr 			
 SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
-		maxmultmom,bz,dmat0,lupri,luerr)
+		& maxmultmom,bz,dmat0,lupri,luerr)
 	IMPLICIT NONE
 	INTEGER,INTENT(IN) :: ndim,lupri,luerr,numrealvec,maxmultmom
 	! input
@@ -397,25 +410,25 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 	CALL LSTIMER('START ',TS,TE,LUPRI)
 	call pbc_overlap_k(lupri,luerr,setting,molecule%natoms,ndim,&
-		lattice,refcell,numrealvec,ovl)
+		& lattice,refcell,numrealvec,ovl)
 	CALL LSTIMER('pbc_overlap_k',TS,TE,LUPRI)
 
 	!CALCULATES kinetic energy of electrons
 	CALL LSTIMER('START ',TS,TE,LUPRI)
 	call pbc_kinetic_k(lupri,luerr,setting,molecule%natoms,ndim,&
-		lattice,refcell,numrealvec,nfdensity,f_1)
+		& lattice,refcell,numrealvec,nfdensity,f_1)
 	CALL LSTIMER('pbc_kinetic_k',TS,TE,LUPRI)
 
 	!CALCULATES electron nuclei attraction
 	CALL LSTIMER('START ',TS,TE,LUPRI)
 	call pbc_nucattrc_k(lupri,luerr,setting,molecule%natoms,ndim,&
-		lattice,refcell,numrealvec,nfdensity,f_1)
+		& lattice,refcell,numrealvec,nfdensity,f_1)
 	CALL LSTIMER('pbc_nucattrc_k',TS,TE,LUPRI)
 
 	!CALCULATES nuclear repulsion
 	CALL LSTIMER('START ',TS,TE,LUPRI)
 	CALL pbc_nucpot(lupri,luerr,setting,molecule%natoms,lattice,&
-		refcell,numrealvec,E_nuc)
+		& refcell,numrealvec,E_nuc)
 	CALL LSTIMER('pbc_nucpot',TS,TE,LUPRI)
 
 	!computing the nuclear moments
@@ -428,7 +441,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 	CALL LSTIMER('pbc_multipole',TS,TE,LUPRI)
 
 	call pbc_controlmm(20,Tlat,lattice%Tlmax,maxmultmom,.false.,lattice%ldef%avec,&
-		ndim,lupri,nfdensity,numrealvec,lattice,E_ff,E_nnff,refcell)
+		& ndim,lupri,nfdensity,numrealvec,lattice,E_ff,E_nnff,refcell)
 
 	DO k=1,BZ%nk
 
@@ -485,13 +498,13 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		CALL LSTIMER('START ',TST,TET,LUPRI)
 		CALL LSTIMER('START ',TS,TE,LUPRI)
 		call pbc_electron_rep_k(lupri,luerr,setting,molecule%natoms,ndim,&
-			lattice,refcell,numrealvec,nfdensity,g_2,E_J)
+			& lattice,refcell,numrealvec,nfdensity,g_2,E_J)
 		CALL LSTIMER('pbc Coul',TS,TE,LUPRI)
 
 		!if hybrid or HF, include parameter if hybrid
 		CALL LSTIMER('START ',TS,TE,LUPRI)
 		call pbc_exact_xc_k(lupri,luerr,setting,molecule%natoms,ndim,&
-			lattice,refcell,numrealvec,nfdensity,g_2,E_K)
+			& lattice,refcell,numrealvec,nfdensity,g_2,E_K)
 		CALL LSTIMER('pbc xchange',TS,TE,LUPRI)
 		CALL LSTIMER('rep xchange',TST,TET,LUPRI)
 
@@ -507,7 +520,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		!Far-field contribution to fock
 		CALL LSTIMER('START ',TS,TE,LUPRI)
 		call pbc_ff_fck(maxmultmom,tlat,lattice%tlmax,ndim,lattice,nfdensity,nucmom,&
-			g_2,E_ff,E_nn,lupri)
+			& g_2,E_ff,E_nn,lupri)
 		CALL LSTIMER('pbc farfield',TS,TE,LUPRI)
 
 		!sums the parts for the fock matrices from  f^0l
@@ -581,14 +594,19 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 			!gets D(k) from C(k)
 			call pbc_get_kdensity(D_k,C_k,ndim,molecule%nelectrons/2 &
-				,bz%kpnt(kpt)%nsingular,smatk,lupri)
+				& ,bz%kpnt(kpt)%nsingular,smatk,lupri)
 
 			!Converts D(k) to D^0l
 			call kspc_2_rspc_loop_k(nfdensity,Bz%Nk,D_k,lattice,kvec,bz%kpnt(kpt)%weight,&
-                          & BZ%NK_nosym,ndim,kpt,lupri)
+                          & BZ%NK_nosym,ndim,kpt,diis_exit,lupri)
 
 		enddo !kpt
 		CALL LSTIMER('k point energy',TST,TET,LUPRI)
+
+                if(diis_exit) then
+                  write(lupri,*) 'Max Density elements for each layer'
+                  call print_maxdens(nfdensity,lattice,lupri)
+                endif
 
 		if(associated(weight)) call mem_dealloc(weight)
 
@@ -598,7 +616,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		call print_bands(bz,ndim,'band-energy') !prints band energy to file band-energy
 		! Get HOMO LUMO energy, change name 
 		call pbc_trans_k_energy(lattice,cellenergies,ndim,molecule%nelectrons,&
-			bz)
+			& bz)
 
 		E_cell=E_1+E_j+E_K+E_ff+E_nuc!+E_nn
 		write(lupri,*) 'E(HOMO) =', cellenergies(1), tol
@@ -802,7 +820,7 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
 	ddensity(:,:)=CMPLX(0.0_realk,0.0_realk,complexk)
 
 	call zgemm('N','C',nbast,nbast,nkmobas,alpha,c_tmp,nbast,&
-		c_tmp,nbast,beta,ddensity,nbast)
+		& c_tmp,nbast,beta,ddensity,nbast)
 
   !=========================================
   ! DEBUG below (smathk,tmp, only used here)
@@ -813,7 +831,7 @@ SUBROUTINE pbc_get_kdensity(ddensity,C_tmp,nbast,nkmobas,nsingular,smatk,lupri)
   
 	alpha=CMPLX(1.0_realk,0.0_realk,complexk)
 	call zgemm('N','N',nbast,nbast,nbast,alpha,ddensity,nbast,&
-		smatk,nbast,beta,tmp,nbast)
+		& smatk,nbast,beta,tmp,nbast)
 
 	nelectrons=0._realk
 	do i=1,nbast
@@ -977,7 +995,7 @@ SUBROUTINE pbc_diisweights(errdim,error,weight,it,num_store,lupri)
 		call dgelss(n,n,m,B_mat,n,weight_tmp,n,Sdgelss,rcond,rank,work,lwork,info)
 		if(info .ne. 0) then
 			call LSQUIT('pbc_diisweights: INFO not zero, while solving eigenvalue',&
-				lupri)
+				& lupri)
 		endif
 		call mem_dealloc(work)
 	endif
@@ -1069,7 +1087,7 @@ SUBROUTINE pbc_get_weighted_fock(i,ndiis,stdiis,nbast,weight,aop,lupri)
 				l3=int(aop%lvec(layer)%lat_coord(3))
 				if(aop%lvec(layer)%f1_computed .or. aop%lvec(layer)%g2_computed)then
 					call mat_daxpy(weight(j),tmp_mat%lvec(layer)%oper(2),&
-						aop%lvec(layer)%oper(2))
+						& aop%lvec(layer)%oper(2))
 				endif
 			enddo
 		enddo
@@ -1089,7 +1107,7 @@ SUBROUTINE pbc_get_weighted_fock(i,ndiis,stdiis,nbast,weight,aop,lupri)
 				l3=int(aop%lvec(layer)%lat_coord(3))
 				if(aop%lvec(layer)%f1_computed .or. aop%lvec(layer)%g2_computed)then
 					call mat_daxpy(weight(k),tmp_mat%lvec(layer)%oper(2),&
-						aop%lvec(layer)%oper(2))
+						& aop%lvec(layer)%oper(2))
 				endif
 			enddo
 		enddo

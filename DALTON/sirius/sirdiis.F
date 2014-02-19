@@ -279,6 +279,11 @@ C  /* Deck DIIS_CTL */
      *                    C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,CVEC,
      *                    TNLM,RCPMAT,WRK,KFRSAV,LFRSAV,
      *                    IPR_DIIS,ICONV)
+
+!#define USE_XCINT
+#ifdef USE_XCINT
+      use xcint_integrator
+#endif
 C
 C L.r. 5-May-1994 hjaaj / 1-Apr-1997
 C
@@ -341,9 +346,9 @@ C
 Cholesky
 C
 C------------------------
-C#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
+C#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
 C
       PARAMETER (THDDEF = 1.0D-5)
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, DM1 = -1.0D0)
@@ -739,9 +744,42 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
      &                 FAOSAV(1,INDEVC,1),1)
             END IF
          END IF
-         IF (DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+
+         IF (DODFT) then
+#ifdef USE_XCINT
+             allocate(dmat_ao(nbast*nbast))
+             allocate(fmat_ao(nbast*nbast))
+             allocate(fmat_ao_tri(nnbast))
+             dmat_ao     = 0.0d0
+             fmat_ao     = 0.0d0
+             fmat_ao_tri = 0.0d0
+             xc_energy   = 0.0d0
+             call daxpy(nbast*nbast, 0.5d0, dcao, 1,
+     &                  dmat_ao, 1)
+             call xc_integrate(
+     &                         xc_mat_dim=nbast,
+     &                         xc_nr_dmat=1,
+     &                         xc_dmat=dmat_ao,
+     &                         xc_nr_geo_pert=0,
+     &                         xc_nr_fld_pert=0,
+     &                         xc_energy=xc_energy,
+     &                         xc_fmat=fmat_ao
+     &                        )
+             emy = emy + xc_energy
+
+             call dgetsp(nbast, fmat_ao, fmat_ao_tri)
+             call daxpy(nnbast, 1.0d0, fmat_ao_tri, 1,
+     &                  faosav(1, indevc, 1), 1)
+
+             deallocate(dmat_ao)
+             deallocate(fmat_ao)
+             deallocate(fmat_ao_tri)
+#else
+                        CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
+#endif /* USE_XCINT */
+         END IF
 
 CAMT If calculated add the empirical dispersion energy correction
          IF (DODFTD) THEN
@@ -2446,8 +2484,8 @@ C
 C     In: F apk,D apk and S unp
 C     Out: SDF-FDS
 
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DOUBLE PRECISION F(NNBAST),D(NNBAST),SAOUNP(NBAST,NBAST)
       DOUBLE PRECISION COMM(NBAST,NBAST),WRK(*)
       PARAMETER (D1=1.0D0, D0=0.0D0, DM1=-1.0D0)

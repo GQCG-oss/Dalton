@@ -3154,7 +3154,7 @@ C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *      ' >>> ACPORB error, number of AO-blocks for UNCONT ',NRCIJ,
      *      '                   current maximum number MXAOVC =',KAOVEC,
-     &      '  Increase MXAOVC; make depend; make'
+     &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for an uncontracted '//
      *                   'basis sets')
             END IF
@@ -5778,7 +5778,7 @@ C
       call header('priccf',-1)
       call output(priccf,1,npshel,1,mxcont,mxprim,mxcont,-1,lupri)
       call header('pricrx',-1)
-      call output(pricrx,1,npshel,1,3,mxprim,3,1,-lupri)
+      call output(pricrx,1,npshel,1,3,mxprim,3,1,lupri)
       WRITE(LUPRI,*) ' kmax ', kmax
       call header('cent',-1)
       call output(cent,1,kmax,1,3,mxshel,3,1,lupri)
@@ -6952,6 +6952,8 @@ C
 #include "dummy.h"
 #include "priunit.h"
 #include "pcmlog.h"
+#include "mxcent.h"
+#include "maxorb.h"
       CHARACTER TMPLN*80, BASNAM*80, BKPLIN*80, FRMT*5
       LOGICAL BASIS, ATOMBA, LMULBS, FOUNDR, FOUNDA
       DIMENSION JCO(KANG)

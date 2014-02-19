@@ -121,7 +121,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
    ! fck=0.0000E-100
   
 !
-    call pbc_init_recvec(lattice%ldef%avec,kvec)
+    call pbc_init_recvec(lattice%ldef%avec,kvec,lattice%ldef%is_active,lupri)
 
 
     write(lupri,*) 'kvec', kvec!(3,3)
@@ -425,7 +425,7 @@ else
   if(lattice%compare_elmnts) then
     !write(*,*) 'hei'
     call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
-    num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
+    & num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
   endif
 
 #endif
@@ -461,7 +461,7 @@ else
 
     !call COMPARE_MATRICES(lupri,nbast,num_latvectors,nfsze,maxmultmom,lattice)
     call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
-    num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
+    & num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
 
     deallocate(k_fock)
     deallocate(k_Sab)
@@ -481,7 +481,7 @@ else
    write(*,*) 'max element in initial dmat',maxdens
 
   call pbc_startzdiis(input%molecule,setting,nbast,lattice,&
-  num_latvectors,maxmultmom,bz,dmat,lupri,luerr)
+  & num_latvectors,maxmultmom,bz,dmat,lupri,luerr)
 
   call pbc_end_Bzgrid(bZ)
 !  call mat_free(nfdensity(n1))
@@ -530,10 +530,10 @@ else
 		 & refcell,num_latvectors)
   
     call pbc_kinetic_int(lupri,luerr,setting,input%molecule%natoms,nbast,fck,&
-     sze,lattice,refcell,num_latvectors)
+     & sze,lattice,refcell,num_latvectors)
   
     call pbc_nucattrc_int(lupri,luerr,setting,input%molecule%natoms,nbast,fck,&
-     sze,lattice,refcell,num_latvectors)
+     & sze,lattice,refcell,num_latvectors)
      
     call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
     nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)
@@ -600,7 +600,7 @@ else
   endif
  
     call pbc_electron_rep(lupri,luerr,setting,input%molecule%natoms,nbast,&
-     lattice,refcell,num_latvectors,nfdensity,nfsze)
+     & lattice,refcell,num_latvectors,nfdensity,nfsze)
   
 !  call pbc_complete_Fock_mtx(lupri,nbast,S_ab,sze,cutoff,ll)
 
@@ -624,35 +624,132 @@ else
 
 END SUBROUTINE set_pbc_molecules
 
-SUBROUTINE pbc_init_recvec(realspace,recvec)
+SUBROUTINE pbc_init_recvec(realspace,recvec,is_active,lu)
 IMPLICIT NONE
 REAL(realk),INTENT(IN) :: realspace(3,3)
 REAL(realk),INTENT(INOUT) :: recvec(3,3)
+LOGICAL,INTENT(IN)     :: is_active(3)
+INTEGER,INTENT(IN)     :: lu
+REAL(realk)            :: t2ct3(3)
+REAL(realk)            :: vol
+INTEGER                :: active_dims,plane
 !REAL(realk) :: PI=3.14159265358979323846D0
+    active_dims=1
+    if(is_active(2))then
+      active_dims=2
+      if(is_active(3)) active_dims=3
+    endif
+    recvec(:,:)=0.0_realk
 
-    recvec(1,1)=2.*pi*(realspace(2,2)*realspace(3,3)-&
-              realspace(3,2)*realspace(2,3))
-    recvec(2,1)=2.*pi*(realspace(3,2)*realspace(1,3)-&
-              realspace(1,2)*realspace(3,3))
-    recvec(3,1)=2.*pi*(realspace(1,2)*realspace(2,3)-&
-              realspace(2,2)*realspace(1,3))
+    SELECT CASE(active_dims)
 
-    recvec(1,2)=2.*pi*(realspace(2,3)*realspace(3,1)-&
-              realspace(3,3)*realspace(2,1))
-    recvec(2,2)=2.*pi*(realspace(3,3)*realspace(1,1)-&
-              realspace(1,3)*realspace(3,1))
-    recvec(3,2)=2.*pi*(realspace(1,3)*realspace(2,1)-&
-              realspace(2,3)*realspace(1,1))
+    CASE(3)
 
-    recvec(1,3)=2.*pi*(realspace(2,1)*realspace(3,3)-&
-              realspace(3,1)*realspace(2,3))
-    recvec(2,3)=2.*pi*(realspace(3,1)*realspace(1,2)-&
-              realspace(1,1)*realspace(3,2))
-    recvec(3,3)=2.*pi*(realspace(1,1)*realspace(2,2)-&
-    	      &realspace(2,1)*realspace(1,2))
+      recvec(1,1)=2.*pi*(realspace(2,2)*realspace(3,3)-&
+        & realspace(3,2)*realspace(2,3))
+      recvec(2,1)=2.*pi*(realspace(3,2)*realspace(1,3)-&
+        & realspace(1,2)*realspace(3,3))
+      recvec(3,1)=2.*pi*(realspace(1,2)*realspace(2,3)-&
+        & realspace(2,2)*realspace(1,3))
 
-    recvec=2.*pi*recvec/(recvec(1,1)*realspace(1,1)+recvec(2,1)*realspace(2,1)+&
-         recvec(3,1)*realspace(3,1))!This gives NaN for the moment
+      recvec(1,2)=2.*pi*(realspace(2,3)*realspace(3,1)-&
+        & realspace(3,3)*realspace(2,1))
+      recvec(2,2)=2.*pi*(realspace(3,3)*realspace(1,1)-&
+        & realspace(1,3)*realspace(3,1))
+      recvec(3,2)=2.*pi*(realspace(1,3)*realspace(2,1)-&
+        & realspace(2,3)*realspace(1,1))
+
+      recvec(1,3)=2.*pi*(realspace(2,1)*realspace(3,3)-&
+        & realspace(3,1)*realspace(2,3))
+      recvec(2,3)=2.*pi*(realspace(3,1)*realspace(1,2)-&
+        & realspace(1,1)*realspace(3,2))
+      recvec(3,3)=2.*pi*(realspace(1,1)*realspace(2,2)-&
+        &realspace(2,1)*realspace(1,2))
+
+      t2ct3(1)=realspace(2,2)*realspace(3,3)-&
+        & realspace(3,2)*realspace(2,3)
+
+      t2ct3(2)=realspace(3,2)*realspace(1,3)-&
+        & realspace(1,2)*realspace(3,3)
+
+      t2ct3(3)=realspace(1,2)*realspace(2,3)-&
+        & realspace(2,2)*realspace(1,3)
+
+      vol= dot_product(t2ct3,realspace(:,1))
+
+      recvec(:,:)=recvec(:,:)/vol
+
+    CASE(2)
+      plane = 0
+      if(realspace(3,1) .eq. 0 .and. realspace(3,2) .eq. 0) then
+        recvec(1,1)=realspace(2,2)*2._realk*pi
+        recvec(2,1)=-realspace(1,2)*2._realk*pi
+
+        recvec(1,2)=-realspace(1,1)*2._realk*pi
+        recvec(2,2)=realspace(2,1)*2._realk*pi
+
+        vol=realspace(1,1)*realspace(2,2)+realspace(2,1)*realspace(1,2)
+        recvec(:,:)=recvec(:,:)/vol
+        if(realspace(3,1) .ne. 0._realk .or. realspace(3,2) .ne. 0._realk)then
+          write(*,*) 'Use just two axes it is a two dimensional system'
+          call LSquit('Not correct usage of lattice vectors',lu)
+        endif
+      elseif(realspace(2,1) .eq. 0 .and. realspace(2,2) .eq. 0) then
+        recvec(1,1)=realspace(3,2)*2._realk*pi
+        recvec(3,1)=-realspace(1,2)*2._realk*pi
+
+        recvec(1,2)=-realspace(1,1)*2._realk*pi
+        recvec(3,2)=realspace(3,1)*2._realk*pi
+
+        vol=realspace(1,1)*realspace(3,2)+realspace(3,1)*realspace(1,2)
+        recvec(:,:)=recvec(:,:)/vol
+        if(realspace(2,1) .ne. 0._realk .or. realspace(2,2) .ne. 0._realk)then
+          write(*,*) 'Use just two axes it is a two dimensional system'
+          call LSquit('Not correct usage of lattice vectors',lu)
+        endif
+      elseif(realspace(1,1) .eq. 0 .and. realspace(1,2) .eq. 0) then
+        recvec(2,1)=realspace(3,2)*2._realk*pi
+        recvec(3,1)=-realspace(2,2)*2._realk*pi
+
+        recvec(2,2)=-realspace(2,1)*2._realk*pi
+        recvec(3,2)=realspace(3,1)*2._realk*pi
+
+        vol=realspace(3,1)*realspace(2,2)+realspace(2,1)*realspace(3,2)
+        recvec(:,:)=recvec(:,:)/vol
+        if(realspace(1,1) .ne. 0._realk .or. realspace(1,2) .ne. 0._realk)then
+          write(*,*) 'Use just two axes it is a two dimensional system'
+          call LSquit('Not correct usage of lattice vectors',lu)
+        endif
+      endif
+      
+
+   CASE(1)
+     if(realspace(1,1) .ne. 0) then
+       recvec(1,1)=2._realk*pi/realspace(1,1)
+       if(realspace(2,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
+         write(*,*) 'Use just one axis it is a one dimensional system'
+         call LSquit('Not correct usage of lattice vectors',lu)
+       endif
+     elseif(realspace(2,1) .ne. 0) then
+       recvec(2,1)=2._realk*pi/realspace(2,1)
+       if(realspace(1,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
+         write(*,*) 'Use just one axis it is a one dimensional system'
+         call LSquit('Not correct usage of lattice vectors',lu)
+       endif
+     elseif(realspace(3,1) .ne. 0) then
+       recvec(3,1)=2._realk*pi/realspace(3,1)
+       if(realspace(2,1) .ne. 0._realk .or. realspace(1,1) .ne. 0._realk) then
+         write(*,*) 'Use just one axis it is a one dimensional system'
+         call LSquit('Not correct usage of lattice vectors',lu)
+       endif
+     endif
+
+   END SELECT
+     
+      
+
+      !recvec=2.*pi*recvec/(recvec(1,1)*realspace(1,1)+recvec(2,1)*realspace(2,1)+&
+      !     recvec(3,1)*realspace(3,1))!This gives NaN for the moment
 
 END SUBROUTINE pbc_init_recvec
 

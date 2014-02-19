@@ -1332,7 +1332,7 @@ C
 C
 C     Statement functions
 C
-c #include <ibtfun.h>
+c #include "ibtfun.h"
 c     PARAMETER (IBIT08 = 255, IFIELD = 8)
 c     PARAMETER (IBIT04 = 15)
 c     ISHELL(I) = IBTAND(IBTSHR(I,IFIELD),IBIT08)

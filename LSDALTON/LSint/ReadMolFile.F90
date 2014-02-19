@@ -968,7 +968,8 @@ DO I=1,Atomtypes
 
     IPOS = INDEX(LINE,' ')
     IF (IPOS .LT. 2) THEN
-      WRITE (LUPRI,*) 'Atom name must start in first column'
+      print*, 'Atom name must start in the first column'
+      WRITE (LUPRI,*) 'Atom name must start in the first column'
       CALL LSQUIT('Error in placement of atom name. See output',lupri)
     ELSEIF (IPOS .EQ. 2) THEN
       StringFormat = '(A1)'
@@ -976,11 +977,12 @@ DO I=1,Atomtypes
       StringFormat = '(A2)'
     ELSEIF (IPOS .EQ. 4) THEN
       StringFormat = '(A3)'
-    ELSEIF (IPOS .EQ. 5) THEN
+    ELSE!IF (IPOS .EQ. 5) THEN
       StringFormat = '(A4)'
-    ELSE
-      WRITE (LUPRI,*) 'Atom name must be less then 4 letters'
-      CALL LSQUIT('Error in atom name. See output',lupri)
+!    ELSE
+!      print*, 'Atom name must be less then 5 letters'
+      WRITE (LUPRI,*) 'Note: Atom name must be less then 5 characters'
+!      CALL LSQUIT('Error in atom name. See output',lupri)
     END IF
 
     READ (LINE,StringFormat) MOLECULE%ATOM(atomnumber)%Name
@@ -1396,7 +1398,7 @@ IF (ATOMBASIS) THEN
       ELSE
          IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
          IF (IPOS3 .LT. 10) THEN
-            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
+            WRITE (StringFormat,'(A2,I1,A1)') '(A', IPOS3 - 1 ,')'
          ELSE
             WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
          ENDIF

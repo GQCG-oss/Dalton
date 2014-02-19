@@ -4100,7 +4100,7 @@ C
 #include "priunit.h"
 #include "qrinf.h"
 #include "inflin.h"
-#include <infrank.h>
+#include "infrank.h"
       LOGICAL LREFST, LORB, LCON, TRPSAVE
       PARAMETER (D1     = 1.0D0)
 C

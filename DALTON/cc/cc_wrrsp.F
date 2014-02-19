@@ -161,7 +161,7 @@ C---------------------------------------------------------------------*
 #include "ccpl1rsp.h"
 #include "dummy.h"
 !Lanczos
-#include <ccqlrlcz.h>
+#include "ccqlrlcz.h"
 Cholesky
 #include "maxorb.h"
 #include "cclr.h"

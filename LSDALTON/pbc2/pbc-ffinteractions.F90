@@ -205,14 +205,14 @@ SUBROUTINE &
         if (i .eq. 1) then
            debug_nf = 3*nfsiz + 1
            call pbc_TsupNF_matrix(Tdebug,debug_nf,debug_lmax,debug_siz,&
-		   square_intermed,latvec,lupri)
+		   & square_intermed,latvec,lupri)
            Tdebug(:,:) = Tdebug(:,:) + T_supNF(1:debug_siz,1:debug_siz)
 
 !           call pbc_matdiff_db(Tdebug,debug_siz,debug_siz,Tlat,siz,siz,15,15,'T1_iter','T1_direct',.not. square_intermed)
         else if (i .eq. 2) then
            debug_nf = 3*(3*nfsiz + 1) + 1
            call pbc_TsupNF_matrix(Tdebug2,debug_nf,debug_lmax,debug_siz,&
-		   square_intermed,latvec,lupri)
+		   & square_intermed,latvec,lupri)
            Tdebug2(:,:) = Tdebug2(:,:) + Tdebug(:,:)
 
 !           call pbc_matdiff_db(Tdebug2,debug_siz,debug_siz,Tlat_aux,siz,siz,15,15,'T2_iter','T2_direct',.not. square_intermed)
@@ -607,7 +607,7 @@ subroutine pbc_do_m2l(Tres,T1,W2,lmax,siz,square_flag,lupri)
 							!if (mod(p,2_long) .eq. 1) fac = -fac
 							! add contribution
 							Tres(lm,jk) = Tres(lm,jk) + T1(max(lm,pq),min(lm,pq)) &
-								* W2(pq,jk) * fac
+								& * W2(pq,jk) * fac
 						end do sum_q
 					end do sum_p
 					! put in the factor
@@ -662,7 +662,7 @@ subroutine pbc_get_nfsize(n1,n2,n3,layer,lupri)
   call pbcstruct_get_active_dims(fdim)
 !
   if (layer .ge. 1 .and. &
-      layer .le. 25) then
+      & layer .le. 25) then
      n1 = layer * fdim(1)
      n2 = layer * fdim(2)
      n3 = layer * fdim(3)
@@ -731,7 +731,7 @@ end subroutine pbc_Tmatrix_print
 
 
 SUBROUTINE pbc_ff_fck(Tlmax,tlat,lmax,nbast,ll,nfdensity,nucmom,&
-                         g_2,E_ff,E_nn,lupri)
+                         & g_2,E_ff,E_nn,lupri)
 IMPLICIT NONE
 INTEGER,INTENT(IN) :: Tlmax,lmax,nbast,lupri
 real(realk), intent(in) :: Tlat((1+lmax)**2,(1+lmax)**2),nucmom((1+lmax)**2)
@@ -818,7 +818,7 @@ DO jk=1,(lmax+1)**2
       if(sphermom(nk)%is_defined) then
         if(nfdensity(nk)%init_magic_tag.EQ.mat_init_magic_value) THEN
           rhojk(jk)=rhojk(jk)-&
-                 mat_dotproduct(nfdensity(nk),sphermom(nk)%getmultipole(jk))
+                 & mat_dotproduct(nfdensity(nk),sphermom(nk)%getmultipole(jk))
         endif
       endif
    ENDDO
@@ -1126,17 +1126,17 @@ DO i=1,ncarmom
    carnucmom(i)%elms(1)=nucmomtmp(i)
 ENDDO
 write(lupri,*) 'debug: Charge from Cartesian nuc.mom. is ',&
-                nucmomtmp(1),carnucmom(1)%elms
+                & nucmomtmp(1),carnucmom(1)%elms
 write(*,*) 'debug: Charge from Cartesian nuc.mom. is ',&
-            nucmomtmp(1),carnucmom(1)%elms
+            & nucmomtmp(1),carnucmom(1)%elms
 
 call II_carmom_to_shermom(sphnucmom,carnucmom,(lmax+1)**2,ncarmom,lmax,&
-                          lupri,iprint)
+                          & lupri,iprint)
 
 write(lupri,*) 'debug: Charge from Spherical nuc.mom. is ',&
-                sphnucmom(1)%elms
+                & sphnucmom(1)%elms
 write(*,*) 'debug: Charge from Spherical nuc.mom. is ',&
-            sphnucmom(1)%elms
+            & sphnucmom(1)%elms
 
 !write(*,*) 'DEBUG 1 segmentation fault',ncarmom
 
@@ -1144,22 +1144,31 @@ DO i=1,ncarmom
    call Mat_free(carnucmom(i))
    !write(*,*) 'DEBUG segmentation fault',i+1,ncarmom
 enddo
+write(*,*) 'debug free carnucmom '
 call mem_dealloc(carnucmom)
+write(*,*) 'debug dealloc carnucmom '
 
 call mem_dealloc(nucmomtmp)
+write(*,*) 'debug dealloc nucmomtmp '
 !write(lupri,*) 'nucmom before transformation'
 DO i=1,(lmax+1)**2
+  write(*,*) 'nucmom(i)',i
   nucmom(i) = sphnucmom(i)%elms(1)
+  write(*,*) 'nucmom done '
 !  write(lupri,*) nucmom(i)
 ENDDO
+write(*,*) 'debug nucmom(i)=sphnucmom '
 
 DO i=1,nsphmom
    call Mat_free(sphnucmom(i))
 enddo
+write(*,*) 'debug free sphnucmom '
 !deallocate(sphnucmom)
 call mem_dealloc(sphnucmom)
+write(*,*) 'debug dealloc sphnucmom '
 
 call pbc_multipl_moment_order(nucmom,lmax)
+write(*,*) 'debug multipl_moment_order'
 call pbc_redefine_q(nucmom,lmax)
 write(lupri,*) 'charge nuclei',nucmom(1)
 write(*,*) 'charge nuclei',nucmom(1)
@@ -1482,7 +1491,6 @@ SUBROUTINE READ_multipole_files(lattice,maxmultmom,sphermom,nbast,nk,lupri)
     numtostring1=adjustl(numtostring1)
     numtostring2=adjustl(numtostring2)
     numtostring3=adjustl(numtostring3)
-    !filename='Qcdlm.dat'!&
     filename='Qcdlm'//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)//'.dat'
     !write(*,*) 'filnavn for Qcdlm', filename
     !filename2=&
@@ -1590,7 +1598,7 @@ SUBROUTINE pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,refcell,numve
        !call TYPEDEF_setmolecules(setting,refcell,1,refcell,2)
 
        call II_get_sphmom(LUPRI,LUERR,SETTING,spherMom,nSpherMom,maxMultmom,&
-       0.0_realk,0.0_realk,0.0_realk)
+       & 0.0_realk,0.0_realk,0.0_realk)
 
 !      call pbc_readopmat2(il1,il2,il3,matris,nbast,'OVERLAP',.true.,.false.)
 !      call write_matrix(matris,nbast,nbast)

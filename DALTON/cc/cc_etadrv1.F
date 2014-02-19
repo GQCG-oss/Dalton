@@ -525,7 +525,7 @@ c /* deck CC_ETA_SETUP1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "cclists.h"

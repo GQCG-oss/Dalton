@@ -59,7 +59,7 @@ END SUBROUTINE find_cutoff_onep
 !> \param numvecs 		Number of unitcells in the BvK lattice
 !> \param nfdensity 		Density matrix.
 SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
-		refcell,numvecs,nfdensity)
+		& refcell,numvecs,nfdensity)
 	IMPLICIT NONE
 	! input and output arguments
 	INTEGER, INTENT(IN) :: lupri,luerr,nbast,numvecs ! nlayer 
@@ -78,7 +78,7 @@ SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
 
 	call set_lstime_print(.false.)
 	write(lupri,*) 'Finding nlayer for Kop',numvecs, lattice%ldef%is_active(1),&
-		lattice%max_layer
+		& lattice%max_layer
 
 	call mem_alloc(K_tmp,1)
 	call mem_alloc(Kx,1)
@@ -117,7 +117,7 @@ SUBROUTINE find_cutoff_twop(lupri,luerr,setting,nbast,lattice, &
 						if( abs(l13) .gt.lattice%max_layer) CYCLE
 						call find_latt_index(newcell,l11,l12,l13,lattice,lattice%max_layer)
 						call find_latt_index(checknf,il31,il32,il33,&
-							lattice,lattice%max_layer)
+							& lattice,lattice%max_layer)
 					
 						setting%samefrag=.false.
 						setting%samemol=.false.
@@ -249,6 +249,7 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
 			call mat_zero(lattice%lvec(idx)%oper(1))
 			! get the overlap matrix for cell between reference and cell l
 			call II_get_overlap(lupri,luerr,setting,lattice%lvec(idx)%oper(1))
+                        !write(*,*) 'Overlap computed for',il1,il2,il3
 			if(lattice%store_mats) then !todo necc? are the matrices ever stored??
 				call pbc_get_file_and_write(lattice,nbast,nbast,idx,1,1, &
 					& '            ')!1 refers to overlap
@@ -1258,10 +1259,10 @@ SUBROUTINE pbc_electron_rep(lupri,luerr,setting,natoms, &
 
 				call find_latt_index(newcell,l1,l2,l3,lattice,lattice%max_layer)
 				call find_latt_index(checknf,checknf1,checknf2,checknf3,lattice,&
-					lattice%nneighbour)
+					& lattice%nneighbour)
 				!Changes setting to point at different lattice cells
 				call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(index1)%molecule,2,&
-					lattice%lvec(index2)%molecule,3,lattice%lvec(newcell)%molecule,4)
+					& lattice%lvec(index2)%molecule,3,lattice%lvec(newcell)%molecule,4)
 
 				setting%samemol(1,2)=.false.
 				setting%samemol(2,1)=.false.
@@ -1333,7 +1334,7 @@ SUBROUTINE pbc_complete_Fock_mtx(lupri,nbast,fock_mtx,sizef,cut,lattice)
 	do i=1,num_latvectors
 		if(i .eq. refcell) CYCLE
 		fock_mtx(nbast*i+1-nbast:i*nbast,nbast*i+1-nbast:i*nbast)=&
-			fock_mtx(refcell*nbast-nbast+1:refcell*nbast, refcell*nbast-nbast+1:refcell*nbast)
+			& fock_mtx(refcell*nbast-nbast+1:refcell*nbast, refcell*nbast-nbast+1:refcell*nbast)
 		call find_latt_vectors(i,il1,il2,il3,lattice)
 		do j=1,i
 			if(j .eq. refcell) CYCLE
@@ -1354,9 +1355,9 @@ SUBROUTINE pbc_complete_Fock_mtx(lupri,nbast,fock_mtx,sizef,cut,lattice)
 
 			if(distance .ge. cut) CYCLE
 			fock_mtx(nbast*i+1-nbast:i*nbast,nbast*j+1-nbast:j*nbast)=&
-				fock_mtx(refcell*nbast-nbast+1:refcell*nbast, cellij*nbast-nbast+1:cellij*nbast)
+				& fock_mtx(refcell*nbast-nbast+1:refcell*nbast, cellij*nbast-nbast+1:cellij*nbast)
 			fock_mtx(nbast*j+1-nbast:j*nbast,nbast*i+1-nbast:i*nbast)=&
-				fock_mtx(nbast*i+1-nbast:i*nbast, nbast*j+1-nbast:j*nbast)
+				& fock_mtx(nbast*i+1-nbast:i*nbast, nbast*j+1-nbast:j*nbast)
 		enddo
 	enddo
 	write(lupri,*) 'FOCK MATRIX'

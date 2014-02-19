@@ -15,8 +15,9 @@ CONTAINS
        & nContA,nContB,nContP,pexp,ACC,BCC,&
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,Pdistance12,PQorder,CDAB,Acenter,Bcenter,&
-       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
+       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&
+       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & BasisContmaxsize,BasisCont)
     implicit none
     integer,intent(in) :: nPrimP,nPasses,nPrimA,nPrimB
     integer,intent(in) :: MaxPasses,IntPrint,lupri
@@ -30,7 +31,7 @@ CONTAINS
     real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2)
     !    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(inout) :: CDAB(nPasses)
+    real(realk),intent(inout) :: LOCALINTS(nPasses)
     real(realk),intent(in) :: integralPrefactor(nPrimP*nPrimP)
     logical,intent(in) :: PQorder
     !integralPrefactor(nPrimP,nPrimP)
@@ -39,9 +40,10 @@ CONTAINS
     real(realk),intent(in) :: Pdistance12(3)           !Acenter-Bcenter 
     real(realk),intent(in) :: Acenter(3),Bcenter(3)
     logical,intent(in) :: spherical
-    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize
+    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize,BasisContmaxsize
 !   TMP variables - allocated outside
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
+    real(realk),intent(inout) :: BasisCont(BasisContmaxsize)
     IF(PQorder)THEN
        call IchorQuit('PQorder OBS general expect to get QP ordering',-1)
     ENDIF
@@ -55,33 +57,39 @@ CONTAINS
        & nContA,nContB,nContP,pexp,ACC,BCC,&
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,Pdistance12,PQorder,CDAB,Acenter,Bcenter,&
-       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
+       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&
+       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & BasisContmaxsize,BasisCont)
    ELSE
     call IchorGabIntegral_OBS_Gen(nPrimA,nPrimB,&
        & nPrimP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContP,pexp,ACC,BCC,&
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
-       & AngmomA,AngmomB,Pdistance12,PQorder,CDAB,Acenter,Bcenter,&
-       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
+       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&
+       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & BasisContmaxsize,BasisCont)
    ENDIF
   end subroutine IchorGabIntegral_OBS_general
   
   
   subroutine IchorGabIntegral_OBS_general_size(TMParray1maxsize,&
-         &TMParray2maxsize,AngmomA,AngmomB,nPrimP,nContP,Psegmented)
+         & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,nPrimP,&
+         & nContP,nPrimB,Psegmented)
     implicit none
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
+    integer,intent(inout) :: BasisContmaxsize
     integer,intent(in) :: AngmomA,AngmomB
-    integer,intent(in) :: nPrimP,nContP
+    integer,intent(in) :: nPrimP,nContP,nPrimB
     logical,intent(in) :: Psegmented
     IF(Psegmented)THEN
      call IchorGabIntegral_OBS_general_sizeSeg(TMParray1maxsize,&
-         &TMParray2maxsize,AngmomA,AngmomB,nPrimP,nContP)
+         & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&
+         & nPrimP,nContP,nPrimB)
     ELSE
      call IchorGabIntegral_OBS_general_sizeGen(TMParray1maxsize,&
-         &TMParray2maxsize,AngmomA,AngmomB,nPrimP,nContP)
+         &TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&
+         & nPrimP,nContP,nPrimB)
     ENDIF
   end subroutine IchorGabIntegral_OBS_general_size
   

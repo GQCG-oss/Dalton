@@ -138,9 +138,11 @@ subroutine get_initial_dens(H1,S,D,ls,config)
 
      ! Quit in case orbitals on file are not localized lcv basis and we are
      ! trying to restart lcm calculation for which lcv is needed.
-     if (config%decomp%cfg_lcm .and. (.not.lcv_on_file)) &
-        &  call lsquit("CAN NOT RESTART .LCM calculation, LCV basis NOT ON FILE",config%lupri)
-
+     if (config%opt%cfg_start_guess=='TRILEVEL') then
+        if (config%decomp%cfg_lcm .and. (.not.lcv_on_file))then
+           call lsquit("CAN NOT RESTART TRILEVEL .LCM calculation, LCV basis NOT ON FILE",config%lupri)
+        endif
+     endif
 
      if (gcbasis .and. .not. config%decomp%cfg_gcbasis) then
         WRITE(config%lupri,*) 'Your dens.restart was constructed using the grand-canonical (GC) basis,'

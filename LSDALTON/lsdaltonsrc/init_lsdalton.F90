@@ -16,7 +16,8 @@ module init_lsdalton_mod
   use linsca_debug, only: sparsetest
   use lstiming, only: lstimer
   use daltoninfo, only: ls_init
-  use IIDFTINT, only: II_DFTDISP
+  !AMT use IIDFTINT, only: II_DFTDISP
+  use IIDFTD, only: DFT_D_LSDAL_IFC
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
   private
@@ -77,7 +78,10 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
   call set_final_config_and_print(lupri,config,ls,nbast)
   
   ! eventually empirical dispersion correction in case of dft
-  CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
+  !AMT CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
+  !AMT   
+  CALL DFT_D_LSDAL_IFC(LS%SETTING,DUMMY,1,1,0,LUPRI)
+  !AMT   
 
   call mat_pass_info(LUPRI,config%opt%info_matop,mem_monitor)
 
@@ -160,6 +164,10 @@ SUBROUTINE print_intro(lupri)
   integer,intent(in)        :: lupri
   integer                   :: I
 
+#ifdef BINARY_INFO_AVAILABLE
+! sets DALTON_VERSION
+#include "dalton_config.h"
+#endif
   WRITE(LUPRI,*)' '
   WRITE(LUPRI,*)'    ******************************************************************    '
   WRITE(LUPRI,*)'    **********  LSDALTON - An electronic structure program  **********    '
@@ -167,7 +175,11 @@ SUBROUTINE print_intro(lupri)
   WRITE(LUPRI,*)' '
   write(LUPRI,*)' '
 
-  WRITE (LUPRI,'(5X,A)')' This is output from LSDALTON (Release Dalton2013)'
+#ifdef BINARY_INFO_AVAILABLE
+  WRITE (LUPRI,'(5X,A)')' This is output from LSDALTON '//DALTON_VERSION
+#else
+  WRITE (LUPRI,'(5X,A)')' This is output from LSDALTON '
+#endif
   write(LUPRI,*)' '
   write(lupri,*)' '
 

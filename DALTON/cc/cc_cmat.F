@@ -89,7 +89,7 @@ c/* Deck CC_CMAT */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -1478,7 +1478,7 @@ c/* Deck CC_CTST */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -1698,7 +1698,7 @@ c/*  Deck CCC_OVOV */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
  
 #include "priunit.h"

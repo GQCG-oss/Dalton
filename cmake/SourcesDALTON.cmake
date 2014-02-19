@@ -627,6 +627,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/sirtra.F
     DALTON/sirius/sirupd.F
     DALTON/sirius/symchk.F
+    DALTON/sirius/pcm_interface.F
     DALTON/soppa/ccsd_tcmepkx.F
     DALTON/soppa/dc_calc.F
     DALTON/soppa/dc_eres.F

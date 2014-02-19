@@ -9,9 +9,36 @@ if(ENABLE_SCALASCA)
         ${CMAKE_SOURCE_DIR}/LSDALTON/scalasca.in
         ${PROJECT_BINARY_DIR}/scalascaCC.sh
         )
+    set(SCALASCA_INSTRUMENT ${CMAKE_CXX_COMPILER})
+    configure_script(
+        ${CMAKE_SOURCE_DIR}/LSDALTON/scalasca.in
+        ${PROJECT_BINARY_DIR}/scalascaCXX.sh
+        )
     unset(SCALASCA_INSTRUMENT)
     SET(CMAKE_Fortran_COMPILER "${PROJECT_BINARY_DIR}/scalascaf90.sh")
     SET(CMAKE_C_COMPILER "${PROJECT_BINARY_DIR}/scalascaCC.sh")
+    SET(CMAKE_CXX_COMPILER "${PROJECT_BINARY_DIR}/scalascaCXX.sh")
+endif()
+if(ENABLE_VAMPIRTRACE)
+#    set(VAMPIRTRACE_INSTRUMENT ${CMAKE_Fortran_COMPILER})
+#    configure_script(
+#        ${CMAKE_SOURCE_DIR}/LSDALTON/vampirtrace.in
+#        ${PROJECT_BINARY_DIR}/vampirtracef90.sh
+#        )
+#    set(VAMPIRTRACE_INSTRUMENT ${CMAKE_C_COMPILER})
+#    configure_script(
+#        ${CMAKE_SOURCE_DIR}/LSDALTON/vampirtrace.in
+#        ${PROJECT_BINARY_DIR}/vampirtraceCC.sh
+#        )
+#    set(VAMPIRTRACE_INSTRUMENT ${CMAKE_CXX_COMPILER})
+#    configure_script(
+#        ${CMAKE_SOURCE_DIR}/LSDALTON/vampirtrace.in
+#        ${PROJECT_BINARY_DIR}/vampirtraceCXX.sh
+#        )
+#    unset(VAMPIRTRACE_INSTRUMENT)
+    SET(CMAKE_Fortran_COMPILER "vtfort")
+    SET(CMAKE_C_COMPILER "vtcc")
+    SET(CMAKE_CXX_COMPILER "vtc++")
 endif()
 
 add_library(
@@ -46,8 +73,34 @@ set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_t2f.F90
     )
+if(ENABLE_OPENACC)
+    set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_acc_reord.F90
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_acc_reord.F90
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_acc_reord.F90
+       )
+endif()
 
 get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+if(ENABLE_OPENACC)
+add_custom_command(
+    OUTPUT
+    ${MANUAL_REORDERING_SOURCES}
+    COMMAND
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering acc ${LIST_OF_DEFINITIONS}
+    DEPENDS
+    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+    )
+elseif(ENABLE_COLLAPSE)
+add_custom_command(
+    OUTPUT
+    ${MANUAL_REORDERING_SOURCES}
+    COMMAND
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
+    DEPENDS
+    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+    )
+else()
 add_custom_command(
     OUTPUT
     ${MANUAL_REORDERING_SOURCES}
@@ -56,6 +109,7 @@ add_custom_command(
     DEPENDS
     ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
     )
+endif()
 unset(LIST_OF_DEFINITIONS)
 
 add_library(

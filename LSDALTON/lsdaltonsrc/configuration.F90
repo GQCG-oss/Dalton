@@ -137,6 +137,8 @@ implicit none
   ! PLT info
   call pltinfo_set_default_config(config%Plt)
   config%doplt=.false.
+  !F12 calc?
+  config%doF12=.false.
   
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
@@ -266,7 +268,7 @@ DO
       READWORD = .TRUE.
       CALL INTEGRAL_INPUT(config%integral,readword,word,lucmd,lupri)
    ENDIF
-   IF ((WORD(1:10) == '**WAVE FUN').OR.(WORD(1:10) == '**WAVEFUNC')) THEN
+   IF (WORD(1:6) == '**WAVE') THEN
       READWORD=.TRUE.
       DO   
          IF(READWORD) THEN
@@ -497,6 +499,8 @@ DO
             CASE('.MAXELM');     READ(LUCMD,*) config%solver%cfg_max_element
                                                config%solver%set_max_element = config%solver%cfg_max_element
             CASE('.MAXIT');      READ(LUCMD,*) config%opt%cfg_max_linscf_iterations
+            CASE('.NOQUITMAXIT');READ(LUCMD,*) config%opt%cfg_max_linscf_iterations
+                                               config%opt%opt_quit=.false.
             CASE('.MAXRATI');    READ(LUCMD,*) maxratio
                                                config%av%cfg_settings%max_dorth_ratio = maxratio
             CASE('.MAXSTEP');    READ(LUCMD,*) config%solver%cfg_max_step 
@@ -539,6 +543,7 @@ DO
             CASE('.PRINTFINALCMO'); config%opt%print_final_cmo=.true.
             CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
             CASE('.RESTART');    config%diag%CFG_restart =  .TRUE.
+            CASE('.CRASHCALC');    config%opt%crashcalc =  .TRUE.
             CASE('.PURIFYRESTARTDENSITY'); config%diag%CFG_purifyrestart =  .TRUE.
             CASE('.REDO L2');    config%diag%cfg_redo_l2 = .true.
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
@@ -664,7 +669,7 @@ DO
    DECInput: IF (WORD(1:5) == '**DEC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word,.false.)
+      call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12)
    END IF DECInput
 
    ! Input for full molecular CC calculation
@@ -672,7 +677,7 @@ DO
    CCinput: IF (WORD(1:4) == '**CC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word,.true.)
+      call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12)
    END IF CCinput
 
 
@@ -770,6 +775,19 @@ DO
         CASE('.RECLAT')
           READ (LUCMD, '(3I2)')config%latt_config%nk1,config%latt_config%nk2,&
                                & config%latt_config%nk3
+          if(config%latt_config%nk2 .gt. 1 ) then
+            if(.not.config%latt_config%ldef%is_active(2)) then
+              WRITE(*,*) 'Reciprocal vector 2 should be set to 1'
+              call LSQUIT('ERROR IN RECIPROCAL VECTORS',lupri)
+            endif
+          endif
+
+          if(config%latt_config%nk3 .gt. 1 ) then
+            if(.not.config%latt_config%ldef%is_active(3)) then
+              WRITE(*,*) 'Reciprocal vector 3 should be set to 1'
+              call LSQUIT('ERROR IN RECIPROCAL VECTORS',lupri)
+            endif
+          endif
 
         CASE('.MLMAX')
           READ (LUCMD, '(I2)')config%latt_config%lmax
@@ -822,9 +840,9 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
-if(config%solver%do_dft)THEN
+if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
-   call init_dftfunc(config%integral%DFT)
+   call init_dftfunc(config%integral%DFT,config%integral%ADMM_FUNC)
 endif
 
 END SUBROUTINE read_dalton_input
@@ -1206,12 +1224,31 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_JKBASIS    = .FALSE.
         CASE ('.ADMM-McWeeny'); ! EXPERIMENTAL
            INTEGRAL%ADMM_MCWEENY    = .TRUE.
+        CASE ('.ADMM-2ERI'); ! EXPERIMENTAL
+           INTEGRAL%ADMM_2ERI       = .TRUE.
         CASE ('.ADMM-CONST-EL');
            IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
                   &ADMM has been previously defined.',lupri)
            ENDIF
            INTEGRAL%ADMM_CONST_EL   = .TRUE.
+        CASE ('.ADMM-FUNC');
+           READ(LUCMD,*) INTEGRAL%ADMM_FUNC
+        CASE ('.ADMMQ-ScaleXC2');
+           IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
+                  &ADMM has been previously defined.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_CONST_EL    = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2   = .TRUE.
+        CASE ('.ADMMQ-ScaleE');
+           IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
+                  &ADMM has been previously defined.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_CONST_EL    = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2   = .FALSE.
+	   INTEGRAL%ADMMQ_ScaleE     = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
@@ -2533,6 +2570,33 @@ DO
       CASE ('.DISPER' )
          DALTON%DFT%DODISP = .TRUE.
          CALL DFTDISPCHECK()
+!AMT
+      CASE ('.DFT-D2')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP2 = .TRUE.
+         DALTON%DFT%DO_DFTD2 = .TRUE.
+      CASE ('.D2PAR')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%L_INP_D2PAR = .TRUE.
+         READ(LUCMD,*)DALTON%DFT%D2_s6_inp, DALTON%DFT%D2_alp_inp, DALTON%DFT%D2_rs6_inp
+      CASE ('.DFT-D3')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+      CASE ('.DFT-D3BJ')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+         DALTON%DFT%DO_BJDAMP = .TRUE.
+      CASE ('.3BODY')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DO_3BODY = .TRUE.
+      CASE ('.D3PAR')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%L_INP_D3PAR = .TRUE.
+         READ(LUCMD,*) DALTON%DFT%D3_s6_inp, DALTON%DFT%D3_alp_inp, DALTON%DFT%D3_rs6_inp, & 
+     &              DALTON%DFT%D3_rs18_inp, DALTON%DFT%D3_s18_inp
+!AMT
       CASE DEFAULT
          WRITE (LUPRI,'(/,3A,/)') ' Keyword ',WORD,&
               & ' not recognized in *DFT INPUT'
@@ -2742,7 +2806,7 @@ implicit none
         & 'Level shifting by ||Dorth|| ratio  ',&
         & 'No level shifting                  ',&
         & 'Van Lenthe fixed level shifts      '/)
-   integer :: nocc,nvirt
+   integer :: nocc,nvirt,nthreads_test
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 integer, external :: OMP_GET_NESTED
@@ -3211,6 +3275,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
            &     'You have specified .DENSFIT in the dalton input but not supplied a fitting basis set'
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
+   if(config%doF12 .AND. (.NOT. config%integral%cabsbasis))then
+      WRITE(config%LUPRI,'(/A)') &
+           &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
+      CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
+   endif
 !ADMM basis input
    if(config%integral%ADMM_JKBASIS .AND. (.NOT. config%integral%JKbasis))then
       WRITE(config%LUPRI,'(/A)') &
@@ -3284,6 +3353,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       ELSEIF(ls%input%basis%REGULAR%DunningsBasis)THEN
          WRITE(config%lupri,*)'We have detected a Dunnings Basis set so we deactivate the' 
          WRITE(config%lupri,*)'use of the Grand Canonical basis, which is normally default.'
+         WRITE(config%lupri,*)'The use of Grand Canonical basis can be enforced using the FORCEGCBASIS keyword' 
          config%decomp%cfg_gcbasis = .FALSE.         
       ENDIF
    ENDIF
@@ -3441,6 +3511,25 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('Combining diagonalization and CSR is inefficient!',-1)
       endif
    endif
+
+!OpenMP sanity check: -DVAR_OMP should be set if openMP is active
+!==================
+#ifndef VAR_OMP
+!OpenMP should be turned off
+nthreads_test = 0
+!$OMP PARALLEL SHARED(nthreads_test)
+
+!$OMP CRITICAL
+nthreads_test = nthreads_test + 1
+!$OMP END CRITICAL
+
+!$OMP END PARALLEL 
+IF(nthreads_test.NE.1)THEN
+   print*,'OpenMP compilation inconsistency: use -DVAR_OMP when using -openmp/-fopenmp flag'
+   call lsquit('OpenMP compilation inconsistency: use -DVAR_OMP',-1)
+ENDIF
+#endif
+
 
 !SCALAPACK sanity check:
 !==================
