@@ -5318,7 +5318,7 @@ call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,F2)
 call mat_zero(k2_xc2)
 call mat_daxpy(1E0_realk,F2(1),k2_xc2)
 tracek2d2 = mat_trAB(F2(1),D2(1))
-write(*,*)     "Tr(k2d2)=", traceK2D2
+
 call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AO2,AO3,GC2,GC3,constrain_factor)
 fac = 1E0_realk
@@ -5347,7 +5347,7 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
 tracex2d2 = mat_trAB(F2(1),D2(1))
 write(*,*)     "Tr(x2d2)=", traceX2D2
-write(*,*)     "Ex2", ex2
+
 IF (scaleXC2) THEN
    EX2 = constrain_factor**(4./3.)*EX2            ! RE-SCALING EXC2 TO FIT k2
    call mat_scal(constrain_factor**(4./3.),F2(1)) ! RE-SCALING XC2 TO FIT k2  
@@ -5378,11 +5378,18 @@ CALL mat_zero(F3(1))
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
 tracex3d3 = mat_trAB(F3(1),D)
 write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
-write(*,*)     "Ex3 (not Ex3*2)", ex3
+write(*,*)     "E(k2)=Tr(k2 d2) ", traceK2D2
+write(lupri,*) "E(k2)=Tr(k2 d2) ", traceK2D2
+write(*,*)     "E(X3)= ", EX3(1)*GGAXfactor
+write(lupri,*) "E(X3)= ", EX3(1)*GGAXfactor
+write(*,*)     "E(x2)= ", fac*EX2(1)*GGAXfactor
+write(lupri,*) "E(x2)= ", fac*EX2(1)*GGAXfactor
 CALL mat_daxpy(GGAXfactor,F3(1),dXC)
 
 
 EdXC = (EX3(1)- fac*EX2(1))*GGAXfactor
+write(*,*)     "E(X3)-E(x2)= ",EdXC
+write(lupri,*) "E(X3)-E(x2)= ",EdXC
 
 !Restore dft functional to original
 IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)

@@ -2137,7 +2137,7 @@ CONTAINS
       type(lsitem) :: ls
       real(realk), INTENT(INOUT) :: Etotal(ndmat)
       !
-      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp
+      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp,EK3,EK2
       integer nbast, lupri,luerr,idmat
       logical :: Dsym,ADMMexchange
       TYPE(Matrix) :: K(ndmat),dXC(ndmat)
@@ -2180,11 +2180,23 @@ CONTAINS
             call mat_init(dXC(idmat),nbast,nbast)
             call mat_zero(K(idmat))
             call mat_zero(dXC(idmat))
-            CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
+
+            ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
+            call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),ndmat,Dsym,K(idmat))
+            EK3 = mat_dotproduct(K(idmat),D(idmat))
+            call mat_zero(K(idmat))
+
+            call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
             Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM
+            EK2 = mat_dotproduct(K(idmat),D(idmat))
             call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
             Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
-           write(lupri,*) "ADMM K2 exact exchange energy contribution: Ek2=",Etotal(idmat)
+            write(*,*)     "E(K3)= ",EK3
+            write(lupri,*) "E(K3)= ",EK3
+            write(*,*)     "E(k2)= ",EK2
+            write(lupri,*) "E(k2)= ",EK2
+            write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
+            write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
             Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
             EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
             write(lupri,*) "ADMM exchange energy contribution: ",EADMM
