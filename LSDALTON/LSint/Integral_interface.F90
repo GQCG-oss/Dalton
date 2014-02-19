@@ -72,8 +72,8 @@ MODULE IntegralInterfaceMOD
        & II_get_single_carmom,II_get_nucdip,II_get_prop,&
        & II_get_prop_expval,II_get_integral,II_get_integral_full,&
        & II_get_sphmom,II_carmom_to_shermom,II_get_3center_overlap,&
-       & II_get_2center_eri,II_get_4center_eri,II_get_4center_eri_diff,&
-       & II_get_1el_diff,II_precalc_ScreenMat, &
+       & II_get_2center_eri,II_get_2center_mixed_eri,II_get_4center_eri,&
+       & II_get_4center_eri_diff,II_get_1el_diff,II_precalc_ScreenMat, &
 #ifdef VAR_MPI
        & II_bcast_screen, II_screeninit, II_screenfree,&
 #endif
@@ -2363,6 +2363,42 @@ CALL ls_getIntegrals(AORdefault,AOempty,AORdefault,AOempty,CoulombOperator,Regul
 CALL retrieve_Output(lupri,setting,F,setting%IntegralTransformGC)
 
 END SUBROUTINE II_get_2center_eri
+
+!> \brief 2 center eris from two different basis sets
+SUBROUTINE II_get_2center_mixed_eri(LUPRI,LUERR,SETTING,S,AO1,AO2,GCAO1,GCAO2)
+IMPLICIT NONE
+TYPE(MATRIX)          :: S
+TYPE(LSSETTING)       :: SETTING
+INTEGER               :: LUPRI,LUERR,IPRINT,AO1,AO2
+LOGICAL               :: GCAO1,GCAO2
+!
+Integer             :: i,j,LU,nbast2,nbast1
+
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+
+IPRINT=SETTING%SCHEME%INTPRINT
+nbast1 = getNbasis(AO1,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
+nbast2 = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(2)%p,LUPRI)
+
+IF(nBast1.NE.S%nrow)CALL LSQUIT('dim1 mismatch in II_get_mixed_overlap',-1)
+IF(nBast2.NE.S%ncol)CALL LSQUIT('dim2 mismatch in II_get_mixed_overlap',-1)
+call initIntegralOutputDims(setting%output,nbast1,1,nbast2,1,1)
+CALL ls_getIntegrals(AO1,AOempty,AO2,AOempty,&
+     &CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,S,.FALSE.)
+
+IF (GCAO1) call AO2GCAO_half_transform_matrix(S,SETTING,LUPRI,1)
+IF (GCAO2) call AO2GCAO_half_transform_matrix(S,SETTING,LUPRI,2)
+
+IF(IPRINT.GT. 1000)THEN
+   WRITE(LUPRI,'(A,2X,F16.8)')'Mixed 2centerERI',mat_dotproduct(S,S)
+   call mat_print(S,1,nbast1,1,nbast2,lupri)
+ENDIF
+
+END SUBROUTINE II_get_2center_mixed_eri
+
+
 
 !> \brief Calculates the explicit 4 center eri tensor in Mulliken (ab|cd) or Dirac noation <a(1)c(2)|r_12^-1|b(1)d(2)>
 !> \author T. Kjaergaard
@@ -5583,12 +5619,16 @@ real(realk),intent(IN)        :: constrain_factor
 !
 TYPE(MATRIX) :: S23,S22,S22inv
 Character(80) :: Filename = 'ADMM_T23'
-Logical :: onMaster
+Logical :: onMaster,McWeeny,ERI2C
 real(realk) :: lambda
 Logical     :: const_electrons
 Logical     :: scale_finalE
 
 onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
+!these options are for the ERI metric
+!with McWeeny ADMM1 is assumed, without ADMM2
+McWeeny = setting%scheme%ADMM_MCWEENY
+ERI2C = setting%scheme%ADMM_2ERI
 
 IF (io_file_exist(Filename,setting%IO)) THEN
   call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
@@ -5596,9 +5636,17 @@ ELSE
   CALL mat_init(S22,n2,n2)
   CALL mat_init(S22inv,n2,n2)
   CALL mat_init(S23,n2,n3)
-  
-  CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-  CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+ 
+  IF (ERI2C.AND..NOT.McWeeny) THEN
+    CALL II_get_2center_mixed_eri(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+  ELSE
+    CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+  ENDIF
+  IF (ERI2C) THEN
+    CALL II_get_2center_mixed_eri(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+  ELSE
+    CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+  ENDIF
  
   CALL mat_inv(S22,S22inv)
   CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
