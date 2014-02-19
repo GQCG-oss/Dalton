@@ -49,6 +49,7 @@ contains
 
 
     ! -- Debug modes
+    DECinfo%CRASHCALC            = .false.
     DECinfo%cc_driver_debug      = .false.
     DECinfo%CCDEBUG              = .false.
     DECinfo%manual_batchsizes    = .false.
@@ -66,7 +67,7 @@ contains
     DECinfo%CCSDnosaferun        = .false.
     DECinfo%solver_par           = .false.
     DECinfo%CCSDpreventcanonical = .false.
-    DECinfo%CCSD_MPICH           = .false.
+    DECinfo%CCSD_NO_DEBUG_COMM   = .true.
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%use_pnos             = .false.
@@ -403,6 +404,7 @@ contains
        !CCSD testing
        case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
           read(input,*) DECinfo%en_mem
+       case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
@@ -412,30 +414,34 @@ contains
           ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
+       case('.CRASHCALC') 
+          DECinfo%CRASHCALC= .true.
+
+
 #ifndef VAR_MPI
           print *, 'WARNING: You have specified MPI groupsize - but this is a serial run!'
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
 
+
 #ifdef MOD_UNRELEASED
 
        !CCSD SPECIFIC KEYWORDS
        !**********************
-       case('.CCDEBUG');                DECinfo%CCDEBUG              = .true.
-       case('.CCSOLVER_LOCAL');         DECinfo%solver_par           = .false.
-       case('.CCSDDYNAMIC_LOAD');       DECinfo%dyn_load             = .true.
-       case('.CCSDNO_RESTART');         DECinfo%CCSDno_restart       = .true.
-       case('.CCSD_WITH_MPICH');        DECinfo%CCSD_MPICH           = .true.
-       case('.SPAWN_COMM_PROC');        DECinfo%spawn_comm_proc      = .true.
-       case('.CCSDMULTIPLIERS');        DECinfo%CCSDmultipliers      = .true.
-       case('.USE_PNOS');               DECinfo%use_pnos             = .true.
-       case('.NOPNOTRAFO');             DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
-       case('.NOPNOTRUNCATION');        DECinfo%noPNOtrunc           = .true.
-       case('.NOPNOOVERLAPTRUNCATION'); DECinfo%noPNOoverlaptrunc    = .true.
-       case('.MOCCSD');                 DECinfo%MOCCSD               = .true.
-       case('.PNOTRIANGULAR');          DECinfo%PNOtriangular        = .true.
-       case('.CCSDPREVENTCANONICAL');   DECinfo%CCSDpreventcanonical = .true.
+       case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
+       case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
+       case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
+       case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
+       case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
+       case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
+       case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
+       case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
+       case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
+       case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
+       case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
+       case('.PNOTRIANGULAR');            DECinfo%PNOtriangular        = .true.
+       case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
 
        case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
        case('.EOSPNOTHR');     read(input,*) DECinfo%EOSPNOthr
@@ -460,14 +466,12 @@ contains
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
 
-#ifdef MOD_UNRELEASED    
        case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
           !endif mod_unreleased
-#endif
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
 
@@ -688,6 +692,7 @@ contains
     write(lupri,*) 'CCDEBUG ', DECitem%CCDEBUG
     write(lupri,*) 'CCSDno_restart ', DECitem%CCSDno_restart
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
+    write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
     write(lupri,*) 'en_mem ', DECitem%en_mem
     write(lupri,*) 'precondition_with_full ', DECitem%precondition_with_full

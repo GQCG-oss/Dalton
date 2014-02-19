@@ -543,6 +543,7 @@ DO
             CASE('.PRINTFINALCMO'); config%opt%print_final_cmo=.true.
             CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
             CASE('.RESTART');    config%diag%CFG_restart =  .TRUE.
+            CASE('.CRASHCALC');    config%opt%crashcalc =  .TRUE.
             CASE('.PURIFYRESTARTDENSITY'); config%diag%CFG_purifyrestart =  .TRUE.
             CASE('.REDO L2');    config%diag%cfg_redo_l2 = .true.
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
@@ -1223,6 +1224,8 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_JKBASIS    = .FALSE.
         CASE ('.ADMM-McWeeny'); ! EXPERIMENTAL
            INTEGRAL%ADMM_MCWEENY    = .TRUE.
+        CASE ('.ADMM-2ERI'); ! EXPERIMENTAL
+           INTEGRAL%ADMM_2ERI       = .TRUE.
         CASE ('.ADMM-CONST-EL');
            IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. works only if &

@@ -57,7 +57,7 @@ module dec_workarounds_module
       call op_blocks(drain(i:i+block-1),source(i:i+block-1),block,scal1=scal1,scal2=scal2)
     enddo
 #else
-    print *,"ERROR(dec_workarounds_module): you cannot use this workaround&
+    print *,"ERROR(assign_in_subblocks): you cannot use this workaround&
     & without a compiler that is able to understand fortran 2003 function pointers"
     stop 1
 #endif

@@ -231,8 +231,17 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
          ls%setting%scheme%DALINK = dalink     !Turn DaLink back on, if requested:
          ls%setting%scheme%DFT%CS00 = CS00
       else
-
-
+         if (iteration == istart+1) then
+            IF(config%opt%crashcalc)THEN
+               print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
+               print*,'This keyword is only used for debug and testing purposes'
+               print*,'We want to be able to test the .RESTART keyword'
+               WRITE(config%lupri,*)'Calculation was intentionally crashed due to keyword .CRASHCALC'
+               WRITE(config%lupri,*)'This keyword is only used for debug and testing purposes'
+               WRITE(config%lupri,*)'We want to be able to test the .RESTART keyword'
+               call lsquit('Crash SCF calculation due to keyword .CRASHCALC',config%lupri)
+            ENDIF
+         endif
  !        ! START DEBUG: PATRICK
  !         call mat_init(Dtest,D(1)%nrow,D(1)%ncol)
  !         call mat_assign(Dtest,D(1))

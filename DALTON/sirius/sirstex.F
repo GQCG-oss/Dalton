@@ -1,3 +1,30 @@
+!
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
+!
+! FILE: sirius/sirstex.F
+!
 C#######################################################################
        SUBROUTINE STXINP(WORD,INPERR,ALLOPT)
 C
@@ -199,8 +226,8 @@ C   Input: KFREE, LFREE  start and length of free workspace
 C
 C
 C   Output: CMO, molecular orbitals defined on a smaller basis projected 
-C           on the current (augmented), from AUGORB
-C           Note: the CMO from the last call to AUGORB is returned
+C           on the current (augmented), from STXAUGORB
+C           Note: the CMO from the last call to STXAUGORB is returned
 C
       INTEGER KFREE, LFREE
       DIMENSION CMO(*), WORK(*)
@@ -243,7 +270,7 @@ C
 cvc
 c ground state -> icall=0
       icall=0
-      CALL AUGORB(FILE,EMC,ENUC,CMO,WORK,KFREE,LFREE,icall)
+      CALL STXAUGORB(FILE,EMC,ENUC,CMO,WORK,KFREE,LFREE,icall)
       IF (IPRSTX.GT.1) THEN
          CALL HEADER('Augmented initial state',LUPRI)
          DO ISYM=1,NSYM
@@ -257,11 +284,11 @@ cvc
 C
 C Append occupied gs orbitals to file LUSTEX
 C
-      CALL APPOCC(CMO,EMC,ENUC,LUSTEX,WORK,KFREE,LFREE)
+      CALL STXAPPOCC(CMO,EMC,ENUC,LUSTEX,WORK,KFREE,LFREE)
 C
 C Append gs orbital energies to file LUSTEX
 C
-      CALL APPENE(FILE,LUSTEX,WORK,KFREE,LFREE)
+      CALL STXAPPENE(FILE,LUSTEX,WORK,KFREE,LFREE)
 C
 C Augment final state orbitals
 C
@@ -269,7 +296,7 @@ C
 cvc
 c final ionic state -> icall=1
       icall=1
-      CALL AUGORB(FILE,EMC,ENUC,CMO,WORK,KFREE,LFREE,icall)
+      CALL STXAUGORB(FILE,EMC,ENUC,CMO,WORK,KFREE,LFREE,icall)
       IF (IPRSTX.GT.1) THEN
          CALL HEADER('Augmented final state',LUPRI)
          DO ISYM=1,NSYM
@@ -282,27 +309,27 @@ c final ionic state -> icall=1
 C
 C Append final state occupied orbitals to file LUSTEX
 C
-      CALL APPOCC(CMO,EMC,ENUC,LUSTEX,WORK,KFREE,LFREE)
+      CALL STXAPPOCC(CMO,EMC,ENUC,LUSTEX,WORK,KFREE,LFREE)
 C
 C Append occupied final orbital energies to file LUSTEX
 C
-      CALL APPENE(FILE,LUSTEX,WORK,KFREE,LFREE)
+      CALL STXAPPENE(FILE,LUSTEX,WORK,KFREE,LFREE)
 C
 C Append molecular overlap to LUSTEX
 C
-      CALL MOVLAP(LUSTEX,WORK,KFREE,LFREE)
+      CALL STXMOVLAP(LUSTEX,WORK,KFREE,LFREE)
       CALL GPCLOSE(LUSTEX,'KEEP')
       CALL QEXIT('STXAUG')
       END
 C#######################################################################
-      SUBROUTINE AUGORB(FILE,EMC,ENUC,CMO,WORK,KFREE,LFREE,icall)
+      SUBROUTINE STXAUGORB(FILE,EMC,ENUC,CMO,WORK,KFREE,LFREE,icall)
 #include "implicit.h"
 C
 C   Input: KFREE, LFREE  start and length of free workspace
 C
 C
 C   Output: CMO, molecular orbitals defined on a smaller basis projected 
-C           on the current (augmented), from AUGORB
+C           on the current (augmented), from STXAUGORB
 C          
 C
       INTEGER KFREE, LFREE
@@ -339,7 +366,7 @@ C
 C  Find old orbitals and dimensions from interface file
 C
 C
-      CALL QENTER('AUGORB')
+      CALL QENTER('STXAUGORB')
       DEBUG=IPRSTX.GT.10
       LUSIFC=-1
       CALL GPOPEN(LUSIFC,FILE,'OLD','SEQUENTIAL','UNFORMATTED',
@@ -355,7 +382,7 @@ C
          CALL MEMGET2('REAL','CMO',KCMO,NCMOT_,WORK,KFREE,LFREE)
          CALL READT(LUSIFC,NCMOT_,WORK(KCMO))
       ELSE
-         CALL QUIT('ERROR (AUGORB) MO''s not found on SIRIFC')
+         CALL QUIT('ERROR (STXAUGORB) MO''s not found on SIRIFC')
       END IF
       CALL GPCLOSE (LUSIFC,'KEEP')
 C
@@ -374,7 +401,7 @@ C
          CALL READT(LUIT1,NCMOT,CMO)
          if (debug) call prorb(cmo,.false.,lupri)
       ELSE
-         CALL QUIT('AUGORB: LABEL "'//LABEL//'" NOT FOUND')
+         CALL QUIT('STXAUGORB: LABEL "'//LABEL//'" NOT FOUND')
       END IF
 C
 C   Need AO overlap matrix
@@ -411,7 +438,7 @@ C
          CALL DZERO(CMO(1+IOFF),NAO*NMO_)
          CALL MCOPY(NAO_,NMO_,WORK(KCMO+IOFF_),NAO_,CMO(1+IOFF),NAO)
          IF (DEBUG) THEN
-            call outful(cmo(1+ioff),nao,nmo,'add orbitals')
+            call STXoutful(cmo(1+ioff),nao,nmo,'add orbitals')
          END IF
          IOFF = IOFF + NAO*NMO
          IOFF_ = IOFF_+ NAO_*NMO_
@@ -456,21 +483,21 @@ c
         luaumo=-1
         CALL GPOPEN(luaumo,'AUMO','UNKNOWN','SEQUENTIAL','UNFORMATTED',
      &  0,.FALSE.)
-        write(lupri,*)' write on ', luaumo,
-     &            ' the gs MOs on the augmented ', 
-     &            'basis set'
+!D      write(lupri,*)' write on ', luaumo,
+!D   &            ' the gs MOs on the augmented ', 
+!D   &            'basis set'
         CALL Waugmo(CMO,luaumo)
         CALL FLSHFO(luaumo)
         CALL GPCLOSE (luaumo,'KEEP')
-        write(lupri,*)' UNIT ',luaumo,' is closed'
+!D      write(lupri,*)' UNIT ',luaumo,' is closed'
       endif
 cvc
 C
 C Save new orbitals on file
 C
       CALL APPORB(FILE,CMO,.FALSE.)
-      CALL MEMREL('AUGORB',WORK,KCMO,KCMO,KFREE,LFREE)
-      CALL QEXIT('AUGORB')
+      CALL MEMREL('STXAUGORB',WORK,KCMO,KCMO,KFREE,LFREE)
+      CALL QEXIT('STXAUGORB')
       END
 C#######################################################################
       SUBROUTINE Waugmo(CMO,IOUT)
@@ -501,24 +528,24 @@ C
 C
       rewind iout
       write(iout) nsym
-      write(lupri,*) ' nsym ',nsym
+!D    write(lupri,*) ' nsym ',nsym
       write(iout) (norb(i),i=1,nsym)
-      write(lupri,*) ' norb ',(norb(i),i=1,nsym)
+!D    write(lupri,*) ' norb ',(norb(i),i=1,nsym)
       write(iout) (nbas(i),i=1,nsym)
-      write(lupri,*) ' nbas ',(nbas(i),i=1,nsym)
+!D    write(lupri,*) ' nbas ',(nbas(i),i=1,nsym)
       nbast=0
       ncmot=0
       do i=1,nsym
         nbast=nbast+nbas(i)
         ncmot=ncmot+norb(i)*nbas(i)
       enddo
-      write(lupri,*) ' nbast,ncmot ', nbast,ncmot
+!D    write(lupri,*) ' nbast,ncmot ', nbast,ncmot
       write(iout) (cent(i),i=1,nbast)
-      write(lupri,*) ' vector cent '
+!D    write(lupri,*) ' vector cent '
       write(iout) (type(i),i=1,nbast)
-      write(lupri,*) ' vector type '
+!D    write(lupri,*) ' vector type '
       write(iout) (cmo(i),i=1,ncmot)
-      write(lupri,*) ' vector cmo '
+!D    write(lupri,*) ' vector cmo '
 c     write(lupri,1) (cmo(i),i=1,(nbas(1)*5+1),nbas(1))
 c   1 format(5f12.5)
 C
@@ -527,13 +554,13 @@ C
       RETURN
       END
 C#######################################################################
-      SUBROUTINE APPOCC(CMO,EMC,ENUC,LUSTEX,WORK,KFREE,LFREE)
+      SUBROUTINE STXAPPOCC(CMO,EMC,ENUC,LUSTEX,WORK,KFREE,LFREE)
 #include "implicit.h"
       REAL*8 CMO(*), WORK(*)
       INTEGER KFREE,LFREE
 #include "inforb.h"
 #include "stex.h"
-      CALL QENTER('APPOCC')
+      CALL QENTER('STXAPPOCC')
 C
       WRITE(LUSTEX) EMC, ENUC
 C
@@ -542,7 +569,7 @@ C
       CALL MEMGET2('REAL','MOOCC',KMOOCC,NBAST*NOCCT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KMOOCC),NBAST*NOCCT)
       IF (IPRSTX.GT.10) THEN
-         call header('APPOCC input:occupied orbitals  ',LUPRI)
+         call header('STXAPPOCC input:occupied orbitals  ',LUPRI)
          call prorb(cmo,.true.,LUPRI)
       END IF
       JOFF = 0
@@ -555,10 +582,10 @@ C
      &                          WORK(KMOOCC+JOFF),NBAST)
          JOFF = JOFF + NBAST*NOCC(ISYM) + NBAS(ISYM)
       END DO
-      CALL MEMCHK('APPOCC:after MCOPY loop',WORK,KMOOCC)
+      CALL MEMCHK('STXAPPOCC:after MCOPY loop',WORK,KMOOCC)
       IF (IPRSTX.GT.10) THEN
-         call outful(
-     &      work(kmoocc),nbast,nocct,'APPOCC:Extracted occupied'
+         call STXoutful(
+     &      work(kmoocc),nbast,nocct,'STXAPPOCC:Extracted occupied'
      &      )
       END IF
 C
@@ -571,15 +598,15 @@ C
          NDIMT=NBAST
       END IF
       IF (IPRSTX.GT.10) THEN
-         CALL OUTFUL(WORK(KMOOCC),NDIMT,NOCCT,
-     &               'APPOCC:Orbitals written to LUSTEX')
+         CALL STXOUTFUL(WORK(KMOOCC),NDIMT,NOCCT,
+     &               'STXAPPOCC:Orbitals written to LUSTEX')
       END IF
       CALL WRITT(LUSTEX,NDIMT*NOCCT,WORK(KMOOCC))
-      CALL MEMREL('APPOCC',WORK,KMOOCC,KMOOCC,KFREE,LFREE)
-      CALL QEXIT('APPOCC')
+      CALL MEMREL('STXAPPOCC',WORK,KMOOCC,KMOOCC,KFREE,LFREE)
+      CALL QEXIT('STXAPPOCC')
       END
 C#######################################################################
-      SUBROUTINE APPENE(FILE,LUSTEX,WORK,KFREE,LFREE)
+      SUBROUTINE STXAPPENE(FILE,LUSTEX,WORK,KFREE,LFREE)
 #include "implicit.h"
       REAL*8 WORK(*)
       INTEGER LUSTEX,KFREE,LFREE
@@ -595,9 +622,9 @@ C#######################################################################
       LOGICAL FNDLAB, DEBUG
       EXTERNAL FNDLAB
       PARAMETER (DH = 0.5D0)
-      CALL QENTER('APPENE')
+      CALL QENTER('STXAPPENE')
       DEBUG=IPRSTX.GT.10
-      IF (DEBUG) PRINT *, '>>> APPENE called'
+      IF (DEBUG) PRINT *, '>>> STXAPPENE called'
 C
 C Read orbital energies from SIRIFC for open-shell case
 C we have to read FC, FV and diagonalize FC + 2*FV
@@ -622,7 +649,7 @@ C
       END IF
       CALL GPCLOSE(LUSIFC,'KEEP')
       IF (IPRSTX.GT.10) THEN
-         CALL HEADER('APPENE:F',LUPRI)
+         CALL HEADER('STXAPPENE:F',LUPRI)
          CALL OUTPTB(WORK(KF),NORB_,NSYM_,1,LUPRI)
       END IF
       CALL MEMGET2('REAL','EVEC',KEVEC,NORB_(1)*NBAS_(1),
@@ -655,7 +682,7 @@ C
          I2OFF = I2OFF + NORBI*NORBI
       END DO
       IF (IPRSTX.GT.10) THEN
-         CALL OUTFUL(WORK(KEVAL),NOCCT_,1,
+         CALL STXOUTFUL(WORK(KEVAL),NOCCT_,1,
 CVC     &       'Eigenvalues to LUSTEX from file '//FILE)
      &       'Eigenvalues to LUSTEX from file ...')
       END IF
@@ -670,16 +697,16 @@ CVC     &       'Eigenvalues to LUSTEX from file '//FILE)
          WRITE(*,*) 'Orbital indices',NOCCT_,(I,I=1,NOCCT_)
       END IF
       WRITE(LUSTEX) NOCCT_, (I, I=1, NOCCT_) !?
-      CALL QEXIT('APPENE')
+      CALL QEXIT('STXAPPENE')
       END
 C#######################################################################
-      SUBROUTINE MOVLAP(LUSTEX,WORK,KFREE,LFREE)
+      SUBROUTINE STXMOVLAP(LUSTEX,WORK,KFREE,LFREE)
 #include "implicit.h"
       REAL*8 WORK(*)
       INTEGER LUSTEX,KFREE,LFREE
 #include "inforb.h"
 #include "stex.h"
-      CALL QENTER('MOVLAP')
+      CALL QENTER('STXMOVLAP')
       IF (STEXMO) THEN
          NDIMT=NORBT
       ELSE
@@ -699,7 +726,7 @@ C
       READ(LUSTEX)  !mc and nuclear energies
       CALL READT(LUSTEX,NDIMT*NOCCT,WORK(KGS))
       IF (IPRSTX.GT.10) THEN
-         CALL OUTFUL(WORK(KGS),NDIMT,NOCCT,'GS orbitals')
+         CALL STXOUTFUL(WORK(KGS),NDIMT,NOCCT,'GS orbitals')
       END IF
       READ(LUSTEX)  ! orbital energies
       READ(LUSTEX)  ! orbital indices
@@ -709,7 +736,7 @@ C
       READ(LUSTEX)  !mc and nuclear energies
       CALL READT(LUSTEX,NDIMT*NOCCT,WORK(KCH))
       IF (IPRSTX.GT.10) THEN
-         CALL OUTFUL(WORK(KCH),NDIMT,NOCCT,'CH orbitals')
+         CALL STXOUTFUL(WORK(KCH),NDIMT,NOCCT,'CH orbitals')
       END IF
       READ(LUSTEX)  ! orbital energies
       READ(LUSTEX)  ! orbital indices
@@ -751,7 +778,7 @@ C
    !
    ! Form Smo = c(gs)T Sao c(ch)
    !
-            CALL OUTFUL(WORK(KAOSQ+ISQOFF),NBASI,NBASI,'AO overlap')
+            CALL STXOUTFUL(WORK(KAOSQ+ISQOFF),NBASI,NBASI,'AO overlap')
             CALL DGEMM('N','N',NBASI,NOCCI,NBASI,1.D0,
      &                 WORK(KAOSQ+ISQOFF),NBASI,
      &                 WORK(KCH+IMOOFF),NBAST,0.D0,
@@ -767,11 +794,11 @@ C
          END DO
       END IF
       IF (IPRSTX.GT.10) THEN
-         CALL OUTFUL(WORK(KMOVLP),NOCCT,NOCCT,'MO overlap')
+         CALL STXOUTFUL(WORK(KMOVLP),NOCCT,NOCCT,'MO overlap')
       END IF
       CALL WRITT(LUSTEX,N2OCCX,WORK(KMOVLP))
-      CALL MEMREL('MOVLAP',WORK,KGS,KGS,KFREE,LFREE)
-      CALL QEXIT('MOVLAP')
+      CALL MEMREL('STXMOVLAP',WORK,KGS,KGS,KFREE,LFREE)
+      CALL QEXIT('STXMOVLAP')
       END
 C#######################################################################
       SUBROUTINE STXDEN(CMO,DEN,WORK,KFREE,LFREE)
@@ -930,12 +957,12 @@ c     print *,'stxfck: allocated memory ',kfree
       IC = 1
       IX = 1 + N2BASX
       IF (IPRSTX.GT.10) THEN
-         CALL OUTFUL(FSTX(IC),NBAST,NBAST,'Two-electron STEX coulomb')
-         CALL OUTFUL(FSTX(IX),NBAST,NBAST,'Two-electron STEX exchange')
+       CALL STXOUTFUL(FSTX(IC),NBAST,NBAST,'Two-electron STEX coulomb')
+       CALL STXOUTFUL(FSTX(IX),NBAST,NBAST,'Two-electron STEX exchange')
       END IF
       CALL DAXPY(N2BASX,D1,FSTX(IX),1,FSTX(IC),1)
       IF (DEBUG) THEN
-         CALL OUTFUL(FSTX,NBAST,NBAST,'Two-electron STEX fock matrix')
+       CALL STXOUTFUL(FSTX,NBAST,NBAST,'Two-electron STEX fock matrix')
       END IF
 C
 C ***** one-electron part in WRK(KH1AO)
@@ -945,15 +972,14 @@ C
       CALL MEMGET2('REAL','TMP',KTMP,NNBASX,WORK,KFREE,LFREE)
       CALL PKSYM1(WORK(KTMP),WORK(KH1AO),NBAS,NSYM,-1)
       CALL DSPTGE(NBAST,WORK(KTMP),WORK(KH1AO))
-      IF (DEBUG) THEN
-         CALL OUTFUL(WORK(KH1AO),NBAST,NBAST,'One-electron fock matrix')
-      END IF
+      IF (DEBUG) CALL STXOUTFUL(
+     &   WORK(KH1AO),NBAST,NBAST,'One-electron fock matrix')
 C
 C  Add one+two 
 C
       CALL DAXPY(N2BASX,D1,WORK(KH1AO),1,FSTX,1)
       IF (DEBUG) THEN
-         CALL OUTFUL(FSTX,NBAST,NBAST,'Total STEX fock matrix')
+         CALL STXOUTFUL(FSTX,NBAST,NBAST,'Total STEX fock matrix')
       END IF
 C
 C  Prepare interface file STEXFOCK
@@ -962,15 +988,15 @@ C
       if (debug) write(2,*)'stxfck:open UNIT1 unit ',lustxf
       CALL GPOPEN(LUSTXF,'UNIT1','UNKNOWN','SEQUENTIAL','UNFORMATTED',
      &   0,.FALSE.)
-      CALL APPFCK(LUSTXF,FSTX,WORK,KFREE,LFREE)
-      CALL APPPRP(LUSTXF,WORK,KFREE,LFREE)
+      CALL STXAPPFCK(LUSTXF,FSTX,WORK,KFREE,LFREE)
+      CALL STXAPPPRP(LUSTXF,WORK,KFREE,LFREE)
       CALL GPCLOSE(LUSTXF,'KEEP')
 C
       CALL MEMREL('STXFCK',WORK,KH1AO,KH1AO,KFREE,LFREE)
       CALL QEXIT('STXFCK')
       END
 C#######################################################################
-      SUBROUTINE APPFCK(LU,F,WORK,KFREE,LFREE)
+      SUBROUTINE STXAPPFCK(LU,F,WORK,KFREE,LFREE)
 #include "implicit.h"
       INTEGER LU, KFREE, LFREE
       REAL*8 F(*), WORK(*)
@@ -984,10 +1010,10 @@ C#######################################################################
       INTEGER NSTEXF,ICALC,IHOLE,IHOL1,ISPIN,ICOUP,ICH
       LOGICAL FNDLAB,DEBUG
       EXTERNAL FNDLAB
-      CALL QENTER('APPFCK')
+      CALL QENTER('STXAPPFCK')
       DEBUG=IPRSTX.GT.10
 
-      if (debug) print *,'ENTER APPFCK>>>'
+      if (debug) print *,'ENTER STXAPPFCK>>>'
       if (debug) write(LUPRI,*)'appfck unit ',lu
       IF (STEXMO) THEN
          NDIMT=NORBT
@@ -1009,7 +1035,7 @@ C#######################################################################
          READ (LUSIFC)
      &      NISHT1,NASHT1,NOCCT1,NORBT1,NBAST1
       ELSE
-         CALL QUIT('ERROR (APPFCK) MO''s not found on SIRIFC')
+         CALL QUIT('ERROR (STXAPPFCK) MO''s not found on SIRIFC')
       END IF
       CALL GPCLOSE (LUSIFC,'KEEP')
 !
@@ -1025,11 +1051,11 @@ C#######################################################################
          READ (LUSIFC)
      &      NISHT2,NASHT2,NOCCT2,NORBT2,NBAST2
       ELSE
-         CALL QUIT('ERROR (APPFCK) MO''s not found on SIRIFC')
+         CALL QUIT('ERROR (STXAPPFCK) MO''s not found on SIRIFC')
       END IF
       CALL GPCLOSE (LUSIFC,'KEEP')
       IF (IPRSTX.GT.10) THEN
-         WRITE(*,*)' APPFCK: Energies read from LUSIFC1-2'
+         WRITE(*,*)' STXAPPFCK: Energies read from LUSIFC1-2'
          WRITE(*,*)' GS ', EMCSCF1
          WRITE(*,*)' CH ', EMCSCF2
       END IF
@@ -1067,7 +1093,7 @@ C
 cvc
 c  nasht2=2 for core-excited state orbitals
 cvc
-      write(LUPRI,*) ' nasht2 =',nasht2
+!D    write(LUPRI,*) ' nasht2 =',nasht2
 c     IF (NASHT2.EQ.1.or.NASHT2.EQ.2) THEN
       IF (NASHT2.ne.0) THEN
 !
@@ -1083,7 +1109,7 @@ c     IF (NASHT2.EQ.1.or.NASHT2.EQ.2) THEN
      &      'Frozen orbital calculaton : orbital hole',
      &       ICH
       ELSE
-         CALL QUIT('APPFCK: NASHT2 =/= ZERO OR ONE')
+         CALL QUIT('STXAPPFCK: NASHT2 =/= ZERO OR ONE')
       END IF
 !
 ! Write to file
@@ -1165,7 +1191,7 @@ c     IF (NASHT2.EQ.1.or.NASHT2.EQ.2) THEN
 !
          CALL WRITT(LU,NNDIMX,WORK(KTRI))
       END IF
-      CALL QEXIT('APPFCK')
+      CALL QEXIT('STXAPPFCK')
       END
 C#######################################################################
       SUBROUTINE STXEIG
@@ -1181,9 +1207,11 @@ C#######################################################################
 #include "stex.h"
       DATA DOSTEX/.FALSE./
       END
+
+#ifdef INCLUDE_NOT_USED_CODE
 C  /* Deck fckds3 */
 C#######################################################################
-      SUBROUTINE FCKDSX(FMAT,DMAT,BUF,IBUF,LENGTH)
+      SUBROUTINE STXFCKDSX(FMAT,DMAT,BUF,IBUF,LENGTH)
 C
 C     Henrik Koch and Trygve Helgaker 18-NOV-1991.
 C     970303-tsaue : index permutation
@@ -1208,8 +1236,8 @@ C
 C
       DEBUG=IPRSTX.GT.10
       IF (DEBUG) THEN
-         call outful(dmat(1,1,1),nbast,nbast,'in fckdsx density 1')
-         call outful(dmat(1,1,2),nbast,nbast,'in fckdsx density 2')
+        call STXoutful(dmat(1,1,1),nbast,nbast,'in stxfckdsx density 1')
+        call STXoutful(dmat(1,1,2),nbast,nbast,'in stxfckdsx density 2')
       END IF
       DO 100 INT = 1, LENGTH
          P    = IBUF(1,INT)
@@ -1238,7 +1266,7 @@ C           exchange:
          FMAT(Q,S) = FMAT(Q,S) - GINT*DMAT(P,R,2)
          FMAT(S,Q) = FMAT(S,Q) - GINT*DMAT(R,P,2)
          !print *,'fockmatrix after integral',p,q,r,s,gint
-         !call outful(fmat,nbast,nbast)
+         !call STXoutful(fmat,nbast,nbast)
   100 CONTINUE
       RETURN
       END
@@ -1295,8 +1323,9 @@ C        ... DMAT(i,j) = DMAT(j,i) has been used above
   100 CONTINUE
       RETURN
       END
+#endif   /* INCLUDE_NOT_USED_CODE */
 C#######################################################################
-      SUBROUTINE APPPRP(LUSTXF,WORK,KFREE,LFREE)
+      SUBROUTINE STXAPPPRP(LUSTXF,WORK,KFREE,LFREE)
 #include "implicit.h"
 #include "priunit.h"
       INTEGER LUSTXF, KFREE, LFREE
@@ -1325,7 +1354,7 @@ C#######################################################################
      &   .TRUE., .TRUE., .TRUE.,
      &   .TRUE., .TRUE., .TRUE./
 
-      CALL QENTER('APPPRP')
+      CALL QENTER('STXAPPPRP')
       CALL FLSHFO(LUPRI)
       DEBUG=IPRSTX.GT.10
       DO I=1,3
@@ -1374,7 +1403,7 @@ C#######################################################################
 
       CALL RDONEL('OVERLAP ',.TRUE.,WORK(KAONNT),NNBAST)
       CALL DZERO(WORK(KAONNX),NNBASX)
-      if (debug) call header('APPPRP:nt2nx for overlap',LUPRI)
+      if (debug) call header('STXAPPPRP:nt2nx for overlap',LUPRI)
       CALL NT2NX(WORK(KAONNT),WORK(KAONNX))
       IF (STEXMO) THEN
          CALL PRPTRA(
@@ -1403,8 +1432,8 @@ C#######################################################################
                CALL WRITT(LUSTXF,NNBASX,WORK(KPRP))
             END IF
          ELSE
-            CALL QUIT('APPPRP: ERROR READING INTEGRALS FROM LUPROP:'//
-     &                PROP(IPROP))
+            CALL QUIT('STXAPPPRP: ERROR READING INTEGRALS FROM LUPROP:'
+     &              //PROP(IPROP))
          END IF
       END DO
       CALL GPCLOSE(LUPROP,'KEEP')
@@ -1429,18 +1458,18 @@ C#######################################################################
       CALL DIPNUC(WORK(KCSTRA),WORK(KSCTRA),0,.FALSE.)
       CALL WRITT(LUSTXF,3,DIPMN)
       IF (IPRSTX.GT.0) THEN
-         CALL OUTFUL(DIPMN,1,3,'Nuclear dipole moment')
+         CALL STXOUTFUL(DIPMN,1,3,'Nuclear dipole moment')
       END IF
 !
 ! Append nuclear quadrupole moments
 !
       WRITE(LUSTXF) DUMMY,DUMMY,DUMMY
 !
-      CALL MEMREL('APPPRP',WORK,KPRP,KPRP,KFREE,LFREE)
-      CALL QEXIT('APPPRP')
+      CALL MEMREL('STXAPPPRP',WORK,KPRP,KPRP,KFREE,LFREE)
+      CALL QEXIT('STXAPPPRP')
       END
 C#######################################################################
-      SUBROUTINE OUTFUL(A,M,N,TEXT)
+      SUBROUTINE STXOUTFUL(A,M,N,TEXT)
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION A(M,N)
@@ -1522,7 +1551,7 @@ C#######################################################################
       DEBUG=IPRSTX.GT.10
       IF (DEBUG) THEN
          print *,'ENTER LTRA>>>'
-         call outful(cmocc,nbast,nocct,'LTRA input CMOCC')
+         call STXoutful(cmocc,nbast,nocct,'LTRA input CMOCC')
       END IF
 C
 C Transform input mo:s by mo:s defined by LABEL
@@ -1582,7 +1611,7 @@ C
       CALL DZERO(WORK(KMO),NORBT*NOCCT)
       if (debug) write(LUPRI,*)'kmo kfree lfree',kmo,kfree,lfree
       IF (IPRSTX.GT.10) THEN
-         CALL OUTFUL(CMOCC,NBAST,NOCCT,'LTRA input AO BASIS')
+         CALL STXOUTFUL(CMOCC,NBAST,NOCCT,'LTRA input AO BASIS')
       END IF
       DO ISYM=1,NSYM
          if (debug) write(LUPRI,*) 'isym',isym
@@ -1595,7 +1624,7 @@ C
      &              WORK(IM+KMO),NORBT)
       END DO
       IF (IPRSTX.GT.10) THEN
-         CALL OUTFUL(WORK(KMO),NORBT,NOCCT,'LTRA output MO BASIS')
+         CALL STXOUTFUL(WORK(KMO),NORBT,NOCCT,'LTRA output MO BASIS')
       END IF
       CALL DCOPY(NORBT*NOCCT,WORK(KMO),1,CMOCC,1)
 
@@ -1645,7 +1674,7 @@ C
       CALL DZERO(WORK(KPRPMO),N2ORBX)
       IF (DEBUG) THEN
          print *,'operator symmetry ',prpsym
-         call outful(work(kprpsq),nbast,nbast,'prptra before')
+         call STXoutful(work(kprpsq),nbast,nbast,'prptra before')
       END IF
       DO ISYM=1,NSYM
          JSYM=MULD2H(PRPSYM,ISYM)
@@ -1666,7 +1695,7 @@ C
      &      )
       END DO
       IF (DEBUG) THEN
-         call outful(work(kprpmo),norbt,norbt,'prptra after ')
+         call STXoutful(work(kprpmo),norbt,norbt,'prptra after ')
       END IF
       IF (ANTI) THEN
          CALL DGETAP(NORBT,WORK(KPRPMO),PRPTR)
@@ -1726,8 +1755,8 @@ C
       DEBUG=.TRUE.
       CALL QENTER('UAUG')
       !IF (DEBUG) THEN
-         CALL OUTFUL(CMO1,NAO1,NMO1,'UAUG:Initial MO')
-         CALL OUTFUL(CMO,NAO,NMO,'UAUG:Trial MO (augmented)')
+         CALL STXOUTFUL(CMO1,NAO1,NMO1,'UAUG:Initial MO')
+         CALL STXOUTFUL(CMO,NAO,NMO,'UAUG:Trial MO (augmented)')
       !ENDIF 
       NAO2=NAO-NAO1
       NMO2=NMO-NMO1
@@ -1755,8 +1784,8 @@ C
       IF (DEBUG) THEN
          CALL HEADER('SX',2)
          CALL OUTPUT(S,1,NAO1,1,NAO,NAO,NAO,1,2)
-         CALL OUTFUL(WORK(KTMP),NAO1,NMO1,'SCA')
-         CALL OUTFUL(WORK(K1A),NMO1,NMO1,'UAUG: <1|A> ')
+         CALL STXOUTFUL(WORK(KTMP),NAO1,NMO1,'SCA')
+         CALL STXOUTFUL(WORK(K1A),NMO1,NMO1,'UAUG: <1|A> ')
          CALL MEMCHK('UAUG 1A',WORK,K1A)
       END IF
 C
@@ -1775,7 +1804,7 @@ C
      &           WORK(KTMP),NAO1,0.D0,
      &           WORK(K1B),NMO1)
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(K1B),NMO1,NMO2,'UAUG: <1|B> ')
+         CALL STXOUTFUL(WORK(K1B),NMO1,NMO2,'UAUG: <1|B> ')
          CALL MEMCHK('UAUG 1B',WORK,K1A)
       END IF
 C
@@ -1807,7 +1836,7 @@ C
      &           WORK(K1B),NMO1,1.D0,
      &           WORK(ISBB),NMO)
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(KS),NMO,NMO,'projected overlap')
+         CALL STXOUTFUL(WORK(KS),NMO,NMO,'projected overlap')
          CALL MEMCHK('UAUG KS',WORK,K1A)
       END IF
 C
@@ -1824,11 +1853,11 @@ C
 C WORK(KS) now contains the eigenvectors
 C
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(KEIG),1,NMO1,
+         CALL STXOUTFUL(WORK(KEIG),1,NMO1,
      &      'Eigenvalues of rejected vectors')
-         CALL OUTFUL(WORK(KEIG+NMO1),1,NMO2,
+         CALL STXOUTFUL(WORK(KEIG+NMO1),1,NMO2,
      &      'Eigenvalues of selected vectors')
-         CALL OUTFUL(WORK(KS),NMO,NMO,'Eigenvectors')
+         CALL STXOUTFUL(WORK(KS),NMO,NMO,'Eigenvectors')
       END IF
 C
 C  Projected trial vectors
@@ -1848,7 +1877,7 @@ C
      &           WORK(K1B),NMO1,1.D0,
      &           CMO(1,NMO1+1),NAO)
       IF (DEBUG) THEN
-         CALL OUTFUL(CMO,NAO,NMO,'Projected mo')
+         CALL STXOUTFUL(CMO,NAO,NMO,'Projected mo')
       END IF
 C
 C   Transform the projected trial vectors with the selected
@@ -1864,7 +1893,7 @@ C
       CALL DZERO(CMO,NAO*NMO1)
       CALL MCOPY(NAO1,NMO1,CMO1,NAO1,CMO,NAO)
       IF (DEBUG) THEN
-         CALL OUTFUL(CMO,NAO,NMO,'UAUG:Final MO')
+         CALL STXOUTFUL(CMO,NAO,NMO,'UAUG:Final MO')
       END IF
       CALL MEMREL('UAUG',WORK,1,1,KFREE,LFREE)
       CALL QEXIT('UAUG')
@@ -1902,9 +1931,9 @@ C
       NAO2 = NAO - NAO1
       NMO2 = NMO - NMO1
       IF (DEBUG) THEN
-         CALL OUTFUL(CMO1,NAO1,NMO1,'UAUG input: CMO1')
-         CALL OUTFUL(CMO,NAO,NMO,'UAUG input: CMO')
-         CALL OUTFUL(S,NAO,NAO,'UAUG input: S')
+         CALL STXOUTFUL(CMO1,NAO1,NMO1,'UAUG input: CMO1')
+         CALL STXOUTFUL(CMO,NAO,NMO,'UAUG input: CMO')
+         CALL STXOUTFUL(S,NAO,NAO,'UAUG input: S')
       END IF
 C
 C 1. Form MO overlap <A|1>, <1|B>
@@ -1930,7 +1959,7 @@ C
      &           WORK(KTMP),NAO,0.D0,
      &           WORK(KA1),NMO1)
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(KA1),NMO1,NMO1,'UAUG: <A|1> ')
+         CALL STXOUTFUL(WORK(KA1),NMO1,NMO1,'UAUG: <A|1> ')
          CALL MEMCHK('UAUG A1',WORK,KA1)
       END IF
 C
@@ -1949,7 +1978,7 @@ C
      &           WORK(KTMP),NAO1,0.D0,
      &           WORK(K1B),NMO1)
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(K1B),NMO1,NMO2,'UAUG: <1|B> ')
+         CALL STXOUTFUL(WORK(K1B),NMO1,NMO2,'UAUG: <1|B> ')
          CALL MEMCHK('UAUG 1B',WORK,KA1)
       END IF
 C
@@ -1965,7 +1994,7 @@ C
      &           WORK(K1B),NMO1,0.D0,
      &           WORK(KSBB),NMO2)
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(KSBB),NMO2,NMO2,'UAUG: <B|1><1|B>')
+         CALL STXOUTFUL(WORK(KSBB),NMO2,NMO2,'UAUG: <B|1><1|B>')
          CALL MEMCHK('UAUG SBB',WORK,KA1)
       END IF
 C
@@ -1977,7 +2006,7 @@ C
          WORK(KSBB+I) = WORK(KSBB+I) + D1
       END DO
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(KSBB),NMO2,NMO2,'UAUG: (1-SBB)')
+         CALL STXOUTFUL(WORK(KSBB),NMO2,NMO2,'UAUG: (1-SBB)')
       END IF
       IF (DEBUG) CALL DCOPY(NMO2*NMO2,WORK(KSBB),1,WORK(KTMP),1)
       CALL MATFUN('SQRT',NMO2,WORK(KSBB),WORK(KUBB),WORK(KFREE),LFREE)
@@ -1986,10 +2015,10 @@ C
      &              WORK(KUBB),NMO2,
      &              WORK(KUBB),NMO2,0.D0,
      &              WORK(KSBB),NMO2)
-         CALL OUTFUL(WORK(KSBB),NMO2,NMO2,' UBB*UBB ')
+         CALL STXOUTFUL(WORK(KSBB),NMO2,NMO2,' UBB*UBB ')
       END IF
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(KUBB),NMO2,NMO2,'UAUG: UBB')
+         CALL STXOUTFUL(WORK(KUBB),NMO2,NMO2,'UAUG: UBB')
          CALL MEMCHK('UAUG UBB',WORK,KA1)
       END IF
 C
@@ -2003,7 +2032,7 @@ C
      &           WORK(KTMP),NAO)
       CALL DCOPY(NAO*NMO2, WORK(KTMP),1,CMO(1,NMO1+1),1)
       IF (DEBUG) THEN
-         CALL OUTFUL(
+         CALL STXOUTFUL(
      &      CMO(1,NMO1+1),NAO,NMO2,
      &      ' First transformation of trial virtuals: UBB'
      &      )
@@ -2022,15 +2051,15 @@ C
      &           WORK(K1B),NMO1,0.D0,
      &           WORK(KA11B),NMO1)
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(KA11B),NMO1,NMO2,'UAUG: <A|1><1|B>')
+         CALL STXOUTFUL(WORK(KA11B),NMO1,NMO2,'UAUG: <A|1><1|B>')
          CALL MEMCHK('UAUG UAB RHS',WORK,KA1)
       END IF
-      CALL TRANSP(NMO1,NMO2,WORK(KA11B),WORK(KTMP))
+      CALL STX_TRANSP(NMO1,NMO2,WORK(KA11B),WORK(KTMP))
       KB11A = KA11B
       CALL DCOPY(NMO1*NMO2,WORK(KTMP),1,WORK(KB11A),1)
       CALL DSCAL(NMO1*NMO2,-D1,WORK(KB11A),1)
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(KB11A),NMO2,NMO1,'UAUG: -<B|1><1|A>')
+         CALL STXOUTFUL(WORK(KB11A),NMO2,NMO1,'UAUG: -<B|1><1|A>')
          CALL MEMCHK('UAUG TRSP RHS',WORK,KA1)
       END IF
 C              UBB UAB+ = - <B|1><1|A>
@@ -2046,7 +2075,7 @@ C
          CALL QUIT('UAUG: SGETRF FACTORIZATION FAILED')
       END IF
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(LUBB),NMO2,NMO2,'UAUG: LU(UBB)')
+         CALL STXOUTFUL(WORK(LUBB),NMO2,NMO2,'UAUG: LU(UBB)')
          CALL MEMCHK('UAG LU(UBB)',WORK,KA1)
       END IF
       CALL DGETRS(  
@@ -2065,15 +2094,15 @@ C
      &              WORK(KUBB),NMO2,
      &              WORK(KUABT),NMO2,0.D0,
      &              WORK(KTMP),NMO2)
-         CALL OUTFUL(WORK(KTMP),NMO2,NMO1,'UAUG:UBB*UAB(T)')
+         CALL STXOUTFUL(WORK(KTMP),NMO2,NMO1,'UAUG:UBB*UAB(T)')
       END IF
 C
 C Transpose back the solution
 C
       KUAB = KTMP
-      CALL TRANSP(NMO2,NMO1,WORK(KUABT),WORK(KUAB))
+      CALL STX_TRANSP(NMO2,NMO1,WORK(KUABT),WORK(KUAB))
       IF (DEBUG) THEN
-         CALL OUTFUL(WORK(KUAB),NMO1,NMO2,'UAUG: UAB')
+         CALL STXOUTFUL(WORK(KUAB),NMO1,NMO2,'UAUG: UAB')
          CALL MEMCHK('UAG UAB',WORK,KA1)
       END IF
 C
@@ -2086,7 +2115,7 @@ C
      &           WORK(KUAB),NMO1,1.D0,
      &           CMO(1,NMO1+1),NAO)
       IF (DEBUG) THEN
-         CALL OUTFUL(
+         CALL STXOUTFUL(
      &      CMO(1,NMO1+1),NAO,NMO2,
      &      ' Final transformation of trial virtuals: UBB'
      &      )
@@ -2104,20 +2133,20 @@ C
          CALL MCOPY(NMO1,NMO1,WORK(KA1),NMO1,WORK(IAA),NMO)
          CALL MCOPY(NMO1,NMO2,WORK(KUAB),NMO1,WORK(IAB),NMO)
          KB1=KTMP
-         CALL TRANSP(NMO1,NMO2,WORK(K1B),WORK(KB1))
+         CALL STX_TRANSP(NMO1,NMO2,WORK(K1B),WORK(KB1))
          CALL MCOPY(NMO2,NMO1,WORK(KB1),NMO2,WORK(IBA),NMO)
          CALL MCOPY(NMO2,NMO2,WORK(KUBB),NMO2,WORK(IBB),NMO)
          CALL DGEMM('T','N',NMO,NMO,NMO,1.D0,
      &              WORK(KU),NMO,
      &              WORK(KU),NMO,0.D0,
      &              WORK(K1),NMO)
-         CALL OUTFUL(WORK(KU),NMO,NMO,'UAUG: U')
-         CALL OUTFUL(WORK(K1),NMO,NMO,'UAUG: U+U = 1 ?')
+         CALL STXOUTFUL(WORK(KU),NMO,NMO,'UAUG: U')
+         CALL STXOUTFUL(WORK(K1),NMO,NMO,'UAUG: U+U = 1 ?')
          CALL DGEMM('N','T',NMO,NMO,NMO,1.D0,
      &              WORK(KU),NMO,
      &              WORK(KU),NMO,0.D0,
      &              WORK(K1),NMO)
-         CALL OUTFUL(WORK(K1),NMO,NMO,'UAUG: UU+ = 1 ?')
+         CALL STXOUTFUL(WORK(K1),NMO,NMO,'UAUG: UU+ = 1 ?')
       END IF
       CALL MEMREL('UAUG:END',WORK,1,1,KFREE,LFREE)
       CALL QEXIT('UAUG')
@@ -2148,7 +2177,7 @@ C  I/O  :
       IF (INFO.NE.0) THEN
          CALL QUIT('MATFUN: DSYEV DIAGONALIZATION FAILED')
       END IF
-      call outful(work(keig),n,1,'matfun:eigenvalues')
+      call STXoutful(work(keig),n,1,'matfun:eigenvalues')
       IF (FUNC(1:4).EQ.'SQRT') THEN
          CALL DCOPY(N*N,A,1,FA,1)
          DO I=1,N
@@ -2183,7 +2212,7 @@ CVC         CALL QUIT('MATFUN: '//FUNC//' NOT IMPLEMENTED')
       CALL QEXIT('MATFUN')
       END
 C#######################################################################
-      SUBROUTINE TRANSP(N,M,A,AT)
+      SUBROUTINE STX_TRANSP(N,M,A,AT)
 #include "implicit.h"
       DIMENSION A(N,M), AT(M,N)
 C
@@ -2250,7 +2279,7 @@ c
         luaumo=-1
         CALL GPOPEN(luaumo,'AUMO','OLD','SEQUENTIAL','UNFORMATTED',
      &  0,.FALSE.)
-      write(lupri,*)' read from ', luaumo,' the augmented gs MOs',nnbast 
+!D    write(lupri,*)' read from ', luaumo,' the augmented gs MOs',nnbast 
 c
       rewind luaumo
 c
@@ -2280,7 +2309,7 @@ c     read(luaumo) (type(i),i=1,nbast)
       read(luaumo) (vgs(i),i=1,nnbast)
 C
       CALL GPCLOSE (luaumo,'KEEP')
-      write(lupri,*)' UNIT ',luaumo,' is closed'
+!D    write(lupri,*)' UNIT ',luaumo,' is closed'
 c
       CALL HEADER('AUGCTL: Orbitali gs aumentati ',LUPRI)
       CALL PRORB(vgs,.true.,LUPRI)
@@ -2288,7 +2317,7 @@ C
 c legge gli orbitali per calcolo Auger (aumentati)
 c
       REWIND LUIT1
-      write(LUPRI,*) 'LUIT1 =',LUIT1
+!D    write(LUPRI,*) 'LUIT1 =',LUIT1
       LABEL='SIRIFC2 '
       IF (RPATST) THEN
          write (LUPRI,*) 'RPA TEST: CMO unit matrix => AO integrals!'
@@ -2313,7 +2342,7 @@ cvc   FALSE= stampa tutti gli orbitali
         CALL PRORB(WORK(KCMO),.TRUE.,LUPRI)
 cvc        CALL PRORB(WORK(KCMO),.FALSE.,LUPRI)
 cvc     END IF
-      write(LUPRI,*)' nauger, nbast =',nauger,nbast
+!D    write(LUPRI,*)' nauger, nbast =',nauger,nbast
       nom=0
       DO I=1,NAUGER
          WRITE(LUPRI,*) ' orbitale DALTON ', IAUGER(I)
@@ -2342,10 +2371,10 @@ C Get AO overlap
 C
       nnn=nbast*(nbast+1)/2
       nom=nom+1
-      write(LUPRI,*) ' nbast,nnn,nom =',nbast,nnn,nom
+!D    write(LUPRI,*) ' nbast,nnn,nom =',nbast,nnn,nom
       CALL RDONEL('OVERLAP ',.TRUE.,over,nnn)
-      call header('matrice over AO ',LUPRI)
-c     call outpkb(over,NBAS,NSYM,1,LUPRI)
+!D    call header('matrice over AO ',LUPRI)
+!D    call outpkb(over,NBAS,NSYM,1,LUPRI)
       do jjj=1,nom
         do iii=1,jjj
           sij=0.d0
@@ -2367,8 +2396,8 @@ c     call outpkb(over,NBAS,NSYM,1,LUPRI)
           sss(ind)=sij
         enddo
       enddo
-      write(LUPRI,*) ' overlap orbitali gs'
-      call outpkb(sss,nom,NSYM,1,LUPRI)
+!D    write(LUPRI,*) ' overlap orbitali gs'
+!D    call outpkb(sss,nom,NSYM,1,LUPRI)
       do jjj=1,nom
         do iii=1,jjj
           sij=0.d0
@@ -2390,8 +2419,8 @@ c     call outpkb(over,NBAS,NSYM,1,LUPRI)
           sss(ind)=sij
         enddo
       enddo
-      write(LUPRI,*) ' overlap orbitali auger'
-      call outpkb(sss,nom,NSYM,1,LUPRI)
+!D    write(LUPRI,*) ' overlap orbitali auger'
+!D    call outpkb(sss,nom,NSYM,1,LUPRI)
       do jjj=1,nom
         do iii=1,nom
           sij=0.d0
@@ -2418,7 +2447,7 @@ c     call outpkb(over,NBAS,NSYM,1,LUPRI)
         write(LUPRI,999) jjj,(sss(iii),iii=jjj,nom*nom,nom)
       enddo
   999 format(i3,9f8.3)
-      stop
+      CALL QUIT('Hardwired STOP in AUGCTL')
 cvc
 C
 C Build matrices
@@ -2435,14 +2464,14 @@ C
       CALL MEMGET2('REAL','VWMO',KVWMO,N2ORBX,WORK,KFREE,LFREE)
 CVC
       LUAUG=-1
-      write(LUPRI,*) ' apre unita',luaug
+!D    write(LUPRI,*) ' apre unita',luaug
 CVC
       CALL GPOPEN(LUAUG,'AUGER','UNKNOWN','SEQUENTIAL','UNFORMATTED',
      &   0,.FALSE.)
 CVC
       REWIND LUAUG
 CVC
-      write(LUPRI,*) 'scrive su unita',luaug,nauger,' coppie di matrici'
+!D    write(LUPRI,*) 'scrive su unita',luaug,nauger,' coppie di matrici'
 CVC
       WRITE(LUAUG)NAUGER,NORBT
 CVC
@@ -2451,61 +2480,61 @@ CVC
       DO N=1,NAUGER
          I=IJLIST(1,N)
          J=IJLIST(2,N)
-      write(LUPRI,*) ' scrive su unita',luaug,' indici matrici ',i,j
+!D    write(LUPRI,*) ' scrive su unita',luaug,' indici matrici ',i,j
          WRITE(LUAUG)I,J
          IF (IPRSTX.GT.10) THEN
             WRITE(STRCOU(2:2),'(I1)') I
             WRITE(STRCOU(3:3),'(I1)') J
             WRITE(STREXC(2:2),'(I1)') I
             WRITE(STREXC(6:6),'(I1)') J
-            CALL OUTFUL(WORK(KVWMAT+ICOFF),NBAST,NBAST,STRCOU//'(AO)')
-            CALL OUTFUL(WORK(KVWMAT+IXOFF),NBAST,NBAST,STREXC//'(AO)')
+           CALL STXOUTFUL(WORK(KVWMAT+ICOFF),NBAST,NBAST,STRCOU//'(AO)')
+           CALL STXOUTFUL(WORK(KVWMAT+IXOFF),NBAST,NBAST,STREXC//'(AO)')
          END IF
          IF (STEXMO) THEN
             ISYMI=ISMO(I)
             ISYMJ=ISMO(J)
             IVWSYM=MULD2H(ISYMI,ISYMJ)
-            CALL GENTRA(
+            CALL STXGENTRA(
      &         'SIRIFC1 ',WORK(KVWMAT+ICOFF),WORK(KVWMO),IVWSYM,
      &         WORK(KFREE),LFREE
      &         )
-      write(LUPRI,*) ' scrive matrice exch1 (ij|**) base MO su unita',
-     $           luaug,'   n2orbx =',n2orbx
+!D    write(LUPRI,*) ' scrive matrice exch1 (ij|**) base MO su unita',
+!D   $           luaug,'   n2orbx =',n2orbx
             CALL WRITT(LUAUG,N2ORBX,WORK(KVWMO))
             IF (IPRSTX.GT.10) THEN
-               CALL OUTFUL(WORK(KVWMO),NORBT,NORBT,STRCOU//'(MO)')
+               CALL STXOUTFUL(WORK(KVWMO),NORBT,NORBT,STRCOU//'(MO)')
 cvc
             else
 cvc stampa ridotta alle prime 10 colonne
-               CALL OUTFUL(WORK(KVWMO),NORBT,10,STRCOU//'(MO)')
+               CALL STXOUTFUL(WORK(KVWMO),NORBT,10,STRCOU//'(MO)')
 cvc
             END IF
-            CALL GENTRA(
+            CALL STXGENTRA(
      &         'SIRIFC1 ',WORK(KVWMAT+IXOFF),WORK(KVWMO),IVWSYM,
      &         WORK(KFREE),LFREE
      &         )
-      write(LUPRI,*) ' scrive matrice exch2 (i*|*j)base MO su unita',
-     $           luaug,'   n2orbx =',n2orbx
+!D    write(LUPRI,*) ' scrive matrice exch2 (i*|*j)base MO su unita',
+!D   $           luaug,'   n2orbx =',n2orbx
             CALL WRITT(LUAUG,N2ORBX,WORK(KVWMO))
             IF (IPRSTX.GT.10) THEN
-               CALL OUTFUL(WORK(KVWMO),NORBT,NORBT,STREXC//'(MO)')
+               CALL STXOUTFUL(WORK(KVWMO),NORBT,NORBT,STREXC//'(MO)')
             else
 cvc stampa ridotta alle prime 10 colonne
-               CALL OUTFUL(WORK(KVWMO),NORBT,10,STREXC//'(MO)')
+               CALL STXOUTFUL(WORK(KVWMO),NORBT,10,STREXC//'(MO)')
             END IF
          ELSE
-      write(LUPRI,*) ' scrive matrice exch1 (ij|**) base AO su unita',
-     &   luaug
+!D    write(LUPRI,*) ' scrive matrice exch1 (ij|**) base AO su unita',
+!D   &   luaug
             CALL WRITT(LUAUG,N2BASX,WORK(KVWMAT+ICOFF))
-      write(LUPRI,*) ' scrive matrice exch2 (i*|*j)base AO su unita',
-     &   luaug
+!D    write(LUPRI,*) ' scrive matrice exch2 (i*|*j)base AO su unita',
+!D   &   luaug
             CALL WRITT(LUAUG,N2BASX,WORK(KVWMAT+IXOFF))
          END IF
          ICOFF = ICOFF + 2*N2BASX
          IXOFF = IXOFF + 2*N2BASX
       END DO
 CVC
-      write(lupri,*) ' chiude unita',luaug
+!D    write(lupri,*) ' chiude unita',luaug
       CALL GPCLOSE(LUAUG,'KEEP')
 CVC
       CALL MEMREL('AUGCTL',WORK,1,1,KFREE,LFREE)
@@ -2551,8 +2580,8 @@ C
             PRINT *,'=================='
             PRINT *,' IG (I,P) ',IG,I,P
             PRINT *,'=================='
-            CALL OUTFUL(VWMAT(1,1,1,IG),NBAST,NBAST,'VWMAT 1')
-            CALL OUTFUL(VWMAT(1,1,2,IG),NBAST,NBAST,'VWMAT 2')
+            CALL STXOUTFUL(VWMAT(1,1,1,IG),NBAST,NBAST,'VWMAT 1')
+            CALL STXOUTFUL(VWMAT(1,1,2,IG),NBAST,NBAST,'VWMAT 2')
          END IF
 C
 C Transform (IP|**) and (I*|P*) to mo basis
@@ -2577,8 +2606,8 @@ C
      &        )
          END DO
          IF (DEBUG) THEN
-            CALL OUTFUL(VWMO(1,1,1),NORBT,NORBT,'VWMO 1')
-            CALL OUTFUL(VWMO(1,1,2),NORBT,NORBT,'VWMO 2')
+            CALL STXOUTFUL(VWMO(1,1,1),NORBT,NORBT,'VWMO 1')
+            CALL STXOUTFUL(VWMO(1,1,2),NORBT,NORBT,'VWMO 2')
          END IF
 C
 C  Select the matrix elements that contribute to RPA matrices A and B 
@@ -2597,14 +2626,14 @@ C
             B(JG,IG) = B(IG,JG)
          END DO
          IF (DEBUG) THEN
-            CALL OUTFUL(A,NWOPT,NWOPT,'Partial A matrix')
-            CALL OUTFUL(B,NWOPT,NWOPT,'Partial B matrix')
+            CALL STXOUTFUL(A,NWOPT,NWOPT,'Partial A matrix')
+            CALL STXOUTFUL(B,NWOPT,NWOPT,'Partial B matrix')
          END IF
       END DO
       CALL QEXIT('AUGAB')
       END
 C#######################################################################
-      SUBROUTINE GENTRA(LABEL,PRPAO,PRPMO,PRPSYM,WORK,LWORK)
+      SUBROUTINE STXGENTRA(LABEL,PRPAO,PRPMO,PRPSYM,WORK,LWORK)
 #include "implicit.h"
       REAL*8  PRPAO(*), PRPMO(*), WORK(*)
       INTEGER  LWORK, PRPSYM
@@ -2615,7 +2644,7 @@ C#######################################################################
       LOGICAL FNDLAB
       EXTERNAL FNDLAB
       LOGICAL DEBUG
-      CALL QENTER('GENTRA')
+      CALL QENTER('STXGENTRA')
 C
 C Transform  PRPAO by mo:s defined by LABEL: output PRPMO
 C
@@ -2624,13 +2653,14 @@ C
       LFREE=LWORK
 C     OPEN(LUIT1,FORM='UNFORMATTED',STATUS='OLD')
       REWIND LUIT1
-      if (debug) write(LUPRI,*)'GENTRA fndlab: label luit1 ',label,luit1
+      if (debug)
+     &   write(LUPRI,*)'STXGENTRA fndlab: label luit1 ',label,luit1
       IF (FNDLAB(LABEL,LUIT1)) THEN
          CALL MEMGET2('REAL','CMO',KCMO,NCMOT,WORK,KFREE,LFREE)
          CALL READT(LUIT1,NCMOT,WORK(KCMO))
          if (debug) call prorb(work(kcmo),.false.,LUPRI)
       ELSE
-         CALL QUIT('GENTRA: LABEL "'//LABEL//'" NOT FOUND')
+         CALL QUIT('STXGENTRA: LABEL "'//LABEL//'" NOT FOUND')
       END IF
 C     CLOSE(LUIT1)
 C
@@ -2656,155 +2686,9 @@ C
      &      )
       END DO
       IF (DEBUG) THEN
-         call outful(prpmo,norbt,norbt,'gentra after ')
+         call STXoutful(prpmo,norbt,norbt,'STXgentra after ')
       END IF
-      CALL MEMREL('GENTRA',WORK,1,1,KFREE,LFREE)
-      CALL QEXIT('GENTRA')
+      CALL MEMREL('STXGENTRA',WORK,1,1,KFREE,LFREE)
+      CALL QEXIT('STXGENTRA')
       END
-C#######################################################################
-c     subroutine hj(cmo,norbt,nbast)
-c     implicit real*8 (a-h,o-z)
-c     dimension cmo(nbast,norbt)
-c     dimension aaa(nbast)
-c     do i = 1,nbast
-c aaa(i) = cmo(i,1) 
-c cmo(i,1) = 0.0d0
-c     end do
-c     write (LUPRI,*) 'hj: orbital 1 is modified to Hondo 2a1 orbital'
-C sspvtz hondo 2a1 relaxed (base cc-pVTZ decontratta e senza funzioni
-c d ed f)
-c attenzione: c'e' un differenza di fase delle funzioni p tra
-c             dalton e hondo (orientazione degli assi) che va
-c             presa in considerazione. Alcuni segni dei coefficienti
-c             seguenti sono stati modificati per questo motivo
-c        cmo(1,1)=    0.000119 d0
-c        cmo(2,1)=    0.000931 d0
-c        cmo(3,1)=    0.004783 d0
-c        cmo(4,1)=    0.019698 d0
-c        cmo(5,1)=    0.061562 d0
-c        cmo(6,1)=    0.149209 d0
-c        cmo(7,1)=    0.157205 d0
-c        cmo(8,1)=   -0.217700 d0
-c        cmo(9,1)=   -0.570913 d0
-c       cmo(10,1)=   -0.175107 d0
-c       cmo(11,1)=    0.000000 d0
-c       cmo(12,1)=    0.000000 d0
-c       cmo(13,1)=   -0.003237 d0
-c       cmo(13,1)=    0.003237 d0
-c       cmo(14,1)=    0.000000 d0
-c       cmo(15,1)=    0.000000 d0
-c       cmo(16,1)=   -0.018649 d0
-c       cmo(16,1)=    0.018649 d0
-c       cmo(17,1)=    0.000000 d0
-c       cmo(18,1)=    0.000000 d0
-c       cmo(19,1)=   -0.058963 d0
-c       cmo(19,1)=    0.058963 d0
-c       cmo(20,1)=    0.000000 d0
-c       cmo(21,1)=    0.000000 d0
-c       cmo(22,1)=   -0.076722 d0
-c       cmo(22,1)=    0.076722 d0
-c       cmo(23,1)=    0.000000 d0
-c       cmo(24,1)=    0.000000 d0
-c       cmo(25,1)=    0.000587 d0
-c       cmo(25,1)=   -0.000587 d0
-c       cmo(26,1)=   -0.338379 d0
-c       cmo(27,1)=    0.097222 d0
-c       cmo(28,1)=    0.134434 d0
-c       cmo(29,1)=    0.014506 d0
-c       cmo(30,1)=    0.000000 d0
-c       cmo(31,1)=    0.010211 d0
-c       cmo(31,1)=   -0.010211 d0
-c       cmo(32,1)=    0.015462 d0
-c       cmo(33,1)=    0.000000 d0
-c       cmo(34,1)=    0.006862 d0
-c       cmo(34,1)=   -0.006862 d0
-c       cmo(35,1)=   -0.338379 d0
-c       cmo(36,1)=    0.097222 d0
-c       cmo(37,1)=    0.134434 d0
-c       cmo(38,1)=   -0.014506 d0
-c       cmo(39,1)=    0.000000 d0
-c       cmo(40,1)=    0.010211  d0
-c       cmo(40,1)=   -0.010211  d0
-c       cmo(41,1)=   -0.015462 d0
-c       cmo(42,1)=    0.000000 d0
-c       cmo(43,1)=    0.006862 d0
-c       cmo(43,1)=   -0.006862 d0
-c sspvtz hondo 2a1 frozen
-c      cmo(1,1) =    0.000103 d0
-c      cmo(2,1) =    0.000801 d0
-c      cmo(3,1) =    0.004153 d0
-c      cmo(4,1) =    0.016735 d0
-c      cmo(5,1) =    0.052343 d0
-c      cmo(6,1) =    0.121257 d0
-c      cmo(7,1) =    0.156187 d0
-c      cmo(8,1) =   -0.136947 d0
-c      cmo(9,1) =  -0.519355 d0
-c     cmo(10,1) =  -0.250465 d0
-c     cmo(11,1) =   0.000000 d0
-c     cmo(12,1) =   0.000000 d0
-c     cmo(13,1) =  -0.002188 d0
-c     cmo(14,1) =   0.000000 d0
-c     cmo(15,1) =   0.000000 d0
-c     cmo(16,1) =  -0.011866 d0
-c     cmo(17,1) =   0.000000 d0
-c     cmo(18,1) =   0.000000 d0
-c     cmo(19,1) =  -0.043264 d0
-c     cmo(20,1) =   0.000000 d0
-c     cmo(21,1) =   0.000000 d0
-c     cmo(22,1) =  -0.066154 d0
-c     cmo(23,1) =   0.000000 d0
-c     cmo(24,1) =   0.000000 d0
-c     cmo(25,1) =  -0.000918 d0
-c     cmo(26,1) =  -0.386906 d0
-c     cmo(27,1) =   0.103339 d0
-c     cmo(28,1) =   0.142222 d0
-c     cmo(29,1) =   0.013377 d0
-c     cmo(30,1) =   0.000000 d0
-c     cmo(31,1) =   0.009684 d0
-c     cmo(32,1) =   0.014243 d0
-c     cmo(33,1) =   0.000000 d0
-c     cmo(34,1) =   0.005878 d0
-c     cmo(35,1) =  -0.386906 d0
-c     cmo(36,1) =   0.103339 d0
-c     cmo(37,1) =   0.142222 d0
-c     cmo(38,1) =  -0.013377 d0
-c     cmo(39,1) =   0.000000 d0
-c     cmo(40,1) =   0.009684 d0
-c     cmo(41,1) =  -0.014243 d0
-c     cmo(42,1) =   0.000000 d0
-c     cmo(43,1) =   0.005878 d0
-
-c     cmo(1,1) = -0.000120d0
-c     cmo(2,1) = -.000934d0
-c     cmo(3,1) = -.004814d0
-c     cmo(4,1) = -.019743d0
-c     cmo(5,1) = -.062053d0
-c     cmo(6,1) = -.149182d0
-c     cmo(7,1) = -.160056d0
-c     cmo(8,1) =  .232740d0
-c     cmo(9,1) =  .548768d0
-c     cmo(10,1) =  .176483d0
-c     cmo(13,1) = .002755d0
-c     cmo(16,1) = .016824d0
-c     cmo(19,1) = .051004d0
-c     cmo(22,1) = .052152d0
-c     cmo(25,1) = .008794d0
-c     cmo(48,1) = .333377d0
-c     cmo(49,1) = -.107737d0
-c     cmo(50,1) = -.129020d0
-c     cmo(51,1) = -.013183d0
-c     cmo(53,1) = -.009046d0
-c     cmo(54,1) = -.016365d0
-c     cmo(56,1) = -.010058d0
-c     cmo(63,1) = .333377d0
-c     cmo(64,1) = -.107737d0
-c     cmo(65,1) = -.129020d0
-c     cmo(66,1) =  .013183d0
-c     cmo(68,1) = -.009046d0
-c     cmo(69,1) = +.016365d0
-c     cmo(71,1) = -.010058d0
-c
-c     write (LUPRI,1)  (-aaa(i),cmo(i,1),i=1,nbast)
-c   1 format(2f12.5)
-c     return
-c     end
+! -- end of sirius/sirstex.F --

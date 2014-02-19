@@ -1054,7 +1054,7 @@ contains
 #ifdef VAR_MPI
     lg_me                    = infpar%lg_mynum
     lg_nnod                  = infpar%lg_nodtot
-    lock_outside             = DECinfo%CCSD_MPICH
+    lock_outside             = DECinfo%CCSD_NO_DEBUG_COMM
     mode                     = MPI_MODE_NOCHECK
 
     parent                   = (infpar%parent_comm==MPI_COMM_NULL)
@@ -2412,7 +2412,7 @@ contains
     type(array),intent(inout) :: omega2
     integer, intent(in) :: s
     logical, intent(in) :: pd
-    logical,intent(in) :: lock_outside
+    logical,intent(inout) :: lock_outside
     integer :: no2,nv2,v2o,o2v
     logical :: master 
     real(realk),pointer :: w2(:),w3(:)
@@ -2425,6 +2425,7 @@ contains
     real(realk) :: nrm
     integer(kind=8) :: w3size
     integer(kind=ls_mpik) :: mode
+    logical :: lock_safe
 
     master       = .true.
     nrm          = 0.0E0_realk
@@ -2488,6 +2489,8 @@ contains
        nnod             = infpar%lg_nodtot
        me               = infpar%lg_mynum
        mode             = int(MPI_MODE_NOCHECK,kind=ls_mpik)
+       lock_safe        = lock_outside
+       lock_outside     = .false.
       
       !Setting transformation variables for each rank
       !**********************************************
@@ -2543,9 +2546,10 @@ contains
         call lsmpi_local_reduction(w1,o2v2,infpar%master)
         call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
       else
-        call arr_lock_wins(omega2,'s',mode)
+        !call arr_lock_wins(omega2,'s',mode)
         call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1,tl1)
-        call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,lock_outside)
+        print *,infpar%lg_mynum,"fai",fai1,"tl",tl1,size(w1),tl1*no
+        call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,.false.)
       endif
 
 
@@ -2621,6 +2625,7 @@ contains
       endif
 
       call mem_dealloc(w3)
+      lock_outside     = lock_safe
 #endif
     endif
     
@@ -3723,11 +3728,9 @@ contains
 #ifdef VAR_MPI
        if( t .and. lock_outside )call arr_lock_wins(omega,'s',mode)
        if( w ) then
-          print *,"if DONE124 is not printed, this is a prob"
           !$OMP WORKSHARE
           w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
           !$OMP END WORKSHARE
-          print *,"DONE124"
        endif
        if( lspdm_use_comm_proc )call lsmpi_barrier(infpar%pc_comm)
        if( t )call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
@@ -4516,8 +4519,10 @@ contains
       &max(max(max(max(max(max(max((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
       &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no)*nor*nba),(i8*no)*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FO + w2 + w3 + govov
-      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,i8*nb*nb)+max(i8*nb*nb,max(2_long*tl1,i8*tl2)))
+      ! w1 + FO + w2 + w3 + govov + full gvvoo + full gvoov
+      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,i8*nb*nb) &
+           & + max(i8*nb*nb,max(2_long*tl1,i8*tl2)))       &
+           & + 2.0E0_realk * (i8*nv**2)*no**2
       !memrq=memrq+max(memin,memout)
     elseif(s==2)then
       call array_default_batches(d1,mode,tdim,splt)

@@ -57,24 +57,26 @@ contains
 
     ! Init basic info (molecular dimensions etc.)
     call molecule_init_basics(molecule,mylsitem)       
-
-    ! Get Fock, overlap, and MO coefficient matrices.
-    call molecule_get_reference_state(molecule,mylsitem)
-    call molecule_get_overlap(molecule,mylsitem)
-    call molecule_mo_fock(molecule)
-   
-    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
-       call dec_get_canonical_orbitals(molecule)
-    end if
-
+    
     ! Skip read-in of info for molecule if requested (only for testing)
     if(DECinfo%SkipReadIn) then
        write(DECinfo%output,*) 'WARNING: I do NOT read in the molecular info files &
             & as requested in the input!'
        return
     end if
+    
+    ! Get Fock, overlap, and MO coefficient matrices.
+    call molecule_get_reference_state(molecule,mylsitem)
+    call molecule_get_overlap(molecule,mylsitem)
+    call molecule_mo_fock(molecule)
+    
+    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
+       call dec_get_canonical_orbitals(molecule)
+    end if
 
-     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+    call molecule_get_carmom(molecule,mylsitem)
+
+    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
        !> Sanity check 
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be persent for F12 calc",-1)

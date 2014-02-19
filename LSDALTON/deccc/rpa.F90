@@ -585,21 +585,16 @@ contains
 
 
     dim1=nocc*nvirt
-    write(*,*) 'DEBUG 1 in residualpar'
 #ifdef VAR_MPI
     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
-    write(*,*) 'DEBUG 2 in residualpar'
       call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
-    write(*,*) 'DEBUG 3 in residualpar'
       call rpa_res_communicate_data(gmo,u2,omega2,nvirt,nocc)
-    write(*,*) 'DEBUG 4 in residualpar'
     endif StartUpSlaves
 #endif
    
 
     omegaw1 = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
 
-    write(*,*) 'DEBUG 5 in residualpar'
 !#ifdef VAR_MPI
 !    if(master) then
 !      call array4_reorder(omega2,[1,3,2,4])
@@ -611,34 +606,25 @@ contains
 !#else
 
     call array4_reorder(omega2,[1,3,2,4])
-    write(*,*) 'DEBUG 6 in residualpar'
     call array_convert(omega2%val,omegaw1)
-    write(*,*) 'DEBUG 7 in residualpar'
 !#endif
 
 
     call mo_work_dist(nvirt*nocc,fai,tl)
-    write(*,*) 'DEBUG 8 in residualpar'
     !call mem_alloc(w2,tl*nocc*nvirt)
 !#ifdef VAR_MPI
 !    write(*,*) 'size of tile',tl,fai,infpar%lg_mynum,nvirt*nocc!*nvirt*nocc
 !#endif
     call mem_alloc(w2,tl*nocc*nvirt)
-    write(*,*) 'DEBUG 9 in residualpar'
     call mem_alloc(w3,tl*nocc*nvirt)
-    write(*,*) 'DEBUG 10 in residualpar'
     call mem_alloc(w4,nocc*nvirt*nocc*nvirt)
-    write(*,*) 'DEBUG 11 in residualpar'
     call mem_alloc(omegw,tl*nocc*nvirt)
-    write(*,*) 'DEBUG 12 in residualpar'
     !call mem_alloc(omegw,tl*tl)
 
     t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
-    write(*,*) 'DEBUG 13 in residualpar'
     !call array4_reorder(u2,[1,3,2,4])
     !call copy_array(u2,t_par)
     call array_convert(u2%elm4,t_par)
-    write(*,*) 'DEBUG 14 in residualpar'
 
 !#ifdef VAR_MPI
 !    write(msg,*) 'Norm of t_par',infpar%lg_mynum
@@ -656,7 +642,6 @@ contains
 
     !call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
     call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.true.)
-    write(*,*) 'DEBUG 15 in residualpar'
 
     !In this u2 is array and no need for t_par
     !call array_two_dim_1batch(u2,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
@@ -694,7 +679,6 @@ contains
     !When fock part is parallelized instead of zero 1.0_realk
     call dgemm('n','n',tl,dim1,dim1, &
          1.0E0_realk,w2,tl,gmo,dim1,0.0E0_realk,w3,tl)
-    write(*,*) 'DEBUG 16 in residualpar'
 !#ifdef VAR_MPI
 !    write(msg,*) 'Norm of w3',infpar%lg_mynum
 !#else
@@ -706,7 +690,6 @@ contains
     !call array_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
     !call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
     call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
-    write(*,*) 'DEBUG 17 in residualpar'
 !    write(msg,*) 'Norm of w4',infpar%lg_mynum
 !#else
 !    write(msg,*) 'Norm of w4'
@@ -722,7 +705,6 @@ contains
     call dgemm('n','n',tl,dim1,dim1, &
          2.0E0_realk,w3,tl,w4,dim1,0.0E0_realk,omegw,tl)
 
-    write(*,*) 'DEBUG 18 in residualpar'
 !#ifdef VAR_MPI
 !    write(msg,*) 'Norm of omegw',infpar%lg_mynum
     !call sleep(1)
@@ -736,16 +718,15 @@ contains
 
     !call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
     call array_two_dim_1batch(omegaw1,[4,2,3,1],'a',omegw,2,fai,tl,.false.,debug=.true.)
-    write(*,*) 'DEBUG 19 in residualpar'
 #ifdef VAR_MPI
+
     call lsmpi_barrier(infpar%lg_comm)
-    write(*,*) 'DEBUG 20 in residualpar'
-    write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
+    !write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
    ! if(master) write(*,*) 'omegaw1'
    ! if(master) write(*,*) omegaw1%elm4
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
-    call print_norm(omegaw1,msg)
+    !call print_norm(omegaw1,msg)
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
     !stop
@@ -756,15 +737,15 @@ contains
       !call array_convert(omegaw1,omega2%val)
       !call array4_reorder(omega2,[1,3,2,4])
       !call array4_reorder(omega2,[1,3,2,4])
-      write(*,*) 'order of omega2',size(omega2%val(:,1,1,1))
-      write(*,*) 'order of omega2',size(omega2%val(1,:,1,1))
-      write(*,*) 'order of omega2',size(omega2%val(1,1,:,1))
-      write(*,*) 'order of omega2',size(omega2%val(1,1,1,:))
+      !write(*,*) 'order of omega2',size(omega2%val(:,1,1,1))
+      !write(*,*) 'order of omega2',size(omega2%val(1,:,1,1))
+      !write(*,*) 'order of omega2',size(omega2%val(1,1,:,1))
+      write(*,*) 'Master writes this'
       !call array4_reorder(omega2,[2,1,4,3])
       call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
 
-      write(msg,*) 'Norm of omega2'
-      call print_norm(omega2%val,i8*dim1*dim1,msg)
+     ! write(msg,*) 'Norm of omega2'
+     ! call print_norm(omega2%val,i8*dim1*dim1,msg)
 !      write(*,*) 'checkpoint 3',infpar%lg_mynum
       !call array4_reorder(omega2,[2,1,4,3])
       call array4_reorder(omega2,[1,3,2,4])
