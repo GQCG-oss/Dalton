@@ -71,6 +71,9 @@ cat > LSDALTON_FMM.dal <<'%EOF%'
 1.0D-11
 .ANGINT
 31
+*DENSOPT
+.CONVTHR
+1.0d-5
 **INFO
 .DEBUG_MPI_MEM
 *END OF INPUT
@@ -90,7 +93,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-151\.85783219[0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-151\.8578322" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
