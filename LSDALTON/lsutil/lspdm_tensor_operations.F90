@@ -3617,7 +3617,7 @@ module lspdm_tensor_operations_module
       lg_nnod = buf(2)
     endif
  
-    if(arr%access_type==NO_PDM_ACCESS.or.arr%atype=='RTAR')then
+    if(arr%access_type==NO_PDM_ACCESS.or.arr%itype==TILED)then
       arr%offset       = 0
       p_arr%new_offset = 0
       arr%nlti         = arr%ntiles
