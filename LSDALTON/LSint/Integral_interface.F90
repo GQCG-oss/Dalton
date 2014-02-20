@@ -5465,7 +5465,7 @@ IF (const_electrons) THEN
   ENDIF
   IF (scale_finalE) THEN
      !scaling_ADMMP = 1E0_realk / mat_trAB(D,S33) * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
-     scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+     scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(4.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
      call mat_scal(scaling_ADMMP, tmp33)
   ELSE
      call mat_scal(scaling_ADMMQ, tmp33)
