@@ -83,7 +83,7 @@ ERROR[1]="DFT ENERGY NOT CORRECT -"
 
 
 # Test individual iterations
-CRIT1=`$GREP " 2   -0\.568253" $log | wc -l`
+CRIT1=`$GREP " 2   -0\.568249" $log | wc -l`
 TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="2nd energy shift not correct -"

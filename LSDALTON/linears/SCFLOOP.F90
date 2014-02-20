@@ -298,9 +298,9 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
       endif
       CALL LSTIMER('FCK_FO ',TIMSTR,TIMEND,config%LUPRI)
 
-      if (config%solver%step_accepted)Then
+!      if (config%solver%step_accepted)Then
          IF(config%opt%cfg_oao_gradnrm)THEN
-            call get_oao_transformed_matrices(config%decomp,F(1),D(1))
+            call get_oao_transformed_matrices(config%decomp,F(1),D(1)) 
             call mat_init(grad,nbast,nbast)
             gradalloc = .TRUE.
             call get_OAO_gradient(config%decomp%FU, config%decomp%DU, grad) !wrk = gradient
@@ -313,13 +313,14 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
             CALL get_AO_gradient(F(1), D(1), S, grad) !grad in AO grad
             gradnrm = sqrt(mat_sqnorm2(grad))         !gradnrm in OAO
          ENDIF
-      else
-         IF(.NOT.gradalloc)call mat_init(grad,nbast,nbast)
-         !in principel the printet gradient norm is wrong
-         !but the calculation of the gradient would modify
-         !config%decomp%FU and config%decomp%DU which 
-         !is not desirerable when we want to revert back to old D
-      endif
+!!$      else
+!!$            !in principel the printet gradient norm is wrong
+!!$            !but the calculation of the gradient 
+!!$            !(the get_oao_transformed_matrices call) 
+!!$            !would modify config%decomp%FU and config%decomp%DU which 
+!!$            !is not desirerable when we want to revert back to old D
+!!$         IF(.NOT.gradalloc)call mat_init(grad,nbast,nbast)
+!!$      endif
       CALL LSTIMER('G_GRAD',TIMSTR,TIMEND,config%LUPRI)
 
       ! Statistic stuff
@@ -357,7 +358,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
 
       WRITE(config%LUPRI,'("** Get new density ")')
       call mat_no_of_matmuls(matmul1)
-      CALL DOPT_get_density(config, fifoqueue, queue, F(1), H1, D(1), iteration,ls)
+      CALL DOPT_get_density(config, fifoqueue, queue, F(1), H1, D(1), iteration,ls) 
       call mat_no_of_matmuls(matmul2)
       WRITE(config%LUPRI,'("No. of matmuls in get_density: ",I5)') matmul2-matmul1
       CALL LSTIMER('G_DENS',TIMSTR,TIMEND,config%LUPRI)
