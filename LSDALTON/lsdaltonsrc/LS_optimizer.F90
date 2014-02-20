@@ -1067,7 +1067,8 @@ Endif ! Optimization
     !     If the step is acceptable, the geometry is updated
     !     and written to file.
     !
-    Implicit Real(realk) (A-H,O-Z)
+    implicit none
+!    Implicit Real(realk) (A-H,O-Z)
     !
     Type(ConfigItem), intent(inout) :: Config ! General information
     Type(lsitem) :: ls   ! General information,used only to get E and gradient
@@ -1079,10 +1080,10 @@ Endif ! Optimization
     TYPE(opt_setting) :: optinfo
     Real(realk) :: CSTEP(MXCOOR), EGRAD(MXCOOR)
     Real(realk) :: COONEW(3,MXCENT), COOOLD(3,MXCENT)
-    Integer     :: ICRD(3)
+    Integer     :: ICRD(3), IFAILD,IREJ,IJ,J,I,JJ
     Real(realk) :: GEINFO(0:optinfo%MaxIter+1,6)
     Real(realk) :: E(1)
-    Real(realk) :: Eerr, Egeodiff, Eerrsave
+    Real(realk) :: Eerr, Egeodiff, Eerrsave,graddi,fac
     CHARACTER*10 FILENM
     CHARACTER*12 molname
     LOGICAL REJGEO,NEWSTP,NEWBMT
