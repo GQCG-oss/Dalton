@@ -3640,7 +3640,7 @@ contains
 
 #ifdef VAR_MPI
 
-    CBAI = array_init(dims,4,TILED_DIST,ALL_INIT,[nvirt,nvirt,nvirt,1])
+    CBAI = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
     call array_zero_tiled_dist(CBAI)
 
 #else

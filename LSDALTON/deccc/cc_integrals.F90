@@ -744,26 +744,23 @@ contains
     ! (intent in needed for the slaves)
     type(array), intent(inout) :: govov
     type(array), intent(inout) :: pgmo_diag, pgmo_up
-    integer :: pgmo_dims
-    !> how to pack integrals:
-    integer :: pack_scheme
 
     !> variables used for MO batch and integral transformation
     integer :: ntot ! total number of MO
     real(realk), pointer :: Cov(:,:), CP(:,:), CQ(:,:)
     real(realk), pointer :: gmo(:), tmp1(:), tmp2(:)
-    integer(kind=long) :: gmosize, min_mem, tmp_size
-    integer :: Nbatch, PQ_batch, dimP, dimQ
+    integer(kind=long)   :: gmosize, min_mem, tmp_size
+    integer :: Nbatch, PQ_batch, dimP, dimQ, idb, iub
     integer :: P_sta, P_end, Q_sta, Q_end, dimPack, ipack
     type(MObatchInfo), intent(out) :: MOinfo
+    logical :: local_moccsd
      
     !> variables used for AO batch construction and AO integral calculation
     real(realk), pointer :: gao(:)
-    integer(kind=long) :: gaosize
+    integer(kind=long)   :: gaosize
     integer :: alphaB, gammaB, dimAlpha, dimGamma
-    integer :: dim1, dim2, dim3, K, MinAObatch,dimK
     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
-    integer :: iorb, idx, p, q
+    integer :: iorb, idx, K
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
     Character :: INTSPEC(5)
@@ -775,20 +772,17 @@ contains
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), &
                       & batchsizeGamma(:), batchindexGamma(:)
 
-    !> Elementary types needed for the calculation
-    logical :: print_debug, local
-    
     !> CHECKING and MEASURING variables
     real(realk) :: MemFree, MemNeed, tcpu, twall, time_start, timewall_start 
-    integer     :: scheme
     integer(kind=long) :: els2add
+    integer :: scheme
+    logical :: print_debug
        
     ! MPI variables:
-    logical :: master
+    logical :: master, local
     integer :: myload
-    integer(kind=ls_mpik) :: ierr
-    integer,pointer       :: tasks(:)
-    integer(kind=ls_mpik) :: myrank, nnod
+    integer(kind=ls_mpik) :: ierr, myrank, nnod
+    integer, pointer      :: tasks(:)
 
     ! Screening integrals stuff:
     type(DECscreenITEM) :: DecScreen
@@ -796,11 +790,8 @@ contains
     !> LS item with information needed for integrals
     type(lsitem), intent(inout) :: MyLsItem
 
-    real(realk), external :: ddot
-    integer :: idb, iub
 
     ntot = no + nv
-
 
     ! Set integral info
     ! *****************
@@ -854,52 +845,43 @@ contains
     nullify(MOinfo%DimInd2)
     nullify(MOinfo%StartInd1)
     nullify(MOinfo%StartInd2)
-#ifdef VAR_MPI
     nullify(tasks)
-#endif
 
     !======================================================================
     !                      Get Dimension of batches                       !
     !======================================================================
-
     ! Get minimum mem. required in the MO-CCSD residual calculation
     if (master) then 
-      select case(ccmodel)
+      select case(CCmodel)
 
       case(MODEL_CCSD)
-        call get_MO_and_AO_batches_size(mo_ccsd,ntot,nb,no,nv, &
+        call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nb,no,nv, &
                & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem)
-
         if (.not.mo_ccsd) return
 
-        if (print_debug) write(DECinfo%output,'(a,I4,a,I4)') & 
-                 & ' BATCH: Number of MO batches      = ', Nbatch, &
-                 & ' with maximum size', dimP
-
-        ! Declare PDM arrays for packed integrals:
-        pgmo_dims = ntot*(ntot+1)*dimP*(dimP+1)/4
-        pgmo_diag = array_minit([pgmo_dims,Nbatch],2,local=local, &
-                  & atype='TDAR',tdims=[pgmo_dims,1])
-        call array_zero(pgmo_diag)
-     
-        if (Nbatch>1) then ! to avoid memory pb in dealloc:
-          pgmo_dims = ntot*(ntot+1)*dimP*dimP/2
-          pgmo_up   = array_minit([pgmo_dims,Nbatch*(Nbatch-1)/2],2, &
-                    & local=local,atype='TDAR',tdims=[pgmo_dims,1])
-          call array_zero(pgmo_up)
+        if (print_debug) then
+          if (local_moccsd) then 
+            write(DECinfo%output,*) 'MO-CCSD: local scheme'
+          else if (.not.local) then
+            write(DECinfo%output,*) 'MO-CCSD: PDM scheme'
+          else
+            write(DECinfo%output,*) 'MO-CCSD: non-MPI scheme'
+          end if
+          write(DECinfo%output,'(a,I4,a,I4)') ' BATCH: Number of MO batches      = ', &
+               & Nbatch, ' with maximum size', dimP
         end if
 
-      case(MODEL_RPA)
+        ! Initialize gmo arrays:
+        call init_gmo_arrays(ntot,dimP,Nbatch,local,local_moccsd,pgmo_diag,pgmo_up)
 
+      case(MODEL_RPA)
         call get_AO_batches_size_rpa(ntot,nb,no,nv,MaxAllowedDimAlpha, &
                   & MaxAllowedDimGamma,MyLsItem)
-
       case default
           call lsquit('only RPA and CCSD model should use this routine',DECinfo%output)
       end select
 
     end if
-    
     !======================================================================
 
 
@@ -911,7 +893,6 @@ contains
     ! MPI: Waking slaves up:
 #ifdef VAR_MPI
     StartUpSlaves: if(master.and.nnod>1) then
-      write(DECinfo%output,'(a,I4)') ' Waking up the slaves for MO int calc.',nnod
       call ls_mpibcast(CCGETGMO,infpar%master,infpar%lg_comm)
       call mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
            & pgmo_diag,pgmo_up,nb,no,nv,Nbatch,ccmodel)
@@ -921,7 +902,7 @@ contains
     call ls_mpi_buffer(dimP,infpar%master)
     call ls_mpi_buffer(Nbatch,infpar%master)
     call ls_mpi_buffer(scheme,infpar%master)
-    call ls_mpi_buffer(print_debug,infpar%master)
+    call ls_mpi_buffer(local_moccsd,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
     call ls_mpi_buffer(els2add,infpar%master)
@@ -1154,7 +1135,7 @@ contains
     end do BatchAlpha
     end do BatchGamma
 
-
+ 
     ! Free integral stuff
     ! *******************
     nullify(Mylsitem%setting%LST_GAB_LHS)
@@ -1196,14 +1177,9 @@ contains
      
 #ifdef VAR_MPI
     call mem_dealloc(tasks)
-    ! The slaves tell to the master that they have done their jobs.
-    ! The master receives the message in the residual routine.
-    if (.not.master.and.ccmodel==MODEL_CCSD) then 
-      call lsmpi_reduction(1.0E0_realk,infpar%master,infpar%lg_comm)
-    end if
 #endif
 
-    if (print_debug) call LSTIMER('get_t1_free_gmo',tcpu,twall,DECinfo%output)
+    call LSTIMER('get_t1_free_gmo',tcpu,twall,DECinfo%output)
 
   end subroutine get_t1_free_gmo
 
@@ -1216,13 +1192,13 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    December 2013
-  subroutine get_MO_and_AO_batches_size(mo_ccsd,ntot,nb,no,nv, &
+  subroutine get_MO_and_AO_batches_size(mo_ccsd,local,ntot,nb,no,nv, &
              & dimMO,Nbatch,MaxAlpha,MaxGamma,MyLsItem)
     
     implicit none
   
     !> performed MO-based CCSD calculation ?
-    logical, intent(inout) :: mo_ccsd
+    logical, intent(inout) :: mo_ccsd, local
     !> number of orbitals:
     integer, intent(in) :: ntot, nb, no, nv
     !> MO batches stuff:
@@ -1235,20 +1211,35 @@ contains
     integer(kind=long) :: min_mem
     integer :: MinAOBatch, na, ng, nnod, magic
 
-    nnod = 1
+    dimMO = 1
+    local = .false. 
+    nnod  = 1
 #ifdef VAR_MPI
-    nnod = infpar%lg_nodtot
+    nnod  = infpar%lg_nodtot
 #endif
 
     !===========================================================
-    ! Get MO batche size depending on MO-ccsd residual routine.
-    dimMO = 1
+    ! Get MO batch size depending on MO-ccsd residual routine.
     call get_currently_available_memory(MemFree)
-    call get_mem_MO_CCSD_residual(MemNeed,ntot,nb,no,nv,dimMO) 
+    if (nnod>1) then 
+      ! try first for scheme with highest requirements --> fastest
+      local = .true. 
+      dimMO = 10
+      if (ntot<dimMO) dimMO = ntot
+      call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
+
+      ! if not enough mem then switch to full PDM scheme:
+      if (MeMNeed>0.8E0_realk*MemFree) then
+        local = .false.
+        dimMO = 1
+      end if
+    end if
+
+    call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
 
     do while ((MemNeed<0.8E0_realk*MemFree).and.(dimMO<=ntot)) 
       dimMO = dimMO + 1
-      call get_mem_MO_CCSD_residual(MemNeed,ntot,nb,no,nv,dimMO) 
+      call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
     end do
 
     if (dimMO>=ntot) then
@@ -1276,7 +1267,7 @@ contains
     end do
 
     ! sanity check:
-    call get_mem_MO_CCSD_residual(MemNeed,ntot,nb,no,nv,dimMO) 
+    call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
     if ((MemFree-MemNeed)<=0.0E0_realk) then
       mo_ccsd = .false.
       write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
@@ -1418,7 +1409,7 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    December 2013
-  subroutine get_mem_MO_CCSD_residual(MemOut,M,N,O,V,X)
+  subroutine get_mem_MO_CCSD_residual(local,MemOut,M,N,O,V,X)
 
     implicit none 
    
@@ -1428,9 +1419,11 @@ contains
     ! V: number of virt. orbs.
     ! X: dimension of MO batch.
     integer,  intent(in) :: M, N, O, V, X
-    ! memory needed:
+    !> use local scheme?
+    logical :: local
+    !> memory needed:
     real(realk), intent(inout) :: MemOut
-    ! intermediate memory:
+    !> intermediate memory:
     integer :: MemNeed, nnod, nTileMax, nMOB
 
     nMOB = (M-1)/X + 1
@@ -1438,6 +1431,7 @@ contains
 #ifdef VAR_MPI
     nnod = infpar%lg_nodtot
 #endif
+    if (local) nnod = 1
 
     ! Packed gmo diag blocks:
     nTileMax = (nMOB-1)/nnod + 3
@@ -1565,6 +1559,52 @@ contains
     MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
   
   end subroutine get_mem_gmo_RPA
+
+
+  !> Purpose: Initialization of arrays for MO integrals: 
+  !           if NO MPI then the arrays are standard
+  !           if MPI and local_moccsd then the arrays are RTAR
+  !           i.e. all the tiles are stored on all the nodes
+  !           if MPI and not local_moccsd then the arrays are TDAR
+  !           i.e. the tiles are distributed among the nodes.
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    February 2014
+  subroutine init_gmo_arrays(ntot,dimMO,Nbat,mpi,local_moccsd,pgmo_diag,pgmo_up)
+
+    implicit none
+ 
+    !> dimension parameters: 
+    integer :: ntot, dimMO, Nbat
+    !> logical for the type of arrays:
+    logical :: mpi, local_moccsd
+    !> gmo arrays:
+    type(array) :: pgmo_diag, pgmo_up
+
+    character(4) :: at
+    integer :: pgmo_dims
+
+    ! define type of array:
+    if (local_moccsd) then
+      at = 'RTAR'
+    else 
+      at = 'TDAR'
+    end if
+
+    ! Declare one array for the diagonal batches:
+    pgmo_dims = ntot*(ntot+1)*dimMO*(dimMO+1)/4
+    pgmo_diag = array_minit([pgmo_dims,Nbat],2,local=mpi,atype=at,tdims=[pgmo_dims,1])
+    call array_zero(pgmo_diag)
+     
+    ! Declare one array for the upper diagonal batches if necesarry
+    if (Nbat>1) then
+      pgmo_dims = ntot*(ntot+1)*dimMO*dimMO/2
+      pgmo_up   = array_minit([pgmo_dims,Nbat*(Nbat-1)/2],2,local=mpi,atype=at, &
+                & tdims=[pgmo_dims,1])
+      call array_zero(pgmo_up)
+    end if
+
+  end subroutine init_gmo_arrays
 
 
   !> Purpose: Transform AO int. into MO int. in batches
