@@ -1006,12 +1006,12 @@ C
          N_TASKS = N_TASKS + 1
 
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
-         IF (IPRINT .GT. 0)
+         IF (IPRINT .GT. 15)
      &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5)')
      &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
-     &      'Print level is',IPRINT
+     &      ' Print level is',IPRINT
 
-!        allocate memory here if we don't call hermit (more to follow...).
+!        allocate memory here if we do not call hermit (more to follow...).
 !        idea: move allocation down to main driver routines of modules as we might want to use
 !              dynamic memory allocation down there (for MPI performance/MPI standard compliance reasons)
 !              which is severely hampered by a "static" WORK for everything.
