@@ -2016,6 +2016,7 @@ contains
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)
     call ls_mpi_buffer(DECitem%simplePNOthr,Master)
+    call ls_mpi_buffer(DECitem%use_pnos,Master)
     call ls_mpi_buffer(DECitem%EOSPNOthr,Master)
     call ls_mpi_buffer(DECitem%noPNOoverlaptrunc,Master)
     call ls_mpi_buffer(DECitem%PNOoverlapthr,Master)
