@@ -371,6 +371,47 @@ C
       WRITE (LUPRI,'(//)')
       RETURN
       END
+
+
+      subroutine print_xyz(coord, io_unit)
+!     prints coordinates in xyz format to io_unit
+!     optionally writes coordinates to file_name
+!     author: radovan bast <bast@kth.se>
+
+      implicit none
+
+      real(8), intent(in) :: coord(3, *)
+      integer, intent(in) :: io_unit
+
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "codata.h"
+
+      integer :: iatom
+      integer :: icent
+      integer :: isymop
+      integer :: mulcnt
+      integer :: i
+
+      write (io_unit, '(i0/)') nucdep
+      iatom = 0
+      do icent = 1, nucind
+         mulcnt = istbnu(icent)
+         do isymop = 0, maxopr
+            if (iand(isymop,mulcnt) .eq. 0) then
+               iatom = iatom + 1
+               write (io_unit,'(a,f17.10,2f24.10)') namdep(iatom)(1:4),
+     &        (pt(iand(isymax(i,1),isymop))*coord(i,icent)*xtang,i=1,3)
+            end if
+         end do
+      end do
+
+      end subroutine
+
+
 C  /* Deck symhes */
       SUBROUTINE SYMHES(HESS)
 #include "implicit.h"
