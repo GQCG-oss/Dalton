@@ -20,6 +20,7 @@ DALTON
 - Fix of error which sometimes caused a geometry optimization to stop with " *** ERROR, Wrong interval in WLKBIS".
 - Fix of a bug which occasionally caused DALTON to abort a .STEX calculation
 - Print final geometry in xyz format (angstrom). File called "final_geometry.xyz" is put into the restart tarball.
+- Append PID to scratch directory to avoid multiple tests running in the same directory.
 
 
 LSDALTON

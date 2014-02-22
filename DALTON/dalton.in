@@ -286,7 +286,8 @@ fi
 if [ $opt_noappend -eq 1 ]; then
     SCRATCHDIR=$DALTON_TMPDIR
 else
-    SCRATCHDIR=$DALTON_TMPDIR/$outnam
+    # append pid to scratch directory to avoid multiple tests running in the same directory
+    SCRATCHDIR=$DALTON_TMPDIR/${outnam}_$$
 fi
 
 
