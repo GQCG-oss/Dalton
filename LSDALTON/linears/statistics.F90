@@ -150,9 +150,10 @@ MODULE scf_stats
       !> Logical unit number for output file.
       integer,intent(in) :: lupri
 
-        WRITE(LUPRI,'("*******************************************************************************************%%%")')
-        WRITE(LUPRI,'(" Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%")')
-        WRITE(LUPRI,'("*******************************************************************************************%%%")')
+        WRITE(LUPRI,'("***********************************************************************************************%%%")')
+        WRITE(LUPRI,'(" Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%")')
+        WRITE(LUPRI,'("***********************************************************************************************%%%")')
+
    end subroutine scf_stats_trustradius_header
 
    !> \brief Print the header for ARH debug info.

@@ -506,7 +506,16 @@ IF (BASISDIR(1:1) .NE. '/') THEN
 !        Example:
 !        BASDIR="/Users/tkjaer/Dalton/basis/"
 #else
-         BASISDIR=INSTALL_BASDIR
+!Warning using gfortran it may put in the value of INSTALL_BASDIR and then if the 
+!        resulting fortran line is longer is longer then 132 characters it will 
+!        truncate the line.
+!        the following line therefor restrict the INSTALL_BASDIR size
+!                                                         BASISDIR=INSTALL_BASDIR
+!        the following line is better
+!        BASISDIR=INSTALL_BASDIR
+!        while the following line make sure that INSTALL_BASDIR can be 131 long
+BASISDIR=&
+&INSTALL_BASDIR
 #endif
      IF (doprint) WRITE(LUPRI,'(A,A)') ' Default basis set library used:',TRIM(BASISDIR)
 ELSE

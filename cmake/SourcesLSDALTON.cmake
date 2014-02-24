@@ -30,6 +30,12 @@ set(DFTFUNC_SOURCES
     LSDALTON/dft/fun-pz81.c
     LSDALTON/dft/fun-slater.c
     LSDALTON/dft/fun-vwn.c
+    LSDALTON/dft/fun-revpbex.c
+    LSDALTON/dft/fun-rpbex.c
+    LSDALTON/dft/fun-mpbex.c
+    LSDALTON/dft/fun-pw91x.c
+    LSDALTON/dft/fun-g96.c
+    LSDALTON/dft/fun-lg93.c
     LSDALTON/dft/functionals.c
     LSDALTON/dft/general.c
     )
@@ -49,6 +55,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     LSDALTON/lsdaltonsrc/init_lsdalton.F90
     LSDALTON/lsdaltonsrc/configuration.F90
     LSDALTON/lsdaltonsrc/LSlib.F90
+    LSDALTON/lsdaltonsrc/LSlibState.F90
     LSDALTON/lsdaltonsrc/Profile.F90
     LSDALTON/lsdaltonsrc/IchorTesting.F90
     LSDALTON/lsdaltonsrc/IchorProfile.F90
@@ -456,6 +463,8 @@ set(LSUTILLIB_SOURCES
     )
 set(LSLIB_SOURCES
     LSDALTON/lsdaltonsrc/LSlib.F90
+    LSDALTON/lsdaltonsrc/LSlibState.F90
+    LSDALTON/lsdaltonsrc/LSlib_tester_module.F90
     LSDALTON/lsdaltonsrc/LSlib_tester.F90
     )
 set(LSDALTON_FIXED_FORTRAN_SOURCES

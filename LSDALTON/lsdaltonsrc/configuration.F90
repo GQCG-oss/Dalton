@@ -543,6 +543,7 @@ DO
             CASE('.PRINTFINALCMO'); config%opt%print_final_cmo=.true.
             CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
             CASE('.RESTART');    config%diag%CFG_restart =  .TRUE.
+            CASE('.CRASHCALC');    config%opt%crashcalc =  .TRUE.
             CASE('.PURIFYRESTARTDENSITY'); config%diag%CFG_purifyrestart =  .TRUE.
             CASE('.REDO L2');    config%diag%cfg_redo_l2 = .true.
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
@@ -839,9 +840,9 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
-if(config%solver%do_dft)THEN
+if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
-   call init_dftfunc(config%integral%DFT)
+   call init_dftfunc(config%integral%DFT,config%integral%ADMM_FUNC)
 endif
 
 END SUBROUTINE read_dalton_input
@@ -1223,12 +1224,16 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_JKBASIS    = .FALSE.
         CASE ('.ADMM-McWeeny'); ! EXPERIMENTAL
            INTEGRAL%ADMM_MCWEENY    = .TRUE.
+        CASE ('.ADMM-2ERI'); ! EXPERIMENTAL
+           INTEGRAL%ADMM_2ERI       = .TRUE.
         CASE ('.ADMM-CONST-EL');
            IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
                   &ADMM has been previously defined.',lupri)
            ENDIF
            INTEGRAL%ADMM_CONST_EL   = .TRUE.
+        CASE ('.ADMM-FUNC');
+           READ(LUCMD,*) INTEGRAL%ADMM_FUNC
         CASE ('.ADMMQ-ScaleXC2');
            IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. works only if &

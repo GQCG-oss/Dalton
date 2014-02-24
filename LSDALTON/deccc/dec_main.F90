@@ -102,7 +102,6 @@ contains
     type(fullmolecule) :: Molecule
     integer :: nbasis
 
-    print *, 'Hartree-Fock info is read from file...'
     
     ! Minor tests
     ! ***********
@@ -118,6 +117,8 @@ contains
       call test_array_reorderings(DECinfo%output)
       return
     endif
+
+    print *, 'Hartree-Fock info is read from file...'
 
     ! Get density matrix
     Molecule%nbasis = get_num_basis_functions(mylsitem)

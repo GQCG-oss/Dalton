@@ -35,12 +35,8 @@ MODULE memory_handling
    public init_threadmemvar
    public collect_thread_memory
    public mem_TurnOffThread_Memory,mem_TurnONThread_Memory
-   public stats_mem
-   public stats_mpi_mem
-   public stats_mem_tp
-   public scf_stats_debug_mem
-   public debug_mem_stats
-   public print_maxmem
+   public stats_mem,stats_mpi_mem,stats_mem_tp,scf_stats_debug_mem
+   public set_mem_xccalc,debug_mem_stats,print_maxmem
 !  print_mem_alloc
    public mem_InsideOMPsection
    public mem_alloc
@@ -98,6 +94,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_allocated_logical, max_mem_used_logical       !Count 'logical' memory, integral code
 
    integer(KIND=long),save :: mem_allocated_AOBATCH, max_mem_used_AOBATCH       !Count 'AOBATCH' memory, integral code
+   integer(KIND=long),save :: mem_allocated_XCcalc, max_mem_used_XCcalc       !Count XC memory, integral code
    integer(KIND=long),save :: mem_allocated_DECORBITAL, max_mem_used_DECORBITAL       !Count 'DECORBITAL' memory, deccc code
    integer(KIND=long),save :: mem_allocated_DECFRAG, max_mem_used_DECFRAG       !Count 'DECFRAG' memory, deccc code
    integer(KIND=long),save :: mem_allocated_BATCHTOORB, max_mem_used_BATCHTOORB       !Count 'BATCHTOORB' memory, deccc code
@@ -659,6 +656,8 @@ mem_allocated_logical = 0
 max_mem_used_logical = 0
 mem_allocated_AOBATCH = 0
 max_mem_used_AOBATCH = 0
+mem_allocated_XCcalc = 0
+max_mem_used_XCcalc = 0 
 mem_allocated_DECORBITAL = 0
 max_mem_used_DECORBITAL = 0
 mem_allocated_DECFRAG = 0
@@ -988,6 +987,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lstensor
     WRITE(LUPRI,'("  Allocated memory (FMM   ):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_FMM
+    WRITE(LUPRI,'("  Allocated memory (XC    ):          ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_XCcalc
 
     call print_maxmem(lupri,max_mem_used_global,'TOTAL')
 #ifdef VAR_SCALAPACK
@@ -1032,6 +1033,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
     CALL print_maxmem(lupri,max_mem_used_lstensor,'LStensor')
     CALL print_maxmem(lupri,max_mem_used_FMM,'FMM')
+    CALL print_maxmem(lupri,max_mem_used_XCcalc,'XC')
 #ifdef MOD_UNRELEASED
     CALL print_maxmem(lupri,max_mem_used_lvec_data,'Lvec_data')
     CALL print_maxmem(lupri,max_mem_used_lattice_cell,'Lattice_cell')
@@ -1127,6 +1129,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lstensor
     WRITE(LUPRI,'("  Allocated MPI memory (FMM   ):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_FMM
+    WRITE(LUPRI,'("  Allocated MPI memory (XC    ):      ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_XCcalc
 #ifdef MOD_UNRELEASED
     WRITE(LUPRI,'("  Allocated MPI memory (lvec_data):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lvec_data
@@ -1177,6 +1181,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
     CALL print_maxmem(lupri,max_mem_used_lstensor,'LStensor')
     CALL print_maxmem(lupri,max_mem_used_FMM,'FMM')
+    CALL print_maxmem(lupri,max_mem_used_XCcalc,'XC ')
 #ifdef MOD_UNRELEASED
     CALL print_maxmem(lupri,max_mem_used_lvec_data,'Lvec_data')
     CALL print_maxmem(lupri,max_mem_used_lattice_cell,'Lattice_cell')
@@ -6144,6 +6149,13 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         endif
      ENDIF
    end subroutine mem_deallocated_mem_linkshell
+
+   subroutine set_mem_XCcalc(mem_allocated_dft,max_mem_used_dft)
+     implicit none
+     integer(KIND=long) :: mem_allocated_dft,max_mem_used_dft
+     mem_allocated_XCcalc = mem_allocated_dft
+     max_mem_used_XCcalc = max_mem_used_dft
+   end subroutine set_mem_XCcalc
 
 !3 to keep track of memory used in the integralitem structure
   subroutine mem_allocated_mem_integralitem(nsize)
