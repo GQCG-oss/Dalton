@@ -1060,10 +1060,6 @@ module dec_typedef_module
      !> Measure of load distribution:
      !> { (total times for nodes) / (time for local master) } / number of nodes
      real(realk),pointer :: load(:)
-     !> max distance between atoms in the atoms that have AOS contribution
-     real(realk),pointer :: RmaxAOS(:)
-     !> max distance between atoms in the atoms that are used for fitting the MOs
-     real(realk),pointer :: RmaxAE(:)
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.
