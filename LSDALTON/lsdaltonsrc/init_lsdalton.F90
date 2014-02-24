@@ -16,7 +16,8 @@ module init_lsdalton_mod
   use linsca_debug, only: sparsetest
   use lstiming, only: lstimer
   use daltoninfo, only: ls_init
-  use IIDFTINT, only: II_DFTDISP
+  !AMT use IIDFTINT, only: II_DFTDISP
+  use IIDFTD, only: DFT_D_LSDAL_IFC
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
   private
@@ -77,7 +78,10 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
   call set_final_config_and_print(lupri,config,ls,nbast)
   
   ! eventually empirical dispersion correction in case of dft
-  CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
+  !AMT CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
+  !AMT   
+  CALL DFT_D_LSDAL_IFC(LS%SETTING,DUMMY,1,1,0,LUPRI)
+  !AMT   
 
   call mat_pass_info(LUPRI,config%opt%info_matop,mem_monitor)
 
@@ -155,70 +159,117 @@ end SUBROUTINE open_lsdalton_files
 !> \author T. Kjaergaard, S. Reine
 !> \date 2008-10-26
 SUBROUTINE print_intro(lupri)
-implicit none
-!> Logical unit number for file DALTON.OUT
-integer,intent(in)        :: lupri
-integer                   :: I
+  implicit none
+  !> Logical unit number for file DALTON.OUT
+  integer,intent(in)        :: lupri
+  integer                   :: I
 
-WRITE(LUPRI,*)' '
-WRITE(LUPRI,*)'    ******************************************************************    '
-WRITE(LUPRI,*)'    **********  LSDALTON - An electronic structure program  **********    '
-WRITE(LUPRI,*)'    ******************************************************************    '
-WRITE(LUPRI,*)' '
+#ifdef BINARY_INFO_AVAILABLE
+! sets DALTON_VERSION
+#include "dalton_config.h"
+#endif
+  WRITE(LUPRI,*)' '
+  WRITE(LUPRI,*)'    ******************************************************************    '
+  WRITE(LUPRI,*)'    **********  LSDALTON - An electronic structure program  **********    '
+  WRITE(LUPRI,*)'    ******************************************************************    '
+  WRITE(LUPRI,*)' '
+  write(LUPRI,*)' '
+
+#ifdef BINARY_INFO_AVAILABLE
+  WRITE (LUPRI,'(5X,A)')' This is output from LSDALTON '//DALTON_VERSION
+#else
+  WRITE (LUPRI,'(5X,A)')' This is output from LSDALTON '
+#endif
+  write(LUPRI,*)' '
+  write(lupri,*)' '
+
+  WRITE(LUPRI,'(5X,A)')&
+       &' IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,',&
+       &' THE FOLLOWING PAPER SHOULD BE CITED:',&
+       &' ',&
+       & ' K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,',&
+       & ' L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,',&
+       & ' P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,',&
+       & ' J. J. Eriksen, P. Ettenhuber, B. Fernandez,',&
+       & ' L. Ferrighi, H. Fliegl, L. Frediani, K. Hald,',&
+       & ' A. Halkier, C. Haettig, H. Heiberg,',&
+       & ' T. Helgaker, A. C. Hennum, H. Hettema,',&
+       & ' E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,',&
+       & ' M. F. Iozzi, B. Jansik, H. J. Aa. Jensen,',&
+       & ' D. Jonsson, P. Joergensen, J. Kauczor,',&
+       & ' S. Kirpekar, T. Kjaergaard, W. Klopper,',&
+       & ' S. Knecht, R. Kobayashi, H. Koch, J. Kongsted,',&
+       & ' A. Krapp, K. Kristensen, A. Ligabue,',&
+       & ' O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,',&
+       & ' C. Neiss, C. B. Nielsen, P. Norman,',&
+       & ' J. Olsen, J. M. H. Olsen, A. Osted,',&
+       & ' M. J. Packer, F. Pawlowski, T. B. Pedersen,',&
+       & ' P. F. Provasi, S. Reine, Z. Rinkevicius,',&
+       & ' T. A. Ruden, K. Ruud, V. Rybkin,',&
+       & ' P. Salek, C. C. M. Samson, A. Sanchez de Meras,',&
+       & ' T. Saue, S. P. A. Sauer, B. Schimmelpfennig,',&
+       & ' K. Sneskov, A. H. Steindal, K. O. Sylvester-Hvid,',&
+       & ' P. R. Taylor, A. M. Teale, E. I. Tellgren,',&
+       & ' D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,',&
+       & ' O. Vahtras, M. A. Watson, D. J. D. Wilson,',&
+       & ' M. Ziolkowski, and H. AAgren,',&
+       & ' "The Dalton quantum chemistry program system",',&
+       & ' WIREs Comput. Mol. Sci. (doi: 10.1002/wcms.1172)'
+  write(lupri,*)' '
+  write(lupri,*)' '
 
 
-         WRITE (LUPRI,'(5X,A)')&
-     &  ' This is output from LSDALTON (Release Dalton2013)',&
-     &  '                                           ',&
-     &  ' Authors in alphabetical order (main contribution(s) in parenthesis)',&
-     &  ' -------------------------------------------------------------------',&
-     &  ' Vebjoern Bakken,         University of Oslo,     Norway    (geometry optimizer)',&
-     &  ' Sonia Coriani,           University of Trieste,  Italy     (response)',&
-     &  ' Patrick Ettenhuber,      Aarhus University,      Denmark   (CCSD)',&
-     &  ' Trygve Helgaker,         University of Oslo,     Norway    (supervision)',&
-     &  ' Stinne Hoest,            Aarhus University,      Denmark   (SCF optimization)',&
-     &  ' Ida-Marie Hoeyvik,       Aarhus University,      Denmark   (orbital localization, SCF optimization)',&
-     &  ' Branislav Jansik,        Aarhus University,      Denmark   (trilevel, orbital localization)',&
-     &  ' Poul Joergensen,         Aarhus University,      Denmark   (supervision)', &
-     &  ' Joanna Kauczor,          Aarhus University,      Denmark   (response solver)',&
-     &  ' Thomas Kjaergaard,       Aarhus University,      Denmark   (response, integrals)',&
-     &  ' Andreas Krapp,           University of Oslo,     Norway    (FMM, dispersion-corrected DFT)',&
-     &  ' Kasper Kristensen,       Aarhus University,      Denmark   (response, DEC)',&
-     &  ' Patrick Merlot,          University of Oslo,     Norway    (PARI)',&
-     &  ' Jeppe Olsen,             Aarhus University,      Denmark   (supervision)', &
-     &  ' Simen Reine,             University of Oslo,     Norway    (integrals, geometry optimizer)',&
-     &  ' Vladimir Rybkin,         University of Oslo,     Norway    (geometry optimizer, dynamics)',&
-     &  ' Pawel Salek,             KTH Stockholm,          Sweden    (FMM, DFT functionals)',&
-     &  ' Andreas J. Thorvaldsen,  University of Tromsoe,  Norway    (response)',&
-     &  ' Lea Thoegersen,          Aarhus University,      Denmark   (SCF optimization)',&
-     &  ' Mark Watson,             University of Oslo,     Norway    (FMM)',&
-     &  ' Marcin Ziolkowski,       Aarhus University,      Denmark   (DEC)'
+  WRITE(LUPRI,'(5X,A)')&
+  &  '                                           ',&
+       &  ' LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)',&
+       &  ' ----------------------------------------------------------------------------',&
+       &  ' Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)',&
+       &  ' Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)',&
+       &  ' Sonia Coriani,           University of Trieste,     Italy     (response)',&
+       &  ' Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)',&
+       &  ' Trygve Helgaker,         University of Oslo,        Norway    (supervision)',&
+       &  ' Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)',&
+       &  ' Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)',&
+       &  ' Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)',&
+       &  ' Poul Joergensen,         Aarhus University,         Denmark   (supervision)', &
+       &  ' Joanna Kauczor,          Aarhus University,         Denmark   (response solver)',&
+       &  ' Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)',&
+       &  ' Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)',&
+       &  ' Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)',&
+       &  ' Patrick Merlot,          University of Oslo,        Norway    (PARI)',&
+       &  ' Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)',&
+       &  ' Jeppe Olsen,             Aarhus University,         Denmark   (supervision)', &
+       &  ' Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)',&
+       &  ' Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)',&
+       &  ' Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)',&
+       &  ' Andrew M. Teale,         University of Nottingham   England   (E-coefficients)',&
+       &  ' Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)',&
+       &  ' Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)',&
+       &  ' Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)',&
+       &  ' Mark Watson,             University of Oslo,        Norway    (FMM)',&
+       &  ' Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)'
 
-     WRITE(LUPRI,*)
-     WRITE(LUPRI,*)
-         WRITE (LUPRI,'(5X,A)')&
-     &'NOTE:',&
-     &' ',&
-     &'This is an experimental code for the evaluation of molecular',&
-     &'energies and properties using various electronic structure models.',&
-     &'The authors accept no responsibility for the performance of the code or',&
-     &'for the correctness of the results.',&
-     &' ',&
-     &'The code (in whole or part) is provided under a licence and',&
-     &'is not to be reproduced for further distribution without',&
-     &'the written permission of the authors or their representatives.',&
-     &' ',&
-     &'See the home page "http://daltonprogram.org"',&
-     &'for further information.',&
-     &' ',&
-     &'If results obtained with this code are published,',&
-     &'an appropriate citation would be:',&
-     &' ',&
-     &'"LSDalton, a molecular electronic structure program, Release 2013,',&
-     &' written by <INSERT AUTHOR LIST>"'
-        write(lupri,*)
+  WRITE(LUPRI,*)' '
+  WRITE(LUPRI,*)' '
+  WRITE (LUPRI,'(5X,A)')&
+       &'NOTE:',&
+       &' ',&
+       &'This is an experimental code for the evaluation of molecular',&
+       &'energies and properties using various electronic structure models.',&
+       &'The authors accept no responsibility for the performance of the code or',&
+       &'for the correctness of the results.',&
+       &' ',&
+       &'The code (in whole or part) is provided under a licence and',&
+       &'is not to be reproduced for further distribution without',&
+       &'the written permission of the authors or their representatives.',&
+       &' ',&
+       &'See the home page "http://daltonprogram.org"',&
+       &'for further information.'
+  WRITE(LUPRI,*)' '
+  WRITE(LUPRI,*)' '
 
-END SUBROUTINE
+
+END SUBROUTINE print_intro
 
 end module init_lsdalton_mod
 

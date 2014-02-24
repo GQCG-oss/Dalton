@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,196 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:59:09 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 19:10:50 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_r12_prop_h2o
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON                                          
+.DIRECT                                           
+.RUN WAVE FUNCTION                                
+**INTEGRAL                                        
+.DIPLEN                                           
+.R12                                              
+**WAVE FUNCTION                                   
+.CC                                               
+*SCF INPUT                                        
+.THRESH                                           
+ 1.0D-10                                          
+*ORBITAL INPUT                                    
+.MOSTART                                          
+ H1DIAG                                           
+*CC INP                                           
+.MP2                                              
+.PRINT                                            
+ 20                                               
+.THRENR                                           
+1.0D-10                                           
+.THRLEQ                                           
+1.0D-07                                           
+*R12                                              
+.NO 2                                             
+.R12XXL                                           
+.R12PRP                                           
+.NO RXR                                           
+*CCFOP                                            
+.DIPMOM                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+Ahlrichs-VDZ Ahlrichs-VTZ                                                      
+H2O                                                                            
+                                                                               
+    4    2  X  Y                                                               
+ 1      8.    1                                                                
+O       .000000000000000    .000000000000000  0.000000000000000       *        
+ 1      1.    1                                                                
+H      1.427450200000000    .000000000000000   1.110746000000000       *       
+ 2      8.    1                                                                
+O       .000000000000000    .000000000000000  0.000000000000000       *        
+ 2      1.    1                                                                
+H      1.427450200000000    .000000000000000   1.110746000000000       *       
 
 
        *******************************************************************
@@ -105,7 +218,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
@@ -134,32 +247,32 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    1
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Ahlrichs-VDZ"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/Ahlrichs-VDZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    1
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Ahlrichs-VDZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/Ahlrichs-VDZ"
 
   Atomic type no.    3
   --------------------
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   This is an auxiliary basis for R12, MBSI:    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Ahlrichs-VTZ"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/Ahlrichs-VTZ"
 
   Atomic type no.    4
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   This is an auxiliary basis for R12, MBSI:    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Ahlrichs-VTZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/Ahlrichs-VTZ"
 
 
                          SYMGRP: Point group information
@@ -236,7 +349,7 @@ Point group: C2v
   total:           6   10.0000    65    34
   ------------------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -300,8 +413,16 @@ Point group: C2v
  H   _2:    0.957119    1.510748    0.000000    0.957119    1.510748    0.000000
 
 
-  Max interatomic separation is    1.5107 Angstrom (    2.8549 Bohr)
+  Max    interatomic separation is    1.5107 Angstrom (    2.8549 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+  Min YX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    2    5
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -342,7 +463,7 @@ Point group: C2v
            27.258063           14.657408            9.531864 cm-1
 
 
-@  Nuclear repulsion energy :    9.196441218324
+@  Nuclear repulsion energy :    9.196441218324 Hartree
 
 
   Symmetry Orbitals
@@ -442,7 +563,7 @@ Point group: C2v
      ************************************************************************
 
  >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -459,16 +580,16 @@ Point group: C2v
  >>>> Detected R12 input:
  Direct Fock matrix formation switched on!
  Scale factors for CC excitations manifolds:
- for bra states (projection manifold):  1.00000000000000000     
- for ket states (operator manifold)  :  1.00000000000000000     
+ for bra states (projection manifold):   1.0000000000000000     
+ for ket states (operator manifold)  :   1.0000000000000000     
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 19:10:50 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:59:09 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -477,32 +598,29 @@ Point group: C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
-
-               Fock matrices are calculated directly
-               without use of integrals on disk.
+ Fock matrices are calculated directly without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART H1DIAG" input option.
+ ".MOSTART H1DIAG" input option
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -515,22 +633,12 @@ Point group: C2v
 
       -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-10
-
-
- Changes of defaults for CC:
- ---------------------------
-
-
- -This is a direct atomic orbital integral based
-  calculation for coupled cluster wave function
- -Dipole moment calculated
-  
 
 
  Changes of defaults for CC:
@@ -549,83 +657,84 @@ Point group: C2v
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   1  -69.5401085647       7.10D+00  -6.95D+01    3  1  1  0
+   1  Screening settings (-IFTHRS, DIFDEN)   -6    T
+@  1  -69.5401085647       7.10D+00  -6.95D+01     3   1   1   0
       Virial theorem: -V/T =      1.705529
-      MULPOP  O      -1.84; H   _1  0.92; H   _2  0.92; 
+@      MULPOP O      -1.84; H   _1  0.92; H   _2  0.92; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   2  -70.1332153370       6.84D+00  -5.93D-01    3  2  0  0
+   2  Screening settings (-IFTHRS, DIFDEN)   -6    T
+@  2  -70.1332153370       6.84D+00  -5.93D-01     3   2   0   0
       Virial theorem: -V/T =      2.078946
-      MULPOP  O       4.07; H   _1 -2.03; H   _2 -2.03; 
+@      MULPOP O       4.07; H   _1 -2.03; H   _2 -2.03; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   3  -75.7776837139       1.64D+00  -5.64D+00    3  1  1  0
+   3  Screening settings (-IFTHRS, DIFDEN)   -6    T
+@  3  -75.7776837139       1.64D+00  -5.64D+00     3   1   1   0
       Virial theorem: -V/T =      1.967578
-      MULPOP  O      -1.13; H   _1  0.56; H   _2  0.56; 
+@      MULPOP O      -1.13; H   _1  0.56; H   _2  0.56; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   4  -75.9049133386       4.18D-01  -1.27D-01    3  1  1  0
+   4  Screening settings (-IFTHRS, DIFDEN)   -6    T
+@  4  -75.9049133386       4.18D-01  -1.27D-01     3   1   1   0
       Virial theorem: -V/T =      1.992727
-      MULPOP  O      -0.81; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.81; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   5  -75.9152818292       3.43D-02  -1.04D-02    3  1  1  0
+   5  Screening settings (-IFTHRS, DIFDEN)   -8    F
+@  5  -75.9152818292       3.43D-02  -1.04D-02     3   1   1   0
       Virial theorem: -V/T =      2.000643
-      MULPOP  O      -0.65; H   _1  0.33; H   _2  0.33; 
+@      MULPOP O      -0.65; H   _1  0.33; H   _2  0.33; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   6  -75.9154487547       1.68D-02  -1.67D-04    3  1  1  0
+   6  Screening settings (-IFTHRS, DIFDEN)   -8    T
+@  6  -75.9154487547       1.68D-02  -1.67D-04     3   1   1   0
       Virial theorem: -V/T =      2.000680
-      MULPOP  O      -0.63; H   _1  0.31; H   _2  0.31; 
+@      MULPOP O      -0.63; H   _1  0.31; H   _2  0.31; 
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   7  -75.9154654370       3.44D-03  -1.67D-05    3  1  1  0
+   7  Screening settings (-IFTHRS, DIFDEN)   -8    T
+@  7  -75.9154654370       3.44D-03  -1.67D-05     3   1   1   0
       Virial theorem: -V/T =      2.000254
-      MULPOP  O      -0.63; H   _1  0.31; H   _2  0.31; 
+@      MULPOP O      -0.63; H   _1  0.31; H   _2  0.31; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   8  -75.9154660852       1.61D-04  -6.48D-07    3  1  1  0
+   8  Screening settings (-IFTHRS, DIFDEN)  -10    F
+@  8  -75.9154660852       1.61D-04  -6.48D-07     3   1   1   0
       Virial theorem: -V/T =      2.000313
-      MULPOP  O      -0.63; H   _1  0.31; H   _2  0.31; 
+@      MULPOP O      -0.63; H   _1  0.31; H   _2  0.31; 
  -----------------------------------------------------------------------------
-   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   9  -75.9154660868       3.44D-05  -1.55D-09    3  1  1  0
+   9  Screening settings (-IFTHRS, DIFDEN)  -10    T
+@  9  -75.9154660868       3.44D-05  -1.55D-09     3   1   1   0
       Virial theorem: -V/T =      2.000315
-      MULPOP  O      -0.63; H   _1  0.31; H   _2  0.31; 
+@      MULPOP O      -0.63; H   _1  0.31; H   _2  0.31; 
  -----------------------------------------------------------------------------
-  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  10  -75.9154660869       9.62D-06  -5.72D-11    3  1  1  0
+  10  Screening settings (-IFTHRS, DIFDEN)  -12    F
+@ 10  -75.9154660869       9.62D-06  -5.72D-11     3   1   1   0
       Virial theorem: -V/T =      2.000316
-      MULPOP  O      -0.63; H   _1  0.31; H   _2  0.31; 
+@      MULPOP O      -0.63; H   _1  0.31; H   _2  0.31; 
  -----------------------------------------------------------------------------
-  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  11  -75.9154660869       6.85D-07  -4.66D-12    3  1  1  0
+  11  Screening settings (-IFTHRS, DIFDEN)  -12    T
+@ 11  -75.9154660869       6.85D-07  -4.66D-12     3   1   1   0
       Virial theorem: -V/T =      2.000316
-      MULPOP  O      -0.63; H   _1  0.31; H   _2  0.31; 
+@      MULPOP O      -0.63; H   _1  0.31; H   _2  0.31; 
  -----------------------------------------------------------------------------
-  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  12  -75.9154660869       9.25D-08  -7.11D-14    3  1  1  0
+  12  Screening settings (-IFTHRS, DIFDEN)  -15    F
+@ 12  -75.9154660869       9.25D-08  -5.68D-14     3   1   1   0
       Virial theorem: -V/T =      2.000316
-      MULPOP  O      -0.63; H   _1  0.31; H   _2  0.31; 
+@      MULPOP O      -0.63; H   _1  0.31; H   _2  0.31; 
  -----------------------------------------------------------------------------
-  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  13  -75.9154660869       1.24D-08   1.42D-14    3  1  1  0
+  13  Screening settings (-IFTHRS, DIFDEN)  -15    T
+@ 13  -75.9154660869       1.24D-08   0.00D+00     3   1   1   0
       Virial theorem: -V/T =      2.000316
-      MULPOP  O      -0.63; H   _1  0.31; H   _2  0.31; 
+@      MULPOP O      -0.63; H   _1  0.31; H   _2  0.31; 
  -----------------------------------------------------------------------------
-  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  14  -75.9154660869       9.14D-10   0.00D+00    3  1  1  0
+  14  Screening settings (-IFTHRS, DIFDEN)  -15    T
+@ 14  -75.9154660869       9.14D-10  -2.84D-14     3   1   1   0
       Virial theorem: -V/T =      2.000316
-      MULPOP  O      -0.63; H   _1  0.31; H   _2  0.31; 
+@      MULPOP O      -0.63; H   _1  0.31; H   _2  0.31; 
  -----------------------------------------------------------------------------
-  15  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  15  -75.9154660869       1.44D-11  -2.84D-14    3  1  1  0
+  15  Screening settings (-IFTHRS, DIFDEN)  -15    T
+@ 15  -75.9154660869       1.44D-11   1.42D-14     3   1   1   0
 
- *** DIIS converged in  15 iterations !
-   - total time used in SIRFCK :              0.03 seconds
+@ *** DIIS converged in  15 iterations !
+@     Converged SCF energy, gradient:    -75.915466086862    1.44D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -666,25 +775,27 @@ Point group: C2v
    2      0.000000000000
    3      0.000000000000
 
+ >>>> CPU and wall time for SCF :       0.059       0.060
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -75.915466086863                 
-     Nuclear repulsion:             9.196441218324
-     Electronic energy:           -85.111907305186
+@    Final HF energy:             -75.915466086862                 
+@    Nuclear repulsion:             9.196441218324
+@    Electronic energy:           -85.111907305185
 
-     Final gradient norm:           0.000000000014
+@    Final gradient norm:           0.000000000014
 
  
-     Date and time (Linux)  : Wed Mar 16 19:10:50 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:59:09 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -719,11 +830,11 @@ Point group: C2v
 
 
  >>>> Total CPU  time used in SIRIUS :      0.06 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      0.06 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:10:50 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:59:09 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -749,7 +860,7 @@ Point group: C2v
  *******************************************************************************
 
 
- LWORK =       100000000
+ LWORK =        64000000
 
 
 
@@ -1102,7 +1213,7 @@ Point group: C2v
  Core memory required by CCSD_R12 :          30611  (double words)
 
  Computation of (ip'|r12|jq') integrals done
- >>> Time used in R  [5] is   0.21 seconds
+ >>>  Time used in R  [5]     is   0.17 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of V^aj_kl intermediate done
 
@@ -1113,7 +1224,7 @@ Point group: C2v
  >>> Time used for V^aj_kl is    0.00 seconds
 
  Computation of (ip'|1/r12|jq') integrals done
- >>> Time used in 1/R[5] is   0.42 seconds
+ >>>  Time used in 1/R[5]     is   0.36 seconds
  Computation of V^aj_kl intermediate done
 
  >>> Time used for V^aj_kl is    0.00 seconds
@@ -1135,9 +1246,9 @@ Point group: C2v
  >>> Time used for V^aj_kl is    0.00 seconds
 
  Computation of (i* p'|r12|jq') integrals done
- >>> Time used in R  [5] is   1.05 seconds
+ >>>  Time used in R  [5]     is   0.89 seconds
  Computation of (i'p|r12|jq') integrals done
- >>> Time used in R  [5] is   0.21 seconds
+ >>>  Time used in R  [5]     is   0.17 seconds
  Computation of V^aj_kl intermediate done
 
  >>> Time used for V^aj_kl is    0.00 seconds
@@ -1147,7 +1258,7 @@ Point group: C2v
  >>> Time used for V^aj_kl is    0.00 seconds
 
  Computation of (ip'|[T,r12]|jq') integrals done
- >>> Time used in T,R[5] is   0.33 seconds
+ >>>  Time used in T,R[5]     is   0.29 seconds
 
 
                  +-----------------------------------------------+
@@ -2127,8 +2238,8 @@ Point group: C2v
  Computation of exchange matrix done [4]
 
               MP2-R12/B   correlation energy =   -0.395765705
- Time for MP2-R12 part cpu:   2.2726539224386215     
- Time for MP2-R12 part wall:   3.0000000000000000     
+ Time for MP2-R12 part cpu :   1.9279999999999999     
+ Time for MP2-R12 part wall:   1.9560000300407410     
 
 
                            +----------------------------+
@@ -2469,10 +2580,14 @@ Point group: C2v
 
 
      Zero matrix.
+    ==== End of matrix output ====
 
      Zero matrix.
+    ==== End of matrix output ====
 
      Zero matrix.
+    ==== End of matrix output ====
+    ==== End of matrix output ====
 
 
                                 +-----------------+
@@ -2527,6 +2642,7 @@ Point group: C2v
       14       0.01770566    -0.03068496
       15       0.01855863    -0.01176073    -0.02437013
       16       0.02324884    -0.01293022    -0.02582441    -0.04714220
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00015375
@@ -2563,6 +2679,7 @@ Point group: C2v
 
                Column  13
       13      -0.00508458
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00112082
@@ -2577,12 +2694,14 @@ Point group: C2v
        5      -0.00991440
        6       0.00058624    -0.00647642
        7       0.00067054     0.00238701    -0.01043344
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00342083
        2       0.00231086    -0.00406712
        3      -0.00111861     0.00295790    -0.00382878
        4      -0.00376033     0.00239257    -0.00087695    -0.00450833
+    ==== End of matrix output ====
 
 
                         +---------------------------------+
@@ -2621,15 +2740,13 @@ Point group: C2v
 
           Norm of Printed Amplitude Vector :             0.0863
 
-
           Printed all single excitations greater than 0.010000
 
-
           Printed all double excitations greater than 0.025000
- Iter.  1: Coupled cluster MP2-R12/ energy :     -76.0438868390391889
-     Conventional correlation energy:    -0.1284207521762113
+ Iter.  1: Coupled cluster MP2-R12/ energy :     -76.0438868390376967
+     Conventional correlation energy:    -0.1284207521761545
      R12 correlation energy         :     0.0000000000000000
-     Total correlation energy       :    -0.1284207521762113
+     Total correlation energy       :    -0.1284207521761545
 
 
 
@@ -2662,7 +2779,7 @@ Point group: C2v
                     ! Model is second order pert. theory: MP2 !
                     +-----------------------------------------+
 
- CC_FOP-1: Workspace:   100000000
+ CC_FOP-1: Workspace:    64000000
 
 
                                 +-----------------+
@@ -2671,10 +2788,14 @@ Point group: C2v
 
 
      Zero matrix.
+    ==== End of matrix output ====
 
      Zero matrix.
+    ==== End of matrix output ====
 
      Zero matrix.
+    ==== End of matrix output ====
+    ==== End of matrix output ====
 
 
                                 +-----------------+
@@ -2729,6 +2850,7 @@ Point group: C2v
       14       0.01770566    -0.03068496
       15       0.01855863    -0.01176073    -0.02437013
       16       0.04418682    -0.02474184    -0.04788849    -0.04714220
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00015375
@@ -2765,6 +2887,7 @@ Point group: C2v
 
                Column  13
       13      -0.00508458
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00112082
@@ -2779,14 +2902,16 @@ Point group: C2v
        5      -0.00991440
        6       0.00058624    -0.00647642
        7       0.00067054     0.00238701    -0.01043344
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00342083
        2      -0.01862712    -0.00406712
        3       0.01069301     0.00295790    -0.00382878
        4       0.01830375     0.00239257    -0.00087695    -0.00450833
+    ==== End of matrix output ====
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  0.14672643955966991     
+ Norm of doubles Lambda vector :  0.14672643955972944     
 
 
  Analysis of the undifferentiated Lagrangian multipliers:
@@ -2864,13 +2989,11 @@ Point group: C2v
 
           Norm of Printed Amplitude Vector :             0.3589
 
-
           Printed all single excitations greater than 0.010000
-
 
           Printed all double excitations greater than 0.025000
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  0.14672643955966991     
+ Norm of doubles Lambda vector :  0.14672643955972944     
 
 
                    Calculating diagonal blocks of zeta-kappa-0
@@ -2883,22 +3006,22 @@ Point group: C2v
                           +------------------------------+
 
   
- Norm of occupied-occupied block:  3.95690766028068130E-002
- Norm of virtual-virtual block:  3.70321467583136846E-002
+ Norm of occupied-occupied block:   3.9569076602828740E-002
+ Norm of virtual-virtual block:   3.7032146758331851E-002
   
  Diagonal blocks of Zeta-kappa-0 calculated
- Total time used in MP2_ZKDIA:  9.98973846435546875E-004
+ Total time used in MP2_ZKDIA:   0.0000000000000000     
 
 
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
   
- Norm of Eta-kappa-0:  9.67002232789816729E-003
+ Norm of Eta-kappa-0:   9.6700223278564472E-003
   
  MP2 Eta-0(kappa) calculation completed
- Total time used in MP2_KANEW:  3.99951934814453125E-002
- CC_FOP> Norm of RHS vector:  4.19413268540440379E-002
+ Total time used in MP2_KANEW:   3.5999774932861328E-002
+ CC_FOP> Norm of RHS vector:   4.1941326854273431E-002
 
 
                       Solving for orbital relaxation vector
@@ -2916,8 +3039,8 @@ Point group: C2v
  Convergence threshold:     1.00D-07
 
 
-   SCF energy         :      -75.915466086862978
- -- inactive part     :      -85.111907305186492
+   SCF energy         :      -75.915466086861542
+ -- inactive part     :      -85.111907305185056
  -- nuclear repulsion :        9.196441218323510
 
  NISHT,NASHT,NORBT,NBAST,NCREF,IREFSY     5     0    13    34     1     1
@@ -2951,7 +3074,7 @@ Point group: C2v
 
  MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS IN RSPNEX:      30
   LINEQ,RESTPP,ORBSPC T F F
-  FREQ =   0.0000000000000000      -0.56246460278976451       0.16583544519174109       0.92724574142038685        1.2206528045470755        1.4345492699493987        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+  FREQ =   0.0000000000000000       0.16583544519662954       0.92724574142103444        1.2206528045468112        1.4345492699482920        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 1.13512733D-02
@@ -2971,21 +3094,24 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    2
 
-              Column   1
-       1      0.19201284
-       2     -0.19201284
+               Column   1
+       1       0.19201284
+       2      -0.19201284
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
                Column   1     Column   2
        1       2.48542192
        2      -0.89585560     2.48542192
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2
        1       2.00000000
        2      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                2           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -3027,11 +3153,12 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    4
 
-              Column   1
-       1      0.19201284
-       2     -0.19201284
-       3      0.03319223
-       4     -0.03319223
+               Column   1
+       1       0.19201284
+       2      -0.19201284
+       3       0.03319223
+       4      -0.03319223
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -3040,14 +3167,16 @@ Point group: C2v
        2      -0.89585560     2.48542192
        3       1.05831789    -0.74758866     3.06816652
        4      -0.74758866     1.05831789    -0.65808543     3.06816652
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                4           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -3068,7 +3197,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 1.26580706D-05
- Z + Y norm squared = 1.69406589D-21
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3094,13 +3223,14 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    6
 
-              Column   1
-       1      0.19201284
-       2     -0.19201284
-       3      0.03319223
-       4     -0.03319223
-       5      0.01725900
-       6     -0.01725900
+               Column   1
+       1       0.19201284
+       2      -0.19201284
+       3       0.03319223
+       4      -0.03319223
+       5       0.01725900
+       6      -0.01725900
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -3115,20 +3245,22 @@ Point group: C2v
                Column   5     Column   6
        5       2.52190087
        6      -0.01023326     2.52190087
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5      -0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6
        5       2.00000000
        6      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                6           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -3178,15 +3310,16 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    8
 
-              Column   1
-       1      0.19201284
-       2     -0.19201284
-       3      0.03319223
-       4     -0.03319223
-       5      0.01725900
-       6     -0.01725900
-       7      0.00213662
-       8     -0.00213662
+               Column   1
+       1       0.19201284
+       2      -0.19201284
+       3       0.03319223
+       4      -0.03319223
+       5       0.01725900
+       6      -0.01725900
+       7       0.00213662
+       8      -0.00213662
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -3205,16 +3338,17 @@ Point group: C2v
        6      -0.01023326     2.52190087
        7      -1.68733804     0.03996820     5.71310439
        8       0.03996820    -1.68733804    -0.00174834     5.71310439
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5      -0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
        7      -0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
@@ -3223,6 +3357,7 @@ Point group: C2v
        6      -0.00000000    -2.00000000
        7       0.00000000     0.00000000     2.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                8           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -3249,7 +3384,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 7.58143561D-09
- Z + Y norm squared = 1.65436123D-24
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3275,17 +3410,18 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   10
 
-              Column   1
-       1      0.19201284
-       2     -0.19201284
-       3      0.03319223
-       4     -0.03319223
-       5      0.01725900
-       6     -0.01725900
-       7      0.00213662
-       8     -0.00213662
-       9      0.00798467
-      10     -0.00798467
+               Column   1
+       1       0.19201284
+       2      -0.19201284
+       3       0.03319223
+       4      -0.03319223
+       5       0.01725900
+       6      -0.01725900
+       7       0.00213662
+       8      -0.00213662
+       9       0.00798467
+      10      -0.00798467
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -3312,18 +3448,21 @@ Point group: C2v
                Column   9     Column  10
        9      16.34190695
       10      -0.03481690    16.34190695
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5      -0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
        7      -0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
@@ -3336,6 +3475,7 @@ Point group: C2v
                Column   9     Column  10
        9       2.00000000
       10      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               10           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -3365,7 +3505,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 1.76678248D-10
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared =-2.58493941D-26
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3391,19 +3531,20 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   12
 
-              Column   1
-       1      0.19201284
-       2     -0.19201284
-       3      0.03319223
-       4     -0.03319223
-       5      0.01725900
-       6     -0.01725900
-       7      0.00213662
-       8     -0.00213662
-       9      0.00798467
-      10     -0.00798467
-      11     -0.01149607
-      12      0.01149607
+               Column   1
+       1       0.19201284
+       2      -0.19201284
+       3       0.03319223
+       4      -0.03319223
+       5       0.01725900
+       6      -0.01725900
+       7       0.00213662
+       8      -0.00213662
+       9       0.00798467
+      10      -0.00798467
+      11      -0.01149607
+      12       0.01149607
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -3436,20 +3577,23 @@ Point group: C2v
       10      -0.03481690    16.34190695
       11     -15.79981470     0.06355485    19.99927129
       12       0.06355485   -15.79981470    -0.09624758    19.99927129
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5      -0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
        7      -0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
@@ -3458,14 +3602,15 @@ Point group: C2v
        8      -0.00000000    -0.00000000    -0.00000000    -2.00000000
        9       0.00000000     0.00000000     0.00000000     0.00000000
       10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
       11       0.00000000     0.00000000     2.00000000
       12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               12           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -3498,7 +3643,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 1.77353212D-12
- Z + Y norm squared =-2.01948392D-28
+ Z + Y norm squared = 2.01948392D-28
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3524,21 +3669,22 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   14
 
-              Column   1
-       1      0.19201284
-       2     -0.19201284
-       3      0.03319223
-       4     -0.03319223
-       5      0.01725900
-       6     -0.01725900
-       7      0.00213662
-       8     -0.00213662
-       9      0.00798467
-      10     -0.00798467
-      11     -0.01149607
-      12      0.01149607
-      13      0.02458572
-      14     -0.02458572
+               Column   1
+       1       0.19201284
+       2      -0.19201284
+       3       0.03319223
+       4      -0.03319223
+       5       0.01725900
+       6      -0.01725900
+       7       0.00213662
+       8      -0.00213662
+       9       0.00798467
+      10      -0.00798467
+      11      -0.01149607
+      12       0.01149607
+      13       0.02458572
+      14      -0.02458572
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -3581,22 +3727,25 @@ Point group: C2v
                Column  13     Column  14
       13       5.49734499
       14       0.00160362     5.49734499
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5      -0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
        7      -0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
@@ -3605,10 +3754,10 @@ Point group: C2v
        8      -0.00000000    -0.00000000    -0.00000000    -2.00000000
        9       0.00000000     0.00000000     0.00000000     0.00000000
       10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000     0.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
@@ -3621,6 +3770,7 @@ Point group: C2v
                Column  13     Column  14
       13       2.00000000
       14      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               14           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -3655,8 +3805,8 @@ Point group: C2v
           BNORM: 1.06714D-01 EIVAL: 0.00000D+00
 
  ** TEST OF Z = Y OR Z = -Y:
- (Z Y) norm squared = 8.01518724D-15
- Z + Y norm squared =-1.57772181D-30
+ (Z Y) norm squared = 8.01518723D-15
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3682,23 +3832,24 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   16
 
-              Column   1
-       1      0.19201284
-       2     -0.19201284
-       3      0.03319223
-       4     -0.03319223
-       5      0.01725900
-       6     -0.01725900
-       7      0.00213662
-       8     -0.00213662
-       9      0.00798467
-      10     -0.00798467
-      11     -0.01149607
-      12      0.01149607
-      13      0.02458572
-      14     -0.02458572
-      15      0.01821361
-      16     -0.01821361
+               Column   1
+       1       0.19201284
+       2      -0.19201284
+       3       0.03319223
+       4      -0.03319223
+       5       0.01725900
+       6      -0.01725900
+       7       0.00213662
+       8      -0.00213662
+       9       0.00798467
+      10      -0.00798467
+      11      -0.01149607
+      12       0.01149607
+      13       0.02458572
+      14      -0.02458572
+      15       0.01821361
+      16      -0.01821361
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -3749,24 +3900,27 @@ Point group: C2v
       14       0.00160362     5.49734499
       15      -2.09913794     0.06365424     8.25838604
       16       0.06365424    -2.09913794    -0.09985915     8.25838604
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5      -0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
        7      -0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15       0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      15      -0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
@@ -3775,12 +3929,12 @@ Point group: C2v
        8      -0.00000000    -0.00000000    -0.00000000    -2.00000000
        9       0.00000000     0.00000000     0.00000000     0.00000000
       10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000     0.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15      -0.00000000     0.00000000    -0.00000000     0.00000000
-      16      -0.00000000     0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
@@ -3789,14 +3943,15 @@ Point group: C2v
       12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
       13      -0.00000000     0.00000000     0.00000000     0.00000000
       14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15      -0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      15      -0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column  13     Column  14     Column  15     Column  16
       13       2.00000000
       14      -0.00000000    -2.00000000
-      15       0.00000000     0.00000000     2.00000000
-      16      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+      15      -0.00000000     0.00000000     2.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               16           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -3834,8 +3989,8 @@ Point group: C2v
           BNORM: 1.06714D-01 EIVAL: 0.00000D+00
 
  ** TEST OF Z = Y OR Z = -Y:
- (Z Y) norm squared = 7.21737427D-17
- Z + Y norm squared = 0.00000000D+00
+ (Z Y) norm squared = 7.21737416D-17
+ Z + Y norm squared =-1.23259516D-32
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3861,25 +4016,26 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   18
 
-              Column   1
-       1      0.19201284
-       2     -0.19201284
-       3      0.03319223
-       4     -0.03319223
-       5      0.01725900
-       6     -0.01725900
-       7      0.00213662
-       8     -0.00213662
-       9      0.00798467
-      10     -0.00798467
-      11     -0.01149607
-      12      0.01149607
-      13      0.02458572
-      14     -0.02458572
-      15      0.01821361
-      16     -0.01821361
-      17      0.01363193
-      18     -0.01363193
+               Column   1
+       1       0.19201284
+       2      -0.19201284
+       3       0.03319223
+       4      -0.03319223
+       5       0.01725900
+       6      -0.01725900
+       7       0.00213662
+       8      -0.00213662
+       9       0.00798467
+      10      -0.00798467
+      11      -0.01149607
+      12       0.01149607
+      13       0.02458572
+      14      -0.02458572
+      15       0.01821361
+      16      -0.01821361
+      17       0.01363193
+      18      -0.01363193
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -3900,8 +4056,8 @@ Point group: C2v
       14      -0.01080605     0.30572733    -0.08246916    -0.22684787
       15       0.28646390    -0.16307515     0.46814686    -0.12316612
       16      -0.16307515     0.28646390    -0.12316612     0.46814686
-      17       0.17128512    -0.04494366     0.03321454    -0.07172303
-      18      -0.04494366     0.17128512    -0.07172303     0.03321454
+      17       0.17128511    -0.04494366     0.03321454    -0.07172303
+      18      -0.04494366     0.17128511    -0.07172303     0.03321454
 
                Column   5     Column   6     Column   7     Column   8
        5       2.52190087
@@ -3928,40 +4084,43 @@ Point group: C2v
       14      -0.03434131     6.10417275     0.05244115    -7.40973506
       15      -1.04778818     0.03633544     2.13558218     0.02967211
       16       0.03633544    -1.04778818     0.02967211     2.13558218
-      17      -0.57446711    -0.00759055    -0.61588051    -0.04971589
-      18      -0.00759055    -0.57446711    -0.04971589    -0.61588051
+      17      -0.57446713    -0.00759055    -0.61588050    -0.04971589
+      18      -0.00759055    -0.57446713    -0.04971589    -0.61588050
 
                Column  13     Column  14     Column  15     Column  16
       13       5.49734499
       14       0.00160362     5.49734499
       15      -2.09913794     0.06365424     8.25838604
       16       0.06365424    -2.09913794    -0.09985915     8.25838604
-      17       2.14616741     0.00045752   -11.60071389     0.00703440
-      18       0.00045752     2.14616741     0.00703440   -11.60071389
+      17       2.14616741     0.00045752   -11.60071390     0.00703440
+      18       0.00045752     2.14616741     0.00703440   -11.60071390
 
                Column  17     Column  18
-      17      32.39663558
-      18      -0.06519615    32.39663558
+      17      32.39663566
+      18      -0.06519615    32.39663566
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5      -0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
        7      -0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15       0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      17      -0.00000000     0.00000000     0.00000000     0.00000000
-      18      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      15      -0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      17       0.00000000     0.00000000    -0.00000000     0.00000000
+      18      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
@@ -3970,14 +4129,14 @@ Point group: C2v
        8      -0.00000000    -0.00000000    -0.00000000    -2.00000000
        9       0.00000000     0.00000000     0.00000000     0.00000000
       10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000     0.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15      -0.00000000     0.00000000    -0.00000000     0.00000000
-      16      -0.00000000     0.00000000    -0.00000000     0.00000000
-      17       0.00000000     0.00000000     0.00000000     0.00000000
-      18      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      17      -0.00000000     0.00000000     0.00000000     0.00000000
+      18      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
@@ -3986,22 +4145,23 @@ Point group: C2v
       12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
       13      -0.00000000     0.00000000     0.00000000     0.00000000
       14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15      -0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      17      -0.00000000     0.00000000    -0.00000000     0.00000000
-      18      -0.00000000     0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000     0.00000000
+      17       0.00000000     0.00000000    -0.00000000     0.00000000
+      18      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column  13     Column  14     Column  15     Column  16
       13       2.00000000
       14      -0.00000000    -2.00000000
-      15       0.00000000     0.00000000     2.00000000
-      16      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+      15      -0.00000000     0.00000000     2.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -2.00000000
       17       0.00000000     0.00000000     0.00000000     0.00000000
       18      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column  17     Column  18
       17       2.00000000
       18      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               18           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -4080,13 +4240,14 @@ Point group: C2v
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.02 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.03 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.02 CPU seconds.
+ >>> Total time used in response solver is         0.03 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  1.43248910836812522E-002
+ Norm of zeta-kappa-0:   1.4324891083693534E-002
+ CCFOP: call CC_D1AO to recalc the 1e Density
 
 
                             +--------------------------+
@@ -4128,7 +4289,7 @@ Point group: C2v
   
   
  CC one electron density calculated & diagonalized
- Total time used in CC_D1AO:  1.00016593933105469E-003
+ Total time used in CC_D1AO:   0.0000000000000000     
   
 
 
@@ -4191,7 +4352,7 @@ Point group: C2v
                     ! Model is second order pert. theory: MP2 !
                     +-----------------------------------------+
 
- CC_FOP-1: Workspace:   100000000
+ CC_FOP-1: Workspace:    64000000
 
 
                                 +-----------------+
@@ -4200,10 +4361,14 @@ Point group: C2v
 
 
      Zero matrix.
+    ==== End of matrix output ====
 
      Zero matrix.
+    ==== End of matrix output ====
 
      Zero matrix.
+    ==== End of matrix output ====
+    ==== End of matrix output ====
 
 
                                 +-----------------+
@@ -4258,6 +4423,7 @@ Point group: C2v
       14       0.01770566    -0.03068496
       15       0.01855863    -0.01176073    -0.02437013
       16       0.04418682    -0.02474184    -0.04788849    -0.04714220
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00015375
@@ -4294,6 +4460,7 @@ Point group: C2v
 
                Column  13
       13      -0.00508458
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00112082
@@ -4308,14 +4475,16 @@ Point group: C2v
        5      -0.00991440
        6       0.00058624    -0.00647642
        7       0.00067054     0.00238701    -0.01043344
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00342083
        2      -0.01862712    -0.00406712
        3       0.01069301     0.00295790    -0.00382878
        4       0.01830375     0.00239257    -0.00087695    -0.00450833
+    ==== End of matrix output ====
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  0.14672643955966991     
+ Norm of doubles Lambda vector :  0.14672643955972944     
 
 
  Analysis of the undifferentiated Lagrangian multipliers:
@@ -4393,13 +4562,11 @@ Point group: C2v
 
           Norm of Printed Amplitude Vector :             0.3589
 
-
           Printed all single excitations greater than 0.010000
-
 
           Printed all double excitations greater than 0.025000
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  0.14672643955966991     
+ Norm of doubles Lambda vector :  0.14672643955972944     
 
 
                    Calculating diagonal blocks of zeta-kappa-0
@@ -4412,22 +4579,22 @@ Point group: C2v
                           +------------------------------+
 
   
- Norm of occupied-occupied block:  3.95690766028068130E-002
- Norm of virtual-virtual block:  3.70321467583136846E-002
+ Norm of occupied-occupied block:   3.9569076602828740E-002
+ Norm of virtual-virtual block:   3.7032146758331851E-002
   
  Diagonal blocks of Zeta-kappa-0 calculated
- Total time used in MP2_ZKDIA:  1.00016593933105469E-003
+ Total time used in MP2_ZKDIA:   0.0000000000000000     
 
 
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
   
- Norm of Eta-kappa-0:  9.67002232789816729E-003
+ Norm of Eta-kappa-0:   9.6700223278564472E-003
   
  MP2 Eta-0(kappa) calculation completed
- Total time used in MP2_KANEW:  3.99937629699707031E-002
- CC_FOP> Norm of RHS vector:  0.48752176763716848     
+ Total time used in MP2_KANEW:   3.5999774932861328E-002
+ CC_FOP> Norm of RHS vector:  0.48752176760189098     
 
 
                       Solving for orbital relaxation vector
@@ -4445,8 +4612,8 @@ Point group: C2v
  Convergence threshold:     1.00D-07
 
 
-   SCF energy         :      -75.915466086862978
- -- inactive part     :      -85.111907305186492
+   SCF energy         :      -75.915466086861542
+ -- inactive part     :      -85.111907305185056
  -- nuclear repulsion :        9.196441218323510
 
  NISHT,NASHT,NORBT,NBAST,NCREF,IREFSY     5     0    13    34     1     1
@@ -4480,11 +4647,11 @@ Point group: C2v
 
  MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS IN RSPNEX:      30
   LINEQ,RESTPP,ORBSPC T F F
-  FREQ =   0.0000000000000000      -0.56246460278976451       0.16583544519174109       0.92724574142038685        1.2206528045470755        1.4345492699493987        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+  FREQ =   0.0000000000000000       0.16583544519662954       0.92724574142103444        1.2206528045468112        1.4345492699482920        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 1.35935830D-02
- Z + Y norm squared = 3.46944695D-18
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4500,21 +4667,24 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    2
 
-              Column   1
-       1      0.36024879
-       2     -0.36024879
+               Column   1
+       1       0.36024879
+       2      -0.36024879
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
                Column   1     Column   2
        1       3.59571246
        2      -0.08164488     3.59571246
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2
        1       2.00000000
        2      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                2           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -4532,7 +4702,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 8.33310245D-04
- Z + Y norm squared =-1.08420217D-19
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4556,11 +4726,12 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    4
 
-              Column   1
-       1      0.36024879
-       2     -0.36024879
-       3      0.09818069
-       4     -0.09818069
+               Column   1
+       1       0.36024879
+       2      -0.36024879
+       3       0.09818069
+       4      -0.09818069
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -4569,6 +4740,7 @@ Point group: C2v
        2      -0.08164488     3.59571246
        3       1.54156757    -0.35448682     4.83387024
        4      -0.35448682     1.54156757    -1.22200486     4.83387024
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
@@ -4577,6 +4749,7 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                4           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -4597,7 +4770,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 1.30070852D-04
- Z + Y norm squared =-2.71050543D-20
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4623,13 +4796,14 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    6
 
-              Column   1
-       1      0.36024879
-       2     -0.36024879
-       3      0.09818069
-       4     -0.09818069
-       5      0.27837151
-       6     -0.27837151
+               Column   1
+       1       0.36024879
+       2      -0.36024879
+       3       0.09818069
+       4      -0.09818069
+       5       0.27837151
+       6      -0.27837151
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -4644,6 +4818,7 @@ Point group: C2v
                Column   5     Column   6
        5       7.19053349
        6      -0.24254672     7.19053349
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
@@ -4652,12 +4827,13 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6
        5       2.00000000
        6      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                6           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -4707,15 +4883,16 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    8
 
-              Column   1
-       1      0.36024879
-       2     -0.36024879
-       3      0.09818069
-       4     -0.09818069
-       5      0.27837151
-       6     -0.27837151
-       7     -0.42844616
-       8      0.42844616
+               Column   1
+       1       0.36024879
+       2      -0.36024879
+       3       0.09818069
+       4      -0.09818069
+       5       0.27837151
+       6      -0.27837151
+       7      -0.42844616
+       8       0.42844616
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -4734,6 +4911,7 @@ Point group: C2v
        6      -0.24254672     7.19053349
        7     -10.23550355     0.05856532    22.83611210
        8       0.05856532   -10.23550355     0.00952522    22.83611210
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
@@ -4742,16 +4920,17 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                8           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -4778,7 +4957,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 4.58502423D-08
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared =-6.61744490D-24
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4804,17 +4983,18 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   10
 
-              Column   1
-       1      0.36024879
-       2     -0.36024879
-       3      0.09818069
-       4     -0.09818069
-       5      0.27837151
-       6     -0.27837151
-       7     -0.42844616
-       8      0.42844616
-       9      0.26803713
-      10     -0.26803713
+               Column   1
+       1       0.36024879
+       2      -0.36024879
+       3       0.09818069
+       4      -0.09818069
+       5       0.27837151
+       6      -0.27837151
+       7      -0.42844616
+       8       0.42844616
+       9       0.26803713
+      10      -0.26803713
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -4835,12 +5015,13 @@ Point group: C2v
        6      -0.24254672     7.19053349
        7     -10.23550355     0.05856532    22.83611210
        8       0.05856532   -10.23550355     0.00952522    22.83611210
-       9       6.28017720    -0.00174011   -14.43052822     0.04743908
-      10      -0.00174011     6.28017720     0.04743908   -14.43052822
+       9       6.28017721    -0.00174011   -14.43052822     0.04743908
+      10      -0.00174011     6.28017721     0.04743908   -14.43052822
 
                Column   9     Column  10
        9      11.77984265
       10       0.06602755    11.77984265
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
@@ -4849,24 +5030,25 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10
        9       2.00000000
       10      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               10           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -4896,7 +5078,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 1.15270986D-09
- Z + Y norm squared = 2.06795153D-25
+ Z + Y norm squared = 4.13590306D-25
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4922,19 +5104,20 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   12
 
-              Column   1
-       1      0.36024879
-       2     -0.36024879
-       3      0.09818069
-       4     -0.09818069
-       5      0.27837151
-       6     -0.27837151
-       7     -0.42844616
-       8      0.42844616
-       9      0.26803713
-      10     -0.26803713
-      11     -0.07953335
-      12      0.07953335
+               Column   1
+       1       0.36024879
+       2      -0.36024879
+       3       0.09818069
+       4      -0.09818069
+       5       0.27837151
+       6      -0.27837151
+       7      -0.42844616
+       8       0.42844616
+       9       0.26803713
+      10      -0.26803713
+      11      -0.07953335
+      12       0.07953335
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -4957,8 +5140,8 @@ Point group: C2v
        6      -0.24254672     7.19053349
        7     -10.23550355     0.05856532    22.83611210
        8       0.05856532   -10.23550355     0.00952522    22.83611210
-       9       6.28017720    -0.00174011   -14.43052822     0.04743908
-      10      -0.00174011     6.28017720     0.04743908   -14.43052822
+       9       6.28017721    -0.00174011   -14.43052822     0.04743908
+      10      -0.00174011     6.28017721     0.04743908   -14.43052822
       11      -2.34423821    -0.03084715     4.79046569    -0.02057425
       12      -0.03084715    -2.34423821    -0.02057425     4.79046569
 
@@ -4967,6 +5150,7 @@ Point group: C2v
       10       0.06602755    11.77984265
       11      -4.25108741     0.04493920     4.40444642
       12       0.04493920    -4.25108741    -0.01016606     4.40444642
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
@@ -4975,30 +5159,31 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
       11      -0.00000000     0.00000000    -0.00000000     0.00000000
       12      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               12           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -5031,7 +5216,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 1.93645478D-11
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 3.23117427D-27
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -5057,21 +5242,22 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   14
 
-              Column   1
-       1      0.36024879
-       2     -0.36024879
-       3      0.09818069
-       4     -0.09818069
-       5      0.27837151
-       6     -0.27837151
-       7     -0.42844616
-       8      0.42844616
-       9      0.26803713
-      10     -0.26803713
-      11     -0.07953335
-      12      0.07953335
-      13      0.03493983
-      14     -0.03493983
+               Column   1
+       1       0.36024879
+       2      -0.36024879
+       3       0.09818069
+       4      -0.09818069
+       5       0.27837151
+       6      -0.27837151
+       7      -0.42844616
+       8       0.42844616
+       9       0.26803713
+      10      -0.26803713
+      11      -0.07953335
+      12       0.07953335
+      13       0.03493983
+      14      -0.03493983
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -5096,8 +5282,8 @@ Point group: C2v
        6      -0.24254672     7.19053349
        7     -10.23550355     0.05856532    22.83611210
        8       0.05856532   -10.23550355     0.00952522    22.83611210
-       9       6.28017720    -0.00174011   -14.43052822     0.04743908
-      10      -0.00174011     6.28017720     0.04743908   -14.43052822
+       9       6.28017721    -0.00174011   -14.43052822     0.04743908
+      10      -0.00174011     6.28017721     0.04743908   -14.43052822
       11      -2.34423821    -0.03084715     4.79046569    -0.02057425
       12      -0.03084715    -2.34423821    -0.02057425     4.79046569
       13       0.68602143     0.01158952    -2.68238847    -0.07966831
@@ -5114,6 +5300,7 @@ Point group: C2v
                Column  13     Column  14
       13       7.60942351
       14      -0.00286854     7.60942351
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
@@ -5122,24 +5309,24 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
       11      -0.00000000     0.00000000    -0.00000000     0.00000000
       12      -0.00000000     0.00000000    -0.00000000     0.00000000
       13      -0.00000000     0.00000000    -0.00000000     0.00000000
@@ -5148,14 +5335,15 @@ Point group: C2v
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column  13     Column  14
       13       2.00000000
       14      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               14           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -5191,7 +5379,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 5.47044313D-13
- Z + Y norm squared = 1.00974196D-28
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -5217,23 +5405,24 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   16
 
-              Column   1
-       1      0.36024879
-       2     -0.36024879
-       3      0.09818069
-       4     -0.09818069
-       5      0.27837151
-       6     -0.27837151
-       7     -0.42844616
-       8      0.42844616
-       9      0.26803713
-      10     -0.26803713
-      11     -0.07953335
-      12      0.07953335
-      13      0.03493983
-      14     -0.03493983
-      15      0.00800296
-      16     -0.00800296
+               Column   1
+       1       0.36024879
+       2      -0.36024879
+       3       0.09818069
+       4      -0.09818069
+       5       0.27837151
+       6      -0.27837151
+       7      -0.42844616
+       8       0.42844616
+       9       0.26803713
+      10      -0.26803713
+      11      -0.07953335
+      12       0.07953335
+      13       0.03493983
+      14      -0.03493983
+      15       0.00800296
+      16      -0.00800296
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -5260,8 +5449,8 @@ Point group: C2v
        6      -0.24254672     7.19053349
        7     -10.23550355     0.05856532    22.83611210
        8       0.05856532   -10.23550355     0.00952522    22.83611210
-       9       6.28017720    -0.00174011   -14.43052822     0.04743908
-      10      -0.00174011     6.28017720     0.04743908   -14.43052822
+       9       6.28017721    -0.00174011   -14.43052822     0.04743908
+      10      -0.00174011     6.28017721     0.04743908   -14.43052822
       11      -2.34423821    -0.03084715     4.79046569    -0.02057425
       12      -0.03084715    -2.34423821    -0.02057425     4.79046569
       13       0.68602143     0.01158952    -2.68238847    -0.07966831
@@ -5284,6 +5473,7 @@ Point group: C2v
       14      -0.00286854     7.60942351
       15     -10.53657821     0.08006581    24.28940819
       16       0.08006581   -10.53657821    -0.09893475    24.28940819
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
@@ -5292,48 +5482,49 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15       0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
       11      -0.00000000     0.00000000    -0.00000000     0.00000000
       12      -0.00000000     0.00000000    -0.00000000     0.00000000
       13      -0.00000000     0.00000000    -0.00000000     0.00000000
       14      -0.00000000     0.00000000    -0.00000000     0.00000000
-      15       0.00000000     0.00000000    -0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
-      15       0.00000000     0.00000000    -0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      15      -0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column  13     Column  14     Column  15     Column  16
       13       2.00000000
       14      -0.00000000    -2.00000000
-      15      -0.00000000     0.00000000     2.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      15       0.00000000     0.00000000     2.00000000
+      16      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               16           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -5372,7 +5563,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 1.32570774D-15
- Z + Y norm squared = 1.97215226D-31
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -5398,25 +5589,26 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   18
 
-              Column   1
-       1      0.36024879
-       2     -0.36024879
-       3      0.09818069
-       4     -0.09818069
-       5      0.27837151
-       6     -0.27837151
-       7     -0.42844616
-       8      0.42844616
-       9      0.26803713
-      10     -0.26803713
-      11     -0.07953335
-      12      0.07953335
-      13      0.03493983
-      14     -0.03493983
-      15      0.00800296
-      16     -0.00800296
-      17     -0.05020048
-      18      0.05020048
+               Column   1
+       1       0.36024879
+       2      -0.36024879
+       3       0.09818069
+       4      -0.09818069
+       5       0.27837151
+       6      -0.27837151
+       7      -0.42844616
+       8       0.42844616
+       9       0.26803713
+      10      -0.26803713
+      11      -0.07953335
+      12       0.07953335
+      13       0.03493983
+      14      -0.03493983
+      15       0.00800296
+      16      -0.00800296
+      17      -0.05020048
+      18       0.05020048
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -5445,8 +5637,8 @@ Point group: C2v
        6      -0.24254672     7.19053349
        7     -10.23550355     0.05856532    22.83611210
        8       0.05856532   -10.23550355     0.00952522    22.83611210
-       9       6.28017720    -0.00174011   -14.43052822     0.04743908
-      10      -0.00174011     6.28017720     0.04743908   -14.43052822
+       9       6.28017721    -0.00174011   -14.43052822     0.04743908
+      10      -0.00174011     6.28017721     0.04743908   -14.43052822
       11      -2.34423821    -0.03084715     4.79046569    -0.02057425
       12      -0.03084715    -2.34423821    -0.02057425     4.79046569
       13       0.68602143     0.01158952    -2.68238847    -0.07966831
@@ -5465,20 +5657,21 @@ Point group: C2v
       14      -0.01781891     2.15890913     0.01287165    -2.86613169
       15      -1.28185533    -0.04094637     3.78976513     0.04638902
       16      -0.04094637    -1.28185533     0.04638902     3.78976513
-      17      -0.40319363     0.01386499    -1.86089336    -0.00247109
-      18       0.01386499    -0.40319363    -0.00247109    -1.86089336
+      17      -0.40319364     0.01386499    -1.86089336    -0.00247109
+      18       0.01386499    -0.40319364    -0.00247109    -1.86089336
 
                Column  13     Column  14     Column  15     Column  16
       13       7.60942351
       14      -0.00286854     7.60942351
       15     -10.53657821     0.08006581    24.28940819
       16       0.08006581   -10.53657821    -0.09893475    24.28940819
-      17       6.09885631     0.01674993   -13.84214900     0.00343247
-      18       0.01674993     6.09885631     0.00343247   -13.84214900
+      17       6.09885631     0.01674993   -13.84214901     0.00343247
+      18       0.01674993     6.09885631     0.00343247   -13.84214901
 
                Column  17     Column  18
       17      11.83593831
       18      -0.05177693    11.83593831
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
@@ -5487,60 +5680,61 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15       0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      17       0.00000000     0.00000000     0.00000000     0.00000000
-      18      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000     0.00000000
+      17      -0.00000000     0.00000000    -0.00000000     0.00000000
+      18      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
       11      -0.00000000     0.00000000    -0.00000000     0.00000000
       12      -0.00000000     0.00000000    -0.00000000     0.00000000
       13      -0.00000000     0.00000000    -0.00000000     0.00000000
       14      -0.00000000     0.00000000    -0.00000000     0.00000000
-      15       0.00000000     0.00000000    -0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      17       0.00000000     0.00000000    -0.00000000     0.00000000
-      18      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      17       0.00000000     0.00000000     0.00000000     0.00000000
+      18      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
-      15       0.00000000     0.00000000    -0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      17      -0.00000000     0.00000000    -0.00000000     0.00000000
-      18      -0.00000000     0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      15      -0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      17      -0.00000000     0.00000000     0.00000000     0.00000000
+      18      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column  13     Column  14     Column  15     Column  16
       13       2.00000000
       14      -0.00000000    -2.00000000
-      15      -0.00000000     0.00000000     2.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -2.00000000
-      17       0.00000000     0.00000000     0.00000000     0.00000000
-      18      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      15       0.00000000     0.00000000     2.00000000
+      16      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+      17      -0.00000000     0.00000000    -0.00000000     0.00000000
+      18      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column  17     Column  18
       17       2.00000000
       18      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               18           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -5606,7 +5800,7 @@ Point group: C2v
            5         2(1)   4(1)       -0.0215527112        0.0215527112
            6         2(1)   5(1)        0.0194970768       -0.0194970768
            7         2(1)   6(1)       -0.0443209752        0.0443209752
-           9         3(1)   4(1)       -0.0380546283        0.0380546283
+           9         3(1)   4(1)       -0.0380546284        0.0380546284
           10         3(1)   5(1)       -0.0465023356        0.0465023356
           11         3(1)   6(1)        0.0291244675       -0.0291244675
           13         8(2)   9(2)        0.0634107179       -0.0634107179
@@ -5622,13 +5816,14 @@ Point group: C2v
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.02 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.03 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.02 CPU seconds.
+ >>> Total time used in response solver is         0.03 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  2.90298333296152150E-002
+ Norm of zeta-kappa-0:   2.9029833328855170E-002
+ CCFOP: call CC_D1AO to recalc the 1e Density
 
 
                             +--------------------------+
@@ -5733,7 +5928,7 @@ Point group: C2v
                     ! Model is second order pert. theory: MP2 !
                     +-----------------------------------------+
 
- CC_FOP-1: Workspace:   100000000
+ CC_FOP-1: Workspace:    64000000
 
 
                                 +-----------------+
@@ -5742,10 +5937,14 @@ Point group: C2v
 
 
      Zero matrix.
+    ==== End of matrix output ====
 
      Zero matrix.
+    ==== End of matrix output ====
 
      Zero matrix.
+    ==== End of matrix output ====
+    ==== End of matrix output ====
 
 
                                 +-----------------+
@@ -5800,6 +5999,7 @@ Point group: C2v
       14       0.01770566    -0.03068496
       15       0.01855863    -0.01176073    -0.02437013
       16       0.04418682    -0.02474184    -0.04788849    -0.04714220
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00015375
@@ -5836,6 +6036,7 @@ Point group: C2v
 
                Column  13
       13      -0.00508458
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00112082
@@ -5850,14 +6051,16 @@ Point group: C2v
        5      -0.00991440
        6       0.00058624    -0.00647642
        7       0.00067054     0.00238701    -0.01043344
+    ==== End of matrix output ====
 
                Column   1     Column   2     Column   3     Column   4
        1      -0.00342083
        2      -0.01862712    -0.00406712
        3       0.01069301     0.00295790    -0.00382878
        4       0.01830375     0.00239257    -0.00087695    -0.00450833
+    ==== End of matrix output ====
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  0.14672643955966991     
+ Norm of doubles Lambda vector :  0.14672643955972944     
 
 
  Analysis of the undifferentiated Lagrangian multipliers:
@@ -5935,13 +6138,11 @@ Point group: C2v
 
           Norm of Printed Amplitude Vector :             0.3589
 
-
           Printed all single excitations greater than 0.010000
-
 
           Printed all double excitations greater than 0.025000
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  0.14672643955966991     
+ Norm of doubles Lambda vector :  0.14672643955972944     
 
 
                    Calculating diagonal blocks of zeta-kappa-0
@@ -5954,22 +6155,22 @@ Point group: C2v
                           +------------------------------+
 
   
- Norm of occupied-occupied block:  3.95690766028068130E-002
- Norm of virtual-virtual block:  3.70321467583136846E-002
+ Norm of occupied-occupied block:   3.9569076602828740E-002
+ Norm of virtual-virtual block:   3.7032146758331851E-002
   
  Diagonal blocks of Zeta-kappa-0 calculated
- Total time used in MP2_ZKDIA:  9.99927520751953125E-004
+ Total time used in MP2_ZKDIA:   0.0000000000000000     
 
 
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
   
- Norm of Eta-kappa-0:  9.67002232789816729E-003
+ Norm of Eta-kappa-0:   9.6700223278564472E-003
   
  MP2 Eta-0(kappa) calculation completed
- Total time used in MP2_KANEW:  4.09929752349853516E-002
- CC_FOP> Norm of RHS vector:  8.54819732296852874E-002
+ Total time used in MP2_KANEW:   3.1999826431274414E-002
+ CC_FOP> Norm of RHS vector:   8.5481973246504139E-002
 
 
                       Solving for orbital relaxation vector
@@ -5987,8 +6188,8 @@ Point group: C2v
  Convergence threshold:     1.00D-07
 
 
-   SCF energy         :      -75.915466086862978
- -- inactive part     :      -85.111907305186492
+   SCF energy         :      -75.915466086861542
+ -- inactive part     :      -85.111907305185056
  -- nuclear repulsion :        9.196441218323510
 
  NISHT,NASHT,NORBT,NBAST,NCREF,IREFSY     5     0    13    34     1     1
@@ -6022,11 +6223,11 @@ Point group: C2v
 
  MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS IN RSPNEX:      30
   LINEQ,RESTPP,ORBSPC T F F
-  FREQ =   0.0000000000000000      -0.56246460278976451       0.16583544519174109       0.92724574142038685        1.2206528045470755        1.4345492699493987        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+  FREQ =   0.0000000000000000       0.16583544519662954       0.92724574142103444        1.2206528045468112        1.4345492699482920        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 4.29099219D-03
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 8.67361738D-19
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -6042,21 +6243,24 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    2
 
-              Column   1
-       1      0.17612852
-       2     -0.17612852
+               Column   1
+       1       0.17612852
+       2      -0.17612852
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
                Column   1     Column   2
        1       3.37076502
        2      -0.44302219     3.37076502
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2
        1       2.00000000
        2      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                2           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -6098,11 +6302,12 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    4
 
-              Column   1
-       1      0.17612852
-       2     -0.17612852
-       3     -0.00428955
-       4      0.00428955
+               Column   1
+       1       0.17612852
+       2      -0.17612852
+       3      -0.00428955
+       4       0.00428955
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -6111,14 +6316,16 @@ Point group: C2v
        2      -0.44302219     3.37076502
        3       0.47950156    -0.69377546     3.49162639
        4      -0.69377546     0.47950156    -1.05818610     3.49162639
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                4           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -6139,7 +6346,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 2.71387652D-05
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 3.38813179D-21
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -6165,13 +6372,14 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    6
 
-              Column   1
-       1      0.17612852
-       2     -0.17612852
-       3     -0.00428955
-       4      0.00428955
-       5      0.07037736
-       6     -0.07037736
+               Column   1
+       1       0.17612852
+       2      -0.17612852
+       3      -0.00428955
+       4       0.00428955
+       5       0.07037736
+       6      -0.07037736
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -6186,20 +6394,22 @@ Point group: C2v
                Column   5     Column   6
        5       3.36164873
        6      -0.04463474     3.36164873
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6
        5       2.00000000
        6      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                6           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -6223,7 +6433,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 5.93930413D-07
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared =-2.11758237D-22
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -6249,15 +6459,16 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED    8
 
-              Column   1
-       1      0.17612852
-       2     -0.17612852
-       3     -0.00428955
-       4      0.00428955
-       5      0.07037736
-       6     -0.07037736
-       7     -0.13168645
-       8      0.13168645
+               Column   1
+       1       0.17612852
+       2      -0.17612852
+       3      -0.00428955
+       4       0.00428955
+       5       0.07037736
+       6      -0.07037736
+       7      -0.13168645
+       8       0.13168645
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -6276,16 +6487,17 @@ Point group: C2v
        6      -0.04463474     3.36164873
        7      -5.09907466     0.00976038    16.23550595
        8       0.00976038    -5.09907466     0.01780630    16.23550595
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
        7       0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
@@ -6294,6 +6506,7 @@ Point group: C2v
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000                8           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -6320,7 +6533,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 2.39010459D-08
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 3.30872245D-24
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -6346,17 +6559,18 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   10
 
-              Column   1
-       1      0.17612852
-       2     -0.17612852
-       3     -0.00428955
-       4      0.00428955
-       5      0.07037736
-       6     -0.07037736
-       7     -0.13168645
-       8      0.13168645
-       9      0.15465712
-      10     -0.15465712
+               Column   1
+       1       0.17612852
+       2      -0.17612852
+       3      -0.00428955
+       4       0.00428955
+       5       0.07037736
+       6      -0.07037736
+       7      -0.13168645
+       8       0.13168645
+       9       0.15465712
+      10      -0.15465712
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -6383,32 +6597,34 @@ Point group: C2v
                Column   9     Column  10
        9      20.42585474
       10       0.01643757    20.42585474
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
        7       0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10
        9       2.00000000
       10      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               10           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -6464,19 +6680,20 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   12
 
-              Column   1
-       1      0.17612852
-       2     -0.17612852
-       3     -0.00428955
-       4      0.00428955
-       5      0.07037736
-       6     -0.07037736
-       7     -0.13168645
-       8      0.13168645
-       9      0.15465712
-      10     -0.15465712
-      11     -0.07309080
-      12      0.07309080
+               Column   1
+       1       0.17612852
+       2      -0.17612852
+       3      -0.00428955
+       4       0.00428955
+       5       0.07037736
+       6      -0.07037736
+       7      -0.13168645
+       8       0.13168645
+       9       0.15465712
+      10      -0.15465712
+      11      -0.07309080
+      12       0.07309080
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -6509,38 +6726,40 @@ Point group: C2v
       10       0.01643757    20.42585474
       11      -9.00855610    -0.00968827     8.57784040
       12      -0.00968827    -9.00855610    -0.02645131     8.57784040
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
        7       0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               12           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -6572,7 +6791,7 @@ Point group: C2v
           BNORM: 7.76472D-02 EIVAL: 0.00000D+00
 
  ** TEST OF Z = Y OR Z = -Y:
- (Z Y) norm squared = 3.70717966D-13
+ (Z Y) norm squared = 3.70717965D-13
  Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
@@ -6599,21 +6818,22 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   14
 
-              Column   1
-       1      0.17612852
-       2     -0.17612852
-       3     -0.00428955
-       4      0.00428955
-       5      0.07037736
-       6     -0.07037736
-       7     -0.13168645
-       8      0.13168645
-       9      0.15465712
-      10     -0.15465712
-      11     -0.07309080
-      12      0.07309080
-      13     -0.01813208
-      14      0.01813208
+               Column   1
+       1       0.17612852
+       2      -0.17612852
+       3      -0.00428955
+       4       0.00428955
+       5       0.07037736
+       6      -0.07037736
+       7      -0.13168645
+       8       0.13168645
+       9       0.15465712
+      10      -0.15465712
+      11      -0.07309080
+      12       0.07309080
+      13      -0.01813208
+      14       0.01813208
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -6654,50 +6874,50 @@ Point group: C2v
       14       0.03043862    -0.22023926     0.01668603    -3.56288251
 
                Column  13     Column  14
-      13      24.00833360
-      14      -0.04255785    24.00833360
+      13      24.00833362
+      14      -0.04255785    24.00833362
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
        7       0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000     0.00000000
-      13       0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column  13     Column  14
       13       2.00000000
       14      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               14           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -6732,8 +6952,8 @@ Point group: C2v
           BNORM: 7.76471D-02 EIVAL: 0.00000D+00
 
  ** TEST OF Z = Y OR Z = -Y:
- (Z Y) norm squared = 5.54766820D-15
- Z + Y norm squared =-1.57772181D-30
+ (Z Y) norm squared = 5.54766818D-15
+ Z + Y norm squared =-7.88860905D-31
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -6759,23 +6979,24 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   16
 
-              Column   1
-       1      0.17612852
-       2     -0.17612852
-       3     -0.00428955
-       4      0.00428955
-       5      0.07037736
-       6     -0.07037736
-       7     -0.13168645
-       8      0.13168645
-       9      0.15465712
-      10     -0.15465712
-      11     -0.07309080
-      12      0.07309080
-      13     -0.01813208
-      14      0.01813208
-      15      0.02405732
-      16     -0.02405732
+               Column   1
+       1       0.17612852
+       2      -0.17612852
+       3      -0.00428955
+       4       0.00428955
+       5       0.07037736
+       6      -0.07037736
+       7      -0.13168645
+       8       0.13168645
+       9       0.15465712
+      10      -0.15465712
+      11      -0.07309080
+      12       0.07309080
+      13      -0.01813208
+      14       0.01813208
+      15       0.02405732
+      16      -0.02405732
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -6818,62 +7039,64 @@ Point group: C2v
       12      -0.00968827    -9.00855610    -0.02645131     8.57784040
       13      -0.22023926     0.03043862    -3.56288251     0.01668603
       14       0.03043862    -0.22023926     0.01668603    -3.56288251
-      15       0.68507108     0.00336813     2.95230005     0.05167485
-      16       0.00336813     0.68507108     0.05167485     2.95230005
+      15       0.68507107     0.00336813     2.95230005     0.05167485
+      16       0.00336813     0.68507107     0.05167485     2.95230005
 
                Column  13     Column  14     Column  15     Column  16
-      13      24.00833360
-      14      -0.04255785    24.00833360
-      15     -16.95231005     0.03716702    16.52130992
-      16       0.03716702   -16.95231005    -0.01294672    16.52130992
+      13      24.00833362
+      14      -0.04255785    24.00833362
+      15     -16.95231004     0.03716702    16.52130990
+      16       0.03716702   -16.95231004    -0.01294672    16.52130990
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
        7       0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15       0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000     0.00000000
-      13       0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      15      -0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15       0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15      -0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column  13     Column  14     Column  15     Column  16
       13       2.00000000
       14      -0.00000000    -2.00000000
-      15      -0.00000000     0.00000000     2.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      15       0.00000000     0.00000000     2.00000000
+      16      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               16           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -6938,25 +7161,26 @@ Point group: C2v
 
   1 REDUCED GRADIENT VECTORS DIM KZYRED   18
 
-              Column   1
-       1      0.17612852
-       2     -0.17612852
-       3     -0.00428955
-       4      0.00428955
-       5      0.07037736
-       6     -0.07037736
-       7     -0.13168645
-       8      0.13168645
-       9      0.15465712
-      10     -0.15465712
-      11     -0.07309080
-      12      0.07309080
-      13     -0.01813208
-      14      0.01813208
-      15      0.02405732
-      16     -0.02405732
-      17     -0.03258312
-      18      0.03258312
+               Column   1
+       1       0.17612852
+       2      -0.17612852
+       3      -0.00428955
+       4       0.00428955
+       5       0.07037736
+       6      -0.07037736
+       7      -0.13168645
+       8       0.13168645
+       9       0.15465712
+      10      -0.15465712
+      11      -0.07309080
+      12       0.07309080
+      13      -0.01813208
+      14       0.01813208
+      15       0.02405732
+      16      -0.02405732
+      17      -0.03258312
+      18       0.03258312
+    ==== End of matrix output ====
 
  RSPRED: REDUCED HESSIAN MATRIX:
 
@@ -7003,40 +7227,43 @@ Point group: C2v
       12      -0.00968827    -9.00855610    -0.02645131     8.57784040
       13      -0.22023926     0.03043862    -3.56288251     0.01668603
       14       0.03043862    -0.22023926     0.01668603    -3.56288251
-      15       0.68507108     0.00336813     2.95230005     0.05167485
-      16       0.00336813     0.68507108     0.05167485     2.95230005
+      15       0.68507107     0.00336813     2.95230005     0.05167485
+      16       0.00336813     0.68507107     0.05167485     2.95230005
       17      -0.62303397     0.01282209    -0.26990978     0.00325874
       18       0.01282209    -0.62303397     0.00325874    -0.26990978
 
                Column  13     Column  14     Column  15     Column  16
-      13      24.00833360
-      14      -0.04255785    24.00833360
-      15     -16.95231005     0.03716702    16.52130992
-      16       0.03716702   -16.95231005    -0.01294672    16.52130992
-      17       6.55574762     0.01164481    -5.98406913     0.03489300
-      18       0.01164481     6.55574762     0.03489300    -5.98406913
+      13      24.00833362
+      14      -0.04255785    24.00833362
+      15     -16.95231004     0.03716702    16.52130990
+      16       0.03716702   -16.95231004    -0.01294672    16.52130990
+      17       6.55574762     0.01164481    -5.98406912     0.03489300
+      18       0.01164481     6.55574762     0.03489300    -5.98406912
 
                Column  17     Column  18
       17       6.26703946
       18      -0.00242541     6.26703946
+    ==== End of matrix output ====
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3       0.00000000     0.00000000     2.00000000
-       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     2.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000    -0.00000000
        7       0.00000000     0.00000000     0.00000000     0.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15       0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000    -0.00000000    -0.00000000     0.00000000
       17      -0.00000000     0.00000000    -0.00000000     0.00000000
       18      -0.00000000     0.00000000    -0.00000000     0.00000000
 
@@ -7045,40 +7272,39 @@ Point group: C2v
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      11      -0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000     0.00000000
-      13       0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      15      -0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      17       0.00000000     0.00000000    -0.00000000     0.00000000
-      18      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15       0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      17      -0.00000000     0.00000000    -0.00000000     0.00000000
+      18      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15      -0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      17       0.00000000     0.00000000     0.00000000     0.00000000
-      18      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000     0.00000000
+      17      -0.00000000     0.00000000     0.00000000     0.00000000
+      18      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column  13     Column  14     Column  15     Column  16
       13       2.00000000
       14      -0.00000000    -2.00000000
-      15      -0.00000000     0.00000000     2.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      15       0.00000000     0.00000000     2.00000000
+      16      -0.00000000    -0.00000000    -0.00000000    -2.00000000
       17       0.00000000     0.00000000    -0.00000000     0.00000000
       18      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column  17     Column  18
       17       2.00000000
       18      -0.00000000    -2.00000000
+    ==== End of matrix output ====
   AFREQ,KZYRED,IGD   0.0000000000000000               18           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -7159,13 +7385,14 @@ Point group: C2v
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.02 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.03 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.02 CPU seconds.
+ >>> Total time used in response solver is         0.03 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  8.96616946539952400E-003
+ Norm of zeta-kappa-0:   8.9661694654176501E-003
+ CCFOP: call CC_D1AO to recalc the 1e Density
 
 
                             +--------------------------+
@@ -7259,7 +7486,7 @@ Point group: C2v
 
  Ground state energy is target 
 
- Ecorr =                    -76.04388683903918888518
+ Ecorr =                    -76.04388683903769674544
 
  *******************************************************************
 
@@ -7293,14 +7520,20 @@ Point group: C2v
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       2.189       2.221
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:59:11 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.65 seconds
- >>>> Total wall time used in DALTON:   4.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.28 seconds
+ >>>> Total wall time used in DALTON:   2.32 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:10:54 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:59:11 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

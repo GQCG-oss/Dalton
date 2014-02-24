@@ -367,7 +367,7 @@ contains
        end if
 
        ! File associated with array is no longer used so that file unit is again available.
-       available_file_units(array%funit)=.true.
+       !available_file_units(array%funit)=.true.
        array%funit=0
 
     end if FileExists
@@ -596,7 +596,7 @@ contains
     real(realk) :: t0,t1
     call cpu_time(t0)
     call array4_write_data(array)
-    call array4_alloc(array)
+    call array4_dealloc(array)
     call cpu_time(t1)
     time_array4_write = time_array4_write + (t1-t0)
     return
@@ -3187,7 +3187,7 @@ contains
     !> Array where EOS indices are extracted
     type(array4),intent(inout) :: Arr
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Occupied (true) or virtual (false) scheme
     logical,intent(in) :: occupied
     type(array4) :: Arr_copy
@@ -3279,7 +3279,7 @@ contains
     !> Original array with AOS fragment indices for both occ and virt spaces
     type(array4),intent(in) :: Arr_orig
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     integer :: nocc, nvirt
 
     ! Number of occ and virt orbitals on central atom in fragment
@@ -3888,7 +3888,7 @@ contains
   subroutine remove_core_orbitals_from_last_index(MyFragment,A,B)
     implicit none
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Original array
     type(array4),intent(in) :: A
     !> New array where core indices for the last index are removed
@@ -3963,5 +3963,107 @@ contains
 
   end subroutine get_combined_SingleDouble_amplitudes
 
+  !> \brief Transform virtual orbital indices in local basis (or whatever the input basis is) 
+  !> for doubles amplitudes to fragment-adapted orbital basis, leaving occupied indices untouched.
+  !> \author Kasper Kristensen
+  !> \date September 2013
+  subroutine transform_virt_amp_to_FOs(t2,MyFragment)
+    implicit none
+    !> Doubles amplitudes stored as (a,i,b,j)
+    type(array4),intent(inout) :: t2
+    !> Atomic (or pair) fragment; the virtual correlation density which implicitly defines 
+    !> the fragment-adapted orbital basis is stored in MyFragment%VirtMat
+    type(decfrag),intent(in) :: MyFragment
+    real(realk),pointer :: U(:,:),eival(:),Ured(:,:),tmp(:,:,:,:),tmp2(:,:,:,:)
+    integer :: nvirt,nvirtFO,i,idx,nocc,dims(4)
+    real(realk) :: thr
+
+    ! Sanity check, this will mix all virtual orbitals, so it can only be used 
+    ! for the occupied partitioning scheme.
+    if(.not. DECinfo%OnlyOccPart) then
+       call lsquit('transform_virt_amp_to_FOs: Will mix all virtual orbitals, so it can &
+            & only be used for the occupied partitioning scheme! Suggestion: Turn on .ONLYOCCPART.',-1)
+    end if
+    nvirt = t2%dims(1)
+    nocc = t2%dims(2)
+    if(nvirt/=MyFragment%nunoccAOS .or. nocc/=MyFragment%noccAOS) then
+       print *, 't2%dims', t2%dims
+       print *, 'nvirt,nocc', MyFragment%nunoccAOS,MyFragment%noccAOS
+       call lsquit('transform_virt_amp_to_FOs: Dimension mismatch for amplitudes and&
+            & associated fragment',-1)
+    end if
+
+
+    ! Determine transformation matrix from local basis to FO basis
+    ! ************************************************************
+    call mem_alloc(U,nvirt,nvirt)
+    call mem_alloc(eival,nvirt)
+
+    ! Diagonalize virtual correlation density matrix
+    call solve_eigenvalue_problem_unitoverlap(nvirt,MyFragment%VirtMat,eival,U)
+
+    ! Throw away eigenvalues smaller than rejection threshold
+    thr = MyFragment%RejectThr(2)
+    
+    ! Number of eigenvalues larger than threshold
+    nvirtFO=0
+    do i=1,nvirt
+       if(eival(i)>thr) then
+          nvirtFO = nvirtFO+1
+       end if
+    end do
+
+    ! Sanity check
+    if(nvirtFO==0) then
+       write(DECinfo%output,*) 'WARNING! Number of virtual FOs is zero for thr= ', thr
+       write(DECinfo%output,*) '--> to avoid artificial behaviour I set nvirtFO=nvirt!'
+       nvirtFO = nvirt
+    end if
+    
+    ! Transformation matrix for (local,FO) indices:
+    call mem_alloc(Ured,nvirt,nvirtFO)
+    idx=0
+    do i=1,nvirt
+       if(eival(i)>thr) then
+          idx=idx+1
+          Ured(:,idx) = U(:,i)
+       end if
+    end do
+    call mem_dealloc(eival)
+    call mem_dealloc(U)
+
+
+    ! Transform the two virtual indices
+    ! *********************************
+    ! We denote the original (probably local) indices by a,b,i,j and the FO indices by A,B.
+    !
+    ! We want to make the transformation: t2(a,i,b,j) --> t2(A,i,B,j)
+
+    ! tmp(A,i,b,j) = sum_a Ured^T(A,a) t2(a,i,b,j)
+    call mem_alloc(tmp,nvirtFO,nocc,nvirt,nocc)
+    call dgemm('t','n',nvirtFO,nocc*nvirt*nocc,nvirt,1.0E0_realk,Ured,nvirt,t2%val,nvirt,&
+         & 0.0E0_realk,tmp,nvirtFO)
+    call array4_free(t2)
+
+    ! Reorder: tmp(A,i,b,j) --> t2(b,j,A,i)
+    call mem_alloc(tmp2,nvirt,nocc,nvirtFO,nocc)
+    call mat_transpose(nvirtFO*nocc,nvirt*nocc,1.0E0_realk,tmp,0.0E0_realk,tmp2)
+    call mem_dealloc(tmp)
+
+    ! t2(B,j,A,i) = sum_b Ured^T(B,b) tmp2(b,j,A,i)
+    dims(1) = nvirtFO
+    dims(2) = nocc
+    dims(3) = nvirtFO
+    dims(4) = nocc
+    t2 = array4_init(dims)
+    call dgemm('t','n',nvirtFO,nocc*nvirtFO*nocc,nvirt,1.0E0_realk,Ured,nvirt,tmp2,nvirt,&
+         & 0.0E0_realk,t2%val,nvirtFO)
+    call mem_dealloc(tmp2)
+
+    ! Since t2(B,j,A,i) = t2(A,i,B,j), the t2 output array now contains the desired amplitudes.
+
+    call mem_dealloc(Ured) 
+
+  end subroutine transform_virt_amp_to_FOs
 
 end module array4_simple_operations

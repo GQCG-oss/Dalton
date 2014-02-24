@@ -1,5 +1,7 @@
 #/usr/bin/python
+from output_plot import *
 from decinfoclass import *
+from ccinfoclass import *
 
 # EXTENDABLE LSDALTON.OUT PARSER FOR SIMPLE DATA COLLECTION
 # AUTHOR: PATRICK ETTENHUBER
@@ -38,10 +40,15 @@ class lsoutput:
       ########################################### 
       self.molinp = []
       self.dalinp = []
+
       #A CHARACTERISTIC STRING THAT CONTAINS THE ESSENTIALS
       self.calctype = [""]*2
+
       #DEC SPECIFIC CALULATION INFO AND OPERATIONS
       self.decinfo = decinfo_class()
+      #CCC SPECIFIC CALULATION INFO AND OPERATIONS
+      self.ccinfo  = ccinfo_class()
+
       #NUMBER OF BASIS FUNCTIONS
       self.nb = 0
       #NUMBER OF VIRTUAL ORBITALS
@@ -159,9 +166,8 @@ class lsoutput:
                  elif(".CC2" == lineparser2):
                    self.calctype[1] = "CC2"
                    found = True
-                 elif(".DECPRINT" == lineparser2):
-                   if(int(self.lines[k+1])>1):
-                     self.decinfo.enable_fragread = True
+                 elif(".PRINTFRAGS"):
+                   self.decinfo.enable_fragread = True
                  k+=1
                if(not found):
                  self.calctype[1] = " NONE"
@@ -192,6 +198,7 @@ class lsoutput:
 
 
       if(found_nb and found_no):
+        print "ATTENTION: CALCULATION OF N_VIRTUAL = N_BASIS - N_OCCUPIED"
         self.nv = self.nb - self.no
 
       #REMOVE ALL TRAILING BLANK LINES FROM THE INPUT FILES
@@ -205,8 +212,18 @@ class lsoutput:
         del self.dalinp[-1]
 
       #FIND MORE SPECIFIC INFORMATION ACCORDING TO THE JOB STRING
+      
+      #Read DEC fragments from DEC calculation
       if("DEC"==self.calctype[0] and not "MP2DEBUG" in self.calctype):
         self.decinfo.get_dec_info(self.lines,self.calctype[1],True)
+
+      #Read CC information
+      if("CC"==self.calctype[0]):
+        self.ccinfo.get_cc_info(self.lines,self.calctype[1])
+
+        #Read fragment info if availale
+        if self.decinfo.enable_fragread:
+           self.decinfo.get_dec_info(self.lines,self.calctype[1],False)
 
 
    ############################################################
@@ -215,6 +232,7 @@ class lsoutput:
    #GET FRAGMENT ENERGIES FROM FULL CALCULATION
    def get_fraginfo_from_full(self):
       if(("DEC"==self.calctype[0] and "MP2DEBUG" in self.calctype)or self.decinfo.enable_fragread):
+        print "reading fragment info"
         self.decinfo.get_dec_info(self.lines,self.calctype[1],False)
       else:
         print "ERROR(get_frag_from_full): cannot be performed for this type of calculation"

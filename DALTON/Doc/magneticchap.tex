@@ -6,7 +6,7 @@ as the magnetic field created by a nuclear magnetic moment.
 This includes the two
 contributions to the ordinary spin-Hamiltonian used in NMR, nuclear
 shieldings\index{nuclear shielding} and indirect nuclear spin--spin
-couplings\index{spin-spin coupling} constants. We
+couplings\index{spin-spin coupling!indirect} constants. We
 also describe the calculation of the magnetic analogue of the
 polarizability, the molecular
 magnetizability\index{magnetizability}. This property
@@ -53,7 +53,7 @@ Ref.~\cite{ovhapjhjajsbpthjcp96}.
 These are in principle equally simple to calculate with \dalton\ as
 nuclear shieldings and magnetizabilities. However, there are 10
 contributions to the spin--spin coupling constant from {\em each}
-nucleus.\footnote{\dalton\ 2.0 now only calculates the symmetry-distinct
+nucleus.\footnote{\dalton\ now only calculates the symmetry-distinct
   contributions to the spin--dipole operator, that is---six instead of
   nine elements are calculated for this operator.} Furthermore, the
 spin--spin coupling constants put severe
@@ -271,9 +271,9 @@ calculations.
 %------------------------------------------------------------
 % by jmelo May-2013
 
-\section{LRESC corrections to Nuclear shielding constants}\label{sec:lresc}
+\section{Relativistic corrections to Nuclear shielding constants}\label{sec:lresc}
 
-Linear Response Elimination of Small Component scheme provides the calculation
+Linear Response Elimination of Small Component scheme (LRESC) provides the calculation
 of first and second order relativistic corrections to nuclear shielding constants. 
 This corrections are invoked through the keyword \Key{LRESC} on the \Sec{*PROPERTIES} input module. Detailed description of the LRESC theoretical scheme and discussions are on this papers. 
 
@@ -301,6 +301,8 @@ Third order corrections are not included in the present version of the code, any
 \begin{verbatim}
 **DALTON INPUT
 .RUN PROPERTIES
+**INTEGRLAS 
+.LRINTS  ! mandatory, to have all necessary integrals computed to use in LRESC module.
 **WAVE FUNCTIONS
 .HF
 **PROPERTIES
@@ -308,8 +310,9 @@ Third order corrections are not included in the present version of the code, any
 **END OF DALTON INPUT
 \end{verbatim}
 
+The integrals computed under \Key{LRINTS} are described in INTEGRALS chapter Section \ref{sec:herinp}
 
-There are a few keywords to get more control over the output and the amount of corrections to be calculated. A detailed description on each correction can be found in Ref.~\cite{melomaldojcp12}. Regarding basis sets convergence, benchmark calculations where presented on XXXXX . The complete list of control keywords are:
+There are a few keywords to get more control over the output and the amount of corrections to be calculated. A detailed physical description on each correction can be found in Ref.~\cite{melomaldojcp12}. Regarding basis sets convergence, benchmark calculations where presented on Ref.~\cite{melomaldojcp12},~\cite{melomaldotca11},~\cite{melojcp03} . The complete list of control keywords are:
 
 \begin{list}{}{\itemsep 0.10cm \parsep 0.0cm}
 \item[\Key{PRINT}] Controls the print level, for debugging purpose.
@@ -319,7 +322,7 @@ There are a few keywords to get more control over the output and the amount of c
 \item[\Key{PARA1T}] Only Paramagnetic Triplet First order corrections are calculated 
 \item[\Key{PARA3S}] (not implemented yet) Only Paramagnetic Singlet Third order corrections are calculated. 
 \item[\Key{PARA3T}] (not implemented yet) Only Paramagnetic Triplet Third order corrections are calculated. 
-\item[\Key{DIAM0S}] Only Diamagnetic Singlet Zeroth order corrections are calculated 
+\item[\Key{DIAM0S}] Only Diamagnetic Singlet Zeroth order corrections are calculated
 \item[\Key{DIAM1S}] Only Diamagnetic Singlet First order corrections are calculated 
 \end{list}
 
@@ -331,8 +334,8 @@ Default Values, and some tips for better running:
 \item First Atom on input list is selected, unless specified with \Key{SELECT}. 
 \item Center of Mass gauge origin for atomic integrals. As mentioned, \Key{GAUGEO} on 
 \Sec{*INTEGRALS} must be placed in the position of the selected nucleus. Default value is the center of mass.
-\item All LRESC terms will be calculated, unless some (or more) of them are asked for. (PARA1S, PARA1T, DIAM0S and/or DIAM1S). 
-\item Only uncontracted basis set is recommended. Integrals under \Key{DIAM0S} only supports uncontraced basis sets.
+\item All LRESC terms will be calculated, unless some (or more) of them are asked for : PARA1S, PARA1T, DIAM0S and/or DIAM1S. See example below.
+\item Uncontracted basis set is recommended. 
 \item No symmetry for molecule specification. 
 \item Hartree-Fock and DFT schemes supported for the ground state Wave Function.
 \end{itemize}
@@ -342,8 +345,9 @@ Default Values, and some tips for better running:
 \begin{verbatim}
 (...)
 *INTEGRALS
+.LRINTS
 .GAUGEO 
-a b c        !where a b c are the atomic cartesian coordinates of the selected nucleus
+a b c        ! a b c atomic cartesian coordinates of selected nucleus (in a.u.)
 (...)
 **PROPERTIES
 .LRESC
@@ -352,7 +356,7 @@ a b c        !where a b c are the atomic cartesian coordinates of the selected n
 .PRINT
 JIMPRT       ! reads one integer , for debugging
 .SELECT
-LRATOM       ! reads one integer corresponding to the place of the nucleus on input file 
+LRATOM       ! reads one integer corresponding to the order of selected nucleus list on input file 
 .DIAM0S      ! calculation of diamagnetic  zeroth order terms
 .DIAM1S      ! calculation of diamagnetic  first order terms
 .PARA1S      ! calculation of paramagnetic first(singlet) order terms
@@ -476,7 +480,7 @@ depend on the isotopic substitution of
 the molecule, both through the nuclear magnetic moments and through the
 center of mass, the isotopic constitution need to be specified if this
 is different  from the most abundant isotopic constitution. Note that
-some of the most common isotopes do not have a magnetic moment. The isotope can be chosen by the keyword \verb|Isotope=| in the \mol\ file.
+some of the most common isotopes do not have a magnetic moment. The isotope can be chosen by the keyword \verb|Isotope=| in the \molinp\ file.
 
 For a SOPPA\index{SOPPA}, SOPPA(CC2)\index{SOPPA(CC2)} or
 SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of nuclear spin--rotation
@@ -651,16 +655,18 @@ H.J.Aa.Jensen. \newblock {\em J.Chem.Phys.}, {\bf
 P.J{\o}rgensen, K.V. Mikkelsen. \newblock {\em J.Chem.Phys.}, {\bf
 104},\hspace{0.25em}629, (1996).
 \item DFT: Z.Rinkevicius, L.Telyatnyk, O.Vahtras and H.{\AA}gren.
-\newblock {\em J.Chem.Phys.}, {\bf 121},\hspace{0.25em} 7614 (2004)
+\newblock {\em J.Chem.Phys.}, {\bf 121},\hspace{0.25em} 7614 (2004);
+Z. Rinkevicius, K. J. de Almeida and O. Vahtras, 
+\newblock {\em J.Chem.Phys.}, {\bf 129},\hspace{0.25em} 64109 (2008)
 \end{list}
 }}
 \end{center}
 
     The calculation of hyperfine coupling\index{hyperfine
 coupling} tensors (in vacuum or in
-solution) is invoked by the keyword \Sec{ESR} in the \Sec{*RESPONSE}
+solution) is invoked by the keyword \Sec{ESR} or keyword \Sec{HFC} in the \Sec{*RESPONSE}
 input module. Thus a complete input file for the calculation of
-hyperfine coupling tensors will be:
+hyperfine coupling tensors will be using ESR keyword:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -682,24 +688,26 @@ hyperfine coupling tensors will be:
    30
 **END OF DALTON INPUT
 \end{verbatim}
-%.TRPPRP
-%FC Cl 01
-%.TRPPRP
-%.
-%.
-%.
-%
-%.TRPPRP
-%SD  01 x
-%.TRPPRP
-%SD  01 y
-%.TRPPRP
-%SD  01 z
-%.TRPPRP
-%.
-%.
-%.
 
+    Alternatively at DFT level hyperfine coupling tensor can be computed using HFC keyword:
+
+ \begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**INTEGRALS
+.MNF-SO
+**WAVE FUNCTIONS
+.DFT
+B3LYP
+**RESPON
+.TRPFLG
+*HFC
+.HFC-FC
+.HFC-SD 
+.HFC-SO
+**END OF DALTON INPUT
+\end{verbatim}
+    
     This will invoke the calculation of hyperfine
 coupling\index{hyperfine coupling} tensors
 using the Restricted-Unrestricted\index{restricted-unrestricted method}
@@ -793,7 +801,7 @@ is implemented.
 
 \section{CTOCD-DZ calculations}\label{sec:ctocd}
 
-The \dalton\ program system can be used to perform calculations of the magnetic
+The \dalton\ program can be used to perform calculations of the magnetic
 properties using the Continuous Transformation of the Origin of the Current Density
 approach (CTOCD) \index{CTOCD-DZ}. Setting the diamagnetic contribution
 to the current density zero, one obtains fully analytical solutions via equations
@@ -880,7 +888,7 @@ A.~Ligabue, S.~P.~A. Sauer and P.~Lazzeretti
 A.~Ligabue, S.~P.~A. Sauer and P.~Lazzeretti
 \newblock {\em J.Chem.Phys.}, {\bf 126},\hspace{0.25em}154111, (2007).
 \item CC3:
-I.~G.~Cuesta, J.~S{\'a}nchez, A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s, F.~Paw{\l}owski
+I.~G.~Cuesta, J.~S{\'a}nchez, A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s, F.~Pawlowski
  and P.~Lazzeretti,
 \newblock {\em Phys.Chem.Chem.Phys.}, {\bf 12},\hspace{0.25em}6163, (2010).
 \end{list}

@@ -151,7 +151,7 @@ ERROR[4]="MCSCF ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -240,7 +240,7 @@ ERROR[6]="FINAL OCCUPANCY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
      PASSED=0
    fi

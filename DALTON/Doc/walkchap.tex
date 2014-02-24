@@ -6,16 +6,17 @@ quantum chemical software package; locating equilibrium
 geometries\index{equilibrium structure} and
 transition structures\index{transition state} of molecules. In
 {\dalton} this is done using either second-order trust-region\index{second-order optimization}\index{geometry optimization!second-order}\index{trust region}
-optimizations~\cite{tuhjahjajpjjcp84} (energies, gradients and
-Hessians are calculated) or a variety of first-order\index{first-order optimization}\index{geometry optimization!first-order}
-methods~\cite{Fletcher} (only energies and gradients are
+optimizations~\cite{tuhjahjajpjjcp84} (energies, molecular gradients and
+molecular Hessians are calculated\index{molecular gradient}\index{molecular Hessian})
+or a variety of first-order\index{first-order optimization}\index{geometry optimization!first-order}
+methods~\cite{Fletcher} (only energies and molecular gradients are
 calculated). These methods
 have been implemented for Hartree--Fock, Density Functional Theory,
-MCSCF  and various Coupled-Cluster wave functions. For other
+MCSCF  and various Coupled Cluster wave functions. For other
 non-variational wave functions---such as CI---the program can 
 only do first-order geometry optimizations using a
-numerically\index{numerical gradient}
-calculated gradient. This will be invoked automatically by the program
+numerically\index{numerical gradient}\index{molecular gradient!numerical}
+calculated molecular gradient. This will be invoked automatically by the program
 in case of a non-variational wave function. Some comments connected to
 such geometry optimizations are collected in Sec.~\ref{sec:nonvargeom}.
 
@@ -25,12 +26,12 @@ modules for exploring potential energy surfaces\index{PES}\index{potential energ
 a pure second-order module and \Sec{OPTIMIZE} which contains both
 first- and second-order methods. While there is a lot of overlap
 between the two modules, certain calculations can only be done using
-one or the other of the two. The main strength of \Sec{WALK} is it's
+one or the other of the two. The main strength of \Sec{WALK} is its
 robustness, while \Sec{OPTIMIZE} focuses more on speed and
 efficiency. For regular optimizations of minima and transition states,
 the recommended module is \Sec{OPTIMIZE}.
 
-One of the strengths of the {\dalton} program package is the
+One of the strengths of the {\dalton} program is the
 stable algorithms for locating first-order transition states\index{transition state}\index{geometry optimization!transition state}.
 As described below, this can done by one of three algorithms in
 \Sec{WALK}: by trust-region second-order image surface
@@ -79,10 +80,10 @@ Sec.~\ref{sec:solventgeoopt}.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item 2.nd-order methods: T.U.Helgaker, J.Alml\"{o}f, H.J.Aa.Jensen,
+\item 2nd-order methods: T.U.Helgaker, J.Alml\"{o}f, H.J.Aa.Jensen,
 and P.J{\o}rgensen.\newblock {\em J.Chem.Phys.}, {\bf
 84},\hspace{0.25em}6266, (1986).
-\item 1.st-order methods: V.Bakken, and T.Helgaker, \newblock {\em J.Chem.Phys.}, {\bf 117},\hspace{0.15em} 9160 (2002).
+\item 1st-order methods: V.Bakken, and T.Helgaker, \newblock {\em J.Chem.Phys.}, {\bf 117},\hspace{0.15em} 9160 (2002).
 \item Excited-state optimization: A.Cesar, H.\AA gren, T.Helgaker, P.J\o rgensen, and H.J.Aa.Jensen.\newblock {\em J.Chem.Phys.}, {\bf
 95},\hspace{0.25em}5906, (1991).
 \item Solvent Hessian: P.-O.\AA strand, K.V.Mikkelsen, K.Ruud and
@@ -120,7 +121,7 @@ that is, a stationary point on the molecular surface with Hessian
 index 0. With the \Sec{OPTIMIZE}
 module the second-order method has to be explicitly requested
 (\Key{2NDORD})~\cite{tuhjahjajpjjcp84}, as first-order methods are the default. At the final,
-optimized geometry the input in the \Sec{*FINAL} section requests a
+optimized geometry the input in the \Sec{*PROPE} section requests a
 vibrational analysis and the evaluation of nuclear shieldings.
 
 In second-order methods the Hessian\index{Hessian} is calculated at every
@@ -198,9 +199,9 @@ optimization~\cite{Fletcher} in redundant internal
 coordinates~\cite{gfxfzpwtppjacs114,ppgfjcp96,vbthjcp117}\index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
 using the BFGS\index{BFGS update}\index{Hessian update!BFGS}
 Hessian update. This means that
-only the energy and the gradient is calculated in each iteration, and
-an approximate Hessian is obtained using the gradients and the
-displacements. The initial Hessian is diagonal in the redundant
+only the energy and the molecular gradient are calculated in each iteration, and
+an approximate molecular Hessian is obtained using the gradients and the
+displacements. The initial molecular Hessian is diagonal in the redundant
 internal coordinates~\cite{rlabgkpamcpl241}.
 To obtain the properties at the optimized 
 geometry, the Hessian has to be calculated. By looking at the
@@ -208,7 +209,7 @@ vibrational frequencies one can then verify that a true minimum has
 been reached (as all frequencies should be real, corresponding to a
 positive definite Hessian).
 
-Several first-order methods have been implemented in DALTON, the
+Several first-order methods have been implemented in \dalton\, the
 recommended method being the Broyden-Fletcher-Goldfarb-Shanno (BFGS)
 Hessian updating\index{BFGS update}\index{Hessian update!BFGS}
 scheme. Though other updates may perform better in
@@ -235,12 +236,12 @@ calculated at the new geometry. If this deviation is larger than a
 given threshold, the step will be reduced through a decrease in the
 trust radius and a simple line search will be performed. A quadratic
 function is fitted 
-to the rejected energy and the previous energy and gradient. The
+to the rejected energy and the previous energy and molecular gradient. The
 minimum of this function is then used as the new step, and this
 process may be repeated.
 
 Another consideration concerning optimizations, is the choice of\index{coordinate system}\index{geometry optimization!coordinate system}
-coordinate system. Second-order methods does not seem to be very
+coordinate system. Second-order methods do not seem to be very
 sensitive to this, and the \Sec{WALK} module thus only uses
 Cartesian coordinates. However, the coordinate system may be crucial
 to the performance of first-order methods, especially when starting
@@ -252,7 +253,7 @@ first-order methods. Redundant internal coordinates consists of all
 bond lengths, angles and dihedral angles in a molecule, and the
 redundancies are removed through projection. The default for
 second-order methods is Cartesian coordinates, while redundant
-internal coordinates is the default for first-order methods, but it is
+internal coordinates are the default for first-order methods, but it is
 possible to override this with the keywords \Key{REDINT} and
 \Key{CARTES} respectively.
 
@@ -261,11 +262,11 @@ set of convergence criteria\index{convergence!geometry, criteria}. These will be
 set automatically depending on the accuracy of the wave function
 using three different criteria, namely the change in energy
 between two iterations, the norm of the molecular
-gradient\index{norm of gradient} and the norm of the
-step\index{norm of step}. The convergence threshold for the change
+gradient\index{molecular gradient!norm of} and the norm of the
+step\index{step!norm of}. The convergence threshold for the change
 in energy is the maximum of $1.0\cdot 10^{-6}$ Hartree and two times the
 convergence threshold for the wave function, whereas for the norm of
-the gradient and step it is the maximum of $1.0\cdot 10^{-4}$ a.u.\ and
+the molecular gradient and step it is the maximum of $1.0\cdot 10^{-4}$ a.u.\ and
 two times the 
 convergence threshold for the wave function. Two out of these
 three criteria have to decrease below their threshold before the program
@@ -278,7 +279,7 @@ should keep in mind that while second-order methods are rather
 insensitive to changes in these thresholds due to their quadratic
 convergence, first-order methods may run into severe trouble if the
 criteria are too close to the accuracy of the wave function and the
-gradient. The quickest way to get somewhat looser convergence
+molecular gradient. The quickest way to get somewhat looser convergence
 criteria, is to use the keyword \Key{BAKER} enforcing the convergence
 criteria of Baker\cite{Baker} (see the Reference Manual for
 details). This will normally give energies converged to within
@@ -286,10 +287,10 @@ $1.0\cdot 10^{-6}$ Hartree.
 
 In case of non-variational\index{non-variational wave functions}
 wave functions, where a numerical 
-gradient\index{numerical gradient} is used, the threshold for
+gradient\index{molecular gradient!numerical} is used, the threshold for
 convergence is reset to 
 $1.0\cdot 10^{-4}$ a.u., due to possible numerical
-instabilities\index{numerical gradient} occurring in the 
+instabilities occurring in the 
 finite difference\index{finite difference} methods employed to
 determine the molecular gradient\index{molecular gradient}.
 
@@ -298,7 +299,7 @@ states\index{excited state!geometry optimization}
 where the state of interest is not the lowest of its
 symmetry, most of the parameters controlling the trust-region
 optimization method will be reset to much more conservative
-values, as one in such calculations will loose the possibility of
+values, as one in such calculations will lose the possibility of
 back-stepping during the wave function optimization, as well as
 to ensure that the start wave function at the new geometry
 is within the local region of the optimized wave function.
@@ -339,7 +340,7 @@ used in the order they appear in the input file, so one should
 sort the sets and put the smaller one at the top for maximum
 efficiency. The ``main'' basis set, that is, the one that will be
 used for the final optimized geometry, is specified in the file
-MOLECULE.INP as usual. After the last optimization, the energy of
+\molinp\ as usual. After the last optimization, the energy of
 the molecule will be calculated at the final geometry with the
 d-aug-cc-pVTZ basis. Please note that these features will work only
 when using basis sets from the basis set library.
@@ -353,7 +354,7 @@ referred to the section describing each module for a closer
 description of the different options. These sections may, with the
 exception of the \Sec{OPTIMIZE} and \Sec{WALK} section, be specified
 in any of the modules \Sec{*START}, \Sec{*EACH STEP}
-and \Sec{*PROPERTIES}. The \Sec{OPTIMIZE} and \Sec{WALK} is
+and \Sec{*PROPERTIES}. The \Sec{OPTIMIZE} and \Sec{WALK} are
 to be placed in the \Sec{*DALTON} module, and will apply to the
 entire calculation.
 
@@ -508,7 +509,7 @@ exact Hessians are used. The step control method is, however, the same
 trust-region image optimization.
 
 When locating transition states it is important to have a good
-description of the mode that should be maximized ({\it i.e.\/} have a negative
+description of the mode that should be maximized ({\it i.e.}~have a negative
 eigenvalue). It is therefore not recommended to start off with a
 simple model Hessian, but rather to calculate the initial Hessian
 analytically. Alternatively it can be calculated using a smaller basis
@@ -617,7 +618,7 @@ coordinates\index{mass-weighted coordinates}, it is recommended to
 specify the isotopic constitution\index{isotopic constitution} of
 the molecule. If none is specified, the most abundant
 isotope of each atom is used by default. The isotopic constitution of
-a molecule is given in the \verb|MOLECULE.INP| file as described in Chapter~\ref{ch:molinp}.
+a molecule is given in the \molinp\ file as described in Chapter~\ref{ch:molinp}.
 
 A requirement in a gradient extremal calculation is that the
 calculation is started on a gradient extremal. In practice this is
@@ -716,7 +717,7 @@ otherwise continue until a critical point with index zero
 }}
 \end{center}
 
-A tool that have proved valuable in the study of molecular
+A tool that has proved valuable in the study of molecular
 dynamics\index{dynamics}
 is the use of steepest descent\index{steepest descent}-based algorithms
 for following a molecular reaction from a transition
@@ -724,8 +725,8 @@ state\index{transition state} towards a minimum. One of the
 most successful ways of doing this is the Intrinsic Reaction Coordinate (IRC)
 approach~\cite{kfacr14}\index{IRC}\index{intrinsic reaction
 coordinate}. The IRC is calculated by taking small steps along the
-negative gradient in a mass-weighted 
-coordinate\index{mass-weighted coordinates} system. In {\dalton}, the
+negative molecular gradient in a mass-weighted 
+coordinate\index{coordinates!mass-weighted} system. In {\dalton}, the
 size of the step is adjusted with the use of the trust-region based
 algorithm. In order to get a sufficiently accurate potential energy surface,
 rather small steps must be taken, and the default trust radius is thus reset
@@ -763,7 +764,7 @@ As the IRC is defined with respect to mass-weighted
 coordinates\index{mass-weighted coordinates}, care
 has to be taken in order to specify the correct isotopic substitution
 of the molecule. The specification of the isotopic constitution of a
-molecule is given in the \verb|MOLECULE.INP| file, as described in
+molecule is given in the \molinp\ file, as described in
 Chapter~\ref{ch:molinp}. 
 
 Due to the small steps that must be used in a calculation of an IRC,
@@ -863,7 +864,7 @@ molecular fragment\index{molecular fragments}. In this particular
 case, we assume that two
 protons leave the protonated formaldehyde\index{formaldehyde} as a
 hydrogen\index{hydrogen} molecule, and
-that the leaving hydrogen atoms are the last atoms of the \mol\ input
+that the leaving hydrogen atoms are the last atoms of the \molinp\ input
 file. This partitioning is mainly needed in order to get
 proper values for the relative translational energy between the two
 fragments, as well as for deciding how much of the energy has been
@@ -874,7 +875,7 @@ isotopes are to be used in the calculation. Isotopic
 substitution is important as the masses of the nuclei enters when
 Newton's equations of motion are integrated. The specification of the
 isotopic constitution of the molecule is given in the
-\verb|MOLECULE.INP| file, as described in Chapter~\ref{ch:molinp}.
+\molinp\ file, as described in Chapter~\ref{ch:molinp}.
 
 In this calculation we start the calculation at a transition
 state\index{transition state},
@@ -984,7 +985,7 @@ structure.
 \section{Geometry optimization using non-variational wave
 functions}\label{sec:nonvargeom}
 
-\dalton\ does not have any support for the calculation of molecular
+\dalton\ does not have any support for the analytical calculation of molecular
 gradients and Hessians for the non-variational wave functions 
 CI and NEVPT2\index{CI}\index{Configuration Interaction}\index{NEVPT2}. However, in order to
 exploit the facilities of the first-order
@@ -1010,10 +1011,10 @@ numerical gradient can be controlled through the keyword
 \Key{DISPLA} in the \Sec{OPTIMI} input module. Default value is
 $1.0\cdot 10^{-3}$ a.u. By default, the threshold for convergence
 of the geometry will be changed because of estimated inaccuracies
-in the numerical gradients. However, if the threshold for
+in the numerical molecular gradients. However, if the threshold for
 convergence is altered manually, this user supplied threshold for
 convergence will be used also in geometry optimizations using
-numerical gradients\index{numerical gradient}. Note that due to
-the possibility of larger numerical errors in the gradient, too
+numerical molecular gradients\index{molecular gradient!numerical}. Note that due to
+the possibility of larger numerical errors in the molecular gradient, too
 tight convergence criteria for an optimized geometry may make it
 difficult for the program to obtain a converged geometry.

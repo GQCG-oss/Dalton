@@ -14,15 +14,15 @@ git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 mkdir $TMP_DIR/build
 cd $TMP_DIR
 #git checkout linsca-develop
-git checkout Dalton2013_release
+#git checkout Dalton2013_release
 git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 export OMP_NUM_THREADS=3
 export MATH_ROOT=/com/intel/Compiler/11.1/064/mkl
 cd $TMP_DIR/build
 export DALTON_TMPDIR=$SCRATCH_DIR
-export DALTON_NR_MPI_PROCS=5
+export DALTON_NUM_MPI_PROCS=5
 export CTEST_PROJECT_NAME=LSDALTON
-FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DCMAKE_BUILD_TYPE=Release -DENABLE_BLAS=OFF -DENABLE_LAPACK=OFF -DBUILDNAME=RB-Grendel-linux-ifort-openMPI-release $TMP_DIR
+FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DCMAKE_BUILD_TYPE=Release -DENABLE_BLAS=OFF -DENABLE_LAPACK=OFF -DBUILDNAME=MB-Grendel-linux-ifort-openMPI-release $TMP_DIR
 #make depend
 #make Nightly
 ctest -D Nightly -L linsca

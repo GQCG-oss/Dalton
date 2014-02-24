@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -402,7 +402,7 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
 C
-C#include <leinf.h>
+C#include "leinf.h"
 C
       if (locdbg) then
         write(lupri,*) ' Backtransform (T) density aijk '
@@ -534,7 +534,7 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
 C
-C#include <leinf.h>
+C#include "leinf.h"
 C
       if (locdbg) then
         write(lupri,*) ' Backtransform (T) densities iajk and iajb'

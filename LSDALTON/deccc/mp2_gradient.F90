@@ -28,7 +28,7 @@ module mp2_gradient_module
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use dec_fragment_utils
-  use crop
+  use crop_tools_module
   use array2_simple_operations!,only: array2_init, array2_transpose, array2_free,&
  !      & extract_occupied_EOS_MO_indices
   use array4_simple_operations!,only: array4_init, array4_contract1, array4_free,&
@@ -59,9 +59,9 @@ contains
     ! **********
 
     ! Number of occupied orbitals
-    fullgrad%nocc = MyMolecule%numocc
+    fullgrad%nocc = MyMolecule%nocc
     ! Number of virtual orbitals
-    fullgrad%nvirt = MyMolecule%numvirt
+    fullgrad%nunocc = MyMolecule%nunocc
     ! Number of basis functions
     fullgrad%nbasis = MyMolecule%nbasis
     ! Number of atoms
@@ -142,7 +142,7 @@ contains
 
 
 
-  !> \brief Init MP2 gradient structure for single fragment, assumes that the fragment structure (ccatom)
+  !> \brief Init MP2 gradient structure for single fragment, assumes that the fragment structure (decfrag)
   !> has already been initiated!
   !> \author Kasper Kristensen
   !> \date October 2011
@@ -150,7 +150,7 @@ contains
 
     implicit none
     !> Fragment (single or pair) for which to initialize MP2 gradient info
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     !> MP2 gradient for fragment
     type(mp2grad), intent(inout) :: grad
     integer :: i,atom1,atom2
@@ -159,7 +159,7 @@ contains
 
     ! Check if it is a pair fragment
     ! ******************************
-    atom1 = fragment%atomic_number
+    atom1 = fragment%EOSatoms(1)
     if(fragment%nEOSatoms==2) then  ! pair fragment
        is_pair=.true.
        write(DECinfo%output,*) 'Initiating MP2 gradient structure for pair fragment ', &
@@ -167,7 +167,7 @@ contains
        atom2 = fragment%EOSatoms(2)
     else
        is_pair=.false.
-       write(DECinfo%output,*) 'Initiating MP2 gradient structure for single fragment ', fragment%atomic_number
+       write(DECinfo%output,*) 'Initiating MP2 gradient structure for single fragment ', fragment%EOSatoms(1)
        atom2 = 0
     end if
 
@@ -186,7 +186,7 @@ contains
     ! ***********************************************************************
 
     ! Number of atoms in fragment (atomic extent)
-    grad%natoms = fragment%number_atoms
+    grad%natoms = fragment%natoms
 
     ! Atomic indices for atoms in atomic extent
     if(associated(grad%atoms_idx)) then
@@ -211,7 +211,7 @@ contains
        call mem_dealloc(grad%Phivv)
        nullify(grad%Phivv)
     end if
-    call mem_alloc(grad%Phivv,grad%dens%nvirt,grad%dens%nvirt)
+    call mem_alloc(grad%Phivv,grad%dens%nunocc,grad%dens%nunocc)
     grad%Phivv=0E0_realk
 
     ! Total Phi matrix in AO basis
@@ -268,7 +268,7 @@ contains
 
     implicit none
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(inout) :: t2occ  ! ordered as (C,I,J,D) at output
     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
@@ -290,7 +290,7 @@ contains
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
 
-    write(DECinfo%output,*) 'Calculating MP2 gradient for fragment', MyFragment%atomic_number
+    write(DECinfo%output,*) 'Calculating MP2 gradient for fragment', MyFragment%EOSatoms(1)
 
     ! Init MP2 gradient structure
     call init_mp2grad(MyFragment,grad)
@@ -340,7 +340,7 @@ contains
     implicit none
 
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
     !> Theta array Theta_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order:  (A,K,B,L)
@@ -375,10 +375,10 @@ contains
     ! Sanity check 1: Gradient input structure is correct
     something_wrong=.false.
     if(noccAOS/=grad%dens%nocc) something_wrong=.true.
-    if(nvirtAOS/=grad%dens%nvirt) something_wrong=.true.
+    if(nvirtAOS/=grad%dens%nunocc) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'Grad structure: nocc =   ', grad%dens%nocc
-       write(DECinfo%output,*) 'Grad structure: nvirt =  ', grad%dens%nvirt
+       write(DECinfo%output,*) 'Grad structure: nvirt =  ', grad%dens%nunocc
        write(DECinfo%output,*) 'Theta, occ AOS dimension ', noccAOS
        write(DECinfo%output,*) 'Theta, virt AOS dimension', nvirtAOS
        call lsquit('single_calculate_mp2gradient: &
@@ -464,7 +464,7 @@ contains
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Structure containing MP2 gradient info, including Ltheta.
     type(mp2grad), intent(inout) :: grad
     type(array4) :: ThetaAO, dens4index
@@ -490,9 +490,9 @@ contains
     ! Number of virtual AOS orbitals in fragment
     nvirtAOS = ThetaOCC%dims(1)
     ! Number of basis functions in fragment
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
     ! Number of atoms in fragment
-    natoms = MyFragment%number_atoms
+    natoms = MyFragment%natoms
     ! Number of AO matrices to use as input in exchange gradient routine
     matdim = noccEOS*noccEOS
 
@@ -511,15 +511,15 @@ contains
     ! **************************************************************
     something_wrong=.false.
     if(grad%dens%nocc /= MyFragment%noccAOS) something_wrong=.true.
-    if(grad%dens%nvirt /= MyFragment%nunoccAOS) something_wrong=.true.
-    if(grad%natoms /= MyFragment%number_atoms) something_wrong=.true.
+    if(grad%dens%nunocc /= MyFragment%nunoccAOS) something_wrong=.true.
+    if(grad%natoms /= MyFragment%natoms) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'Gradient: nocc   = ', grad%dens%nocc
-       write(DECinfo%output,*) 'Gradient: nvirt  = ', grad%dens%nvirt
+       write(DECinfo%output,*) 'Gradient: nvirt  = ', grad%dens%nunocc
        write(DECinfo%output,*) 'Gradient: natoms = ', grad%natoms
        write(DECinfo%output,*) 'Fragment: nocc   = ', MyFragment%noccAOS
        write(DECinfo%output,*) 'Fragment: nvirt  = ', MyFragment%nunoccAOS
-       write(DECinfo%output,*) 'Fragment: natoms = ', MyFragment%number_atoms
+       write(DECinfo%output,*) 'Fragment: natoms = ', MyFragment%natoms
        call lsquit('Something wrong in single_fragment_Ltheta_contribution:&
             & Dimensions in fragment does not match dimensions in gradient structure', DECinfo%output)
     end if
@@ -531,10 +531,10 @@ contains
 
     ! Get virtual MO coefficient matrix in array2 form
     CvirtAOS = array2_init([nbasis,nvirtAOS],&
-         &MyFragment%ypv(1:nbasis,1:nvirtAOS))
+         &MyFragment%Cv(1:nbasis,1:nvirtAOS))
 
     ! Get occupied MO coefficient matrix for EOS orbitals in array2 form
-    CoccEOS = array2_init_plain([MyFragment%number_basis,MyFragment%noccEOS])
+    CoccEOS = array2_init_plain([MyFragment%nbasis,MyFragment%noccEOS])
     call extract_occupied_EOS_MO_indices(CoccEOS,MyFragment)
 
     ! Transform virtual Theta indices to AO indices
@@ -591,11 +591,11 @@ contains
 
     implicit none
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: pairfragment
+    type(decfrag),intent(inout) :: pairfragment
     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(in) :: t2occ
     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
@@ -662,11 +662,11 @@ contains
     implicit none
 
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: pairfragment
+    type(decfrag),intent(inout) :: pairfragment
     !> Theta array, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(inout) :: ThetaOCC       ! ordered as (C,I,J,D) at output
     !> Theta array, only for EOS orbitals using virtual partitioning, order:  (A,K,B,L)
@@ -709,10 +709,10 @@ contains
     ! Sanity check 1: Gradient input structure is correct
     something_wrong=.false.
     if(noccAOS/=grad%dens%nocc) something_wrong=.true.
-    if(nvirtAOS/=grad%dens%nvirt) something_wrong=.true.
+    if(nvirtAOS/=grad%dens%nunocc) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'Grad structure: nocc =   ', grad%dens%nocc
-       write(DECinfo%output,*) 'Grad structure: nvirt =  ', grad%dens%nvirt
+       write(DECinfo%output,*) 'Grad structure: nvirt =  ', grad%dens%nunocc
        write(DECinfo%output,*) 'Theta, occ AOS dimension ', noccAOS
        write(DECinfo%output,*) 'Theta, virt AOS dimension', nvirtAOS
        call lsquit('pair_calculate_mp2density: &
@@ -879,7 +879,7 @@ contains
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
     !> Pair fragment
-    type(ccatom),intent(inout) :: PairFragment
+    type(decfrag),intent(inout) :: PairFragment
     !> Number of occupied EOS orbitals
     integer,intent(in) :: noccEOS
     !> Which "interaction orbital pairs" to include (see which_pairs_occ)
@@ -908,9 +908,9 @@ contains
     ! Number of virtual AOS orbitals in fragment
     nvirtAOS = ThetaOCC%dims(1)
     ! Number of basis functions in fragment
-    nbasis = PairFragment%number_basis
+    nbasis = PairFragment%nbasis
     ! Number of atoms in fragment
-    natoms_frag = PairFragment%number_atoms
+    natoms_frag = PairFragment%natoms
     ! Number of occupied pairs to consider
     matdim = count(dopair_occ)
 
@@ -930,15 +930,15 @@ contains
     ! **************************************************************
     something_wrong=.false.
     if(grad%dens%nocc /= PairFragment%noccAOS) something_wrong=.true.
-    if(grad%dens%nvirt /= PairFragment%nunoccAOS) something_wrong=.true.
-    if(grad%natoms /= PairFragment%number_atoms) something_wrong=.true.
+    if(grad%dens%nunocc /= PairFragment%nunoccAOS) something_wrong=.true.
+    if(grad%natoms /= PairFragment%natoms) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'Gradient: nocc   = ', grad%dens%nocc
-       write(DECinfo%output,*) 'Gradient: nvirt  = ', grad%dens%nvirt
+       write(DECinfo%output,*) 'Gradient: nvirt  = ', grad%dens%nunocc
        write(DECinfo%output,*) 'Gradient: natoms = ', grad%natoms
        write(DECinfo%output,*) 'Fragment: nocc   = ', PairFragment%noccAOS
        write(DECinfo%output,*) 'Fragment: nvirt  = ', PairFragment%nunoccAOS
-       write(DECinfo%output,*) 'Fragment: natoms = ', PairFragment%number_atoms
+       write(DECinfo%output,*) 'Fragment: natoms = ', PairFragment%natoms
        call lsquit('Something wrong in pair_fragment_Ltheta_contribution:&
             & Dimensions in fragment does not match dimensions in gradient structure', DECinfo%output)
     end if
@@ -949,10 +949,10 @@ contains
 
     ! Get virtual MO coefficient matrix in array2 form
     CvirtAOS = array2_init([nbasis,nvirtAOS],&
-         &PairFragment%ypv(1:nbasis,1:nvirtAOS))
+         &PairFragment%Cv(1:nbasis,1:nvirtAOS))
 
     ! Get occupied MO coefficient matrix for EOS orbitals in array2 form
-    CoccEOS = array2_init_plain([PairFragment%number_basis,PairFragment%noccEOS])
+    CoccEOS = array2_init_plain([PairFragment%nbasis,PairFragment%noccEOS])
     call extract_occupied_EOS_MO_indices(CoccEOS,PairFragment)
 
     ! Transform virtual Theta indices to AO indices
@@ -1181,8 +1181,8 @@ contains
     ! Easy reference to molecule info
     ! *******************************
     nbasis = MyMolecule%nbasis
-    nocc = MyMolecule%numocc
-    nvirt = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
     ncore = MyMolecule%ncore
     nval = MyMolecule%nval
 
@@ -1221,8 +1221,8 @@ contains
        call mat_init(C,nbasis,nbasis)
        call mat_init(F,nbasis,nbasis)
        call mem_alloc(basis,nbasis,nbasis)
-       basis(1:nbasis,1:nocc) = MyMolecule%ypo(1:nbasis,1:nocc)
-       basis(1:nbasis,nocc+1:nbasis) = MyMolecule%ypv(1:nbasis,1:nvirt)
+       basis(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
+       basis(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
        call mat_set_from_full(basis(1:nbasis,1:nbasis), 1E0_realk, C)
        call mem_dealloc(basis)
        call mat_set_from_full(MyMolecule%fock(1:nbasis,1:nbasis), 1E0_realk, F)
@@ -1790,7 +1790,7 @@ contains
     implicit none
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
-    !> Fragment energies (see ccatom type def)
+    !> Fragment energies (see decfrag type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergies
     !> Job list of fragments
     type(joblist),intent(in) :: jobs
@@ -1827,7 +1827,7 @@ contains
     ! Energies and Gradient stuff
     write(funit) FragEnergies
     write(funit) fullgrad%nocc
-    write(funit) fullgrad%nvirt
+    write(funit) fullgrad%nunocc
     write(funit) fullgrad%natoms
     write(funit) fullgrad%EHF
     write(funit) fullgrad%Ecorr
@@ -1851,7 +1851,7 @@ contains
     implicit none
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
-    !> Fragment energies (see ccatom type def)
+    !> Fragment energies (see decfrag type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(inout) :: FragEnergies
     !> Job list of fragments
     type(joblist),intent(inout) :: jobs
@@ -1888,15 +1888,15 @@ contains
 
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(funit,fullgrad%nocc)
-       call read_64bit_to_32bit(funit,fullgrad%nvirt)
+       call read_64bit_to_32bit(funit,fullgrad%nunocc)
        call read_64bit_to_32bit(funit,fullgrad%natoms)
     elseif(DECinfo%convert32to64) then
        call read_32bit_to_64bit(funit,fullgrad%nocc)
-       call read_32bit_to_64bit(funit,fullgrad%nvirt)
+       call read_32bit_to_64bit(funit,fullgrad%nunocc)
        call read_32bit_to_64bit(funit,fullgrad%natoms)
     else
        read(funit) fullgrad%nocc
-       read(funit) fullgrad%nvirt
+       read(funit) fullgrad%nunocc
        read(funit) fullgrad%natoms
     end if
 
@@ -2003,7 +2003,7 @@ contains
   ! ======================================
 
 
-  !> \brief Init MP2 density structure for single fragment, assumes that the fragment structure (ccatom)
+  !> \brief Init MP2 density structure for single fragment, assumes that the fragment structure (decfrag)
   !> has already been initiated!
   !> \author Kasper Kristensen
   !> \date September 2011
@@ -2011,7 +2011,7 @@ contains
 
     implicit none
     !> Fragment with information corresponding to density
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     !> MP2 density for fragment
     type(mp2dens), intent(inout) :: dens
     integer :: i
@@ -2021,13 +2021,13 @@ contains
 
     ! Central atom and orbital space sizes
     ! ************************************
-    dens%centralatom = fragment%atomic_number
+    dens%centralatom = fragment%EOSatoms(1)
     dens%centralatom2 = 0    ! only used for pairs
-    dens%nbasis = fragment%number_basis
-    dens%nvirt = fragment%nunoccAOS
+    dens%nbasis = fragment%nbasis
+    dens%nunocc = fragment%nunoccAOS
     dens%nocc = fragment%noccAOS
     dens%nocctot = fragment%nocctot
-    dens%energy = fragment%energies(1)
+    dens%energy = fragment%energies(FRAGMODEL_OCCMP2)
     dens%pairdist = 0E0_realk
     dens%nEOSatoms = fragment%nEOSatoms
 
@@ -2038,8 +2038,8 @@ contains
 
     ! Sanity check
     ! ************
-    if( (dens%nvirt==0) .or. (dens%nocc==0) ) then
-       write(DECinfo%output,*) 'nvirt,nocc =', dens%nvirt,dens%nocc
+    if( (dens%nunocc==0) .or. (dens%nocc==0) ) then
+       write(DECinfo%output,*) 'nvirt,nocc =', dens%nunocc,dens%nocc
        call lsquit('single_init_mp2dens: Number of orbitals is zero, it seems that the fragment &
             & has not been initialized before initiating the density',-1)
     end if
@@ -2053,7 +2053,7 @@ contains
     ! Initiate array for virt-virt block of density (Y)
     ! *************************************************
     ! Dimension of Y is (nvirt,nvirt)
-    call mem_alloc(dens%Y,dens%nvirt,dens%nvirt)
+    call mem_alloc(dens%Y,dens%nunocc,dens%nunocc)
     dens%Y=0E0_realk
 
     ! Initiate array for occ-occ block of density (X)
@@ -2071,13 +2071,13 @@ contains
     ! Initiate array for virt-occ block of Phi matrix
     ! ***********************************************
     ! Dimension of Phivo is (nvirt,nocctot)
-    call mem_alloc(dens%Phivo,dens%nvirt,dens%nocctot)
+    call mem_alloc(dens%Phivo,dens%nunocc,dens%nocctot)
     dens%Phivo=0E0_realk
 
     ! Initiate array for occ-virt block of Phi matrix
     ! ***********************************************
     ! Dimension of Phiov is (nocc.nvirt)
-    call mem_alloc(dens%Phiov,dens%nocc,dens%nvirt)
+    call mem_alloc(dens%Phiov,dens%nocc,dens%nunocc)
     dens%Phiov=0E0_realk
 
   end subroutine single_init_mp2dens
@@ -2092,7 +2092,7 @@ contains
 
     implicit none
     !> Pair fragment with information corresponding to density
-    type(ccatom),intent(inout) :: pairfragment
+    type(decfrag),intent(inout) :: pairfragment
     !> MP2 density for pair fragment
     type(mp2dens), intent(inout) :: dens
     !> First atom in pair
@@ -2122,7 +2122,7 @@ contains
     ! Set stuff to zero
     dens%nocc=0
     dens%nocctot=0
-    dens%nvirt=0
+    dens%nunocc=0
     dens%centralatom=0
     dens%centralatom2=0
     dens%energy=0E0_realk
@@ -2150,7 +2150,7 @@ contains
     implicit none
 
     !> Atomic fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: t2occ
     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
@@ -2190,10 +2190,10 @@ contains
     ! Sanity check 1: Density input structure is correct
     something_wrong=.false.
     if(noccAOS/=dens%nocc) something_wrong=.true.
-    if(nvirtAOS/=dens%nvirt) something_wrong=.true.
+    if(nvirtAOS/=dens%nunocc) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'dens%nocc', dens%nocc
-       write(DECinfo%output,*) 'dens%nvirt', dens%nvirt
+       write(DECinfo%output,*) 'dens%nunocc', dens%nunocc
        write(DECinfo%output,*) 'Amplitudes, occ AOS dimension ', noccAOS
        write(DECinfo%output,*) 'Amplitudes, virt AOS dimension', nvirtAOS
        call lsquit('single_calculate_mp2density: &
@@ -2254,8 +2254,8 @@ contains
     call LSTIMER('X MATRIX',tcpu,twall,DECinfo%output)
 
     ! X and Y matrices collected and transformed to AO basis (unrelaxed corr. density)
-    call get_unrelaxed_corrdens_in_AO_basis(dens%nocc,dens%nvirt,dens%nbasis,MyFragment%ypo,&
-         & MyFragment%ypv,dens%X,dens%Y,dens%rho)
+    call get_unrelaxed_corrdens_in_AO_basis(dens%nocc,dens%nunocc,dens%nbasis,MyFragment%Co,&
+         & MyFragment%Cv,dens%X,dens%Y,dens%rho)
 
 
 
@@ -2306,11 +2306,11 @@ contains
 
     implicit none
     !> Fragment 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: pairfragment
+    type(decfrag),intent(inout) :: pairfragment
     !> t2 amplitudes, only for EOS orbitals using occupied partitioning, order:  (A,I,B,J)
     type(array4),intent(in) :: t2occ
     !> t2 amplitudes, only for EOS orbitals using virtual partitioning, order:  (A,I,B,J)
@@ -2355,11 +2355,11 @@ contains
     ! Sanity check
     something_wrong=.false.
     if(noccAOS/=dens%nocc) something_wrong=.true.
-    if(nvirtAOS/=dens%nvirt) something_wrong=.true.
+    if(nvirtAOS/=dens%nunocc) something_wrong=.true.
     if(nocctot/=dens%nocctot) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'dens%nocc', dens%nocc
-       write(DECinfo%output,*) 'dens%nvirt', dens%nvirt
+       write(DECinfo%output,*) 'dens%nunocc', dens%nunocc
        write(DECinfo%output,*) 'dens%nocctot', dens%nocctot
        write(DECinfo%output,*) 'Amplitudes, occ AOS dimension ', noccAOS
        write(DECinfo%output,*) 'Amplitudes, virt AOS dimension', nvirtAOS
@@ -2582,8 +2582,8 @@ call mem_TurnOffThread_Memory()
 
 
     ! X and Y matrices collected and transformed to AO basis (unrelaxed corr. density)
-    call get_unrelaxed_corrdens_in_AO_basis(dens%nocc,dens%nvirt,dens%nbasis,PairFragment%ypo,&
-         & PairFragment%ypv,dens%X,dens%Y,dens%rho)
+    call get_unrelaxed_corrdens_in_AO_basis(dens%nocc,dens%nunocc,dens%nbasis,PairFragment%Co,&
+         & PairFragment%Cv,dens%X,dens%Y,dens%rho)
 
     call LSTIMER('PHIOV MATRIX',tcpu,twall,DECinfo%output)
 
@@ -2724,8 +2724,8 @@ call mem_TurnOffThread_Memory()
     ! Easy reference to molecule info
     ! *******************************
     nbasis = MyMolecule%nbasis
-    nocc = MyMolecule%numocc
-    nvirt = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
     nelectrons = MyMolecule%nelectrons
     ncore = MyMolecule%ncore
     nval = MyMolecule%nval
@@ -2740,8 +2740,8 @@ call mem_TurnOffThread_Memory()
     ! **********************************
     call mat_init(Cocc,nbasis,nocc)
     call mat_init(Cvirt,nbasis,nvirt)
-    call mat_set_from_full(MyMolecule%ypo(1:nbasis,1:nocc), 1E0_realk, Cocc)
-    call mat_set_from_full(MyMolecule%ypv(1:nbasis,1:nvirt), 1E0_realk, Cvirt)
+    call mat_set_from_full(MyMolecule%Co(1:nbasis,1:nocc), 1E0_realk, Cocc)
+    call mat_set_from_full(MyMolecule%Cv(1:nbasis,1:nvirt), 1E0_realk, Cvirt)
 
 
     ! Get RHS matrix for kappabar orbital rotation multiplier equation (dimension nvirt,nocc)
@@ -3183,7 +3183,7 @@ call mem_TurnOffThread_Memory()
        call lsquit('dec_solve_kappabar_equation: Not implemented for full equation AND frozen core!',-1)
     end if
 
-    if(DECinfo%ccModel /= 1) then
+    if(DECinfo%ccModel /= MODEL_MP2) then
        print *, 'CC model: ', DECinfo%ccModel
        call lsquit('dec_solve_kappabar_equation:&
             & kappabar multiplier equation is only implemented for MP2',-1)
@@ -3204,8 +3204,8 @@ call mem_TurnOffThread_Memory()
 
     ! Initialize stuff
     ! ****************
-    nocc=MyMolecule%numocc
-    nunocc=MyMolecule%numvirt
+    nocc=MyMolecule%nocc
+    nunocc=MyMolecule%nunocc
     ncore = MyMolecule%ncore
     nval = MyMolecule%nval
 
@@ -3872,8 +3872,8 @@ call mem_TurnOffThread_Memory()
 
     ! Initialize stuff
     ! ****************
-    nocc = MyMolecule%numocc
-    nunocc = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nunocc = MyMolecule%nunocc
     nbasis = MyMolecule%nbasis
     ncore = MyMolecule%ncore
     nval = MyMolecule%nval
@@ -3959,10 +3959,10 @@ call mem_TurnOffThread_Memory()
     ! Collect occ and virt MO coefficients
     call mem_alloc(C,nbasis,nbasis)
     do i=1,nocc
-       C(:,i) = MyMolecule%ypo(:,i)
+       C(:,i) = MyMolecule%Co(:,i)
     end do
     do i=1,nunocc
-       C(:,i+nocc) = MyMolecule%ypv(:,i)
+       C(:,i+nocc) = MyMolecule%Cv(:,i)
     end do
 
     ! tmp = C rhoMO_relaxation
@@ -4096,7 +4096,7 @@ call mem_TurnOffThread_Memory()
     integer :: nval,ncore,nocc
     type(matrix) :: RHS,dummy1,dummy2
 
-    nocc = MyMolecule%numocc
+    nocc = MyMolecule%nocc
     ncore = MyMolecule%ncore
     nval = MyMolecule%nval
 
@@ -4165,18 +4165,18 @@ call mem_TurnOffThread_Memory()
     implicit none
 
     !> Fragment under consideration
-    type(ccatom),intent(in) :: fragment
+    type(decfrag),intent(in) :: fragment
     !> MP2 gradient structure for fragment
     type(mp2grad), intent(inout) :: grad
 
     ! Frozen core requires special treatment of core orbitals
     if(DECinfo%frozencore) then
        call fragment_Phi_matrix_in_AO_basis_fc(fragment%ncore,fragment%noccAOS,&
-            & fragment%nunoccAOS,fragment%number_basis,fragment%CoreMO,fragment%ypo,&
-            & fragment%ypv,grad)
+            & fragment%nunoccAOS,fragment%nbasis,fragment%CoreMO,fragment%Co,&
+            & fragment%Cv,grad)
     else
        call fragment_Phi_matrix_in_AO_basis_standard(fragment%noccAOS,fragment%nunoccAOS,&
-            & fragment%number_basis,fragment%ypo,fragment%ypv,grad)
+            & fragment%nbasis,fragment%Co,fragment%Cv,grad)
     end if
 
   end subroutine fragment_Phi_matrix_in_AO_basis_wrapper
@@ -4398,15 +4398,15 @@ call mem_TurnOffThread_Memory()
 
 
     nbasis = MyMolecule%nbasis
-    nocc = MyMolecule%numocc
-    nvirt = MyMolecule%numvirt
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
 
     ! Get MO blocks for Phi matrix in simple fortran form
     call mem_alloc(Phivo_simple,nvirt,nocc)
     call mem_alloc(Phiov_simple,nocc,nvirt)
     call mem_alloc(Phioo_simple,nocc,nocc)
     call get_Phi_MO_blocks_from_AO_simple(nbasis,nocc,nvirt,MyMolecule%overlap,&
-         & MyMolecule%ypo,MyMolecule%ypv,fullgrad%Phi,&
+         & MyMolecule%Co,MyMolecule%Cv,fullgrad%Phi,&
          & Phivo_simple,Phiov_simple,Phioo_simple)
 
     ! Init and convert to type(matrix) form

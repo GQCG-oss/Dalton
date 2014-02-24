@@ -110,7 +110,7 @@ CRIT6=`$GREP "bond distance\: * H2 * O * (0| )\.972[0-9][0-9][0-9]" $log | wc -l
 CRIT7=`$GREP "bond angle\: * H1 * O * H2 * 104\.5[0-9][0-9]" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
-CTRL[2]=7
+CTRL[2]=10
 ERROR[2]="CARTESIAN COORDINATES NOT CORRECT"
 
 # DFT setup
@@ -125,7 +125,7 @@ CRIT8=`$GREP "Becke\: * (0| )\.720[0-9][0-9]" $log | wc -l`
 CRIT9=`$GREP "Slater\: * (0| )\.800[0-9][0-9]" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
-CTRL[3]=9
+CTRL[3]=16
 ERROR[3]="DFT SETUP NOT CORRECT"
 
 # DFT energy
@@ -277,7 +277,7 @@ CRIT3=`$GREP "13 * \-\*\*\-\-\*\*\- * 3 * \-\*\*\-\-\*\*\- * 3 * 1\.353[0-9]" $l
 CRIT4=`$GREP "19 * \-\*\*\-\-\*\*\- * 4 * \-\*\*\-\-\*\*\- * 4 * (\-0| \-)\.652[0-9]" $log | wc -l`
 CRIT5=`$GREP "25 * \-\*\*\-\-\*\*\- * 5 * \-\*\*\-\-\*\*\- * 5 * (\-0| \-)\.652[0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-CTRL[9]=5
+CTRL[9]=8
 ERROR[9]="O-H coupling DSO orbital contributions NOT CORRECT"
 
 # O-H coupling PSO orbital contributions 
@@ -307,7 +307,7 @@ TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
 		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22`
-CTRL[10]=22
+CTRL[10]=30
 ERROR[10]="O-H coupling PSO orbital contributions NOT CORRECT"
 
 # O-H coupling FC orbital contributions 
@@ -342,7 +342,7 @@ TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
 		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ \
 		$CRIT25 \+ $CRIT26`
-CTRL[11]=26
+CTRL[11]=38
 ERROR[11]="O-H coupling FC orbital contributions NOT CORRECT"
 
 # O-H coupling SD(+FC) orbital contributions 
@@ -364,7 +364,7 @@ CRIT15=`$GREP "TOTAL * (0| )\.289[0-9]" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15`
-CTRL[12]=15
+CTRL[12]=20
 ERROR[12]="O-H coupling SD(+FC) orbital contributions NOT CORRECT"
 
 # O-H total coupling orbital contributions 
@@ -399,7 +399,7 @@ TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
 		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ \
 		$CRIT25 \+ $CRIT26`
-CTRL[13]=26
+CTRL[13]=38
 ERROR[13]="O-H total coupling orbital contributions NOT CORRECT"
 
 # H-H coupling DSO orbital contributions 
@@ -531,7 +531,7 @@ CRIT4=`$GREP "Isotropic PSO contribution\: * \-1(0| )\.366[0-9] Hz" $log | wc -l
 CRIT5=`$GREP "Isotropic SD contribution \: * (0| )\.289[0-9] Hz" $log | wc -l`
 CRIT6=`$GREP "Isotropic FC contribution \: * \-39\.14[0-9][0-9] Hz" $log | wc -l`
 TEST[19]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[19]=6
+CTRL[19]=12
 ERROR[19]="O-H TOTAL COUPLING NOT CORRECT"
 
 # H-H total coupling
@@ -548,7 +548,7 @@ ERROR[20]="H-H TOTAL COUPLING NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
       echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} );"
       PASSED=0
    fi

@@ -2,7 +2,7 @@
 
 In this chapter we give an few recommendations to keywords that is advantages to use 
 
-\section{Small Molecular systems}
+\section{Small Molecular Systems}
 
 the {\lsdalton} program have been designed to treat large molecular systems and as such the performance for small molecules is not expected to be competative.
 \begin{verbatim}
@@ -18,11 +18,11 @@ the {\lsdalton} program have been designed to treat large molecular systems and 
 The .RH (.i.e. Roothaan-Hall) and .DIIS keywords requests a standard diagonalization combined with the DIIS scheme for convergence acceleration, which is usually the fast option for small uncomplicated molecules. 
 With the keyword .CONVTHR (i.e. convergence threshold) it is requested that iterations are terminated when the Frobenius norm of the SCF gradient is smaller than 10$^{-6}$. 
 
-\section{Large Molecular systems}
+\section{Large Molecular Systems}
 
 the {\lsdalton} program have been designed to treat large molecular systems and the default 
 settings, will mostly likely work well. However, large molecular systems present a number of 
-challengens and we suggest to use the following Keywords.
+challenges and we suggest to use the following Keywords.
 
 \begin{verbatim}
 **INTEGRAL
@@ -56,7 +56,7 @@ We employ the The Augmented Rothaan-Hall (ARH) method for density optimization.
 Note that ARH is default, so this keyword is actually unnecessary.
 ARH is more robust than the standard diagonalization/DIIS scheme.
 
-For Large molecules it may be beneficial to use the new davidson algorithm 
+For Large molecules it may be beneficial to use the new Davidson algorithm 
 
 \begin{verbatim}
 .ARH DAVID
@@ -75,7 +75,7 @@ where the ARH method have been augmented by a linesearch.
 
 \section{Large MPI Jobs}
 
-For large HF/KS calculations all matrix operations can be parallized through the use of the SCALAPACK library, which is activated through the .SCALAPACK keyword 
+For large HF/KS calculations all matrix operations can be parallelized through the use of the SCALAPACK library, which is activated through the .SCALAPACK keyword 
 
 \begin{verbatim}
 **GENERAL
@@ -95,7 +95,7 @@ STANDARD
 
 When you want to perform a large scale MPI calculation you usually want to run it on a super computer cluster. This means you need to understand how the supercomputer works and how you can achieve the best performance. Some testing may be required. The {\lsdalton} program is a MPI/OpenMP hybrid code which means that you may want to use 1 MPI process per compute node and exploit all the cores on the compute node using OpenMP. However some supercomputers use hyper-threading so even if the super computer homepage suggest that there are 16 cores per node  it may be more efficient to run with 8 OpenMP threads per node.    
 
-The super computer cluster most likely use some queing system like PBS, which means you need to construct a submisssion script that may look something like:
+The super computer cluster most likely use some queuing system like PBS, which means you need to construct a submission script that may look something like:
 
 \begin{verbatim}
 #!/bin/bash                                                                     
@@ -136,7 +136,7 @@ ensures that each compute node use 8 OpenMP threads.
 
 \section{Response Calculations}
 
-For response calculations we recommend to use a tight convergence threshld for the initial SCF optimization. 
+For response calculations we recommend to use a tight convergence threshold for the initial SCF optimization. 
 
 \begin{verbatim}
 .CONVDYN
@@ -145,7 +145,7 @@ STANDARD
 
 \section{Accuracy}
 
-In order to debug other programs against the {\lsdalton} program, it may be advantages to remove screening and other approximation that reduce the accuarcy of the calculation, at the expense of speed.
+In order to debug other programs against the {\lsdalton} program, it may be advantages to remove screening and other approximation that reduce the accuracy of the calculation, at the expense of speed.
 
 \begin{verbatim}
 .THRESH
@@ -159,7 +159,7 @@ removes all screening.
 \begin{verbatim}
 .NO OMP 
 \end{verbatim}
-Deactivats the use of OpenMP, which makes the code non deterministic. Alternative the 
+Deactivates the use of OpenMP, which makes the code non deterministic. Alternative the 
 \begin{verbatim}
 export OMP_NUM_THREADS=1
 \end{verbatim}

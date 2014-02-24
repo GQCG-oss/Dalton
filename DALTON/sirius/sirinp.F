@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -202,14 +202,10 @@ C                   ERRINP (ERROR message OUTPUT ROUTINE)
 C
 C******************************************
 C
-Cjje
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
-Cjje
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
+#include "ecpinf.h"
       DIMENSION CMO(LCMO)
 C
 C -- local variables and constants
@@ -1654,10 +1650,11 @@ C
 C  Do we use embedding ?
 C  (that is, is QM part embedded in environment)
 C
-      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
-#if defined (BUILD_PELIB)
-      embedding = embedding .or. peqm
-#endif
+      IF (QMMM .AND. ECP) THEN
+         CALL QUIT('QMMM is not compatible with the use of ECPs')
+      END IF
+      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. PEQM .OR.
+     &            QMNPMM
 C
 C ***  PRINT INPUT DATA *****
 C
@@ -1832,6 +1829,11 @@ C
          ELSE
             ICHECK = 2
          END IF
+      END IF
+C
+      IF (MCTYPE .GT. 0 .AND. PARCAL) THEN
+         IF (RNRESP) CALL PARQUIT('MCSCF in RESPONSE')
+         IF (RNABAC) CALL PARQUIT('MCSCF in ABACUS')
       END IF
 
 C
@@ -2018,11 +2020,7 @@ C
 C
 C -- local variables and constants
 C
-#if defined(BUILD_GEN1INT)
       PARAMETER (NTBMOD = 26)
-#else
-      PARAMETER (NTBMOD = 25)
-#endif
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
 C needed for lucita: nsym, norb
@@ -2037,13 +2035,8 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-#if defined(BUILD_GEN1INT)
-     *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',
+     *            '*AUXILL','*LUCITA','*STEX  ','*CHOACT','*CUBE  ',
      *            '*END OF'/
-#else
-     *            '*AUXILL','*LUCITA','*STEX  ','*CHOACT',
-     *            '*END OF'/
-#endif
 C
 C
 C  ***************************************************
@@ -2063,11 +2056,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-#if defined(BUILD_GEN1INT)
-     *                2900,3000,2400,3200,3300,3600,3400,8000), I
-#else
-     *                2900,3000,2400,3200,3300,3400,8000), I
-#endif
+     *                2900,3000,2400,3200,3300,3400,3500,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2145,14 +2134,17 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
        GO TO 910
  3300  CALL STXINP(WORD,INPERR,ALLOPT)
        GO TO 910
-#if defined(BUILD_GEN1INT)
-C added by Bin Gao, to generate cube files to visualize the results
-C March 9, 2012
- 3600  call gen1int_host_cube_init(LUCMD, LUPRI, WORD)
-       goto 910
-#endif
  3400  CALL CC_ACTINP(WORD,NSYM)
        GO TO 910
+C added by Bin Gao, to generate cube files to visualize the results
+C March 9, 2012
+ 3500  CONTINUE
+#if defined(BUILD_GEN1INT)
+       call gen1int_host_cube_init(LUCMD, LUPRI, WORD)
+#else
+       call quit('.CUBE not active in this version')
+#endif
+       goto 910
 C  Here if "*END OF"
  8000  CONTINUE
        IF (ALLOPT .AND. .NOT.PTABMO) THEN
@@ -2199,18 +2191,13 @@ C
       END
 C  /* Deck sir_geninp */
       SUBROUTINE SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
-
+C
+C 1-Oct 1987 Hans Agren
 #ifdef MOD_XCINT
       use xcint_integrator
       use eri_contractions
 #endif
-
 C
-C 1-Oct 1987 Hans Agren
-C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -2303,7 +2290,7 @@ C *** Option 1 >CI    <  do a CI calculation (before MCSCF)
 C
 C *** Option 2 >FLAGS <  Set Flags directly as in old input
 C     set up control flags and print flags
-C     read namelist $INPUT ... $END
+C     read namelist $NMLSIR ... $END
  102  CONTINUE
          CALL IZERO(NPATH,NPDIM)
 #if defined (VAR_NONAMELIST)
@@ -2513,7 +2500,6 @@ C        ... no P-supermatrix for DFT
 
          call set_eri_contractions_xfac(hfx_out)
 #endif
-
          IF (WDFTMP.NE.0.0D0) THEN
             DOMP2    = .TRUE.
             FLAG(9)  = .TRUE.
@@ -2626,10 +2612,8 @@ C
       GO TO 100
 C
  8000 CONTINUE
-#if defined (BUILD_PELIB)
 !     No QC if PE library is used
-      if (peqm) flag(21) = .false.
-#endif
+      IF (PEQM) FLAG(21) = .FALSE.
 C     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
@@ -5123,9 +5107,6 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 C
 C Used from common blocks:
@@ -5510,9 +5491,7 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
-#if defined (BUILD_PELIB)
-       IF (peqm) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
-#endif
+       IF (PEQM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
       END IF
 C
 C ***** Wave function specifications
@@ -5526,15 +5505,12 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        write(iwunit,'(/5x,a)')
-     &                  'Wave function environment is modeled using the'
-        write(iwunit,'(5x,a/)')
-     &                  'polarizable embedding model (PE library).'
+      IF (PEQM) THEN
+         WRITE(IWUNIT,'(/5X,A/5X,A/)')
+     &   'Wave function environment is modeled using the',
+     &   'polarizable embedding model (PE library).'
         WFTYPE = 'PE-'//WFTYPE
-      end if
-#endif
+      END IF
 C     for SIRIUS (not LUCITA) :
       NINEL = 2*NISHT
       CALL MOLCHR(ICHARG)

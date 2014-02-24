@@ -58,7 +58,7 @@ cat > fullccsdpt.dal <<'%EOF%'
 .CCSD(T)
 .ccThr
 1.0d-9
-.Memory
+.MEMORY
 1.0
 *END OF INPUT
 %EOF%

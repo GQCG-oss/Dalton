@@ -1,11 +1,11 @@
 
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -50,7 +50,6 @@ C  /* Deck qm3fck */
 
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
-      LOGICAL HSFOCK
       DIMENSION DFTNS(MXQM3)
 
 
@@ -61,7 +60,6 @@ C  /* Deck qm3fck */
       LWRK1 = LWRK - KEND
       IF (LWRK1 .LT. 0) CALL ERRWRK('QM3FCK',-KEND,LWRK)
 
-      HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
 
 C     Get total density      
       IF (NASHT .EQ. 0) THEN

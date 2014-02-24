@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,206 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:55:20 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Sun Mar 20 16:29:13 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-20T16_29-testjob-pid-32097
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_dft_properties_nosym
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN PROPERTIES                                   
+.RUN RESPONSE                                     
+**INTEGRALS                                       
+.PVIOLA                                           
+.SPIN-O                                           
+.WEINBG                                           
+0.25                                              
+**WAVE FUNCTIONS                                  
+.DFT                                              
+ B3LYP                                            
+*SCF INPUT                                        
+.THRESH                                           
+ 1.0d-10                                          
+**PROPERTIES                                      
+.SHIELDINGS                                       
+.EXCITA                                           
+.SPIN-SPIN                                        
+*EXCITA                                           
+.NEXCIT                                           
+ 2                                                
+**RESPONSE                                        
+.TRPFLG                                           
+*LINEAR                                           
+.MAX IT                                           
+99                                                
+.MAXITO                                           
+99                                                
+.THCLR                                            
+5.0D-6                                            
+.PROPRT                                           
+PVIOLA X                                          
+.PROPRT                                           
+PVIOLA Y                                          
+.PROPRT                                           
+PVIOLA Z                                          
+.PROPRT                                           
+X1SPNORB                                          
+.PROPRT                                           
+Y1SPNORB                                          
+.PROPRT                                           
+Z1SPNORB                                          
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+cc-pVDZ                                                                        
+H2O                                                                            
+                                                                               
+    2    0                                                                     
+        8.    1                                                                
+O     0.0  0.0000000000 0.0                                                    
+        1.    2                                                                
+H1    1.430    0.0  1.1                                                        
+H2   -1.430    0.0  1.1                                                        
 
 
        *******************************************************************
@@ -105,7 +228,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -131,16 +254,16 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
 
                          SYMGRP: Point group information
@@ -179,7 +302,7 @@ Point group: C1
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -201,8 +324,10 @@ Point group: C1
  H2    :    0.954707    1.513447    0.000000
 
 
-  Max interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
+  Max    interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
   between atoms    3 and    2, "H2    " and "H1    ".
+
+  Min HX interatomic separation is    0.9547 Angstrom (    1.8041 Bohr)
 
 
   Bond distances (Angstrom):
@@ -243,7 +368,7 @@ Point group: C1
            27.793237           14.605184            9.574067 cm-1
 
 
-@  Nuclear repulsion energy :    9.218170507464
+@  Nuclear repulsion energy :    9.218170507464 Hartree
 
 
                      .---------------------------------------.
@@ -290,8 +415,8 @@ Point group: C1
    1      1     8.00000    15.99491500        8      8.000000
    2      1     1.00000     1.00782500        0      0.000000
    3      1     1.00000     1.00782500        0      0.000000
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:       21643 ( 47.9% )
  Megabytes written:                              0.254
 
@@ -300,8 +425,8 @@ Point group: C1
    =================================
    Spin-orbit 2-electron CPU  time      0. seconds
    Spin-orbit 2-electron wall time      0. seconds
- >>>> Total CPU  time used in HERMIT:   0.12 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.11 seconds
+ >>>> Total wall time used in HERMIT:   0.11 seconds
 
 
                         .----------------------------------.
@@ -334,8 +459,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Mar 20 16:29:13 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:55:20 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -344,24 +469,23 @@ Point group: C1
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Kohn-Sham DFT calculation.
+@    Restricted, closed shell Kohn-Sham DFT calculation.
 
-     Time-dependent Kohn-Sham DFT calculation (TD-DFT).
-
+@    Time-dependent Kohn-Sham DFT calculation (TD-DFT).
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EWMO  " input option.
+ ".MOSTART EWMO  " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> KS-DFT   <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> KS-DFT <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                1
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 1
+@    Reference state symmetry                   1
  
      This is a DFT calculation of type: B3LYP
  Weighted mixed functional:
@@ -375,17 +499,17 @@ Point group: C1
      ======================
      Abelian symmetry species          All |    1
                                        --- |  ---
-     Occupied SCF orbitals               5 |    5
+@    Occupied SCF orbitals               5 |    5
      Secondary orbitals                 19 |   19
      Total number of orbitals           24 |   24
      Number of basis functions          24 |   24
 
      Optimization information
      ========================
-     Number of configurations                 1
-     Number of orbital rotations             95
+@    Number of configurations                 1
+@    Number of orbital rotations             95
      ------------------------------------------
-     Total number of variables               96
+@    Total number of variables               96
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -407,69 +531,62 @@ Point group: C1
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21522 compressed from 21522 (117 radial)
-         DFT grid generation - Atom:    2*1 points= 20634 compressed from 20634 ( 87 radial)
-         DFT grid generation - Atom:    3*1 points= 20634 compressed from 20634 ( 87 radial)
-         DFT grid generation - Number of grid points:    62790; grid generation time:      0.0 s
       K-S energy, electrons, error :     -7.473190092289   9.9999994663   -5.34D-07
-   1    -76.2131060636        1.63871D+00   -7.62D+01    1
+@  1    -76.2131060636        1.63871D+00   -7.62D+01    1
       Virial theorem: -V/T =      2.004803
-      MULPOP  O      -0.55; H1      0.28; H2      0.28; 
+@      MULPOP O      -0.55; H1      0.28; H2      0.28; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.558040043665   9.9999994678   -5.32D-07
-   2    -76.3692535578        5.88047D-01   -1.56D-01    2
+      K-S energy, electrons, error :     -7.558040043666   9.9999994678   -5.32D-07
+@  2    -76.3692535578        5.88047D-01   -1.56D-01    2
       Virial theorem: -V/T =      2.002496
-      MULPOP  O      -0.17; H1      0.09; H2      0.09; 
+@      MULPOP O      -0.17; H1      0.09; H2      0.09; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.544043519610   9.9999994653   -5.35D-07
-   3    -76.3830021761        2.77990D-02   -1.37D-02    3
+      K-S energy, electrons, error :     -7.544043519609   9.9999994653   -5.35D-07
+@  3    -76.3830021761        2.77990D-02   -1.37D-02    3
       Virial theorem: -V/T =      2.004012
-      MULPOP  O      -0.26; H1      0.13; H2      0.13; 
+@      MULPOP O      -0.26; H1      0.13; H2      0.13; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.539687984308   9.9999994655   -5.34D-07
-   4    -76.3830368427        1.83113D-02   -3.47D-05    4
+@  4    -76.3830368427        1.83113D-02   -3.47D-05    4
       Virial theorem: -V/T =      2.004457
-      MULPOP  O      -0.25; H1      0.12; H2      0.12; 
+@      MULPOP O      -0.25; H1      0.12; H2      0.12; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.543298207208   9.9999994652   -5.35D-07
-   5    -76.3830505344        4.42111D-03   -1.37D-05    5
+@  5    -76.3830505343        4.42111D-03   -1.37D-05    5
       Virial theorem: -V/T =      2.004044
-      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+@      MULPOP O      -0.25; H1      0.13; H2      0.13; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.542583533275   9.9999994653   -5.35D-07
-   6    -76.3830514037        1.09703D-04   -8.69D-07    6
+@  6    -76.3830514037        1.09703D-04   -8.69D-07    6
       Virial theorem: -V/T =      2.004125
-      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+@      MULPOP O      -0.25; H1      0.13; H2      0.13; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.542600561344   9.9999994653   -5.35D-07
-   7    -76.3830514043        7.36834D-06   -5.79D-10    7
+@  7    -76.3830514043        7.36834D-06   -5.79D-10    7
       Virial theorem: -V/T =      2.004123
-      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+@      MULPOP O      -0.25; H1      0.13; H2      0.13; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.542599661800   9.9999994653   -5.35D-07
-   8    -76.3830514043        4.57533D-07   -2.80D-12    8
+@  8    -76.3830514043        4.57533D-07   -2.83D-12    8
       Virial theorem: -V/T =      2.004123
-      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+@      MULPOP O      -0.25; H1      0.13; H2      0.13; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.542599594986   9.9999994653   -5.35D-07
-   9    -76.3830514043        1.31434D-08   -5.68D-14    9
+@  9    -76.3830514043        1.31434D-08    1.42D-14    9
       Virial theorem: -V/T =      2.004123
-      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+@      MULPOP O      -0.25; H1      0.13; H2      0.13; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.542599594748   9.9999994653   -5.35D-07
-  10    -76.3830514043        9.30566D-10    2.84D-14   10
+@ 10    -76.3830514043        9.30636D-10   -7.11D-14   10
       Virial theorem: -V/T =      2.004123
-      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+@      MULPOP O      -0.25; H1      0.13; H2      0.13; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.542599594691   9.9999994653   -5.35D-07
-  11    -76.3830514043        1.59235D-11    0.00D+00   10
+@ 11    -76.3830514043        1.59841D-11    1.71D-13   10
 
- *** DIIS converged in  11 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:    -76.383051404263    1.60D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -491,25 +608,27 @@ Point group: C1
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       4.113       4.136
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:            -76.383051404266                 
-     Nuclear repulsion:             9.218170507464
-     Electronic energy:           -85.601221911730
+@    Final DFT energy:            -76.383051404263                 
+@    Nuclear repulsion:             9.218170507464
+@    Electronic energy:           -85.601221911728
 
-     Final gradient norm:           0.000000000016
+@    Final gradient norm:           0.000000000016
 
  
-     Date and time (Linux)  : Sun Mar 20 16:29:17 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:55:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -517,37 +636,37 @@ Point group: C1
  ------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
-   1 O   :1s    -1.0027   0.0067   0.0000  -0.0073  -0.0000   0.0312  -0.0000
-   2 O   :1s    -0.0151  -0.8672   0.0000   0.3247  -0.0000  -0.2509  -0.0000
-   3 O   :1s     0.0128   0.1515   0.0000   0.1921  -0.0000  -0.7691   0.0000
-   4 O   :2px   -0.0000  -0.0000  -0.7344   0.0000   0.0000   0.0000   0.5309
-   5 O   :2py   -0.0000   0.0000   0.0000   0.0000   0.9267  -0.0000   0.0000
-   6 O   :2pz   -0.0029  -0.1676  -0.0000  -0.7983   0.0000  -0.3507   0.0000
-   7 O   :2px   -0.0000  -0.0000   0.1437  -0.0000  -0.0000   0.0000   0.3706
-   8 O   :2py    0.0000   0.0000   0.0000   0.0000   0.0620  -0.0000   0.0000
+   1 O   :1s    -1.0027   0.0067  -0.0000  -0.0073  -0.0000   0.0312   0.0000
+   2 O   :1s    -0.0151  -0.8672  -0.0000   0.3247  -0.0000  -0.2509   0.0000
+   3 O   :1s     0.0128   0.1515   0.0000   0.1921  -0.0000  -0.7691  -0.0000
+   4 O   :2px    0.0000   0.0000  -0.7344  -0.0000  -0.0000   0.0000   0.5309
+   5 O   :2py    0.0000  -0.0000  -0.0000   0.0000   0.9267  -0.0000  -0.0000
+   6 O   :2pz   -0.0029  -0.1676   0.0000  -0.7983   0.0000  -0.3507   0.0000
+   7 O   :2px   -0.0000  -0.0000   0.1437  -0.0000   0.0000   0.0000   0.3706
+   8 O   :2py    0.0000  -0.0000  -0.0000   0.0000   0.0620  -0.0000  -0.0000
    9 O   :2pz    0.0021   0.0859   0.0000   0.0136   0.0000  -0.1470  -0.0000
-  11 O   :3d1-   0.0000   0.0000   0.0000   0.0000   0.0193  -0.0000   0.0000
-  12 O   :3d0   -0.0000  -0.0022   0.0000  -0.0185   0.0000  -0.0082  -0.0000
-  13 O   :3d1+  -0.0000  -0.0000  -0.0238   0.0000  -0.0000   0.0000   0.0117
+  11 O   :3d1-   0.0000  -0.0000  -0.0000   0.0000   0.0193  -0.0000  -0.0000
+  12 O   :3d0   -0.0000  -0.0022  -0.0000  -0.0185   0.0000  -0.0082  -0.0000
+  13 O   :3d1+   0.0000   0.0000  -0.0238   0.0000   0.0000   0.0000   0.0117
   15 H1  :1s     0.0009  -0.3526  -0.5641  -0.3391   0.0000   0.1785  -0.1605
   16 H1  :1s    -0.0014   0.1613   0.1732   0.1231  -0.0000   0.6843  -1.2469
-  17 H1  :2px   -0.0010   0.0377   0.0156   0.0244  -0.0000   0.0018   0.0030
-  18 H1  :2py    0.0000  -0.0000  -0.0000  -0.0000   0.0329   0.0000  -0.0000
+  17 H1  :2px   -0.0010   0.0377   0.0156   0.0244   0.0000   0.0018   0.0030
+  18 H1  :2py   -0.0000   0.0000   0.0000  -0.0000   0.0329   0.0000   0.0000
   19 H1  :2pz   -0.0009   0.0188   0.0281  -0.0157  -0.0000  -0.0049  -0.0013
   20 H2  :1s     0.0009  -0.3526   0.5641  -0.3391   0.0000   0.1785   0.1605
-  21 H2  :1s    -0.0014   0.1613  -0.1732   0.1231  -0.0000   0.6843   1.2469
+  21 H2  :1s    -0.0014   0.1613  -0.1732   0.1231   0.0000   0.6843   1.2469
   22 H2  :2px    0.0010  -0.0377   0.0156  -0.0244   0.0000  -0.0018   0.0030
-  23 H2  :2py    0.0000  -0.0000  -0.0000  -0.0000   0.0329   0.0000  -0.0000
+  23 H2  :2py   -0.0000   0.0000   0.0000  -0.0000   0.0329   0.0000   0.0000
   24 H2  :2pz   -0.0009   0.0188  -0.0281  -0.0157  -0.0000  -0.0049   0.0013
 
 
 
- >>>> Total CPU  time used in SIRIUS :      4.30 seconds
- >>>> Total wall time used in SIRIUS :      4.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      4.12 seconds
+ >>>> Total wall time used in SIRIUS :      4.14 seconds
 
  
-     Date and time (Linux)  : Sun Mar 20 16:29:17 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:55:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -575,11 +694,11 @@ Point group: C1
  -------------------------------
 
 
- ** CALCULATION OF TRIPLET RESPONSE PROPERTY  **  TRPFLG = T  TRPLET = T
+ ** CALCULATION OF TRIPLET RESPONSE PROPERTIES  **  TRPFLG = T  TRPLET = T
 
- USE FOCK TYPE DECOUPLING OF THE TWO-ELECTRON DENSITY MATRIX :
- ADD DV*(FC+FV) INSTEAD OF DV*FC TO E[2] APPROXIMATE ORBITAL DIAGONAL
-  AVDIA = T
+ Default : Using Fock type decoupling of the two-electron density matrix :
+    Add DV*(FC+FV) instead of DV*FC to E[2] approximate orbital diagonal
+
 
 
  Linear Response calculation
@@ -601,9 +720,11 @@ Point group: C1
           Y1SPNORB
           Z1SPNORB
 
+ Integral transformation: Total CPU and WALL times (sec)       0.007       0.007
 
-   SCF energy         :      -76.383051404266183
- -- inactive part     :      -85.601221911730235
+
+   SCF energy         :      -76.383051404263497
+ -- inactive part     :      -85.601221911727549
  -- nuclear repulsion :        9.218170507464057
 
 
@@ -630,6 +751,7 @@ Point group: C1
 
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : PVIOLA X
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
  FREQ 2    0.0000000000000000     
 
@@ -639,11 +761,6 @@ Point group: C1
 
  Operator symmetry =  1; triplet =   T
 
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -657,6 +774,7 @@ Point group: C1
 
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : PVIOLA Y
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
  FREQ 2    0.0000000000000000     
 
@@ -666,11 +784,6 @@ Point group: C1
 
  Operator symmetry =  1; triplet =   T
 
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -684,6 +797,7 @@ Point group: C1
 
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : PVIOLA Z
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
  FREQ 2    0.0000000000000000     
 
@@ -693,11 +807,6 @@ Point group: C1
 
  Operator symmetry =  1; triplet =   T
 
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -711,6 +820,7 @@ Point group: C1
 
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : X1SPNORB
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
  FREQ 2    0.0000000000000000     
 
@@ -720,10 +830,6 @@ Point group: C1
 
  Operator symmetry =  1; triplet =   T
 
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -737,6 +843,7 @@ Point group: C1
 
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : Y1SPNORB
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
  FREQ 2    0.0000000000000000     
 
@@ -746,10 +853,6 @@ Point group: C1
 
  Operator symmetry =  1; triplet =   T
 
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -763,6 +866,7 @@ Point group: C1
 
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : Z1SPNORB
+ RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
  FREQ 2    0.0000000000000000     
 
@@ -772,10 +876,6 @@ Point group: C1
 
  Operator symmetry =  1; triplet =   T
 
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -799,32 +899,32 @@ Point group: C1
 @ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
 @ -<< PVIOLA X ; PVIOLA X >> =  1.971698325817D+05
-@ -<< PVIOLA X ; PVIOLA Y >> =  1.708897134606D-11
-@ -<< PVIOLA X ; PVIOLA Z >> = -8.148240056743D-11
-@ -<< PVIOLA X ; X1SPNORB >> = -3.704053870594D-17
-@ -<< PVIOLA X ; Y1SPNORB >> =  4.864025804203D-02
-@ -<< PVIOLA X ; Z1SPNORB >> = -1.260208122028D-16
-@ -<< PVIOLA Y ; PVIOLA Y >> =  1.495427098881D+05
-@ -<< PVIOLA Y ; PVIOLA Z >> =  7.172717625966D-11
-@ -<< PVIOLA Y ; X1SPNORB >> =  5.058573335746D-02
-@ -<< PVIOLA Y ; Y1SPNORB >> =  3.267199031840D-17
-@ -<< PVIOLA Y ; Z1SPNORB >> =  1.635818034928D-15
+@ -<< PVIOLA X ; PVIOLA Y >> = -9.131874730166D-12
+@ -<< PVIOLA X ; PVIOLA Z >> =  3.359102114095D-10
+@ -<< PVIOLA X ; X1SPNORB >> = -3.493936016272D-17
+@ -<< PVIOLA X ; Y1SPNORB >> =  4.864025804206D-02
+@ -<< PVIOLA X ; Z1SPNORB >> = -2.183052657266D-16
+@ -<< PVIOLA Y ; PVIOLA Y >> =  1.495427098880D+05
+@ -<< PVIOLA Y ; PVIOLA Z >> =  5.325404390057D-11
+@ -<< PVIOLA Y ; X1SPNORB >> =  5.058573335721D-02
+@ -<< PVIOLA Y ; Y1SPNORB >> =  3.545208546797D-17
+@ -<< PVIOLA Y ; Z1SPNORB >> =  6.182117350369D-16
 @ -<< PVIOLA Z ; PVIOLA Z >> =  1.870331331992D+05
-@ -<< PVIOLA Z ; X1SPNORB >> =  5.156054840841D-17
-@ -<< PVIOLA Z ; Y1SPNORB >> = -4.407762084934D-16
-@ -<< PVIOLA Z ; Z1SPNORB >> = -8.280876830969D-20
-@ -<< X1SPNORB ; X1SPNORB >> =  2.298384789690D-06
-@ -<< X1SPNORB ; Y1SPNORB >> =  1.185918809174D-23
-@ -<< X1SPNORB ; Z1SPNORB >> =  1.004139140824D-20
-@ -<< Y1SPNORB ; Y1SPNORB >> =  2.005848224214D-06
-@ -<< Y1SPNORB ; Z1SPNORB >> = -5.952239331224D-22
-@ -<< Z1SPNORB ; Z1SPNORB >> =  2.392249224694D-06
+@ -<< PVIOLA Z ; X1SPNORB >> =  2.034209143599D-16
+@ -<< PVIOLA Z ; Y1SPNORB >> =  2.802510948482D-16
+@ -<< PVIOLA Z ; Z1SPNORB >> = -8.006921977055D-19
+@ -<< X1SPNORB ; X1SPNORB >> =  2.298384789687D-06
+@ -<< X1SPNORB ; Y1SPNORB >> =  3.250368603559D-22
+@ -<< X1SPNORB ; Z1SPNORB >> = -6.132175131909D-21
+@ -<< Y1SPNORB ; Y1SPNORB >> =  2.005848224217D-06
+@ -<< Y1SPNORB ; Z1SPNORB >> = -7.274220304581D-22
+@ -<< Z1SPNORB ; Z1SPNORB >> =  2.392249224699D-06
 
 
- Time used in linear response calculation is     13.77 CPU seconds for symmetry 1
+ Time used in linear response calculation is     12.38 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:  13.78 seconds
- >>>> Total wall time used in RESPONSE:  14.00 seconds
+ >>>> Total CPU  time used in RESPONSE:  12.38 seconds
+ >>>> Total wall time used in RESPONSE:  13.78 seconds
 
 
                    .-------------------------------------------.
@@ -871,138 +971,15 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Sun Mar 20 16:29:31 2011 
-     Host name              : fe6                                     
- No symmetry -> DSO by numerical integration.
+     Date and time (Linux)  : Sun Sep  8 20:55:38 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+No symmetry -> DSO by numerical integration.
  Electrons:   9.9999995(-5.35e-07): DFTDSO time:       0.2 s
 
  TRACTL_1: Integral transformation abandoned,
- the required MO integrals are already available.
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.4 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.4 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.4 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*2 evaluation time:       0.7 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*2 evaluation time:       0.7 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*2 evaluation time:       0.7 s
-       Electrons: 9.999999(-5.35e-07): LR-DFT*2 evaluation time:       0.7 s
- >>> Time used in EXCITA is   3.17 seconds
+           the required MO integrals are already available.
+ >>>  Time used in EXCITA     is   2.95 seconds
 
 
    ***************************************************************************
@@ -1011,8 +988,8 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Sun Mar 20 16:30:40 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:43 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -1060,7 +1037,7 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.00000000        -0.00000000        -0.00000000
+      x      0.00000000         0.00000000         0.00000000
       y     -0.00000000        -0.00000000        -0.00000000
       z      0.74878490         1.90322127         6.34846280
 
@@ -1074,12 +1051,13 @@ Point group: C1
                 Singlet electronic excitation energies
                 --------------------------------------
 
+               ========================================
                  Sym.   Mode   Frequency    Frequency
-                ex. st.  No.      (au)          (eV)
-                =======================================
-                   1        1    0.280133    7.622797
-                   1        2    0.348606    9.486057
-                ---------------------------------------
+                ex. st.  No.      (au)         (eV)
+               ----------------------------------------
+                   1      1     0.280133     7.622797
+                   1      2     0.348606     9.486057
+               ========================================
 
 
   ******************************************************************************
@@ -1093,13 +1071,13 @@ Point group: C1
 
                        Bx             By             Bz
 
-        O    x   363.32103063    -0.00000000     0.00000000
-        O    y     0.00000000   328.43845370    -0.00000000
+        O    x   363.32103063     0.00000000     0.00000000
+        O    y     0.00000000   328.43845370     0.00000000
         O    z    -0.00000000     0.00000000   349.41734684
 
         H1   x    39.53124177     0.00000000     9.07753226
         H1   y    -0.00000000    25.01550564    -0.00000000
-        H1   z     6.58360307     0.00000000    31.41992872
+        H1   z     6.58360307    -0.00000000    31.41992872
 
         H2   x    39.53124177    -0.00000000    -9.07753226
         H2   y     0.00000000    25.01550564    -0.00000000
@@ -1128,8 +1106,8 @@ Point group: C1
  String on input: "O       "
                     Bx             By             Bz
 
-  O      x   363.32103063    -0.00000000     0.00000000
-  O      y     0.00000000   328.43845370    -0.00000000
+  O      x   363.32103063     0.00000000     0.00000000
+  O      y     0.00000000   328.43845370     0.00000000
   O      z    -0.00000000     0.00000000   349.41734684
 
 
@@ -1138,8 +1116,8 @@ Point group: C1
 
                  Bx         By         Bz            Bx         By         Bz
 
-  O      x   410.0417     0.0000    -0.0000      -46.7207    -0.0000     0.0000
-  O      y     0.0000   392.2321    -0.0000        0.0000   -63.7936    -0.0000
+  O      x   410.0417    -0.0000    -0.0000      -46.7207     0.0000     0.0000
+  O      y     0.0000   392.2321    -0.0000        0.0000   -63.7936     0.0000
   O      z    -0.0000     0.0000   387.1157       -0.0000     0.0000   -37.6984
 
   Diamagnetic contribution:    396.463171         Paramagnetic:     -49.404227
@@ -1150,16 +1128,16 @@ Point group: C1
 
                  Bx         By         Bz            Bx         By         Bz
 
-  O      x     0.0000    -0.0000     0.0000       16.2621     0.0000     0.0000
+  O      x     0.0000    -0.0000     0.0000       16.2621     0.0000    -0.0000
   O      y     0.0000     0.0000    -0.0000        0.0000   -18.6205     0.0000
-  O      z    -0.0000     0.0000     0.0000        0.0000     0.0000     2.3584
+  O      z    -0.0000     0.0000     0.0000       -0.0000     0.0000     2.3584
 
 
   Principal values and axes:
   --------------------------
 
-  O         363.321031  =  347.06  +  16.26:     1.000000  0.000000  0.000000
-  O         349.417347  =  347.06  +   2.36:    -0.000000  0.000000  1.000000
+  O         363.321031  =  347.06  +  16.26:     1.000000  0.000000 -0.000000
+  O         349.417347  =  347.06  +   2.36:     0.000000  0.000000  1.000000
   O         328.438454  =  347.06  -  18.62:    -0.000000  1.000000 -0.000000
 
 
@@ -1184,7 +1162,7 @@ Point group: C1
 
   H1     x    39.53124177     0.00000000     9.07753226
   H1     y    -0.00000000    25.01550564    -0.00000000
-  H1     z     6.58360307     0.00000000    31.41992872
+  H1     z     6.58360307    -0.00000000    31.41992872
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1193,7 +1171,7 @@ Point group: C1
                  Bx         By         Bz            Bx         By         Bz
 
   H1     x    35.6756    -0.0000    17.3399        3.8556     0.0000    -8.2624
-  H1     y    -0.0000    13.0493     0.0000       -0.0000    11.9662    -0.0000
+  H1     y     0.0000    13.0493     0.0000       -0.0000    11.9662    -0.0000
   H1     z    15.3685    -0.0000    23.2237       -8.7849     0.0000     8.1963
 
   Diamagnetic contribution:     23.982865         Paramagnetic:       8.006027
@@ -1205,14 +1183,14 @@ Point group: C1
                  Bx         By         Bz            Bx         By         Bz
 
   H1     x     0.0000     0.0000     1.2470        7.5423    -0.0000     7.8306
-  H1     y    -0.0000     0.0000    -0.0000       -0.0000    -6.9734    -0.0000
-  H1     z    -1.2470     0.0000     0.0000        7.8306    -0.0000    -0.5690
+  H1     y    -0.0000     0.0000     0.0000       -0.0000    -6.9734    -0.0000
+  H1     z    -1.2470    -0.0000     0.0000        7.8306    -0.0000    -0.5690
 
 
   Principal values and axes:
   --------------------------
 
-  H1         25.015506  =   31.99  -   6.97:     0.000000  1.000000 -0.000000
+  H1         25.015506  =   31.99  -   6.97:     0.000000  1.000000  0.000000
   H1         26.657074  =   31.99  -   5.33:    -0.519662  0.000000  0.854372
   H1         44.294096  =   31.99  +  12.31:     0.854372 -0.000000  0.519662
 
@@ -1248,7 +1226,7 @@ Point group: C1
 
   H2     x    35.6756     0.0000   -17.3399        3.8556    -0.0000     8.2624
   H2     y    -0.0000    13.0493     0.0000        0.0000    11.9662    -0.0000
-  H2     z   -15.3685    -0.0000    23.2237        8.7849    -0.0000     8.1963
+  H2     z   -15.3685    -0.0000    23.2237        8.7849     0.0000     8.1963
 
   Diamagnetic contribution:     23.982865         Paramagnetic:       8.006027
 
@@ -1259,8 +1237,8 @@ Point group: C1
                  Bx         By         Bz            Bx         By         Bz
 
   H2     x     0.0000    -0.0000    -1.2470        7.5423     0.0000    -7.8306
-  H2     y     0.0000     0.0000    -0.0000        0.0000    -6.9734    -0.0000
-  H2     z     1.2470     0.0000     0.0000       -7.8306    -0.0000    -0.5690
+  H2     y     0.0000     0.0000     0.0000        0.0000    -6.9734    -0.0000
+  H2     z     1.2470    -0.0000     0.0000       -7.8306    -0.0000    -0.5690
 
 
   Principal values and axes:
@@ -1275,13 +1253,15 @@ Point group: C1
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from J.Mason, Solid state Nuc.Magn.Res. 2 (1993), 285
+@1  Definitions from J. Mason, Solid state Nuc. Magn. Res. 2 (1993), 285
 
- @1atom   shielding       dia      para     skew      span     (aniso     asym)
- @1----------------------------------------------------------------------------
- @1O       347.0589  396.4632  -49.4042   -0.2028   34.8826   24.3931    1.2900
- @1H1       31.9889   23.9829    8.0060    0.8297   19.2786   18.4578    0.1334
- @1H2       31.9889   23.9829    8.0060    0.8297   19.2786   18.4578    0.1334
+@1 London orbitals (GIAOs) has been used.
+
+@1 atom   shielding       dia      para     skew      span     (aniso     asym)
+@1 ----------------------------------------------------------------------------
+@1 O       347.0589  396.4632  -49.4042   -0.2028   34.8826   24.3931    1.2900
+@1 H1       31.9889   23.9829    8.0060    0.8297   19.2786   18.4578    0.1334
+@1 H2       31.9889   23.9829    8.0060    0.8297   19.2786   18.4578    0.1334
 
 
 
@@ -1289,13 +1269,15 @@ Point group: C1
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from Smith, Palke and Grieg, Concepts in Mag.Res. 4 (1992), 107
+@2  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992), 107
 
- @2atom   shielding       dia      para     aniso      asym        S        A
- @2----------------------------------------------------------------------------
- @2O       347.0589  396.4632  -49.4042  -27.9307    0.7467   30.4156    0.0000
- @2H1       31.9889   23.9829    8.0060   18.4578    0.1334   18.5125    1.2470
- @2H2       31.9889   23.9829    8.0060   18.4578    0.1334   18.5125    1.2470
+@2 London orbitals (GIAOs) has been used.
+
+@2 atom   shielding       dia      para     aniso      asym        S        A
+@2 ----------------------------------------------------------------------------
+@2 O       347.0589  396.4632  -49.4042  -27.9307    0.7467   30.4156    0.0000
+@2 H1       31.9889   23.9829    8.0060   18.4578    0.1334   18.5125    1.2470
+@2 H2       31.9889   23.9829    8.0060   18.4578    0.1334   18.5125    1.2470
 
 
 
@@ -1333,6 +1315,16 @@ Point group: C1
 
 
 
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    10.72833     -4.5108569E-15  -6.201495    
+                y  -1.8220140E-16  -27.13751      2.8066421E-15
+                z    6.201495     -2.1164802E-15   8.544696    
+
+
    Interatomic separations (in Angstrom):
    --------------------------------------
 
@@ -1343,8 +1335,10 @@ Point group: C1
  H2    :    0.954707    1.513447    0.000000
 
 
-  Max interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
+  Max    interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
   between atoms    3 and    2, "H2    " and "H1    ".
+
+  Min HX interatomic separation is    0.9547 Angstrom (    1.8041 Bohr)
 
 
   Bond distances (Angstrom):
@@ -1369,25 +1363,25 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
+ RHSIDE     00:00:01       2 %
  EXCITA     00:00:03       5 %
- LINRES     00:00:23      36 %
- TRP LR     00:00:37      58 %
- REST       00:00:01       2 %
+ LINRES     00:00:21      36 %
+ TRP LR     00:00:34      57 %
 
- TOTAL      00:01:05     100 %
+ TOTAL      00:01:00     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  1 minute   5 seconds
- >>>> Total wall time used in ABACUS:  1 minute   9 seconds
+ >>>> Total CPU  time used in ABACUS:  1 minute   0 seconds
+ >>>> Total wall time used in ABACUS:  1 minute   5 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  1 minute  23 seconds
- >>>> Total wall time used in DALTON:  1 minute  27 seconds
+ >>>> Total CPU  time used in DALTON:  1 minute  17 seconds
+ >>>> Total wall time used in DALTON:  1 minute  23 seconds
 
  
-     Date and time (Linux)  : Sun Mar 20 16:30:40 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:56:43 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

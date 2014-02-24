@@ -13,22 +13,12 @@
 module parallel_communication_models_mpi
 
 #ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
   use mpi
-  implicit none
-#else
-  implicit none
-#include "mpif.h"
 #endif
-#else
-  implicit none
 #endif
 
-#if defined (VAR_INT64)
-#define my_MPI_INTEGER MPI_INTEGER8
-#else
-#define my_MPI_INTEGER MPI_INTEGER4
-#endif
+  implicit none
 
   public communication_type_mpi
   public communication_init_mpi
@@ -66,9 +56,23 @@ module parallel_communication_models_mpi
   type(communication_type_mpi), public, save :: communication_info_mpi
 ! ----------------------------------------------------------------------------
 
-  integer, private                       :: ierr
+  private
+
 #ifdef VAR_MPI
-  integer, private                       :: istat(MPI_STATUS_SIZE)
+#ifndef USE_MPI_MOD_F90
+#include "mpif.h"
+#endif
+#endif
+
+  integer                                :: ierr
+#ifdef VAR_MPI
+  integer                                :: istat(MPI_STATUS_SIZE)
+#endif
+
+#if defined (VAR_INT64)
+#define my_MPI_INTEGER MPI_INTEGER8
+#else
+#define my_MPI_INTEGER MPI_INTEGER4
 #endif
 
 contains 

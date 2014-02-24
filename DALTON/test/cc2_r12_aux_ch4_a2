@@ -178,6 +178,12 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+
 #             Total SCF   energy:                   -40.1917720926
 #             Total MP2-R12/B energy:               -40.3940351575
 #             Total CC2-R12/B energy:               -40.3953862545
@@ -245,7 +251,7 @@ ERROR[10]="CC2-R12/B 8A1 EXCITATION ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

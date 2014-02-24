@@ -1,5 +1,7 @@
 include(CheckFortranSourceCompiles)
 
+set(MPI_FOUND FALSE)
+
 if(ENABLE_SGI_MPT)
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -lmpi")
     set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}       -lmpi")
@@ -45,7 +47,7 @@ if(MPI_FOUND)
         message("-- mpi.mod matches current compiler, setting -DUSE_MPI_MOD_F90")
         add_definitions(-DUSE_MPI_MOD_F90)
     else()
-        message("-- WARNING: mpi.mod compiled with different compiler")
+        message("-- WARNING: mpi.mod compiled with different compiler, will use mpif.h instead")
     endif()
 
     # test whether MPI integer type matches
@@ -68,23 +70,6 @@ if(MPI_FOUND)
         message("-- 32-bit integer MPI interface activated by the user")
         add_definitions(-DVAR_MPI_32BIT_INT)
         set(USE_32BIT_MPI_INTERFACE TRUE)
-    endif()
-
-    if(ENABLE_MPI2_DETECTION)
-        # test whether MPI-2 is available
-        file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-2-compatibility.F90" _source)
-        check_fortran_source_compiles(
-            ${_source}
-            MPI_2_COMPATIBLE
-            )
-        if(MPI_2_COMPATIBLE)
-            add_definitions(-DVAR_MPI2)
-            message("-- MPI-2 support found")
-        else()
-            message("-- no MPI-2 support found, will try with MPI-1")
-        endif()
-    else()
-        message("-- MPI-2 support disabled, will try with MPI-1")
     endif()
 
 endif()

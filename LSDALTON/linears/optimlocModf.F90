@@ -14,7 +14,7 @@ module optimlocMOD
 !  use davidson_settings
   use matrix_module, only: matrix
   use matrix_operations 
-  use matrix_util, only: matrix_exponential
+!  use matrix_util, only: matrix_exponential
   use matrix_util
   use loc_utils
   use typedeftype
@@ -173,7 +173,6 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   call mat_mul(CMO,SC,'T','n',1E0_realk,0E0_realk,CSC)
   call mat_identity(SC)
   call mat_daxpy(-1E0_realk,SC,CSC)
-  print*,'mat_sqnorm(C^T*S*C - I) =',mat_sqnorm2(CSC)/CSC%nrow
   IF(ABS(mat_sqnorm2(CSC)/CSC%nrow).GT.1.0E-15_realk)THEN
      write(ls%lupri,*) 'WARNING: ORBITALS NOT ORTHONORMAL!!! SOMETHING IS WRONG.' 
   ENDIF

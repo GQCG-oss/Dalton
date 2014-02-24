@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,249 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:38:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 18:05:50 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_energy_corehole
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE FUNCTIONS                               
+**WAVE FUNCTIONS                                  
+.MCSCF                                            
+.WESTA                                            
+*CONFIGURATION INPUT                              
+.INACTIVE                                         
+ 2 0 0 0                                          
+.RAS1 SPACE                                       
+ 1 0 0 0                                          
+.RAS2 SPACE                                       
+ 4 2 2 0                                          
+.RAS3 SPACE                                       
+ 0 0 0 0                                          
+.RAS1 ELECTRONS                                   
+ 1 1                                              
+.ELECTR                                           
+ 10                                               
+.SYMMET                                           
+ 2                                                
+.SPIN MULTIPLICITY                                
+ 1                                                
+*ORBITA                                           
+.MOSTART                                          
+ NEWORB                                           
+.REORDER                                          
+ 2 0 0 0                                          
+ 2 3 3 2                                          
+.FREEZE                                           
+ 1 0 0 0                                          
+ 3                                                
+*OPTIMI                                           
+.NEO ALWAYS                                       
+.TRACI                                            
+.NO ABS                                           
+.DETERM                                           
+.MAX MAC                                          
+ 30                                               
+*CI VEC                                           
+.PLUS COMBINATIONS                                
+.STARTHDIAGONAL                                   
+**END OF INPUT                                    
+
+
+   Content of the .mol file
+ ----------------------------
+
+INTGRL                                                                         
+Calculation of core-hole excitations using both a frozen and a relaxed         
+core orbital. This is a three step job                                         
+    2    2  X  Y       1.D-15                                                  
+       8.     1    3    1    1    1                                            
+O   0.000000             0.000000                  2.132                       
+   11    5                                                                     
+15330.     0.000508   -0.000115 0.000000   0.000000  0.0                       
+2299.      0.003929   -0.000895 0.000000   0.000000  0.0                       
+522.4      0.020243   -0.004636 0.000000   0.000000  0.0                       
+147.3      0.079181   -0.018724 0.000000   0.000000  0.0                       
+47.55      0.230687   -0.058463 0.000000   0.000000  0.0                       
+16.76      0.433118   -0.136463 0.000000   0.000000  0.0                       
+6.207      0.350260   -0.175740 0.000000   0.000000  0.0                       
+1.752      0.042728    0.160934 1.000000   0.000000  0.0                       
+0.6882     -0.008154   0.603418 0.000000   0.000000  0.0                       
+0.2384     0.002381    0.378765 0.000000   1.000000  0.0                       
+0.073760   0.0         0.0      0.0        0.0       1.000000                  
+    6    4                                                                     
+34.46      0.015928    0.000000  0.000000   0.0                                
+7.749      0.099740    0.000000  0.000000   0.0                                
+2.280      0.310492    0.000000  0.000000   0.0                                
+0.7156     0.491026    1.000000  0.000000   0.0                                
+0.2140     0.336337    0.000000  1.000000   0.0                                
+0.05974    0.0         0.0       0.0        1.000                              
+    3    3                                                                     
+2.314      1.000000    0.000000   0.0                                          
+0.645      0.000000    1.000000   0.0                                          
+0.214000   0.0         0.0        1.0000                                       
+        6.    1    3    1    1    1                                            
+C   0.        0.000000  0.000000                                               
+   11    5                                                                     
+8236.       0.000531 -0.000113   0.000000   0.000000  0.0                      
+1235.       0.004108 -0.000878   0.000000   0.000000  0.0                      
+280.8       0.021087 -0.004540   0.000000   0.000000  0.0                      
+79.27       0.081853 -0.018133   0.000000   0.000000  0.0                      
+25.59       0.234817 -0.055760   0.000000   0.000000  0.0                      
+8.997       0.434401 -0.126895   0.000000   0.000000  0.0                      
+3.319       0.346129 -0.170352   0.000000   0.000000  0.0                      
+0.9059      0.039378 0.140382    1.000000   0.000000  0.0                      
+0.3643     -0.008983 0.598684    0.000000   0.000000  0.0                      
+0.1285      0.002385 0.395389    0.000000   1.000000  0.0                      
+0.04402     0.000000 0.000000    0.000000   0.000000  1.0                      
+    6    4                                                                     
+18.71      0.014031    0.000000  0.000000  0.0                                 
+4.133      0.086866    0.000000  0.000000  0.0                                 
+1.200      0.290216    0.000000  0.000000  0.0                                 
+0.3827     0.501008    1.000000  0.000000  0.0                                 
+0.1209     0.343406    0.000000  1.000000  0.0                                 
+0.03569    0.000000    0.000000  0.000000  1.0                                 
+    3    3                                                                     
+1.097      1.000000    0.000000  0.0                                           
+0.318      0.000000    1.000000  0.0                                           
+0.100      0.000000    0.000000  1.0                                           
 
 
        *******************************************************************
@@ -105,7 +271,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -202,7 +368,7 @@ Point group: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-15
 
 
   Cartesian Coordinates (a.u.)
@@ -243,8 +409,10 @@ Point group: C2v
  C     :    1.128206    0.000000
 
 
-  Max interatomic separation is    1.1282 Angstrom (    2.1320 Bohr)
+  Max    interatomic separation is    1.1282 Angstrom (    2.1320 Bohr)
   between atoms    2 and    1, "C     " and "O     ".
+
+  Min YX interatomic separation is    1.1282 Angstrom (    2.1320 Bohr)
 
 
   Bond distances (Angstrom):
@@ -273,7 +441,7 @@ Point group: C2v
                B =        57910.39 MHz     (    1.931683 cm-1)
 
 
-@  Nuclear repulsion energy :   22.514071294559
+@  Nuclear repulsion energy :   22.514071294559 Hartree
 
 
   Symmetry Orbitals
@@ -382,14 +550,14 @@ Point group: C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:      474134 ( 21.9% )
  Megabytes written:                              5.434
 
- >>> Time used in TWOINT is   0.22 seconds
- >>>> Total CPU  time used in HERMIT:   0.26 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>  Time used in TWOINT     is   0.20 seconds
+ >>>> Total CPU  time used in HERMIT:   0.23 seconds
+ >>>> Total wall time used in HERMIT:   0.23 seconds
 
 
                         .----------------------------------.
@@ -408,8 +576,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 18:05:50 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:38:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      Calculation of core-hole excitations using both a frozen and a relaxed  
@@ -418,61 +586,60 @@ Point group: C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     MC-SCF optimization.
-
-               Type: restricted active space calculation (RAS)
+@    MC-SCF optimization.
+@              Type: restricted active space calculation (RAS)
 
  Initial molecular orbitals are obtained according to
- ".MOSTART NEWORB" input option.
+ ".MOSTART NEWORB" input option
+ and reordered as requested with .REORDER or indirectly with .CORHOL
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> MC-SCF   <<<
-     Number of closed shell electrons          4
-     Number of electrons in active shells     10
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> MC-SCF <<<
+@    Number of closed shell electrons           4
+@    Number of electrons in active shells      10
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  2
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   2
 
-     Number of active orbitals in RAS1, RAS2, and RAS3 :   1   8   0
+Number of active orbitals in RAS1, RAS2, and RAS3 :   1   8   0
 
-     Minimum number of electrons in RAS1 :   1 (maximum   1 holes)
-     Maximum number of electrons in RAS1 :   1 (minimum   1 holes)
+@    Minimum number of electrons in RAS1 :   1 (maximum   1 holes)
+@    Maximum number of electrons in RAS1 :   1 (minimum   1 holes)
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1    2    3    4
                                        --- |  ---  ---  ---  ---
-     Inactive orbitals                   2 |    2    0    0    0
-     Active orbitals in RAS1             1 |    1    0    0    0
-     Active orbitals in RAS2             0 |    4    2    2    0
-     Active orbitals                     9 |    5    2    2    0
+@    Inactive orbitals                   2 |    2    0    0    0
+@    Active orbitals in RAS1             1 |    1    0    0    0
+@    Active orbitals in RAS2             8 |    4    2    2    0
+@    Active orbitals                     9 |    5    2    2    0
      Secondary orbitals                 53 |   23   12   12    6
      Total number of orbitals           64 |   30   14   14    6
      Number of basis functions          64 |   30   14   14    6
 
      Optimization information
      ========================
-     Number of determinants                1960
-     Number of orbital rotations            194
+@    Number of determinants                1960
+@    Number of orbital rotations            194
      ------------------------------------------
-     Total number of variables             2154
+@    Total number of variables             2154
 
      Maximum number of macro iterations      30
      Maximum number of micro iterations     720
-     Threshold for gradient            1.00D-05
+     Threshold for MCSCF gradient      1.00D-05
      Number of initial trial vectors          1
      Number of initial CI iterations         20
      Number of simultaneous trial vectors     1
 
-     This calculation converges to the lowest state
-     for the specified symmetry and spin species.
+@    This calculation converges to the lowest state for the specified symmetry and spin species.
 
      Maximum number of NEO/NR iterations  24
 
-     Number of orbitals frozen with ".FREEZE"  1
+@    Number of orbitals frozen with ".FREEZE"  1
 
      Orbital  Symmetry   No. in   Type
        no.              symmetry
@@ -490,6 +657,8 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
 
 
 
+
+ Integral transformation: Total CPU and WALL times (sec)       0.054       0.056
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
 
@@ -502,12 +671,12 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
 
  Element no. Config.no.    Active energy      Total energy
 
-         1 :       1034    -43.7556091682   -101.5561935649
-         2 :       1393    -43.7556091682   -101.5561935649
+         1 :       1393    -43.7556091682   -101.5561935649
+         2 :       1034    -43.7556091682   -101.5561935649
          3 :         30    -42.9650764284   -100.7656608251
          4 :        597    -42.9650764284   -100.7656608251
-         5 :       1041    -42.9620230402   -100.7626074369
-         6 :       1561    -42.9620230402   -100.7626074369
+         5 :       1561    -42.9620230402   -100.7626074369
+         6 :       1041    -42.9620230402   -100.7626074369
          7 :       1202    -42.9492913478   -100.7498757445
          8 :       1405    -42.9492913478   -100.7498757445
 
@@ -523,10 +692,10 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
 
 
  CI energies and residuals:
-    1     -101.574321678915908       7.82D-07
+    1     -101.574321678917102       7.82D-07
 
 
- Final CI energy:     -101.574321678915908
+ Final CI energy:     -101.574321678917102
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -553,21 +722,23 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -101.574321678916           (MACRO    1)
+ Integral transformation: Total CPU and WALL times (sec)       0.107       0.108
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -80.3146556912839    
- - Active energy          :    -43.7737372821910    
+ Total MCSCF energy       :          -101.574321678917016  (MACRO    1)
 
- Norm of total gradient   :        2.586465712730
- -    of CI gradient      :        0.000001563703
- -    of orbital gradient :        2.586465712730
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -80.314655691283875
+ - Active energy          :           -43.773737282192251
+
+ Norm of total gradient   :             2.586465712725
+ -    of CI gradient      :             0.000001563703
+ -    of orbital gradient :             2.586465712725
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.047965
-      MULPOP  O      -0.12; C       0.12; 
+@      MULPOP O      -0.12; C       0.12; 
 
  (SIRNEO) iteration (  1,  3)
  Micro iteration termination criterion met, EVAL(ISTATE+1) = -3.29D-01
@@ -597,21 +768,23 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -102.057935597376           (MACRO    2)
+ Integral transformation: Total CPU and WALL times (sec)       0.108       0.109
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -80.3824325599687    
- - Active energy          :    -44.1895743319665    
+ Total MCSCF energy       :          -102.057935597374183  (MACRO    2)
 
- Norm of total gradient   :        1.572489129801
- -    of CI gradient      :        0.093915208293
- -    of orbital gradient :        1.569682132469
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -80.382432559967796
+ - Active energy          :           -44.189574331965495
+
+ Norm of total gradient   :             1.572489129781
+ -    of CI gradient      :             0.093915208295
+ -    of orbital gradient :             1.569682132449
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.018331
-      MULPOP  O      -0.11; C       0.11; 
+@      MULPOP O      -0.11; C       0.11; 
 
  Residual norm when dim(red L) =   5
  NEO root     CSF        orbital          total
@@ -644,21 +817,23 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -102.142215773944           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.111       0.112
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -80.3530086736999    
- - Active energy          :    -44.3032783948031    
+ Total MCSCF energy       :          -102.142215773941487  (MACRO    3)
 
- Norm of total gradient   :        0.283028500002
- -    of CI gradient      :        0.137757917804
- -    of orbital gradient :        0.247240546625
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -80.353008673697872
+ - Active energy          :           -44.303278394802717
+
+ Norm of total gradient   :             0.283028500003
+ -    of CI gradient      :             0.137757917806
+ -    of orbital gradient :             0.247240546626
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.019434
-      MULPOP  O      -0.28; C       0.28; 
+@      MULPOP O      -0.28; C       0.28; 
 
  (SIRNEO) iteration (  3,  4)
  Micro iteration termination criterion met, EVAL(ISTATE+1) = -1.29D-02
@@ -688,21 +863,23 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -102.185708474410           (MACRO    4)
+ Integral transformation: Total CPU and WALL times (sec)       0.106       0.106
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -80.3861646838349    
- - Active energy          :    -44.3136150851338    
+ Total MCSCF energy       :          -102.185708474407193  (MACRO    4)
 
- Norm of total gradient   :        0.811100836053
- -    of CI gradient      :        0.079331857832
- -    of orbital gradient :        0.807211882085
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -80.386164683834693
+ - Active energy          :           -44.313615085131602
+
+ Norm of total gradient   :             0.811100836176
+ -    of CI gradient      :             0.079331857833
+ -    of orbital gradient :             0.807211882208
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.016060
-      MULPOP  O       0.12; C      -0.12; 
+@      MULPOP O       0.12; C      -0.12; 
 
  Residual norm when dim(red L) =   5
  NEO root     CSF        orbital          total
@@ -735,21 +912,23 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :    -102.223753388323           (MACRO    5)
+ Integral transformation: Total CPU and WALL times (sec)       0.109       0.110
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -80.4344119010725    
- - Active energy          :    -44.3034127818093    
+ Total MCSCF energy       :          -102.223753388320688  (MACRO    5)
 
- Norm of total gradient   :        0.638938538486
- -    of CI gradient      :        0.165567204126
- -    of orbital gradient :        0.617114217046
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -80.434411901070675
+ - Active energy          :           -44.303412781809115
+
+ Norm of total gradient   :             0.638938538539
+ -    of CI gradient      :             0.165567204125
+ -    of orbital gradient :             0.617114217102
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.013482
-      MULPOP  O       0.12; C      -0.12; 
+@      MULPOP O       0.12; C      -0.12; 
 
  Residual norm when dim(red L) =   7
  NEO root     CSF        orbital          total
@@ -768,7 +947,7 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
 
  Symmetry  1
 
-   1.000000000   1.971318401   1.981515358   0.010549509   0.029160805
+   1.000000000   1.971318400   1.981515358   0.010549509   0.029160805
 
  Symmetry  2
 
@@ -782,21 +961,23 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :    -102.241893523760           (MACRO    6)
+ Integral transformation: Total CPU and WALL times (sec)       0.109       0.143
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -79.9816756637758    
- - Active energy          :    -44.7742891545430    
+ Total MCSCF energy       :          -102.241893523750818  (MACRO    6)
 
- Norm of total gradient   :        2.737450884197
- -    of CI gradient      :        0.309267297952
- -    of orbital gradient :        2.719924830176
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -79.981675663779086
+ - Active energy          :           -44.774289154530834
+
+ Norm of total gradient   :             2.737450885117
+ -    of CI gradient      :             0.309267298043
+ -    of orbital gradient :             2.719924831091
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.013071
-      MULPOP  O       0.15; C      -0.15; 
+@      MULPOP O       0.15; C      -0.15; 
 
  Residual norm when dim(red L) =   5
  NEO root     CSF        orbital          total
@@ -815,7 +996,7 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
 
  Symmetry  1
 
-   1.000000000   1.971318401   1.981515358   0.010549509   0.029160805
+   1.000000000   1.971318400   1.981515358   0.010549509   0.029160805
 
  Symmetry  2
 
@@ -829,21 +1010,23 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION  7 >>>
  --------------------------
 
- Total MCSCF energy       :    -102.275240310828           (MACRO    7)
+ Integral transformation: Total CPU and WALL times (sec)       0.108       0.219
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -79.1254426708111    
- - Active energy          :    -45.6638689345762    
+ Total MCSCF energy       :          -102.275240310824984  (MACRO    7)
 
- Norm of total gradient   :        0.256433282995
- -    of CI gradient      :        0.204821430734
- -    of orbital gradient :        0.154292612070
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -79.125442670899531
+ - Active energy          :           -45.663868934484547
+
+ Norm of total gradient   :             0.256433283025
+ -    of CI gradient      :             0.204821430751
+ -    of orbital gradient :             0.154292612098
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.012809
-      MULPOP  O       0.13; C      -0.13; 
+@      MULPOP O       0.13; C      -0.13; 
 
  Residual norm when dim(red L) =   9
  NEO root     CSF        orbital          total
@@ -876,21 +1059,23 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION  8 >>>
  --------------------------
 
- Total MCSCF energy       :    -102.287015473267           (MACRO    8)
+ Integral transformation: Total CPU and WALL times (sec)       0.108       0.211
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -78.0769203923125    
- - Active energy          :    -46.7241663755132    
+ Total MCSCF energy       :          -102.287015473264162  (MACRO    8)
 
- Norm of total gradient   :        0.106645651129
- -    of CI gradient      :        0.100917202759
- -    of orbital gradient :        0.034482069138
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -78.076920392325590
+ - Active energy          :           -46.724166375497674
+
+ Norm of total gradient   :             0.106645651135
+ -    of CI gradient      :             0.100917202764
+ -    of orbital gradient :             0.034482069142
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.012811
-      MULPOP  O       0.09; C      -0.09; 
+@      MULPOP O       0.09; C      -0.09; 
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
@@ -923,21 +1108,23 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION  9 >>>
  --------------------------
 
- Total MCSCF energy       :    -102.288268331668           (MACRO    9)
+ Integral transformation: Total CPU and WALL times (sec)       0.108       0.110
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -78.1182007878265    
- - Active energy          :    -46.6841388384006    
+ Total MCSCF energy       :          -102.288268331665677  (MACRO    9)
 
- Norm of total gradient   :        0.010270828302
- -    of CI gradient      :        0.009731884872
- -    of orbital gradient :        0.003283341413
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -78.118200787829792
+ - Active energy          :           -46.684138838394986
+
+ Norm of total gradient   :             0.010270828303
+ -    of CI gradient      :             0.009731884873
+ -    of orbital gradient :             0.003283341414
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.012946
-      MULPOP  O       0.10; C      -0.10; 
+@      MULPOP O       0.10; C      -0.10; 
 
  Residual norm when dim(red L) =  19
  NEO root     CSF        orbital          total
@@ -970,21 +1157,23 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION 10 >>>
  --------------------------
 
- Total MCSCF energy       :    -102.288287199407           (MACRO   10)
+ Integral transformation: Total CPU and WALL times (sec)       0.109       0.109
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -78.1180825182810    
- - Active energy          :    -46.6842759756854    
+ Total MCSCF energy       :          -102.288287199405062  (MACRO   10)
 
- Norm of total gradient   :        0.000193682079
- -    of CI gradient      :        0.000151399463
- -    of orbital gradient :        0.000120793005
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -78.118082518284169
+ - Active energy          :           -46.684275975679995
+
+ Norm of total gradient   :             0.000193682079
+ -    of CI gradient      :             0.000151399463
+ -    of orbital gradient :             0.000120793005
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.012916
-      MULPOP  O       0.10; C      -0.10; 
+@      MULPOP O       0.10; C      -0.10; 
 
  Residual norm when dim(red L) =  11
  NEO root     CSF        orbital          total
@@ -1017,33 +1206,37 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  <<< MACRO ITERATION 11 >>>
  --------------------------
 
- Total MCSCF energy       :    -102.288287203286           (MACRO   11)
+ Integral transformation: Total CPU and WALL times (sec)       0.108       0.109
 
- - Nuclear repulsion      :     22.5140712945591    
- - Inactive energy        :    -78.1180845153979    
- - Active energy          :    -46.6842739824474    
+ Total MCSCF energy       :          -102.288287203283886  (MACRO   11)
 
- Norm of total gradient   :        0.000007744137
- -    of CI gradient      :        0.000006734572
- -    of orbital gradient :        0.000003823246
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -78.118084515401748
+ - Active energy          :           -46.684273982441233
+
+ Norm of total gradient   :             0.000007744138
+ -    of CI gradient      :             0.000006734572
+ -    of orbital gradient :             0.000003823246
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
       Virial theorem: -V/T =      2.012916
-      MULPOP  O       0.10; C      -0.10; 
+@      MULPOP O       0.10; C      -0.10; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -3.87888D-09   -3.87875D-09
+ Energy difference; actual and predicted:   -3.87882D-09   -3.87875D-09
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    1.00003D+00
+ Energy difference; actual and predicted:    1.00002D+00
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used           11
      Number of micro iterations used           64
-     Total number of CPU seconds used         2.84
+     Total number of CPU seconds used         2.43
+
+ >>>> CPU and wall time for MCSCF :       2.428       2.902
 
 
                      .----------------------------------------.
@@ -1052,30 +1245,30 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:05:54 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:38:27 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    3   -101.574321678916   2.5864657127  0.000000   0.7386804781
-    2    4   -102.057935597376   1.5724891298  0.722640   0.6935401699
-    3    4   -102.142215773944   0.2830285000  0.640935   0.6986825833
-    4    4   -102.185708474410   0.8111008361  0.835559   0.7107213595
-    5    6   -102.223753388323   0.6389385385  0.698977   0.7378160742
-    6    4   -102.241893523760   2.7374508842  0.426113   0.6944163034
-    7    7   -102.275240310828   0.2564332830  0.817576   0.7434409238
-    8    6   -102.287015473267   0.1066456511  0.740570   0.0716235566
-    9   17   -102.288268331668   0.0102708283  1.003996   0.0194173656
-   10    9   -102.288287199407   0.0001936821  0.999041   0.0001939115
-   11    0   -102.288287203286   0.0000077441  1.000000   0.0000000000
+    1    3   -101.574321678917   2.5864657127  0.000000   0.7386804781
+    2    4   -102.057935597374   1.5724891298  0.722640   0.6935401699
+    3    4   -102.142215773941   0.2830285000  0.640935   0.6986825833
+    4    4   -102.185708474407   0.8111008362  0.835559   0.7107213595
+    5    6   -102.223753388321   0.6389385385  0.698977   0.7378160743
+    6    4   -102.241893523751   2.7374508851  0.426113   0.6944163034
+    7    7   -102.275240310825   0.2564332830  0.817576   0.7434409238
+    8    6   -102.287015473264   0.1066456511  0.740570   0.0716235566
+    9   17   -102.288268331666   0.0102708283  1.003996   0.0194173656
+   10    9   -102.288287199405   0.0001936821  0.999041   0.0001939115
+   11    0   -102.288287203284   0.0000077441  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1   1323   -0.000000    0.000002    171    0.802663    2.586466    2.586466
-    2   1567    0.032193    0.093915    100    1.382892    1.569682    1.572489
-    3   1567    0.057051    0.137758     82    0.068522    0.247241    0.283029
+    1   1629   -0.000000    0.000002    171    0.802663    2.586466    2.586466
+    2   1125    0.032193    0.093915    100    1.382892    1.569682    1.572489
+    3   1125    0.057051    0.137758     82    0.068522    0.247241    0.283029
     4   1209    0.029104    0.079332    100    0.646954    0.807212    0.811101
     5   1585   -0.028575    0.165567     77    0.443200    0.617114    0.638939
     6   1501    0.068294    0.309267    146   -1.986616    2.719925    2.737451
@@ -1089,59 +1282,59 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     3     0     3      0.20      0.12      0.06      0.06      0.02
-    2     4     0     4      0.22      0.13      0.08      0.08      0.02
-    3     4     2     3      0.22      0.13      0.08      0.08      0.02
-    4     4     1     3      0.21      0.12      0.08      0.07      0.02
-    5     6     2     4      0.25      0.12      0.11      0.10      0.02
-    6     4     0     4      0.22      0.12      0.08      0.08      0.02
-    7     7     4     4      0.27      0.13      0.13      0.12      0.02
-    8     6     4     3      0.25      0.13      0.11      0.10      0.02
-    9    17    12     6      0.41      0.13      0.27      0.26      0.02
-   10     9     6     4      0.29      0.13      0.15      0.15      0.02
-   11     0     0     0      0.14      0.12      0.00      0.00
+    1     3     0     3      0.18      0.11      0.06      0.05      0.02
+    2     4     0     4      0.19      0.11      0.07      0.07      0.02
+    3     4     2     3      0.20      0.11      0.07      0.07      0.02
+    4     4     1     3      0.19      0.11      0.07      0.06      0.02
+    5     6     2     4      0.22      0.11      0.09      0.09      0.02
+    6     4     0     4      0.20      0.11      0.08      0.07      0.02
+    7     7     4     4      0.23      0.11      0.11      0.11      0.02
+    8     6     4     3      0.22      0.11      0.10      0.09      0.02
+    9    17    12     6      0.35      0.11      0.23      0.22      0.01
+   10     9     6     4      0.25      0.11      0.13      0.13      0.01
+   11     0     0     0      0.12      0.11      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1    -80.314655691284    -43.773737282191   -101.574321678916
-    2    -80.382432559969    -44.189574331966   -102.057935597376
-    3    -80.353008673700    -44.303278394803   -102.142215773944
-    4    -80.386164683835    -44.313615085134   -102.185708474410
-    5    -80.434411901073    -44.303412781809   -102.223753388323
-    6    -79.981675663776    -44.774289154543   -102.241893523760
-    7    -79.125442670811    -45.663868934576   -102.275240310828
-    8    -78.076920392312    -46.724166375513   -102.287015473267
-    9    -78.118200787826    -46.684138838401   -102.288268331668
-   10    -78.118082518281    -46.684275975685   -102.288287199407
-   11    -78.118084515398    -46.684273982447   -102.288287203286
+    1    -80.314655691284    -43.773737282192   -101.574321678917
+    2    -80.382432559968    -44.189574331965   -102.057935597374
+    3    -80.353008673698    -44.303278394803   -102.142215773941
+    4    -80.386164683835    -44.313615085132   -102.185708474407
+    5    -80.434411901071    -44.303412781809   -102.223753388321
+    6    -79.981675663779    -44.774289154531   -102.241893523751
+    7    -79.125442670900    -45.663868934485   -102.275240310825
+    8    -78.076920392326    -46.724166375498   -102.287015473264
+    9    -78.118200787830    -46.684138838395   -102.288268331666
+   10    -78.118082518284    -46.684275975680   -102.288287199405
+   11    -78.118084515402    -46.684273982441   -102.288287203284
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.669232527362     -0.483613918460      0.722639588914
-    3     -0.131495757205     -0.084280176568      0.640934569750
+    2     -0.669232527359     -0.483613918457      0.722639588912
+    3     -0.131495757204     -0.084280176567      0.640934569748
     4     -0.052052242080     -0.043492700466      0.835558637398
-    5     -0.054429405249     -0.038044913913      0.698977211660
-    6     -0.042571197830     -0.018140135437      0.426112873525
-    7     -0.040787365507     -0.033346787069      0.817576390486
-    8     -0.015900140957     -0.011775162438      0.740569688691
-    9     -0.001247872443     -0.001252858401      1.003995567462
-   10     -0.000018885855     -0.000018867739      0.999040791854
+    5     -0.054429405249     -0.038044913913      0.698977211662
+    6     -0.042571197833     -0.018140135430      0.426112873343
+    7     -0.040787365514     -0.033346787074      0.817576390476
+    8     -0.015900140957     -0.011775162439      0.740569688706
+    9     -0.001247872443     -0.001252858402      1.003995567535
+   10     -0.000018885855     -0.000018867739      0.999040792482
    11     -0.000000003879     -0.000000003879      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      1.15755477  1.00000000      0.738680478076      0.700000000000
+    1      1.15755477  1.00000000      0.738680478078      0.700000000000
     2      0.94454278  1.00000000      0.693540169949      0.700000000000
-    3      1.72551502  1.00000000      0.698682583322      0.700000000000
-    4      1.51536697  1.00000000      0.710721359540      0.700000000000
-    5      1.68970129  1.00000000      0.737816074249      0.700000000000
-    6      1.02482337  1.00000000      0.694416303422      0.700000000000
-    7      0.58571914  1.00000000      0.743440923776      0.700000000000
-    8      0.20000000  1.00000000      0.071623556599      0.700000000000
+    3      1.72551502  1.00000000      0.698682583321      0.700000000000
+    4      1.51536697  1.00000000      0.710721359538      0.700000000000
+    5      1.68970129  1.00000000      0.737816074263      0.700000000000
+    6      1.02482337  1.00000000      0.694416303400      0.700000000000
+    7      0.58571914  1.00000000      0.743440923792      0.700000000000
+    8      0.20000000  1.00000000      0.071623556598      0.700000000000
     9      0.20000000  1.00000000      0.019417365581      0.700000000000
    10      0.20000000  1.00000000      0.000193911519      0.700000000000
    11      0.00000000  0.00000000      0.000000000000      0.700000000000
@@ -1150,14 +1343,14 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -1.035999914433    0.760037099016   -0.262994239422   -0.590029060643
-    2   -0.164177627904    0.836497193075   -0.092628603696   -0.324188459077
-    3   -0.126337231423    0.638428426440   -0.233479430224   -0.667568313183
-    4   -0.115733250522   -0.680423754921    0.057853635389    0.664430387675
-    5   -0.095171133974   -0.625705183179    0.724782318867    0.191022119300
-    6   -0.056872004698    0.814746350573   -0.016623215680   -0.531774735541
-    7   -0.009170721693    0.916846980063   -0.028438883346   -0.333267482541
-    8   -0.000099809315    0.999897417110   -0.004067684938   -0.009723075137
+    1   -1.035999914425    0.760037099015   -0.262994239420   -0.590029060645
+    2   -0.164177627904    0.836497193074   -0.092628603696   -0.324188459076
+    3   -0.126337231422    0.638428426443   -0.233479430222   -0.667568313175
+    4   -0.115733250523   -0.680423754922    0.057853635381    0.664430387675
+    5   -0.095171133978   -0.625705183167    0.724782318881    0.191022119276
+    6   -0.056872004708    0.814746350588   -0.016623215678   -0.531774735523
+    7   -0.009170721692    0.916846980068   -0.028438883343   -0.333267482526
+    8   -0.000099809315    0.999897417110   -0.004067684938   -0.009723075136
     9   -0.000001510846    0.999992459404   -0.000660567425   -0.003562456888
    10   -0.000000000310    0.999999999248   -0.000009873566   -0.000022835645
    11    0.000000000000    0.000000000000    0.000000000000    0.000000000000
@@ -1168,23 +1361,22 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            2
-     Total charge of molecule:    0
-     State number:                1
+@    Spin multiplicity:           1
+@    Spatial symmetry:            2
+@    Total charge of molecule:    0
+@    State number:                1
 
-     Final MCSCF energy:         -102.288287203286                 
-     Nuclear repulsion:            22.514071294559
-     Electronic energy:          -124.802358497845
+@    Final MCSCF energy:         -102.288287203284                 
+@    Nuclear repulsion:            22.514071294559
+@    Electronic energy:          -124.802358497843
 
-     Final gradient norm:           0.000007744137
+@    Final gradient norm:           0.000007744138
 
  
-     Date and time (Linux)  : Wed Mar 16 18:05:54 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:38:27 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 String information written on SIRIUS.STRINGINFO for use by WESTA program
-
 
  Occupancies of natural orbitals
  -------------------------------
@@ -1203,8 +1395,6 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
    1.926971789   0.079125676
 
  Symmetry  4 -- No occupied orbitals
-
-String information written on SIRIUS.STRINGINFO for use by WESTA program
 
  (Only coefficients >0.0100 are printed.)
 
@@ -1359,12 +1549,12 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
 
 
 
- >>>> Total CPU  time used in SIRIUS :      2.86 seconds
- >>>> Total wall time used in SIRIUS :      4.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.44 seconds
+ >>>> Total wall time used in SIRIUS :      2.91 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:05:54 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:38:27 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  NOTE:   11 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -1374,9 +1564,9 @@ String information written on SIRIUS.STRINGINFO for use by WESTA program
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   3.12 seconds
- >>>> Total wall time used in DALTON:   5.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.67 seconds
+ >>>> Total wall time used in DALTON:   3.15 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:05:55 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:38:27 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

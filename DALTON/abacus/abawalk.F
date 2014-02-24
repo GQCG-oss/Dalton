@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -108,28 +108,28 @@ C
      *            '" not recognized in *WALK input.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in *WALK input')
-    1          CONTINUE
+    1          CONTINUE   ! .RESTAR
                   START = .FALSE.
                GO TO 100
-    2          CONTINUE
+    2          CONTINUE   ! .PRINT
                   READ (LUCMD,*) IPRWLK
                   IF (IPRWLK .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
-    3          CONTINUE
+    3          CONTINUE   ! .INDEX
                   READ (LUCMD,*) IWKIND
                GO TO 100
-    4          CONTINUE
+    4          CONTINUE   ! .TRUST
                   READ (LUCMD,*) TRUSTR, TRUSTI, TRUSTD
                   SETRAD = .TRUE.
                GO TO 100
-    5          CONTINUE
+    5          CONTINUE   ! .ANHARM
                   V3CAL = .TRUE.
                   IWKVEC(6) = 1
                GO TO 100
-    6          CONTINUE
+    6          CONTINUE   ! .DISPLA
                   READ (LUCMD,*) DISPLC
                GO TO 100
-    7          CONTINUE
+    7          CONTINUE   ! .SCALE
                   ISCVEC(2) = 1
                   DO 7000 ICOOR = 1,3
                      DO 7000 INUC = 1,MXCENT
@@ -140,49 +140,49 @@ C
                      READ (LUCMD,*) IATOM,(SCALCO(J,IATOM), J = 1,3)
  7100             CONTINUE
                GO TO 100
-    8          CONTINUE
+    8          CONTINUE   ! .MODE
                   READ (LUCMD,*) IMODE
                GO TO 100
-    9          CONTINUE
+    9          CONTINUE   ! .TOLERA
                   READ (LUCMD,*) TOLST
                GO TO 100
-   10          CONTINUE
+   10          CONTINUE   ! .HESFIL
                   HESFLW = .TRUE.
                GO TO 100
-   11          CONTINUE
+   11          CONTINUE   ! .NOPRED
                   WFPRED = .FALSE.
                GO TO 100
-   12          CONTINUE
+   12          CONTINUE   ! .MAXNUC
                   READ (LUCMD,*) XMXNUC
                   IF (XMXNUC .EQ. DXMXNU) ICHANG = ICHANG - 1
                GO TO 100
-   13          CONTINUE
+   13          CONTINUE   ! .KEEPSY
                   KEEPSY = .TRUE.
                GO TO 100
-   14          CONTINUE
+   14          CONTINUE   ! .REJECT
                   REJECT = .TRUE.
                   IF (.NOT.SETRAD) TRUSTD = TRSTDR
                GO TO 100
-   15          CONTINUE
+   15          CONTINUE   ! .RATLIM
                   READ (LUCMD,*) RTRMIN, RTRGOD, REJMIN, REJMAX
                GO TO 100
-   16          CONTINUE
+   16          CONTINUE   ! .NEWTON
                   IWKVEC(4) = 1
                GO TO 100
-   17          CONTINUE
+   17          CONTINUE   ! .VIBCNV
                GO TO 100
-   18          CONTINUE
+   18          CONTINUE   ! .GRDEXT
 Cpeo mass-scaled coordinates as default
                   ISCVEC(3) = 1
                   IWKVEC(2) = 1
                GO TO 100
-   19          CONTINUE
+   19          CONTINUE   ! .MODFOL
                   IWKVEC(1) = 1
                GO TO 100
-   20          CONTINUE
+   20          CONTINUE   ! .MASSES
                   ISCVEC(3) = 1
                GO TO 100
-   21          CONTINUE
+   21          CONTINUE   ! .REPS
                   READ (LUCMD,*) NREPS
                   READ (LUCMD,*) (IDOREP(I),I=1,NREPS)
                   DO 21000 IREP = 1, 7
@@ -192,68 +192,68 @@ Cpeo mass-scaled coordinates as default
                      DOREPW(IDOREP(IREP)) = DOSYM(IREP + 1)
 21010             CONTINUE
                GO TO 100
-   22          CONTINUE
+   22          CONTINUE   ! .ZERGRD
                   READ (LUCMD,*) ZERGRD
                GO TO 100
-   23          CONTINUE
+   23          CONTINUE   ! .EIGEN
                   IWKVEC(5) = 1
                   GO TO 100
-   24          CONTINUE
+   24          CONTINUE   ! .DYNAMI
                   IWKVEC(3) = 1
                   GO TO 100
-   25          CONTINUE
+   25          CONTINUE   ! .NOGRAD
                   READ (LUCMD, *) NZEROG
                   READ (LUCMD, *) (IZEROG(I),I=1,NZEROG)
                   GO TO 100
-   26          CONTINUE
+   26          CONTINUE   ! .MOMENT
                   READ (LUCMD,*) NSTMOM
                   DO 265 IP = 1, NSTMOM
                      READ (LUCMD, *) ISTMOM(IP), STRMOM(IP)
   265             CONTINUE
                   GO TO 100
-   27          CONTINUE
+   27          CONTINUE   ! .NUMERI
                   IWKVEC(6) = 1
                   GO TO 100
-   28          CONTINUE
+   28          CONTINUE   ! .HARMON
                   READ (LUCMD,*) ANHFAC
                   GO TO 100
-   29          CONTINUE
+   29          CONTINUE   ! .FRAGME
                   READ (LUCMD, *) NIP
                   READ (LUCMD, *) (IPART(IP), IP=1,NIP)
                   GO TO 100
-   30          CONTINUE
+   30          CONTINUE   ! .IMAGE
                   IMAGE = .TRUE.
                   GO TO 100
-   31          CONTINUE
+   31          CONTINUE   ! (not used any more)
                   GO TO 100
-   32          CONTINUE
+   32          CONTINUE   ! .IRC
                   IWKVEC(7) = 1
                   READ (LUCMD,*) IRCSGN
                   GO TO 100
-   33          CONTINUE
+   33          CONTINUE   ! .MAXTRU
                   READ (LUCMD,*) TRUMX1
                   GO TO 100
-   34          CONTINUE
+   34          CONTINUE   ! .NOORTH
                   NOORTH = .TRUE.
                   GO TO 100
-   35          CONTINUE
+   35          CONTINUE   ! .NATCON
                   NATCON = .TRUE.
                   GO TO 100
- 36            CONTINUE
+ 36            CONTINUE   ! .VIBAVE
                   VIBAVE = .TRUE.
                   IWKVEC(6) = 1
                   GO TO 100
- 37            CONTINUE
+ 37            CONTINUE   ! .NORMAL
                   NMODIF = .TRUE.
                   GO TO 100
- 38            CONTINUE
+ 38            CONTINUE   ! .ECKART
                   ECKART = .TRUE.
                   DO I = 1, NUCDEP
-                     READ (LUCMD,'(7X,F17.10,2F24.10)') 
+                     READ (LUCMD,'(7X,F17.10,2F24.10)')  ! 7X to skip atom labels
      &                    (ECKGEO(J,I), J = 1, 3)
                   END DO
                   GO TO 100
- 39            CONTINUE
+ 39            CONTINUE   ! .TEMPER
                   DOTEMP = .TRUE.
                   READ (LUCMD, *) NTEMP
                   IF (NTEMP .GT. MAXTMP) THEN
@@ -265,13 +265,13 @@ Cpeo mass-scaled coordinates as default
                   END IF
                   READ (LUCMD, *) (TEMP(ITMP), ITMP=1,NTEMP)
                   GOTO 100
- 40            CONTINUE
+ 40            CONTINUE   ! .NO CEN
                   DOCENT = .FALSE.
                   GO TO 100
- 41            CONTINUE
+ 41            CONTINUE   ! .REUSE
                   REUSED = .TRUE.
                   GO TO 100
- 42            CONTINUE
+ 42            CONTINUE   ! .ACCURA
                   ACCURT = .TRUE.
                   GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -287,7 +287,7 @@ Cpeo mass-scaled coordinates as default
 C
       IF (.NOT.DOWALK) THEN
          IF (ICHANG .GT. 0) WRITE (LUPRI,'(//A/)')
-     &      ' Walk not requested, *WALK input ignored.'
+     &      ' Walk not requested with .WALK, *WALK input ignored.'
          GO TO 9999
       END IF
 C
@@ -521,10 +521,10 @@ C
                WRITE (LUPRI,'(A)') ' Mass scaling in this run.'
             END IF
          END IF
-         IF (IWKTYP .EQ. 6) THEN
-            IF (ITERMX .EQ. 20) ITERMX = 6*NUCDEP + 1
-            WRITE (LUPRI,'(/A,I5)') 'Maximum number of iterations '//
-     *           'reset in numerical differentiation to ',ITERMX
+         IF (IWKTYP .EQ. 6) THEN ! numerical differentiation
+            ITERMX = 6*NUCDEP + 1
+            WRITE (LUPRI,'(/A,I5)') 'Maximum number of geometry steps '
+     *           //'reset in numerical differentiation to ',ITERMX
          END IF
          IF (NZEROG .GT. 0) THEN
             WRITE (LUPRI,'(/A,16I5)')
@@ -636,7 +636,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
 C
       CALL QENTER('WLKDRV')
       IF (IPRWLK .GT. 3) CALL TIMER ('START ',TIMEIN,TIMOUT)
@@ -846,7 +845,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
 #include "taymol.h"
 C
 C
@@ -906,8 +904,8 @@ C
          END IF
       ELSE
          TRUSTX = TRUSTR
-         IF (DIPDER .AND. (IWKTYP .EQ. 6 .AND. .NOT. 
-     &                    (V3CAL .OR. VIBAVE))) THEN
+         IF (DIPDER .AND.
+     &      (IWKTYP .EQ. 6 .AND. .NOT.(V3CAL .OR. VIBAVE))) THEN
             NXYZ = 0
             DO 100 I = 1, 3
                IF (ISYMAX(I,1) .EQ. 0) NXYZ = NXYZ + 1
@@ -948,6 +946,8 @@ C
 C
 C        Generate normal coordinates for numerical differentiation
 C
+         CALL AROUND(
+     &    'Generating normal coordinates for numerical differentiation')
          KAMASS = 1
          KNATYP = KAMASS + NUCDEP
          KNUMIS = KNATYP + (NUCDEP + 1)/IRAT
@@ -990,7 +990,7 @@ C
          END IF
          CALL CMMASS(WORK(KGEOM),WORK(KAMASS),WORK(KNATYP),WORK(KNUMIS),
      &               IPRWLK)
-C     
+C
 C     Project out translation and rotational motion from the Hessian
 C
          CALL VIBHES(IPRWLK,NCART,WORK(KGEOM),KTRRO,GRDCAR,HESCAR,
@@ -1119,7 +1119,7 @@ C
      *                     IPOINT,IPRWLK)
             END IF
 C
-C     The step should be so small that no important change in energy 
+C     The step should be so small that no important change in energy
 C     should occur, and prediction of the new energy should be zero energy
 C     change. KR, July-97
 C
@@ -1239,7 +1239,7 @@ C
          CALL DCOPY(NCART,COOR,1,CORD,1)
 C
 C     WORK(KFMATF) and WORK(KFMATT) is used as temporary arrays here.
-C     The most important point is that we would like to initialize 
+C     The most important point is that we would like to initialize
 C     WORK(KAMASS)
 C
          CALL CMMASS(WORK(KFMATF),WORK(KAMASS),WORK(KFMATT),WORK(KLAST),
@@ -1552,7 +1552,6 @@ C
 C
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKPRJ','*',103)
 C
@@ -1710,7 +1709,6 @@ C  /* Deck wlkeig */
 C
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKEIG','*',103)
 C
@@ -2141,6 +2139,7 @@ C
 #include "cbisol.h"
 #include "ibtfun.h"
 C
+      CHARACTER*(len_MLINE) TMP_MLINE
 C
 C Write new coordinates into MOLECULE input
 C
@@ -2162,7 +2161,7 @@ C     ... make a translation of center of cavity to (0,0,0)
             TOTCHR = D0
 C
 C     If we have a finite field, we must ensure that there is a zero
-C     contribution from the nuclear part of the dipole moment to the 
+C     contribution from the nuclear part of the dipole moment to the
 C     total charge. Thus move center-of nuclear charge to the origin
 C
             DO IATOM = 1, NUCIND
@@ -2191,12 +2190,13 @@ C
 C
 C     Coordinates written are always in atomic units
 C
-      CALL UPCASE(MLINE(NMLAU))
-      IPOS = INDEX(MLINE(NMLAU),'ATO')
+      TMP_MLINE = MLINE(NMLAU)
+      CALL UPCASE(TMP_MLINE)
+      IPOS = INDEX(TMP_MLINE,'ATO')
       IF (IPOS .EQ. 0) THEN
          MLINE(NMLAU)(20:20) = ' '
       ELSE
-         IPOS = INDEX(MLINE(NMLAU),'ANG')
+         IPOS = INDEX(TMP_MLINE,'ANG')
          IF (IPOS .NE. 0) THEN
             IPOS2 = INDEX(MLINE(NMLAU)(IPOS:),' ')
             DO ICHARP = IPOS, IPOS + IPOS2 - 1
@@ -2211,7 +2211,8 @@ C
          NC = NCLINE(N)
          IF (NC .NE. 0) THEN
             READ  (MLINE(NC),9100) NAME
-            IPOS = INDEX(MLINE(NC),'Isotope=')
+            TMP_MLINE = MLINE(NC)
+            IPOS = INDEX(TMP_MLINE,'ISOTOPE=')
             IF (IPOS .NE. 0) THEN
                READ (MLINE(NC)(IPOS:),'(A11)') TMPTXT
             ELSE
@@ -2351,20 +2352,20 @@ C
      &          DIPM0(3), DIPG0(3,NCART), DIPGF(3,NCART),
      &          STPDIX(NCART), GRDDIX(NCART),
      &          FMATF(NCART,NCART,NCART), SUSTO0(3,3), SUSTF(3,3,NCART),
-     &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3), 
-     &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT), 
-     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
+     &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3),
+     &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT),
+     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT),
      &          SRCF(3,3,MXCENT,NCART), POLAR0(3,3),
      &          POLARF(3,3,NCART),
-     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
+     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART),
      &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART)
 C
 #include "inftap.h"
 #include "nuclei.h"
 #include "cbilnr.h"
-      DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR), 
+      DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR),
      &          ROAGLD(3,3,MXFR,MXCOOR), ROAAD(3,3,3,MXFR,MXCOOR),
-     &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR), 
+     &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR),
      &          ROAGLU(3,3,MXFR), ROAAU(3,3,3,MXFR)
 C
       CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
@@ -2384,8 +2385,8 @@ C
      &                                ROAGLU,ROAGLD, ROAAU, ROAAD
       IF (IWKTYP .EQ. 6) READ (LUWLK) NUMMOD, FMATF
       IF (IWKTYP .EQ. 6 .AND. VIBAVE) READ (LUWLK) SUSTO0, SUSTF, GFAC0,
-     &                                GFACF, QUAD0, QUADF, SIGMA0, 
-     &                                SIGMAF, SRC0, SRCF, POLAR0, 
+     &                                GFACF, QUAD0, QUADF, SIGMA0,
+     &                                SIGMAF, SRC0, SRCF, POLAR0,
      &                                POLARF, EFG0, EFGF, SSJ0, SSJF
       CALL GPCLOSE(LUWLK,'KEEP')
 C
@@ -2445,19 +2446,19 @@ C
      &          STPDIA(NCART),GRDDIA(NCART),
      &          FMATF(NCART,NCART,NCART), SUSTO0(3,3), SUSTF(3,3,NCART),
      &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3),
-     &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT), 
-     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
+     &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT),
+     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT),
      &          SRCF(3,3,MXCENT,NCART), POLAR0(3,3), POLARF(3,3,NCART),
-     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
+     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART),
      &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART),
      &          WORK(LWORK)
 C
 #include "inftap.h"
 #include "nuclei.h"
 #include "cbilnr.h"
-      DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR), 
+      DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR),
      &          ROAGLD(3,3,MXFR,MXCOOR), ROAAD(3,3,3,MXFR,MXCOOR),
-     &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR), 
+     &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR),
      &          ROAGLU(3,3,MXFR), ROAAU(3,3,3,MXFR)
 C
       CALL GPOPEN(LUWLK,ABAWLK,'UNKNOWN','SEQUENTIAL','UNFORMATTED',
@@ -2476,8 +2477,8 @@ C
      &                                 ROAAFU,ROAAFD,ROAGNU,ROAGND,
      &                                 ROAGLU,ROAGLD,ROAAU, ROAAD
       IF (IWKTYP .EQ. 6) WRITE (LUWLK) NUMMOD, FMATF
-      IF (IWKTYP .EQ. 6 .AND. VIBAVE)  WRITE (LUWLK) SUSTO0, SUSTF, 
-     &                                 GFAC0, GFACF, QUAD0, QUADF, 
+      IF (IWKTYP .EQ. 6 .AND. VIBAVE)  WRITE (LUWLK) SUSTO0, SUSTF,
+     &                                 GFAC0, GFACF, QUAD0, QUADF,
      &                                 SIGMA0, SIGMAF, SRC0, SRCF,
      &                                 POLAR0, POLARF, EFG0, EFGF,
      &                                 SSJ0, SSJF
@@ -2631,8 +2632,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
-#include "prkoor.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 C
       CHARACTER*1 STARM, STARE, STARG, STARS, STARH
@@ -3251,8 +3251,8 @@ C     Print
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Output from WLKTRA',-1)
-         WRITE (LUPRI,'(1X,A,1P,E24.12)') ' EKINPA ', EKINPA
-         WRITE (LUPRI,'(1X,A,1P,E24.12)') ' VREL   ', VREL
+         WRITE (LUPRI,'(A,1P,E24.12)') '  EKINPA ', EKINPA
+         WRITE (LUPRI,'(A,1P,E24.12)') '  VREL   ', VREL
       END IF
       RETURN
       END
@@ -3340,13 +3340,13 @@ C
 C
 C     ***** Print *****
 C
-      IF (IPRINT .GT. 5) THEN
+      IF (IPRINT .GE. 2) THEN
          CALL HEADER('STPSYM in WLKINC',1)
-         CALL OUTPUT(STPSYM,1,1,1,NCART,1,NCART,1,LUPRI)
+         CALL OUTPUT(STPSYM,1,1,1,NCART,1,NCART,-1,LUPRI)
          CALL HEADER('STPCAR in WLKINC',1)
-         CALL OUTPUT(STPCAR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
-         CALL HEADER('COOR in WLKINC',1)
-         CALL OUTPUT(COOR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
+         CALL OUTPUT(COOR,1,3,1,NUCIND,3,NUCIND,-1,LUPRI)
+         CALL HEADER('New COOR in WLKINC',1)
+         CALL OUTPUT(COOR,1,3,1,NUCIND,3,NUCIND,-1,LUPRI)
       END IF
       RETURN
       END
@@ -3384,7 +3384,7 @@ C
                   STPCAR(ICCOOR) = EVEC(ICCOOR,1)*DISPNC
                ELSE IF (IPOINT .EQ. 4*NUMMOD) THEN
                   STPCAR(ICCOOR) = EVEC(ICCOOR,NUMMOD)*DISPNC
-               ELSE IF ((MOD(IPOINT,4) .EQ. 1) .OR. 
+               ELSE IF ((MOD(IPOINT,4) .EQ. 1) .OR.
      &                  (MOD(IPOINT,4) .EQ. 3)) THEN
                   STPCAR(ICCOOR) = EVEC(ICCOOR,(IPOINT+3)/4)*DISPNC
                ELSE IF (MOD(IPOINT,4) .EQ. 2) THEN
@@ -3420,11 +3420,11 @@ C
 C
 C     ***** Print *****
 C
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 2) THEN
          CALL HEADER('STPCAR in WLKNCI',1)
-         CALL OUTPUT(STPCAR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
-         CALL HEADER('COOR in WLKNCI',1)
-         CALL OUTPUT(COOR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
+         CALL OUTPUT(STPCAR,1,3,1,NUCIND,3,NUCIND,-1,LUPRI)
+         CALL HEADER('New COOR in WLKNCI',1)
+         CALL OUTPUT(COOR,1,3,1,NUCIND,3,NUCIND,-1,LUPRI)
       END IF
       RETURN
       END
@@ -3614,13 +3614,13 @@ C  /* Deck wlkv3 */
      *                 LWORK,NCRTOT,N2CRT,NCART,IPOINT,
      *                 IPRINT)
 C
-C     Determine anharmonic force field by numerical differentiation
-C     Currently the entire anharmonic is determined only, using 
-C     numerical differentiation of the Hessian. In the future V_imm should 
+C     Determine anharmonic force field by numerical differentiation.
+C     Currently the entire anharmonic is determined only, using
+C     numerical differentiation of the Hessian. In the future V_imm should
 C     be determined in internal coordinates, using numerical differentiation
-C     of the gradient. This can be used for speeding of the determination 
+C     of the gradient. This can be used for speeding of the determination
 C     of the effective geometry needed for rovibrational averaging.
-C     
+C
 C     K.Ruud, San Diego March 1999
 C
 #include "implicit.h"
@@ -3691,7 +3691,7 @@ C
      *       ' - numerical differentiation is complete.'
 
             DO I = 1, NCART
-               WRITE (LUPRI,'(/A,I5,/A)') 
+               WRITE (LUPRI,'(/A,I5,/A)')
      &              ' Anharmonic force constants (*,*,I):', I,
      &              ' ----------------------------------------'
                CALL OUTPUT(FMATF(1,1,I),1,NCART,1,NCART,NCART,NCART,
@@ -3702,7 +3702,7 @@ Ckr      Print anharmonic force field and analyze in terms of normal
 Ckr      coordinates. Need also some consistency check for the accuray of
 Ckr      of the numerical differentiation, qua what is done for the symmetric
 Ckr      nature of the Hessian.
-Ckr            
+Ckr
          END IF
 C
       END IF
@@ -3716,7 +3716,7 @@ C
 C     Determine anharmonic force field by numerical differentiation
 C     along normal coordinates. Only the anharmonic force constants
 C     needed for determining an effective geometry is considered.
-C     
+C
 C     K.Ruud, San Diego March 1999
 C
 #include "implicit.h"
@@ -3736,7 +3736,7 @@ C
 #include "chrsgn.h"
 C
       FINAL = IPOINT .EQ. 2*NUMMOD
-C      
+C
       CALL DGEMM('N','N',1,NUMMOD,NCART,1.D0,
      &           GRDCAR,1,
      &           EVEC,NCART,0.D0,
@@ -3786,7 +3786,7 @@ C
      *       ' - numerical differentiation is complete.'
 
             DO I = 1, NUMMOD
-               WRITE (LUPRI,'(/A,I5,/A)') 
+               WRITE (LUPRI,'(/A,I5,/A)')
      &              ' Anharmonic force constants (*,*,I):', I,
      &              ' ----------------------------------------'
                CALL OUTPUT(FMATF(1,1,I),1,NUMMOD,1,NUMMOD,NCART,NCART,
@@ -3797,7 +3797,7 @@ Ckr      Print anharmonic force field and analyze in terms of normal
 Ckr      coordinates. Need also some consistency check for the accuray of
 Ckr      of the numerical differentiation, qua what is done for the symmetric
 Ckr      nature of the Hessian.
-Ckr            
+Ckr
          END IF
 C
       END IF
@@ -3832,19 +3832,19 @@ C
       LOGICAL FINAL, ODD
 #include "cbilnr.h"
       DIMENSION GRDCAR(NCRTOT), HESCAR(NCART,NCART), GRAD0(NCRTOT),
-     &          HESS0(NCART,NCART), HESSF(NCART,NCART), DIPM0(3), 
-     &          EVAL(NCART), DIPMF(3,NCART), SUSTO0(3,3), 
+     &          HESS0(NCART,NCART), HESSF(NCART,NCART), DIPM0(3),
+     &          EVAL(NCART), DIPMF(3,NCART), SUSTO0(3,3),
      &          SUSTF(3,3,NCART),
      &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3),
      &          QUADF(3,3,NCART), QUADT(3,3), SIGMA0(3,3,MXCENT),
-     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
-     &          SRCF(3,3,MXCENT,NCART), TMAT(3,3,MXCENT), CSTRA(*), 
-     &          SCTRA(*), POLAR0(3,3), POLARF(3,3,NCART), 
-     &          POLDD(2,3,3,MXFR), ALFA0(3,3,MXFR), 
+     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT),
+     &          SRCF(3,3,MXCENT,NCART), TMAT(3,3,MXCENT), CSTRA(*),
+     &          SCTRA(*), POLAR0(3,3), POLARF(3,3,NCART),
+     &          POLDD(2,3,3,MXFR), ALFA0(3,3,MXFR),
      &          ALFAF(3,3,MXFR,NCART),
-     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
-     &          SPNTOT(MXCOOR,MXCOOR), SSJ0(MXCOOR,MXCOOR), 
-     &          SSJF(MXCOOR,MXCOOR,NCART), ROANL(2,3,3,MXFR), 
+     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART),
+     &          SPNTOT(MXCOOR,MXCOOR), SSJ0(MXCOOR,MXCOOR),
+     &          SSJF(MXCOOR,MXCOOR,NCART), ROANL(2,3,3,MXFR),
      &          ROALO(2,3,3,MXFR), ROANL0(3,3,MXFR), ROALO0(3,3,MXFR),
      &          ROANLF(3,3,MXFR,MXCOOR), ROALOF(3,3,MXFR,MXCOOR),
      &          WORK(LWORK)
@@ -3946,7 +3946,7 @@ C
                   HESSF(I,1) = HESSF(I,1)
      &                 - (ERGMOL - ESTART)/(D12*(DISPLC**2))
             ELSE
-                  HESSF(I,1) = HESSF(I,1) + 
+                  HESSF(I,1) = HESSF(I,1) +
      &                         (D4/D3)*(ERGMOL - ESTART)/(DISPLC**2)
             END IF
          ELSE
@@ -4055,7 +4055,7 @@ C
                WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                DO ICOOR = 1, 3
                   WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                 NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                 NAMDPX(3*(IATOM-1)+ICOOR),
      &                 (SIGMA0(K,ICOOR,IATOM),K=1,3)
                END DO
             END DO
@@ -4067,7 +4067,7 @@ C
                WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                DO ICOOR = 1, 3
                   WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                 NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                 NAMDPX(3*(IATOM-1)+ICOOR),
      &                 (SRC0(K,ICOOR,IATOM),K=1,3)
                END DO
             END DO
@@ -4090,7 +4090,7 @@ C
             DO IATOM = 1, NUCDEP
                DO ICOOR = 1, 3
                   WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                 NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                 NAMDPX(3*(IATOM-1)+ICOOR),
      &                 (EFG0(K,ICOOR,IATOM),K=1,3)
                END DO
             END DO
@@ -4132,17 +4132,17 @@ C
             CALL OUTPUT(DIP0,1,1,1,3,1,3,1,LUPRI)
             IF (MAGSUS) THEN
                CALL HEADER('Magnetizabilities at displaced geometry',1)
-               CALL POLPRI(SUSTOT,'   ',-2)            
+               CALL POLPRI(SUSTOT,'   ',-2)
             END IF
             IF (MOLGFA) THEN
                CALL HEADER('Rotational g tensor at displaced '//
      &                     'geometry',1)
-               CALL POLPRI(GTRAN,'   ',-2)            
+               CALL POLPRI(GTRAN,'   ',-2)
             END IF
             IF (QUADRU) THEN
                CALL HEADER('Molecular quadrupole moment at displaced '//
      &                     'geometry',1)
-               CALL POLPRI(QUADT,'   ',-1)            
+               CALL POLPRI(QUADT,'   ',-1)
             END IF
             IF (SHIELD) THEN
                CALL HEADER('Chemical shielding tensors at displaced '//
@@ -4151,7 +4151,7 @@ C
                   WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                   DO ICOOR = 1, 3
                      WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                    NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                    NAMDPX(3*(IATOM-1)+ICOOR),
      &                    (TMAT(K,ICOOR,IATOM),K=1,3)
                   END DO
                END DO
@@ -4163,14 +4163,14 @@ C
                   WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                   DO ICOOR = 1, 3
                      WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                    NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                    NAMDPX(3*(IATOM-1)+ICOOR),
      &                    (GTRANT(K,ICOOR,IATOM),K=1,3)
                   END DO
                END DO
             END IF
             IF (POLAR) THEN
                CALL HEADER('Polarizability at displaced geometry',1)
-               CALL POLPRI(POLARS,'   ',-1)            
+               CALL POLPRI(POLARS,'   ',-1)
             END IF
             IF (ALFA) THEN
                CALL HEADER('Polarizability at displaced geometry',1)
@@ -4187,7 +4187,7 @@ C
                DO IATOM = 1, NUCDEP
                   DO ICOOR = 1, 3
                      WRITE (LUPRI,'(2X,A,3F15.8)')
-     &                    NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                    NAMDPX(3*(IATOM-1)+ICOOR),
      &                    (ELNQC(K,ICOOR,IATOM),K=1,3)
                   END DO
                END DO
@@ -4226,12 +4226,12 @@ C
                WRITE (LUPRI,'(A)') ' New harmonic force '//
      &              'field, but derivatives read in from file'
 C
-C     We can either check what the user wants (by reading input file), 
+C     We can either check what the user wants (by reading input file),
 C     since the user need to calculate properties in new effective geometry
 C
                CALL ABAINP('**START',WORK,LWORK)
             END IF
-            WRITE (LUPRI,'(/A,/A)') 
+            WRITE (LUPRI,'(/A,/A)')
      &           ' Dipole moment second derivatives:',
      &           ' ---------------------------------'
             WRITE (LUPRI,'(5X,A4,5X,3(5X,A1,11X))') 'Mode','X',
@@ -4241,7 +4241,7 @@ C
      &              IMOD,(DIPMF(ICOOR,IMOD),ICOOR = 1, 3)
             END DO
             IF (MAGSUS) THEN
-               WRITE (LUPRI,'(/A,/A)') 
+               WRITE (LUPRI,'(/A,/A)')
      &              ' Magnetizability tensor second derivatives:',
      &              ' ------------------------------------------'
                WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
@@ -4253,7 +4253,7 @@ C
                END DO
             END IF
             IF (MOLGFA) THEN
-               WRITE (LUPRI,'(/A,/A)') 
+               WRITE (LUPRI,'(/A,/A)')
      &              ' Rotational g tensor second derivatives:',
      &              ' ---------------------------------------'
                WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
@@ -4265,7 +4265,7 @@ C
                END DO
             END IF
             IF (QUADRU) THEN
-               WRITE (LUPRI,'(/A,/A)') 
+               WRITE (LUPRI,'(/A,/A)')
      &              ' Molecular quadrupole moment second derivatives:',
      &              ' -----------------------------------------------'
                WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
@@ -4308,7 +4308,7 @@ C
                END DO
             END IF
             IF (POLAR) THEN
-               WRITE (LUPRI,'(/A,/A)') 
+               WRITE (LUPRI,'(/A,/A)')
      &              ' Polarizability second derivatives:',
      &              ' ----------------------------------'
                WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
@@ -4321,7 +4321,7 @@ C
             END IF
             IF (ALFA) THEN
                DO IFRQR = 1, NFRVAL
-                  WRITE (LUPRI,'(/A,2X,F8.5,/A)') 
+                  WRITE (LUPRI,'(/A,2X,F8.5,/A)')
      &              ' Polarizability second derivatives for frequency:',
      &              FRVAL(IFRQR),
      &              ' -----------------------------------------------'//
@@ -4330,7 +4330,7 @@ C
      &                 'YY','XZ','YZ','ZZ'
                   DO IMOD = 1, NUMMOD
                      WRITE (LUPRI,'(2X,I2,1X,6(2X,F10.6))') IMOD,
-     &                    ((ALFAF(ICOOR,JCOOR,IFRQR,IMOD), 
+     &                    ((ALFAF(ICOOR,JCOOR,IFRQR,IMOD),
      &                    ICOOR = 1, JCOOR), JCOOR = 1, 3)
                   END DO
                END DO
@@ -4362,7 +4362,7 @@ C
             END IF
             IF (OPTROT) THEN
                DO IFRQR = 1, NFRVAL
-               WRITE (LUPRI,'(/A,F8.5,/A)') 
+               WRITE (LUPRI,'(/A,F8.5,/A)')
      &           ' London G matrix second derivatives for frequency:',
      &                 FRVAL(IFRQR),
      &           ' -------------------------------------------------'//
@@ -4374,7 +4374,7 @@ C
      &              ((ROALOF(ICOOR,JCOOR,IFRQR,IMOD), ICOOR = 1, JCOOR),
      &                                           JCOOR = 1, 3)
                END DO
-               WRITE (LUPRI,'(/A,F8.5,/A)') 
+               WRITE (LUPRI,'(/A,F8.5,/A)')
      &          ' No-London G matrix second derivatives for frequency:',
      &                 FRVAL(IFRQR),
      &          ' --------------------------------------------------'//
@@ -5111,11 +5111,13 @@ C
       END IF
 C
       GRDNRM = SQRT(DDOT(NONTRO,GRDDIA,1,GRDDIA,1))
+      GRD_ASUM = DASUM(NONTRO,GRDDIA,1)
 C
       IF (IPRINT .GT. 5) THEN
          WRITE (LUPRI,'(A,1P,D12.5)') ' HESMIN: ', HESMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDMIN: ', GRDMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDNRM: ', GRDNRM
+         WRITE (LUPRI,'(A,1P,D12.5)') ' GRD_ASUM', GRD_ASUM
       END IF
 C
 C     ************************
@@ -5126,8 +5128,19 @@ C
          IF (IPRINT .GT. 3) WRITE (LUPRI,'(/A/)') ' General case.'
 C
 C        Determine level shift
+C        hjaaj Jan 2014
+C           We want to find the RNU for which the step length SL is TRUSTR
+C           We want RNU = 0 (Newton step) or RNU > 0 (restricted step)
+C           We know that SL = norm(- (Hess + RNU)^-1 grad )
+C               SL ≤ contribution if all eigenvalues where equal to EVAL(1)
+C                  = GRD_ASUM  / (EVAL(1) + RNU)
+C               SL ≥ contribution from first eigenvector
+C                  = GRDDIA(1) / (EVAL(1) + RNU)
+C           From this you can derive the formulas for XMIN and XMAX,
+C           when we also remember that if RNU corresponding to trust
+C           radius is negative, then we select Newton step, RNU = 0.
 C
-         XMIN = GRDNRM/TRUSTR - MIN(HESMIN,D0)
+         XMIN = MAX(D0,  -HESMIN + GRD_ASUM/TRUSTR)
          XMAX = MAX(D0, - HESMIN + DP5*GRDMIN/TRUSTR)
          IF (IPRINT .GT. 5) THEN
             WRITE (LUPRI,'(/A,2(1P,D12.5,2X))')
@@ -5872,7 +5885,6 @@ C  /* Deck wlkirm */
       LOGICAL DONWTN, INDXOK
       DIMENSION GRDDIA(NCART), EVAL(NCART), Q(NCART)
 #include "trkoor.h"
-#include "prkoor.h"
 C
       DONWTN = .FALSE.
       CALL DZERO(Q,NCART)
@@ -6219,13 +6231,29 @@ C          XMIN ; FUNCT(..,XMIN,..) < 0
 C  Output: XDET ; FUNCT(..,XDET,..) = 0
 C
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION GDDIA(*),HESDIA(*)
       PARAMETER ( MAXIT=100 , D2=2.0D0 , D0=0.0D0 , DTEST=1.0D-7 )
       EXTERNAL FUNCT
       IFAIL = 0
       FMAX  = FUNCT(GDDIA,HESDIA,XMAX,NCORD,TRUSTR)
+      IF (abs(FMAX) .le. DTEST) THEN
+         XDET = XMAX
+         GO TO 8000
+      END IF
       FMIN  = FUNCT(GDDIA,HESDIA,XMIN,NCORD,TRUSTR)
-      IF ( (FMAX.LT.D0) .OR. (FMIN.GT.D0) )  RETURN
+      IF (abs(FMIN) .le. DTEST) THEN
+         XDET = XMIN
+         GO TO 8000
+      END IF
+      IF ( (FMAX.LT.D0) .OR. (FMIN.GT.D0) ) THEN
+         WRITE(LUPRI,*) 'WLKBIS problem: XMIN, XMAX =',XMIN,XMAX
+         WRITE(LUPRI,*) 'WLKBIS problem: FMIN, FMAX =',FMIN,FMAX
+         WRITE(LUPRI,*) 'WLKBIS problem: TRUSTR     =',TRUSTR
+         WRITE(LUPRI,*) 'WLKBIS problem: (GDDIA(i),HESDIA(i),i=1,ncord)'
+         WRITE(LUPRI,'(I5,2F20.10)') (i,GDDIA(i),HESDIA(i),i=1,NCORD)
+         RETURN
+      END IF
 C
       ITER = 0
  100  CONTINUE
@@ -6234,13 +6262,13 @@ C
          FDET= FUNCT(GDDIA,HESDIA,XDET,NCORD,TRUSTR)
          IF (FDET.GT.D0) XMAX=XDET
          IF (FDET.LT.D0) XMIN=XDET
-      IF (ABS(XMAX-XMIN).LT.DTEST) GO TO 101
+      IF (ABS(XMAX-XMIN).LT.DTEST) GO TO 8000
       IF (ITER .LT. MAXIT) GO TO 100
 C
       IFAIL=1
       RETURN
 C
- 101  CONTINUE
+ 8000 CONTINUE
       IFAIL=5
       RETURN
       END
@@ -7220,7 +7248,7 @@ C
          CALL HEADER('Rayleigh properties for parent molecule '//
      &               '(in A**6)',1)
          DO 340 F = 1, NFRVAL
-            WRITE (LUPRI,'(2X,A,F8.6,A,F6.2,A,/2X,A)') 
+            WRITE (LUPRI,'(2X,A,F8.6,A,F6.2,A,/2X,A)')
      &         'frequency: ',FRVAL(F),' a.u. = ',XTNM/FRVAL(F),' nm',
      &         '----------------------------------'
             ALMN  = ALFMN  (ROAAFU(1,1,F))
@@ -7267,9 +7295,9 @@ C
                WRITE (LUPRI,'(5F14.4)') ALMN*GMMNL*XFOAIN,
      &             ALMN*GMMNNL*XFOAIN,BGML*XFOAIN,BGMNL*XFOAIN,BA*XFOAIN
                WRITE (LUPRI,'(/1X,A)') '** Difference para'//
-     &                'meters L-R (1st line) and '//            
-     &                'chirality number (2nd line,*E3) **'          
-               WRITE (LUPRI,'(/6X,A,2(/2X,4F14.6),/)') 
+     &                'meters L-R (1st line) and '//
+     &                'chirality number (2nd line,*E3) **'
+               WRITE (LUPRI,'(/6X,A,2(/2X,4F14.6),/)')
      &           'DELTApar(Lon) DELTAperp(Lon) DELTA0(Lon)   '//
      &           'DELTA180(Lon)',
      &           DZL*XFRAIN, DXL*XFRAIN,D0L*XFRAIN,DBL*XFRAIN,

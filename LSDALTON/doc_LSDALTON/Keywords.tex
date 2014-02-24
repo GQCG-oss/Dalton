@@ -14,8 +14,8 @@ for the optimization of the wave function (mandatory)
 \item **LOCALIZE ORBITALS contains settings for orbital localization procedure (optional)
 \item **RESPONS contains information about requested molecular properties for HF and DFT (optional)
 \item **DEC \emph{or} **CC contains info about MP2 and coupled-cluster calculations (optional)
-\item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera}.
-\item **PLTGRID contains information about grid used for construction of *.plt files.
+\item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera} (optional).
+\item **PLTGRID contains information about grid used for construction of *.plt files (optional).
 \end{itemize}
 Each of these sections may contain subsections, indicated by a single asterisk. LSDALTON.INP
 should always end with *END OF INPUT. 
@@ -26,140 +26,152 @@ This input module defines the way the integrals should be calculated.
 \begin{description}
 
 \item[\Key{SCALAPACK}] Use SCALAPACK matrices. \newline
-NB: Requires linking to the scalapack lib (provided by MKL).
+NB: Requires linking to the scalapack lib (provided by MKL) and the use of the --scalapack keyword during installation.
 \item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices
-\item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library!
+\item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library and the use of the --csr keyword during installation!
 \item[\Key{TIME}] Activate the printout of timings.
 \item[\Key{NOGCBASIS}] Deactivate the use of the Grand Canonical basis \cite{trilevel1, trilevel2}
 \item[\Key{FORCEGCBASIS}] The Grand Canonical basis \cite{trilevel1, trilevel2} is deactivated when the program
 detects the use of a Dunning basis set like (cc-pVXZ) but the calculation will force the use of the Grand Canonical basis using this keyword.
 
 \end{description}
-\section{**INTEGRAL}\label{sec:integral}
+\section{**INTEGRAL basic keywords}\label{sec:integral}
 
 This input module defines the way the integrals should be calculated.
 \begin{description}
 
-\item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
-When using this keyword, an auxiliary basis set has to be 
-specified in the \mol\ file.
-
-\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM) to approximate 
-the exact-exchange energy and gradient contributions \cite{ADMM:2010}.
-When using this keyword, an auxiliary basis set has to be 
+\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM)~\cite{ADMM:2010} to approximate 
+the exact-exchange contribution. When using this keyword, an auxiliary basis set has to be 
 specified in the \mol\ file such as:
 \begin{verbatim}
 1     BASIS
 2     6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21G
       ...
 \end{verbatim} 
-where the "JK" basis is used as ADMM auxiliary basis set, and the choice of "CABS" basis isn't used here even though it needs to be assigned an existing basis set.
-Beware that ADMM accuracy and robustness haven't been thoroughly tested yet.\newline
-{\bf Test case example}: linsca/linsca\_admm\_df
-
-\item[\Key{PARI}] Use the very local Pair-Atomic Resolution-of-the-Identity (PARI) 
-approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
-When using this keyword, an auxiliary basis set has to be 
-specified in the \mol\ file.\newline
-{\bf Use at your own risk}: note that this method contains inherent deficiencies (discussed in~\cite{PARI:2013}) 
-which may result in the non-convergence of the SCF scheme for HF or KS-DFT. \newline
-{\bf Test cases} in LSint: LSDALTON\_ethane\_pari\_b3lyp, 
-LSDALTON\_ethane\_pari\_b3lyp\_ChgConst, 
-LSDALTON\_ethane\_pari\_b3lyp\_ChgDipConst, 
-LSDALTON\_ethane\_pari\_b3lyp\_unconstrained
-
-
-\item[\Key{RUNMM}] Use the (Fast) Multipole Method.
+where the "JK" basis is used as ADMM auxiliary basis set. You also have to provide a valid 
+"CABS" basis from the library (which is needed for technical reasons, but will not actually 
+be used in the calculation). \emph{Note of caution: we do not recommend to use ADMM in combination 
+with geometry optimization.}
 
 \item[\Key{AOPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
-Print the Atomic Orbital information. The higher the print level, the more information will be printed.
+Print the Atomic Orbital information. The higher the print level, the more information will be printed. Default value is 0.
 \item[\Key{BASPRINT}] 
 \verb| | \newline
 \verb|<Print level>|\newline
 Print the basis set information. The higher the print level, the more information will be printed.
-Using a print level of 6 will print the input exponents and contraction coefficients read from file as well as the normalized basis used in LSDALTON.  
-\item[\Key{CARMOM}] 
+Using a print level of 6 will print the input exponents and contraction coefficients read from file as well as the normalized basis used in \lsdalton.  
+\item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
+When using this keyword, an auxiliary basis set has to be 
+specified in the \mol\ file. For the Poples basis sets we recommend df-def2 and for
+Dunnings basis sets use the corresponding cc-pV$X$Zdenfit basis sets, with $X=$T$,$Q$,5$.
+%\item[\Key{INTPRINT}] 
+%\verb| | \newline
+%\verb|<Print level>|\newline
+%Print information about the actual integral evaluation. The higher the print level, the more information will be printed. Default value is 0.
+\item[\Key{LINSCAPRINT}] 
 \verb| | \newline
-\verb|<Order of multipole moment>|\newline
-Calculate the cartesian multipole moment integrals to the order requested. 
-\begin{eqnarray}
-\int \chi_{\mu}(r_{1}) x^{i}y^{j}z^{k} \chi_{\rho}(r_{2}) dr_{1}dr_{2}
-\end{eqnarray}
+\verb|<Print level>|\newline
+Print level in the integral code. The higher the print level, the more information will be printed. This keyword corresponds to 
+\begin{verbatim}
+.AOPRINT
+<Print level>
+.BASPRINT
+<Print level>
+.MOLPRINT
+<Print level>
+\end{verbatim} 
+%.INTPRINT
+%<Print level>
+See the individual keywords for more details. Default value is 0.
+\item[\Key{MOLPRINT}] 
+\verb| | \newline
+\verb|<Print level>|\newline
+Print information about the molecule. The higher the print level, the more information will be printed. Default value is 0.
+\item[\Key{NOJENGINE}] Turn off J-engine algorithm (which is default) for the calculation of the Coulomb matrix 
+(see Refs. \cite{shao:425} and \cite{shao:6572}). Compute instead Coulomb-like contributions from the explicitly calculated integrals.
+\item[\Key{NOLINK}] Turn off the LinK algorithm (which is default) for the calculation of the exchange matrix (see Ref. \cite{ochsenfeld:1663}).
+\item[\Key{NO SCREEN}] Deactivate the use of all screening methods.
+\item[\Key{NOFAMILY}] Deactivate the exploitation of family type basis set, basis set sharing exponents for different angular momentums.  
+\item[\Key{PARI}] Use the Pair-Atomic Resolution-of-the-Identity
+approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
+When using this keyword, an auxiliary basis set has to be 
+specified in the \mol\ file.\newline
+\emph{We do not recommend to use this method for any production runs, and have included it 
+in case other method developers would like to explore it (see the reference for details).}
+\item[\Key{RUNMM}] Use the (Fast) Multipole Method.
+\item[\Key{THRESH}]
+\verb| | \newline
+\verb|<Threshold>|\newline
+An overall screening threshold for integral evaluation. The default value is $10^{-8}$
+
+The various integral-evaluation thresholds (below) are set according to this Threshold. 
+\begin{itemize}
+\item The Cauchy-Schwarz screening threshold is set equal to Threshold (can be set separately by \Key{THR\_CS})
+\begin{itemize}
+  \item The Screening threshold used for Coulomb is Threshold $\cdot 10^{-2}$ (Default: $10^{-10}$) 
+  \item The Screening threshold used for Exchange is Threshold $\cdot 10^{-0}$ (Default: $10^{-8}$)
+  \item The Screening threshold used for One-electron operators is Threshold $\cdot 10^{-7}$ (Default: $10^{-15}$)
+\end{itemize}
+\item The Primitve Cauchy-Schwarz screening threshold is set equal to Threshold$\cdot 10^{-1}$  (can be set separately by \Key{THR\_PS})
+\item The Overlap-distribution distance-screening threshold is set equal to 
+      Threshold $\cdot 10^{-1}$.
+      When calculating overlap integrals, this threshold 
+      is used for setting up AO extents. Overlap distributions (ODs) for which the 
+      distance between the two AOs are larger than the sum of the extents are 
+      screened away. %(OD screening)
+\item The Overlap-distribution extent-screening threshold is set equal to 
+      Threshold $\cdot 10^{-1}$. When calculating overlap integrals, this threshold 
+      is used for setting up OD extents. Overlap integrals between two ODs separated
+      by more than the sum of the extents are screened away. %(OE screening)
+\item The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on
+      the non-classical extent of the continuous charge distribution (orbitals or orbital products). By default this threshold 
+      is set equal to Threshold $\cdot 10^{-1}$ (can be set separately by \Key{SCREEN} under *FMM)
+\end{itemize}
+\end{description}
+
+\section{**INTEGRAL advanced keywords}\label{sec:integral:adv}
+
+This input module defines the way the integrals should be calculated. 
+This section contains some advanced keywords which is mostly useful
+for debugging or comparisons with other codes. 
+\begin{description}
+
+\item[\Key{NO CS}] Deactivate the use of Cauchy-Schwarz screening. 
+Note that this does not deactivate the Primitive Cauchy-Schwarz screening. 
+\item[\Key{NO PS}] Deactivate the use of primitive Cauchy-Schwarz screening.
+\item[\Key{THR\_CS}] 
+\verb| | \newline
+\verb|<CS_Threshold>|\newline
+Cauchy-Schwarz screening threshold. The default value is $10^{-8}$. Note that 
+\begin{itemize}
+  \item The Screening threshold used for Coulomb is CS\_Threshold $\cdot 10^{-2}$ (Default: $10^{-10}$) 
+  \item The Screening threshold used for Exchange is CS\_Threshold $\cdot 10^{-0}$ (Default: $10^{-8}$)
+  \item The Screening threshold used for One-electron operators is CS\_Threshold $\cdot 10^{-7}$ (Default: $10^{-15}$)
+\end{itemize}
+\item[\Key{THR\_PS}] 
+\verb| | \newline
+\verb|<PS_Threshold>|\newline
+Primitive Cauchy-Schwarz screening threshold. The default value is $10^{-9}$
 \item[\Key{CART-E}] Use cartesian E-coefficients instead of hermite E-coefficients for the McMurchie-Davidson
 integral-evaluation scheme \cite{McMurchie1978} used in \lsdalton. The use of Cartesian E-coefficients is 
 default in most integral programs. We however use hermite E-coefficients according to ref.~\cite{reine:4771}.
-\item[\Key{ETUVIL}] Build E-coefficients inside the integral loop, in order to reduced memory requirements. 
-This will increase the workload! 
-%\item[\Key{FRAGMENT}] Calculate integrals in fragments, in order to reduced memory requirements 
 \item[\Key{FTUVMAXPRIM}] 
 \verb| | \newline
 \verb|<Maxprim>|\newline
 Sets the maximum number of primitives used in the FTUV batches in the J-engine algorithm.
-\item[\Key{INTPRINT}] 
-\verb| | \newline
-\verb|<Print level>|\newline
-Print information about the actual integral evaluation. The higher the print level, the more information will be printed. 
-\item[\Key{NOJENGINE}] Turn off J-engine algorithm (which is default) for the calculation of the Coulomb matrix 
-(see Refs. \cite{shao:425} and \cite{shao:6572}). Compute instead Coulomb-like contributions from the explicitly calculated integrals.
-\item[\Key{NOLINK}] Turn off the LinK algorithm (which is default) for the calculation of the exchange matrix (see Ref. \cite{ochsenfeld:1663}).
-\item[\Key{LINSCAPRINT}] 
-\verb| | \newline
-\verb|<Print level>|\newline
-Print level in the integral code. The higher the print level, the more information will be printed.
 \item[\Key{LOW RJ000 ACCURACY}] Use a decreased accuracy for the calculation of the Boys function.
 \item[\Key{MAXPASSES}] 
 \verb| | \newline
 \verb|<maxpass>|\newline
-Change the maximum number of collected overlaps (default is 40).
-\item[\Key{MOLPRINT}] 
-\verb| | \newline
-\verb|<Print level>|\newline
-Print information about the molecule. The higher the print level, the more information will be printed. 
-\item[\Key{NO CS}] Deactivate the use of Cauchy-Schwarz screening.
-\item[\Key{NO PASS}] Deactivate the use of Passes, the collection of overlaps which is used as default in order to increase efficiency. 
-\item[\Key{NO PS}] Deactivate the use of primitive Cauchy-Schwarz screening.
-\item[\Key{NO SCREEN}] Deactivate the use of all screening methods.
-\item[\Key{NOFAMILY}] Deactivate the exploitation of family type basis set, basis set sharing exponents for different angular momentums.  
-\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the numer of primitive functions in the calculation of integrals.
+Change the maximum number of collected overlap distributions (default is 40).
+\item[\Key{NO PASS}] Deactivate the use of Passes, the collection of overlap distributions which is used as default in order to increase efficiency. 
+\item[\Key{NOSEGMENT}] Deactivate the use of segments. The use of segments is used to reduced the number of primitive functions in the calculation of integrals. The basis is considered to be a general contracted basis where all primitives contribute to all contracted functions. 
 \item[\Key{NSETUV}] Use non-spherical E-coefficients.
 \item[\Key{OVERLAP-DF-J}] Use the Overlap density fitting algorithm for the calculation of the Coulomb matrix.
 %\item[\Key{PARI}] Use pair-atomic-resolution-of-the-identity algorithm for the calculation of the Fock matrix
-\item[\Key{SPHMOM}] 
-\verb| | \newline
-\verb|<Order of multipole moment>|\newline
-Calculate spherical multipole moment integrals to the requested order.
-\item[\Key{THR\_CS}] 
-\verb| | \newline
-\verb|<CS_Threshold>|\newline
-Cauchy-Schwarz screening threshold.
-\item[\Key{THR\_PS}] 
-\verb| | \newline
-\verb|<PS_Threshold>|\newline
-Primitive Cauchy-Schwarz screening threshold.
-\item[\Key{THRESH}]
-\verb| | \newline
-\verb|<Threshold>|\newline
-An overall screening threshold for integral evaluation. The various integral-evaluation thresholds (below) are set according to
-\begin{itemize}
-\item The Cauchy-Schwarz screening threshold is set equal to Threshold (can be set separately by \Key{THR\_CS})
-\item The Primitve Cauchy-Schwarz screening threshold is set equal to Threshold$\cdot 10^{-1}$  (can be set separately by \Key{THR\_PS})
-\item The Overlap-distribution distance-screening threshold is set equal to 
-      Threshold$\cdot 10^{-1}$.
-      When calculating overlap integrals, this threshold 
-      is used for setting up AO extents. Overlap distributions (ODs) for which the 
-      distance between the two AOs are larger than the sum of the extents are 
-      screened away.
-\item The Overlap-distribution extent-screeing threshold is set equal to 
-      Threshold$\cdot 10^{-1}$. When calculating overlap integrals, this threshold 
-      is used for setting up OD extents. Overlap integrals between two ODs separated
-      by more than the sum of the extents are screened away. 
-\item The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on
-      the non-classical extent of the contineous charge distribution (orbitals or orbital products). By default this threshold 
-      is set equal to Threshold$\cdot 10^{-1}$ (can be set separately by \Key{SCREEN} under *FMM)
-\end{itemize}
-\item[\Key{UNCONT}] Treat the basis functions (given by input) as fully uncontracted basis fuctions (i.e. ignore
+\item[\Key{UNCONT}] Treat the basis functions (given by input) as fully uncontracted basis functions (i.e. ignore
 any contraction coefficients given in the basis and treat instead all the primitives as separate basis functions).
 \end{description}
 
@@ -171,10 +183,10 @@ classical Coulomb interactions.\newline
 %
 % Meant as a reminder to those who will rewrite/restructure/optimise the FMM code
 %
-For gradients OpenMP parallelisation is turned off. The reason for this is that a continous counter used 
+For gradients OpenMP parallelization is turned off. The reason for this is that a continuous counter used 
 to identify moments for orbital products has to be the same in both moments and derivative moments. 
 For the same reason screening [only during writing (see printmm routines)!!] is turned off both for the serial 
-and parallel cases. As a consequence of the screeening been turned off the moments have to be recalculated for the gradient and can not be reused from the preceeding energy evaluation. 
+and parallel cases. As a consequence of the screening been turned off the moments have to be recalculated for the gradient and can not be reused from the preceding energy evaluation. 
 %
 % a solution to these problems could be to calculate moments and derivatives moments at the same time as was
 % done in the FCK3 code.
@@ -188,13 +200,15 @@ It has however not been tested for speed and efficiency.
 \begin{description}
 \item[\Key{LMAX}] \verb| |\newline
 \verb|<Lmax>|\newline
-The maximum multipole-moment expansion order of a given orbital product.
+The maximum multipole-moment expansion order of a given orbital product. Default Value is 8.
 \item[\Key{TLMAX}] \verb| |\newline
 \verb|<TLmax>|\newline
-The maximum order used for translated multipole-moments.
+The maximum order used for translated multipole-moments. Default Value is 20.
 \item[\Key{SCREEN}] \verb| |\newline
 \verb|<Threshold>|\newline
-Defines the threshold used to determine if a contribution can be calculated classically on non-classically.
+The FMM threshold is used to distinguish the Coulomb repulsion into classical and non-classical interactions, based on the non-classical extent of the contineous charge distribution (orbitals or orbital products). 
+By default this threshold is set equal to $\cdot 10^{-9}$ 
+Defines the threshold used to determine if a contribution can be calculated classically or non-classically.
 \item[\Key{NOONE}] Do not use FMM for the nuclear-electron attraction.
 \item[\Key{NOMMBU}] Do not use io-buffers for interfacing multipole-moments to the FMM driver.
 \end{description}
@@ -204,18 +218,18 @@ Defines the threshold used to determine if a contribution can be calculated clas
 \item[\Key{HF}] Hartree-Fock calculation.
 \item[\Key{DFT}] \verb| | \newline
 \verb|<FUNCTIONAL>|\newline
-DFT calculation. The exchange---correlation functional is read from the following line.
+DFT calculation.
 
-Functionals in \lsdalton\ can be divided into two groups: generic and combined functionals. 
-Combined functionals are a linear combination of generic ones. 
-One can always create own combined functionals by using GGAKey general functional.
-A number of standalone functionals are also included within \lsdalton. 
+The exchange---correlation functionals in \lsdalton\ can be divided into two groups: 
+generic and combined functionals. 
+A number of generic functionals are included within \lsdalton. 
+The combined functionals are linear combinations of generic ones.
 
 It should be noted that the input is not case sensitive, although the notation
-employed in this manual makes use of case to exphasise exchange or correlation 
-functional properties and reflect the original literature sources.
+employed in this manual makes use of case to emphasise exchange or correlation 
+functional properties and to reflect the original literature sources.
 
-Supported functionals are: 
+%Supported functionals are: 
 \subsubsection{Exchange Functionals}
 \providecommand\exfn[1]{#1}
 
@@ -240,8 +254,8 @@ Supported functionals are:
 
 %\item[LRC95x] 1995 GGA exchange functional with correct asymptotic behavior~\cite{dft:lrc95}.\index{LRC95} The LRC95x exchange functional includes the Slater exchange (Eq 6 from original reference).
 
-\item[KTx] Keal and Tozer's 2003 GGA exchange functional (With x being 1,2 or 3). Note that the gradient correction pre-factor constant, $\gamma$, is not included in the KT exchange 
-  definition, but rather in the KT1, KT2 and KT3 definitions. The full KT exchange is given by \cite{dft:kt12}\index{KT}, \exfn{Slater} + $\gamma$\exfn{KTx} ($\gamma$ is -0.006 for KT1,KT2 and -0.004 for KT3). 
+%\item[KTx] Keal and Tozer's 2003 GGA exchange functional (With x being 1,2 or 3). Note that the gradient correction pre-factor constant, $\gamma$, is not included in the KT exchange 
+%  definition, but rather in the KT1, KT2 and KT3 definitions. The full KT exchange is given by \cite{dft:kt12}\index{KT}, \exfn{Slater} + $\gamma$\exfn{KTx} ($\gamma$ is -0.006 for KT1,KT2 and -0.004 for KT3). 
 
 \item[OPTX] Handy's 2001 exchange functional correction \cite{dft:optx}.\index{OPTX} The full OPTX exchange functional is given by 1.05151*\exfn{Slater} - 1.43169*\exfn{OPTX}.
 
@@ -369,7 +383,7 @@ The following GGA and hybrid functional aliases are defined within
 \lsdalton\ and provide further examples of the GGAKey keyword.
 
 \item[SVWN5] is a sum of Slater functional and VWN (or VWN5) correlation
-  functional. SVWN is a synonym for SVWN5. It is equivalent to
+  functional. It is equivalent to
   \funexample{GGAKey Slater=1 VWN5=1}
   \index{SVWN}
 
@@ -379,7 +393,7 @@ The following GGA and hybrid functional aliases are defined within
   \funexample{GGAKey Slater=1 VWN3=1}
   \index{SVWN3}
 
-\item[LDA] A synonym for SVWN5 (or SVWN). \index{LDA}
+\item[LDA] A synonym for SVWN5. \index{LDA}
 
 %\item[BVWN] is a sum of the \exfn{Slater} functional, \exfn{Becke} correction and 
 %  \corfn{VWN} correlation functional.  It is equivalent to 
@@ -398,7 +412,7 @@ The following GGA and hybrid functional aliases are defined within
 \item[B3LYP-G] hybrid functional with VWN3 form used for
   correlation---this is the form used by the Gaussian quantum chemistry
   program. Keyword B3LYPGauss is a synonym for B3LYPg.\index{B3LYPG} 
-  This functional can be explicitely set up by
+  This functional can be explicitly set up by
   \funexample{GGAKey HF=0.2 Slater=0.8 Becke=0.72 LYP=0.81 VWN3=0.19}
   \index{B3LYP, Gaussian version}
 
@@ -666,11 +680,11 @@ are possible with the \verb|GGAKey| keyword.
 \subsubsection{XCFUN functionals}
 
 Recently some support have been added for using the functionals from the XCFUN lib \textbf{fixme: insert proper reference}. Full 
-support is expected in the next release, but unfortunetly time constraints did not allow for 
+support is expected in the next release, but unfortunately time constraints did not allow for 
 full support in this release. 
 
 Currently only LDA and GGA type functionals are currently supported and only upto and including 
-linear response. the XCFUN functionals are activated using the .XCFUN keyword under the **INTEGRALS section (see Section \ref{sec:integral})
+linear response. The XCFUN functionals are activated using the .XCFUN keyword under the **INTEGRALS section (see Section \ref{sec:integral})
 \begin{verbatim}
 **INTEGRALS
 .XCFUN
@@ -687,7 +701,9 @@ which is multiplied with an angular grid (Lebedev-grids).
 The angular grids are by default pruned for radial points close to the nucleus,  
 following Murray, Handy and Laming.~\cite{dft-int:pruning} 
 Grid weights for the grid points are calculated following different schemes (see below). 
-Grid points with weights below $10^{-20}$ are disregarded.  
+Grid points with weights below $10^{-20}$ are disregarded. The default settings 
+corresponds to \Key{GRID4}, but with the BLOCKSSF rather than the BLOCK partitioning scheme
+(see details below).
 Please note that the grid construction routines in the \lsdalton\
 program changed compared to the \dalton\ program which may result in small deviations in the number of grid points etc.
 \begin{description}
@@ -701,7 +717,7 @@ Note that the value of \verb|ANGINT| is changed by the following keywords:
 The \verb|GRIDX| keywords also imply specific \verb|ANGINT| values.
 %%
 %%\item[\Key{ANGMIN}] 
-%% ANGMIN IS NOT ACTIVE ANYMORE IN LSDALTON 
+%% ANGMIN IS NOT ACTIVE ANYMORE IN \lsdalton\ 
 %% 
 \item[\Key{COARSE}]
 Shortcut keyword for radial integration accuracy $10^{-11}$ and angular expansion order equal to $35$.
@@ -783,34 +799,52 @@ Note that the value of \verb|RADINT| is changed by the following keywords:
 The \verb|GRIDX| keywords also imply specific \verb|RADINT| values.
 \item[\Key{ULTRAF}]
 Shortcut keyword for radial integration accuracy $10^{-15}$ and angular expansion order equal to $64$.
+\item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. This correction can be combined with all GGA type functionals
+\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{dixon,CasidaSalahub} 
+\begin{eqnarray}
+V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + (1-\mathrm{HFexchange}) \cdot V_{LB94,correction}\right),  
+\end{eqnarray}
+with a Zhan-Nichols-Dixon shift \cite{dixon,ZND} ($\mathrm{HFexchange}=0.2$ for B3LYP)
+\begin{eqnarray}
+\Delta = ZND_{1} \cdot \epsilon_{HOMO} - ZND_{2}
+\end{eqnarray}
+Where $ZND_{1} = 0.2332$ and $ZND_{2} = 0.0116$. Note that $ZND_{2} = 0.0116 au. = 0.315 eV$.
+The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords. Note that this keyword only works with GGA type functionals. The CS00 keyword only work with a method which calculates the HOMO energy. 
+\item[\Key{CS00 ZND1}] \verb| | \newline
+\verb|<ZND1 in au.>|\newline
+Changes the parameter $ZND_{1}$ (default $ZND_{1} = 0.2332$) see .CS00
+\item[\Key{CS00 ZND1}] \verb| | \newline
+\verb|<ZND2 in au.>|\newline
+Changes the parameter $ZND_{2}$ (default $ZND_{1} = 0.0116$) see .CS00
+\item[\Key{CS00 SHIFT}] \verb| | \newline
+\verb|<Delta in au.>|\newline
+Using the Casida-Salahub correction with a shift of Delta see .CS00
 \end{description}
 
 \subsection{*DENSOPT}\label{subsec:densopt}
 This section contains the different options for obtaining the SCF wave function
-and energy. The default is diagonalization combined with the DIIS scheme for acceleration
-of SCF convergence (no damping/level shifting). 
-Should have a different name. DENSOPT?
+and energy. The default is augmented Roothaan--Hall density optimization  in combination with
+a conjugate residual optimal trialvectors (CROP) scheme for solving the (level-shifted) Newton equations ((see ref.~\cite{crop})) and using an
+atom-in-a-molecule  starting guess. 
+
 \begin{description}
 \item[\Key{2ND\_ALL}] Use second order optimization in all SCF iterations.
 \item[\Key{2ND\_LOC}] Use second order optimization in local SCF iterations.
 \item[\Key{ARH}] Use Augmented Roothaan-Hall scheme for density optimization 
 (default)~\cite{ARH1,ARH2} where the CROP solver (\cite{crop}) is used for 
-solving the (level-shifted) Newton equationw.\index{Augmented Roothaan-Hall}\index{ARH} 
+solving the (level-shifted) Newton equation.\index{Augmented Roothaan-Hall}\index{ARH} 
 \item[\Key{ARH FULL}] Use Augmented Roothaan-Hall for density optimization -
-no truncation of the reduced space, keep all micro vectors for the CROP algorithm 
-(see ref.~\cite{crop}).
-\item[\Key{ARH DAVID}] Use Augmented Roothan-Hall for density optimization where
+no truncation of the reduced space, keep all micro vectors for the CROP algorithm. 
+\item[\Key{ARH DAVID}] Use Augmented Roothaan-Hall for density optimization where
 the (level-shifted) Newton equations are solved using a reduced space solver based 
-Davidson's algorithm \cite{davidson:1975}. This option
-is recommended for complicated optimizations, especially for large molecular systems
- with charges separated in space. This setting should be used if \Key{ARH} 
+Davidson's algorithm \cite{davidson:1975}. This setting may be used if default settings  
 converges to a saddle point. 
  \item[\Key{ARH(LS) DAVID}] The same procedure as described for \Key{ARH DAVID} 
 augmented with a line search to accelerate convergence for very large molecular 
 systems, but is less efficient than \Key{ARH DAVID} for smaller molecular systems. 
 \item[\Key{STABILITY}] Check stability of the optimized wave function by calculation
 of the lowest Hessian eigenvalue. 
-\item[\Key{STAB\_MAXIT}] \verb| | \newline
+\item[\Key{STAB MAXIT}] \verb| | \newline
 \verb|<Max. number of stability iterations>|\newline
 Max. number of iterations in calculation of lowest Hessian eigenvalue (default is 40).
 \item[\Key{CHOLESKY}] Do Cholesky decomposition of overlap matrix (for density optimization
@@ -826,43 +860,14 @@ For update of trust-radius (used in ARH and second order optimization). Contract
 if trust-radius ratio is smaller than this criterion (default is 0.25).
 \item[\Key{CONVDYN}] \verb| | \newline
 \verb|<Option>|\newline 
-Dynamic SCF convergence threshold. This is suitable for large calculations, since the standard SCF
+Dynamic SCF convergence threshold. This is suitable for calculations on large molecules, since the standard SCF
 convergence threshold is based on the Frobenius norm of the SCF gradient, which is not size-extensive.
-Options are TIGHT, STANDARD, and SLOPPY.
+Options are SLOPPY, STANDARD, TIGHT, VTIGHT corresponding to $10^{-4}$, $10^{-5}$, $10^{-6}$, $10^{-7}$ times the square root of the number of electrons in the system.
 \item[\Key{CONVTHR}] \verb| | \newline
 \verb|<Threshold>|\newline
 SCF convergence threshold - Frobenius norm of SCF gradient (default is 1.0d-4). 
 Note that this convergence criterion
 is not size-extensive. For large molecules, it is recommended to use .CONVDYN instead.
-\item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. Note that the LB94 functional is the same as using the follwing input. 
-\begin{verbatim}
-**WAVE FUNCTIONS
-.DFT
-GGAKey SLATER=1.0 VWN=1.0
-*DENSOPT
-.LB94
-**END OF INPUT
-\end{verbatim}
-However this correction can be combined with all functionals
-\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{CasidaSalahub} 
-\begin{eqnarray}
-V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + V_{LB94,correction}\right),  
-\end{eqnarray}
-with a Zhan-Nichols-Dixon shift \cite{dixon,ZND}
-\begin{eqnarray}
-\Delta = NZD_{1} \cdot \epsilon_{HOMO} - NZD_{2}
-\end{eqnarray}
-Where $NZD_{1} = 0.2332$ and $NZD_{2} = 0.315$. Note that NWCHEM have introduced the same correction but uses a $NZD_{2} = 0.0116$. The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD1>|\newline
-Changes the parameter $NZD_{1}$ (default $NZD_{1} = 0.2332$) see .CS00
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD2>|\newline
-Changes the parameter $NZD_{2}$ (default $NZD_{1} = 0.315$) see .CS00
-\item[\Key{CS00}] \verb| | \newline
-\verb|<Delta>|\newline
-Using the Casida-Salahub correction with a shift of Delta see .CS00
-
 %\item[\Key{DIAGHESONLY}] Calculate only one SCF energy (i.e., no optimization) 
 %and the lowest Hessian eigenvalue for a density constructed by weighted
 %average of two input densities. Needs files D1 and D2 (densities). Lowest Hessian
@@ -871,16 +876,14 @@ Using the Casida-Salahub correction with a shift of Delta see .CS00
 \item[\Key{DISK}] Store densities and Fock/KS matrices from previous 
 iterations on disk instead of in core when constructing the new Fock/KS matrix ({\it memory-saving option}).
 \item[\Key{DISKSOLVER}] Store trial and sigma vectors on disk instead of in core
-when solving linear equations ({\it memory-saving option}). Only referenced is density 
-optimization method is ARH, Direct Density optimization or second order optimization.
-\item[\Key{DORTH}] Do level shift by using the ratio $\vert\vert$Dorth$\vert\vert$/$\vert\vert$D$\vert\vert$ 
-(for diagonalization only).
+when solving linear equations ({\it memory-saving option}). Only referenced using ARH
+, Direct Density optimization or second order optimization.
 %\item[\Key{DSM}] The Density Subspace Minimization scheme is used to speed up SCF convergence~\cite{TOKJ,TOYJ}.
 %\item[\Key{DSMONE}] The Density Subspace Minimization scheme is used to speed up SCF convergence, 
 %but only one DSM step is taken in each SCF iteration.
 %\item[\Key{DSMXTRA}] The Density Subspace Minimization scheme is used to speed up SCF convergence,
 %including extra (more expensive) term.
-\item[\Key{DUMPMAT}] Dump Fock/KS and density matrices from all iterations to disk for later investigation.
+%\item[\Key{DUMPMAT}] Dump Fock/KS and density matrices from all iterations to disk for later investigation.
 \item[\Key{EDIIS}] The energy-DIIS scheme is used to speed up SCF convergence~\cite{ediis}.
 \item[\Key{EXPAND}] \verb| | \newline
 \verb|<Expansion criterion>|\newline 
@@ -929,27 +932,26 @@ Used in ARH and second order optimization.
 \item[\Key{MAXIT}] \verb| | \newline
 \verb|<Max. number of iterations> |\newline
 Max. number of SCF iterations (default is 100).
-\item[\Key{MAXRATIO}] \verb| | \newline
-\verb|<Max. ratio for DORTH> |\newline
-Largest accepted ratio when using level shift .DORTH.
+%\item[\Key{MAXRATIO}] \verb| | \newline
+%\verb|<Max. ratio for DORTH> |\newline
+%Largest accepted ratio when using level shift .DORTH.
 \item[\Key{MAXSTEP}] \verb| | \newline
 \verb|<Trust radius (Frobenius norm)>|\newline
 Absolute max. Frobenius norm of step allowed (default is 0.6).
 Used in ARH and second order optimization.
 \item[\Key{MICTHRS}] \verb| | \newline
 \verb|<Threshold for micro iterations>|\newline
-The micro iterations are converged to gradient norm times this factor (default is 1.0d-2).
+The micro iterations of the CROP algorithm are converged to gradient norm times this factor (default is 1.0d-2).
 Only referenced if ARH, Direct Density optimization or second order optimization.
 \item[\Key{MICROVECS}] \verb| | \newline
 \verb|<Max. number of microvectors>|\newline
-Max. number of microvectors to be kept in Conjugate Residual Optimal Vectors (CROP) scheme
+Max. number of microvectors to be kept in the CROP scheme
 (default is 2). 
 Only referenced if ARH, Direct Density optimization or second order optimization.
 \item[\Key{MINDAMP}] \verb| | \newline
 \verb|<Minimum damping>|\newline
 Never allow level shift to be smaller than this.
-\item[\Key{MOCHANGE}] Level shifting is done by use of MO overlaps (diagonalization only).
-\item[\Key{MUOPT}] Optimal level shift is chosen by doing a line search in the SCF energy - very expensive! For diagonalization only.
+%\item[\Key{MOCHANGE}] Level shifting is done by use of MO overlaps (diagonalization only).
 %\item[\Key{NALPHA}] \verb| | \newline
 %\verb|<Number of alpha electrons>|\newline
 %Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
@@ -965,16 +967,16 @@ Maximum number of previous Fock and density matrices to be stored and used for A
 %\verb|<Max. no of vectors for DSM>|\newline
 %\item[\Key{NVECDII}] \verb| | \newline
 %\verb|<Max. no of vectors for DIIS>|\newline
-\item[\Key{NOINCREM}] Turn off incremental scheme for Fock/KS matrix build.
+%\item[\Key{NOINCREM}] Turn off incremental scheme for Fock/KS matrix build.
 \item[\Key{NOPREC}] Turn off preconditioning of linear equations (ARH, TrFD, and second order optimization).
 \item[\Key{NOSHIFT}] Do no level shifting.
-\item[\Key{OVERLAP}] \verb| | \newline
-\verb|<Overlap>|\newline
-Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANGE).
+%\item[\Key{OVERLAP}] \verb| | \newline
+%\verb|<Overlap>|\newline
+%Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANGE).
 %\item[\Key{PURIFY}] \verb| | \newline
 %\verb|<Purification method>|\newline
 %Use purification scheme for density optimization 
-\item[\Key{Restart}] The code automaticly saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
+\item[\Key{RESTART}] The code automatically saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
 \item[\Key{RH}] Use standard Roothaan-Hall scheme (diagonalization) for density optimization.
 %\item[\Key{SCALVIR}]
 %\item[\Key{SOEO}]
@@ -1036,7 +1038,7 @@ Note that Huckel guess is not supported by \lsdalton.
 For the different parts of the wave function optimization, it is possible
 to get very detailed information.
 This section describes these keywords. They must be put
-under *LINSCA in a section beginning with
+under *DENSOPT in a section beginning with
 \$INFO and ending with \$END INFO. Note that these keywords
 do NOT start with a dot!
 \begin{description}
@@ -1055,89 +1057,123 @@ do NOT start with a dot!
 \end{description}\end{description}
 
 \section{**OPTIMIZE}\label{sec:optimize}
-This input module describes keywords needed to optimize molecular geometry.
-In the current release a number of quasi-Newton trust-radius level-shifted techniques for finding 
-equilibrium geometries are available. The methods differ in the way approximate Hessians are 
-built and updated. Geometric structure can be optimized in redundant internal or 
-Cartesian coordinates with two sets of convergence criteria. The default setting is minimization 
-in internal coordinates \cite{DaltonOpt}, with model Hessian \cite{ModelHess} updated with BFGS formula. 
-By default, new convergence criteria are used, i.e. convergence is declared if  the four quantities - 
-the root-mean-square of the gradient, its maximum absolute value, the root-mean square of the step
-vector, and its maximum absolute element (in internal or Cartesian coordinates) - 
-are smaller than $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$ respectively \cite{NewConv}.
-The default value of $\epsilon$ is $1.0\cdot 10^{-5}$.
+This input module describes the keywords needed to optimize a molecular geometry.
+In the current release no second-order algorithms are available since the molecular Hessian is not implemented, but
+a number of quasi-Newton trust-radius level-shifted techniques for finding
+equilibrium geometries are available (\Key{BFGS}, \Key{PSB}, \Key{DFP}).
+The methods differ in the way approximate Hessians are built and updated: \Key{INIMOD}, \Key{INIRED} and \Key{INITEV} provide different approximations for the initial Hessian, 
+while \Key{MODHES} recomputes the approximated Hessian at every geometry.
 
 The geometry optimization generates a sequence of geometry steps. The coordinates of each 
-accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX} 
+accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX}
 is the geometry step number, and the final converged geometry in MOLECULE.OUT.
-By default, the atoms-in-molecule approach is used to set up the initial density-matrix at each new
-geometry (each step). However, it is possible to take as starting guess McWeeny-purified converged
-density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
+
+Geometric structure can be optimized in redundant internal (\Key{REDINT}) or
+Cartesian  (\Key{CARTES}) coordinates with two sets of convergence criteria (two for the gradient and two for the step).
+Convergence is obtained when the following four quantities are respectively smaller than the four convergence criteria $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$  \cite{NewConv}:
+\begin{itemize}
+\item the root-mean-square of the gradient, 
+\item the maximum absolute value of the gradient, 
+\item the root-mean square of the step vector,
+\item and the maximum absolute element (in internal or Cartesian coordinates) of the step vector.
+\end{itemize}
+
+
+The default setting specifies the minimization in internal coordinates \cite{DaltonOpt}, with a model Hessian \cite{ModelHess} updated with BFGS formula. 
+The atoms-in-molecule approach is used to set up the initial density-matrix at each new
+geometry step.
+However, it is possible to take as starting guess McWeeny-purified converged
+density-matrix at the previous geometry. This is achieved by setting the \Key{RESTART} option under
 the *DENSOPT subsection.
-\newline
+The default value of $\epsilon$ is $10^{-5}$
+(Other predefined values for the convergence criteria can be set using the keywords \Key{VLOOSE}, \Key{LOOSE}, \Key{TIGHT} and \Key{VTIGHT}).
+Alternatively the convergence criteria of Baker~\cite{Baker} can be set using \Key{BAKER}.
+
+
 \vspace{1 cm}
 \noindent
-\textbf{Example test cases for **OPTIMIZE calculations}: \newline
-These test cases illustrate the main features of the geometry optimization. The test cases are located in LSDALTON/test/geomopt.
+\textbf{Example of test cases for geometry optimization calculations} \newline
+The test cases are located in LSDALTON/test/geomopt.
+These test cases illustrate the main features of the geometry optimization:
 \begin{itemize}
 \item
 \textit{geomopt/cartes\_bfgs\_min}:
-\item
-\textit{geomopt/Excited\_state\_opt}: Performs a geometry optimization of an excited state. 
+performs a DFT/LDA geometry optimization in Cartesian coordinates,
+with BFGS update of an initial Hessian equal to a unit matrix
+and Baker convergence criteria.
 \item
 \textit{geomopt/redint\_bfgs}:
+performs a DFT/BLYP geometry optimization in redundant internal coordinates
+with a model Hessian updated with BFGS formula
+and Baker convergence criteria.
+\item
+\textit{geomopt/Excited\_state\_opt}:
+performs a DFT/B3LYP geometry optimization of an excited state in redundant internal coordinates
+and Baker convergence criteria.
 \item
 \textit{geomopt/cartes\_psb\_min}:
+performs a DFT/BLYP geometry optimization in Cartesian coordinates
+with a diagonal initial Hessian updated by PSB formula,
+McWeenie's purification used for constructing the initial guess
+and Baker convergence criteria.
 \item
 \textit{geomopt/geoopt\_constrain}:
+shows a constrained geometry optimization of ethane,
+keeping the C-C bond distance fixed
+(Internal coordinate \#1 as determined from the use of \Key{FINDRE}).
 \item
-\textit{geomopt/cartes\_trilevel\_newconv}: 
+\textit{geomopt/cartes\_trilevel\_newconv}:
+performs a geometry optimization in Cartesian coordinates
+with \Key{TRILEVEL} starting guess and a default convergence criteria,
+ a diagonal initial Hessian updated by a loose DFP formula.
 \end{itemize}
 
 \begin{description}
-\item[\Key{PRINT}]\verb| | \newline
-\verb|<Print level>|\newline
-Print level for the output. The higher the print level, the more information
-is printed to the output file.
-
-\item[\Key{VLOOSE}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-3}$.
-
-\item[\Key{LOOSE}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-4}$.
-
-\item[\Key{TIGHT}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-6}$.
-
-\item[\Key{VTIGHT}]
-For the default convergence criteria $\epsilon$ is set to $1.0\cdot 10^{-7}$.
-
-\item[\Key{.MAX IT}]
-Maximum number of iterations in geometry optimization scheme.
 
 \item[\Key{BAKER}]
 Activates the convergence criteria of Baker \cite{Baker}. The minimum
 is then said to be found when the largest element of the gradient
 vector (in Cartesian or redundant internal coordinates) falls below
-$3.0\cdot 10^{-4}$ and either the energy change from the last
-iteration is less than $1.0\cdot 10^{-6}$ or the largest element of
-the predicted step vector is less $3.0\cdot 10^{-4}$.
+$3\cdot 10^{-4}$ and either the energy change from the last
+iteration is less than $10^{-6}$ or the largest element of
+the predicted step vector is less than $3\cdot 10^{-4}$.
 
 \item[\Key{BFGS}]
 Specifies the use of a first-order method\index{first-order optimization}
 with the Broyden-Fletcher-Goldfarb-Shanno (BFGS)
 update formula for optimization. This is the
 preferred first-order method for minimizations, as this update is able
-to maintain a positive definite Hessian. 
+to maintain a positive definite Hessian.
 
-\item[\Key{PSB}]
-Specifies that a first-order method with the
-Powell-Symmetric-Broyden (PSB) 
-update formula should be used for optimization.
+\item[\Key{CARTES}]
+Specifies that Cartesian coordinates\index{Cartesian coordinates}\index{coordinate system!Cartesian coordinates}
+should be used in the optimization.
+
+\item[\Key{CONSTR}]\verb| | \newline
+\verb|<Number of contrained redundant internal coordinates>|\newline
+\verb|<Indices of each contrained redundant internal coordinate, one per line>|\newline
+Specifies a contrained geometry optimization. You will need to give
+the total number of redundant internal coordinates to constrain and their
+indices as defined using the \Key{FINDRE} keyword.
+For example fixing redundant internal coordinates 4 and 9 would read like:
+\begin{verbatim}
+...
+**OPTIMIZE
+.CONSTR
+2
+4
+9
+...
+**END OF INPUT
+\end{verbatim}
+
 
 \item[\Key{DFP}]
 Specifies that a first-order\index{first-order optimization} method with the
-Davidon-Fletcher-Powell (DFP) update formula should be used for optimization. 
+Davidon-Fletcher-Powell (DFP) update formula should be used for optimization.
+
+\item[\Key{FINDRE}]
+Using this keyword no geometry optimization is carried out, but only the redundant internals coordinates are found.
 
 \item[\Key{INIMOD}]
 Use a simple model Hessian~\cite{ModelHess} diagonal in redundant
@@ -1156,12 +1192,6 @@ dihedral angles, unless \Key{INITEV} has been specified. If the
 optimization is run in Cartesian coordinates, the diagonal internal
 Hessian is transformed to Cartesians.
 
-\item[\Key{MODHES}]
-Determine a new model Hessian (see \Key{INIMOD})
-at every geometry without doing any updating. The model is thus used
-in much the same manner as an exact Hessian, though it is obviously
-only a relatively crude approximation to the analytical Hessian.
-
 \item[\Key{INITEV}]\verb| | \newline
 \verb|<Read EVLINI, the eigenvalues>|\newline
 The default initial Hessian for first-order
@@ -1170,31 +1200,59 @@ matrix when redundant internal coordinates are used. If \Key{INITEV}
 is used, all the diagonal elements (and therefore the eigenvalues) are
 set equal to the value EVLINI. 
 
+\item[\Key{LOOSE}]
+Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-4}$.
+
+\item[\Key{MAX IT}]
+Maximum number of iterations in geometry optimization scheme
+(default set to 100).
+
+\item[\Key{MODHES}]
+Determine a new model Hessian (see \Key{INIMOD})
+at every geometry without doing any updating. The model is thus used
+in much the same manner as an exact Hessian, though it is obviously
+only a relatively crude approximation to the analytical Hessian.
+
+\item[\Key{PRINT}]\verb| | \newline
+\verb|<Print level>|\newline
+Print level for the output. The higher the print level, the more information
+is printed to the output file.
+
 \item[\Key{REDINT}]
-Specifies that redundant internal coordinates coordinates
+Specifies that redundant internal coordinates\index{Redundant internal coordinates}\index{coordinate system!Redundant internal coordinates}
 should be used in the optimization. This is the default.
 
-\item[\Key{CARTES}]
-Indicates that Cartesian coordinates\index{Cartesian coordinates}\index{coordinate system!Cartesian coordinates}
-should be used in the optimization.
+\item[\Key{PSB}]
+Specifies that a first-order method with the
+Powell-Symmetric-Broyden (PSB) 
+update formula should be used for optimization.
+
+\item[\Key{TIGHT}]
+Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-6}$.
+
+\item[\Key{VLOOSE}]
+Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-3}$.
+
+\item[\Key{VTIGHT}]
+Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-7}$.
 
 \end{description}
 
 \section{**DYNAMI}\label{sec:dynami}
-This input module is devoted to molecular dynamics simulations. LSDALTON provides some tools for performing
+This input module is devoted to molecular dynamics simulations. \lsdalton\ provides some tools for performing
 direct Born-Oppenheimer molecular dynamics, i.e. trajectories are integrated with forces calculated on the fly.
 Trajectory integration is available for SCF-type wavefunctions (with dispersion correction for DFT)
   and for DEC wavefunctions. Properties could be calculated along the trajectories and should be
  specified in the **RESPONSE section.
-LSDALTON simulates microcanonical(NVE) ensembles. Currently no sampling is availabe and the starting coordinates
+\lsdalton\ simulates microcanonical(NVE) ensembles. Currently no sampling is availabe and the starting coordinates
 and velocities must be provided as input. Trajectories are integrated with gradient-based velocity-Verlet 
 method \cite{Verlet}. 
 
-LSDALTON provides several options for the choice of starting guess for SCF-type electronic theory methods. By
+\lsdalton\ provides several options for the choice of starting guess for SCF-type electronic theory methods. By
 default, the guess is generated anew each time step according to the corresponding input. Alternatively, one can
 restart from the density optimized at the previous time-step. This is achieved by setting the .RESTART option under
 the *DENSOPT subsection. This reduces the number of SCF iterations per time-step and accelerates the integration. 
-Two more efficient algorithms for starting guess propagation are implemented in LSDALTON: Fock matrix dynamics \cite{FMD} 
+Two more efficient algorithms for starting guess propagation are implemented in \lsdalton\: Fock matrix dynamics \cite{FMD} 
  and time-reversible propagator \cite{TimRev}.  
 \newline
 \vspace{1 cm}
@@ -1216,16 +1274,18 @@ These test cases illustrate the main features of direct dynamics. The test cases
 Print level for the output. The higher the print level, the more information
 is printed to the output file.
 \item[\Key{TIMESTEP}]\verb| | \newline
-Defines integration time step in femtoseconds which should be given in the next line (real).
+Defines integration time step in femtoseconds which should be given in the next line (real). The
+default i 0.5 fs.
 \item[\Key{MAX ITER}]\verb| | \newline
-Defines maximum number of time steps. Must be given in the next line (integer).
+Defines maximum number of time steps. Must be given in the next line (integer). The default is 100.
 \item[\Key{MASSWE}]\verb| | \newline 
 States that the integration is carried out in mass-weighted coordinates. The default is FALSE.
 \item[\Key{MWVEL}]\verb| | \newline 
 States that the input velocities are mass-weighted. The default is FALSE.
 \item[\Key{VELOCI}]\verb| | \newline 
 Begins the input of the velocities. In the next line the number of atoms should be given (integer),
-then the velocities grouped atom-wise: three(x,y,z) in a line (real).
+then the velocities grouped atom-wise: three(x,y,z) in a line (real). The default is for all 
+velocities to be zero.
 \item[\Key{FOCKMD}]\verb| | \newline 
 Fock matrix dynamics. Below number of points for extrapolation $N$ and polynomial order $M$ must
 be specified. Note that $M>N$ (both integer). Works only with .RESTART option under the *DENSOPT subsection
@@ -1241,9 +1301,9 @@ The only thoroughly tested option is $N=2$.
 This section describes keywords needed to perform localization of Hartree--Fock orbitals. The optimization of the
 chosen localization function will be performed using a trust-region algorithm \cite{hoyvik:TRM}, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
 
-After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The coefficient matrix row index refer to the atomic orbital basis index, while the column index refer to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
+After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; \textit{cmo\_orbitals.u} and \textit{lcm\_orbitals.u}. \textit{cmo\_orbitals.u} contains coefficients for the canonical molecular orbitals (CMO) and \textit{lcm\_orbitals.u} contains coefficients for the localized molecular orbitals (LMO). The coefficient matrix row index refers to the atomic orbital basis index, while the column index refers to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
 
-For the most effcient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
+For the most efficient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
 
 \begin{description}
 
@@ -1253,7 +1313,7 @@ Use powers m of the second moment (PSM) localization function \cite{jansik:2011}
 
 \item[\Key{PFM}]\verb| | \newline
 \verb|<m m>|\newline
-Use powers m of the fourth moment (PFM) localization function \cite{hoyvik:PFM}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen is basis sets augmented with diffuse functions are used.
+Use powers m of the fourth moment (PFM) localization function \cite{hoyvik:PFM}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen if basis sets augmented with diffuse functions are used.
 
 \item[\Key{PipekMezey}]\verb| | \newline
 Use Pipek-Mezey localization function using an implementation based on L{\"o}wdin population analysis 
@@ -1281,16 +1341,24 @@ Pipek-Mezey localization (using Mulliken population analysis) of virtual space.
 Should only be used in combination with the .START/TRILEVEL and  .LCM options for the *DENSOPT section. The keyword is used to skip orbital localization after the second level in the three level procedure. Not recommended for general use, but can be used to save  computational time if only the virtual space is to be localized.  
 
 \item[\Key{Only Loc}]\verb| | \newline
-Provided the file with the molecular orbital coefficients (e.g., cmo\_orbitals.u or lcm\_orbitals.u) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to orbitals\_in.u, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to orbitals\_out.u. Thus, for this keyword to be used, orbitals\_in.u must exist and a localization function must be chosen.
+Provided the file with the molecular orbital coefficients (e.g., \textit{cmo\_orbitals.u} or \textit{lcm\_orbitals.u}) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to \textit{orbitals\_in.u}, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to \textit{orbitals\_out.u}. Thus, for this keyword to be used, \textit{orbitals\_in.u} must exist and a localization function must be chosen.
 
 
 \item[\Key{Orbital Locality}]\verb| | \newline
 This keyword will make sure second and fourth moment orbital spreads are printed for all orbitals, not just the least local ones.
 
 
+\item[\Key{MACRO IT}]\verb| | \newline
+<option>
+Set maximum number of macro iterations for orbital localization procedure. Default is 200. 
+
+
+\item[\Key{LOOSE MICRO THRESH}]\verb| | \newline
+Looser threshold for solving level-shifted Newton equations in davidson solver in orbital localization procedure. Should only be used if a calculation fails and the error message tells you to use this keyword.
+
 \item[\Key{Orbital Plot}]\verb| | \newline
 \verb|<orbital specification>|\newline	
-Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plottinge other orbitals, use the **PLT option described in section \ref{sec:plt}. Also note that the grid dimensions may be modified as described in Section~\ref{sec:pltgrid}.
+Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plotting other orbitals, use the **PLT option described in section \ref{sec:plt}. Also note that the grid dimensions may be modified as described in Section~\ref{sec:pltgrid}.
 \end{description}
 
 
@@ -1335,22 +1403,25 @@ Below, the list of general response input keywords follows.
 \item[\Key{NEXCIT}] \verb| | \newline
 \verb|<Number of excitation energies>|\newline
 Determines the number of excitation energies to be calculated.
-If this keyword is set the excitation energies 
+If this keyword is set, the excitation energies 
 and the corresponding one-photon dipole absorption strengths
-for excited states 1 to NEXCIT are always calculated.
+for the lowest NEXCIT excited states (i.e. excited states 1 to NEXCIT) 
+are always calculated.
 \emph{\bf Important:} If properties involving excited states
-are requested (e.g. two-photon absorption or the excited state gradient)
+are to be requested (e.g. two-photon absorption or the excited state gradient),
 this keyword must be listed \emph{before}
 any of these properties. \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_opa
 \end{description}
 
 \subsection{*SOLVER}\label{subsec:responsesolver}
-General information related to the way response equations are solved to obtained property.
-By default standard and eigenvalue response equations are solved using the
-algorithm with paired trial vectors\cite{coriani:2007} and damped
+General information related to the way response equations are solved to 
+obtain a given property.
+By default, standard and eigenvalue response equations are solved using the
+algorithm with paired trial vectors~\cite{coriani:2007}, whereas damped
 (complex) response equations are solved using the algorithm with
-symmetrized trial vectors\cite{kauczor:2011}.\newline
+symmetrized trial vectors~\cite{kauczor:2011}.\newline
+This choice can be modified using the \Key{SYM\_SOLVER} and \Key{PAIR\_SOLVER} keywords, see below.
 \begin{description}
 \item[\Key{SYM\_SOLVER}] \verb| | \newline
 The solver with symmetrized trial vectors is used for solving standard
@@ -1363,11 +1434,11 @@ response equations.\newline
 \item[\Key{CONVTHR}] \verb| | \newline
 \verb|<Convergence threshold>|\newline
 Convergence threshold to which response equations are solved.
-Default value is set equal to $10^{-4}$.
+Default value is set to $10^{-4}$.
 \item[\Key{MAXIT}] \verb| | \newline
 \verb|<Maximum number of iterations>|\newline
 Maximum number of iterations in the iterative procedure.
-Default value set equal to 100.
+Default value is set to 100.
 \item[\Key{MAXRED}] \verb| | \newline
 \verb|<Maximum size of the reduced space>|\newline
 Maximum size of the reduced space.
@@ -1376,7 +1447,7 @@ Default value set equal to 200.
 AO preconditioning is used (MO preconditioning by default).
 AO preconditioning may only be used within the algorithm with paired trial vectors.
 \item[\Key{NOPREC}] \verb| | \newline
-No precondtioning is used.
+No preconditioning is used.
 \item[\Key{CONVDYN}] \verb| | \newline
 \verb|<Option>|\newline 
 Dynamic convergence threshold suitable for large calculations.
@@ -1385,29 +1456,29 @@ Options are TIGHT, STANDARD, and SLOPPY.
 \verb|<Number Of excitation Vectors on file>|\newline 
 This is a restart option, that allows the user to restart the calculation. 
 
-Assume that you have already done one calculation where you requested 6 excitation 
-energies but realize that you need 10, you can provide the file rsp\_eigenvecs and use
+Assume for instance that you have already done one calculation where you requested 6 excitation 
+energies but realize that you need 10. You can provide the file rsp\_eigenvecs and use
 
 .RESTEXC\\
 6 
 
 option to restart the calculation from the previous. 
-Naturally this option can also be used to bypass the excitation vector step if the previous calculation failed for some property evaluation which needed the excitation vectors.  
+This option can also be used to bypass the excitation vector step if the previous calculation failed for some property evaluation which needed the excitation vectors.  
 \item[\Key{DTHR}] \verb| | \newline
 \verb|<Threshold>|\newline 
-Threshold for when excited states is considered degenerate
+Threshold for when excited states are to be considered degenerate
 \end{description}
 Now follows a list of input keywords for the specific properties
 available in \lsdalton.
 
 \subsection{*ALPHA}\label{subsec:alpha}
 Calculation of the (possibly complex) 
-polarizability tensor $\alpha$ and its isotropic average.
+electric dipole polarizability tensor $\alpha_{AB}$ and its isotropic average.
 The polarizability equals minus the linear response function
-$<< \mu_A; \mu_B >>_{\omega_B}$, where
-$\omega_B$ is in general allowed to be complex --
-i.e. $\omega_B = \omega_B^R + i \omega_B^I$.
-Frequencies not specified are set to zero by default,
+$\langle\langle \mu_A; \mu_B \rangle\rangle_{\omega_B}$, where
+$\omega_B$ is in general allowed to be complex -- that is,
+$\omega_B = \omega_B^R + i \omega_B^I$.
+Unspecified frequencies are set to zero by default,
 i.e. if no frequencies are specified, the static polarizability is calculated.
 \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_alpha 
@@ -1416,8 +1487,8 @@ i.e. if no frequencies are specified, the static polarizability is calculated.
 \verb|<Number of real frequencies for B operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
 Real frequencies $\omega_B^R$ in the corresponding linear response function.
-First line after .BFREQ contains the number of frequencies
-and the second line contains all frequencies on one line.
+The first line after .BFREQ contains the number of frequencies
+and the second line contains all frequency values (on one single line).
 \item[\Key{IMBFREQ}] \verb| | \newline
 \verb|<Number of imaginary frequencies for B operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
@@ -1445,29 +1516,30 @@ for the frequencies $\omega_B = 0.1 + 0.05i$ and $\omega_B = 0.2$
 
 
 \subsection{*BETA}\label{subsec:beta}
-Calculation of the (possibly complex) first hyperpolarizability tensor $\beta$ and 
+Calculation of the (possibly complex) first electric dipole 
+hyperpolarizability tensor $\beta_{ABC}$ and 
 the corresponding averages $\beta_{\parallel}$ and
 $\beta_{\perp}$. 
 The first hyperpolarizability tensor equals minus the quadratic response function
-$<< \mu_A; \mu_B, \mu_C >>_{\omega_B, \omega_C}$, where
+$\langle\langle \mu_A; \mu_B, \mu_C \rangle\rangle_{\omega_B, \omega_C}$, where
 the frequencies are in general allowed to be complex --
 i.e. $\omega_B = \omega_B^R + i \omega_B^I$ and
 $\omega_C = \omega_C^R + i \omega_C^I$.
 The input is analogous to the *ALPHA input.
-Frequencies not specified are set to zero by default,
+Unspecified frequencies are set to zero by default,
 i.e. if no frequencies are specified, the static first hyperpolarizability is calculated. \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_beta 
 \begin{description}
-\item[\Key{BFREQ}] \verb| | \newline
-\verb|<Number of real frequencies for B operator>|\newline
-\verb|<Freq1, freq2, ... , freqN>|\newline
+\item[\Key{BFREQ}] \verb| | %\newline
+\verb|<Number of real frequencies for B operator>|%\newline
+\verb|<Freq1, freq2, ... , freqN>|%\newline
 Real frequencies $\omega_B^R$ in the corresponding quadratic response function.
 Input as for .BFREQ under *ALPHA.
 \item[\Key{IMBFREQ}] \verb| | \newline
 \verb|<Number of imaginary frequencies for B operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
 Imaginary frequencies $\omega_B^I$ in the corresponding quadratic response function.
-Input as for .BFREQ under *ALPHA.
+Input as for .IMBFREQ under *ALPHA.
 \item[\Key{CFREQ}] \verb| | \newline
 \verb|<Number of real frequencies for C operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
@@ -1477,7 +1549,7 @@ Input as for .BFREQ under *ALPHA.
 \verb|<Number of imaginary frequencies for C operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
 Imaginary frequencies $\omega_C^I$ in the corresponding quadratic response function.
-Input as for .BFREQ under *ALPHA.
+Input as for .IMBFREQ under *ALPHA.
 \end{description}
 
 \subsection{*DAMPED\_TPA}\label{subsec:dtpa}
@@ -1494,37 +1566,48 @@ excitation energy in case of resonance).
 \item[\Key{GAMMA}] \verb| | \newline
 \verb|<Damping parameter>|\newline
 The damping parameter $\gamma$ is used in \emph{all} response equations,
-i.e. $i \gamma$ is effectively added to all frequencies occuring in response equations.
+i.e. $i \gamma$ is effectively added to all frequencies occurring in the response equations.
 Default value: 0.005 a.u.
 \end{description}
 
 \subsection{*QUASIMCD}\label{subsec:quasimcd}
-Calculation of magnetic circular dichroism (MCD) $\mathcal{A}$ and $\mathcal{B}$ terms, based on the method of Ref \cite{KjaergaardMCD} but reformulated using Ref. \cite{thorvaldsen:214108}. The calculation of Damped MCD spectra according to Ref. \cite{KjaergaardDampedMCD} is also possible with this keyword.
-
+Calculation of the  $\mathcal{A}$ and $\mathcal{B}$ terms of magnetic circular dichroism (MCD), based on the method of Ref.~ \cite{KjaergaardMCD}, but reformulated using the formalism of Ref.~\cite{thorvaldsen:214108}. 
+The calculation of Damped MCD spectra according to Ref.~\cite{KjaergaardDampedMCD} is also possible with this keyword.
+\newline
 {\bf Note that one or more of the 3 keywords \{ .DAMPEDXCOOR  , .MCDEXCIT, .DAMPEDRANGE \} must be specified}
 
-If {\bf .MCDEXCIT} is specified the default is to proceed in the following way. 
+If {\bf .MCDEXCIT} is specified, the default is to proceed in the following way: 
 \begin{enumerate}
-\item Determine the number of excited states as specified. 
+\item Determine the excited states requested under .MCDEXCIT 
 \item Determine $\mathcal{B}$ terms for all allowed transitions. Both London atomic orbitals LAO (also called Gauge including atomic orbitals GIAO) and non-LAOs are used to determine the $\mathcal{B}$ terms. LAOs are superior to standards AOs, but the difference can give an indication of how close the result is to the basis set limit. 
-\item Simulate the MCD spectra based on the calculated $\mathcal{B}$ terms by associating a Lorentzian lineshape function (with lineshape parameter of 0.005 a.u.) with each $\mathcal{B}$ term (See Ref. \cite{KjaergaardMCD}). 
-The simulated spectra is written to a file MCDspectraAU.dat (in atomic units). The first number is the frequency, the second the LAO ellipticity and the third is the non-LAO ellipticity. A corresponding file is generated call MCDspectra.dat using standard units ($cm^{-1}$ for frequencies and molar ellipticity for the ellipticity).
-The individuel $\mathcal{B}$ term contribution to the MCD spectra is written to the files BtermAU.dat and Bterm.dat. Per default 5000 points are used for the simulated spectra. 
-The standard units for the $\mathcal{B}$ term is given as $\frac{D^{2} \mu_{B}}{cm^{-1}}$, where $D$ is the unit Debye, $\mu_{B}$ is the Bohr magneton. The conversion factor between atomic units and the standard units are $5.88764 \dot 10^{-5}$.
-The standard units for the $\mathcal{A}$ term is given as $D^{2} \mu_{B}$ with a conversion factor of $12.920947806163007$.
+\item Simulate the MCD spectrum based on the calculated $\mathcal{B}$ terms 
+(sticks) by associating a Lorentzian lineshape function (with lineshape parameter of 0.005 a.u.) to each $\mathcal{B}$ term (See Ref. \cite{KjaergaardMCD}). 
+The simulated spectrum is written to a file MCDspectraAU.dat (in atomic units). The first number is the frequency, the second the LAO ellipticity and the third is the non-LAO ellipticity. A corresponding file is generated called MCDspectra.dat using standard units ($cm^{-1}$ for frequencies and molar ellipticity for the ellipticity).
+The individual $\mathcal{B}$ term contribution to the MCD spectra is written to the files BtermAU.dat and Bterm.dat. Per default 5000 points are used for the simulated spectrum. 
+The standard units for the $\mathcal{B}$ term are given as $\frac{D^{2} \mu_{B}}{cm^{-1}}$, where $D$ is the unit Debye and $\mu_{B}$ is the Bohr magneton. The conversion factor between atomic units and the standard units is $5.88764 \dot 10^{-5}$.
+The standard unit  for the $\mathcal{A}$ term is given as $D^{2} \mu_{B}$, with a conversion factor of $12.920947806163007$.
 
-\item Perform damped calculations based on the Standard MCD calculation. A number of points around each of the MCD peaks (default value: 10) are determined for which to calculate the damped spectra. The result is printed to the files dampedMCDspectraRAU.dat (atomic units) and dampedMCDspectraR.dat.
+\item Perform damped calculations based on the standard MCD calculation. A number of points around each individual MCD peak (default value: 10) are determined for which to calculate the damped spectra. The result is printed to the files dampedMCDspectraRAU.dat (atomic units) and dampedMCDspectraR.dat.
 \end{enumerate}
 {\bf Test case}: LSresponse/LSresponse\_mcd\_calc, LSresponse/LSresponse\_mcd\newline
 LSresponse/LSresponse\_mcd2, LSresponse/LSresponse\_mcd3  \newline
-Note that only the LSresponse/LSresponse\_mcd\_calc test case is a good example for a general MCD calculation
+Note that only the LSresponse/LSresponse\_mcd\_calc test case is a good example for a general MCD calculation.
 
 \begin{description}
 \item[\Key{MCDEXCIT}] \verb| | \newline
 \verb|<Number of excited states to consider>|\newline
 The $\mathcal{B}$ terms will be calculated for all states, unless they are zero due to selection rules (dipole forbidden)
+\item[\Key{MCDEXSTATES}] \verb| | \newline
+\verb|<Number of specific excited states to consider in MCD calc>|\newline
+\verb|<Specific excited states to consider>|\newline
+This keyword only calculates the $\mathcal{B}$ and possible $\mathcal{A}$ terms for the selected excited states.
+The first line after .MCDEXSTATES contains the number of specific excited states for which the MCD is to be calculated,
+and the second line specifies such states (identified by their index in the .MCDNEXCIT list).
+{\bf Important:} The position of the highest lying excited state
+specified by .MCDEXSTATES must be smaller than or equal to
+the total number of excited states specified by .MCDNEXCIT!
 \item[\Key{DEGENERATE}] \verb| | \newline
-This keyword must be set if the molecule have a degenerate state so that $\mathcal{A}$ terms are possible, otherwise all states are assumed non-degenerate and no $\mathcal{A}$ terms will be calculated. When this keyword is set the $\mathcal{A}$ terms are calculated and a derivative Lorentzian lineshape function is used to simulate the individuel $\mathcal{A}$ term contributions to the MCD spectra (See Ref. \cite{KjaergaardMCD}). The individuel $\mathcal{A}$ terms contributions to the MCD spectra is written to the files AtermAU.dat and Aterm.dat   
+This keyword must be set in input if the molecule has a degenerate state so that $\mathcal{A}$ terms are possible, otherwise all states are assumed non-degenerate and no $\mathcal{A}$ terms will be calculated. When this keyword is set, the $\mathcal{A}$ terms are calculated and a derivative Lorentzian lineshape function is used to simulate the individual $\mathcal{A}$ term contributions to the MCD spectrum (See Ref. \cite{KjaergaardMCD}). The individual $\mathcal{A}$ terms contributions to the MCD spectrum are written to the files AtermAU.dat and Aterm.dat   
 \item[\Key{DAMPEDXCOOR}] \verb| | \newline
 \verb|<Number of frequencies>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
@@ -1535,38 +1618,42 @@ The frequencies for which to calculate the damped MCD spectra (in atomic units).
 \verb|<Number of frequencies in range between Freq1 and Freq2>|\newline
 The frequencies for which to calculate the damped MCD spectra (in atomic units), here specified as an interval.
 \item[\Key{NO LONDON}] \verb| | \newline
-Deactivates the use of LAOs
-\item[\Key{NO LONDON}] \verb| | \newline
-Deactivates the use of non-LAOs
+Deactivates the use of LAOs (i.e., only standard, non-LAO, basis is used)
+\item[\Key{NO NOLONDON}] \verb| | \newline
+Deactivates the use of non-LAOs (i.e., only LAO are used)
 \item[\Key{NO SIMULATE}] \verb| | \newline
-Deactivates the simulated spectra
+Deactivates the simulation of the MCD spectrum from the individual MCD terms
 \item[\Key{NO ATERM}] \verb| | \newline
 Deactivates the calculation of $\mathcal{A}$ terms
 \item[\Key{NO BTERM}] \verb| | \newline
 Deactivates the calculation of $\mathcal{B}$ terms
 \item[\Key{NO DAMPED}] \verb| | \newline
-Deactivates the performance of damped MCD spectra
+Deactivates the execution of damped MCD spectra
 \item[\Key{GAUSSIAN}] \verb| | \newline
-Uses Gaussian lineshape functions (with a lineshape parameter of 0.0070851079363103793) instead of the default Lorentzian lineshape functions.
+Uses Gaussian lineshape functions (with a lineshape parameter of 0.0070851079363103793) 
+instead of the default Lorentzian lineshape functions.
 \item[\Key{LINESHAPEPARAM}] \verb| | \newline
 \verb|<lineshape parameter>|\newline
-Changes the lineshape parameter (default value 0.005 a.u. for lorentz, 0.0070851079363103793 a.u. for gaussian) used for the simulated spectra
-\item[\Key{NVECFORPEAK}] \verb| | \newline
-\verb|<number of frequencies used around each MCD peak>|\newline
-Changes the number of frequencies used around each MCD peak (default 10).
+Changes the lineshape parameter (default value is 0.005~a.u. for Lorentzian, 
+and 0.0070851079363103793~a.u. for Gaussian) used to simulate the spectrum
 \item[\Key{NSTEPS}] \verb| | \newline
 \verb|<number of frequencies used for the simulated MCD spectra>|\newline
-Changes the number of frequencies used for the simulated MCD spectra (default 5000).
+Changes the number of frequencies used for the simulation of the MCD spectra from the 
+individual $\mathcal{A}$ and $\mathcal{B}$ terms' sticks 
+(default 5000).
+\item[\Key{NVECFORPEAK}] \verb| | \newline
+\verb|<number of frequencies used around each MCD peak>|\newline
+Changes the number of frequencies used around each MCD peak (default 10) in the damped response calculation.
 \end{description}
-Note that the keyword {\bf .DTHR} under {\bf *SOLVER} (see section \ref{subsec:responsesolver} ) can be used to define the threshold for when excited states is considered degenerate
+Note that the keyword {\bf .DTHR} under {\bf *SOLVER} (see section \ref{subsec:responsesolver} ) can be used to define the threshold below which an excited state is considered degenerate
 
 \subsection{*SHIELD}\label{nmrshield}
 Nuclear magnetic shielding tensors and chemical shift can be calculated with this keyword
 {\bf Test case}: LSresponse/LSresponse\_NMR\_SHIELD
 
-\subsection{*ESDIPOLE}\label{subsec:esd}
-Permanent dipole moment for excited states.
-{\bf Always requires specification of .NEXCIT!}
+\subsection*{ESDIPOLE}\label{subsec:esd}
+Permanent dipole moment for excited states. 
+{\bf Always requires specification of .NEXCIT!}\newline
 If .EXSTATES is not specified, the excited state dipole moments
 for all excited states from 1 to NEXCIT
 are calculated. \newline
@@ -1577,11 +1664,15 @@ are calculated. \newline
 \verb|<Specific excited states to consider>|\newline
 Only calculate excited state gradient for selected excited states.
 The first line after .EXSTATES contains the number
-of excited states where the excited state gradient is to be calculated,
-and the second line specifies which states.
-{\bf Important:} The position of the highlest lying excited state
+of excited states for which the 
+%excited state gradient 
+excited state dipole moment
+is to be calculated,
+and the second line specifies such states (identified by their 
+index in the .NEXCIT list).
+{\bf Important:} The position of the highest lying excited state
 specified by .EXSTATES must be smaller than or equal to
-the number of excited states specified by .NEXCIT!
+the total number of excited states specified by .NEXCIT!
 \end{description}
 
 \subsection{*ESGRAD}\label{subsec:esg}
@@ -1611,17 +1702,18 @@ to calculate excited state gradients for excited states number 3 and 6:
 
 
 \subsection{*GAMMA}\label{subsec:gamma}
-Calculation of the (possibly complex)  second hyperpolarizability tensor $\gamma$ and 
+Calculation of the (possibly complex)  second electric-dipole 
+hyperpolarizability tensor $\gamma_{ABCD}$ and 
 the corresponding averages $\gamma_{\parallel}$ and
 $\gamma_{\perp}$. 
 The second hyperpolarizability tensor equals minus the cubic response function
-$<< \mu_A; \mu_B, \mu_C, \mu_D >>_{\omega_B, \omega_C, \omega_D}$, where
+$\langle\langle \mu_A; \mu_B, \mu_C, \mu_D \rangle\rangle_{\omega_B, \omega_C, \omega_D}$, where
 the frequencies are in general allowed to be complex --
 i.e. $\omega_B = \omega_B^R + i \omega_B^I$,
 $\omega_C = \omega_C^R + i \omega_C^I$, and
 $\omega_D = \omega_D^R + i \omega_D^I$.
-The input is analogous to the *ALPHA and *BETA inputs.
-Frequencies not specified are set to zero by default,
+The input is analogous to those for *ALPHA and *BETA.
+Unspecified frequencies are set to zero by default,
 i.e. if no frequencies are specified the static second hyperpolarizability is calculated. \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_gamma 
 \begin{description}
@@ -1644,7 +1736,7 @@ Input as for .BFREQ under *ALPHA.
 \verb|<Number of imaginary frequencies for C operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
 Imaginary frequencies $\omega_C^I$ in the corresponding cubic response function.
-Input as for .BFREQ under *ALPHA.
+Input as for .IMBFREQ under *ALPHA.
 \item[\Key{DFREQ}] \verb| | \newline
 \verb|<Number of real frequencies for D operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
@@ -1654,7 +1746,7 @@ Input as for .BFREQ under *ALPHA.
 \verb|<Number of imaginary frequencies for D operator>|\newline
 \verb|<Freq1, freq2, ... , freqN>|\newline
 Imaginary frequencies $\omega_D^I$ in the corresponding cubic response function.
-Input as for .BFREQ under *ALPHA.
+Input as for .IMBFREQ under *ALPHA.
 \end{description}
 
 
@@ -1689,10 +1781,11 @@ Furthermore, conventional coupled-cluster energies for the MP2, CC2, and CCSD mo
 
 The **DEC and **CC implementations employ massive parallelism and will be highly effective only if many computing nodes are available.
 
-\textbf{Special note}: It is highly recommended that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
+\textbf{Special note}: It is mandatory that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
 
-The **DEC section uses local orbitals by default, while the **CC section uses canonical orbitals by default.
-Below keywords for the **DEC section and **CC sections and relevant test cases are given. 
+The **DEC and **CC sections use local orbitals by default, although the orbitals are converted to the (semi-)canonical basis when the MP2
+and CC equations are solved.
+Below keywords for the **DEC section and **CC section and relevant test cases are given. 
 
 \vspace{1 cm}
 \noindent
@@ -1709,9 +1802,9 @@ Thus, the higher the FOT, the smaller is the error of the DEC calculation compar
 
 \item[\Key{MEMORY}] \verb| | \newline
 \verb|<Memory in gigabytes>| \newline
-It is highly recommended to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
-If this keyword is not set, the program will try to estimate the available memory using a system call. While this will usually work fine it might fail on some architectures.
-(This keyword can also be used in **CC section).
+It is mandatory to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
+If this keyword is not set, the program will stop with a quit statement informing about an error in the LSDALTON.INP file.
+(This keyword must also be used in **CC section).
 
 
 \item[\Key{PAIRTHR}] \verb| | \newline
@@ -1748,14 +1841,16 @@ Calculate DEC-MP2 density matrix~\cite{dec5} (stored in MP2.dens). The MP2 elect
 Calculate MP2 molecular gradient~\cite{dec5} at input geometry (for geometry optimization, see test case examples below). The MP2 density and electric dipole moment is also calculated if this keyword is invoked.
 
 \item[\Key{KAPPATHR}] \verb| | \newline
-Threshold for $\bar{kappa}$ multiplier equations solved when DEC-MP2 molecular gradiient is calculation. Default value is 10$^{-4}$.
+\verb|<THR>|\newline
+Threshold for $\bar{kappa}$ multiplier equations solved when DEC-MP2 molecular gradient is calculation. Default value is 10$^{-4}$.
 
 
 \item[\Key{CANONICAL}] \verb| | \newline
 Use canonical orbitals. This is only recommended for advanced users for testing purposes. In general, the DEC scheme is only meaningful for local orbitals.
 
 \item[\Key{MPIGROUPSIZE}] \verb| | \newline
-Size of local MPI groups in massively parallel DEC scheme~\cite{dec6}. The default settings should suffice for most purposes, and use of the keyword is only recommended for advanced users.
+\verb|<Size>|\newline
+Size of local MPI groups (integer) in massively parallel DEC scheme~\cite{dec6}. The default settings should suffice for most purposes, and use of the keyword is only recommended for advanced users.
 
 
 \end{description}
@@ -1773,7 +1868,7 @@ These test cases illustrate the main features of the DEC scheme. The test cases 
 \item
 \textit{decmp2\_gradient}: Calculate DEC-MP2 molecular gradient.
 \item
-\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT will be increased to get a more accurate energy and gradient in the next iteration.
+\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optimization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT level will be increased to get a more accurate energy and gradient in the next iteration.
 \end{itemize}
 
 
@@ -1790,16 +1885,16 @@ Use MP2 model. This gives the canonical MP2 energy and is not optimized for para
 Use CC2 model which is not an optimized code, but rather uses the CCSD optimized code with some contributions removed. See CCSD documentation for details.
 
 \item[\Key{CCSD}]\verb| | \newline
-Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). 
+Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). Using this keyword automatically triggers checkpointing after each iteration. The calculation can be restarted with the usual \Key{.RESTART} keyword.
 
 \item[\Key{FROZENCORE}]  \verb| | \newline
 Use the frozen core approximation (can also be used in **DEC section).
 
 \item[\Key{MEMORY}] \verb| | \newline
 \verb|<Memory in gigabytes>| \newline
-It is highly recommended to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
-If this keyword is not set, the program will try to estimate the available memory using a system call. While this will usually work fine it might fail on some architectures.
-(This keyword can also be used in **DEC section).
+It is mandatory to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
+If this keyword is not set, the program will stop with a quit statement informing about an error in the LSDALTON.INP file.
+(This keyword must also be used in **DEC section).
 
 \item[\Key{CCMAXITER}]  \verb| | \newline
 Maximum number of iterations in CC solver.
@@ -1811,8 +1906,9 @@ Convergence threshold for residual norm in CC solver.
 \item[\Key{SUBSIZE}]  \verb| | \newline
 Number of previous vectors to store in CROP scheme~\cite{crop} for CC solver.
 
-\item[\Key{CCSDSAFE}]  \verb| | \newline
-Save CCSD amplitudes to be able to restart full CCSD calculation. The files are named t11.restart and t12.restart for the singles amplitudes and t21.restart and t22.restart for the doubles amplitudes. These files are written in in an alternate fashion and the latest amplitudes are read automatically if a CCSD calculation is started in the same folder.
+\item[\Key{CCSDNOSAFE}]  \verb| | \newline
+Prevent saving of CCSD amplitudes as checkpoint files. 
+
 
 \end{description}
 
@@ -1869,7 +1965,7 @@ dens.plt \newline
 
 \item[\Key{EP}]\verb| | \newline
 Construct .plt file for electrostatic potential grid points based on input density matrix.
-For example to calculate electrostatic potential from the density in the the file  \emph{dens.restart} and save information in file  ep.plt,
+For example to calculate electrostatic potential from the density in the file  \emph{dens.restart} and save information in file  ep.plt,
 insert the following section in the LSDALTON.INP file used to generate the  \emph{dens.restart} file in the first place:
  \newline
 **PLT \newline
@@ -1939,7 +2035,7 @@ Manual definition of gridbox as described above. All input values are in a.u.
 \item[\Key{MOLECULE}] \verb| | \newline
 \verb|<buffer>| \newline
 \verb|<deltax    deltay    deltaz>| \newline
-Molecule-specifc definition of gridbox as described above. All input values are in a.u.
+Molecule-specific definition of gridbox as described above. All input values are in a.u.
 
 \end{description}
 

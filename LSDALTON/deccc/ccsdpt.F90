@@ -37,7 +37,7 @@ module ccsdpt_module
   public :: ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
        & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair,&
        & ccsdpt_energy_e4_full, print_e4_full, ccsdpt_energy_e5_full,&
-       & print_e5_full, ccsd_energy_full, print_ccsd_full
+       & print_e5_full
   private
 
 contains
@@ -47,7 +47,7 @@ contains
   !> \brief: driver routine for dec-ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2012
-  subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,mylsitem,ccsd_doubles,&
+  subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_doubles,&
                          & ccsdpt_singles,ccsdpt_doubles)
 
     implicit none
@@ -57,7 +57,7 @@ contains
     !> ppfock and qqfock for fragment or full molecule
     real(realk), intent(in) :: ppfock(nocc,nocc), qqfock(nvirt,nvirt)
     !> mo coefficents for occ and virt space for fragment or full molecule
-    real(realk), intent(in) :: ypo(nbasis,nocc), ypv(nbasis,nvirt)
+    real(realk), intent(in) :: Co(nbasis,nocc), Cv(nbasis,nvirt)
     !> mylsitem for fragment or full molecule
     type(lsitem), intent(inout) :: mylsitem
     !> ccsd doubles amplitudes
@@ -70,14 +70,7 @@ contains
     ! if this is a parallel calculation
     type(array) :: cbai ! integrals (AI|BC) in the order (C,B,A,I)
 #ifdef VAR_MPI
-    type(array) :: cbai_pdm ! v^3 tiles from cbai, 1 == i, 2 == j, 3 == k
-#endif
-    !> integers
-    integer :: i,j,k,idx,tuple_type
-    !> mpi stuff
-#ifdef VAR_MPI
-    integer :: b_size,ntasks,nodtotal,ij,ij_count,i_old,j_old
-    integer, pointer :: ij_array(:),jobs(:)
+    integer :: nodtotal
 #endif
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
@@ -115,7 +108,7 @@ contains
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,ccsd_doubles%val,mylsitem)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%val,mylsitem)
 
     end if waking_the_slaves
 
@@ -134,7 +127,7 @@ contains
     Uvirt      = array2_init(virtdims)
     C_can_occ  = array2_init(occAO)
     C_can_virt = array2_init(virtAO)
-    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
+    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
                          & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
 
     ! ***************************************************
@@ -191,30 +184,6 @@ contains
     ! if cbai is tiled distributed, then put the three tiles into
     ! an array structure, cbai_pdm. here, initialize the array structure.
 
-#ifdef VAR_MPI
-
-    cbai_pdm = array_init([nvirt,nvirt,nvirt,3],4)
-
-    ! create job distribution list
-    ! first, determine common batch size from number of tasks and nodes
-    ntasks = (nocc**2 + nocc)/2
-    b_size = int(ntasks/nodtotal)
-
-    ! ij_array stores all jobs for composite ij indices in decending order
-    call mem_alloc(ij_array,ntasks)
-    ! init list (one more than b_size since mod(ntasks,nodtotal) is not necessearily zero
-    call mem_alloc(jobs,b_size + 1)
-
-    ! create ij_array
-    call create_ij_array_ccsdpt(ntasks,nocc,ij_array)
-    ! fill the list
-    call job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
-
-    ! release ij_array
-    call mem_dealloc(ij_array)
-
-#endif
-
     ! init triples tuples array3 structure
     trip_ampl = array3_init_standard(dims_aaa)
     ! init 3d wrk array
@@ -223,315 +192,27 @@ contains
     ! init ccsd_doubles help array
     ccsd_doubles_portions = array_init([nocc,nvirt,nvirt,3],4)
 
-    ! a note on the mpi scheme.
-    ! since we (in a dec picture) often have many nodes compared to nocc, we explicitly collapse the i- and j-loop.
-    ! by doing this, we are guaranteed that all nodes participate.
-    ! the composite index ij is incremented in the collapsed loop, and we may calculate i and j from ij.
+    !**********************************************************
+    ! here: the main ijk-loop: this is where the magic happens!
+    !**********************************************************
 
 #ifdef VAR_MPI
 
-    ! init ij and i_old/j_old
-    ij = 0
-    i_old = 0
-    j_old = 0
-
- ijrun: do ij_count = 1,b_size + 1
-
-           ! get value of ij from job disttribution list
-           ij = jobs(ij_count)
-
-           ! no more jobs to be done? otherwise leave the loop
-           if (ij .lt. 0) exit
-
-           ! calculate i and j from composite ij value
-           call calc_i_and_j(ij,nocc,i,j)
-
-           ! has the i and j index changed?
-           if (i .eq. i_old) then
-
-              ! get the j'th v^3 tile only
-              call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
-
-              ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
-              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
-                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
-
-              ! store j index
-              j_old = j
-
-           else if (j .eq. j_old) then
-
-              ! get the i'th v^3 tile only
-              call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
-
-              ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
-              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
-                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
-
-              ! store i index
-              i_old = i
-
-           else
-
-              ! get the i'th and j'th v^3 tile
-              call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
-              call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
-
-              ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
-              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
-                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
-   
-              ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
-              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
-                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
-
-              ! store i and j indices
-              i_old = i
-              j_old = j
-
-           end if
+    ! the parallel version of the ijk-loop
+    call ijk_loop_par(nocc,nvirt,jaik,abij,cbai,trip_tmp,trip_ampl,ccsd_doubles,ccsd_doubles_portions,&
+                    & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt,nodtotal)
 
 #else
 
- irun: do i=1,nocc
-
-          ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
-          call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
-                  & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
-
-    jrun: do j=1,i
-
-             ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
-             call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
-                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
+    ! the serial version of the ijk-loop
+    call ijk_loop_ser(nocc,nvirt,jaik,abij,cbai,trip_tmp,trip_ampl,ccsd_doubles,ccsd_doubles_portions,&
+                    & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt)
 
 #endif
 
-       krun: do k=1,j
-
-#ifdef VAR_MPI
-
-                ! get the k'th tile
-                call array_get_tile(cbai,k,cbai_pdm%elm1(2*nvirt**3+1:3*nvirt**3),nvirt**3)
-
-#endif
-
-                ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
-                call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,k),nvirt,nvirt,&
-                        & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,3))
-
-                ! select type of tuple
-                tuple_type = -1
-                ! i == j == k
-                ! this always gives zero contribution
-                ! i == j > k
-                if ((i .eq. j) .and. (j .gt. k) .and. (i .gt. k)) tuple_type = 1
-                ! i > j == k
-                if ((i .gt. j) .and. (j .eq. k) .and. (i .gt. k)) tuple_type = 2
-                ! i > j > k
-                if ((i .gt. j) .and. (j .gt. k) .and. (i .gt. k)) tuple_type = 3
-
-                ! generate tuple(s)
-                TypeOfTuple: select case(tuple_type)
-
-                case(1)
-
-                   ! iik,iki
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(i,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),cbai_pdm%elm4(:,:,:,3),trip_tmp)
-#else
-                   call trip_amplitudes_virt(i,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),cbai%elm4(:,:,:,k),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(i,k,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,i,k),trip_tmp)
-                   trip_ampl%val = trip_tmp%val
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
-
-                   ! kii,iik
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(k,i,i,nocc,nvirt,ccsd_doubles%val(:,:,i,k),cbai_pdm%elm4(:,:,:,1),trip_tmp)
-#else
-                   call trip_amplitudes_virt(k,i,i,nocc,nvirt,ccsd_doubles%val(:,:,i,k),cbai%elm4(:,:,:,i),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(i,i,k,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,k,i),trip_tmp)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
-
-                   ! iki.kii
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(i,k,i,nocc,nvirt,ccsd_doubles%val(:,:,k,i),cbai_pdm%elm4(:,:,:,1),trip_tmp)
-#else
-                   call trip_amplitudes_virt(i,k,i,nocc,nvirt,ccsd_doubles%val(:,:,k,i),cbai%elm4(:,:,:,i),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(k,i,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,3),jaik%val(:,:,i,i),trip_tmp)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
-   
-                   ! generate triples amplitudes from trip arrays
-
-                   call trip_denom(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
-
-                   ! now do the contractions
-
-#ifdef VAR_MPI
-
-                   call ccsdpt_driver_case1(i,k,nocc,nvirt,abij,jaik,&
-                                        & cbai_pdm%elm4(:,:,:,1),cbai_pdm%elm4(:,:,:,3),&
-                                        & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
-
-#else
-
-                   call ccsdpt_driver_case1(i,k,nocc,nvirt,abij,jaik,&
-                                        & cbai%elm4(:,:,:,i),cbai%elm4(:,:,:,k),&
-                                        & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
-
-#endif
-
-                case(2)
-
-                   ! ijj.jji
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(i,j,j,nocc,nvirt,ccsd_doubles%val(:,:,j,i),cbai_pdm%elm4(:,:,:,2),trip_tmp)
-#else
-                   call trip_amplitudes_virt(i,j,j,nocc,nvirt,ccsd_doubles%val(:,:,j,i),cbai%elm4(:,:,:,j),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(j,j,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,2),jaik%val(:,:,i,j),trip_tmp)
-                   trip_ampl%val = trip_tmp%val
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
-
-                   ! jij,ijj
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(j,i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),cbai_pdm%elm4(:,:,:,2),trip_tmp)
-#else
-                   call trip_amplitudes_virt(j,i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),cbai%elm4(:,:,:,j),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(i,j,j,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,j,j),trip_tmp)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
- 
-                   ! jji,jij
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(j,j,i,nocc,nvirt,ccsd_doubles%val(:,:,j,j),cbai_pdm%elm4(:,:,:,1),trip_tmp)
-#else
-                   call trip_amplitudes_virt(j,j,i,nocc,nvirt,ccsd_doubles%val(:,:,j,j),cbai%elm4(:,:,:,i),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(j,i,j,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,2),jaik%val(:,:,j,i),trip_tmp)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
-
-                   ! generate triples amplitudes from trip arrays
-
-                   call trip_denom(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
-
-                   ! now do the contractions
-
-#ifdef VAR_MPI
-
-                   call ccsdpt_driver_case2(i,j,nocc,nvirt,abij,jaik,&
-                                        & cbai_pdm%elm4(:,:,:,1),cbai_pdm%elm4(:,:,:,2),&
-                                        & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
-
-#else
-
-                   call ccsdpt_driver_case2(i,j,nocc,nvirt,abij,jaik,&
-                                        & cbai%elm4(:,:,:,i),cbai%elm4(:,:,:,j),&
-                                        & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
-
-#endif
-
-                case(3)
-
-                   ! ijk.jki
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,j,i),cbai_pdm%elm4(:,:,:,3),trip_ampl)
-#else
-                   call trip_amplitudes_virt(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,j,i),cbai%elm4(:,:,:,k),trip_ampl)
-#endif
-                   call trip_amplitudes_occ(j,k,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,2),jaik%val(:,:,i,k),trip_ampl)
-
-                   ! kij,ijk
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(k,i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,k),cbai_pdm%elm4(:,:,:,2),trip_tmp)
-#else
-                   call trip_amplitudes_virt(k,i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,k),cbai%elm4(:,:,:,j),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(i,j,k,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,k,j),trip_tmp)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
-
-                   ! jki,kij
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(j,k,i,nocc,nvirt,ccsd_doubles%val(:,:,k,j),cbai_pdm%elm4(:,:,:,1),trip_tmp)
-#else
-                   call trip_amplitudes_virt(j,k,i,nocc,nvirt,ccsd_doubles%val(:,:,k,j),cbai%elm4(:,:,:,i),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(k,i,j,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,3),jaik%val(:,:,j,i),trip_tmp)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
-
-                   ! ikj,kji
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(i,k,j,nocc,nvirt,ccsd_doubles%val(:,:,k,i),cbai_pdm%elm4(:,:,:,2),trip_tmp)
-#else
-                   call trip_amplitudes_virt(i,k,j,nocc,nvirt,ccsd_doubles%val(:,:,k,i),cbai%elm4(:,:,:,j),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(k,j,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,3),jaik%val(:,:,i,j),trip_tmp)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
-
-                   ! jik,ikj
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(j,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),cbai_pdm%elm4(:,:,:,3),trip_tmp)
-#else
-                   call trip_amplitudes_virt(j,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),cbai%elm4(:,:,:,k),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(i,k,j,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,j,k),trip_tmp)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
-
-                   ! kji,jik
-#ifdef VAR_MPI
-                   call trip_amplitudes_virt(k,j,i,nocc,nvirt,ccsd_doubles%val(:,:,j,k),cbai_pdm%elm4(:,:,:,1),trip_tmp)
-#else
-                   call trip_amplitudes_virt(k,j,i,nocc,nvirt,ccsd_doubles%val(:,:,j,k),cbai%elm4(:,:,:,i),trip_tmp)
-#endif
-                   call trip_amplitudes_occ(j,i,k,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,2),jaik%val(:,:,k,i),trip_tmp)
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
-
-                   ! generate triples amplitudes from trip arrays
-
-                   call trip_denom(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
-
-                   ! now do the contractions
-
-#ifdef VAR_MPI
-
-                   call ccsdpt_driver_case3(i,j,k,nocc,nvirt,abij,jaik,&
-                                        & cbai_pdm%elm4(:,:,:,1),cbai_pdm%elm4(:,:,:,2),cbai_pdm%elm4(:,:,:,3),&
-                                        & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
-
-#else
-
-                   call ccsdpt_driver_case3(i,j,k,nocc,nvirt,abij,jaik,&
-                                        & cbai%elm4(:,:,:,i),cbai%elm4(:,:,:,j),cbai%elm4(:,:,:,k),& 
-                                        & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
-
-#endif
-
-                end select TypeOfTuple
-
-             end do krun
-
-#ifdef VAR_MPI
-
-       end do ijrun
-
-#else
-
-          end do jrun
-       end do irun
-
-#endif
-
-
-    ! *************************************************
-    ! *********** done w/ trip generation *************
-    ! *************************************************
+    ! *******************************************
+    ! *********** done w/ main loop *************
+    ! *******************************************
 
     ! now release trip_ijk, trip_kji, trip_jki, trip_ikj, trip_jik, and trip_kji array3s
     call array3_free(trip_tmp)
@@ -560,10 +241,8 @@ contains
        call array4_free(ccsdpt_doubles_2) 
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
-       call mem_dealloc(jobs)
        call array4_free(abij)
        call array_free(cbai)
-       call array_free(cbai_pdm)
        call array4_free(jaik)
 
        ! now, release the slaves  
@@ -600,10 +279,6 @@ contains
     call mem_dealloc(eivalvirt)
     call array4_free(abij)
     call array_free(cbai)
-#ifdef VAR_MPI
-    call array_free(cbai_pdm)
-    call mem_dealloc(jobs)
-#endif
     call array4_free(jaik)
 
     ! **************************************************************
@@ -617,26 +292,932 @@ contains
   end subroutine ccsdpt_driver
 
 
-  !> \brief: create ij_array for ccsd(t)
+  !> \brief: main ijk-loop (parallel version)
   !> \author: Janus Juul Eriksen
-  !> \date: july 2013
-  subroutine create_ij_array_ccsdpt(ntasks,no,ij_array)
+  !> \date: january 2014
+  subroutine ijk_loop_par(nocc,nvirt,ovoo,vvoo,vvvo,trip_tmp,trip_ampl,ccsd_doubles,ccsd_doubles_portions,&
+                        & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt,nodtotal)
 
     implicit none
 
-    !> batch size (without remainder contribution)
-    integer, intent(in) :: ntasks,no
-    !> jobs array
-    integer, dimension(ntasks), intent(inout) :: ij_array
+    !> nocc,nvirt
+    integer, intent(in)      :: nocc,nvirt
+    !> 2-el integrals
+    type(array4), intent(inout) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
+    type(array4), intent(inout) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
+#ifdef VAR_OPENACC
+    ! vvoo pointers
+    real(realk), pointer, dimension(:,:) :: vvoo_ptr_12, vvoo_ptr_13, vvoo_ptr_21
+    real(realk), pointer, dimension(:,:) :: vvoo_ptr_23, vvoo_ptr_31, vvoo_ptr_32
+    ! ovoo pointers
+    real(realk), pointer, dimension(:,:) :: ovoo_ptr_12, ovoo_ptr_13, ovoo_ptr_21
+    real(realk), pointer, dimension(:,:) :: ovoo_ptr_23, ovoo_ptr_31, ovoo_ptr_32
+    ! vvvo pointers
+    real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_2, vvvo_ptr_3
+    ! ccsd t2 pointers
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_21
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32
+    real(realk), pointer, dimension(:,:,:) :: ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3
+#endif
+    type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    type(array)                 :: vvvo_pdm ! v^3 tiles from cbai, 1 == i, 2 == j, 3 == k
+    !> triples amplitudes and 3d work array
+    type(array3), intent(inout) :: trip_tmp, trip_ampl
+    !> ccsd doubles amplitudes
+    type(array4), intent(inout) :: ccsd_doubles
+    type(array), intent(inout)  :: ccsd_doubles_portions ! o*v^2 portions of ccsd_doubles, 1 == i, 2 == j, 3 == k
+    !> ccsd(t) intermediates 
+    type(array4), intent(inout) :: ccsdpt_doubles
+    type(array4), intent(inout) :: ccsdpt_doubles_2
+    type(array2), intent(inout) :: ccsdpt_singles
+    !> orbital energies
+    real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt)
+    !> job distribution
+    integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
+    integer, pointer :: ij_array(:),jobs(:)
+    !> loop integers
+    integer :: i,j,k,idx,tuple_type
+
+    ! init pdm work array for vvvo integrals
+    vvvo_pdm = array_init([nvirt,nvirt,nvirt,3],4)
+
+    ! create job distribution list
+    ! first, determine common batch size from number of tasks and nodes
+    ! in the ij matrix, njobs is the number of elements in the lower triangular matrix
+    ! always an even number [ n(n+1) is always an even number ]
+    njobs = int((nocc**2 + nocc)/2)
+    b_size = int(njobs/nodtotal)
+
+    ! ij_array stores all jobs for composite ij indices in descending order
+    call mem_alloc(ij_array,njobs)
+    ! init list (one more than b_size since mod(njobs,nodtotal) is not necessearily zero
+    call mem_alloc(jobs,b_size + 1)
+
+    ! create ij_array
+    call create_ij_array_ccsdpt(njobs,nocc,ij_array)
+    ! fill the list
+    call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
+
+    ! release ij_array
+    call mem_dealloc(ij_array)
+
+    ! now follows the main loop
+
+    ! a note on the mpi scheme.
+    ! since we (in a dec picture) often have many nodes compared to nocc, we explicitly collapse the i- and j-loop.
+    ! by doing this, we are guaranteed that all nodes participate.
+    ! the composite index ij is incremented in the collapsed loop, and we may calculate i and j from ij.
+
+    ! a note on the openacc implementation.
+    ! we use pointers to alias specific memory blocks of the vvoo and ovoo integrals.
+    ! this is because we thus avoid to allocate more memory on the device for these integral blocks than what is
+    ! actually needed within one loop cycle AND we avoid doing explicit copies into memory buffers on the host.
+
+    ! init ij and i_old/j_old
+    ij = 0
+    i_old = 0
+    j_old = 0
+
+ ijrun_par: do ij_count = 1,b_size + 1
+
+               ! get value of ij from job disttribution list
+               ij = jobs(ij_count)
+    
+               ! no more jobs to be done? otherwise leave the loop
+               if (ij .lt. 0) exit
+    
+               ! calculate i and j from composite ij value
+               call calc_i_and_j(ij,nocc,i,j)
+    
+               ! has the i and j index changed?
+               if (i .eq. i_old) then
+    
+                  ! get the j'th v^3 tile only
+                  call array_get_tile(vvvo,j,vvvo_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+    
+                  ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+                  call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
+    
+                  ! store j index
+                  j_old = j
+    
+               else if (j .eq. j_old) then
+    
+                  ! get the i'th v^3 tile only
+                  call array_get_tile(vvvo,i,vvvo_pdm%elm1(1:nvirt**3),nvirt**3)
+    
+                  ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+                  call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
+    
+                  ! store i index
+                  i_old = i
+    
+               else
+    
+                  ! get the i'th and j'th v^3 tile
+                  call array_get_tile(vvvo,i,vvvo_pdm%elm1(1:nvirt**3),nvirt**3)
+                  call array_get_tile(vvvo,j,vvvo_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+    
+                  ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+                  call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
+    
+                  ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+                  call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
+    
+                  ! store i and j indices
+                  i_old = i
+                  j_old = j
+    
+               end if
+
+        krun_par: do k=1,j
+ 
+                     ! get the k'th tile
+                     call array_get_tile(vvvo,k,vvvo_pdm%elm1(2*nvirt**3+1:3*nvirt**3),nvirt**3)
+     
+                     ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,k),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,3))
+     
+                     ! select type of tuple
+                     tuple_type = -1
+                     ! i == j == k
+                     ! this always gives zero contribution
+                     ! i == j > k
+                     if ((i .eq. j) .and. (j .gt. k) .and. (i .gt. k)) tuple_type = 1
+                     ! i > j == k
+                     if ((i .gt. j) .and. (j .eq. k) .and. (i .gt. k)) tuple_type = 2
+                     ! i > j > k
+                     if ((i .gt. j) .and. (j .gt. k) .and. (i .gt. k)) tuple_type = 3
+     
+                     ! generate tuple(s)
+                     TypeOfTuple_par: select case(tuple_type)
+     
+                     case(1)
+
+#ifdef VAR_OPENACC
+                        call abij_ptr_alias_case_1(i,k,vvoo,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31)
+                        call jaik_ptr_alias_case_1(i,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31)
+                        call cbai_ptr_alias_case_1(i,k,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_3,.true.)
+                        call ccsd_t2_ptr_alias_case_1(i,k,ccsd_doubles,ccsd_doubles_portions,&
+                                                    & ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_31,&
+                                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_3)
+#endif
+
+#ifdef VAR_OPENACC
+                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_31,&
+                                                & ccsd_ov2_ptr_1,ccsd_ov2_ptr_3,vvvo_ptr_1,&
+                                                & vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,&
+                                                & ovoo_ptr_31,trip_tmp,trip_ampl)
+#else
+                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
+                                                & ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
+                                                & ccsd_doubles_portions%elm4(:,:,:,3),&
+                                                & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,3),&
+                                                & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
+                                                & trip_tmp,trip_ampl)
+#endif
+     
+                        ! generate triples amplitudes from trip arrays
+     
+                        call trip_denom(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
+     
+                        ! now do the contractions
+     
+#ifdef VAR_OPENACC
+                        call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31,&
+                                             & ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31,&
+                                             & vvvo_ptr_1,vvvo_ptr_3,&
+                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#else
+                        call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo%val(:,:,i,i),vvoo%val(:,:,i,k),vvoo%val(:,:,k,i),&
+                                             & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
+                                             & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,3),&
+                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#endif
+     
+                     case(2)
+
+#ifdef VAR_OPENACC
+                        call abij_ptr_alias_case_2(i,j,vvoo,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23)
+                        call jaik_ptr_alias_case_2(i,j,ovoo,ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23)
+                        call cbai_ptr_alias_case_2(i,j,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_2,.true.)
+                        call ccsd_t2_ptr_alias_case_2(i,j,ccsd_doubles,ccsd_doubles_portions,&
+                                                    & ccsd_v2_ptr_12,ccsd_v2_ptr_21,ccsd_v2_ptr_23,&
+                                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2)
+#endif
+
+#ifdef VAR_OPENACC
+                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_21,ccsd_v2_ptr_23,&
+                                                & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,vvvo_ptr_1,&
+                                                & vvvo_ptr_2,ovoo_ptr_12,ovoo_ptr_21,&
+                                                & ovoo_ptr_23,trip_tmp,trip_ampl)
+#else
+                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
+                                                & ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions%elm4(:,:,:,1),&
+                                                & ccsd_doubles_portions%elm4(:,:,:,2),&
+                                                & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,2),&
+                                                & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
+                                                & trip_tmp,trip_ampl)
+#endif
+
+                        ! generate triples amplitudes from trip arrays
+     
+                        call trip_denom(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
+     
+                        ! now do the contractions
+     
+#ifdef VAR_OPENACC
+                        call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23,&
+                                             & ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23,&
+                                             & vvvo_ptr_1,vvvo_ptr_2,&
+                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#else
+                        call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,j,i),vvoo%val(:,:,j,j),&
+                                             & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
+                                             & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,2),&
+                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#endif
+     
+                     case(3)
+
+#ifdef VAR_OPENACC
+                        call abij_ptr_alias_case_3(i,j,k,vvoo,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_21,&
+                                                 & vvoo_ptr_23,vvoo_ptr_31,vvoo_ptr_32)
+                        call jaik_ptr_alias_case_3(i,j,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
+                                                 & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32)
+                        call cbai_ptr_alias_case_3(i,j,k,vvvo_pdm,vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,.true.)
+                        call ccsd_t2_ptr_alias_case_3(i,j,k,ccsd_doubles,ccsd_doubles_portions,&
+                                                    & ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_21,&
+                                                    & ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32,&
+                                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3)
+#endif
+
+#ifdef VAR_OPENACC
+                        call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_13,&
+                                                & ccsd_v2_ptr_21,ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32,&
+                                                & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3,vvvo_ptr_1,&
+                                                & vvvo_ptr_2,vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
+                                                & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32,trip_tmp,trip_ampl)
+#else
+                        call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,i,k),&
+                                                & ccsd_doubles%val(:,:,j,i),ccsd_doubles%val(:,:,j,k),&
+                                                & ccsd_doubles%val(:,:,k,i),ccsd_doubles%val(:,:,k,j),&
+                                                & ccsd_doubles_portions%elm4(:,:,:,1),ccsd_doubles_portions%elm4(:,:,:,2),&
+                                                & ccsd_doubles_portions%elm4(:,:,:,3),vvvo_pdm%elm4(:,:,:,1),&
+                                                & vvvo_pdm%elm4(:,:,:,2),vvvo_pdm%elm4(:,:,:,3),&
+                                                & ovoo%val(:,:,i,j),ovoo%val(:,:,i,k),ovoo%val(:,:,j,i),&
+                                                & ovoo%val(:,:,j,k),ovoo%val(:,:,k,i),ovoo%val(:,:,k,j),&
+                                                & trip_tmp,trip_ampl)
+#endif
+
+                        ! generate triples amplitudes from trip arrays
+     
+                        call trip_denom(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
+     
+                        ! now do the contractions
+
+#ifdef VAR_OPENACC     
+                        call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_21,&
+                                             & vvoo_ptr_23,vvoo_ptr_31,vvoo_ptr_32,ovoo_ptr_12,ovoo_ptr_13,&
+                                             & ovoo_ptr_21,ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32,&
+                                             & vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,&
+                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#else
+                        call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,i,k),&
+                                             & vvoo%val(:,:,j,i),vvoo%val(:,:,j,k),vvoo%val(:,:,k,i),&
+                                             & vvoo%val(:,:,k,j),ovoo%val(:,:,i,j),ovoo%val(:,:,i,k),&
+                                             & ovoo%val(:,:,j,i),ovoo%val(:,:,j,k),ovoo%val(:,:,k,i),ovoo%val(:,:,k,j),&
+                                             & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,2),vvvo_pdm%elm4(:,:,:,3),&
+                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#endif
+     
+                     end select TypeOfTuple_par
+  
+                  end do krun_par
+  
+            end do ijrun_par
+
+    ! release pdm work array and job list
+    call array_free(vvvo_pdm)
+    call mem_dealloc(jobs)
+
+  end subroutine ijk_loop_par
+
+
+  !> \brief: main ijk-loop (serial version)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine ijk_loop_ser(nocc,nvirt,ovoo,vvoo,vvvo,trip_tmp,trip_ampl,ccsd_doubles,ccsd_doubles_portions,&
+                        & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt)
+
+    implicit none
+
+    !> nocc,nvirt
+    integer, intent(in)      :: nocc,nvirt
+    !> 2-el integrals
+    type(array4), intent(inout) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
+    type(array4), intent(inout) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
+#ifdef VAR_OPENACC
+    ! vvoo pointers
+    real(realk), pointer, dimension(:,:) :: vvoo_ptr_12, vvoo_ptr_13, vvoo_ptr_21
+    real(realk), pointer, dimension(:,:) :: vvoo_ptr_23, vvoo_ptr_31, vvoo_ptr_32
+    ! ovoo pointers
+    real(realk), pointer, dimension(:,:) :: ovoo_ptr_12, ovoo_ptr_13, ovoo_ptr_21
+    real(realk), pointer, dimension(:,:) :: ovoo_ptr_23, ovoo_ptr_31, ovoo_ptr_32
+    ! vvvo pointers
+    real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_2, vvvo_ptr_3
+    ! ccsd t2 pointers
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_21
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32
+    real(realk), pointer, dimension(:,:,:) :: ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3
+#endif
+    type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    !> triples amplitudes and 3d work array
+    type(array3), intent(inout) :: trip_tmp, trip_ampl
+    !> ccsd doubles amplitudes
+    type(array4), intent(inout) :: ccsd_doubles
+    type(array), intent(inout)  :: ccsd_doubles_portions ! o*v^2 portions of ccsd_doubles, 1 == i, 2 == j, 3 == k
+    !> ccsd(t) intermediates
+    type(array4), intent(inout) :: ccsdpt_doubles
+    type(array4), intent(inout) :: ccsdpt_doubles_2
+    type(array2), intent(inout) :: ccsdpt_singles
+    !> orbital energies
+    real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt)
+    !> loop integers
+    integer :: i,j,k,idx,tuple_type
+
+    ! a note on the openacc implementation.
+    ! we use pointers to alias specific memory blocks of the vvoo and ovoo integrals.
+    ! this is because we thus avoid to allocate more memory on the device for these integral blocks than what is
+    ! actually needed within one loop cycle AND we avoid doing explicit copies into memory buffers on the host.
+
+ irun_ser: do i=1,nocc
+
+          ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+          call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+                  & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
+
+    jrun_ser: do j=1,i
+
+             ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+             call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
+
+       krun_ser: do k=1,j
+
+                    ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+                    call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,k),nvirt,nvirt,&
+                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,3))
+    
+                    ! select type of tuple
+                    tuple_type = -1
+                    ! i == j == k
+                    ! this always gives zero contribution
+                    ! i == j > k
+                    if ((i .eq. j) .and. (j .gt. k) .and. (i .gt. k)) tuple_type = 1
+                    ! i > j == k
+                    if ((i .gt. j) .and. (j .eq. k) .and. (i .gt. k)) tuple_type = 2
+                    ! i > j > k
+                    if ((i .gt. j) .and. (j .gt. k) .and. (i .gt. k)) tuple_type = 3
+    
+                    ! generate tuple(s)
+                    TypeOfTuple_ser: select case(tuple_type)
+    
+                    case(1)
+
+#ifdef VAR_OPENACC
+                       call abij_ptr_alias_case_1(i,k,vvoo,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31)
+                       call jaik_ptr_alias_case_1(i,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31)
+                       call cbai_ptr_alias_case_1(i,k,vvvo,vvvo_ptr_1,vvvo_ptr_3,.false.)
+                       call ccsd_t2_ptr_alias_case_1(i,k,ccsd_doubles,ccsd_doubles_portions,&
+                                                   & ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_31,&
+                                                   & ccsd_ov2_ptr_1,ccsd_ov2_ptr_3)
+#endif
+
+#ifdef VAR_OPENACC
+                       call trip_generator_case1(i,k,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_31,&
+                                               & ccsd_ov2_ptr_1,ccsd_ov2_ptr_3,vvvo_ptr_1,&
+                                               & vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,&
+                                               & ovoo_ptr_31,trip_tmp,trip_ampl)
+#else
+                       call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
+                                               & ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
+                                               & ccsd_doubles_portions%elm4(:,:,:,3),&
+                                               & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,k),&
+                                               & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
+                                               & trip_tmp,trip_ampl)
+#endif
+ 
+                       ! generate triples amplitudes from trip arrays
+    
+                       call trip_denom(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
+    
+                       ! now do the contractions
+    
+#ifdef VAR_OPENACC
+                       call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31,&
+                                            & ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31,&
+                                            & vvvo_ptr_1,vvvo_ptr_3,&
+                                            & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#else
+                       call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo%val(:,:,i,i),vvoo%val(:,:,i,k),vvoo%val(:,:,k,i),&
+                                            & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
+                                            & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,k),&
+                                            & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#endif
+    
+                    case(2)
+
+#ifdef VAR_OPENACC
+                       call abij_ptr_alias_case_2(i,j,vvoo,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23)
+                       call jaik_ptr_alias_case_2(i,j,ovoo,ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23)
+                       call cbai_ptr_alias_case_2(i,j,vvvo,vvvo_ptr_1,vvvo_ptr_2,.false.)
+                       call ccsd_t2_ptr_alias_case_2(i,j,ccsd_doubles,ccsd_doubles_portions,&
+                                                   & ccsd_v2_ptr_12,ccsd_v2_ptr_21,ccsd_v2_ptr_23,&
+                                                   & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2)
+#endif
+
+#ifdef VAR_OPENACC
+                       call trip_generator_case2(i,j,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_21,ccsd_v2_ptr_23,&
+                                               & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,vvvo_ptr_1,&
+                                               & vvvo_ptr_2,ovoo_ptr_12,ovoo_ptr_21,&
+                                               & ovoo_ptr_23,trip_tmp,trip_ampl)
+#else
+                       call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
+                                               & ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions%elm4(:,:,:,1),&
+                                               & ccsd_doubles_portions%elm4(:,:,:,2),&
+                                               & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,j),&
+                                               & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
+                                               & trip_tmp,trip_ampl)
+#endif
+
+                       ! generate triples amplitudes from trip arrays
+    
+                       call trip_denom(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
+    
+                       ! now do the contractions
+
+#ifdef VAR_OPENACC    
+                       call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23,&
+                                            & ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23,&
+                                            & vvvo_ptr_1,vvvo_ptr_2,&
+                                            & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#else
+                       call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,j,i),vvoo%val(:,:,j,j),&
+                                            & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
+                                            & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,j),&
+                                            & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#endif
+    
+                    case(3)
+
+#ifdef VAR_OPENACC
+                       call abij_ptr_alias_case_3(i,j,k,vvoo,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_21,&
+                                                 & vvoo_ptr_23,vvoo_ptr_31,vvoo_ptr_32)
+                       call jaik_ptr_alias_case_3(i,j,k,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
+                                                 & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32)
+                       call cbai_ptr_alias_case_3(i,j,k,vvvo,vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,.false.)
+                       call ccsd_t2_ptr_alias_case_3(i,j,k,ccsd_doubles,ccsd_doubles_portions,&
+                                                   & ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_21,&
+                                                   & ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32,&
+                                                   & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3)
+#endif
+
+#ifdef VAR_OPENACC
+                       call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_v2_ptr_12,ccsd_v2_ptr_13,&
+                                               & ccsd_v2_ptr_21,ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32,&
+                                               & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3,vvvo_ptr_1,&
+                                               & vvvo_ptr_2,vvvo_ptr_3,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
+                                               & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32,trip_tmp,trip_ampl)
+#else
+                       call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,i,k),&
+                                               & ccsd_doubles%val(:,:,j,i),ccsd_doubles%val(:,:,j,k),&
+                                               & ccsd_doubles%val(:,:,k,i),ccsd_doubles%val(:,:,k,j),&
+                                               & ccsd_doubles_portions%elm4(:,:,:,1),ccsd_doubles_portions%elm4(:,:,:,2),&
+                                               & ccsd_doubles_portions%elm4(:,:,:,3),vvvo%elm4(:,:,:,i),&
+                                               & vvvo%elm4(:,:,:,j),vvvo%elm4(:,:,:,k),&
+                                               & ovoo%val(:,:,i,j),ovoo%val(:,:,i,k),ovoo%val(:,:,j,i),&
+                                               & ovoo%val(:,:,j,k),ovoo%val(:,:,k,i),ovoo%val(:,:,k,j),&
+                                               & trip_tmp,trip_ampl)
+#endif
+
+                       ! generate triples amplitudes from trip arrays
+    
+                       call trip_denom(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl%val)
+    
+                       ! now do the contractions
+
+#ifdef VAR_OPENACC    
+                       call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_21,&
+                                            & vvoo_ptr_23,vvoo_ptr_31,vvoo_ptr_32,ovoo_ptr_12,ovoo_ptr_13,&
+                                            & ovoo_ptr_21,ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32,&
+                                            & vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,&
+                                            & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#else
+                       call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,i,k),vvoo%val(:,:,j,i),&
+                                            & vvoo%val(:,:,j,k),vvoo%val(:,:,k,i),vvoo%val(:,:,k,j),ovoo%val(:,:,i,j),&
+                                            & ovoo%val(:,:,i,k),ovoo%val(:,:,j,i),ovoo%val(:,:,j,k),ovoo%val(:,:,k,i),&
+                                            & ovoo%val(:,:,k,j),vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,j),vvvo%elm4(:,:,:,k),&
+                                            & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+#endif
+
+                    end select TypeOfTuple_ser
+
+                 end do krun_ser
+    
+              end do jrun_ser
+    
+           end do irun_ser
+
+  end subroutine ijk_loop_ser
+
+
+  !> \brief: alias the pointers for use with openacc (case 1)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine ccsd_t2_ptr_alias_case_1(oindex1,oindex3,ccsd_t2,ccsd_t2_portions,&
+                                    & ccsd_v2_ptr_11,ccsd_v2_ptr_13,ccsd_v2_ptr_31,&
+                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_3)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex3
+    !> ccsd t2 amplitudes
+    type(array4), intent(inout) :: ccsd_t2
+    !> portions of the t2 amplitudes
+    type(array), intent(inout)  :: ccsd_t2_portions
+    !> nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_11, ccsd_v2_ptr_13, ccsd_v2_ptr_31
+    !> no*nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:,:) :: ccsd_ov2_ptr_1,ccsd_ov2_ptr_3
+
+#ifdef VAR_OPENACC
+    ! nv**2 pointers
+    ccsd_v2_ptr_11 => ccsd_t2%val(:,:,oindex1,oindex1)
+    ccsd_v2_ptr_13 => ccsd_t2%val(:,:,oindex1,oindex3)
+    ccsd_v2_ptr_31 => ccsd_t2%val(:,:,oindex3,oindex1)
+    ! no*nv**2 pointers
+    ccsd_ov2_ptr_1 => ccsd_t2_portions%elm4(:,:,:,1)
+    ccsd_ov2_ptr_3 => ccsd_t2_portions%elm4(:,:,:,3)
+#endif
+
+  end subroutine ccsd_t2_ptr_alias_case_1
+
+
+  !> \brief: alias the pointers for use with openacc (case 2)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine ccsd_t2_ptr_alias_case_2(oindex1,oindex2,ccsd_t2,ccsd_t2_portions,&
+                                    & ccsd_v2_ptr_12,ccsd_v2_ptr_21,ccsd_v2_ptr_22,&
+                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2
+    !> ccsd t2 amplitudes
+    type(array4), intent(inout) :: ccsd_t2
+    !> portions of the t2 amplitudes
+    type(array), intent(inout)  :: ccsd_t2_portions
+    !> nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_12, ccsd_v2_ptr_21, ccsd_v2_ptr_22
+    !> no*nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:,:) :: ccsd_ov2_ptr_1,ccsd_ov2_ptr_2
+
+#ifdef VAR_OPENACC
+    ! nv**2 pointers
+    ccsd_v2_ptr_12 => ccsd_t2%val(:,:,oindex1,oindex2)
+    ccsd_v2_ptr_21 => ccsd_t2%val(:,:,oindex2,oindex1)
+    ccsd_v2_ptr_22 => ccsd_t2%val(:,:,oindex2,oindex2)
+    ! no*nv**2 pointers
+    ccsd_ov2_ptr_1 => ccsd_t2_portions%elm4(:,:,:,1)
+    ccsd_ov2_ptr_2 => ccsd_t2_portions%elm4(:,:,:,2)
+#endif
+
+  end subroutine ccsd_t2_ptr_alias_case_2
+
+
+  !> \brief: alias the pointers for use with openacc (case 3)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine ccsd_t2_ptr_alias_case_3(oindex1,oindex2,oindex3,ccsd_t2,ccsd_t2_portions,&
+                                    & ccsd_v2_ptr_12,ccsd_v2_ptr_13,ccsd_v2_ptr_21,&
+                                    & ccsd_v2_ptr_23,ccsd_v2_ptr_31,ccsd_v2_ptr_32,&
+                                    & ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2,oindex3
+    !> ccsd t2 amplitudes
+    type(array4), intent(inout) :: ccsd_t2
+    !> portions of the t2 amplitudes
+    type(array), intent(inout)  :: ccsd_t2_portions
+    !> nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_12, ccsd_v2_ptr_13, ccsd_v2_ptr_21
+    real(realk), pointer, dimension(:,:) :: ccsd_v2_ptr_23, ccsd_v2_ptr_31, ccsd_v2_ptr_32
+    !> no*nv**2 tiles of ccsd_doubles
+    real(realk), pointer, dimension(:,:,:) :: ccsd_ov2_ptr_1,ccsd_ov2_ptr_2,ccsd_ov2_ptr_3
+
+#ifdef VAR_OPENACC
+    ! nv**2 pointers
+    ccsd_v2_ptr_12 => ccsd_t2%val(:,:,oindex1,oindex2)
+    ccsd_v2_ptr_13 => ccsd_t2%val(:,:,oindex1,oindex3)
+    ccsd_v2_ptr_21 => ccsd_t2%val(:,:,oindex2,oindex1)
+    ccsd_v2_ptr_23 => ccsd_t2%val(:,:,oindex2,oindex3)
+    ccsd_v2_ptr_31 => ccsd_t2%val(:,:,oindex3,oindex1)
+    ccsd_v2_ptr_32 => ccsd_t2%val(:,:,oindex3,oindex2)
+    ! no*nv**2 pointers
+    ccsd_ov2_ptr_1 => ccsd_t2_portions%elm4(:,:,:,1)
+    ccsd_ov2_ptr_2 => ccsd_t2_portions%elm4(:,:,:,2)
+    ccsd_ov2_ptr_3 => ccsd_t2_portions%elm4(:,:,:,3)
+#endif
+
+  end subroutine ccsd_t2_ptr_alias_case_3
+
+
+  !> \brief: alias the pointers for use with openacc (case 1)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine cbai_ptr_alias_case_1(oindex1,oindex3,vvvo,vvvo_ptr_1,vvvo_ptr_3,par)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex3
+    type(array), intent(inout) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    ! pointers
+    real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_3
+    ! logical distinguishing between serial and parallel run
+    logical, intent(in) :: par
+
+#ifdef VAR_OPENACC
+    if (par) then
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,1)
+       vvvo_ptr_3 => vvvo%elm4(:,:,:,3)
+
+    else
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,oindex1)
+       vvvo_ptr_3 => vvvo%elm4(:,:,:,oindex3)
+
+    end if
+#endif
+
+  end subroutine cbai_ptr_alias_case_1
+
+
+  !> \brief: alias the pointers for use with openacc (case 2)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine cbai_ptr_alias_case_2(oindex1,oindex2,vvvo,vvvo_ptr_1,vvvo_ptr_2,par)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2
+    type(array), intent(inout) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    ! pointers
+    real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_2
+    ! logical distinguishing between serial and parallel run
+    logical, intent(in) :: par
+
+#ifdef VAR_OPENACC
+    if (par) then
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,1)
+       vvvo_ptr_2 => vvvo%elm4(:,:,:,2)
+
+    else
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,oindex1)
+       vvvo_ptr_2 => vvvo%elm4(:,:,:,oindex2)
+
+    end if
+#endif
+
+  end subroutine cbai_ptr_alias_case_2
+
+
+  !> \brief: alias the pointers for use with openacc (case 3)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine cbai_ptr_alias_case_3(oindex1,oindex2,oindex3,vvvo,vvvo_ptr_1,vvvo_ptr_2,vvvo_ptr_3,par)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2,oindex3
+    type(array), intent(inout) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    ! pointers
+    real(realk), pointer, dimension(:,:,:) :: vvvo_ptr_1, vvvo_ptr_2, vvvo_ptr_3
+    ! logical distinguishing between serial and parallel run
+    logical, intent(in) :: par
+
+#ifdef VAR_OPENACC
+    if (par) then
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,1)
+       vvvo_ptr_2 => vvvo%elm4(:,:,:,2)
+       vvvo_ptr_3 => vvvo%elm4(:,:,:,3)
+
+    else
+
+       vvvo_ptr_1 => vvvo%elm4(:,:,:,oindex1)
+       vvvo_ptr_2 => vvvo%elm4(:,:,:,oindex2)
+       vvvo_ptr_3 => vvvo%elm4(:,:,:,oindex3)
+
+    end if
+#endif
+
+  end subroutine cbai_ptr_alias_case_3
+
+
+  !> \brief: alias the pointers for use with openacc (case 1)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine abij_ptr_alias_case_1(oindex1,oindex3,vvoo,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_31)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex3
+    type(array4), intent(inout) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
+    ! pointers
+    real(realk), pointer, dimension(:,:) :: vvoo_ptr_12, vvoo_ptr_13, vvoo_ptr_31
+
+#ifdef VAR_OPENACC
+    vvoo_ptr_12 => vvoo%val(:,:,oindex1,oindex1)
+    vvoo_ptr_13 => vvoo%val(:,:,oindex1,oindex3)
+    vvoo_ptr_31 => vvoo%val(:,:,oindex3,oindex1)
+#endif
+
+ end subroutine abij_ptr_alias_case_1
+
+
+  !> \brief: alias the pointers for use with openacc (case 1)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine jaik_ptr_alias_case_1(oindex1,oindex3,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_31)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex3
+    type(array4), intent(inout) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
+    ! pointers
+    real(realk), pointer, dimension(:,:) :: ovoo_ptr_12, ovoo_ptr_13, ovoo_ptr_31
+
+#ifdef VAR_OPENACC
+    ovoo_ptr_12 => ovoo%val(:,:,oindex1,oindex1)
+    ovoo_ptr_13 => ovoo%val(:,:,oindex1,oindex3)
+    ovoo_ptr_31 => ovoo%val(:,:,oindex3,oindex1)
+#endif
+
+ end subroutine jaik_ptr_alias_case_1
+
+
+  !> \brief: alias the pointers for use with openacc (case 2)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine abij_ptr_alias_case_2(oindex1,oindex2,vvoo,vvoo_ptr_12,vvoo_ptr_21,vvoo_ptr_23)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2
+    type(array4), intent(inout) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
+    ! pointers
+    real(realk), pointer, dimension(:,:) :: vvoo_ptr_12, vvoo_ptr_21, vvoo_ptr_23
+
+#ifdef VAR_OPENACC
+    vvoo_ptr_12 => vvoo%val(:,:,oindex1,oindex2)
+    vvoo_ptr_21 => vvoo%val(:,:,oindex2,oindex1)
+    vvoo_ptr_23 => vvoo%val(:,:,oindex2,oindex2)
+#endif
+
+ end subroutine abij_ptr_alias_case_2
+
+
+  !> \brief: alias the pointers for use with openacc (case 2)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine jaik_ptr_alias_case_2(oindex1,oindex2,ovoo,ovoo_ptr_12,ovoo_ptr_21,ovoo_ptr_23)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2
+    type(array4), intent(inout) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K) 
+    ! pointers
+    real(realk), pointer, dimension(:,:) :: ovoo_ptr_12, ovoo_ptr_21, ovoo_ptr_23
+
+#ifdef VAR_OPENACC
+    ovoo_ptr_12 => ovoo%val(:,:,oindex1,oindex2)
+    ovoo_ptr_21 => ovoo%val(:,:,oindex2,oindex1)
+    ovoo_ptr_23 => ovoo%val(:,:,oindex2,oindex2)
+#endif
+
+ end subroutine jaik_ptr_alias_case_2
+
+
+  !> \brief: alias the pointers for use with openacc (case 3)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine abij_ptr_alias_case_3(oindex1,oindex2,oindex3,vvoo,vvoo_ptr_12,vvoo_ptr_13,vvoo_ptr_21,&
+                                 & vvoo_ptr_23,vvoo_ptr_31,vvoo_ptr_32)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2,oindex3
+    type(array4), intent(inout) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
+    ! pointers
+    real(realk), pointer, dimension(:,:) :: vvoo_ptr_12, vvoo_ptr_13, vvoo_ptr_21
+    real(realk), pointer, dimension(:,:) :: vvoo_ptr_23, vvoo_ptr_31, vvoo_ptr_32
+
+#ifdef VAR_OPENACC
+    vvoo_ptr_12 => vvoo%val(:,:,oindex1,oindex2)
+    vvoo_ptr_13 => vvoo%val(:,:,oindex1,oindex3)
+    vvoo_ptr_21 => vvoo%val(:,:,oindex2,oindex1)
+    vvoo_ptr_23 => vvoo%val(:,:,oindex2,oindex3)
+    vvoo_ptr_31 => vvoo%val(:,:,oindex3,oindex1)
+    vvoo_ptr_32 => vvoo%val(:,:,oindex3,oindex2)
+#endif
+
+ end subroutine abij_ptr_alias_case_3
+
+
+  !> \brief: alias the pointers for use with openacc (case 3)
+  !> \author: Janus Juul Eriksen
+  !> \date: january 2014
+  subroutine jaik_ptr_alias_case_3(oindex1,oindex2,oindex3,ovoo,ovoo_ptr_12,ovoo_ptr_13,ovoo_ptr_21,&
+                                 & ovoo_ptr_23,ovoo_ptr_31,ovoo_ptr_32)
+
+    implicit none
+
+    !> occupied orbital indices
+    integer, intent(in) :: oindex1,oindex2,oindex3
+    type(array4), intent(inout) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
+    ! pointers
+    real(realk), pointer, dimension(:,:) :: ovoo_ptr_12, ovoo_ptr_13, ovoo_ptr_21
+    real(realk), pointer, dimension(:,:) :: ovoo_ptr_23, ovoo_ptr_31, ovoo_ptr_32
+
+#ifdef VAR_OPENACC
+    ovoo_ptr_12 => ovoo%val(:,:,oindex1,oindex2)
+    ovoo_ptr_13 => ovoo%val(:,:,oindex1,oindex3)
+    ovoo_ptr_21 => ovoo%val(:,:,oindex2,oindex1)
+    ovoo_ptr_23 => ovoo%val(:,:,oindex2,oindex3)
+    ovoo_ptr_31 => ovoo%val(:,:,oindex3,oindex1)
+    ovoo_ptr_32 => ovoo%val(:,:,oindex3,oindex2)
+#endif
+
+ end subroutine jaik_ptr_alias_case_3
+
+
+  !> \brief: create ij_array for ccsd(t)
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2013
+  subroutine create_ij_array_ccsdpt(njobs,no,ij_array)
+
+    implicit none
+
+    !> njobs and nocc
+    integer, intent(in) :: njobs,no
+    !> ij_array
+    integer, dimension(njobs), intent(inout) :: ij_array
     !> integers
     integer :: counter,offset,fill_1,fill_2
 
-    ! since i .ge. j, the composite ij indices will make up a lower triangular matrix
+    ! since i .ge. j, the composite ij indices will make up a lower triangular matrix.
     ! for each ij, k (where j .ge. k) jobs have to be carried out.
     ! thus, the largest jobs for a given i-value will be those that have the largest j-value,
     ! and the largest jobs will thus be those for which the ij index appears near the diagonal.
     ! as the value of j specifies how large a given job is, we fill up the ij_array with jobs
-    ! for j-values in decending order.
+    ! for j-values in descending order.
+
+    ! the below is the lower triangular part of the ij (5*5) matrix written in row-major order
+
+    ! ||  1               ||
+    ! ||  2   3           ||
+    ! ||  4   5  6        ||
+    ! ||  7   8  9 10     ||
+    ! ||  11 12 13 14 15  ||
+
+    ! examples of ij --> i,j conversion
+    ! - ij index 15 corresponds to (i,j)=(5,5) and thus to k=1,2,3,4,5
+    ! - ij index 9  corresponds to (i,j)=(4,3) and thus to k=1,2,3
+    ! - ij index 11  corresponds to (i,j)=(5,1) and thus to k=1
+
+    ! we want ij_array to look like this
+    ! (15 , 14 , 10 , 13 , 9 , 6 , 12 , 8 , 5 , 3 , 11 , 7 , 4 , 2 , 1)
 
     ! counter specifies the index of ij_array
     counter = 1
@@ -648,8 +1229,8 @@ contains
 
        if (fill_1 .eq. 0) then
 
-          ! this is largest possible job
-          ij_array(counter) = ntasks
+          ! this is largest possible job, i.e., the (no,no)-th entry in the ij matrix
+          ij_array(counter) = njobs
           ! increment counter
           counter = counter + 1
 
@@ -659,17 +1240,20 @@ contains
 
              if (fill_2 .eq. 0) then
 
-                ! this is the largest i-value, for which we have to do k number of jobs
-                ij_array(counter) = ntasks - fill_1
+                ! this is the largest i-value, for which we have to do k number of jobs, 
+                ! that is, we are at the no'th row essentially moving from right towards left.
+                ij_array(counter) = njobs - fill_1
                 ! increment counter
                 counter = counter + 1
 
              else
 
-                ! we loop through the i-value keeping the j-value (and k-value of course) fixed
-                ! we thus loop from i == nocc up towards the diagonal of the lower triangular matrix
+                ! we loop through the i-values keeping the j-value (and k-range) fixed
+                ! we thus loop from i == no up towards the diagonal of the lower triangular matrix
                 offset = offset + (no - fill_2)
-                ij_array(counter) = ntasks - fill_1 - offset
+                ! 'njobs - fill_1' gives the current column, while 'offset' moves us up through the rows
+                ! while staying below or on the diagonal.(still row-major numbering)
+                ij_array(counter) = njobs - fill_1 - offset
                 ! increment counter
                 counter = counter + 1
 
@@ -687,14 +1271,14 @@ contains
   !> \brief: make job distribution list for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
+  subroutine job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
     implicit none
 
-    !> batch size (without remainder contribution) 
-    integer, intent(in) :: b_size,ntasks
+    !> batch size (without remainder contribution) and njobs 
+    integer, intent(in) :: b_size,njobs
     !> ij_array
-    integer, dimension(ntasks), intent(inout) :: ij_array
+    integer, dimension(njobs), intent(inout) :: ij_array
     !> jobs array
     integer, dimension(b_size+1), intent(inout) :: jobs
     !> integers
@@ -705,7 +1289,7 @@ contains
     nodtotal = infpar%lg_nodtot
 
     ! fill the jobs array with values of ij stored in ij_array
-    ! there are (nocc**2 + nocc)/2 tasks in total (ntasks)
+    ! there are (nocc**2 + nocc)/2 jobs in total (njobs)
 
     ! the below algorithm distributes the jobs evenly among the nodes.
 
@@ -713,7 +1297,7 @@ contains
 
        fill_sum = infpar%lg_mynum + 1 + fill*nodtotal
 
-       if (fill_sum .le. ntasks) then
+       if (fill_sum .le. njobs) then
 
           jobs(fill + 1) = ij_array(infpar%lg_mynum + 1 + fill*nodtotal) 
 
@@ -745,9 +1329,11 @@ contains
     !> integers
     integer :: gauss_sum,gauss_sum_old,series
 
-    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements
+    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements.
+    ! in column 1, there are N rows, in column 2, there are (N-1) rows, ...,  in
+    ! column (N-1), there are 2 rows, and in column N, there are 1 row.
     ! this is a gauss sum of 1 + 2 + 3 + ... + N-2 + N-1 + N
-    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum)
+    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum).
     ! if gauss_sum for a given i (series) is smaller than ij, we loop.
     ! when gauss_sum is greater than ij, we use the value of i for the present loop cycle
     ! and calculate the value of j from the present ij and previous gauss_sum values.
@@ -755,7 +1341,7 @@ contains
 
     do series = 1,no
 
-       gauss_sum = (series**2 + series)/2
+       gauss_sum = int((series**2 + series)/2)
 
        if (gauss_sum .lt. ij) then
 
@@ -784,10 +1370,197 @@ contains
   end subroutine calc_i_and_j
 
 
+  !> \brief: generator for triples amplitudes, case(1)
+  !> \author: Janus Juul Eriksen
+  !> \date: february 2014
+  subroutine trip_generator_case1(oindex1,oindex3,no,nv,ccsd_doubles_11,ccsd_doubles_13,&
+                                & ccsd_doubles_31,ccsd_doubles_portions_1,ccsd_doubles_portions_3,&
+                                & cbai_tile_1,cbai_tile_3,jaik_tile_11,&
+                                & jaik_tile_13,jaik_tile_31,trip_tmp,trip_ampl)
+
+    implicit none
+
+    !> i, j, k, nocc, and nvirt
+    integer, intent(in) :: oindex1,oindex3,no,nv
+    !> nv**2 tiles of ccsd_doubles
+    real(realk), dimension(nv,nv) :: ccsd_doubles_11, ccsd_doubles_13, ccsd_doubles_31
+    !> no*nv**2 tiles of ccsd_doubles
+    real(realk), dimension(no,nv,nv) :: ccsd_doubles_portions_1,ccsd_doubles_portions_3
+    !> tiles of jaik 2-el integrals
+    real(realk), dimension(no,nv) :: jaik_tile_11, jaik_tile_13, jaik_tile_31
+    !> tiles of cbai 2-el integrals
+    real(realk), dimension(nv,nv,nv), intent(inout) :: cbai_tile_1, cbai_tile_3
+    !> triples amplitude and work array
+    type(array3), intent(inout) :: trip_tmp, trip_ampl
+
+    ! iik,iki
+    call trip_amplitudes_virt(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_11,&
+                            & cbai_tile_3,trip_tmp%val)
+    call trip_amplitudes_occ(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_portions_1,&
+                            & jaik_tile_13,trip_tmp%val)
+    trip_ampl%val = trip_tmp%val
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [2,1,3],1.0E0_realk,trip_ampl%val)
+
+    ! kii,iik
+    call trip_amplitudes_virt(oindex3,oindex1,oindex1,no,nv,ccsd_doubles_13,&
+                            & cbai_tile_1,trip_tmp%val)
+    call trip_amplitudes_occ(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_portions_1,&
+                            & jaik_tile_31,trip_tmp%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [2,3,1],1.0E0_realk,trip_ampl%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [3,2,1],1.0E0_realk,trip_ampl%val)
+
+    ! iki.kii
+    call trip_amplitudes_virt(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_31,&
+                            & cbai_tile_1,trip_tmp%val)
+    call trip_amplitudes_occ(oindex3,oindex1,oindex1,no,nv,ccsd_doubles_portions_3,&
+                            & jaik_tile_11,trip_tmp%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [1,3,2],1.0E0_realk,trip_ampl%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [3,1,2],1.0E0_realk,trip_ampl%val)
+
+  end subroutine trip_generator_case1
+
+
+  !> \brief: generator for triples amplitudes, case(2)
+  !> \author: Janus Juul Eriksen
+  !> \date: february 2014
+  subroutine trip_generator_case2(oindex1,oindex2,no,nv,ccsd_doubles_12,ccsd_doubles_21,&
+                                & ccsd_doubles_22,ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
+                                & cbai_tile_1,cbai_tile_2,jaik_tile_12,&
+                                & jaik_tile_21,jaik_tile_22,trip_tmp,trip_ampl)
+
+    implicit none
+
+    !> i, j, k, nocc, and nvirt
+    integer, intent(in) :: oindex1,oindex2,no,nv
+    !> nv**2 tiles of ccsd_doubles
+    real(realk), dimension(nv,nv) :: ccsd_doubles_12, ccsd_doubles_21, ccsd_doubles_22
+    !> no*nv**2 tiles of ccsd_doubles
+    real(realk), dimension(no,nv,nv) :: ccsd_doubles_portions_1,ccsd_doubles_portions_2
+    !> tiles of jaik 2-el integrals
+    real(realk), dimension(no,nv) :: jaik_tile_12, jaik_tile_21, jaik_tile_22
+    !> tiles of cbai 2-el integrals
+    real(realk), dimension(nv,nv,nv), intent(inout) :: cbai_tile_1, cbai_tile_2
+    !> triples amplitude and work array
+    type(array3), intent(inout) :: trip_tmp, trip_ampl
+
+    ! ijj.jji
+    call trip_amplitudes_virt(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_21,&
+                            & cbai_tile_2,trip_tmp%val)
+    call trip_amplitudes_occ(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_portions_2,&
+                            & jaik_tile_12,trip_tmp%val)
+    trip_ampl%val = trip_tmp%val
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [1,3,2],1.0E0_realk,trip_ampl%val)
+ 
+    ! jij,ijj
+    call trip_amplitudes_virt(oindex2,oindex1,oindex2,no,nv,ccsd_doubles_12,&
+                            & cbai_tile_2,trip_tmp%val)
+    call trip_amplitudes_occ(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_portions_1,&
+                            & jaik_tile_22,trip_tmp%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [2,1,3],1.0E0_realk,trip_ampl%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [2,3,1],1.0E0_realk,trip_ampl%val)
+ 
+    ! jji,jij
+    call trip_amplitudes_virt(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_22,&
+                            & cbai_tile_1,trip_tmp%val)
+    call trip_amplitudes_occ(oindex2,oindex1,oindex2,no,nv,ccsd_doubles_portions_2,&
+                            & jaik_tile_21,trip_tmp%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [3,1,2],1.0E0_realk,trip_ampl%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [3,2,1],1.0E0_realk,trip_ampl%val)
+
+  end subroutine trip_generator_case2
+
+
+  !> \brief: generator for triples amplitudes, case(3)
+  !> \author: Janus Juul Eriksen
+  !> \date: february 2014
+  subroutine trip_generator_case3(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_12,ccsd_doubles_13,&
+                                & ccsd_doubles_21,ccsd_doubles_23,ccsd_doubles_31,ccsd_doubles_32,&
+                                & ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
+                                & ccsd_doubles_portions_3,cbai_tile_1,cbai_tile_2,cbai_tile_3,&
+                                & jaik_tile_12,jaik_tile_13,jaik_tile_21,jaik_tile_23,jaik_tile_31,&
+                                & jaik_tile_32,trip_tmp,trip_ampl)
+
+    implicit none
+
+    !> i, j, k, nocc, and nvirt
+    integer, intent(in) :: oindex1,oindex2,oindex3,no,nv
+    !> nv**2 tiles of ccsd_doubles
+    real(realk), dimension(nv,nv) :: ccsd_doubles_12, ccsd_doubles_13, ccsd_doubles_21
+    real(realk), dimension(nv,nv) :: ccsd_doubles_23, ccsd_doubles_31, ccsd_doubles_32
+    !> no*nv**2 tiles of ccsd_doubles
+    real(realk), dimension(no,nv,nv) :: ccsd_doubles_portions_1,ccsd_doubles_portions_2,ccsd_doubles_portions_3
+    !> tiles of jaik 2-el integrals
+    real(realk), dimension(no,nv) :: jaik_tile_12, jaik_tile_13, jaik_tile_21
+    real(realk), dimension(no,nv) :: jaik_tile_23, jaik_tile_31, jaik_tile_32
+    !> tiles of cbai 2-el integrals 
+    real(realk), dimension(nv,nv,nv), intent(inout) :: cbai_tile_1, cbai_tile_2, cbai_tile_3
+    !> triples amplitude and work array
+    type(array3), intent(inout) :: trip_tmp, trip_ampl
+
+    ! ijk.jki
+    call trip_amplitudes_virt(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_21,&
+                            & cbai_tile_3,trip_ampl%val)
+    call trip_amplitudes_occ(oindex2,oindex3,oindex1,no,nv,ccsd_doubles_portions_2,&
+                            & jaik_tile_13,trip_ampl%val)
+
+    ! kij,ijk
+    call trip_amplitudes_virt(oindex3,oindex1,oindex2,no,nv,ccsd_doubles_13,&
+                            & cbai_tile_2,trip_tmp%val)
+    call trip_amplitudes_occ(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_portions_1,&
+                            & jaik_tile_32,trip_tmp%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [2,3,1],1.0E0_realk,trip_ampl%val)
+
+    ! jki,kij
+    call trip_amplitudes_virt(oindex2,oindex3,oindex1,no,nv,ccsd_doubles_32,&
+                            & cbai_tile_1,trip_tmp%val)
+    call trip_amplitudes_occ(oindex3,oindex1,oindex2,no,nv,ccsd_doubles_portions_3,&
+                            & jaik_tile_21,trip_tmp%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [3,1,2],1.0E0_realk,trip_ampl%val)
+
+    ! ikj,kji
+    call trip_amplitudes_virt(oindex1,oindex3,oindex2,no,nv,ccsd_doubles_31,&
+                            & cbai_tile_2,trip_tmp%val)
+    call trip_amplitudes_occ(oindex3,oindex2,oindex1,no,nv,ccsd_doubles_portions_3,&
+                            & jaik_tile_12,trip_tmp%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [1,3,2],1.0E0_realk,trip_ampl%val)
+ 
+    ! jik,ikj
+    call trip_amplitudes_virt(oindex2,oindex1,oindex3,no,nv,ccsd_doubles_12,&
+                            & cbai_tile_3,trip_tmp%val)
+    call trip_amplitudes_occ(oindex1,oindex3,oindex2,no,nv,ccsd_doubles_portions_1,&
+                            & jaik_tile_23,trip_tmp%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [2,1,3],1.0E0_realk,trip_ampl%val)
+ 
+    ! kji,jik
+    call trip_amplitudes_virt(oindex3,oindex2,oindex1,no,nv,ccsd_doubles_23,&
+                            & cbai_tile_1,trip_tmp%val)
+    call trip_amplitudes_occ(oindex2,oindex1,oindex3,no,nv,ccsd_doubles_portions_2,&
+                            & jaik_tile_31,trip_tmp%val)
+    call array_reorder_3d(1.0E0_realk,trip_tmp%val,nv,nv,nv,&
+                        & [3,2,1],1.0E0_realk,trip_ampl%val)
+
+  end subroutine trip_generator_case3
+
+
   !> \brief: driver routine for contractions in case(1) of ccsdpt_driver
   !> \author: Janus Juul Eriksen
   !> \date: march 2013
-  subroutine ccsdpt_driver_case1(oindex1,oindex3,no,nv,abij,jaik,&
+  subroutine ccsdpt_driver_case1(oindex1,oindex3,no,nv,abij_tile_12,abij_tile_13,abij_tile_31,&
+                            & jaik_tile_12,jaik_tile_13,jaik_tile_31,&
                             & int_virt_tile_o1,int_virt_tile_o3,&
                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,wrk_3d,trip)
 
@@ -800,8 +1573,10 @@ contains
     type(array4), intent(inout) :: ccsdpt_doubles
     type(array4), intent(inout) :: ccsdpt_doubles_2
     !> aibj and jaik 2-el integrals
-    type(array4), intent(inout) :: jaik ! integrals (AI|JK) in the order (J,A,I,K)
-    type(array4), intent(inout) :: abij ! integrals (AI|BJ) in the order (A,B,I,J)
+    !> tiles of jaik integrals (AI|JK) in the order (J,A,I,K)
+    real(realk), dimension(no,nv) :: jaik_tile_12, jaik_tile_13, jaik_tile_31
+    !> tiles of abij integrals (AI|BJ) in the order (A,B,I,J)
+    real(realk), dimension(nv,nv) :: abij_tile_12, abij_tile_13, abij_tile_31
     !> tiles of cbai 2-el integrals determined by incomming oindex1,oindex3
     real(realk), dimension(nv,nv,nv), intent(inout) :: int_virt_tile_o1
     real(realk), dimension(nv,nv,nv), intent(inout) :: int_virt_tile_o3
@@ -825,9 +1600,9 @@ contains
 
           ! calculate contribution to ccsdpt_singles:
 
-          call ccsdpt_contract_11(oindex1,oindex1,oindex3,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_11(oindex1,oindex1,oindex3,nv,abij_tile_13,abij_tile_31,ccsdpt_singles,&
                        & trip,.false.)
-          call ccsdpt_contract_12(oindex1,oindex1,oindex3,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_12(oindex1,oindex1,oindex3,nv,abij_tile_12,abij_tile_12,ccsdpt_singles,&
                        & trip,.false.)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
@@ -839,7 +1614,7 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex1,oindex3,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex1,oindex3,oindex1,no,nv,jaik_tile_31,jaik_tile_13,&
                            & ccsdpt_doubles_2,trip,.true.)
 
        else if (idx .eq. 2) then
@@ -849,9 +1624,9 @@ contains
           call array_reorder_3d(1.0E0_realk,trip%val,trip%dims(1),trip%dims(2),&
                            & trip%dims(3),[3,1,2],0.0E0_realk,wrk_3d%val)
 
-          call ccsdpt_contract_11(oindex3,oindex1,oindex1,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_11(oindex3,oindex1,oindex1,nv,abij_tile_12,abij_tile_12,ccsdpt_singles,&
                        & wrk_3d,.true.)
-          call ccsdpt_contract_12(oindex3,oindex1,oindex1,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_12(oindex3,oindex1,oindex1,nv,abij_tile_13,abij_tile_31,ccsdpt_singles,&
                        & wrk_3d,.true.)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
@@ -861,9 +1636,9 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex1,oindex1,oindex3,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex1,oindex1,oindex3,no,nv,jaik_tile_13,jaik_tile_31,&
                            & ccsdpt_doubles_2,wrk_3d,.false.)
-          call ccsdpt_contract_222(oindex1,oindex1,oindex3,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex1,oindex1,oindex3,no,nv,jaik_tile_12,&
                            & ccsdpt_doubles_2,wrk_3d)
 
        else if (idx .eq. 3) then
@@ -886,9 +1661,9 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex3,oindex1,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex3,oindex1,oindex1,no,nv,jaik_tile_12,jaik_tile_12,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex3,oindex1,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex3,oindex1,oindex1,no,nv,jaik_tile_31,&
                            & ccsdpt_doubles_2,trip)
 
        end if
@@ -901,7 +1676,8 @@ contains
   !> \brief: driver routine for contractions in case(2) of ccsdpt_driver
   !> \author: Janus Juul Eriksen
   !> \date: march 2013
-  subroutine ccsdpt_driver_case2(oindex1,oindex2,no,nv,abij,jaik,&
+  subroutine ccsdpt_driver_case2(oindex1,oindex2,no,nv,abij_tile_12,abij_tile_21,abij_tile_23,&
+                            & jaik_tile_12,jaik_tile_21,jaik_tile_23,&
                             & int_virt_tile_o1,int_virt_tile_o2,&
                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,wrk_3d,trip)
 
@@ -914,8 +1690,10 @@ contains
     type(array4), intent(inout) :: ccsdpt_doubles
     type(array4), intent(inout) :: ccsdpt_doubles_2
     !> aibj and jaik 2-el integrals
-    type(array4), intent(inout) :: jaik ! integrals (AI|JK) in the order (J,A,I,K)
-    type(array4), intent(inout) :: abij ! integrals (AI|BJ) in the order (A,B,I,J)
+    !> tiles of jaik integrals (AI|JK) in the order (J,A,I,K)
+    real(realk), dimension(no,nv) :: jaik_tile_12, jaik_tile_21, jaik_tile_23
+    !> tiles of abij integrals (AI|BJ) in the order (A,B,I,J)
+    real(realk), dimension(nv,nv) :: abij_tile_12, abij_tile_21, abij_tile_23
     !> tiles of cbai 2-el integrals determined by incomming oindex1,oindex2
     real(realk), dimension(nv,nv,nv), intent(inout) :: int_virt_tile_o1
     real(realk), dimension(nv,nv,nv), intent(inout) :: int_virt_tile_o2
@@ -939,9 +1717,9 @@ contains
   
           ! calculate contributions to ccsdpt_singles:
  
-          call ccsdpt_contract_11(oindex1,oindex2,oindex2,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_11(oindex1,oindex2,oindex2,nv,abij_tile_23,abij_tile_23,ccsdpt_singles,&
                        & trip,.true.)
-          call ccsdpt_contract_12(oindex1,oindex2,oindex2,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_12(oindex1,oindex2,oindex2,nv,abij_tile_21,abij_tile_12,ccsdpt_singles,&
                        & trip,.true.)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
@@ -951,9 +1729,9 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex2,oindex2,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex2,oindex2,oindex1,no,nv,jaik_tile_21,jaik_tile_12,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex2,oindex2,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex2,oindex2,oindex1,no,nv,jaik_tile_23,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 2) then
@@ -976,9 +1754,9 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex1,oindex2,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex1,oindex2,oindex2,no,nv,jaik_tile_23,jaik_tile_23,&
                            & ccsdpt_doubles_2,wrk_3d,.false.)
-          call ccsdpt_contract_222(oindex1,oindex2,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex1,oindex2,oindex2,no,nv,jaik_tile_12,&
                            & ccsdpt_doubles_2,wrk_3d)
 
        else if (idx .eq. 3) then
@@ -990,9 +1768,9 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
    
-          call ccsdpt_contract_11(oindex2,oindex2,oindex1,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_11(oindex2,oindex2,oindex1,nv,abij_tile_21,abij_tile_12,ccsdpt_singles,&
                        & trip,.false.)
-          call ccsdpt_contract_12(oindex2,oindex2,oindex1,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_12(oindex2,oindex2,oindex1,nv,abij_tile_23,abij_tile_23,ccsdpt_singles,&
                        & trip,.false.)
    
           ! calculate contributions to ccsdpt_doubles (virt part):
@@ -1004,7 +1782,7 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex2,oindex1,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex2,oindex1,oindex2,no,nv,jaik_tile_12,jaik_tile_21,&
                            & ccsdpt_doubles_2,trip,.true.)
 
        end if
@@ -1017,7 +1795,11 @@ contains
   !> \brief: driver routine for contractions in case(3) of ccsdpt_driver
   !> \author: Janus Juul Eriksen
   !> \date: march 2013
-  subroutine ccsdpt_driver_case3(oindex1,oindex2,oindex3,no,nv,abij,jaik,&
+  subroutine ccsdpt_driver_case3(oindex1,oindex2,oindex3,no,nv,&
+                            & abij_tile_12, abij_tile_13, abij_tile_21,&
+                            & abij_tile_23, abij_tile_31, abij_tile_32,&
+                            & jaik_tile_12, jaik_tile_13, jaik_tile_21,&
+                            & jaik_tile_23, jaik_tile_31, jaik_tile_32,&
                             & int_virt_tile_o1,int_virt_tile_o2,int_virt_tile_o3,&
                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,wrk_3d,trip)
 
@@ -1030,8 +1812,12 @@ contains
     type(array4), intent(inout) :: ccsdpt_doubles
     type(array4), intent(inout) :: ccsdpt_doubles_2
     !> aibj and jaik 2-el integrals
-    type(array4), intent(inout) :: jaik ! integrals (AI|JK) in the order (J,A,I,K)
-    type(array4), intent(inout) :: abij ! integrals (AI|BJ) in the order (A,B,I,J)
+    !> tiles of jaik integrals (AI|JK) in the order (J,A,I,K)
+    real(realk), dimension(no,nv) :: jaik_tile_12, jaik_tile_13, jaik_tile_21
+    real(realk), dimension(no,nv) :: jaik_tile_23, jaik_tile_31, jaik_tile_32
+    !> tiles of abij integrals (AI|BJ) in the order (A,B,I,J)
+    real(realk), dimension(nv,nv) :: abij_tile_12, abij_tile_13, abij_tile_21
+    real(realk), dimension(nv,nv) :: abij_tile_23, abij_tile_31, abij_tile_32
     !> tiles of cbai 2-el integrals determined by incomming oindex1,oindex2,oindex3
     real(realk), dimension(nv,nv,nv), intent(inout) :: int_virt_tile_o1
     real(realk), dimension(nv,nv,nv), intent(inout) :: int_virt_tile_o2
@@ -1056,9 +1842,9 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_11(oindex1,oindex2,oindex3,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_11(oindex1,oindex2,oindex3,nv,abij_tile_23,abij_tile_32,ccsdpt_singles,&
                        & trip,.false.)
-          call ccsdpt_contract_12(oindex1,oindex2,oindex3,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_12(oindex1,oindex2,oindex3,nv,abij_tile_21,abij_tile_12,ccsdpt_singles,&
                        & trip,.false.)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
@@ -1070,9 +1856,9 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex2,oindex3,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex2,oindex3,oindex1,no,nv,jaik_tile_31,jaik_tile_13,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex2,oindex3,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex2,oindex3,oindex1,no,nv,jaik_tile_23,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 2) then
@@ -1084,9 +1870,9 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_11(oindex3,oindex1,oindex2,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_11(oindex3,oindex1,oindex2,nv,abij_tile_12,abij_tile_21,ccsdpt_singles,&
                        & wrk_3d,.false.)
-          call ccsdpt_contract_12(oindex3,oindex1,oindex2,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_12(oindex3,oindex1,oindex2,nv,abij_tile_13,abij_tile_31,ccsdpt_singles,&
                        & wrk_3d,.false.)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
@@ -1098,9 +1884,9 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex1,oindex2,oindex3,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex1,oindex2,oindex3,no,nv,jaik_tile_23,jaik_tile_32,&
                            & ccsdpt_doubles_2,wrk_3d,.false.)
-          call ccsdpt_contract_222(oindex1,oindex2,oindex3,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex1,oindex2,oindex3,no,nv,jaik_tile_12,&
                            & ccsdpt_doubles_2,wrk_3d)
 
        else if (idx .eq. 3) then
@@ -1112,9 +1898,9 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_11(oindex2,oindex3,oindex1,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_11(oindex2,oindex3,oindex1,nv,abij_tile_31,abij_tile_13,ccsdpt_singles,&
                        & trip,.false.)
-          call ccsdpt_contract_12(oindex2,oindex3,oindex1,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_12(oindex2,oindex3,oindex1,nv,abij_tile_32,abij_tile_23,ccsdpt_singles,&
                        & trip,.false.)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
@@ -1126,9 +1912,9 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex3,oindex1,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex3,oindex1,oindex2,no,nv,jaik_tile_12,jaik_tile_21,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex3,oindex1,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex3,oindex1,oindex2,no,nv,jaik_tile_31,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 4) then
@@ -1141,9 +1927,9 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_11(oindex3,oindex2,oindex1,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_11(oindex3,oindex2,oindex1,nv,abij_tile_21,abij_tile_12,ccsdpt_singles,&
                        & wrk_3d,.false.)
-          call ccsdpt_contract_12(oindex3,oindex2,oindex1,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_12(oindex3,oindex2,oindex1,nv,abij_tile_23,abij_tile_32,ccsdpt_singles,&
                        & wrk_3d,.false.)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
@@ -1155,9 +1941,9 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex2,oindex1,oindex3,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex2,oindex1,oindex3,no,nv,jaik_tile_13,jaik_tile_31,&
                            & ccsdpt_doubles_2,wrk_3d,.false.)
-          call ccsdpt_contract_222(oindex2,oindex1,oindex3,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex2,oindex1,oindex3,no,nv,jaik_tile_21,&
                            & ccsdpt_doubles_2,wrk_3d)
 
        else if (idx .eq. 5) then
@@ -1169,9 +1955,9 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_11(oindex1,oindex3,oindex2,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_11(oindex1,oindex3,oindex2,nv,abij_tile_32,abij_tile_23,ccsdpt_singles,&
                        & trip,.false.)
-          call ccsdpt_contract_12(oindex1,oindex3,oindex2,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_12(oindex1,oindex3,oindex2,nv,abij_tile_31,abij_tile_13,ccsdpt_singles,&
                        & trip,.false.)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
@@ -1183,9 +1969,9 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex3,oindex2,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex3,oindex2,oindex1,no,nv,jaik_tile_21,jaik_tile_12,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex3,oindex2,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex3,oindex2,oindex1,no,nv,jaik_tile_32,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 6) then
@@ -1197,9 +1983,9 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_11(oindex2,oindex1,oindex3,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_11(oindex2,oindex1,oindex3,nv,abij_tile_13,abij_tile_31,ccsdpt_singles,&
                        & wrk_3d,.false.)
-          call ccsdpt_contract_12(oindex2,oindex1,oindex3,nv,abij,ccsdpt_singles,&
+          call ccsdpt_contract_12(oindex2,oindex1,oindex3,nv,abij_tile_12,abij_tile_21,ccsdpt_singles,&
                        & wrk_3d,.false.)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
@@ -1211,9 +1997,9 @@ contains
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex1,oindex3,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex1,oindex3,oindex2,no,nv,jaik_tile_32,jaik_tile_23,&
                            & ccsdpt_doubles_2,wrk_3d,.false.)
-          call ccsdpt_contract_222(oindex1,oindex3,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex1,oindex3,oindex2,no,nv,jaik_tile_13,&
                            & ccsdpt_doubles_2,wrk_3d)
 
        end if
@@ -1390,7 +2176,7 @@ contains
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
     real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
     real(realk), dimension(nv,nv), intent(in) :: doub_ampl_v2
-    type(array3), intent(inout) :: trip
+    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
     !> temporary quantities
     integer :: nv2
 
@@ -1408,8 +2194,11 @@ contains
     ! ***************************************************
 
     ! do v^4o^3 contraction
+
+!$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
     call dgemm('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
-                   & 0.0E0_realk,trip%val,nv)
+                   & 0.0E0_realk,trip,nv)
+!$acc end host_data
 
   end subroutine trip_amplitudes_virt
 
@@ -1429,7 +2218,7 @@ contains
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
     real(realk), dimension(no,nv), intent(in) :: int_occ_portion
     real(realk), dimension(no,nv,nv), intent(in) :: doub_ampl_ov2
-    type(array3), intent(inout) :: trip
+    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
     !> temporary quantities
     integer :: nv2
 
@@ -1447,8 +2236,11 @@ contains
     ! ****************************************************
 
     ! do v^3o^4 contraction
+
+!$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
     call dgemm('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
-                   & 1.0E0_realk,trip%val,nv)
+                   & 1.0E0_realk,trip,nv)
+!$acc end host_data
 
   end subroutine trip_amplitudes_occ
 
@@ -1464,7 +2256,7 @@ contains
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk) :: eigenocc(no), eigenvirt(nv)
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     real(realk), dimension(nv,nv,nv), intent(inout) :: trip
     !> temporary quantities
     integer :: trip_type, a, b, c
@@ -1475,19 +2267,39 @@ contains
 
     e_orb_occ = eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3)
 
-         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,b,c,e_orb),SHARED(nv,trip,eigenvirt,e_orb_occ)
+#ifdef VAR_OPENACC
+!$acc parallel present(trip,eigenvirt,eigenocc)
+!$acc loop gang
+#else
+!$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,b,c,e_orb),SHARED(nv,trip,eigenvirt,e_orb_occ)
+#endif
  arun_0: do a=1,nv
+#ifdef VAR_OPENACC
+!$acc loop worker
+#endif
     brun_0: do b=1,nv
+#ifdef VAR_OPENACC
+!$acc loop vector
+#endif
        crun_0: do c=1,nv
 
-                  e_orb = -1.0E0_realk / (eigenvirt(a) + eigenvirt(b) + eigenvirt(c) - e_orb_occ)
-
-                  trip(c,b,a) = trip(c,b,a) * e_orb
+                  trip(c,b,a) = trip(c,b,a) / (e_orb_occ - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
 
                end do crun_0
+#ifdef VAR_OPENACC
+!$acc end loop
+#endif
             end do brun_0
+#ifdef VAR_OPENACC
+!$acc end loop
+#endif
          end do arun_0
-         !$OMP END PARALLEL DO
+#ifdef VAR_OPENACC
+!$acc end loop
+!$acc end parallel
+#else
+!$OMP END PARALLEL DO
+#endif
 
   end subroutine trip_denom
 
@@ -1498,13 +2310,15 @@ contains
   !> date: august 2012
   !> param: oindex1-oindex3 are outside loop indices of driver routine. int_normal is abij of driver.
   !> nv is nvirt and T_star is ccsdpt_singles of driver. trip_ampl is the triples amplitude array.
-  subroutine ccsdpt_contract_11(oindex1,oindex2,oindex3,nv,int_normal,T_star,trip_ampl,special)
+!  subroutine ccsdpt_contract_11(oindex1,oindex2,oindex3,nv,int_normal,T_star,trip_ampl,special)
+  subroutine ccsdpt_contract_11(oindex1,oindex2,oindex3,nv,int_normal_23,int_normal_32,T_star,trip_ampl,special)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv
     type(array2), intent(inout) :: T_star
-    type(array4), intent(inout) :: int_normal
+!    type(array4), intent(inout) :: int_normal
+    real(realk), dimension(nv,nv) :: int_normal_23, int_normal_32
     type(array3), optional, intent(inout) :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
@@ -1534,19 +2348,22 @@ contains
 
        ! now contract coulumb term over both indices
        call dgemm('n','n',nv,1,nv2,&
-                & 1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex3),&
+!                & 1.0E0_realk,trip_ampl%val,nv,int_normal%val(1,1,oindex2,oindex3),&
+                & 1.0E0_realk,trip_ampl%val,nv,int_normal_23,&
                 & nv2,1.0E0_realk,T_star%val(:,oindex1),nv)
 
     case(1)
 
        ! now contract coulumb term over both indices
        call dgemm('n','n',nv,1,nv2,&
-                & 2.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex3),&
+!                & 2.0E0_realk,trip_ampl%val,nv,int_normal%val(1,1,oindex2,oindex3),&
+                & 2.0E0_realk,trip_ampl%val,nv,int_normal_23,&
                 & nv2,1.0E0_realk,T_star%val(:,oindex1),nv)
 
        ! now contract exchange term over both indices
        call dgemm('n','n',nv,1,nv2,&
-                & -1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex3,oindex2),&
+!                & -1.0E0_realk,trip_ampl%val,nv,int_normal%val(1,1,oindex3,oindex2),&
+                & -1.0E0_realk,trip_ampl%val,nv,int_normal_32,&
                 & nv2,1.0E0_realk,T_star%val(:,oindex1),nv)
 
     end select TypeofContraction_11
@@ -1559,13 +2376,15 @@ contains
   !> date: august 2012
   !> param: oindex1-oindex3 are outside loop indices of driver routine. int_normal is abij of driver.
   !> nv is nvirt and T_star is ccsdpt_singles of driver. trip_ampl is the triples amplitude array.
-  subroutine ccsdpt_contract_12(oindex1,oindex2,oindex3,nv,int_normal,T_star,trip_ampl,special)
+!  subroutine ccsdpt_contract_12(oindex1,oindex2,oindex3,nv,int_normal,T_star,trip_ampl,special)
+  subroutine ccsdpt_contract_12(oindex1,oindex2,oindex3,nv,int_normal_21,int_normal_12,T_star,trip_ampl,special)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv
     type(array2), intent(inout) :: T_star
-    type(array4), intent(inout) :: int_normal
+!    type(array4), intent(inout) :: int_normal
+    real(realk), dimension(nv,nv) :: int_normal_21, int_normal_12
     type(array3), optional, intent(inout) :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
@@ -1599,19 +2418,22 @@ contains
 
        ! now contract coulumb term over both indices
        call dgemm('n','n',nv,1,nv2,&
-                & -1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex1),&
+!                & -1.0E0_realk,trip_ampl%val,nv,int_normal%val(1,1,oindex2,oindex1),&
+                & -1.0E0_realk,trip_ampl%val,nv,int_normal_21,&
                 & nv2,1.0E0_realk,T_star%val(:,oindex3),nv)
 
     case(1)
 
        ! now contract coulumb term over both indices
        call dgemm('n','n',nv,1,nv2,&
-                & -2.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex1),&
+!                & -2.0E0_realk,trip_ampl%val,nv,int_normal%val(1,1,oindex2,oindex1),&
+                & -2.0E0_realk,trip_ampl%val,nv,int_normal_21,&
                 & nv2,1.0E0_realk,T_star%val(:,oindex3),nv)
 
        ! now contract exchange term over both indices
        call dgemm('n','n',nv,1,nv2,&
-                & 1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex1,oindex2),&
+!                & 1.0E0_realk,trip_ampl%val,nv,int_normal%val(1,1,oindex1,oindex2),&
+                & 1.0E0_realk,trip_ampl%val,nv,int_normal_12,&
                 & nv2,1.0E0_realk,T_star%val(:,oindex3),nv)
 
     end select TypeofContraction_12
@@ -1742,12 +2564,15 @@ contains
   !> date: august 2012
   !> param: oindex1-oindex3 are outside loop indices of driver routine.
   !> nv is nvirt and T_star is T_ast_2 of driver. trip_ampl is the triples amplitud array.
-  subroutine ccsdpt_contract_221(oindex1,oindex2,oindex3,no,nv,int_occ,T_star,trip_ampl,special)
+  subroutine ccsdpt_contract_221(oindex1,oindex2,oindex3,no,nv,&
+                               & int_occ_23,int_occ_32,T_star,trip_ampl,special)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    type(array4), intent(inout) :: int_occ, T_star
+!    type(array4), intent(inout) :: int_occ, T_star
+    type(array4), intent(inout) :: T_star
+    real(realk), dimension(no,nv) :: int_occ_23, int_occ_32
     type(array3), intent(inout) :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
@@ -1775,21 +2600,25 @@ contains
 
        ! now contract coulumb term over first index.
        ! for this special case, we only have to subtract one coulumb term
-       call dgemm('n','n',no,nv2,nv,-1.0E0_realk,int_occ%val(:,:,oindex3,oindex2),no,&
+!       call dgemm('n','n',no,nv2,nv,-1.0E0_realk,int_occ%val(:,:,oindex3,oindex2),no,&
+       call dgemm('n','n',no,nv2,nv,-1.0E0_realk,int_occ_32,no,&
                       & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
        ! now contract exchange term over first index
-       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),no,&
+!       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),no,&
+       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
                       & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
     case(1)
  
        ! now contract coulumb term over first index
-       call dgemm('n','n',no,nv2,nv,-2.0E0_realk,int_occ%val(:,:,oindex3,oindex2),no,&
+!       call dgemm('n','n',no,nv2,nv,-2.0E0_realk,int_occ%val(:,:,oindex3,oindex2),no,&
+       call dgemm('n','n',no,nv2,nv,-2.0E0_realk,int_occ_32,no,&
                       & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
        ! now contract exchange term over first index
-       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),no,&
+!       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),no,&
+       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
                       & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
     end select TypeofContraction_221
@@ -1803,12 +2632,14 @@ contains
   !> date: august 2012
   !> param: oindex1-oindex3 are outside loop indices of driver routine.
   !> nv is nvirt and T_star is T_ast_2 of driver. trip_ampl is the triples amplitud array.
-  subroutine ccsdpt_contract_222(oindex1,oindex2,oindex3,no,nv,int_occ,T_star,trip_ampl)
+  subroutine ccsdpt_contract_222(oindex1,oindex2,oindex3,no,nv,int_occ_12,T_star,trip_ampl)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    type(array4), intent(inout) :: int_occ, T_star
+!    type(array4), intent(inout) :: int_occ, T_star
+    type(array4), intent(inout) :: T_star
+    real(realk), dimension(no,nv) :: int_occ_12
     type(array3), intent(inout) :: trip_ampl
     !> integer
     integer :: nv2
@@ -1822,7 +2653,8 @@ contains
     ! contraction time (here: over virtual index 'c') with canAIBC(k,j,l,c)
 
     ! contract coulumb term over first index
-    call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ%val(:,:,oindex1,oindex2),no,&
+!    call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ%val(:,:,oindex1,oindex2),no,&
+    call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ_12,no,&
                    & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex3),no)
 
   end subroutine ccsdpt_contract_222
@@ -1836,7 +2668,7 @@ contains
     implicit none
 
     !> fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
@@ -1854,8 +2686,8 @@ contains
 
     ! init energy reals to be on the safe side.
     ! note: OccEnergyPT and VirtEnergyPT have been initialized in the e4 routine.
-    MyFragment%energies(12) = 0.0E0_realk
-    MyFragment%energies(13) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
 
     ! init temp energy
     ccsdpt_e5 = 0.0E0_realk
@@ -1875,19 +2707,19 @@ contains
                     end do ido_frag_singles
                     !$OMP END PARALLEL DO
 
-    MyFragment%energies(12) = 2.0E0_realk * ccsdpt_e5
+    MyFragment%energies(FRAGMODEL_OCCpT5) = 2.0E0_realk * ccsdpt_e5
 
     ! insert into occ. part. scheme part
-    MyFragment%energies(8) = MyFragment%energies(8) + MyFragment%energies(12)
+    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) + MyFragment%energies(FRAGMODEL_OCCpT5)
 
     ! *********************************
     ! do unoccupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
-    MyFragment%energies(9) = MyFragment%energies(9) + MyFragment%energies(12)
+    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) + MyFragment%energies(FRAGMODEL_OCCpT5)
     ! insert into virt_e5 part
-    MyFragment%energies(13) = MyFragment%energies(13) + MyFragment%energies(12)
+    MyFragment%energies(FRAGMODEL_VIRTpT5) = MyFragment%energies(FRAGMODEL_VIRTpT5) + MyFragment%energies(FRAGMODEL_OCCpT5)
 
     ! ******************************
     !   done with E[5] energy part
@@ -1904,11 +2736,11 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> fragment info
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
@@ -1926,8 +2758,8 @@ contains
 
     ! init energy reals to be on the safe side.
     ! note: OccEnergyPT and VirtEnergyPT have been initialized in the e4 routine.
-    PairFragment%energies(12) = 0.0E0_realk
-    PairFragment%energies(13) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
 
   ido_pair_singles: do i=1,nocc_eos
                     i_eos = PairFragment%idxo(i)
@@ -1953,7 +2785,7 @@ contains
                           end do
 
                           if (occ_in_frag_1 .and. virt_in_frag_2) then
-                             PairFragment%energies(12) = PairFragment%energies(12) &
+                             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
                                & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
                                & * ccsdpt_singles%val(a_eos,i_eos)
                           end if
@@ -1975,7 +2807,7 @@ contains
                           end do
                              
                           if (occ_in_frag_2 .and. virt_in_frag_1) then
-                             PairFragment%energies(12) = PairFragment%energies(12) &
+                             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
                                & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
                                & * ccsdpt_singles%val(a_eos,i_eos)
                           end if
@@ -2003,16 +2835,16 @@ contains
                     end do ido_pair_singles
 
     ! insert into occ. part. scheme part
-    PairFragment%energies(8) = PairFragment%energies(8) + PairFragment%energies(12)
+    PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
 
     ! *********************************
     ! do unoccupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
-    PairFragment%energies(9) = PairFragment%energies(9) + PairFragment%energies(12)
+    PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
     ! insert into virt_e5 part
-    PairFragment%energies(13) = PairFragment%energies(13) + PairFragment%energies(12)
+    PairFragment%energies(FRAGMODEL_VIRTpT5) = PairFragment%energies(FRAGMODEL_VIRTpT5) + PairFragment%energies(FRAGMODEL_OCCpT5)
 
     ! ******************************
     !   done with E[5] energy part
@@ -2030,7 +2862,7 @@ contains
     implicit none
 
     !> fragment info
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) doubles amplitudes
     type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> is this called from inside the ccsd(t) fragment optimization routine?
@@ -2059,10 +2891,10 @@ contains
     ! init energy reals to be on the safe side
     ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
     !       as this (e4) routine is called before the e5 routine
-    MyFragment%energies(8) = 0.0E0_realk
-    MyFragment%energies(9) = 0.0E0_realk
-    MyFragment%energies(10) = 0.0E0_realk
-    MyFragment%energies(11) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
 
     ! *******************************
     ! do occupied partitioning scheme
@@ -2133,10 +2965,10 @@ contains
                         !$OMP END PARALLEL DO
 
     !get total fourth--order energy contribution
-    MyFragment%energies(10) = energy_res_cou + energy_res_exc
+    MyFragment%energies(FRAGMODEL_OCCpT4) = energy_res_cou + energy_res_exc
 
     ! insert into occ. part. scheme part
-    MyFragment%energies(8) = MyFragment%energies(8) + MyFragment%energies(10)
+    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) + MyFragment%energies(FRAGMODEL_OCCpT4)
 
     ! *********************************
     ! do unoccupied partitioning scheme
@@ -2213,10 +3045,10 @@ contains
                         !$OMP END PARALLEL DO
 
     !get total fourth--order energy contribution
-    MyFragment%energies(11) = energy_res_cou + energy_res_exc
+    MyFragment%energies(FRAGMODEL_VIRTpT4) = energy_res_cou + energy_res_exc
 
     ! insert into virt. part. scheme part
-    MyFragment%energies(9) = MyFragment%energies(9) + MyFragment%energies(11)
+    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) + MyFragment%energies(FRAGMODEL_VIRTpT4)
 
     ! ******************************
     !   done with E[4] energy part
@@ -2249,11 +3081,11 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> pair fragment info
-    type(ccatom), intent(inout) :: PairFragment
+    type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
     type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     ! logical pointers for keeping hold of which pairs are to be handled
@@ -2288,10 +3120,10 @@ contains
     ! init energy reals to be on the safe side
     ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
     !       as this (e4) routine is called before the e5 routine
-    PairFragment%energies(8) = 0.0E0_realk
-    PairFragment%energies(9) = 0.0E0_realk
-    PairFragment%energies(10) = 0.0E0_realk
-    PairFragment%energies(11) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
+    PairFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
 
     ! *******************************
     ! do occupied partitioning scheme
@@ -2352,10 +3184,10 @@ contains
                         !$OMP END PARALLEL DO
 
     ! get total fourth--order energy contribution
-    PairFragment%energies(10) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+    PairFragment%energies(FRAGMODEL_OCCpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
 
     ! insert into occ. part. scheme part
-    PairFragment%energies(8) = PairFragment%energies(8) + PairFragment%energies(10)
+    PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) + PairFragment%energies(FRAGMODEL_OCCpT4)
 
     ! *********************************
     ! do unoccupied partitioning scheme
@@ -2422,10 +3254,10 @@ contains
                         !$OMP END PARALLEL DO
 
     ! get total fourth--order energy contribution
-    PairFragment%energies(11) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+    PairFragment%energies(FRAGMODEL_VIRTpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
 
     ! insert into virt. part. scheme part
-    PairFragment%energies(9) = PairFragment%energies(9) + PairFragment%energies(11)
+    PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) + PairFragment%energies(FRAGMODEL_VIRTpT4)
 
     ! ******************************
     !   done with E[4] energy part
@@ -2454,7 +3286,7 @@ contains
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e4
     real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
@@ -2550,14 +3382,14 @@ contains
   !>         ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distance_table)
+  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: e4_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -2607,7 +3439,7 @@ contains
           if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
 
              write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
-                  & bohr_to_angstrom*distance_table(i,j), e4_matrix(i,j)
+                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
 
           end if
 
@@ -2617,206 +3449,6 @@ contains
 
   end subroutine print_e4_full
 
-  !> \brief: calculate ccsd correlation energy for full molecule calculation
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine ccsd_energy_full(nocc,nvirt,natoms,offset,ccsd_doubles,ccsd_singles,integral,occ_orbitals,&
-                           & eccsdpt_matrix_cou,eccsdpt_matrix_exc)
-
-    implicit none
-
-    !> ccsd doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
-    type(array4), intent(inout) :: ccsd_doubles, integral
-    !> ccsd singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles
-    !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
-    !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
-    !> etot
-    real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
-    !> integers
-    integer :: i,j,a,b,atomI,atomJ
-    !> energy reals
-    real(realk) :: energy_tmp_1, energy_tmp_2, energy_res_cou, energy_res_exc
-
-    ! *************************************************************
-    ! ************** do energy for full molecule ******************
-    ! *************************************************************
-
-    ! ***********************
-    !   do CCSD energy part
-    ! ***********************
-
-    energy_res_cou = 0.0E0_realk
-    energy_res_exc = 0.0E0_realk
-
-    ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
-    ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
-
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:eccsdpt_matrix_cou),&
-    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
-    do j=1,nocc
-    atomJ = occ_orbitals(j+offset)%CentralAtom
-       do i=1,nocc
-       atomI = occ_orbitals(i+offset)%CentralAtom
-
-          do b=1,nvirt
-             do a=1,nvirt
-
-                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
-                energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
-                eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
-                                        & + energy_tmp_1 + energy_tmp_2
-
-             end do
-          end do
-
-       end do
-    end do
-    !$OMP END PARALLEL DO
-
-    ! reorder from (a,b,i,j) to (a,b,j,i)
-    call array4_reorder(integral,[1,2,4,3])
-
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
-    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
-    do j=1,nocc
-    atomJ = occ_orbitals(j+offset)%CentralAtom
-       do i=1,nocc
-       atomI = occ_orbitals(i+offset)%CentralAtom
-
-          do b=1,nvirt
-             do a=1,nvirt
-
-                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
-                energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
-                eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) &
-                                        & + energy_tmp_1 + energy_tmp_2
-
-             end do
-          end do
-
-       end do
-    end do
-    !$OMP END PARALLEL DO
-
-    ! get total fourth--order energy contribution
-    eccsdpt_matrix_cou = 2.0E0_realk * eccsdpt_matrix_cou - eccsdpt_matrix_exc
-
-    ! for the pair fragment energy matrix,
-    ! we only consider pairs IJ where J>I; thus, move contributions
-
-    do AtomJ=1,natoms
-       do AtomI=AtomJ+1,natoms
-
-          eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
-                                              & + eccsdpt_matrix_cou(AtomJ,AtomI)
-       end do
-    end do
-
-
-    ! ******************************************************************
-    ! ************** done w/ energy for full molecule ******************
-    ! ******************************************************************
-
-  end subroutine ccsd_energy_full
-
-
-  !> \brief: print out CCSD fragment and pair interaction energies for full molecule calculation 
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine print_ccsd_full(natoms,ccsd_matrix,orbitals_assigned,distance_table)
-
-    implicit none
-
-    !> number of atoms in molecule
-    integer, intent(in) :: natoms
-    !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: ccsd_matrix, distance_table
-    !> vector handling how the orbitals are assigned?
-    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-    !> loop counters
-    integer :: i,j
-!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
-
-    ! print out fragment energies
-    if(.not.DECinfo%CCDhack)then
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,'(1X,a)') '*                         CCSD energies                       *'
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCSD)'
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,*)
-    else
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,'(1X,a)') '*                         CCD energies                        *'
-      write(DECinfo%output,'(1X,a)') '***************************************************************'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCD)'
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-      write(DECinfo%output,'(8X,a)') '------    --------------------'
-      write(DECinfo%output,*)
-    endif
-
-    do i=1,natoms
-
-       if (orbitals_assigned(i)) then
-
-          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, ccsd_matrix(i,i)
-
-       end if
-
-    end do
-
-    ! now print out pair interaction energies
-
-    if(.not.DECinfo%CCDhack)then
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCSD)                   '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-    else
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCD)                   '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-    endif
-
-    do j=1,natoms
-       do i=j+1,natoms
-
-          ! write increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
-                  & bohr_to_angstrom*distance_table(i,j), ccsd_matrix(i,j)
-
-          end if
-
-       end do
-    end do
-
-
-  end subroutine print_ccsd_full
 
 
   !> \brief: calculate E[5] contribution to ccsd(t) energy correction for full molecule calculation
@@ -2832,9 +3464,9 @@ contains
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
-    type(ccorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> virtual orbital information
-    type(ccorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
+    type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e5
     real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix
@@ -2878,14 +3510,14 @@ contains
   !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distance_table)
+  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
     integer, intent(in) :: natoms
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix, distance_table
+    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
     !> vector handling how the orbitals are assigned?
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
@@ -2924,7 +3556,7 @@ contains
              else
 
                 write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-                     &bohr_to_angstrom*distance_table(a,i), e5_matrix(a,i)
+                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
 
              end if
 
@@ -2970,7 +3602,7 @@ contains
     real(realk) :: tcpu, twall
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
     type(array4) :: JAIB
-    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches
+    integer :: MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxActualDimGamma,nbatchesGamma
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
@@ -3008,12 +3640,13 @@ contains
 
 #ifdef VAR_MPI
 
-    CBAI = array_init(dims,4,TILED_DIST,ALL_INIT,[nvirt,nvirt,nvirt,1])
+    CBAI = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
     call array_zero_tiled_dist(CBAI)
 
 #else
 
     CBAI = array_init(dims,4)
+    call array_zero(CBAI)
 
 #endif
 
@@ -3104,7 +3737,7 @@ contains
     INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)='C' !C = Coulomb operator
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
-            & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+            & nbatchesAlpha,nbatchesGamma,INTSPEC)
 
     if (doscreen) then
 
@@ -3133,7 +3766,8 @@ contains
     ! init distribution
     distribution = 0
     myload = 0
-    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,batchdimAlpha,batchdimGamma,myload)
+    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
+    &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
 
 #endif
 
@@ -3174,7 +3808,7 @@ contains
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
-               & FullRHS,nbatches,INTSPEC)
+               & FullRHS,INTSPEC)
 
           ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
           m = nbasis*dimGamma*dimAlpha
@@ -3290,8 +3924,8 @@ contains
     if (infpar%lg_nodtot .gt. 1) then
 
        ! now, reduce o^2v^2 and o^3v integrals onto master
-       call lsmpi_local_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt)
-       call lsmpi_local_allreduce(JAIK%val,nocc,nvirt,nocc,nocc) 
+       call lsmpi_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt,infpar%lg_comm)
+       call lsmpi_allreduce(JAIK%val,nocc,nvirt,nocc,nocc, infpar%lg_comm) 
 
     end if
 
@@ -3347,6 +3981,13 @@ contains
          & JAIB%dims(3),JAIB%dims(4),order,0.0E0_realk,ABIJ%val)
     
     call array4_free(JAIB)
+
+#ifdef VAR_MPI
+
+    ! here, synchronize all procs
+    call lsmpi_barrier(infpar%lg_comm)
+
+#endif
 
     call LSTIMER('CCSD(T) INT',tcpu,twall,DECinfo%output)
 
@@ -3536,25 +4177,32 @@ contains
     !> Tot size of temporary arrays (in GB)
     real(realk), intent(inout) :: mem
     real(realk) :: GB
-  
+    integer(kind=long) :: tmpI
     GB = 1.000E-9_realk ! 1 GB
     ! Array sizes needed in get_CCSDpT_integrals are checked and the largest one is found
   
     ! Tmp array 1 (five candidates)
     size1 = i8*alphadim*gammadim*nbasis*nbasis
-    size1 = max(size1,i8*nvirt**2*gammadim*alphadim)
-    size1 = max(size1,i8*nvirt*nocc*gammadim*alphadim)
-    size1 = max(size1,i8*nvirt*nocc**2*alphadim)
-    size1 = max(size1,i8*nvirt**3)
+    tmpI = i8*nvirt**2*gammadim*alphadim
+    size1 = max(size1,tmpI)
+    tmpI = i8*nvirt*nocc*gammadim*alphadim
+    size1 = max(size1,tmpI)
+    tmpI = i8*nvirt*nocc**2*alphadim
+    size1 = max(size1,tmpI)
+    tmpI = i8*nvirt**3
+    size1 = max(size1,tmpI)
   
     ! tmp array 2 (three candidates)
     size2 = i8*alphadim*gammadim*nbasis*nvirt
-    size2 = max(size2,alphadim*gammadim*nvirt*nocc)
-    size2 = max(size2,i8*nvirt**3)
+    tmpI = alphadim*gammadim*nvirt*nocc
+    size2 = max(size2,tmpI)
+    tmpI = i8*nvirt**3
+    size2 = max(size2,tmpI)
   
     ! Tmp array3 (two candidates)
     size3 = i8*alphadim*gammadim*nvirt**2
-    size3 = max(size3,i8*alphadim*nvirt**3)
+    tmpI = i8*alphadim*nvirt**3
+    size3 = max(size3,tmpI)
   
     ! Size = size1+size2+size3,  convert to GB
     mem = realk*GB*(size1+size2+size3)
@@ -3598,13 +4246,13 @@ end module ccsdpt_module
 
     implicit none
     integer :: nocc, nvirt,nbasis
-    real(realk), pointer :: ppfock(:,:), qqfock(:,:), ypo(:,:), ypv(:,:)
+    real(realk), pointer :: ppfock(:,:), qqfock(:,:), Co(:,:), Cv(:,:)
     type(array2) :: ccsdpt_t1
     type(array4) :: ccsd_t2, ccsdpt_t2
     type(lsitem) :: mylsitem
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,ccsd_t2%val,mylsitem)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%val,mylsitem)
 
     ! init and receive ppfock
     call mem_alloc(ppfock,nocc,nocc)
@@ -3614,13 +4262,13 @@ end module ccsdpt_module
     call mem_alloc(qqfock,nvirt,nvirt)
     call ls_mpibcast(qqfock,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
-    ! init and receive ypo
-    call mem_alloc(ypo,nbasis,nocc)
-    call ls_mpibcast(ypo,nbasis,nocc,infpar%master,infpar%lg_comm)
+    ! init and receive Co
+    call mem_alloc(Co,nbasis,nocc)
+    call ls_mpibcast(Co,nbasis,nocc,infpar%master,infpar%lg_comm)
 
-    ! init and receive ypv
-    call mem_alloc(ypv,nbasis,nvirt)
-    call ls_mpibcast(ypv,nbasis,nvirt,infpar%master,infpar%lg_comm)
+    ! init and receive Cv
+    call mem_alloc(Cv,nbasis,nvirt)
+    call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
 
     ! init and receive ccsd_doubles array4 structure
     ccsd_t2 = array4_init([nvirt,nocc,nvirt,nocc])
@@ -3631,7 +4279,7 @@ end module ccsdpt_module
     ccsdpt_t2 = array4_init_standard([nvirt,nvirt,nocc,nocc])
 
     ! now enter the ccsd(t) driver routine
-    call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,mylsitem,ccsd_t2,&
+    call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_t2,&
                          & ccsdpt_t1,ccsdpt_t2)
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
@@ -3643,8 +4291,8 @@ end module ccsdpt_module
     call ls_free(mylsitem)
     call mem_dealloc(ppfock)
     call mem_dealloc(qqfock)
-    call mem_dealloc(ypo)
-    call mem_dealloc(ypv)
+    call mem_dealloc(Co)
+    call mem_dealloc(Cv)
 
   end subroutine ccsdpt_slave
 

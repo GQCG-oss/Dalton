@@ -118,6 +118,16 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+if $GREP -q "ERI does not work with Cartesian basis." $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Basis set
 CRIT1=`$GREP "O * 1 * 8\.0000 * 44 * 27 * \[11s7p2d\|6s5p1d\]" $log | wc -l`
 CRIT2=`$GREP "H * 2 * 1\.0000 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
@@ -179,9 +189,9 @@ CTRL[6]=5
 ERROR[6]="MAGNETIZABILITIES NOT CORRECT"
 
 # Total magnetizability tensor
-CRIT1=`$GREP "Bx * \-3\.0260882..... * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.9671019..... * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.0338308..... *" $log | wc -l`
+CRIT1=`$GREP "Bx *   \-3\.026088...... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 *   \-2\.967101...... * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 *   \-3\.033830...... *" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="TOTAL MAGNETIZABILITY TENSOR NOT CORRECT"
@@ -203,26 +213,26 @@ CTRL[9]=3
 ERROR[9]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Molecular rotational g-factor
-CRIT1=`$GREP "Isotropic g\-tensor * \: * (0| )\.7199346[0-9]" $log | wc -l`
-CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.9745334[0-9]" $log | wc -l`
+CRIT1=`$GREP "Isotropic g\-tensor * \: * (0| )\.719934.." $log | wc -l`
+CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.974533.." $log | wc -l`
 CRIT3=`$GREP "Diamagnetic contribution \: * (0| )\.0000000" $log | wc -l`
-CRIT4=`$GREP "Electronic contribution * \: * (\-0|\-)\.2545987[0-9]" $log | wc -l`
-CRIT5=`$GREP "1st anisotropy\: * (\-0|\-)\.0177308[0-9]" $log | wc -l`
-CRIT6=`$GREP "2nd anisotropy\: * (0| )\.0647314[0-9]" $log | wc -l`
+CRIT4=`$GREP "Electronic contribution * \: * (\-0|\-)\.254598.." $log | wc -l`
+CRIT5=`$GREP "1st anisotropy\: * (\-0|\-)\.017731.." $log | wc -l`
+CRIT6=`$GREP "2nd anisotropy\: * (0| )\.064731.." $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[10]=6
 ERROR[10]="MOLECULAR ROT G-FACTOR NOT CORRECT"
 
 # Molecular rotational g-factor in principal axis system
-CRIT1=`$GREP "A * (0| )\.708114[0-9]* * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000" $log | wc -l`
-CRIT2=`$GREP "B * (\-0| \-| 0|  )\.00000000 * (0| )\.763088[0-9]* * (\-0| \-| 0|  )\.00000000" $log | wc -l`
-CRIT3=`$GREP "C * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000 * (0| )\.688600" $log | wc -l`
+CRIT1=`$GREP "A * (0| )\.70811... * \-*0*\.00000000 * \-*0*\.00000000" $log | wc -l`
+CRIT2=`$GREP "B * \-*0*\.00000000 * (0| )\.76308... * \-*0*\.00000000" $log | wc -l`
+CRIT3=`$GREP "C * \-*0*\.00000000 * \-*0*\.00000000 * (0| )\.68860..." $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=3
 ERROR[11]="MOLECULAR ROT G-FACTOR IN PRINCIPAL AXIS SYSTEM NOT CORRECT"
 
 # Shielding tensors (symmetry coordinates)
-CRIT1=`$GREP "O * y * 354\.8610" $log | wc -l`
+CRIT1=`$GREP "O * y * 354\.8609" $log | wc -l`
 CRIT2=`$GREP "H * y * 78\.1123" $log | wc -l`
 CRIT3=`$GREP "H * z * \-15\.3280" $log | wc -l`
 CRIT4=`$GREP "O * x * 297\.1807" $log | wc -l`
@@ -246,9 +256,9 @@ CTRL[13]=5
 ERROR[13]="CHEMICAL SHIELDING FOR OXYGEN NOT CORRECT"
 
 # Total shielding tensor for O
-CRIT1=`$GREP "O * x * 297\.1807[0-9]* * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "O * y * (0| )\.00000000 * 354\.8610[0-9]* * (0| )\.00000000" $log | wc -l`
-CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 * 303\.4487" $log | wc -l`
+CRIT1=`$GREP "O * x *   297\.1807.... * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "O * y * (0| )\.00000000 *   354\.8609.... * (0| )\.00000000" $log | wc -l`
+CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 *   303\.4487...." $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[14]=3
 ERROR[14]="TOTAL SHIELDING TENSOR FOR OXYGEN NOT CORRECT"
@@ -305,7 +315,7 @@ ERROR[20]="CHEMICAL SHIELDINGS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -319,6 +329,5 @@ else
   echo THERE IS A PROBLEM
   exit 1
 fi
-
-' > prop_nolondon_soppacc.check
+%EOF%
 #######################################################################

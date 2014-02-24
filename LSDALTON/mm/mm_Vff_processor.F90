@@ -88,7 +88,7 @@ CONTAINS
 
       REAL(REALK)   :: g 
       INTEGER :: u,v, lm_max
-
+      energy = 0.0E0_realk 
       CALL mm_verify_Vff_input(scheme,LHS_mms,Vff,'E')
 
       IF (scheme%dynamic_LMAX_on) THEN

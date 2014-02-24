@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -27,13 +27,13 @@ C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
      &                  HESSEE,LWORK,ITYPE,MAXDIF,IATOM,NODV,NOPV,
      &                  NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
-     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP)
+     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP,GENCTR)
 C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "mtags.h"
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME
+      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
       DIMENSION FMAT(*),DMAT(*),ISYMDM(*),IFCTYP(*),WORK(LWORK),
      &          NSTAT(NODTOT), HESSEE(*)
 CTROND
@@ -56,7 +56,11 @@ C
 !     IPRPAR = 11
       IPRINT = MAX(IPRINT,IPRPAR)
 C
-      IF (IPRINT .GT. 3) CALL TITLER('Output from PARDRV','*',103)
+      IF (IPRINT .GT. 3) THEN
+         CALL TITLER('Output from PARDRV','*',103)
+         WRITE(LUPRI,'(/A,I5)')
+     &      'Parallel type (ITYPE) is',ITYPE
+      END IF
       IF (IPRPAR .GT. 0) CALL GETTIM(CPU1,WALL1)
 C
       IF (DEBUG) THEN
@@ -78,30 +82,29 @@ C
       CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
 #endif
       IF (IPRTYP.EQ.1) THEN
-         if (iprint .gt. 3) 
-     &        write (lupri,*) 'Calling parallel HERMIT routines.'
+         if (iprint .gt. 3)
+     &      write (lupri,*) 'Calling parallel HERMIT routines.'
          CALL HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                   DINTSKP,RELCAL)
+     &                   DINTSKP,RELCAL,GENCTR)
       ELSE
          if (iprint .gt. 3)
-     &    write (lupri,*) 'Calling parallel ERI routines.'
+     &      write (lupri,*) 'Calling parallel ERI routines.'
          CALL ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,IPRINT)
       END IF
 C
+      KCPUS  = 1
+      KWALLS = KCPUS  + NODTOT
+      KLAST  = KWALLS + NODTOT
+      IF (KLAST .GT. LWORK)
+     &   CALL STOPIT('PARDRV','RVTIM',KLAST,LWORK)
+C
+      CALL RVTIM(NSTAT,WORK(KCPUS),WORK(KWALLS),NODNAM(1),NODTOT,IPRINT)
+C
       IF (IPRPAR .GT. 0) THEN
-         KCPUS  = 1
-         KWALLS = KCPUS  + NODTOT
-         KLAST  = KWALLS + NODTOT
-         IF (KLAST .GT. LWORK)
-     &      CALL STOPIT('PARDRV','RVTIM',KLAST,LWORK)
-C
-         CALL RVTIM(NSTAT,WORK(KCPUS),WORK(KWALLS),NODNAM(1),NODTOT,
-     &              IPRPAR,IPRINT)
-C
          CALL GETTIM(CPU2,WALL2)
          CPU    = CPU2 - CPU1
          WALL   = WALL2 - WALL1
@@ -128,7 +131,7 @@ C
       RETURN
       END
 C  /* Deck rvtim */
-      SUBROUTINE RVTIM(NSTAT,CPUS,WALLS,NODNAM,NODTOT,IPRPAR,IPRINT)
+      SUBROUTINE RVTIM(NSTAT,CPUS,WALLS,NODNAM,NODTOT,IPRINT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -147,11 +150,12 @@ C
 #if defined (VAR_MPI)
          NWHO = -1
          CALL MPIXRECV(TMGARR,2,'DOUBLE',NWHO,MTAG8)
-#endif
-#if defined (VAR_PVM)
+#elif defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG8)
          CALL PVMXUNPACK(NWHO  ,1,'INTEGER')
          CALL PVMXUNPACK(TMGARR,2,'DOUBLE')
+#else
+         NWHO = I
 #endif
          CPUS(NWHO)   = TMGARR(1)
          WALLS(NWHO)  = TMGARR(2)
@@ -159,19 +163,20 @@ C
 C
   100 CONTINUE
 C
-      IF (IPRPAR .GT. 1) THEN
+      IF (IPRINT .LE. 0) GOTO 9000
+      IF (IPRINT .GT. 1) THEN
          CALL AROUND('Overall statistics for distribution of batches')
 C
          WRITE(LUPRI,'(9X,5(A,4X))')   'Nodename',
-     &                                  'Batches',
-     &                                  'CPU time',
-     &                                  'Wall time',
-     &                                  'Efficiency'
+     &                                 'Batches',
+     &                                 'CPU time',
+     &                                 'Wall time',
+     &                                 'Efficiency'
          WRITE(LUPRI,'(9X,5(A,4X)/)')  '--------',
-     &                                  '-------',
-     &                                  '--------',
-     &                                  '---------',
-     &                                  '----------'
+     &                                 '-------',
+     &                                 '--------',
+     &                                 '---------',
+     &                                 '----------'
 C
          DO 200 NWHO = 1, NODTOT
             IF (WALLS(NWHO) .NE. 0.0D0) THEN
@@ -192,8 +197,9 @@ C
       WRITE(LUPRI,'(/A,I5.2,A,I2.2,A,I2.2)')
      &     '>>>> Total CPU  time used in NODES  so far   :',
      &     IHOURS,':',IMINS,':',ISECS
+      CALL FLSHFO(LUPRI)
 C
-      RETURN
+ 9000 RETURN
       END
 C  /* Deck eri_pardrv */
       SUBROUTINE ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
@@ -375,6 +381,7 @@ C
       EQUIVALENCE (ITMP,MLINE)
 #endif
 #include "cbieri.h"
+#include "cbirea.h"
 C
       NDMAT = NDMT
 C
@@ -400,16 +407,20 @@ C   /molinc/
 #if defined (SYS_T3D)
          CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
 #else
-         CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
+         CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 #endif
 C   /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C   /infpar/
          CALL MPIXBCAST(NODTOT,NPARI,'INTEGER',MASTER)
-C   /cbieri/ integers
+C   /cbieri/
          CALL MPIXBCAST(NDMAT ,NCBII,'INTEGER',MASTER)
-C   /cbieri/ logicals
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
+C   /cbirea/
+         CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
 C  comr12
          CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
          CALL MPIXBCAST(LMULBS,1,'LOGICAL',MASTER)
@@ -436,7 +447,7 @@ C
 C   /molinp/
          CALL PVMXPACK(NMLINE,1,'INTEGER')
 C   /molinc/
-         CALL PVMXPACK(MLINE ,80*NMLINE,'STRING')
+         CALL PVMXPACK(MLINE ,len_MLINE*NMLINE,'STRING')
 C   /inforb/
          CALL PVMXPACK(MULD2H,NINFI,'INTEGER')
 C   /infpar/
@@ -561,7 +572,7 @@ C
       RETURN
       END
 C     /* Deck dopar */
-Cef begin 
+Cef begin
       SUBROUTINE DOPAR(INDEX,MXBTCH,NBATCH,NSTAT,IPRINT)
 C
 #include "implicit.h"
@@ -578,20 +589,20 @@ C
       LOGICAL DONE, TDONE
       DIMENSION INDEX(3,MXBTCH), NSTAT(NODTOT), IQUEUE(2,NODTOT,1000),
      &     NQUEUE(NODTOT)
-C  
+C
 C Used from common blocks
 C
 C  MXORB  : MXSHEL (for INFPAR)
 C  INFPAR : NODTOT, NODEID(), NTASK, NCODE
 C
 #include "infpar.h"
-C   
+C
 C For MPE event logging
 C      evIDb1 = MPE_Log_get_event_number()
 C      evIDe1 = MPE_Log_get_event_number()
 C      call MPE_Describe_state(evIDb1,evIDe1,
 C     &     "DOPAR","magenta")
-C   
+C
 C Begin logging the event
 C      call MPE_Log_event(evIDb1,0,'')
 C
@@ -601,9 +612,9 @@ C
       CALL IZERO(NSTAT,NODTOT)
 C
       CALL IZERO(IQUEUE,(2*1000*NODTOT))
-C     
+C
       CALL IZERO(NQUEUE,NODTOT)
-      
+
 C     Start loop over integrals (class1|class2).
 C
       IQSIZE = 1000
@@ -615,17 +626,17 @@ C
       IDONE = 0
 C
       IF (AOSAVE) THEN
-C     
+C
 C         do ii=1,mxbtch
-C            write(lupri,*) 'i,INDEX(1..3,i):',ii,INDEX(1,ii), 
+C            write(lupri,*) 'i,INDEX(1..3,i):',ii,INDEX(1,ii),
 C     &           INDEX(2,ii),  INDEX(3,ii)
 C         end do
          IF (NTASK .GT. 1) THEN
             CALL QUIT('NTASK > 1 is not ported to AOSAVE = TRUE.')
          END IF
-C               
- 110     CONTINUE 
-C     
+C
+ 110     CONTINUE
+C
 #if defined (VAR_MPI)
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
@@ -637,7 +648,7 @@ C         CALL MPI_BARRIER(MPI_COMM_WORLD)
          END IF
 C
 C     Send (I|J) batch to NODEID
-C     
+C
          IF (IPLACE .GT. NBATCH .AND. NQUEUE(NWHO) .EQ. 0) THEN
             TDONE = .TRUE.
             CALL MPIXSEND(TDONE,1,'LOGICAL',NWHO,MTAG6)
@@ -645,11 +656,11 @@ C
             IDONE = IDONE + 1
          ELSE
             CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
-            IF (NQUEUE(NWHO) .GT. 0) THEN 
+            IF (NQUEUE(NWHO) .GT. 0) THEN
                CALL MPIXSEND(IQUEUE(1,NWHO,1),NTASK,
      &              'INTEGER',NWHO,MTAG61)
-               CALL MPIXSEND(INDEX(3,IQUEUE(2,NWHO,1)),NTASK,'INTEGER', 
-     &              NWHO,MTAG64) 
+               CALL MPIXSEND(INDEX(3,IQUEUE(2,NWHO,1)),NTASK,'INTEGER',
+     &              NWHO,MTAG64)
                CALL MPIXSEND(IQUEUE(2,NWHO,1),1,'INTEGER',
      &              NWHO,MTAG62)
                NQUEUE(NWHO) = NQUEUE(NWHO) - 1
@@ -657,9 +668,9 @@ C
      &              IQUEUE(1,NWHO,1),(2*NODTOT))
                CALL ICOPY((NQUEUE(NWHO)+1),IQUEUE(2,NWHO,2),(2*NODTOT),
      &              IQUEUE(2,NWHO,1),(2*NODTOT))
-C     
-               IPLACQ = IPLACQ - 1  
-            ELSE IF ((INDEX(3,IPLACE) .EQ. 1 
+C
+               IPLACQ = IPLACQ - 1
+            ELSE IF ((INDEX(3,IPLACE) .EQ. 1
      &          .AND. INDEX(2,IPLACE) .EQ. NWHO)
      &          .OR. (INDEX(3,IPLACE) .EQ. 0)) THEN
 C
@@ -669,18 +680,18 @@ C
      &              MTAG64)
 C
                INDEX(2,IPLACE) = NWHO
-C     
+C
                CALL MPIXSEND(IPLACE,1,'INTEGER',NWHO,MTAG62)
                IPLACE = IPLACE + NTASK
-            ELSE     
-C     
+            ELSE
+C
                NQUEUE(INDEX(2,IPLACE)) = NQUEUE(INDEX(2,IPLACE)) + 1
                IF (NQUEUE(INDEX(2,IPLACE)) .GT. IQSIZE) THEN
                   CALL QUIT('The queue array IQUEUE must be enlarged.')
                END IF
-               IQUEUE(1,INDEX(2,IPLACE),NQUEUE(INDEX(2,IPLACE))) = 
+               IQUEUE(1,INDEX(2,IPLACE),NQUEUE(INDEX(2,IPLACE))) =
      &              INDEX(1,IPLACE)
-               IQUEUE(2,INDEX(2,IPLACE),NQUEUE(INDEX(2,IPLACE))) = 
+               IQUEUE(2,INDEX(2,IPLACE),NQUEUE(INDEX(2,IPLACE))) =
      &              IPLACE
                IPLACQ = IPLACQ + 1
                IPLACE = IPLACE + NTASK
@@ -689,7 +700,7 @@ C     Tell the unemployed node to try again
                CALL MPIXSEND(ITMP,1,'INTEGER',NWHO,MTAG61)
             END IF
          END IF
-C     
+C
 #endif
 #if defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG5)
@@ -757,10 +768,10 @@ C         write(lupri,*) j,(INDX_C(I,J),i=1,3)
 C      END DO
 C
 C  ELSE below is for the compability to old code: AOSAVE = FALSE
-      ELSE 
+      ELSE
 C
          DO 100, I = 1,NBATCH
-C     
+C
 #if defined (VAR_MPI)
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
@@ -774,9 +785,9 @@ C
 #if defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG5)
          CALL PVMXUNPACK(NWHO,1,'INTEGER')
-C     
+C
 C     Send (I|J) batch to NODEID
-C     
+C
          CALL PVMXINITSEND(NCODE)
          CALL PVMXPACK(DONE,1,'LOGICAL')
          CALL PVMXPACK(INDEX(1,IPLACE),NTASK,'INTEGER')
@@ -816,7 +827,7 @@ C
          CALL PVMXSEND(NODEID(NWHO),MTAG6)
 #endif
   200 CONTINUE
-C  ENDIF below ends if-test on AOSAVE   
+C  ENDIF below ends if-test on AOSAVE
       END IF
 C
 C End logging the event
@@ -948,35 +959,64 @@ C
 C
       RETURN
       END
-C  /* Deck nodedriver */
+C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
-      SUBROUTINE NODEDRIVER(MWORK,WRKDLM)
+      SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
-      use polarizable_embedding, only: pe_mpi
+#ifdef MOD_CGTO_DIFF_ERI
+      use eri_basis_loops
+#endif
+#ifdef MOD_XCINT
+      use xcint_integrator, only: xc_integrate_worker
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
 C infpar.h: MASTER,MYNUM
 #include "maxorb.h"
 #include "infpar.h"
-C defined parallel calculation types
+C iprtyp.h: define parallel calculation types
 #include "iprtyp.h"
-      real(8), allocatable :: work(:)
-C
-      CALL QENTER('NODEDRIVER')
+
+      real(8), allocatable  :: work(:)
+      integer(4), parameter :: TEN_4 = 10
+
+! ======================================================
+
+      CALL QENTER('DALTON_NODEDRIVER')
+      CALL GETTIM(CSTR,WSTR)
+      N_TASKS = 0
 C
 C     Get calculation type (IPRTYP)
 C
-  100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+  100 CONTINUE
+#ifdef VAR_IFORT
+!     Nov 2013 hjaaj: sleep 10 millisecond before next check for a task
+!     - this saves a lot of cpu time on other cores in a sequential section
+!     - may make it possible to go into turbo mode
+!     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
+!     - only intel ifort has a sleepqq counting in milliseconds (that I know of),
+!       the more common sleep(n) sleeps in at least one second, which is too long.
+!       (One could use an interface to the C routine usleep.)
+      CALL SLEEPQQ(TEN_4)
+#endif
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN
+         N_TASKS = N_TASKS + 1
 
-!        allocate memory here if we don't call hermit (more to follow...).
-!        idea: move allocation down to main driver routines of modules as we might want to use 
-!              dynamic memory allocation down there (for MPI performance/MPI standard compliance reasons) 
+         CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+         IF (IPRINT .GT. 15)
+     &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5)')
+     &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
+     &      ' Print level is',IPRINT
+
+!        allocate memory here if we do not call hermit (more to follow...).
+!        idea: move allocation down to main driver routines of modules as we might want to use
+!              dynamic memory allocation down there (for MPI performance/MPI standard compliance reasons)
 !              which is severely hampered by a "static" WORK for everything.
 !              sknecht - feb 2013.
-         if(iprtyp /= her_work .and. .not.(allocated(work)))then
+         if(iprtyp /= HER_WORK .and. .not.(allocated(work)))then
 !          allocate memory using f90 utilities
            allocate(work(0:mwork+1),stat=i)
 !          Set memory traps
@@ -987,13 +1027,12 @@ C
              write (luerr,*) mynum,
      &           ': ALLOCATE command failed to allocate'//
      &           ' the requested memory. Error code:',i
-             write (luerr,*) 
+             write (luerr,*)
      &           'Reduce the memory demands and be welcome back'
              call quit('Failed to allocate memory')
            end if
          end if
 
-         CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
 C  new calculation type needs to be added in include/iprtyp.h
          IF      (IPRTYP.EQ.HER_WORK) THEN
             CALL HER_NODSTR(MWORK,wrkdlm,IPRINT)
@@ -1007,6 +1046,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL DFT_CSLAVE(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_GRAD_WORK) THEN
             CALL DFT_GRAD_SLAVE(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.DFT_EXPGRAD_WORK) THEN
+            CALL DFT_EXPG_SLAVE(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_BRHS_WORK) THEN
             CALL DFT_BRHS_SLAVE(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_HESSTAT_WORK) THEN
@@ -1015,7 +1056,7 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL DFTHED_SLAVE(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_SUSCEP_WORK) THEN
              CALL DFT_SUSCEP_SLAVE(WORK(1),MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.NPETES2_WORK .OR. 
+         ELSE IF (IPRTYP.EQ.NPETES2_WORK .OR.
      &            IPRTYP.EQ.PCMBSOL_WORK) THEN
             CALL J1INTS(WORK(1),MWORK,IPRTYP,IPRINT)
          ELSE IF (IPRTYP.EQ.J1XP_WORK) THEN
@@ -1076,8 +1117,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
-         else if (iprtyp == PE) then
-            call pe_mpi(work(1:mwork), iprint)
+         ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
+            CALL PE_IFC_MPI(WORK(1), MWORK, IPRINT)
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN
@@ -1089,20 +1130,52 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
+
+#ifdef MOD_CGTO_DIFF_ERI
+         ! added by Bin Gao, Oct. 27, 2012
+         ! cgto-diff-eri code to calculate arbitray order geometric derivatives
+         ! of two-electron integrals
+         ELSE IF (IPRTYP.EQ.CGTO_DIFF_ERI_INIT) THEN
+            CALL unopt_geodiff_loop_worker(LUPRI,IPRINT)
+#endif
+
+#ifdef MOD_XCINT
+         ! XCint: XC integration, added by R. Bast
+         else if (iprtyp == XCINT_MPI_WAKEUP_SIGNAL) then
+            call xc_integrate_worker()
+#endif
+
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
-     &         '(NODEDRIVER) ERROR on slave',MYTID,
+     &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
      &         ': Unknown calculation type request',IPRTYP
-            CALL QUIT('NODEDRIVER: Unknown calculation type')
+            WRITE(*,'(/A,I5,A,I10)')
+     &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
+     &         ': Unknown calculation type request',IPRTYP
+            CALL QUIT('DALTON_NODEDRIVER: Unknown calculation type')
          END IF
 C
          GO TO 100
-      END IF
+      END IF ! IPRTYP .gt. 0
 
 !     release memory
       if(allocated(work)) deallocate(work)
 C
-      CALL QEXIT('NODEDRIVER')
+      IF (MYNUM .LE. 20) THEN
+         CALL GETTIM(CEND,WEND)
+         CTOT = CEND - CSTR
+         WTOT = WEND - WSTR
+C
+         WRITE (LUPRI,'(/A,I10/)') 'Number of tasks performed:',N_TASKS
+         CALL TIMTXT('>>>> Total CPU  time used:',CTOT,LUPRI)
+         CALL TIMTXT('>>>> Total wall time used:',WTOT,LUPRI)
+C
+C        Stamp date and time and hostname to output
+C
+         CALL TSTAMP(' ',LUPRI)
+      END IF
+C
+      CALL QEXIT('DALTON_NODEDRIVER')
       RETURN
       END
 #endif
@@ -1173,6 +1246,7 @@ C
 #if defined (VAR_MPI)
          NWHO = -1
          CALL MPIXRECV(NAME,20 ,'STRING',NWHO,MTAG8)
+         NODNAM(NWHO) = NAME
 #endif
 #if defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG8)
@@ -1181,8 +1255,8 @@ C
          DO J=1, NODTOT
             IF (NODEID(J) .EQ. NTID) NWHO = J
          END DO
-#endif
          NODNAM(NWHO) = NAME
+#endif
       END DO
 C
       IF (IPRPAR.GT.0) THEN
@@ -1310,6 +1384,7 @@ C
 #include "inforb.h"
 #include "r12int.h"
 #include "cbieri.h"
+#include "cbirea.h"
 #if defined (SYS_T3D)
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER
@@ -1343,7 +1418,7 @@ C   /molinc/
 #if defined (SYS_T3D)
          CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
 #else
-         CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
+         CALL MPIXBCAST(MLINE,len_MLINE*NMLINE,'STRING',MASTER)
 #endif
 C   /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
@@ -1352,6 +1427,11 @@ C   /infpar/
 C   /cbieri/
          CALL MPIXBCAST(NDMAT ,NCBII,'INTEGER',MASTER)
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
+C   /cbirea/
+         CALL MPIXBCAST(LCMMAX,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMSTR,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(NCMEND,1,'INTEGER',MASTER)
+         CALL MPIXBCAST(LCNTNUUM,1,'LOGICAL',MASTER)
 C  comr12
          CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
          CALL MPIXBCAST(LMULBS,1,'LOGICAL',MASTER)
@@ -1359,8 +1439,7 @@ C  comr12
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NDMAT,'INTEGER',MASTER)
-#endif
-#if defined (VAR_PVM)
+#elif defined (VAR_PVM)
 C
 C     Receive initialization.
 C
@@ -1382,7 +1461,7 @@ C
 C   /molinp/
          CALL PVMXUNPACK(NMLINE,1,'INTEGER')
 C   /molinc/
-         CALL PVMXUNPACK(MLINE,80*NMLINE,'STRING')
+         CALL PVMXUNPACK(MLINE,len_MLINE*NMLINE,'STRING')
 C   /inforb/
          CALL PVMXUNPACK(MULD2H,NINFI,'INTEGER')
 C   /infpar/
@@ -1399,15 +1478,18 @@ C  comr12
       END IF
       CALL PVMXUNPACK(ISYMDM,NDMAT,'INTEGER')
       CALL PVMXUNPACK(IFCTYP,NDMAT,'INTEGER')
+#else
+!     to remove compiler warnings for sequential builds
+      FIRST = .TRUE.
 #endif
 C
 C     Set hermit
 C
       IF (NEWGEO) RDINPC = .FALSE.
-C                                                                                                     
-C     Since REAINI is not initialized outside of SETHER, make sure slaves                            
-C     initialize it properly                                                                        
-C                                                                                                     
+C
+C     Since REAINI is not initialized outside of SETHER, make sure slaves
+C     initialize it properly
+C
       IF (FIRST) THEN
           RELCAL = .FALSE.
           TSTINP = .FALSE.
@@ -1451,7 +1533,7 @@ C
 C
       CALL GETTIM(CPU2,WALL2)
 C
-      TMGARR(1)  = CPU2 - CPU1
+      TMGARR(1) = CPU2  - CPU1
       TMGARR(2) = WALL2 - WALL1
 C
 #if defined (VAR_MPI)

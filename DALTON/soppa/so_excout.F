@@ -1,18 +1,15 @@
 C
 C  /* Deck so_excout */
-CSPAS:23/5-11: second and third moment sum rules
-C     SUBROUTINE SO_EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
-C    &                     FONAC,FONA2,SECMAT,WORK,LWORK)
       SUBROUTINE SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
      &                     TTLEN,EXENG,FONAC,FONA2,SECMAT,WORK,LWORK)
-CKeinSPASmehr
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, November 1997
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
+C     PFP & SPAS, November 2013: HRPA and triplet excitation energies
 C
-C     PURPOSE: Driver for printing final output for the RPA, RPA(D), 
+C     PURPOSE: Driver for printing final output for the RPA, HRPA, RPA(D), 
 C              SOPPA, and SOPPA(CCSD) excitation calculations.
 C
 #include "implicit.h"
@@ -21,23 +18,23 @@ C
 #include "ccsdsym.h"
 #include "ccorb.h"
 #include "cbiexc.h"
-CSPAS:15/03-2006: merge with Dalton-2.0  
-C#include <cbilrs.h>
-CKeinSPASmehr
 #include "soppinf.h"
 #include "maxorb.h"
 #include "secmom.h"
 #include "codata.h"
 C
-      DIMENSION TRLEN(3,NSYM,MXNEXI,4), TRVEL(3,NSYM,MXNEXI,4)
-CSPAS:23/5-11: second and third moment sum rules
-      DIMENSION TQLEN(3,3,NSYM,MXNEXI,4), TQVEL(3,3,NSYM,MXNEXI,4)
+CSPAS: HRPA i.e. 5 models now
+C     DIMENSION TRLEN(3,NSYM,MXNEXI,4), TRVEL(3,NSYM,MXNEXI,4)
+C     DIMENSION TQLEN(3,3,NSYM,MXNEXI,4), TQVEL(3,3,NSYM,MXNEXI,4)
+C     DIMENSION TRLON(3,NSYM,MXNEXI,4), TRMAG(3,NSYM,MXNEXI,4)
+C     DIMENSION TTLEN(10,NSYM,MXNEXI,4)
+C     DIMENSION BSRLON(3,NSYM,MXNEXI,4),EXENG(NSYM,MXNEXI,4)
+      DIMENSION TRLEN(3,NSYM,MXNEXI,5), TRVEL(3,NSYM,MXNEXI,5)
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI,5), TQVEL(3,3,NSYM,MXNEXI,5)
+      DIMENSION TRLON(3,NSYM,MXNEXI,5), TRMAG(3,NSYM,MXNEXI,5)
+      DIMENSION TTLEN(10,NSYM,MXNEXI,5)
+      DIMENSION BSRLON(3,NSYM,MXNEXI,5),EXENG(NSYM,MXNEXI,5)
 CKeinSPASmehr
-      DIMENSION TRLON(3,NSYM,MXNEXI,4), TRMAG(3,NSYM,MXNEXI,4)
-CSPAS:23/5-11: second and third moment sum rules
-      DIMENSION TTLEN(10,NSYM,MXNEXI,4)
-CKeinSPASmehr
-      DIMENSION BSRLON(3,NSYM,MXNEXI,4),EXENG(NSYM,MXNEXI,4)
       DIMENSION FONAC(*)
       DIMENSION FONA2(*)
       DIMENSION SECMAT(3,MXNEXI,NSYM)
@@ -56,35 +53,34 @@ C===============================================
 C
       IF (AORPA) THEN
 C
-         DO 100 ISYM = 1, NSYM
+         DO ISYM = 1, NSYM
 C
             NEXCTX(ISYM) = NEXCIT(ISYM)
             NEXCIT(ISYM) = MIN(NEXCIT(ISYM),NT1AM(ISYM))
 C
-  100    CONTINUE
+         END DO  
 C
          WRITE(LUPRI,9000)
          WRITE(LUPRI,'(30X,A)') ' RPA results:'
          WRITE(LUPRI,9001)
 C
-CSPAS:23/5-11: second and third moment sum rules
-C        CALL EXCOUT(TRLEN(1,1,1,1),TRVEL(1,1,1,1),DUMMY,DUMMY,
-C    &               TRMAG(1,1,1,1),TRLON(1,1,1,1),BSRLON(1,1,1,1),
-C    &               EXENG(1,1,1),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
          CALL EXCOUT(TRLEN(1,1,1,1),TRVEL(1,1,1,1),TQLEN(1,1,1,1,1),
      &               TQVEL(1,1,1,1,1),TRMAG(1,1,1,1),TRLON(1,1,1,1),
      &               BSRLON(1,1,1,1),TTLEN(1,1,1,1),EXENG(1,1,1),
      &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
-CKeinSPASmehr
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
-         DO 200 ISYM = 1, NSYM
+CSPAS:26/01-08: 
+C     this gives a lot of non-sense output for the orbital extend
 C
-            NEXCIT(ISYM) = NEXCTX(ISYM)
+C        DO 200 ISYM = 1, NSYM
 C
-  200    CONTINUE
+C           NEXCIT(ISYM) = NEXCTX(ISYM)
 C
-      END IF
+C 200    END DO
+C
+C     END IF
+CKeinSPASmehr
 C
 C--------------------------------------------------
 C     Write <R**2> of molecular orbitals to output.
@@ -99,33 +95,33 @@ C
       WRITE(LUPRI,'(1X,A)')
      &   ' ------------------------------------------------'
 C
-      DO 220 ISYM = 1, NSYM 
+      DO ISYM = 1, NSYM 
 C
-         DO 210 IMO = 1, NRHF(ISYM)
+         DO IMO = 1, NRHF(ISYM)
 C
             SECSUM = SECOMO(1,IMO,ISYM) + SECOMO(2,IMO,ISYM) 
      &             + SECOMO(3,IMO,ISYM)
             WRITE(LUPRI,'(2I5,4F10.3)') ISYM, IMO,
      &         (SECOMO(I,IMO,ISYM), I = 1,3), SECSUM
 C
-  210    CONTINUE
+         END DO  
 C
-  220 CONTINUE
+      END DO  
 C
       WRITE(LUPRI,'(1X)')
 C
-      DO 221 ISYMA = 1, NSYM
+      DO ISYMA = 1, NSYM
 C
-         DO 211 IMOA = 1, NVIR(ISYMA)
+         DO IMOA = 1, NVIR(ISYMA)
 C
             SECSUM = SECVMO(1,IMOA,ISYMA) + SECVMO(2,IMOA,ISYMA)
      &             + SECVMO(3,IMOA,ISYMA)
             WRITE(LUPRI,'(2I5,4F10.3)') ISYMA, IMOA,
      &         (SECVMO(I,IMOA,ISYMA), I = 1,3), SECSUM
 C
-  211    CONTINUE
+         END DO  
 C
-  221 CONTINUE
+      END DO  
 C--------------------------------------------
 C     Write <R**2> of ground state to output.
 C--------------------------------------------
@@ -151,12 +147,9 @@ C
       WRITE(LUPRI,'(1X,A)') 
      &   ' -----------------------------------------------------------'
 C
-      DO 240 ISYM = 1, NSYM
+      DO ISYM = 1, NSYM
 C
-CSPAS:24/5-11: remove a lot of garbage output
-C        DO 230 IEXCI = 1, NEXCIT(ISYM)
-         DO 230 IEXCI = 1, MIN(NEXCIT(ISYM),NT1AM(ISYM))
-CKeinSPASmehr
+         DO IEXCI = 1, NEXCIT(ISYM)
 C
             SECSUM = SECMAT(1,IEXCI,ISYM) 
      &             + SECMAT(2,IEXCI,ISYM) + SECMAT(3,IEXCI,ISYM)
@@ -165,9 +158,55 @@ C
      &         XTEV * EXENG(ISYM,IEXCI,1),
      &         ( SECMAT(I,IEXCI,ISYM), I = 1,3), SECSUM
 C
-  230    CONTINUE
+         END DO
 C
-  240 CONTINUE
+      END DO
+C
+CSPAS:26/01-08: 
+C     moved because otherwise we get a lot of non-sense output 
+C     for the orbital extend
+         DO ISYM = 1, NSYM
+C
+            NEXCIT(ISYM) = NEXCTX(ISYM)
+C
+         END DO
+C
+      END IF
+CKeinSPASmehr
+CPFP HRPA included
+C
+C================================================
+C     Write calculated HRPA properties to output.
+C================================================
+C
+      IF (AOHRP) THEN
+C
+         DO ISYM = 1, NSYM
+C
+            NEXCTX(ISYM) = NEXCIT(ISYM)
+            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),NT1AM(ISYM))
+C
+         END DO
+C
+         WRITE(LUPRI,9000)
+         WRITE(LUPRI,'(30X,A)') 'HRPA results:'
+         WRITE(LUPRI,9001)
+C
+         CALL EXCOUT(TRLEN(1,1,1,2),TRVEL(1,1,1,2),TQLEN(1,1,1,1,2),
+     &               TQVEL(1,1,1,1,2),TRMAG(1,1,1,2),TRLON(1,1,1,2),
+     &               BSRLON(1,1,1,2),TTLEN(1,1,1,2),EXENG(1,1,2),
+     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+     &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
+C
+         DO ISYM = 1, NSYM
+C
+            NEXCIT(ISYM) = NEXCTX(ISYM)
+C
+         END DO
+C
+      END IF
+C
+Cend-PFP
 C
 C==================================================
 C     Write calculated RPA(D) properties to output.
@@ -175,33 +214,33 @@ C==================================================
 C
       IF (DCRPA) THEN
 C
-         DO 300 ISYM = 1, NSYM
+         DO ISYM = 1, NSYM
 C
             NEXCTX(ISYM) = NEXCIT(ISYM)
-            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
+CSPAS:26/01-08: in RPA(D) we have only single excitations !!
+C           NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
+            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),NT1AM(ISYM))
+CKeinSPASmehr
 C
-  300    CONTINUE
+         END DO
 C
          WRITE(LUPRI,9000)
          WRITE(LUPRI,'(30X,A)') 'RPA(D) results:'
          WRITE(LUPRI,9001)
 C
-CSPAS:23/5-11: second and third moment sum rules
-C        CALL EXCOUT(TRLEN(1,1,1,2),TRVEL(1,1,1,2),DUMMY,DUMMY,
-C    &               TRMAG(1,1,1,2),TRLON(1,1,1,2),BSRLON(1,1,1,2),
-C    &               EXENG(1,1,2),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
-         CALL EXCOUT(TRLEN(1,1,1,2),TRVEL(1,1,1,2),TQLEN(1,1,1,1,2),
-     &               TQVEL(1,1,1,1,2),TRMAG(1,1,1,2),TRLON(1,1,1,2),
-     &               BSRLON(1,1,1,2),TTLEN(1,1,1,2),EXENG(1,1,2),
-     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CSPAS:15/11-13: RPA(D) is now model 3 due to HRPA
+         CALL EXCOUT(TRLEN(1,1,1,3),TRVEL(1,1,1,3),TQLEN(1,1,1,1,3),
+     &               TQVEL(1,1,1,1,3),TRMAG(1,1,1,3),TRLON(1,1,1,3),
+     &               BSRLON(1,1,1,3),TTLEN(1,1,1,3),EXENG(1,1,3),
 CKeinSPASmehr
+     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
-         DO 400 ISYM = 1, NSYM
+         DO ISYM = 1, NSYM
 C
             NEXCIT(ISYM) = NEXCTX(ISYM)
 C
-  400    CONTINUE
+         END DO
 C
       END IF
 C
@@ -211,33 +250,33 @@ C=================================================
 C
       IF (AOSOP) THEN
 C
-         DO 500 ISYM = 1, NSYM
+         DO ISYM = 1, NSYM
 C
             NEXCTX(ISYM) = NEXCIT(ISYM)
-            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
+CPFP   2009-Jun: new triplet variables
+C           NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
+            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+N2P2HOP(ISYM)))
+Cend-PFP
 C
-  500    CONTINUE
+         END DO
 C
          WRITE(LUPRI,9000)
          WRITE(LUPRI,'(30X,A)') 'SOPPA results:'
          WRITE(LUPRI,9001)
 C
-CSPAS:23/5-11: second and third moment sum rules
-C        CALL EXCOUT(TRLEN(1,1,1,3),TRVEL(1,1,1,3),DUMMY,DUMMY,
-C    &               TRMAG(1,1,1,3),TRLON(1,1,1,3),BSRLON(1,1,1,3),
-C    &               EXENG(1,1,3),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
-         CALL EXCOUT(TRLEN(1,1,1,3),TRVEL(1,1,1,3),TQLEN(1,1,1,1,3),
-     &               TQVEL(1,1,1,1,3),TRMAG(1,1,1,3),TRLON(1,1,1,3),
-     &               BSRLON(1,1,1,3),TTLEN(1,1,1,3),EXENG(1,1,3),
-     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CSPAS:15/11-13: SOPPA is now model 4 due to HRPA
+         CALL EXCOUT(TRLEN(1,1,1,4),TRVEL(1,1,1,4),TQLEN(1,1,1,1,4),
+     &               TQVEL(1,1,1,1,4),TRMAG(1,1,1,4),TRLON(1,1,1,4),
+     &               BSRLON(1,1,1,4),TTLEN(1,1,1,4),EXENG(1,1,4),
 CKeinSPASmehr
+     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
-         DO 600 ISYM = 1, NSYM
+         DO ISYM = 1, NSYM
 C
             NEXCIT(ISYM) = NEXCTX(ISYM)
 C
-  600    CONTINUE
+         END DO
 C
       END IF
 C
@@ -247,39 +286,41 @@ C=======================================================
 C
       IF (AOSOC) THEN
 C
-         DO 700 ISYM = 1, NSYM
+         DO ISYM = 1, NSYM
 C
             NEXCTX(ISYM) = NEXCIT(ISYM)
-            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
+CPFP   2009-Jun: new triplet variables
+C            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
+            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+N2P2HOP(ISYM)))
+Cend-PFP
 C
-  700    CONTINUE
+         END DO
 C
          WRITE(LUPRI,9000)
          WRITE(LUPRI,'(30X,A)') 'SOPPA(CCSD) results:'
          WRITE(LUPRI,9001)
 C
-CSPAS:23/5-11: second and third moment sum rules
-C        CALL EXCOUT(TRLEN(1,1,1,4),TRVEL(1,1,1,4),DUMMY,DUMMY,
-C    &               TRMAG(1,1,1,4),TRLON(1,1,1,4),BSRLON(1,1,1,4),
-C    &               EXENG(1,1,4),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
-         CALL EXCOUT(TRLEN(1,1,1,4),TRVEL(1,1,1,4),TQLEN(1,1,1,1,4),
-     &               TQVEL(1,1,1,1,4),TRMAG(1,1,1,4),TRLON(1,1,1,4),
-     &               BSRLON(1,1,1,4),TTLEN(1,1,1,4),EXENG(1,1,4),
-     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CSPAS:15/11-13: SOPPA(CCSD) is now model 5 due to HRPA
+         CALL EXCOUT(TRLEN(1,1,1,5),TRVEL(1,1,1,5),TQLEN(1,1,1,1,5),
+     &               TQVEL(1,1,1,1,5),TRMAG(1,1,1,5),TRLON(1,1,1,5),
+     &               BSRLON(1,1,1,5),TTLEN(1,1,1,5),EXENG(1,1,5),
 CKeinSPASmehr
+     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
-         DO 800 ISYM = 1, NSYM
+         DO ISYM = 1, NSYM
 C
             NEXCIT(ISYM) = NEXCTX(ISYM)
 C
-  800    CONTINUE
+         END DO
 C
       END IF
 C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('SO_EXCOUT')
 C

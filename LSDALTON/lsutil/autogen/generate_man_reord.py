@@ -25,8 +25,10 @@ def main():
   args.append(False)
   args.append(False)
   args.append("")
+  args.append(False)
 # print sys.argv
   force_rewrite = False 
+  acc_write = False
   for i in range(len(sys.argv)):
     if "VAR_LSDEBUG" in sys.argv[i]:
       args[1] = True
@@ -34,6 +36,9 @@ def main():
       args[2] = True
     if "CMAKE_BUILD=" in sys.argv[i]:
       args[3] = sys.argv[i][sys.argv[i].find("=")+1:]
+    if "acc" in sys.argv[i]:
+      args[4] = True
+      acc_write = True
 
     if "FORCE_REWRITE" in sys.argv[i] :
       force_rewrite = True
@@ -84,17 +89,24 @@ def main():
     reordmod  = os.path.getmtime(installdir+"reorder_frontend.F90")
 #    scriptmod = time.ctime(os.path.getmtime(sys.argv[0]))
     scriptmod = os.path.getmtime(sys.argv[0])
-    if(scriptmod>reordmod):
+  # radovan: this should not be done here but taken care of by (c)make
+    if(scriptmod>reordmod or writenew):
       print "REORDER GENERATOR IS NEWER THAN REORDERING FILES - GENERATING NEW ONES"
       writenew = True
   if(not os.path.exists(installdir+"reord2d_2_reord.F90")):
     writenew = True
+  if (acc_write):
+    if(not os.path.exists(installdir+"reord2d_acc_reord.F90")):
+      writenew = True
   if(not os.path.exists(installdir+"reord3d_1_reord.F90")):
     writenew = True
   if(not os.path.exists(installdir+"reord3d_2_reord.F90")):
     writenew = True
   if(not os.path.exists(installdir+"reord3d_3_reord.F90")):
     writenew = True
+  if (acc_write):
+    if(not os.path.exists(installdir+"reord3d_acc_reord.F90")):
+      writenew = True
   if(not os.path.exists(installdir+"reord4d_1_reord.F90")):
     writenew = True
   if(not os.path.exists(installdir+"reord4d_2_reord.F90")):
@@ -103,6 +115,9 @@ def main():
     writenew = True
   if(not os.path.exists(installdir+"reord4d_4_reord.F90")):
     writenew = True
+  if (acc_write):
+    if(not os.path.exists(installdir+"reord4d_acc_reord.F90")):
+      writenew = True
   if(not os.path.exists(installdir+"reord4d_1_utils_f2t.F90")):
     writenew = True
   if(not os.path.exists(installdir+"reord4d_2_utils_f2t.F90")):
@@ -146,6 +161,11 @@ def main():
         writenew = (not line.split()[-1] == str(args[3]))
         if writenew:
           break
+
+      if "!ARG4:" in line:
+        writenew = (not line.split()[-1] == str(args[4]))
+        if writenew:
+          break
  
       if "!END VARS" in line:
         endvars_found = True
@@ -170,11 +190,14 @@ def produce_files(installdir,lsutildir,args):
    f=open(installdir+"reorder_frontend.F90",'w')
    utils = []
    reord = []
+   acc_reord = []
+   acc = args[4]
 
    for idx in range(maxr-minr+1):
      #if(idx==maxr-minr):
      sho3 = []
      sho = []
+     sho_acc = []
      
      for i in range(idx+minr) :
        sho.append(open(installdir+"reord"+str(idx+minr)+"d_"+str(i+1)+"_reord.F90",'w'))
@@ -190,10 +213,13 @@ def produce_files(installdir,lsutildir,args):
          sho2.append(open(installdir+"reord"+str(idx+minr)+"d_"+str(i+1)+"_utils_f2t.F90",'w'))
          sho2.append(open(installdir+"reord"+str(idx+minr)+"d_"+str(i+1)+"_utils_t2f.F90",'w'))
        sho3.append(sho2)
-       
+
+     if (acc):
+       sho_acc.append(open(installdir+"reord"+str(idx+minr)+"d_acc_reord.F90",'w'))       
 
      reord.append(sho)
      utils.append(sho3)
+     acc_reord.append(sho_acc)
 
 
    #GET COMMAND LINE ARGUMENTS
@@ -222,8 +248,8 @@ def produce_files(installdir,lsutildir,args):
        for k in range(len(forutils)):
          write_simple_module_header(utils[idx][i][k],idx+minr,i+1,now,args,forutils[k])
 
-   
-   
+     if(acc):
+       write_simple_module_header(acc_reord[idx][0],idx+minr,i+1,now,args,"acc")
 
    #SPECIFY THE ORDER OF REODERINGS
    for idx in range(maxr-minr+1):
@@ -247,12 +273,20 @@ def produce_files(installdir,lsutildir,args):
 
        if doreord :
          emptystr = ""
-         # WRITE THE SUBROUTINE HEADER AND GET ITS NAME
+         # WRITE THE CPU SUBROUTINE HEADER AND GET ITS NAME
          sub = write_subroutine_header(reord[idx][perm[0]],idxarr,perm,now,modes,emptystr,debug_loops)
-         #Write the subroutine body
+         #Write the CPU subroutine body
          write_subroutine_body(reord[idx][perm[0]],idxarr,perm,modes,args,emptystr)
-         #END THE SUBROUTINE
+         #END THE CPU SUBROUTINE
          reord[idx][perm[0]].write("  end subroutine "+sub+"\n\n")
+         # WRITE THE ANALOGOUS GPU STUFF
+         # we have six precases
+         if (acc):
+           for acc_case in range(6):
+             sub_acc = write_subroutine_header_acc(acc_reord[idx][0],idxarr,perm,now,modes,acc_case)
+             write_subroutine_body_acc(acc_reord[idx][0],idxarr,perm,modes,args,acc_case)
+             acc_reord[idx][0].write("#endif\n")
+             acc_reord[idx][0].write("  end subroutine "+sub_acc+"\n\n")
 
        if(idx+minr!=4 and hack_only_4d_for_utils):
          continue
@@ -280,6 +314,9 @@ def produce_files(installdir,lsutildir,args):
 
        for ad in range(len(forutils)):
          write_simple_module_end_and_close(utils[idx][i][ad],idx+minr,i+1,now,args,forutils[ad])
+
+     if (acc):
+       write_simple_module_end_and_close(acc_reord[idx][0],idx+minr,i+1,now,args,'acc')
 
    #remove empty file
    os.system("rm "+installdir+"reord2d_1_reord.F90")
@@ -321,33 +358,10 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
       for j in range(modes):
         omppar += "f"+abc[j] +","
     omppar = omppar[0:-1]+")\n"
-  
-    #WRITE OpenACC PARALLEL STATEMENT HERE
-    oaccpar ="!$acc parallel default(none) private("
-    for j in range(modes):
-      oaccpar += abc[j]+",b"+abc[j]+","
-    if ad != "":
-      for j in range(modes):
-        oaccpar += "b"+abc[j]+"f,"
-    oaccpar = oaccpar[0:-1] + ")&\n!$acc firstprivate(bcntr,pre1,pre2,bs,&\n!$acc "
-#    oaccpar = oaccpar[0:-1] + ")\n"
-#    oaccpar = oaccpar[0:-1] + ")"
-    for j in range(modes):
-      oaccpar += "d"+abc[j] +",d"+abc[j]+"2,mod"+abc[j]+","
-    if ad != "":
-      oaccpar += "&\n!$acc "
-      for j in range(modes):
-        oaccpar += "f"+abc[j] +","
-    oaccpar = oaccpar[0:-1]+")&\n!$acc"
-    oaccpar += " present(array_in,array_out)\n"
  
     if(not debug_loops): 
       f.write("#ifndef VAR_LSESSL\n")
-      f.write("#ifdef VAR_OPENACC\n")
-      f.write(oaccpar)
-      f.write("#else\n")
       f.write(omppar)
-      f.write("#endif\n")
       f.write("#endif\n")
   
     #get the batched space
@@ -409,25 +423,15 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
             ompdo ="        !$OMP DO" 
             if (modes-len(oldr)>1 and (not nocollapse)):
               ompdo += " COLLAPSE("+str(modes-len(oldr))+")\n"
+              f.write("#ifndef VAR_LSESSL\n")
+              f.write(ompdo)
+              f.write("#endif\n")
             else:
               ompdo += "\n"
-        #WRITE OpenACC DO STUFF HERE
-            oacccache = "!$acc cache(array_in,array_out)\n"
-            oaccdo = "!$acc loop gang"
-#            if (modes-len(oldr)>1 and (not nocollapse)):
-            if modes-len(oldr)>1:
-              oaccdo += " collapse("+str(modes-len(oldr))+")\n"
-            else:
-              oaccdo += "\n"
-            f.write("#ifndef VAR_LSESSL\n")
-            f.write("#ifdef VAR_OPENACC\n")
-            f.write(oacccache)
-            f.write(oaccdo)
-            f.write("#else\n")
-            f.write(ompdo)
-            f.write("#endif\n")
-            f.write("#endif\n")
-  
+              f.write("#ifndef VAR_LSESSL\n")
+              f.write(ompdo)
+              f.write("#endif\n")
+ 
         #ORDER THE LOOPS, this depends on the architecture and may be modified
         #THESE CONDITIONS ARE SET UP FOR INTEL, please adapt whenever a different compiler/architecture is used
         useold = False
@@ -470,8 +474,6 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
           for j in  range(len(outeri)):
             f.write(offsetstr+"do b"+abc[outeri[j]]+"=1,d"+abc[outeri[j]]+"2,bs\n")
             offsetstr += "  "
-#            if ad != "":
-#              f.write(offsetstr+"b"+abc[outeri[j]]+"f = f"+abc[outeri[j]]+" + b"+abc[outeri[j]]+"\n")
           offsetstr = offsetstr[0:-2]
         else:
           offsetstr="    "
@@ -483,47 +485,16 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
           for j in  range(len(outeri)):
             if ad != "":
               f.write(offsetstr2+"b"+abc[outeri[j]]+"f = f"+abc[outeri[j]]+" + b"+abc[outeri[j]]+"\n")          
-#          f.write("\n")
         else:
           offsetstr2 = offsetstr + "  "        
-#          f.write("\n")
        
-#        offsetstr2 = offsetstr + "  "
         #WRITING THE INNER FOR LOOPS HERE: 
         if(not debug_loops):
-#          oaccinnerdo = "!$acc loop vector collapse("+str(modes)+")\n"
-          oaccworkerdo = "!$acc loop worker\n"
-          f.write("#ifdef VAR_OPENACC\n")
-#          f.write(oacccache)
-          f.write(oaccworkerdo)
-          f.write("#endif\n")
           for j in range(modes):
             if(inneri[j] in newr):
-              if (modes == 4 and j == 2):  
-                oaccvectordo = "!$acc loop vector\n"
-                f.write("#ifdef VAR_OPENACC\n")
-                f.write(oaccvectordo)
-                f.write("#endif\n")
-              elif (modes == 3 and j == 1):
-                oaccvectordo = "!$acc loop vector\n"
-                f.write("#ifdef VAR_OPENACC\n")
-                f.write(oaccvectordo)
-                f.write("#endif\n")
               f.write(offsetstr2+"do "+abc[inneri[j]]+"=d"+abc[inneri[j]]+"2+1,d"+abc[inneri[j]]+"\n")
             elif(inneri[j] in newu):
-              if (modes == 4 and j == 2):
-                oaccvectordo = "!$acc loop vector\n"
-                f.write("#ifdef VAR_OPENACC\n")
-                f.write(oaccvectordo)
-                f.write("#endif\n")
-              elif (modes == 3 and j == 1):
-                oaccvectordo = "!$acc loop vector\n"
-                f.write("#ifdef VAR_OPENACC\n")
-                f.write(oaccvectordo)
-                f.write("#endif\n")
               f.write(offsetstr2+"do "+abc[inneri[j]]+"=0,bcntr\n")
-            else:
-              print "FUCKING INVALID STUFF HAPPENING HERE"
             offsetstr2 += "  "
         else:
           for j in range(modes):
@@ -548,7 +519,7 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
               else:
                 newidx += abc[perm[j]]+","
             else:
-              print "FUCKING INVALID STUFF HAPPENING HERE"
+              print "INVALID STUFF HAPPENING HERE"
             if(idxarr[j] in newu):
               if ad == "f2t":
                 oldidx += "b"+abc[idxarr[j]]+"f+"+abc[idxarr[j]]+","
@@ -560,7 +531,7 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
               else:
                 oldidx += abc[idxarr[j]]+","
             else:
-              print "FUCKING INVALID STUFF HAPPENING HERE"
+              print "INVALID STUFF HAPPENING HERE"
         else:
           for j in range(modes):
             if ad == "t2f":
@@ -595,26 +566,10 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
   
         f.write(cpstr)
         
-  
+ 
         for j in  range(modes-1,-1,-1):
           f.write(offsetstr2+"enddo\n")
           offsetstr2 = offsetstr2[0:-2]
-          if (modes == 4 and j == 2):
-            f.write("#ifdef VAR_OPENACC\n")
-            f.write("!$acc end loop\n")
-            f.write("#endif\n")
-          if (modes == 4 and j == 0):
-            f.write("#ifdef VAR_OPENACC\n")
-            f.write("!$acc end loop\n")  
-            f.write("#endif\n")
-          if (modes == 3 and j == 1):
-            f.write("#ifdef VAR_OPENACC\n")
-            f.write("!$acc end loop\n")
-            f.write("#endif\n")
-          if (modes == 3 and j == 0):
-            f.write("#ifdef VAR_OPENACC\n")
-            f.write("!$acc end loop\n")
-            f.write("#endif\n")
         f.write("\n")
   
         #WRITING THE OUTER ENDOFOR HERE:
@@ -622,19 +577,14 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
           for j in  range(modes-len(oldr)-1,-1,-1):
             f.write(offsetstr+"enddo\n")
             offsetstr = offsetstr[0:-2]
-         
+
           if(modes-len(oldr)> 0):
             ompdo ="        !$OMP END DO NOWAIT\n"
-            oaccdo ="!$acc end loop\n" 
-            oacccache = "!$acc end cache\n"
             f.write("#ifndef VAR_LSESSL\n")
-            f.write("#ifdef VAR_OPENACC\n")
-            f.write(oaccdo)
-            f.write(oacccache)
-            f.write("#else\n")
             f.write(ompdo)
             f.write("#endif\n")
-            f.write("#endif\n")
+
+        if(not debug_loops):
          
           conditionalstatement="      endif "+label1+"\n"
           f.write(conditionalstatement)
@@ -642,19 +592,178 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
       if(not debug_loops):
         if(i==modes-1):
           ompdo = "      !$OMP END PARALLEL\n"
-          oaccdo = "!$acc end parallel\n"
           f.write("#ifndef VAR_LSESSL\n")
-          f.write("#ifdef VAR_OPENACC\n")
-          f.write(oaccdo)
-          f.write("#else\n")
           f.write(ompdo)
-          f.write("#endif\n")
           f.write("#endif\n")
   
     if(cas==len(cases)-1):
       f.write("    endif precase\n")
    
 
+def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
+  
+  #get the batched space
+  casecounter = 1
+  fullrange = modes+1
+
+  #FIND THE RESTRICTED INDICES IN THE OLD ORDERING
+  all_thingys = combinations(idxarr,0)
+  #all_thingys = itertools.combinations(idxarr,i)
+  for oldr in all_thingys:
+
+    label1 = "r"+str(casecounter)
+    label1 = ""
+    casecounter += 1
+    #get conditions for the reordering
+    conditions = []
+    oldu  = []
+    newu  = []
+    newr  = []
+    for j in range(modes):
+      oldu.append(idxarr[j])
+      newu.append(perm[j])
+      newr.append(perm[j])
+
+    #modify the conditions accordingly
+    for j in  range(len(oldr)):
+      for k in range(len(oldu)):
+        if oldu[k] == oldr[j]:
+          del oldu[k]
+          break
+      for k in range(len(newu)):
+        if newu[k] == oldr[j]:
+          del newu[k]
+          break
+    for j in  range(len(oldu)):
+      for k in range(len(newr)):
+        if newr[k] == oldu[j]:
+          del newr[k]
+          break
+
+    #ORDER THE LOOPS, this depends on the architecture and may be modified
+    #THESE CONDITIONS ARE SET UP FOR INTEL, please adapt whenever a different compiler/architecture is used
+    useold = False
+    for j in range(len(oldu)):
+      if(idxarr[oldu[j]]<perm[newu[j]]):
+        useold = True
+        break
+      elif(idxarr[oldu[j]]>perm[newu[j]]):
+        useold =False
+        break
+      
+    #f.write("!"+str(newu)+"    "+str(oldu)+"\n")
+    #f.write("!useold "+str(useold)+"\n")
+    #BUILD THE ORDER OF THE LOOPS ACCORDING TO THE PREVIOUS CONDITIONS
+    outer =[]
+    inner =[]
+    for j in range(len(perm)):
+      if useold:
+        inner.append(idxarr[j])
+      else:
+        inner.append(perm[j])
+    
+    if useold:
+      for j in range(len(oldu)):
+        outer.append(oldu[j])
+    else:
+      for j in range(len(newu)):
+        outer.append(newu[j])
+    inneri = []
+    outeri = []
+    for j in reversed(inner):
+      inneri.append(j)
+    for j in reversed(outer):
+      outeri.append(j)
+
+    offsetstr="    "
+    offsetstr2 = offsetstr + "  "
+
+    #WRITING OPENACC DIRECTIVES:
+    oaccparallel_init = "!$acc parallel present(array_in,array_out)\n"
+    if(modes == 4):
+      oaccloop_gang = "!$acc loop gang collapse(2)\n"
+      oaccloop_worker = "!$acc loop worker\n"
+      oaccloop_vector = "!$acc loop vector\n"
+    elif(modes == 3):
+      oaccloop_gang = "!$acc loop gang\n"
+      oaccloop_worker = "!$acc loop worker\n"
+      oaccloop_vector = "!$acc loop vector\n"
+    elif(modes == 2):
+      oaccloop_gang = "!$acc loop gang, worker\n"
+      oaccloop_vector = "!$acc loop vector\n"
+
+    #WRITING THE INNER FOR LOOPS HERE:
+    f.write(oaccparallel_init)
+    f.write(oaccloop_gang)
+    for j in range(modes):
+      if (modes == 4 and j == 2):
+        f.write(oaccloop_worker)
+      if (modes == 3 and j == 1):
+        f.write(oaccloop_worker)
+      if (modes == 4 and j == 3):
+        f.write(oaccloop_vector)
+      if (modes == 3 and j == 2):
+        f.write(oaccloop_vector)
+      if (modes == 2 and j == 1):
+        f.write(oaccloop_vector)
+      f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
+      offsetstr2 += "  "
+
+    offsetstr2 = offsetstr2[0:-2]
+    
+    #CENTRAL COPYING AND ADDITION STRING
+    newidx = ""
+    oldidx = ""
+    for j in range(modes):
+      if(perm[j] in newu):
+        newidx += abc[perm[j]]+","
+      elif(perm[j] in newr):
+        newidx += abc[perm[j]]+","
+      else:
+        print "INVALID STUFF HAPPENING HERE"
+      if(idxarr[j] in newu):
+        oldidx += abc[idxarr[j]]+","
+      elif(idxarr[j] in newr):
+        oldidx += abc[idxarr[j]]+","
+      else:
+        print "INVALID STUFF HAPPENING HERE"
+
+    newidx = newidx[0:-1]
+    oldidx = oldidx[0:-1]
+
+    cpstr=offsetstr2+"  array_out("
+#    if cas == 0:
+    if acc_case == 0:
+      cpstr += newidx+") = array_in("+oldidx+")\n"
+#    elif cas==1:
+    elif acc_case==1:
+      cpstr += newidx+") = pre1*array_in("+oldidx+")\n"
+#    elif cas==2:
+    elif acc_case==2:
+      cpstr += newidx+") = array_out("+newidx+") + array_in("+oldidx+")\n"
+#    elif cas==3:
+    elif acc_case==3:
+      cpstr += newidx+") = array_out("+newidx+") + pre1*array_in("+oldidx+")\n"
+#    elif cas==4:
+    elif acc_case==4:
+      cpstr += newidx+") = pre2*array_out("+newidx+") + array_in("+oldidx+")\n"
+#    elif cas==5:
+    elif acc_case==5:
+      cpstr += newidx+") = pre2*array_out("+newidx+") + pre1*array_in("+oldidx+")\n"
+
+    f.write(cpstr)
+    
+    oaccloop_end = "!$acc end loop\n"
+    oaccparallel_end = "!$acc end parallel\n"
+    for j in  range(modes-1,-1,-1):
+      f.write(offsetstr2+"enddo\n")
+      if (modes == 4 and j == 1):
+        f.write("")
+      else:
+        f.write(oaccloop_end)
+      offsetstr2 = offsetstr2[0:-2]
+    f.write(oaccparallel_end)
+    f.write("\n")
 
 #WRITE THE HEADER AND GET THE SUBROUTINE NAME
 def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
@@ -682,7 +791,7 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   subheaderstr= "  !\> \\brief reorder a "+str(modes)+" diensional array  to get the indices\n"
   subheaderstr+= "  !   in the order "+reordstr1+" , this is a quite expensive reordering\n"
   subheaderstr+= "  !   and thus requires additional attention \n"
-  subheaderstr+= "  !\> \\autor Patrick Ettenhuber\n"
+  subheaderstr+= "  !\> \\author Patrick Ettenhuber\n"
   subheaderstr+= "  !\> \date "+str(now.month)+", "+str(now.year)+"\n"
   subheaderstr+= "  subroutine "+sname+"(bs,dims,"
   if ad != "":
@@ -715,10 +824,7 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   subheaderstr+= "    logical :: "
   for i in range(modes):
     subheaderstr+= "mod"+abc[i]+","
-#  subheaderstr = subheaderstr[0:-1]
   subheaderstr = subheaderstr[0:-1] + "\n"
-  subheaderstr += "!$acc declare present(array_in,array_out)\n"
-#  subheaderstr += "\n\n"
   subheaderstr += "\n"
   for i in range(modes):
     subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
@@ -747,6 +853,52 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   return sname
 
 
+#WRITE THE HEADER AND GET THE SUBROUTINE NAME
+def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
+  reordstr1 = ""
+  reordstr2 = ""
+  reordstr3 = ""
+  var_underscore = ""
+  for i in range(modes):
+    reordstr1 += str(perm[i]+1)
+    intermed = "dims("+str(idxarr[i]+1)+"),"
+    reordstr2 += intermed
+    intermed = "dims("+str(perm[i]+1)+"),"
+    reordstr3 += intermed
+  reordstr2 = reordstr2[0:-1]
+  reordstr3 = reordstr3[0:-1]
+  sname =  "manual_acc_"+reordstr1+"_reordering_"+str(acc_case)
+
+  #GET THE SUBROUTINE HEADER
+  subheaderstr= "  !\> \\brief reorder a "+str(modes)+" diensional array (case "+str(acc_case)+") on a device\n"
+  subheaderstr+= "  !   to get the indices in the order "+reordstr1+" , this is a quite expensive reordering\n"
+  subheaderstr+= "  !   and thus requires additional attention \n"
+  subheaderstr+= "  !\> \\author Janus Juul Eriksen & Patrick Ettenhuber\n"
+  subheaderstr+= "  !\> \date "+str(now.month)+", "+str(now.year)+"\n"
+  subheaderstr+= "  subroutine "+sname+"(dims,"
+  subheaderstr+= "pre1,array_in,pre2,array_out)\n"
+  subheaderstr+= "    implicit none\n"
+  subheaderstr+= "    !>  the dimensions of the different modes in the original array\n"
+  subheaderstr+= "    integer, intent(in) :: dims("+str(modes)+")\n"
+  subheaderstr+= "    !> as this routine can be used for adding and scaling these are the prefactors\n"
+  subheaderstr+= "    real(realk),intent(in) :: pre1,pre2\n"
+  subheaderstr+= "    !> array to be reordered\n"
+  subheaderstr+= "    real(realk),intent(in) :: array_in("+reordstr2+")\n"
+  subheaderstr+= "    !> reordered array\n"
+  subheaderstr+= "    real(realk),intent(inout) :: array_out("+reordstr3+")\n"
+  subheaderstr+= "    integer :: "
+  for i in range(modes):
+    subheaderstr+= abc[i]+",d"+abc[i]+","
+  subheaderstr = subheaderstr[0:-1]
+  subheaderstr += "\n"
+  subheaderstr += "\n"
+  for i in range(modes):
+    subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
+
+  f.write(subheaderstr)
+  f.write("#ifdef VAR_OPENACC\n")
+  f.write("\n")
+  return sname
 
 
 
@@ -765,6 +917,8 @@ def write_simple_module_header(f,idim,idx,now,args,kindof):
      f.write("module reord"+str(idim)+"d_"+str(idx)+"_utils_t2f_module\n")
    elif(kindof=="r"):
      f.write("module reord"+str(idim)+"d_"+str(idx)+"_reord_module\n")
+   elif(kindof=="acc"):
+     f.write("module reord"+str(idim)+"d_acc_reord_module\n")
    else:
      print "NO VALID OPTION1 " + kindof
      sys.exit()
@@ -780,6 +934,8 @@ def write_simple_module_end_and_close(f,idim,idx,now,args,kindof):
      f.write("end module reord"+str(idim)+"d_"+str(idx)+"_utils_t2f_module\n")
    elif(kindof=='r'):
      f.write("end module reord"+str(idim)+"d_"+str(idx)+"_reord_module\n")
+   elif(kindof=='acc'):
+     f.write("end module reord"+str(idim)+"d_acc_reord_module\n")
    else:
      print "NO VALID OPTION2"+kindof
      sys.exit()
@@ -812,6 +968,10 @@ def write_main_header(f,now,args,lsutildir,minr,maxr):
        if(mode==2 and i == 0):
          continue
        f.write("  use ""reord"+str(mode)+"d_"+str(i+1)+"_reord_module\n")
+#   if(args[4]):
+#     f.write("  use reord2d_acc_reord_module\n")
+#     f.write("  use reord3d_acc_reord_module\n")
+#     f.write("  use reord4d_acc_reord_module\n")
    f.write("  use LSTIMING\n")
    #f.write("  contains\n")
    #Write the subroutines called by the user

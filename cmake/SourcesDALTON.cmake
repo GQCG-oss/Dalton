@@ -370,6 +370,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/ccsd_diis.F
     DALTON/cc/ccsd_energy.F
     DALTON/cc/ccsd_input.F
+    DALTON/cc/ccsd_init0.F
     DALTON/cc/ccsd_rhs.F
     DALTON/cc/ccsd_rhs3.F
     DALTON/cc/ccsd_rou3.F
@@ -427,7 +428,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/choles/nocc_util.F
     DALTON/densfit/denfit_noddy.F
     DALTON/densfit/df_dirac.F
-    DALTON/densfit/dposv.F
     DALTON/dft/dft_aos.F
     DALTON/dft/dft_ac.F 
     DALTON/dft/dft_aux.F
@@ -584,6 +584,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/intsort.F
     DALTON/sirius/koopro4.F
     DALTON/sirius/newtrahso.F
+    DALTON/sirius/opt-solvers.F
     DALTON/sirius/r12aux.F
     DALTON/sirius/siraba.F
     DALTON/sirius/sirave.F
@@ -626,6 +627,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/sirtra.F
     DALTON/sirius/sirupd.F
     DALTON/sirius/symchk.F
+    DALTON/sirius/pcm_interface.F
     DALTON/soppa/ccsd_tcmepkx.F
     DALTON/soppa/dc_calc.F
     DALTON/soppa/dc_eres.F
@@ -733,6 +735,13 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_writeset.F
     DALTON/soppa/so_wrtve.F
     )
+if(NOT ENABLE_CRAY_WRAPPERS)
+    # radovan: CRAY provides these functions
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        ${DALTON_FIXED_FORTRAN_SOURCES}
+        DALTON/densfit/dposv.F
+        )
+endif()
 set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/input/input_reader_sections.F90
     DALTON/input/input_reader.F90
@@ -750,6 +759,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/gp/one_sided_communication_wrappers.F90
     DALTON/gp/memory_parallel.F90
     DALTON/abacus/rma_windows.F90
+    DALTON/cc/dyn_index.F90
     )
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F

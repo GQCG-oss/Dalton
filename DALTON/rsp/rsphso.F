@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -303,7 +303,7 @@ C
      *      '               Z part         Y part'
          CALL OUTPUT(GP(1+KZCONF),1,KZWOPT,1,2,KZVAR,2,1,LUPRI)
       ELSE IF (IPRHSO.GT.2) THEN
-         IF (LORB) CALL RSPPRO (GP(1+KZCONF),KZVAR,LUPRI)
+         IF (LORB) CALL RSPPRO (GP(1+KZCONF),KZVAR,UDV,LUPRI)
          IF (LCON) CALL RSPPRC (GP,KZCONF,KZVAR,LUPRI)
       END IF
 C
@@ -1540,7 +1540,7 @@ C        Always full exchange for spin-orbit integrals:
      &               IPRNTD,RTNTWO,IDUMMY,I2TYP,WRK(KJSTRS),
      &               WRK(KNPRIM),WRK(KNCONT),WRK(KIORBS),
      &               IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &               .FALSE.)
+     &               .FALSE.,.false.)
          HFXFAC=HFXSAV
          CALL MEMREL('HSOFCKAO.TWOINT',WRK,KFC,KJSTRS,KFREE,LFREE)
          IF (DEBUG) THEN

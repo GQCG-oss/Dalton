@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -572,9 +572,6 @@ C     EVECS(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -595,13 +592,6 @@ C
 #include "gnrinf.h"
 #include "mxcent.h"
 #include "wavpcm.h"
-C
-      logical :: polemb = .false.
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        polemb = .true.
-      end if
-#endif
 C
       CALL QENTER('RSPELI')
 C
@@ -676,8 +666,9 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM
-     &             .or. QMNPMM .or. WAVPCM .or. polemb) THEN
+C EMBEDDING = (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM .OR. .OR. QMNPMM
+C
+      IF (EMBEDDING .OR. WAVPCM) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF
@@ -2467,6 +2458,7 @@ C
          END IF
 C        WRITE (IUNIT,1000) JWOPSY,PRFAC*100.
       ELSE
+         THPLIM = 0.0D0
 C        WRITE (IUNIT,1010) JWOPSY
       ENDIF
       IF (SOPPA) THEN
@@ -2474,16 +2466,14 @@ C        WRITE (IUNIT,1010) JWOPSY
          CALL SOPIJ(ISYMV,IOFFY,IUNIT,RSPVEC,XNDXCI(KABSAD),
      *              XNDXCI(KABTAD),XNDXCI(KIJSAD),XNDXCI(KIJTAD),
      *              XNDXCI(KIJ1AD),XNDXCI(KIJ2AD),XNDXCI(KIJ3AD),THPSOP)
-      ENDIF
-      INPR = 0
-      IF (SOPPA) THEN
          IF (IPRRSP.GT.20) WRITE(IUNIT,1021)
       ELSE
          WRITE(IUNIT,1020)
       ENDIF
+      INPR = 0
       DO 200 IG = 1,NZCONF
-         IF (IUNITX.LT.0 .OR. ABS(RSPVEC(IG)) .GT. THPLIM
-     *        .OR. ABS(RSPVEC(IOFFY+IG)) .GT. THPLIM) THEN
+         IF (ABS(RSPVEC(IG)) .GT. THPLIM .OR.
+     &       ABS(RSPVEC(IOFFY+IG)) .GT. THPLIM) THEN
             IF (SOPPA) THEN
                IF (IPRRSP .GT. 20) THEN
                   CALL SOPIJAB(IG,ISYMV,II,IISYM,IJ,
@@ -2533,14 +2523,14 @@ C1010 FORMAT(/5X,'Response configuration operator symmetry =',I2)
      *       /' -----------   ---    ---    ---    ---  ----',
      *            '  --------------   --------------')
  1100 FORMAT(I12,20X,2F20.10)
- 1110 FORMAT(I10,2X,I4,'(',I1,')',I4,'(',I1,')',I4,'(',I1,')',I4,'(',
+ 1110 FORMAT(I10,I6,'(',I1,')',I4,'(',I1,')',I4,'(',I1,')',I4,'(',
      *       I1,')',A3,2F17.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
-     *       1P,D9.2,' not printed.',
+ 1200 FORMAT(/I9,' elements with absolute value ≤',
+     *       1P,D9.2,' are not printed.',
      *       //' The numbers in parenthesis',
      *         ' give the configuration symmetry.')
- 1210 FORMAT(/1X,I8,' elements with absolute value less than',
-     *       1P,D9.2,' not printed.',
+ 1210 FORMAT(/I9,' elements with absolute value ≤',
+     *       1P,D9.2,' are not printed.',
      *       //' The numbers in parenthesis give the symmetry of the ',
      *         '2p-2h elements.')
  3000 FORMAT(/5X,'Configuration operator symmetry =',I2,
@@ -2550,7 +2540,7 @@ C -- end of subroutine RSPANC
 C
       END
 C  /* Deck rsppro */
-      SUBROUTINE RSPPRO (WOP,IOFFY,IUNITX)
+      SUBROUTINE RSPPRO (WOP,IOFFY,UDV,IUNITX)
 C
 C Written 31-May-1987 hjaaj
 C
@@ -2565,8 +2555,9 @@ C  if IUNITX .gt. 0, write only elements with absolut value
 C                    .ge. PRFAC * (max. absolut value)
 C
 #include "implicit.h"
-      DIMENSION WOP(*)
       PARAMETER (PRFAC = 1.D-1)
+      DIMENSION WOP(*), UDV(NASHDI,*)
+      REAL*8  :: WOP_SCALED(NWOPT,2)   ! allocatable array
 C
 C Used from common blocks:
 C   INFIND : ISMO(*)
@@ -2574,6 +2565,7 @@ C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
 C
 #include "maxorb.h"
 #include "maxash.h"
+#include "infdim.h"
 #include "infind.h"
 #include "infvar.h"
 C
@@ -2581,50 +2573,83 @@ C
 C
 C Any elements?
 C
-      IF (NWOPT.LE.0) GO TO 300
+      IF (NWOPT.LE.0) THEN
+         WRITE (IUNIT,3000) JWOPSY
+         GO TO 300
+      END IF
+C
+C Scale vector with square root of metric diagonal elements ( S[2] )
+C
+      WOP_SC_AMAX = 0.0D0
+      DO IG = 1, NWOPT
+         K  = JWOP(1,IG)
+         L  = JWOP(2,IG)
+         KA = ICH(K)
+         IF (KA .LT. 0) THEN
+            OCC_K = 2.0D0
+         ELSE IF (KA .GT. 0) THEN
+            OCC_K = UDV(KA,KA)
+         ELSE
+            OCC_K = 0.0D0
+         END IF
+         LA = ICH(L)
+         IF (LA .LT. 0) THEN
+            OCC_L = 2.0D0
+         ELSE IF (LA .GT. 0) THEN
+            OCC_L = UDV(LA,LA)
+         ELSE
+            OCC_L = 0.0D0
+         END IF
+         FACTOR = ABS(OCC_K - OCC_L)
+         FACTOR = SQRT( FACTOR )
+         WOP_SCALED(IG,1) = FACTOR*WOP(IG)
+         WOP_SCALED(IG,2) = FACTOR*WOP(IOFFY+IG)
+         WOP_SC_AMAX = MAX(WOP_SC_AMAX, ABS(WOP_SCALED(IG,1)),
+     &                                  ABS(WOP_SCALED(IG,2)) )
+      END DO
 C
 C 1. find maximum absolute value in WOP
 C
       IF (IUNITX.GT.0) THEN
-         MAXX   = IDAMAX(NWOPT,WOP,1)
-         MAXY   = IDAMAX(NWOPT,WOP(IOFFY+1),1)
-         THPWOP = PRFAC * MAX( ABS(WOP(MAXX)) , ABS(WOP(MAXY)) )
+         THPWOP = PRFAC * WOP_SC_AMAX
          WRITE (IUNIT,1000) JWOPSY,PRFAC*100.D0
       ELSE
+         THPWOP = 0.0D0
          WRITE (IUNIT,1010) JWOPSY
       ENDIF
       WRITE (IUNIT,1020)
       INPR = 0
       DO 200 IG = 1,NWOPT
-         IF (IUNITX.LT.0 .OR. ABS(WOP(IG))       .GT. THPWOP
-     *                   .OR. ABS(WOP(IOFFY+IG)) .GT. THPWOP) THEN
+         IF (ABS(WOP_SCALED(IG,1)) .GT. THPWOP .OR.
+     &       ABS(WOP_SCALED(IG,2)) .GT. THPWOP) THEN
             K  = JWOP(1,IG)
             L  = JWOP(2,IG)
             KS = ISMO(K)
             LS = ISMO(L)
-            WRITE (IUNIT,1100) IG,K,KS,L,LS,WOP(IG),WOP(IOFFY+IG)
+            WRITE (IUNIT,1100) IG,K,KS,L,LS,WOP(IG),WOP(IOFFY+IG),
+     &         WOP_SCALED(IG,1),WOP_SCALED(IG,2)
          ELSE
             INPR = INPR + 1
          ENDIF
   200 CONTINUE
       IF (INPR.GT.0) WRITE (IUNIT,1200) INPR,THPWOP
 C
-      RETURN
-C
   300 CONTINUE
-      WRITE (IUNIT,3000) JWOPSY
       RETURN
 C
- 1000 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
-     *  5X,'(only elements abs greater than',F8.2,
-     *     ' % of max abs value)')
- 1010 FORMAT(/5X,'Response orbital operator symmetry =',I2)
- 1020 FORMAT(/,5X,' Index(r,s)      r      s        (r s) operator',
-     *            '      (s r) operator',
-     *       /,5X,' ----------    -----  -----      --------------',
-     *            '      --------------')
- 1100 FORMAT(I12,I10,'(',I1,')',I4,'(',I1,')',2F20.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
+ 1000 FORMAT(/5X,'Response orbital operator symmetry =',I2,
+     &       /5X,'(only scaled elements abs greater than',F8.2,
+     &           ' % of max abs value)')
+ 1010 FORMAT(/5X,'Response orbital operator symmetry =',I2,
+     &       /5X,'(all non-zero values)')
+ 1020 FORMAT(/5X,' Index(r,s)      r      s  ',
+     &           '      (r s) operator      (s r) operator',
+     &           '      (r s) scaled        (s r) scaled',
+     &       /5X,' ----------    -----  -----',
+     &           '      --------------      --------------',
+     &           '      --------------      --------------')
+ 1100 FORMAT(I12,I10,'(',I1,')',I4,'(',I1,')',4F20.10)
+ 1200 FORMAT(/I9,' elements with absolute value ≤$',
      *       1P,D9.2,' not printed.',
      *       //' The numbers in parenthesis give the orbital symmetry.')
  3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
@@ -2652,6 +2677,7 @@ C
 #include "implicit.h"
 #include "maxorb.h"
 #include "maxash.h"
+#include "infdim.h"
 #include "infind.h"
 #include "infvar.h"
       DIMENSION WOP(*), MJWOP(2,MAXWOP,8)

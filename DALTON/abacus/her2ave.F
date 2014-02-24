@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -29,14 +29,14 @@ C  /* Deck intexp */
      &                  ISYMR,ISYMS,ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,
      &                  THRESH,SYMFAC,
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,
-     &                  ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
+     &                  ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP,GENCTR)
 #include "implicit.h"
 #include "maxorb.h"
 #include "infpar.h"
 #include "priunit.h"
 #include "maxaqn.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, DIA2SO,
-     &        ZFS2EL, SPNORB
+     &        ZFS2EL, SPNORB, GENCTR
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
      &          ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          WORK(LWORK), NINDAB(*), NINDCD(*), FT(*), FV(*),
@@ -67,8 +67,14 @@ C
          CALL MEMGET('REAL',KPAA  ,0     ,WORK,KFREE,LFREE)
       END IF
       IF (LONDON .AND. DDFOCK) THEN
-         CALL MEMGET('REAL',KPINT ,3*NCCINT,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KQINT ,3*NCCINT,WORK,KFREE,LFREE)
+Cajt six components if second derivative integrals
+         IF (SUSCEP) THEN
+            CALL MEMGET('REAL',KPINT ,6*NCCINT,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KQINT ,6*NCCINT,WORK,KFREE,LFREE)
+         ELSE
+            CALL MEMGET('REAL',KPINT ,3*NCCINT,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KQINT ,3*NCCINT,WORK,KFREE,LFREE)
+         END IF
       ELSE
          CALL MEMGET('REAL',KPINT ,0       ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KQINT ,0       ,WORK,KFREE,LFREE)
@@ -83,7 +89,7 @@ C
      &            ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &            SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &            NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &            DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
+     &            DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP,GENCTR)
       LWTOT  = LWTOT - KFREE
       CALL MEMREL('INTEXP',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
@@ -94,7 +100,7 @@ C  /* Deck intex1 */
      &                  ISYMR,ISYMS,ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,
      &                  THRESH,SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &                  NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DIA2SO,
-     &                  ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
+     &                  ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP,GENCTR)
 C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
@@ -111,7 +117,7 @@ C
      &           D0 = 0.0 D00, DP125 = 0.125D00, D3=3.0D0, D4=4.0D0)
       INTEGER A, B, C, D, X, Y, Z, Y2, Z2
       LOGICAL NODER, DCMPAB, DCMPCD, NOPMAT, NODV, DV, SUSCEP, DDFOCK,
-     &        EXPECT, LONDON, DIA2SO, ZFS2EL, SPNORB
+     &        EXPECT, LONDON, DIA2SO, ZFS2EL, SPNORB, GENCTR
 #include "nuclei.h"
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          DERIV(NINTYP), PSO(*), PSA(*),
@@ -125,6 +131,9 @@ C
      &          DIFAB(3), DIFCD(3), HESSEE(*),
      &          IXPAB(NUCA*NUCB,2), IXPCD(NUCC*NUCD,2),
      &          IFCTYP(NDMAT)
+
+C Used from common blocks:
+C  inforb.h : NASHT
 #include "twocom.h"
 #include "dftcom.h"
 #include "symmet.h"
@@ -132,9 +141,11 @@ C
 #include "expopt.h"
 #include "dirprt.h"
 #include "infinp.h"
+#include "inforb.h"
 #include "rspprp.h"
 #include "esg.h"
 #include "ibtfun.h"
+C     statement functions:
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -222,6 +233,11 @@ C
          DIFCD(1) = XAND(ISYMT)*CORCX0 - XAND(ISYMTS)*CORDX0
          DIFCD(2) = YAND(ISYMT)*CORCY0 - YAND(ISYMTS)*CORDY0
          DIFCD(3) = ZAND(ISYMT)*CORCZ0 - ZAND(ISYMTS)*CORDZ0
+#ifdef BUILD_OPENRSP
+!radovan: this breaks tests on master
+C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+         IF (.NOT.SUSCEP) THEN
+#endif
          DO 10 N = 1, 3
             Y   = NEXT(N)
             Z   = NEXT(Y)
@@ -238,6 +254,40 @@ C
                QINT(I,N) = AOAB - AOCD
   20        CONTINUE
   10     CONTINUE
+#ifdef BUILD_OPENRSP
+!radovan: this breaks tests on master
+         ELSE
+         DO J = 1, 6
+            K = (7+2*J)/5; M = J-K*(K-1)/2
+            K = NEXT(K); L = NEXT(K)
+            M = NEXT(M); N = NEXT(M)
+            KK = 1+(8-MIN(K,M))*(MIN(K,M)-1)/2+ABS(K-M)
+            KL = 1+(8-MIN(K,N))*(MIN(K,N)-1)/2+ABS(K-N)
+            LK = 1+(8-MIN(L,M))*(MIN(L,M)-1)/2+ABS(L-M)
+            LL = 1+(8-MIN(L,N))*(MIN(L,N)-1)/2+ABS(L-N)
+            KM = 3*(K-1) + M; MK = 3*(M-1) + K
+            KN = 3*(K-1) + N; NK = 3*(N-1) + K
+            LM = 3*(L-1) + M; ML = 3*(M-1) + L
+            LN = 3*(L-1) + N; NL = 3*(N-1) + L
+            ABK = DIFAB(K); ABL = DIFAB(L)
+            ABM = DIFAB(M); ABN = DIFAB(N)
+            CDK = DIFCD(K); CDL = DIFCD(L)
+            CDM = DIFCD(M); CDN = DIFCD(N)
+            DO I = 1, NCCINT
+               PPQQ = ABL*ABN*AOINT(I, 6+KK) - ABL*ABM*AOINT(I, 6+KL)
+     &              - ABK*ABN*AOINT(I, 6+LK) + ABK*ABM*AOINT(I, 6+LL)
+     &              + CDL*CDN*AOINT(I,12+KK) - CDL*CDM*AOINT(I,12+KL)
+     &              - CDK*CDN*AOINT(I,12+LK) + CDK*CDM*AOINT(I,12+LL)
+               PQPQ = ABL*CDN*AOINT(I,18+KM) - ABL*CDM*AOINT(I,18+KN)
+     &              - ABK*CDN*AOINT(I,18+LM) + ABK*CDM*AOINT(I,18+LN)
+     &              + ABN*CDL*AOINT(I,18+MK) - ABN*CDK*AOINT(I,18+ML)
+     &              - ABM*CDL*AOINT(I,18+NK) + ABM*CDK*AOINT(I,18+NL)
+               PINT(I,J) = -(PPQQ + PQPQ)/4
+               QINT(I,J) = -(PPQQ - PQPQ)/4
+            END DO
+         END DO
+         END IF
+#endif
       END IF
 C
       SFAC = SYMFAC
@@ -312,7 +362,12 @@ C
                      A = ICORBA(IORBA) + ICOMPA
                      B = ICORBB(IORBB) + ICOMPB
                      DTAB  = DMAT(A,B,1)
-                     IF (DV) DVAB  = DMAT(A,B,2)
+C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+                     DTBA = DMAT(B,A,1)
+                     IF (DV .OR. GENCTR) THEN
+                        DVAB = DMAT(A,B,2)
+                        DVBA = DMAT(B,A,2)
+                     ENDIF
                                                       FAB = D1
                      IF (TCONAB .AND. IORBA.NE.IORBB) FAB = D2
                      DO 600 IORBCD = 1, NORBCD
@@ -321,17 +376,28 @@ C
                         C = ICORBC(IORBC) + ICOMPC
                         D = ICORBD(IORBD) + ICOMPD
 C
-                        DTAC = DMAT(C,A,1)
-                        DTAD = DMAT(D,A,1)
-                        DTBC = DMAT(C,B,1)
-                        DTBD = DMAT(D,B,1)
-                        DTCD = DMAT(D,C,1)
-                        IF (DV) THEN
-                           DVAC = DMAT(C,A,2)
-                           DVAD = DMAT(D,A,2)
-                           DVBC = DMAT(C,B,2)
-                           DVBD = DMAT(D,B,2)
-                           DVCD = DMAT(D,C,2)
+C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+                        DTAC = DMAT(A,C,1)
+                        DTAD = DMAT(A,D,1)
+                        DTBC = DMAT(B,C,1)
+                        DTBD = DMAT(B,D,1)
+                        DTCD = DMAT(C,D,1)
+                        DTCA = DMAT(C,A,1)
+                        DTDA = DMAT(D,A,1)
+                        DTCB = DMAT(C,B,1)
+                        DTDB = DMAT(D,B,1)
+                        DTDC = DMAT(D,C,1)
+                        IF (DV .OR. GENCTR) THEN
+                           DVAC = DMAT(A,C,2)
+                           DVAD = DMAT(A,D,2)
+                           DVBC = DMAT(B,C,2)
+                           DVBD = DMAT(B,D,2)
+                           DVCD = DMAT(C,D,2)
+                           DVCA = DMAT(C,A,2)
+                           DVDA = DMAT(D,A,2)
+                           DVCB = DMAT(C,B,2)
+                           DVDB = DMAT(D,B,2)
+                           DVDC = DMAT(D,C,2)
                         END IF
                                                        FCD = D1
                         IF (TCONCD.AND.IORBC.NE.IORBD) FCD = D2
@@ -358,21 +424,51 @@ C
                               ELSE
                                  XFAC = 1.0D0
                               END IF
+
+#ifdef BUILD_OPENRSP
+!radovan: this breaks tests on master
+C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+                              IF (ESG) THEN
+                                 CALL ESG_PVAL(DFTADD,HFXFAC,
+     &                                         PVAL,DMAT,A,B,C,D,PFAC)
+                              ELSEIF (GENCTR) THEN
+                                 IF (HFXMU .NE. D0) THEN
+                                  PVAL = -FAB*FCD*FCABCD*DP125*DP5*(
+     &                                 (DTDB*DVAC + DTBD*DVCA
+     &                                + DTCB*DVAD + DTBC*DVDA
+     &                                + DTDA*DVBC + DTAD*DVCB
+     &                        + DTCA*DVBD + DTAC*DVDB)*DP5*HFXFAC)
+                                 ELSE
+                                  PVAL = FAB*FCD*FCABCD*DP125*DP5*(
+     &                                 + (DTAB+DTBA)*(DVCD+DVDC)
+     &                                 + (DTCD+DTDC)*(DVAB+DVBA)
+     &                                 - DP5*HFXFAC*(
+     &                                   DTDB*DVAC + DTBD*DVCA
+     &                                 + DTCB*DVAD + DTBC*DVDA
+     &                                 + DTDA*DVBC + DTAD*DVCB
+     &                                 + DTCA*DVBD + DTAC*DVDB))
+                                 END IF
+                              ELSE IF (HFXMU .NE. D0) THEN
+#else
                               IF (HFXMU .NE. D0) THEN
+#endif
                                  PVAL = PFAC*( - HFXFAC*DP25*
      &                                  (DTAC*DTBD + DTAD*DTBC))
                               ELSE IF (NODV) THEN
                                  PVAL = PFAC*(DTAB*DTCD
      &                                - XFAC*DP25*(DTAC*DTBD+DTAD*DTBC)
      &                                + PAOVAL)
-                              ELSE IF (HSROHF .OR. 
+                              ELSE IF ((HSROHF .AND. NASHT .GT. 1) .OR. 
      &                                (DFTADD .AND. .NOT. NODV)) THEN
                                  PVAL = PFAC*(DTAB*DTCD
      &                                - XFAC*DP25*(DTAC*DTBD + DVAC*DVBD
      &                                      + DTAD*DTBC + DVAD*DVBC))
+#ifndef BUILD_OPENRSP
+!radovan: this breaks tests on master
                               ELSE IF (ESG) THEN 
                                  CALL ESG_PVAL(DFTADD,HFXFAC,
      &                                         PVAL,DMAT,A,B,C,D,PFAC)
+#endif
                               ELSE
                                  PVAL = PFAC*(DTAB*DTCD - DVAB*DVCD
      &                                - DP25*(DTAC*DTBD - DVAC*DVBD
@@ -418,6 +514,52 @@ C
 C                         950210-hjaaj: new SKLFC1 symmetrizes with
 C                         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
+C Bin Gao, December 24, 2009, copied from that of linsca
+c     vincent liegeois
+                           IF (IFCTYP(1).Eq.03) THEN
+
+                              DFAC = FAB*FCD*FCABCD
+                              EFAC = -HFXFAC*DP5*DFAC
+                              IF (HFXMU .NE. D0) DFAC = D0
+C
+C                             Total Fock matrix
+C
+                              DCD  = DFAC*DTCD
+                              DAB  = DFAC*DTAB
+                              DDC  = DFAC*DTDC
+                              DBA  = DFAC*DTBA
+                              DBD  = EFAC*DTBD
+                              DBC  = EFAC*DTBC
+                              DAD  = EFAC*DTAD
+                              DAC  = EFAC*DTAC
+                              DDB  = EFAC*DTDB
+                              DCB  = EFAC*DTCB
+                              DDA  = EFAC*DTDA
+                              DCA  = EFAC*DTCA
+
+                              DO I = 1, NCARTZ
+                                 N = NCART(I)
+!                              coulomb:
+                                    FT(C,D,N) = FT(C,D,N) + DINT(I)*
+     &                                          (DAB+DBA)
+                                    FT(D,C,N) = FT(D,C,N) + DINT(I)*
+     &                                          (DAB+DBA)
+                                    FT(B,A,N) = FT(B,A,N) + DINT(I)*
+     &                                          (DCD+DDC)
+                                    FT(A,B,N) = FT(A,B,N) + DINT(I)*
+     &                                          (DCD+DDC)
+c                              exchange:
+                                    FT(C,A,N) = FT(C,A,N) + DINT(I)*DDB
+                                    FT(A,C,N) = FT(A,C,N) + DINT(I)*DBD
+                                    FT(D,A,N) = FT(D,A,N) + DINT(I)*DCB
+                                    FT(A,D,N) = FT(A,D,N) + DINT(I)*DBC
+                                    FT(C,B,N) = FT(C,B,N) + DINT(I)*DDA
+                                    FT(B,C,N) = FT(B,C,N) + DINT(I)*DAD
+                                    FT(D,B,N) = FT(D,B,N) + DINT(I)*DCA
+                                    FT(B,D,N) = FT(B,D,N) + DINT(I)*DAC
+                              ENDDO
+                           ELSE
+c     end vincent liegeois
                               DFAC = FAB*FCD*FCABCD
                               EFAC = -HFXFAC*DP25*DFAC
                               IF (HFXMU .NE. D0) DFAC = D0
@@ -439,6 +581,9 @@ C
                                  FT(C,B,N) = FT(C,B,N) + DINT(I)*DAD
                                  FT(D,B,N) = FT(D,B,N) + DINT(I)*DAC
   800                         CONTINUE
+c     vincent liegeois
+                           ENDIF
+c     end vincent liegeois
 C
 C                             Active Fock matrix
 C
@@ -484,7 +629,11 @@ C                       **************************
 C
                         ELSE IF (LONDON) THEN
                            FACTOR = DP125*FAB*FCD*FCABCD
+#ifdef BUILD_OPENRSP
+                           IF (SUSCEP .OR. GENCTR) THEN
+#else
                            IF (SUSCEP) THEN
+#endif
                               IF (NOPMAT) THEN
                                  PAOVL1 = D0
                                  PAOVL2 = D0
@@ -492,7 +641,78 @@ C
                                  PAOVL1 = PAO(IORBA,IORBB,IORBC,IORBD)
                                  PAOVL2 = PAA(IORBA,IORBB,IORBC,IORBD)
                               ENDIF
+#ifdef BUILD_OPENRSP
+!radovan: this breaks tests on master
+C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+                              IF (GENCTR) THEN
+                                 IF (.NOT.SUSCEP) THEN
+                                    IF (HFXMU .NE. D0) THEN
+                                    PVAL1 = -FACTOR*(
+     &                             DP5*HFXFAC*(DTDB*DVAC + DTCB*DVAD
+     &                                     - DTDA*DVBC - DTCA*DVBD
+     &                                     - DTBD*DVCA + DTAD*DVCB
+     &                                     - DTBC*DVDA + DTAC*DVDB))
+                                    PVAL2 = -FACTOR*(
+     &                             DP5*HFXFAC*(DTCB*DVAD - DTDB*DVAC
+     &                                     - DTDA*DVBC + DTCA*DVBD
+     &                                     + DTBD*DVCA + DTAD*DVCB
+     &                                     - DTBC*DVDA - DTAC*DVDB))
+                                 ELSE
+                                    PVAL1 = FACTOR*(
+     &                                      (DTAB-DTBA)*(DVCD+DVDC)
+     &                                    + (DVAB-DVBA)*(DTCD+DTDC)
+     &                            -DP5*HFXFAC*(DTDB*DVAC + DTCB*DVAD
+     &                                     - DTDA*DVBC - DTCA*DVBD
+     &                                     - DTBD*DVCA + DTAD*DVCB
+     &                                     - DTBC*DVDA + DTAC*DVDB))
+! WARNING THIS WAS ADDED BY ME (THOMAS KJAERGAARD )
+! ANDREAS PLEASE CONFIRM THAT THIS IS OK. THE OLD WAS:
+!     &                            -DP5*(DTDB*DVAC + DTCB*DVAD
+!     &                                     - DTDA*DVBC - DTCA*DVBD
+!     &                                     - DTBD*DVCA + DTAD*DVCB
+!     &                                     - DTBC*DVDA + DTAC*DVDB))
+
+                                    PVAL2 = FACTOR*(
+     &                                      (DTCD-DTDC)*(DVAB+DVBA)
+     &                                    + (DVCD-DVDC)*(DTAB+DTBA)
+     &                            -DP5*HFXFAC*(DTCB*DVAD - DTDB*DVAC
+     &                                     - DTDA*DVBC + DTCA*DVBD
+     &                                     + DTBD*DVCA + DTAD*DVCB
+     &                                     - DTBC*DVDA - DTAC*DVDB))
+! WARNING THIS WAS ADDED BY ME (THOMAS KJAERGAARD )
+! ANDREAS PLEASE CONFIRM THAT THIS IS OK. THE OLD WAS:
+!     &                            -DP5*(DTCB*DVAD - DTDB*DVAC
+!     &                                     - DTDA*DVBC + DTCA*DVBD
+!     &                                     + DTBD*DVCA + DTAD*DVCB
+!     &                                     - DTBC*DVDA - DTAC*DVDB))
+                                 END IF
+                                 ELSE IF (SUSCEP) THEN
+                                    IF (HFXMU .NE. D0) THEN
+                                 CALL QUIT('CAMB3LYP not implemented '//
+     &                                      'for SUSCEPT and GENCTR')
+                                    ELSE
+                                    PVAL1 = FACTOR*(
+     &                                   + D2*(DTAB*DVCD + DTBA*DVDC
+     &                                   +     DTCD*DVBA + DTDC*DVBA)
+     &                                   -    (DTAC*DVBD + DTBD*DVAC
+     &                                   +     DTCA*DVDB + DTDB*DVCA))
+Ckr
+Ckr   For time being, I assume there is no difference between density
+Ckr   element combinations between x_2^2 and x_1*x_2 for general, different
+Ckr   densities for the Coulomb part (no reason for it to vanish)
+Ckr
+                                    PVAL2 = PVAL1
+Ckr
+Ckr                                    PVAL2 = FACTOR*(
+Ckr     &                                   -    (DTBD*DVAC + DTAC*DVBD
+Ckr     &                                   +     DTDB*DVCA + DTCA*DVDB))
+Ckr
+                                    END IF
+                                 END IF
+                              ELSE IF (HFXMU .NE. D0) THEN
+#else
                               IF (HFXMU .NE. D0) THEN
+#endif /* BUILD_OPENRSP */
                                  PVAL1  = FACTOR*(
      &                                  - HFXFAC*DP25*
      &                                    (DTAC*DTBD + DTAD*DTBC)
@@ -520,6 +740,35 @@ C
      &                                     - DTAD*DTBC + DVAD*DVBC)
      &                                  + PAOVL2)
                               END IF
+#ifdef BUILD_OPENRSP
+!radovan: this breaks tests on master
+C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+                              IF (.NOT.SUSCEP) THEN
+                                 NODER = .FALSE.
+                                 DO I = 1, 3
+                                    DERIV(I) = DERIV(I)
+     &                                       + PVAL1*AOINT(INT,I)
+                                    DERIV(I+3) = DERIV(I+3)
+     &                                       + PVAL2*AOINT(INT,I+3)
+                                 END DO
+                              ELSE IF (SUSCEP) THEN
+                                 IF (ABS(PVAL1) .GT. THRSH) THEN
+                                 NODER = .FALSE.
+                                 ELSE IF (SUSCEP) THEN
+                                    DO 900 I = 7, 18
+                                       DERIV(I) = DERIV(I)
+     &                                          + PVAL1*AOINT(INT,I)
+ 900                                CONTINUE
+                                 END IF
+                                 IF (ABS(PVAL2) .GT. THRSH) THEN
+                                    NODER = .FALSE.
+                                    DO 910 I = 19, 27
+                                       DERIV(I) = DERIV(I)
+     &                                          + PVAL2*AOINT(INT,I)
+ 910                                CONTINUE
+                                 END IF
+                              END IF
+#else
                               IF (ABS(PVAL1) .GT. THRSH) THEN
                                  NODER = .FALSE.
                                  DO 900 I = 7, 18
@@ -532,14 +781,90 @@ C
                                     DERIV(I)=DERIV(I)+PVAL2*AOINT(INT,I)
   910                            CONTINUE
                               END IF
+#endif /* BUILD_OPENRSP */
                            END IF
+#ifdef BUILD_OPENRSP
+                           IF (DDFOCK .AND. .NOT.GENCTR) THEN
+#else
                            IF (DDFOCK) THEN
+#endif
                               DFAC = DP125*FAB*FCD*FCABCD
                               EFAC = DP5*HFXFAC*DFAC
                               IF (HFXMU .NE. D0) DFAC = D0 
 C
 C                             Total Fock matrix
 C
+#ifdef BUILD_OPENRSP
+!radovan: this breaks tests on master
+C Bin Gao, December 24, 2009, copied from that of linsca
+                           IF (IFCTYP(1) .EQ. 3) THEN
+                              DFAC = DFAC*2.0
+                              EFAC = EFAC*2.0
+                              DAB  = DFAC*DTAB
+                              DBA  = DFAC*DTBA
+                              DCD  = DFAC*DTCD
+                              DDC  = DFAC*DTDC
+C
+                              DAC  = EFAC*DTAC
+                              DCA  = EFAC*DTCA
+                              DAD  = EFAC*DTAD
+                              DDA  = EFAC*DTDA
+                              DBC  = EFAC*DTBC
+                              DCB  = EFAC*DTCB
+                              DBD  = EFAC*DTBD
+                              DDB  = EFAC*DTDB
+C
+                           IF (.NOT.SUSCEP) THEN
+                           DO N = 1, 3
+                              ABCD = PINT(INT,N)
+                              ABDC = QINT(INT,N)
+C Coulomb
+                              FT(A,B,N) = FT(A,B,N) + ABCD*DDC
+                              FT(A,B,N) = FT(A,B,N) + ABDC*DCD
+                              FT(B,A,N) = FT(B,A,N) - ABCD*DCD
+                              FT(B,A,N) = FT(B,A,N) - ABDC*DDC
+                              FT(C,D,N) = FT(C,D,N) + ABCD*DBA
+                              FT(C,D,N) = FT(C,D,N) - ABDC*DAB
+                              FT(D,C,N) = FT(D,C,N) - ABCD*DAB
+                              FT(D,C,N) = FT(D,C,N) + ABDC*DBA
+C Exchange
+C                              ABCD = ABCD*HFXFAC
+C                              ABDC = ABDC*HFXFAC
+                              FT(C,A,N) = FT(C,A,N) + ABDC*DDB
+                              FT(A,C,N) = FT(A,C,N) - ABDC*DBD
+                              FT(D,A,N) = FT(D,A,N) + ABCD*DCB
+                              FT(A,D,N) = FT(A,D,N) - ABCD*DBC
+                              FT(C,B,N) = FT(C,B,N) - ABCD*DDA
+                              FT(B,C,N) = FT(B,C,N) + ABCD*DAD
+                              FT(D,B,N) = FT(D,B,N) - ABDC*DCA
+                              FT(B,D,N) = FT(B,D,N) + ABDC*DAC
+                           END DO
+                           ELSE
+                           DO N = 1, 6
+                              ABCD = PINT(INT,N)
+                              ABDC = QINT(INT,N)
+                              FT(A,B,N) = FT(A,B,N)
+     &                                  + ABCD*DDC + ABDC*DCD
+                              FT(B,A,N) = FT(B,A,N)
+     &                                  + ABCD*DCD + ABDC*DDC
+                              FT(C,D,N) = FT(C,D,N)
+     &                                  + ABCD*DBA + ABDC*DAB
+                              FT(D,C,N) = FT(D,C,N)
+     &                                  + ABCD*DAB + ABDC*DBA
+C                              ABCD = ABCD*HFXFAC
+C                              ABDC = ABDC*HFXFAC
+                              FT(A,D,N) = FT(A,D,N) - ABCD*DBC
+                              FT(D,A,N) = FT(D,A,N) - ABCD*DCB
+                              FT(B,C,N) = FT(B,C,N) - ABCD*DAD
+                              FT(C,B,N) = FT(C,B,N) - ABCD*DDA
+                              FT(A,C,N) = FT(A,C,N) - ABDC*DBD
+                              FT(C,A,N) = FT(C,A,N) - ABDC*DDB
+                              FT(B,D,N) = FT(B,D,N) - ABDC*DAC
+                              FT(D,B,N) = FT(D,B,N) - ABDC*DCA
+                           ENDDO
+                           END IF
+                           ELSE
+#endif
                               DAB  = DFAC*DTAB
                               DCD  = DFAC*DTCD
                               DAC  = EFAC*DTAC
@@ -579,6 +904,9 @@ C
                                     FV(D,B,N) = FV(D,B,N) - ABDC*DAC
   930                            CONTINUE
                               END IF
+#ifdef BUILD_OPENRSP
+                           END IF
+#endif
                            END IF
                            IF (IPRINT .GT. 30) THEN
                               WRITE(LUPRI,'(//A,4I5,2D12.4)')
@@ -762,6 +1090,23 @@ C    &                           (AOINT(INT,I),I=1,NINTYP)
          IF (.NOT.LONDON .AND. EXPECT .AND. .NOT.EXPGRA) THEN
             CALL DEROUT(DERIV,HESSEE,NINTYP,IPRINT)
          END IF
+
+#ifdef BUILD_OPENRSP
+!radovan: this breaks few tests on master
+!         test before removing this
+!         anyway the ifs are strange
+C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+         IF (LONDON .AND. GENCTR) THEN
+            IF (.NOT.SUSCEP) THEN
+               CALL LNDGC1(DERIV,FT,ISYMR,ISYMT,ISYMTS,IPRINT)
+            ELSE IF (SUSCEP) THEN
+               CALL LNDGC2(DERIV,FT,ISYMR,ISYMT,ISYMTS,IPRINT)
+            END IF
+         ELSE IF (LONDON .AND. SUSCEP .AND. .NOT.DDFOCK) THEN
+            CALL LNDOUT(DERIV,ISYMR,ISYMT,ISYMTS,IPRINT)
+         END IF
+#endif
+
          IF (SUSCEP) THEN
             CALL LNDOUT(DERIV,ISYMR,ISYMT,ISYMTS,IPRINT)
          END IF
@@ -1266,6 +1611,188 @@ C
  4020 FORMAT (6F12.6)
  4030 FORMAT (//,1X,' Two-electron integral Hessian ',/)
       END
+C Bin Gao, December 24, 2009
+C from linsca abacus/her2ave.F
+C  /* Deck droutg */
+      SUBROUTINE DROUTG(DERIV,expval,NINTYP,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+      INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
+      DIMENSION DERIV(NINTYP), EXPVAL(*)
+C
+#include <nuclei.h>
+#include <expcom.h>
+#include <energy.h>
+C
+      IF (IPRINT .GE.10) THEN
+         WRITE (LUPRI, 1000)
+         WRITE (LUPRI, 1110) TWOCEN, THRCEN
+         WRITE (LUPRI, 1120) ICENT1, ICENT2, ICENT3, ICENT4
+      END IF
+C
+C     ***************************
+C     ***** Two-Center Case *****
+C     ***************************
+C
+      IF (TWOCEN) THEN
+         AX = 3*ICENT1 - 2
+         AY = 3*ICENT1 - 1
+         AZ = 3*ICENT1
+         BX = 3*ICENT2 - 2
+         BY = 3*ICENT2 - 1
+         BZ = 3*ICENT2
+C
+C        ***** Gradient *****
+C
+         IF (DERONE) THEN
+            DAX = DERIV(1)
+            DAY = DERIV(2)
+            DAZ = DERIV(3)
+C
+C           A electron-repulsion gradient elements:
+C
+            EXPVAL(AX) = EXPVAL(AX) + DAX
+            EXPVAL(AY) = EXPVAL(AY) + DAY
+            EXPVAL(AZ) = EXPVAL(AZ) + DAZ
+C
+C           B electron-repulsion gradient elements:
+C
+            EXPVAL(BX) = EXPVAL(BX) - DAX
+            EXPVAL(BY) = EXPVAL(BY) - DAY
+            EXPVAL(BZ) = EXPVAL(BZ) - DAZ
+         END IF
+C
+C     *****************************
+C     ***** Three-Center Case *****
+C     *****************************
+C
+      ELSE IF (THRCEN) THEN
+         AX = 3*ICENT1 - 2
+         AY = 3*ICENT1 - 1
+         AZ = 3*ICENT1
+         BX = 3*ICENT2 - 2
+         BY = 3*ICENT2 - 1
+         BZ = 3*ICENT2
+         CX = 3*ICENT3 - 2
+         CY = 3*ICENT3 - 1
+         CZ = 3*ICENT3
+C
+C        ***** Gradient *****
+C
+         IF (DERONE) THEN
+            DAX = DERIV(1)
+            DAY = DERIV(2)
+            DAZ = DERIV(3)
+            DBX = DERIV(4)
+            DBY = DERIV(5)
+            DBZ = DERIV(6)
+C
+C           A electron-repulsion gradient elements:
+C
+            EXPVAL(AX) = EXPVAL(AX) + DAX
+            EXPVAL(AY) = EXPVAL(AY) + DAY
+            EXPVAL(AZ) = EXPVAL(AZ) + DAZ
+C
+C           B electron-repulsion gradient elements:
+C
+            EXPVAL(BX) = EXPVAL(BX) + DBX
+            EXPVAL(BY) = EXPVAL(BY) + DBY
+            EXPVAL(BZ) = EXPVAL(BZ) + DBZ
+C
+C           C electron-repulsion gradient elements:
+C
+            EXPVAL(CX) = EXPVAL(CX) - (DAX + DBX)
+            EXPVAL(CY) = EXPVAL(CY) - (DAY + DBY)
+            EXPVAL(CZ) = EXPVAL(CZ) - (DAZ + DBZ)
+         END IF
+C
+C     ****************************
+C     ***** Four-Center Case *****
+C     ****************************
+C
+      ELSE
+         AX = 3*ICENT1 - 2
+         AY = 3*ICENT1 - 1
+         AZ = 3*ICENT1
+         BX = 3*ICENT2 - 2
+         BY = 3*ICENT2 - 1
+         BZ = 3*ICENT2
+         CX = 3*ICENT3 - 2
+         CY = 3*ICENT3 - 1
+         CZ = 3*ICENT3
+         DX = 3*ICENT4 - 2
+         DY = 3*ICENT4 - 1
+         DZ = 3*ICENT4
+C
+C        ***** Gradient *****
+C
+         IF (DERONE) THEN
+            DAX = DERIV(1)
+            DAY = DERIV(2)
+            DAZ = DERIV(3)
+            DBX = DERIV(4)
+            DBY = DERIV(5)
+            DBZ = DERIV(6)
+            DCX = DERIV(7)
+            DCY = DERIV(8)
+            DCZ = DERIV(9)
+C
+C           A electron-repulsion gradient elements:
+C
+            EXPVAL(AX) = EXPVAL(AX) + DAX
+            EXPVAL(AY) = EXPVAL(AY) + DAY
+            EXPVAL(AZ) = EXPVAL(AZ) + DAZ
+C
+C           B electron-repulsion gradient elements:
+C
+            EXPVAL(BX) = EXPVAL(BX) + DBX
+            EXPVAL(BY) = EXPVAL(BY) + DBY
+            EXPVAL(BZ) = EXPVAL(BZ) + DBZ
+C
+C           C electron-repulsion gradient elements:
+C
+            EXPVAL(CX) = EXPVAL(CX) + DCX
+            EXPVAL(CY) = EXPVAL(CY) + DCY
+            EXPVAL(CZ) = EXPVAL(CZ) + DCZ
+C
+C           D electron-repulsion gradient elements:
+C
+            EXPVAL(DX) = EXPVAL(DX) - (DAX + DBX + DCX)
+            EXPVAL(DY) = EXPVAL(DY) - (DAY + DBY + DCY)
+            EXPVAL(DZ) = EXPVAL(DZ) - (DAZ + DBZ + DCZ)
+         END IF
+      END IF
+      IF (IPRINT .GT. 05) THEN
+         WRITE (LUPRI, 1000)
+         WRITE (LUPRI, 1110) TWOCEN, THRCEN
+         WRITE (LUPRI, 1120) ICENT1, ICENT2, ICENT3, ICENT4
+         WRITE (LUPRI,'(A,3I5)') ' AX/Y/Z ',AX,AY,AZ
+         WRITE (LUPRI,'(A,3I5)') ' BX/Y/Z ',BX,BY,BZ
+         IF (.NOT.TWOCEN) THEN
+         WRITE (LUPRI,'(A,3I5)') ' CX/Y/Z ',CX,CY,CZ
+         IF (.NOT.THRCEN) THEN
+         WRITE (LUPRI,'(A,3I5)') ' DX/Y/Z ',DX,DY,DZ
+         END IF
+         END IF
+         WRITE (LUPRI, 4000) (DERIV(I),I = 1, NINTYP)
+         NCDEP3 = 3*NUCDEP
+         IF (IPRINT .GE. 10) THEN
+            IF (DERONE) THEN
+               WRITE(LUPRI, 4010)
+               WRITE(LUPRI, 4020) (EXPVAL(I),I=1,NCDEP3)
+            END IF
+         END IF
+      END IF
+      RETURN
+ 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine DEROUT >>>>>>>>',/)
+ 1110 FORMAT (2X,'TWOCEN,...:  ',2L5)
+ 1120 FORMAT (2X,'ICENT1/2/3/4:',4I7)
+ 4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
+ 4010 FORMAT (//,1X,' Two-electron integral gradient ',/)
+ 4020 FORMAT (6F12.6)
+      END
 C  /* Deck so2out */
       SUBROUTINE SO2OUT(DERIV,IPRINT)
 C
@@ -1425,6 +1952,192 @@ C
       END IF
       RETURN
  1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDOUT >>>>>>>>',/)
+ 4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
+      END
+C  /* Deck lndgc1 */
+      SUBROUTINE LNDGC1(DERIV,EXPVAL,ISYMR,ISYMT,ISYMTS,IPRINT)
+C
+C     K.Ruud, May 2007, based on LNDOUT
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <mxcent.h>
+      INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
+      DIMENSION DERIV(*), G1(3), G2(3)
+      DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3)
+#include <twocom.h>
+#include <symmet.h>
+#include <ibtfun.h>
+      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      NEXT(I) = MOD(I,3) + 1
+C
+      IF (IPRINT .GT. 10) THEN
+         CALL HEADER('Subroutine LNDGC1',-1)
+         WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
+     &                             ISYMR, ISYMT, ISYMTS
+      END IF
+C
+      DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
+      DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
+      DIFAB(3) =             CORAZ0 - ZAND(ISYMR )*CORBZ0
+      DIFCD(1) = XAND(ISYMT)*CORCX0 - XAND(ISYMTS)*CORDX0
+      DIFCD(2) = YAND(ISYMT)*CORCY0 - YAND(ISYMTS)*CORDY0
+      DIFCD(3) = ZAND(ISYMT)*CORCZ0 - ZAND(ISYMTS)*CORDZ0
+C
+      G1(1) = DERIV(1)
+      G1(2) = DERIV(2)
+      G1(3) = DERIV(3)
+C
+      G2(1) = DERIV(4)
+      G2(2) = DERIV(5)
+      G2(3) = DERIV(6)
+C
+      DO 100 X1 = 1, 3
+         Y1   = NEXT (X1)
+         Z1   = NEXT (Y1)
+         ABY1 = DIFAB(Y1)
+         ABZ1 = DIFAB(Z1)
+         CDY1 = DIFCD(Y1)
+         CDZ1 = DIFCD(Z1)
+         X1S  = IPTAX(X1,2)
+         EXPVAL(X1S) = EXPVAL(X1S)
+     &               - ABY1*G1(Z1)
+     &               + ABZ1*G1(Y1)
+     &               - CDY1*G2(Z1)
+     &               + CDZ1*G2(Y1)
+  100 CONTINUE
+      IF (IPRINT .GT. 05) THEN
+         WRITE (LUPRI, 1000)
+         WRITE (LUPRI, 4000) (DERIV(I),I = 1, 27)
+         WRITE(LUPRI,'(/A)') ' Unfinished contration with B1 integrals'
+         CALL OUTPUT(EXPVAL,1,3,1,1,3,1,1,LUPRI)
+         IF (IPRINT .GT. 10) THEN
+            WRITE (LUPRI,'(/A)') ' G1 '
+            CALL OUTPUT(G1,1,3,1,1,3,1,1,LUPRI)
+            WRITE (LUPRI,'(/A)') ' G2 '
+            CALL OUTPUT(G2,1,3,1,1,3,1,1,LUPRI)
+         END IF
+      END IF
+      RETURN
+ 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDGC1 >>>>>>>>',/)
+ 4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
+      END
+C  /* Deck lndgc2 */
+      SUBROUTINE LNDGC2(DERIV,EXPVAL,ISYMR,ISYMT,ISYMTS,IPRINT)
+C
+C     K.Ruud, May 2007, based on LNDOUT
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <mxcent.h>
+      INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
+      DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
+      DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3,3)
+#include <twocom.h>
+#include <symmet.h>
+#include <ibtfun.h>
+      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      NEXT(I) = MOD(I,3) + 1
+C
+      IF (IPRINT .GT. 10) THEN
+         CALL HEADER('Subroutine LNDGC2',-1)
+         WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
+     &                             ISYMR, ISYMT, ISYMTS
+      END IF
+C
+      DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
+      DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
+      DIFAB(3) =             CORAZ0 - ZAND(ISYMR )*CORBZ0
+      DIFCD(1) = XAND(ISYMT)*CORCX0 - XAND(ISYMTS)*CORDX0
+      DIFCD(2) = YAND(ISYMT)*CORCY0 - YAND(ISYMTS)*CORDY0
+      DIFCD(3) = ZAND(ISYMT)*CORCZ0 - ZAND(ISYMTS)*CORDZ0
+C
+      G11(1,1) = DERIV (7)
+      G11(1,2) = DERIV (8)
+      G11(1,3) = DERIV (9)
+      G11(2,1) = DERIV (8)
+      G11(2,2) = DERIV(10)
+      G11(2,3) = DERIV(11)
+      G11(3,1) = DERIV (9)
+      G11(3,2) = DERIV(11)
+      G11(3,3) = DERIV(12)
+C
+      G22(1,1) = DERIV(13)
+      G22(1,2) = DERIV(14)
+      G22(1,3) = DERIV(15)
+      G22(2,1) = DERIV(14)
+      G22(2,2) = DERIV(16)
+      G22(2,3) = DERIV(17)
+      G22(3,1) = DERIV(15)
+      G22(3,2) = DERIV(17)
+      G22(3,3) = DERIV(18)
+C
+      CALL DCOPY(9,DERIV(19),1,G12,1)
+C
+      DO 100 X1 = 1, 3
+         Y1   = NEXT (X1)
+         Z1   = NEXT (Y1)
+         ABY1 = DIFAB(Y1)
+         ABZ1 = DIFAB(Z1)
+         CDY1 = DIFCD(Y1)
+         CDZ1 = DIFCD(Z1)
+         X1S  = IPTAX(X1,2)
+         DO 200 X2 = X1, 3
+         IF (ISYMAX(X1,2).EQ.ISYMAX(X2,2)) THEN
+            Y2   = NEXT (X2)
+            Z2   = NEXT (Y2)
+            ABY2 = DIFAB(Y2)
+            ABZ2 = DIFAB(Z2)
+            CDY2 = DIFCD(Y2)
+            CDZ2 = DIFCD(Z2)
+            X2S  = IPTAX(X2,2)
+            EXPVAL(X1S,X2S) = EXPVAL(X1S,X2S)
+     &                      - ABY1*ABY2*G11(Z1,Z2)
+     &                      + ABY1*ABZ2*G11(Z1,Y2)
+     &                      + ABZ1*ABY2*G11(Y1,Z2)
+     &                      - ABZ1*ABZ2*G11(Y1,Y2)
+C
+     &                      - CDY1*CDY2*G22(Z1,Z2)
+     &                      + CDY1*CDZ2*G22(Z1,Y2)
+     &                      + CDZ1*CDY2*G22(Y1,Z2)
+     &                      - CDZ1*CDZ2*G22(Y1,Y2)
+C
+     &                      - ABY1*CDY2*G12(Z2,Z1)
+     &                      + ABY1*CDZ2*G12(Y2,Z1)
+     &                      + ABZ1*CDY2*G12(Z2,Y1)
+     &                      - ABZ1*CDZ2*G12(Y2,Y1)
+C
+     &                      - ABY2*CDY1*G12(Z1,Z2)
+     &                      + ABY2*CDZ1*G12(Y1,Z2)
+     &                      + ABZ2*CDY1*G12(Z1,Y2)
+     &                      - ABZ2*CDZ1*G12(Y1,Y2)
+         END IF
+  200    CONTINUE
+  100 CONTINUE
+      IF (IPRINT .GT. 05) THEN
+         WRITE (LUPRI, 1000)
+         WRITE (LUPRI, 4000) (DERIV(I),I = 1, 27)
+         WRITE(LUPRI,'(/A)') ' Unfinished two-electron susceptibilities'
+         CALL OUTPUT(EXPVAL,1,3,1,3,3,3,1,LUPRI)
+         IF (IPRINT .GT. 10) THEN
+            WRITE (LUPRI,'(/A)') ' G11 '
+            CALL OUTPUT(G11,1,3,1,3,3,3,1,LUPRI)
+            WRITE (LUPRI,'(/A)') ' G22 '
+            CALL OUTPUT(G22,1,3,1,3,3,3,1,LUPRI)
+            WRITE (LUPRI,'(/A)') ' G12 '
+            CALL OUTPUT(G12,1,3,1,3,3,3,1,LUPRI)
+         END IF
+      END IF
+      RETURN
+ 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDGC2 >>>>>>>>',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck zfsout */

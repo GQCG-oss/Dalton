@@ -22,7 +22,7 @@ cat > fullmp2_local_f12.info <<'%EOF%'
    --------------------------------
    Molecule:         H2O
    Wave Function:    MP2-F12 / 6-31G
-   Test Purpose:     Test MP2-F12 energy using toy code (Kasper K)
+   Test Purpose:     Test MP2-F12 energy using toy code for local orbitals (Kasper K)
 %EOF%
 
 #######################################################################
@@ -54,10 +54,15 @@ cat > fullmp2_local_f12.dal <<'%EOF%'
 TRILEVEL
 .CONVTHR
 1.0d-5
+.LCM
+**LOCALIZE ORBITALS
+.PSM
+2 2
 **CC
 .MP2
 .F12
-!.canonical
+.MEMORY
+2.0
 *END OF INPUT
 %EOF%
 #######################################################################

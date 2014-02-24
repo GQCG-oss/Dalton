@@ -89,6 +89,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Nuclear repulsion
 CRIT1=`$GREP "Nuclear repulsion: * 16\.91009781024" $log | wc -l`
 TEST[1]=`expr $CRIT1 `
@@ -105,14 +110,14 @@ ERROR[2]="HF ENERGY NOT CORRECT"
 CRIT1=`$GREP "Total SOSEX Energy: * \-40\.202114455" $log | wc -l`
 CRIT2=`$GREP "SOSEX Correlation Energy: * (\-0|\-).179579609" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 `
-CTRL[3]=2
+CTRL[3]=4
 ERROR[3]="SOSEX ENERGIES NOT CORRECT"
 
 # dRPA energy
 CRIT1=`$GREP "Total DRCCD Energy: * \-40\.319537005" $log | wc -l`
 CRIT2=`$GREP "DRCCD Correlation Energy: * (\-0|\-).297002159" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 `
-CTRL[4]=2
+CTRL[4]=4
 ERROR[4]="DRPA ENERGIES NOT CORRECT"
 
 # dRPA solution stabilizing (Hurwitz check)
@@ -122,9 +127,9 @@ CTRL[5]=1
 ERROR[5]="NOT STABILIZING SOLUTION"
 
 # dRPA dipole moment (relaxed)
-CRIT1=`$GREP " x * (0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000" $log | wc -l`
-CRIT2=`$GREP " y * (0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000" $log | wc -l`
-CRIT3=`$GREP " z * (0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000" $log | wc -l`
+CRIT1=`$GREP "   x * (0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000" $log | wc -l`
+CRIT2=`$GREP "   y * (0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000" $log | wc -l`
+CRIT3=`$GREP "   z * (0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000.*(0| |\-0|\-)\.00000000" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[6]=3
 ERROR[6]="DRPA DIPOLE MOMENT NOT CORRECT"
@@ -142,7 +147,7 @@ ERROR[7]="DRPA GRADIENT NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

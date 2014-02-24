@@ -2,7 +2,7 @@ all: librsp_properties.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../LSint
+INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../responsesolver -I../SolverUtilities
 
 # Keep the file lists sorted for easier modification.
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
@@ -22,7 +22,7 @@ clean :
 
 
 Makefile.depend depend: $(F90_OBJS:.o=.F90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint  -- $(F90_OBJS:.o=.F90) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../linears -M../responsesolver -M../SolverUtilities -- $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

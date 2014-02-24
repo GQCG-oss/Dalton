@@ -295,6 +295,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # QM/MM interaction energy compared:
 CRIT1=`$GREP "\| * (\-|\-0).010193083. \| * (\-|\-0)\.001413232. \| * ( |0)\.005071554. \| * (\-|\-0)\.00653493.. \|" $log | wc -l`
 CRIT2=`$GREP "\| * \-75\.71407834.. \| * \-75\.72061327.. \| * (\-|\-0)\.000001850. \|" $log | wc -l`
@@ -311,11 +316,11 @@ CTRL[2]=7
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 # Quadrupole moment components compared:
-CRIT1=`$GREP "1 * 1\.3936093. * ( |0)\.00048152 * ( |0)\.14782028" $log | wc -l`
-CRIT2=`$GREP "2 *  ( |0)\.00048152  *  -1\.5681122. * ( |0)\.00140569" $log | wc -l`
-CRIT3=`$GREP "3 * ( |0)\.14782028 * ( |0)\.00140569 * ( |0)\.1745028." $log | wc -l`
+CRIT1=`$GREP "1 * 1\.3936093. * ( |0)\.0004815. * ( |0)\.1478202." $log | wc -l`
+CRIT2=`$GREP "2 *  ( |0)\.0004815.  *  -1\.5681122. * ( |0)\.0014056." $log | wc -l`
+CRIT3=`$GREP "3 * ( |0)\.1478202. * ( |0)\.0014056. * ( |0)\.1745028." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[3]=6
+CTRL[3]=9
 ERROR[3]="QUADRUPOLE MOMENT NOT CORRECT"
 
 # Second order electric moment components compared:
@@ -323,7 +328,7 @@ CRIT1=`$GREP "1 * 7\.1879348. * (\-|\-0)\.00032101 * (\-|\-0)\.09854685" $log | 
 CRIT2=`$GREP "2 * (\-|\-0)\.00032101 * 5\.0717988. * (\-|\-0)\.00093713" $log | wc -l`
 CRIT3=`$GREP "3 * (\-|\-0)\.09854685 * (\-|\-0)\.00093713 * 6\.3626927." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[4]=8
+CTRL[4]=10
 ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"
 
 # First ground state excitation energy compared:
@@ -349,7 +354,7 @@ ERROR[7]="STATIC POLARIZATION NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -363,6 +368,5 @@ else
   echo THERE IS A PROBLEM 
   exit 1
 fi
-
-' > ccsdmm_modelmix.check
+%EOF%
 #######################################################################

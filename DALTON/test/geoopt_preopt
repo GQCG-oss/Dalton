@@ -179,9 +179,9 @@ CTRL[13]=1
 ERROR[13]="FIRST ENERGY WITH THIRD BASIS SET NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "O *      (0| )\.0000000000 * (0| )\.0000000000   * \-0*\.047461" $log | wc -l`
-CRIT2=`$GREP "H * _1 * (0| )\.0000000000 *   1\.419656..[0-9][0-9] * 1.022283" $log | wc -l`
-CRIT3=`$GREP "H * _2 * (0| )\.0000000000 * \-1\.419656..[0-9][0-9] * 1.022283" $log | wc -l`
+CRIT1=`$GREP "O *      (0| )\.0000000000 * (0| )\.0000000000   * \-0*\.04746." $log | wc -l`
+CRIT2=`$GREP "H * _1 * (0| )\.0000000000 *   1\.419655..[0-9][0-9] * 1.02228." $log | wc -l`
+CRIT3=`$GREP "H * _2 * (0| )\.0000000000 * \-1\.419655..[0-9][0-9] * 1.02228." $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[14]=12
 ERROR[14]="FINAL GEOMETRY NOT CORRECT"
@@ -197,7 +197,7 @@ ERROR[15]="GEOMETRY OPTIMIZATION NOT CONVERGED"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi

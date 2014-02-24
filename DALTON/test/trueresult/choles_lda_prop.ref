@@ -1,14 +1,14 @@
 
 
-   ****************************************************************************
-   *************** DALTON2011 - An electronic structure program ***************
-   ****************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
+    This is output from DALTON (Release Dalton2013 patch 0)
    ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -20,76 +20,184 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri May  6 15:49:27 2011 
-     Host name              : macasm.icmol.uv.es                      
+     Date and time (Linux)  : Sun Sep  8 20:46:00 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /Dalton/EXPERIMENTAL/Version_5_mayo/test/2011-05-06T15_49-testjob-pid-49178
-   2) /Volumes/Dalton/EXPERIMENTAL/Version_5_mayo/basis
+   1) /home/bast/DALTON-2013.0-Source/build/test_choles_lda_prop
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN PROPERTIES                                   
+.CHOLES                                           
+**CHOLES                                          
+.REDUCE                                           
+.SPANDI                                           
+  1.0d-3                                          
+.THRCOM                                           
+ 1.0D-8                                           
+**WAVE FUNCTIONS                                  
+.DFT                                              
+ LDA                                              
+*SCF INP                                          
+.THRESH                                           
+ 1.0D-8                                           
+**PROPERTIES                                      
+.POLARI                                           
+.MAGNET                                           
+.SHIELD                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+aug-cc-pVDZ                                                                    
+HCN                                                                            
+aug-cc-pVDZ basis                                                              
+    3    0                                                                     
+        1.    1                                                                
+H   0.3   0.0    -1.0                                                          
+        7.    1                                                                
+N   0.3   0.0     1.5                                                          
+        6.    1                                                                
+C   0.0   0.0     0.0                                                          
 
 
        *******************************************************************
@@ -125,24 +233,24 @@
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/Volumes/Dalton/EXPERIMENTAL/Version_5_mayo/basis/aug-cc-pVDZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/aug-cc-pVDZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   7.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   7 :
-     "/Volumes/Dalton/EXPERIMENTAL/Version_5_mayo/basis/aug-cc-pVDZ"
+  Basis set file used for this atomic type with Z =   7 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/aug-cc-pVDZ"
 
   Atomic type no.    3
   --------------------
   Nuclear charge:   6.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   6 :
-     "/Volumes/Dalton/EXPERIMENTAL/Version_5_mayo/basis/aug-cc-pVDZ"
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/aug-cc-pVDZ"
 
 
                          SYMGRP: Point group information
@@ -182,7 +290,7 @@ Point group: C1
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -204,8 +312,16 @@ Point group: C1
  C     :    0.552477    0.809485    0.000000
 
 
-  Max interatomic separation is    1.3229 Angstrom (    2.5000 Bohr)
+  Max    interatomic separation is    1.3229 Angstrom (    2.5000 Bohr)
   between atoms    2 and    1, "N     " and "H     ".
+
+  Min HX interatomic separation is    0.5525 Angstrom (    1.0440 Bohr)
+
+  Min YX interatomic separation is    0.8095 Angstrom (    1.5297 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    1    1
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -246,7 +362,7 @@ Point group: C1
           309.234334            3.322978            3.287650 cm-1
 
 
-@  Nuclear repulsion energy :   36.003216630673
+@  Nuclear repulsion energy :   36.003216630673 Hartree
 
 
                      .---------------------------------------.
@@ -266,7 +382,7 @@ Point group: C1
      ************************************************************************
 
  >>>> Total CPU  time used in HERMIT:   0.04 seconds
- >>>> Total wall time used in HERMIT:   0.05 seconds
+ >>>> Total wall time used in HERMIT:   0.04 seconds
 
 
                         .----------------------------------.
@@ -335,18 +451,16 @@ End of Cholesky initializations
   29       80          2      6           51         0.907107569D-01
   29      109          1      7           75         0.222366550D-01
   40      149          1      8           55         0.212483323D-01
-  39      188          1      9           55         0.142665239D-01
+  39      188          1      9           55         0.142666086D-01
   35      223          2     11           75         0.844262157D-02
-  35      258          2     13           58         0.860859258D-03
-  55      313          1     14           75         0.479540499D-03
-  34      347          1     15           52         0.783448436D-04
-  49      396          4     19           75         0.367856587D-04
-  23      419          6     25           50         0.539379383D-05
-  39      458          2     27           74         0.117900875D-05
-  40      498          6     33           75         0.365234578D-06
-  18      516          7     40           30         0.644174634D-07
-
-
+  36      259          2     13           59         0.860859258D-03
+  54      313          1     14           75         0.478367344D-03
+  32      345          1     15           52         0.768058817D-04
+  51      396          4     19           75         0.392471498D-04
+  24      420          7     26           52         0.532724922D-05
+  39      459          2     28           75         0.120680011D-05
+  37      496          5     33           75         0.363330822D-06
+  19      515          8     41           34         0.658960320D-07
 
 
                        +-----------------------------------+
@@ -358,11 +472,11 @@ End of Cholesky initializations
          -----------------
 
       ISAB         Maximum          Actual
-        1            1540             516
+        1            1540             515
 
 
-Largest absolute element in diagonal:    0.99596D-08
-Number of distributions (total and actual):        36        40
+Largest absolute element in diagonal:    0.96970D-08
+Number of distributions (total and actual):        36        41
 
 
 
@@ -371,15 +485,15 @@ Number of distributions (total and actual):        36        40
          ---------------
 
 
-      Initialization time :       0.06
-      Diagonal time       :       0.65
+      Initialization time :       0.05
+      Diagonal time       :       0.37
       Integral time       :       0.72
-      Decomposition time  :       0.46
+      Decomposition time  :       0.34
 
-      Total time          :       1.89
+      Total time          :       1.48
 
 
-Decomposition completed
+Cholesky decomposition completed
 
 
 
@@ -396,12 +510,12 @@ Poor man check of decomposition
 
 Check information for symmetry  1
 
-Number of vectors      :     516
+Number of vectors      :     515
 
-Maximum diagonal       :    0.99596433D-08
+Maximum diagonal       :    0.96970075D-08
 Minimum diagonal       :   -0.55511151D-16
 
-Maximum absolute error :    0.99596433D-08    0.28265879D-01
+Maximum absolute error :    0.96970075D-08    0.28265879D-01
 
 Converged   diagonals :    1540
 Zeroed neg  diagonals :       0
@@ -443,8 +557,8 @@ Unconverged diagonals :       0
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri May  6 15:50:05 2011 
-     Host name              : macasm.icmol.uv.es                      
+     Date and time (Linux)  : Sun Sep  8 20:46:02 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      HCN                                                                     
@@ -453,23 +567,22 @@ Unconverged diagonals :       0
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Kohn-Sham DFT calculation.
-               Fock matrices are calculated directly
-               without use of integrals on disk.
+@    Restricted, closed shell Kohn-Sham DFT calculation.
+ Fock matrices are calculated directly without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EWMO  " input option.
+ ".MOSTART EWMO  " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> KS-DFT   <<<
-     Number of closed shell electrons         14
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> KS-DFT <<<
+@    Number of closed shell electrons          14
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                1
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 1
+@    Reference state symmetry                   1
  
      This is a DFT calculation of type: LDA
 
@@ -477,17 +590,17 @@ Unconverged diagonals :       0
      ======================
      Abelian symmetry species          All |    1
                                        --- |  ---
-     Occupied SCF orbitals               7 |    7
+@    Occupied SCF orbitals               7 |    7
      Secondary orbitals                 48 |   48
      Total number of orbitals           55 |   55
      Number of basis functions          55 |   55
 
      Optimization information
      ========================
-     Number of configurations                 1
-     Number of orbital rotations            336
+@    Number of configurations                 1
+@    Number of orbital rotations            336
      ------------------------------------------
-     Total number of variables              337
+@    Total number of variables              337
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -504,75 +617,78 @@ Unconverged diagonals :       0
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation - Partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 23346 compressed from 23346 ( 93 radial)
-         DFT grid generation - Atom:    2*1 points= 24486 compressed from 24486 (123 radial)
-         DFT grid generation - Atom:    3*1 points= 24642 compressed from 24642 (123 radial)
-         DFT grid generation - Number of grid points:    72474; grid generation time:      0.0 s 
-
-      K-S energy, electrons, error :    -11.910056508292  13.9999999612   -3.88D-08
-   1    -90.4917980881        3.94299D+00   -9.05D+01    1
+      K-S energy, electrons, error :    -11.910056508293  13.9999999612   -3.88D-08
+@  1    -90.4917980879        3.94299D+00   -9.05D+01    1
       Virial theorem: -V/T =      1.959890
-      MULPOP  H      -0.04; N      -0.64; C       0.68; 
+@      MULPOP H      -0.04; N      -0.64; C       0.68; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -13.056525249562  13.9999999747   -2.53D-08
-   2    -90.8459389790        3.04046D+00   -3.54D-01    2
+   2  Screening settings (-IFTHRS, DIFDEN)   -7    F
+      K-S energy, electrons, error :    -13.056525250476  13.9999999747   -2.53D-08
+@  2    -90.8459389798        3.04046D+00   -3.54D-01    2
       Virial theorem: -V/T =      1.898995
-      MULPOP  H      -1.76; N       1.21; C       0.55; 
+@      MULPOP H      -1.76; N       1.21; C       0.55; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.662686661725  13.9999999715   -2.85D-08
-   3    -91.2779108013        9.99855D-01   -4.32D-01    3
+   3  Screening settings (-IFTHRS, DIFDEN)   -7    F
+      K-S energy, electrons, error :    -12.662686664821  13.9999999715   -2.85D-08
+@  3    -91.2779108016        9.99855D-01   -4.32D-01    3
       Virial theorem: -V/T =      1.929559
-      MULPOP  H      -1.11; N      -0.25; C       1.35; 
+@      MULPOP H      -1.11; N      -0.25; C       1.35; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.482070222883  13.9999999704   -2.96D-08
-   4    -91.3097549305        5.52638D-01   -3.18D-02    4
+   4  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      K-S energy, electrons, error :    -12.482070225894  13.9999999704   -2.96D-08
+@  4    -91.3097549317        5.52638D-01   -3.18D-02    4
       Virial theorem: -V/T =      1.940799
-      MULPOP  H      -1.05; N       0.38; C       0.67; 
+@      MULPOP H      -1.05; N       0.38; C       0.67; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.565332476843  13.9999999708   -2.92D-08
-   5    -91.3246938209        2.21098D-02   -1.49D-02    5
+   5  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      K-S energy, electrons, error :    -12.565332478462  13.9999999708   -2.92D-08
+@  5    -91.3246938216        2.21098D-02   -1.49D-02    5
       Virial theorem: -V/T =      1.935700
-      MULPOP  H      -1.04; N       0.19; C       0.85; 
+@      MULPOP H      -1.04; N       0.19; C       0.85; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.560592070587  13.9999999708   -2.92D-08
-   6    -91.3247228564        2.12538D-03   -2.90D-05    6
+   6  Screening settings (-IFTHRS, DIFDEN)  -10    F
+      K-S energy, electrons, error :    -12.560592072042  13.9999999708   -2.92D-08
+@  6    -91.3247228570        2.12538D-03   -2.90D-05    6
       Virial theorem: -V/T =      1.935979
-      MULPOP  H      -1.05; N       0.19; C       0.85; 
+@      MULPOP H      -1.05; N       0.19; C       0.85; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.560669291934  13.9999999708   -2.92D-08
-   7    -91.3247231339        3.03025D-04   -2.78D-07    7
+   7  Screening settings (-IFTHRS, DIFDEN)  -11    F
+      K-S energy, electrons, error :    -12.560669293382  13.9999999708   -2.92D-08
+@  7    -91.3247231346        3.03025D-04   -2.78D-07    7
       Virial theorem: -V/T =      1.935974
-      MULPOP  H      -1.05; N       0.20; C       0.85; 
+@      MULPOP H      -1.05; N       0.20; C       0.85; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.560710442284  13.9999999708   -2.92D-08
-   8    -91.3247231389        9.38927D-05   -4.96D-09    8
+   8  Screening settings (-IFTHRS, DIFDEN)  -11    F
+      K-S energy, electrons, error :    -12.560710443731  13.9999999708   -2.92D-08
+@  8    -91.3247231395        9.38927D-05   -4.96D-09    8
       Virial theorem: -V/T =      1.935971
-      MULPOP  H      -1.05; N       0.20; C       0.85; 
+@      MULPOP H      -1.05; N       0.20; C       0.85; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.560710890344  13.9999999708   -2.92D-08
-   9    -91.3247231394        4.13637D-06   -5.23D-10    9
+   9  Screening settings (-IFTHRS, DIFDEN)  -12    F
+      K-S energy, electrons, error :    -12.560710891790  13.9999999708   -2.92D-08
+@  9    -91.3247231400        4.13638D-06   -5.23D-10    9
       Virial theorem: -V/T =      1.935971
-      MULPOP  H      -1.05; N       0.20; C       0.85; 
+@      MULPOP H      -1.05; N       0.20; C       0.85; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.560710937388  13.9999999708   -2.92D-08
-  10    -91.3247231394        5.30625D-07   -9.52D-13   10
+  10  Screening settings (-IFTHRS, DIFDEN)  -13    F
+      K-S energy, electrons, error :    -12.560710938834  13.9999999708   -2.92D-08
+@ 10    -91.3247231400        5.30626D-07   -9.38D-13   10
       Virial theorem: -V/T =      1.935971
-      MULPOP  H      -1.05; N       0.20; C       0.85; 
+@      MULPOP H      -1.05; N       0.20; C       0.85; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.560711053369  13.9999999708   -2.92D-08
-  11    -91.3247231394        3.98078D-08   -6.11D-13   10
+  11  Screening settings (-IFTHRS, DIFDEN)  -14    F
+      K-S energy, electrons, error :    -12.560711054814  13.9999999708   -2.92D-08
+@ 11    -91.3247231400        3.98081D-08   -6.96D-13   10
       Virial theorem: -V/T =      1.935971
-      MULPOP  H      -1.05; N       0.20; C       0.85; 
+@      MULPOP H      -1.05; N       0.20; C       0.85; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.560711050148  13.9999999708   -2.92D-08
-  12    -91.3247231394        8.94834D-09    1.14D-13   10
+  12  Screening settings (-IFTHRS, DIFDEN)  -14    F
+      K-S energy, electrons, error :    -12.560711051593  13.9999999708   -2.92D-08
+@ 12    -91.3247231400        8.94789D-09    5.26D-13   10
 
- *** DIIS converged in  12 iterations !
-   - total time used in SIRFCK :              0.13 seconds
+@ *** DIIS converged in  12 iterations !
+@     Converged SCF energy, gradient:    -91.324723140045    8.95D-09
+    - total time used in SIRFCK :              0.15 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -584,7 +700,7 @@ Unconverged diagonals :       0
 
  Sym       Kohn-Sham orbital energies
 
-  1    -13.83524524    -9.82124266    -0.91709546    -0.66723165    -0.45681552
+  1    -13.83524524    -9.82124265    -0.91709546    -0.66723165    -0.45681552
         -0.44516642    -0.30285459    -0.00334351     0.03293408     0.03698692
          0.04723547     0.07210679
 
@@ -595,7 +711,7 @@ Unconverged diagonals :       0
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       4.479       4.620
+ >>>> CPU and wall time for SCF :       8.143       8.516
 
 
                        .-----------------------------------.
@@ -603,19 +719,19 @@ Unconverged diagonals :       0
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:            -91.324723139419                 
-     Nuclear repulsion:            36.003216630673
-     Electronic energy:          -127.327939770092
+@    Final DFT energy:            -91.324723140045                 
+@    Nuclear repulsion:            36.003216630673
+@    Electronic energy:          -127.327939770718
 
-     Final gradient norm:           0.000000008948
+@    Final gradient norm:           0.000000008948
 
  
-     Date and time (Linux)  : Fri May  6 15:50:10 2011 
-     Host name              : macasm.icmol.uv.es                      
+     Date and time (Linux)  : Sun Sep  8 20:46:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -623,68 +739,68 @@ Unconverged diagonals :       0
  ------------------------------------------
 
     Orbital         3        4        5        6        7        8        9
-   1 H   :1s    -0.2449   1.0069   0.0000  -0.2030   0.0870   0.2497   0.1614
-   2 H   :1s     1.1853   0.8681  -0.0000  -0.5820  -0.9979  -1.1227  -0.5090
-   3 H   :1s     0.1460   0.2996   0.0000  -0.0923  -0.1756  -2.6527   0.8280
-   4 H   :2px    0.0120  -0.0370  -0.0000  -0.0104  -0.0035  -0.0030   0.0222
-   5 H   :2py    0.0000  -0.0000  -0.0211   0.0000  -0.0000  -0.0000   0.0000
-   6 H   :2pz    0.0087   0.0179  -0.0000  -0.0037  -0.0086   0.0158   0.0026
-   7 H   :2px    0.0305   0.0251  -0.0000   0.0382  -0.0387   0.0871  -0.1215
-   8 H   :2py   -0.0000  -0.0000   0.0715   0.0000   0.0000   0.0000  -0.0000
-   9 H   :2pz    0.3597   0.1268  -0.0000  -0.1761  -0.3074  -0.1688  -0.3234
-  10 N   :1s     0.0396   0.0572  -0.0000  -0.0033   0.0127   0.0107  -0.0029
-  11 N   :1s    -0.7839  -0.0784  -0.0000   0.0747  -0.3602   0.1339   0.0180
-  12 N   :1s     0.3830   0.5047   0.0000  -0.1269  -0.3727   0.0025   0.2893
-  13 N   :1s     0.4153   0.5574   0.0000  -0.1405  -0.6648  -1.0529   1.0366
-  14 N   :2px    0.0855   0.1929  -0.0000   0.6667  -0.1766  -0.1163  -0.3813
-  15 N   :2py    0.0000   0.0000   0.7294   0.0000  -0.0000   0.0000   0.0000
-  16 N   :2pz    0.4112   0.0801  -0.0000  -0.1996  -0.8250   0.0683   0.0545
-  17 N   :2px    0.0161  -0.1950  -0.0000  -0.2324   0.0049  -0.0518  -0.0979
-  18 N   :2py   -0.0000  -0.0000  -0.2554  -0.0000  -0.0000   0.0000  -0.0000
-  19 N   :2pz   -0.5305  -0.2347   0.0000   0.1963   0.4386   0.0822   0.0608
-  20 N   :2px    0.0163  -0.0331  -0.0000  -0.0339  -0.0161  -0.1367  -0.8201
-  21 N   :2py   -0.0000  -0.0000  -0.0329  -0.0000  -0.0000   0.0000  -0.0000
-  22 N   :2pz   -0.1151  -0.0761  -0.0000   0.0350   0.0831   0.3972  -0.0583
-  23 N   :3d2-   0.0000   0.0000  -0.0142  -0.0000  -0.0000  -0.0000   0.0000
-  24 N   :3d1-  -0.0000  -0.0000  -0.0519   0.0000  -0.0000   0.0000   0.0000
-  25 N   :3d0   -0.0200  -0.0248   0.0000   0.0236   0.0318  -0.0027  -0.0013
-  26 N   :3d1+  -0.0163  -0.0149   0.0000  -0.0412   0.0180   0.0007   0.0063
-  27 N   :3d2+  -0.0026  -0.0050   0.0000  -0.0118   0.0025  -0.0001   0.0030
-  29 N   :3d1-   0.0000   0.0000   0.0401  -0.0000  -0.0000  -0.0000   0.0000
-  30 N   :3d0    0.1126   0.0221  -0.0000  -0.0435  -0.0795  -0.0243  -0.0229
-  31 N   :3d1+   0.0136   0.0359  -0.0000   0.0300  -0.0103   0.0018   0.0122
-  32 N   :3d2+  -0.0038   0.0110   0.0000   0.0074   0.0015   0.0044  -0.0012
-  33 C   :1s     0.0926  -0.0912   0.0000   0.0255  -0.0407  -0.0171  -0.0052
-  34 C   :1s    -0.6183   0.2655   0.0000  -0.1428   0.3052   0.0934  -0.0419
-  35 C   :1s    -1.0397  -1.8074   0.0000   0.7378   1.0934   0.8533   0.1616
-  36 C   :1s    -0.5514  -0.9699  -0.0000   0.2705   0.6872   2.9611  -1.7593
-  37 C   :2px   -0.1238   0.2219   0.0000   0.7083   0.0603   0.0846   0.1104
-  38 C   :2py   -0.0000  -0.0000   0.7384   0.0000   0.0000   0.0000   0.0000
-  39 C   :2pz   -0.4585  -0.7466  -0.0000   0.1540   0.3233  -0.1134   0.0349
-  40 C   :2px   -0.1611  -0.2156   0.0000  -0.0467   0.1634   0.1026   0.3876
-  41 C   :2py    0.0000   0.0000  -0.1801  -0.0000  -0.0000  -0.0000   0.0000
-  42 C   :2pz    0.3657   0.4262  -0.0000  -0.1531  -0.2683  -0.0554  -0.1888
-  43 C   :2px   -0.0483  -0.0396  -0.0000   0.0418   0.0519   0.3347   1.3812
-  44 C   :2py    0.0000   0.0000   0.0206   0.0000  -0.0000  -0.0000  -0.0000
-  45 C   :2pz    0.0284   0.0395  -0.0000  -0.0221  -0.0085  -0.2090  -0.2797
-  46 C   :3d2-  -0.0000   0.0000   0.0160   0.0000   0.0000   0.0000   0.0000
-  47 C   :3d1-   0.0000   0.0000  -0.0102   0.0000  -0.0000  -0.0000   0.0000
-  48 C   :3d0    0.0298  -0.0523  -0.0000  -0.0130  -0.0262   0.0041   0.0069
-  49 C   :3d1+  -0.0190  -0.0278   0.0000   0.0016   0.0126  -0.0111  -0.0229
-  50 C   :3d2+  -0.0046   0.0094   0.0000   0.0142   0.0018   0.0002  -0.0071
-  52 C   :3d1-  -0.0000  -0.0000   0.0676   0.0000   0.0000   0.0000  -0.0000
-  53 C   :3d0    0.1914  -0.0856  -0.0000  -0.0634  -0.1537  -0.0157  -0.1684
-  54 C   :3d1+  -0.0058   0.0831  -0.0000   0.0472  -0.0088   0.0194  -0.0631
-  55 C   :3d2+  -0.0144  -0.0087   0.0000   0.0100   0.0134  -0.0026   0.0247
+   1 H   :1s    -0.2449   1.0069   0.0000  -0.2030  -0.0870   0.2497   0.1614
+   2 H   :1s     1.1853   0.8681   0.0000  -0.5820   0.9979  -1.1227  -0.5090
+   3 H   :1s     0.1460   0.2996   0.0000  -0.0923   0.1756  -2.6527   0.8280
+   4 H   :2px    0.0120  -0.0370   0.0000  -0.0104   0.0035  -0.0030   0.0222
+   5 H   :2py    0.0000  -0.0000   0.0211   0.0000   0.0000  -0.0000   0.0000
+   6 H   :2pz    0.0087   0.0179  -0.0000  -0.0037   0.0086   0.0158   0.0026
+   7 H   :2px    0.0305   0.0251   0.0000   0.0382   0.0387   0.0871  -0.1215
+   8 H   :2py   -0.0000   0.0000  -0.0715  -0.0000  -0.0000  -0.0000   0.0000
+   9 H   :2pz    0.3597   0.1268   0.0000  -0.1761   0.3074  -0.1688  -0.3234
+  10 N   :1s     0.0396   0.0572   0.0000  -0.0033  -0.0127   0.0107  -0.0029
+  11 N   :1s    -0.7839  -0.0784   0.0000   0.0747   0.3602   0.1339   0.0180
+  12 N   :1s     0.3830   0.5047  -0.0000  -0.1269   0.3727   0.0025   0.2893
+  13 N   :1s     0.4153   0.5574   0.0000  -0.1405   0.6648  -1.0529   1.0366
+  14 N   :2px    0.0855   0.1929  -0.0000   0.6667   0.1766  -0.1163  -0.3813
+  15 N   :2py   -0.0000  -0.0000  -0.7294  -0.0000  -0.0000  -0.0000   0.0000
+  16 N   :2pz    0.4112   0.0801  -0.0000  -0.1996   0.8250   0.0683   0.0545
+  17 N   :2px    0.0161  -0.1950   0.0000  -0.2324  -0.0049  -0.0518  -0.0979
+  18 N   :2py    0.0000   0.0000   0.2554   0.0000   0.0000  -0.0000  -0.0000
+  19 N   :2pz   -0.5305  -0.2347  -0.0000   0.1963  -0.4386   0.0822   0.0608
+  20 N   :2px    0.0163  -0.0331   0.0000  -0.0339   0.0161  -0.1367  -0.8201
+  21 N   :2py    0.0000   0.0000   0.0329  -0.0000  -0.0000  -0.0000  -0.0000
+  22 N   :2pz   -0.1151  -0.0761  -0.0000   0.0350  -0.0831   0.3972  -0.0583
+  23 N   :3d2-   0.0000  -0.0000   0.0142  -0.0000   0.0000  -0.0000  -0.0000
+  24 N   :3d1-  -0.0000  -0.0000   0.0519   0.0000   0.0000  -0.0000   0.0000
+  25 N   :3d0   -0.0200  -0.0248   0.0000   0.0236  -0.0318  -0.0027  -0.0013
+  26 N   :3d1+  -0.0163  -0.0149   0.0000  -0.0412  -0.0180   0.0007   0.0063
+  27 N   :3d2+  -0.0026  -0.0050   0.0000  -0.0118  -0.0025  -0.0001   0.0030
+  29 N   :3d1-  -0.0000  -0.0000  -0.0401   0.0000   0.0000   0.0000  -0.0000
+  30 N   :3d0    0.1126   0.0221   0.0000  -0.0435   0.0795  -0.0243  -0.0229
+  31 N   :3d1+   0.0136   0.0359  -0.0000   0.0300   0.0103   0.0018   0.0122
+  32 N   :3d2+  -0.0038   0.0110   0.0000   0.0074  -0.0015   0.0044  -0.0012
+  33 C   :1s     0.0926  -0.0912  -0.0000   0.0255   0.0407  -0.0171  -0.0052
+  34 C   :1s    -0.6183   0.2655  -0.0000  -0.1428  -0.3052   0.0934  -0.0419
+  35 C   :1s    -1.0397  -1.8074  -0.0000   0.7378  -1.0934   0.8533   0.1617
+  36 C   :1s    -0.5514  -0.9699  -0.0000   0.2705  -0.6872   2.9611  -1.7593
+  37 C   :2px   -0.1238   0.2219  -0.0000   0.7083  -0.0603   0.0846   0.1104
+  38 C   :2py   -0.0000   0.0000  -0.7384  -0.0000  -0.0000   0.0000   0.0000
+  39 C   :2pz   -0.4585  -0.7466  -0.0000   0.1540  -0.3233  -0.1134   0.0349
+  40 C   :2px   -0.1611  -0.2156  -0.0000  -0.0467  -0.1634   0.1026   0.3876
+  41 C   :2py   -0.0000  -0.0000   0.1801   0.0000   0.0000   0.0000  -0.0000
+  42 C   :2pz    0.3657   0.4262   0.0000  -0.1531   0.2683  -0.0554  -0.1888
+  43 C   :2px   -0.0483  -0.0396  -0.0000   0.0418  -0.0519   0.3347   1.3812
+  44 C   :2py   -0.0000  -0.0000  -0.0206   0.0000   0.0000   0.0000  -0.0000
+  45 C   :2pz    0.0284   0.0395   0.0000  -0.0221   0.0085  -0.2090  -0.2797
+  46 C   :3d2-   0.0000   0.0000  -0.0160  -0.0000  -0.0000   0.0000   0.0000
+  47 C   :3d1-  -0.0000  -0.0000   0.0102  -0.0000   0.0000  -0.0000   0.0000
+  48 C   :3d0    0.0298  -0.0523   0.0000  -0.0130   0.0262   0.0041   0.0069
+  49 C   :3d1+  -0.0190  -0.0278   0.0000   0.0016  -0.0126  -0.0111  -0.0229
+  50 C   :3d2+  -0.0046   0.0094   0.0000   0.0142  -0.0018   0.0002  -0.0071
+  52 C   :3d1-  -0.0000  -0.0000  -0.0676  -0.0000  -0.0000  -0.0000   0.0000
+  53 C   :3d0    0.1914  -0.0856   0.0000  -0.0634   0.1537  -0.0157  -0.1684
+  54 C   :3d1+  -0.0058   0.0831   0.0000   0.0472   0.0088   0.0194  -0.0631
+  55 C   :3d2+  -0.0144  -0.0087  -0.0000   0.0100  -0.0134  -0.0026   0.0247
 
 
 
- >>>> Total CPU  time used in SIRIUS :      4.50 seconds
- >>>> Total wall time used in SIRIUS :      4.64 seconds
+ >>>> Total CPU  time used in SIRIUS :      8.16 seconds
+ >>>> Total wall time used in SIRIUS :      8.54 seconds
 
  
-     Date and time (Linux)  : Fri May  6 15:50:10 2011 
-     Host name              : macasm.icmol.uv.es                      
+     Date and time (Linux)  : Sun Sep  8 20:46:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  NOTE:    1 informational messages have been issued.
  Check output, result, and error files for "INFO".
@@ -726,75 +842,8 @@ Unconverged diagonals :       0
 
 
  
-     Date and time (Linux)  : Fri May  6 15:50:10 2011 
-     Host name              : macasm.icmol.uv.es                      
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.04 seconds
-
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.04 seconds
-
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.04 seconds
-
-
->>> SIRFCK:   3 non-symmetric Fock matrices calculated in       0.14 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-
->>> SIRFCK:   3 non-symmetric Fock matrices calculated in       0.14 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-
->>> SIRFCK:   3 non-symmetric Fock matrices calculated in       0.14 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-
->>> SIRFCK:   3 non-symmetric Fock matrices calculated in       0.14 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-
->>> SIRFCK:   3 non-symmetric Fock matrices calculated in       0.14 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.04 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.05 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.04 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.05 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.6 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.05 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.05 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
-
->>> SIRFCK:   1 non-symmetric Fock matrices calculated in       0.04 seconds
-
-       Electrons: 14.000000(-2.92e-08): LR-DFT*1 evaluation time:       0.5 s
+     Date and time (Linux)  : Sun Sep  8 20:46:10 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
    ***************************************************************************
@@ -803,8 +852,8 @@ Unconverged diagonals :       0
 
 
  
-     Date and time (Linux)  : Fri May  6 15:50:27 2011 
-     Host name              : macasm.icmol.uv.es                      
+     Date and time (Linux)  : Sun Sep  8 20:46:56 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -823,8 +872,8 @@ Unconverged diagonals :       0
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-     Total energy        -91.3247231394 au (Hartrees)
-                         -2485.07212922 eV
+     Total energy        -91.3247231400 au (Hartrees)
+                         -2485.07212923 eV
                            -239773.0236 kJ/mol
 
 
@@ -835,7 +884,7 @@ Unconverged diagonals :       0
      Mass-velocity correction:                  -0.2230537701 au
 
      Total relativistic correction:             -0.0454468581 au (0.0498%)
-     Non-relativistic + relativistic energy:   -91.3701699975 au
+     Non-relativistic + relativistic energy:   -91.3701699981 au
 
 
 
@@ -854,7 +903,7 @@ Unconverged diagonals :       0
 
       x     -0.07842588        -0.19933868        -0.66492227
       y     -0.00000000        -0.00000000        -0.00000000
-      z     -0.87031145        -2.21211092        -7.37880779
+      z     -0.87031145        -2.21211092        -7.37880776
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -868,8 +917,8 @@ Unconverged diagonals :       0
 
                          Ex          Ey          Ez
 
-            Ex       9.937242    0.000000    0.858222
-            Ey       0.000000    9.560063    0.000000
+            Ex       9.937242   -0.000000    0.858222
+            Ey      -0.000000    9.560063    0.000000
             Ez       0.858222    0.000000   11.732711
 
 
@@ -879,8 +928,8 @@ Unconverged diagonals :       0
 
                          Ex          Ey          Ez
 
-            Ex       1.472547    0.000000    0.127175
-            Ey       0.000000    1.416655    0.000000
+            Ex       1.472547   -0.000000    0.127175
+            Ey      -0.000000    1.416655    0.000000
             Ez       0.127175    0.000000    1.738608
 
 
@@ -895,8 +944,8 @@ Unconverged diagonals :       0
              ---------------------------------------------
 
                12.0769          0.3723     0.0000     0.9281
-                9.5930          0.9281    -0.0000    -0.3723
-                9.5601          0.0000     1.0000    -0.0000
+                9.5930          0.9281     0.0000    -0.3723
+                9.5601          0.0000     1.0000     0.0000
 
 
             Mean value:   10.4100        Anisotropy:    2.5006
@@ -913,7 +962,7 @@ Unconverged diagonals :       0
   Units:  JT**(-2)/(10**(-30))   (SI) 
           ppm cm**(3) mol**(-1)  (cgs)
 
-  London orbitals used.
+ London orbitals (GIAOs) used.
 
 
   Magnetizabilities                    au          SI         cgs
@@ -940,9 +989,9 @@ Unconverged diagonals :       0
 
                        Bx                  By                  Bz
 
-  Bx        -2.787038580271     -0.000000000001     -0.150232678159
-  By        -0.000000000001     -2.679279510514     -0.000000000000
-  Bz        -0.150232678159     -0.000000000000     -3.649918847272
+  Bx        -2.787038602152     -0.000000000000     -0.150232675609
+  By        -0.000000000000     -2.679279532209      0.000000000000
+  Bz        -0.150232675609      0.000000000000     -3.649918851377
 
 
 
@@ -951,9 +1000,9 @@ Unconverged diagonals :       0
 
                        Bx                  By                  Bz
 
-  Bx        -6.434303313201      0.000000000000      0.377531585262
-  By         0.000000000000     -6.516200549841      0.000000000000
-  Bz         0.377531585262      0.000000000000     -3.753808315453
+  Bx        -6.434303321745     -0.000000000000      0.377531586387
+  By        -0.000000000000     -6.516200558143      0.000000000000
+  Bz         0.377531586387      0.000000000000     -3.753808318634
 
 
 
@@ -962,9 +1011,9 @@ Unconverged diagonals :       0
 
                        Bx                  By                  Bz
 
-  Bx         3.647264732929     -0.000000000001     -0.527764263421
-  By        -0.000000000001      3.836921039327     -0.000000000000
-  Bz        -0.527764263421     -0.000000000000      0.103889468181
+  Bx         3.647264719593     -0.000000000000     -0.527764261996
+  By        -0.000000000000      3.836921025934      0.000000000000
+  Bz        -0.527764261996      0.000000000000      0.103889467257
 
 
 
@@ -987,21 +1036,21 @@ Unconverged diagonals :       0
   Molecular rotational g-tensor
   -----------------------------
 
-  Isotropic g-tensor       :      -0.05402073
+  Isotropic g-tensor       :      -0.05402072
   Nuclear contribution     :       0.69042215
-  Diamagnetic contribution :       0.03018242
+  Diamagnetic contribution :       0.03018243
   Electronic contribution  :      -0.77462530
-  1st anisotropy:                  0.59160547
-  2nd anisotropy:                 -0.28631553
+  1st anisotropy:                  0.59160548
+  2nd anisotropy:                 -0.28631554
 
 
 
   Molecular rotational g-tensor in principal axis system (a.u.):
   --------------------------------------------------------------
 
-   A            0.34038291      0.01333030      0.00000000
-   B            1.24050952     -0.24489775      0.00000000
-   C            0.00000000      0.00000000     -0.25754736
+   A            0.34038293      0.01333030      0.00000000
+   B            1.24050953     -0.24489775      0.00000000
+   C            0.00000000      0.00000000     -0.25754735
 
 
   Nuclear contribution in principal axis system (a.u.):
@@ -1015,17 +1064,17 @@ Unconverged diagonals :       0
   Electronic contribution in principal axis system (a.u.):
   --------------------------------------------------------
 
-   A           -0.80234151     -0.01270038      0.00000000
-   B           -1.18188947     -0.75152562      0.00000000
-   C            0.00000000      0.00000000     -0.77000878
+   A           -0.80234151     -0.01270038     -0.00000000
+   B           -1.18188947     -0.75152562     -0.00000000
+   C           -0.00000000     -0.00000000     -0.77000878
 
 
   Diamagnetic contribution in principal axis system (a.u.):
   ---------------------------------------------------------
 
-   A            0.24152988      0.00757044      0.00000000
-   B            0.70450056     -0.07671847      0.00000000
-   C            0.00000000      0.00000000     -0.07426415
+   A            0.24152990      0.00757044      0.00000000
+   B            0.70450056     -0.07671846      0.00000000
+   C            0.00000000      0.00000000     -0.07426414
 
 
   ******************************************************************************
@@ -1039,17 +1088,17 @@ Unconverged diagonals :       0
 
                        Bx             By             Bz
 
-        H    x    49.73294914    -0.00000000    -8.13255053
-        H    y     0.00000000    55.77063447     0.00000000
-        H    z    20.38281104     0.00000000    74.33215666
+        H    x    49.73294914    -0.00000000    -8.13255050
+        H    y     0.00000000    55.77063450     0.00000000
+        H    z    20.38281112     0.00000000    74.33215668
 
-        N    x   -39.90026386     0.00000000    72.01333583
-        N    y     0.00000000   -75.56670246     0.00000000
-        N    z    13.50818045    -0.00000000   344.94762618
+        N    x   -39.90026332    -0.00000000    72.01333581
+        N    y     0.00000000   -75.56670168    -0.00000000
+        N    z    13.50818061     0.00000000   344.94762614
 
-        C    x    48.33587821    -0.00000000    36.10741278
-        C    y     0.00000000    46.37224189     0.00000000
-        C    z    64.65182830    -0.00000000   297.27377387
+        C    x    48.33587637    -0.00000000    36.10741263
+        C    y    -0.00000000    46.37224017     0.00000000
+        C    z    64.65182851     0.00000000   297.27377399
 
 
 
@@ -1074,9 +1123,9 @@ Unconverged diagonals :       0
  String on input: "H       "
                     Bx             By             Bz
 
-  H      x    49.73294914    -0.00000000    -8.13255053
-  H      y     0.00000000    55.77063447     0.00000000
-  H      z    20.38281104     0.00000000    74.33215666
+  H      x    49.73294914    -0.00000000    -8.13255050
+  H      y     0.00000000    55.77063450     0.00000000
+  H      z    20.38281112     0.00000000    74.33215668
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1084,9 +1133,9 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H      x    33.0811     0.0000    -4.3101       16.6518    -0.0000    -3.8225
-  H      y    -0.0000    32.6220     0.0000        0.0000    23.1486     0.0000
-  H      z   -17.7900     0.0000    79.3455       38.1728    -0.0000    -5.0134
+  H      x    33.0811    -0.0000    -4.3101       16.6518     0.0000    -3.8225
+  H      y     0.0000    32.6220    -0.0000        0.0000    23.1486     0.0000
+  H      z   -17.7900     0.0000    79.3455       38.1728     0.0000    -5.0134
 
   Diamagnetic contribution:     48.349567         Paramagnetic:      11.595680
 
@@ -1096,16 +1145,16 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H      x     0.0000    -0.0000   -14.2577      -10.2123     0.0000     6.1251
-  H      y     0.0000     0.0000    -0.0000        0.0000    -4.1746     0.0000
+  H      x     0.0000    -0.0000   -14.2577      -10.2123    -0.0000     6.1251
+  H      y     0.0000     0.0000    -0.0000       -0.0000    -4.1746     0.0000
   H      z    14.2577     0.0000     0.0000        6.1251     0.0000    14.3869
 
 
   Principal values and axes:
   --------------------------
 
-  H          48.292194  =   59.95  -  11.65:     0.973433 -0.000000 -0.228971
-  H          55.770634  =   59.95  -   4.17:     0.000000  1.000000 -0.000000
+  H          48.292194  =   59.95  -  11.65:     0.973433  0.000000 -0.228971
+  H          55.770634  =   59.95  -   4.17:    -0.000000  1.000000 -0.000000
   H          75.772912  =   59.95  +  15.83:     0.228971  0.000000  0.973433
 
 
@@ -1128,9 +1177,9 @@ Unconverged diagonals :       0
  String on input: "N       "
                     Bx             By             Bz
 
-  N      x   -39.90026386     0.00000000    72.01333583
-  N      y     0.00000000   -75.56670246     0.00000000
-  N      z    13.50818045    -0.00000000   344.94762618
+  N      x   -39.90026332    -0.00000000    72.01333581
+  N      y     0.00000000   -75.56670168    -0.00000000
+  N      z    13.50818061     0.00000000   344.94762614
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1138,9 +1187,9 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  N      x   373.1033     0.0000    -3.3486     -413.0036     0.0000    75.3619
-  N      y     0.0000   374.4752     0.0000       -0.0000  -450.0419     0.0000
-  N      z    -2.4795    -0.0000   357.6128       15.9877     0.0000   -12.6651
+  N      x   373.1033    -0.0000    -3.3486     -413.0036    -0.0000    75.3619
+  N      y     0.0000   374.4752    -0.0000        0.0000  -450.0419    -0.0000
+  N      z    -2.4795     0.0000   357.6128       15.9877     0.0000   -12.6651
 
   Diamagnetic contribution:    368.397095         Paramagnetic:    -291.903541
 
@@ -1150,16 +1199,16 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  N      x     0.0000     0.0000    29.2526     -116.3938     0.0000    42.7608
-  N      y    -0.0000     0.0000     0.0000        0.0000  -152.0603    -0.0000
-  N      z   -29.2526    -0.0000     0.0000       42.7608    -0.0000   268.4541
+  N      x     0.0000    -0.0000    29.2526     -116.3938    -0.0000    42.7608
+  N      y     0.0000     0.0000    -0.0000       -0.0000  -152.0603    -0.0000
+  N      z   -29.2526     0.0000     0.0000       42.7608    -0.0000   268.4541
 
 
   Principal values and axes:
   --------------------------
 
-  N         -75.566702  =   76.49  - 152.06:    -0.000000  1.000000  0.000000
-  N         -44.594195  =   76.49  - 121.09:     0.994029  0.000000 -0.109116
+  N         -75.566702  =   76.49  - 152.06:     0.000000  1.000000 -0.000000
+  N         -44.594194  =   76.49  - 121.09:     0.994029 -0.000000 -0.109116
   N         349.641557  =   76.49  + 273.15:     0.109116 -0.000000  0.994029
 
 
@@ -1182,9 +1231,9 @@ Unconverged diagonals :       0
  String on input: "C       "
                     Bx             By             Bz
 
-  C      x    48.33587821    -0.00000000    36.10741278
-  C      y     0.00000000    46.37224189     0.00000000
-  C      z    64.65182830    -0.00000000   297.27377387
+  C      x    48.33587637    -0.00000000    36.10741263
+  C      y    -0.00000000    46.37224017     0.00000000
+  C      z    64.65182851     0.00000000   297.27377399
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1192,11 +1241,11 @@ Unconverged diagonals :       0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  C      x   324.5728    -0.0000     4.4656     -276.2369    -0.0000    31.6418
-  C      y    -0.0000   325.7404    -0.0000        0.0000  -279.3682     0.0000
-  C      z     7.9345    -0.0000   304.9669       56.7173    -0.0000    -7.6932
+  C      x   324.5728     0.0000     4.4656     -276.2369    -0.0000    31.6418
+  C      y     0.0000   325.7404    -0.0000       -0.0000  -279.3682     0.0000
+  C      z     7.9345     0.0000   304.9669       56.7173     0.0000    -7.6932
 
-  Diamagnetic contribution:    318.426729         Paramagnetic:    -187.766098
+  Diamagnetic contribution:    318.426728         Paramagnetic:    -187.766098
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1205,15 +1254,15 @@ Unconverged diagonals :       0
                  Bx         By         Bz            Bx         By         Bz
 
   C      x     0.0000    -0.0000   -14.2722      -82.3248    -0.0000    50.3796
-  C      y     0.0000     0.0000     0.0000       -0.0000   -84.2884     0.0000
-  C      z    14.2722    -0.0000     0.0000       50.3796     0.0000   166.6131
+  C      y     0.0000     0.0000    -0.0000       -0.0000   -84.2884     0.0000
+  C      z    14.2722     0.0000     0.0000       50.3796     0.0000   166.6131
 
 
   Principal values and axes:
   --------------------------
 
-  C          38.526663  =  130.66  -  92.13:     0.981567  0.000000 -0.191117
-  C          46.372242  =  130.66  -  84.29:    -0.000000  1.000000  0.000000
+  C          38.526661  =  130.66  -  92.13:     0.981567  0.000000 -0.191117
+  C          46.372240  =  130.66  -  84.29:    -0.000000  1.000000  0.000000
   C         307.082989  =  130.66  + 176.42:     0.191117  0.000000  0.981567
 
 
@@ -1221,13 +1270,15 @@ Unconverged diagonals :       0
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from J.Mason, Solid state Nuc.Magn.Res. 2 (1993), 285
+@1  Definitions from J. Mason, Solid state Nuc. Magn. Res. 2 (1993), 285
 
- @1atom   shielding       dia      para     skew      span     (aniso     asym)
- @1----------------------------------------------------------------------------
- @1H        59.9452   48.3496   11.5957    0.4557   27.4807   23.7415    0.4725
- @1N        76.4936  368.3971 -291.9035    0.8543  425.2083  409.7220    0.1134
- @1C       130.6606  318.4267 -187.7661    0.9416  268.5563  264.6335    0.0445
+@1 London orbitals (GIAOs) has been used.
+
+@1 atom   shielding       dia      para     skew      span     (aniso     asym)
+@1 ----------------------------------------------------------------------------
+@1 H        59.9452   48.3496   11.5957    0.4557   27.4807   23.7415    0.4725
+@1 N        76.4936  368.3971 -291.9035    0.8543  425.2083  409.7220    0.1134
+@1 C       130.6606  318.4267 -187.7661    0.9416  268.5563  264.6335    0.0445
 
 
 
@@ -1235,13 +1286,15 @@ Unconverged diagonals :       0
                          ! Summary of chemical shieldings !
                          +--------------------------------+
 
- Definitions from Smith, Palke and Grieg, Concepts in Mag.Res. 4 (1992), 107
+@2  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992), 107
 
- @2atom   shielding       dia      para     aniso      asym        S        A
- @2----------------------------------------------------------------------------
- @2H        59.9452   48.3496   11.5957   23.7415    0.4725   24.6090   14.2577
- @2N        76.4936  368.3971 -291.9035  409.7220    0.1134  410.5991   29.2526
- @2C       130.6606  318.4267 -187.7661  264.6335    0.0445  264.7207   14.2722
+@2 London orbitals (GIAOs) has been used.
+
+@2 atom   shielding       dia      para     aniso      asym        S        A
+@2 ----------------------------------------------------------------------------
+@2 H        59.9452   48.3496   11.5957   23.7415    0.4725   24.6090   14.2577
+@2 N        76.4936  368.3971 -291.9035  409.7220    0.1134  410.5991   29.2526
+@2 C       130.6606  318.4267 -187.7661  264.6335    0.0445  264.7207   14.2722
 
 
 
@@ -1255,8 +1308,16 @@ Unconverged diagonals :       0
  C     :    0.552477    0.809485    0.000000
 
 
-  Max interatomic separation is    1.3229 Angstrom (    2.5000 Bohr)
+  Max    interatomic separation is    1.3229 Angstrom (    2.5000 Bohr)
   between atoms    2 and    1, "N     " and "H     ".
+
+  Min HX interatomic separation is    0.5525 Angstrom (    1.0440 Bohr)
+
+  Min YX interatomic separation is    0.8095 Angstrom (    1.5297 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    1    1
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -1281,25 +1342,25 @@ Unconverged diagonals :       0
  CPU time statistics for ABACUS
  ------------------------------
 
- RHSIDE     00:00:02      14 %
- RESPON     00:00:09      53 %
- LINRES     00:00:03      20 %
- RELAX      00:00:02      13 %
+ RHSIDE     00:00:05      11 %
+ RESPON     00:00:23      54 %
+ LINRES     00:00:09      20 %
+ RELAX      00:00:06      15 %
 
- TOTAL      00:00:17     100 %
+ TOTAL      00:00:43     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  17.32 seconds
- >>>> Total wall time used in ABACUS:  17.32 seconds
+ >>>> Total CPU  time used in ABACUS:  43.23 seconds
+ >>>> Total wall time used in ABACUS:  45.31 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  23.77 seconds
- >>>> Total wall time used in DALTON:  1 minute   0 seconds
+ >>>> Total CPU  time used in DALTON:  52.93 seconds
+ >>>> Total wall time used in DALTON:  55.40 seconds
 
  
-     Date and time (Linux)  : Fri May  6 15:50:27 2011 
-     Host name              : macasm.icmol.uv.es                      
+     Date and time (Linux)  : Sun Sep  8 20:46:56 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

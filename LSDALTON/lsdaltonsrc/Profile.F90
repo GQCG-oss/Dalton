@@ -14,7 +14,10 @@ module profile_int
   use daltoninfo       
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
-  
+  use ProfileIchorMod
+#ifdef MOD_UNRELEASED
+  use dal_interface, only: di_decpackedJ,di_decpackedJold
+#endif
 private
 public :: di_profile_lsint
 
@@ -54,7 +57,11 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
 #endif
   WRITE(lupri,*)' '
   WRITE(lupri,*)'============================================='
-
+  WRITE(lupri,*)'config%prof%Ichor',config%prof%Ichor
+  IF(config%prof%Ichor)THEN
+     call profile_Ichor(LUPRI,LUPRI,ls%SETTING,config)
+     RETURN
+  ENDIF
   IF(config%prof%Overlap)THEN
      CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
      call mat_init(S,nbast,nbast)
@@ -96,6 +103,16 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      CALL mat_free(H1)
      CALL mat_free(S)
   endif
+  print*,'config%prof%IchorDEC',config%prof%IchorDEC
+#ifdef VAR_ICHOR
+  IF(config%prof%IchorDEC)THEN
+     print*,'call di_decpackedJOLD'
+     call di_decpackedJOLD(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
+     print*,'call di_decpackedJ'
+     call di_decpackedJ(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
+     RETURN
+  ENDIF
+#endif
      
 !#ifdef VAR_OMP
 !  DO I = 1,2

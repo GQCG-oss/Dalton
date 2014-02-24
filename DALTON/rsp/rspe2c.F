@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -3467,45 +3467,48 @@ C
      *               WRK(KWRK2),NBX,(ISIM-1))
 C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
          IF ( NGPPP(KSYMOP) .GT. 0 ) THEN
-            JOP = 1
+            JOP = 0
             DO 600 IOP = 1,NGPPP(KSYMOP)
                CALL GETGPV(LBLPP(KSYMOP,IOP),FC,FV,CMO,UDV,PV,
      *                     XINDX,ANTSYM,WRK(KWRK2),LWRK2 )
+C ---------------------------- test for non-adiabatic coupling:
                IF (LBLPP(KSYMOP,IOP)(1:3) .EQ. 'HDO') THEN
                   IF (REFST) THEN
                      XNACGD(NBX+1) = DDOT(KZCONF,WRK(KWRK2),1,
      *                               WRK(KCREF),1)
                   ENDIF
-                  DO 450 INUM = 1,NBX
+                  DO INUM = 1,NBX
                      XNACGD(INUM) = DDOT(KZYVAR,WRK(KWRK2),1,
      *                              WRK(KBVECS+(INUM-1)*KZYVAR),1)
- 450              CONTINUE
+                  END DO
                   CALL RDS2(LBLPP(KSYMOP,IOP),UDV,XINDX,
      *                      WRK(KWRK2),LWRK2)
-                  DO 455 INUM = 1,NBX
+                  DO INUM = 1,NBX
                      XNACS2(INUM) = DDOT(KZYVAR,WRK(KWRK2),1,
      *                              WRK(KBVECS+(INUM-1)*KZYVAR),1)
- 455              CONTINUE
+                  END DO
                   IF (REFST) THEN
                      XNACS2(NBX+1) = DDOT(KZCONF,WRK(KWRK2),1,
      *                               WRK(KCREF),1)
                   ENDIF
                   WRITE(LUPRI,'(/A,A,2(/A))')
      &               ' OPERATOR TYPE:    ',LBLPP(KSYMOP,IOP),
-     &               ' NON ADIABATIC COUPLING ELEMENTS',
-     &             ' STATE  Excit.en.    HDO term   RDS2 term     total'
+     &               ' non-adiabatic coupling elements',
+     &             ' State  Excit.en.    HDO term   RDS2 term     total'
                   IF (REFST) THEN
                      WRITE(LUPRI,'(/I5,F12.8,3F12.6)')
      *               0,0.D0,XNACGD(NBX+1),XNACS2(NBX+1),XNACGD(NBX+1)
      *               +XNACS2(NBX+1)
                   ENDIF
-                  DO 456 INUM = 1,NBX
+                  DO INUM = 1,NBX
                      WRITE(LUPRI,'(/I5,F12.8,3F12.6)')
      *               (ISIM-1+INUM),WRK(KEIVAL-1+(ISIM-1+INUM)),
      *               XNACGD(INUM),XNACS2(INUM),XNACGD(INUM)+XNACS2(INUM)
- 456              CONTINUE
+                  END DO
                   GO TO 600
                END IF
+C ---------------------------- not non-adiabatic coupling:
+               JOP = JOP + 1
                IF (IPRRSP.GT.0) WRITE(LUPRI,'(/A,A)')
      *            '@ Transition operator type:    ',LBLPP(KSYMOP,IOP)
                IF (IPRRSP.GT.11) WRITE(LUPRI,'(A,I4,A,L4)')
@@ -3517,7 +3520,8 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                      CALL QUIT('State count error in RSPPP')
                   END IF
                   XMOM = DDOT(KZYVAR,WRK(KWRK2),1,
-     *                        WRK(KBVECS+(INUM-1)*KZYVAR),1)
+     &                        WRK(KBVECS+(INUM-1)*KZYVAR),1)
+                  TRSMOM(INUM,JOP) = XMOM
                   IF (IPRRSP.GT.0) WRITE(LUPRI,751)
      &               (ISIM-1+INUM),XMOM, WRK(KEIVAL-1+ISIM-1+INUM)*XTEV
  751              FORMAT('@ STATE NO:',I5,' *TRANSITION MOMENT:'
@@ -3525,13 +3529,10 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                   IF (RSPOCD .OR. RSPECD) THEN
                      WRK(KFREX+LOCST-1) = WRK(KEIVAL-1+ISIM-1+INUM)
                   END IF
-                  IF ( LBLPP(KSYMOP,IOP) .EQ. 'XDIPLEN ' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'YDIPLEN ' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'ZDIPLEN ' ) THEN
+                  IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPLEN ' ) THEN
                       OSCIL = D2R3*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
                       IF (IPRRSP.GT.11) WRITE(LUPRI,'(/A,1P,G16.8)')
      *                   ' OSCILLATOR STRENGTH (LENGTH)   :',OSCIL
-                      TRSMOM(INUM,JOP) = XMOM
                       OSCSTR(INUM,JOP) = OSCIL
                       IF (RSPECD .OR. RSPOCD) THEN
                          IF (LBLPP(KSYMOP,IOP).EQ.'XDIPLEN ') THEN
@@ -3545,13 +3546,10 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                             WRK(KOFF) = XMOM
                          END IF
                       END IF
-                  ELSE IF ( LBLPP(KSYMOP,IOP) .EQ. 'XDIPVEL ' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'YDIPVEL ' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'ZDIPVEL ' ) THEN
+                  ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPVEL ' ) THEN
                       OSCIL = D2R3*XMOM*XMOM/WRK(KEIVAL-1+ISIM-1+INUM)
                       IF (IPRRSP.GT.11) WRITE(LUPRI,'(/A,1P,G16.8)')
      *                   ' OSCILLATOR STRENGTH (VELOCITY) :',OSCIL
-                      TRSMOM(INUM,JOP) = XMOM
                       OSCSTR(INUM,JOP) = OSCIL
                       IF (RSPECD .OR. RSPOCD) THEN
                          IF (LBLPP(KSYMOP,IOP).EQ.'XDIPVEL ') THEN
@@ -3565,10 +3563,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                             WRK(KOFF) = XMOM
                          END IF
                       END IF
-                  ELSE IF ( LBLPP(KSYMOP,IOP) .EQ. 'XANGMOM ' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'YANGMOM ' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'ZANGMOM ' ) THEN
-                      TRSMOM(INUM,JOP) = XMOM
+                  ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'ANGMOM ' ) THEN
                       IF (RSPECD .OR. RSPOCD) THEN
                          IF (LBLPP(KSYMOP,IOP).EQ.'XANGMOM ') THEN
                             KOFF = KTRMAG + 3*(LOCST - 1)
@@ -3581,13 +3576,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                             WRK(KOFF) = XMOM
                          END IF
                       END IF
-                  ELSE IF ( LBLPP(KSYMOP,IOP) .EQ. 'XXSECMOM' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'XYSECMOM' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'XZSECMOM' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'YYSECMOM' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'YZSECMOM' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'ZZSECMOM' ) THEN
-                      TRSMOM(INUM,JOP) = XMOM
+                  ELSE IF ( LBLPP(KSYMOP,IOP)(3:8) .EQ. 'SECMOM' ) THEN
                       IF (RSPECD .OR. RSPOCD) THEN
                          IF (LBLPP(KSYMOP,IOP).EQ.'XXSECMOM') THEN
                             I1 = 1
@@ -3636,13 +3625,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                             WRK(KOFF) = XMOM
                          END IF
                       END IF
-                  ELSE IF ( LBLPP(KSYMOP,IOP) .EQ. 'XXROTSTR' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'XYROTSTR' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'XZROTSTR' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'YYROTSTR' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'YZROTSTR' .OR.
-     *                 LBLPP(KSYMOP,IOP) .EQ. 'ZZROTSTR' ) THEN
-                      TRSMOM(INUM,JOP) = XMOM
+                  ELSE IF ( LBLPP(KSYMOP,IOP)(3:8) .EQ. 'ROTSTR' ) THEN
                       IF (RSPECD .OR. RSPOCD) THEN
                          IF (LBLPP(KSYMOP,IOP).EQ.'XXROTSTR') THEN
                             I1 = 1
@@ -3692,31 +3675,24 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                          END IF
                       END IF
                   ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' .OR.
-     *                 LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
+     &                      LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
                       OSCIL = D2*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
                       IF (IPRRSP.GT.11) WRITE(LUPRI,'(/A,1P,G16.8)')
-     *                   ' GENERALIZED OSCILLATOR STRENGTH :',OSCIL
-                      TRSMOM(INUM,JOP) = XMOM
+     &                   ' GENERALIZED OSCILLATOR STRENGTH :',OSCIL
                       OSCSTR(INUM,JOP) = OSCIL
                   ELSE IF (LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNORB' .OR.
      &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'MNF-SO') THEN
                      XMOMAU = XMOM
-                     TRSMOM(INUM,JOP) = XMOMAU
                      IF (IPRRSP.GT.11) THEN
                         XMOMCM = XMOMAU*XTKAYS
                         WRITE(LUPRI,'(/3A,G16.8,A/41X,G16.8,A)')
-     *                  ' SPIN-ORBIT COUPLING CONSTANT (',
-     *                    LBLPP(KSYMOP,IOP), '):',
-     *                    XMOMAU,' (AU)', XMOMCM,' (CM-1)'
+     &                  ' SPIN-ORBIT COUPLING CONSTANT (',
+     &                    LBLPP(KSYMOP,IOP), '):',
+     &                    XMOMAU,' (AU)', XMOMCM,' (CM-1)'
                      END IF
-                  ELSE IF (LBLPP(KSYMOP,IOP)(1:3) .NE. 'HDO') THEN
-                      TRSMOM(INUM,JOP) = XMOM
                   END IF
  550           CONTINUE
-               IF (LBLPP(KSYMOP,IOP)(1:3) .NE. 'HDO' ) THEN
-                  JOP = JOP + 1
-               END IF
- 600        CONTINUE
+ 600        CONTINUE  ! go to 600 if non-adiabatic coupling ("HDO" in label)
          END IF
          PRI_LINE = ' '
          WRITE (PRI_LINE,'(3(A,I2))')
@@ -3799,7 +3775,7 @@ C
                WRITE (LUPRI,'(/A,I3)')
      &              ' Eigenvector for state no.',(ISIM-1+INUM)
                CALL RSPPRO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),KZVAR,
-     *                     LUPRI)
+     *                     UDV,LUPRI)
 C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
@@ -4337,7 +4313,7 @@ C                 CALL RSPPRC(WRK(KBVECS+(IVEC-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                   CALL RSPANC(WRK(KBVECS+(IVEC-1)*KZYVAR),KZCONF,KZVAR,
      *                        MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
                   CALL RSPPRO(WRK(KBVECS+(IVEC-1)*KZYVAR+KZCONF),KZVAR,
-     *                        LUPRI)
+     *                        UDV,LUPRI)
                END IF
                CALL WRITDX(LURSP2,NVEC,IRAT*KZYVAR,WRK(IBV))
                ANTSYM = 1.0d0
@@ -5902,7 +5878,7 @@ C
      &              LBLLR(KSYMOP,IOPA),KSYMOP,-FREQ(IFREQ),
      &              ' B operator, symmetry, frequency: ',
      &                LBLLR(KSYMOP,IOPB),KSYMOP, FREQ(IFREQ),
-     &              ' Value of linear response -<<A;B>(omega): ',VAL
+     &              ' Value of linear response -<<A;B>>(omega): ',VAL
             END DO
          END DO
       END DO

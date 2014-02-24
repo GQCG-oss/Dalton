@@ -9,11 +9,13 @@ Certain functionality can also be incorporated into other programs by linking to
 
 \section{The Grand Canonical Basis}
 
-Unlike all other Quantum Chemistry Programs the {\lsdalton} program, uses the so called grand canonical basis {\insertref} as the internal default basis. The results therefore cannot directly be compared to other programs unless the 
+Unlike all other Quantum Chemistry Programs the {\lsdalton} program, uses the so called grand canonical basis \cite{trilevel1,trilevel2} as the internal default basis. 
+The results therefore cannot directly be compared to other programs unless the 
 \begin{verbatim}
 .NOGCBASIS
 \end{verbatim}
 keyword is specified. This keyword deactivates the use of the grand canonical basis and uses the input basis instead. 
+An exception is Dunning's correlation consistent basis sets (cc-pVDZ, cc-pVTZ, ..., aug-cc-pVDZ, etc.) for which the .NOGCBASIS keyword is used by default.
 
 \section{Basisset and Ordering}
 
@@ -22,7 +24,7 @@ orbitals (GTOs)
 \begin{equation}
 G_{ilm}(\textbf{r}; a_{i};\textbf{A}) = S_{lm}(x_{A}; y_{A}; z_{A}) \exp(-a_{i}r^{2}_{A})
 \end{equation}
-where $S_{lm}(x_{A}; y_{A}; z_{A})$ is a real solid harmonic introduced in section 6.4.2 of Ref. [THE BOOK {\insertref}], (see Table 6.3).
+where $S_{lm}(x_{A}; y_{A}; z_{A})$ is a real solid harmonic introduced in section 6.4.2 of Ref.~\cite{MEST} (see Table 6.3).
 Concerning the ordering of basis functions, it is one atomtype after the other as given
 in the input, and for each atomtype, it is one atom after another as given in input. For
 each atom increasing with angular momentum $l$, within one angular momentum $l$, the ordering 
@@ -30,7 +32,7 @@ is first the components (e.g. $p_{x},p_{y},p_{z}$), and then the contracted func
 
 
 
-So for an atom consiting of 3 s functions 2 p functions and 1 d function, the ordering is
+So for an atom consisting of 3 s functions 2 p functions and 1 d function, the ordering is
 $\{1s; 2s; 3s; 1p_{x};1p_{y};1p_{z}; 2p_{x};2p_{y};2p_{z}; 1d_{xy}; 1d_{yz}; 1d_{z2-r2} ; 1d_{xz}; 1d_{x2-y2}\}$
 In {\lsdalton} the ordering of the basis functions are $m = \{-l,\cdots,0,\cdots,l\}$ for a given
 angular momentum $l$. Although for computational efficiency the p orbitals are treated as a
@@ -42,7 +44,7 @@ For an unnormalized primitive spherical harmonic GTO, the overlap is given by
 \begin{equation}
 \left\langle \chi^{\eqtext{GTO}}_{i lm} | \chi^{\eqtext{GTO}}_{i lm} \right\rangle = (N_i^{\eqtext{p}})^2 \left(\frac{\pi}{2a_i}\right)^{3/2}\frac{1}{(4a_i)^l}
 \end{equation}
-(where the last term corresponds to $1/(2p)^l$ according to for example Eq. 9.3.8 of Ref. [THE BOOK {\insertref}]). This gives 
+(where the last term corresponds to $1/(2p)^l$ according to for example Eq. 9.3.8 of Ref. \cite{MEST}. This gives 
 the primitive normalization factor $N^{\eqtext{p}}$
 \begin{equation}
   N^{\eqtext{p}}_i = \frac{(4a_i)^{l/2+3/4}}{\pi^{3/4}}
@@ -112,7 +114,100 @@ the dens.restart is given in terms of the grand canonical basis rather than the 
 \section{The {\lsdalton} library bundle}
 \label{sec:LSlib}
 
-\dots Simen will write this section soon!!!!! \dots
+The {\lsdalton} library bundle \verb|liblsdalton.a| allows for porting \lsdalton\ code 
+functionality to other programs. Currently this functionalty is limited to 
+the evaluation of certain standard AO integrals and integral components: the overlap 
+matrix, the one-electron integral matrix (combining kinetic energy and 
+nuclear-electron attraction contributions), the Coulomb, exchange and exchange-correlation 
+matrices and the four-center two-electron repulsion integrals. Also, the 
+first derivatives of these integral components with respect to the nuclear displacments 
+are available, see the file \verb|LSDALTON/lsdaltonsrc/LSlib_tester.F90|
+for details. 
+
+After building \lsdalton\ under a \verb|build| directory (consult the installation guide
+\verb|http://daltonprogram.org/installation/2013/| for assistance), the \lsdalton\ library 
+\verb|liblsdalton.a| can be found under \verb|build\lib|. You can now link you 
+program to the \lsdalton\ library. 
+The use is perhaps best illustrated by a simple example. The file \verb|lslib_test.F90|
+
+\begin{verbatim}
+PROGRAM testlslib
+implicit none
+integer :: nbast,natoms,nelectrons,lupri,luerr
+integer :: i,j
+double precision, allocatable :: Smat(:,:)
+
+call lsinit_all()
+
+lupri = 6 !logical unit number of standard output
+luerr = 0 !logical unit number of standard error
+CALL LSlib_get_dimensions(nbast,natoms,nelectrons,lupri,luerr)
+allocate(Smat(nbast,nbast))
+CALL LSlib_get_overlap(Smat,nbast,lupri,luerr)
+
+deallocate(Smat)
+call lsfree_all()
+
+END PROGRAM testlslib
+\end{verbatim}
+%
+calculates the AO overlap matrix (\verb|Smat|). To compile \verb|lslib_test.F90|
+you have to link to the external libraries required by \lsdalton, typically lapack
+and blas. For an example intel/mkl build
+
+\begin{verbatim}
+./setup --fc=ifort --cc=icc --cxx=icpc --mkl=parallel --omp
+\end{verbatim}
+%
+you can build the excecutable \verb|lslib_test.x| from \verb|lslib_test.F90| according to
+
+\begin{verbatim}
+ifort -mkl=parallel -openmp -parallel -O3 lslib_test.F90 -o lslib_test.x 
+/dalton-path/build/lib/liblsdalton.a
+\end{verbatim}
+%
+Exaclty how to compile and link your code to \verb|libsldalton.a| for other types of build 
+varies, and it can then be instrutive to see how \lsdalton\ is buildt. To see how 
+\verb|lsdalton.x| is compiled and linked, you can type
+
+\begin{verbatim}
+make VERBOSE=1 lsdalton.x
+\end{verbatim}
+%
+in the \verb|build| directory. The actual build of \verb|lsdalton.x| can be found towards
+the end of the standard output. 
+
+The execution of \verb|lslib_test.x| requires the precense of  valid \molecule\ and \lsdalton\ input 
+files in the directory where you execute your program, for example the \verb|MOLECULE.INP|
+
+\begin{verbatim}
+BASIS
+STO-3G
+
+
+Atomtypes=2 
+Charge=8.0 Atoms=1
+O    0.00000 0.00000 0.00000
+Charge=1.0 Atoms=2
+H    0.00000 0.50000 0.00000
+H    0.00000 0.00000 0.50000
+\end{verbatim}
+%
+and the \verb|LSDALTON.INP|
+
+\begin{verbatim}
+**GENERAL
+.NOGCBASIS
+**WAVE FUNCTION
+.DFT
+BLYP
+*END OF INPUT
+\end{verbatim}
+
+
+
+
+
 
 
 

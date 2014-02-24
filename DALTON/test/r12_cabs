@@ -143,6 +143,12 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 #
 #             MP2-R12/B   correlation energy =   -0.179894117
 #             MP2-R12/B   correlation energy =   -0.163731939
@@ -168,7 +174,7 @@ ERROR[1]="Ansatz 2/3 MP2-R12/B ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

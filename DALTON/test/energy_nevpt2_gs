@@ -97,7 +97,7 @@ CRIT1=`$GREP "Number of closed shell electrons * 10" $log | wc -l`
 CRIT2=`$GREP "Number of electrons in active shells * 6" $log | wc -l`
 CRIT3=`$GREP " active orbitals .* 5" $log | wc -l`
 CRIT4=`$GREP "Total number of orbitals .* 46" $log | wc -l`
-CRIT5=`$GREP "Spin multiplicity .* 1" $log | wc -l`
+CRIT5=`$GREP "Spin multiplicity is .* 1" $log | wc -l`
 CRIT6=`$GREP "Total number of symmetries * 4" $log | wc -l`
 CRIT7=`$GREP "Reference state symmetry * 1" $log | wc -l`
 TEST[1]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
@@ -139,7 +139,7 @@ ERROR[6]="NEVPT2 energies not correct."
 PASSED=1
 for i in 1 2 3 4 5 6
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

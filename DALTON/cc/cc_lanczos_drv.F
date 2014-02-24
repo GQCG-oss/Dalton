@@ -2,14 +2,12 @@ C  /* Deck cc_lanczos_drv */
 C--------------------------------------------------------------------
       SUBROUTINE CC_LANCZOS_drv(WORK,LWORK,APROXR12)
 C--------------------------------------------------------------------
-C     Updated version of CC_LANCZOS_drv2_s (includes symmetry)
 C     Purpose: Noddy code to build the Lanczos recursive chain
 C     Handling of RHS vectors is for the time being done
 C     like in CC_XETST
 C     Sonia Coriani & Kristian Sneskov, August 2010
 C     FIXME: RESTRUCTURE THE DUMP-ON-FILE FOR CCSDR3
 C     SYMMETRY inserted in noddy way.
-C     REWRITE COMPLETELY TO DRIVE WITHIN CC RSP SOLVER
 C--------------------------------------------------------------------
       IMPLICIT NONE
 #include "priunit.h"
@@ -41,7 +39,7 @@ C--------------------------------------------------------------------
       INTEGER MXXETRAN, MXVEC, IPRLEE, MXFQTRAN
       PARAMETER (MXXETRAN = 20, MXVEC = 10, IPRLEE=1, MXFQTRAN=50)
       integer ifile, kRfull, kLfull, KoffR,KoffL,istart,NrExc,koffre
-      INTEGER LWORK, LENGTH,Jkaede, kPTcsi,ketaQ,kinverse
+      INTEGER LWORK, LENGTH,Jkaede, kFtrans
       INTEGER kLe1,lensym, length_check,msym,NTRIP,IEX,krod,lentot
 #if defined (SYS_CRAY) 
       REAL WORK(LWORK), ALPHA(JCHAIN), BETA(jChain), xgamma(jchain)
@@ -49,7 +47,6 @@ C--------------------------------------------------------------------
       REAL DDOT
       REAL ZERO, ONE, TWO, FOUR, FIVE, Q1norm, factor
       REAL ovlpLR, xnorm1, ovlpRR, ovlpLL
-      REAL Ftrans(JCHAIN,JCHAIN)
       real sum11,csinorm, etanorm
 #else 
       !sonia: enlarge alpha by 1 to check residuals
@@ -61,7 +58,6 @@ C--------------------------------------------------------------------
       DOUBLE PRECISION thrshold
       DOUBLE PRECISION ovlpLR, xnorm1
       DOUBLE PRECISION ovlpRR, ovlpLL, sum11, csinorm,etanorm
-      DOUBLE PRECISION Ftrans(JCHAIN,JCHAIN)
       
 #endif 
       PARAMETER (ZERO = 0.0D0, ONE  = 1.0D0, TWO = 2.0D0)
@@ -78,15 +74,16 @@ C--------------------------------------------------------------------
       INTEGER ISYAMP,ISYM,ksym
       INTEGER ISYM0, ISYHOP, IOPT, IOPER, ITRAN, IVEC, IDUM, ISYETA
       INTEGER IOPTRW,III
-      INTEGER KEND0, ITEST, KEND3, LWRK3, IORDER, ILSTETA, ISIGN
-      INTEGER KEND1, KDUM, KEND2, LWRK1, LWRK2
+      INTEGER ITEST, IORDER, ILSTETA, ISIGN
+      INTEGER KDUM, LWRK1, LWRK2, LWRK3,LWRK4,LWRK5,LWRK6,LWRK61
+      INTEGER KEND0,KEND1,KEND2,KEND3,KEND4,KEND5,KEND6,KEND61
       INTEGER KTTRI, KWI, KEIVAL, KEIVER, KEIVEL
-      INTEGER IDLSTL,ISYCTR,IDXR1,INUM,IREAL,  KEND6, LWRK6
+      INTEGER IDLSTL,ISYCTR,IDXR1,INUM,IREAL
       INTEGER KETA1, KETA2, KRHO1, KRHO2
       INTEGER IRELAX, KCTR1, KCTR2
       INTEGER KETA12, kpnewa1, ks1, kr1, kpnewa2, kqnew1, kqnew2
       INTEGER KPNEW1, KPNEW2, KAQNEW1, KAQNEW2, kqold1, kqold2, kpold1
-      INTEGER kpold2, KEND4, KEND5, LWRK4, LWRK5, ICPLX,IDXVEC,IOFF,JOFF
+      INTEGER kpold2, ICPLX,IDXVEC,IOFF,JOFF
       integer iopera,ioperb,isyma,isymb
       CHARACTER*(8) LABELA,LABELB
       logical lorxa,lorxb
@@ -289,7 +286,7 @@ C
       CALL CC_XIETA(IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL, 
      &              FILXI,  idummy, dummy,
      &              FILETA, idummy, dummy,
-     &              .FALSE.,0,  WORK(KEND1), LWRK1 )
+     &              .FALSE.,0,WORK(KEND1), LWRK1 )
 !
 !     open files for Q and P matrices
 !     FIXME: replace all this with call to ATTR
@@ -321,11 +318,15 @@ C
         KQnew2 = KQnew1 + NT1AM(ISYHOP)
         KEND1  = KQnew2 + NT2AM(ISYHOP)
       end if
-      LWRK1  = LWORK   - KEND1
+      LWRK1  = LWORK - KEND1
+      if (LWRK1.LT.0) then
+         WRITE(LUPRI,*) 'Need:', KEND1, 'Available:', LWORK
+         CALL QUIT('Insufficient memory in CC_LANCZOS_DRV (1)')
+      end if
 !
       KAQnew1 = KEND1
       if (ccs) then
-        kend2 = KAQnew1 + NT1AM(ISYHOP)
+        kend2   = KAQnew1 + NT1AM(ISYHOP)
         KAQnew2 = kend2
       else
         KAQnew2 = KAQnew1 + NT1AM(ISYHOP)
@@ -333,9 +334,9 @@ C
       end if
       LWRK2   = LWORK - KEND2
 !
-      IF (LWRK1.LT.0 .OR. LWRK2.LT.0) THEN
-         WRITE(LUPRI,*) 'Need:', KEND1,',',KEND2, 'Available:', LWORK
-         CALL QUIT('Insuff memory in CC_LANCZOS_DRV')
+      IF (LWRK2.LT.0) THEN
+         WRITE(LUPRI,*) 'Need:',KEND2, 'Available:', LWORK
+         CALL QUIT('Insufficient memory in CC_LANCZOS_DRV (2)')
       END IF
 C     -------------------------------------------------
 C     read in the Csi^Z vector from CC_XIETA and print
@@ -784,7 +785,7 @@ C
       END IF
 C
       !WRITE (LUPRI,*) ' WARNING: I SKIP REORDER FTB SONIA'
-      WRITE (LUPRI,*) ' REORDER REINTRODUCED'
+      !WRITE (LUPRI,*) ' REORDER REINTRODUCED'
       !reorder and Normalize both KEIVER and KEIVAL
       CALL RGORD2(jkaede,jkaede,WORK(KEIVAL),WORK(KWI),
      &            WORK(KEIVER),WORK(KEIVEL),.FALSE.)
@@ -799,28 +800,29 @@ C
          END IF
       END DO
 C
-      IF (IPRLEE .GE.1 .OR. ICPLX .GT. 0) THEN
+      IF (IPRLEE .GE.10.OR. ICPLX .GT. 0) THEN
          WRITE (LUPRI,'(/A)') ' REDUCED right EIGENVALUES real part:'
          CALL OUTPUT(WORK(KEIVAL),1,jkaede,1,1,jkaede,1,1,LUPRI)
       ENDIF
 C
-      IF (IPRLEE .GE.1 .OR. ICPLX .GT. 0) THEN
-         WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES imaginary part:'
-         !CALL OUTPUT(WORK(KWI),1,jkaede,1,1,jkaede,1,1,LUPRI)
+      IF (IPRLEE .GE.10.OR. ICPLX .GT. 0) THEN
+         WRITE (LUPRI,'(/A)') ' REDUCED Right EIGENVALUES imag part:'
+         CALL OUTPUT(WORK(KWI),1,jkaede,1,1,jkaede,1,1,LUPRI)
       END IF
 C
-      IF (IPRLEE .GE. 1) THEN
+      IF (IPRLEE .GE. 10) THEN
          WRITE (LUPRI,'(/A)') ' REDUCED right EIGENVECTORS :'
-!         CALL OUTPUT(WORK(KEIVER),1,jkaede,1,
-!     &                            jkaede,jkaede,jkaede,1,LUPRI)
+         CALL OUTPUT(WORK(KEIVER),1,jkaede,1,
+     &                            jkaede,jkaede,jkaede,1,LUPRI)
       END IF
 C
       IF (ICPLX .GT. 0)
      *   WRITE(LUPRI,*) '**WARNING CCRED: COMPLEX EIGENVALUES.'
 C
-      IF (IPRLEE .GE. 1) THEN
+      IF (IPRLEE .GE. 10) THEN
          WRITE (LUPRI,'(/A)') 'reordered REDUCED left EIGENVECTORS :'
-       !CALL OUTPUT(WORK(KEIVEL),1,jkaede,1,jkaede,jkaede,jkaede,1,LUPRI)
+        CALL OUTPUT(WORK(KEIVEL),1,jkaede,1,
+     &                           jkaede,jkaede,jkaede,1,LUPRI)
       END IF
 
       IF (IPRLEE .GE. 1) THEN
@@ -849,7 +851,6 @@ C
       call CC_BIORTOCOMP(Jkaede,work(keival),work(kwi),
      &                   work(keiver),work(keivel),
      &                   WORK(KEND6),LWRK6)
-      write(lupri,*)'EXIT BIORTOCOMP'
 !
 ! Test biorthonormality
 !
@@ -908,7 +909,7 @@ C
        WRITE(LUPRI,*) 'Calling CC_FMATRIX to perform FQ tranforms'
        call flshfo(lupri)
        CALL CC_FMATRIX(IFQTRAN, NQLLBL, 'L0 ', 'QL ', IOPT, 'FQ ',
-     &                 IDUMMY, DUMMY, 0, WORK(KEND6), LWRK6 )
+     &                 IDUMMY, DUMMY, 0, WORK(KEND6), LWRK6)
        WRITE(LUPRI,*) 'out of CC_FMATRIX'
        call flshfo(lupri)
 C
@@ -916,11 +917,19 @@ C------------------------------------------------------------------
 C     Generate trans^F
 C-------------------------------------------------------------------
 C
-       CALL DZERO(Ftrans,JCHAIN*JCHAIN)
+       kftrans = kend6
+       kend61  = kftrans + jkaede*jkaede
+       lwrk61  = lwork - kend61
+       IF (LWRK61.LT. 0) THEN
+         WRITE(LUPRI,*) 'Need:', KEND61, 'Available:', LWORK
+         CALL QUIT('Insufficient work space in LANCZOS Ftrans')
+       END IF
+       
+       CALL DZERO(work(kFtrans),jkaede*jkaede)
        WRITE(LUPRI,*) 'Calling Lanczos_Ftrans to make transF (calF)'
        call flshfo(lupri)
        CALL CC_Lanczos_Ftrans(IOPTRW,JKAEDE,LENGTH,IFQTRAN,WORK(KRfull),
-     &               WORK(KEIVER),Ftrans,WORK(KEND6),LWRK6,
+     &               WORK(KEIVER),work(kFtrans),WORK(KEND61),LWRK61,
      &               WORK(KEIVAL),WORK(KWI),isyhop)
 
       if (locdbg) then
@@ -936,16 +945,16 @@ C-------------------------------------------------------------
 C
       if (sum_rules) then
         CALL CC_LANCZOS_SUMRULES(LABEL,JKAEDE,WORK(KEIVAL),WORK(KWI),
-     *                  WORK(KEIVER),
-     *                  WORK(KEIVEL),FTRANS,ETANORM,CSINORM)
+     *                  WORK(KEIVER),WORK(KEIVEL),
+     &                  work(kFTRANS),ETANORM,CSINORM)
       else
         CALL CC_LANCZOS_LR(LABEL,JKAEDE,WORK(KEIVAL),WORK(KWI),
-     *                  WORK(KEIVER),
-     *                  WORK(KEIVEL),FTRANS,ETANORM,CSINORM)
+     *                  WORK(KEIVER),WORK(KEIVEL),
+     &                  work(kFTRANS),ETANORM,CSINORM)
         !compute oscillator strengths as residue of Lanczos LR
         CALL CC_LANCZOS_OSCSTR(LABEL,JKAEDE,WORK(KEIVAL),WORK(KWI),
-     *                 WORK(KEIVER),
-     *                 WORK(KEIVEL),FTRANS,ETANORM,CSINORM)
+     *                 WORK(KEIVER),WORK(KEIVEL),
+     &                 work(kFTRANS),ETANORM,CSINORM)
       end if
 C
 C--------------------------------------------------------------

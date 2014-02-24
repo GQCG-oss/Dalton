@@ -3,6 +3,7 @@
 !> \author Marcin Ziolkowski (modified by Kasper Kristensen)
 module dec_fragment_utils
 
+  use fundamental
   use precision
   use ls_util!,only: dgemm_ts
   use typedeftype!,only: lsitem
@@ -11,7 +12,7 @@ module dec_fragment_utils
   use DALTONINFO!, only: ls_free
   use dec_typedef_module
   use memory_handling!, only: mem_alloc, mem_dealloc, mem_allocated_global,&
-!       & stats_mem, get_avaiLable_memory
+  !       & stats_mem, get_avaiLable_memory
   use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use matrix_module!, only:matrix
   use matrix_operations
@@ -22,11 +23,15 @@ module dec_fragment_utils
 #endif
 
 #ifdef VAR_PAPI
-    use papi_module
+  use papi_module
 #endif
 
-    ! DEC DEPENDENCIES (within deccc directory)
-    ! *****************************************
+  ! F12 DEPENDENCIES 
+  ! *****************************************
+  !use f12_routines_module
+  
+  ! DEC DEPENDENCIES (within deccc directory)
+  ! *****************************************
 
   !> Maximum number of files to be opened at the same time
   ! NOTE: If you change this number, you have to change
@@ -37,19 +42,20 @@ module dec_fragment_utils
   !> Keeping control of which file units are available
   logical,save :: available_file_units(max_number_files)=.true.
 
+
   !> Read 64 bit integer(s) from file and convert to 32 bit
   interface read_64bit_to_32bit
      module procedure read_64bit_to_32bit_singleinteger
      module procedure read_64bit_to_32bit_vectorinteger
      module procedure read_64bit_to_32bit_singlelogical
      module procedure read_64bit_to_32bit_vectorlogical
-  end interface
+  end interface read_64bit_to_32bit
   interface read_32bit_to_64bit
      module procedure read_32bit_to_64bit_singleinteger
      module procedure read_32bit_to_64bit_vectorinteger
      module procedure read_32bit_to_64bit_singlelogical
      module procedure read_32bit_to_64bit_vectorlogical
-  end interface
+  end interface read_32bit_to_64bit
 
 contains
 
@@ -1291,7 +1297,7 @@ contains
   !> \brief Subroutine that creates initial fragment
   !> \date august 2011
   !> \author Ida-Marie Hoyvik
-  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,Occ,Virt)
+  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,init_radius,Occ,Virt)
     implicit none
     !> number of atoms in MOLECULE
     Integer, intent(in)    :: natoms
@@ -1299,18 +1305,16 @@ contains
     integer,intent(in), dimension(natoms) :: nocc_per_atom, nunocc_per_atom
     !> Distances from central atom to other atoms
     real(realk),intent(in) :: DistMyAtom(natoms)
+    !> Include orbitals assigned to atoms within this distance of central atom
+    real(realk),intent(in) :: init_radius
     !> Which AOS atoms to include for occ and virt spaces
     !> (entry i is T if orbitals on atom i is included)
     !> (In practice occ and virt will be identical but we keep it general)
     logical,intent(inout)  :: Occ(natoms),Virt(natoms)
-    real(realk)            :: init_radius
     integer                :: i
     real(realk)            :: FOT
 
     FOT=DECinfo%FOT
-
-    ! Initial radius set to 6 a.u.
-    init_radius = 6.0 
 
     write(DECinfo%output,'(a,f5.2)') " FOP Radius for initial fragment: ",init_radius
 
@@ -1588,7 +1592,7 @@ contains
 
     implicit none
     !> Fragment information
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     real(realk), intent(inout) :: fragmem
     real(realk) :: O,V,A,tmp,GB
 
@@ -1597,10 +1601,10 @@ contains
     ! ***************************************************************
     O = MyFragment%noccAOS
     V = MyFragment%nunoccAOS
-    A = MyFragment%number_basis
+    A = MyFragment%nbasis
     GB = 1.000E9_realk ! 1 GB
 
-    ! Use type ccatom to calculate memory use
+    ! Use type decfrag to calculate memory use
     ! ***************************************
 
     ! Y matrices
@@ -1727,8 +1731,8 @@ contains
     integer(kind=8) :: flops_int
     integer :: retval
 
-flops_int=0
-retval=0
+    flops_int=0
+    retval=0
 #ifdef VAR_PAPI
     call PAPIf_stop(eventset,flops_int,retval)
 #endif
@@ -1745,7 +1749,7 @@ retval=0
 
     implicit none
     !> Atomic (or pair) fragment
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> How much to print?
     !> 1. Basic fragment info (size and energies, i.e. no pointers are printed)
     !> 2. Basic fragment info AND EOS/AOS indices
@@ -1762,7 +1766,7 @@ retval=0
     write(DECinfo%output,*)
     if(MyFragment%nEOSatoms==2) then
        pair=.false.
-       write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%atomic_number
+       write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%EOSatoms(1)
     else
        pair=.true.
        write(DECinfo%output,'(1X,a,2i6)') 'PAIR FRAGMENT, atomic numbers:', &
@@ -1776,8 +1780,8 @@ retval=0
     write(DECinfo%output,'(1X,a,i8)') '#core orbitals =', MyFragment%ncore
     write(DECinfo%output,'(1X,a,i8)') 'Red Frag: Size occ AOS  =', MyFragment%noccAOS
     write(DECinfo%output,'(1X,a,i8)') 'Red Frag: Size virt AOS =', MyFragment%nunoccAOS
-    write(DECinfo%output,'(1X,a,i8)') 'Atoms in atomic extent =', MyFragment%number_atoms
-    write(DECinfo%output,'(1X,a,i8)') 'Number of basis functions =', MyFragment%number_basis
+    write(DECinfo%output,'(1X,a,i8)') 'Atoms in atomic extent =', MyFragment%natoms
+    write(DECinfo%output,'(1X,a,i8)') 'Number of basis functions =', MyFragment%nbasis
     do i=1,ndecenergies
        write(DECinfo%output,'(1X,a,i5,f16.10)') 'Idx, Fragenergy ', i,MyFragment%energies(i)
     end do
@@ -1826,20 +1830,8 @@ retval=0
        end do
        write(DECinfo%output,*)
 
-       write(DECinfo%output,*) 'Reduced Frag: Occ AOS indices (frag,full)'
-       do i=1,MyFragment%REDnoccAOS
-          write(DECinfo%output,*) i, MyFragment%REDoccAOSidx(i)
-       end do
-       write(DECinfo%output,*)
-
-       write(DECinfo%output,*) 'Reduced Frag: Virt AOS indices (frag,full)'
-       do i=1,MyFragment%REDnunoccAOS
-          write(DECinfo%output,*) i, MyFragment%REDunoccAOSidx(i)
-       end do
-       write(DECinfo%output,*)
-
        write(DECinfo%output,*) 'Atomic extent indices (frag,full in terms of atoms)'
-       do i=1,MyFragment%number_atoms
+       do i=1,MyFragment%natoms
           write(DECinfo%output,*) i, MyFragment%atoms_idx(i)
        end do
        write(DECinfo%output,*)
@@ -1847,21 +1839,21 @@ retval=0
     end if
 
     if(printlevel > 2 .and. MyFragment%BasisInfoIsSet) then
-       
+
        write(DECinfo%output,*) 'Occ MO coefficients (column, elements in column)'
        do i=1,MyFragment%noccAOS
-          write(DECinfo%output,*) i, MyFragment%ypo(:,i)
+          write(DECinfo%output,*) i, MyFragment%Co(:,i)
        end do
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'Virt MO coefficients (column, elements in column)'
        do i=1,MyFragment%nunoccAOS
-          write(DECinfo%output,*) i, MyFragment%ypv(:,i)
+          write(DECinfo%output,*) i, MyFragment%Cv(:,i)
        end do
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'AO fock matrix (column, elements in column)'
-       do i=1,MyFragment%number_basis
+       do i=1,MyFragment%nbasis
           write(DECinfo%output,*) i, MyFragment%fock(:,i)
        end do
        write(DECinfo%output,*)
@@ -1903,15 +1895,31 @@ retval=0
        if(MyFragment%FAset) then
           write(DECinfo%output,*) 'Occupied FO coefficients (column, elements in column)'
           do i=1,MyFragment%noccFA
-             write(DECinfo%output,*) i, MyFragment%CoccFA(:,i)
+             write(DECinfo%output,*) i, MyFragment%CoFA(:,i)
           end do
           write(DECinfo%output,*)
 
           write(DECinfo%output,*) 'Virtual FO coefficients (column, elements in column)'
           do i=1,MyFragment%nunoccFA
-             write(DECinfo%output,*) i, MyFragment%CunoccFA(:,i)
+             write(DECinfo%output,*) i, MyFragment%CvFA(:,i)
           end do
           write(DECinfo%output,*)
+
+          if(.not. MyFragment%pairfrag) then
+             write(DECinfo%output,*) 'Occupied corrdens eigenvalues'
+             do i=1,MyFragment%noccFA
+                write(DECinfo%output,*) i, MyFragment%CDocceival(i)
+             end do
+             write(DECinfo%output,*)
+
+             write(DECinfo%output,*) 'Unoccupied corrdens eigenvalues'
+             do i=1,MyFragment%nunoccFA
+                write(DECinfo%output,*) i, MyFragment%CDunocceival(i)
+             end do
+             write(DECinfo%output,*)
+
+          end if
+
        end if
 
     end if
@@ -1921,10 +1929,7 @@ retval=0
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
-
-
-  End subroutine fragment_print
-
+  end subroutine fragment_print
 
 
   !> \brief Delete atomic fragment
@@ -1933,15 +1938,18 @@ retval=0
 
     implicit none
     !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
 
     ! Free everything in fragment - including basis info (fock matrix, MO coefficients, lsitem etc.)
     call atomic_fragment_free_simple(fragment)
     call atomic_fragment_free_basis_info(fragment)
     call free_fragment_t1(fragment)
+   
+    if(DECinfo%F12debug) then 
+       print *, "atomic_fragment_free"
+    end if
 
   end subroutine atomic_fragment_free
-
 
   !> \brief Delete the "simple" part of the atomic fragment structure, i.e.
   !> everything not deleted in atomic_fragment_free_basis_info.
@@ -1950,8 +1958,19 @@ retval=0
 
     implicit none
     !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     integer :: i
+
+    deallocate(fragment%noccLOC)
+    deallocate(fragment%nunoccLOC)
+    deallocate(fragment%noccFA)
+    deallocate(fragment%nunoccFA)
+    nullify(fragment%noccLOC)
+    nullify(fragment%nunoccLOC)
+    nullify(fragment%noccFA)
+    nullify(fragment%nunoccFA)
+    nullify(fragment%noccAOS)
+    nullify(fragment%nunoccAOS)
 
     if(associated(fragment%occEOSidx)) then
        call mem_dealloc(fragment%occEOSidx)
@@ -1973,16 +1992,6 @@ retval=0
        fragment%unoccAOSidx => null()
     end if
 
-
-    if(associated(fragment%REDoccAOSidx)) then
-       call mem_dealloc(fragment%REDoccAOSidx)
-       fragment%REDoccAOSidx => null()
-    end if
-
-    if(associated(fragment%REDunoccAOSidx)) then
-       call mem_dealloc(fragment%REDunoccAOSidx)
-       fragment%REDunoccAOSidx => null()
-    end if
 
     if(associated(fragment%coreidx)) then
        call mem_dealloc(fragment%coreidx)
@@ -2023,8 +2032,23 @@ retval=0
     end if
 
     if(fragment%FAset) then
-       call mem_dealloc(fragment%CoccFA)
-       call mem_dealloc(fragment%CunoccFA)
+       call mem_dealloc(fragment%CoFA)
+       call mem_dealloc(fragment%CvFA)
+
+       !Check if associated because that might be different on master and slaves
+       !due to the "Expensive Box"
+       if(associated(fragment%ppfockFA))then
+         call mem_dealloc(fragment%ppfockFA)
+       endif
+
+       if(associated(fragment%qqfockFA))then
+         call mem_dealloc(fragment%qqfockFA)
+       endif
+
+       if(.not. fragment%pairfrag) then
+          call mem_dealloc(fragment%CDocceival)
+          call mem_dealloc(fragment%CDunocceival)
+       end if
        fragment%FAset=.false.
     end if
 
@@ -2053,15 +2077,14 @@ retval=0
 
   end subroutine atomic_fragment_free_simple
 
-
-
+  
   !> \brief Delete basis set infomation for atomic fragment (fock matrix, MO coefficients, lsitem etc.)
   !> \author Kasper Kristensen
   subroutine atomic_fragment_free_basis_info(fragment)
 
     implicit none
     !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
+    type(decfrag),intent(inout) :: fragment
     integer :: i
 
     if(associated(fragment%S)) then
@@ -2069,19 +2092,25 @@ retval=0
     end if
 
     ! Transformation matrices
-    if(associated(fragment%ypo)) then
-       call mem_dealloc(fragment%ypo)
+    nullify(fragment%Co,fragment%Cv)
+    if(associated(fragment%CoLOC)) then
+       call mem_dealloc(fragment%CoLOC)
     end if
 
-    if(associated(fragment%ypv)) then
-       call mem_dealloc(fragment%ypv)
+    if(associated(fragment%CvLOC)) then
+       call mem_dealloc(fragment%CvLOC)
     end if
-    
+
     ! Free CABS MOs !
-    if(associated(fragment%cabsMOs)) then
-       call mem_dealloc(fragment%cabsMOs)
+    if(associated(fragment%Ccabs)) then
+       call mem_dealloc(fragment%Ccabs)
     end if
-    
+
+    ! Free CABS RI MOs !
+    if(associated(fragment%Cri)) then
+       call mem_dealloc(fragment%Cri)
+    end if
+
     if(associated(fragment%coreMO)) then
        call mem_dealloc(fragment%coreMO)
     end if
@@ -2090,12 +2119,14 @@ retval=0
        call mem_dealloc(fragment%fock)
     end if
 
-    if(associated(fragment%qqfock)) then
-       call mem_dealloc(fragment%qqfock)
+    ! Fock matrices
+    nullify(fragment%ppfock,fragment%qqfock)
+    if(associated(fragment%qqfockLOC)) then
+       call mem_dealloc(fragment%qqfockLOC)
     end if
 
-    if(associated(fragment%ppfock)) then
-       call mem_dealloc(fragment%ppfock)
+    if(associated(fragment%ppfockLOC)) then
+       call mem_dealloc(fragment%ppfockLOC)
     end if
 
     if(associated(fragment%ccfock)) then
@@ -2114,7 +2145,70 @@ retval=0
     ! Internal control of whether basis info is set or not
     fragment%BasisInfoIsSet=.false.
 
+   if(DECinfo%F12) then
+       call atomic_fragment_free_f12(fragment)
+    end if
+    
   end subroutine atomic_fragment_free_basis_info
+
+  !> \brief Free the f12 fragment free matrices
+  !> \author Yang Min Wang
+  subroutine atomic_fragment_free_f12(fragment)
+    
+    implicit none
+    !> Atomic fragment to be freed
+    type(decfrag),intent(inout) :: fragment
+    
+    if(DECinfo%F12debug) then   
+        print *, "atomic_fragment_free_f12"
+    end if
+
+    ! Free CABS MOs !
+    if(associated(fragment%Ccabs)) then
+       call mem_dealloc(fragment%Ccabs)
+    end if
+    
+    ! Free CABS RI MOs !
+    if(associated(fragment%Cri)) then
+       call mem_dealloc(fragment%Cri)
+    end if
+
+    if(associated(fragment%hJir)) then
+       call mem_dealloc(fragment%hJir)
+       fragment%hJir => null()
+    end if
+    
+    if(associated(fragment%Krs)) then
+       call mem_dealloc(fragment%Krs)
+       fragment%Krs => null()
+    end if
+    
+    if(associated(fragment%Frs)) then
+       call mem_dealloc(fragment%Frs)
+       fragment%Frs => null()
+    end if
+
+    if(associated(fragment%Fac)) then
+       call mem_dealloc(fragment%Fac)
+       fragment%Fac => null()
+    end if
+
+    if(associated(fragment%Frm)) then
+       call mem_dealloc(fragment%Frm)
+       fragment%Frm => null()
+    end if
+
+    if(associated(fragment%Fcp)) then
+       call mem_dealloc(fragment%Fcp)
+       fragment%Fcp => null()
+    end if
+    
+    if(associated(fragment%Fij)) then
+       call mem_dealloc(fragment%Fij)
+       fragment%Fij => null()
+    end if
+    
+  end subroutine atomic_fragment_free_f12
 
 
   !> \brief Free and nullify fragment information related to t1 amplitudes.
@@ -2123,7 +2217,7 @@ retval=0
   subroutine free_fragment_t1(Fragment)
     implicit none
     !> Fragment info (only t1-related information will be modified here)
-    type(ccatom), intent(inout) :: Fragment
+    type(decfrag), intent(inout) :: Fragment
 
     if(associated(fragment%t1)) then
        call mem_dealloc(fragment%t1)
@@ -2147,7 +2241,7 @@ retval=0
   subroutine orbital_free(myorbital)
 
     implicit none
-    type(ccorbital), intent(inout) :: myorbital
+    type(decorbital), intent(inout) :: myorbital
 
     if(associated(myorbital%atoms)) then
        call mem_dealloc(myorbital%atoms)
@@ -2160,16 +2254,25 @@ retval=0
   !> \brief Determine memory for DEC calculation and store in DECinfo%memory.
   !> If memory was set manually in input, nothing is done here.
   !> Otherwise a system call is used to determine memory.
-  !> \author Kasper Kristensen
+  !> \author Kasper Kristensen, modified by Pablo Baudin
   !> \date August 2012
   subroutine get_memory_for_dec_calculation()
     implicit none
-    real(realk) :: mem
+    real(realk) :: mem, MemInUse
     logical :: memfound
 
     memfound=.false.
     if(DECinfo%memory_defined) then ! do nothing 
        write(DECinfo%output,'(1X,a,g12.4,a)') 'Memory set in input to be: ', DECinfo%memory, ' GB'
+
+       ! sanity check
+       MemInUse = 1.0E-9_realk*mem_allocated_global
+       if (DECinfo%memory<MemInUse) then
+          call get_available_memory(DECinfo%output,Mem,memfound)
+          DECinfo%memory = Mem
+          write(DECinfo%output,*) 'WARNING! Specified memory for DEC too small!'
+          write(DECinfo%output,'(1X,a,g12.4,a)') 'Memory set by default to be: ', DECinfo%memory, ' GB'
+       end if
 
     else ! using system call
 
@@ -2197,7 +2300,7 @@ retval=0
     !> Currently available memory in GB
     real(realk),intent(inout) :: mem
     real(realk) :: MemInUse
-    
+
     ! Total memory was determined at the beginning of DEC calculaton (DECinfo%memory)
     ! Memory currently in use is mem_allocated_global (see memory.f90)
     ! Memory available: Total memory - memory in use
@@ -2407,8 +2510,8 @@ retval=0
     ! hardcoded values are changed consistently.
 
     ! Sanity check
-    if(npoints==1) then  ! Skip plot if only 1 point
-       write(DECinfo%output,*) 'Ascii-plot will be skipped because there is only one point!'
+    if(npoints<2) then  ! Skip plot if only 1 point
+       write(DECinfo%output,*) 'Ascii-plot will be skipped because there is less than 2 points!'
        return
     end if
 
@@ -2436,7 +2539,7 @@ retval=0
     end do
     ! Set xlabel
     xaxis(lengthx-len(xlabel)+1:lengthx) = xlabel
-    
+
 
     ! Minimum and maximum values of original points
     xmin = minval(x)
@@ -2518,7 +2621,7 @@ retval=0
        if(j==yminplot) then
           write(string(1:12),'(g12.2)') ymin
        end if
-       
+
        ! Write string to output file
        write(DECinfo%output,'(1X,a)') string
 
@@ -2561,9 +2664,9 @@ retval=0
     !> Distance between fragments
     real(realk) :: fragdist
     !>  fragment 1
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !>  fragment 2
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
     !> Distance table for all atoms in the molecule
@@ -2638,7 +2741,7 @@ retval=0
     integer,intent(in) :: n
     !> Grid box
     type(SPgridbox),intent(inout) :: mygrid
-    
+
     ! Basic info
     mygrid%center = center
     mygrid%delta = delta
@@ -2660,7 +2763,7 @@ retval=0
     implicit none
     !> Grid box
     type(SPgridbox),intent(inout) :: mygrid
-    
+
     call mem_dealloc(mygrid%val)
 
   end subroutine free_SPgridbox
@@ -2684,7 +2787,7 @@ retval=0
     ! Cocc copy (avoid passing the same element into dgemm twice)
     call mem_alloc(Cocc_copy,nbasis,nocc)
     Cocc_copy = Cocc
-    
+
     ! density = Cocc Cocc^T 
     call dec_simple_dgemm(nbasis,nocc,nbasis,Cocc,Cocc_copy,dens,'n','t')
     call mem_dealloc(Cocc_copy)
@@ -2753,11 +2856,11 @@ retval=0
     !> HF Density matrix
     type(matrix),intent(in) :: D
     type(matrix) :: F
-    
+
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
     call mat_set_from_full(MyMolecule%fock, 1E0_realk, F)
-    
+
     ! Get HF energy
     Ehf = get_HF_energy(D,F,Mylsitem) 
 
@@ -2769,19 +2872,20 @@ retval=0
   !> Check whether fragment restart file exist.
   !> \author Kasper Kristensen
   !> \date December 2012
-  function fragment_restart_file_exist(first_order) result(file_exist)
+  function fragment_restart_file_exist(first_order,esti) result(file_exist)
 
     implicit none
     !> First order calculation?
     logical,intent(in) :: first_order
+    !> Use estimated fragment energies
+    logical,intent(in) :: esti
     logical :: file_exist
     character(len=40) :: FileName
 
     if(first_order) then  ! first order calculation
        filename = 'mp2grad.info'
-
     else ! energy calculation
-       filename = 'fragenergies.info'
+       filename = get_fragenergy_restart_filename(esti) 
     end if
 
     inquire(file=FileName,exist=file_exist)
@@ -2967,7 +3071,7 @@ retval=0
   subroutine save_fragment_t1_AOSAOSamplitudes(MyFragment,t1)
     implicit none
     !> Fragment info (only t1-related information will be modified here)
-    type(ccatom), intent(inout) :: MyFragment
+    type(decfrag), intent(inout) :: MyFragment
     !> Singles amplitudes to be stored (stored as virtual,occupied)
     type(array2),intent(in) :: t1
     integer :: nocc,nvirt,i,a,ix,ax
@@ -3020,9 +3124,9 @@ retval=0
 
     implicit none
     ! Fragment 1 in pair
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     ! Fragment 2 in pair
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     integer, intent(in) :: natoms
     logical,dimension(natoms,natoms),intent(inout) :: dopair
     integer :: a,b,ax,bx
@@ -3079,11 +3183,11 @@ retval=0
 
     implicit none
     ! Fragment 1 in pair
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     ! Fragment 2 in pair
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: PairFragment
+    type(decfrag),intent(inout) :: PairFragment
     !> Do pair or not - dimension: (noccEOS,noccEOS) for PAIR
     logical,dimension(PairFragment%noccEOS,PairFragment%noccEOS),&
          & intent(inout) :: dopair
@@ -3181,11 +3285,11 @@ retval=0
 
     implicit none
     ! Fragment 1 in pair
-    type(ccatom),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     ! Fragment 2 in pair
-    type(ccatom),intent(inout) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment
-    type(ccatom),intent(inout) :: PairFragment
+    type(decfrag),intent(inout) :: PairFragment
     !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
     logical,dimension(PairFragment%nunoccEOS,PairFragment%nunoccEOS),&
          & intent(inout) :: dopair
@@ -3196,40 +3300,44 @@ retval=0
 
     ! Set which atoms to consider for pair
     dopair=.false.
-    do a=1,fragment1%nunoccEOS   ! Unoccupied EOS for fragment 1
-       do b=1,fragment2%nunoccEOS ! Unoccupied EOS for fragment 2
 
-          ax=fragment1%unoccEOSidx(a)  ! index in full list orbitals
-          bx=fragment2%unoccEOSidx(b)  ! index in full list orbitals
-          p1=0
-          p2=0
+    ! Skip this when only occupied part. is requested
+    DoCheck: if(.not. DECinfo%onlyoccpart) then
+       do a=1,fragment1%nunoccEOS   ! Unoccupied EOS for fragment 1
+          do b=1,fragment2%nunoccEOS ! Unoccupied EOS for fragment 2
 
-          ! Index for fragment 1 in pair fragment list
-          do i=1,PairFragment%nunoccEOS
+             ax=fragment1%unoccEOSidx(a)  ! index in full list orbitals
+             bx=fragment2%unoccEOSidx(b)  ! index in full list orbitals
+             p1=0
+             p2=0
 
-             ! "ax" index in PairFragment%unoccEOSidx list
-             if(PairFragment%unoccEOSidx(i) == ax) p1 = i
+             ! Index for fragment 1 in pair fragment list
+             do i=1,PairFragment%nunoccEOS
 
-             ! "bx" index in PairFragment%unoccEOSidx list
-             if(PairFragment%unoccEOSidx(i) == bx) p2 = i
+                ! "ax" index in PairFragment%unoccEOSidx list
+                if(PairFragment%unoccEOSidx(i) == ax) p1 = i
+
+                ! "bx" index in PairFragment%unoccEOSidx list
+                if(PairFragment%unoccEOSidx(i) == bx) p2 = i
+
+             end do
+
+             ! Sanity check
+             if(p1==p2 .or. p1==0 .or. p2==0 ) then
+                write(DECinfo%output,'(1X,a,4i6)') 'ax,bx,p1,p2', ax,bx,p1,p2
+                call lsquit('which_pairs_unocc: &
+                     & Something wrong with indices in pair',DECinfo%output)
+             end if
+
+
+             ! Pair interaction for (p1,p2) index pair
+             dopair(p1,p2)=.true.
+             dopair(p2,p1)=.true.
 
           end do
-
-          ! Sanity check
-          if(p1==p2 .or. p1==0 .or. p2==0 ) then
-             write(DECinfo%output,'(1X,a,4i6)') 'ax,bx,p1,p2', ax,bx,p1,p2
-             call lsquit('which_pairs_unocc: &
-                  & Something wrong with indices in pair',DECinfo%output)
-          end if
-
-
-          ! Pair interaction for (p1,p2) index pair
-          dopair(p1,p2)=.true.
-          dopair(p2,p1)=.true.
-
        end do
-    end do
 
+    end if DoCheck
 
   end subroutine which_pairs_unocc
 
@@ -3254,11 +3362,13 @@ retval=0
     write(funit) jobs%atom2
     write(funit) jobs%jobsize
     write(funit) jobs%jobsdone
+    write(funit) jobs%dofragopt
+    write(funit) jobs%esti
 
     ! MPI fragment statistics
     write(funit) jobs%nslaves
     write(funit) jobs%nocc
-    write(funit) jobs%nvirt
+    write(funit) jobs%nunocc
     write(funit) jobs%nbasis
     write(funit) jobs%ntasks
     write(funit) jobs%flops
@@ -3268,8 +3378,9 @@ retval=0
   end subroutine write_fragment_joblist_to_file
 
 
-  !> Read fragment job list from file (includes initialization of job list).
-  !> Also read pair cutoff distance in case that was changed during the original calculation.
+  !> Read fragment job list from file assuming that joblist has already been initialized 
+  !> with the proper dimensions.
+  !> Also read pair cutoff distance.
   !> \author Kasper Kristensen
   !> \date November 2012
   subroutine read_fragment_joblist_from_file(jobs,funit)
@@ -3286,39 +3397,57 @@ retval=0
 
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(funit,njobs)
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file1: Error in number of jobs!',-1)
+       end if
        call read_64bit_to_32bit(funit,njobs,jobs%atom1)
        call read_64bit_to_32bit(funit,njobs,jobs%atom2)
        call read_64bit_to_32bit(funit,njobs,jobs%jobsize)
        call read_64bit_to_32bit(funit,njobs,jobs%jobsdone)
+       call read_64bit_to_32bit(funit,njobs,jobs%dofragopt)
+       call read_64bit_to_32bit(funit,njobs,jobs%esti)
        call read_64bit_to_32bit(funit,njobs,jobs%nslaves)
        call read_64bit_to_32bit(funit,njobs,jobs%nocc)
-       call read_64bit_to_32bit(funit,njobs,jobs%nvirt)
+       call read_64bit_to_32bit(funit,njobs,jobs%nunocc)
        call read_64bit_to_32bit(funit,njobs,jobs%nbasis)
        call read_64bit_to_32bit(funit,njobs,jobs%ntasks)
     elseif(DECinfo%convert32to64) then
        call read_32bit_to_64bit(funit,njobs)
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file2: Error in number of jobs!',-1)
+       end if
        call read_32bit_to_64bit(funit,njobs,jobs%atom1)
        call read_32bit_to_64bit(funit,njobs,jobs%atom2)
        call read_32bit_to_64bit(funit,njobs,jobs%jobsize)
        call read_32bit_to_64bit(funit,njobs,jobs%jobsdone)
+       call read_32bit_to_64bit(funit,njobs,jobs%dofragopt)
+       call read_32bit_to_64bit(funit,njobs,jobs%esti)
        call read_32bit_to_64bit(funit,njobs,jobs%nslaves)
        call read_32bit_to_64bit(funit,njobs,jobs%nocc)
-       call read_32bit_to_64bit(funit,njobs,jobs%nvirt)
+       call read_32bit_to_64bit(funit,njobs,jobs%nunocc)
        call read_32bit_to_64bit(funit,njobs,jobs%nbasis)
        call read_32bit_to_64bit(funit,njobs,jobs%ntasks)
     else
        read(funit) njobs
-       call init_joblist(njobs,jobs)
+       if(njobs/=jobs%njobs) then
+          print *, 'Number of jobs in job list   : ', jobs%njobs
+          print *, 'Number of jobs read from file: ', njobs
+          call lsquit('read_fragment_joblist_from_file3: Error in number of jobs!',-1)
+       end if
        read(funit) jobs%atom1
        read(funit) jobs%atom2
        read(funit) jobs%jobsize
        read(funit) jobs%jobsdone
+       read(funit) jobs%dofragopt
+       read(funit) jobs%esti
 
        read(funit) jobs%nslaves
        read(funit) jobs%nocc
-       read(funit) jobs%nvirt
+       read(funit) jobs%nunocc
        read(funit) jobs%nbasis
        read(funit) jobs%ntasks
     end if
@@ -3326,6 +3455,14 @@ retval=0
     read(funit) jobs%flops
     read(funit) jobs%LMtime
     read(funit) jobs%load
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) 'JOB LIST RESTART'
+    write(DECinfo%output,'(1X,a,i10)') '-- total number of jobs : ', jobs%njobs
+    write(DECinfo%output,'(1X,a,i10)') '-- number of jobs done  : ', count(jobs%jobsdone)
+    write(DECinfo%output,'(1X,a,i10)') '-- number of jobs to do : ', jobs%njobs-count(jobs%jobsdone)
+    write(DECinfo%output,*)
+
 
   end subroutine read_fragment_joblist_from_file
 
@@ -3345,20 +3482,23 @@ retval=0
     jobs%njobs = njobs
 
     ! Set all pointers to be of size njobs and equal to 0
-    nullify(jobs%atom1,jobs%atom2,jobs%jobsize)
     call mem_alloc(jobs%atom1,njobs)
     call mem_alloc(jobs%atom2,njobs)
     call mem_alloc(jobs%jobsize,njobs)
     call mem_alloc(jobs%jobsdone,njobs)
+    call mem_alloc(jobs%dofragopt,njobs)
+    call mem_alloc(jobs%esti,njobs)
     jobs%atom1=0
     jobs%atom2=0
     jobs%jobsize=0
     jobs%jobsdone=.false. ! no jobs are done
+    jobs%dofragopt=.false. 
+    jobs%esti=.false.
 
     ! MPI fragment statistics
     call mem_alloc(jobs%nslaves,njobs)
     call mem_alloc(jobs%nocc,njobs)
-    call mem_alloc(jobs%nvirt,njobs)
+    call mem_alloc(jobs%nunocc,njobs)
     call mem_alloc(jobs%nbasis,njobs)
     call mem_alloc(jobs%ntasks,njobs)
     call mem_alloc(jobs%flops,njobs)
@@ -3366,7 +3506,7 @@ retval=0
     call mem_alloc(jobs%load,njobs)
     jobs%nslaves=0
     jobs%nocc=0
-    jobs%nvirt=0
+    jobs%nunocc=0
     jobs%nbasis=0
     jobs%ntasks=0
     jobs%flops=0.0E0_realk
@@ -3406,6 +3546,16 @@ retval=0
        nullify(jobs%jobsdone)
     end if
 
+    if(associated(jobs%dofragopt)) then
+       call mem_dealloc(jobs%dofragopt)
+       nullify(jobs%dofragopt)
+    end if
+
+    if(associated(jobs%esti)) then
+       call mem_dealloc(jobs%esti)
+       nullify(jobs%esti)
+    end if
+
     if(associated(jobs%nslaves)) then
        call mem_dealloc(jobs%nslaves)
        nullify(jobs%nslaves)
@@ -3416,9 +3566,9 @@ retval=0
        nullify(jobs%nocc)
     end if
 
-    if(associated(jobs%nvirt)) then
-       call mem_dealloc(jobs%nvirt)
-       nullify(jobs%nvirt)
+    if(associated(jobs%nunocc)) then
+       call mem_dealloc(jobs%nunocc)
+       nullify(jobs%nunocc)
     end if
 
     if(associated(jobs%nbasis)) then
@@ -3479,9 +3629,11 @@ retval=0
     jobs%atom2(position) = singlejob%atom2(1)
     jobs%jobsize(position) = singlejob%jobsize(1)
     jobs%jobsdone(position) = singlejob%jobsdone(1)
+    jobs%dofragopt(position) = singlejob%dofragopt(1)
+    jobs%esti(position) = singlejob%esti(1)
     jobs%nslaves(position) = singlejob%nslaves(1)
     jobs%nocc(position) = singlejob%nocc(1)
-    jobs%nvirt(position) = singlejob%nvirt(1)
+    jobs%nunocc(position) = singlejob%nunocc(1)
     jobs%nbasis(position) = singlejob%nbasis(1)
     jobs%ntasks(position) = singlejob%ntasks(1)
     jobs%flops(position) = singlejob%flops(1)
@@ -3696,7 +3848,7 @@ retval=0
 
   end subroutine dec_diff_basis_transform2
 
-  
+
   !> Add DEC energies: E = sum_P E_P  +  sum_{P>Q} dE_PQ
   !> taking into account that not all atoms have orbitals assigned.
   !> \author Kasper Kristensen
@@ -3727,6 +3879,42 @@ retval=0
 
 
   end subroutine add_dec_energies
+
+
+
+  !> Add estimated DEC energies for pairs which are skipped from the calculation
+  !> to estimate the associated error.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine estimate_energy_of_skipped_pairs(natoms,FragEnergies,orbitals_assigned,MyMolecule,E)
+
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Estimated fragment energies (E_P on diagonal, dE_PQ on off-diagonal)
+    real(realk),dimension(natoms,natoms),intent(in) :: FragEnergies
+    !> Which atoms have orbitals assigned?
+    logical,dimension(natoms) :: orbitals_assigned
+    !> Full molecule structure, where MyMolecule%ccmodel defines the model to be used for
+    !> each pair. If the model is MODEL_NONE (see dec_typedef.F90), then the pair
+    !> will be skipped in the DEC calculation.
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> Estimated energy contribution from skipped pairs
+    real(realk),intent(inout) :: E
+    integer :: P,Q
+
+    E = 0.0_realk
+    do P=1,natoms
+       if(orbitals_assigned(P)) then
+          do Q=1,P-1
+             if(orbitals_assigned(Q) .and. MyMolecule%ccmodel(P,Q)==MODEL_NONE ) then
+                E = E + FragEnergies(P,Q)
+             end if
+          end do
+       end if
+    end do
+
+  end subroutine estimate_energy_of_skipped_pairs
 
 
   !> \brief Project orbitals onto MO space defined by input (see details inside subroutine).
@@ -3773,7 +3961,7 @@ retval=0
     ! where S is the AO overlap matrix: S_{mu nu} = <chi_mu | chi_nu>
     !
     ! Thus, the task of this subroutine is to change the input Z to (C M^-1 C^T S Z).
-    
+
 
     ! Get inverse overlap for phi orbitals: M^-1 = (C^T S C)^-1
     ! *********************************************************
@@ -3854,7 +4042,7 @@ retval=0
     !
     ! Thus, the task of this subroutine is to change the input Z to:
     ! Z - PZ = (Z  -  C M^-1 C^T S Z).
- 
+
     ! Copy Z and calculate projection on Z: PZ = (C M^-1 C^T S) Z
     call mem_alloc(PZ,nAO,nMOZ)
     PZ = Z 
@@ -3925,7 +4113,7 @@ retval=0
     ! dirty with square roots and negative numbers, we take the absolute value...
     lambda=abs(lambda)
 
-    
+
     ! (iii) Get final orthogonalized MOs
     ! **********************************
 
@@ -3949,11 +4137,7 @@ retval=0
 
   end subroutine orthogonalize_MOs
 
-
-  !> \brief Print short energy summary (both HF and correlation)
-  !> (Necessary to place here because it is used both for DEC and for full calculation).
-  !> \author Kasper Kristensen
-  !> \date April 2013
+  !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
   subroutine print_total_energy_summary(EHF,Ecorr,Eerr)
     implicit none
     !> HF energy
@@ -3962,54 +4146,752 @@ retval=0
     real(realk),intent(in) :: Ecorr
     !> Estimated intrinsic DEC energy error
     real(realk),intent(in) :: Eerr
+    integer :: lupri
 
-    ! Print summary
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(13X,a)') '**********************************************************'
-    write(DECinfo%output,'(13X,a,19X,a,19X,a)') '*', 'DEC ENERGY SUMMARY', '*'
-    write(DECinfo%output,'(13X,a)') '**********************************************************'
-    write(DECinfo%output,*)
-    if(DECinfo%first_order) then
-       write(DECinfo%output,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
-       write(DECinfo%output,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
-       ! skip error print for full calculation (0 by definition)
-       if(.not. DECinfo%full_molecular_cc) then  
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
-       end if
-       if(DECinfo%ccmodel==1) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==2) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==3) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==4) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
-       end if
-    else
-       write(DECinfo%output,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
-       write(DECinfo%output,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
-       ! skip error print for full calculation (0 by definition)
-       if(.not. DECinfo%full_molecular_cc) then  
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
-       end if
-       if(DECinfo%ccmodel==1) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total MP2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==2) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==3) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==4) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
-       end if
-    end if
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
+    lupri=6
+    call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+
+    lupri=DECinfo%output
+    call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
 
 
   end subroutine print_total_energy_summary
 
+
+  !> \brief Print short energy summary (both HF and correlation) to specific logical unit number.
+  !> (Necessary to place here because it is used both for DEC and for full calculation).
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+    implicit none
+    !> HF energy
+    real(realk),intent(in) :: EHF
+    !> Correlation energy
+    real(realk),intent(in) :: Ecorr
+    !> Estimated intrinsic DEC energy error
+    real(realk),intent(in) :: Eerr
+    !> Logical unit number to print to
+    integer,intent(in) :: lupri
+
+    ! Print summary
+    write(lupri,*)
+    write(lupri,*)
+    write(lupri,*)
+    write(lupri,*)
+    write(lupri,'(13X,a)') '**********************************************************'
+    if(DECinfo%full_molecular_cc) then
+       write(lupri,'(13X,a,19X,a,19X,a)') '*', 'CC ENERGY SUMMARY', '*'
+    else
+       write(lupri,'(13X,a,19X,a,19X,a)') '*', 'DEC ENERGY SUMMARY', '*'
+    end if
+    write(lupri,'(13X,a)') '**********************************************************'
+    write(lupri,*)
+    if(DECinfo%first_order) then
+       write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
+       write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
+       ! skip error print for full calculation (0 by definition)
+       if(.not. DECinfo%full_molecular_cc .and. (.not. DECinfo%onlyoccpart) ) then  
+          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
+       end if
+       if(DECinfo%ccmodel==MODEL_MP2) then
+          if (DECinfo%F12) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+          else          
+             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+          endif
+       elseif(DECinfo%ccmodel==MODEL_CC2) then
+          write(lupri,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_CCSD) then
+          write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
+          write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
+       end if
+    else
+       write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
+       write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
+       ! skip error print for full calculation (0 by definition)
+       if(.not. DECinfo%full_molecular_cc .and. (.not. DECinfo%onlyoccpart) ) then  
+          write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
+       end if
+       if(DECinfo%ccmodel==MODEL_MP2) then
+          if (DECinfo%F12) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+          else          
+             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+          endif
+       elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_CC2) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_CCSD) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
+       end if
+    end if
+    write(lupri,*)
+    write(lupri,*)
+
+
+  end subroutine print_total_energy_summary_lupri
+
+
+  !> \brief Print all fragment energies for given CC model.
+  !> \author Kasper Kristensen
+  !> \date March 2013
+  subroutine print_all_fragment_energies(natoms,FragEnergies,dofrag,&
+       & DistanceTable,energies)
+    implicit none
+    !> Number of atoms in full molecule
+    integer,intent(in) :: nAtoms
+    ! Fragment energies as listed in decfrag type def "energies"
+    real(realk),intent(in) :: FragEnergies(natoms,natoms,ndecenergies)
+    !> Which atoms are associated with a fragment?
+    logical,intent(in) :: dofrag(natoms)
+    !> Distances between all atoms (not changed at output, is intent(inout) for MPI purposes)
+    real(realk),intent(inout) :: DistanceTable(natoms,natoms)
+    !> Total DEC energies (sum of frag energies)
+    real(realk),intent(in) :: energies(ndecenergies)
+
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) '============================================================================='
+
+    select case(DECinfo%ccmodel)
+    case(MODEL_MP2)
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCMP2),dofrag,&
+            & 'MP2 occupied single energies','AF_MP2_OCC')
+       if(.not. DECinfo%onlyoccpart) then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTMP2),dofrag,&
+               & 'MP2 virtual single energies','AF_MP2_VIR')
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGMP2),dofrag,&
+               & 'MP2 Lagrangian single energies','AF_MP2_LAG')
+       end if
+
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCMP2),dofrag,&
+            & DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTMP2),dofrag,&
+               & DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')          
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGMP2),dofrag,&
+               & DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
+       end if
+
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,g20.10)') 'MP2 occupied   correlation energy : ', &
+            & energies(FRAGMODEL_OCCMP2)
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,g20.10)') 'MP2 virtual    correlation energy : ', &
+               & energies(FRAGMODEL_VIRTMP2)
+          write(DECinfo%output,'(1X,a,g20.10)') 'MP2 Lagrangian correlation energy : ', &
+               & energies(FRAGMODEL_LAGMP2)
+       end if
+       write(DECinfo%output,*)
+
+    case(MODEL_CC2)
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCC2),dofrag,&
+            & 'CC2 occupied single energies','AF_CC2_OCC')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCC2),dofrag,&
+               & 'CC2 virtual single energies','AF_CC2_VIR')
+       end if
+
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCC2),dofrag,&
+            & DistanceTable, 'CC2 occupied pair energies','PF_CC2_OCC')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCC2),dofrag,&
+               & DistanceTable, 'CC2 virtual pair energies','PF_CC2_VIR')
+       end if
+
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,g20.10)') 'CC2 occupied   correlation energy : ', &
+            & energies(FRAGMODEL_OCCCC2)
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,g20.10)') 'CC2 virtual    correlation energy : ', &
+               & energies(FRAGMODEL_VIRTCC2)
+       end if
+       write(DECinfo%output,*)
+
+    case(MODEL_RPA)
+
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
+            & 'RPA occupied single energies','AF_RPA_OCC')
+
+       if(.not.DECinfo%onlyoccpart) then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
+               & 'RPA virtual single energies','AF_RPA_VIR')
+       endif
+
+
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
+            & DistanceTable, 'RPA occupied pair energies','PF_RPA_OCC')
+
+       if(.not.DECinfo%onlyoccpart) then
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
+               & DistanceTable, 'RPA virtual pair energies','PF_RPA_VIR')          
+       endif
+
+    case(MODEL_CCSD)
+       if(.not.DECinfo%CCDhack)then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+               & 'CCSD occupied single energies','AF_CCSD_OCC')
+          if(.not.DECinfo%onlyoccpart) then
+             call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
+                  & 'CCSD virtual single energies','AF_CCSD_VIR')
+          end if
+
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+               & DistanceTable, 'CCSD occupied pair energies','PF_CCSD_OCC')
+          if(.not.DECinfo%onlyoccpart) then
+             call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
+                  & DistanceTable, 'CCSD virtual pair energies','PF_CCSD_VIR')
+          end if
+
+          write(DECinfo%output,*)
+          write(DECinfo%output,'(1X,a,g20.10)') 'CCSD occupied   correlation energy : ', &
+               & energies(FRAGMODEL_OCCCCSD)
+          if(.not.DECinfo%onlyoccpart) then
+             write(DECinfo%output,'(1X,a,g20.10)') 'CCSD virtual    correlation energy : ', &
+                  & energies(FRAGMODEL_VIRTCCSD)
+          end if
+          write(DECinfo%output,*)
+       else
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+               & 'CCD occupied single energies','AF_CCD_OCC')
+          if(.not.DECinfo%onlyoccpart) then
+             call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
+                  & 'CCD virtual single energies','AF_CCD_VIR')
+          end if
+
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+               & DistanceTable, 'CCD occupied pair energies','PF_CCD_OCC')
+          if(.not.DECinfo%onlyoccpart) then
+             call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
+                  & DistanceTable, 'CCD virtual pair energies','PF_CCD_VIR')
+          end if
+
+          write(DECinfo%output,*)
+          write(DECinfo%output,'(1X,a,g20.10)') 'CCD occupied   correlation energy : ', &
+               & energies(FRAGMODEL_OCCCCSD)
+          if(.not.DECinfo%onlyoccpart) then
+             write(DECinfo%output,'(1X,a,g20.10)') 'CCD virtual    correlation energy : ', &
+                  & energies(FRAGMODEL_VIRTCCSD)
+          end if
+          write(DECinfo%output,*)
+       endif
+
+    case(MODEL_CCSDpT)
+
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+            & 'CCSD occupied single energies','AF_CCSD_OCC')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
+               & 'CCSD virtual single energies','AF_CCSD_VIR')
+       end if
+
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+            & DistanceTable, 'CCSD occupied pair energies','PF_CCSD_OCC')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
+               & DistanceTable, 'CCSD virtual pair energies','PF_CCSD_VIR')
+       end if
+
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,g20.10)') 'CCSD occupied correlation energy : ', &
+            & energies(FRAGMODEL_OCCCCSD)
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,g20.10)') 'CCSD virtual  correlation energy : ', &
+               & energies(FRAGMODEL_VIRTCCSD)
+       end if
+       write(DECinfo%output,*)
+
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT),dofrag,&
+            & '(T) occupied single energies','AF_ParT_OCC_BOTH')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT),dofrag,&
+               & '(T) virtual single energies','AF_ParT_VIR_BOTH')
+       end if
+
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
+            & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
+               & '(T) virtual single energies (fourth order)','AF_ParT_VIR4')
+       end if
+
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
+            & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT5),dofrag,&
+               & '(T) virtual single energies (fifth order)','AF_ParT_VIR5')
+       end if
+
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT),dofrag,&
+            & DistanceTable, '(T) occupied pair energies','PF_ParT_OCC_BOTH')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT),dofrag,&
+               & DistanceTable, '(T) virtual pair energies','PF_ParT_VIR_BOTH')
+       end if
+
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
+            & DistanceTable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
+               & DistanceTable, '(T) virtual pair energies (fourth order)','PF_ParT_VIR4')
+       end if
+
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
+            & DistanceTable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
+       if(.not.DECinfo%onlyoccpart) then
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT5),dofrag,&
+               & DistanceTable, '(T) virtual pair energies (fifth order)','PF_ParT_VIR5')
+       end if
+
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy : ', energies(FRAGMODEL_OCCpT)
+       write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order energy   : ', energies(FRAGMODEL_OCCpT4)
+       write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order energy   : ', energies(FRAGMODEL_OCCpT5)
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  correlation energy : ', energies(FRAGMODEL_VIRTpT)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order energy   : ', energies(FRAGMODEL_VIRTpT4)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order energy   : ', energies(FRAGMODEL_VIRTpT5)
+       end if
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) occupied correlation energy : ', &
+            & energies(FRAGMODEL_OCCCCSD)+energies(FRAGMODEL_OCCpT)
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) virtual  correlation energy : ', &
+               & energies(FRAGMODEL_VIRTCCSD)+energies(FRAGMODEL_VIRTpT)
+       end if
+       write(DECinfo%output,*)
+
+    case default
+       ! MODIFY FOR NEW MODEL
+       ! If you implement new model, please print the fragment energies here,
+       ! see FRAGMODEL_* definitions in dec_typedef.F90.
+       write(DECinfo%output,*) 'WARNING: print_all_fragment_energies needs implementation &
+            & for model: ', DECinfo%ccmodel
+    end select
+
+#ifdef MOD_UNRELEASED
+    ! MODIFY FOR NEW CORRECTION
+    if(DECInfo%F12) then
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(13X,a)') '**********************************************************'
+       write(DECinfo%output,'(13X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
+       write(DECinfo%output,'(13X,a)') '**********************************************************'
+       write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY : ', energies(FRAGMODEL_OCCMP2)  
+       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY : ', energies(FRAGMODEL_MP2f12)
+       write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+            & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
+       write(DECinfo%output,*)       
+    endif
+#endif
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) '============================================================================='
+
+  end subroutine print_all_fragment_energies
+
+
+  !> \brief Print atomic fragment energies
+  !> \author Kasper Kristensen
+  !> \date September 2012
+  subroutine print_atomic_fragment_energies(natoms,FragEnergies,dofrag,headline,greplabel)
+
+    implicit none
+    !> Number of atoms in full molecule
+    integer,intent(in) :: nAtoms
+    ! Fragment energies 
+    real(realk),intent(in) :: FragEnergies(natoms,natoms)
+    !> Which atoms are associated with a fragment?
+    logical,intent(in) :: dofrag(natoms)
+    !> Character string to print as headline
+    character(*),intent(in) :: headline
+    !> Label to print after each energy for easy grepping
+    character(*),intent(in) :: greplabel
+    integer :: i
+
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) '================================================================='
+    write(DECinfo%output,*) trim(headline)
+    write(DECinfo%output,*) '================================================================='
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) 'Fragment       Energy'
+    do i=1,natoms
+       if(.not. dofrag(i)) cycle
+       write(DECinfo%output,'(I6,3X,g20.10,2a)') i,FragEnergies(i,i), "    ",greplabel
+    end do
+
+
+  end subroutine print_atomic_fragment_energies
+
+
+  !> \brief Print pair fragment energies
+  !> \author Kasper Kristensen
+  !> \date September 2012
+  subroutine print_pair_fragment_energies(natoms,FragEnergies,dofrag,&
+       & DistanceTable, headline, greplabel)
+
+    implicit none
+
+    !> Number of atoms in full molecule
+    integer,intent(in) :: nAtoms
+    ! Fragment energies 
+    real(realk),intent(in) :: FragEnergies(natoms,natoms)
+    !> Which atoms are associated with a fragment?
+    logical,intent(in) :: dofrag(natoms)
+    !> Distances between all atoms (a.u.)
+    real(realk),intent(in) :: DistanceTable(natoms,natoms)
+    !> Character string to print as headline
+    character(*),intent(in) :: headline
+    !> Label to print after each energy for easy grepping
+    character(*),intent(in) :: greplabel
+    integer :: i,j
+    real(realk) :: pairdist,thr
+
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) '================================================================='
+    write(DECinfo%output,*) trim(headline)
+    write(DECinfo%output,*) '================================================================='
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(2X,a)') 'Atom1  Atom2     Dist(Ang)        Energy'
+    thr=1.0E-15_realk
+    do i=1,natoms
+       do j=i+1,natoms
+
+          ! Skip if no fragment
+          if(.not. dofrag(i)) cycle
+          if(.not. dofrag(j)) cycle
+
+          pairdist = DistanceTable(i,j)
+
+          ! Only print if pair distance is below threshold and nonzero
+          DistanceCheck: if(pairdist < DECinfo%pair_distance_threshold &
+               & .and. abs(FragEnergies(i,j)) > thr  ) then
+             write(DECinfo%output,'(I6,2X,I6,2X,g14.5,2X,g20.10,2a)') &
+                  & i,j,pairdist*bohr_to_angstrom, FragEnergies(i,j),"    ",greplabel
+          end if DistanceCheck
+
+       end do
+    end do
+
+  end subroutine print_pair_fragment_energies
+
+
+  !> \brief Get total number of atomic fragments + pair fragments
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  function get_total_number_of_fragments(natoms,dofrag,DistanceTable) result(njobs)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Logical vector describing which atoms have orbitals assigned 
+    !> (i.e., which atoms to consider in atomic fragment calculations)
+    logical,intent(in) :: dofrag(natoms)
+    !> Distance table with interatomic distances
+    real(realk),intent(in) :: DistanceTable(natoms,natoms)
+    integer :: njobs
+    integer :: naf,npf,i,j
+
+
+    ! Number of atomic fragments
+    naf = count(dofrag)
+
+    ! Number of pair fragments (do not include pairs with interatomic distance beyond pair threshold)
+    npf=0
+    iloop: do i=1,natoms
+       if(.not. dofrag(i)) cycle iloop
+       jloop: do j=i+1,natoms
+          if(.not. dofrag(j)) cycle iloop
+
+          ! Pair distance below threshold?
+          if(DistanceTable(i,j)<DECinfo%pair_distance_threshold) then
+             npf=npf+1
+          end if
+
+       end do jloop
+    end do iloop
+
+    ! Number of jobs: Atomic frags + pair frags
+    njobs = naf+npf
+
+  end function get_total_number_of_fragments
+
+
+  !> \brief Extract fragment energies for occupied partitioning for given CC model
+  !> from set of all fragment energies.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine get_occfragenergies(natoms,ccmodel,FragEnergiesAll,FragEnergies)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> CC model according to MODEL_* conventions in dec_typedef.F90
+    integer,intent(in) :: ccmodel
+    !> Fragment energies for all models (see FRAGMODEL_* in dec_typedef.F90)
+    real(realk),intent(in) :: FragEnergiesAll(natoms,natoms,ndecenergies)
+    !> Fragment energies for occupied partitioning for given CC model
+    real(realk),intent(inout) :: FragEnergies(natoms,natoms)
+
+    ! MODIFY FOR NEW MODEL
+    select case(ccmodel)
+    case(MODEL_MP2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCMP2)
+
+    case(MODEL_CC2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCC2)
+
+    case(MODEL_RPA)
+
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCRPA)
+
+    case(MODEL_CCSD)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCCSD)
+
+    case(MODEL_CCSDpT)
+       ! CCSD(T): Add CCSD and (T) contributions using occupied partitioning
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCCSD) &
+            & + FragEnergiesAll(:,:,FRAGMODEL_OCCpT)
+
+    case default
+       print *, 'Model is: ', ccmodel
+       call lsquit('get_occfragenergies: Model needs implementation!',-1)
+    end select
+
+  end subroutine get_occfragenergies
+
+
+
+  !> \brief Estimate (absolute) energy error in DEC calculation.
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine get_estimated_energy_error(natoms,energies,Eerr)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> SUM of fragment energies for all models (see FRAGMODEL_* in dec_typedef.F90)
+    real(realk),intent(in) :: energies(ndecenergies)
+    !> Estimated (absolute) energy error
+    real(realk),intent(inout) :: Eerr
+    real(realk) :: Eocc,Evirt
+
+    ! MODIFY FOR NEW MODEL
+    select case(DECinfo%ccmodel)
+    case(MODEL_MP2)
+       ! Energy error = max difference between occ,virt, and Lag energies
+       Eerr = max(energies(FRAGMODEL_LAGMP2),energies(FRAGMODEL_OCCMP2),energies(FRAGMODEL_VIRTMP2)) &
+            & - min(energies(FRAGMODEL_LAGMP2),energies(FRAGMODEL_OCCMP2),energies(FRAGMODEL_VIRTMP2))
+
+    case(MODEL_CC2)
+       ! Energy error = difference between occ and virt energies
+       Eerr = abs(energies(FRAGMODEL_OCCCC2) - energies(FRAGMODEL_VIRTCC2))
+
+    case(MODEL_RPA)
+       ! Energy error = difference between occ and virt energies
+       Eerr = abs(energies(FRAGMODEL_OCCRPA) - energies(FRAGMODEL_VIRTRPA))
+
+    case(MODEL_CCSD)
+       Eerr = abs(energies(FRAGMODEL_OCCCCSD) - energies(FRAGMODEL_VIRTCCSD))
+
+    case(MODEL_CCSDpT)
+       ! CCSD(T): Add CCSD and (T) contributions and find diff
+       Eocc = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
+       Evirt = energies(FRAGMODEL_VIRTCCSD) + energies(FRAGMODEL_VIRTpT)
+       Eerr = abs(Eocc-Evirt)
+
+    case default
+       print *, 'Model is: ', DECinfo%ccmodel
+       call lsquit('get_estimated_energy_error: Model needs implementation!',-1)
+    end select
+
+  end subroutine get_estimated_energy_error
+
+  !> \brief Get filename for for fragment energy restart file 
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  function get_fragenergy_restart_filename(esti) result(filename)
+    implicit none
+    !> Is this estimated fragment energies?
+    logical,intent(in) :: esti
+    character(len=40) :: FileName
+
+    if(esti) then
+       FileName='estimated_fragenergies.info'
+    else
+       FileName='fragenergies.info'
+    end if
+
+  end function get_fragenergy_restart_filename
+
+  !> \brief Get filename for for fragment energy restart file used for backing up existing file
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  function get_fragenergy_restart_filename_backup(esti) result(filename)
+    implicit none
+    !> Is this estimated fragment energies?
+    logical,intent(in) :: esti
+    character(len=40) :: FileName
+
+    if(esti) then
+       FileName='estimated_fragenergies.backup'
+    else
+       FileName='fragenergies.backup'
+    end if
+
+  end function get_fragenergy_restart_filename_backup
+
+
+  !> \brief Get number of pair fragments with interatomic distances in the range [r1,r2].
+  !> This is done by counting the number of entries in MyMolecule%ccmodel(i,j), where j>i 
+  !> AND ccmodel(i,j) is not an empty model (MODEL_NONE) AND atoms "i" and "j"
+  !> both have orbitals assigned AND the distance between "i" and "j" is in the range [r1,r2].
+  function get_num_of_pair_fragments(MyMolecule,dofrag,r1,r2) result(npairfrags)
+    implicit none
+    !> Full molecule structure
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> List of which atoms have orbitals assigned
+    logical,dimension(MyMolecule%natoms),intent(in) :: dofrag
+    !> Minimum distance to consider
+    real(realk),intent(in) :: r1
+    !> Maximum distance to consider
+    real(realk),intent(in) :: r2
+    integer :: npairfrags
+    integer :: i,j
+
+    npairfrags=0
+    iloop: do i=1,MyMolecule%natoms
+       if(.not. dofrag(i)) cycle iloop
+       jloop: do j=i+1,MyMolecule%natoms
+          if(.not. dofrag(j)) cycle jloop
+          if(MyMolecule%ccmodel(i,j) /= MODEL_NONE) then
+             if( MyMolecule%DistanceTable(i,j) .ge. r1 &
+                  & .and. MyMolecule%DistanceTable(i,j) .le. r2 ) then
+                ! Pair fragment (i,j) needs to be calculated
+                npairfrags = npairfrags+1
+             end if
+          end if
+       end do jloop
+    end do iloop
+
+  end function get_num_of_pair_fragments
+
+
+  !> \brief Make pointers for MO coefficients and MO Fock matrices in decfrag type
+  !> point to the fragment-adapted orbitals
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine fragment_basis_point_to_FOs(MyFragment,skipfock)
+    implicit none
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: MyFragment
+    !> Do not change pointers for Fock matrix
+    logical,intent(in),optional :: skipfock
+    logical :: skipf
+
+    skipf=.false.
+    if(present(skipfock)) then
+       if(skipfock) skipf=.true.
+    end if
+
+    ! Sanity check: Fragment-adapted MO coefficients have been set
+    if(.not. MyFragment%FAset) then
+       call lsquit('fragment_basis_point_to_FOs: Fragment-adapted MO coefficients &
+            & have not been set!',-1)
+    end if
+
+    ! Dimensions for fragment-adapted orbitals
+    MyFragment%noccAOS => MyFragment%noccFA
+    MyFragment%nunoccAOS => MyFragment%nunoccFA
+
+    ! Total number of occupied orbitals
+    if(DECinfo%frozencore) then
+       ! core + valence (AOS)
+       Myfragment%nocctot = Myfragment%ncore + Myfragment%noccAOS
+    else
+       ! AOS already contains core orbitals
+       Myfragment%nocctot = Myfragment%noccAOS
+    end if
+
+    ! MO coefficients
+    MyFragment%Co => MyFragment%CoFA
+    MyFragment%Cv => MyFragment%CvFA
+
+    ! MO Fock
+    if(.not. skipf) then
+       MyFragment%ppfock => MyFragment%ppfockFA
+       MyFragment%qqfock => MyFragment%qqfockFA    
+    end if
+
+    ! Pointers point to FO data
+    MyFragment%fragmentadapted=.true.
+
+  end subroutine fragment_basis_point_to_FOs
+
+
+
+  !> \brief Make pointers for MO coefficients and MO Fock matrices in decfrag type
+  !> point to the local orbitals
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine fragment_basis_point_to_LOs(MyFragment)
+    implicit none
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: MyFragment
+
+    ! Dimensions for fragment-adapted orbitals
+    MyFragment%noccAOS => MyFragment%noccLOC
+    MyFragment%nunoccAOS => MyFragment%nunoccLOC
+
+    ! Total number of occupied orbitals
+    if(DECinfo%frozencore) then
+       ! core + valence (AOS)
+       Myfragment%nocctot = Myfragment%ncore + Myfragment%noccAOS
+    else
+       ! AOS already contains core orbitals
+       Myfragment%nocctot = Myfragment%noccAOS
+    end if
+
+    ! MO coefficients
+    MyFragment%Co => MyFragment%CoLOC
+    MyFragment%Cv => MyFragment%CvLOC
+
+    ! MO Fock
+    MyFragment%ppfock => MyFragment%ppfockLOC
+    MyFragment%qqfock => MyFragment%qqfockLOC   
+
+    ! Pointers do not point to FO data
+    MyFragment%fragmentadapted=.false.
+
+  end subroutine fragment_basis_point_to_LOs
+
+
+  !> \brief Initialize pointers in fragment structure handling some dimensions.
+  !> These pointers are the only pointers that are not arrays.
+  !> \author Kasper Kristensen
+  !> \date November 2013
+  subroutine fragment_init_dimension_pointers(fragment)
+    implicit none
+    !> Atomic or pair fragment
+    type(decfrag),intent(inout) :: fragment
+
+    nullify(fragment%noccAOS)
+    nullify(fragment%nunoccAOS)
+    nullify(fragment%noccLOC)
+    nullify(fragment%nunoccLOC)
+    nullify(fragment%noccFA)
+    nullify(fragment%nunoccFA)
+    allocate(fragment%noccLOC)
+    allocate(fragment%nunoccLOC)
+    allocate(fragment%noccFA)
+    allocate(fragment%nunoccFA)
+
+  end subroutine fragment_init_dimension_pointers
 
 end module dec_fragment_utils

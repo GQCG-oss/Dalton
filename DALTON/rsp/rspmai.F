@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -333,10 +333,13 @@ C
          CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE IF (CCPPA) THEN
          CALL TITLER('SOPPA(CCSD) response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('SOPPA(CCSD) RESPONSE')
       ELSE IF (SOPPA) THEN
          CALL TITLER('SOPPA response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
+         IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
 C
@@ -887,6 +890,7 @@ C
                GO TO 100
     3          CONTINUE
                   SOPPA = .TRUE.
+                  IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
                   IF (SOPPA .AND. EMBEDDING) THEN
                     WRITE (LUPRI,'(/A)')
      &              '@ **INFO**'//
@@ -1255,7 +1259,7 @@ C  Initializing ESRHFC
       DATA HFCFC/.FALSE./,HFCSD/.FALSE./,HFCSO/.FALSE./
       DATA UNGAUSS/.TRUE./
       DATA HSOBRT/.FALSE./,HSOEFF/.FALSE./
-      DATA IPRHFC/5/
+      DATA IPRHFC/0/
 C  Initializing ABSLRS
        DATA ABSLRS/.FALSE./,ABSLRS_INTERVAL/.FALSE./
        DATA ABSLRS_ALPHA/.FALSE./,ABS_BATCH/.FALSE./
@@ -1280,9 +1284,6 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1633,8 +1634,8 @@ C .CHANNEL - restrict to excitations from particular orbitals
                DO I=1,NSYM
                   CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
                END DO
-               IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
-     &               'Too many orbitals for CHANNEL calculation: ' //
+               IF (CHANNEL_NORB .GT. CHANNEL_MAX) CALL QUIT(
+     &               'Too many orbitals for .CHANNEL calculation: ' //
      &               'increase CHANNEL_MAX and recompile')
                IOFF=0
                DO ISYM=1,NSYM
@@ -1710,12 +1711,10 @@ C
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-#if defined (BUILD_PELIB)
-         if (peqm) then
-           write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+           WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
-#endif
+         END IF
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
@@ -1826,9 +1825,6 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -2277,12 +2273,10 @@ C
              WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
          END IF    
 
-#if defined (BUILD_PELIB)
-         if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
-#endif
+         END IF
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -4726,9 +4720,6 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
@@ -4877,12 +4868,10 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-#if defined (BUILD_PELIB)
-         if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
-#endif
+         END IF
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='

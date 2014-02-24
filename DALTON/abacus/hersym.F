@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -124,13 +124,15 @@ C ***********************************************************
          DIMENSION TMPARR(7,0:LENTMP), WORK(*)
          DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM), JCO(MXAQN)
          LOGICAL   VRML_SYM, ADDSYM, DOCART, DOOWN, AUTOSY, NOSYM
+         LOGICAL   MIDAS_SYM
          PARAMETER (D0 = 0.0D0)
-         CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41, ID3, CRT
+         CHARACTER*1 KASYM(3,3), ID3, CRT
          CHARACTER SYMM*9, TMPLN*80, BSNM*80
-         CHARACTER NAME*4
-         LOGICAL   MIDSYM
-         MIDSYM = .TRUE.
-         I = 1
+         CHARACTER CLASS*15, TEXT*41, NAME*4
+
+C        MIDAS_SYM: write out input coordinates for midas.sym analysis
+         MIDAS_SYM = .TRUE.
+
 C ::: IPRTHR - Print level threshold for verbose output. :::
          IPRTHR = 3
 C
@@ -166,10 +168,9 @@ C               /hjaaj Mar 2004
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
 C
-C        MIDAS Interface, write out input coordinates for midas.sym
-C        analysis
+C        MIDAS Interface, write out input coordinates for midas.sym analysis
 C
-         IF (MIDSYM) THEN
+         IF (MIDAS_SYM) THEN
             LUCOOR = -1
             CALL GPOPEN(LUCOOR,'midasifc.cartorig','NEW',
      &                  ' ','FORMATTED',IDUMMY,.FALSE.)
@@ -258,15 +259,15 @@ C ::: The new symmetry is added. :::
 C ::: The input file is modified to include symmetry. :::
 C ::: If there's any Angstrom mark, it's removed.    :::
          TMPLN = MLINE(NMLAU)
-         CALL UPCASE(MLINE(NMLAU))
+         CALL UPCASE(TMPLN)
          IF (INDEX(TMPLN,'ATO') .EQ. 0) THEN
-            WRITE(TMPLN(10:10), '(I1)') NSYMOP
-            WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
+            WRITE(MLINE(NMLAU)(10:10), '(I1)') NSYMOP
+            WRITE(MLINE(NMLAU)(11:20), '(A9,A1)') SYMM, ' '
          ELSE
-            CALL LINE4(TMPLN,NONTYP,NSMOP2,CRT,KCHARG,THRS,ADDSYM,KASYM,
-     &                 ID3,DOCART,DOOWN)
+            CALL LINE4(MLINE(NMLAU),NONTYP2,NSMOP2,CRT,KCHARG,THRS,
+     &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
             AUTOSY = .FALSE.
-            NOSYM = .FALSE.
+            NOSYM  = .FALSE.
             IWHERE = 1
             DO I2 = 1, 3
                DO J2 = 1, 3
@@ -275,10 +276,9 @@ C ::: If there's any Angstrom mark, it's removed.    :::
                END DO
             END DO
             ID3 = ' '
-            CALL LINE4W(TMPLN,NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
-     &                  KASYM,ID3,DOCART,DOOWN)
+            CALL LINE4W(MLINE(NMLAU),NONTYP,NSYMOP,KCHARG,THRS,
+     &                  AUTOSY,NOSYM,KASYM,ID3,DOCART,DOOWN)
          END IF
-         MLINE(NMLAU) = TMPLN
          IF (NSYMOP .EQ. 0) THEN
             WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
          ELSE IF (NSYMOP .EQ. 1) THEN
@@ -361,16 +361,15 @@ C ::: Finally the number of atoms are updated. :::
             TMPLN = MLINE(NCI)
             CALL UPCASE(TMPLN)
             IF (INDEX(TMPLN,'CHA') .EQ. 0) THEN
-               WRITE(TMPLN(12:15),'(I4)') NONT(K)
+               WRITE(MLINE(NCI)(12:15),'(I4)') NONT(K)
             ELSE
-               CALL LINE5R(TMPLN,Q,NONT2,MBSI,IQM,JCO,MXAQN,
+               CALL LINE5R(MLINE(NCI),Q,NONT2,MBSI,IQM,JCO,MXAQN,
      &                    BASIS,ATOMBA,LMULBS,BSNM,
      &                    RADIUS_PCM, ALPHA_PCM)
-               CALL LINE5W(TMPLN,Q,NONT(K),MBSI,BASIS,ATOMBA,LMULBS,
-     &                    BSNM,IQM,JCO,MXAQN,
+               CALL LINE5W(MLINE(NCI),Q,NONT(K),MBSI,BASIS,ATOMBA,
+     &                    LMULBS,BSNM,IQM,JCO,MXAQN,
      &                    RADIUS_PCM, ALPHA_PCM)
             END IF
-            MLINE(NCI) = TMPLN
  510        CONTINUE
             IF (J .EQ. NINT(ATMARR(4,I))) THEN
                I = I + 1

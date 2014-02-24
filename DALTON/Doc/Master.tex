@@ -2,12 +2,18 @@
 \usepackage{a4}
 \usepackage{makeidx}
 % separate longtable is needed for tetex-latex-2.0.2-21.3
-\usepackage{supertabular,longtable,hyperref}
+\usepackage{supertabular,longtable}
 \usepackage{color}
 % Specifies the document style.
 \usepackage{bibentry}
 \usepackage[numbers]{natbib}
-
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
+ breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=true]
+ {hyperref}
+\usepackage[dvipsnames,svgnames,x11names,hyperref]{xcolor}
+\hypersetup{
+ urlcolor=webbrown,linkcolor=blue,citecolor=red}
 
 \newcommand{\ignore}[1]{}
 \newcommand{\nobibentry}[1]{{\let\nocite\ignore\bibentry{#1}}}
@@ -15,6 +21,7 @@
 \newcommand{\bibfnamefont}[1]{#1}
 \newcommand{\bibnamefont}[1]{#1}
 
+\newcommand{\newbibentry}[1]{{\begin{NoHyper}\bibentry{#1}\end{NoHyper}}}
 
 \typeout{***               }
 \typeout{***   Modification history: }
@@ -103,24 +110,31 @@
 %
 %           
 %\renewcommand{\thetable}{\Roman{table}}
-\newcommand{\dalton}{{\sc dalton2011}}
-\newcommand{\her}{{\sc hermit}\index{\sc hermit}}
-\newcommand{\hermit}{{\sc hermit}\index{\sc hermit}}
-\newcommand{\sir}{{\sc sirius}\index{\sc sirius}}
-%
-\newcommand{\choles}{{\sc cholesky}\index{\sc cholesky}}
-%
-\newcommand{\sirius}{{\sc sirius}\index{\sc sirius}}
-\newcommand{\aba}{{\sc abacus}\index{\sc abacus}}
-\newcommand{\abacus}{{\sc abacus}\index{\sc abacus}}
-\newcommand{\resp}{{\sc response}\index{\sc response}}
-\newcommand{\response}{{\sc response}\index{\sc response}}
-\newcommand{\mol}{{\sc molecule}\index{\sc molecule}}
-\newcommand{\molecule}{{\sc molecule}\index{\sc molecule}}
-\newcommand{\cc}{{\sc cc}\index{\sc cc}}
+\newcommand{\latestrelease}{DALTON2013}
+\newcommand{\dalton}{{\sc Dalton}}
+\newcommand{\her}{{\sc Hermit}\index{\sc Hermit}}
+\newcommand{\hermit}{{\sc Hermit}\index{\sc Hermit}}
+\newcommand{\sir}{{\sc Sirius}\index{\sc Sirius}}
+\newcommand{\choles}{{\sc Cholesky}\index{\sc Cholesky}}
+\newcommand{\sirius}{{\sc Sirius}\index{\sc Sirius}}
+\newcommand{\aba}{{\sc Abacus}\index{\sc Abacus}}
+\newcommand{\abacus}{{\sc Abacus}\index{\sc Abacus}}
+\newcommand{\resp}{{\sc Response}\index{\sc Response}}
+\newcommand{\response}{{\sc Response}\index{\sc Response}}
+\newcommand{\mol}{{\sc Molecule}\index{\sc Molecule}}
+\newcommand{\molecule}{{\sc Molecule}\index{\sc Molecule}}
+\newcommand{\cc}{{\sc CC}\index{\sc CC}}
 \newcommand{\eri}{{\sc eri}\index{\sc eri}}
 \newcommand{\twoint}{{\sc twoint}\index{\sc twoint}}
-\newcommand{\lucita}{{\sc lucita}\index{\sc lucita}}
+\newcommand{\lucita}{{\sc Lucita}\index{\sc Lucita}}
+
+\newcommand{\dalinp}{{\tt DALTON.INP}\index{dalton input file}\index{DALTON.INP}}
+\newcommand{\molinp}{{\tt MOLECULE.INP}\index{molecule input file}\index{MOLECULE.INP}}
+\newcommand{\potinp}{{\tt POTENTIAL.INP}\index{potential input file}\index{POTENTIAL.INP}}
+
+\newcommand{\angstrom}{\aa{}ngstr\"{o}m{}}
+\newcommand{\bohr}{bohr}
+
 \newcommand{\OM}{\mbox{1-matrix}}
 \newcommand{\TM}{\mbox{2-matrix}}
 \newcommand{\grp}[1]{\mbox{$\cal #1$}}
@@ -170,63 +184,82 @@
 %
 \baselineskip=15pt
 %
-\title{DALTON2011 Program Manual}
+\title{\latestrelease\ -- \dalton\ Program Manual}
 
 %
-\author{C.~Angeli,
+\author{
+K.~Aidas
+C.~Angeli,
 K.~L.~Bak,
 V.~Bakken,
+R.~Bast,
+L.~Boman,\\
 O.~Christiansen,
-R.~Cimiraglia,\\
+R.~Cimiraglia,
 S.~Coriani,
 P.~Dahle,
-E.~K.~Dalskov,
+E.~K.~Dalskov,\\
 T.~Enevoldsen,
-B.~Fernandez,\\
+J.~J.~Eriksen,
+B.~Fern\'{a}ndez,
 L.~Ferrighi,
+H.~Fliegl,\\
 L.~Frediani,
-C.~H{\"a}ttig,
+B.~Gao,
 K.~Hald,
-A.~Halkier, \\
-H.~Heiberg,
+A.~Halkier,
+C.~H{\"a}ttig,
+H.~Heiberg,\\
 T.~Helgaker,
+A.~C.~Hennum,
 H.~Hettema,
+E.~Hjerten\ae{}s,
+M.~F.~Iozzi,\\
 B.~Jansik,
-H.~J.~Aa.~Jensen, \\
+H.~J.~Aa.~Jensen,
 D.~Jonsson,
 P.~J{\o}rgensen,
+J.~Kauczor,\\
 S.~Kirpekar,
 W.~Klopper,
-S.~Knecht,\\
+S.~Knecht,
 R.~Kobayashi,
-J.~Kongsted,
 H.~Koch,
+J.~Kongsted,\\
 A.~Ligabue,
-O.~B.~Lutn\ae s,\\
+O.~B.~Lutn\ae{}s,
+J.~I.~Melo,
 K.~V.~Mikkelsen,
+R.~H.~Myhre,\\
+C.~Neiss,
 C.~B.~Nielsen,
 P.~Norman,
 J.~Olsen,
+J.~M.~H.~Olsen,
 A.~Osted,\\
 M.~J.~Packer,
 F.~Pawlowski,
 T.~B.~Pedersen,
-Z.~Rinkevicius,
+P.~F.~Provasi,
+Z.~Rinkevicius,\\
 E.~Rudberg,
-T.~A.~Ruden,\\
+T.~A.~Ruden,
 K.~Ruud,
-P.~Sa\l ek,
-C.~C.~M.~Samson,
-A.~Sanchez de Meras,
-T.~Saue,\\
+P.~Sa\l{}ek,
+C.~C.~M.~Samson,\\
+A.~S\'{a}nchez de Mer\'{a}s,
+T.~Saue,
 S.~P.~A.~Sauer,
 B.~Schimmelpfennig,
+K.~Sneskov,\\
 A.~H.~Steindal,
-K.~O.~Sylvester-Hvid,\\
+K.~O.~Sylvester-Hvid,
 P.~R.~Taylor,
+A.~M.~Teale,
+D.~P.~Tew,\\
 O.~Vahtras,
-D.~J.~Wilson,
-and H.~{\AA}gren,
+D.~J.~D.~Wilson
+and H.~{\AA}gren.
 }
 %
 \date{\mbox{\ }}
@@ -238,11 +271,11 @@ and H.~{\AA}gren,
 %
 \include{Preface}
 \include{Intro}
-\include{New12}
-\part{DALTON Installation Guide}
+\include{New}
+\part{\dalton\ Installation Guide}
 \include{Install}
 \include{Maintain}
-\part{DALTON User's Guide}
+\part{\dalton\ User's Guide}
 \include{Starting}
 \include{wfguide}
 \include{walkchap}
@@ -254,6 +287,7 @@ and H.~{\AA}gren,
 \include{dirpar}
 \include{finitefield}
 \include{Solvent}
+\include{embedding}
 \include{vibave}
 \include{relativity}
 \include{soppa}
@@ -261,7 +295,8 @@ and H.~{\AA}gren,
 \include{lucitaexamples}
 \include{ccexamples}
 \include{cholexamples}
-\part{DALTON Reference Manual}
+\include{Symm_tut}
+\part{\dalton\ Reference Manual}
 \include{General}
 \include{Choles}
 \include{Hermit}
@@ -288,18 +323,23 @@ and H.~{\AA}gren,
 \include{ccexlr}
 %\include{ccslv}
 \include{ccgr}
+\include{cclrlanczos}
 \include{ccr12}
 \include{chomp2}
 \include{chocc2}
 \include{chopt}
 \include{choact}
 %%%%%% end of CC %%%%%%%
-\part{Appendix: DALTON Tool box}
+\part{Appendix: \dalton\ Tool box}
 \include{Appendix}
 \part{References}
 \bibliographystyle{unsrt}
-\bibliography{dalton,dft}
+\bibliography{dalton,dft,Symm_tut}
 %
+% Index
+%
+\index{gradient!molecular|see{molecular gradient}}
+\index{Hessian!molecular|see{molecular Hessian}}
 \part{Index}
 \printindex
 \end{document}

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -30,7 +30,7 @@ c/* Deck CC_FTST */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -240,9 +240,9 @@ C
       PARAMETER ( ISYM0 = 1 )
 C
       INTEGER LWORK
-      DIMENSION INDEXA(MXCORB)
-      DIMENSION IADRPQ0(MXCORB+IRAT), IADRPQR(MXCORB+IRAT)
-      DIMENSION IADRBFI(MXCORB), IADRBFD(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
+      DIMENSION IADRPQ0(MXCORB_CC+IRAT), IADRPQR(MXCORB_CC+IRAT)
+      DIMENSION IADRBFI(MXCORB_CC), IADRBFD(MXCORB_CC)
       DIMENSION WORK(*)
       CHARACTER*6 CFIL,DFIL,CTFIL,DTFIL
       CHARACTER*7 O3FIL,O3TFIL
@@ -393,8 +393,8 @@ C       -----------------------------------------
         CALL WOPEN2(LUPQR0,FILPQR0,64,0)
         CALL WOPEN2(LUPQRR,FILPQRR,64,0)
 
-        CALL GETWA2(LUPQR0,FILPQR0,IADRPQ0,1,(MXCORB+IRAT)/IRAT)
-        CALL GETWA2(LUPQRR,FILPQRR,IADRPQR,1,(MXCORB+IRAT)/IRAT)
+        CALL GETWA2(LUPQR0,FILPQR0,IADRPQ0,1,(MXCORB_CC+IRAT)/IRAT)
+        CALL GETWA2(LUPQRR,FILPQRR,IADRPQR,1,(MXCORB_CC+IRAT)/IRAT)
 
       END IF
 
@@ -3322,7 +3322,7 @@ C----------------------------------------------------------------------
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -3355,7 +3355,7 @@ C----------------------------------------------------------------------
       PARAMETER(ONE=1.0D0,TWO=2.0D0,THREE=3.0D0,HALF=0.5D0,ZERO=0.0D0)
 
       CHARACTER*(10) MODEL
-      INTEGER IADRPQ(MXCORB+IRAT)
+      INTEGER IADRPQ(MXCORB_CC+IRAT)
       INTEGER ISYTAMP, ISYZETA, ISYMD, ISYTIN, ISYAIK
       INTEGER KZETA, KTAMP, KEND1, LWRK1, KEND2, LWRK2
       INTEGER IERR, IADR, IOPT, IDEL, ILLL
@@ -3400,7 +3400,7 @@ C----------------------------------------------------------------------
       LUPQIM = -1
       CALL WOPEN2(LUPQIM,FILNAM,64,0)
 * reserve at the beginning a record for the start addresses:
-      IADR = (MXCORB+IRAT)/IRAT + 1
+      IADR = (MXCORB_CC+IRAT)/IRAT + 1
 
 *----------------------------------------------------------------------
 * get XLAMD matrices from zero T1 amplitudes:
@@ -3585,7 +3585,7 @@ C
 *----------------------------------------------------------------------
 * save start addresses and close file and return:
 *----------------------------------------------------------------------
-      CALL  PUTWA2(LUPQIM,FILNAM,IADRPQ,1,(MXCORB+IRAT)/IRAT)
+      CALL  PUTWA2(LUPQIM,FILNAM,IADRPQ,1,(MXCORB_CC+IRAT)/IRAT)
 
       CALL WCLOSE2(LUPQIM,FILNAM,'KEEP')
 
@@ -3622,7 +3622,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

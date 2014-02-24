@@ -5,9 +5,9 @@ c     File: gnrinf.h -- general information for DALTON
 c
 C
 C     EMBEDDING : QM part is embedded in environment (solvent or e.g. protein)
-C                 May 2011/hjaaj: EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
+C                 May 2011/hjaaj: EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .or. PEQM
 C                 (For now, EMBEDDING is defined in sirius/sirinp.F because this is
-C                 the first instance where all of FLAG(16), PCM, QM3, QMMM are set)
+C                 the first instance where all of FLAG(16), PCM, QM3, QMMM, PEQM are set)
 C
       LOGICAL TESTIN, OPTWLK, RNHERM, RNSIRI, RNABAC, GEOCNV,
      &        HRINPC, SRINPC, RDINPC, RDMLIN, PARCAL, DIRCAL,
@@ -15,16 +15,12 @@ C
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,
-     &        EMBEDDING, QM3, QMMM, QMNPMM
-#if defined (SYS_CRAY)
-      REAL GRADML, PANAS,  CHIVAL, THR_REDFAC
-#else
-      DOUBLE PRECISION GRADML, PANAS,  CHIVAL, THR_REDFAC
-#endif
+     &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM
+      REAL*8  GRADML, PANAS,  CHIVAL, THR_REDFAC
       INTEGER KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS
 C
       COMMON /GNRINF/
-     &        ! double:
+     &        ! real*8ZZ
      &        GRADML, PANAS,  CHIVAL, THR_REDFAC,
      &        ! integer:
      &        KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS,
@@ -35,7 +31,7 @@ C
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,
-     &        EMBEDDING, QM3, QMMM, QMNPMM
+     &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM
 
       INTEGER LBASDIR
       PARAMETER (LBASDIR = 600)

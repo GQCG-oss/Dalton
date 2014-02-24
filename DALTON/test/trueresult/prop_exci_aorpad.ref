@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,225 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:39:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 17:48:57 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_prop_exci_aorpad
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN PROPERTIES                                   
+**WAVE FUNCTIONS                                  
+.HF                                               
+.CC                                               
+*CC INPUT                                         
+.MP2                                              
+.AO-SOPPA                                         
+**PROPERTIES                                      
+.SOPPA                                            
+.EXCITA                                           
+.PRINT                                            
+ 2                                                
+*SOPPA                                            
+.AORPA                                            
+.DCRPA                                            
+*EXCITA                                           
+.DIPSTR                                           
+.ROTVEL                                           
+.NEXCITA                                          
+    5    5    5    5    0    0    0    0          
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+INTGRL                                                                         
+Calculation of excitation energies through ABACUS                              
+                                                                               
+c   2    2  X  Y      0.10D-14                                                 
+      8.00    1    3    6    5    1                                            
+O   0.00000             0.00000              0.1241444240                      
+F  6    1                                                                      
+31195.6 0.00021                                                                
+4669.38 0.001628                                                               
+1062.62 0.00845                                                                
+301.426 0.034191                                                               
+98.5153 0.110311                                                               
+35.4609 .269493                                                                
+F  1    1                                                                      
+13.6179 .423545                                                                
+F  1    1                                                                      
+5.38618 .283038                                                                
+F  1    1                                                                      
+1.53873 .027484                                                                
+F  1    1                                                                      
+.6055 -.005144                                                                 
+F  1    1                                                                      
+.22054 .00164                                                                  
+F  3    1                                                                      
+114.863 .002266                                                                
+26.8767 0.017192                                                               
+8.32077 0.075341                                                               
+F  1    1                                                                      
+2.97237 .212775                                                                
+F  1    1                                                                      
+1.12848 .370478                                                                
+F  1    1                                                                      
+.4236 .398523                                                                  
+F  1    1                                                                      
+.15074 .184703                                                                 
+F  2    1                                                                      
+1.21879 .357851                                                                
+.36102 .759561                                                                 
+      1.00    1    2    3    1                                                 
+H   0.00000             1.43153              -0.985265576                      
+F  3    1                                                                      
+33.865014 .006068                                                              
+5.094788 0.045316                                                              
+1.158786 0.202846                                                              
+F  1    1                                                                      
+0.32584 0.503709                                                               
+F  1    1                                                                      
+.102741 .383568                                                                
+F  1    1                                                                      
+1.16 1.0                                                                       
 
 
        *******************************************************************
@@ -105,7 +247,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -205,7 +347,7 @@ Point group: C2v
   Cartesian basis used.
   (Note that d, f, ... atomic GTOs are not all normalized.)
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-15
 
 
   Cartesian Coordinates (a.u.)
@@ -254,8 +396,10 @@ Point group: C2v
  H   _2:    0.958391    1.515066    0.000000
 
 
-  Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
+  Max    interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9584 Angstrom (    1.8111 Bohr)
 
 
   Bond distances (Angstrom):
@@ -296,7 +440,7 @@ Point group: C2v
            27.323753           14.573981            9.504472 cm-1
 
 
-@  Nuclear repulsion energy :    9.183706230245
+@  Nuclear repulsion energy :    9.183706230245 Hartree
 
 
   Symmetry Orbitals
@@ -375,30 +519,19 @@ Point group: C2v
     *************************************************************************
 
 
- Default print level:        1
-
- * Nuclear model: Point charge
-
- Calculation of one- and two-electron Hamiltonian integrals.
-
- Center of mass  (bohr):      0.000000000000      0.000000000000     -0.000015049426
- Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
- Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
- Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
-
 
      ************************************************************************
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:       75206 ( 24.7% )
  Megabytes written:                              0.866
 
- >>> Time used in TWOINT is   0.18 seconds
- >>>> Total CPU  time used in HERMIT:   0.19 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>  Time used in TWOINT     is   0.13 seconds
+ >>>> Total CPU  time used in HERMIT:   0.13 seconds
+ >>>> Total wall time used in HERMIT:   0.13 seconds
 
 
                         .----------------------------------.
@@ -432,8 +565,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 17:48:57 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      Calculation of excitation energies through ABACUS                       
@@ -442,30 +575,28 @@ Point group: C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
-
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -478,20 +609,12 @@ Point group: C2v
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-06
-
-
- Changes of defaults for CC:
- ---------------------------
-
-
- MP2 Amplitudes written for atom integral direct SOPPA calculations
-  
 
 
  Changes of defaults for CC:
@@ -508,52 +631,55 @@ Point group: C2v
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-   1  -75.8289971698       2.45D+00  -7.58D+01    3  1  1  0
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+@  1  -75.8289971698       2.45D+00  -7.58D+01     3   1   1   0
       Virial theorem: -V/T =      1.995901
-      MULPOP  O      -0.57; H   _1  0.28; H   _2  0.28; 
+@      MULPOP O      -0.57; H   _1  0.28; H   _2  0.28; 
  -----------------------------------------------------------------------------
-   2  -76.0524427034       3.70D-01  -2.23D-01    3  1  1  0
+@  2  -76.0524427034       3.70D-01  -2.23D-01     3   1   1   0
       Virial theorem: -V/T =      2.001342
-      MULPOP  O      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP O      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-   3  -76.0600525846       8.30D-02  -7.61D-03    3  1  1  0
+@  3  -76.0600525846       8.30D-02  -7.61D-03     3   1   1   0
       Virial theorem: -V/T =      2.001274
-      MULPOP  O      -0.81; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.81; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   4  -76.0607501246       1.70D-02  -6.98D-04    3  1  1  0
+@  4  -76.0607501246       1.70D-02  -6.98D-04     3   1   1   0
       Virial theorem: -V/T =      2.000717
-      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   5  -76.0607819964       5.18D-03  -3.19D-05    3  1  1  0
+@  5  -76.0607819964       5.18D-03  -3.19D-05     3   1   1   0
       Virial theorem: -V/T =      2.000873
-      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   6  -76.0607838687       1.92D-03  -1.87D-06    3  1  1  0
+@  6  -76.0607838687       1.92D-03  -1.87D-06     3   1   1   0
       Virial theorem: -V/T =      2.000774
-      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-   7  -76.0607842024       3.22D-04  -3.34D-07    3  1  1  0
+@  7  -76.0607842024       3.22D-04  -3.34D-07     3   1   1   0
       Virial theorem: -V/T =      2.000809
-      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
-   8  -76.0607842185       4.12D-05  -1.61D-08    3  1  1  0
+@  8  -76.0607842185       4.12D-05  -1.61D-08     3   1   1   0
       Virial theorem: -V/T =      2.000809
-      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
-   9  -76.0607842187       7.64D-06  -1.83D-10    3  1  1  0
+@  9  -76.0607842187       7.64D-06  -1.83D-10     3   1   1   0
       Virial theorem: -V/T =      2.000810
-      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
-  10  -76.0607842187       1.38D-06  -8.47D-12    3  1  1  0
+@ 10  -76.0607842187       1.38D-06  -8.58D-12     3   1   1   0
       Virial theorem: -V/T =      2.000810
-      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
-  11  -76.0607842187       2.21D-07  -4.55D-13    3  1  1  0
+@ 11  -76.0607842187       2.21D-07  -3.41D-13     3   1   1   0
 
- *** DIIS converged in  11 iterations !
-   - total time used in SIRFCK :              0.02 seconds
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:    -76.060784218682    2.21D-07
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -583,25 +709,30 @@ Point group: C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.014       0.014
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -76.060784218685                 
-     Nuclear repulsion:             9.183706230245
-     Electronic energy:           -85.244490448930
+@    Final HF energy:             -76.060784218682                 
+@    Nuclear repulsion:             9.183706230245
+@    Electronic energy:           -85.244490448927
 
-     Final gradient norm:           0.000000220760
+@    Final gradient norm:           0.000000220760
 
  
-     Date and time (Linux)  : Wed Mar 16 17:48:57 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+ INFO: Sorry, plot of MOs with Molden is only implemented for spherical GTOs
 
  (Only coefficients >0.0100 are printed.)
 
@@ -666,12 +797,15 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.02 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:48:57 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ NOTE:    1 informational messages have been issued.
+ Check output, result, and error files for "INFO".
 
 
                      .---------------------------------------.
@@ -721,7 +855,7 @@ Point group: C2v
           Number of t2 amplitudes                 :      4175
           Total number of amplitudes in ccsd      :      4239
 
- Iter.  1: Coupled cluster MP2   energy :     -76.3109682847503734
+ Iter.  1: Coupled cluster MP2   energy :     -76.3109682847483413
 
 
 
@@ -735,7 +869,7 @@ Point group: C2v
 
             Total SCF   energy:                   -76.0607842187
 
-            Total MP2   energy:                   -76.3109682848
+            Total MP2   energy:                   -76.3109682847
 
 
  requested model not yet implemented
@@ -754,7 +888,7 @@ Point group: C2v
                                                                                 
                                                                                 
             Total SCF   energy:                   -76.0607842187                
-            Total MP2   energy:                   -76.3109682848                
+            Total MP2   energy:                   -76.3109682847                
   
 
  *******************************************************************************
@@ -767,6 +901,12 @@ Point group: C2v
  *******************************************************************************
  *******************************************************************************
 
+
+ >>>> CPU and wall time for CC :       0.010       0.010
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:39:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                       .-------------------------------------.
@@ -822,6 +962,72 @@ Point group: C2v
  - ICASE = 2: no MO integrals on MOTWOINT
  - ICASE = 3: transformation level on MOTWOINT not sufficient
 
+ NSETUP: MO transformation level too low or no MO integral file found.
+ NSETUP: generating MO 2-el. integral file.
+
+
+ WORKING AREA IN TRANSFORMATION SECTION    8000000
+
+ TRANSFORMATION SECTION: PARAMETER =  10
+ MAXIMUM NUMBER OF AO INTEGRALS =      85064
+
+---> (Re)generating AOTWOINT
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-15
+ Number of two-electron integrals written:       75206 ( 24.7% )
+ Megabytes written:                              0.866
+
+ >>>  Time used in TWOINT     is   0.13 seconds
+
+ FIRST HALF-SORT STATISTICS
+  NUMBER OF PASSES OVER AO FI      1
+  NUMBER OF BLOCKS PER CHA       780
+  TOTAL NUMBER OF CHAINS           1
+  NUMBER OF BUFFERS PER PA         1
+
+  NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER      1706
+
+  NUMBER OF DA RECORDS FOR ALL INTEGRALS     100
+  NUMBER OF DA RECORDS ACTUALLY USED          88
+  PERCENT NON-ZERO AO INTEGRALS             0.01
+
+  THRESHOLD FOR DISCARDING INTEGRALS  1.00D-16
+
+ TIME IN SORTA      0.13
+
+ NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 13 IS    169348
+
+  THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
+ TIME IN TRACD      0.02
+
+ SECOND HALF-SORT STATISTICS
+  NUMBER OF PASSES OVER FILE       1
+  NUMBER OF BLOCKS PER CHA       780
+  TOTAL NUMBER OF CHAINS           1
+  NUMBER OF BUFFERS PER PA         1
+
+ NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER      1706
+
+  NUMBER OF DA RECORDS FOR ALL INTEGRALS     100
+  NUMBER OF DA RECORDS ACTUALLY USED         100
+  PERCENT NON-ZERO INTEGRALS                0.01
+ TIME IN SORTB      0.00
+ TIME IN TRAAB      0.02
+
+ NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 12 IS    169348
+ USING   780 + 1 RECORDS WITH BUFFER LENGTH   287
+
+  THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
+ TOTAL TIME IN TRACD,SORTB,TRAAB      0.04
+
+ Integral transformation: Total CPU and WALL times (sec)       0.172       0.173
+
 
                                  Isotopic Masses
                                  ---------------
@@ -837,6 +1043,8 @@ Point group: C2v
 
  Center of mass dipole origin  :    0.000000    0.000000   -0.000015
 
+ Center of mass gauge origin   :    0.000000    0.000000   -0.000015
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -844,8 +1052,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 17:48:57 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                             **************************
@@ -1047,11 +1255,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   1       3     |   -0.102657  |
- |    exci. | 1   1   |   2       3     |   -0.625547  |
- |    exci. | 1   1   |   3       3     |   -0.154706  |
- |    exci. | 2   2   |   1       1     |    0.584655  |
- |    exci. | 3   3   |   1       1     |   -0.473549  |
+ |    exci. | 1   1   |   1       3     |    0.102657  |
+ |    exci. | 1   1   |   2       3     |    0.625547  |
+ |    exci. | 1   1   |   3       3     |    0.154706  |
+ |    exci. | 2   2   |   1       1     |   -0.584655  |
+ |    exci. | 3   3   |   1       1     |    0.473549  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1070,12 +1278,12 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   1       3     |    0.101758  |
- |    exci. | 1   1   |   2       3     |   -0.737944  |
- |    exci. | 1   1   |   3       3     |    0.358504  |
- |    exci. | 2   2   |   1       1     |   -0.394605  |
- |    exci. | 3   3   |   1       1     |    0.370547  |
- |    exci. | 3   3   |   3       1     |    0.153964  |
+ |    exci. | 1   1   |   1       3     |   -0.101758  |
+ |    exci. | 1   1   |   2       3     |    0.737944  |
+ |    exci. | 1   1   |   3       3     |   -0.358504  |
+ |    exci. | 2   2   |   1       1     |    0.394605  |
+ |    exci. | 3   3   |   1       1     |   -0.370547  |
+ |    exci. | 3   3   |   3       1     |   -0.153964  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1106,26 +1314,59 @@ Point group: C2v
 
  --------------------------------------------------------------
 
- ZDIPLEN RPA transition moments for excitation symmetry  1
+ ZDIPLEN  RPA transition moments for excitation symmetry  1
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
    1    -0.69872 +    0.02901 =   -0.66971
    2    -0.38136 +    0.01330 =   -0.36806
-   3    -0.39650 +    0.02683 =   -0.36967
-   4     0.03836 +   -0.04539 =   -0.00702
+   3     0.39650 +   -0.02683 =    0.36967
+   4    -0.03836 +    0.04539 =    0.00702
    5     0.03003 +   -0.03426 =   -0.00423
  =========================================
 
- ZDIPVEL RPA transition moments for excitation symmetry  1
+ ZDIPVEL  RPA transition moments for excitation symmetry  1
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
    1     0.28534 +    0.00968 =    0.29502
    2     0.20289 +    0.01944 =    0.22233
-   3     0.23806 +    0.00959 =    0.24765
-   4     0.02285 +   -0.03618 =   -0.01333
+   3    -0.23806 +   -0.00959 =   -0.24765
+   4    -0.02285 +    0.03618 =    0.01333
    5    -0.00267 +   -0.01603 =   -0.01870
+ =========================================
+
+ XXSECMOM RPA transition moments for excitation symmetry  1
+ =========================================
+ Exci.    1p-1h        1h-1p        Total
+ -----------------------------------------
+   1    -0.09830 +   -0.04697 =   -0.14527
+   2    -1.09607 +   -0.03038 =   -1.12645
+   3    -1.15245 +    0.04311 =   -1.10934
+   4     1.56509 +   -0.17125 =    1.39384
+   5    -0.77532 +    0.12828 =   -0.64704
+ =========================================
+
+ YYSECMOM RPA transition moments for excitation symmetry  1
+ =========================================
+ Exci.    1p-1h        1h-1p        Total
+ -----------------------------------------
+   1     0.52271 +   -0.07179 =    0.45092
+   2     1.17354 +    0.02296 =    1.19650
+   3    -1.03035 +    0.09057 =   -0.93979
+   4     0.89229 +   -0.20824 =    0.68405
+   5    -1.11767 +    0.17688 =   -0.94079
+ =========================================
+
+ ZZSECMOM RPA transition moments for excitation symmetry  1
+ =========================================
+ Exci.    1p-1h        1h-1p        Total
+ -----------------------------------------
+   1     0.51351 +   -0.03137 =    0.48214
+   2     0.25125 +   -0.00138 =    0.24987
+   3     0.46066 +    0.10771 =    0.56837
+   4     2.11639 +   -0.19479 =    1.92160
+   5    -0.64275 +    0.12384 =   -0.51891
  =========================================
 
   ******************************************************************
@@ -1233,34 +1474,34 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   1       3     |   -0.101276  |
- |    exci. | 1   1   |   2       3     |   -0.617132  |
- |    exci. | 1   1   |   3       3     |   -0.152625  |
- |    exci. | 2   2   |   1       1     |    0.576789  |
- |    exci. | 3   3   |   1       1     |   -0.467178  |
+ |    exci. | 1   1   |   1       3     |    0.101276  |
+ |    exci. | 1   1   |   2       3     |    0.617132  |
+ |    exci. | 1   1   |   3       3     |    0.152625  |
+ |    exci. | 2   2   |   1       1     |   -0.576789  |
+ |    exci. | 3   3   |   1       1     |    0.467178  |
  |-----------------------------------------------------|
- |    exci. | 1 1 1 1 |   2   1   3   2 |    0.024280  |
- |    exci. | 1 1 1 1 |   5   2   3   2 |    0.022914  |
- |    exci. | 1 1 1 1 |   2   4   3   2 |   -0.022303  |
- |    exci. | 1 1 1 1 |   2   2   3   3 |    0.065939  |
- |    exci. | 1 1 1 1 |   3   2   3   3 |    0.034451  |
- |    exci. | 2 1 2 1 |   1   1   1   2 |   -0.025881  |
- |    exci. | 2 1 2 1 |   2   2   1   2 |   -0.025624  |
- |    exci. | 2 1 2 1 |   1   4   1   2 |    0.021650  |
- |    exci. | 2 1 2 1 |   1   1   1   3 |    0.047552  |
- |    exci. | 2 1 2 1 |   3   2   1   3 |    0.033250  |
- |    exci. | 2 1 2 1 |   1   3   1   3 |   -0.020085  |
- |    exci. | 2 1 2 1 |   1   7   1   3 |    0.029549  |
- |    exci. | 3 1 3 1 |   1   1   1   2 |    0.022081  |
- |    exci. | 3 1 3 1 |   1   1   1   3 |   -0.037501  |
- |    exci. | 3 1 3 1 |   3   2   1   3 |    0.048395  |
- |    exci. | 2 2 2 2 |   1   1   1   1 |   -0.079114  |
- |    exci. | 3 2 3 2 |   1   1   1   1 |    0.095104  |
- |    exci. | 3 2 3 2 |   3   1   1   1 |   -0.034980  |
- |    exci. | 3 3 3 3 |   1   1   1   1 |   -0.047383  |
- |    exci. | 3 3 3 3 |   3   1   1   1 |    0.031106  |
- |    exci. | 2 2 1 1 |   2   1   3   2 |    0.023487  |
- |    exci. | 4 3 2 1 |   1   1   1   2 |   -0.020640  |
+ |    exci. | 1 1 1 1 |   2   1   3   2 |   -0.024280  |
+ |    exci. | 1 1 1 1 |   5   2   3   2 |   -0.022914  |
+ |    exci. | 1 1 1 1 |   2   4   3   2 |    0.022303  |
+ |    exci. | 1 1 1 1 |   2   2   3   3 |   -0.065939  |
+ |    exci. | 1 1 1 1 |   3   2   3   3 |   -0.034451  |
+ |    exci. | 2 1 2 1 |   1   1   1   2 |    0.025881  |
+ |    exci. | 2 1 2 1 |   2   2   1   2 |    0.025624  |
+ |    exci. | 2 1 2 1 |   1   4   1   2 |   -0.021650  |
+ |    exci. | 2 1 2 1 |   1   1   1   3 |   -0.047552  |
+ |    exci. | 2 1 2 1 |   3   2   1   3 |   -0.033250  |
+ |    exci. | 2 1 2 1 |   1   3   1   3 |    0.020085  |
+ |    exci. | 2 1 2 1 |   1   7   1   3 |   -0.029549  |
+ |    exci. | 3 1 3 1 |   1   1   1   2 |   -0.022081  |
+ |    exci. | 3 1 3 1 |   1   1   1   3 |    0.037501  |
+ |    exci. | 3 1 3 1 |   3   2   1   3 |   -0.048395  |
+ |    exci. | 2 2 2 2 |   1   1   1   1 |    0.079114  |
+ |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.095104  |
+ |    exci. | 3 2 3 2 |   3   1   1   1 |    0.034980  |
+ |    exci. | 3 3 3 3 |   1   1   1   1 |    0.047383  |
+ |    exci. | 3 3 3 3 |   3   1   1   1 |   -0.031106  |
+ |    exci. | 2 2 1 1 |   2   1   3   2 |   -0.023487  |
+ |    exci. | 4 3 2 1 |   1   1   1   2 |    0.020640  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1281,14 +1522,14 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   2       3     |   -0.716929  |
- |    exci. | 1   1   |   3       3     |    0.348295  |
- |    exci. | 2   2   |   1       1     |   -0.383367  |
- |    exci. | 3   3   |   1       1     |    0.359995  |
- |    exci. | 3   3   |   3       1     |    0.149580  |
+ |    exci. | 1   1   |   2       3     |    0.716929  |
+ |    exci. | 1   1   |   3       3     |   -0.348295  |
+ |    exci. | 2   2   |   1       1     |    0.383367  |
+ |    exci. | 3   3   |   1       1     |   -0.359995  |
+ |    exci. | 3   3   |   3       1     |   -0.149580  |
  |-----------------------------------------------------|
- |    exci. | 2 1 2 1 |   1   2   1   3 |    0.127411  |
- |    exci. | 3 1 3 1 |   1   2   1   3 |   -0.100894  |
+ |    exci. | 2 1 2 1 |   1   2   1   3 |   -0.127411  |
+ |    exci. | 3 1 3 1 |   1   2   1   3 |    0.100894  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1358,26 +1599,59 @@ Point group: C2v
 
  --------------------------------------------------------------
 
- ZDIPLEN RPA(D) transition moments for excitation symmetry  1
+ ZDIPLEN  RPA(D) transition moments for excitation symmetry  1
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1    -0.66856 +   -0.03901 +    0.02763 +    0.00090 =   -0.67904
    2    -0.36690 +   -0.01225 +    0.01297 +    0.00030 =   -0.36587
-   3    -0.38264 +   -0.01805 +    0.02567 +    0.00098 =   -0.37404
-   4     0.03549 +    0.00996 +   -0.04265 +   -0.00105 =    0.00175
+   3     0.38264 +    0.01805 +   -0.02567 +   -0.00098 =    0.37404
+   4    -0.03549 +   -0.00996 +    0.04265 +    0.00105 =   -0.00175
    5     0.02624 +   -0.00142 +   -0.03244 +   -0.00097 =   -0.00859
  ===================================================================
 
- ZDIPVEL RPA(D) transition moments for excitation symmetry  1
+ ZDIPVEL  RPA(D) transition moments for excitation symmetry  1
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1     0.27243 +    0.00931 +    0.00903 +    0.00028 =    0.29104
    2     0.19490 +    0.00597 +    0.01889 +    0.00005 =    0.21981
-   3     0.22901 +    0.00732 +    0.00901 +    0.00038 =    0.24573
-   4     0.02241 +   -0.00354 +   -0.03414 +   -0.00074 =   -0.01601
+   3    -0.22901 +   -0.00732 +   -0.00901 +   -0.00038 =   -0.24573
+   4    -0.02241 +    0.00354 +    0.03414 +    0.00074 =    0.01601
    5    -0.00136 +   -0.00081 +   -0.01503 +   -0.00048 =   -0.01769
+ ===================================================================
+
+ XXSECMOM RPA(D) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.09525 +    0.00342 +   -0.04478 +   -0.00165 =   -0.13826
+   2    -1.05753 +   -0.05053 +   -0.02916 +   -0.00150 =   -1.13871
+   3    -1.10985 +   -0.06155 +    0.04153 +    0.00164 =   -1.12823
+   4     1.48604 +    0.10212 +   -0.16243 +   -0.00665 =    1.41909
+   5    -0.74068 +   -0.04260 +    0.12253 +    0.00506 =   -0.65569
+ ===================================================================
+
+ YYSECMOM RPA(D) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1     0.49761 +    0.03135 +   -0.06847 +   -0.00218 =    0.45831
+   2     1.13152 +    0.04017 +    0.02203 +    0.00021 =    1.19394
+   3    -0.99319 +   -0.05837 +    0.08708 +    0.00303 =   -0.96145
+   4     0.84671 +    0.07763 +   -0.19706 +   -0.00729 =    0.71999
+   5    -1.06810 +   -0.06400 +    0.16888 +    0.00592 =   -0.95730
+ ===================================================================
+
+ ZZSECMOM RPA(D) transition moments for excitation symmetry  1
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1     0.48711 +    0.02942 +   -0.02992 +   -0.00123 =    0.48537
+   2     0.24219 +    0.00488 +   -0.00135 +   -0.00056 =    0.24516
+   3     0.44394 +    0.00155 +    0.10351 +    0.00365 =    0.55266
+   4     2.01186 +    0.13157 +   -0.18459 +   -0.00714 =    1.95170
+   5    -0.60944 +   -0.02636 +    0.11817 +    0.00471 =   -0.51292
  ===================================================================
 
   ******************************************************************
@@ -1490,8 +1764,8 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   1       1     |   -0.975947  |
- |    exci. | 1   2   |   3       1     |    0.182406  |
+ |    exci. | 1   2   |   1       1     |    0.975947  |
+ |    exci. | 1   2   |   3       1     |   -0.182406  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1550,9 +1824,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   1       1     |   -0.164775  |
- |    exci. | 1   2   |   2       1     |    0.230658  |
- |    exci. | 1   2   |   3       1     |   -0.951233  |
+ |    exci. | 1   2   |   1       1     |    0.164775  |
+ |    exci. | 1   2   |   2       1     |   -0.230658  |
+ |    exci. | 1   2   |   3       1     |    0.951233  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1578,37 +1852,48 @@ Point group: C2v
 
  --------------------------------------------------------------
 
- XDIPLEN RPA transition moments for excitation symmetry  2
+ XDIPLEN  RPA transition moments for excitation symmetry  2
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1    -0.45142 +   -0.01128 =   -0.46270
+   1     0.45142 +    0.01128 =    0.46270
    2    -0.18615 +    0.00180 =   -0.18435
    3     0.04492 +    0.01068 =    0.05561
-   4    -0.54945 +    0.05332 =   -0.49613
+   4     0.54945 +   -0.05332 =    0.49613
    5    -0.65758 +    0.02990 =   -0.62768
  =========================================
 
- XDIPVEL RPA transition moments for excitation symmetry  2
+ XDIPVEL  RPA transition moments for excitation symmetry  2
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1     0.20423 +   -0.03152 =    0.17272
+   1    -0.20423 +    0.03152 =   -0.17272
    2     0.07929 +   -0.00664 =    0.07265
    3    -0.07728 +    0.01443 =   -0.06284
-   4     0.25407 +    0.07551 =    0.32958
+   4    -0.25407 +   -0.07551 =   -0.32958
    5     0.55957 +    0.01715 =    0.57672
  =========================================
 
- YANGMOM RPA transition moments for excitation symmetry  2
+ YANGMOM  RPA transition moments for excitation symmetry  2
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1     0.13330 +    0.00078 =    0.13407
+   1    -0.13330 +   -0.00078 =   -0.13407
    2    -0.00416 +    0.00319 =   -0.00097
    3     0.07893 +   -0.00565 =    0.07328
-   4    -0.20496 +    0.00422 =   -0.20074
+   4     0.20496 +   -0.00422 =    0.20074
    5    -0.05270 +    0.00648 =   -0.04622
+ =========================================
+
+ XZSECMOM RPA transition moments for excitation symmetry  2
+ =========================================
+ Exci.    1p-1h        1h-1p        Total
+ -----------------------------------------
+   1    -0.18038 +   -0.01487 =   -0.19525
+   2    -0.73947 +   -0.01908 =   -0.75854
+   3     0.74970 +    0.02231 =    0.77200
+   4    -0.32704 +    0.01024 =   -0.31680
+   5     0.03594 +   -0.00408 =    0.03187
  =========================================
 
   ******************************************************************
@@ -1640,11 +1925,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   1       1     |   -0.955488  |
- |    exci. | 1   2   |   3       1     |    0.178582  |
+ |    exci. | 1   2   |   1       1     |    0.955488  |
+ |    exci. | 1   2   |   3       1     |   -0.178582  |
  |-----------------------------------------------------|
- |    exci. | 2 1 1 1 |   1   2   3   3 |    0.148335  |
- |    exci. | 1 1 2 1 |   3   2   1   3 |    0.100477  |
+ |    exci. | 2 1 1 1 |   1   2   3   3 |   -0.148335  |
+ |    exci. | 1 1 2 1 |   3   2   1   3 |   -0.100477  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1714,11 +1999,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   1       1     |   -0.160695  |
- |    exci. | 1   2   |   2       1     |    0.224947  |
- |    exci. | 1   2   |   3       1     |   -0.927678  |
+ |    exci. | 1   2   |   1       1     |    0.160695  |
+ |    exci. | 1   2   |   2       1     |   -0.224947  |
+ |    exci. | 1   2   |   3       1     |    0.927678  |
  |-----------------------------------------------------|
- |    exci. | 1 1 2 1 |  15   5   1   3 |    0.115148  |
+ |    exci. | 1 1 2 1 |  15   5   1   3 |   -0.115148  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1749,37 +2034,48 @@ Point group: C2v
 
  --------------------------------------------------------------
 
- XDIPLEN RPA(D) transition moments for excitation symmetry  2
+ XDIPLEN  RPA(D) transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1    -0.43437 +   -0.02827 +   -0.01077 +    0.00026 =   -0.47315
+   1     0.43437 +    0.02827 +    0.01077 +   -0.00026 =    0.47315
    2    -0.17944 +   -0.00805 +    0.00169 +    0.00020 =   -0.18560
    3     0.04466 +   -0.00170 +    0.01032 +   -0.00008 =    0.05320
-   4    -0.52597 +   -0.03577 +    0.05094 +    0.00066 =   -0.51014
+   4     0.52597 +    0.03577 +   -0.05094 +   -0.00066 =    0.51014
    5    -0.63067 +   -0.01536 +    0.02866 +    0.00102 =   -0.61634
  ===================================================================
 
- XDIPVEL RPA(D) transition moments for excitation symmetry  2
+ XDIPVEL  RPA(D) transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.19646 +    0.00551 +   -0.03037 +   -0.00001 =    0.17159
+   1    -0.19646 +   -0.00551 +    0.03037 +    0.00001 =   -0.17159
    2     0.07574 +    0.00151 +   -0.00655 +   -0.00000 =    0.07070
    3    -0.07567 +   -0.00119 +    0.01402 +   -0.00001 =   -0.06285
-   4     0.24245 +    0.00861 +    0.07231 +    0.00021 =    0.32358
+   4    -0.24245 +   -0.00861 +   -0.07231 +   -0.00021 =   -0.32358
    5     0.53647 +    0.00309 +    0.01625 +    0.00015 =    0.55596
  ===================================================================
 
- YANGMOM RPA(D) transition moments for excitation symmetry  2
+ YANGMOM  RPA(D) transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.12710 +    0.00552 +    0.00077 +    0.00006 =    0.13346
+   1    -0.12710 +   -0.00552 +   -0.00077 +   -0.00006 =   -0.13346
    2    -0.00326 +    0.00250 +    0.00308 +    0.00005 =    0.00237
    3     0.07595 +    0.00190 +   -0.00544 +   -0.00013 =    0.07228
-   4    -0.19540 +   -0.00648 +    0.00401 +    0.00008 =   -0.19779
+   4     0.19540 +    0.00648 +   -0.00401 +   -0.00008 =    0.19779
    5    -0.05080 +   -0.00206 +    0.00623 +    0.00017 =   -0.04646
+ ===================================================================
+
+ XZSECMOM RPA(D) transition moments for excitation symmetry  2
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.17150 +   -0.00736 +   -0.01415 +   -0.00035 =   -0.19335
+   2    -0.71422 +   -0.03261 +   -0.01831 +   -0.00055 =   -0.76570
+   3     0.72513 +    0.02687 +    0.02154 +    0.00078 =    0.77430
+   4    -0.31441 +   -0.02618 +    0.00974 +    0.00037 =   -0.33048
+   5     0.03495 +    0.00457 +   -0.00392 +   -0.00031 =    0.03529
  ===================================================================
 
   ******************************************************************
@@ -1906,8 +2202,8 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   1   |   1       3     |    0.964430  |
- |    exci. | 3   1   |   3       3     |   -0.254028  |
+ |    exci. | 3   1   |   1       3     |   -0.964430  |
+ |    exci. | 3   1   |   3       3     |    0.254028  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1926,8 +2222,8 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   1       1     |    0.979375  |
- |    exci. | 1   3   |   3       1     |   -0.146911  |
+ |    exci. | 1   3   |   1       1     |   -0.979375  |
+ |    exci. | 1   3   |   3       1     |    0.146911  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1946,8 +2242,8 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   3       1     |   -0.112377  |
- |    exci. | 3   1   |   2       3     |   -0.982496  |
+ |    exci. | 1   3   |   3       1     |    0.112377  |
+ |    exci. | 3   1   |   2       3     |    0.982496  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1966,9 +2262,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   1       1     |    0.121412  |
- |    exci. | 1   3   |   2       1     |    0.966594  |
- |    exci. | 1   3   |   3       1     |    0.203853  |
+ |    exci. | 1   3   |   1       1     |   -0.121412  |
+ |    exci. | 1   3   |   2       1     |   -0.966594  |
+ |    exci. | 1   3   |   3       1     |   -0.203853  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1987,46 +2283,57 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   1   |   1       3     |    0.252528  |
- |    exci. | 3   1   |   2       3     |    0.101220  |
- |    exci. | 3   1   |   3       3     |    0.948498  |
+ |    exci. | 3   1   |   1       3     |   -0.252528  |
+ |    exci. | 3   1   |   2       3     |   -0.101220  |
+ |    exci. | 3   1   |   3       3     |   -0.948498  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
 
- YDIPLEN RPA transition moments for excitation symmetry  3
+ YDIPLEN  RPA transition moments for excitation symmetry  3
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1     0.52292 +   -0.04300 =    0.47992
-   2     0.86259 +   -0.02735 =    0.83524
-   3    -0.67596 +    0.06698 =   -0.60898
-   4     0.21974 +   -0.02585 =    0.19389
-   5     0.00076 +    0.01972 =    0.02048
+   1    -0.52292 +    0.04300 =   -0.47992
+   2    -0.86259 +    0.02735 =   -0.83524
+   3     0.67596 +   -0.06698 =    0.60898
+   4    -0.21974 +    0.02585 =   -0.19389
+   5    -0.00076 +   -0.01972 =   -0.02048
  =========================================
 
- YDIPVEL RPA transition moments for excitation symmetry  3
+ YDIPVEL  RPA transition moments for excitation symmetry  3
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1    -0.18552 +   -0.05019 =   -0.23571
-   2    -0.44290 +   -0.01178 =   -0.45468
-   3     0.38019 +    0.06899 =    0.44917
-   4    -0.13937 +   -0.01044 =   -0.14980
-   5    -0.06073 +    0.02970 =   -0.03103
+   1     0.18552 +    0.05019 =    0.23571
+   2     0.44290 +    0.01178 =    0.45468
+   3    -0.38019 +   -0.06899 =   -0.44917
+   4     0.13937 +    0.01044 =    0.14980
+   5     0.06073 +   -0.02970 =    0.03103
  =========================================
 
- XANGMOM RPA transition moments for excitation symmetry  3
+ XANGMOM  RPA transition moments for excitation symmetry  3
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1    -0.21364 +    0.00368 =   -0.20997
-   2     0.13159 +    0.00546 =    0.13705
-   3     0.44887 +   -0.00992 =    0.43895
-   4     0.10916 +   -0.00612 =    0.10304
-   5     0.16335 +   -0.00426 =    0.15909
+   1     0.21364 +   -0.00368 =    0.20997
+   2    -0.13159 +   -0.00546 =   -0.13705
+   3    -0.44887 +    0.00992 =   -0.43895
+   4    -0.10916 +    0.00612 =   -0.10304
+   5    -0.16335 +    0.00426 =   -0.15909
+ =========================================
+
+ YZSECMOM RPA transition moments for excitation symmetry  3
+ =========================================
+ Exci.    1p-1h        1h-1p        Total
+ -----------------------------------------
+   1     0.80492 +    0.01478 =    0.81970
+   2     0.80929 +   -0.01294 =    0.79635
+   3     0.23819 +    0.00991 =    0.24810
+   4    -0.54783 +   -0.02175 =   -0.56958
+   5    -0.25975 +   -0.01726 =   -0.27700
  =========================================
 
   ******************************************************************
@@ -2058,11 +2365,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   1   |   1       3     |    0.946560  |
- |    exci. | 3   1   |   3       3     |   -0.249321  |
+ |    exci. | 3   1   |   1       3     |   -0.946560  |
+ |    exci. | 3   1   |   3       3     |    0.249321  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   8  12   2   2 |   -0.110234  |
- |    exci. | 1 1 3 1 |   1  12   1   2 |   -0.115149  |
+ |    exci. | 3 1 1 1 |   8  12   2   2 |    0.110234  |
+ |    exci. | 1 1 3 1 |   1  12   1   2 |    0.115149  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2083,11 +2390,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   1       1     |    0.966951  |
- |    exci. | 1   3   |   3       1     |   -0.145047  |
+ |    exci. | 1   3   |   1       1     |   -0.966951  |
+ |    exci. | 1   3   |   3       1     |    0.145047  |
  |-----------------------------------------------------|
- |    exci. | 1 1 3 1 |   1  12   1   3 |   -0.100413  |
- |    exci. | 1 1 3 1 |   7  12   1   3 |    0.110124  |
+ |    exci. | 1 1 3 1 |   1  12   1   3 |    0.100413  |
+ |    exci. | 1 1 3 1 |   7  12   1   3 |   -0.110124  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2108,11 +2415,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   3       1     |   -0.110080  |
- |    exci. | 3   1   |   2       3     |   -0.962416  |
+ |    exci. | 1   3   |   3       1     |    0.110080  |
+ |    exci. | 3   1   |   2       3     |    0.962416  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   1  14   1   2 |    0.115434  |
- |    exci. | 1 1 3 1 |   2  13   1   2 |    0.128918  |
+ |    exci. | 3 1 1 1 |   1  14   1   2 |   -0.115434  |
+ |    exci. | 1 1 3 1 |   2  13   1   2 |   -0.128918  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2133,35 +2440,35 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   1       1     |    0.120451  |
- |    exci. | 1   3   |   2       1     |    0.958948  |
- |    exci. | 1   3   |   3       1     |    0.202240  |
+ |    exci. | 1   3   |   1       1     |   -0.120451  |
+ |    exci. | 1   3   |   2       1     |   -0.958948  |
+ |    exci. | 1   3   |   3       1     |   -0.202240  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   8  13   2   2 |    0.030379  |
- |    exci. | 3 1 1 1 |   2  16   1   2 |    0.030813  |
- |    exci. | 3 1 1 1 |   8   9   2   3 |    0.043940  |
- |    exci. | 3 1 1 1 |   8  12   2   3 |   -0.030206  |
- |    exci. | 3 1 1 1 |   1  12   3   3 |    0.020601  |
- |    exci. | 3 1 1 1 |   7  13   2   3 |   -0.037465  |
- |    exci. | 3 1 1 1 |  10  13   2   3 |    0.035602  |
- |    exci. | 3 1 1 1 |   1  14   1   3 |   -0.084546  |
- |    exci. | 3 1 1 1 |   2  14   1   3 |   -0.028109  |
- |    exci. | 3 1 1 1 |   3  14   1   3 |   -0.029497  |
- |    exci. | 3 1 1 1 |   7  14   1   3 |    0.059467  |
- |    exci. | 3 1 1 1 |   8  14   1   3 |   -0.043199  |
- |    exci. | 3 1 1 1 |   9  14   1   3 |   -0.047375  |
- |    exci. | 3 1 1 1 |  10  14   1   3 |   -0.029953  |
- |    exci. | 1 1 3 1 |   2  14   1   2 |   -0.026277  |
- |    exci. | 1 1 3 1 |   1  12   1   3 |   -0.031264  |
- |    exci. | 1 1 3 1 |   2  12   1   3 |   -0.020059  |
- |    exci. | 1 1 3 1 |   8  12   1   3 |   -0.039141  |
- |    exci. | 1 1 3 1 |   2  13   1   3 |   -0.085757  |
- |    exci. | 1 1 3 1 |   5  13   1   3 |    0.030848  |
- |    exci. | 1 1 3 1 |   7  13   1   3 |    0.021324  |
- |    exci. | 1 1 3 1 |   2  14   1   3 |   -0.029288  |
- |    exci. | 3 2 1 2 |   8   1   2   1 |    0.029923  |
- |    exci. | 3 2 1 2 |   8   4   2   1 |   -0.020175  |
- |    exci. | 1 2 3 2 |   2   2   1   1 |    0.023521  |
+ |    exci. | 3 1 1 1 |   8  13   2   2 |   -0.030379  |
+ |    exci. | 3 1 1 1 |   2  16   1   2 |   -0.030813  |
+ |    exci. | 3 1 1 1 |   8   9   2   3 |   -0.043940  |
+ |    exci. | 3 1 1 1 |   8  12   2   3 |    0.030206  |
+ |    exci. | 3 1 1 1 |   1  12   3   3 |   -0.020601  |
+ |    exci. | 3 1 1 1 |   7  13   2   3 |    0.037465  |
+ |    exci. | 3 1 1 1 |  10  13   2   3 |   -0.035602  |
+ |    exci. | 3 1 1 1 |   1  14   1   3 |    0.084546  |
+ |    exci. | 3 1 1 1 |   2  14   1   3 |    0.028109  |
+ |    exci. | 3 1 1 1 |   3  14   1   3 |    0.029497  |
+ |    exci. | 3 1 1 1 |   7  14   1   3 |   -0.059467  |
+ |    exci. | 3 1 1 1 |   8  14   1   3 |    0.043199  |
+ |    exci. | 3 1 1 1 |   9  14   1   3 |    0.047375  |
+ |    exci. | 3 1 1 1 |  10  14   1   3 |    0.029953  |
+ |    exci. | 1 1 3 1 |   2  14   1   2 |    0.026277  |
+ |    exci. | 1 1 3 1 |   1  12   1   3 |    0.031264  |
+ |    exci. | 1 1 3 1 |   2  12   1   3 |    0.020059  |
+ |    exci. | 1 1 3 1 |   8  12   1   3 |    0.039141  |
+ |    exci. | 1 1 3 1 |   2  13   1   3 |    0.085757  |
+ |    exci. | 1 1 3 1 |   5  13   1   3 |   -0.030848  |
+ |    exci. | 1 1 3 1 |   7  13   1   3 |   -0.021324  |
+ |    exci. | 1 1 3 1 |   2  14   1   3 |    0.029288  |
+ |    exci. | 3 2 1 2 |   8   1   2   1 |   -0.029923  |
+ |    exci. | 3 2 1 2 |   8   4   2   1 |    0.020175  |
+ |    exci. | 1 2 3 2 |   2   2   1   1 |   -0.023521  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2182,46 +2489,46 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   1   |   1       3     |    0.247176  |
- |    exci. | 3   1   |   3       3     |    0.928398  |
+ |    exci. | 3   1   |   1       3     |   -0.247176  |
+ |    exci. | 3   1   |   3       3     |   -0.928398  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   2   2   1   2 |    0.036118  |
- |    exci. | 3 1 1 1 |   8   2   1   2 |    0.022236  |
- |    exci. | 3 1 1 1 |   9   2   1   2 |   -0.032471  |
- |    exci. | 3 1 1 1 |  10   2   1   2 |    0.024732  |
- |    exci. | 3 1 1 1 |   1  12   1   2 |   -0.031672  |
- |    exci. | 3 1 1 1 |   4  12   1   2 |    0.027182  |
- |    exci. | 3 1 1 1 |   7  12   2   2 |    0.045358  |
- |    exci. | 3 1 1 1 |   8  12   2   2 |   -0.092259  |
- |    exci. | 3 1 1 1 |   9  12   2   2 |   -0.026475  |
- |    exci. | 3 1 1 1 |  10  12   2   2 |    0.020652  |
- |    exci. | 3 1 1 1 |   3  12   3   2 |    0.024313  |
- |    exci. | 3 1 1 1 |   1  14   1   2 |   -0.025908  |
- |    exci. | 3 1 1 1 |   8  14   1   2 |   -0.020009  |
- |    exci. | 3 1 1 1 |   1  15   1   2 |    0.051362  |
- |    exci. | 3 1 1 1 |   2  15   1   2 |   -0.065738  |
- |    exci. | 3 1 1 1 |   3  15   1   2 |   -0.067762  |
- |    exci. | 3 1 1 1 |   5  15   1   2 |   -0.035727  |
- |    exci. | 3 1 1 1 |   7  15   1   2 |    0.022704  |
- |    exci. | 3 1 1 1 |   7  15   2   2 |   -0.071541  |
- |    exci. | 3 1 1 1 |   8  15   2   2 |    0.026531  |
- |    exci. | 3 1 1 1 |   9  15   2   2 |   -0.024295  |
- |    exci. | 3 1 1 1 |   3  15   3   2 |    0.051593  |
- |    exci. | 3 1 1 1 |   5  15   3   2 |   -0.058544  |
- |    exci. | 3 1 1 1 |   1   2   1   3 |   -0.021467  |
- |    exci. | 3 1 1 1 |   3  15   1   3 |   -0.033187  |
- |    exci. | 3 1 1 1 |   5  15   3   3 |    0.023512  |
- |    exci. | 1 1 3 1 |   5   1   1   2 |   -0.041727  |
- |    exci. | 1 1 3 1 |   1  12   1   2 |   -0.094879  |
- |    exci. | 1 1 3 1 |   3  12   1   2 |   -0.028076  |
- |    exci. | 1 1 3 1 |   7  12   1   2 |    0.079059  |
- |    exci. | 1 1 3 1 |   9  12   1   2 |   -0.058247  |
- |    exci. | 1 1 3 1 |   2  13   1   2 |   -0.040851  |
- |    exci. | 1 1 3 1 |   3  13   1   2 |    0.021583  |
- |    exci. | 1 1 3 1 |   4  13   1   2 |    0.025279  |
- |    exci. | 1 1 3 1 |   1  14   1   2 |   -0.025325  |
- |    exci. | 1 1 3 1 |   3  14   1   2 |    0.021697  |
- |    exci. | 1 1 3 1 |   4  14   1   2 |    0.021206  |
+ |    exci. | 3 1 1 1 |   2   2   1   2 |   -0.036118  |
+ |    exci. | 3 1 1 1 |   8   2   1   2 |   -0.022236  |
+ |    exci. | 3 1 1 1 |   9   2   1   2 |    0.032471  |
+ |    exci. | 3 1 1 1 |  10   2   1   2 |   -0.024732  |
+ |    exci. | 3 1 1 1 |   1  12   1   2 |    0.031672  |
+ |    exci. | 3 1 1 1 |   4  12   1   2 |   -0.027182  |
+ |    exci. | 3 1 1 1 |   7  12   2   2 |   -0.045358  |
+ |    exci. | 3 1 1 1 |   8  12   2   2 |    0.092259  |
+ |    exci. | 3 1 1 1 |   9  12   2   2 |    0.026475  |
+ |    exci. | 3 1 1 1 |  10  12   2   2 |   -0.020652  |
+ |    exci. | 3 1 1 1 |   3  12   3   2 |   -0.024313  |
+ |    exci. | 3 1 1 1 |   1  14   1   2 |    0.025908  |
+ |    exci. | 3 1 1 1 |   8  14   1   2 |    0.020009  |
+ |    exci. | 3 1 1 1 |   1  15   1   2 |   -0.051362  |
+ |    exci. | 3 1 1 1 |   2  15   1   2 |    0.065738  |
+ |    exci. | 3 1 1 1 |   3  15   1   2 |    0.067762  |
+ |    exci. | 3 1 1 1 |   5  15   1   2 |    0.035727  |
+ |    exci. | 3 1 1 1 |   7  15   1   2 |   -0.022704  |
+ |    exci. | 3 1 1 1 |   7  15   2   2 |    0.071541  |
+ |    exci. | 3 1 1 1 |   8  15   2   2 |   -0.026531  |
+ |    exci. | 3 1 1 1 |   9  15   2   2 |    0.024295  |
+ |    exci. | 3 1 1 1 |   3  15   3   2 |   -0.051593  |
+ |    exci. | 3 1 1 1 |   5  15   3   2 |    0.058544  |
+ |    exci. | 3 1 1 1 |   1   2   1   3 |    0.021467  |
+ |    exci. | 3 1 1 1 |   3  15   1   3 |    0.033187  |
+ |    exci. | 3 1 1 1 |   5  15   3   3 |   -0.023512  |
+ |    exci. | 1 1 3 1 |   5   1   1   2 |    0.041727  |
+ |    exci. | 1 1 3 1 |   1  12   1   2 |    0.094879  |
+ |    exci. | 1 1 3 1 |   3  12   1   2 |    0.028076  |
+ |    exci. | 1 1 3 1 |   7  12   1   2 |   -0.079059  |
+ |    exci. | 1 1 3 1 |   9  12   1   2 |    0.058247  |
+ |    exci. | 1 1 3 1 |   2  13   1   2 |    0.040851  |
+ |    exci. | 1 1 3 1 |   3  13   1   2 |   -0.021583  |
+ |    exci. | 1 1 3 1 |   4  13   1   2 |   -0.025279  |
+ |    exci. | 1 1 3 1 |   1  14   1   2 |    0.025325  |
+ |    exci. | 1 1 3 1 |   3  14   1   2 |   -0.021697  |
+ |    exci. | 1 1 3 1 |   4  14   1   2 |   -0.021206  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2229,37 +2536,48 @@ Point group: C2v
 
  --------------------------------------------------------------
 
- YDIPLEN RPA(D) transition moments for excitation symmetry  3
+ YDIPLEN  RPA(D) transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.49899 +    0.02561 +   -0.04134 +   -0.00094 =    0.48232
-   2     0.83158 +    0.03288 +   -0.02645 +   -0.00100 =    0.83701
-   3    -0.64828 +   -0.03334 +    0.06418 +    0.00162 =   -0.61583
-   4     0.21557 +    0.01501 +   -0.02490 +   -0.00099 =    0.20469
-   5     0.00535 +    0.01378 +    0.01894 +    0.00038 =    0.03844
+   1    -0.49899 +   -0.02561 +    0.04134 +    0.00094 =   -0.48232
+   2    -0.83158 +   -0.03288 +    0.02645 +    0.00100 =   -0.83701
+   3     0.64828 +    0.03334 +   -0.06418 +   -0.00162 =    0.61583
+   4    -0.21557 +   -0.01501 +    0.02490 +    0.00099 =   -0.20469
+   5    -0.00535 +   -0.01378 +   -0.01894 +   -0.00038 =   -0.03844
  ===================================================================
 
- YDIPVEL RPA(D) transition moments for excitation symmetry  3
+ YDIPVEL  RPA(D) transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1    -0.17629 +   -0.00819 +   -0.04832 +   -0.00028 =   -0.23307
-   2    -0.42633 +   -0.01114 +   -0.01124 +   -0.00026 =   -0.44898
-   3     0.36417 +    0.01013 +    0.06621 +    0.00049 =    0.44100
-   4    -0.13575 +   -0.00423 +   -0.00997 +   -0.00029 =   -0.15025
-   5    -0.06073 +   -0.00388 +    0.02856 +    0.00008 =   -0.03597
+   1     0.17629 +    0.00819 +    0.04832 +    0.00028 =    0.23307
+   2     0.42633 +    0.01114 +    0.01124 +    0.00026 =    0.44898
+   3    -0.36417 +   -0.01013 +   -0.06621 +   -0.00049 =   -0.44100
+   4     0.13575 +    0.00423 +    0.00997 +    0.00029 =    0.15025
+   5     0.06073 +    0.00388 +   -0.02856 +   -0.00008 =    0.03597
  ===================================================================
 
- XANGMOM RPA(D) transition moments for excitation symmetry  3
+ XANGMOM  RPA(D) transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1    -0.20350 +   -0.00576 +    0.00356 +    0.00003 =   -0.20566
-   2     0.12709 +    0.00533 +    0.00524 +    0.00015 =    0.13781
-   3     0.43022 +    0.01635 +   -0.00953 +   -0.00018 =    0.43687
-   4     0.10590 +    0.00411 +   -0.00584 +   -0.00021 =    0.10396
-   5     0.15480 +    0.00170 +   -0.00409 +   -0.00006 =    0.15234
+   1     0.20350 +    0.00576 +   -0.00356 +   -0.00003 =    0.20566
+   2    -0.12709 +   -0.00533 +   -0.00524 +   -0.00015 =   -0.13781
+   3    -0.43022 +   -0.01635 +    0.00953 +    0.00018 =   -0.43687
+   4    -0.10590 +   -0.00411 +    0.00584 +    0.00021 =   -0.10396
+   5    -0.15480 +   -0.00170 +    0.00409 +    0.00006 =   -0.15234
+ ===================================================================
+
+ YZSECMOM RPA(D) transition moments for excitation symmetry  3
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1     0.77027 +    0.04094 +    0.01410 +   -0.00005 =    0.82526
+   2     0.77898 +    0.03127 +   -0.01253 +   -0.00039 =    0.79733
+   3     0.23134 +    0.01344 +    0.00939 +    0.00072 =    0.25488
+   4    -0.52796 +   -0.01235 +   -0.02093 +   -0.00111 =   -0.56236
+   5    -0.24500 +    0.00777 +   -0.01641 +   -0.00025 =   -0.25389
  ===================================================================
 
   ******************************************************************
@@ -2379,9 +2697,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |    0.171304  |
- |    exci. | 3   2   |   2       1     |   -0.964083  |
- |    exci. | 3   2   |   3       1     |    0.189926  |
+ |    exci. | 3   2   |   1       1     |   -0.171304  |
+ |    exci. | 3   2   |   2       1     |    0.964083  |
+ |    exci. | 3   2   |   3       1     |   -0.189926  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2400,9 +2718,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |    0.268698  |
- |    exci. | 3   2   |   2       1     |    0.233518  |
- |    exci. | 3   2   |   3       1     |    0.926596  |
+ |    exci. | 3   2   |   1       1     |   -0.268698  |
+ |    exci. | 3   2   |   2       1     |   -0.233518  |
+ |    exci. | 3   2   |   3       1     |   -0.926596  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2421,7 +2739,7 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 2   3   |   1       1     |   -0.994574  |
+ |    exci. | 2   3   |   1       1     |    0.994574  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2440,22 +2758,33 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 4   1   |   1       3     |   -0.999805  |
+ |    exci. | 4   1   |   1       3     |    0.999805  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
 
  --------------------------------------------------------------
 
- ZANGMOM RPA transition moments for excitation symmetry  4
+ ZANGMOM  RPA transition moments for excitation symmetry  4
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
    1     0.19226 +   -0.00632 =    0.18593
-   2    -0.26077 +    0.00652 =   -0.25424
-   3    -0.09573 +    0.00324 =   -0.09248
-   4     0.10767 +   -0.00937 =    0.09830
-   5    -0.28586 +    0.00705 =   -0.27881
+   2     0.26077 +   -0.00652 =    0.25424
+   3     0.09573 +   -0.00324 =    0.09248
+   4    -0.10767 +    0.00937 =   -0.09830
+   5     0.28586 +   -0.00705 =    0.27881
+ =========================================
+
+ XYSECMOM RPA transition moments for excitation symmetry  4
+ =========================================
+ Exci.    1p-1h        1h-1p        Total
+ -----------------------------------------
+   1    -0.45099 +   -0.02323 =   -0.47421
+   2     0.70701 +   -0.00839 =    0.69862
+   3    -0.18690 +   -0.01352 =   -0.20042
+   4     0.72601 +    0.01526 =    0.74127
+   5     0.05293 +   -0.00220 =    0.05072
  =========================================
 
   ******************************************************************
@@ -2513,11 +2842,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |    0.167602  |
- |    exci. | 3   2   |   2       1     |   -0.943247  |
- |    exci. | 3   2   |   3       1     |    0.185822  |
+ |    exci. | 3   2   |   1       1     |   -0.167602  |
+ |    exci. | 3   2   |   2       1     |    0.943247  |
+ |    exci. | 3   2   |   3       1     |   -0.185822  |
  |-----------------------------------------------------|
- |    exci. | 3 1 2 1 |   7   7   1   2 |    0.142576  |
+ |    exci. | 3 1 2 1 |   7   7   1   2 |   -0.142576  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2538,11 +2867,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |    0.262274  |
- |    exci. | 3   2   |   2       1     |    0.227935  |
- |    exci. | 3   2   |   3       1     |    0.904442  |
+ |    exci. | 3   2   |   1       1     |   -0.262274  |
+ |    exci. | 3   2   |   2       1     |   -0.227935  |
+ |    exci. | 3   2   |   3       1     |   -0.904442  |
  |-----------------------------------------------------|
- |    exci. | 3 1 2 1 |   9   4   1   2 |   -0.109998  |
+ |    exci. | 3 1 2 1 |   9   4   1   2 |    0.109998  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2563,29 +2892,29 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 2   3   |   1       1     |   -0.990994  |
+ |    exci. | 2   3   |   1       1     |    0.990994  |
  |-----------------------------------------------------|
- |    exci. | 3 2 1 1 |   9   6   2   3 |   -0.031683  |
- |    exci. | 4 2 2 1 |   1   5   1   3 |    0.028261  |
- |    exci. | 1 2 3 1 |  11   4   1   3 |   -0.032346  |
- |    exci. | 3 1 1 2 |   7  10   1   1 |   -0.025316  |
- |    exci. | 4 1 2 2 |   1   5   1   1 |   -0.044848  |
- |    exci. | 4 1 2 2 |   1   8   1   1 |    0.034707  |
- |    exci. | 1 1 3 2 |   3   7   1   1 |    0.026568  |
- |    exci. | 1 1 3 2 |  15   9   1   1 |   -0.021316  |
- |    exci. | 1 1 3 2 |  11  10   1   1 |   -0.028648  |
- |    exci. | 3 1 2 1 |   5  10   1   2 |    0.022205  |
- |    exci. | 3 1 2 1 |   1  16   1   3 |    0.034321  |
- |    exci. | 3 1 2 1 |   4  16   1   3 |   -0.036193  |
- |    exci. | 4 2 1 2 |   1   1   1   1 |   -0.021345  |
- |    exci. | 4 2 1 2 |   2   1   1   1 |    0.066680  |
- |    exci. | 4 2 1 2 |   1   2   1   1 |   -0.063331  |
- |    exci. | 4 2 1 2 |   2   2   1   1 |    0.031646  |
- |    exci. | 4 2 1 2 |   1   2   2   1 |    0.049189  |
- |    exci. | 4 2 1 2 |   2   2   2   1 |    0.022832  |
- |    exci. | 2 2 3 2 |   1   1   1   1 |    0.092265  |
- |    exci. | 2 2 3 2 |   3   1   1   1 |    0.026892  |
- |    exci. | 3 3 2 3 |   7   1   1   1 |   -0.025867  |
+ |    exci. | 3 2 1 1 |   9   6   2   3 |    0.031683  |
+ |    exci. | 4 2 2 1 |   1   5   1   3 |   -0.028261  |
+ |    exci. | 1 2 3 1 |  11   4   1   3 |    0.032346  |
+ |    exci. | 3 1 1 2 |   7  10   1   1 |    0.025316  |
+ |    exci. | 4 1 2 2 |   1   5   1   1 |    0.044848  |
+ |    exci. | 4 1 2 2 |   1   8   1   1 |   -0.034707  |
+ |    exci. | 1 1 3 2 |   3   7   1   1 |   -0.026568  |
+ |    exci. | 1 1 3 2 |  15   9   1   1 |    0.021316  |
+ |    exci. | 1 1 3 2 |  11  10   1   1 |    0.028648  |
+ |    exci. | 3 1 2 1 |   5  10   1   2 |   -0.022205  |
+ |    exci. | 3 1 2 1 |   1  16   1   3 |   -0.034321  |
+ |    exci. | 3 1 2 1 |   4  16   1   3 |    0.036193  |
+ |    exci. | 4 2 1 2 |   1   1   1   1 |    0.021345  |
+ |    exci. | 4 2 1 2 |   2   1   1   1 |   -0.066680  |
+ |    exci. | 4 2 1 2 |   1   2   1   1 |    0.063331  |
+ |    exci. | 4 2 1 2 |   2   2   1   1 |   -0.031646  |
+ |    exci. | 4 2 1 2 |   1   2   2   1 |   -0.049189  |
+ |    exci. | 4 2 1 2 |   2   2   2   1 |   -0.022832  |
+ |    exci. | 2 2 3 2 |   1   1   1   1 |   -0.092265  |
+ |    exci. | 2 2 3 2 |   3   1   1   1 |   -0.026892  |
+ |    exci. | 3 3 2 3 |   7   1   1   1 |    0.025867  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2606,30 +2935,30 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 4   1   |   1       3     |   -0.995326  |
+ |    exci. | 4   1   |   1       3     |    0.995326  |
  |-----------------------------------------------------|
- |    exci. | 3 2 1 1 |   9   4   2   3 |   -0.080430  |
- |    exci. | 3 1 1 2 |   3   7   2   1 |    0.022149  |
- |    exci. | 1 1 3 2 |   6   5   1   1 |   -0.023413  |
- |    exci. | 4 1 1 1 |   2   9   1   1 |   -0.037457  |
- |    exci. | 4 1 1 1 |   1  14   2   1 |   -0.024729  |
- |    exci. | 4 1 1 1 |   2  14   2   1 |    0.059531  |
- |    exci. | 4 1 1 1 |   1  14   3   1 |    0.043801  |
- |    exci. | 4 1 1 1 |   1  15   2   1 |   -0.029475  |
- |    exci. | 4 1 1 1 |   1  15   3   1 |    0.042763  |
- |    exci. | 3 1 2 1 |   5   8   1   1 |    0.052632  |
- |    exci. | 3 1 2 1 |   2   9   1   1 |   -0.023863  |
- |    exci. | 3 1 2 1 |   3   9   1   1 |    0.022722  |
- |    exci. | 3 1 2 1 |   4   9   1   1 |   -0.025236  |
- |    exci. | 3 1 2 1 |   6  13   1   1 |   -0.022859  |
- |    exci. | 3 1 2 1 |   7  13   1   1 |    0.028063  |
- |    exci. | 3 1 2 1 |   1  14   1   1 |    0.039434  |
- |    exci. | 3 1 2 1 |   3  14   1   1 |   -0.031014  |
- |    exci. | 3 1 2 1 |   1  15   1   1 |   -0.026452  |
- |    exci. | 2 1 3 1 |   3  14   1   1 |    0.050077  |
- |    exci. | 2 1 3 1 |   4  14   1   1 |   -0.027615  |
- |    exci. | 2 1 3 1 |   5  14   1   1 |    0.034543  |
- |    exci. | 2 1 3 1 |   5   3   1   2 |   -0.043571  |
+ |    exci. | 3 2 1 1 |   9   4   2   3 |    0.080430  |
+ |    exci. | 3 1 1 2 |   3   7   2   1 |   -0.022149  |
+ |    exci. | 1 1 3 2 |   6   5   1   1 |    0.023413  |
+ |    exci. | 4 1 1 1 |   2   9   1   1 |    0.037457  |
+ |    exci. | 4 1 1 1 |   1  14   2   1 |    0.024729  |
+ |    exci. | 4 1 1 1 |   2  14   2   1 |   -0.059531  |
+ |    exci. | 4 1 1 1 |   1  14   3   1 |   -0.043801  |
+ |    exci. | 4 1 1 1 |   1  15   2   1 |    0.029475  |
+ |    exci. | 4 1 1 1 |   1  15   3   1 |   -0.042763  |
+ |    exci. | 3 1 2 1 |   5   8   1   1 |   -0.052632  |
+ |    exci. | 3 1 2 1 |   2   9   1   1 |    0.023863  |
+ |    exci. | 3 1 2 1 |   3   9   1   1 |   -0.022722  |
+ |    exci. | 3 1 2 1 |   4   9   1   1 |    0.025236  |
+ |    exci. | 3 1 2 1 |   6  13   1   1 |    0.022859  |
+ |    exci. | 3 1 2 1 |   7  13   1   1 |   -0.028063  |
+ |    exci. | 3 1 2 1 |   1  14   1   1 |   -0.039434  |
+ |    exci. | 3 1 2 1 |   3  14   1   1 |    0.031014  |
+ |    exci. | 3 1 2 1 |   1  15   1   1 |    0.026452  |
+ |    exci. | 2 1 3 1 |   3  14   1   1 |   -0.050077  |
+ |    exci. | 2 1 3 1 |   4  14   1   1 |    0.027615  |
+ |    exci. | 2 1 3 1 |   5  14   1   1 |   -0.034543  |
+ |    exci. | 2 1 3 1 |   5   3   1   2 |    0.043571  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2637,15 +2966,26 @@ Point group: C2v
 
  --------------------------------------------------------------
 
- ZANGMOM RPA(D) transition moments for excitation symmetry  4
+ ZANGMOM  RPA(D) transition moments for excitation symmetry  4
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1     0.18324 +    0.00455 +   -0.00605 +   -0.00003 =    0.18170
-   2    -0.24969 +   -0.01193 +    0.00626 +    0.00004 =   -0.25532
-   3    -0.09025 +    0.00054 +    0.00309 +    0.00000 =   -0.08662
-   4     0.10364 +    0.00077 +   -0.00904 +   -0.00023 =    0.09514
-   5    -0.27849 +   -0.00518 +    0.00685 +    0.00027 =   -0.27656
+   2     0.24969 +    0.01193 +   -0.00626 +   -0.00004 =    0.25532
+   3     0.09025 +   -0.00054 +   -0.00309 +   -0.00000 =    0.08662
+   4    -0.10364 +   -0.00077 +    0.00904 +    0.00023 =   -0.09514
+   5     0.27849 +    0.00518 +   -0.00685 +   -0.00027 =    0.27656
+ ===================================================================
+
+ XYSECMOM RPA(D) transition moments for excitation symmetry  4
+ ===================================================================
+ Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
+ -------------------------------------------------------------------
+   1    -0.43289 +   -0.02328 +   -0.02218 +   -0.00037 =   -0.47872
+   2     0.68048 +    0.04380 +   -0.00805 +   -0.00014 =    0.71608
+   3    -0.17782 +    0.00343 +   -0.01282 +   -0.00019 =   -0.18739
+   4     0.70478 +    0.01835 +    0.01479 +    0.00075 =    0.73866
+   5     0.05302 +    0.00202 +   -0.00212 +    0.00022 =    0.05314
  ===================================================================
 
  |=====================================================| 
@@ -2655,9 +2995,32 @@ Point group: C2v
  |-----------------------------------------------------| 
  |  START                            0           0.0   |
  |  SO_EXCIT1.1                   4686           0.0   |
- |  SO_PRPINT                     7927           0.1   |
- |  RP_ERES.2                     9443           0.1   |
- |  SO_AODENS                 99996789         762.9   |
+ |  SO_PRPINT                    10087           0.1   |
+ |  RP_ERES.3                    18664           0.1   |
+ |  RP_ERES.4                    19903           0.2   |
+ |  DC_ERES.3                    27445           0.2   |
+ |  DC_ERES.4                    27721           0.2   |
+ |  SO_T2M1.1                    27738           0.2   |
+ |  SO_T2M1.2                    28506           0.2   |
+ |  DC_ERES.5                    28960           0.2   |
+ |  SO_RES_A.1                   29560           0.2   |
+ |  SO_RES_A.2                   29617           0.2   |
+ |  SO_RES_A.3                   29816           0.2   |
+ |  SO_SIGAI.2                63994251         488.2   |
+ |  SO_SIGAI.2                63994385         488.2   |
+ |  SO_SIGAI.2                63994404         488.2   |
+ |  SO_SIGAI.2                63994572         488.2   |
+ |  SO_SIGAI.2                63994578         488.2   |
+ |  SO_SIGAI.2                63994623         488.2   |
+ |  SO_SIGAI.2                63994629         488.2   |
+ |  SO_SIGAI.2                63994691         488.2   |
+ |  SO_SIGAI.2                63994709         488.2   |
+ |  DC_R1VEC                1140933448        8704.6   |
+ |  DC_R1VEC                1152003682        8789.1   |
+ |  DC_R1VEC                1152113374        8789.9   |
+ |  DC_R1VEC                1152250782        8791.0   |
+ |  DC_R1VEC                1152736989        8794.7   |
+ |  DC_R1VEC                1154777927        8810.3   |
  |=====================================================| 
 
  |=====================================================| 
@@ -2665,58 +3028,58 @@ Point group: C2v
  |=====================================================| 
  |   Routine            cpu time   of total        sum |
  |-----------------------------------------------------| 
- |   SO_SIGAI            0: 0: 0     35.7 %     35.7 % |
- |   CC_AOFOCK           0: 0: 0     15.8 %     51.4 % |
- |   SO_SIGDA            0: 0: 0      9.2 %     60.6 % |
- |   CCTRBT              0: 0: 0      8.1 %     68.7 % |
- |   SO_RES_A            0: 0: 0      7.3 %     76.0 % |
- |   CCRDAO              0: 0: 0      5.9 %     81.9 % |
- |   SO_RES_CB           0: 0: 0      5.2 %     87.1 % |
- |   SO_ERES             0: 0: 0      1.3 %     88.4 % |
- |   SO_REDEV            0: 0: 0      1.3 %     89.7 % |
- |   SO_T2M1             0: 0: 0      1.2 %     90.8 % |
- |   SO_ORTH_TRN         0: 0: 0      0.9 %     91.8 % |
- |   SO_OPTVEC           0: 0: 0      0.7 %     92.5 % |
- |   CC_FCKMO            0: 0: 0      0.6 %     93.0 % |
- |   LAMMAT              0: 0: 0      0.5 %     93.5 % |
- |   SO_ORDEIG           0: 0: 0      0.3 %     93.9 % |
- |   SO_TRIAL2           0: 0: 0      0.2 %     94.1 % |
- |   SO_DENS             0: 0: 0      0.2 %     94.3 % |
- |   SO_ROPT             0: 0: 0      0.2 %     94.6 % |
- |   SO_SRES             0: 0: 0      0.2 %     94.8 % |
- |   SO_RES_OVL          0: 0: 0      0.1 %     94.9 % |
- |   SO_TRIAL1           0: 0: 0      0.1 %     95.0 % |
- |   SO_BCKTR            0: 0: 0      0.1 %     95.1 % |
- |   SO_INCRED           0: 0: 0      0.1 %     95.2 % |
- |   SO_INIT             0: 0: 0      0.0 %     95.2 % |
- |   SO_MOENERGY         0: 0: 0      0.0 %     95.2 % |
- |   SO_T2MP             0: 0: 0      0.0 %     95.2 % |
- |   SO_AODENS           0: 0: 0      0.0 %     95.2 % |
- |   ERIDI1              0: 0: 0      0.0 %     95.2 % |
- |   ERIDI2              0: 0: 0      0.0 %     95.2 % |
- |   SO_RES_B            0: 0: 0      0.0 %     95.2 % |
- |   SO_RES_C            0: 0: 0      0.0 %     95.2 % |
- |   SO_RES_SYM          0: 0: 0      0.0 %     95.2 % |
- |   SO_RES_FCK          0: 0: 0      0.0 %     95.2 % |
- |   SO_RES_OVLR         0: 0: 0      0.0 %     95.2 % |
- |   SO_TWOFOCK          0: 0: 0      0.0 %     95.2 % |
- |   SO_ONEFOCK          0: 0: 0      0.0 %     95.2 % |
- |   SO_CHECK            0: 0: 0      0.0 %     95.2 % |
- |   SO_RES_TCB          0: 0: 0      0.0 %     95.2 % |
- |   SO_RES_CD           0: 0: 0      0.0 %     95.2 % |
- |   SO_DIAG             0: 0: 0      0.0 %     95.2 % |
- |   SO_DENSAI           0: 0: 0      0.0 %     95.2 % |
- |   ???????????         0: 0: 0      0.0 %     95.2 % |
- |   ?????????           0: 0: 0      0.0 %     95.2 % |
+ |   SO_SIGAI            0: 0: 0     36.8 %     36.8 % |
+ |   CC_AOFOCK           0: 0: 0     17.5 %     54.3 % |
+ |   CCTRBT              0: 0: 0     11.0 %     65.3 % |
+ |   SO_SIGDA            0: 0: 0      7.7 %     73.0 % |
+ |   SO_RES_CB           0: 0: 0      6.3 %     79.3 % |
+ |   SO_RES_A            0: 0: 0      5.6 %     84.9 % |
+ |   CCRDAO              0: 0: 0      4.6 %     89.5 % |
+ |   SO_REDEV            0: 0: 0      1.4 %     90.8 % |
+ |   SO_T2M1             0: 0: 0      1.1 %     92.0 % |
+ |   SO_ERES             0: 0: 0      1.0 %     93.0 % |
+ |   SO_OPTVEC           0: 0: 0      0.9 %     93.9 % |
+ |   SO_ORTH_TRN         0: 0: 0      0.7 %     94.6 % |
+ |   CC_FCKMO            0: 0: 0      0.5 %     95.1 % |
+ |   SO_ROPT             0: 0: 0      0.3 %     95.4 % |
+ |   SO_INCRED           0: 0: 0      0.3 %     95.8 % |
+ |   SO_AODENS           0: 0: 0      0.2 %     96.0 % |
+ |   SO_RES_OVLR         0: 0: 0      0.2 %     96.2 % |
+ |   SO_DENS             0: 0: 0      0.1 %     96.3 % |
+ |   SO_ONEFOCK          0: 0: 0      0.1 %     96.4 % |
+ |   SO_TRIAL1           0: 0: 0      0.1 %     96.6 % |
+ |   SO_ORDEIG           0: 0: 0      0.1 %     96.7 % |
+ |   SO_GETMO            0: 0: 0      0.0 %     96.7 % |
+ |   SO_INIT             0: 0: 0      0.0 %     96.7 % |
+ |   SO_MOENERGY         0: 0: 0      0.0 %     96.7 % |
+ |   SO_T2MP             0: 0: 0      0.0 %     96.7 % |
+ |   SO_BCKTR            0: 0: 0      0.0 %     96.7 % |
+ |   ERIDI1              0: 0: 0      0.0 %     96.7 % |
+ |   ERIDI2              0: 0: 0      0.0 %     96.7 % |
+ |   SO_RES_B            0: 0: 0      0.0 %     96.7 % |
+ |   SO_RES_C            0: 0: 0      0.0 %     96.7 % |
+ |   SO_RES_SYM          0: 0: 0      0.0 %     96.7 % |
+ |   SO_RES_FCK          0: 0: 0      0.0 %     96.7 % |
+ |   SO_RES_OVL          0: 0: 0      0.0 %     96.7 % |
+ |   SO_TWOFOCK          0: 0: 0      0.0 %     96.7 % |
+ |   SO_CHECK            0: 0: 0      0.0 %     96.7 % |
+ |   SO_RES_TCB          0: 0: 0      0.0 %     96.7 % |
+ |   SO_RES_CD           0: 0: 0      0.0 %     96.7 % |
+ |   SO_DIAG             0: 0: 0      0.0 %     96.7 % |
+ |   SO_SRES             0: 0: 0      0.0 %     96.7 % |
+ |   SO_DENSAI           0: 0: 0      0.0 %     96.7 % |
+ |   ???????????         0: 0: 0      0.0 %     96.7 % |
+ |   ?????????           0: 0: 0      0.0 %     96.7 % |
+ |   SO_TRIAL2           0: 0: 0     -0.0 %     96.7 % |
  |-----------------------------------------------------| 
  |   Total CPU time      0: 0: 1                       |
  |=====================================================| 
 
  |-----------------------------------------------------| 
- |   SO_READ             0: 0: 0      0.5 %            |
- |   SO_WRITE            0: 0: 0      0.8 %            |
+ |   SO_READ             0: 0: 0      0.6 %            |
+ |   SO_WRITE            0: 0: 0      0.3 %            |
  |   SO_OPEN             0: 0: 0      0.2 %            |
- |   SO_CLOSE            0: 0: 0      0.3 %            |
+ |   SO_CLOSE            0: 0: 0      0.0 %            |
  |-----------------------------------------------------| 
 
  |=====================================================| 
@@ -2731,7 +3094,7 @@ Point group: C2v
  |-----------------------------------------------------| 
  |   Total wall time     0: 0: 1                       |
  |=====================================================| 
- >>> Time used in EXCITA is   0.86 seconds
+ >>>  Time used in EXCITA     is   0.87 seconds
 
 
    ***************************************************************************
@@ -2740,8 +3103,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 17:48:58 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:56 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -2773,33 +3136,34 @@ Point group: C2v
                 Singlet electronic excitation energies
                 --------------------------------------
 
+               ========================================
                  Sym.   Mode   Frequency    Frequency
-                ex. st.  No.      (au)          (eV)
-                =======================================
-                   1        1    0.423806   11.532345
-                   1        2    0.611783   16.647474
-                   1        3    0.656751   17.871096
-                   1        4    0.780819   21.247165
-                   1        5    0.838821   22.825477
-                ---------------------------------------
-                   2        1    0.332099    9.036883
-                   2        2    0.611754   16.646681
-                   2        3    0.689701   18.767726
-                   2        4    0.744198   20.250652
-                   2        5    1.067913   29.059386
-                ---------------------------------------
-                   3        1    0.488861   13.302595
-                   3        2    0.543995   14.802849
-                   3        3    0.754612   20.534032
-                   3        4    0.839804   22.852232
-                   3        5    0.873649   23.773207
-                ---------------------------------------
-                   4        1    0.394974   10.747781
-                   4        2    0.654107   17.799169
-                   4        3    0.786727   21.407929
-                   4        4    0.830477   22.598426
-                   4        5    1.349579   36.723908
-                ---------------------------------------
+                ex. st.  No.      (au)         (eV)
+               ----------------------------------------
+                   1      1     0.423806    11.532345
+                   1      2     0.611783    16.647474
+                   1      3     0.656751    17.871096
+                   1      4     0.780819    21.247165
+                   1      5     0.838821    22.825477
+               ----------------------------------------
+                   2      1     0.332099     9.036883
+                   2      2     0.611754    16.646681
+                   2      3     0.689701    18.767726
+                   2      4     0.744198    20.250652
+                   2      5     1.067913    29.059386
+               ----------------------------------------
+                   3      1     0.488861    13.302595
+                   3      2     0.543995    14.802849
+                   3      3     0.754612    20.534032
+                   3      4     0.839804    22.852232
+                   3      5     0.873649    23.773207
+               ----------------------------------------
+                   4      1     0.394974    10.747781
+                   4      2     0.654107    17.799169
+                   4      3     0.786727    21.407929
+                   4      4     0.830477    22.598426
+                   4      5     1.349579    36.723908
+               ========================================
 
 
                 Electric transition dipole moments (in a.u.)
@@ -2810,21 +3174,21 @@ Point group: C2v
  ==============================================================================
    1        1     0.423806     0.0000  0.0000 -0.6961    0.0000  0.0000 -0.6697
    1        2     0.611783     0.0000  0.0000 -0.3634    0.0000  0.0000 -0.3681
-   1        3     0.656751     0.0000  0.0000 -0.3771    0.0000  0.0000 -0.3697
-   1        4     0.780819     0.0000  0.0000  0.0171    0.0000  0.0000 -0.0070
+   1        3     0.656751     0.0000  0.0000  0.3771    0.0000  0.0000  0.3697
+   1        4     0.780819     0.0000  0.0000 -0.0171    0.0000  0.0000  0.0070
    1        5     0.838821     0.0000  0.0000  0.0223    0.0000  0.0000 -0.0042
  ------------------------------------------------------------------------------
-   2        1     0.332099    -0.5201  0.0000  0.0000   -0.4627  0.0000  0.0000
+   2        1     0.332099     0.5201  0.0000  0.0000    0.4627  0.0000  0.0000
    2        2     0.611754    -0.1188  0.0000  0.0000   -0.1843  0.0000  0.0000
    2        3     0.689701     0.0911  0.0000  0.0000    0.0556  0.0000  0.0000
-   2        4     0.744198    -0.4429  0.0000  0.0000   -0.4961  0.0000  0.0000
+   2        4     0.744198     0.4429  0.0000  0.0000    0.4961  0.0000  0.0000
    2        5     1.067913    -0.5400  0.0000  0.0000   -0.6277  0.0000  0.0000
  ------------------------------------------------------------------------------
-   3        1     0.488861     0.0000  0.4822  0.0000    0.0000  0.4799  0.0000
-   3        2     0.543995     0.0000  0.8358  0.0000    0.0000  0.8352  0.0000
-   3        3     0.754612     0.0000 -0.5952  0.0000    0.0000 -0.6090  0.0000
-   3        4     0.839804     0.0000  0.1784  0.0000    0.0000  0.1939  0.0000
-   3        5     0.873649     0.0000  0.0355  0.0000    0.0000  0.0205  0.0000
+   3        1     0.488861     0.0000 -0.4822  0.0000    0.0000 -0.4799  0.0000
+   3        2     0.543995     0.0000 -0.8358  0.0000    0.0000 -0.8352  0.0000
+   3        3     0.754612     0.0000  0.5952  0.0000    0.0000  0.6090  0.0000
+   3        4     0.839804     0.0000 -0.1784  0.0000    0.0000 -0.1939  0.0000
+   3        5     0.873649     0.0000 -0.0355  0.0000    0.0000 -0.0205  0.0000
  ------------------------------------------------------------------------------
    4        1     0.394974     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
    4        2     0.654107     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
@@ -2848,23 +3212,23 @@ Point group: C2v
    1      4    21.2472   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    1      5    22.8255   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   2      1     9.0369   -0.00000  0.06704 -0.00000  -0.00000 -0.00000 -0.00000
+   2      1     9.0369   -0.00000 -0.06704 -0.00000  -0.00000 -0.00000 -0.00000
    2      2    16.6467   -0.00000 -0.00048 -0.00000  -0.00000 -0.00000 -0.00000
    2      3    18.7677   -0.00000  0.03664 -0.00000  -0.00000 -0.00000 -0.00000
-   2      4    20.2507   -0.00000 -0.10037 -0.00000  -0.00000 -0.00000 -0.00000
+   2      4    20.2507   -0.00000  0.10037 -0.00000  -0.00000 -0.00000 -0.00000
    2      5    29.0594   -0.00000 -0.02311 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   3      1    13.3026   -0.10498 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      2    14.8028    0.06853 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      3    20.5340    0.21948 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      4    22.8522    0.05152 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      5    23.7732    0.07954 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      1    13.3026    0.10498 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    14.8028   -0.06853 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      3    20.5340   -0.21948 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      4    22.8522   -0.05152 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      5    23.7732   -0.07954 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
    4      1    10.7478   -0.00000 -0.00000  0.09297  -0.00000 -0.00000 -0.00000
-   4      2    17.7992   -0.00000 -0.00000 -0.12712  -0.00000 -0.00000 -0.00000
-   4      3    21.4079   -0.00000 -0.00000 -0.04624  -0.00000 -0.00000 -0.00000
-   4      4    22.5984   -0.00000 -0.00000  0.04915  -0.00000 -0.00000 -0.00000
-   4      5    36.7239   -0.00000 -0.00000 -0.13941  -0.00000 -0.00000 -0.00000
+   4      2    17.7992   -0.00000 -0.00000  0.12712  -0.00000 -0.00000 -0.00000
+   4      3    21.4079   -0.00000 -0.00000  0.04624  -0.00000 -0.00000 -0.00000
+   4      4    22.5984   -0.00000 -0.00000 -0.04915  -0.00000 -0.00000 -0.00000
+   4      5    36.7239   -0.00000 -0.00000  0.13941  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
 
 
@@ -2991,33 +3355,34 @@ Point group: C2v
                 Singlet electronic excitation energies
                 --------------------------------------
 
+               ========================================
                  Sym.   Mode   Frequency    Frequency
-                ex. st.  No.      (au)          (eV)
-                =======================================
-                   1        1    0.368344   10.023151
-                   1        2    0.591502   16.095595
-                   1        3    0.630860   17.166583
-                   1        4    0.717241   19.517114
-                   1        5    0.784285   21.341492
-                ---------------------------------------
-                   2        1    0.277368    7.547560
-                   2        2    0.585865   15.942210
-                   2        3    0.679082   18.478767
-                   2        4    0.675389   18.378264
-                   2        5    1.020518   27.769695
-                ---------------------------------------
-                   3        1    0.446912   12.161084
-                   3        2    0.519134   14.126366
-                   3        3    0.696926   18.964311
-                   3        4    0.830771   22.606429
-                   3        5    0.829128   22.561708
-                ---------------------------------------
-                   4        1    0.352759    9.599071
-                   4        2    0.590755   16.075250
-                   4        3    0.734603   19.989572
-                   4        4    0.835105   22.724358
-                   4        5    1.351674   36.780928
-                ---------------------------------------
+                ex. st.  No.      (au)         (eV)
+               ----------------------------------------
+                   1      1     0.368344    10.023151
+                   1      2     0.591502    16.095595
+                   1      3     0.630860    17.166583
+                   1      4     0.717241    19.517114
+                   1      5     0.784285    21.341492
+               ----------------------------------------
+                   2      1     0.277368     7.547560
+                   2      2     0.585865    15.942210
+                   2      3     0.679082    18.478767
+                   2      4     0.675389    18.378264
+                   2      5     1.020518    27.769695
+               ----------------------------------------
+                   3      1     0.446912    12.161084
+                   3      2     0.519134    14.126366
+                   3      3     0.696926    18.964311
+                   3      4     0.830771    22.606429
+                   3      5     0.829128    22.561708
+               ----------------------------------------
+                   4      1     0.352759     9.599071
+                   4      2     0.590755    16.075250
+                   4      3     0.734603    19.989572
+                   4      4     0.835105    22.724358
+                   4      5     1.351674    36.780928
+               ========================================
 
 
                 Electric transition dipole moments (in a.u.)
@@ -3028,21 +3393,21 @@ Point group: C2v
  ==============================================================================
    1        1     0.368344     0.0000  0.0000 -0.7901    0.0000  0.0000 -0.6790
    1        2     0.591502     0.0000  0.0000 -0.3716    0.0000  0.0000 -0.3659
-   1        3     0.630860     0.0000  0.0000 -0.3895    0.0000  0.0000 -0.3740
-   1        4     0.717241     0.0000  0.0000  0.0223    0.0000  0.0000  0.0017
+   1        3     0.630860     0.0000  0.0000  0.3895    0.0000  0.0000  0.3740
+   1        4     0.717241     0.0000  0.0000 -0.0223    0.0000  0.0000 -0.0017
    1        5     0.784285     0.0000  0.0000  0.0226    0.0000  0.0000 -0.0086
  ------------------------------------------------------------------------------
-   2        1     0.277368    -0.6186  0.0000  0.0000   -0.4732  0.0000  0.0000
+   2        1     0.277368     0.6186  0.0000  0.0000    0.4732  0.0000  0.0000
    2        2     0.585865    -0.1207  0.0000  0.0000   -0.1856  0.0000  0.0000
    2        3     0.679082     0.0925  0.0000  0.0000    0.0532  0.0000  0.0000
-   2        4     0.675389    -0.4791  0.0000  0.0000   -0.5101  0.0000  0.0000
+   2        4     0.675389     0.4791  0.0000  0.0000    0.5101  0.0000  0.0000
    2        5     1.020518    -0.5448  0.0000  0.0000   -0.6163  0.0000  0.0000
  ------------------------------------------------------------------------------
-   3        1     0.446912     0.0000  0.5215  0.0000    0.0000  0.4823  0.0000
-   3        2     0.519134     0.0000  0.8649  0.0000    0.0000  0.8370  0.0000
-   3        3     0.696926     0.0000 -0.6328  0.0000    0.0000 -0.6158  0.0000
-   3        4     0.830771     0.0000  0.1809  0.0000    0.0000  0.2047  0.0000
-   3        5     0.829128     0.0000  0.0434  0.0000    0.0000  0.0384  0.0000
+   3        1     0.446912     0.0000 -0.5215  0.0000    0.0000 -0.4823  0.0000
+   3        2     0.519134     0.0000 -0.8649  0.0000    0.0000 -0.8370  0.0000
+   3        3     0.696926     0.0000  0.6328  0.0000    0.0000  0.6158  0.0000
+   3        4     0.830771     0.0000 -0.1809  0.0000    0.0000 -0.2047  0.0000
+   3        5     0.829128     0.0000 -0.0434  0.0000    0.0000 -0.0384  0.0000
  ------------------------------------------------------------------------------
    4        1     0.352759     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
    4        2     0.590755     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
@@ -3066,23 +3431,23 @@ Point group: C2v
    1      4    19.5171   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    1      5    21.3415   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   2      1     7.5476   -0.00000  0.06673 -0.00000  -0.00000 -0.00000 -0.00000
+   2      1     7.5476   -0.00000 -0.06673 -0.00000  -0.00000 -0.00000 -0.00000
    2      2    15.9422   -0.00000  0.00119 -0.00000  -0.00000 -0.00000 -0.00000
    2      3    18.4788   -0.00000  0.03614 -0.00000  -0.00000 -0.00000 -0.00000
-   2      4    18.3783   -0.00000 -0.09890 -0.00000  -0.00000 -0.00000 -0.00000
+   2      4    18.3783   -0.00000  0.09890 -0.00000  -0.00000 -0.00000 -0.00000
    2      5    27.7697   -0.00000 -0.02323 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   3      1    12.1611   -0.10283 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      2    14.1264    0.06891 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      3    18.9643    0.21843 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      4    22.6064    0.05198 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      5    22.5617    0.07617 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      1    12.1611    0.10283 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    14.1264   -0.06891 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      3    18.9643   -0.21843 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      4    22.6064   -0.05198 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      5    22.5617   -0.07617 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
    4      1     9.5991   -0.00000 -0.00000  0.09085  -0.00000 -0.00000 -0.00000
-   4      2    16.0752   -0.00000 -0.00000 -0.12766  -0.00000 -0.00000 -0.00000
-   4      3    19.9896   -0.00000 -0.00000 -0.04331  -0.00000 -0.00000 -0.00000
-   4      4    22.7244   -0.00000 -0.00000  0.04757  -0.00000 -0.00000 -0.00000
-   4      5    36.7809   -0.00000 -0.00000 -0.13828  -0.00000 -0.00000 -0.00000
+   4      2    16.0752   -0.00000 -0.00000  0.12766  -0.00000 -0.00000 -0.00000
+   4      3    19.9896   -0.00000 -0.00000  0.04331  -0.00000 -0.00000 -0.00000
+   4      4    22.7244   -0.00000 -0.00000 -0.04757  -0.00000 -0.00000 -0.00000
+   4      5    36.7809   -0.00000 -0.00000  0.13828  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
 
 
@@ -3131,8 +3496,10 @@ Point group: C2v
  H   _2:    0.958391    1.515066    0.000000
 
 
-  Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
+  Max    interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9584 Angstrom (    1.8111 Bohr)
 
 
   Bond distances (Angstrom):
@@ -3160,17 +3527,17 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.87 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.88 seconds
+ >>>> Total wall time used in ABACUS:   1.37 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.12 seconds
- >>>> Total wall time used in DALTON:   1.00 seconds
+ >>>> Total CPU  time used in DALTON:   1.22 seconds
+ >>>> Total wall time used in DALTON:   1.72 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:48:58 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:39:56 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

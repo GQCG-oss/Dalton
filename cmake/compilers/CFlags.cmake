@@ -4,7 +4,7 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
     set(CMAKE_C_FLAGS         "-std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64 -ffloat-store")
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i386")
         set(CMAKE_C_FLAGS
-            "${CMAKE_C_FLAGS} -m64"
+            "${CMAKE_C_FLAGS} -m32"
             )
     endif()
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "x86_64")

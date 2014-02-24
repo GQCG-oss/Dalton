@@ -9,6 +9,8 @@ check_fortran_source_compiles(
 
 if(COMPILER_UNDERSTANDS_FORTRAN03)
     add_definitions(-DCOMPILER_UNDERSTANDS_FORTRAN_2003)
-else()
-    message(FATAL_ERROR "Your compiler is not compatible with some Fortran 2003 features that we need.")
+    # radovan: it is better if code stops at runtim iff
+    #          user asks for the functionality that requires -DCOMPILER_UNDERSTANDS_FORTRAN_2003
+#else()
+#    message(FATAL_ERROR "Your compiler is not compatible with some Fortran 2003 features that we need.")
 endif()

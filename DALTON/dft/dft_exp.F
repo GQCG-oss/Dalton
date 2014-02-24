@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,22 +21,119 @@
 !...      http://daltonprogram.org
 !
 !
+! FILE : dft_exp.F
+!
+! Subroutines for .EXPGRA option for DFT wave functions
+!
+cfrj-st : parallelized exp-grad spring 2013
+cfrj  : SUBROUTINE KICK_SLAVES_EXPG, DFT_EXPG_SLAVE and EXPGSLAVE_COLLECT modelled after corresponding dft_grad routines
+cfrj  : the latter is apparently not used
+cfrj-end
       SUBROUTINE DFTEXPGRAD(WORK,LFREE,IPRINT)
 #include "implicit.h"
 #include "dummy.h"
-#include "inforb.h"
+#include "maxorb.h"
 #include "priunit.h"
-      EXTERNAL DEXPGC
+#include "inforb.h"
+#include "expopt.h"
+#include "dftmolgrad.h"
+
       DIMENSION WORK(LFREE)
+      EXTERNAL DEXPGC
+      LOGICAL DFT_ISGGA
+      EXTERNAL DFT_ISGGA
+c
+      DOGGA = DFT_ISGGA()
+C      
+c     CALL DZERO(tmpvec,MXPRIM)
+c
+      NDMAT = 1
       KDMAT = 1
       KLAST = KDMAT + N2BASX
       LWRK  = LFREE - KLAST +1
       IF(KLAST.GT.LFREE) CALL QUIT('NOMEM IN DFTEXPGRAD')
       CALL DFTDNS(WORK(KDMAT),WORK(KLAST),LWRK,0)
+      CALL KICK_SLAVES_EXPG(NBAST,NDMAT,WORK(KDMAT),IPRINT)
       CALL DFTINT(WORK(KDMAT),1,0,.FALSE.,WORK(KLAST),LWRK,
      &            DEXPGC,WORK(KDMAT),ELE)
+c     CALL EXPGSLAVE_COLLECT(tmpvec,WORK(KLAST),LWRK)
       IF(IPRINT.GE.0) WRITE(LUPRI,'(A,F20.14)')
      &     'Orbital-exponent gradient integration, electrons:', ELE
+      call flush(lupri)
+      RETURN
+      END
+C
+      SUBROUTINE KICK_SLAVES_EXPG(NBAST,NDMAT,DMAT,IPRINT)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpar.h"
+#include "mpif.h"
+C
+      DIMENSION DMAT(NBAST,NBAST,NDMAT)
+      IF (MYNUM .EQ. MASTER) THEN
+cfrj: define new IPRTYP for expgrad
+         IPRTYP = 666
+         CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL DFTINTBCAST
+         CALL MPI_BCAST(NDMAT,1,my_MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(DMAT,NDMAT*NBAST*NBAST,MPI_DOUBLE_PRECISION,0,
+     &                  MPI_COMM_WORLD,IERR)        
+      END IF
+      RETURN
+#endif
+      END
+c
+#if defined (VAR_MPI)
+      SUBROUTINE DFT_EXPG_SLAVE(WORK,LWORK,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
+#include "dftmolgrad.h"
+#include "energy.h"
+#include "mpif.h"
+#include "expopt.h"
+      DIMENSION WORK(LWORK)
+      EXTERNAL DEXPGC
+      LOGICAL DFT_ISGGA
+      EXTERNAL DFT_ISGGA
+C
+      DOGGA = DFT_ISGGA()
+      KDMAT  = 1
+      KFREE  = KDMAT + 2*N2BASX
+      IF (KFREE .GT. LWORK)CALL STOPIT('DFT_EXPG_SLAVE',' ',KFREE,LWORK)
+      LFREE = LWORK - KFREE + 1
+      CALL DFTINTBCAST
+      CALL MPI_BCAST(NDMAT,1,my_MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(WORK(KDMAT),NDMAT*NBAST*NBAST,MPI_DOUBLE_PRECISION,
+     &               0,MPI_COMM_WORLD,IERR)       
+c     CALL DZERO(tmpvec,MXPRIM)
+      CALL DFTINT(WORK(KDMAT),NDMAT,0,.FALSE.,WORK(KFREE),LFREE,
+     &               DEXPGC,WORK(KDMAT),ELE)
+c     CALL EXPGSLAVE_COLLECT(tmpvec,WORK(KFREE),LFREE)
+      RETURN
+      END
+#endif
+c
+      SUBROUTINE EXPGSLAVE_COLLECT(GRADMOL,WORK,LWORK)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "mxcent.h"
+#include "mpif.h"
+#include "maxorb.h"
+      DIMENSION GRADMOL(MXPRIM), WORK(LWORK)
+      CALL DCOPY(MXPRIM,GRADMOL,1,WORK(1),1)
+      CALL MPI_Reduce(WORK,GRADMOL,MXPRIM,MPI_DOUBLE_PRECISION,
+     &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
+      RETURN
+#endif
       END
 
 C /* Deck dftexp */
@@ -78,6 +175,7 @@ C
      &               GRADA(1,I),GRADA(2,I),GRADA(3,I),
      &               COORD(1,I),COORD(2,I),COORD(3,I),DOGGA)
       END DO
+      RETURN
       END
       SUBROUTINE DFTEXP(DMAT,GAO,GAO1,NBLEN,NBLCNT,NBLOCKS,LDAIB,
      &                  VXC,VXB,RHX,RHY,RHZ,
@@ -245,3 +343,4 @@ C
       END DO
       RETURN
       END
+C -- end of dft/dft_exp.F --

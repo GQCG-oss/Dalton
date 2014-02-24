@@ -108,6 +108,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Symmetry
 CRIT1=`$GREP "Number of coordinates in each symmetry\: * 3 * 3 * 2 * 1" $log | wc -l`
 CRIT2=`$GREP "Number of orbitals in each symmetry\: * 27 * 21 * 12 * 9" $log | wc -l`
@@ -144,13 +149,13 @@ ERROR[5]="RESPONSE CALCULATION NOT CORRECT"
 CRIT1=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 207\.462(8|9)" $log | wc -l`
 CRIT2=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 214\.8152" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[6]=2
+CTRL[6]=4
 ERROR[6]="GAMMA VALUES NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5 6
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

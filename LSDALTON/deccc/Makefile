@@ -5,10 +5,11 @@ include ../Makefile.config
 INCLUDES := $(INCLUDES) -I../LSint -I../lsutil
 
 F90_OBJS = dec_settings.o \
+        dec_workarounds.o \
 	decmpi.o \
 	decmpiSlave.o \
 	CABS.o \
-	cc_crop.o \
+	crop_tools.o \
         array4_memory.o \
         array3_memory.o \
 	dec_utils.o \
@@ -21,6 +22,7 @@ F90_OBJS = dec_settings.o \
 	ccsdpt.o \
 	ccorbital.o \
 	cc_integrals.o \
+        cc_debug_routines.o\
 	ccsd.o \
 	rpa.o \
 	f12_integrals.o \

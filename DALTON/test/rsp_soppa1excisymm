@@ -77,6 +77,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Basis set
 CRIT1=`$GREP "O * 1 * 8\.0000 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
 CRIT2=`$GREP "H * 2 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
@@ -117,12 +122,12 @@ CTRL[4]=7
 ERROR[4]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Transition moments
-CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.61165... * \*ENERGY\(eV\)\: * 10\.39534" $log | wc -l`
-CRIT2=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.54007... * \*ENERGY\(eV\)\: * 17\.40219" $log | wc -l`
-CRIT3=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.50061... * \*ENERGY\(eV\)\: * 12\.46520" $log | wc -l`
-CRIT4=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.91781... * \*ENERGY\(eV\)\: * 14\.37195" $log | wc -l`
-CRIT5=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.36245... * \*ENERGY\(eV\)\: * 7\.75444[89]" $log | wc -l`
-CRIT6=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.34551... * \*ENERGY\(eV\)\: * 23\.02376" $log | wc -l`
+CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*0*\.61165... * \*ENERGY\(eV\)\: * 10\.3953" $log | wc -l`
+CRIT2=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*0*\.54007... * \*ENERGY\(eV\)\: * 17\.4021" $log | wc -l`
+CRIT3=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*0*\.50061... * \*ENERGY\(eV\)\: * 12\.4652" $log | wc -l`
+CRIT4=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*0*\.91781... * \*ENERGY\(eV\)\: * 14\.3719" $log | wc -l`
+CRIT5=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*0*\.36245... * \*ENERGY\(eV\)\: * 7\.7544" $log | wc -l`
+CRIT6=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*0*\.34551... * \*ENERGY\(eV\)\: * 23\.0237" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[5]=6
 ERROR[5]="TRANSITION MOMENTS NOT CORRECT"
@@ -214,7 +219,7 @@ ERROR[13]="STATE 2 (SYM 4) NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

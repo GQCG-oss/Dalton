@@ -55,6 +55,9 @@ TRILEVEL
 TIGHT
 **CC
 .MP2
+.CANONICAL
+.MEMORY
+2.0
 *END OF INPUT
 %EOF%
 #######################################################################

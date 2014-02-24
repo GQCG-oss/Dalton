@@ -425,7 +425,7 @@ $AWK -v "tol=$1" 'function e(v,r){#print "vibr_freq: checking " v,",", r;
 return(v>r||v<-r)}
  BEGIN {s=0;c=0}
 / Vibrational Frequencies and IR Intensities/ {
-for(i=0; i<9; i++) getline;
+for(i=0; i<6; i++) getline;
 split("'"$p"'",arr," ");
 idx=1;
 failed=0;

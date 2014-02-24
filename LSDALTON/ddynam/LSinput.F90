@@ -154,14 +154,14 @@ Subroutine LS_dynamics_init(dynamics_input)
   Dynamics_Input% GetRandom = -1
   Dynamics_Input%LowerRandom = -1.1E3_realk
   Dynamics_Input%UpperRandom = -1.1E3_realk
-  Dynamics_Input%trajMax = -999
+  Dynamics_Input%trajMax = 100
   Dynamics_Input%MaxTime = -1.1E3_realk
   Dynamics_Input%Temp    = -1.1E3_realk
   Dynamics_Input%RotTemp = -1.1E3_realk
   Dynamics_Input%VibTemp = -1.1E3_realk
   Dynamics_Input%PathLen  = -1.1E3_realk
   Dynamics_Input%StepLen  = -1.1E3_realk
-  Dynamics_Input%TimeStep = -1.1E3_realk
+  Dynamics_Input%TimeStep = 0.5E0_realk
   Dynamics_Input%PathL    = .False.
   Dynamics_Input%StepL    = .False.
   Dynamics_Input%TimeL    = .False.

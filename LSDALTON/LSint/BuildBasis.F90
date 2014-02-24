@@ -8,6 +8,11 @@ MODULE BUILDBASISSET
   use memory_handling
   use AO_TypeType, only: ExpThr
   use molecule_type
+  use files
+  use molecule_module
+  TYPE CAR200
+    CHARACTER(len=200) :: p
+  END TYPE CAR200
 contains
 !> \brief builds the basis structure
 !> \author T. Kjaergaard
@@ -39,9 +44,6 @@ contains
 !>
 SUBROUTINE Build_BASIS(LUPRI,IPRINT,MOLECULE,BASINFO,BASISSETLIBRARY,&
      &BASISLABEL,UNCONTRACTED,SINGLESEGMENT,doprint,DOSPHERICAL,BASISSETNAME)
-use files
-use molecule_type
-use molecule_module
 implicit none
 !> the logical unit number for the output file
 INTEGER            :: LUPRI
@@ -68,21 +70,23 @@ CHARACTER(len=80),OPTIONAL  :: BASISSETNAME
 !
 !INTEGER,pointer         :: CHARGES(:)
 REAL(REALK),pointer         :: CHARGES(:)
-CHARACTER(len=200)  :: BASISDIR
-INTEGER            :: LEN_BASISDIR,LUBAS,NEND,i,j,k,IPOLST,IAUG
-LOGICAL            :: FILE_EXIST,POLFUN,CONTRACTED,GCONT,pointcharge
-CHARACTER(len=200) :: STRING
+LOGICAL,pointer    :: uCHARGES(:)
+TYPE(CAR200),pointer :: BASISDIR(:)
+INTEGER,pointer    :: LEN_BASISDIR(:)
+INTEGER            :: LUBAS,NEND,i,j,k,IPOLST,IAUG,NBASDIR,IBAS,IPOS
+LOGICAL            :: FILE_EXIST,POLFUN,CONTRACTED,GCONT,pointcharge,BASIS_EXIST
+TYPE(CAR200),pointer :: STRING(:)
 INTEGER,pointer  :: BINDEXES(:)
 real(realk)        :: tstart,tend
-integer            :: IT,II,natomtypes,atomtype
+integer            :: IT,II,natomtypes,atomtype,MaxCharge,iatom,icharge
 logical,pointer    :: POINTCHARGES(:)
 
 CONTRACTED=.NOT.UNCONTRACTED
 
 CALL LSTIMER('START ',Tstart,Tend,LUPRI)
 
-CALL GET_BASISSET_LIB(LUPRI,BASISDIR,LEN_BASISDIR,doprint)
-IF(IPRINT .GT. 0) WRITE(LUPRI,*)'BASISSET LIBRARY: ',BASISDIR(1:LEN_BASISDIR)
+CALL GET_BASISSET_LIBS(LUPRI,BASISDIR,LEN_BASISDIR,NBASDIR,IPRINT.GT.0)
+ALLOCATE(STRING(NBASDIR))
 
 BASINFO%GCbasis = .FALSE.
 BASINFO%SPHERICAL = DOSPHERICAL
@@ -138,13 +142,35 @@ BASINFO%LABEL=BASISLABEL
 natomtypes = 0
 DO I=1,J  
  IF(present(BASISSETNAME))THEN
-  call mem_alloc(CHARGES,MOLECULE%nAtoms)
-  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
+!  CALL UNIQUE_CHARGES2(LUPRI,MOLECULE,CHARGES,k)
+    MaxCharge = 0
+    DO IATOM=1,MOLECULE%natoms  
+       ICHARGE = INT(MOLECULE%ATOM(IATOM)%CHARGE)
+       MaxCharge = MAX(Icharge,MaxCharge)
+    ENDDO
+    call mem_alloc(uCHARGES,MaxCharge)
+    uCHARGES = .FALSE.
+    DO IATOM=1,MOLECULE%natoms  
+       ICHARGE = INT(MOLECULE%ATOM(IATOM)%CHARGE)
+       uCHARGES(ICHARGE) = .TRUE.
+    ENDDO
+    k = 0
+    DO ICharge=1,MaxCharge
+       IF(uCHARGES(ICharge)) k = k +1
+    ENDDO
+    call mem_alloc(CHARGES,k)
+    k = 0
+    DO ICharge=1,MaxCharge
+       IF(uCHARGES(ICharge))THEN
+          k = k + 1
+          CHARGES(k) = ICharge
+       ENDIF
+    ENDDO
+    call mem_dealloc(uCHARGES)    
  ELSE
-  k=BASISSETLIBRARY%nCharges(BINDEXES(I))
+   k=BASISSETLIBRARY%nCharges(BINDEXES(I))
  ENDIF
  natomtypes = natomtypes + k
- IF(present(BASISSETNAME)) call mem_dealloc(CHARGES)
 ENDDO
 IF(natomtypes.EQ. 0)CALL LSQUIT('Error trying to build basis but found no atoms',lupri)
 CALL INIT_BASISSETINFO_TYPES(BASINFO,natomtypes)
@@ -152,8 +178,8 @@ CALL INIT_BASISSETINFO_TYPES(BASINFO,natomtypes)
 atomtype = 0
 DO I=1,J  
  IF(present(BASISSETNAME))THEN
-  call mem_alloc(CHARGES,MOLECULE%nAtoms)
-  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
+!  call mem_alloc(CHARGES,MOLECULE%nAtoms)
+!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
 !  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
   DO II=1,k
    BASINFO%ATOMTYPE(atomtype+II)%NAME = BASISSETNAME
@@ -180,7 +206,9 @@ DO I=1,J
   CALL DETERMINE_AUGMENTATION(LUPRI,BASISSETNAME,IAUG)
   CALL DETERMINE_POLARIZATION(LUPRI,BASISSETNAME,POLFUN,IPOLST)
   NEND = INDEX(BASISSETNAME,' ') - 1
-  STRING = BASISDIR(1:LEN_BASISDIR)//BASISSETNAME(1:NEND)//' '
+  DO IBAS=1,NBASDIR
+    STRING(IBAS)%p = BASISDIR(IBAS)%p(1:LEN_BASISDIR(IBAS))//BASISSETNAME(1:NEND)//' '
+  ENDDO
   IF(BASISSETNAME(1:11).EQ.'pointcharge')THEN
      pointcharge=.TRUE.
   ELSE
@@ -190,14 +218,15 @@ DO I=1,J
   CALL DETERMINE_AUGMENTATION(LUPRI,BASISSETLIBRARY%BASISSETNAME(BINDEXES(I)),IAUG)
   CALL DETERMINE_POLARIZATION(LUPRI,BASISSETLIBRARY%BASISSETNAME(BINDEXES(I)),POLFUN,IPOLST)
   NEND = INDEX(BASISSETLIBRARY%BASISSETNAME(BINDEXES(I)),' ') - 1
-  STRING = BASISDIR(1:LEN_BASISDIR)//BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))(1:NEND)//' '
+  DO IBAS=1,NBASDIR
+    STRING(IBAS)%p = BASISDIR(IBAS)%p(1:LEN_BASISDIR(IBAS))//BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))(1:NEND)//' '
+  ENDDO
   IF(BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))(1:11).EQ.'pointcharge')THEN
      pointcharge=.TRUE.
   ELSE
      pointcharge=.FALSE.
   ENDIF
  ENDIF
-
  IF(pointcharge)THEN
     IF(present(BASISSETNAME))THEN
        DO II=1,k
@@ -211,37 +240,59 @@ DO I=1,J
        ENDDO
     ENDIF
  ELSE
-  NEND= INDEX(STRING(1:),' ') - 1
+  NEND= INDEX(STRING(1)%p(1:),' ') - 1
   LUBAS=-1
-  IF(STRING(NEND-10:NEND).EQ.'USERDEFINED')THEN
+  IF(STRING(1)%p(NEND-10:NEND).EQ.'USERDEFINED')THEN
+     IBAS = 1
      CALL LSOPEN(LUBAS,'MOLECULE.INP','OLD','FORMATTED')
      call FIND_BASIS_IN_MOLFILE(LUPRI,LUBAS) 
   ELSE
-     INQUIRE (FILE = STRING(1:NEND), EXIST = FILE_EXIST)
-     IF(FILE_EXIST) THEN
-        IF(doprint) WRITE(LUPRI,*)'OPENING FILE',STRING(1:NEND)
-        CALL LSOPEN(LUBAS,STRING(1:NEND),'OLD','FORMATTED')
+     BASIS_EXIST = .FALSE.
+     DO II=1,NBASDIR
+       NEND= INDEX(STRING(II)%p(1:),' ') - 1
+       INQUIRE (FILE = STRING(II)%p(1:NEND), EXIST = FILE_EXIST)
+       IF (FILE_EXIST) THEN
+         BASIS_EXIST = .TRUE.
+         IBAS = II
+         EXIT
+       ENDIF
+     ENDDO
+     IF(BASIS_EXIST) THEN
+        IF(doprint) WRITE(LUPRI,*)'OPENING FILE',STRING(IBAS)%p(1:NEND)
+        CALL LSOPEN(LUBAS,STRING(IBAS)%p(1:NEND),'OLD','FORMATTED')
      ELSE
-        WRITE (LUPRI,'(/,3A)')'Basis "',STRING(1:NEND),'" doesn''t exist'
+        IPOS = INDEX(STRING(1)%p,'/',.TRUE.)+1
+        WRITE (LUPRI,'(/,3A)')'Basis "',STRING(1)%p(IPOS:NEND),&
+     &    '" doesn''t exist in any of the provided basis-set libraries:'
+        DO IBAS=1,NBASDIR
+          WRITE(LUPRI,'(3X,A)') BASISDIR(IBAS)%p
+        ENDDO
         CALL LSQUIT('Non-existing basis set in Linsca Integral',lupri)
      ENDIF
   ENDIF
   call mem_alloc(POINTCHARGES,k)
-  DO IT=1,k
-     POINTCHARGES(IT) = BASISSETLIBRARY%POINTCHARGES(BINDEXES(I),IT)
-  ENDDO  
+  IF(present(BASISSETNAME))THEN
+     DO IT=1,k
+        POINTCHARGES(IT) = .FALSE.
+     ENDDO
+  ELSE
+     DO IT=1,k
+        POINTCHARGES(IT) = BASISSETLIBRARY%POINTCHARGES(BINDEXES(I),IT)
+     ENDDO     
+  ENDIF
   IF(present(BASISSETNAME))THEN
    CALL READ_BASISSET_FILE_AND_BUILD_BASISINFO(LUPRI,IPRINT,LUBAS,&
-        &CONTRACTED,STRING,IAUG,POLFUN,IPOLST,BASINFO,CHARGES,&
+        &CONTRACTED,STRING(IBAS)%p,IAUG,POLFUN,IPOLST,BASINFO,CHARGES,&
         &k,atomtype,SINGLESEGMENT,DOSPHERICAL,POINTCHARGES)
    call mem_dealloc(CHARGES)
   ELSE
    call mem_alloc(CHARGES,k)
    DO IT=1,k
     CHARGES(IT) = BASISSETLIBRARY%CHARGES(BINDEXES(I),IT)
+!    BASINFO%ATOMTYPE(atomtype+IT)%Charge = CHARGES(IT)
    ENDDO
    CALL READ_BASISSET_FILE_AND_BUILD_BASISINFO(LUPRI,IPRINT,LUBAS,&
-        &CONTRACTED,STRING,IAUG,POLFUN,IPOLST,BASINFO,&
+        &CONTRACTED,STRING(IBAS)%p,IAUG,POLFUN,IPOLST,BASINFO,&
         &CHARGES,k,atomtype,SINGLESEGMENT,DOSPHERICAL,POINTCHARGES)
    call mem_dealloc(CHARGES)
   ENDIF
@@ -262,12 +313,16 @@ CALL DETERMINE_FAMILYTYPEBASISSET(lupri,iprint,BASINFO)
 
 CALL DETERMINE_GENERALCONTRACTED(lupri,iprint,BASINFO,GCONT)
 BASINFO%GCONT = GCONT
+DEALLOCATE(BASISDIR)
+DEALLOCATE(STRING)
+call mem_dealloc(LEN_BASISDIR)
 END SUBROUTINE Build_BASIS
 
 !> \brief determine if the different atoms have a family type basisset
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE DETERMINE_FAMILYTYPEBASISSET(LUPRI,IPRINT,BASINFO)
+implicit none
 !> the logical unit number for the output file
 INTEGER :: LUPRI
 !> the printlevel integer, determining how much output should be generated
@@ -313,6 +368,7 @@ END SUBROUTINE DETERMINE_FAMILYTYPEBASISSET
 !> \author T. Kjaergaard
 !> \date 2011
 SUBROUTINE DETERMINE_GENERALCONTRACTED(LUPRI,IPRINT,BASINFO,GCONT)
+implicit none
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
 !> the printlevel integer, determining how much output should be generated
@@ -327,9 +383,12 @@ INTEGER :: type,B1
 GCONT = .TRUE.
 do type = 1,BASINFO%nATOMTYPES
  DO B1=1,BASINFO%ATOMTYPE(type)%nAngmom
-  IF(BASINFO%ATOMTYPE(type)%SHELL(B1)%segment(1)%ncol.NE.BASINFO%ATOMTYPE(type)%SHELL(B1)%norb)THEN
-     GCONT = .FALSE.
-     RETURN
+  IF(BASINFO%ATOMTYPE(type)%SHELL(B1)%nprim.NE.0)THEN
+   IF(BASINFO%ATOMTYPE(type)%SHELL(B1)%segment(1)%ncol.NE.&
+        & BASINFO%ATOMTYPE(type)%SHELL(B1)%norb)THEN
+      GCONT = .FALSE.
+      RETURN
+   ENDIF
   ENDIF
  ENDDO
 enddo
@@ -414,21 +473,24 @@ END SUBROUTINE ATTACH_CHARGEINDEX_IDTYPE
 !> \brief get the path to the basisset library
 !> \author T. Kjaergaard
 !> \date 2010
-SUBROUTINE GET_BASISSET_LIB(LUPRI,BASDIR,LENBAS,doprint)
+!> Modified by S. Reine to handle multiple library directories NBASDIR, Feb 3, 2014
+SUBROUTINE GET_BASISSET_LIBS(LUPRI,BASDIR,LENBAS,NBASDIR,doprint)
 !****************************************************************
 !* OBTAIN A STRING CONTAINING THE BASISSET LIBRARY AND LENGTH=LENBAS 
 !****************************************************************
 implicit none
-CHARACTER(len=200):: BASDIR
-INTEGER          :: IDUMMY,IERR,LENBAS,I,LUPRI
-logical          :: doprint
+TYPE(CAR200),pointer :: BASDIR(:)
+CHARACTER(len=1000) :: BASISDIR
+INTEGER,pointer  :: LENBAS(:)
+INTEGER          :: IDUMMY,IERR,I,LUPRI,NBASDIR,IPOS,IBAS,IPOSNEW
+logical          :: doprint,lastbasis
 
-DO I = 1,200
-  BASDIR(I:I)=' '
+DO I = 1,1000
+  BASISDIR(I:I)=' '
 ENDDO
 
 #if defined(SYS_AIX)||defined(SYS_CRAY)||defined (SYS_LINUX)
-      CALL GETENV ('BASDIR',BASDIR)
+      CALL GETENV ('BASDIR',BASISDIR)
 !CALL GET_ENVIRONMENT_VARIABLE(NAME[, VALUE, LENGTH, STATUS, TRIM_NAME) 
 !NAME 	Shall be a scalar of type CHARACTER and of default kind.
 !VALUE 	(Optional) Shall be a scalar of type CHARACTER and of default kind.
@@ -437,35 +499,74 @@ ENDDO
 !TRIM_NAME 	(Optional) Shall be a scalar of type LOGICAL and of default kind. 
 #endif
 
-IF (BASDIR(1:1) .NE. '/') THEN
+IF (BASISDIR(1:1) .NE. '/') THEN
 
 #if defined (VAR_ABSOFT)
-         BASDIR="Insert basis-directory path here"
+         BASISDIR="Insert basis-directory path here"
 !        Example:
 !        BASDIR="/Users/tkjaer/Dalton/basis/"
 #else
-         BASDIR=INSTALL_BASDIR
+!Warning using gfortran it may put in the value of INSTALL_BASDIR and then if the 
+!        resulting fortran line is longer is longer then 132 characters it will 
+!        truncate the line.
+!        the following line therefor restrict the INSTALL_BASDIR size
+!                                                         BASISDIR=INSTALL_BASDIR
+!        the following line is better
+!        BASISDIR=INSTALL_BASDIR
+!        while the following line make sure that INSTALL_BASDIR can be 131 long
+BASISDIR=&
+&INSTALL_BASDIR
 #endif
-     IF (doprint) WRITE(LUPRI,'(/A,/8X,A)') ' Default basis set library used:',BASDIR
+     IF (doprint) WRITE(LUPRI,'(A,A)') ' Default basis set library used:',TRIM(BASISDIR)
 ELSE
-     IF (doprint) WRITE(LUPRI,'(/A,/8X,A)') ' User supplied basis set directory :'&
-          &,BASDIR
+     IF (doprint) WRITE(LUPRI,'(A,A)') ' User supplied basis set directory :',TRIM(BASISDIR)
 END IF
 
-LENBAS = 0
-LENBAS = INDEX(BASDIR,' ') - 1
+NBASDIR = 1
+IPOS    = 1
+lastbasis = .FALSE.
+DO WHILE (.NOT.lastbasis)
+  IPOS = INDEX(BASISDIR(IPOS:1000),':')
+  IF (IPOS.EQ.0) THEN
+    lastbasis = .true.
+  ELSE
+    IPOS = IPOS + 1
+    NBASDIR = NBASDIR + 1
+  ENDIF
+ENDDO
 
-IF (BASDIR(LENBAS:LENBAS) .NE. '/') THEN
-  LENBAS = LENBAS + 1
-  BASDIR(LENBAS:LENBAS) = '/'
-END IF
-END SUBROUTINE GET_BASISSET_LIB
+ALLOCATE(BASDIR(NBASDIR))
+call mem_alloc(LENBAS,NBASDIR)
+
+IF (doprint) write(lupri,'(A,I3)') 'Number of basis set directories in BASDIR is',NBASDIR
+
+IPOS    = 1
+DO IBAS=1,NBASDIR
+  DO I=1,200
+    BASDIR(IBAS)%p(I:I) = ' '
+  ENDDO
+  IPOSNEW = INDEX(BASISDIR(IPOS:1000),':')
+  IF (IPOSNEW.EQ.0) THEN
+    IPOSNEW=MIN(IPOS+200,1001)
+    LENBAS(IBAS) = 0
+    LENBAS(IBAS) = INDEX(BASISDIR(IPOS:IPOSNEW),' ') - 1
+  ELSE
+    LENBAS(IBAS) = IPOSNEW - IPOS
+  ENDIF
+  BASDIR(IBAS)%p(1:LENBAS(IBAS)) = BASISDIR(IPOS:IPOSNEW-1)
+  IF (BASDIR(IBAS)%p(LENBAS(IBAS):LENBAS(IBAS)) .NE. '/') THEN
+    LENBAS(IBAS) = LENBAS(IBAS) + 1
+    BASDIR(IBAS)%p(LENBAS(IBAS):LENBAS(IBAS)) = '/'
+  END IF
+  IPOS = IPOSNEW+1
+  IF (doprint) WRITE(LUPRI,'(3X,A)') BASDIR(IBAS)%p
+ENDDO
+END SUBROUTINE GET_BASISSET_LIBS
 
 !> \brief DETERMINE NAMES OF AND NUMBER OF UNIQUE BASISSETS 
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE UNIQUE_BASISSETS(LUPRI,MOLECULE,BASISLABEL,BINDEX,b)
-use molecule_type
 implicit none
 TYPE(MOLECULEINFO) :: MOLECULE
 CHARACTER(len=9)   :: BASISLABEL
@@ -653,7 +754,7 @@ INTEGER                   :: LUBAS
 !> if the basis should be contracted
 LOGICAL                   :: CONTRACTED
 !> basisset name
-CHARACTER(len=80)   :: BASISSETNAME
+CHARACTER(len=200)   :: BASISSETNAME
 !> IAUG      : AUGMENTATION LEVEL  
 INTEGER  :: IAUG
 !> POLFUN  : TRUE IF POLARIZATION FUNCTIONS ARE SPECIFIED  
@@ -886,10 +987,10 @@ integer,intent(in) :: lupri,lubas
 !
 logical :: SEARCHING
 INTEGER :: IOS
-CHARACTER(len=88)  :: STRING
+CHARACTER(len=200)  :: STRING
 SEARCHING =.TRUE.
 DO WHILE(SEARCHING) 
-   READ(LUBAS,'(A88)', IOSTAT=ios) STRING
+   READ(LUBAS,'(A200)', IOSTAT=ios) STRING
    IF(STRING(1:17).EQ.'USERDEFINED BASIS')THEN
       SEARCHING=.FALSE.
    ENDIF
@@ -905,7 +1006,7 @@ CHARACTER(len=200)  :: STRING
 CHARACTER(len=1)    :: SIGN
 INTEGER             :: CHARGE,NUCLEARCHARGE,ios,ELEMENT,LUBAS,LUPRI,IPOS
 LOGICAL             :: SEARCHING,SEARCHING_H,HFORMAT
-CHARACTER(len=80)   :: BASISSETNAME
+CHARACTER(len=200)   :: BASISSETNAME
 CHARACTER(len=10)   :: atname(74)
 atname = (/'HYDROGEN  ','HELIUM    ','LITHIUM   ',&
      & 'BERYLLIUM ','BORON     ','CARBON    ','NITROGEN  ',&
@@ -934,7 +1035,11 @@ IF((ELEMENT .EQ. 0) .OR. (ELEMENT.NE.CHARGE))THEN
     IF(ios /= 0)THEN
       WRITE (LUPRI,'(/I3,2A)') CHARGE&
       & ,' is an unsupported element for basis ',BASISSETNAME
-      CALL LSQUIT('Unsupported element in linsca',lupri)
+      WRITE (LUPRI,'(A)') 'You need to choose a basis set that support this element'
+      WRITE (LUPRI,'(A)') 'You can look at EMSL to find a suitable basis set that support this element'
+      WRITE (LUPRI,'(A)') 'If you download a new basis set from EMSL please read the EMSL section in the manual!'
+      WRITE (LUPRI,'(A)') 'Note that LSDALTON do NOT support Effective Core Potentials (ECP)'
+      CALL LSQUIT('Unsupported element in basis set, choose a proper basis set',lupri)
     ELSE
       READ (STRING, '(A1)') SIGN
       IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
@@ -1224,6 +1329,8 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                        ENDIF
                     ENDIF
                     NUMNUMOLD = NUMNUM
+                    !just in case NUMBER_OF_LINES was wrong
+                    IF(KNTORB.EQ.nOrbital)EXIT
                  ENDDO
               ENDIF
            ENDIF

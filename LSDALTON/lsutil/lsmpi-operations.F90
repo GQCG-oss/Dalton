@@ -29,8 +29,13 @@ module lsmpi_op
        & lsmpi_print, lsmpi_default_mpi_group, lsmpi_finalize, lsmpi_barrier,&
        & LSMPIREDUCTION, LSMPIREDUCTIONmaster
   use infpar_module
-!  use mpi
+
+#ifdef USE_MPI_MOD_F90
+  use mpi
+#else
   include 'mpif.h'
+#endif 
+
 #endif
   !*****************************************
   !*
@@ -156,8 +161,8 @@ integer(kind=ls_mpik),intent(in) :: comm  ! communicator
 integer(kind=ls_mpik) :: MASTER
 LOGICAL :: SLAVE
 integer(kind=ls_mpik) :: mynum,nodtot,ierr
-call get_rank_for_comm(comm,mynum)
-CALL get_size_for_comm(comm, nodtot, ierr)
+call get_rank_for_comm(comm, mynum)
+CALL get_size_for_comm(comm, nodtot)
 input%numNodes = nodtot 
 input%node = mynum
 
@@ -219,7 +224,7 @@ SUBROUTINE mpicopy_setting(setting,comm)
   Master  = infpar%master
 
   call get_rank_for_comm(comm,mynum)
-  CALL get_size_for_comm(comm, nodtot, ierr)
+  CALL get_size_for_comm(comm, nodtot)
   setting%numNodes = nodtot 
   setting%node = mynum
   setting%comm = comm
@@ -520,16 +525,18 @@ integer(kind=ls_mpik) :: COUNT,TAG,IERR,request,COUNT2
 real(realk),pointer :: buffer2(:)
 integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE),nMess,j,i
 logical(kind=ls_mpik) :: MessageRecieved
-logical :: ALLOC
+logical :: ALLOC,MessageRecievedW
 TAG = 155534879
 call set_lstmemrealkbufferpointer(lstmem_index,buffer,nbuffer)
 IF(nbuffer.GT.HUGE(COUNT))call lsquit('64 bit error in lsmpi_isend_lstmemrealkbuf',-1)
 COUNT = nbuffer
 MessageRecieved = .TRUE.
+MessageRecievedW = .TRUE.
 ALLOC=.FALSE.
-DO WHILE(MessageRecieved)
+DO WHILE(MessageRecievedW)
    call MPI_IPROBE(MPI_ANY_SOURCE,TAG,comm,MessageRecieved,status,ierr)
-   IF(MessageRecieved)THEN
+   MessageRecievedW = MessageRecieved 
+   IF(MessageRecievedW)THEN
       IF(.NOT.ALLOC)THEN
          call mem_alloc(buffer2,COUNT)
          ALLOC=.TRUE.
@@ -1156,6 +1163,7 @@ call LS_MPI_BUFFER(dalton%DEBUGOVERLAP,Master)
 call LS_MPI_BUFFER(dalton%DEBUG4CENTER,Master)
 call LS_MPI_BUFFER(dalton%DEBUG4CENTER_ERI,Master)
 call LS_MPI_BUFFER(dalton%DEBUGPROP,Master)
+call LS_MPI_BUFFER(dalton%DEBUGICHOR,Master)
 call LS_MPI_BUFFER(dalton%DEBUGGEN1INT,Master)
 call LS_MPI_BUFFER(dalton%DEBUGCGTODIFF,Master)
 call LS_MPI_BUFFER(dalton%DEBUGEP,Master)
@@ -1211,8 +1219,6 @@ call LS_MPI_BUFFER(dalton%NOSEGMENT,Master)
 !* JOB REQUESTS
 call LS_MPI_BUFFER(dalton%DO3CENTEROVL,Master)
 call LS_MPI_BUFFER(dalton%DO2CENTERERI,Master)
-call LS_MPI_BUFFER(dalton%CARMOM,Master)
-call LS_MPI_BUFFER(dalton%SPHMOM,Master)
 call LS_MPI_BUFFER(dalton%MIXEDOVERLAP,Master)
 
 !*CAUCHY-SCHWARZ INTEGRAL PARAMETERS
@@ -1255,6 +1261,7 @@ call LS_MPI_BUFFER(dalton%ADMM_GCBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_JKBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_DFBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_MCWEENY,Master)
+call LS_MPI_BUFFER(dalton%ADMM_2ERI,Master)
 call LS_MPI_BUFFER(dalton%SR_EXCHANGE,Master)
 !Coulomb attenuated method CAM parameters
 call LS_MPI_BUFFER(dalton%CAM,Master)
@@ -1346,8 +1353,6 @@ call LS_MPI_BUFFER(scheme%CONTANG,Master) !Used contracted-angular AO ordering r
 !* JOB REQUESTS
 call LS_MPI_BUFFER(scheme%DO3CENTEROVL,Master)
 call LS_MPI_BUFFER(scheme%DO2CENTERERI,Master)
-call LS_MPI_BUFFER(scheme%CARMOM,Master)
-call LS_MPI_BUFFER(scheme%SPHMOM,Master)
 call LS_MPI_BUFFER(scheme%CMORDER,Master)
 call LS_MPI_BUFFER(scheme%CMIMAT,Master)
 call LS_MPI_BUFFER(scheme%MIXEDOVERLAP,Master)

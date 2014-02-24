@@ -18,7 +18,7 @@ C
 C
 C
       CHARACTER*14 SUBNM(LSOTIM)
-      DATA SUBNM  /' LAMMAT       ',' SO_INIT      ',' SO_MOENERGY  ',
+      DATA SUBNM  /' SO_GETMO     ',' SO_INIT      ',' SO_MOENERGY  ',
      &             ' SO_DENS      ',' SO_T2MP      ',' SO_AODENS    ',
      &             ' SO_BCKTR     ',' ERIDI1       ',' ERIDI2       ',
      &             ' CCRDAO       ',' CC_AOFOCK    ',' SO_T2M1      ',

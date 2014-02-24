@@ -4,7 +4,7 @@ General
 -------
 
 Normally you want to only edit delete_flags and/or
-source_files_and_dirs_to_exclude. All the other files in this directory
+paths_to_exclude. All the other files in this directory
 normally do not need any editing (unless they need bugfixes).
 
 
@@ -30,11 +30,11 @@ and produce:
     keep this 2
 
 
-source_files_and_dirs_to_exclude
---------------------------------
+paths_to_exclude
+----------------
 
 List all source files and directories to exlude in
-source_files_and_dirs_to_exclude, each entry on a new line.
+paths_to_exclude, each entry on a new line.
 
 These entries could look like this:
 

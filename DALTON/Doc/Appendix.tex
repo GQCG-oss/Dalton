@@ -14,10 +14,9 @@ the current distribution of the program, with proper references and a
 short description of the use of the program.
 
 Executable versions of the programs in this directory will
-automatically be produced during installation of the \dalton\ program,
-but they will by default not be installed in the installation
-directory of the \dalton\ program, but rather placed in the
-\verb|tools| directory.
+automatically be produced during installation of the \dalton\ program
+and placed in the
+\verb|build/tools| directory.
 
 \subsection*{A1: FChk2HES}
 
@@ -27,9 +26,9 @@ Universit\"{a}t Freiburg, Switzerland}
 
 \smallskip
 
-\noindent 
-{\bf Purpose:} Reads the Formatted Checkpoint file of Gaussian  
-     and creates a \verb|DALTON.HES| file with Hessian and Atomic coordinates
+\noindent
+{\bf Purpose:} Reads the formatted checkpoint file of Gaussian
+     and creates a \verb|DALTON.HES| file with Hessian and atomic coordinates
      as well as a dummy \verb|MOLECULE.INP| file.
 
 \smallskip
@@ -41,30 +40,30 @@ Universit\"{a}t Freiburg, Switzerland}
 
 \smallskip
 \noindent
-{\bf Comments:}     The Gaussian checkpointfile "Test.FChk" is created
+{\bf Comments:}     The Gaussian checkpoint file "Test.FChk" is created
      with the keyword "FormCheck=ForceCart", and where the keyword "NoSymm"
      has  been specified
 
 If symmetry is used: Hessian\index{Hessian} will be in standard(Gaussian) orientation,
         but geometry will be in input orientation. So do not use the
-        \verb|MOLECULE.INP| file from this utility, 
+        \verb|MOLECULE.INP| file from this utility,
         neither the coordinates in the end of \verb|DALTON.HES|.
         Use either the standard-orientation from Gaussian output file, or
-        use the converted checkpointfile (created with the command
+        use the converted checkpoint file (created with the command
         "formchk checkpointfilename convertedfilename") as an input for
-        this program. Anyway, this will not lead to the geometry you 
+        this program. Anyway, this will not lead to the geometry you
         specified in the input, and the Hessian will be incompatible with the
         calculation you want to do in \dalton. (If this was already carried
         out at the input orientation ...)
 
 The only way to get the geometry orientation you want is to turn
-        off symmetry. 
+        off symmetry.
         Then, both the Hessian and the geometry in the Test.FChk file are
         in the input orientation, and everything is fine.
 
 The program has been made for the purpose of being used in VCD or
 VROA\index{VCD}\index{ROA}\index{vibrational circular
-dichroism}\index{Raman optical activity} 
+dichroism}\index{Raman optical activity}
 calculations where it may be of interest to compare predicted spectra
 obtained from SCF London orbital invariants/AATs\index{atomic axial
 tensor}\index{AAT} with a MP2 or DFT force field.
@@ -72,12 +71,12 @@ tensor}\index{AAT} with a MP2 or DFT force field.
 \subsection*{A2: labread}
 
 \noindent
-{\large\bf Author: \normalsize\large Hans J\o rgen Aa.Jensen,
+{\large\bf Author: \normalsize\large Hans J\o rgen Aa. Jensen,
 Odense University, Denmark}
 
 \smallskip
 
-\noindent 
+\noindent
 {\bf Purpose:} Reads unformatted AO-integral files and prints the
 INTEGRAL labels found on the file
 
@@ -90,9 +89,9 @@ INTEGRAL labels found on the file
 {\bf Comments:}  A convenient tool in connection with \dalton\ errors
 connected to missing labels on a given file in order to check that the
 given integrals do indeed, or do not, exist on a given file (usually
-\verb|AOPROPER|). 
+\verb|AOPROPER|).
 
-\subsection*{A3: ODCPROG}
+\subsection*{A3: ODCPRG}
 
 \noindent
 {\large\bf Author: \normalsize\large Antonio Rizzo (Istituto di
@@ -101,7 +100,7 @@ Sonia Coriani (University of Trieste, Italy)}
 
 \smallskip
 
-\noindent 
+\noindent
 {\bf Purpose:} Analyze the magnetizability and nuclear shielding
 polarizabilities from a set of finite-field magnetizability and
 nuclear shielding calculations.
@@ -115,15 +114,15 @@ where $n$ is the number of finite field output files.
 
 \smallskip
 \noindent
-{\bf readmg.dat:} 
+{\bf readmg.dat:}
 
 \begin{verbatim}
 TITLE (1 line)
 N ZPRT IPG ISSYM NIST NLAST NSTEP
 FILE1
 FILE2
-... 
-FILEN 
+...
+FILEN
 \end{verbatim}
 where
 \begin{itemize}
@@ -143,15 +142,15 @@ where
 
 \smallskip
 \noindent
-{\bf Comments:} 
+{\bf Comments:}
     Only 6 point groups are presently implemented, of which
-    C3v only for shielding-polarizabilities and 
-    Dih only for hyperpolarizabilities 
+    C3v only for shielding-polarizabilities and
+    Dih only for hyperpolarizabilities
 
     When \verb|issym.ne.ipg| and both
     hypermagnetizabilities\index{magnetizability polarizability}\index{shielding polarizability}
-    and shielding 
-    polarizabilities are required, the number of field set-ups should 
+    and shielding
+    polarizabilities are required, the number of field set-ups should
     be equal to the one for shieldings
 
     Different field set-ups are needed according to
@@ -226,22 +225,114 @@ Need     x  0  z
 \end{verbatim}
 \end{itemize}
 
-%\subsection*{A4: arturo}
-%\noindent
-%{\large\bf Author: \normalsize\large Asger Halkier (Aarhus University, Denmark)
-%and Sonia Coriani (University of Trieste, Italy)}
-%
-%\smallskip
-%
-%\noindent
-%{\bf Purpose:} Performs central difference analysis of (finite
-%field) energy calculations with \cc.
-%
-%\smallskip
-%\noindent
-%{\bf Commandline:} arturo
-%
-%Requires the existence of 
-%
-%\smallskip
-%\noindent
+\subsection*{A4: xyz2dalton, distances, and aces2dalton}
+
+This documents the use of three small utilities (\verb|xyz2dalton|,
+\verb|distances|, and \verb|aces2dalton|) that are written by
+Peter Robert Taylor and distributed with
+Dalton2013.  Two are designed to assist in the preparation of Dalton
+input files; one is less specifically Dalton-oriented but may be
+useful in a variety of 
+contexts when setting up calculations.  All three programs run as
+filters in traditional UNIX style, that is, they are invoked as
+
+\noindent
+\verb|program <input_file >output_file|
+
+\noindent
+and by default would read from standard input (the keyboard, which is
+almost certainly not what you want!) and write to standard output (the
+screen, which is probably not what you want either\ldots).  Error
+messages are written to standard error.  The 
+first few source lines of each program are fairly detailed explanations of
+how to use them.  
+
+\verb|xyz2dalton| reads an XYZ coordinate file from, e.g., the PDB,
+and produces a complete-except-for-the-basis 
+Dalton mol file (with coordinates in atomic units).  There is no
+default basis choice and so the mol file generated is not ``correct''
+until the user edits it to provide a basis choice of his/her own.
+The program currently writes "Choose basis here!" in \verb|output_file|
+where the basis should be specified.  This also implicitly assumes the
+user will make a global basis choice: for \verb|ATOMBASIS| inputs the
+user will need to edit the mol file further.  The program is invoked
+as
+
+\noindent
+\verb|xyz2dalton [-c] <input_file >output_file|
+
+\noindent
+where including the optional argument \verb|-c| causes the geometry
+origin to be translated to the molecular centre of mass (using IUPAC
+atomic weights for the most abundant isotope of each element).
+
+\verb|distances| reads an XYZ file and calculates a list of
+internuclear distances. 
+This is probably of limited interest to users but can be helpful to
+identify neighbouring atoms: something that is not always easy with
+XYZ files.  Command-line arguments can be specified to restrict both the
+minimum distances and maximum distances that appear in the output
+file, so the program can be invoked (there should be no line break in
+the command line here: the break shown is purely for typesetting
+convenience) as 
+
+\noindent
+\verb|distances [--min lower_bound] [--max upper_bound]|
+
+\noindent
+\verb|         < XYZinputfile > Distancesfile|
+
+\noindent
+where only distances between \verb|lower_bound| and \verb|upper_bound| will
+appear in the output file.  The default values for the bounds are
+respectively zero and infinity, so by default all distances are printed.
+
+The limitations on dimensioning for the numbers of nuclear centres in
+the codes (\verb|xyz2dalton| and \verb|distances|) are determined in large part by 
+the desire to ensure that every atom is numbered differently.  This means
+single letter atoms can go to 999 (the first carbon, say, will be labelled
+C001) but two-letter atoms only to 99 (the first helium will be He01).
+
+There are some idiosyncrasies that result from handling XYZ files.
+There is no convention/require\-ment that all atoms of a given
+type will be grouped together in the XYZ file.  For many reasons,
+however, it is desirable to have a Dalton
+mol file in which each atom type occurs only once, and this is how the
+coordinate information is eventually
+written to stdout.  The atom types are listed by decreasing atomic number.
+
+\verb|aces2dalton| reads a file output in ACES/C4 library format from
+the EMSL 
+basis set library server.  The EMSL server can
+export a variety of different formats, including a Dalton format.
+However, the EMSL developers insist on only one output format for each
+program they export for, and there are several different Dalton
+formats, related to the need to handle different exponent sizes, and
+the Dalton format EMSL produces is not always convenient/ideal.  With
+\verb|aces2dalton| a user can produce a library file in Dalton format
+for a desired basis set, for any or all atoms that set is available for.
+
+Specify the desired basis sets to be displayed by the EMSL server in
+ACES/C4 format, remember to ensure "Optimize general contractions" is
+checked, and save the page that EMSL generates as a text file from
+within the browser window, Such a file can contain basis sets for as
+many elements as you like.  After running
+
+\noindent
+\verb|aces2dalton <input_file >output_file|
+
+\noindent
+where \verb|input_file| is the text file you just saved from the EMSL
+webpage, 
+move \verb|output_file| to a directory where Dalton will find it
+(see the Dalton documentation).
+The code will work for angular momenta up to $l=7$ and for all
+elements up to copernicium ($Z=112$).
+It is assumed that no basis set will contain more than 100 exponents
+of a given angular type.
+No more than 7 decimal places are possible for any exponent, and
+no more than 6 for a contraction coefficient.  For exponents larger
+than 1,000,000 only 3 decimal places are available.  It should be
+straightforward for a user who wants to change any of these limits by
+editing the source: most limits are set in \verb|PARAMETER| statements
+in the various \verb|MODULES|.

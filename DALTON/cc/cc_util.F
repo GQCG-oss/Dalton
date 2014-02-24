@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -61,7 +61,7 @@ C
 C     PURPOSE:
 C             Calculate the C-term 
 C
-C#include <implicit.h>
+C#include "implicit.h"
       implicit none
 
 #include "priunit.h"
@@ -1334,7 +1334,7 @@ c /* deck cc_iajb2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -1524,14 +1524,14 @@ c /* deck cc_iajb3 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
 #include "ccsdsym.h"
 #include "r12int.h"
-C#include <maxorb.h>
-C#include <ccisao.h>
+C#include "maxorb.h"
+C#include "ccisao.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2410,7 +2410,7 @@ c/* deck cc_cd */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -2707,7 +2707,7 @@ c           CALL CC_PRP(WORK(NI),WORK,ISYMBJ,1,0)
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "ccorb.h"
 #include "maxorb.h"
@@ -2737,7 +2737,7 @@ c           CALL CC_PRP(WORK(NI),WORK,ISYMBJ,1,0)
       PARAMETER(ONE=1.0D0,TWO=2.0D0,THREE=3.0D0,HALF=0.5D0,ZERO=0.0D0)
 
       INTEGER IV, IADR, IADRW
-      INTEGER IADRPQ(MXCORB,IV)
+      INTEGER IADRPQ(MXCORB_CC,IV)
       INTEGER ISYTAMP,ISYCTR,ISYMC,ISYTIN,ISYAIK, ISYMAI,ISYMA,ISYMI
       INTEGER KEND1, LWRK1, KOFF, KOFFY, KYIM
       INTEGER IERR, IOPT, IVIRC
@@ -3010,7 +3010,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -3023,7 +3023,7 @@ C
 
       CHARACTER*(*) FILAO, FILMO
       INTEGER ISYPQMO, ISYLAM, IADRPQ, ITRAN, LWORK, LUAO, LUMO
-      INTEGER IADRAO(MXCORB,*), IADRMO(MXCORB,*)
+      INTEGER IADRAO(MXCORB_CC,*), IADRMO(MXCORB_CC,*)
 
 #if defined (SYS_CRAY)
       REAL ZERO, ONE
@@ -3396,7 +3396,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -3425,7 +3425,7 @@ C
       PARAMETER(ONE=1.0D0,TWO=2.0D0,THREE=3.0D0,HALF=0.5D0,ZERO=0.0D0)
 
       INTEGER IV, IADR, IADRW
-      INTEGER IADRPQ(MXCORB,IV)
+      INTEGER IADRPQ(MXCORB_CC,IV)
       INTEGER ISYTAMP, ISYCTR, ISYMD, ISYTIN, ISYAIK, ISYMA, ISYMAI
       INTEGER KEND1, LWRK1, KEND2, LWRK2, NVIRD, NBASD
       INTEGER IERR, IOPT, IDEL, ILLL, KOFF1, KOFF2, KOFF, ISYMI

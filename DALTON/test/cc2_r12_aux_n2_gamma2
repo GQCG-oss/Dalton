@@ -117,6 +117,12 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+
 #           Total SCF   energy:                  -108.9541307667
 #           Total MP2-R12/A energy:              -109.3671238978
 #           Total CC2-R12/A energy:              -109.3693042691
@@ -189,7 +195,7 @@ ERROR[4]="CC2-R12/A SECOND ORDER PROPERTIES NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

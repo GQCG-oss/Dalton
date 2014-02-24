@@ -6,8 +6,10 @@ C     PARAMETER (MXTSK=(MXSHEL*(MXSHEL+1)/2), IEIR=0, MMWORK=0,
 C    &     MXSHL_KEEP=MAX(MXTSK,IEIR), MNSHL_KEEP=MIN(MXTSK,IEIR) )
 Chj 11-May-2005: changes needed for compilation with g77:
 C     MAX and MIN not allowed by "g77"; zero size arrays not allowed
-      PARAMETER (MXTSK=(MXSHEL*(MXSHEL + 1)/2),
-     &           MMWORK=INSTALL_MMWORK )
+
+!     PARAMETER ( MXTSK = (MXSHEL*(MXSHEL + 1)/2) )
+      PARAMETER ( MXTSK = (100*(100 + 1)/2) ) ! reduced to 100 in order to reduce static allocation /hjaaj Sep 2013
+      PARAMETER ( MMWORK = MAX(1,INSTALL_MMWORK) )
 
       REAL*8  AOINTSCORE
       COMMON /AOINTS_INCORE/ AOINTSCORE(MMWORK)

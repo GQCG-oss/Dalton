@@ -126,7 +126,7 @@ CTRL[5]=1
 ERROR[5]="INITIAL ENERGY NOT CORRECT"
 
 # Initial gradient
-CRIT1=`$GREP "O * y * (0| )\.072402" $log | wc -l`
+CRIT1=`$GREP "O * y * (0| )\.072400" $log | wc -l`
 CRIT2=`$GREP "H * y *  \-0*\.054515" $log | wc -l`
 CRIT3=`$GREP "H * z * (0| )\.003105" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
@@ -171,7 +171,7 @@ ERROR[9]="SECOND ITERATION NOT CORRECT"
 # Third iteration
 CRIT1=`$GREP "Energy at this geometry is * \: * \-150\.785410" $log | wc -l`
 CRIT2=`$GREP "Norm of gradient * \: * (0| )\.00143[0-9]" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.00180[0-9]" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: * (0| )\.001(79|80)[0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[10]=3
 ERROR[10]="THIRD ITERATION NOT CORRECT"
@@ -194,17 +194,17 @@ ERROR[12]="SYMMETRY NOT DETERMINED CORRECTLY"
 
 # New geometry
 CRIT1=`$GREP "Total number of coordinates\: * 12" $log | wc -l`
-CRIT2=`$GREP "1 * x * 1\.32318(4|5)" $log | wc -l`
+CRIT2=`$GREP "1 * x * 1\.323188" $log | wc -l`
 CRIT3=`$GREP "2 * y * \-*0*\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * \-0*\.029637135" $log | wc -l`
-CRIT5=`$GREP "4 * x * \-1\.32318(4|5)" $log | wc -l`
+CRIT5=`$GREP "4 * x * \-1\.323188" $log | wc -l`
 CRIT6=`$GREP "5 * y * \-*0*\.0000000000" $log | wc -l`
 CRIT7=`$GREP "6 * z * \-0*\.029637135" $log | wc -l`
-CRIT8=`$GREP "7 * x * \-*1\.65806(7|8)" $log | wc -l`
-CRIT9=`$GREP "8 * y * \-*1\.75853(3|4)" $log | wc -l`
+CRIT8=`$GREP "7 * x * \-*1\.658064" $log | wc -l`
+CRIT9=`$GREP "8 * y * \-*1\.758536" $log | wc -l`
 CRIT10=`$GREP "9 * z * 0*\.470362865" $log | wc -l`
-CRIT11=`$GREP "10 * x * \-*1\.65806(7|8)" $log | wc -l`
-CRIT12=`$GREP "11 * y * \-*1\.75853(3|4)" $log | wc -l`
+CRIT11=`$GREP "10 * x * \-*1\.658064" $log | wc -l`
+CRIT12=`$GREP "11 * y * \-*1\.758536" $log | wc -l`
 CRIT13=`$GREP "12 * z * 0*\.470362865" $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
@@ -213,16 +213,16 @@ CTRL[13]=14
 ERROR[13]="SYMMETRY-BROKEN GEOMETRY NOT CORRECT"
 
 # Final energy
-CRIT1=`$GREP "Final * HF energy\: * \-150\.783313621" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-150\.7867668(4|5)....." $log | wc -l`
 TEST[14]=`expr	$CRIT1`
 CTRL[14]=1
 ERROR[14]="FINAL ENERGY NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "O *_1 * \-*1\.3120204... * \-*0*\.0988763... * \-0*\.2496365..." $log | wc -l`
-CRIT2=`$GREP "O *_2 * \-*1\.3120204... * \-*0*\.0988763... * \-0*\.2496365..." $log | wc -l`
-CRIT3=`$GREP "H *_1 * \-*1\.5833060... *  \-*1\.6000957... *   0*\.6903623..." $log | wc -l`
-CRIT4=`$GREP "H *_2 * \-*1\.5833060... *  \-*1\.6000957... *   0*\.6903623..." $log | wc -l`
+CRIT1=`$GREP "O *_1 *    1\.3120...... *    0*\.0988...... * \-0*\.249(5|6)...." $log | wc -l`
+CRIT2=`$GREP "O *_2 * \-*1\.3120...... * \-*0*\.0988...... * \-0*\.249(5|6)......" $log | wc -l`
+CRIT3=`$GREP "H *_1 *    1\.583[23]...... *     1\.6000...... *   0*\.6903......" $log | wc -l`
+CRIT4=`$GREP "H *_2 * \-*1\.583[23]...... *  \-*1\.6000...... *   0*\.6903......" $log | wc -l`
 TEST[15]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[15]=16
 ERROR[15]="FINAL GEOMETRY NOT CORRECT"
@@ -230,35 +230,35 @@ ERROR[15]="FINAL GEOMETRY NOT CORRECT"
 # Final iteration
 CRIT1=`$GREP "Energy at this geometry is * \: * \-150\.786767" $log | wc -l`
 CRIT2=`$GREP "Norm of gradient * \: * (0| )\.00000[0-9]" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.00000[0-9]" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: * (0| )\.00003[0-9]" $log | wc -l`
 TEST[16]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[16]=4
+CTRL[16]=3
 ERROR[16]="FINAL ITERATION NOT CORRECT"
 
 # Vibrational frequencies
-CRIT1=`$GREP "1 * A * 4117\.48 * (0| )\.01876[0-9] * 31\.68[0-9] * (0| )\.749[0-9]" $log | wc -l`
-CRIT2=`$GREP "3 * A * 1612\.01 * (0| )\.00734[0-9] * (0| )\.34[0-9] * (0| )\.008[0-9]" $log | wc -l`
+CRIT1=`$GREP "1 * A * 4117\.[45]. * (0| )\.01876[0-9] * 31\.6[89][0-9] * (0| )\.7[45][09][0-9]" $log | wc -l`
+CRIT2=`$GREP "3 * A * 1612\.0. * (0| )\.00734[0-9] * (0| )\.34[0-9] * (0| )\.008[0-9]" $log | wc -l`
 CRIT3=`$GREP "5 * A * 1132\.5(8|9) * (0| )\.00516[0-9] * 1\.71[0-9] * (0| )\.040[0-9]" $log | wc -l`
-CRIT4=`$GREP "6 * A * 377\.87 * (0| )\.00172[0-9] * 213\.24[0-9] * 5\.046[0-9]" $log | wc -l`
-CRIT5=`$GREP "2 * B * 4114\.80 * (0| )\.01874[0-9] * 109\.60[0-9] * 2\.593[0-9]" $log | wc -l`
-CRIT6=`$GREP "4 * B * 1469\.9(4|5) * (0| )\.00669[0-9] * 101\.19[0-9] * 2\.394[0-9]" $log | wc -l`
+CRIT4=`$GREP "6 * A * 377\.[79]. * (0| )\.00172[0-9] * 213\.2.. * 5\.046[0-9]" $log | wc -l`
+CRIT5=`$GREP "2 * B * 4114\.[78]. * (0| )\.01874[0-9] * 109\.[56].. * 2\.59[34][0-9]" $log | wc -l`
+CRIT6=`$GREP "4 * B * 1469\.9. * (0| )\.00669[0-9] * 101\.19[0-9] * 2\.394[0-9]" $log | wc -l`
 TEST[17]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[17]=6
 ERROR[17]="VIBRATIONAL FREQUENCIES NOT CORRECT"
 
 # Geometry optimization
-CRIT1=`$GREP "Geometry converged in * 10( |  )iterations\!" $log | wc -l`
+#CRIT1=`$GREP "Geometry converged in * 9( |  )iterations\!" $log | wc -l`
 CRIT2=`$GREP "Please note that symmetry was broken during this optimization\." $log | wc -l`
 CRIT3=`$GREP "Energy at final geometry is * \: * \-150\.786767 a\.u\." $log | wc -l`
 CRIT4=`$GREP "Energy change during optimization \: * (\-0|\-)\.011273 a\.u\." $log | wc -l`
-TEST[18]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[18]=4
+TEST[18]=`expr	$CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[18]=3
 ERROR[18]="GEOMETRY NOT CONVERGED CORRECTLY"
 
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi

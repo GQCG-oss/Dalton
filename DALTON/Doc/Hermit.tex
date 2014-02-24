@@ -8,7 +8,7 @@ this will be automatically taken care of by the program. However,
 {\her} has an extensive set of atomic one- and two-electron
 integrals\index{one-electron integral}\index{two-electron integral},
 and some users may find it useful to generate explicit integrals using
-{\her}. This is for instance necessary if the {\resp} program (dynamic
+{\her}. This is for instance necessary if the {\resp} module (dynamic
 properties) is to be
 used, as described in Chapter~\ref{ch:response}. Disk usage may also
 be reduced by not calculating the
@@ -16,7 +16,7 @@ supermatrix\index{supermatrix}, and this is also controlled in the
 \Sec{*INTEGRALS} input section.
 
 It is worth noticing that the two-electron part of {\her} is actually
-two integral programs. {\twoint} is the more general one and is invoked by
+two integral modules. {\twoint} is the more general one and is invoked by
 default in sequential calculations; {\eri} (Electron Repulsion
 Integrals) is a highly vectorized two-electron integral code with
 orientation towards integral distributions. {\eri} is
@@ -28,8 +28,8 @@ functionality. {\dalton} will, however, automatically revert to
 {\twoint} for any two-electron integral not available in {\eri}:
 {{\eri} cannot be used in parallel
 calculations and it contains only first-derivatives (for
-the Hartree--Fock gradient), thus it cannot be used to calculate
-Hessians or to calculate MCSCF gradients.}
+the Hartree--Fock molecular gradient), thus it cannot be used to calculate
+molecular Hessians or to calculate MCSCF molecular gradients.}
 
     Input to integral evaluation is
 indicated by the keyword \Sec{*INTEGRALS}, and the section may be
@@ -45,7 +45,7 @@ a supermatrix as defined in for instance Ref.~\cite{pemsjaahborjcp74}.
 \section{\Sec{*INTEGRALS} directives}\label{sec:herinp}
 
           The following directives may be included in the input to
-the integral evaluation.  They are organized according to the program
+the integral evaluation.  They are organized according to the
 section names in which they can appear.
 
 %\subsection{End of input: \Sec{END OF}}
@@ -244,7 +244,7 @@ direction (x/y/z) of the dipole moment.
 Specify the dipole origin\index{dipole origin} to be used in the
 calculation.
 Read one more line containing the three Cartesian
-components in bohrs (*). Default is~(0,0,0).
+components in \bohr{}s (*). Default is~(0,0,0).
 
 \item[\Key{DIPVEL}] Dipole velocity\index{dipole velocity} integrals.
 
@@ -426,7 +426,7 @@ see Ref.~\cite{ovhapjhjajsbpthjcp96}.
 r}_K\right)\right|\chi_{\nu}\right>$
 \item Property labels: \verb|FC NAMab|, where \verb|NAM| is the three
 first letters in the name of this atom, as given in the
-\verb|MOLECULE.INP| file, and \verb|ab| is the number of the
+\molinp\ file, and \verb|ab| is the number of the
 symmetry-adapted nucleus.
 \end{list}
 
@@ -439,7 +439,7 @@ see Ref.~\cite{pmpljvkrjcp119}.
 r}_K\right)\right]_+\right|\chi_{\nu}\right>$
 \item Property labels: \verb|FCKEnacd|, where \verb|na| is the two
 first letters in the name of this atom, as given in the
-\verb|MOLECULE.INP| file, and \verb|cd| is the number of the
+\molinp\ file, and \verb|cd| is the number of the
 symmetry-adapted nucleus.
 \end{list}
 
@@ -497,7 +497,7 @@ and \verb|d| is the coordinate of the external magnetic field.
 integral. Mainly for debugging purposes.
 
 \item[\Key{INPTES}] Test the correctness of the \Sec{*INTEGRALS}-input. Mainly
-for debugging purposes, but also a good option to check if the \mol\ input
+for debugging purposes, but also a good option to check if the \molinp\ input
 has been typed in correctly.
 
 \item[\Key{KINENE}] Kinetic energy integrals\index{kinetic
@@ -520,6 +520,14 @@ orbital\index{London orbitals} phase factors, see Ref.~\cite{thpjjcp95}.
 $\frac{1}{4}Q_{MN}\left<\chi_{\mu}\left|{\bf r}h\right|\chi_{\nu}\right>$
 \item Property labels: \verb|XLONMOM |, \verb|YLONMOM |, \verb|ZLONMOM |.
 \end{list}
+
+
+\item[\Key{LRINTS}] All needed integrals to compute relativisctic corrections 
+to nuclear magnetic shielding will be done. 
+%\begin{list}{}{}
+%\item Integral:
+%\end{list}
+
 
 \item[\Key{MAGMOM}] One-electron contribution to the magnetic
 moment\index{magnetic moment}
@@ -852,7 +860,7 @@ matrices, irrespective of their inherent Hermiticity or
 anti-Hermiticity.
 
 \item[\Key{RANGMO}] Calculate the diamagnetic magnetizability integrals using the CTOCD-DZ method,
-\index{CTOCD-DZ, CTOCD-DZ diamagnetic magnetizability} see Ref.~\cite{paololazz1,paololazz2}.
+\index{CTOCD-DZ!diamagnetic magnetizability} see Ref.~\cite{paololazz1,paololazz2}.
 The gauge origin is, as default, in the center of mass. 
 
 \begin{list}{}{}
@@ -887,7 +895,7 @@ representation~\cite{tbphkkrjcp110}.
 
 \item[\Key{RPSO}] Calculate the diamagnetic nuclear shielding tensor 
 integrals using the CTOCD-DZ method,
-\index{CTOCD-DZ,CTOCD-DZ diamagnetic nuclear shieldings}  
+\index{CTOCD-DZ!diamagnetic nuclear shieldings}  
 see Ref.~\cite{paololazz1,paololazz2,ctocd}. 
 The gauge origin is, as default, at the center of mass. 
 Setting the gauge origin somewhere else will give wrong results in calculations using symmetry.
@@ -1202,7 +1210,7 @@ Set print level during the calculation of one-electron Hamiltonian
 integrals.  Read one more line containing print level. Default is
 the value of \verb|IPRDEF| from the \Sec{*INTEGRALS} input module.
 
-\item[\Key{SKIP}] Skip the the calculation of one-electron Hamiltonian
+\item[\Key{SKIP}] Skip the calculation of one-electron Hamiltonian
 integrals. Mainly for debugging purposes.
 
 \item[\Key{SOLVEN}]\verb| |\newline
@@ -1508,6 +1516,5 @@ module.
 
 Threshold for the supermatrix integrals. Read one more line containing
 the threshold. Default is the same as the threshold for
-discarding the two-electron integrals (see the chapter describing the
-\mol\ input format, Ch.~\ref{ch:molinp}).
+discarding the two-electron integrals (see the chapter describing the molecule input format, Ch.~\ref{ch:molinp}).
 \end{description}

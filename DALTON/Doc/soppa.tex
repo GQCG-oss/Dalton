@@ -1,6 +1,6 @@
 \chapter{SOPPA, SOPPA(CC2), SOPPA(CCSD) and RPA(D)}\label{ch:soppa}
 
-The Dalton program system can also be used to perform Second-Order
+The \dalton\ program system can also be used to perform Second-Order
 Polarization Propagator Approximation (SOPPA) \index{SOPPA}
 \index{polarization propagator}
 \cite{esnpjjodjcp73,mjpekdtehjajjojcp,spascpl260,tejospastcan100,spas037},
@@ -68,9 +68,9 @@ polarization propagators are not coupled cluster linear response
 functions and neither SOPPA, SOPPA(CC2) nor SOPPA(CCSD) are the same as
 the CC2 model, and although they all three are of at least second order
 in all terms they differ in the terms included. The SOPPA(CC2) and
-SOPPA(CCSD) models are thus not implemented in the CC module but are
-implemented in the RESPONSE and ABACUS modules of the Dalton program,
-using the same code as SOPPA. Starting with \dalton\ a second
+SOPPA(CCSD) models are thus not implemented in the \cc\ module but are
+implemented in the \response\ and \abacus\ modules of the \dalton\ program,
+using the same code as SOPPA. Starting with Dalton2011 a second
 implementation of the SOPPA equations is available which makes use of
 an atomic integral direct algorithm thereby avoiding the storage of the
 two-electron repulsion integrals in the molecular orbital basis

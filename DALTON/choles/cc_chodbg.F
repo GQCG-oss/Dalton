@@ -153,8 +153,8 @@ C
 #include "chodbg.h"
 #include "priunit.h"
 
-      DIMENSION INDEXA(MXCORB)
-      DIMENSION ERRNRM(MXCORB), ERRMAX(MXCORB), XINSTD(MXCORB)
+      DIMENSION INDEXA(MXCORB_CC)
+      DIMENSION ERRNRM(MXCORB_CC), ERRMAX(MXCORB_CC), XINSTD(MXCORB_CC)
 
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
 
@@ -641,7 +641,7 @@ C
 #include "chodbg2.h"
 #include "priunit.h"
 
-      INTEGER IPOINT(MXCORB)
+      INTEGER IPOINT(MXCORB_CC)
       INTEGER IADR1
 
       PARAMETER (IDIV = 2, IOPTR = 3)

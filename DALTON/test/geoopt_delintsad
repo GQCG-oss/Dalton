@@ -113,35 +113,35 @@ CTRL[2]=3
 ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
-CRIT1=`$GREP "Total number of coordinates\: * 24" $log | wc -l`
-CRIT2=`$GREP "3 * z * 1\.4598223474" $log | wc -l`
-CRIT3=`$GREP "4 * x * (0| )\.0201357029" $log | wc -l`
-CRIT4=`$GREP "6 * z * \-1\.4596834723" $log | wc -l`
-CRIT5=`$GREP "7 * x * 1\.6428197329" $log | wc -l`
-CRIT6=`$GREP "8 * y * 1\.0258944623" $log | wc -l`
-CRIT7=`$GREP "9 * z * 2\.1559360111" $log | wc -l`
-CRIT8=`$GREP "10 * x * \-1\.7169234124" $log | wc -l`
-CRIT9=`$GREP "11 * y * (0| )\.9139003605" $log | wc -l`
-CRIT10=`$GREP "12 * z * 2\.1327640108" $log | wc -l`
-CRIT11=`$GREP "13 * x * (0| )\.0599355947" $log | wc -l`
-CRIT12=`$GREP "14 * y * \-1\.9397948248" $log | wc -l`
-CRIT13=`$GREP "15 * z * 2\.1450189290" $log | wc -l`
-CRIT14=`$GREP "16 * x * \-1\.9208446692" $log | wc -l`
-CRIT15=`$GREP "17 * y * (\-0|\-)\.4855279159" $log | wc -l`
-CRIT16=`$GREP "18 * z * \-2\.1578535369" $log | wc -l`
-CRIT17=`$GREP "19 * x * 1\.2716620058" $log | wc -l`
-CRIT18=`$GREP "20 * y * \-1\.3596527890" $log | wc -l`
-CRIT19=`$GREP "21 * z * \-2\.1358349591" $log | wc -l`
-CRIT20=`$GREP "22 * x * (0| )\.4235983754" $log | wc -l`
-CRIT21=`$GREP "23 * y * 1\.8451807069" $log | wc -l`
-CRIT22=`$GREP "24 * z * \-2\.1416840166" $log | wc -l`
-TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
-		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
-		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22`
-CTRL[3]=22
-CTRL[3]=0
-ERROR[3]="GEOMETRY NOT READ CORRECTLY"
+#CRIT1=`$GREP "Total number of coordinates\: * 24" $log | wc -l`
+#CRIT2=`$GREP "3 * z * 1\.4598223474" $log | wc -l`
+#CRIT3=`$GREP "4 * x * (0| )\.0201357029" $log | wc -l`
+#CRIT4=`$GREP "6 * z * \-1\.4596834723" $log | wc -l`
+#CRIT5=`$GREP "7 * x * 1\.6428197329" $log | wc -l`
+#CRIT6=`$GREP "8 * y * 1\.0258944623" $log | wc -l`
+#CRIT7=`$GREP "9 * z * 2\.1559360111" $log | wc -l`
+#CRIT8=`$GREP "10 * x * \-1\.7169234124" $log | wc -l`
+#CRIT9=`$GREP "11 * y * (0| )\.9139003605" $log | wc -l`
+#CRIT10=`$GREP "12 * z * 2\.1327640108" $log | wc -l`
+#CRIT11=`$GREP "13 * x * (0| )\.0599355947" $log | wc -l`
+#CRIT12=`$GREP "14 * y * \-1\.9397948248" $log | wc -l`
+#CRIT13=`$GREP "15 * z * 2\.1450189290" $log | wc -l`
+#CRIT14=`$GREP "16 * x * \-1\.9208446692" $log | wc -l`
+#CRIT15=`$GREP "17 * y * (\-0|\-)\.4855279159" $log | wc -l`
+#CRIT16=`$GREP "18 * z * \-2\.1578535369" $log | wc -l`
+#CRIT17=`$GREP "19 * x * 1\.2716620058" $log | wc -l`
+#CRIT18=`$GREP "20 * y * \-1\.3596527890" $log | wc -l`
+#CRIT19=`$GREP "21 * z * \-2\.1358349591" $log | wc -l`
+#CRIT20=`$GREP "22 * x * (0| )\.4235983754" $log | wc -l`
+#CRIT21=`$GREP "23 * y * 1\.8451807069" $log | wc -l`
+#CRIT22=`$GREP "24 * z * \-2\.1416840166" $log | wc -l`
+#TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+#		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
+#		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
+#		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22`
+#CTRL[3]=22
+#CTRL[3]=0
+#ERROR[3]="GEOMETRY NOT READ CORRECTLY"
 
 # Initial energy
 CRIT1=`$GREP "Final * HF energy\: * \-78\.300809229[01]" $log | wc -l`
@@ -298,9 +298,9 @@ CTRL[11]=3
 ERROR[11]="GEOMETRY OPTIMIZATION NOT CONVERGED CORRECTLY"
 
 PASSED=1
-for i in 1 2 3 4 5 6 7 8 9 10 11
+for i in 1 2 4 5 6 7 8 9 10 11
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} : ${TEST[i]} .lt. ${CTRL[i]} ; "
      PASSED=0
    fi

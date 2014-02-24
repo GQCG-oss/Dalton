@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -50,7 +50,7 @@ c/* Deck CC_GMATRIX */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -235,7 +235,7 @@ c/* Deck CC_GMAT */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "iratdef.h"
@@ -317,7 +317,7 @@ c/* Deck CC_GMAT */
 
       CHARACTER MODEL*(10), MODELW*(10), APROXR12*(3)
       LOGICAL LSAME, LLSAME, CCSDR12
-      INTEGER INDEXA(MXCORB)
+      INTEGER INDEXA(MXCORB_CC)
       INTEGER IDLSTA, IDLSTB, IDLSTC, IDLSTD
       INTEGER ISYRES, ISYCTR, ISYMTB, ISYMTC, ISYMTD
       INTEGER KEND0, KEND1, KEND1A, KEND2, KFREE, KENDSV, KENDE3
@@ -1988,7 +1988,7 @@ c/* Deck CCG_1ITROO */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -2067,7 +2067,7 @@ c/* Deck CCG_1ITRVO */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -2174,7 +2174,7 @@ c/* Deck CCG_1ITRVV */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -2269,7 +2269,7 @@ c/* Deck CCG_21CCSD */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -2965,7 +2965,7 @@ c/* Deck CCG_21CD */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "dummy.h"
 #include "priunit.h"
@@ -3314,7 +3314,7 @@ c/* Deck CCG_22CD */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -3635,7 +3635,7 @@ c/* Deck CCG_4O */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3768,7 +3768,7 @@ c/* Deck CCG_4OS */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -3957,7 +3957,7 @@ c/*  Deck CCG_OOVV */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -4180,7 +4180,7 @@ c/* Deck CCG_RDIAJB */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -4241,7 +4241,7 @@ c/* Deck CCG_TI */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -4336,7 +4336,7 @@ c/* Deck CCG_TRANS13 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -4455,7 +4455,7 @@ c/* Deck CCG_TRANS2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -4597,7 +4597,7 @@ c/* Deck CCG_TRANS4 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -4694,7 +4694,7 @@ c/* Deck CCG_SORT1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdsym.h"
@@ -4907,7 +4907,7 @@ c/* Deck CCG_LXD */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-# include <implicit.h>
+# include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"     
@@ -5003,7 +5003,7 @@ c/* Deck CCG_LXD */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "dummy.h"
 #include "priunit.h"

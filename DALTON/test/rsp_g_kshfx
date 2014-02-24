@@ -141,7 +141,7 @@ CRIT2=`$GREP "B2C CONTRIBUTION TO HYPVAL          0.00017844" $log | wc -l`
 CRIT3=`$GREP "C2B CONTRIBUTION TO HYPVAL         -0.00005105" $log | wc -l`
 CRIT4=`$GREP "A2B CONTRIBUTION TO HYPVAL          0.00014448" $log | wc -l`
 CRIT5=`$GREP "A2C CONTRIBUTION TO HYPVAL          0.00007217" $log | wc -l`
-CRIT6=`$GREP "@omega B.*0.00057501" $log | wc -l`
+CRIT6=`$GREP "@ omega B.*0.00057501" $log | wc -l`
 TEST[2]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6`
 CTRL[2]=6
 ERROR[2]="G-TENSOR QUADRATIC RESPONSE NOT CORRECT"
@@ -149,7 +149,7 @@ ERROR[2]="G-TENSOR QUADRATIC RESPONSE NOT CORRECT"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -184,7 +184,7 @@ ERROR[2]="G-TENSOR - FIELD NOT CORRECT"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -219,7 +219,7 @@ ERROR[2]="G-TENSOR-E-FIELD NOT CORRECT"
 PASSED=1
 for i in 1 2
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

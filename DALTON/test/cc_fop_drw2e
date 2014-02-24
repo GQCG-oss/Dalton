@@ -90,6 +90,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2, CC2 and CCSD energies:
 CRIT1=`$GREP "Final * HF energy: * -128\.53186163632" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * -128\.809153237" $log | wc -l`
@@ -113,7 +118,7 @@ ERROR[2]="2 ELECTRON DARWIN TERMS NOT CORRECT"
 PASSED=1
 for i in 1 2
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

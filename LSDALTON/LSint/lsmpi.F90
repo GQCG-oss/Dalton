@@ -96,6 +96,7 @@ CALL LS_GETTIM(t1,t2)
       tasks%target_nrhs = min(target_ntasks,natomsRHS)
       tasks%target_nlhs = 1
       IF (natomsRHS.LT.target_ntasks) tasks%target_nlhs = natomsLHS
+      IF (natomsLHS.EQ.0) tasks%target_nlhs=1
     ELSE IF ((AO1.EQ.AORdefault).AND.(AO2.EQ.AORdefault)) THEN
       tasks%target_nlhs = min(target_ntasks,natomsLHS)
       tasks%target_nrhs = 1

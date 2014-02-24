@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -253,7 +253,8 @@ C
      &            TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &            IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &            WORK(KIORBS),
-     &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
+     &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.,
+     &            .false.)
       IF (IPRINT.GT.0) CALL TIMER('GETDIS/TWOINT',TIMSTR,TIMEND)
 C
 C--------------------------------------
@@ -401,9 +402,11 @@ Chj   June 09: maybe READIN may still be needed for NEWGEO, keep it for
 Chj   now for safety, but REAINI should definitely NOT be called, it will
 Chj   reiinitialize variables changed by user under *READIN
 C
+         IPREAD_save = IPREAD
          IPREAD = JPRINT
          HERMIT = .FALSE.
          CALL READIN(WORK,LWORK,HERMIT)
+         IPREAD = IPREAD_save
 C
 C        consistency check
 C
@@ -511,7 +514,7 @@ C
      &                  WORK(KNSTAT),DUMMY,LFREE,IDUMMY,IDUMMY,IDUMMY,
      &                  LDUMMY,LDUMMY,LDUMMY,LDUMMY,LDUMMY,
      &                  IPRFCK,IPRTYP,
-     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY)
+     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,LDUMMY)
 
          ELSE
 #endif
@@ -571,7 +574,7 @@ C
 #include "maxorb.h"
 #include "aovec.h"
 #include "dummy.h"
-      LOGICAL   ABA
+      LOGICAL   ABA, LDUMMY
       PARAMETER (D0 = 0.D0)
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,NDMAT),
      &          ISYMDM(NDMAT), IFCTYP(NDMAT)
@@ -703,7 +706,7 @@ C
      &               WORK(KFREE),WORK(KNSTAT),DUMMY,LFREE,ITYPE,MAXDER,
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
      &               ICEDIF,IFTHRS,
-     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),LDUMMY)
          IF (IPRINT .GT. 0) THEN
            CALL GETTIM(CPU2,WALL2)
            WALL   = WALL2 - WALL1
@@ -737,7 +740,7 @@ c             calculation.
      &               WORK(KFREE),WORK(KNSTAT),DUMMY,LFREE,ITYPE,MAXDER,
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
      &               ICEDIF,IFTHRS,
-     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),LDUMMY)
             IF (IPRINT .GT. 0) THEN
               CALL GETTIM(CPU1,WALL1)
               WALL   = WALL1 - WALL2
@@ -767,7 +770,8 @@ C
      &               IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,
      &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &               WORK(KIORBS),ICEDIF,IFTHRS,
-     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.,
+     &               .false.)
          HFXMU = HFXM0
          IF (IPRINT .GT. 0) THEN
            CALL GETTIM(CPU2,WALL2)
@@ -787,7 +791,8 @@ C
      &               IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,
      &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &               WORK(KIORBS),ICEDIF,IFTHRS,
-     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),
+     &               .FALSE.,.false.)
             IF (IPRINT .GT. 0) THEN
               CALL GETTIM(CPU1,WALL1)
               WALL   = WALL1 - WALL2

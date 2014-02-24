@@ -62,31 +62,4 @@ type(Matrix) :: expX, tmp
 end subroutine updatecmo
 
 
-subroutine update_trustradius_david(CFG,r,ls,macroiter)
-implicit none
-type(RedSpaceItem)      :: CFG
-real(realk), intent(in) :: r
-type(lsitem), intent(in)   :: ls
-integer,intent(in)         :: macroiter
-
-
- if (r.lt.0d0) then
-    CFG%step_accepted = .false.
-    return
- endif
-
- if(r.gt.0.75d0) then
-         CFG%Stepsize = min(CFG%Stepsize*2.5d0,CFG%max_stepsize)
- end if
-
- if(r.gt.0.25d0 .and. r.lt.0.75d0)  write(ls%lupri,*) 'Keep stepsize', r
-
- if (r.gt.0.0d0 .and. r.lt.0.25d0) then
-    CFG%Stepsize = CFG%Stepsize*0.7d0
- endif
-
- CFG%step_accepted = .true.
-
-end subroutine update_trustradius_david
-
 end module loc_utils

@@ -57,6 +57,8 @@ TRILEVEL
 .SimulateFull
 .kappaTHR
 1e-6
+.MEMORY
+2.0
 *END OF INPUT  
 %EOF%
 #######################################################################

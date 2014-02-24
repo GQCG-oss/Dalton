@@ -109,6 +109,10 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
 
 # SCF, MP2 and CC2 energies:
 CRIT1=`$GREP "Final * HF energy:"  $log | $GREP "\-230.7281544." | wc -l`
@@ -138,11 +142,11 @@ then
   echo TEST ENDED PROPERLY
 else
 
-  if [ $TESTA -lt $CTRLA ]; then
+  if [ $TESTA -ne $CTRLA ]; then
     echo "$ERRORA ( test = $TESTA; control = $CTRLA ); "
   fi
 
-  if [ $TESTB -lt $CTRLB ]; then
+  if [ $TESTB -ne $CTRLB ]; then
     echo "$ERRORB ( test = $TESTB; control = $CTRLB ); "
   fi
 

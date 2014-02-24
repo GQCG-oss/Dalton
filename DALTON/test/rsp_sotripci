@@ -84,7 +84,7 @@ Z2SPNORB
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo '#!/bin/bash
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -126,7 +126,7 @@ ERROR[4]="TRANSITION NOT CORRECT"
 PASSED=1
 for i in 1 2 3
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,171 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:53:40 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 18:55:59 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_dft_optimize_sym
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.OPTIMIZE                                         
+**WAVE FUNCTIONS                                  
+.DFT                                              
+ B3LYPGauss                                       
+**END OF INPUT                                    
+                                                  
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+6-31G*                                                                         
+H2O                                                                            
+Symmetry                                                                       
+    2                                                                          
+        8.    1                                                                
+O     0.0  0.0000000000 0.0                                                    
+        1.    2                                                                
+H     1.430    0.0  0.8                                                        
+H    -1.430    0.0  0.8                                                        
+                                                                               
 
 
        *******************************************************************
@@ -105,7 +193,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     "Old" integral transformation used (limited to max 255 basis functions)
  --------------------------------------------------------------------------------
@@ -128,13 +216,7 @@
               >>>>>>>>>> 1st Order Geometry Optimization >>>>>>>>>>
               >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
- Read .mol file to determine number of atoms:
-
-
- **************************************************************************************
- ****************** Output of molecule and basis set info suppressed ******************
- **************************************************************************************
-
+ Reading .mol file to determine number of atoms for parallel runs.
 
 
                       SYMADD: Requested addition of symmetry
@@ -142,7 +224,10 @@
 
  Symmetry test threshold:  5.00E-06
 
- Symmetry class found: C(2v)  
+ - molecule centered at center of mass and rotated so
+   principal axes of inertia are along coordinate axes.
+
+ Symmetry class found: C(2v)          
 
  The following elements were found:   X  Y     
 
@@ -163,8 +248,8 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G*"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-31G*"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-31G*                                                                          
@@ -174,8 +259,8 @@
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G*"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-31G*"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-31G*                                                                          
@@ -186,7 +271,10 @@
 
  Symmetry test threshold:  5.00E-06
 
- Symmetry class found: C(2v)  
+ - molecule centered at center of mass and rotated so
+   principal axes of inertia are along coordinate axes.
+
+ Symmetry class found: C(2v)          
 
  Symmetry Independent Centres             
  ----------------------------
@@ -265,7 +353,7 @@ Represented as:      C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -314,8 +402,10 @@ Represented as:      C2v
  H   _2:    0.867092    1.513447    0.000000
 
 
-  Max interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
+  Max    interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.8671 Angstrom (    1.6386 Bohr)
 
 
   Bond distances (Angstrom):
@@ -356,7 +446,7 @@ Represented as:      C2v
            52.546589           14.605184           11.428627 cm-1
 
 
-@  Nuclear repulsion energy :   10.114283351242
+@  Nuclear repulsion energy :   10.114283351242 Hartree
 
 
   Symmetry Orbitals
@@ -419,13 +509,13 @@ Represented as:      C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:        3461 ( 23.5% )
  Megabytes written:                              0.041
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -459,8 +549,8 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 18:55:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:40 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      H2O                                                                     
@@ -469,21 +559,21 @@ Represented as:      C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Kohn-Sham DFT calculation.
+@    Restricted, closed shell Kohn-Sham DFT calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> KS-DFT   <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> KS-DFT <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
  
      This is a DFT calculation of type: B3LYPGauss
  Weighted mixed functional:
@@ -504,7 +594,7 @@ Represented as:      C2v
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -526,50 +616,44 @@ Represented as:      C2v
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
       K-S energy, electrons, error :     -7.517669025541  10.0000003074    3.07D-07
-   1  -76.1501244600       2.45D+00  -7.62D+01    3  1  1  0
+@  1  -76.1501244600       2.45D+00  -7.62D+01     3   1   1   0
       Virial theorem: -V/T =      2.002442
-      MULPOP  O      -0.45; H   _1  0.23; H   _2  0.23; 
+@      MULPOP O      -0.45; H   _1  0.23; H   _2  0.23; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.747583472518  10.0000002397    2.40D-07
-   2  -76.3552733954       7.25D-01  -2.05D-01    3  1  1  0
+@  2  -76.3552733954       7.25D-01  -2.05D-01     3   1   1   0
       Virial theorem: -V/T =      1.987855
-      MULPOP  O      -0.91; H   _1  0.45; H   _2  0.45; 
+@      MULPOP O      -0.91; H   _1  0.45; H   _2  0.45; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.558007739504  10.0000002628    2.63D-07
-   3  -76.3669792264       5.36D-01  -1.17D-02    3  1  1  0
+@  3  -76.3669792264       5.36D-01  -1.17D-02     3   1   1   0
       Virial theorem: -V/T =      2.009493
-      MULPOP  O      -0.73; H   _1  0.36; H   _2  0.36; 
+@      MULPOP O      -0.73; H   _1  0.36; H   _2  0.36; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.656280593771  10.0000002498    2.50D-07
-   4  -76.3789686176       8.27D-02  -1.20D-02    3  1  1  0
+@  4  -76.3789686176       8.27D-02  -1.20D-02     3   1   1   0
       Virial theorem: -V/T =      1.998215
-      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.644410908986  10.0000002509    2.51D-07
-   5  -76.3792712990       3.68D-03  -3.03D-04    3  1  1  0
+@  5  -76.3792712990       3.68D-03  -3.03D-04     3   1   1   0
       Virial theorem: -V/T =      1.999560
-      MULPOP  O      -0.82; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.82; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.644927724493  10.0000002508    2.51D-07
-   6  -76.3792719395       1.71D-04  -6.41D-07    3  1  1  0
+@  6  -76.3792719395       1.71D-04  -6.41D-07     3   1   1   0
       Virial theorem: -V/T =      1.999495
-      MULPOP  O      -0.82; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.82; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.644951495811  10.0000002508    2.51D-07
-   7  -76.3792719412       5.76D-06  -1.68D-09    3  1  1  0
+@  7  -76.3792719412       5.76D-06  -1.68D-09     3   1   1   0
 
- *** DIIS converged in   7 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -76.379271941211    5.76D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -598,25 +682,27 @@ Represented as:      C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       1.443       1.459
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:            -76.379271941211                 
-     Nuclear repulsion:            10.114283351242
-     Electronic energy:           -86.493555292453
+@    Final DFT energy:            -76.379271941211                 
+@    Nuclear repulsion:            10.114283351242
+@    Electronic energy:           -86.493555292453
 
-     Final gradient norm:           0.000005759261
+@    Final gradient norm:           0.000005759261
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:01 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:41 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -660,12 +746,12 @@ Represented as:      C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.95 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.45 seconds
+ >>>> Total wall time used in SIRIUS :      1.46 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:01 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:41 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -678,6 +764,8 @@ Represented as:      C2v
 
  Center of mass dipole origin  :    0.000000    0.000000    0.000000
 
+ Center of mass gauge origin   :    0.000000    0.000000    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -685,8 +773,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:01 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:41 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
             +---------------------------------------------------------+
@@ -713,8 +801,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:02 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:42 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -800,8 +888,10 @@ Represented as:      C2v
  H   _2:    0.867092    1.513447    0.000000
 
 
-  Max interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
+  Max    interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.8671 Angstrom (    1.6386 Bohr)
 
 
   Bond distances (Angstrom):
@@ -829,8 +919,8 @@ Represented as:      C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.42 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.39 seconds
+ >>>> Total wall time used in ABACUS:   0.39 seconds
 
 
                    .-------------------------------------------.
@@ -886,13 +976,13 @@ Represented as:      C2v
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:        3461 ( 23.5% )
  Megabytes written:                              0.041
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -919,48 +1009,42 @@ Represented as:      C2v
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
       K-S energy, electrons, error :     -7.612112993164  10.0000008281    8.28D-07
-   1    -76.3967102895        2.54798D-01   -1.74D-02    1
+@  1    -76.3967102895        2.54798D-01   -1.74D-02    1
       Virial theorem: -V/T =      2.001267
-      MULPOP  O      -0.82; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.82; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.541318607138  10.0000008269    8.27D-07
-   2    -76.3989435608        2.36080D-01   -2.23D-03    2
+      K-S energy, electrons, error :     -7.541318607136  10.0000008269    8.27D-07
+@  2    -76.3989435608        2.36080D-01   -2.23D-03    2
       Virial theorem: -V/T =      2.008771
-      MULPOP  O      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP O      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.588925042198  10.0000008299    8.30D-07
-   3    -76.4012432339        5.62200D-02   -2.30D-03    3
+      K-S energy, electrons, error :     -7.588925042197  10.0000008299    8.30D-07
+@  3    -76.4012432339        5.62200D-02   -2.30D-03    3
       Virial theorem: -V/T =      2.003327
-      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.579746836809  10.0000008297    8.30D-07
-   4    -76.4013884622        4.44643D-03   -1.45D-04    4
+      K-S energy, electrons, error :     -7.579746836808  10.0000008297    8.30D-07
+@  4    -76.4013884622        4.44643D-03   -1.45D-04    4
       Virial theorem: -V/T =      2.004351
-      MULPOP  O      -0.82; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.82; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.580010555153  10.0000008297    8.30D-07
-   5    -76.4013894039        3.33399D-04   -9.42D-07    5
+      K-S energy, electrons, error :     -7.580010555152  10.0000008297    8.30D-07
+@  5    -76.4013894039        3.33399D-04   -9.42D-07    5
       Virial theorem: -V/T =      2.004318
-      MULPOP  O      -0.82; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.82; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.580039817094  10.0000008297    8.30D-07
-   6    -76.4013894111        2.57732D-05   -7.18D-09    6
+      K-S energy, electrons, error :     -7.580039817093  10.0000008297    8.30D-07
+@  6    -76.4013894111        2.57732D-05   -7.18D-09    6
       Virial theorem: -V/T =      2.004314
-      MULPOP  O      -0.82; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.82; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.580043269189  10.0000008297    8.30D-07
-   7    -76.4013894111        1.52938D-06   -5.25D-11    7
+      K-S energy, electrons, error :     -7.580043269188  10.0000008297    8.30D-07
+@  7    -76.4013894111        1.52938D-06   -5.25D-11    7
 
- *** DIIS converged in   7 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -76.401389411145    1.53D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -989,34 +1073,36 @@ Represented as:      C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       1.442       1.456
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:            -76.401389411147                 
-     Nuclear repulsion:             9.282745012284
-     Electronic energy:           -85.684134423431
+@    Final DFT energy:            -76.401389411145                 
+@    Nuclear repulsion:             9.282745012283
+@    Electronic energy:           -85.684134423429
 
-     Final gradient norm:           0.000001529377
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:56:04 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      1.96 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+@    Final gradient norm:           0.000001529377
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:04 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:43 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.44 seconds
+ >>>> Total wall time used in SIRIUS :      1.46 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:53:43 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -1031,6 +1117,8 @@ Represented as:      C2v
 
  Center of mass dipole origin  :    0.000000    0.000000   -0.062859
 
+ Center of mass gauge origin   :    0.000000    0.000000   -0.062859
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -1038,15 +1126,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:04 2011 
-     Host name              : fe6                                     
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
+     Date and time (Linux)  : Sun Sep  8 20:53:43 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
             +---------------------------------------------------------+
@@ -1073,8 +1154,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:05 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:44 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -1082,12 +1163,12 @@ Represented as:      C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     314 %
+ REST       00:00:01     293 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.39 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.40 seconds
+ >>>> Total wall time used in ABACUS:   0.71 seconds
 
 
                    .-------------------------------------------.
@@ -1144,13 +1225,13 @@ Represented as:      C2v
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:        3461 ( 23.5% )
  Megabytes written:                              0.041
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -1177,43 +1258,37 @@ Represented as:      C2v
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
-      K-S energy, electrons, error :     -7.572424323670  10.0000010541    1.05D-06
-   1    -76.4039506066        7.58101D-02   -2.56D-03    1
+      K-S energy, electrons, error :     -7.572424323668  10.0000010541    1.05D-06
+@  1    -76.4039506066        7.58101D-02   -2.56D-03    1
       Virial theorem: -V/T =      2.004729
-      MULPOP  O      -0.82; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.82; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.556915129135  10.0000010553    1.06D-06
-   2    -76.4043500993        5.60370D-02   -3.99D-04    2
+      K-S energy, electrons, error :     -7.556915129134  10.0000010553    1.06D-06
+@  2    -76.4043500993        5.60370D-02   -3.99D-04    2
       Virial theorem: -V/T =      2.006221
-      MULPOP  O      -0.80; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.80; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.570134194311  10.0000010556    1.06D-06
-   3    -76.4044590635        2.54205D-02   -1.09D-04    3
+      K-S energy, electrons, error :     -7.570134194310  10.0000010556    1.06D-06
+@  3    -76.4044590635        2.54205D-02   -1.09D-04    3
       Virial theorem: -V/T =      2.004707
-      MULPOP  O      -0.82; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.82; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.565942311532  10.0000010556    1.06D-06
-   4    -76.4044889479        3.16378D-04   -2.99D-05    4
+      K-S energy, electrons, error :     -7.565942311530  10.0000010556    1.06D-06
+@  4    -76.4044889479        3.16378D-04   -2.99D-05    4
       Virial theorem: -V/T =      2.005174
-      MULPOP  O      -0.81; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.81; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.565975858592  10.0000010556    1.06D-06
-   5    -76.4044889564        3.39351D-05   -8.55D-09    5
+      K-S energy, electrons, error :     -7.565975858590  10.0000010556    1.06D-06
+@  5    -76.4044889564        3.39351D-05   -8.55D-09    5
       Virial theorem: -V/T =      2.005169
-      MULPOP  O      -0.81; H   _1  0.41; H   _2  0.41; 
+@      MULPOP O      -0.81; H   _1  0.41; H   _2  0.41; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.565979732874  10.0000010556    1.06D-06
-   6    -76.4044889565        5.33353D-06   -8.33D-11    6
+      K-S energy, electrons, error :     -7.565979732873  10.0000010556    1.06D-06
+@  6    -76.4044889565        5.33353D-06   -8.32D-11    6
 
- *** DIIS converged in   6 iterations !
-   - total time used in SIRFCK :              0.01 seconds
+@ *** DIIS converged in   6 iterations !
+@     Converged SCF energy, gradient:    -76.404488956492    5.33D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1242,34 +1317,36 @@ Represented as:      C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       1.238       1.316
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:            -76.404488956494                 
-     Nuclear repulsion:             9.111117119253
-     Electronic energy:           -85.515606075747
+@    Final DFT energy:            -76.404488956492                 
+@    Nuclear repulsion:             9.111117119230
+@    Electronic energy:           -85.515606075722
 
-     Final gradient norm:           0.000005333535
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:56:07 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      1.67 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+@    Final gradient norm:           0.000005333534
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:07 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:45 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.24 seconds
+ >>>> Total wall time used in SIRIUS :      1.32 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:53:45 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -1284,6 +1361,8 @@ Represented as:      C2v
 
  Center of mass dipole origin  :    0.000000    0.000000   -0.106799
 
+ Center of mass gauge origin   :    0.000000    0.000000   -0.106799
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -1291,15 +1370,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:07 2011 
-     Host name              : fe6                                     
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
+     Date and time (Linux)  : Sun Sep  8 20:53:45 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
             +---------------------------------------------------------+
@@ -1326,8 +1398,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:07 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:46 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -1338,8 +1410,8 @@ Represented as:      C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.44 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.40 seconds
+ >>>> Total wall time used in ABACUS:   0.40 seconds
 
 
                    .-------------------------------------------.
@@ -1396,13 +1468,13 @@ Represented as:      C2v
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:        3461 ( 23.5% )
  Megabytes written:                              0.041
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -1429,48 +1501,42 @@ Represented as:      C2v
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
       K-S energy, electrons, error :     -7.559028641435  10.0000003335    3.34D-07
-   1    -76.4056003779        9.66574D-02   -1.11D-03    1
+@  1    -76.4056003779        9.66574D-02   -1.11D-03    1
       Virial theorem: -V/T =      2.005528
-      MULPOP  O      -0.81; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.81; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.543675291055  10.0000003355    3.35D-07
-   2    -76.4063092004        5.93695D-02   -7.09D-04    2
+      K-S energy, electrons, error :     -7.543675291057  10.0000003355    3.35D-07
+@  2    -76.4063092004        5.93695D-02   -7.09D-04    2
       Virial theorem: -V/T =      2.006924
-      MULPOP  O      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP O      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.559417765890  10.0000003342    3.34D-07
-   3    -76.4063980180        3.90117D-02   -8.88D-05    3
+@  3    -76.4063980180        3.90117D-02   -8.88D-05    3
       Virial theorem: -V/T =      2.005128
-      MULPOP  O      -0.80; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.80; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.552952813414  10.0000003347    3.35D-07
-   4    -76.4064677770        9.96688D-04   -6.98D-05    4
+@  4    -76.4064677770        9.96688D-04   -6.98D-05    4
       Virial theorem: -V/T =      2.005852
-      MULPOP  O      -0.80; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.80; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.553042334277  10.0000003347    3.35D-07
-   5    -76.4064678291        1.34497D-04   -5.21D-08    5
+@  5    -76.4064678291        1.34497D-04   -5.21D-08    5
       Virial theorem: -V/T =      2.005840
-      MULPOP  O      -0.80; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.80; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.553043081310  10.0000003347    3.35D-07
-   6    -76.4064678303        1.31373D-05   -1.19D-09    6
+      K-S energy, electrons, error :     -7.553043081311  10.0000003347    3.35D-07
+@  6    -76.4064678303        1.31373D-05   -1.19D-09    6
       Virial theorem: -V/T =      2.005840
-      MULPOP  O      -0.80; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.80; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.553044994976  10.0000003347    3.35D-07
-   7    -76.4064678303        4.12644D-07   -1.15D-11    7
+      K-S energy, electrons, error :     -7.553044994977  10.0000003347    3.35D-07
+@  7    -76.4064678303        4.12644D-07   -1.16D-11    7
 
- *** DIIS converged in   7 iterations !
-   - total time used in SIRFCK :              0.01 seconds
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -76.406467830329    4.13D-07
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1499,34 +1565,36 @@ Represented as:      C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       1.438       1.450
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:            -76.406467830328                 
-     Nuclear repulsion:             8.963682293446
-     Electronic energy:           -85.370150123775
+@    Final DFT energy:            -76.406467830329                 
+@    Nuclear repulsion:             8.963682293456
+@    Electronic energy:           -85.370150123785
 
-     Final gradient norm:           0.000000412644
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:56:10 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      1.95 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+@    Final gradient norm:           0.000000412644
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:10 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:47 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.44 seconds
+ >>>> Total wall time used in SIRIUS :      1.45 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:53:47 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -1541,6 +1609,8 @@ Represented as:      C2v
 
  Center of mass dipole origin  :    0.000000    0.000000   -0.170863
 
+ Center of mass gauge origin   :    0.000000    0.000000   -0.170863
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -1548,15 +1618,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:10 2011 
-     Host name              : fe6                                     
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
+     Date and time (Linux)  : Sun Sep  8 20:53:47 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
             +---------------------------------------------------------+
@@ -1568,7 +1631,7 @@ Represented as:      C2v
         Coordinate    Direct calc.     Tra.-rot. sym.   Difference
         ----------------------------------------------------------
 
-        O    z       -0.0071677968    -0.0071563847    -0.0000114122
+        O    z       -0.0071677968    -0.0071563846    -0.0000114122
 
 
 
@@ -1583,8 +1646,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:10 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:48 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -1592,12 +1655,12 @@ Represented as:      C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     388 %
+ REST       00:00:02     402 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.44 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.40 seconds
+ >>>> Total wall time used in ABACUS:   0.40 seconds
 
 
                    .-------------------------------------------.
@@ -1654,13 +1717,13 @@ Represented as:      C2v
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:        3461 ( 23.5% )
  Megabytes written:                              0.041
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -1687,38 +1750,32 @@ Represented as:      C2v
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
       K-S energy, electrons, error :     -7.554540709187  10.0000005072    5.07D-07
-   1    -76.4068087005        2.19786D-02   -3.41D-04    1
+@  1    -76.4068087005        2.19786D-02   -3.41D-04    1
       Virial theorem: -V/T =      2.005796
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.557410481611  10.0000005068    5.07D-07
-   2    -76.4068333229        8.96488D-03   -2.46D-05    2
+      K-S energy, electrons, error :     -7.557410481609  10.0000005068    5.07D-07
+@  2    -76.4068333229        8.96488D-03   -2.46D-05    2
       Virial theorem: -V/T =      2.005461
-      MULPOP  O      -0.80; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.80; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.554854632249  10.0000005070    5.07D-07
-   3    -76.4068348082        7.00106D-03   -1.49D-06    3
+@  3    -76.4068348082        7.00106D-03   -1.49D-06    3
       Virial theorem: -V/T =      2.005751
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.556071124849  10.0000005069    5.07D-07
-   4    -76.4068369823        7.29632D-04   -2.17D-06    4
+@  4    -76.4068369823        7.29632D-04   -2.17D-06    4
       Virial theorem: -V/T =      2.005613
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.555993567078  10.0000005069    5.07D-07
-   5    -76.4068370072        7.34397D-06   -2.48D-08    5
+@  5    -76.4068370072        7.34397D-06   -2.48D-08    5
 
- *** DIIS converged in   5 iterations !
-   - total time used in SIRFCK :              0.01 seconds
+@ *** DIIS converged in   5 iterations !
+@     Converged SCF energy, gradient:    -76.406837007168    7.34D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1747,34 +1804,36 @@ Represented as:      C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       1.030       1.040
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:            -76.406837007168                 
-     Nuclear repulsion:             9.004838105169
-     Electronic energy:           -85.411675112338
+@    Final DFT energy:            -76.406837007168                 
+@    Nuclear repulsion:             9.004838105163
+@    Electronic energy:           -85.411675112331
 
-     Final gradient norm:           0.000007343968
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:56:12 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      1.40 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+@    Final gradient norm:           0.000007343968
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:12 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.03 seconds
+ >>>> Total wall time used in SIRIUS :      1.04 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:53:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -1789,6 +1848,8 @@ Represented as:      C2v
 
  Center of mass dipole origin  :    0.000000    0.000000   -0.179754
 
+ Center of mass gauge origin   :    0.000000    0.000000   -0.179754
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -1796,15 +1857,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:12 2011 
-     Host name              : fe6                                     
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
+     Date and time (Linux)  : Sun Sep  8 20:53:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
             +---------------------------------------------------------+
@@ -1831,8 +1885,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:13 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:49 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -1843,8 +1897,8 @@ Represented as:      C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.44 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.40 seconds
+ >>>> Total wall time used in ABACUS:   0.40 seconds
 
 
                    .-------------------------------------------.
@@ -1901,13 +1955,13 @@ Represented as:      C2v
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:        3461 ( 23.5% )
  Megabytes written:                              0.041
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -1934,43 +1988,37 @@ Represented as:      C2v
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
-      K-S energy, electrons, error :     -7.559335081845  10.0000008656    8.66D-07
-   1    -76.4069750148        2.93510D-02   -1.38D-04    1
+      K-S energy, electrons, error :     -7.559335081843  10.0000008656    8.66D-07
+@  1    -76.4069750148        2.93510D-02   -1.38D-04    1
       Virial theorem: -V/T =      2.005491
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.565980457882  10.0000008652    8.65D-07
-   2    -76.4070042968        2.15568D-02   -2.93D-05    2
+      K-S energy, electrons, error :     -7.565980457879  10.0000008652    8.65D-07
+@  2    -76.4070042968        2.15568D-02   -2.93D-05    2
       Virial theorem: -V/T =      2.004781
-      MULPOP  O      -0.80; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.80; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.560982222052  10.0000008653    8.65D-07
-   3    -76.4070210881        9.26696D-03   -1.68D-05    3
+      K-S energy, electrons, error :     -7.560982222051  10.0000008653    8.65D-07
+@  3    -76.4070210881        9.26696D-03   -1.68D-05    3
       Virial theorem: -V/T =      2.005350
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.562516788016  10.0000008653    8.65D-07
-   4    -76.4070249566        8.25546D-04   -3.87D-06    4
+      K-S energy, electrons, error :     -7.562516788014  10.0000008653    8.65D-07
+@  4    -76.4070249566        8.25546D-04   -3.87D-06    4
       Virial theorem: -V/T =      2.005178
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.562444041355  10.0000008653    8.65D-07
-   5    -76.4070249883        1.17229D-05   -3.17D-08    5
+      K-S energy, electrons, error :     -7.562444041354  10.0000008653    8.65D-07
+@  5    -76.4070249883        1.17229D-05   -3.17D-08    5
       Virial theorem: -V/T =      2.005186
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.562443563214  10.0000008653    8.65D-07
-   6    -76.4070249883        1.47914D-06   -1.66D-11    6
+      K-S energy, electrons, error :     -7.562443563212  10.0000008653    8.65D-07
+@  6    -76.4070249883        1.47914D-06   -1.65D-11    6
 
- *** DIIS converged in   6 iterations !
-   - total time used in SIRFCK :              0.01 seconds
+@ *** DIIS converged in   6 iterations !
+@     Converged SCF energy, gradient:    -76.407024988332    1.48D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1999,34 +2047,36 @@ Represented as:      C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       1.232       1.680
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:            -76.407024988332                 
-     Nuclear repulsion:             9.089119232577
-     Electronic energy:           -85.496144220909
+@    Final DFT energy:            -76.407024988332                 
+@    Nuclear repulsion:             9.089119232556
+@    Electronic energy:           -85.496144220887
 
-     Final gradient norm:           0.000001479143
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:56:15 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      1.58 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+@    Final gradient norm:           0.000001479143
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:15 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:51 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.23 seconds
+ >>>> Total wall time used in SIRIUS :      1.68 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:53:51 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -2041,6 +2091,8 @@ Represented as:      C2v
 
  Center of mass dipole origin  :    0.000000    0.000000   -0.182698
 
+ Center of mass gauge origin   :    0.000000    0.000000   -0.182698
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -2048,15 +2100,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:15 2011 
-     Host name              : fe6                                     
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
+     Date and time (Linux)  : Sun Sep  8 20:53:51 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
             +---------------------------------------------------------+
@@ -2083,8 +2128,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:15 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:51 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -2092,12 +2137,12 @@ Represented as:      C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     435 %
+ REST       00:00:02     401 %
 
 
 
  >>>> Total CPU  time used in ABACUS:   0.40 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total wall time used in ABACUS:   0.40 seconds
 
 
                    .-------------------------------------------.
@@ -2154,13 +2199,13 @@ Represented as:      C2v
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:        3461 ( 23.5% )
  Megabytes written:                              0.041
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -2187,38 +2232,32 @@ Represented as:      C2v
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
-      K-S energy, electrons, error :     -7.562388953303  10.0000008604    8.60D-07
-   1    -76.4070251005        8.79564D-04   -1.12D-07    1
+      K-S energy, electrons, error :     -7.562388953302  10.0000008604    8.60D-07
+@  1    -76.4070251005        8.79564D-04   -1.12D-07    1
       Virial theorem: -V/T =      2.005188
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.562296832932  10.0000008604    8.60D-07
-   2    -76.4070251432        2.88766D-04   -4.27D-08    2
+@  2    -76.4070251432        2.88766D-04   -4.27D-08    2
       Virial theorem: -V/T =      2.005199
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.562380227785  10.0000008604    8.60D-07
-   3    -76.4070251445        2.40790D-04   -1.29D-09    3
+      K-S energy, electrons, error :     -7.562380227784  10.0000008604    8.60D-07
+@  3    -76.4070251445        2.40790D-04   -1.29D-09    3
       Virial theorem: -V/T =      2.005190
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.562336992576  10.0000008604    8.60D-07
-   4    -76.4070251470        3.25763D-05   -2.54D-09    4
+      K-S energy, electrons, error :     -7.562336992575  10.0000008604    8.60D-07
+@  4    -76.4070251470        3.25763D-05   -2.54D-09    4
       Virial theorem: -V/T =      2.005195
-      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+@      MULPOP O      -0.79; H   _1  0.40; H   _2  0.40; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.562340851315  10.0000008604    8.60D-07
-   5    -76.4070251471        3.02520D-07   -4.91D-11    5
+      K-S energy, electrons, error :     -7.562340851314  10.0000008604    8.60D-07
+@  5    -76.4070251471        3.02520D-07   -4.91D-11    5
 
- *** DIIS converged in   5 iterations !
-   - total time used in SIRFCK :              0.01 seconds
+@ *** DIIS converged in   5 iterations !
+@     Converged SCF energy, gradient:    -76.407025147065    3.03D-07
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2247,34 +2286,36 @@ Represented as:      C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       1.025       1.034
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:            -76.407025147065                 
-     Nuclear repulsion:             9.087652077797
-     Electronic energy:           -85.494677224863
+@    Final DFT energy:            -76.407025147065                 
+@    Nuclear repulsion:             9.087652077790
+@    Electronic energy:           -85.494677224855
 
-     Final gradient norm:           0.000000302520
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:56:17 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      1.40 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+@    Final gradient norm:           0.000000302520
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:17 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:52 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.03 seconds
+ >>>> Total wall time used in SIRIUS :      1.03 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:53:52 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -2289,6 +2330,8 @@ Represented as:      C2v
 
  Center of mass dipole origin  :    0.000000    0.000000   -0.182329
 
+ Center of mass gauge origin   :    0.000000    0.000000   -0.182329
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -2296,15 +2339,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:17 2011 
-     Host name              : fe6                                     
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21288 compressed from 21288 (114 radial)
-         DFT grid generation - Atom:    2*2 points= 18666 compressed from 18666 ( 81 radial)
-         DFT grid generation - Number of grid points:    39954; grid generation time:      0.0 s
+     Date and time (Linux)  : Sun Sep  8 20:53:52 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
             +---------------------------------------------------------+
@@ -2331,8 +2367,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:18 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:53 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -2343,8 +2379,8 @@ Represented as:      C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.44 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.40 seconds
+ >>>> Total wall time used in ABACUS:   0.40 seconds
 
 
                    .-------------------------------------------.
@@ -2386,6 +2422,8 @@ Represented as:      C2v
 
  Center of mass dipole origin  :    0.000000    0.000000   -0.182329
 
+ Center of mass gauge origin   :    0.000000    0.000000   -0.182329
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -2393,8 +2431,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:18 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:53 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
    ***************************************************************************
@@ -2403,8 +2441,8 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:18 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:53 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -2471,8 +2509,10 @@ Represented as:      C2v
  H   _2:    0.968667    1.525242    0.000000
 
 
-  Max interatomic separation is    1.5252 Angstrom (    2.8823 Bohr)
+  Max    interatomic separation is    1.5252 Angstrom (    2.8823 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9687 Angstrom (    1.8305 Bohr)
 
 
   Bond distances (Angstrom):
@@ -2526,17 +2566,17 @@ Represented as:      C2v
 
 
 
- Iter      Energy        Change       GradNorm  Index   StepLen    TrustRad #Rej
- -------------------------------------------------------------------------------
-   0      -76.379272     0.000000     0.249086    0    0.301476*   0.500000   0 
-   1      -76.401389    -0.022117     0.063914    0    0.095056*   0.500000   0 
-   2      -76.404489    -0.003100     0.033002    0    0.158678*   0.500000   0 
-   3      -76.406468    -0.001979     0.021173    0    0.052998*   0.500000   0 
-   4      -76.406837    -0.000369     0.014275    0    0.059255*   0.500000   0 
-   5      -76.407025    -0.000188     0.000286    0    0.002100*   0.500000   0 
-   6      -76.407025    -0.000000     0.000024    0    0.000047*   0.500000   0 
+@ Iter      Energy        Change       GradNorm  Index   StepLen    TrustRad #Rej
+@ -------------------------------------------------------------------------------
+@   0      -76.379272     0.000000     0.249086    0    0.301476*   0.500000   0 
+@   1      -76.401389    -0.022117     0.063914    0    0.095056*   0.500000   0 
+@   2      -76.404489    -0.003100     0.033002    0    0.158678*   0.500000   0 
+@   3      -76.406468    -0.001979     0.021173    0    0.052998*   0.500000   0 
+@   4      -76.406837    -0.000369     0.014275    0    0.059255*   0.500000   0 
+@   5      -76.407025    -0.000188     0.000286    0    0.002100*   0.500000   0 
+@   6      -76.407025    -0.000000     0.000024    0    0.000047*   0.500000   0 
 
- *) Newton step taken.
+@  *) Newton step taken.
 
 
    Interatomic separations (in Angstrom):
@@ -2549,8 +2589,10 @@ Represented as:      C2v
  H   _2:    0.968667    1.525242    0.000000
 
 
-  Max interatomic separation is    1.5252 Angstrom (    2.8823 Bohr)
+  Max    interatomic separation is    1.5252 Angstrom (    2.8823 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9687 Angstrom (    1.8305 Bohr)
 
 
   Bond distances (Angstrom):
@@ -2571,15 +2613,15 @@ Represented as:      C2v
 
 
 
- Geometry converged in            7  iterations!
+@ Geometry converged in  7 iterations!
 
- Energy at final geometry is       :     -76.407025 a.u.
- Energy change during optimization :      -0.027753 a.u.
-                                            -72.866 kJ/mol
+@ Energy at final geometry is       :     -76.407025 a.u.
+@ Energy change during optimization :      -0.027753 a.u.
+@                                            -72.866 kJ/mol
 
- >>>> Total CPU  time used in DALTON:  15.00 seconds
- >>>> Total wall time used in DALTON:  19.00 seconds
+ >>>> Total CPU  time used in DALTON:  11.74 seconds
+ >>>> Total wall time used in DALTON:  12.67 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:56:18 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:53:53 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

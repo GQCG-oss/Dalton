@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,194 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:38:21 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 17:41:13 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_energy_nevpt2_ex
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+ATOMBASIS                                         
+ Formaldehyde                                     
+ ANO basis                                        
+    3    1  Y                                     
+       8.     1 Basis=ano-1 4 3 1                 
+O1         0.0978456801            0.0000000000   
+       6.     1 Basis=ano-1 4 3 1                 
+C1        -0.3491426209            0.0000000000   
+       1.     1 Basis=ano-1 2 1                   
+H1         0.1257484704            1.7643249913   
+                                                  
+EOF                                               
+                                                  
+**DALTON INPUT                                    
+.RUN WAVE FUNCTION                                
+**WAVE FUNCTIONS                                  
+.HF                                               
+.MCSCF                                            
+.NEVPT2                                           
+*SCF INPUT                                        
+.DOUBLY OCCUPIED                                  
+ 6 2                                              
+*CONFIGURATION INPUT                              
+.SYMMETRY                                         
+ 2                                                
+.SPIN MUL                                         
+ 1                                                
+.INACTIVE                                         
+ 4 1                                              
+.ELECTRONS                                        
+ 6                                                
+.CAS SPACE                                        
+ 4 1                                              
+*NEVPT2                                           
+.FROZEN                                           
+ 2 0                                              
+.THRESHOLD                                        
+ 0.D0                                             
+*OPTIMIZATION                                     
+.STATE                                            
+ 1                                                
+.SYM CHECK                                        
+-1                                                
+.THRESHOLD                                        
+ 1.D-9                                            
+**END OF DALTON INPUT                             
 
 
        *******************************************************************
@@ -105,7 +216,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -130,8 +241,8 @@
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   The basis set is "ano-1 4 3 1" from the basis set library.
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/ano-1"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/ano-1"
 
   Atomic type no.    2
   --------------------
@@ -139,8 +250,8 @@
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   The basis set is "ano-1 4 3 1" from the basis set library.
-  Used basis set file for basis set for elements with Z =   6 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/ano-1"
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/ano-1"
 
   Atomic type no.    3
   --------------------
@@ -148,8 +259,8 @@
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   The basis set is "ano-1 2 1" from the basis set library.
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/ano-1"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/ano-1"
 
 
                          SYMGRP: Point group information
@@ -213,7 +324,7 @@ Point group: Cs
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -261,8 +372,12 @@ Point group: Cs
  H1  _2:    2.067263    1.078354    1.867281    0.000000
 
 
-  Max interatomic separation is    2.0673 Angstrom (    3.9066 Bohr)
+  Max    interatomic separation is    2.0673 Angstrom (    3.9066 Bohr)
   between atoms    3 and    1, "H1  _1" and "O1    ".
+
+  Min HX interatomic separation is    1.0784 Angstrom (    2.0378 Bohr)
+
+  Min YX interatomic separation is    1.3872 Angstrom (    2.6214 Bohr)
 
 
   Bond distances (Angstrom):
@@ -304,7 +419,7 @@ Point group: Cs
             8.759154            1.040834            0.947818 cm-1
 
 
-@  Nuclear repulsion energy :   28.578756252064
+@  Nuclear repulsion energy :   28.578756252064 Hartree
 
 
   Symmetry Orbitals
@@ -387,14 +502,14 @@ Point group: Cs
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:      286333 ( 49.0% )
  Megabytes written:                              3.284
 
- >>> Time used in TWOINT is   1.26 seconds
- >>>> Total CPU  time used in HERMIT:   1.43 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>  Time used in TWOINT     is   1.52 seconds
+ >>>> Total CPU  time used in HERMIT:   1.66 seconds
+ >>>> Total wall time used in HERMIT:   1.67 seconds
 
 
                         .----------------------------------.
@@ -426,8 +541,8 @@ Point group: Cs
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 17:41:14 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:38:22 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
       Formaldehyde                                                           
@@ -436,63 +551,59 @@ Point group: Cs
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     N-electron valence state 2. order perturbation theory using Ken Dyall's zeroth-order Hamiltonian
+@    N-electron valence state 2. order perturbation theory using Ken Dyall's zeroth-order Hamiltonian
+@              preceded by :
 
-               preceded by :
+@    MC-SCF optimization.
+@              Type: complete active space calculation (CAS).
 
-     MC-SCF optimization.
-
-               Type: complete active space calculation (CAS).
-
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> NEVPT2   <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      6
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> NEVPT2 <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       6
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                2
-     Reference state symmetry                  2
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 2
+@    Reference state symmetry                   2
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1    2
                                        --- |  ---  ---
-     Inactive orbitals                   5 |    4    1
-     Active orbitals                     5 |    4    1
+@    Inactive orbitals                   5 |    4    1
+@    Active orbitals                     5 |    4    1
      Secondary orbitals                 36 |   23   13
      Total number of orbitals           46 |   31   15
      Number of basis functions          46 |   31   15
 
       -- Initial occupation of symmetries is determined from user input.                      
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               8 |    6    2
+@    Occupied SCF orbitals               8 |    6    2
 
      Optimization information
      ========================
-     Number of configurations                20
-     Number of orbital rotations            227
+@    Number of configurations                20
+@    Number of orbital rotations            227
      ------------------------------------------
-     Total number of variables              247
+@    Total number of variables              247
 
      Maximum number of macro iterations      25
      Maximum number of micro iterations     600
-     Threshold for gradient            1.00D-09
+     Threshold for MCSCF gradient      1.00D-09
      Number of initial trial vectors          1
      Number of initial CI iterations          3
      Number of simultaneous trial vectors     1
 
-     This calculation converges to the lowest state
-     for the specified symmetry and spin species.
+@    This calculation converges to the lowest state for the specified symmetry and spin species.
 
      Maximum number of NEO/NR iterations  24
 
@@ -504,57 +615,60 @@ Point group: Cs
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1    -113.350638396        3.02966D+00   -1.13D+02    1
+      Threshold for discarding integrals :  1.00D-12 )
+@  1    -113.350638396        3.02966D+00   -1.13D+02    1
       Virial theorem: -V/T =      1.996149
-      MULPOP  O1     -0.91; C1      0.78; H1  _1  0.07; H1  _2  0.07; 
+@      MULPOP O1     -0.91; C1      0.78; H1  _1  0.07; H1  _2  0.07; 
  -----------------------------------------------------------------------------
-   2    -113.507217979        2.58342D+00   -1.57D-01    2
+@  2    -113.507217979        2.58342D+00   -1.57D-01    2
       Virial theorem: -V/T =      2.012160
-      MULPOP  O1      0.44; C1     -0.60; H1  _1  0.08; H1  _2  0.08; 
+@      MULPOP O1      0.44; C1     -0.60; H1  _1  0.08; H1  _2  0.08; 
  -----------------------------------------------------------------------------
-   3    -113.827429456        5.61916D-01   -3.20D-01    3
+@  3    -113.827429456        5.61916D-01   -3.20D-01    3
       Virial theorem: -V/T =      1.999244
-      MULPOP  O1     -0.47; C1      0.44; H1  _1  0.02; H1  _2  0.02; 
+@      MULPOP O1     -0.47; C1      0.44; H1  _1  0.02; H1  _2  0.02; 
  -----------------------------------------------------------------------------
-   4    -113.842513787        8.81726D-02   -1.51D-02    4
+@  4    -113.842513787        8.81726D-02   -1.51D-02    4
       Virial theorem: -V/T =      2.005607
-      MULPOP  O1     -0.35; C1      0.35; H1  _1  0.00; H1  _2  0.00; 
+@      MULPOP O1     -0.35; C1      0.35; H1  _1  0.00; H1  _2  0.00; 
  -----------------------------------------------------------------------------
-   5    -113.843048641        1.71751D-02   -5.35D-04    5
+@  5    -113.843048641        1.71751D-02   -5.35D-04    5
       Virial theorem: -V/T =      2.004168
-      MULPOP  O1     -0.36; C1      0.35; H1  _1  0.01; H1  _2  0.01; 
+@      MULPOP O1     -0.36; C1      0.35; H1  _1  0.01; H1  _2  0.01; 
  -----------------------------------------------------------------------------
-   6    -113.843098453        6.35711D-03   -4.98D-05    6
+@  6    -113.843098453        6.35711D-03   -4.98D-05    6
       Virial theorem: -V/T =      2.004207
-      MULPOP  O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
+@      MULPOP O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
  -----------------------------------------------------------------------------
-   7    -113.843108302        3.75000D-03   -9.85D-06    7
+@  7    -113.843108302        3.75000D-03   -9.85D-06    7
       Virial theorem: -V/T =      2.004188
-      MULPOP  O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
+@      MULPOP O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
  -----------------------------------------------------------------------------
-   8    -113.843111649        1.20132D-03   -3.35D-06    8
+@  8    -113.843111649        1.20132D-03   -3.35D-06    8
       Virial theorem: -V/T =      2.004198
-      MULPOP  O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
+@      MULPOP O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
  -----------------------------------------------------------------------------
-   9    -113.843112077        1.75484D-04   -4.28D-07    9
+@  9    -113.843112077        1.75484D-04   -4.28D-07    9
       Virial theorem: -V/T =      2.004201
-      MULPOP  O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
+@      MULPOP O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
  -----------------------------------------------------------------------------
-  10    -113.843112086        4.62396D-05   -8.54D-09   10
+@ 10    -113.843112086        4.62396D-05   -8.54D-09   10
       Virial theorem: -V/T =      2.004200
-      MULPOP  O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
+@      MULPOP O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
  -----------------------------------------------------------------------------
-  11    -113.843112087        2.14600D-05   -6.45D-10   10
+@ 11    -113.843112087        2.14600D-05   -6.45D-10   10
       Virial theorem: -V/T =      2.004200
-      MULPOP  O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
+@      MULPOP O1     -0.37; C1      0.36; H1  _1  0.00; H1  _2  0.00; 
  -----------------------------------------------------------------------------
-  12    -113.843112087        7.66491D-06   -1.61D-10   10
+@ 12    -113.843112087        7.66491D-06   -1.61D-10   10
 
- *** DIIS converged in  12 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  12 iterations !
+@     Converged SCF energy, gradient:   -113.843112086736    7.66D-06
+    - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.046       0.046
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -566,6 +680,8 @@ Point group: Cs
 
 
 
+
+ Integral transformation: Total CPU and WALL times (sec)       0.086       0.087
 
  (CIST1)  4 lowest diagonal elements:
 
@@ -586,10 +702,10 @@ Point group: Cs
 
 
  CI energies and residuals:
-    1     -113.722599409086939       2.11D-03
+    1     -113.722599409085163       2.11D-03
 
 
- Final CI energy:     -113.722599409086939
+ Final CI energy:     -113.722599409085163
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -608,17 +724,19 @@ Point group: Cs
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.722599409087           (MACRO    1)
+ Integral transformation: Total CPU and WALL times (sec)       0.061       0.061
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -131.494061051904    
- - Active energy          :    -10.8072946092474    
+ Total MCSCF energy       :          -113.722599409085120  (MACRO    1)
 
- Norm of total gradient   :        0.691439701537
- -    of CI gradient      :        0.004212088091
- -    of orbital gradient :        0.691426871893
-      Virial theorem: -V/T =      2.009128
-      MULPOP  O1     -0.04; C1     -0.06; H1  _1  0.05; H1  _2  0.05; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -131.494061051901099
+ - Active energy          :           -10.807294609248059
+
+ Norm of total gradient   :             0.691439701535
+ -    of CI gradient      :             0.004212088091
+ -    of orbital gradient :             0.691426871891
+      Virial theorem: -V/T =      2.019799
+@      MULPOP O1      0.35; C1      0.31; H1  _1 -0.33; H1  _2 -0.33; 
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
@@ -643,17 +761,19 @@ Point group: Cs
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.793867751977           (MACRO    2)
+ Integral transformation: Total CPU and WALL times (sec)       0.064       0.065
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -130.938631112247    
- - Active energy          :    -11.4339928917945    
+ Total MCSCF energy       :          -113.793867751974574  (MACRO    2)
 
- Norm of total gradient   :        0.374090941115
- -    of CI gradient      :        0.116283650355
- -    of orbital gradient :        0.355558919006
-      Virial theorem: -V/T =      1.997450
-      MULPOP  O1     -0.23; C1      0.20; H1  _1  0.01; H1  _2  0.01; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -130.938631112242717
+ - Active energy          :           -11.433992891795894
+
+ Norm of total gradient   :             0.374090941121
+ -    of CI gradient      :             0.116283650356
+ -    of orbital gradient :             0.355558919012
+      Virial theorem: -V/T =      2.001037
+@      MULPOP O1     -0.21; C1      0.69; H1  _1 -0.24; H1  _2 -0.24; 
 
  (SIRNEO) iteration (  2,  4)
  Micro iteration termination criterion met, EVAL(ISTATE+1) = -5.78D-03
@@ -675,17 +795,19 @@ Point group: Cs
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.718796953760           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.062       0.063
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -123.859680518969    
- - Active energy          :    -18.4378726868549    
+ Total MCSCF energy       :          -113.718796953745624  (MACRO    3)
 
- Norm of total gradient   :        2.084509813519
- -    of CI gradient      :        1.209424077855
- -    of orbital gradient :        1.697785193292
-      Virial theorem: -V/T =      2.001512
-      MULPOP  O1     -0.14; C1      0.13; H1  _1  0.00; H1  _2  0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -123.859680518613544
+ - Active energy          :           -18.437872687196119
+
+ Norm of total gradient   :             2.084509813636
+ -    of CI gradient      :             1.209424077950
+ -    of orbital gradient :             1.697785193368
+      Virial theorem: -V/T =      2.000253
+@      MULPOP O1     -0.14; C1      0.67; H1  _1 -0.26; H1  _2 -0.26; 
 
  (SIRSTP) Energy difference;
  actual, predicted and ratio:   0.0750707982  -0.0362777531   -2.069334
@@ -711,17 +833,19 @@ Point group: Cs
 
  <<< MACRO ITERATION  3 BACKSTEP NO.  1 >>>
 
- Total MCSCF energy       :    -113.783700321589           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.062       0.061
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -127.458808176682    
- - Active energy          :    -14.9036483969715    
+ Total MCSCF energy       :          -113.783700321581989  (MACRO    3)
 
- Norm of total gradient   :        1.265740411810
- -    of CI gradient      :        0.532384024965
- -    of orbital gradient :        1.148331851013
-      Virial theorem: -V/T =      2.000620
-      MULPOP  O1     -0.15; C1      0.14; H1  _1  0.00; H1  _2  0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -127.458808176364613
+ - Active energy          :           -14.903648397281414
+
+ Norm of total gradient   :             1.265740411898
+ -    of CI gradient      :             0.532384025023
+ -    of orbital gradient :             1.148331851083
+      Virial theorem: -V/T =      2.001225
+@      MULPOP O1     -0.14; C1      0.66; H1  _1 -0.26; H1  _2 -0.26; 
 
  (SIRSTP) Energy difference;
  actual, predicted and ratio:   0.0101674304  -0.0319278632   -0.318450
@@ -747,17 +871,19 @@ Point group: Cs
 
  <<< MACRO ITERATION  3 BACKSTEP NO.  2 >>>
 
- Total MCSCF energy       :    -113.811757145637           (MACRO    3)
+ Integral transformation: Total CPU and WALL times (sec)       0.061       0.061
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -129.834049201857    
- - Active energy          :    -12.5564641958445    
+ Total MCSCF energy       :          -113.811757145633237  (MACRO    3)
 
- Norm of total gradient   :        0.632701112308
- -    of CI gradient      :        0.160209656606
- -    of orbital gradient :        0.612081337279
-      Virial theorem: -V/T =      1.999918
-      MULPOP  O1     -0.15; C1      0.15; H1  _1 -0.00; H1  _2 -0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -129.834049201693631
+ - Active energy          :           -12.556464196003645
+
+ Norm of total gradient   :             0.632701112355
+ -    of CI gradient      :             0.160209656627
+ -    of orbital gradient :             0.612081337323
+      Virial theorem: -V/T =      2.001690
+@      MULPOP O1     -0.13; C1      0.65; H1  _1 -0.26; H1  _2 -0.26; 
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -782,17 +908,19 @@ Point group: Cs
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.821635248496           (MACRO    4)
+ Integral transformation: Total CPU and WALL times (sec)       0.061       0.062
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -130.938492424843    
- - Active energy          :    -11.4618990757170    
+ Total MCSCF energy       :          -113.821635248493294  (MACRO    4)
 
- Norm of total gradient   :        0.058833768703
- -    of CI gradient      :        0.034916683005
- -    of orbital gradient :        0.047352271200
-      Virial theorem: -V/T =      2.000158
-      MULPOP  O1     -0.15; C1      0.15; H1  _1  0.00; H1  _2  0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -130.938492424758124
+ - Active energy          :           -11.461899075799209
+
+ Norm of total gradient   :             0.058833768700
+ -    of CI gradient      :             0.034916682995
+ -    of orbital gradient :             0.047352271203
+      Virial theorem: -V/T =      2.002394
+@      MULPOP O1     -0.11; C1      0.61; H1  _1 -0.25; H1  _2 -0.25; 
 
  (SIRNEO) iteration (  4,  3)
  Micro iteration termination criterion met, EVAL(ISTATE+1) = -2.25D-03
@@ -814,17 +942,19 @@ Point group: Cs
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.823689769613           (MACRO    5)
+ Integral transformation: Total CPU and WALL times (sec)       0.061       0.061
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -131.265481335478    
- - Active energy          :    -11.1369646861990    
+ Total MCSCF energy       :          -113.823689769608734  (MACRO    5)
 
- Norm of total gradient   :        0.032548736534
- -    of CI gradient      :        0.024968814771
- -    of orbital gradient :        0.020880099111
-      Virial theorem: -V/T =      2.000147
-      MULPOP  O1     -0.15; C1      0.15; H1  _1  0.00; H1  _2  0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -131.265481335410897
+ - Active energy          :           -11.136964686261880
+
+ Norm of total gradient   :             0.032548736536
+ -    of CI gradient      :             0.024968814778
+ -    of orbital gradient :             0.020880099106
+      Virial theorem: -V/T =      1.995768
+@      MULPOP O1     -0.21; C1      0.41; H1  _1 -0.10; H1  _2 -0.10; 
 
  Residual norm when dim(red L) =   9
  NEO root     CSF        orbital          total
@@ -849,17 +979,19 @@ Point group: Cs
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.831132643402           (MACRO    6)
+ Integral transformation: Total CPU and WALL times (sec)       0.061       0.061
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -131.319821559963    
- - Active energy          :    -11.0900673355027    
+ Total MCSCF energy       :          -113.831132643395662  (MACRO    6)
 
- Norm of total gradient   :        0.042970503578
- -    of CI gradient      :        0.025662456826
- -    of orbital gradient :        0.034465961286
-      Virial theorem: -V/T =      2.000191
-      MULPOP  O1     -0.14; C1      0.14; H1  _1 -0.00; H1  _2 -0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -131.319821560034967
+ - Active energy          :           -11.090067335424735
+
+ Norm of total gradient   :             0.042970503578
+ -    of CI gradient      :             0.025662456838
+ -    of orbital gradient :             0.034465961277
+      Virial theorem: -V/T =      1.981418
+@      MULPOP O1     -0.40; C1      0.10; H1  _1  0.15; H1  _2  0.15; 
 
  Residual norm when dim(red L) =   9
  NEO root     CSF        orbital          total
@@ -884,17 +1016,19 @@ Point group: Cs
  <<< MACRO ITERATION  7 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.844353511494           (MACRO    7)
+ Integral transformation: Total CPU and WALL times (sec)       0.064       0.064
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -130.888582214229    
- - Active energy          :    -11.5345275493288    
+ Total MCSCF energy       :          -113.844353511486844  (MACRO    7)
 
- Norm of total gradient   :        0.051479311165
- -    of CI gradient      :        0.040109617823
- -    of orbital gradient :        0.032269769695
-      Virial theorem: -V/T =      1.999718
-      MULPOP  O1     -0.11; C1      0.12; H1  _1 -0.00; H1  _2 -0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -130.888582214455994
+ - Active energy          :           -11.534527549094886
+
+ Norm of total gradient   :             0.051479311164
+ -    of CI gradient      :             0.040109617818
+ -    of orbital gradient :             0.032269769698
+      Virial theorem: -V/T =      1.969674
+@      MULPOP O1     -0.54; C1     -0.18; H1  _1  0.36; H1  _2  0.36; 
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
@@ -919,17 +1053,19 @@ Point group: Cs
  <<< MACRO ITERATION  8 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.850626994371           (MACRO    8)
+ Integral transformation: Total CPU and WALL times (sec)       0.062       0.063
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -130.252757129605    
- - Active energy          :    -12.1766261168298    
+ Total MCSCF energy       :          -113.850626994368270  (MACRO    8)
 
- Norm of total gradient   :        0.078402587565
- -    of CI gradient      :        0.074368231707
- -    of orbital gradient :        0.024826031694
-      Virial theorem: -V/T =      1.999447
-      MULPOP  O1     -0.10; C1      0.10; H1  _1  0.00; H1  _2  0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -130.252757129727343
+ - Active energy          :           -12.176626116704973
+
+ Norm of total gradient   :             0.078402587594
+ -    of CI gradient      :             0.074368231735
+ -    of orbital gradient :             0.024826031700
+      Virial theorem: -V/T =      1.967451
+@      MULPOP O1     -0.52; C1     -0.32; H1  _1  0.42; H1  _2  0.42; 
 
  Residual norm when dim(red L) =   7
  NEO root     CSF        orbital          total
@@ -954,17 +1090,19 @@ Point group: Cs
  <<< MACRO ITERATION  9 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.851630478513           (MACRO    9)
+ Integral transformation: Total CPU and WALL times (sec)       0.062       0.063
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -130.269515369620    
- - Active energy          :    -12.1608713609574    
+ Total MCSCF energy       :          -113.851630478510785  (MACRO    9)
 
- Norm of total gradient   :        0.005273887324
- -    of CI gradient      :        0.004465584731
- -    of orbital gradient :        0.002805786970
-      Virial theorem: -V/T =      1.999630
-      MULPOP  O1     -0.11; C1      0.11; H1  _1  0.00; H1  _2  0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -130.269515369633552
+ - Active energy          :           -12.160871360941268
+
+ Norm of total gradient   :             0.005273887329
+ -    of CI gradient      :             0.004465584735
+ -    of orbital gradient :             0.002805786973
+      Virial theorem: -V/T =      1.966825
+@      MULPOP O1     -0.54; C1     -0.30; H1  _1  0.42; H1  _2  0.42; 
 
  Residual norm when dim(red L) =  12
  NEO root     CSF        orbital          total
@@ -989,17 +1127,19 @@ Point group: Cs
  <<< MACRO ITERATION 10 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.851644062372           (MACRO   10)
+ Integral transformation: Total CPU and WALL times (sec)       0.062       0.063
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -130.274518200456    
- - Active energy          :    -12.1558821139794    
+ Total MCSCF energy       :          -113.851644062369360  (MACRO   10)
 
- Norm of total gradient   :        0.000202052162
- -    of CI gradient      :        0.000164954236
- -    of orbital gradient :        0.000116684088
-      Virial theorem: -V/T =      1.999639
-      MULPOP  O1     -0.11; C1      0.11; H1  _1  0.00; H1  _2  0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -130.274518200454679
+ - Active energy          :           -12.155882113978723
+
+ Norm of total gradient   :             0.000202052163
+ -    of CI gradient      :             0.000164954236
+ -    of orbital gradient :             0.000116684088
+      Virial theorem: -V/T =      1.966809
+@      MULPOP O1     -0.54; C1     -0.30; H1  _1  0.42; H1  _2  0.42; 
 
  Residual norm when dim(red L) =  20
  NEO root     CSF        orbital          total
@@ -1024,17 +1164,19 @@ Point group: Cs
  <<< MACRO ITERATION 11 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.851644078388           (MACRO   11)
+ Integral transformation: Total CPU and WALL times (sec)       0.063       0.063
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -130.274544727735    
- - Active energy          :    -12.1558556027171    
+ Total MCSCF energy       :          -113.851644078385704  (MACRO   11)
 
- Norm of total gradient   :        0.000000273995
- -    of CI gradient      :        0.000000216165
- -    of orbital gradient :        0.000000168363
-      Virial theorem: -V/T =      1.999639
-      MULPOP  O1     -0.11; C1      0.11; H1  _1  0.00; H1  _2  0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -130.274544727733570
+ - Active energy          :           -12.155855602716178
+
+ Norm of total gradient   :             0.000000273995
+ -    of CI gradient      :             0.000000216165
+ -    of orbital gradient :             0.000000168363
+      Virial theorem: -V/T =      1.966809
+@      MULPOP O1     -0.54; C1     -0.30; H1  _1  0.42; H1  _2  0.42; 
 
  Residual norm when dim(red L) =  16
  NEO root     CSF        orbital          total
@@ -1059,29 +1201,33 @@ Point group: Cs
  <<< MACRO ITERATION 12 >>>
  --------------------------
 
- Total MCSCF energy       :    -113.851644078388           (MACRO   12)
+ Integral transformation: Total CPU and WALL times (sec)       0.063       0.064
 
- - Nuclear repulsion      :     28.5787562520640    
- - Inactive energy        :    -130.274545071415    
- - Active energy          :    -12.1558552590371    
+ Total MCSCF energy       :          -113.851644078385846  (MACRO   12)
 
- Norm of total gradient   :        0.000000000594
- -    of CI gradient      :        0.000000000300
- -    of orbital gradient :        0.000000000513
-      Virial theorem: -V/T =      1.999639
-      MULPOP  O1     -0.11; C1      0.11; H1  _1  0.00; H1  _2  0.00; 
+ - Nuclear repulsion      :            28.578756252064036
+ - Inactive energy        :          -130.274545071413627
+ - Active energy          :           -12.155855259036265
+
+ Norm of total gradient   :             0.000000000594
+ -    of CI gradient      :             0.000000000300
+ -    of orbital gradient :             0.000000000513
+      Virial theorem: -V/T =      1.966809
+@      MULPOP O1     -0.54; C1     -0.30; H1  _1  0.42; H1  _2  0.42; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -5.11591D-13   -2.60864D-14
+ Energy difference; actual and predicted:   -1.42109D-13   -2.60864D-14
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    1.96114D+01
+ Energy difference; actual and predicted:    5.44761D+00
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used           12
      Number of micro iterations used           84
      Total number of CPU seconds used         1.62
+
+ >>>> CPU and wall time for MCSCF :       1.616       1.629
 
 
                      .----------------------------------------.
@@ -1090,26 +1236,26 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 17:41:17 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:38:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    7   -113.722599409087   0.6914397015  0.000000   0.7241377794
-    2    4   -113.793867751977   0.3740909411  0.495528   0.7482131433
-    3    0   -113.718796953760   2.0845098135 -2.069334   0.0000000000
-    3    0   -113.783700321589   1.2657404118 -0.318450   0.0000000000
-    3    3   -113.811757145637   0.6327011123  0.619344   0.1735022142
-    4    3   -113.821635248496   0.0588337687  0.958979   0.3764082086
-    5    7   -113.823689769613   0.0325487365  0.923625   0.4891755084
-    6    7   -113.831132643402   0.0429705036  0.940574   0.5512222787
-    7    6   -113.844353511494   0.0514793112  0.777534   0.5839721878
-    8    5   -113.850626994371   0.0784025876  0.607768   0.0940482180
-    9   10   -113.851630478513   0.0052738873  1.028618   0.0188655724
-   10   18   -113.851644062372   0.0002020522  1.011617   0.0010719722
-   11   14   -113.851644078388   0.0000002740  1.000334   0.0000000000
-   12    0   -113.851644078388   0.0000000006  1.000000   0.0000000000
+    1    7   -113.722599409085   0.6914397015  0.000000   0.7241377794
+    2    4   -113.793867751975   0.3740909411  0.495528   0.7482131433
+    3    0   -113.718796953746   2.0845098136 -2.069334   0.0000000000
+    3    0   -113.783700321582   1.2657404119 -0.318450   0.0000000000
+    3    3   -113.811757145633   0.6327011124  0.619344   0.1735022142
+    4    3   -113.821635248493   0.0588337687  0.958979   0.3764082086
+    5    7   -113.823689769609   0.0325487365  0.923625   0.4891755083
+    6    7   -113.831132643396   0.0429705036  0.940574   0.5512222787
+    7    6   -113.844353511487   0.0514793112  0.777534   0.5839721879
+    8    5   -113.850626994368   0.0784025876  0.607768   0.0940482180
+    9   10   -113.851630478511   0.0052738873  1.028618   0.0188655725
+   10   18   -113.851644062369   0.0002020522  1.011617   0.0010719722
+   11   14   -113.851644078386   0.0000002740  1.000343   0.0000000000
+   12    0   -113.851644078386   0.0000000006  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -1133,72 +1279,72 @@ Point group: Cs
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     7     1     6      0.12      0.06      0.05      0.05      0.01
+    1     7     1     6      0.13      0.06      0.06      0.06      0.01
     2     4     1     3      0.10      0.06      0.03      0.03      0.01
-    3     0     0     0      0.07      0.07      0.00      0.00
     3     0     0     0      0.07      0.06      0.00      0.00
-    3     3     0     3      0.10      0.06      0.03      0.02      0.01
+    3     0     0     0      0.07      0.06      0.00      0.00
+    3     3     0     3      0.10      0.06      0.03      0.03      0.01
     4     3     2     2      0.09      0.06      0.02      0.02      0.01
-    5     7     4     4      0.11      0.06      0.04      0.04      0.01
-    6     7     4     4      0.11      0.06      0.04      0.04      0.01
-    7     6     3     4      0.11      0.06      0.04      0.04      0.01
-    8     5     3     3      0.10      0.06      0.03      0.03      0.01
-    9    10     5     6      0.13      0.06      0.06      0.06      0.01
-   10    18     9    10      0.18      0.06      0.11      0.10      0.01
-   11    14     8     7      0.15      0.06      0.08      0.07      0.01
+    5     7     4     4      0.11      0.06      0.05      0.04      0.01
+    6     7     4     4      0.11      0.06      0.05      0.04      0.01
+    7     6     3     4      0.11      0.06      0.05      0.04      0.01
+    8     5     3     3      0.10      0.06      0.04      0.03      0.01
+    9    10     5     6      0.14      0.06      0.07      0.07      0.01
+   10    18     9    10      0.18      0.06      0.12      0.11      0.01
+   11    14     8     7      0.15      0.06      0.08      0.08      0.01
    12     0     0     0      0.07      0.06      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -131.494061051904    -10.807294609247   -113.722599409087
-    2   -130.938631112247    -11.433992891795   -113.793867751977
-    3   -123.859680518969    -18.437872686855   -113.718796953760
-    3   -127.458808176682    -14.903648396971   -113.783700321589
-    3   -129.834049201857    -12.556464195844   -113.811757145637
-    4   -130.938492424843    -11.461899075717   -113.821635248496
-    5   -131.265481335478    -11.136964686199   -113.823689769613
-    6   -131.319821559963    -11.090067335503   -113.831132643402
-    7   -130.888582214229    -11.534527549329   -113.844353511494
-    8   -130.252757129605    -12.176626116830   -113.850626994371
-    9   -130.269515369620    -12.160871360957   -113.851630478513
-   10   -130.274518200456    -12.155882113979   -113.851644062372
-   11   -130.274544727735    -12.155855602717   -113.851644078388
-   12   -130.274545071415    -12.155855259037   -113.851644078388
+    1   -131.494061051901    -10.807294609248   -113.722599409085
+    2   -130.938631112243    -11.433992891796   -113.793867751975
+    3   -123.859680518614    -18.437872687196   -113.718796953746
+    3   -127.458808176365    -14.903648397281   -113.783700321582
+    3   -129.834049201694    -12.556464196004   -113.811757145633
+    4   -130.938492424758    -11.461899075799   -113.821635248493
+    5   -131.265481335411    -11.136964686262   -113.823689769609
+    6   -131.319821560035    -11.090067335425   -113.831132643396
+    7   -130.888582214456    -11.534527549095   -113.844353511487
+    8   -130.252757129727    -12.176626116705   -113.850626994368
+    9   -130.269515369634    -12.160871360941   -113.851630478511
+   10   -130.274518200455    -12.155882113979   -113.851644062369
+   11   -130.274544727734    -12.155855602716   -113.851644078386
+   12   -130.274545071414    -12.155855259036   -113.851644078386
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.143822968292     -0.071268342890      0.495528243763
-    3     -0.036277753097      0.075070798218     -2.069334283650
-    3     -0.031927863157      0.010167430388     -0.318450074098
-    3     -0.028884423060     -0.017889393660      0.619343984222
-    4     -0.010300646508     -0.009878102859      0.958978919482
-    5     -0.002224411394     -0.002054521117      0.923624614904
-    6     -0.007913121627     -0.007442873789      0.940573662313
-    7     -0.017003582610     -0.013220868092      0.777534264103
-    8     -0.010322169541     -0.006273482878      0.607767858563
-    9     -0.000975565157     -0.001003484142      1.028618267994
-   10     -0.000013427862     -0.000013583859      1.011617391647
-   11     -0.000000016011     -0.000000016016      1.000333876145
-   12     -0.000000000000     -0.000000000001      1.000000000000
+    2     -0.143822968290     -0.071268342889      0.495528243761
+    3     -0.036277753099      0.075070798229     -2.069334283856
+    3     -0.031927863158      0.010167430393     -0.318450074224
+    3     -0.028884423061     -0.017889393659      0.619343984166
+    4     -0.010300646510     -0.009878102860      0.958978919496
+    5     -0.002224411393     -0.002054521115      0.923624614698
+    6     -0.007913121624     -0.007442873787      0.940573662391
+    7     -0.017003582609     -0.013220868091      0.777534264130
+    8     -0.010322169548     -0.006273482881      0.607767858509
+    9     -0.000975565157     -0.001003484143      1.028618268363
+   10     -0.000013427862     -0.000013583859      1.011617382485
+   11     -0.000000016011     -0.000000016016      1.000342746793
+   12     -0.000000000000     -0.000000000000      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.57992764  1.00000000      0.724137779422      0.700000000000
-    2      0.64322771  1.00000000      0.748213143266      0.700000000000
+    1      0.57992764  1.00000000      0.724137779424      0.700000000000
+    2      0.64322771  1.00000000      0.748213143263      0.700000000000
     3      0.00000000  0.00000000      0.000000000000      0.469000000000
     3      0.00000000  0.00000000      0.000000000000      0.314230000000
-    3      0.20000000  1.00000000      0.173502214208      0.314230000000
-    4      4.04725884  1.00000000      0.376408208568      0.377076000000
-    5      3.19822029  1.00000000      0.489175508354      0.452491200000
-    6      2.34988170  1.00000000      0.551222278674      0.542989440000
-    7      1.14497252  1.00000000      0.583972187849      0.542989440000
-    8      0.20000000  1.00000000      0.094048217962      0.542989440000
-    9      0.20000000  1.00000000      0.018865572424      0.700000000000
-   10      0.20000000  1.00000000      0.001071972222      0.700000000000
+    3      0.20000000  1.00000000      0.173502214195      0.314230000000
+    4      4.04725884  1.00000000      0.376408208569      0.377076000000
+    5      3.19822029  1.00000000      0.489175508349      0.452491200000
+    6      2.34988170  1.00000000      0.551222278678      0.542989440000
+    7      1.14497252  1.00000000      0.583972187947      0.542989440000
+    8      0.20000000  1.00000000      0.094048217983      0.542989440000
+    9      0.20000000  1.00000000      0.018865572456      0.700000000000
+   10      0.20000000  1.00000000      0.001071972228      0.700000000000
    11      0.20000000  1.00000000      0.000000000000      0.700000000000
    12      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -1206,18 +1352,18 @@ Point group: Cs
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.082236974021    0.921999381467   -0.315684142401   -0.177787762210
-    2   -0.024373750356    0.901075639575   -0.098548970554   -0.143744642500
+    1   -0.082236974017    0.921999381470   -0.315684142389   -0.177787762214
+    2   -0.024373750360    0.901075639565   -0.098548970526   -0.143744642580
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
-    3   -0.000823060656    0.999398482803   -0.028055672587   -0.019733060384
-    4   -0.021944346814   -0.548754121573    0.055975911970    0.817851889181
-    5   -0.046954114713   -0.538566747617    0.052052699148    0.809893321655
-    6   -0.070126304128   -0.611095747169    0.002423358084    0.751574850050
-    7   -0.018702596309    0.831295436342    0.013930230693   -0.513953747120
-    8   -0.000078017610    0.999823145581   -0.003693028467   -0.017631536126
-    9   -0.000001074214    0.999992881880   -0.000723179920   -0.003454368640
-   10   -0.000000001281    0.999999977018   -0.000017160459   -0.000209163544
+    3   -0.000823060656    0.999398482803   -0.028055672583   -0.019733060385
+    4   -0.021944346804   -0.548754121534    0.055975911926    0.817851889208
+    5   -0.046954114698   -0.538566747610    0.052052699135    0.809893321669
+    6   -0.070126304124   -0.611095747142    0.002423358110    0.751574850063
+    7   -0.018702596333    0.831295436169    0.013930230707   -0.513953747349
+    8   -0.000078017610    0.999823145581   -0.003693028468   -0.017631536129
+    9   -0.000001074214    0.999992881880   -0.000723179921   -0.003454368646
+   10   -0.000000001281    0.999999977018   -0.000017160459   -0.000209163545
    11   -0.000000000000    1.000000000000   -0.000000030146   -0.000000093181
    12    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
@@ -1227,21 +1373,20 @@ Point group: Cs
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            2
-     Total charge of molecule:    0
-     State number:                1
+@    Spin multiplicity:           1
+@    Spatial symmetry:            2
+@    Total charge of molecule:    0
+@    State number:                1
 
-     Final MCSCF energy:         -113.851644078388                 
-     Nuclear repulsion:            28.578756252064
-     Electronic energy:          -142.430400330452
+@    Final MCSCF energy:         -113.851644078386                 
+@    Nuclear repulsion:            28.578756252064
+@    Electronic energy:          -142.430400330450
 
-     Final gradient norm:           0.000000000594
+@    Final gradient norm:           0.000000000594
 
  
-     Date and time (Linux)  : Wed Mar 16 17:41:17 2011 
-     Host name              : fe6                                     
-
+     Date and time (Linux)  : Sun Sep  8 20:38:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Occupancies of natural orbitals
  -------------------------------
@@ -1399,6 +1544,8 @@ Point group: Cs
   10- 5 to 10- 4         2    0.24225551E-08    0.10000000E+01
   Number of coefficients less than 10^-11 times norm is             0
 
+ Integral transformation: Total CPU and WALL times (sec)       0.081       0.081
+
 
 
  **********************************************************************
@@ -1409,13 +1556,13 @@ Point group: Cs
 
  Elapsed time after dalcip     0.00 sec.
 
- NORB   =     46
- NOCB   =      8
- NCF    =     48
- NTOTHP =    108
- FROZEN =  0  0
- E-MCSCF=  -113.85164408
- THR    = 0.00D+00
+ NORB   =      46
+ NOCB   =       8
+ NCF    =      48
+ NTOTHP =     108
+ FROZEN =   2   0
+ E-MCSCF=   -113.85164408
+ THR    =        0.00D+00
 
  Spin multiplicity is    1
  There are     16 different orbital occupation patterns
@@ -1424,50 +1571,54 @@ Point group: Cs
  number of double    differences=         234
  number of triple    differences=         180
  number of quadruple differences=          78
- number of jdifgen calls                  576
- Elapsed time after density matrices     0.01 sec.
- KoopE and KoopE2 have taken       0.01 seconds
- Koopman0pE has taken       0.01 seconds
+ number of jdifgen calls                           576
+ Elapsed time after density matrices      0.00 seconds
+ KoopE and KoopE2 have taken              0.01 seconds
+ Koopman0pE has taken                     0.01 seconds
 
- Maximum value of F matrix is: 0.106D-09
- BAMAT has taken       0.27 seconds
+ Maximum value of F matrix is: 1.055D-10
+ BAMAT has taken       0.22 seconds
  BBMAT has taken       0.00 seconds
  BCMAT has taken       0.01 seconds
 
- Largest difference between bmat and cmat  = 0.107D-09
- Largest difference between btmat and ctmat= 0.107D-09
+ Largest difference between bmat  and cmat  =  1.07D-10
+
+ Largest difference between btmat and ctmat =  1.07D-10
  BDMAT has taken       0.00 seconds
 
- Total elapsed time in Koopro4    0.32 seconds
+ Total elapsed time in Koopro4    0.25 seconds
 
  STARTING THE PERTURBATION SUMMATION
 
 
- Maximum value of core F matrix is: 0.223D-14
- for indices =   1  3
- Maximum value of virt F matrix is: 0.151D-12
- for indices =  16 20
+ Maximum value of core F matrix is: 0.113D-14
+ for indices =   3  4
+ Maximum value of virt F matrix is: 0.729D-12
+ for indices =  27 31
+
+    2 FROZEN CORE ORBITALS:
+        1   2
 
 
  V(0) class
- E2SC = -0.05772972
- E2PC = -0.05772972
- PSISC=  0.01537163
- PSIPC=  0.01537163
- Elapsed time     0.01 sec.
+ E2SC = -0.05405831
+ E2PC = -0.05405831
+ PSISC=  0.01522153
+ PSIPC=  0.01522153
+ Elapsed time     0.00 sec.
 
  V(+1) class
- E2SC = -0.00901138
- E2PC = -0.00904451
- PSISC=  0.00265787
- PSIPC=  0.00269375
+ E2SC = -0.00787028
+ E2PC = -0.00790334
+ PSISC=  0.00260633
+ PSIPC=  0.00264220
  Elapsed time     0.00 sec.
 
  V(-1) class
- E2SC = -0.06046595
- E2PC = -0.06055707
- PSISC=  0.01573647
- PSIPC=  0.01583393
+ E2SC = -0.05789855
+ E2PC = -0.05798954
+ PSISC=  0.01561555
+ PSIPC=  0.01571298
  Elapsed time     0.00 sec.
 
  V(+2) class
@@ -1475,10 +1626,10 @@ Point group: Cs
  There are    9 linear dependencies
  Linear dependencies analysis:4
  There are    7 linear dependencies
- E2SC = -0.00077114
- E2PC = -0.00077316
- PSISC=  0.00017122
- PSIPC=  0.00017307
+ E2SC = -0.00064301
+ E2PC = -0.00064502
+ PSISC=  0.00016631
+ PSIPC=  0.00016816
  Elapsed time     0.00 sec.
 
  V(-2) class
@@ -1497,15 +1648,15 @@ Point group: Cs
  Linear dependencies analysis:7
  There are    2 linear dependencies
  Elapsed time for PC    0.00 sec.
- E2SC = -0.04715370
- E2PC = -0.04806644
- PSISC=  0.01616064
- PSIPC=  0.01755489
+ E2SC = -0.04626026
+ E2PC = -0.04717272
+ PSISC=  0.01611386
+ PSIPC=  0.01750805
  Elapsed time     0.01 sec.
 
  V(-1)' class
- Elapsed time for SC    0.02 sec.
- Time for S diag.    0.00 sec.
+ Elapsed time for SC    0.01 sec.
+ Time for S diag.    0.01 sec.
  Linear dependencies analysis:9
  There are   54 linear dependencies
  Time for matrix transf.    0.00 sec.
@@ -1525,25 +1676,25 @@ Point group: Cs
  Time for matrix transf.    0.00 sec.
  Time for H diag.    0.00 sec.
  Elapsed time for PC    0.01 sec.
- E2SC = -0.00204561
- E2PC = -0.00222963
- PSISC=  0.00105734
- PSIPC=  0.00147578
+ E2SC = -0.00202502
+ E2PC = -0.00220903
+ PSISC=  0.00105600
+ PSIPC=  0.00147444
  Elapsed time     0.01 sec.
 
   Strongly Contracted and Partially Contracted NEVPT2 results for each class
 
              Norm  SC       Energy SC      Norm  PC       Energy PC 
-  (0)     0.0153716299  -0.0577297154   0.0153716299  -0.0577297154
-  (+1)    0.0026578716  -0.0090113757   0.0026937466  -0.0090445074
-  (-1)    0.0157364683  -0.0604659496   0.0158339270  -0.0605570681
-  (+2)    0.0001712231  -0.0007711361   0.0001730741  -0.0007731593
+   (0)    0.0152215299  -0.0540583128   0.0152215299  -0.0540583128
+  (+1)    0.0026063341  -0.0078702804   0.0026421960  -0.0079033443
+  (-1)    0.0156155458  -0.0578985514   0.0157129820  -0.0579895355
+  (+2)    0.0001663144  -0.0006430085   0.0001681639  -0.0006450244
   (-2)    0.0105082217  -0.0558976935   0.0106692479  -0.0561313897
-  (+1)'   0.0010573422  -0.0020456123   0.0014757827  -0.0022296255
+  (+1)'   0.0010559996  -0.0020250188   0.0014744388  -0.0022090261
   (-1)'   0.0098326440  -0.0277167282   0.0113736702  -0.0286895462
-  (0)'    0.0161606432  -0.0471536959   0.0175548898  -0.0480664389
+   (0)'   0.0161138552  -0.0462602575   0.0175080472  -0.0471727152
   -----------------------------------------------------------------
-  Total   0.0714960440  -0.2607919068   0.0751459682  -0.2632214506
+  Total   0.0711204447  -0.2523698511   0.0747702759  -0.2547988942
 
 
      ********************************
@@ -1552,30 +1703,32 @@ Point group: Cs
 
 
  STATE   DIAGONALISATION        PERTURBATION SC-D        PERTURBATION PC-D
-    1    -113.85164408           -114.11243599           -114.11486553
+    1    -113.85164408           -114.10401393           -114.10644297
 
 
 
- Total elapsed time in dypc    0.07 sec.
+ Total elapsed time in dypc    0.06 sec.
+
+
+ >>>> CPU and wall time for NEVPT2 :       0.310       0.312
 
 
 
-
- >>>> Total CPU  time used in SIRIUS :      2.17 seconds
- >>>> Total wall time used in SIRIUS :      3.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.07 seconds
+ >>>> Total wall time used in SIRIUS :      2.08 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:41:17 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:38:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   3.62 seconds
- >>>> Total wall time used in DALTON:   4.00 seconds
+ >>>> Total CPU  time used in DALTON:   3.73 seconds
+ >>>> Total wall time used in DALTON:   3.76 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:41:17 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:38:24 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

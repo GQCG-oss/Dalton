@@ -47,9 +47,9 @@ BECKE GC2
 test='
 check_scf_energy DFT -83.328715459994 4e-10
 
-check_mol_gradient 1 "Li    " 0 0 -0.0000169506 7e-8
-check_mol_gradient 1 "O     " 0 0  0.0000469217 7e-8
-check_mol_gradient 1 "H     " 0 0 -0.0000004800 9e-8
+check_mol_gradient 1 "Li    " 0 0 -0.0000168063 1e-6
+check_mol_gradient 1 "O     " 0 0  0.0000465284 1e-6
+check_mol_gradient 1 "H     " 0 0 -0.0000002310 1e-6
 
 check_mol_hessian 9 1e-5 "
            Li   x      Li   y      Li   z      O    x      O    y      O    z

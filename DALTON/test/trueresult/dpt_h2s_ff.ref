@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,198 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 21:16:22 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 20:44:53 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_dpt_h2s_ff
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON                                          
+.RUN PROPERTIES                                   
+**INTEGRAL                                        
+.DIPORG                                           
+ 0.0 0.0 100.0                                    
+.DIPLEN                                           
+.THETA                                            
+.EFGCAR                                           
+.SECMOM                                           
+.DARWIN                                           
+.MASSVELO                                         
+.DPTPOT                                           
+.DPTPXP                                           
+.KINENER                                          
+**WAVE FUNCTION                                   
+.CC                                               
+*HAMILTONIAN                                      
+.FIELD                                            
+ 0.1                                              
+ZDIPLEN                                           
+*SCF INP                                          
+.THRESH                                           
+ 1.0D-10                                          
+*CC INP                                           
+.CCS                                              
+.CCSD                                             
+.CC(T)                                            
+.THRENR                                           
+1.0D-10                                           
+.THRLEQ                                           
+1.0D-07                                           
+*CCFOP                                            
+.ALLONE                                           
+.DPTECO                                           
+.2ELDAR                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+cc-pVDZ                                                                        
+First-order relativistic corrections                                           
+                                                                               
+    2    2  X  Y      1.00D-15                                                 
+       16.0   1                                                                
+S       0.00000000000000    0.00000000000000    0.00000000000000       *       
+        1.0   1                                                                
+H       1.82237883747756    0.00000000000000    1.75080674629681       *       
 
 
        *******************************************************************
@@ -105,7 +220,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -130,16 +245,16 @@
   Nuclear charge:  16.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =  16 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =  16 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
 
 
                          SYMGRP: Point group information
@@ -210,7 +325,7 @@ Point group: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-15
 
 
   Cartesian Coordinates (a.u.)
@@ -259,8 +374,10 @@ Point group: C2v
  H   _2:    1.337300    1.928723    0.000000
 
 
-  Max interatomic separation is    1.9287 Angstrom (    3.6448 Bohr)
+  Max    interatomic separation is    1.9287 Angstrom (    3.6448 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    1.3373 Angstrom (    2.5271 Bohr)
 
 
   Bond distances (Angstrom):
@@ -301,7 +418,7 @@ Point group: C2v
            10.357477            8.992942            4.813549 cm-1
 
 
-@  Nuclear repulsion energy :   12.936949454995
+@  Nuclear repulsion energy :   12.936949454995 Hartree
 
 
   Symmetry Orbitals
@@ -397,13 +514,13 @@ Point group: C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:       20351 ( 24.6% )
  Megabytes written:                              0.234
 
- >>>> Total CPU  time used in HERMIT:   0.13 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.11 seconds
+ >>>> Total wall time used in HERMIT:   0.11 seconds
 
 
                         .----------------------------------.
@@ -441,8 +558,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 20:44:53 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:16:22 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      First-order relativistic corrections                                    
@@ -451,12 +568,10 @@ Point group: C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
-
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
 
 @  The molecule is placed in a static field.
@@ -466,21 +581,21 @@ Point group: C2v
 @  ---------------------------------------------
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         18
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          18
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -493,33 +608,12 @@ Point group: C2v
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               9 |    5    2    2    0
+@    Occupied SCF orbitals               9 |    5    2    2    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-10
-
-
- Changes of defaults for CC:
- ---------------------------
-
- -Calculation with finite fields:
-    Field strength:   0.100000Field Label:  ZDIPLEN 
-
- Electric field:      0.00000000    0.00000000    0.10000000
- Total norm:          0.10000000
-Center of charge:    0.00000000    0.00000000    0.19453408
-Charge correction to interaction with electric field:   -0.35016135
-
- -Dipole moment calculated
- -Traceless quadrupole moment calculated
- -Electric field gradient calculated
- -Relativistic corrections to energy calculated
- -Electronic second moment of charge calculated
- -Relativistic two-electron Darwin term calculated
- -First-order DPT energy corrections calculated
-  
 
 
  Changes of defaults for CC:
@@ -549,70 +643,71 @@ Charge correction to interaction with electric field:   -0.35016135
 
  Automatic occupation of symmetries with  18 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
-   1  -578.280584273       1.52D+00  -5.78D+02    5  2  2  0
+@  1  -578.280584273       1.52D+00  -5.78D+02     5   2   2   0
       Virial theorem: -V/T =      2.452486
-      MULPOP  S       0.17; H   _1 -0.09; H   _2 -0.09; 
+@      MULPOP S       0.17; H   _1 -0.09; H   _2 -0.09; 
  -----------------------------------------------------------------------------
-   2  -578.458315944       3.49D-01  -1.78D-01    5  2  2  0
+@  2  -578.458315944       3.49D-01  -1.78D-01     5   2   2   0
       Virial theorem: -V/T =      2.448971
-      MULPOP  S      -0.61; H   _1  0.31; H   _2  0.31; 
+@      MULPOP S      -0.61; H   _1  0.31; H   _2  0.31; 
  -----------------------------------------------------------------------------
-   3  -578.472409252       1.03D-01  -1.41D-02    5  2  2  0
+@  3  -578.472409252       1.03D-01  -1.41D-02     5   2   2   0
       Virial theorem: -V/T =      2.451861
-      MULPOP  S      -0.71; H   _1  0.35; H   _2  0.35; 
+@      MULPOP S      -0.71; H   _1  0.35; H   _2  0.35; 
  -----------------------------------------------------------------------------
-   4  -578.473741329       2.30D-02  -1.33D-03    5  2  2  0
+@  4  -578.473741329       2.30D-02  -1.33D-03     5   2   2   0
       Virial theorem: -V/T =      2.451317
-      MULPOP  S      -0.77; H   _1  0.38; H   _2  0.38; 
+@      MULPOP S      -0.77; H   _1  0.38; H   _2  0.38; 
  -----------------------------------------------------------------------------
-   5  -578.473838847       2.48D-03  -9.75D-05    5  2  2  0
+@  5  -578.473838847       2.48D-03  -9.75D-05     5   2   2   0
       Virial theorem: -V/T =      2.451369
-      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP S      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-   6  -578.473839730       4.78D-04  -8.82D-07    5  2  2  0
+@  6  -578.473839730       4.78D-04  -8.82D-07     5   2   2   0
       Virial theorem: -V/T =      2.451374
-      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP S      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-   7  -578.473839760       1.04D-04  -3.03D-08    5  2  2  0
+@  7  -578.473839760       1.04D-04  -3.03D-08     5   2   2   0
       Virial theorem: -V/T =      2.451373
-      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP S      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-   8  -578.473839762       1.63D-05  -1.76D-09    5  2  2  0
+@  8  -578.473839762       1.63D-05  -1.76D-09     5   2   2   0
       Virial theorem: -V/T =      2.451373
-      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP S      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-   9  -578.473839762       1.44D-06  -4.38D-11    5  2  2  0
+@  9  -578.473839762       1.44D-06  -4.42D-11     5   2   2   0
       Virial theorem: -V/T =      2.451373
-      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP S      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-  10  -578.473839762       2.33D-07  -2.27D-13    5  2  2  0
+@ 10  -578.473839762       2.33D-07   0.00D+00     5   2   2   0
       Virial theorem: -V/T =      2.451373
-      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP S      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-  11  -578.473839762       3.70D-08  -1.14D-13    5  2  2  0
+@ 11  -578.473839762       3.70D-08  -1.14D-13     5   2   2   0
       Virial theorem: -V/T =      2.451373
-      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP S      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-  12  -578.473839762       6.49D-09   2.27D-13    5  2  2  0
+@ 12  -578.473839762       6.49D-09  -1.14D-13     5   2   2   0
       Virial theorem: -V/T =      2.451373
-      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP S      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-  13  -578.473839762       5.38D-10   0.00D+00    5  2  2  0
+@ 13  -578.473839762       5.38D-10   3.41D-13     5   2   2   0
       Virial theorem: -V/T =      2.451373
-      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP S      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-  14  -578.473839762       1.06D-10   1.14D-13    5  2  2  0
+@ 14  -578.473839762       1.06D-10  -2.27D-13     5   2   2   0
       Virial theorem: -V/T =      2.451373
-      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+@      MULPOP S      -0.78; H   _1  0.39; H   _2  0.39; 
  -----------------------------------------------------------------------------
-  15  -578.473839762       1.53D-11   1.14D-13    5  2  2  0
+@ 15  -578.473839762       1.52D-11   0.00D+00     5   2   2   0
 
- *** DIIS converged in  15 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  15 iterations !
+@     Converged SCF energy, gradient:   -578.473839761818    1.52D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -642,15 +737,17 @@ Charge correction to interaction with electric field:   -0.35016135
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       0.010       0.010
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
  The molecule is placed in a static field.
  Field strength (a.u.)          Field operator
@@ -658,15 +755,15 @@ Charge correction to interaction with electric field:   -0.35016135
     0.10000000                      ZDIPLEN 
 
 
-     Final HF energy:            -578.473839761821                 
-     Nuclear repulsion:            12.936949454995
-     Electronic energy:          -591.410789216816
+@    Final HF energy:            -578.473839761818                 
+@    Nuclear repulsion:            12.936949454995
+@    Electronic energy:          -591.410789216814
 
-     Final gradient norm:           0.000000000015
+@    Final gradient norm:           0.000000000015
 
  
-     Date and time (Linux)  : Wed Mar 16 20:44:54 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:16:22 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -720,12 +817,12 @@ Charge correction to interaction with electric field:   -0.35016135
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.02 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.01 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 20:44:54 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:16:22 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -830,10 +927,11 @@ Charge correction to interaction with electric field:   -0.35016135
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1    8.985683D+04  0.000000D+00  0.000000D+00
-       2    0.000000D+00  8.985045D+04  0.000000D+00
-       3    0.000000D+00  0.000000D+00 -1.797073D+05
+               Column   1     Column   2     Column   3
+       1     8.985683D+04   0.000000D+00   0.000000D+00
+       2     0.000000D+00   8.985045D+04   0.000000D+00
+       3     0.000000D+00   0.000000D+00  -1.797073D+05
+    ==== End of matrix output ====
 
 
                       +-------------------------------------+
@@ -842,10 +940,11 @@ Charge correction to interaction with electric field:   -0.35016135
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1    1.495581D+01  0.000000D+00  0.000000D+00
-       2    0.000000D+00  1.256887D+01  0.000000D+00
-       3    0.000000D+00  0.000000D+00  1.797239D+05
+               Column   1     Column   2     Column   3
+       1     1.495581D+01   0.000000D+00   0.000000D+00
+       2     0.000000D+00   1.256887D+01   0.000000D+00
+       3     0.000000D+00   0.000000D+00   1.797239D+05
+    ==== End of matrix output ====
 
  Alfa**2 Invariant:                    **************
  Beta**2 Invariant:                    **************
@@ -867,24 +966,27 @@ Charge correction to interaction with electric field:   -0.35016135
 
 Total non-diagonalized EFG Tensor   S     
 
-              Column   1    Column   2    Column   3
-       1      1.20326197    0.00000000    0.00000000
-       2      0.00000000   -1.68902513    0.00000000
-       3      0.00000000    0.00000000    0.48576316
+               Column   1     Column   2     Column   3
+       1       1.20326197     0.00000000     0.00000000
+       2       0.00000000    -1.68902513     0.00000000
+       3       0.00000000     0.00000000     0.48576316
+    ==== End of matrix output ====
 
 Total non-diagonalized EFG Tensor   H   _1
 
-              Column   1    Column   2    Column   3
-       1      0.10828639    0.00000000    0.16332050
-       2      0.00000000   -0.13263254    0.00000000
-       3      0.16332050    0.00000000    0.02434615
+               Column   1     Column   2     Column   3
+       1       0.10828639     0.00000000     0.16332050
+       2       0.00000000    -0.13263254     0.00000000
+       3       0.16332050     0.00000000     0.02434615
+    ==== End of matrix output ====
 
 Total non-diagonalized EFG Tensor   H   _2
 
-              Column   1    Column   2    Column   3
-       1      0.10828639    0.00000000   -0.16332050
-       2      0.00000000   -0.13263254    0.00000000
-       3     -0.16332050    0.00000000    0.02434615
+               Column   1     Column   2     Column   3
+       1       0.10828639     0.00000000    -0.16332050
+       2       0.00000000    -0.13263254     0.00000000
+       3      -0.16332050     0.00000000     0.02434615
+    ==== End of matrix output ====
  String on input: "S       "
  String on input: "S       "
  String on input: "H   _1  "
@@ -894,24 +996,27 @@ Total non-diagonalized EFG Tensor   H   _2
 
 EFG Principal axis                  S     
 
-              Column   1    Column   2    Column   3
-       1      1.00000000    0.00000000    0.00000000
-       2      0.00000000    1.00000000    0.00000000
-       3      0.00000000    0.00000000    1.00000000
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
 
 EFG Principal axis                  H   _1
 
-              Column   1    Column   2    Column   3
-       1      0.79021933    0.00000000   -0.61282413
-       2      0.00000000    1.00000000    0.00000000
-       3      0.61282413    0.00000000    0.79021933
+               Column   1     Column   2     Column   3
+       1       0.79021933     0.00000000    -0.61282413
+       2       0.00000000     1.00000000     0.00000000
+       3       0.61282413     0.00000000     0.79021933
+    ==== End of matrix output ====
 
 EFG Principal axis                  H   _2
 
-              Column   1    Column   2    Column   3
-       1      0.79021933    0.00000000    0.61282413
-       2      0.00000000    1.00000000    0.00000000
-       3     -0.61282413    0.00000000    0.79021933
+               Column   1     Column   2     Column   3
+       1       0.79021933     0.00000000     0.61282413
+       2       0.00000000     1.00000000     0.00000000
+       3      -0.61282413     0.00000000     0.79021933
+    ==== End of matrix output ====
 
 
                          Nuclear quadrupole moment for S
@@ -972,7 +1077,7 @@ EFG Principal axis                  H   _2
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
 
  Number of two-electron spin-orbit integrals written:     23259 (22.7%)
- >>> Time used in TWOINT is   0.12 seconds
+ >>>  Time used in TWOINT     is   0.14 seconds
 
  Number of two-electron spin-orbit integrals written:     12435 (21.9%)
 
@@ -1041,23 +1146,21 @@ EFG Principal axis                  H   _2
           Number of t2 amplitudes                 :      4022
           Total number of amplitudes in ccsd      :      4080
 
- Iter.  1: Coupled cluster MP2   energy :    -578.6247428975426601
- Iter.  1: Coupled cluster CCSD  energy :    -578.6391426803033937
- Iter.  2: Coupled cluster CCSD  energy :    -578.6437164355179448
- Iter.  3: Coupled cluster CCSD  energy :    -578.6438232598269451
- Iter.  4: Coupled cluster CCSD  energy :    -578.6438439062787893
- Iter.  5: Coupled cluster CCSD  energy :    -578.6438367053748379
- Iter.  6: Coupled cluster CCSD  energy :    -578.6438366407300009
- Iter.  7: Coupled cluster CCSD  energy :    -578.6438368489584718
- Iter.  8: Coupled cluster CCSD  energy :    -578.6438367518534278
- Iter.  9: Coupled cluster CCSD  energy :    -578.6438367495147759
- Iter. 10: Coupled cluster CCSD  energy :    -578.6438367474721645
- Iter. 11: Coupled cluster CCSD  energy :    -578.6438367475725499
- Iter. 12: Coupled cluster CCSD  energy :    -578.6438367477086331
- Iter. 13: Coupled cluster CCSD  energy :    -578.6438367477045404
+ Iter.  1: Coupled cluster MP2   energy :    -578.6247428975402727
+ Iter.  1: Coupled cluster CCSD  energy :    -578.6391426803013474
+ Iter.  2: Coupled cluster CCSD  energy :    -578.6437164355158984
+ Iter.  3: Coupled cluster CCSD  energy :    -578.6438232598256945
+ Iter.  4: Coupled cluster CCSD  energy :    -578.6438439062766292
+ Iter.  5: Coupled cluster CCSD  energy :    -578.6438367053726779
+ Iter.  6: Coupled cluster CCSD  energy :    -578.6438366407280682
+ Iter.  7: Coupled cluster CCSD  energy :    -578.6438368489566528
+ Iter.  8: Coupled cluster CCSD  energy :    -578.6438367518524046
+ Iter.  9: Coupled cluster CCSD  energy :    -578.6438367495132979
+ Iter. 10: Coupled cluster CCSD  energy :    -578.6438367474704592
+ Iter. 11: Coupled cluster CCSD  energy :    -578.6438367475698215
 
- CCSD  energy converged to within   0.10D-09 is   -578.643836748
- Final 2-norm of the CC vector function:  1.79871769D-09
+ CCSD  energy converged to within   0.10D-09 is         -578.643836747570
+ Final 2-norm of the CC vector function:  3.19892718D-08
 
 
 
@@ -1073,7 +1176,7 @@ EFG Principal axis                  H   _2
 
             Total MP2   energy:                  -578.6247428975
 
-            Total CCSD  energy:                  -578.6438367477
+            Total CCSD  energy:                  -578.6438367476
 
 
 
@@ -1108,19 +1211,24 @@ EFG Principal axis                  H   _2
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+ RPA: call cceq_str
+ RPA: exit cceq_str
 
 
                   Constructing right-hand-side for CCSD-kappa-0
                   ---------------------------------------------
 
- CC_FOP> Norm of RHS vector:  3.98011857397244641E-005
+ CC_FOP> Norm of RHS vector:   3.9801163841836054E-005
 
 
                       Solving for orbital relaxation vector
                       -------------------------------------
 
 
+ Integral transformation: Total CPU and WALL times (sec)       0.006       0.006
+
    Equations converged to residual less than:  0.000000
+ CCFOP: call CC_D1AO to recalc the 1e Density
 
 
                             +--------------------------+
@@ -1183,7 +1291,7 @@ EFG Principal axis                  H   _2
 
                  au               Debye          C m (/(10**-30)
 
-      z      2.00550399         5.09748236        17.00337091
+      z      2.00550399         5.09748236        17.00337092
 
 
 
@@ -1199,10 +1307,11 @@ EFG Principal axis                  H   _2
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1    8.985271D+04  0.000000D+00  0.000000D+00
-       2    0.000000D+00  8.984659D+04  0.000000D+00
-       3    0.000000D+00  0.000000D+00 -1.796993D+05
+               Column   1     Column   2     Column   3
+       1     8.985271D+04   0.000000D+00   0.000000D+00
+       2     0.000000D+00   8.984659D+04   0.000000D+00
+       3     0.000000D+00   0.000000D+00  -1.796993D+05
+    ==== End of matrix output ====
 
 
                       +-------------------------------------+
@@ -1211,10 +1320,11 @@ EFG Principal axis                  H   _2
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1    1.501772D+01  0.000000D+00  0.000000D+00
-       2    0.000000D+00  1.245032D+01  0.000000D+00
-       3    0.000000D+00  0.000000D+00  1.797158D+05
+               Column   1     Column   2     Column   3
+       1     1.501772D+01   0.000000D+00   0.000000D+00
+       2     0.000000D+00   1.245032D+01   0.000000D+00
+       3     0.000000D+00   0.000000D+00   1.797158D+05
+    ==== End of matrix output ====
 
  Alfa**2 Invariant:                    **************
  Beta**2 Invariant:                    **************
@@ -1236,24 +1346,27 @@ EFG Principal axis                  H   _2
 
 Total non-diagonalized EFG Tensor   S     
 
-              Column   1    Column   2    Column   3
-       1      1.21415499    0.00000000    0.00000000
-       2      0.00000000   -1.75737865    0.00000000
-       3      0.00000000    0.00000000    0.54322366
+               Column   1     Column   2     Column   3
+       1       1.21415499     0.00000000     0.00000000
+       2       0.00000000    -1.75737864     0.00000000
+       3       0.00000000     0.00000000     0.54322365
+    ==== End of matrix output ====
 
 Total non-diagonalized EFG Tensor   H   _1
 
-              Column   1    Column   2    Column   3
-       1      0.10801704    0.00000000    0.16984653
-       2      0.00000000   -0.13635068    0.00000000
-       3      0.16984653    0.00000000    0.02833364
+               Column   1     Column   2     Column   3
+       1       0.10801704     0.00000000     0.16984653
+       2       0.00000000    -0.13635068     0.00000000
+       3       0.16984653     0.00000000     0.02833364
+    ==== End of matrix output ====
 
 Total non-diagonalized EFG Tensor   H   _2
 
-              Column   1    Column   2    Column   3
-       1      0.10801704    0.00000000   -0.16984653
-       2      0.00000000   -0.13635068    0.00000000
-       3     -0.16984653    0.00000000    0.02833364
+               Column   1     Column   2     Column   3
+       1       0.10801704     0.00000000    -0.16984653
+       2       0.00000000    -0.13635068     0.00000000
+       3      -0.16984653     0.00000000     0.02833364
+    ==== End of matrix output ====
  String on input: "S       "
  String on input: "S       "
  String on input: "H   _1  "
@@ -1263,24 +1376,27 @@ Total non-diagonalized EFG Tensor   H   _2
 
 EFG Principal axis                  S     
 
-              Column   1    Column   2    Column   3
-       1      1.00000000    0.00000000    0.00000000
-       2      0.00000000    1.00000000    0.00000000
-       3      0.00000000    0.00000000    1.00000000
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
 
 EFG Principal axis                  H   _1
 
-              Column   1    Column   2    Column   3
-       1      0.78370136    0.00000000   -0.62113781
-       2      0.00000000    1.00000000    0.00000000
-       3      0.62113781    0.00000000    0.78370136
+               Column   1     Column   2     Column   3
+       1       0.78370136     0.00000000    -0.62113781
+       2       0.00000000     1.00000000     0.00000000
+       3       0.62113781     0.00000000     0.78370136
+    ==== End of matrix output ====
 
 EFG Principal axis                  H   _2
 
-              Column   1    Column   2    Column   3
-       1      0.78370136    0.00000000    0.62113781
-       2      0.00000000    1.00000000    0.00000000
-       3     -0.62113781    0.00000000    0.78370136
+               Column   1     Column   2     Column   3
+       1       0.78370136     0.00000000     0.62113781
+       2       0.00000000     1.00000000     0.00000000
+       3      -0.62113781     0.00000000     0.78370136
+    ==== End of matrix output ====
 
 
                          Nuclear quadrupole moment for S
@@ -1332,16 +1448,16 @@ EFG Principal axis                  H   _2
          ------ 
   
   
-         DPTONE:     -2.098168060053
+         DPTONE:     -2.098168060049
          ------ 
   
-         DPTREO:      0.727075802331
+         DPTREO:      0.727075802332
          ------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
 
  Number of two-electron spin-orbit integrals written:     23259 (22.7%)
- >>> Time used in TWOINT is   0.12 seconds
+ >>>  Time used in TWOINT     is   0.13 seconds
 
  Number of two-electron spin-orbit integrals written:     12435 (21.9%)
 
@@ -1349,10 +1465,10 @@ EFG Principal axis                  H   _2
 
  Number of two-electron spin-orbit integrals written:     17420 (25.5%)
   
-         DPTTWO:      0.368216477334
+         DPTTWO:      0.368216477333
          ------ 
   
-         Total first-order DPT correction:     -1.109016009090
+         Total first-order DPT correction:     -1.109016009086
          --------------------------------
 
 
@@ -1410,11 +1526,12 @@ EFG Principal axis                  H   _2
           Number of t2 amplitudes                 :      4022
           Total number of amplitudes in ccsd      :      4080
 
- Iter.  1: Coupled cluster RSTAR energy :    -578.6438367477045404
- Iter.  1: Coupled cluster CCSD  energy :    -578.6438367476996518
+ Iter.  1: Coupled cluster RSTAR energy :    -578.6438367475698215
+ Iter.  1: Coupled cluster CCSD  energy :    -578.6438367476760050
+ Iter.  2: Coupled cluster CCSD  energy :    -578.6438367476993108
 
- CCSD  energy converged to within   0.10D-09 is   -578.643836748
- Final 2-norm of the CC vector function:  4.29556059D-10
+ CCSD  energy converged to within   0.10D-09 is         -578.643836747699
+ Final 2-norm of the CC vector function:  3.46680776D-09
 
 
 
@@ -1428,7 +1545,7 @@ EFG Principal axis                  H   _2
 
             Total SCF   energy:                  -578.4738397618
 
-            Total RSTAR energy:                  -578.6438367477
+            Total RSTAR energy:                  -578.6438367476
 
             Total CCSD  energy:                  -578.6438367477
 
@@ -1474,8 +1591,10 @@ EFG Principal axis                  H   _2
                         ! Coupled Cluster model is CCSD(T) !
                         +----------------------------------+
 
+ RPA: call cceq_str
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
+ RPA: exit cceq_str
 
 
                       Constructing RHS for CCSD(T)-kapbar-0
@@ -1486,22 +1605,25 @@ EFG Principal axis                  H   _2
                                 Inside ccpt_den()
                                 -----------------
 
- CC_DEN_PTFC: ZKDIA before TWO electron part  0.20481527035429853     
+ CC_DEN_PTFC: ZKDIA before TWO electron part  0.20481526871380717     
 
 
                     Construct part of rhs for CCSD(T)-kappa-0
                     -----------------------------------------
 
  CC_DEN_PTFC using CCETACOR
- CC_DEN_PTFC: ZKDIA before CCETACOR  1.86427460665100674E-006
- CC_FOP> Norm of RHS vector:  1.39171561817181667E-006
+ CC_DEN_PTFC: ZKDIA before CCETACOR   1.8642746009481770E-006
+ CC_FOP> Norm of RHS vector:   1.3917157584764032E-006
 
 
                       Solving for orbital relaxation vector
                       -------------------------------------
 
 
+ Integral transformation: Total CPU and WALL times (sec)       0.006       0.006
+
    Equations converged to residual less than:  0.000000
+ CCFOP: call CC_D1AO to recalc the 1e Density
 
 
                             +--------------------------+
@@ -1580,10 +1702,11 @@ EFG Principal axis                  H   _2
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1    8.985238D+04  0.000000D+00  0.000000D+00
-       2    0.000000D+00  8.984628D+04  0.000000D+00
-       3    0.000000D+00  0.000000D+00 -1.796987D+05
+               Column   1     Column   2     Column   3
+       1     8.985238D+04   0.000000D+00   0.000000D+00
+       2     0.000000D+00   8.984628D+04   0.000000D+00
+       3     0.000000D+00   0.000000D+00  -1.796987D+05
+    ==== End of matrix output ====
 
 
                       +-------------------------------------+
@@ -1592,10 +1715,11 @@ EFG Principal axis                  H   _2
 
                     X              Y              Z
 
-              Column   1    Column   2    Column   3
-       1    1.502320D+01  0.000000D+00  0.000000D+00
-       2    0.000000D+00  1.244688D+01  0.000000D+00
-       3    0.000000D+00  0.000000D+00  1.797152D+05
+               Column   1     Column   2     Column   3
+       1     1.502320D+01   0.000000D+00   0.000000D+00
+       2     0.000000D+00   1.244688D+01   0.000000D+00
+       3     0.000000D+00   0.000000D+00   1.797152D+05
+    ==== End of matrix output ====
 
  Alfa**2 Invariant:                    **************
  Beta**2 Invariant:                    **************
@@ -1617,24 +1741,27 @@ EFG Principal axis                  H   _2
 
 Total non-diagonalized EFG Tensor   S     
 
-              Column   1    Column   2    Column   3
-       1      1.21163151    0.00000000    0.00000000
-       2      0.00000000   -1.75901769    0.00000000
-       3      0.00000000    0.00000000    0.54738617
+               Column   1     Column   2     Column   3
+       1       1.21163151     0.00000000     0.00000000
+       2       0.00000000    -1.75901769     0.00000000
+       3       0.00000000     0.00000000     0.54738617
+    ==== End of matrix output ====
 
 Total non-diagonalized EFG Tensor   H   _1
 
-              Column   1    Column   2    Column   3
-       1      0.10801353    0.00000000    0.17029117
-       2      0.00000000   -0.13664893    0.00000000
-       3      0.17029117    0.00000000    0.02863541
+               Column   1     Column   2     Column   3
+       1       0.10801353     0.00000000     0.17029117
+       2       0.00000000    -0.13664893     0.00000000
+       3       0.17029117     0.00000000     0.02863541
+    ==== End of matrix output ====
 
 Total non-diagonalized EFG Tensor   H   _2
 
-              Column   1    Column   2    Column   3
-       1      0.10801353    0.00000000   -0.17029117
-       2      0.00000000   -0.13664893    0.00000000
-       3     -0.17029117    0.00000000    0.02863541
+               Column   1     Column   2     Column   3
+       1       0.10801353     0.00000000    -0.17029117
+       2       0.00000000    -0.13664893     0.00000000
+       3      -0.17029117     0.00000000     0.02863541
+    ==== End of matrix output ====
  String on input: "S       "
  String on input: "S       "
  String on input: "H   _1  "
@@ -1644,24 +1771,27 @@ Total non-diagonalized EFG Tensor   H   _2
 
 EFG Principal axis                  S     
 
-              Column   1    Column   2    Column   3
-       1      1.00000000    0.00000000    0.00000000
-       2      0.00000000    1.00000000    0.00000000
-       3      0.00000000    0.00000000    1.00000000
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
 
 EFG Principal axis                  H   _1
 
-              Column   1    Column   2    Column   3
-       1      0.78325684    0.00000000   -0.62169825
-       2      0.00000000    1.00000000    0.00000000
-       3      0.62169825    0.00000000    0.78325684
+               Column   1     Column   2     Column   3
+       1       0.78325684     0.00000000    -0.62169825
+       2       0.00000000     1.00000000     0.00000000
+       3       0.62169825     0.00000000     0.78325684
+    ==== End of matrix output ====
 
 EFG Principal axis                  H   _2
 
-              Column   1    Column   2    Column   3
-       1      0.78325684    0.00000000    0.62169825
-       2      0.00000000    1.00000000    0.00000000
-       3     -0.62169825    0.00000000    0.78325684
+               Column   1     Column   2     Column   3
+       1       0.78325684     0.00000000     0.62169825
+       2       0.00000000     1.00000000     0.00000000
+       3      -0.62169825     0.00000000     0.78325684
+    ==== End of matrix output ====
 
 
                          Nuclear quadrupole moment for S
@@ -1707,14 +1837,14 @@ EFG Principal axis                  H   _2
   
          DPTFLD:     -0.106141061791    (ZDIPLEN )
          ------ 
- Effective 1-e density in AO basis All:    31.786567012961871     
+ Effective 1-e density in AO basis All:    31.786567012787359     
   
   
          DPTFLD:     -0.106141061791    (TOTAL   )
          ------ 
   
   
-         DPTONE:     -2.098164962736
+         DPTONE:     -2.098164962735
          ------ 
   
          DPTREO:      0.727082293429
@@ -1723,7 +1853,7 @@ EFG Principal axis                  H   _2
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
 
  Number of two-electron spin-orbit integrals written:     23259 (22.7%)
- >>> Time used in TWOINT is   0.12 seconds
+ >>>  Time used in TWOINT     is   0.13 seconds
 
  Number of two-electron spin-orbit integrals written:     12435 (21.9%)
 
@@ -1734,7 +1864,7 @@ EFG Principal axis                  H   _2
          DPTTWO:      0.368208087072
          ------ 
   
-         Total first-order DPT correction:     -1.109015644025
+         Total first-order DPT correction:     -1.109015644024
          --------------------------------
 
 
@@ -1785,11 +1915,11 @@ EFG Principal axis                  H   _2
                                                                                 
             Total SCF   energy:                  -578.4738397618                
             Total MP2   energy:                  -578.6247428975                
-            Total CCSD  energy:                  -578.6438367477                
+            Total CCSD  energy:                  -578.6438367476                
                                                                                 
                                                                                 
             Total SCF   energy:                  -578.4738397618                
-            Total RSTAR energy:                  -578.6438367477                
+            Total RSTAR energy:                  -578.6438367476                
             Total CCSD  energy:                  -578.6438367477                
                                                                                 
                                                                                 
@@ -1813,6 +1943,12 @@ EFG Principal axis                  H   _2
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :       4.018       4.290
+
+ 
+     Date and time (Linux)  : Sun Sep  8 21:16:26 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
@@ -1821,6 +1957,8 @@ EFG Principal axis                  H   _2
 
  Center of mass dipole origin  :    0.000000    0.000000    0.103832
 
+ Center of mass gauge origin   :    0.000000    0.000000    0.103832
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -1828,8 +1966,8 @@ EFG Principal axis                  H   _2
 
 
  
-     Date and time (Linux)  : Wed Mar 16 20:44:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:16:26 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
    ***************************************************************************
@@ -1838,8 +1976,8 @@ EFG Principal axis                  H   _2
 
 
  
-     Date and time (Linux)  : Wed Mar 16 20:44:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:16:26 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                              Molecular geometry (au)
@@ -1906,8 +2044,10 @@ EFG Principal axis                  H   _2
  H   _2:    1.337300    1.928723    0.000000
 
 
-  Max interatomic separation is    1.9287 Angstrom (    3.6448 Bohr)
+  Max    interatomic separation is    1.9287 Angstrom (    3.6448 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    1.3373 Angstrom (    2.5271 Bohr)
 
 
   Bond distances (Angstrom):
@@ -1935,17 +2075,17 @@ EFG Principal axis                  H   _2
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.02 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.01 seconds
+ >>>> Total wall time used in ABACUS:   0.02 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   4.09 seconds
- >>>> Total wall time used in DALTON:   6.00 seconds
+ >>>> Total CPU  time used in DALTON:   4.17 seconds
+ >>>> Total wall time used in DALTON:   4.44 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 20:44:59 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:16:26 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

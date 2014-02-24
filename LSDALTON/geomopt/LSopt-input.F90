@@ -173,6 +173,14 @@ Type(opt_setting) :: optinfo
      optinfo%dynamicConvergence = .FALSE.
      optinfo%doNumGradGeomOpt = .FALSE.
      optinfo%findif_mesh = 1.0D-5
+
+!    Non-iterative stepping scheme based on perturbation theory (Vladimir R. and Ulf E.)
+     optinfo%New_stepping = .TRUE.
+     optinfo%IBT = .FALSE.
+     optinfo%OLDIBT = .FALSE.
+     optinfo%Shanks = .FALSE.
+     optinfo%Deriv_order = 20
+
 ! 
 End subroutine Optimization_set_default_config 
 !=========================!
@@ -190,8 +198,8 @@ Integer :: NAtoms,i
 Character(Len = 70) :: Keyword
 Character(Len = 1) :: Prompt
 Integer :: FileStatus
-Character(Len=7), dimension(82) :: KwordTABLE = &
-            (/'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC', &
+Character(Len=7), dimension(87) :: KwordTABLE = &
+          (/'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC', &
             '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY', &
             '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA', &
             '.SP BAS', '.DYNOPT', '.VISUAL', '.VRML  ', & 
@@ -211,7 +219,8 @@ Character(Len=7), dimension(82) :: KwordTABLE = &
             '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT', &
             '.NOHSWR', '.FREEZE', '.FRZITR', '.REDSPA', &
             '.CARTRS', '.FORBAC', '.SCANSI', '.SCANST', &
-            '.NUMOPT', '.NUMESH'/)
+            '.NUMOPT', '.NUMESH', '.NOHOPE', '.ITERBT', &
+            '.DERORD', '.OLDIBT', '.SHANKS'/)
 ! Number of cartesian coordinates
 optinfo%IcartCoord = NAtoms*3
 !
@@ -304,8 +313,8 @@ Do
 !                 Case('.VR-BON')
 !                 Case('.VR-EIG')
                  Case('.INITHE')
-                   Write(lupri,*)'INITHE optinon is not availvable in LSDALTON'
-                   Call LSQuit('Hessian not availvable in LSDALTON',lupri)
+                   Write(lupri,*)'INITHE optinon is not available in LSDALTON'
+                   Call LSQuit('Hessian not available in LSDALTON',lupri)
                  Case('.INITEV')
                    Read(lucmd,*) optinfo%EvLini
                  Case('.HESFIL')
@@ -324,8 +333,8 @@ Do
                  Case('.BFGS  ')
                    optinfo%BFGS = .TRUE. 
                  Case('.NEWTON')
-                   Write(lupri,*)'NEWTON optinon is not availvable in LSDALTON'
-                   Call LSQuit('Hessian not availvable in LSDALTON',lupri)
+                   Write(lupri,*)'NEWTON optinon is not available in LSDALTON'
+                   Call LSQuit('Hessian not available in LSDALTON',lupri)
                  Case('.QUADSD')
                     Call lsquit('.QUADSD not implemented in LSDALTON',lupri)
 !                   optinfo%QuadSD = .TRUE.
@@ -343,13 +352,13 @@ Do
                     optinfo%CartCoord = .TRUE. 
                     optinfo%RedInt = .FALSE.
                  Case('.REDINT')
-                    optinfo%RedInt = .TRUE.
-                    optinfo%CartCoord = .FALSE.
                     If (optinfo%CartCoord) then
                        Call LSQuit('The user must choose&
-                 & between optimization in cartesian or&
-                 & internal coordinates', lupri)
-                    Endif
+                                 & between optimization in cartesian or&
+                                 & internal coordinates', lupri)
+                    Endif       
+                    optinfo%RedInt = .TRUE.
+                    optinfo%CartCoord = .FALSE.
                  Case('.INIRED')
                     optinfo%InrdHess = .TRUE.
                  Case('.1STORD')
@@ -567,6 +576,16 @@ Do
                      Read(lucmd,*) optinfo%ScanCoord
                   Case('.SCANST') 
                      Read(lucmd,*) optinfo%Scan_step
+                  Case('.NOHOPE')
+                     optinfo%New_stepping = .FALSE.
+                  Case('.ITERBT')
+                     optinfo%IBT = .TRUE.
+                  Case('.OLDIBT')
+                     optinfo%OldIBT = .TRUE.
+                  Case('.DERORD')
+                     Read(lucmd,*) optinfo%Deriv_order
+                  Case('.SHANKS')
+                     optinfo%Shanks = .TRUE.
           End select
         Else
            Write(lupri,'(/,3A,/)') ' Keyword "',Keyword, &
@@ -795,12 +814,12 @@ ELSE
            & removing a number of dihedral coordinates.'
       END IF
 !
-      IF (.NOT. (optinfo%HessFile .OR. optinfo%InmdHess .OR. optinfo%CMBMod &
+      IF (.NOT. (optinfo%HessFile .OR. optinfo%InmdHess .OR. optinfo%ModHes .OR. optinfo%CMBMod &
       .OR. optinfo%InrdHess .OR. (optinfo%EVLINI .GT. -0.9E0_realk))) THEN
          IF (optinfo%SADDLE) THEN
             optinfo%NOAUX  = .TRUE.
          ELSE
-            optinfo%InmdHess = .TRUE.
+            IF (.NOT.optinfo%CartCoord) optinfo%InmdHess = .TRUE.
          END IF
       END IF
 !

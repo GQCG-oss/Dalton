@@ -93,7 +93,8 @@ C
          XGAMMA = DAMPING(IDAMP)
 
          WRITE (LUPRI,*) " FOR OPERATOR LABEL = ", LABEL
-         WRITE (LUPRI,*) " Response fun with gamma = ",XGAMMA, 'J=',J
+         WRITE (LUPRI,'(1X,A27,F12.8,A3,I10)') 
+     *               " Response fun with gamma = ",XGAMMA, ' J=',J
          WRITE(LUPRI,*)  " Frequency (eV)  & Real  (au)& Imaginary(au)",
      &                   "&  sigma^I (au)"
          WRITE(LUPRI,'(X,"---------------------------")')
@@ -101,7 +102,8 @@ C
 !Also on file LUSPEC
 !
          WRITE (LUSPEC,*) " FOR OPERATOR LABEL = ", LABEL
-         WRITE (LUSPEC,*) " Response fun with gamma = ",XGAMMA, 'J=',J
+         WRITE (LUSPEC,'(1X,A27,F12.8,A3,I10)')
+     *               " Response fun with gamma = ",XGAMMA, ' J=',J
          WRITE(LUSPEC,*) " Frequency (eV)  & Real  (au)& Imaginary(au)",
      &                   "&  sigma^I (au)"
          WRITE(LUSPEC,'(X,"---------------------------")')
@@ -1075,7 +1077,7 @@ C
          WRITE (LUPRI,'(9(5X,I3,(4X,G13.6)/))')
      &         (N,SUM_L0_T(N),N=-6,2)
       WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,A,A,/)')
-     &   'I(N) Sum Rules : Dipole Length Approximation in a.u.',
+     &   'I(N) Sum Rules : Dipole Length Approximation in eV ',
      &   'N',LABEL(1:1),LABEL(1:1),' - component'
          WRITE (LUPRI,'(9(5X,I3,(4X,G13.6)/))')
      &         (N,mean_exc_energy(N),N=-6,2)

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -48,6 +48,7 @@ C
       WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
       WRITE (LUPRI, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
       WRITE (LUPRI, '()')
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C  /* Deck timer */
@@ -166,6 +167,7 @@ Cx    WRITE (LUPRI,'(//150A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
 Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '| ', HEAD(1:LHEAD), ' |'
 Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
       WRITE (LUPRI,'()')
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C  /* Deck stopit */
@@ -279,9 +281,33 @@ C
       ELSE
          LUPRIN = 6
       END IF
-      WRITE (LUPRIN,*) 'ERROR: ',TEXT,
+      WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,
      & ' not implemented for parallel calculations!'
       CALL QUIT(TEXT)
+      RETURN
+      END
+C  /* Deck parqarn */
+      SUBROUTINE PARWARN(TEXT)
+C Purpose:
+C   Warning message if code is not optimized (parallelized) for parallel calculations.
+
+      IMPLICIT NONE
+
+#include "priunit.h"
+      CHARACTER TEXT*(*)
+      INTEGER LUPRIN
+C
+C
+      IF (LUPRI .GE. 0) THEN
+         LUPRIN = LUPRI
+      ELSE IF (LUERR .GE. 0) THEN
+         LUPRIN = LUERR
+      ELSE
+         LUPRIN = 6
+      END IF
+      WRITE (LUPRIN,'(//3A/A/)') 'WARNING: ',TEXT,
+     & 'module is not optimized for parallel calculations!',
+     & 'WARNING: you will get better efficiency with a sequential run'
       RETURN
       END
 C  /* Deck opendx */
@@ -918,7 +944,7 @@ C
             END IF
          ELSE
             IF (MYNUM .GT. 0) THEN
-             IF (INDEX(FILENM,'.n') .EQ. 0) THEN
+             IF (INDEX(FILENM(1:FILELN),'.n') .EQ. 0) THEN
                FILENM(FILELN+1:FILELN+LEN_NODEID) = F_NODEID
                FILELN = FILELN + LEN_NODEID
              END IF
@@ -936,8 +962,8 @@ C
             IF (FILELN .LE. 0) GOTO 9005
 C
             IF (MYNUM .GT. 0 .AND. .NOT. OLDDX) THEN
-             IF (INDEX(FILENM,'.n')     .EQ. 0 .AND.
-     &           INDEX(FILENM,'NUMCAL') .EQ. 0) THEN
+             IF (INDEX(FILENM(1:FILELN),'.n')     .EQ. 0 .AND.
+     &           INDEX(FILENM(1:FILELN),'NUMCAL') .EQ. 0) THEN
 C
 C     The last test will not be necessary anymore when we get
 C     locking RMA operations in MPI2
@@ -970,7 +996,7 @@ C
                END IF
             ELSE
                IF (MYNUM .GT. 0) THEN
-                IF (INDEX(FILENM,'.n') .EQ. 0) THEN
+                IF (INDEX(FILENM(1:FILELN),'.n') .EQ. 0) THEN
                   FILENM(FILELN+1:FILELN+LEN_NODEID) = F_NODEID
                   FILELN = FILELN + LEN_NODEID
                 END IF

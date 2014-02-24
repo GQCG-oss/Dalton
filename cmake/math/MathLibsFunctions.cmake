@@ -14,7 +14,6 @@
 
 include(FindPackageHandleStandardArgs)
 include(FindPackageMessage)
-include(MathLibs)
 
 if(NOT MATH_LANG)
     set(MATH_LANG C)
@@ -126,13 +125,13 @@ macro(cache_math_result _service MATH_TYPE)
 endmacro()
 
 macro(config_math_service _SERVICE)
-    set(ENABLE_${_SERVICE}
-        ENABLE_${_SERVICE}
+    set(ENABLE_AUTO_${_SERVICE}
+        ENABLE_AUTO_${_SERVICE}
         CACHE BOOL
         "Enable ${_SERVICE}"
         )
     set(${_SERVICE}_FOUND FALSE)
-    if(ENABLE_${_SERVICE})
+    if(ENABLE_AUTO_${_SERVICE})
         if(EXISTS $ENV{MATH_ROOT})
             if(NOT DEFINED ${_SERVICE}_ROOT})
                 set(${_SERVICE}_ROOT $ENV{MATH_ROOT})
@@ -179,18 +178,21 @@ macro(config_math_service _SERVICE)
         endif()
         unset(EXTRA_LIBS)
 
-        find_package_message(${_SERVICE} "Found ${_SERVICE}: ${${_SERVICE}_TYPE}" "[${${_SERVICE}_LIBRARIES}]")
-        set(LIBS
-            ${LIBS}
+        find_package_message(${_SERVICE}
+            "Found ${_SERVICE}: ${${_SERVICE}_TYPE} (${${_SERVICE}_LIBRARIES})"
+            "[${${_SERVICE}_LIBRARIES}]"
+            )
+        set(EXTERNAL_LIBS
+            ${EXTERNAL_LIBS}
             ${${_SERVICE}_LIBRARIES}
             )
     else()
-        if(ENABLE_${_SERVICE})
-            message("-- No external ${_SERVICE} library found")
+        if(ENABLE_AUTO_${_SERVICE})
+            message("-- No external ${_SERVICE} library found (have you set the MATH_ROOT environment variable?)")
         endif()
-        message("-- Using own ${_SERVICE} implementation (slow)")
-        add_definitions(-DUSE_OWN_${_SERVICE})
-        set(USE_OWN_${_SERVICE} TRUE)
+        message("-- Using builtin ${_SERVICE} implementation (slow)")
+        add_definitions(-DUSE_BUILTIN_${_SERVICE})
+        set(USE_BUILTIN_${_SERVICE} TRUE)
     endif()
 endmacro()
 

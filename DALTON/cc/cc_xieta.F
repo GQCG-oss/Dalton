@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -41,7 +41,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -143,17 +143,17 @@ C
         ISTART      = 1
         IEND        = ISTART   + NTRAN
         IADRX0      = IEND     + NTRAN
-        IADRX1      = IADRX0   + MXCORB*1
-        IADRE0      = IADRX1   + MXCORB*NTRAN
-        IADRE1      = IADRE0   + MXCORB*NTRAN
-        IADRPQ0     = IADRE1   + MXCORB*NTRAN
-        IADRPQ1     = IADRPQ0  + MXCORB*NTRAN
-        IADRPQMO    = IADRPQ1  + MXCORB*NTRAN
-        IT2DEL0     = IADRPQMO + MXCORB*NTRAN
-        IT2DELB     = IT2DEL0  + MXCORB*1
-        IADRH0      = IT2DELB  + MXCORB*NTRAN
-        IADRH1      = IADRH0   + MXCORB*NTRAN
-        KCMOPQ      = IADRH1   + MXCORB*NTRAN
+        IADRX1      = IADRX0   + MXCORB_CC*1
+        IADRE0      = IADRX1   + MXCORB_CC*NTRAN
+        IADRE1      = IADRE0   + MXCORB_CC*NTRAN
+        IADRPQ0     = IADRE1   + MXCORB_CC*NTRAN
+        IADRPQ1     = IADRPQ0  + MXCORB_CC*NTRAN
+        IADRPQMO    = IADRPQ1  + MXCORB_CC*NTRAN
+        IT2DEL0     = IADRPQMO + MXCORB_CC*NTRAN
+        IT2DELB     = IT2DEL0  + MXCORB_CC*1
+        IADRH0      = IT2DELB  + MXCORB_CC*NTRAN
+        IADRH1      = IADRH0   + MXCORB_CC*NTRAN
+        KCMOPQ      = IADRH1   + MXCORB_CC*NTRAN
         KCMOHQ      = KCMOPQ   + NTRAN
         KLAMDPQ     = KCMOHQ   + NTRAN
         KLAMDHQ     = KLAMDPQ  + NTRAN
@@ -413,7 +413,7 @@ c /* deck cc_xieta1 */
 *
 *
 *    IT2DEL0,IT2DELB -- integer scratch arrays of dimensions
-*                       MXCORB and MXCORB x NXETRAN
+*                       MXCORB_CC and MXCORB_CC x NXETRAN
 *
 *    operator labels:
 *           HAM0     : unperturbed Hamiltonian (1-el & 2-el part)
@@ -433,7 +433,7 @@ c /* deck cc_xieta1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "aovec.h"
@@ -462,7 +462,7 @@ c /* deck cc_xieta1 */
 #include "dummy.h"
 #include "ccsections.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 #include "ccnoddy.h"
 #include "cch2d.h"
 #include "ccrc1rsp.h"
@@ -523,7 +523,7 @@ c /* deck cc_xieta1 */
       INTEGER LWORK, NXETRAN, IOPTRES, MAXSIM, MXVEC, IORDER
       INTEGER IXETRAN(MXDIM_XEVEC,NXETRAN)
       INTEGER IXDOTS(MXVEC,NXETRAN), IEDOTS(MXVEC,NXETRAN)
-      INTEGER IT2DEL0(MXCORB), IT2DELB(MXCORB,NXETRAN)
+      INTEGER IT2DEL0(MXCORB_CC), IT2DELB(MXCORB_CC,NXETRAN)
       INTEGER ISTART(NXETRAN), IEND(NXETRAN)
       INTEGER KRBIM(NXETRAN), KGBIM(NXETRAN), KFBIM(NXETRAN)
       INTEGER KRHO1(NXETRAN), KRHO2(NXETRAN), KBFZI(NXETRAN)
@@ -537,14 +537,14 @@ c /* deck cc_xieta1 */
       INTEGER KDNSHFB(NXETRAN), KDPKHFB(NXETRAN)
       INTEGER KXINT(NXETRAN),   KYINT(NXETRAN)
       INTEGER KCMOPQ(NXETRAN),  KCMOHQ(NXETRAN)
-      INTEGER IADRX0(MXCORB),          IADRX1(MXCORB,NXETRAN)
-      INTEGER IADRH0(MXCORB,NXETRAN),  IADRH1(MXCORB,NXETRAN)
+      INTEGER IADRX0(MXCORB_CC),          IADRX1(MXCORB_CC,NXETRAN)
+      INTEGER IADRH0(MXCORB_CC,NXETRAN),  IADRH1(MXCORB_CC,NXETRAN)
 
-      INTEGER IADRE0(MXCORB,NXETRAN),  IADRE1(MXCORB,NXETRAN)
-      INTEGER IADRPQ0(MXCORB,NXETRAN), IADRPQ1(MXCORB,NXETRAN)
-      INTEGER IADRPQMO(MXCORB,NXETRAN)
+      INTEGER IADRE0(MXCORB_CC,NXETRAN),  IADRE1(MXCORB_CC,NXETRAN)
+      INTEGER IADRPQ0(MXCORB_CC,NXETRAN), IADRPQ1(MXCORB_CC,NXETRAN)
+      INTEGER IADRPQMO(MXCORB_CC,NXETRAN)
 
-      INTEGER INDEXA(MXCORB), IGAM(MXCORB)
+      INTEGER INDEXA(MXCORB_CC), IGAM(MXCORB_CC)
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
@@ -3371,8 +3371,8 @@ C          END IF
       CHARACTER*(*) FNBFDX0, FNBFDX1
       CHARACTER*(8) LABELH
       INTEGER ITRAN, ISYAMP, ISYHOP, IORDER, LWORK
-      INTEGER LUBFDX0, IADRBFX0, IADRX0(MXCORB)
-      INTEGER LUBFDX1, IADRBFX1, IADRX1(MXCORB,*)
+      INTEGER LUBFDX0, IADRBFX0, IADRX0(MXCORB_CC)
+      INTEGER LUBFDX1, IADRBFX1, IADRX1(MXCORB_CC,*)
       
 #if defined (SYS_CRAY)
       REAL DENSPKQ(*), DPKHFQ(*), FOCKQ(*), FCKHFQ(*)
@@ -3539,11 +3539,11 @@ C          END IF
       LOGICAL LRELAX, LTWOEL
       CHARACTER*(*) LISTL, FNBFDE0, FNBFDE1, FILPQMO, FILPQ0, FILPQ1
       INTEGER ITRAN, ISTART, IDLSTL, ISYAMP, ISYCTR, ISYHOP, LWORK
-      INTEGER LUBFDE0, IADRBFE0, IADRE0(MXCORB,*)
-      INTEGER LUBFDE1, IADRBFE1, IADRE1(MXCORB,*)
-      INTEGER LUPQMO,  IADRPQ,   IADRPQMO(MXCORB,*)
-      INTEGER LUPQ0,   IADRPQI0, IADRPQ0(MXCORB,*)
-      INTEGER LUPQ1,   IADRPQI1, IADRPQ1(MXCORB,*)
+      INTEGER LUBFDE0, IADRBFE0, IADRE0(MXCORB_CC,*)
+      INTEGER LUBFDE1, IADRBFE1, IADRE1(MXCORB_CC,*)
+      INTEGER LUPQMO,  IADRPQ,   IADRPQMO(MXCORB_CC,*)
+      INTEGER LUPQ0,   IADRPQI0, IADRPQ0(MXCORB_CC,*)
+      INTEGER LUPQ1,   IADRPQI1, IADRPQ1(MXCORB_CC,*)
       
 #if defined (SYS_CRAY)
       REAL XINT(*), YINT(*), MINT(*), ZETA1(*), ZETA2(*)
@@ -3837,12 +3837,12 @@ CCH
       CHARACTER*(*) FNBFDE0, FNBFDE1, FILPQ0, FILPQ1, FNHINT0, FNHINT1
       INTEGER ISYCTR,ISYAMP,ISYHOP,ISY0DIS,ISY1DIS,IDEL,IREAL,LWORK
       INTEGER IADRZ0, IADRZ1
-      INTEGER LUBFDE0, IADRE0(MXCORB)
-      INTEGER LUBFDE1, IADRE1(MXCORB)
-      INTEGER LUPQ0, IADRPQ0(MXCORB)
-      INTEGER LUPQ1, IADRPQ1(MXCORB)
-      INTEGER LUHINT0, IADRH0(MXCORB)
-      INTEGER LUHINT1, IADRH1(MXCORB)
+      INTEGER LUBFDE0, IADRE0(MXCORB_CC)
+      INTEGER LUBFDE1, IADRE1(MXCORB_CC)
+      INTEGER LUPQ0, IADRPQ0(MXCORB_CC)
+      INTEGER LUPQ1, IADRPQ1(MXCORB_CC)
+      INTEGER LUHINT0, IADRH0(MXCORB_CC)
+      INTEGER LUHINT1, IADRH1(MXCORB_CC)
       
 #if defined (SYS_CRAY)
       REAL XLAMDP0(*), XLAMDH0(*), XLAMDPQ(*), XLAMDHQ(*)
@@ -4176,7 +4176,7 @@ c /* deck ccxiintao */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -4200,8 +4200,8 @@ c /* deck ccxiintao */
       INTEGER LU0IAJB, LU0IABJ, LU0IJBA, LU0AIBJ
       INTEGER LU1IAJB, LU1IABJ, LU1IJBA, LU1AIBJ
       INTEGER IADRX0(*), IADRX1(*)
-      INTEGER IT2DEL0(MXCORB)
-      INTEGER IT2DELB(MXCORB,*)
+      INTEGER IT2DEL0(MXCORB_CC)
+      INTEGER IT2DELB(MXCORB_CC,*)
 
 #if defined (SYS_CRAY)
       REAL X0INT(*), X1INT(*), D0SRHF(*), D1SRHF(*)
@@ -5424,7 +5424,7 @@ c /* deck cceta2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -6402,7 +6402,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -6748,7 +6748,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -6877,7 +6877,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

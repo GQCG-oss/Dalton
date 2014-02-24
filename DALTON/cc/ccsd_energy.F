@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -3586,6 +3586,9 @@ C
 C     FREEZE OC230899
 C     Frozen orbital bug-fix, tbp July 2003.
 C
+
+      use dyn_iadrpk
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3891,6 +3894,7 @@ C
          ICOUN1 = ICOUN1 + N2BST(ISYM)
 C
   450 CONTINUE
+      N2BSTX = ICOUN1
 C
       DO 500 ISYMD = 1,NSYM
          NDISAO(ISYMD)   = 0
@@ -4404,35 +4408,7 @@ C
 C
   900 CONTINUE
 C
-      DO 920 ISYMAB = 1,NSYM
-C
-         DO 930 ISYMB = 1,NSYM
-C
-            ISYMA = MULD2H(ISYMB,ISYMAB)
-C
-            DO 940 B = 1,NBAS(ISYMB)
-C
-               DO 950 A = 1,NBAS(ISYMA)
-C
-                  NABSQ = I2BST(ISYMAB) + IAODIS(ISYMA,ISYMB)
-     *                  + NBAS(ISYMA)*(B - 1) + A
-C
-                  IF (ISYMA .EQ. ISYMB) THEN
-                     NAB = INDEX(A,B)
-                  ELSE IF (ISYMB .GT.ISYMA) THEN
-                     NAB = NBAS(ISYMA)*(B - 1) + A
-                  ELSE
-                     NAB = NBAS(ISYMB)*(A - 1) + B
-                  END IF
-C
-                  NABPK = IAODPK(ISYMA,ISYMB) + NAB
-C
-                  IADRPK(NABSQ) = NABPK
-C
-  950          CONTINUE
-  940       CONTINUE
-  930    CONTINUE
-  920 CONTINUE
+      call get_iadrpk(lupri,nsym,muld2h,nbas,nbast,i2bst,iaodis,iaodpk)
 C
       DO 1000 ISYM = 1,NSYM
 C
@@ -4516,6 +4492,14 @@ C
          XCKI(ISYCKA)   = XCOUN2
 C
  1040 CONTINUE
+C
+C
+C     FIND MAX LENGTH OF NCKIJ(JSAIKJ)
+C
+      NCKAMAX = 0
+      DO I = 1,NSYM
+         NCKAMAX = MAX(NCKAMAX,NCKA(I))
+      ENDDO
 C
       DO 1060 ISYMJ = 1,NSYM
 C
@@ -5270,6 +5254,9 @@ C     Henrik Koch and Alfredo Sanchez.       1-July-1994
 C
 C     Squareup the integral distribution.
 C
+
+      use dyn_iadrpk
+
 #include "implicit.h"
       DIMENSION DISTAB(*), SCR(*)
 #include "priunit.h"
@@ -5281,6 +5268,13 @@ C
       CALL QENTER('CCSD_SYMSQ')
 C
 C
+c     ii_sum = 0
+c     do i = 1,n2bstx
+c        ii_sum = ii_sum + iadrpk(i)
+c     end do
+c     write(lupri,*) 'ii_sum in ccsd_symsq', ii_sum
+c     call flshfo(lupri)
+
 #if !defined (SYS_CRAY)
       DO 100 IJSQ = 1,N2BST(ISYMAB)
 C
@@ -5303,7 +5297,9 @@ C
       RETURN
       END
       SUBROUTINE CCSD_SYMSQT(DISTAB1,ISYMAB,SCR)
-C
+
+      use dyn_iadrpk
+
 #include "implicit.h"
       DIMENSION DISTAB1(*), SCR(*)
 #include "priunit.h"

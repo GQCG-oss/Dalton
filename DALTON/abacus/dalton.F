@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -30,7 +30,11 @@ C951009-kenneth : Changed name from PSISTAR to DALTON
 C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
+#ifdef VAR_CHEMSHELL
+      subroutine dalton
+#else
       PROGRAM DALTON2013_DALTON
+#endif
 C
       use parallel_models_mpi
 C
@@ -45,6 +49,10 @@ C
 #include "inftap.h"
 #include "prpc.h"
 #include "incore.h"
+
+! DALTON_VERSION
+#include "dalton_config.h"
+
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       LOGICAL FINISH
@@ -116,7 +124,7 @@ C
       END IF
  
 Cef begin
-C If AOSAVE .eq. .TRUE. then run the incore-version of dalton where integrals
+C If AOSAVE .eq. .TRUE. then run the incore-version of Dalton where integrals
 C are stored in memory on each slave for reuse. Take a look at the header
 C file DALTON_SOURCE_DIR/include/incore.h  and the variables: MMWORK and IEIR. 
 C MMWORK (we used MMWORK=80000000 when testing ) determines the size of 
@@ -189,17 +197,17 @@ C
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 C
-         CALL TITLER('DALTON2011 - An electronic structure program',
+         CALL TITLER('Dalton - An Electronic Structure Program',
      &               '*',115)
 
          WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON Release 2011 (DEVELOPMENT VERSION)'
+     &'This is output from DALTON '//DALTON_VERSION
 
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
      &'NOTE:',
      &' ',
-     &'DALTON is an experimental code for the evaluation of molecular',
+     &'Dalton is an experimental code for the evaluation of molecular',
      &'properties using (MC)SCF, DFT, CI, and CC wave functions.',
      &'The authors accept no responsibility for the performance of',
      &'the code or for the correctness of the results.',
@@ -212,90 +220,142 @@ C
      &//' for further information.',
      &' ',
      &'If results obtained with this code are published,',
-     &'an appropriate citation would be:',
+     &'the appropriate citations would be both of:',
      &' ',
-     &'"Dalton, a molecular electronic structure program,',
-     &'Release Dalton2011 (2011), see http://daltonprogram.org"'
+     &'   K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,',
+     &'   L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,',
+     &'   P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,',
+     &'   J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,',
+     &'   H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,',
+     &'   H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,',
+     &'   E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,',
+     &'   B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,',
+     &'   J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,',
+     &'   S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,',
+     &'   K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,',
+     &'   K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,',
+     &'   P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,',
+     &'   M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,',
+     &'   S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,',
+     &'   P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,',
+     &'   S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,',
+     &'   A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,',
+     &'   A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,',
+     &'   L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,',
+     &'   M. Ziolkowski and H. Aagren,',
+     &'   "The Dalton quantum chemistry program system",',
+     &'   WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)',
+     &'',
+     &'and',
+     &'',
+     &'   Dalton, a Molecular Electronic Structure Program,',
+     &'   Release DALTON2013.1 (2013), see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
      *'Authors in alphabetical order '//
      &  '(major contribution(s) in parenthesis):',
+     *'Kestutis Aidas,','Vilnius University,','Lithuania',
+     &  '(QM/MM)',
      *'Celestino Angeli,','University of Ferrara,','Italy',
      &  '(NEVPT2)',
      *'Keld L. Bak,','UNI-C,','Denmark',
      &  '(AOSOPPA, non-adiabatic coupling, magnetic properties)',
      *'Vebjoern Bakken,','University of Oslo,','Norway',
      &  '(DALTON; geometry optimizer, symmetry detection)',
+     *'Radovan Bast,','KTH Stockholm,','Sweden',
+     &  '(DALTON installation and execution frameworks)',
+     *'Linus Boman,','NTNU,', 'Norway',
+     &  '(Cholesky decomposition and subsystems)',
      *'Ove Christiansen,','Aarhus University,','Denmark',
      &  '(CC module)',
-     *'Renzo Cimiraglia,','University of Ferrara,','Italy','(NEVPT2)',
+     *'Renzo Cimiraglia,','University of Ferrara,','Italy',
+     &  '(NEVPT2)',
      *'Sonia Coriani,','University of Trieste,','Italy',
      &  '(CC module, MCD in RESPONS)',
-     *'Paal Dahle,','University of Oslo,','Norway','(Parallelization)',
-     *'Erik K. Dalskov,','UNI-C,','Denmark','(SOPPA)',
-     *'Thomas Enevoldsen,','SDU - Odense University,','Denmark',
+     *'Paal Dahle,','University of Oslo,','Norway',
+     &  '(Parallelization)',
+     *'Erik K. Dalskov,','UNI-C,','Denmark',
      &  '(SOPPA)',
+     *'Thomas Enevoldsen,','Univ. of Southern Denmark,','Denmark',
+     &  '(SOPPA)',
+     *'Janus J. Eriksen,','Aarhus University,','Denmark',
+     &  '(PE-MP2/SOPPA, TDA)',
      *'Berta Fernandez,','U. of Santiago de Compostela,','Spain',
      &  '(doublet spin, ESR in RESPONS)',
      *'Lara Ferrighi,','Aarhus University,','Denmark',
      &  '(PCM Cubic response)',
-     *'Heike Fliegl,','University of Helsinki,','Finland',
+     *'Heike Fliegl,','University of Oslo,','Norway',
      &  '(CCSD(R12))',
-     *'Luca Frediani,','University of Tromsoe,','Norway','(PCM)',
-     *'Bin Gao,','University of Tromsoe,','Norway',
-     &  '(Gen1Int module)',
-     *'Christof Haettig,','Ruhr University Bochum,','Germany',
+     *'Luca Frediani,','UiT The Arctic U. of Norway,','Norway',
+     &  '(PCM)',
+     *'Bin Gao,','UiT The Arctic U. of Norway,','Norway',
+     &  '(Gen1Int library)',
+     *'Christof Haettig,','Ruhr-University Bochum,','Germany',
      &  '(CC module)',
-     *'Kasper Hald,', 'Aarhus University,','Denmark','(CC module)',
-     *'Asger Halkier,','Aarhus University,','Denmark','(CC module)',
+     *'Kasper Hald,', 'Aarhus University,','Denmark',
+     &  '(CC module)',
+     *'Asger Halkier,','Aarhus University,','Denmark',
+     &  '(CC module)',
      *'Hanne Heiberg,','University of Oslo,','Norway',
      &  '(geometry analysis, selected one-electron integrals)',
      *'Trygve Helgaker,','University of Oslo,','Norway',
      &  '(DALTON; ABACUS, ERI, DFT modules, London, and much more)',
+     *'Alf Christian Hennum,','University of Oslo,','Norway',
+     &  '(Parity violation)',
      *'Hinne Hettema,','University of Auckland,','New Zealand',
      &  '(quadratic response in RESPONS; SIRIUS supersymmetry)',
-     *'Brano Jansik','University of Aarhus','Denmark',
+     *'Eirik Hjertenaes,', 'NTNU,','Norway',
+     &  '(Cholesky decomposition)',
+     *'Maria Francesca Iozzi,','University of Oslo,','Norway',
+     &  '(RPA)',
+     *'Brano Jansik','Technical Univ. of Ostrava','Czech Rep.',
      &  '(DFT cubic response)',
      *'Hans Joergen Aa. Jensen,','Univ. of Southern Denmark,','Denmark',
      &'(DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)'
-     *,'Dan Jonsson,','University of Tromsoe,','Norway',
+     *,'Dan Jonsson,','UiT The Arctic U. of Norway,','Norway',
      &  '(cubic response in RESPONS module)',
      *'Poul Joergensen,','Aarhus University,','Denmark',
      &  '(RESPONS, ABACUS, and CC modules)',
-     *'Sheela Kirpekar,','SDU - Odense University,','Denmark',
+     *'Joanna Kauczor,','Linkoeping University,','Sweden',
+     &  '(Complex polarization propagator (CPP) module)',
+     *'Sheela Kirpekar,','Univ. of Southern Denmark,','Denmark',
      &  '(Mass-velocity & Darwin integrals)',
-     *'Wim Klopper,','University of Karlsruhe,','Germany',
+     *'Wim Klopper,','KIT Karlsruhe,','Germany',
      &  '(R12 code in CC, SIRIUS, and ABACUS modules)',
-     *'Stefan Knecht,','Univ. of Southern Denmark,','Denmark',
-     &  '(Parallel CI)',
-     *'Rika Kobayashi,','ANU Supercomputer Facility,','Australia',
+     *'Stefan Knecht,','ETH Zurich,','Switzerland',
+     &  '(Parallel CI and MCSCF)',
+     *'Rika Kobayashi,','Australian National Univ.,','Australia',
      &  '(DIIS in CC, London in MCSCF)',
-     *'Jacob Kongsted,','Univ. of Southern Denmark,','Denmark',
-     &  '(QM/MM code)',
-     *'Henrik Koch,','University of Trondheim,','Norway',
+     *'Henrik Koch,','NTNU,', 'Norway',
      &  '(CC module, Cholesky decomposition)',
+     *'Jacob Kongsted,','Univ. of Southern Denmark,','Denmark',
+     &  '(Polarizable embedding, QM/MM)',
      *'Andrea Ligabue,','University of Modena,','Italy',
      &  '(CTOCD, AOSOPPA)',
-     *'Ola B. Lutnaes,','University of Oslo,','Norway','(DFT Hessian)',
+     *'Ola B. Lutnaes,','University of Oslo,','Norway',
+     &  '(DFT Hessian)',
      *'Juan I. Melo,','University of Buenos Aires,','Argentina',
      &'(LRESC, Relativistic Effects on NMR Shieldings)',
      *'Kurt V. Mikkelsen,','University of Copenhagen,','Denmark',
-     &  '(MC-SCRF and QM/MM code)',
+     &  '(MC-SCRF and QM/MM)',
+     *'Rolf H. Myhre,', 'NTNU,','Norway',
+     &  '(Cholesky, subsystems and ECC2)',
      *'Christian Neiss,','Univ. Erlangen-Nuernberg,','Germany',
      &  '(CCSD(R12))',
      *'Christian B. Nielsen,','University of Copenhagen,','Denmark',
-     &  '(QM/MM code)',
-     *'Patrick Norman,','University of Linkoeping,','Sweden',
-     &  '(cubic response and complex response in RESPONS)',
+     &  '(QM/MM)',
+     *'Patrick Norman,','Linkoeping University,','Sweden',
+     &  '(Cubic response and complex response in RESPONS)',
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
      *'Jogvan Magnus H. Olsen,','Univ. of Southern Denmark,', 'Denmark',
-     &  '(Polarizable embedding (PE) library)',
-     *'Anders Osted,','Copenhagen University,','Denmark','(QM/MM code)',
+     &  '(Polarizable embedding, PE library, QM/MM)',
+     *'Anders Osted,','Copenhagen University,','Denmark',
+     &  '(QM/MM)',
      *'Martin J. Packer,','University of Sheffield,','UK',
      &  '(SOPPA)',
-     *'Filip Pawlowski,','Kazimierz Wielki University','Poland',
+     *'Filip Pawlowski,','Kazimierz Wielki University,','Poland',
      &  '(CC3)',
      *'Thomas B. Pedersen,','University of Oslo,','Norway',
      &  '(Cholesky decomposition)',
@@ -307,21 +367,24 @@ C
      &  '(DFT grid and basis info)',
      *'Torgeir A. Ruden,','University of Oslo,','Norway',
      &  '(Numerical derivatives in ABACUS)',
-     *'Kenneth Ruud,','University of Tromsoe,','Norway',
+     *'Kenneth Ruud,','UiT The Arctic U. of Norway,','Norway',
      &  '(DALTON; ABACUS magnetic properties and  much more)',
-     *'Pawel Salek,','KTH Stockholm,','Sweden','(DALTON; DFT code)',
-     *'Claire C.M. Samson','University of Karlsruhe','Germany',
+     *'Pawel Salek,','KTH Stockholm,','Sweden',
+     &  '(DALTON; DFT code)',
+     *'Claire C. M. Samson','University of Karlsruhe','Germany',
      &  '(Boys localization, r12 integrals in ERI)',
      *'Alfredo Sanchez de Meras,','University of Valencia,','Spain',
      &  '(CC module, Cholesky decomposition)',
-     *'Trond Saue,','CNRS/ULP Toulouse,','France',
+     *'Trond Saue,','Paul Sabatier University,','France',
      &  '(direct Fock matrix construction)',
      *'Stephan P. A. Sauer,','University of Copenhagen,','Denmark',
      &  '(SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)',
      *'Bernd Schimmelpfennig,','Forschungszentrum Karlsruhe,',
      &  'Germany','(AMFI module)',
-     *'Arnfinn H. Steindal,','University of Tromsoe,','Norway',
-     &  '(parallel QM/MM)',
+     *'Kristian Sneskov,','Aarhus University,','Denmark',
+     &  '(QM/MM, PE-CC)',
+     *'Arnfinn H. Steindal,','UiT The Arctic U. of Norway,',
+     &  'Norway','(parallel QM/MM)',
      *'K. O. Sylvester-Hvid,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF)',
      *'Peter R. Taylor,','VLSCI/Univ. of Melbourne,','Australia',
@@ -335,7 +398,7 @@ C
      *'David J. Wilson,','La Trobe University,','Australia',
      &  '(DFT Hessian and DFT magnetizabilities)',
      *'Hans Agren,','KTH Stockholm,','Sweden',
-     &  '(SIRIUS module, MC-SCRF solvation model)'
+     &  '(SIRIUS module, RESPONS, MC-SCRF solvation model)'
 C
          WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
@@ -384,8 +447,13 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          call print_binary_info(lupri)
 
 #if defined (VAR_MPI)
-         IF (NODTOT .GT. 0) WRITE(LUPRI,'(/A,I5,A)')
-     &   " * Parallel with MPI: Using", NODTOT+1, " CPUs."
+         IF (NODTOT .GT. 0) THEN
+            WRITE(LUPRI,'(/A,I5,A)')
+     &      " * Parallel with MPI: Using", NODTOT+1, " CPUs."
+         ELSE
+            WRITE(LUPRI,'(/A,I5,A)')
+     &      " * Sequential calculation using 1 CPU"
+         END IF
 #endif
 
 #ifdef VAR_OMP
@@ -480,10 +548,11 @@ C
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
-C ahs only print if number of cores are less than 20
-         IF (NODTOT .LE. 20) THEN
+C ahs only print if number of cores are less than 16
+         IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
+           WRITE(LUPRI,'(/A)') ' * Release: DALTON2013.1'
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN
@@ -497,21 +566,7 @@ C ahs only print if number of cores are less than 20
              WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
      &        MMCORE
            END IF
-           CALL TITLER('DALTON - An electronic structure program',
-     &               '*',111)
-           WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
-           CALL TSTAMP('INIT',LUPRI)
-           IF (GBYTES .GE. 1.D0) THEN
-             WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
-     &        LMWORK,' =',GBYTES,' gigabytes.'
-           ELSE
-             WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
-     &        LMWORK,' =',XMBYTES,' megabytes.'
-           END IF
-           IF (AOSAVE) THEN
-             WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
-     &        MMCORE
-           END IF
+           CALL FLSHFO(LUPRI)
          END IF
          IF (PARIO) THEN
             CALL DALTON_GNRLINP
@@ -548,7 +603,7 @@ C
             CALL SENDNAME(MASTER,MYNUM)
 
 !           call main co-workers driver routine
-            call nodedriver(lmwork,wrkdlm)
+            call dalton_nodedriver(lmwork,wrkdlm)
          END IF
       END IF
 

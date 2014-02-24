@@ -15,6 +15,10 @@
 #ifndef _FUNCTIONALS_H_
 #define _FUNCTIONALS_H_
 
+#if !defined(M_PI)
+#define M_PI		3.14159265358979323846
+#endif
+
 #ifdef SYS_REAL
 typedef float real;
 #else
@@ -347,7 +351,26 @@ extern Functional PW86xFunctional;
 extern Functional Pw91cFunctional;
 extern Functional PZ81Functional;
 extern Functional PBEcFunctional;
+extern Functional admmLDAXFunctional;
+extern Functional admmPBEXFunctional;
+extern Functional admmREVPBEXFunctional;
+extern Functional admmRPBEXFunctional;
+extern Functional admmMPBEXFunctional;
+extern Functional admmPW91XFunctional;
+extern Functional admmG96XFunctional;
+extern Functional admmLG93XFunctional;
+extern Functional admmKT1XFunctional;
+extern Functional admmKT2XFunctional;
+extern Functional admmKT3XFunctional;
+extern Functional admmOPTXFunctional;
 extern Functional PbexFunctional;
+extern Functional revPBExFunctional;
+extern Functional rPBExFunctional;
+extern Functional mPBExFunctional;
+extern Functional PW91xFunctional;
+extern Functional G96xFunctional;
+extern Functional LG93xFunctional;
+extern Functional OPTXFunctional;
 extern Functional SlaterFunctional;
 extern Functional VWN3Functional;
 extern Functional VWN5Functional;

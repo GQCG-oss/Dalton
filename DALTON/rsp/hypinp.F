@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -26,9 +26,6 @@ C
 C  /* Deck hypinp */
       SUBROUTINE HYPINP(WORD)
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -43,7 +40,7 @@ C
 #include "inftap.h"
 #include "infrank.h"
 #include "inforb.h"
-! gnrinf.h: QM3, THR_REDFAC
+! gnrinf.h: QM3, PEQM, THR_REDFAC
 #include "gnrinf.h"
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
@@ -576,12 +573,10 @@ C
      *      ' Test of contributions from A2 terms.'
          IF (X2TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from X2 terms.'
-#if defined (BUILD_PELIB)
-         if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
-#endif
+         END IF
       END IF
 C
 C *** END OF HYPINP
@@ -593,9 +588,6 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
-#if defined (BUILD_PELIB)
-      use pe_variables, only: peqm
-#endif
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -1045,12 +1037,10 @@ C
      *      ,MAXITO
          IF (E3TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from E3 and S3 terms.'
-#if defined (BUILD_PELIB)
-         if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
-#endif
+         END IF
       END IF
 C
 C *** END OF SMOINP

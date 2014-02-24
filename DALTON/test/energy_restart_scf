@@ -130,7 +130,7 @@ ERROR[4]="HF ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -199,7 +199,7 @@ ERROR[4]="FINAL HF ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
      PASSED=0
    fi

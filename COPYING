@@ -1,1 +1,16 @@
-write me ...
+"Dalton, a molecular electronic structure program,
+ Release DALTON2013 (2013), see http://daltonprogram.org"
+
+Copyright (c) 2013 by the authors of Dalton. All Rights Reserved.
+
+This program is provided under a written licence and may be used, copied,
+transmitted, or stored only in accord with that written licence.
+
+In particular, no part of the source code or compiled modules may be
+distributed outside the research group of the licence holder.  This means also
+that persons (e.g. post-docs) leaving the research group of the licence holder
+may not take any part of Dalton, including modified files, with him/her, unless
+that person has obtained his/her own licence.
+
+For further information, including how to get a licence, see:
+http://daltonprogram.org

@@ -65,7 +65,7 @@ TYPE(ODITEM)         :: OD
 !
 Integer               :: ILHS,nPrimP
 TYPE(Overlap)         :: P
-TYPE(Allocitem)       :: Alloc
+TYPE(Allocitem)       :: Allocations
 TYPE(Integralitem)    :: Integral
 TYPE(TUVitem),target  :: SharedTUV
 integer :: nthreads,tid
@@ -78,13 +78,13 @@ IF (IPRINT.GT. 5) THEN
 ENDIF
 CALL initTUVitem(sharedTUV,Input,OD,OD,LUPRI,IPRINT)
 Integral%TUV => sharedTUV
-!CALL initAlloc(Alloc,LUPRI,IPRINT,'LHS')
-call allocitem_zero(Alloc,'Both')
-CALL SET_ALLOC(Alloc,Input,OD,'LHS',IPRINT,LUPRI)
+!CALL initAlloc(Allocations,LUPRI,IPRINT,'LHS')
+call allocitem_zero(Allocations,'Both')
+CALL SET_ALLOC(Allocations,Input,OD,'LHS',IPRINT,LUPRI)
 
 IF(.NOT.INPUT%noOMP)call mem_TurnONThread_Memory()
 !$OMP PARALLEL IF(.NOT.INPUT%noOMP) DEFAULT(none) PRIVATE(integral,&
-!$OMP P,ILHS,nPrimP,tid,nthreads) SHARED(INPUT,Alloc,OD,lupri,iprint,output,sharedTUV)
+!$OMP P,ILHS,nPrimP,tid,nthreads) SHARED(INPUT,Allocations,OD,lupri,iprint,output,sharedTUV)
 IF(.NOT.INPUT%noOMP)call init_threadmemvar()
 
 #ifdef VAR_OMP
@@ -96,10 +96,10 @@ tid=0
 #endif
 
 call INIT_BUFCOUNTERS(1)
-call MEM_INIT_OVERLAP(Alloc,0,Input,1,IPRINT,LUPRI)
+call MEM_INIT_OVERLAP(Allocations,0,Input,1,IPRINT,LUPRI)
 call ALLOC_ODLHS_BUFFERS
 integral%TUV => sharedTUV 
-CALL INIT_OVERLAP(P,Alloc,0,Input,1,IPRINT,LUPRI)
+CALL INIT_OVERLAP(P,Allocations,0,Input,1,IPRINT,LUPRI)
 
 !!$OMP DO SCHEDULE(DYNAMIC,1)
 !DO ILHS=1,OD%nbatches

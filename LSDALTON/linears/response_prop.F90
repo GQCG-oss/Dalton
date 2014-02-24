@@ -4,7 +4,7 @@
 !> \author Thomas Kjaergaard and Kasper Kristensen
 !> \date 2010-03
 module response_wrapper_module
-
+#ifdef VAR_RSP
   use precision
   use memory_handling, only: mem_alloc, mem_dealloc
   use files, only: lsopen, lsclose
@@ -16,9 +16,9 @@ module response_wrapper_module
   use matrix_module, only: matrix
   !warning matrix_operations and matrix_defop do not mix
   use matrix_operations,only: mat_write_to_disk
-  use matrix_defop
+  use lsdalton_matrix_defop
   use rspsolver, only: rsp_molcfg
-  use rsp_equations, only: rsp_eq_sol, pert_dens, pert_fock, rsp_eq_sol_empty
+  use lsdalton_rsp_equations, only: rsp_eq_sol, pert_dens, pert_fock, rsp_eq_sol_empty
   use response_wrapper_type_module, only: ALPHAinputItem, &
        & BETAinputItem, GAMMAinputItem, TPAinputItem, ESGinputItem, &
        & DTPAinputItem, RSPSOLVERinputitem, MCDinputItem, ESDinputItem
@@ -2265,7 +2265,7 @@ Contains
   subroutine calculate_component_of_RHS_for_DTPA(molcfg, Dj, Dk, Fj, Fk, J, K, &
        & RHS,D,S,DS,SD)
 
-    use matrix_defop
+    use lsdalton_matrix_defop
 
     implicit none
     !> structure containing the molecule, integral and solver settings
@@ -2339,7 +2339,7 @@ Contains
   !> \author Kasper Kristensen                                                                
   !> \date 2010-09
   subroutine calculate_one_photon_absorption(molcfg,D,D1,one_photon)
-    use rsp_contribs
+    use lsdalton_rsp_contribs
 
     implicit none
     !> structure containing the molecule, integral and solver settings
@@ -4261,7 +4261,7 @@ END SUBROUTINE INSERTION_increasing
   !> Questions regarding this driver, the input structure etc. may be addressed to tkjaergaard@chem.au.dk.
   !> The result is placed in the tensor NMST which has dimensions (3*natoms)*3
 subroutine NMRshieldresponse_driver(molcfg,F,D,S)
-use rsp_contribs
+use lsdalton_rsp_contribs
 use lstiming
 implicit none
 type(rsp_molcfg), intent(inout) :: molcfg
@@ -4344,10 +4344,11 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
 !
   integer   :: i,j,k,l,LUMCD,LUMCD2,Nstep,lengthX
   real(realk),allocatable  :: Y(:),YL(:)
-  real(realk),allocatable :: PUREB(:),PUREBL(:),PUREA(:),PUREAL(:)
+  real(realk),allocatable :: PUREB(:,:),PUREBL(:,:),PUREA(:,:),PUREAL(:,:)
   real(realk),allocatable :: Xcoor(:),COMBINED(:),COMBINEDL(:),Deltavec(:),Xcoor2(:),Xcoor3(:)
   complex(realk),allocatable :: verdet(:),verdetL(:) 
   real(realk) :: Range,step,Estart,Eend,FUN,INT,x,DISPLACEMENT,FA
+  character(len=16) :: filenameMCD
 !
   Real(realk),parameter :: PI=3.14159265358979323846E0_realk
   !the Bterm is in standard units given in D**2*muB/(cm^-1) (au : e**3*a0**4/hbar)
@@ -4417,12 +4418,12 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
         x=x+step
         lengthX=lengthX+1
      ENDDO
-     Allocate(PUREB(lengthX))
-     Allocate(PUREBL(lengthX))
+     Allocate(PUREB(lengthX,nBterms))
+     Allocate(PUREBL(lengthX,nBterms))
      PUREB = 0E0_realk
      PUREBL = 0E0_realk
-     Allocate(PUREA(lengthX))
-     Allocate(PUREAL(lengthX))
+     Allocate(PUREA(lengthX,nAterms))
+     Allocate(PUREAL(lengthX,nAterms))
      PUREA = 0E0_realk
      PUREAL = 0E0_realk
      Allocate(Xcoor(lengthX))
@@ -4465,10 +4466,10 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
               DO WHILE(x<Eend)
                  x=x+step
                  lengthX=lengthX+1
-                 PUREB(lengthX)=Y(i)*GAMMABTERM(i)/((x-freqB(i))**2+GAMMABTERM(i)**2) 
-                 PUREBL(lengthX)=YL(i)*GAMMABTERM(i)/((x-freqB(i))**2+GAMMABTERM(i)**2) 
-                 COMBINED(lengthX) = COMBINED(lengthX) + PUREB(lengthX)  
-                 COMBINEDL(lengthX) = COMBINEDL(lengthX) + PUREBL(lengthX)  
+                 PUREB(lengthX,i)=Y(i)*GAMMABTERM(i)/((x-freqB(i))**2+GAMMABTERM(i)**2) 
+                 PUREBL(lengthX,i)=YL(i)*GAMMABTERM(i)/((x-freqB(i))**2+GAMMABTERM(i)**2) 
+                 COMBINED(lengthX) = COMBINED(lengthX) + PUREB(lengthX,i)  
+                 COMBINEDL(lengthX) = COMBINEDL(lengthX) + PUREBL(lengthX,i)  
               ENDDO
            ENDDO
         ELSE !GAUSSIAN
@@ -4492,12 +4493,12 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
               DO WHILE(x<Eend)
                  x=x+step
                  lengthX=lengthX+1
-                 PUREB(lengthX)=Y(i)/(gammaBTERM(i)*sqrt(2*PI))*&
+                 PUREB(lengthX,i)=Y(i)/(gammaBTERM(i)*sqrt(2*PI))*&
                       & EXP(-((x-freqB(i))**2)/(2*gammaBTERM(i)*gammaBTERM(i))) 
-                 PUREBL(lengthX)=YL(i)/(gammaBTERM(i)*sqrt(2*PI))*&
+                 PUREBL(lengthX,i)=YL(i)/(gammaBTERM(i)*sqrt(2*PI))*&
                       & EXP(-((x-freqB(i))**2)/(2*gammaBTERM(i)*gammaBTERM(i))) 
-                 COMBINED(lengthX) = COMBINED(lengthX) + PUREB(lengthX)  
-                 COMBINEDL(lengthX) = COMBINEDL(lengthX) + PUREBL(lengthX)  
+                 COMBINED(lengthX) = COMBINED(lengthX) + PUREB(lengthX,i)  
+                 COMBINEDL(lengthX) = COMBINEDL(lengthX) + PUREBL(lengthX,i)  
               ENDDO
            ENDDO
         ENDIF
@@ -4530,10 +4531,10 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
               DO WHILE(x<Eend)
                  x=x+step
                  lengthX=lengthX+1
-                 PUREA(lengthX)  =Y(i)*(2E0_realk*GAMMAATERM(i)*(x-freqA(i)))/((x-freqA(i))**2+GAMMAATERM(i)**2)**2
-                 PUREAL(lengthX)=YL(i)*(2E0_realk*GAMMAATERM(i)*(x-freqA(i)))/((x-freqA(i))**2+GAMMAATERM(i)**2)**2
-                 COMBINED(lengthX) = COMBINED(lengthX) + PUREA(lengthX)  
-                 COMBINEDL(lengthX)= COMBINEDL(lengthX) + PUREAL(lengthX)  
+                 PUREA(lengthX,i)  =Y(i)*(2E0_realk*GAMMAATERM(i)*(x-freqA(i)))/((x-freqA(i))**2+GAMMAATERM(i)**2)**2
+                 PUREAL(lengthX,i)=YL(i)*(2E0_realk*GAMMAATERM(i)*(x-freqA(i)))/((x-freqA(i))**2+GAMMAATERM(i)**2)**2
+                 COMBINED(lengthX) = COMBINED(lengthX) + PUREA(lengthX,i)  
+                 COMBINEDL(lengthX)= COMBINEDL(lengthX) + PUREAL(lengthX,i)  
               ENDDO
            ENDDO
         ELSE !GAUSSIAN
@@ -4557,12 +4558,12 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
               DO WHILE(x<Eend)
                  x=x+step
                  lengthX=lengthX+1
-                 PUREA(lengthX)=Y(i)*((x-freqA(i))/(gammaATERM(i)*gammaATERM(i)))/(gammaATERM(i)*sqrt(2*PI))*&
+                 PUREA(lengthX,i)=Y(i)*((x-freqA(i))/(gammaATERM(i)*gammaATERM(i)))/(gammaATERM(i)*sqrt(2*PI))*&
                       &EXP(-((x-freqA(i))**2)/(2*gammaATERM(i)*gammaATERM(i))) 
-                 PUREAL(lengthX)=YL(i)*((x-freqA(i))/(gammaATERM(i)*gammaATERM(i)))/(gammaATERM(i)*sqrt(2*PI))*&
+                 PUREAL(lengthX,i)=YL(i)*((x-freqA(i))/(gammaATERM(i)*gammaATERM(i)))/(gammaATERM(i)*sqrt(2*PI))*&
                       &EXP(-((x-freqA(i))**2)/(2*gammaATERM(i)*gammaATERM(i))) 
-                 COMBINED(lengthX) = COMBINED(lengthX) + PUREA(lengthX)  
-                 COMBINEDL(lengthX)= COMBINEDL(lengthX)+ PUREAL(lengthX)  
+                 COMBINED(lengthX) = COMBINED(lengthX) + PUREA(lengthX,i)  
+                 COMBINEDL(lengthX)= COMBINEDL(lengthX)+ PUREAL(lengthX,i)  
               ENDDO
            ENDDO
         ENDIF
@@ -4581,19 +4582,25 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
      ENDDO
      CALL LSCLOSE(LUMCD,'KEEP')
 
-     LUMCD=-1
-     CALL LSOPEN(LUMCD,'BtermAU.dat','REPLACE','FORMATTED')
-     DO I=1,lengthX
-        WRITE(LUMCD,*)Xcoor(I),PUREBL(I),PUREB(I)
+     DO J=1,nBterms
+        LUMCD=-1
+        call generateMCDFilename(filenameMCD,'BtermAU',J)
+        CALL LSOPEN(LUMCD,TRIM(filenameMCD),'REPLACE','FORMATTED')
+        DO I=1,lengthX
+           WRITE(LUMCD,*)Xcoor(I),PUREBL(I,J),PUREB(I,J)
+        ENDDO
+        CALL LSCLOSE(LUMCD,'KEEP')
      ENDDO
-     CALL LSCLOSE(LUMCD,'KEEP')
 
-     LUMCD=-1
-     CALL LSOPEN(LUMCD,'AtermAU.dat','REPLACE','FORMATTED')
-     DO I=1,lengthX
-        WRITE(LUMCD,*)Xcoor(I),PUREAL(I),PUREA(I)
+     DO J=1,nAterms
+        LUMCD=-1
+        call generateMCDFilename(filenameMCD,'AtermAU',J)
+        CALL LSOPEN(LUMCD,TRIM(filenameMCD),'REPLACE','FORMATTED')
+        DO I=1,lengthX
+           WRITE(LUMCD,*)Xcoor(I),PUREAL(I,J),PUREA(I,J)
+        ENDDO
+        CALL LSCLOSE(LUMCD,'KEEP')
      ENDDO
-     CALL LSCLOSE(LUMCD,'KEEP')
 
      LUMCD2=-1
      CALL LSOPEN(LUMCD2,'gnuplot_MCDAU.gnu','REPLACE','FORMATTED')
@@ -4661,12 +4668,12 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
         x=x+step
         lengthX=lengthX+1
      ENDDO
-     Allocate(PUREB(lengthX))
-     Allocate(PUREBL(lengthX))
+     Allocate(PUREB(lengthX,nBterms))
+     Allocate(PUREBL(lengthX,nBterms))
      PUREB = 0E0_realk
      PUREBL = 0E0_realk
-     Allocate(PUREA(lengthX))
-     Allocate(PUREAL(lengthX))
+     Allocate(PUREA(lengthX,nAterms))
+     Allocate(PUREAL(lengthX,nAterms))
      PUREA = 0E0_realk
      PUREAL = 0E0_realk
      Allocate(Xcoor(lengthX))
@@ -4709,10 +4716,10 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
               DO WHILE(x<Eend)
                  x=x+step
                  lengthX=lengthX+1
-                 PUREB(lengthX)=Y(i)*GAMMABTERM(i)*auTOcm/((x-freqB(i)*auTOcm)**2+(GAMMABTERM(i)*auTOcm)**2) 
-                 PUREBL(lengthX)=YL(i)*GAMMABTERM(i)*auTOcm/((x-freqB(i)*auTOcm)**2+(GAMMABTERM(i)*auTOcm)**2) 
-                 COMBINED(lengthX) = COMBINED(lengthX) + PUREB(lengthX)  
-                 COMBINEDL(lengthX) = COMBINEDL(lengthX) + PUREBL(lengthX)  
+                 PUREB(lengthX,i)=Y(i)*GAMMABTERM(i)*auTOcm/((x-freqB(i)*auTOcm)**2+(GAMMABTERM(i)*auTOcm)**2) 
+                 PUREBL(lengthX,i)=YL(i)*GAMMABTERM(i)*auTOcm/((x-freqB(i)*auTOcm)**2+(GAMMABTERM(i)*auTOcm)**2) 
+                 COMBINED(lengthX) = COMBINED(lengthX) + PUREB(lengthX,i)  
+                 COMBINEDL(lengthX) = COMBINEDL(lengthX) + PUREBL(lengthX,i)  
               ENDDO
            ENDDO
         ELSE !gaussian
@@ -4737,12 +4744,12 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
               DO WHILE(x<Eend)
                  x=x+step
                  lengthX=lengthX+1
-                 PUREB(lengthX)=Y(i)/(gammaBTERM(i)*auTOcm*sqrt(2*PI))*&
+                 PUREB(lengthX,i)=Y(i)/(gammaBTERM(i)*auTOcm*sqrt(2*PI))*&
                       & EXP(-((x-freqB(i)*auTOcm)**2)/(2*gammaBTERM(i)*auTOcm*gammaBTERM(i)*auTOcm)) 
-                 PUREBL(lengthX)=YL(i)/(gammaBTERM(i)*auTOcm*sqrt(2*PI))*&
+                 PUREBL(lengthX,i)=YL(i)/(gammaBTERM(i)*auTOcm*sqrt(2*PI))*&
                       & EXP(-((x-freqB(i)*auTOcm)**2)/(2*gammaBTERM(i)*auTOcm*gammaBTERM(i)*auTOcm)) 
-                 COMBINED(lengthX) = COMBINED(lengthX) + PUREB(lengthX)  
-                 COMBINEDL(lengthX) = COMBINEDL(lengthX) + PUREBL(lengthX)  
+                 COMBINED(lengthX) = COMBINED(lengthX) + PUREB(lengthX,i)  
+                 COMBINEDL(lengthX) = COMBINEDL(lengthX) + PUREBL(lengthX,i)  
               ENDDO
            ENDDO
         ENDIF
@@ -4775,12 +4782,12 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
               DO WHILE(x<Eend)
                  x=x+step
                  lengthX=lengthX+1
-                 PUREA(lengthX)  = Y(i)*(2E0_realk*GAMMAATERM(i)*auTOcm*(x-freqA(i)*auTOcm))/&
+                 PUREA(lengthX,i)  = Y(i)*(2E0_realk*GAMMAATERM(i)*auTOcm*(x-freqA(i)*auTOcm))/&
 		 &((x-freqA(i)*auTOcm)**2+(GAMMAATERM(i)*auTOcm)**2)**2
-                 PUREAL(lengthX) =YL(i)*(2E0_realk*GAMMAATERM(i)*auTOcm*(x-freqA(i)*auTOcm))/&
+                 PUREAL(lengthX,i) =YL(i)*(2E0_realk*GAMMAATERM(i)*auTOcm*(x-freqA(i)*auTOcm))/&
 		 &((x-freqA(i)*auTOcm)**2+(GAMMAATERM(i)*auTOcm)**2)**2
-                 COMBINED(lengthX) = COMBINED(lengthX) + PUREA(lengthX)  
-                 COMBINEDL(lengthX)= COMBINEDL(lengthX) + PUREAL(lengthX)  
+                 COMBINED(lengthX) = COMBINED(lengthX) + PUREA(lengthX,i)  
+                 COMBINEDL(lengthX)= COMBINEDL(lengthX) + PUREAL(lengthX,i)  
               ENDDO
            ENDDO
         ELSE !GAUSSIAN
@@ -4804,14 +4811,14 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
               DO WHILE(x<Eend)
                  x=x+step
                  lengthX=lengthX+1
-                 PUREA(lengthX) = Y(i)*((x-freqA(i)*auTOcm)/(gammaATERM(i)*auTOcm*gammaATERM(i)*auTOcm))/&
+                 PUREA(lengthX,i) = Y(i)*((x-freqA(i)*auTOcm)/(gammaATERM(i)*auTOcm*gammaATERM(i)*auTOcm))/&
 		 &(gammaATERM(i)*auTOcm*sqrt(2*PI))*&
                       &EXP(-((x-freqA(i)*auTOcm)**2)/(2*gammaATERM(i)*auTOcm*gammaATERM(i)*auTOcm)) 
-                 PUREAL(lengthX)=YL(i)*((x-freqA(i)*auTOcm)/(gammaATERM(i)*auTOcm*gammaATERM(i)*auTOcm))/&
+                 PUREAL(lengthX,i)=YL(i)*((x-freqA(i)*auTOcm)/(gammaATERM(i)*auTOcm*gammaATERM(i)*auTOcm))/&
 		 &(gammaATERM(i)*auTOcm*sqrt(2*PI))*&
                       &EXP(-((x-freqA(i)*auTOcm)**2)/(2*gammaATERM(i)*auTOcm*gammaATERM(i)*auTOcm)) 
-                 COMBINED(lengthX) = COMBINED(lengthX) + PUREA(lengthX)  
-                 COMBINEDL(lengthX)= COMBINEDL(lengthX)+ PUREAL(lengthX)  
+                 COMBINED(lengthX) = COMBINED(lengthX) + PUREA(lengthX,i)  
+                 COMBINEDL(lengthX)= COMBINEDL(lengthX)+ PUREAL(lengthX,i)  
               ENDDO
            ENDDO
         ENDIF
@@ -4830,19 +4837,24 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
      ENDDO
      CALL LSCLOSE(LUMCD,'KEEP')
 
-     LUMCD=-1
-     CALL LSOPEN(LUMCD,'Bterm.dat','REPLACE','FORMATTED')
-     DO I=1,lengthX
-        WRITE(LUMCD,*)Xcoor(I),PUREBL(I),PUREB(I)
+     DO J=1,nBterms     
+        LUMCD=-1
+        call generateMCDFilename(filenameMCD,'Bterm',J)
+        CALL LSOPEN(LUMCD,TRIM(filenameMCD),'REPLACE','FORMATTED')
+        DO I=1,lengthX
+           WRITE(LUMCD,*)Xcoor(I),PUREBL(I,J),PUREB(I,J)
+        ENDDO
+        CALL LSCLOSE(LUMCD,'KEEP')
      ENDDO
-     CALL LSCLOSE(LUMCD,'KEEP')
-
-     LUMCD=-1
-     CALL LSOPEN(LUMCD,'Aterm.dat','REPLACE','FORMATTED')
-     DO I=1,lengthX
-        WRITE(LUMCD,*)Xcoor(I),PUREAL(I),PUREA(I)
+     DO J=1,nAterms     
+        LUMCD=-1
+        call generateMCDFilename(filenameMCD,'Aterm',J)
+        CALL LSOPEN(LUMCD,TRIM(filenameMCD),'REPLACE','FORMATTED')
+        DO I=1,lengthX
+           WRITE(LUMCD,*)Xcoor(I),PUREAL(I,J),PUREA(I,J)
+        ENDDO
+        CALL LSCLOSE(LUMCD,'KEEP')
      ENDDO
-     CALL LSCLOSE(LUMCD,'KEEP')
 
      LUMCD2=-1
      CALL LSOPEN(LUMCD2,'gnuplot_MCD.gnu','REPLACE','FORMATTED')
@@ -4872,6 +4884,25 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
   endif
 end subroutine simulateSpectra
 
+subroutine generateMCDFilename(filenameBtermAU,SPEC,I)
+  implicit none
+  character(len=16) :: filenameBtermAU
+  character*(*) :: SPEC !like BtermAU
+  integer :: I,J
+  do J=1,16
+     filenameBtermAU(J:J) = ' '
+  enddo
+  IF(i.LT.10)THEN
+     write(filenameBtermAU,'(A,I1,A)')SPEC,I,'.dat'
+  ELSEIF(i.LT.100)THEN
+     write(filenameBtermAU,'(A,I2,A)')SPEC,I,'.dat'
+  ELSEIF(i.LT.1000)THEN
+     write(filenameBtermAU,'(A,I3,A)')SPEC,I,'.dat'
+  ELSE
+     CALL LSQUIT('nBterms too large in generateMCDFilename',-1)
+  ENDIF
+end subroutine generateMCDFilename
+
 subroutine write_transition_density_matrix(nexci_max,lupri)
   implicit none
   !> Position of the highest lying excited state to be printet
@@ -4895,5 +4926,11 @@ subroutine write_transition_density_matrix(nexci_max,lupri)
      CALL LSCLOSE(luExciTransDensMat,'KEEP')
   enddo
 end subroutine write_transition_density_matrix
+#else
+CONTAINS
+subroutine response_wrapper_dummy_routine()
+implicit none
 
+end subroutine response_wrapper_dummy_routine
+#endif
 end module response_wrapper_module

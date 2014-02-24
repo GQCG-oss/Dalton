@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -37,7 +37,7 @@ C
 C PURPOSE:
 C DRIVER ROUTINE FOR QUADRATIC RESPONSE
 C
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
 #include "mxcent.h"
@@ -55,14 +55,18 @@ C
 #include "infsmo.h"
 #include "infspi.h"
 #include "inftap.h"
+#include "infpar.h"
 C
       CALL QENTER('QRCALC')
       IF (SOPPA) THEN
-         WRITE (LUPRI,*)
+         WRITE (LUPRI,'(//A)')
      &   'QRCALC ERROR: quadratic response not implemented for SOPPA'
          CALL QUIT(
      &   'QRCALC ERROR: quadratic response not implemented for SOPPA')
       END IF
+      IF (DODFT.AND.(NASHT.GT.0).AND.(NODTOT.GT.0)) THEN
+         CALL PARQUIT('open-shell DFT quadratic response')
+      END IF 
 C
 C DETERMINE SOLUTION VECTORS FOR EIGENVALUE AND LINEAR EQUATIONS
 C WHICH ARE USED IN QUADRATIC RESPONSE
@@ -149,7 +153,7 @@ C
 #include "implicit.h"
 #include "iratdef.h"
 C
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
 C VECTOR TO STORE NPPCNV(8)
@@ -514,7 +518,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                END IF
             END IF
             IF (IPRRSP.GE.3) THEN
-               CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
+               CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,UDV,LUPRI)
                CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
      *                  MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
                IF (IPRRSP.GT.200)
@@ -704,8 +708,8 @@ C
      &   ' QRLRVE -- operator spin  : ',OPRANK(INDPRP(LRLAB(ILRLAB))),
      &   ' QRLRVE -- frequencies :',(WRK(KEIVAL+I),I=0,NFREQ-1)
          IF (GPNORM .LT. THRSML) THEN
-            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
-            WRITE (LUPRI,*) '     property vector is only',GPNORM
+            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'//
+     &                      ' property vector is only',GPNORM
             CALL DZERO(WRK(KBVECS),KZYVAR)
             DO 450 IFREQ = 1,NFREQ
                CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),BLANK,
@@ -739,17 +743,17 @@ C
             JBVECS = KBVECS
             DO 560 JFREQ = IFREQ,IFREQ-1+NBX
 CTODO        IF (IPRRSP.GE.5) THEN
-                  WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D12.6,/A,I5)')
-     *            ' QRLRVE: SINGLET SOLUTION   LABEL',LRLAB(ILRLAB),
-     *            ' FREQUENCY ',WRK(KEIVAL-1+JFREQ),
-     *            ' SYMMETRY',KSYMOP
+                  WRITE(LUPRI,'(/A,I5,3(3X,A),D14.6)')
+     &            ' QRLRVE: SINGLET SOLUTION FOR SYMMETRY',KSYMOP,
+     &            ' LABEL',LRLAB(ILRLAB),
+     &            ' FREQUENCY ',WRK(KEIVAL-1+JFREQ)
                   JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
                DO JLRLAB = 1, NLRLAB
                CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &                     ANTSM2,WRK(KGP2),LGP2)
                VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
                WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
-     &              '@QRLRVE:  << ', LRLAB(JLRLAB),' ; '
+     &              '@ QRLRVE:  << ', LRLAB(JLRLAB),' ; '
      &              ,LRLAB(ILRLAB),' >> (',WRK(KEIVAL-1+JFREQ),'):',VAL
                END DO
 CTODO        END IF
@@ -793,21 +797,21 @@ CTODO        END IF
 
          if ((found).and.(conv)) then
            write(lupri,*)'SONIA: found redundant exci X_f on file'
-           !CALL RSPPRO(WRK(KXf),KZVAR,-LUPRI)
+           !CALL RSPPRO(WRK(KXf),KZVAR,UDV,-LUPRI)
            call dzero(WRK(KS2Xf),KZYVAR)
            CALL RSPSLI(0,1,DUMMY,WRK(KXf),
      *                 UDV,WRK(KS2Xf),XINDX,WRK(KWRK1),LWRK1)
            write(lupri,*)'SONIA: S2X_f of excitation vector'
-           CALL RSPPRO(WRK(KS2Xf),KZVAR,-LUPRI)
+           CALL RSPPRO(WRK(KS2Xf),KZVAR,UDV,-LUPRI)
         write(lupri,*)'XfS2Xf=',ddot(KZYVAR,WRK(KXf),1,WRK(KS2Xf),1)
            tt = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
            write(lupri,*)'SONIA: ddot{Xf,GD}=', tt
            !write(lupri,*)'SONIA: Property gradient before projection'
-           !CALL RSPPRO(WRK(KGP),KZVAR,-LUPRI)
+           !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
            !project out X_f as: GDp= GD-(ddot{Xf,GD})S[2]X_f
            CALL DAXPY(KZYVAR,-TT,WRK(KS2Xf),1,WRK(KGP),1)
            write(lupri,*)'SONIA: property gradient after projection'
-           !CALL RSPPRO(WRK(KGP),KZVAR,-LUPRI)
+           !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
            tt2 = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
            write(lupri,*)'SONIA: hopefully zero, ddot{Xf|GDp}=', tt2
          end if
@@ -858,10 +862,10 @@ CTODO        END IF
           !DO 560 JFREQ = IFREQ,IFREQ-1+NBX
 !TODO     IF (IPRRSP.GE.5) THEN
           JFREQ = IFREQ
-          WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D12.6,/A,I5)')
-     &    ' QRLRVE: SINGLET SOLUTION   LABEL',LRLAB(ILRLAB),
-     &    ' FREQUENCY ',WRK(KEIVAL-1+IFREQ),
-     &    ' SYMMETRY',KSYMOP
+          WRITE(LUPRI,'(/A,I5,3(3X,A),D14.6)')
+     &      ' QRLRVE: SINGLET SOLUTION FOR SYMMETRY',KSYMOP,
+     &      ' LABEL',LRLAB(ILRLAB),
+     &      ' FREQUENCY ',WRK(KEIVAL-1+IFREQ)
           CALL FLSHFO(LUPRI)
           JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
           DO JLRLAB = 1, NLRLAB
@@ -869,7 +873,7 @@ CTODO        END IF
      &                     ANTSM2,WRK(KGP2),LGP2)
              VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
              WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
-     &              '@QRLRVE:  << ', LRLAB(JLRLAB),' ; '
+     &              '@ QRLRVE:  << ', LRLAB(JLRLAB),' ; '
      &              ,LRLAB(ILRLAB),' >> (',WRK(KEIVAL-1+JFREQ),'):',VAL
           END DO
 !TODO        END IF
@@ -905,7 +909,7 @@ C
          CALL QUIT('Response vector not found on file RSPVEC')
       ELSE
          WRITE (LUPRI,'(/3A,F12.8/A,I3,A)') 
-     &        ' @WARNING>>>>'//
+     &        '@ WARNING>>>>'//
      &        ' Response label ',LABEL,' with frequency ', FREQ,
      &        ' and symmetry',MSYM,' not converged on file RSPVEC'
       END IF
@@ -949,7 +953,7 @@ C
 #include "infhso.h"
 #include "inftap.h"
 #include "inflr.h"
-#include <infrank.h>
+#include "infrank.h"
 C
 C     Local variables:
 C
@@ -1603,7 +1607,7 @@ C
      * '@ B operator, symmetry, spin: ',BQRLB(MSYMB,IBOP),MSYMB,ISPINB,
      * '@ C operator, symmetry, spin: ',CQRLB(MSYMC,ICOP),MSYMC,ISPINC
                                  WRITE(LUPRI,'(/A,3F15.8)')
-     *                           '@omega B, omega C, QR value :',
+     *                           '@ omega B, omega C, QR value :',
      *                           BQRFR(IBFR),CQRFR(ICFR),HYPVAL(IAOP)
                                  WRITE(LURSPRES,'(//A,3(/2A,2I5))')
      * '@ Quadratic response function value in a.u. for',
@@ -1611,7 +1615,7 @@ C
      * '@ B operator, symmetry, spin: ',BQRLB(MSYMB,IBOP),MSYMB,ISPINB,
      * '@ C operator, symmetry, spin: ',CQRLB(MSYMC,ICOP),MSYMC,ISPINC
                                  WRITE(LURSPRES,'(/A,3F15.8)')
-     *                           '@omega B, omega C, QR value :',
+     *                           '@ omega B, omega C, QR value :',
      *                           BQRFR(IBFR),CQRFR(ICFR),HYPVAL(IAOP)
                               END IF
                              IF (SOCOLL) CALL SODIST(AQRLB(MSYMA,IAOP),
@@ -1663,7 +1667,7 @@ C
 C
       LOGICAL FOUND, CONV
       CHARACTER*8 BLANK, LABEL
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),VECB(*),VECC(*),WRK(*)
 C
       PARAMETER (BLANK = '        ')
@@ -2291,7 +2295,7 @@ C
          WRITE(LUPRI,'(3(/A64))')
      & ' All results are presented in atomic units, except the        ',
      & ' excitation energy which is given in eV and two-photon cross  ',
-     & ' section which is given in GM.                                '
+     & ' section which is given in GM. A FWHM of 0.1 eV is assumed.   '
          WRITE(LUPRI,'(3(/A))')
      &        '   Conversion factors:',
      &        '      1 a.u. = 1.896788 10^{-50} cm^4 s/photon',
@@ -2331,7 +2335,7 @@ C
          WRITE(LUPRI,'(3(/A60))') 
      &        '          Two-photon cross sections                ',
      &        '---------------------------------------------------',
-     &        ' sigma  =  8*pi^3*alpha^2*hbar/e^4 * E^2*D   (a.u.)'
+     &        ' sigma  =  8*pi^3*alpha^2*hbar/e^4 * E^2*D   (a.u.)' 
          WRITE(LUPRI,'(3(/A53))') 
      &        '       Polarization ratio      ',
      &        '-------------------------------',
@@ -2362,11 +2366,11 @@ C
                DG = DG/D30
                R = (-DF+3*DG)/(DF+2*DG)
                D = 2*DF+4*DG
-               s = D * RESFRE(IC,ISYMC)**2 * AU_TO_GM
+               s = D * (RESFRE(IC,ISYMC)*0.5D0)**2 * AU_TO_GM
                WRITE(LUPRI,'(A2,2I4,F8.2,A14,4E11.3,F8.2)')' ',ISYMC,IC,
      &              RESFRE(IC,ISYMC)*XTEV,'Linear     ',DF,DG,D,s,R
                D=-2*DF+6*DG
-               s = D * RESFRE(IC,ISYMC)**2 * AU_TO_GM
+               s = D * (RESFRE(IC,ISYMC)*0.5D0)**2 * AU_TO_GM
                WRITE(LUPRI,'(A2,2I4,F8.2,A14,4E11.3,F8.2)')' ',ISYMC,IC,
      &              RESFRE(IC,ISYMC)*XTEV,'Circular   ',DF,DG,D,s,R
                IF (IPRRSP.GT.2) THEN
@@ -2514,7 +2518,7 @@ C
      &                       'found on file')
                      ELSE
                         WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                       ' @WARNING>>>>'//
+     &                       '@ WARNING>>>>'//
      &                       ' Response label ','EXCITLAB',
      &                       ' with frequency ',FREQC,
      &                       ' and symmetry',MSYMC,
@@ -2575,7 +2579,7 @@ C
      &                          'found on file')
                         ELSE
                            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                          ' @WARNING>>>>'//
+     &                          '@ WARNING>>>>'//
      &                          ' Response label ','EXCITLAB',
      &                          ' with frequency ',FREQB,
      &                          ' and symmetry',MSYMB,
@@ -2759,13 +2763,13 @@ C
      *                     ' E3+A2B+A2C CONTRIBUTION TO XMOM', VAL,XMOM
                         END IF
                         WRITE(LUPRI,'(//A/A,5X,A,2I5,2(/A,5X,I8,2I5))')
-     *   '@Transition moment <B | A - <A> | C> in a.u. for',
-     *   '@A operator label,    symmetry, spin: ',
+     *   '@ Transition moment <B | A - <A> | C> in a.u. for',
+     *   '@ A operator label,    symmetry, spin: ',
      *      LBLPP(MSYMA,IAOP),MSYMA,ISPINA,
-     *   '@B excited state no., symmetry, spin: ',IB,MSYMBX,ISPINB,
-     *   '@C excited state no., symmetry, spin: ',IC,MSYMCX,ISPINC
+     *   '@ B excited state no., symmetry, spin: ',IB,MSYMBX,ISPINB,
+     *   '@ C excited state no., symmetry, spin: ',IC,MSYMCX,ISPINC
                            WRITE(LUPRI,'(/A,3F13.8)')
-     *   '@B and C excitation energies, moment:',
+     *   '@ B and C excitation energies, moment:',
      *   EXCITA(MSYMB,IB,ISPINB+1),EXCITA(MSYMC,IC,ISPINC+1),XMOM
                         CALL FLSHFO(LUPRI)
  1100                CONTINUE
@@ -2969,14 +2973,14 @@ C
             JBVECS = KBVECS
             DO 560 JFREQ = IFREQ,IFREQ-1+NBX
                IF (IPRRSP.GE.3) THEN
-                  WRITE(LUPRI,'(/A,3X,A,3X,A,1P,D14.6,/A,I5)')
-     *            '@QRTRVE: TRIPLET solution.  Label',LRLAB(ILRLAB),
-     *            ' Frequency ',WRK(KEIVAL-1+JFREQ),
-     *            ' Symmetry',KSYMOP
+                  WRITE(LUPRI,'(/A,I5,A,3X,A,3X,A,1P,D14.6)')
+     &            '@ QRTRVE: TRIPLET solution symmetry',KSYMOP,
+     &            '.  Label',LRLAB(ILRLAB),
+     &            ' Frequency ',WRK(KEIVAL-1+JFREQ)
                   JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
                   VAL = DDOT(KZYRED,WRK(KREDGP),1,WRK(JEIVEC),1)
                   WRITE(LUPRI,'(/A,1P,G20.12)')
-     *            '@QRTRVE: Value of linear response property:',VAL
+     &            '@ QRTRVE: Value of linear response property:',VAL
                END IF
                IF (IPRRSP.GT.100) THEN
                   WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
@@ -3146,7 +3150,7 @@ C
      * '@ B operator, symmetry, spin: ',LABEL(2),KSYMB,KSPINB,
      * '@ C operator, symmetry, spin: ',LABEL(3),KSYMC,KSPINC
                    WRITE(LUPRI,'(/A,3F15.8)')
-     *                  '@omega B, omega C, QR value :',
+     *                  '@ omega B, omega C, QR value :',
      *                  FRQB,FRQC,QUAVAL
                    IF (SOCOLL) CALL SODIST(ALAB,KSYMA,BLAB,KSYMB,
      *                  CLAB,KSYMC,QUAVAL)
@@ -3215,7 +3219,7 @@ C
       LOGICAL FOUND, CONV
       CHARACTER*8 BLANK
       PARAMETER ( D1 = 1.0D0, BLANK = '        ', D0 = 0.0D0 )
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),VECA(*),VECB(*),MJWOP(*),WRK(*)
 C
 #include "infrsp.h"
@@ -3328,7 +3332,7 @@ C
      &               AQRLB(ISYM,IAOP),ISYM,-FRQ,
      &               '@ B operator, symmetry, frequency: ',
      &               BQRLB(ISYM,IBOP),ISYM, FRQ,
-     &               '@ Value of linear response -<<A;B>(omega): ',VAL
+     &               '@ Value of linear response -<<A;B>>(omega): ',VAL
                END DO
             END DO
             END DO
@@ -3593,10 +3597,9 @@ C
       CALL TRADIP(SIGFC2,SMAT2,CSTRA,SCTRA,3*NUCDEP,2,2)
       CALL AROUND('Summary of isotropic SO-FC contribution to '//
      &            'chemical shieldings')
-      WRITE (LUPRI,'(1X,A,/,1X,A)')
-      WRITE (LUPRI,'(1X,A,/,1X,A)')
-     & '@1atom   1-electron FC    2-electron FC    Total FC',
-     & '@1----------------------------------------------'/
+      WRITE (LUPRI,'(A/A)')
+     & '@ 1atom   1-electron FC    2-electron FC    Total FC',
+     & '@ 1----------------------------------------------'/
      &  /'-------------'
       IATOM = 0
       FAC= ALPHA2*1.D6/3.0D0
@@ -3609,7 +3612,7 @@ C
                SIGMA2 = (SMAT2(1,1,IATOM) + SMAT2(2,2,IATOM)
      &                + SMAT2(3,3,IATOM))*FAC
                SIGMAT = SIGMA1 + SIGMA2
-               WRITE (LUPRI,'(1X,2A,3F15.9)') '@1',
+               WRITE (LUPRI,'(2A,3F15.9)') '@ 1',
      &              NAMDEP(IATOM), SIGMA1, SIGMA2, SIGMAT
             END IF
          END DO
@@ -3619,9 +3622,9 @@ C
       CALL TRADIP(SIGSD2,SMAT2,CSTRA,SCTRA,3*NUCDEP,2,2)
       CALL AROUND('Summary of isotropic SO-SD contribution to '//
      &            'chemical shieldings')
-      WRITE (LUPRI,'(1X,A,/,1X,A)')
-     & '@1atom   1-electron SD    2-electron SD    Total SD',
-     & '@1----------------------------------------------'/
+      WRITE (LUPRI,'(A/A)')
+     & '@ 1atom   1-electron SD    2-electron SD    Total SD',
+     & '@ 1----------------------------------------------'/
      &  /'-------------'
       IATOM = 0
       DO I = 1, NUCIND
@@ -3633,7 +3636,7 @@ C
                SIGMA2 = (SMAT2(1,1,IATOM) + SMAT2(2,2,IATOM)
      &                + SMAT2(3,3,IATOM))*FAC
                SIGMAT = SIGMA1 + SIGMA2
-               WRITE (LUPRI,'(1X,2A,3F15.9)') '@1',
+               WRITE (LUPRI,'(2A,3F15.9)') '@ 1',
      &              NAMDEP(IATOM), SIGMA1, SIGMA2, SIGMAT
             END IF
          END DO

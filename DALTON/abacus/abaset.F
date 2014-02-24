@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -391,6 +391,7 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "mxcent.h"
+#include "maxaqn.h"
 C -- local constants
       PARAMETER (D1=1.0D0, D2=2.0D0)
 #include "dummy.h"
@@ -398,6 +399,7 @@ C -- local constants
 #include "litinfo.h"
 C
 C Used from common blocks:
+C   priunit.h : LUERR,...
 C   INFINP : ISTATE,LSYM,MCTYPE,?
 C   INFORB : NISH(8),...
 C   INFVAR : NCONF,NWOPT,NVAR,JWOPSY,JWOP(2,*)
@@ -405,7 +407,7 @@ C   INFDIM : NCONMA,NWOPMA,NVARMA,NWOPDI,MAXRL
 C   INFOPT : ?
 C   INFTRA : ITRLVL,THRP,THRQ
 C   INFTAP : LUSIFC
-C   priunit.h : LUERR,...
+C   CCOM   : THRS
 C
 #include "abainf.h"
 #include "infinp.h"
@@ -418,6 +420,7 @@ C
 #include "inftap.h"
 #include "infpri.h"
 #include "inflin.h"
+#include "ccom.h"
 #include "linaba.h"
 C
       CHARACTER*8 RTNLBL(2)
@@ -493,8 +496,8 @@ C          (FLAG(14) true tells that old mo integral file exists)
 C          Set ITRLVL to minimum transformation level required.
 C
       AO2INTFILE_LABEL = 'AOTWOINT'
-      THRP = 1.D-15
-      THRQ = 1.D-15
+      THRP = MAX(1.D-15,THRS)
+      THRQ = MAX(1.D-15,THRS)
 C
 C     USEDRC must be set to false, kr-nov.95
 C

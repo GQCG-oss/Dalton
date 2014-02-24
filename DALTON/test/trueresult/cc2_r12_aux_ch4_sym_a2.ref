@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,203 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 21:11:54 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 20:19:41 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_cc2_r12_aux_ch4_sym_a2
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE FUNCTION                                
+.DIRECT                                           
+*MOLBAS                                           
+.R12AUX                                           
+**INTEGRALS                                       
+.R12                                              
+**WAVE FUNCTION                                   
+.CC                                               
+*ORBITAL INPUT                                    
+.NOSUPSYM                                         
+.MOSTART                                          
+ H1DIAG                                           
+*SCF INPUT                                        
+.THRESH                                           
+ 1.0D-11                                          
+*CC INPUT                                         
+.CC2                                              
+.PRINT                                            
+ 1                                                
+.FROIMP                                           
+  1 0 0 0                                         
+  0 0 0 0                                         
+.THRENR                                           
+ 1.0D-10                                          
+.MAX IT                                           
+ 400                                              
+*CCEXCI                                           
+.THREXC                                           
+ 1.D-8                                            
+.NCCEXCI                                          
+ 4 4 4 4                                          
+*R12 INPUT                                        
+.NO HYB                                           
+.CC2                                              
+ 2B                                               
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+6-311G** 6-311G**                                                              
+Direct CC2-R12/B calculation using symmetry                                    
+                                                                               
+    4    2 XY XZ                                                               
+ 1      6.    1                                                                
+C      0.000000000000000   0.000000000000000   0.000000000000000       *       
+ 1      1.    1                                                                
+H      1.276731000000000   1.276731000000000   1.276731000000000       *       
+ 2      6.    1                                                                
+C      0.000000000000000   0.000000000000000   0.000000000000000       *       
+ 2      1.    1                                                                
+H      1.276731000000000   1.276731000000000   1.276731000000000       *       
 
 
        *******************************************************************
@@ -105,17 +225,13 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
     Wave function sections will be executed (SIRIUS module)
  --------------------------------------------------------------------------------
-
-
- INFO : "*READIN" is deprecated, use instead "*MOLBAS"
-
 
 
  Changes of defaults for *MOLBAS:
@@ -143,8 +259,8 @@
   Nuclear charge:   6.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    1
-  Used basis set file for basis set for elements with Z =   6 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311G**"
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-311G**"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311G**                                                                        
@@ -154,8 +270,8 @@
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    1
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311G**"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-311G**"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311G**                                                                        
@@ -165,8 +281,8 @@
   Nuclear charge:   6.00000
   Number of symmetry independent centers:    1
   This is an auxiliary basis for R12, MBSI:    2
-  Used basis set file for basis set for elements with Z =   6 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311G**"
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-311G**"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311G**                                                                        
@@ -176,8 +292,8 @@
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   This is an auxiliary basis for R12, MBSI:    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311G**"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/6-311G**"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-311G**                                                                        
@@ -262,7 +378,7 @@ Point group: D2
   ------------------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -353,8 +469,16 @@ Point group: D2
  H   _4:    1.910933    1.910933    1.910933    0.000000
 
 
-  Max interatomic separation is    1.9109 Angstrom (    3.6111 Bohr)
+  Max    interatomic separation is    1.9109 Angstrom (    3.6111 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+  Min YX interatomic separation is    0.0000 Angstrom (    0.0000 Bohr)
+
+WARNING: Number of short HX and YX bond lengths:    4    1
+WARNING: If not intentional, maybe your coordinates were in Angstrom,
+WARNING: but "Angstrom" was not specified in .mol file
 
 
   Bond distances (Angstrom):
@@ -400,7 +524,7 @@ Point group: D2
             4.580578            4.580578            4.580578 cm-1
 
 
-@  Nuclear repulsion energy :   12.514560078913
+@  Nuclear repulsion energy :   12.514560078913 Hartree
 
 
   Symmetry Orbitals
@@ -549,8 +673,8 @@ Point group: D2
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.05 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.04 seconds
 
 
                         .----------------------------------.
@@ -568,16 +692,16 @@ Point group: D2
  >>>> Detected R12 input:
  Direct Fock matrix formation switched on!
  Scale factors for CC excitations manifolds:
- for bra states (projection manifold):  1.00000000000000000     
- for ket states (operator manifold)  :  1.00000000000000000     
+ for bra states (projection manifold):   1.0000000000000000     
+ for ket states (operator manifold)  :   1.0000000000000000     
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 20:19:41 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:11:54 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      Direct CC2-R12/B calculation using symmetry                             
@@ -586,32 +710,29 @@ Point group: D2
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-      (Integral direct) CC calculation.
+@    (Integral direct) CC calculation.
 
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
 
-     This is a combination run starting with
-
-               a restricted, closed shell Hartree-Fock calculation
-
-               Fock matrices are calculated directly
-               without use of integrals on disk.
+ Fock matrices are calculated directly without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART H1DIAG" input option.
+ ".MOSTART H1DIAG" input option
 
      Wave function specification
      ============================
 
      For the specification of the Coupled Cluster: see later.
 
-     For the wave function of type :      >>>          <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> CC <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -624,24 +745,12 @@ Point group: D2
 
       -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    2    1    1    1
+@    Occupied SCF orbitals               5 |    2    1    1    1
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-11
-
-
- Changes of defaults for CC:
- ---------------------------
-
-
- -This is a direct atomic orbital integral based
-  calculation for coupled cluster wave function
-
- -Implicit frozen core calculation
- -Excitation energies calculated
-  
 
 
  Changes of defaults for CC:
@@ -662,83 +771,84 @@ Point group: D2
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   1  -26.9208461510       1.74D+01  -2.69D+01    2  1  1  1
+   1  Screening settings (-IFTHRS, DIFDEN)   -7    T
+@  1  -26.9208461562       1.74D+01  -2.69D+01     2   1   1   1
       Virial theorem: -V/T =      1.397424
-      MULPOP  C      -3.96; H   _1  0.99; H   _2  0.99; H   _3  0.99; H   _4  0.99; 
+@      MULPOP C      -3.96; H   _1  0.99; H   _2  0.99; H   _3  0.99; H   _4  0.99; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   2  -34.5740137487       5.98D+00  -7.65D+00    2  1  1  1
+   2  Screening settings (-IFTHRS, DIFDEN)   -7    T
+@  2  -34.5740142129       5.98D+00  -7.65D+00     2   1   1   1
       Virial theorem: -V/T =      2.092202
-      MULPOP  C       7.24; H   _1 -1.81; H   _2 -1.81; H   _3 -1.81; H   _4 -1.81; 
+@      MULPOP C       7.24; H   _1 -1.81; H   _2 -1.81; H   _3 -1.81; H   _4 -1.81; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   3  -38.7812868927       4.97D+00  -4.21D+00    2  1  1  1
+   3  Screening settings (-IFTHRS, DIFDEN)   -7    T
+@  3  -38.7812870349       4.97D+00  -4.21D+00     2   1   1   1
       Virial theorem: -V/T =      1.865551
-      MULPOP  C      -2.05; H   _1  0.51; H   _2  0.51; H   _3  0.51; H   _4  0.51; 
+@      MULPOP C      -2.05; H   _1  0.51; H   _2  0.51; H   _3  0.51; H   _4  0.51; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   4  -40.0920858822       1.21D+00  -1.31D+00    2  1  1  1
+   4  Screening settings (-IFTHRS, DIFDEN)   -7    T
+@  4  -40.0920858983       1.21D+00  -1.31D+00     2   1   1   1
       Virial theorem: -V/T =      1.982551
-      MULPOP  C      -0.78; H   _1  0.19; H   _2  0.19; H   _3  0.19; H   _4  0.19; 
+@      MULPOP C      -0.78; H   _1  0.19; H   _2  0.19; H   _3  0.19; H   _4  0.19; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   5  -40.1914985475       6.81D-02  -9.94D-02    2  1  1  1
+   5  Screening settings (-IFTHRS, DIFDEN)   -7    T
+@  5  -40.1914985533       6.81D-02  -9.94D-02     2   1   1   1
       Virial theorem: -V/T =      2.012916
-      MULPOP  C      -0.36; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.36; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   6  -40.1917302489       2.39D-02  -2.32D-04    2  1  1  1
+   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
+@  6  -40.1917302493       2.39D-02  -2.32D-04     2   1   1   1
       Virial theorem: -V/T =      2.011954
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   7  -40.1917714459       1.96D-03  -4.12D-05    2  1  1  1
+   7  Screening settings (-IFTHRS, DIFDEN)   -9    T
+@  7  -40.1917714460       1.96D-03  -4.12D-05     2   1   1   1
       Virial theorem: -V/T =      2.011289
-      MULPOP  C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
+@      MULPOP C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   8  -40.1917720842       2.24D-04  -6.38D-07    2  1  1  1
+   8  Screening settings (-IFTHRS, DIFDEN)   -9    T
+@  8  -40.1917720843       2.24D-04  -6.38D-07     2   1   1   1
       Virial theorem: -V/T =      2.011253
-      MULPOP  C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
+@      MULPOP C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
  -----------------------------------------------------------------------------
-   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   9  -40.1917720926       2.77D-05  -8.32D-09    2  1  1  1
+   9  Screening settings (-IFTHRS, DIFDEN)  -11    F
+@  9  -40.1917720926       2.77D-05  -8.29D-09     2   1   1   1
       Virial theorem: -V/T =      2.011254
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  10  -40.1917720926       1.90D-06  -6.95D-11    2  1  1  1
+  10  Screening settings (-IFTHRS, DIFDEN)  -11    T
+@ 10  -40.1917720926       1.91D-06  -7.56D-11     2   1   1   1
       Virial theorem: -V/T =      2.011255
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  11  -40.1917720926       2.04D-07  -2.56D-13    2  1  1  1
+  11  Screening settings (-IFTHRS, DIFDEN)  -13    F
+@ 11  -40.1917720926       2.05D-07   5.93D-12     2   1   1   1
       Virial theorem: -V/T =      2.011255
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  12  -40.1917720926       3.20D-08   0.00D+00    2  1  1  1
+  12  Screening settings (-IFTHRS, DIFDEN)  -13    T
+@ 12  -40.1917720926       3.18D-08  -7.11D-14     2   1   1   1
       Virial theorem: -V/T =      2.011255
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  13  -40.1917720926       6.94D-10   1.42D-14    2  1  1  1
+  13  Screening settings (-IFTHRS, DIFDEN)  -17    F
+@ 13  -40.1917720926       6.90D-10   5.68D-14     2   1   1   1
       Virial theorem: -V/T =      2.011255
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  14  -40.1917720926       1.71D-11  -4.26D-14    2  1  1  1
+  14  Screening settings (-IFTHRS, DIFDEN)  -17    T
+@ 14  -40.1917720926       1.79D-11   1.42D-14     2   1   1   1
       Virial theorem: -V/T =      2.011255
-      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+@      MULPOP C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
  -----------------------------------------------------------------------------
-  15  Screening settings (-IFTHRS, DIFDEN)  -20    F
-  15  -40.1917720926       3.96D-13   4.26D-14    2  1  1  1
+  15  Screening settings (-IFTHRS, DIFDEN)  -17    T
+@ 15  -40.1917720926       4.29D-13  -5.68D-14     2   1   1   1
 
- *** DIIS converged in  15 iterations !
-   - total time used in SIRFCK :              0.57 seconds
+@ *** DIIS converged in  15 iterations !
+@     Converged SCF energy, gradient:    -40.191772092640    4.29D-13
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -763,7 +873,7 @@ Point group: D2
          1.69778322
 
     E(LUMO) :     0.15222200 au (symmetry 1)
-  - E(HOMO) :    -0.52478334 au (symmetry 2)
+  - E(HOMO) :    -0.52478334 au (symmetry 3)
   ------------------------------------------
     gap     :     0.67700534 au
 
@@ -784,7 +894,9 @@ Point group: D2
    2      0.006483084240
    3      0.006483084240
    4      0.006483084240
- >>> Time used in R12AUX is   0.33 seconds
+ >>>  Time used in R12AUX     is   0.30 seconds
+
+ >>>> CPU and wall time for SCF :       0.808       0.814
 
 
                        .-----------------------------------.
@@ -792,19 +904,19 @@ Point group: D2
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:             -40.191772092642                 
-     Nuclear repulsion:            12.514560078913
-     Electronic energy:           -52.706332171555
+@    Final HF energy:             -40.191772092640                 
+@    Nuclear repulsion:            12.514560078913
+@    Electronic energy:           -52.706332171553
 
-     Final gradient norm:           0.000000000000
+@    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Mar 16 20:19:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:11:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -870,12 +982,12 @@ Point group: D2
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.93 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.81 seconds
+ >>>> Total wall time used in SIRIUS :      0.82 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 20:19:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:11:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -937,19 +1049,19 @@ Point group: D2
  Core memory required by CCSD_R12 :          81390  (double words)
 
  Computation of (ip'|r12|jq') integrals done
- >>> Time used in R  [6] is   3.79 seconds
+ >>>  Time used in R  [6]     is   3.10 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of V^aj_kl intermediate done
 
  >>> Time used for V^aj_kl is    0.01 seconds
 
  Computation of (ip'|1/r12|jq') integrals done
- >>> Time used in 1/R[5] is   1.56 seconds
+ >>>  Time used in 1/R[5]     is   1.34 seconds
  Computation of (ip'|r12|jq')X(p'r')(kr'|r12|lq') integrals done
  Computation of (i'p'|r12|jq') integrals done
- >>> Time used in R  [6] is   3.55 seconds
+ >>>  Time used in R  [6]     is   3.10 seconds
  Computation of (ip'|[T,r12]|jq') integrals done
- >>> Time used in T,R[5] is   2.25 seconds
+ >>>  Time used in T,R[5]     is   2.02 seconds
 
 
                  +-----------------------------------------------+
@@ -996,9 +1108,9 @@ Point group: D2
        -0.125452553   -0.148261165   -0.047677939   -0.054001899
 
               MP2-R12/B   correlation energy =   -0.202263065
- >>> Time used in E(R12) is   0.19 seconds
- Time for MP2-R12 part cpu:   11.352274179458618     
- Time for MP2-R12 part wall:   12.000000000000000     
+ >>>  Time used in E(R12)     is   0.14 seconds
+ Time for MP2-R12 part cpu :   9.7139999999999986     
+ Time for MP2-R12 part wall:   10.027999997138977     
  Preparing R12 Ansatz 2/3 ... ONEAUX= F
    
 
@@ -1020,104 +1132,104 @@ Point group: D2
           Number of t2' amplitudes for R12 part   :        40
           Total number of amplitudes in ccsd      :      2889
 
- Iter.  1: Coupled cluster MP2-R12/B energy :     -40.3940351574709169
-       Norm^2 of Omegar12  in NXTAM:        0.2159386492D-26
- Iter.  1: Coupled cluster CC2-R12/B energy :     -40.3939356210694385
+ Iter.  1: Coupled cluster MP2-R12/B energy :     -40.3940351574693182
+       Norm^2 of Omegar12  in NXTAM:        0.2942094017D-26
+ Iter.  1: Coupled cluster CC2-R12/B energy :     -40.3939356210679392
        Norm^2 of Omegar12  in NXTAM:        0.1567276905D-05
- Iter.  2: Coupled cluster CC2-R12/B energy :     -40.3956699915192203
-       Norm^2 of Omegar12  in NXTAM:        0.6587482788D-06
- Iter.  3: Coupled cluster CC2-R12/B energy :     -40.3951748939086741
+ Iter.  2: Coupled cluster CC2-R12/B energy :     -40.3956699915175932
+       Norm^2 of Omegar12  in NXTAM:        0.6587482789D-06
+ Iter.  3: Coupled cluster CC2-R12/B energy :     -40.3951748939072246
        Norm^2 of Omegar12  in NXTAM:        0.2550693558D-06
- Iter.  4: Coupled cluster CC2-R12/B energy :     -40.3953622911463412
+ Iter.  4: Coupled cluster CC2-R12/B energy :     -40.3953622911448136
        Norm^2 of Omegar12  in NXTAM:        0.9573860508D-08
- Iter.  5: Coupled cluster CC2-R12/B energy :     -40.3953268612045804
+ Iter.  5: Coupled cluster CC2-R12/B energy :     -40.3953268612034506
        Norm^2 of Omegar12  in NXTAM:        0.3070580572D-07
- Iter.  6: Coupled cluster CC2-R12/B energy :     -40.3953420169080175
+ Iter.  6: Coupled cluster CC2-R12/B energy :     -40.3953420169069091
        Norm^2 of Omegar12  in NXTAM:        0.1142247068D-07
- Iter.  7: Coupled cluster CC2-R12/B energy :     -40.3953651015771982
-       Norm^2 of Omegar12  in NXTAM:        0.6497173956D-08
- Iter.  8: Coupled cluster CC2-R12/B energy :     -40.3953698044017599
+ Iter.  7: Coupled cluster CC2-R12/B energy :     -40.3953651015756563
+       Norm^2 of Omegar12  in NXTAM:        0.6497173955D-08
+ Iter.  8: Coupled cluster CC2-R12/B energy :     -40.3953698044001115
        Norm^2 of Omegar12  in NXTAM:        0.1880781625D-08
- Iter.  9: Coupled cluster CC2-R12/B energy :     -40.3953836714184362
+ Iter.  9: Coupled cluster CC2-R12/B energy :     -40.3953836714172567
        Norm^2 of Omegar12  in NXTAM:        0.1150533360D-08
- Iter. 10: Coupled cluster CC2-R12/B energy :     -40.3953741713836436
+ Iter. 10: Coupled cluster CC2-R12/B energy :     -40.3953741713824570
        Norm^2 of Omegar12  in NXTAM:        0.1181922838D-08
- Iter. 11: Coupled cluster CC2-R12/B energy :     -40.3953838472767757
-       Norm^2 of Omegar12  in NXTAM:        0.3169798572D-09
- Iter. 12: Coupled cluster CC2-R12/B energy :     -40.3953860482065110
+ Iter. 11: Coupled cluster CC2-R12/B energy :     -40.3953838472757099
+       Norm^2 of Omegar12  in NXTAM:        0.3169798574D-09
+ Iter. 12: Coupled cluster CC2-R12/B energy :     -40.3953860482055447
        Norm^2 of Omegar12  in NXTAM:        0.1806750375D-09
- Iter. 13: Coupled cluster CC2-R12/B energy :     -40.3953871587173339
-       Norm^2 of Omegar12  in NXTAM:        0.9114946942D-10
- Iter. 14: Coupled cluster CC2-R12/B energy :     -40.3953870079951329
-       Norm^2 of Omegar12  in NXTAM:        0.3680776509D-10
- Iter. 15: Coupled cluster CC2-R12/B energy :     -40.3953870869748926
-       Norm^2 of Omegar12  in NXTAM:        0.2200975009D-10
- Iter. 16: Coupled cluster CC2-R12/B energy :     -40.3953865492574948
-       Norm^2 of Omegar12  in NXTAM:        0.6274370251D-11
- Iter. 17: Coupled cluster CC2-R12/B energy :     -40.3953863722678008
-       Norm^2 of Omegar12  in NXTAM:        0.2830820254D-12
- Iter. 18: Coupled cluster CC2-R12/B energy :     -40.3953864368292344
-       Norm^2 of Omegar12  in NXTAM:        0.3794264720D-11
- Iter. 19: Coupled cluster CC2-R12/B energy :     -40.3953863460972684
-       Norm^2 of Omegar12  in NXTAM:        0.1180165442D-11
- Iter. 20: Coupled cluster CC2-R12/B energy :     -40.3953862374174761
-       Norm^2 of Omegar12  in NXTAM:        0.9273481663D-12
- Iter. 21: Coupled cluster CC2-R12/B energy :     -40.3953862273877178
-       Norm^2 of Omegar12  in NXTAM:        0.2750356578D-12
- Iter. 22: Coupled cluster CC2-R12/B energy :     -40.3953861888720240
-       Norm^2 of Omegar12  in NXTAM:        0.1870933852D-12
- Iter. 23: Coupled cluster CC2-R12/B energy :     -40.3953862015933751
-       Norm^2 of Omegar12  in NXTAM:        0.1033066317D-12
- Iter. 24: Coupled cluster CC2-R12/B energy :     -40.3953862057960720
-       Norm^2 of Omegar12  in NXTAM:        0.4593091980D-13
- Iter. 25: Coupled cluster CC2-R12/B energy :     -40.3953862406079551
-       Norm^2 of Omegar12  in NXTAM:        0.5583879001D-14
- Iter. 26: Coupled cluster CC2-R12/B energy :     -40.3953862186845569
-       Norm^2 of Omegar12  in NXTAM:        0.3154644123D-13
- Iter. 27: Coupled cluster CC2-R12/B energy :     -40.3953862365800731
-       Norm^2 of Omegar12  in NXTAM:        0.9488993721D-14
- Iter. 28: Coupled cluster CC2-R12/B energy :     -40.3953862491220548
-       Norm^2 of Omegar12  in NXTAM:        0.5844783860D-14
- Iter. 29: Coupled cluster CC2-R12/B energy :     -40.3953862535378789
-       Norm^2 of Omegar12  in NXTAM:        0.1791153508D-14
- Iter. 30: Coupled cluster CC2-R12/B energy :     -40.3953862554098819
-       Norm^2 of Omegar12  in NXTAM:        0.1042471922D-14
- Iter. 31: Coupled cluster CC2-R12/B energy :     -40.3953862555164207
-       Norm^2 of Omegar12  in NXTAM:        0.5147089715D-15
- Iter. 32: Coupled cluster CC2-R12/B energy :     -40.3953862555165841
-       Norm^2 of Omegar12  in NXTAM:        0.9541517279D-16
- Iter. 33: Coupled cluster CC2-R12/B energy :     -40.3953862548561204
-       Norm^2 of Omegar12  in NXTAM:        0.1574925362D-16
- Iter. 34: Coupled cluster CC2-R12/B energy :     -40.3953862550426379
-       Norm^2 of Omegar12  in NXTAM:        0.6037673313D-16
- Iter. 35: Coupled cluster CC2-R12/B energy :     -40.3953862547595506
-       Norm^2 of Omegar12  in NXTAM:        0.2368013311D-16
- Iter. 36: Coupled cluster CC2-R12/B energy :     -40.3953862543342979
-       Norm^2 of Omegar12  in NXTAM:        0.1593436626D-16
- Iter. 37: Coupled cluster CC2-R12/B energy :     -40.3953862543382627
-       Norm^2 of Omegar12  in NXTAM:        0.4510372231D-17
- Iter. 38: Coupled cluster CC2-R12/B energy :     -40.3953862541905266
-       Norm^2 of Omegar12  in NXTAM:        0.3346774228D-17
- Iter. 39: Coupled cluster CC2-R12/B energy :     -40.3953862542593924
-       Norm^2 of Omegar12  in NXTAM:        0.1792079004D-17
- Iter. 40: Coupled cluster CC2-R12/B energy :     -40.3953862542971223
-       Norm^2 of Omegar12  in NXTAM:        0.9282063113D-18
- Iter. 41: Coupled cluster CC2-R12/B energy :     -40.3953862544440554
-       Norm^2 of Omegar12  in NXTAM:        0.2700572999D-18
- Iter. 42: Coupled cluster CC2-R12/B energy :     -40.3953862543583924
-       Norm^2 of Omegar12  in NXTAM:        0.6399508239D-18
- Iter. 43: Coupled cluster CC2-R12/B energy :     -40.3953862544427054
-       Norm^2 of Omegar12  in NXTAM:        0.2261644133D-18
- Iter. 44: Coupled cluster CC2-R12/B energy :     -40.3953862545041673
-       Norm^2 of Omegar12  in NXTAM:        0.1106145600D-18
- Iter. 45: Coupled cluster CC2-R12/B energy :     -40.3953862545262794
-       Norm^2 of Omegar12  in NXTAM:        0.3839717364D-19
- Iter. 46: Coupled cluster CC2-R12/B energy :     -40.3953862545356230
-       Norm^2 of Omegar12  in NXTAM:        0.1828139952D-19
- Iter. 47: Coupled cluster CC2-R12/B energy :     -40.3953862545363123
+ Iter. 13: Coupled cluster CC2-R12/B energy :     -40.3953871587161117
+       Norm^2 of Omegar12  in NXTAM:        0.9114946943D-10
+ Iter. 14: Coupled cluster CC2-R12/B energy :     -40.3953870079936692
+       Norm^2 of Omegar12  in NXTAM:        0.3680776522D-10
+ Iter. 15: Coupled cluster CC2-R12/B energy :     -40.3953870869734502
+       Norm^2 of Omegar12  in NXTAM:        0.2200975005D-10
+ Iter. 16: Coupled cluster CC2-R12/B energy :     -40.3953865492562798
+       Norm^2 of Omegar12  in NXTAM:        0.6274370404D-11
+ Iter. 17: Coupled cluster CC2-R12/B energy :     -40.3953863722667492
+       Norm^2 of Omegar12  in NXTAM:        0.2830820367D-12
+ Iter. 18: Coupled cluster CC2-R12/B energy :     -40.3953864368279199
+       Norm^2 of Omegar12  in NXTAM:        0.3794264811D-11
+ Iter. 19: Coupled cluster CC2-R12/B energy :     -40.3953863460963376
+       Norm^2 of Omegar12  in NXTAM:        0.1180165461D-11
+ Iter. 20: Coupled cluster CC2-R12/B energy :     -40.3953862374156714
+       Norm^2 of Omegar12  in NXTAM:        0.9273481905D-12
+ Iter. 21: Coupled cluster CC2-R12/B energy :     -40.3953862273868012
+       Norm^2 of Omegar12  in NXTAM:        0.2750356653D-12
+ Iter. 22: Coupled cluster CC2-R12/B energy :     -40.3953861888704324
+       Norm^2 of Omegar12  in NXTAM:        0.1870934062D-12
+ Iter. 23: Coupled cluster CC2-R12/B energy :     -40.3953862015923164
+       Norm^2 of Omegar12  in NXTAM:        0.1033066399D-12
+ Iter. 24: Coupled cluster CC2-R12/B energy :     -40.3953862057943880
+       Norm^2 of Omegar12  in NXTAM:        0.4593091323D-13
+ Iter. 25: Coupled cluster CC2-R12/B energy :     -40.3953862406073299
+       Norm^2 of Omegar12  in NXTAM:        0.5583877329D-14
+ Iter. 26: Coupled cluster CC2-R12/B energy :     -40.3953862186836901
+       Norm^2 of Omegar12  in NXTAM:        0.3154643714D-13
+ Iter. 27: Coupled cluster CC2-R12/B energy :     -40.3953862365782825
+       Norm^2 of Omegar12  in NXTAM:        0.9488997328D-14
+ Iter. 28: Coupled cluster CC2-R12/B energy :     -40.3953862491209463
+       Norm^2 of Omegar12  in NXTAM:        0.5844782602D-14
+ Iter. 29: Coupled cluster CC2-R12/B energy :     -40.3953862535361949
+       Norm^2 of Omegar12  in NXTAM:        0.1791153946D-14
+ Iter. 30: Coupled cluster CC2-R12/B energy :     -40.3953862554085745
+       Norm^2 of Omegar12  in NXTAM:        0.1042472636D-14
+ Iter. 31: Coupled cluster CC2-R12/B energy :     -40.3953862555145164
+       Norm^2 of Omegar12  in NXTAM:        0.5147094501D-15
+ Iter. 32: Coupled cluster CC2-R12/B energy :     -40.3953862555154188
+       Norm^2 of Omegar12  in NXTAM:        0.9541497330D-16
+ Iter. 33: Coupled cluster CC2-R12/B energy :     -40.3953862548543512
+       Norm^2 of Omegar12  in NXTAM:        0.1574927390D-16
+ Iter. 34: Coupled cluster CC2-R12/B energy :     -40.3953862550416005
+       Norm^2 of Omegar12  in NXTAM:        0.6037661705D-16
+ Iter. 35: Coupled cluster CC2-R12/B energy :     -40.3953862547581224
+       Norm^2 of Omegar12  in NXTAM:        0.2368014591D-16
+ Iter. 36: Coupled cluster CC2-R12/B energy :     -40.3953862543328981
+       Norm^2 of Omegar12  in NXTAM:        0.1593438509D-16
+ Iter. 37: Coupled cluster CC2-R12/B energy :     -40.3953862543369127
+       Norm^2 of Omegar12  in NXTAM:        0.4510395044D-17
+ Iter. 38: Coupled cluster CC2-R12/B energy :     -40.3953862541891695
+       Norm^2 of Omegar12  in NXTAM:        0.3346740842D-17
+ Iter. 39: Coupled cluster CC2-R12/B energy :     -40.3953862542579145
+       Norm^2 of Omegar12  in NXTAM:        0.1792077691D-17
+ Iter. 40: Coupled cluster CC2-R12/B energy :     -40.3953862542965325
+       Norm^2 of Omegar12  in NXTAM:        0.9281731827D-18
+ Iter. 41: Coupled cluster CC2-R12/B energy :     -40.3953862544431033
+       Norm^2 of Omegar12  in NXTAM:        0.2700484721D-18
+ Iter. 42: Coupled cluster CC2-R12/B energy :     -40.3953862543573194
+       Norm^2 of Omegar12  in NXTAM:        0.6399261832D-18
+ Iter. 43: Coupled cluster CC2-R12/B energy :     -40.3953862544417106
+       Norm^2 of Omegar12  in NXTAM:        0.2261732423D-18
+ Iter. 44: Coupled cluster CC2-R12/B energy :     -40.3953862545029949
+       Norm^2 of Omegar12  in NXTAM:        0.1106198883D-18
+ Iter. 45: Coupled cluster CC2-R12/B energy :     -40.3953862545253983
+       Norm^2 of Omegar12  in NXTAM:        0.3839807505D-19
+ Iter. 46: Coupled cluster CC2-R12/B energy :     -40.3953862545344506
+       Norm^2 of Omegar12  in NXTAM:        0.1828148267D-19
+ Iter. 47: Coupled cluster CC2-R12/B energy :     -40.3953862545356657
 
- CC2-R12/B energy converged to within   0.10D-09 is    -40.395386255
- Final 2-norm of the CC vector function:  1.23615715D-10
+ CC2-R12/B energy converged to within   0.10D-09 is          -40.395386254536
+ Final 2-norm of the CC vector function:  1.23626505D-10
  R12       energy converged to within   0.10D-09 is     -0.138561123
 
 
@@ -1175,13 +1287,13 @@ Point group: D2
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
-  MIN AND MAX IN SELECTED SUPSPACE   0.75401585626269496        1.0633632596765348     
+  MIN AND MAX IN SELECTED SUPSPACE   0.75401585626248502        1.0633632596757512     
  Start vector guessed from diagonal
- ... selected element no. 11
+ ... selected element no. 20
  Start vector guessed from diagonal
  ... selected element no. 29
  Start vector guessed from diagonal
- ... selected element no. 20
+ ... selected element no. 11
  Start vector guessed from diagonal
  ... selected element no. 21
 
@@ -1194,371 +1306,403 @@ Point group: D2
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.57225388
-       2      0.57540966
-       3      0.62992629
-       4      0.71525283
+               Column   1
+       1       0.57225388
+       2       0.57540966
+       3       0.62992629
+       4       0.71525283
+    ==== End of matrix output ====
       1       4         0.03     0.33E+00
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49875229
-       2      0.50046568
-       3      0.55342199
-       4      0.64937712
+               Column   1
+       1       0.49875314
+       2       0.50046512
+       3       0.55342218
+       4       0.64937725
+    ==== End of matrix output ====
       2       4         0.03     0.11E+00
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49244756
-       2      0.49325791
-       3      0.54715694
-       4      0.64162966
+               Column   1
+       1       0.49244685
+       2       0.49325834
+       3       0.54715679
+       4       0.64162978
+    ==== End of matrix output ====
       3       4         0.03     0.50E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49161930
-       2      0.49195988
-       3      0.54512464
-       4      0.64004408
+               Column   1
+       1       0.49161964
+       2       0.49195932
+       3       0.54512461
+       4       0.64004392
+    ==== End of matrix output ====
       4       4         0.03     0.37E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49174864
-       2      0.49206296
-       3      0.54447288
-       4      0.64065776
- (CCORT) Norm^2 (R12-part) =  -7.23815547310968227E-002
+               Column   1
+       1       0.49174885
+       2       0.49206296
+       3       0.54447316
+       4       0.64065792
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -7.2378501023729364E-002
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
       5       4         0.03     0.30E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49165426
-       2      0.49186030
-       3      0.54406929
-       4      0.63973365
+               Column   1
+       1       0.49165419
+       2       0.49186086
+       3       0.54406935
+       4       0.63973356
+    ==== End of matrix output ====
       6       4         0.03     0.20E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49147212
-       2      0.49149642
-       3      0.54309866
-       4      0.63917778
+               Column   1
+       1       0.49147236
+       2       0.49149630
+       3       0.54309863
+       4       0.63917741
+    ==== End of matrix output ====
       7       4         0.03     0.17E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49150217
-       2      0.49152286
-       3      0.54307363
-       4      0.63941187
+               Column   1
+       1       0.49150226
+       2       0.49152286
+       3       0.54307365
+       4       0.63941192
+    ==== End of matrix output ====
       8       4         0.03     0.14E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49147075
-       2      0.49147807
-       3      0.54321576
-       4      0.63862034
+               Column   1
+       1       0.49147070
+       2       0.49147819
+       3       0.54321579
+       4       0.63861984
+    ==== End of matrix output ====
       9       4         0.03     0.17E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49147731
-       2      0.49148064
-       3      0.54316314
-       4      0.63845305
- (CCORT) Norm^2 (R12-part) =  -4.55053628557179415E-002
+               Column   1
+       1       0.49147735
+       2       0.49148058
+       3       0.54316314
+       4       0.63845279
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -4.5584194984849329E-002
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
      10       4         0.03     0.16E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148697
-       2      0.49149117
-       3      0.54318563
-       4      0.63841064
+               Column   1
+       1       0.49148697
+       2       0.49149116
+       3       0.54318561
+       4       0.63841081
+    ==== End of matrix output ====
      11       4         0.03     0.66E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49147755
-       2      0.49147960
-       3      0.54315169
-       4      0.63830158
- (CCORT) Norm^2 (R12-part) =  -7.61677779997969595E-002
+               Column   1
+       1       0.49147755
+       2       0.49147960
+       3       0.54315169
+       4       0.63830160
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -7.6115554081261083E-002
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
      12       4         0.03     0.44E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148758
-       2      0.49149283
-       3      0.54315816
-       4      0.63830199
+               Column   1
+       1       0.49148758
+       2       0.49149282
+       3       0.54315816
+       4       0.63830196
+    ==== End of matrix output ====
      13       4         0.03     0.27E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148396
-       2      0.49148621
-       3      0.54315492
-       4      0.63828328
- (CCORT) Norm^2 (R12-part) =  -3.71641974991342369E-002
+               Column   1
+       1       0.49148396
+       2       0.49148622
+       3       0.54315491
+       4       0.63828332
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -3.6749418111476445E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      14       4         0.03     0.23E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148248
-       2      0.49148314
-       3      0.54315826
-       4      0.63829940
- (CCORT) Norm^2 (R12-part) =  -8.36499768905621984E-012
+               Column   1
+       1       0.49148248
+       2       0.49148314
+       3       0.54315826
+       4       0.63829940
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -8.3790835814073777E-012
 WARNING: R12 part of input vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.11745608994006101     
+ (CCORT) Norm^2 (R12-part) =  -0.11738965918662833     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.17759196921690781     
+ (CCORT) Norm^2 (R12-part) =  -0.17759211825655444     
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      15       4         0.03     0.14E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148390
-       2      0.49148445
-       3      0.54315765
-       4      0.63829555
- (CCORT) Norm^2 (R12-part) =  -2.26263351535438278E-002
+               Column   1
+       1       0.49148390
+       2       0.49148445
+       3       0.54315765
+       4       0.63829554
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -2.2628398506793497E-002
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
      16       4         0.03     0.96E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148347
-       2      0.49148356
-       3      0.54315755
-       4      0.63829074
+               Column   1
+       1       0.49148348
+       2       0.49148356
+       3       0.54315755
+       4       0.63829074
+    ==== End of matrix output ====
      17       4         0.03     0.42E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148357
-       2      0.49148396
-       3      0.54315780
-       4      0.63828598
- (CCORT) Norm^2 (R12-part) =  -0.16969400556080866     
+               Column   1
+       1       0.49148357
+       2       0.49148396
+       3       0.54315780
+       4       0.63828598
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =  -0.16969491393461489     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -8.33021841102666860E-002
+ (CCORT) Norm^2 (R12-part) =   -8.3505548957076181E-002
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -7.36857622831921383E-002
+ (CCORT) Norm^2 (R12-part) =   -7.3184999549185809E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      18       4         0.03     0.52E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148315
-       2      0.49148352
-       3      0.54315746
-       4      0.63829194
+               Column   1
+       1       0.49148315
+       2       0.49148352
+       3       0.54315746
+       4       0.63829194
+    ==== End of matrix output ====
      19       4         0.03     0.28E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148367
-       2      0.49148368
-       3      0.54315770
-       4      0.63829371
- (CCORT) Norm^2 (R12-part) =  -7.30967107492010160E-002
+               Column   1
+       1       0.49148367
+       2       0.49148368
+       3       0.54315770
+       4       0.63829371
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -7.3662704525062808E-002
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.18230085586282202     
+ (CCORT) Norm^2 (R12-part) =  -0.18225480968330315     
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      20       4         0.03     0.16E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148370
-       2      0.49148371
-       3      0.54315757
-       4      0.63829353
- (CCORT) Norm^2 (R12-part) =  -8.36291382032956082E-003
+               Column   1
+       1       0.49148370
+       2       0.49148371
+       3       0.54315757
+       4       0.63829353
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -8.3833201331964119E-003
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -1.44508064830420561E-002
+ (CCORT) Norm^2 (R12-part) =   -1.4410419142532450E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      21       4         0.03     0.86E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148365
-       2      0.49148366
-       3      0.54315754
-       4      0.63829281
+               Column   1
+       1       0.49148365
+       2       0.49148366
+       3       0.54315754
+       4       0.63829281
+    ==== End of matrix output ====
      22       4         0.03     0.56E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148363
-       2      0.49148364
-       3      0.54315751
-       4      0.63829242
- (CCORT) Norm^2 (R12-part) =  -1.00318844895000425E-003
+               Column   1
+       1       0.49148363
+       2       0.49148364
+       3       0.54315751
+       4       0.63829242
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -9.6922316168934763E-004
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.45839505817719273     
+ (CCORT) Norm^2 (R12-part) =  -0.45840770018385268     
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      23       4         0.03     0.19E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148364
-       2      0.49148364
-       3      0.54315753
-       4      0.63829247
- (CCORT) Norm^2 (R12-part) =  -7.05135464159551972E-002
+               Column   1
+       1       0.49148364
+       2       0.49148364
+       3       0.54315753
+       4       0.63829247
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -7.0463939266200856E-002
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -1.36381175146558960E-002
+ (CCORT) Norm^2 (R12-part) =   -1.3697919497544380E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      24       4         0.03     0.10E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148365
-       2      0.49148366
-       3      0.54315754
-       4      0.63829243
+               Column   1
+       1       0.49148365
+       2       0.49148366
+       3       0.54315754
+       4       0.63829243
+    ==== End of matrix output ====
      25       4         0.03     0.94E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148364
-       2      0.49148364
-       3      0.54315754
-       4      0.63829240
- (CCORT) Norm^2 (R12-part) =  -3.05084801736798111E-002
+               Column   1
+       1       0.49148364
+       2       0.49148364
+       3       0.54315754
+       4       0.63829240
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -3.2358464435224943E-002
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.14404543785238894     
+ (CCORT) Norm^2 (R12-part) =  -0.14410634243288936     
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      26       4         0.03     0.30E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148364
-       2      0.49148364
-       3      0.54315754
-       4      0.63829240
- (CCORT) Norm^2 (R12-part) =  -0.11005275437116273     
+               Column   1
+       1       0.49148364
+       2       0.49148364
+       3       0.54315754
+       4       0.63829240
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -9.4754559474000855E-002
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -5.09227708287076780E-002
+ (CCORT) Norm^2 (R12-part) =   -6.5819915133754681E-002
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      27       4         0.03     0.19E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148364
-       2      0.49148364
-       3      0.54315754
-       4      0.63829240
- (CCORT) Norm^2 (R12-part) =  -0.41985073367470438     
+               Column   1
+       1       0.49148364
+       2       0.49148364
+       3       0.54315754
+       4       0.63829240
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =  -0.21941540517182950     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.11438175824868516     
-WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -1.94825211088085135E-002
+ (CCORT) Norm^2 (R12-part) =   -1.5945303112162162E-002
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
-     28       4         0.03     0.19E-05
+     28       4         0.03     0.20E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148364
-       2      0.49148364
-       3      0.54315754
-       4      0.63829241
- (CCORT) Norm^2 (R12-part) =  -0.98556073132288224     
+               Column   1
+       1       0.49148364
+       2       0.49148364
+       3       0.54315754
+       4       0.63829241
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =   -1.1923346218750577     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.22136016720182450     
+ (CCORT) Norm^2 (R12-part) =  -0.23967390959238108     
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -5.27594166950084570E-002
+ (CCORT) Norm^2 (R12-part) =  -0.13972116629148090     
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
-     29       4         0.03     0.74E-06
+     29       4         0.03     0.68E-06
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148364
-       2      0.49148364
-       3      0.54315754
-       4      0.63829241
- (CCORT) Norm^2 (R12-part) =  -0.46851050789843779     
+               Column   1
+       1       0.49148364
+       2       0.49148364
+       3       0.54315754
+       4       0.63829241
+    ==== End of matrix output ====
+ (CCORT) Norm^2 (R12-part) =  -0.20861435487174157     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
-     30       4         0.03     0.46E-06
+ (CCORT) Norm^2 (R12-part) =  -0.29968044173447705     
+WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
+     30       4         0.03     0.41E-06
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148364
-       2      0.49148364
-       3      0.54315754
-       4      0.63829241
- (CCORT) Norm^2 (R12-part) =  -5.95315979460407044E-003
-WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
-     31       3         0.02     0.17E-06
+               Column   1
+       1       0.49148364
+       2       0.49148364
+       3       0.54315754
+       4       0.63829241
+    ==== End of matrix output ====
+     31       4         0.03     0.16E-06
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148364
-       2      0.49148364
-       3      0.54315754
-       4      0.63829241
-     32       2         0.02     0.97E-07
+               Column   1
+       1       0.49148364
+       2       0.49148364
+       3       0.54315754
+       4       0.63829241
+    ==== End of matrix output ====
+     32       2         0.02     0.11E-06
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148364
-       2      0.49148364
-       3      0.54315754
-       4      0.63829241
-     33       1         0.01     0.22E-07
+               Column   1
+       1       0.49148364
+       2       0.49148364
+       3       0.54315754
+       4       0.63829241
+    ==== End of matrix output ====
+     33       1         0.01     0.24E-07
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.49148364
-       2      0.49148364
-       3      0.54315754
-       4      0.63829241
-     34       1         0.01     0.84E-08
+               Column   1
+       1       0.49148364
+       2       0.49148364
+       3       0.54315754
+       4       0.63829241
+    ==== End of matrix output ====
+     34       1         0.01     0.92E-08
     --------------------------------------
     converged in 34 iterations
     threshold:    0.10E-07
@@ -1566,15 +1710,15 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            1.01
+         CC_TRDRV            0.82
          CCRED               0.01
          CCNEX               0.01
          ---------------------------
-         Total time          1.02
+         Total time          0.85
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  1 minute   1 second 
- >>>> Total wall time used in CCEQ_SOLV:  1 minute   8 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  50.87 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  53.28 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1594,7 +1738,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  eigenvector was orthogonalized against  1 degenerate vectors
 
 
- eigenvector for state  1      0.49148364has been renormalized... scaling factor:  0.80346993    
+ eigenvector for state  1      0.49148364has been renormalized... scaling factor:  0.98671722    
 
  degenerate eigenvector found:  2        0.4914836398
  eigenvector was orthogonalized against  1 degenerate vectors
@@ -1611,19 +1755,19 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4914836398       13.3739501557
-         2            0.4914836398       13.3739501569
+         1            0.4914836398       13.3739501559
+         2            0.4914836398       13.3739501564
          3            0.5431575388       14.7800684747
-         4            0.6382924114       17.3688200445
+         4            0.6382924114       17.3688200450
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -39.903902614728814
-@@    1    2           -39.903902614686338
-@@    1    3           -39.852228715741724
-@@    1    4           -39.757093843150002
+@@    1    1           -39.903902614721567
+@@    1    2           -39.903902614704002
+@@    1    3           -39.852228715741980
+@@    1    4           -39.757093843131813
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1637,11 +1781,11 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
 
 
-          Single Excitation Contribution :              97.4123 %
+          Single Excitation Contribution :              97.4120 %
 
-          Double Excitation Contribution :               2.5877 %
+          Double Excitation Contribution :               2.5880 %
 
-          ||T1||/||T2||                  :               6.1355
+          ||T1||/||T2||                  :               6.1352
 
           Norm of Total Amplitude Vector :               0.9992
 
@@ -1650,42 +1794,40 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   2   |   1       1     |       11          |              |   -0.785352  |
+ | 2   2   |   1       1     |       11          |              |   -0.548623  |
+ | 4   4   |   1       1     |       29          |              |    0.762193  |
  +-----------------------------------------------------------------------------+
- | 2 1 2 1 |   1   1   1   1 |       11        1 |           56 |    0.020851  |
- | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |    0.037682  |
- | 3 2 3 2 |   3   1   1   1 |       22       11 |          242 |   -0.023447  |
- | 3 2 3 2 |   1   3   1   1 |       20       13 |          203 |    0.022134  |
- | 4 2 4 2 |   1   1   1   1 |       29       11 |          417 |    0.016668  |
- | 4 2 4 2 |   3   1   1   1 |       31       11 |          476 |   -0.022279  |
- | 4 2 4 2 |   1   3   1   1 |       29       13 |          419 |    0.020715  |
- | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |   -0.020492  |
- | 4 3 4 3 |   1   1   1   1 |       29       20 |          426 |   -0.030649  |
- | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |   -0.017190  |
- | 4 2 3 1 |   2   1   1   1 |       21        1 |          914 |    0.025612  |
- | 3 2 4 1 |   2   1   1   1 |       30        1 |         1139 |    0.025623  |
- | 4 4 2 2 |   2   1   1   1 |       11       10 |         1471 |   -0.018691  |
- | 2 4 4 2 |   2   1   1   1 |       30       10 |         1851 |   -0.017425  |
- | 2 4 4 2 |   1   2   1   1 |       29       11 |         1823 |    0.025819  |
- | 2 1 4 3 |   1   1   1   1 |       29       19 |         1831 |   -0.016285  |
- | 2 1 4 3 |   1   2   1   1 |       29       20 |         1832 |   -0.022907  |
- | 2 2 4 4 |   2   1   1   1 |       30       29 |         1870 |    0.025519  |
- | 3 3 2 2 |   2   1   1   1 |       11       10 |         2174 |   -0.020572  |
- | 2 3 3 2 |   2   1   1   1 |       20       10 |         2309 |   -0.019402  |
- | 2 3 3 2 |   1   2   1   1 |       19       11 |         2291 |    0.026444  |
- | 2 2 3 3 |   2   1   1   1 |       20       19 |         2318 |    0.026299  |
- | 1 2 4 3 |   1   1   1   1 |       28       19 |         2506 |   -0.016114  |
- | 1 2 4 3 |   2   1   1   1 |       29       19 |         2534 |   -0.023232  |
+ | 4 1 4 1 |   1   1   1   1 |       29        1 |          407 |   -0.020236  |
+ | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |    0.026324  |
+ | 3 2 3 2 |   1   1   1   1 |       20       11 |          201 |    0.029746  |
+ | 4 2 4 2 |   3   1   1   1 |       31       11 |          476 |   -0.024248  |
+ | 4 2 4 2 |   1   3   1   1 |       29       13 |          419 |    0.025031  |
+ | 4 3 4 3 |   1   1   1   1 |       29       20 |          426 |   -0.021411  |
+ | 4 3 4 3 |   3   1   1   1 |       31       20 |          485 |   -0.017337  |
+ | 4 3 4 3 |   1   3   1   1 |       29       22 |          428 |    0.019346  |
+ | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |   -0.036571  |
+ | 4 2 3 1 |   2   1   1   1 |       21        1 |          914 |    0.017973  |
+ | 3 2 4 1 |   2   1   1   1 |       30        1 |         1139 |    0.017818  |
+ | 4 1 3 2 |   1   1   1   1 |       20       10 |          903 |    0.016138  |
+ | 4 1 3 2 |   1   2   1   1 |       20       11 |          904 |    0.021600  |
+ | 4 4 3 3 |   2   1   1   1 |       21       20 |          933 |   -0.023246  |
+ | 3 4 4 3 |   2   1   1   1 |       30       20 |         1158 |   -0.023840  |
+ | 4 4 2 2 |   2   1   1   1 |       11       10 |         1471 |   -0.027044  |
+ | 1 4 3 2 |   2   1   1   1 |       20       10 |         1606 |    0.023179  |
+ | 2 4 4 2 |   2   1   1   1 |       30       10 |         1851 |   -0.026882  |
+ | 2 4 4 2 |   1   2   1   1 |       29       11 |         1823 |    0.022685  |
+ | 2 1 4 3 |   1   2   1   1 |       29       20 |         1832 |   -0.018416  |
+ | 2 2 4 4 |   2   1   1   1 |       30       29 |         1870 |    0.023630  |
+ | 3 4 2 1 |   2   1   1   1 |       11        1 |         2165 |   -0.024835  |
+ | 2 4 3 1 |   2   1   1   1 |       20        1 |         2300 |   -0.024888  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.7935
-
+          Norm of Printed Amplitude Vector :             0.9459
 
           Printed all single excitations greater than 0.493488
 
-
-          Printed all double excitations greater than 0.016086
+          Printed all double excitations greater than 0.016087
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  2
@@ -1699,11 +1841,11 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
 
 
-          Single Excitation Contribution :              97.4130 %
+          Single Excitation Contribution :              97.4132 %
 
-          Double Excitation Contribution :               2.5870 %
+          Double Excitation Contribution :               2.5868 %
 
-          ||T1||/||T2||                  :               6.1364
+          ||T1||/||T2||                  :               6.1366
 
           Norm of Total Amplitude Vector :               0.9992
 
@@ -1712,43 +1854,40 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 3   3   |   1       1     |       20          |              |   -0.660268  |
- | 4   4   |   1       1     |       29          |              |    0.700002  |
+ | 2   2   |   1       1     |       11          |              |   -0.563356  |
+ | 3   3   |   1       1     |       20          |              |    0.756799  |
  +-----------------------------------------------------------------------------+
- | 3 1 3 1 |   1   1   1   1 |       20        1 |          191 |    0.017530  |
- | 4 1 4 1 |   1   1   1   1 |       29        1 |          407 |   -0.018585  |
- | 3 2 3 2 |   1   1   1   1 |       20       11 |          201 |    0.027319  |
- | 4 2 4 2 |   1   1   1   1 |       29       11 |          417 |   -0.025768  |
- | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |    0.031681  |
- | 4 3 4 3 |   3   1   1   1 |       31       20 |          485 |   -0.025496  |
- | 4 3 4 3 |   1   3   1   1 |       29       22 |          428 |    0.025642  |
- | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |   -0.033587  |
- | 4 1 3 2 |   1   2   1   1 |       20       11 |          904 |    0.022025  |
- | 3 1 4 2 |   1   2   1   1 |       29       11 |         1120 |   -0.021139  |
- | 4 4 3 3 |   2   1   1   1 |       21       20 |          933 |   -0.026610  |
- | 3 4 4 3 |   2   1   1   1 |       30       20 |         1158 |   -0.026109  |
- | 3 4 4 3 |   1   2   1   1 |       29       21 |         1130 |    0.025328  |
- | 3 3 4 4 |   2   1   1   1 |       30       29 |         1167 |    0.025975  |
- | 4 3 2 1 |   2   1   1   1 |       11        1 |         1462 |    0.021596  |
- | 2 3 4 1 |   2   1   1   1 |       30        1 |         1842 |    0.021479  |
- | 4 4 2 2 |   2   1   1   1 |       11       10 |         1471 |   -0.019576  |
- | 1 4 3 2 |   2   1   1   1 |       20       10 |         1606 |    0.019100  |
- | 2 4 4 2 |   2   1   1   1 |       30       10 |         1851 |   -0.020475  |
- | 3 4 2 1 |   2   1   1   1 |       11        1 |         2165 |   -0.022882  |
- | 2 4 3 1 |   2   1   1   1 |       20        1 |         2300 |   -0.022784  |
- | 3 3 2 2 |   2   1   1   1 |       11       10 |         2174 |    0.017590  |
- | 2 3 3 2 |   2   1   1   1 |       20       10 |         2309 |    0.018612  |
- | 1 3 4 2 |   2   1   1   1 |       29       10 |         2525 |   -0.017652  |
+ | 3 1 3 1 |   1   1   1   1 |       20        1 |          191 |   -0.020093  |
+ | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |    0.027031  |
+ | 3 2 3 2 |   3   1   1   1 |       22       11 |          242 |   -0.024461  |
+ | 3 2 3 2 |   1   3   1   1 |       20       13 |          203 |    0.025169  |
+ | 4 2 4 2 |   1   1   1   1 |       29       11 |          417 |    0.029535  |
+ | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |   -0.036312  |
+ | 4 3 4 3 |   1   1   1   1 |       29       20 |          426 |   -0.021986  |
+ | 4 3 4 3 |   3   1   1   1 |       31       20 |          485 |    0.018894  |
+ | 4 3 4 3 |   1   3   1   1 |       29       22 |          428 |   -0.016830  |
+ | 4 2 3 1 |   2   1   1   1 |       21        1 |          914 |    0.018301  |
+ | 3 2 4 1 |   2   1   1   1 |       30        1 |         1139 |    0.018451  |
+ | 3 1 4 2 |   1   2   1   1 |       29       11 |         1120 |    0.021359  |
+ | 3 4 4 3 |   1   2   1   1 |       29       21 |         1130 |   -0.023503  |
+ | 3 3 4 4 |   2   1   1   1 |       30       29 |         1167 |   -0.022870  |
+ | 4 3 2 1 |   2   1   1   1 |       11        1 |         1462 |   -0.024657  |
+ | 1 3 3 1 |   5   1   1   1 |       23        1 |         1660 |   -0.016496  |
+ | 2 3 4 1 |   2   1   1   1 |       30        1 |         1842 |   -0.024715  |
+ | 3 3 2 2 |   2   1   1   1 |       11       10 |         2174 |   -0.027063  |
+ | 2 3 3 2 |   2   1   1   1 |       20       10 |         2309 |   -0.026861  |
+ | 2 3 3 2 |   1   2   1   1 |       19       11 |         2291 |    0.023059  |
+ | 1 3 4 2 |   2   1   1   1 |       29       10 |         2525 |    0.023103  |
+ | 2 2 3 3 |   2   1   1   1 |       20       19 |         2318 |    0.023971  |
+ | 1 2 4 3 |   2   1   1   1 |       29       19 |         2534 |   -0.018788  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.9691
+          Norm of Printed Amplitude Vector :             0.9502
 
+          Printed all single excitations greater than 0.493491
 
-          Printed all single excitations greater than 0.493490
-
-
-          Printed all double excitations greater than 0.016084
+          Printed all double excitations greater than 0.016083
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  3
@@ -1796,9 +1935,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Norm of Printed Amplitude Vector :             0.9364
 
-
           Printed all single excitations greater than 0.492715
-
 
           Printed all double excitations greater than 0.017008
 
@@ -1818,7 +1955,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Double Excitation Contribution :               2.5081 %
 
-          ||T1||/||T2||                  :               6.2346
+          ||T1||/||T2||                  :               6.2347
 
           Norm of Total Amplitude Vector :               0.9958
 
@@ -1837,28 +1974,26 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 4 3 4 3 |   3   2   1   1 |       31       21 |          486 |    0.019004  |
  | 4 2 3 1 |   2   2   1   1 |       21        2 |          915 |    0.017923  |
  | 3 1 4 2 |   2   2   1   1 |       30       11 |         1149 |    0.028231  |
- | 4 4 3 3 |   2   2   1   1 |       21       21 |          934 |    0.020305  |
+ | 4 4 3 3 |   2   2   1   1 |       21       21 |          934 |    0.020304  |
  | 4 4 3 3 |   3   2   1   1 |       22       21 |          955 |    0.021262  |
- | 3 3 4 4 |   2   2   1   1 |       30       30 |         1168 |   -0.025329  |
+ | 3 3 4 4 |   2   2   1   1 |       30       30 |         1168 |   -0.025328  |
  | 4 3 2 1 |   2   2   1   1 |       11        2 |         1463 |   -0.018763  |
- | 1 3 3 1 |   5   2   1   1 |       23        2 |         1661 |   -0.021608  |
+ | 1 3 3 1 |   5   2   1   1 |       23        2 |         1661 |   -0.021609  |
  | 2 3 4 1 |   2   2   1   1 |       30        2 |         1843 |   -0.018764  |
  | 1 4 3 2 |   2   2   1   1 |       20       11 |         1607 |   -0.020044  |
- | 1 1 3 3 |   5   2   1   1 |       23       20 |         1679 |   -0.016544  |
- | 2 1 4 3 |   2   2   1   1 |       30       20 |         1861 |   -0.020042  |
+ | 1 1 3 3 |   5   2   1   1 |       23       20 |         1679 |   -0.016545  |
+ | 2 1 4 3 |   2   2   1   1 |       30       20 |         1861 |   -0.020043  |
  | 2 4 3 1 |   2   2   1   1 |       20        2 |         2301 |    0.017924  |
  | 3 3 2 2 |   2   2   1   1 |       11       11 |         2175 |   -0.025328  |
  | 1 3 4 2 |   2   2   1   1 |       29       11 |         2526 |    0.028231  |
- | 2 2 3 3 |   2   2   1   1 |       20       20 |         2319 |    0.020303  |
+ | 2 2 3 3 |   2   2   1   1 |       20       20 |         2319 |    0.020304  |
  | 2 2 3 3 |   3   2   1   1 |       21       20 |         2339 |    0.021261  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.7994
 
-
           Printed all single excitations greater than 0.493690
-
 
           Printed all double excitations greater than 0.015837
 
@@ -1882,13 +2017,13 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844037691        1.1959103517885588     
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843946953        1.1959103517880632     
  Start vector guessed from diagonal
  ... selected element no. 10
  Start vector guessed from diagonal
- ... selected element no. 20
- Start vector guessed from diagonal
  ... selected element no. 29
+ Start vector guessed from diagonal
+ ... selected element no. 20
  Start vector guessed from diagonal
  ... selected element no. 30
 
@@ -1901,290 +2036,322 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48816966
-       2      0.56539921
-       3      0.56780069
-       4      0.74030769
+               Column   1
+       1       0.48816966
+       2       0.56539921
+       3       0.56780069
+       4       0.74030769
+    ==== End of matrix output ====
       1       4         0.03     0.34E+00
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.42107424
-       2      0.49054269
-       3      0.49572972
-       4      0.67107346
+               Column   1
+       1       0.42107424
+       2       0.49054269
+       3       0.49572972
+       4       0.67107346
+    ==== End of matrix output ====
       2       4         0.03     0.12E+00
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41781036
-       2      0.48485824
-       3      0.49231311
-       4      0.66211555
+               Column   1
+       1       0.41781036
+       2       0.48485824
+       3       0.49231311
+       4       0.66211555
+    ==== End of matrix output ====
       3       4         0.03     0.58E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41773169
-       2      0.48338266
-       3      0.49181957
-       4      0.65311190
+               Column   1
+       1       0.41773169
+       2       0.48338266
+       3       0.49181957
+       4       0.65311190
+    ==== End of matrix output ====
       4       4         0.03     0.91E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41770516
-       2      0.48298858
-       3      0.49167486
-       4      0.64360835
+               Column   1
+       1       0.41770516
+       2       0.48298858
+       3       0.49167486
+       4       0.64360835
+    ==== End of matrix output ====
       5       4         0.03     0.69E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41766651
-       2      0.48288732
-       3      0.49164495
-       4      0.63957489
+               Column   1
+       1       0.41766651
+       2       0.48288732
+       3       0.49164495
+       4       0.63957489
+    ==== End of matrix output ====
       6       4         0.03     0.51E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41759441
-       2      0.48274794
-       3      0.49153364
-       4      0.63734094
+               Column   1
+       1       0.41759441
+       2       0.48274794
+       3       0.49153364
+       4       0.63734094
+    ==== End of matrix output ====
       7       4         0.03     0.28E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760109
-       2      0.48276943
-       3      0.49156047
-       4      0.63676366
+               Column   1
+       1       0.41760109
+       2       0.48276943
+       3       0.49156047
+       4       0.63676366
+    ==== End of matrix output ====
       8       4         0.03     0.20E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760404
-       2      0.48278262
-       3      0.49155822
-       4      0.63653315
+               Column   1
+       1       0.41760404
+       2       0.48278262
+       3       0.49155822
+       4       0.63653315
+    ==== End of matrix output ====
       9       4         0.03     0.12E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760284
-       2      0.48279154
-       3      0.49155593
-       4      0.63642044
+               Column   1
+       1       0.41760284
+       2       0.48279154
+       3       0.49155593
+       4       0.63642044
+    ==== End of matrix output ====
      10       4         0.03     0.64E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760136
-       2      0.48277616
-       3      0.49155064
-       4      0.63640523
+               Column   1
+       1       0.41760136
+       2       0.48277616
+       3       0.49155064
+       4       0.63640523
+    ==== End of matrix output ====
      11       4         0.03     0.42E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760396
-       2      0.48277471
-       3      0.49154887
-       4      0.63636759
+               Column   1
+       1       0.41760396
+       2       0.48277471
+       3       0.49154887
+       4       0.63636759
+    ==== End of matrix output ====
      12       4         0.03     0.27E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760653
-       2      0.48278136
-       3      0.49155451
-       4      0.63635739
+               Column   1
+       1       0.41760653
+       2       0.48278136
+       3       0.49155451
+       4       0.63635739
+    ==== End of matrix output ====
      13       4         0.03     0.16E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760527
-       2      0.48277897
-       3      0.49155427
-       4      0.63634809
+               Column   1
+       1       0.41760527
+       2       0.48277897
+       3       0.49155427
+       4       0.63634809
+    ==== End of matrix output ====
      14       4         0.03     0.14E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760443
-       2      0.48277822
-       3      0.49155366
-       4      0.63635687
+               Column   1
+       1       0.41760443
+       2       0.48277822
+       3       0.49155366
+       4       0.63635687
+    ==== End of matrix output ====
      15       4         0.03     0.10E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760457
-       2      0.48277863
-       3      0.49155385
-       4      0.63635986
+               Column   1
+       1       0.41760457
+       2       0.48277863
+       3       0.49155385
+       4       0.63635986
+    ==== End of matrix output ====
      16       4         0.03     0.46E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760466
-       2      0.48277914
-       3      0.49155427
-       4      0.63635923
+               Column   1
+       1       0.41760466
+       2       0.48277914
+       3       0.49155427
+       4       0.63635923
+    ==== End of matrix output ====
      17       4         0.03     0.38E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760464
-       2      0.48277911
-       3      0.49155445
-       4      0.63636106
+               Column   1
+       1       0.41760464
+       2       0.48277911
+       3       0.49155445
+       4       0.63636106
+    ==== End of matrix output ====
      18       4         0.03     0.21E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760457
-       2      0.48277900
-       3      0.49155425
-       4      0.63636115
+               Column   1
+       1       0.41760457
+       2       0.48277900
+       3       0.49155425
+       4       0.63636115
+    ==== End of matrix output ====
      19       4         0.03     0.87E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760463
-       2      0.48277903
-       3      0.49155425
-       4      0.63636118
+               Column   1
+       1       0.41760463
+       2       0.48277903
+       3       0.49155425
+       4       0.63636118
+    ==== End of matrix output ====
      20       4         0.03     0.59E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760463
-       2      0.48277907
-       3      0.49155432
-       4      0.63636137
+               Column   1
+       1       0.41760463
+       2       0.48277907
+       3       0.49155432
+       4       0.63636137
+    ==== End of matrix output ====
      21       4         0.03     0.28E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636124
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636124
+    ==== End of matrix output ====
      22       4         0.03     0.15E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636141
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636141
+    ==== End of matrix output ====
      23       4         0.03     0.12E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636138
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636138
+    ==== End of matrix output ====
      24       4         0.03     0.61E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636137
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636137
+    ==== End of matrix output ====
      25       4         0.03     0.21E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      26       4         0.03     0.12E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      27       4         0.03     0.83E-06
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      28       4         0.03     0.20E-06
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      29       4         0.03     0.48E-07
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      30       2         0.02     0.30E-07
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      31       1         0.01     0.20E-07
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      32       1         0.01     0.63E-08
     --------------------------------------
     converged in 32 iterations
@@ -2193,15 +2360,15 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.97
+         CC_TRDRV            0.78
          CCRED               0.01
          CCNEX               0.01
          ---------------------------
-         Total time          0.98
+         Total time          0.80
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  59.05 seconds
- >>>> Total wall time used in CCEQ_SOLV:  1 minute   5 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  47.71 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  49.69 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2237,10 +2404,10 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -39.977781633299422
-@@    2    2           -39.912607198972239
-@@    2    3           -39.903831988828962
-@@    2    4           -39.759024893581653
+@@    2    1           -39.977781633300218
+@@    2    2           -39.912607198970797
+@@    2    3           -39.903831988828273
+@@    2    4           -39.759024893582215
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2279,7 +2446,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 3 1 4 1 |   1  10   1   1 |       29       10 |          362 |   -0.043029  |
  | 3 1 4 1 |   2  10   1   1 |       30       10 |          363 |   -0.019308  |
  | 3 1 4 1 |   3  10   1   1 |       31       10 |          364 |    0.024787  |
- | 2 2 1 2 |   1   3   1   1 |        1       13 |          445 |    0.021999  |
+ | 2 2 1 2 |   1   3   1   1 |        1       13 |          445 |    0.022080  |
  | 2 3 1 3 |   1   2   1   1 |        1       21 |          741 |   -0.032259  |
  | 2 4 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.032259  |
  | 3 4 2 2 |   1   1   1   1 |       10       10 |         1712 |   -0.025093  |
@@ -2294,9 +2461,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Norm of Printed Amplitude Vector :             0.9831
 
-
           Printed all single excitations greater than 0.492501
-
 
           Printed all double excitations greater than 0.017254
 
@@ -2345,7 +2510,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 3 4 4 4 |   3   1   1   1 |       31       29 |         1067 |   -0.018840  |
  | 3 4 4 4 |   1   2   1   1 |       29       30 |         1102 |   -0.025781  |
  | 3 3 2 1 |   2   1   1   1 |       11        1 |         1380 |   -0.021453  |
- | 2 3 3 1 |   5   1   1   1 |       23        1 |         1392 |   -0.019290  |
+ | 2 3 3 1 |   5   1   1   1 |       23        1 |         1392 |   -0.019308  |
  | 1 3 4 1 |   3   1   1   1 |       30        1 |         1399 |   -0.022420  |
  | 4 4 1 2 |   1   2   1   1 |        1       11 |         1740 |    0.021453  |
  | 2 4 3 2 |   2   1   1   1 |       20       10 |         1722 |   -0.018666  |
@@ -2360,9 +2525,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Norm of Printed Amplitude Vector :             0.9593
 
-
           Printed all single excitations greater than 0.492458
-
 
           Printed all double excitations greater than 0.017303
 
@@ -2406,7 +2569,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 3 4 4 4 |   3   1   1   1 |       31       29 |         1067 |    0.019073  |
  | 4 3 1 1 |   1   1   1   1 |        1        1 |         1370 |   -0.020141  |
  | 3 3 2 1 |   2   1   1   1 |       11        1 |         1380 |   -0.021736  |
- | 2 3 3 1 |   5   1   1   1 |       23        1 |         1392 |   -0.019384  |
+ | 2 3 3 1 |   5   1   1   1 |       23        1 |         1392 |   -0.019400  |
  | 1 3 4 1 |   3   1   1   1 |       30        1 |         1399 |   -0.020730  |
  | 4 4 1 2 |   1   2   1   1 |        1       11 |         1740 |   -0.021736  |
  | 3 4 2 2 |   2   1   1   1 |       11       10 |         1713 |   -0.020246  |
@@ -2426,9 +2589,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Norm of Printed Amplitude Vector :             0.9789
 
-
           Printed all single excitations greater than 0.492823
-
 
           Printed all double excitations greater than 0.016882
 
@@ -2489,9 +2650,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Norm of Printed Amplitude Vector :             0.9716
 
-
           Printed all single excitations greater than 0.492763
-
 
           Printed all double excitations greater than 0.016953
 
@@ -2518,13 +2677,13 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844037913        1.1959103517885610     
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843946575        1.1959103517880596     
  Start vector guessed from diagonal
  ... selected element no. 19
  Start vector guessed from diagonal
- ... selected element no. 29
- Start vector guessed from diagonal
  ... selected element no. 10
+ Start vector guessed from diagonal
+ ... selected element no. 29
  Start vector guessed from diagonal
  ... selected element no. 11
 
@@ -2537,290 +2696,322 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48816966
-       2      0.56539921
-       3      0.56780069
-       4      0.74030769
+               Column   1
+       1       0.48816966
+       2       0.56539921
+       3       0.56780069
+       4       0.74030769
+    ==== End of matrix output ====
       1       4         0.03     0.34E+00
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.42107424
-       2      0.49054269
-       3      0.49572972
-       4      0.67107346
+               Column   1
+       1       0.42107424
+       2       0.49054269
+       3       0.49572972
+       4       0.67107346
+    ==== End of matrix output ====
       2       4         0.03     0.12E+00
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41781036
-       2      0.48485824
-       3      0.49231311
-       4      0.66211555
+               Column   1
+       1       0.41781036
+       2       0.48485824
+       3       0.49231311
+       4       0.66211555
+    ==== End of matrix output ====
       3       4         0.03     0.58E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41773169
-       2      0.48338266
-       3      0.49181957
-       4      0.65311190
+               Column   1
+       1       0.41773169
+       2       0.48338266
+       3       0.49181957
+       4       0.65311190
+    ==== End of matrix output ====
       4       4         0.03     0.91E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41770516
-       2      0.48298858
-       3      0.49167486
-       4      0.64360835
+               Column   1
+       1       0.41770516
+       2       0.48298858
+       3       0.49167486
+       4       0.64360835
+    ==== End of matrix output ====
       5       4         0.03     0.69E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41766651
-       2      0.48288732
-       3      0.49164495
-       4      0.63957489
+               Column   1
+       1       0.41766651
+       2       0.48288732
+       3       0.49164495
+       4       0.63957489
+    ==== End of matrix output ====
       6       4         0.03     0.51E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41759441
-       2      0.48274794
-       3      0.49153364
-       4      0.63734094
+               Column   1
+       1       0.41759441
+       2       0.48274794
+       3       0.49153364
+       4       0.63734094
+    ==== End of matrix output ====
       7       4         0.03     0.28E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760109
-       2      0.48276943
-       3      0.49156047
-       4      0.63676366
+               Column   1
+       1       0.41760109
+       2       0.48276943
+       3       0.49156047
+       4       0.63676366
+    ==== End of matrix output ====
       8       4         0.03     0.20E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760404
-       2      0.48278262
-       3      0.49155822
-       4      0.63653315
+               Column   1
+       1       0.41760404
+       2       0.48278262
+       3       0.49155822
+       4       0.63653315
+    ==== End of matrix output ====
       9       4         0.03     0.12E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760284
-       2      0.48279154
-       3      0.49155593
-       4      0.63642044
+               Column   1
+       1       0.41760284
+       2       0.48279154
+       3       0.49155593
+       4       0.63642044
+    ==== End of matrix output ====
      10       4         0.03     0.64E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760136
-       2      0.48277616
-       3      0.49155064
-       4      0.63640523
+               Column   1
+       1       0.41760136
+       2       0.48277616
+       3       0.49155064
+       4       0.63640523
+    ==== End of matrix output ====
      11       4         0.03     0.42E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760396
-       2      0.48277471
-       3      0.49154887
-       4      0.63636759
+               Column   1
+       1       0.41760396
+       2       0.48277471
+       3       0.49154887
+       4       0.63636759
+    ==== End of matrix output ====
      12       4         0.03     0.27E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760653
-       2      0.48278136
-       3      0.49155451
-       4      0.63635739
+               Column   1
+       1       0.41760653
+       2       0.48278136
+       3       0.49155451
+       4       0.63635739
+    ==== End of matrix output ====
      13       4         0.03     0.16E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760527
-       2      0.48277897
-       3      0.49155427
-       4      0.63634809
+               Column   1
+       1       0.41760527
+       2       0.48277897
+       3       0.49155427
+       4       0.63634809
+    ==== End of matrix output ====
      14       4         0.03     0.14E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760443
-       2      0.48277822
-       3      0.49155366
-       4      0.63635687
+               Column   1
+       1       0.41760443
+       2       0.48277822
+       3       0.49155366
+       4       0.63635687
+    ==== End of matrix output ====
      15       4         0.03     0.10E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760457
-       2      0.48277863
-       3      0.49155385
-       4      0.63635986
+               Column   1
+       1       0.41760457
+       2       0.48277863
+       3       0.49155385
+       4       0.63635986
+    ==== End of matrix output ====
      16       4         0.03     0.46E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760466
-       2      0.48277914
-       3      0.49155427
-       4      0.63635923
+               Column   1
+       1       0.41760466
+       2       0.48277914
+       3       0.49155427
+       4       0.63635923
+    ==== End of matrix output ====
      17       4         0.03     0.38E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760464
-       2      0.48277911
-       3      0.49155445
-       4      0.63636106
+               Column   1
+       1       0.41760464
+       2       0.48277911
+       3       0.49155445
+       4       0.63636106
+    ==== End of matrix output ====
      18       4         0.03     0.21E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760457
-       2      0.48277900
-       3      0.49155425
-       4      0.63636115
+               Column   1
+       1       0.41760457
+       2       0.48277900
+       3       0.49155425
+       4       0.63636115
+    ==== End of matrix output ====
      19       4         0.03     0.87E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760463
-       2      0.48277903
-       3      0.49155425
-       4      0.63636118
+               Column   1
+       1       0.41760463
+       2       0.48277903
+       3       0.49155425
+       4       0.63636118
+    ==== End of matrix output ====
      20       4         0.03     0.59E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760463
-       2      0.48277907
-       3      0.49155432
-       4      0.63636137
+               Column   1
+       1       0.41760463
+       2       0.48277907
+       3       0.49155432
+       4       0.63636137
+    ==== End of matrix output ====
      21       4         0.03     0.28E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636124
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636124
+    ==== End of matrix output ====
      22       4         0.03     0.15E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636141
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636141
+    ==== End of matrix output ====
      23       4         0.03     0.12E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636138
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636138
+    ==== End of matrix output ====
      24       4         0.03     0.61E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636137
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636137
+    ==== End of matrix output ====
      25       4         0.03     0.21E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      26       4         0.03     0.12E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      27       4         0.03     0.83E-06
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      28       4         0.03     0.20E-06
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      29       4         0.03     0.48E-07
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      30       2         0.02     0.30E-07
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      31       1         0.01     0.20E-07
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      32       1         0.01     0.63E-08
     --------------------------------------
     converged in 32 iterations
@@ -2829,15 +3020,15 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.97
+         CC_TRDRV            0.77
          CCRED               0.01
          CCNEX               0.01
          ---------------------------
-         Total time          0.98
+         Total time          0.79
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  59.00 seconds
- >>>> Total wall time used in CCEQ_SOLV:  1 minute   5 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  47.63 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  48.73 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2873,10 +3064,10 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -39.977781633299443
-@@    3    2           -39.912607198972225
-@@    3    3           -39.903831988828962
-@@    3    4           -39.759024893581646
+@@    3    1           -39.977781633300218
+@@    3    2           -39.912607198970797
+@@    3    3           -39.903831988828266
+@@    3    4           -39.759024893582207
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2916,7 +3107,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 2 2 4 2 |   1   9   1   1 |       29       19 |          695 |   -0.043029  |
  | 2 2 4 2 |   2   9   1   1 |       30       19 |          696 |   -0.019308  |
  | 2 2 4 2 |   3   9   1   1 |       31       19 |          697 |    0.024787  |
- | 3 3 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.025495  |
+ | 3 3 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.025496  |
  | 3 4 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.032259  |
  | 3 1 2 2 |   1   2   1   1 |       10       11 |         1749 |   -0.024493  |
  | 2 1 3 2 |   2  10   1   1 |       20       19 |         2055 |   -0.025093  |
@@ -2930,9 +3121,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Norm of Printed Amplitude Vector :             0.9832
 
-
           Printed all single excitations greater than 0.492501
-
 
           Printed all double excitations greater than 0.017254
 
@@ -2980,7 +3169,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 2 4 4 4 |   1   1   1   1 |       29       29 |         1065 |   -0.043849  |
  | 2 4 4 4 |   3   1   1   1 |       31       29 |         1067 |    0.018840  |
  | 2 4 4 4 |   1   2   1   1 |       29       30 |         1102 |    0.025781  |
- | 3 2 2 1 |   4   1   1   1 |       13        1 |         1382 |   -0.018039  |
+ | 3 2 2 1 |   4   1   1   1 |       13        1 |         1382 |   -0.018086  |
  | 2 2 3 1 |   3   1   1   1 |       21        1 |         1390 |    0.021453  |
  | 1 2 4 1 |   3   1   1   1 |       30        1 |         1399 |    0.022420  |
  | 4 1 1 2 |   1   2   1   1 |        1       11 |         1740 |   -0.022420  |
@@ -2990,16 +3179,14 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 1 1 4 2 |   3  10   1   1 |       30       19 |         2065 |   -0.018483  |
  | 4 4 1 3 |   1   1   1   1 |        1       20 |         2073 |   -0.021453  |
  | 1 4 4 3 |   2   9   1   1 |       29       28 |         2397 |   -0.020573  |
- | 4 3 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.018132  |
+ | 4 3 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.018086  |
  | 2 3 3 4 |   2   1   1   1 |       20       29 |         2425 |   -0.018666  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.9594
 
-
           Printed all single excitations greater than 0.492458
-
 
           Printed all double excitations greater than 0.017303
 
@@ -3042,7 +3229,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 2 4 4 4 |   1   1   1   1 |       29       29 |         1065 |   -0.041083  |
  | 2 4 4 4 |   3   1   1   1 |       31       29 |         1067 |    0.019073  |
  | 4 2 1 1 |   1   1   1   1 |        1        1 |         1370 |   -0.020141  |
- | 3 2 2 1 |   4   1   1   1 |       13        1 |         1382 |    0.017989  |
+ | 3 2 2 1 |   4   1   1   1 |       13        1 |         1382 |    0.018037  |
  | 2 2 3 1 |   3   1   1   1 |       21        1 |         1390 |   -0.021736  |
  | 1 2 4 1 |   3   1   1   1 |       30        1 |         1399 |   -0.020730  |
  | 4 1 1 2 |   1   2   1   1 |        1       11 |         1740 |   -0.020730  |
@@ -3058,15 +3245,13 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 2 4 3 3 |   3   9   1   1 |       21       28 |         2389 |    0.016895  |
  | 1 4 4 3 |   2   9   1   1 |       29       28 |         2397 |   -0.022466  |
  | 1 4 4 3 |   3   9   1   1 |       30       28 |         2398 |    0.017876  |
- | 4 3 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.018085  |
+ | 4 3 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.018037  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.9791
 
-
           Printed all single excitations greater than 0.492823
-
 
           Printed all double excitations greater than 0.016882
 
@@ -3127,9 +3312,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Norm of Printed Amplitude Vector :             0.9716
 
-
           Printed all single excitations greater than 0.492763
-
 
           Printed all double excitations greater than 0.016953
 
@@ -3156,13 +3339,13 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844037847        1.1959103517885601     
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843946920        1.1959103517880629     
  Start vector guessed from diagonal
  ... selected element no. 28
  Start vector guessed from diagonal
- ... selected element no. 19
- Start vector guessed from diagonal
  ... selected element no. 10
+ Start vector guessed from diagonal
+ ... selected element no. 19
  Start vector guessed from diagonal
  ... selected element no. 11
 
@@ -3175,290 +3358,322 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.48816966
-       2      0.56539921
-       3      0.56780069
-       4      0.74030769
+               Column   1
+       1       0.48816966
+       2       0.56539921
+       3       0.56780069
+       4       0.74030769
+    ==== End of matrix output ====
       1       4         0.03     0.34E+00
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.42107424
-       2      0.49054269
-       3      0.49572972
-       4      0.67107346
+               Column   1
+       1       0.42107424
+       2       0.49054269
+       3       0.49572972
+       4       0.67107346
+    ==== End of matrix output ====
       2       4         0.03     0.12E+00
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41781036
-       2      0.48485824
-       3      0.49231311
-       4      0.66211555
+               Column   1
+       1       0.41781036
+       2       0.48485824
+       3       0.49231311
+       4       0.66211555
+    ==== End of matrix output ====
       3       4         0.03     0.58E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41773169
-       2      0.48338266
-       3      0.49181957
-       4      0.65311190
+               Column   1
+       1       0.41773169
+       2       0.48338266
+       3       0.49181957
+       4       0.65311190
+    ==== End of matrix output ====
       4       4         0.03     0.91E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41770516
-       2      0.48298858
-       3      0.49167486
-       4      0.64360835
+               Column   1
+       1       0.41770516
+       2       0.48298858
+       3       0.49167486
+       4       0.64360835
+    ==== End of matrix output ====
       5       4         0.03     0.69E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41766651
-       2      0.48288732
-       3      0.49164495
-       4      0.63957489
+               Column   1
+       1       0.41766651
+       2       0.48288732
+       3       0.49164495
+       4       0.63957489
+    ==== End of matrix output ====
       6       4         0.03     0.51E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41759441
-       2      0.48274794
-       3      0.49153364
-       4      0.63734094
+               Column   1
+       1       0.41759441
+       2       0.48274794
+       3       0.49153364
+       4       0.63734094
+    ==== End of matrix output ====
       7       4         0.03     0.28E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760109
-       2      0.48276943
-       3      0.49156047
-       4      0.63676366
+               Column   1
+       1       0.41760109
+       2       0.48276943
+       3       0.49156047
+       4       0.63676366
+    ==== End of matrix output ====
       8       4         0.03     0.20E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760404
-       2      0.48278262
-       3      0.49155822
-       4      0.63653315
+               Column   1
+       1       0.41760404
+       2       0.48278262
+       3       0.49155822
+       4       0.63653315
+    ==== End of matrix output ====
       9       4         0.03     0.12E-01
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760284
-       2      0.48279154
-       3      0.49155593
-       4      0.63642044
+               Column   1
+       1       0.41760284
+       2       0.48279154
+       3       0.49155593
+       4       0.63642044
+    ==== End of matrix output ====
      10       4         0.03     0.64E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760136
-       2      0.48277616
-       3      0.49155064
-       4      0.63640523
+               Column   1
+       1       0.41760136
+       2       0.48277616
+       3       0.49155064
+       4       0.63640523
+    ==== End of matrix output ====
      11       4         0.03     0.42E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760396
-       2      0.48277471
-       3      0.49154887
-       4      0.63636759
+               Column   1
+       1       0.41760396
+       2       0.48277471
+       3       0.49154887
+       4       0.63636759
+    ==== End of matrix output ====
      12       4         0.03     0.27E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760653
-       2      0.48278136
-       3      0.49155451
-       4      0.63635739
+               Column   1
+       1       0.41760653
+       2       0.48278136
+       3       0.49155451
+       4       0.63635739
+    ==== End of matrix output ====
      13       4         0.03     0.16E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760527
-       2      0.48277897
-       3      0.49155427
-       4      0.63634809
+               Column   1
+       1       0.41760527
+       2       0.48277897
+       3       0.49155427
+       4       0.63634809
+    ==== End of matrix output ====
      14       4         0.03     0.14E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760443
-       2      0.48277822
-       3      0.49155366
-       4      0.63635687
+               Column   1
+       1       0.41760443
+       2       0.48277822
+       3       0.49155366
+       4       0.63635687
+    ==== End of matrix output ====
      15       4         0.03     0.10E-02
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760457
-       2      0.48277863
-       3      0.49155385
-       4      0.63635986
+               Column   1
+       1       0.41760457
+       2       0.48277863
+       3       0.49155385
+       4       0.63635986
+    ==== End of matrix output ====
      16       4         0.03     0.46E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760466
-       2      0.48277914
-       3      0.49155427
-       4      0.63635923
+               Column   1
+       1       0.41760466
+       2       0.48277914
+       3       0.49155427
+       4       0.63635923
+    ==== End of matrix output ====
      17       4         0.03     0.38E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760464
-       2      0.48277911
-       3      0.49155445
-       4      0.63636106
+               Column   1
+       1       0.41760464
+       2       0.48277911
+       3       0.49155445
+       4       0.63636106
+    ==== End of matrix output ====
      18       4         0.03     0.21E-03
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760457
-       2      0.48277900
-       3      0.49155425
-       4      0.63636115
+               Column   1
+       1       0.41760457
+       2       0.48277900
+       3       0.49155425
+       4       0.63636115
+    ==== End of matrix output ====
      19       4         0.03     0.87E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760463
-       2      0.48277903
-       3      0.49155425
-       4      0.63636118
+               Column   1
+       1       0.41760463
+       2       0.48277903
+       3       0.49155425
+       4       0.63636118
+    ==== End of matrix output ====
      20       4         0.03     0.59E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760463
-       2      0.48277907
-       3      0.49155432
-       4      0.63636137
+               Column   1
+       1       0.41760463
+       2       0.48277907
+       3       0.49155432
+       4       0.63636137
+    ==== End of matrix output ====
      21       4         0.03     0.28E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636124
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636124
+    ==== End of matrix output ====
      22       4         0.03     0.15E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636141
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636141
+    ==== End of matrix output ====
      23       4         0.03     0.12E-04
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636138
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636138
+    ==== End of matrix output ====
      24       4         0.03     0.61E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636137
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636137
+    ==== End of matrix output ====
      25       4         0.03     0.21E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      26       4         0.03     0.12E-05
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      27       4         0.03     0.83E-06
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      28       4         0.03     0.20E-06
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      29       4         0.03     0.48E-07
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      30       2         0.02     0.30E-07
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      31       1         0.01     0.20E-07
 
  REDUCED EIGENVALUES real part:
 
-              Column   1
-       1      0.41760462
-       2      0.48277906
-       3      0.49155427
-       4      0.63636136
+               Column   1
+       1       0.41760462
+       2       0.48277906
+       3       0.49155427
+       4       0.63636136
+    ==== End of matrix output ====
      32       1         0.01     0.63E-08
     --------------------------------------
     converged in 32 iterations
@@ -3467,15 +3682,15 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.97
+         CC_TRDRV            0.77
          CCRED               0.01
          CCNEX               0.01
          ---------------------------
-         Total time          0.98
+         Total time          0.79
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  59.09 seconds
- >>>> Total wall time used in CCEQ_SOLV:  1 minute   5 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  47.62 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  48.27 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3511,10 +3726,10 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -39.977781633299436
-@@    4    2           -39.912607198972232
-@@    4    3           -39.903831988828962
-@@    4    4           -39.759024893581646
+@@    4    1           -39.977781633300225
+@@    4    2           -39.912607198970790
+@@    4    3           -39.903831988828266
+@@    4    4           -39.759024893582215
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3562,15 +3777,13 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 2 3 3 3 |   4   9   1   1 |       22       28 |         2390 |    0.024787  |
  | 1 3 4 3 |   2   9   1   1 |       29       28 |         2397 |   -0.062730  |
  | 1 3 4 3 |   4   9   1   1 |       31       28 |         2399 |    0.029646  |
- | 4 4 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.022160  |
+ | 4 4 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.022080  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.9831
 
-
           Printed all single excitations greater than 0.492501
-
 
           Printed all double excitations greater than 0.017254
 
@@ -3608,7 +3821,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 4 1 2 2 |   1   1   1   1 |       10       10 |          343 |    0.020573  |
  | 1 1 3 2 |   2  10   1   1 |       20       19 |          686 |   -0.020573  |
  | 2 1 4 2 |   1   2   1   1 |       29       11 |          399 |    0.018483  |
- | 3 4 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.019325  |
+ | 3 4 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.019308  |
  | 2 4 4 3 |   1   1   1   1 |       29       20 |          732 |   -0.018666  |
  | 3 3 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.021453  |
  | 4 3 2 4 |   2   1   1   1 |       11       29 |         1047 |    0.018666  |
@@ -3634,9 +3847,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Norm of Printed Amplitude Vector :             0.9593
 
-
           Printed all single excitations greater than 0.492458
-
 
           Printed all double excitations greater than 0.017303
 
@@ -3679,7 +3890,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  | 1 1 3 2 |   3  10   1   1 |       21       19 |          687 |    0.017876  |
  | 2 1 4 2 |   1   2   1   1 |       29       11 |          399 |   -0.021470  |
  | 2 1 4 2 |   2  10   1   1 |       30       19 |          696 |    0.016895  |
- | 3 4 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.019416  |
+ | 3 4 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.019400  |
  | 3 3 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.021736  |
  | 4 3 2 4 |   1   2   1   1 |       10       30 |         1083 |    0.016895  |
  | 1 3 3 4 |   3   1   1   1 |       21       29 |         1057 |   -0.021470  |
@@ -3700,9 +3911,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Norm of Printed Amplitude Vector :             0.9789
 
-
           Printed all single excitations greater than 0.492823
-
 
           Printed all double excitations greater than 0.016882
 
@@ -3763,9 +3972,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
           Norm of Printed Amplitude Vector :             0.9716
 
-
           Printed all single excitations greater than 0.492763
-
 
           Printed all double excitations greater than 0.016953
 
@@ -3829,7 +4036,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
              1 ^1A        -39.9039026147                                        
              2 ^1A        -39.9039026147                                        
              3 ^1A        -39.8522287157                                        
-             4 ^1A        -39.7570938432                                        
+             4 ^1A        -39.7570938431                                        
              1 ^1B2       -39.9777816333                                        
              2 ^1B2       -39.9126071990                                        
              3 ^1B2       -39.9038319888                                        
@@ -3858,14 +4065,20 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  *******************************************************************************
 
 
+ >>>> CPU and wall time for CC :     232.710     240.237
+
+ 
+     Date and time (Linux)  : Sun Sep  8 21:15:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
 
                       .-------------------------------------.
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  4 minutes 46 seconds
- >>>> Total wall time used in DALTON:  5 minutes 17 seconds
+ >>>> Total CPU  time used in DALTON:  3 minutes 54 seconds
+ >>>> Total wall time used in DALTON:  4 minutes  1 second 
 
  
-     Date and time (Linux)  : Wed Mar 16 20:24:58 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 21:15:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

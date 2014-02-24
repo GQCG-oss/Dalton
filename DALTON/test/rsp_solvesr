@@ -227,8 +227,14 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
+CRIT1b=`$GREP "Calculation of one\-electron Hamiltonian integrals\." $log | wc -l`
 CRIT2=`$GREP "The following one\-electron property integrals are calculated" $log | wc -l`
 CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
 CRIT4=`$GREP "\- Fermi contact integrals" $log | wc -l`
@@ -236,11 +242,12 @@ CRIT5=`$GREP "\(Dirac delta function integrals\)" $log | wc -l`
 CRIT6=`$GREP "\- spin\-dipole integrals" $log | wc -l`
 CRIT7=`$GREP "\(electron spin \- nuclear moment coupling\)" $log | wc -l`
 CRIT8=`$GREP "two-electron integrals are transformed to P-supermatrix elements" $log | wc -l`
+CRIT8b=`$GREP "Fock matrices are calculated directly and in parallel without use of integrals on disk" $log |wc -l`
 CRIT9=`$GREP "Integrals for all indirect spin\-spin coupling and/or shielding tensors are calculated\." $log | wc -l`
 CRIT10=`$GREP "One\-electron RLM integrals calculated\." $log | wc -l`
 CRIT11=`$GREP "Maximum L quantum number\: 12" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11`
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT1b \+ $CRIT8b`
 CTRL[1]=11
 ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
@@ -347,7 +354,7 @@ ERROR[7]="ESR PARAMETERS NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

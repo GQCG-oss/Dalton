@@ -65,6 +65,8 @@ type OptItem
       logical     :: cfg_prefer_CSR
       !> Use SCALAPACK Matrices:
       logical     :: cfg_prefer_SCALAPACK
+      !> Should we crash the calculation - for debugging purposes
+      logical     :: crashcalc
       !> Should incremental scheme be used for integrals?
       logical     :: cfg_incremental
       !> Should we save old F0 and D0 related to incremental and line search
@@ -147,6 +149,7 @@ implicit none
    opt%purescf                   = .false.
    opt%cfg_prefer_CSR            = .false.
    opt%cfg_prefer_SCALAPACK      = .false.
+   opt%crashcalc                 = .false.
    opt%cfg_incremental           = .false.
    opt%cfg_saveF0andD0           = .false.
    opt%cfg_queue_on_disk         = .false.
@@ -163,6 +166,7 @@ implicit none
    opt%cfg_scale_virt            = .false.
    !INFO OPTIONS:
    !=============
+   opt%info_matop                = .FALSE.
    opt%print_final_cmo           = .false.
    !DEBUG OPTIONS:
    !==============

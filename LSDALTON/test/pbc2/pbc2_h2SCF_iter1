@@ -66,7 +66,7 @@ H1DIAG
 15
 .TESTCASE
 .DIIS
-1 7 1.0E-8
+0 7 1.0E-8
 .LATTICE
 10 3
 .NFIELD
@@ -103,13 +103,13 @@ CTRL[2]=1
 ERROR[2]="Basis not correct"
 
 # Test individual iterations
-CRIT1=`$GREP "final E\(HOMO\) \= * \-0\.765741519" $log | wc -l`
+CRIT1=`$GREP "Final E\(HOMO\) \= * \-0\.7005151" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="HOMO energy at first iteration not correct -"
 
 # Test individual iterations
-CRIT1=`$GREP "final E\(LUMO\) \= * 0\.298243105" $log | wc -l`
+CRIT1=`$GREP "Final E\(LUMO\) \= * 0\.2357670" $log | wc -l`
 TEST[4]=`expr  $CRIT1`
 CTRL[4]=1
 ERROR[4]="LUMO energy at first iteration not correct -"

@@ -153,16 +153,17 @@ CTRL[7]=1
 ERROR[7]="TOTAL NUMBER OF INTERNAL COORDINATES NOT CORRECT"
 
 # Other parts of Dalton
+# ctrl = 12 because of output header
 CRIT1=`$GREP "SIRIUS" $log | wc -l`
 CRIT2=`$GREP "ABACUS" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[8]=0
+CTRL[8]=12
 ERROR[8]="OTHER PARTS OF DALTON SHOULD NOT BE RUN"
 
 PASSED=1
 for i in 1 2 3 4 5 6 7 8
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} : ${TEST[i]} .ne. ${CTRL[i]} ; "
      PASSED=0
    fi

@@ -107,6 +107,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2 and CC3 energies:
 CRIT1=`$GREP "Total SCF   energy: * -7\.5755889529" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * -7\.5941367951" $log | wc -l`
@@ -117,14 +122,14 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 transition moments:
-CRIT1=`$GREP  " *\| *ZDIPLEN *\| *(|-|-0|0)\.48586718 *\| *(|-|-0|0)\.94072362 *\| *(|0)\.45706673 *\|" $log | wc -l`
+CRIT1=`$GREP  " *\| *ZDIPLEN *\| *( |-|-0|0)\.48586718 *\| *( |-|-0|0)\.94072362 *\| *( |0)\.45706673 *\|" $log | wc -l`
 
 TEST[2]=$CRIT1
 CTRL[2]=1
 ERROR[2]="CC3 TRANSITION MOMENT NOT CORRECT"
 
 # CC3 excitation energies:
-CRIT1=`$GREP  " *\| *\^1A1 *\| *1 *\| *(|0)\.1020058 *\| *2\.77572 *\| *22387\.69. *\| *91\.92 *\|" $log | wc -l`
+CRIT1=`$GREP  " *\| *\^1A1 *\| *1 *\| *( |0)\.1020058 *\| *2\.77572 *\| *22387\.69. *\| *91\.92 *\|" $log | wc -l`
 TEST[3]=$CRIT1
 CTRL[3]=1
 ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT"

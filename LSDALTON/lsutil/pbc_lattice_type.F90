@@ -2,6 +2,7 @@ MODULE lattice_type
 use precision
 use matrix_module, only: matrix
 use molecule_typetype, only: MOLECULEINFO
+!use dft_type
 Implicit none
 INTEGER, public :: max_layer
 INTEGER, public :: n_neighbour
@@ -25,12 +26,11 @@ integer, parameter :: MaxPBCOpTypes = 4
 type,public ::lvec_data_t
   real(realk) :: lat_coord(1:3)   ! lattice coordinates of a cell
   real(realk) :: std_coord(1:3)      ! standard coordinates
-  REAL(realk),pointer :: fck_vec(:),fck_mat(:,:)!probably only
-  REAL(realk),pointer :: Sl_vec(:),Sl_mat(:,:)!elms is needed her.
   REAL(realk),pointer :: d_vec(:),d_mat(:,:), elms(:)
-  LOGICAL      :: is_redundant,g2_computed,f1_computed
-  LOGICAL      :: ovl_computed
-  TYPE(matrix) :: oper(MaxPBCOpTypes)              !Not sure 
+  LOGICAL      :: is_redundant,g2_computed,f1_computed,J_computed,Kx_computed
+  LOGICAL      :: ovl_computed,Vz_computed,dm_computed
+  TYPE(Moleculeinfo) :: molecule    
+  TYPE(matrix) :: oper(MaxPBCOpTypes)         !Not sure 
   !type(rspcopdata_t) :: opdat(MaxPBCOpTypes+1)
   ! other data?
   !type(matrix), pointer :: density(:)
@@ -43,6 +43,7 @@ type, public :: lvec_list_t
 #ifdef MOD_UNRELEASED
   type(rspace_lat_info_t) :: ldef   ! definition of real-space lattice
   integer :: num_entries,nf_entries
+  integer :: fdim(3)
   type(lvec_data_t), pointer :: lvec(:)
   type(lvec_data_t), pointer :: nflvec(:)
   type(rspcopdata_t) :: opdat(MaxPBCOpTypes+5)
@@ -63,6 +64,7 @@ type, public :: lvec_list_t
   integer            :: num_its,num_store
   Real(realk)        :: error
   integer            :: nneighbour,nf,ndmat
+  INTEGEr(short)     :: realthr
   integer      :: nk1,nk2,nk3
   integer      :: num_its_densmat
   character(len=10)  :: wannier_direct
@@ -73,6 +75,7 @@ end type
 type, public :: lattice_cell_info_t
   type(latticecell_atom_pos_t),pointer :: atom(:)
   type(matrix),pointer :: getmultipole(:)
+  LOGICAL              :: is_defined = .false. 
 end type
 
 type, public :: latticecell_atom_pos_t

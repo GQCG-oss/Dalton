@@ -5,17 +5,15 @@ include ../Makefile.config
 INCLUDES := $(INCLUDES) -I../lsutil -I../LSint
 
 F90_OBJS = \
-		   pbc-multipole.o\
-		   pbc-harmonics.o\
 		   pbc-msc.o\
 		   pbc-krsp-op.o\
 		   pbc-matop.o\
 		   pbc-data.o\
 		   pbc-ffdata.o\
-	           pbc_kscf.o\
-                   pbc_int.o\
-		   pbc_mmit.o\
-		   pbc_eigsolv.o\
+	           pbc-nfinteractions.o\
+                   pbcmain.o\
+		   pbc-ffinteractions.o\
+		   pbc-scf.o\
 		   pbc_compare.o
 F_CPPS = $(F_OBJS:.o=.i)
 

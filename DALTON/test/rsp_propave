@@ -55,8 +55,6 @@ cat > rsp_propave.dal <<'%EOF%'
 .S0MIX
 .PROPAVE
 ZDIPLEN
-*CUBIC
-.DIPLNZ
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
@@ -70,6 +68,7 @@ ZDIPLEN
 #######################################################################
 echo $CHECK_SHELL >rsp_propave.check
 cat >>rsp_propave.check <<'%EOF%'
+#!/bin/bash
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -80,11 +79,13 @@ fi
 
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
+CRIT1b=`$GREP "Calculation of one\-electron Hamiltonian integrals\." $log | wc -l`
 CRIT2=`$GREP "The following one\-electron property integrals are calculated" $log | wc -l`
 CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
 CRIT4=`$GREP "\- dipole length integrals" $log | wc -l`
 CRIT5=`$GREP "two-electron integrals are transformed to P-supermatrix elements" $log | wc -l`
-TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CRIT5b=`$GREP "Fock matrices are calculated directly and in parallel without use of integrals on disk" $log |wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT1b \+ $CRIT5b`
 CTRL[1]=5
 ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
@@ -123,31 +124,19 @@ TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="ENERGY NOT CORRECT"
 
-# Response setup
-CRIT1=`$GREP "Variable settings for Cubic Response calculation" $log | wc -l`
-CRIT2=`$GREP "Second hyperpolarizability calculation \: * CRCAL\= T" $log | wc -l`
-CRIT3=`$GREP "1 B\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
-CRIT4=`$GREP "1 C\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
-CRIT5=`$GREP "1 D\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
-CRIT6=`$GREP "1 A OPERATORS OF SYMMETRY NO\: * 1 AND LABELS\:" $log | wc -l`
-CRIT7=`$GREP "1 B OPERATORS OF SYMMETRY NO\: * 1 AND LABELS\:" $log | wc -l`
-CRIT8=`$GREP "1 C OPERATORS OF SYMMETRY NO\: * 1 AND LABELS\:" $log | wc -l`
-CRIT9=`$GREP "1 D OPERATORS OF SYMMETRY NO\: * 1 AND LABELS\:" $log | wc -l`
-TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8 \+ $CRIT9`
-CTRL[6]=9
-ERROR[6]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
-
-# Average second hyperpolarizability
-CRIT1=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 13922\.6..[0-9]" $log | wc -l`
-TEST[7]=`expr	$CRIT1`
-CTRL[7]=1
-ERROR[7]="AVERAGE SECOND HYPERPOLARIZABILITY NOT CORRECT"
+# Average value
+CRIT1=`$GREP "Calculation of electronic one\-electron expectation values" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN * inactive part\: * \-1\.91204774" $log | wc -l`
+CRIT3=`$GREP "ZDIPLEN * active part * \: * (0| )\.00000000" $log | wc -l`
+CRIT4=`$GREP "ZDIPLEN * total * \: * \-1\.91204774" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[6]=4
+ERROR[6]="AVERAGE VALUE NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4 5 6 7
+for i in 1 2 3 4 5 6
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi

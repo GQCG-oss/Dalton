@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -308,7 +308,7 @@ C
 #include "maxaqn.h"
 C
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 141)
+      PARAMETER (NDIR = 9, NTABLE = 143)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -350,6 +350,7 @@ C
 
 C     Keywords for R12 have been added (WK/UniKA/04-11-2002).
 cLig <> added RANGMO and RPSO
+C Bin Gao, December 17, 2009; adds integrals S2MBRA, S2MKET, and S2MMIX
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT',
      &             '*QM3INP'/
@@ -424,9 +425,9 @@ C     Bin Gao, Oct. 3, 2011
 !                    233        234        235        236
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
 !                    237        238        239        240
-     &             '.NEWTRA', '.KINADI', '.GENINT', '.######',
-!                    241
-     &             '.LRINTS'/ !jim-dbg  added new key to do lresc integrals
+     &             '.NEWTRA', '.KINADI', '.GENINT', '.S2MBRA',
+!                    241        242        243
+     &             '.S2MKET', '.S2MMIX', '.LRINTS'/
 C
 C
       CALL QENTER('HERINP')
@@ -508,7 +509,8 @@ C
      &                201,202,203,204,205,206,207,208,209,210,
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
-     &                231,232,233,234,235,236,237,238,239,240,241), I
+     &                231,232,233,234,235,236,237,238,239,240,
+     &                241,242,243), I
             END IF
          END DO
             IF (WORD .EQ. '.OPTION') THEN
@@ -820,9 +822,12 @@ C
             GOTO 100
   166    CONTINUE
             READ (LUCMD,'(A7)') FIELD2
+C Modified by Bin Gao, December 14, 2009
+C adding XYZ-ALL
             IF (.NOT. ((FIELD2 .EQ. 'X-FIELD')
      &          .OR. (FIELD2 .EQ. 'Y-FIELD')
-     &          .OR. (FIELD2 .EQ. 'Z-FIELD'))) THEN
+     &          .OR. (FIELD2 .EQ. 'Z-FIELD')
+     &          .OR. (FIELD2 .EQ. 'XYZ-ALL'))) THEN
                WRITE (LUPRI,'(/,3A,/)') ' Field direction "',FIELD2,
      &               '" illegal'
                CALL QUIT('Illegal field directions for CM-2 integrals')
@@ -995,13 +1000,16 @@ C&&& Nuclear model
             ONEPRP = .TRUE.
             GO TO 100
   201    CONTINUE
+C Modified by Bin Gao, December 14, 2009
+C adds XYZ-ALL
             READ (LUCMD,'(A7)') FIELD3
             IF (.NOT. ((FIELD3 .EQ. 'XX-FGRD')
      &          .OR.   (FIELD3 .EQ. 'XY-FGRD')
      &          .OR.   (FIELD3 .EQ. 'XZ-FGRD')
      &          .OR.   (FIELD3 .EQ. 'YY-FGRD')
      &          .OR.   (FIELD3 .EQ. 'YZ-FGRD')
-     &          .OR.   (FIELD3 .EQ. 'ZZ-FGRD'))) THEN
+     &          .OR.   (FIELD3 .EQ. 'ZZ-FGRD')
+     &          .OR.   (FIELD3 .EQ. 'XYZ-ALL'))) THEN
                WRITE (LUPRI,'(/,3A,/)') ' Field direction "',FIELD1,
      &               '" illegal'
                CALL QUIT('Illegal field direction for QDBINT integrals')
@@ -1230,10 +1238,20 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             TEST_GEN1INT = .true.
 #endif
             goto 100
+C copied from linsca abacus/herdrv.F, Bin Gao, December 17, 2009
   240    CONTINUE
+            S2MBRA = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
   241    CONTINUE
+            S2MKET = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+  242    CONTINUE
+            S2MMIX = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+  243    CONTINUE
 c jim-dbg : setting all integrals for LRESC module
             ONEPRP = .TRUE.
             DOLRINTS=.TRUE.
@@ -1437,6 +1455,16 @@ cLig <<
      &      '- test of second magnetic derivatives of overlap integrals'
          IF (ANGMOM) WRITE (LUPRI,'(10X,A)')
      &      '- electronic angular momentum around the origin'
+C copied from linsca abacus/herdrv.F, Bin Gao, December 17, 2009
+         IF (S2MBRA) WRITE (LUPRI,'(10X,A)')
+     &       '- second magnetic derivatives of overlap integrals, '//
+     &       'bra part'
+         IF (S2MKET) WRITE (LUPRI,'(10X,A)')
+     &       '- second magnetic derivatives of overlap integrals, '//
+     &       'ket part'
+         IF (S2MMIX) WRITE (LUPRI,'(10X,A)')
+     &       '- second magnetic derivatives of overlap integrals, '//
+     &       'mixed bra and ket part'
          IF (ANGLON) WRITE (LUPRI,'(10X,A)')
      &      '- electronic angular momentum around the nuclei'
          IF (LONMOM) WRITE (LUPRI,'(10X,A)')
@@ -1550,8 +1578,11 @@ cLig <<
             WRITE (LUPRI,'(10X,A)')
      &         '- First order magnetic derivative of electric '//
      &         'field gradient'
-            WRITE (LUPRI,'(12X,A,A1,A)')
-     &         'Electric field gradient applied in ',FIELD3(1:2),
+Cajt qdb            WRITE (LUPRI,'(12X,A,A1,A)')
+Cajt qdb     &         'Electric field gradient applied in ',FIELD3(1:2),
+            WRITE (LUPRI,'(12X,A,A7,A)')
+     &         'Electric field gradient applied in ',FIELD3(1:7),
+Cajt qdb
      &         '-direction'
          END IF
          IF (EFBDER) WRITE (LUPRI,'(10X,A)')
@@ -2763,6 +2794,39 @@ C
                CALL FLSHFO(LUPRI)
             END IF
 C
+C           ***** Second magnetic derivatives of overlap integrals *****
+Cdj bra-diff. part 
+C
+            IF (S2MBRA) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('S2MBRA ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('S2MBRA',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ***** Second magnetic derivatives of overlap integrals *****
+Cdj ket-diff. part 
+C
+            IF (S2MKET) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('S2MKET ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('S2MKET',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ***** Second magnetic derivatives of overlap integrals *****
+Cdj mixed bra-diff. ket-diff. part 
+C
+            IF (S2MMIX) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('S2MMIX ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('S2MMIX',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
 C           ***** Electronic angular momentum around the origin *****
 C
             IF (ANGMOM) THEN
@@ -3128,8 +3192,22 @@ C           ****  Second order magnetic derivative of electric field  ****
 C
             IF (CM2) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('CM2    ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+C Modified by Bin Gao, December 14, 2009
+C copied from linsca
+               IF (FIELD2 .EQ. 'XYZ-ALL') THEN
+                  FIELD2 = 'X-FIELD'
+                  CALL PR1INT('CM2    ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+                  FIELD2 = 'Y-FIELD'
+                  CALL PR1INT('CM2    ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+                  FIELD2 = 'Z-FIELD'
+                  CALL PR1INT('CM2    ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+               ELSE
+                  CALL PR1INT('CM2    ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+               END IF
                CALL TIMER('CM2 ',TIMSTR,TIMEND)
             END IF
 C
@@ -3137,8 +3215,32 @@ C           ****  Second order magnetic derivative of electric field  ****
 C
             IF (QDBINT) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('QDBINT ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+Cajt qdb               CALL PR1INT('QDBINT ',WORK,LWORK,IDUMMY,
+Cajt qdb     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               IF (FIELD3 .EQ. 'XYZ-ALL') THEN
+                  FIELD3 = 'XX-FGRD'
+                  CALL PR1INT('QDBINT ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+                  FIELD3 = 'XY-FGRD'
+                  CALL PR1INT('QDBINT ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+                  FIELD3 = 'YY-FGRD'
+                  CALL PR1INT('QDBINT ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+                  FIELD3 = 'XZ-FGRD'
+                  CALL PR1INT('QDBINT ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+                  FIELD3 = 'YZ-FGRD'
+                  CALL PR1INT('QDBINT ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+                  FIELD3 = 'ZZ-FGRD'
+                  CALL PR1INT('QDBINT ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+               ELSE
+                  CALL PR1INT('QDBINT ',WORK,LWORK,IDUMMY,
+     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
+               END IF
+Cajt qdb
                CALL TIMER('QDBINT',TIMSTR,TIMEND)
             END IF
 C
@@ -3460,7 +3562,7 @@ C
      &                     RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
      &                     WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &                     IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                     .FALSE.)
+     &                     .FALSE.,.false.)
                CALL TIMER('TWOINT',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
                CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3498,7 +3600,7 @@ C
      &                  RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
      &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                  .FALSE.)
+     &                  .FALSE.,.false.)
             CALL TIMER('TWOINT short-range',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
             CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3531,7 +3633,7 @@ C
      &                  IPRNTD,RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
      &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                  .FALSE.)
+     &                  .FALSE.,.false.)
             CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
             CALL GETTIM(SO2CPU,SO2WAL)
             SOCPU=SO2CPU-SO1CPU
@@ -3575,7 +3677,7 @@ C
      &                  IPRNTD,RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
      &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                  .FALSE.)
+     &                  .FALSE.,.false.)
             DO2DAR = .FALSE.
             IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
             CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3621,7 +3723,7 @@ C
      &                  IPRNTD,RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
      &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                  .FALSE.)
+     &                  .FALSE.,.false.)
             BPH2OO = .FALSE.
             IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
             CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)

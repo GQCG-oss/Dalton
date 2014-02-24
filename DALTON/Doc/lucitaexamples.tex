@@ -3,9 +3,9 @@
 \label{ch:lucitaexamples}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In this Chapter we discuss three examples of input files (\verb|DALTON.INP|) 
+In this Chapter we discuss three examples of input files (\dalinp) 
 for generalized active space (GAS) and restricted active space (RAS) 
-CI calculations based on the \lucita\ module of the Dalton program. 
+CI calculations based on the \lucita\ module of the \dalton\ program. 
 Other examples may be found in the test suite. 
 
 \section{Energy calculation with a GAS-type active space decomposition I}\label{cc:lucitaex:gas1}
@@ -56,7 +56,7 @@ first excited singlet state of A1 symmetry:
 **END OF DALTON INPUT
 \end{verbatim}
 
-The basis set input (\verb|MOLECULE.INP|) used in this example reads as:
+The basis set input (\molinp) used in this example reads as:
 
 \begin{verbatim}
 BASIS
@@ -79,7 +79,7 @@ and asking for the first two triplet states in B1 symmetry.
 Note in particular the splitting of the former GAS II space into three 
 spaces with the ``$\sigma$''-, ``$\pi$''-\ and ``$\delta$''-like orbitals separated into different spaces. 
 Remember that the min/max number of electrons in the final GAS space have to be always identical and 
-specify the number of active (``correlated'') electrons. The kewyword \Key{NACTEL} is thus merely optional for 
+specify the number of active (``correlated'') electrons. The keyword \Key{NACTEL} is thus merely optional for 
 GASCI calculations whereas it is mandatory for RASCI calculations (see next section \ref{cc:lucitaex:ras}). 
 
 %

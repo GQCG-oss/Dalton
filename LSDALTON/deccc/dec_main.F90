@@ -30,11 +30,11 @@ module dec_main_mod
   use orbital_operations!,only: check_lcm_against_canonical
   use full_molecule!,only: molecule_copyback_FSC_matrices
   use mp2_gradient_module!,only: dec_get_error_difference
-  use dec_driver_module,only: dec_wrapper, main_fragment_driver
+  use dec_driver_module,only: dec_wrapper
   use full,only: full_driver
 
 public :: dec_main_prog_input, dec_main_prog_file, &
-     & get_mp2gradient_and_energy_from_inputs, get_total_mp2energy_from_inputs
+     & get_mp2gradient_and_energy_from_inputs, get_total_CCenergy_from_inputs
 private
 
 contains
@@ -59,12 +59,15 @@ contains
     type(matrix),intent(inout) :: C
     type(fullmolecule) :: Molecule
 
-    print *, 'DEC gets Hartree-Fock info directly from HF calculation...'
+    print *, 'Hartree-Fock info comes directly from HF calculation...'
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C)
+    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
 
+    !> F12
+    !call molecule_init_f12(molecule,mylsitem,D)
+      
     ! Fock, overlap, and MO coefficient matrices are now stored
     ! in Molecule, and there is no reason to store them twice.
     ! So we delete them now and reset them at the end.
@@ -97,9 +100,9 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     type(matrix) :: D
     type(fullmolecule) :: Molecule
+    integer :: nbasis
 
-    print *, 'DEC will read Hartree-Fock info from file...'
-
+    
     ! Minor tests
     ! ***********
     !Array test
@@ -115,15 +118,21 @@ contains
       return
     endif
 
-    ! Get informations about full molecule by reading from file
-    call molecule_init_from_files(molecule,mylsitem)
+    print *, 'Hartree-Fock info is read from file...'
 
     ! Get density matrix
+    Molecule%nbasis = get_num_basis_functions(mylsitem)
     call dec_get_density_matrix_from_file(Molecule%nbasis,D)
-
+    
+    ! Get informations about full molecule by reading from file
+    call molecule_init_from_files(molecule,mylsitem,D)
+ 
+    !> F12
+    !call molecule_init_f12(molecule,mylsitem,D)
+       
     ! Main DEC program
     call dec_main_prog(MyLsitem,molecule,D)
-
+     
     ! Delete molecule structure and density
     call molecule_finalize(molecule)
     call mat_free(D)
@@ -147,7 +156,8 @@ contains
     character(len=10) :: program_version
     character(len=50) :: MyHostname
     integer, dimension(8) :: values
-    real(realk) :: tcpu1, twall1, tcpu2, twall2
+    real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr
+    real(realk) :: molgrad(3,Molecule%natoms)
 
 
     ! Sanity check: LCM orbitals span the same space as canonical orbitals 
@@ -162,18 +172,28 @@ contains
 
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-    write(program_version,'("v:",i2,".",i2.2)') version,subversion
-    ! =============================================================
-    ! Main program 
-    ! =============================================================
-    write(DECinfo%output,*) 
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(a)') '============================================================================='
-    write(DECinfo%output,'(a,a)') &
-         '             -- Divide, Expand & Consolidate Coupled-Cluster -- ',program_version
-    write(DECinfo%output,'(a)') '============================================================================='
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
+    if(.not. DECinfo%full_molecular_cc) then
+       write(program_version,'("v:",i2,".",i2.2)') version,subversion
+       ! =============================================================
+       ! Main program 
+       ! =============================================================
+       write(DECinfo%output,*) 
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(a)') '============================================================================='
+       write(DECinfo%output,'(a,a)') &
+            '             -- Divide, Expand & Consolidate Coupled-Cluster -- ',program_version
+       write(DECinfo%output,'(a)') '============================================================================='
+       write(DECinfo%output,*)
+    end if
+
+    if(DECinfo%use_canonical) then
+       write(DECinfo%output,*) 'Using canonical orbitals as requested in input!'
+       if(.not. DECinfo%full_molecular_cc) then
+          write(DECinfo%output,*) 'Warning: This may cause meaningless results for the DEC scheme'
+       end if
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+    end if
 
     ! Set DEC memory
     call get_memory_for_dec_calculation()
@@ -186,7 +206,7 @@ contains
     else
        ! -- Initialize DEC driver for energy calculation
        write(DECinfo%output,'(/,a,/)') 'DEC calculation is carried out...'
-       call DEC_wrapper(molecule,mylsitem,D)
+       call DEC_wrapper(molecule,mylsitem,D,EHF,Ecorr,molgrad,Eerr)
        ! --
     end if
 
@@ -198,16 +218,21 @@ contains
 
     ! Print memory summary
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'DEC memory summary'
-    write(DECinfo%output,*) '------------------'
+    write(DECinfo%output,*) 'CC Memory summary'
+    write(DECinfo%output,*) '-----------------'
     call print_memory_currents4(DECinfo%output)
     write(DECinfo%output,*) '------------------'
     call print_memory_currents_3d(DECinfo%output)
     write(DECinfo%output,*) '------------------'
     write(DECinfo%output,*)
     write(DECinfo%output,'(/,a)') '------------------------------------------------------'
-    write(DECinfo%output,'(a,g20.6,a)') 'Total CPU  time used in DEC           :',tcpu2-tcpu1,' s'
-    write(DECinfo%output,'(a,g20.6,a)') 'Total Wall time used in DEC           :',twall2-twall1,' s'
+    if(DECinfo%full_molecular_cc) then
+       write(DECinfo%output,'(a,g20.6,a)') 'Total CPU  time used in CC           :',tcpu2-tcpu1,' s'
+       write(DECinfo%output,'(a,g20.6,a)') 'Total Wall time used in CC           :',twall2-twall1,' s'
+    else
+       write(DECinfo%output,'(a,g20.6,a)') 'Total CPU  time used in DEC          :',tcpu2-tcpu1,' s'
+       write(DECinfo%output,'(a,g20.6,a)') 'Total Wall time used in DEC          :',twall2-twall1,' s'
+    end if
     write(DECinfo%output,'(a,/)') '------------------------------------------------------'
     write(DECinfo%output,*)
 
@@ -223,7 +248,11 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,'(/,a)') '============================================================================='
-    write(DECinfo%output,'(a)')   '                          -- end of DEC program --                           '
+    if(DECinfo%full_molecular_cc) then
+       write(DECinfo%output,'(a)')   '                          -- end of CC program --'
+    else
+       write(DECinfo%output,'(a)')   '                          -- end of DEC program --'
+    end if
     write(DECinfo%output,'(a,/)') '============================================================================='
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -261,21 +290,16 @@ contains
     real(realk),intent(inout) :: Eerr
     real(realk) :: Ecorr,EHF
     type(fullmolecule) :: Molecule
-    integer :: nBasis,nOcc,nUnocc
-    type(ccorbital), pointer :: OccOrbitals(:)
-    type(ccorbital), pointer :: UnoccOrbitals(:)
-    integer :: i
-    real(realk), pointer :: DistanceTable(:,:)
 
     write(DECinfo%output,*) 'Calculating DEC-MP2 gradient, FOT = ', DECinfo%FOT
 
     ! Sanity check
     ! ************
-    if( (.not. DECinfo%gradient) .or. (.not. DECinfo%first_order) .or. (DECinfo%ccmodel/=1) ) then
+    if( (.not. DECinfo%gradient) .or. (.not. DECinfo%first_order) .or. (DECinfo%ccmodel/=MODEL_MP2) ) then
        ! Modify DECinfo to calculate first order properties (gradient) for MP2
        DECinfo%gradient=.true.
        DECinfo%first_order=.true.
-       DECinfo%ccmodel=1
+       DECinfo%ccmodel=MODEL_MP2
     end if
     write(DECinfo%output,*) 'Calculating MP2 energy and gradient from Fock, density, overlap, and MO inputs...'
 
@@ -284,36 +308,15 @@ contains
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C)
-    nOcc = Molecule%numocc
-    nUnocc = Molecule%numvirt
-    nBasis = Molecule%nbasis
+    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
 
     ! No reason to save F,S and C twice. Delete the ones in matrix format and reset at the end
     call mat_free(F)
     call mat_free(S)
     call mat_free(C)
 
-
-    ! Calculate distance matrix 
-    ! *************************
-    call mem_alloc(DistanceTable,nAtoms,nAtoms)
-    DistanceTable=0.0E0_realk
-    call GetDistances(DistanceTable,nAtoms,mylsitem,DECinfo%output) ! distances in atomic units
-
-
-    ! Analyze basis and create orbitals
-    ! *********************************
-    call mem_alloc(OccOrbitals,nOcc)
-    call mem_alloc(UnoccOrbitals,nUnocc)
-    call GenerateOrbitals_driver(Molecule,mylsitem,nocc,nunocc,natoms, &
-         & OccOrbitals, UnoccOrbitals, DistanceTable)
-
-
-    ! -- Calculate molecular MP2 gradient
-    call main_fragment_driver(Molecule,mylsitem,D,&
-         & OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,DistanceTable,EHF,Ecorr,mp2gradient,Eerr)
+    ! -- Calculate molecular MP2 gradient and correlation energy
+    call DEC_wrapper(Molecule,mylsitem,D,EHF,Ecorr,mp2gradient,Eerr)
 
     ! Total MP2 energy: EHF + Ecorr
     EMP2 = EHF + Ecorr
@@ -323,19 +326,7 @@ contains
 
     ! Free molecule structure and other stuff
     call molecule_finalize(Molecule)
-    call mem_dealloc(DistanceTable)
     
-    ! Delete orbitals 
-    do i=1,nOcc
-       call orbital_free(OccOrbitals(i))
-    end do
-
-    do i=1,nUnocc
-       call orbital_free(UnoccOrbitals(i))
-    end do
-
-    call mem_dealloc(OccOrbitals)
-    call mem_dealloc(UnOccOrbitals)
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
     ! (the current value of Eerr) and the intrinsic error at the previous geometry.
@@ -355,7 +346,7 @@ contains
   !> as is done in a "conventional" DEC calculation which uses the dec_main_prog subroutine.
   !> \author Kasper Kristensen
   !> \date November 2011
-  subroutine get_total_mp2energy_from_inputs(MyLsitem,F,D,S,C,EMP2,Eerr)
+  subroutine get_total_CCenergy_from_inputs(MyLsitem,F,D,S,C,ECC,Eerr)
 
     implicit none
     !> LSitem structure
@@ -368,17 +359,14 @@ contains
     type(matrix),intent(inout) :: S
     !> MO coefficients 
     type(matrix),intent(inout) :: C
-    !> Total MP2 energy (Hartree-Fock + correlation contribution)
-    real(realk),intent(inout) :: EMP2
+    !> Total CC energy (Hartree-Fock + correlation contribution)
+    real(realk),intent(inout) :: ECC
     !> Difference between intrinsic energy error at this and the previous geometry
     !> (zero for single point calculation or first geometry step)
     real(realk),intent(inout) :: Eerr
     real(realk) :: Ecorr,EHF
     type(fullmolecule) :: Molecule
-    integer :: nBasis,nOcc,nUnocc,natoms
-    type(ccorbital), pointer :: OccOrbitals(:)
-    type(ccorbital), pointer :: UnoccOrbitals(:)
-    real(realk), pointer :: DistanceTable(:,:), dummy(:,:)
+    real(realk), pointer :: dummy(:,:)
     integer :: i
     logical :: save_first_order, save_grad, save_dens
     ! Quick solution to ensure that the MP2 gradient contributions are not set
@@ -389,70 +377,33 @@ contains
     DECinfo%gradient = .false.
     DECinfo%MP2density=.false.
     
-    write(DECinfo%output,*) 'Calculating DEC-MP2 energy, FOT = ', DECinfo%FOT
+    write(DECinfo%output,*) 'Calculating DEC correlation energy, FOT = ', DECinfo%FOT
 
     ! Set DEC memory
     call get_memory_for_dec_calculation()
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C)
+    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
 
     ! No reason to save F,S and C twice. Delete the ones in matrix format and reset at the end
     call mat_free(F)
     call mat_free(S)
     call mat_free(C)
 
-    nOcc = Molecule%numocc
-    nUnocc = Molecule%numvirt
-    nBasis = Molecule%nbasis
-    natoms = Molecule%natoms
-
-
-    ! Calculate distance matrix 
-    ! *************************
-    call mem_alloc(DistanceTable,nAtoms,nAtoms)
-    DistanceTable=0.0E0_realk
-    call GetDistances(DistanceTable,nAtoms,mylsitem,DECinfo%output) ! distances in atomic units
-
-
-    ! Analyze basis and create orbitals
-    ! *********************************
-    call mem_alloc(OccOrbitals,nOcc)
-    call mem_alloc(UnoccOrbitals,nUnocc)
-    call GenerateOrbitals_driver(Molecule,mylsitem,nocc,nunocc,natoms, &
-         & OccOrbitals, UnoccOrbitals, DistanceTable)
-
     ! -- Calculate correlation energy
-    call mem_alloc(dummy,3,natoms)
-    call main_fragment_driver(Molecule,mylsitem,D,&
-         & OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,DistanceTable,EHF,Ecorr,dummy,Eerr)
+    call mem_alloc(dummy,3,Molecule%natoms)
+    call DEC_wrapper(Molecule,mylsitem,D,EHF,Ecorr,dummy,Eerr)
     call mem_dealloc(dummy)
 
-    ! Total MP2 energy: EHF + Ecorr
-    EMP2 = EHF + Ecorr
-
+    ! Total CC energy: EHF + Ecorr
+    ECC = EHF + Ecorr
 
     ! Restore input matrices
     call molecule_copyback_FSC_matrices(Molecule,F,S,C)
 
     ! Free molecule structure and other stuff
     call molecule_finalize(Molecule)
-    call mem_dealloc(DistanceTable)
-
-    ! Delete orbitals 
-    do i=1,nOcc
-       call orbital_free(OccOrbitals(i))
-    end do
-
-    do i=1,nUnocc
-       call orbital_free(UnoccOrbitals(i))
-    end do
-
-    call mem_dealloc(OccOrbitals)
-    call mem_dealloc(UnOccOrbitals)
-
 
     ! Reset DEC parameters to the same as they were at input
     DECinfo%first_order = save_first_order
@@ -467,7 +418,7 @@ contains
     DECinfo%ncalc(DECinfo%FOTlevel) = DECinfo%ncalc(DECinfo%FOTlevel) +1
     call print_calculation_bookkeeping()
 
-  end subroutine get_total_mp2energy_from_inputs
+  end subroutine get_total_CCenergy_from_inputs
 
   !> \brief Print number of DEC calculations for each FOT level (only interesting for geometry opt)
   !> \author Kasper Kristensen
@@ -476,14 +427,17 @@ contains
     implicit none
     integer :: i
 
-    write(DECinfo%output,*) 
-    write(DECinfo%output,*) 'DEC CALCULATION BOOK KEEPING'
-    write(DECinfo%output,*) '============================'
-    write(DECinfo%output,*) 
-    do i=1,7
-       write(DECinfo%output,'(1X,a,i6,a,i6)') '# calculations done for FOTlevel ',i, ' is ', DECinfo%ncalc(i)
-    end do
-    write(DECinfo%output,*) 
+    ! This only be done for geometry optimization and DEC scheme
+    if( (.not. DECinfo%full_molecular_cc) .and. DECinfo%gradient) then
+       write(DECinfo%output,*) 
+       write(DECinfo%output,*) 'DEC CALCULATION BOOK KEEPING'
+       write(DECinfo%output,*) '============================'
+       write(DECinfo%output,*) 
+       do i=1,7
+          write(DECinfo%output,'(1X,a,i6,a,i6)') '# calculations done for FOTlevel ',i, ' is ', DECinfo%ncalc(i)
+       end do
+       write(DECinfo%output,*) 
+    end if
 
   end subroutine print_calculation_bookkeeping
 

@@ -216,6 +216,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # MM/MM interaction energy compared:
 CRIT1=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n - R_s\| \]        \| * (\-|\-0)\.02355955" $log | wc -l`
 CRIT2=`$GREP "Epol  \= - 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \|   * (\-|\-0)\.00570793" $log | wc -l`
@@ -250,7 +255,7 @@ CRIT1=` $GREP "1 * \-2\.995115.. * ( |0)\.0116340. * ( |0)\.0036497." $log | wc 
 CRIT2=` $GREP "2 * ( |0)\.0116340. * 1\.800341.. * \-3\.7964021." $log | wc -l`
 CRIT3=` $GREP "3 * ( |0)\.0036497. * \-3\.7964021. * 1\.194773.." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[4]=3
+CTRL[4]=4
 ERROR[4]="QUADRUPOLE MOMENT COMPONENTS ARE NOT CORRECT"
 
 # Lowest excitation energies compared:
@@ -263,7 +268,7 @@ ERROR[5]="LOWEST EXCITATION ENERGIES ARE NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

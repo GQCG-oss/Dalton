@@ -1,3 +1,26 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C   /* Deck angkin */
       SUBROUTINE ANGKIN(xmos,WORK,llwork)
 C
@@ -11,10 +34,10 @@ Cc      dalton.out = lupri
 Cc      aca esta nasht = 0.5 naos
 Cc      aca esta norbt = nmos
 Cc      aca estan los print levels =  iprsir
-#include <inftap.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "inforb.h"
 #include "chrnos.h"
 #include "lrescinf.h"
 
@@ -33,10 +56,12 @@ C ------------------------------------------------------
        integer  naos, nmos, nelec, lineas
        double precision Xmos, Cmos, Vec1, Vec2, Vec3,
      &    Mat1, Mat2, Mat3, MatKin, VecKin
-       dimension xmos(5000000), CCMOS(NBAST,NBAST), 
-     &    Vec1(5000000), Vec2(5000000), Vec3(5000000),
+!      the following become "AUTOMATIC ARRAYS"
+!      better to allocate from WORK /hjaaj Sep 2013
+       dimension xmos(NNBASX), CCMOS(NBAST,NBAST), 
+     &    Vec1(NNBASX), Vec2(NNBASX), Vec3(NNBASX),
      &    Mat1(NBAST,NBAST), Mat2(NBAST,NBAST), Mat3(NBAST,NBAST),
-     &    MatKin(NBAST,NBAST), VecKin(5000000)
+     &    MatKin(NBAST,NBAST), VecKin(NNBASX)
 C ------------------------------------------------------
 C  TITLUOS :
 C ------------------------------------------------------
@@ -172,8 +197,8 @@ C  -----------------------
         vec2(mu)  = 0.0
         vec3(mu)  = 0.0
       enddo
+      Do j=1, naos
       Do i=1, naos
-      Do j=1,naos
         Mat1(i,j) = 0.0
         Mat2(i,j) = 0.0
         Mat3(i,j) = 0.0
@@ -313,8 +338,8 @@ C
 C -------------------------------------------------
        double precision VEC, Mat
        character*8 label
-       INTEGER  naos, number, lupri
-       DIMENSION VEC(5000000), MAT(1700,1700)
+       INTEGER   naos, number, lupri
+       DIMENSION VEC(*), MAT(NAOS,NAOS)
 C
 C       write(*,*) '    Empieza VEC --> MAT'
 C
@@ -354,7 +379,7 @@ C -------------------------------------------------
        double precision VEC, Mat
        character*8 label
        INTEGER  naos, number, lupri, i, j
-       DIMENSION VEC(5000000), MAT(1700,1700)
+       DIMENSION VEC(*), MAT(naos,naos)
 C
 C       write(*,*) '    Empieza VEC --> MAT'
 C
@@ -462,10 +487,10 @@ C
 C =================================================================
 C =================================================================
        SUBROUTINE getmatrix(label,RTNLBL,TOTOVL,nelmnt)
-#include <inforb.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <lrescinf.h>
+#include "inforb.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "lrescinf.h"
 
        LOGICAL ANTSYM, FNDLB2
        CHARACTER*8 RTNLBL(2),label
@@ -505,7 +530,7 @@ C
                                              
             INTEGER Number
             double precision A, B, C, aux, sclfac
-            dimension A(5000000),B(5000000),C(5000000)
+            dimension A(*),B(*),C(*)
 C
 C   deberia sumar dos vectores 
 C

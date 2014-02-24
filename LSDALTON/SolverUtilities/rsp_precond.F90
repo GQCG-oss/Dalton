@@ -38,7 +38,7 @@ contains
       type(Matrix), intent(in)   :: res_in
       !> Solution vector, i.e. preconditioned residual (output)
       type(Matrix),intent(inout) :: x 
-      !> Damping factor. Only output if debug_rsp_linsca is specified in $INFO section
+      !> Damping factor. Only output if debug_rsp_linsca is specified
       real(realk),intent(inout)  :: omega
       type(Matrix)             :: scrmat(1), b_current, sigma, rho, res
       integer                  :: i, j, k, matdim, max_it, iter, red_space_dim, IERR

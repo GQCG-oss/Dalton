@@ -11,4 +11,17 @@ LSDALTON/doc_LSDALTON/*.ind
 LSDALTON/doc_LSDALTON/*.toc
 LSDALTON/lsutil/reord*.F90
 LSDALTON/test/TESTLOG
+DALTON/Doc/*.aux
+DALTON/Doc/*.pdf
+DALTON/Doc/*.log
+DALTON/Doc/*.bbl
+DALTON/Doc/*.blg
+DALTON/Doc/*.idx
+DALTON/Doc/*.ilg
+DALTON/Doc/*.ind
+DALTON/Doc/*.toc
+DALTON/Doc/Master.out
+DALTON/test/perl-pid.*
+DALTON/test/perl_test.*
+DALTON/test/perl_test.*
 *~

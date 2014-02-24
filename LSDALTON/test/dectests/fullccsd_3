@@ -61,7 +61,7 @@ TRILEVEL
 3
 .ccThr
 1e-7
-.Memory
+.MEMORY
 1.0
 *END OF INPUT
 %EOF%
@@ -92,7 +92,7 @@ CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # CCSD ENERGY
-CRIT1=`$GREP "Corr. energy       = * \-0\.20721[8-9]" $log | wc -l`
+CRIT1=`$GREP "Correlation energy  : * \-0\.20721[8-9]" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy is not correct"

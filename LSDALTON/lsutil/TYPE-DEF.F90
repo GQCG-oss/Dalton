@@ -1,6 +1,7 @@
 !> @file 
 !> contains many structure and associated subroutine
 MODULE TYPEDEFTYPE
+  use,intrinsic :: iso_c_binding,only:c_ptr
  use precision
  use dft_typetype
  use molecule_typetype
@@ -83,6 +84,7 @@ LOGICAL  :: DEBUGOVERLAP
 LOGICAL  :: DEBUG4CENTER
 LOGICAL  :: DEBUG4CENTER_ERI
 LOGICAL  :: DEBUGPROP
+LOGICAL  :: DEBUGICHOR
 LOGICAL  :: DEBUGGEN1INT
 LOGICAL  :: DEBUGCGTODIFF
 LOGICAL  :: DEBUGEP
@@ -137,8 +139,6 @@ LOGICAL  :: NOSEGMENT !DISABLE SEGMENTS
 !* JOB REQUESTS
 LOGICAL  :: DO3CENTEROVL
 LOGICAL  :: DO2CENTERERI
-INTEGER  :: CARMOM
-INTEGER  :: SPHMOM
 LOGICAL  :: MIXEDOVERLAP
 
 !*CAUCHY-SCHWARZ INTEGRAL PARAMETERS
@@ -178,12 +178,18 @@ INTEGER     :: LU_LUINDR
 LOGICAL     :: LR_EXCHANGE_DF
 LOGICAL     :: LR_EXCHANGE_PARI
 LOGICAL     :: LR_EXCHANGE
-LOGICAL     :: ADMM_EXCHANGE
-LOGICAL     :: ADMM_GCBASIS
-LOGICAL     :: ADMM_DFBASIS
-LOGICAL     :: ADMM_JKBASIS
-LOGICAL     :: ADMM_MCWEENY
-LOGICAL     :: SR_EXCHANGE
+!ADMM setting
+LOGICAL       :: ADMM_EXCHANGE
+LOGICAL       :: ADMM_GCBASIS
+LOGICAL       :: ADMM_DFBASIS
+LOGICAL       :: ADMM_JKBASIS
+LOGICAL       :: ADMM_MCWEENY
+LOGICAL       :: ADMM_2ERI
+LOGICAL       :: ADMMQ_ScaleXC2
+LOGICAL       :: ADMMQ_ScaleE
+LOGICAL       :: ADMM_CONST_EL
+CHARACTER(80) :: ADMM_FUNC
+LOGICAL       :: SR_EXCHANGE
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
 REAL(REALK) :: CAMalpha
@@ -279,8 +285,6 @@ LOGICAL  :: ContAng  !Specifies that the AO-shell ordering is contracted first t
 !* JOB REQUESTS
 LOGICAL     :: DO3CENTEROVL
 LOGICAL     :: DO2CENTERERI
-INTEGER     :: CARMOM
-INTEGER     :: SPHMOM
 INTEGER     :: CMORDER
 INTEGER     :: CMimat
 LOGICAL     :: MIXEDOVERLAP
@@ -331,6 +335,10 @@ LOGICAL     :: ADMM_GCBASIS
 LOGICAL     :: ADMM_DFBASIS
 LOGICAL     :: ADMM_JKBASIS
 LOGICAL     :: ADMM_MCWEENY
+LOGICAL     :: ADMM_2ERI
+LOGICAL     :: ADMM_CONST_EL
+LOGICAL     :: ADMMQ_ScaleXC2
+LOGICAL     :: ADMMQ_ScaleE
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
 REAL(REALK) :: CAMalpha
@@ -662,6 +670,19 @@ type pltinfo
 
 end type pltinfo
 
+!TYPE DEFINITION FOR MPI_MEM_D
+type mpi_realk
+   ! double precision buffer
+   real(realk), pointer :: d(:) => null()
+   ! number of elements in the buffer
+   integer(kind=8)      :: n
+   ! associated c_ptr
+   type(c_ptr)          :: c
+   ! mpi_window handle
+   integer(kind=ls_mpik):: w
+   ! allocation type, 0 = normal pointer, 1 = MPI_ALLOC_MEM, 3 =  MPI_WIN_ALLOC(LOCAL)
+   integer              :: t
+end type mpi_realk
 
 
 contains

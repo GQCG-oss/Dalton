@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -496,8 +496,18 @@ C
             CALL GETESG_DENMAT_FOCMAT(WORK(KDSO),WORK(KFSO),NBAST,
      &                                NNBAST)
          ELSE
-           CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,IPRINT,
-     &                 NODC,NODV)
+Cajt Check whether written to files DSOTRI FSOTRI and can be read from there
+Cajt       CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,IPRINT,
+Cajt     &             NODC,NODV)
+           CALL GPINQ('DSOTRI','EXIST',FOUND)
+           IF (FOUND) CALL GPINQ('FSOTRI','EXIST',FOUND)
+           IF (FOUND) THEN
+              CALL READ_DSOFSO(WORK(KDSO),WORK(KFSO))
+           ELSE
+              CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,IPRINT,
+     &                    NODC,NODV)
+           END IF
+Cajt
          END IF
          CALL DSYM1(DENMAT,FOCMAT,WORK(KDSO),WORK(KFSO),.TRUE.,
      &              NBAST,IPRINT)
@@ -885,6 +895,7 @@ C
          IF (EXPGRA) THEN
             CALL HEADER('One-electron part of alpha gradient',-1)
             WRITE (LUPRI,'(2X,5F12.8)') (ALPGRD(I),I=1,KMAX)
+            CALL FLSHFO(LUPRI)
          ELSE IF (PROPTY) THEN
             KCSTRA = 1
             KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
@@ -972,6 +983,46 @@ C
  1000 FORMAT (//,2X,'***************************************',
      *         /,2X,'********** ISHELA/B =',I3,',',I3,' **********',
      *         /,2X,'***************************************',/)
+      END
+C  /* Deck write_dsofso */
+      SUBROUTINE WRITE_DSOFSO(DSO,FSO)
+#include <implicit.h>
+#include <inforb.h>
+#include <dummy.h>
+      DIMENSION DSO(NNBAST), FSO(NNBAST)
+C
+      IUNIT = -1
+      CALL GPOPEN(IUNIT,'DSOTRI','UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE(IUNIT) (DSO(I), I=1,NNBAST)
+      CALL GPCLOSE(IUNIT,'KEEP')
+C
+      IUNIT = -1
+      CALL GPOPEN(IUNIT,'FSOTRI','UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE(IUNIT) (FSO(I), I=1,NNBAST)
+      CALL GPCLOSE(IUNIT,'KEEP')
+      RETURN
+      END
+C  /* Deck read_dsofso */
+      SUBROUTINE READ_DSOFSO(DSO,FSO)
+#include <implicit.h>
+#include <inforb.h>
+#include <dummy.h>
+      DIMENSION DSO(NNBAST), FSO(NNBAST)
+C
+      IUNIT = -1
+      CALL GPOPEN(IUNIT,'DSOTRI','UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      READ(IUNIT) (DSO(I), I=1,NNBAST)
+      CALL GPCLOSE(IUNIT,'KEEP')
+C
+      IUNIT = -1
+      CALL GPOPEN(IUNIT,'FSOTRI','UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      READ(IUNIT) (FSO(I), I=1,NNBAST)
+      CALL GPCLOSE(IUNIT,'KEEP')
+      RETURN
       END
 C  /* Deck dsofso */
       SUBROUTINE DSOFSO(DSO,FSO,WORK,LWORK,IPRINT,NODC,NODV)

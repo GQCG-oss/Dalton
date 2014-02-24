@@ -139,8 +139,8 @@ fi
 #
 # Test of TPA
 #
-CRIT1=`$GREP "1 * 1 * 4.09 * Linear   *   ( |0)\.24[0-9](D|E)\-06 * ( |0)\.59[0-9](D|E)\-01 * ( |0)\.23[0-9](D|E)\+00  * ( |0)\.11.(D|E)\-01 * 1\.5[0-9]" $log | wc -l`
-CRIT2=`$GREP "1 * 1 * 4.09 * Circular *   ( |0)\.24[0-9](D|E)\-06 * ( |0)\.59[0-9](D|E)\-01 * ( |0)\.35[0-9](D|E)\+00  * ( |0)\.17.(D|E)\-01 * 1\.5[0-9]" $log | wc -l`     
+CRIT1=`$GREP "1 * 1 * 4.09 * Linear   *   ( |0)\.24[0-9](D|E)\-06 * ( |0)\.59[0-9](D|E)\-01 * ( |0)\.23[0-9](D|E)\+00  * ( |0)\.29.(D|E)\-02 * 1\.5[0-9]" $log | wc -l`
+CRIT2=`$GREP "1 * 1 * 4.09 * Circular *   ( |0)\.24[0-9](D|E)\-06 * ( |0)\.59[0-9](D|E)\-01 * ( |0)\.35[0-9](D|E)\+00  * ( |0)\.43.(D|E)\-02 * 1\.5[0-9]" $log | wc -l`     
 TEST[1]=`expr $CRIT1 \+ $CRIT2`
 CTRL[1]=2
 ERROR[1]="DFT/MM TPA NOT CORRECT"
@@ -148,7 +148,7 @@ ERROR[1]="DFT/MM TPA NOT CORRECT"
 PASSED=1 
 for i in 1 
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

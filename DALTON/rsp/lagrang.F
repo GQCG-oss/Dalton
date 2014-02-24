@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -336,7 +336,7 @@ C     CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
       IF ( IPRRSP.GE.10 ) THEN
          WRITE (LUPRI,'(/A)') ' SOLUTION VECTOR FOR LAGRANGIAN  '
          CALL RSPPRC(WRK(KBVECS),KZCONF,KZVAR,LUPRI)
-         CALL RSPPRO(WRK(KBVECS+KZCONF),KZVAR,LUPRI)
+         CALL RSPPRO(WRK(KBVECS+KZCONF),KZVAR,UDV,LUPRI)
       END IF
       CALL DCOPY(KZYVAR,WRK(KBVECS),1,WRK(1),1)
 C
@@ -466,8 +466,7 @@ C
          ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
-         THRESR = THRESR*THR_REDFAC
-C arnfinn: This is not working. THRESR not used or defined
+         THCESR = THCESR*THR_REDFAC
       END IF
 C
 C FC labels generation

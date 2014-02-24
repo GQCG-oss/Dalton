@@ -56,6 +56,7 @@ cat > geoopt_constrain.dal <<'%EOF%'
 .CONSTR
 1
 1
+.NOHOPE
 **WAVE FUNCTIONS
 .HF
 *DENSOPT

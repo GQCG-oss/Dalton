@@ -442,7 +442,7 @@ module array2_simple_operations
     !> Matrix where rows, columns or both are AOS indices
     type(array2),intent(in) :: AOS
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Extract occupied ('o' or 'O') or virtual ('v' or 'V') EOS indices from AOS matrix
     character(len=1), intent(in) :: occ_or_virt
     !> Extract EOS indices from rows ('r' or 'R') or columns ('c' or 'C') of AOS matrix
@@ -579,7 +579,7 @@ module array2_simple_operations
     !> MO coeffiecient matrix for fragment occupied EOS
     type(array2),intent(inout) :: Ceos
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     ! Number of basis functions in fragment
     integer :: nbasis
     ! Number of occupied orbitals in EOS
@@ -588,12 +588,12 @@ module array2_simple_operations
 
 
     nocc_eos = MyFragment%noccEOS
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
 
     ! Loop over orbitals and extract EOS orbitals
     do i=1,nocc_eos
        idx=MyFragment%idxo(i)
-       Ceos%val(1:nbasis,i) = MyFragment%ypo(1:nbasis,idx)
+       Ceos%val(1:nbasis,i) = MyFragment%Co(1:nbasis,idx)
     end do
 
 
@@ -612,7 +612,7 @@ module array2_simple_operations
     !> MO coeffiecient matrix for fragment virtual EOS
     type(array2),intent(inout) :: Ceos
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     ! Number of basis functions in fragment
     integer :: nbasis
     ! Number of occupied orbitals in EOS
@@ -620,12 +620,12 @@ module array2_simple_operations
     integer :: a, ax
 
     nunocc_eos = MyFragment%nunoccEOS
-    nbasis = MyFragment%number_basis
+    nbasis = MyFragment%nbasis
 
     ! Loop over orbitals and extract virtual EOS orbitals
     do a=1,nunocc_eos
        ax=MyFragment%idxu(a)
-       Ceos%val(1:nbasis,a) = MyFragment%ypv(1:nbasis,ax)
+       Ceos%val(1:nbasis,a) = MyFragment%Cv(1:nbasis,ax)
     end do
 
 
@@ -646,14 +646,16 @@ module array2_simple_operations
 
     implicit none
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Transforming from AO to occupied orbitals in the basis where the fragment Fock matrix is diagonal
     type(array2),intent(inout) :: CDIAGocc
     !> Transforming from AO to virtual orbitals in the basis where the fragment Fock matrix is diagonal
     type(array2),intent(inout) :: CDIAGvirt
     !> Occupied space: Transforming between local basis and basis where the fragment Fock matrix is diagonal
+    !> - indices: (local,semi-canonical)
     type(array2),intent(inout) :: Uocc
     !> Virtual space: Transforming between local basis and basis where the fragment Fock matrix is diagonal
+    !> - indices: (local,semi-canonical)
     type(array2),intent(inout) :: Uvirt
     !> Eigenvalues from diagonalization of occ-occ Fock matrix block
     real(realk), dimension(MyFragment%noccAOS),intent(inout) :: EVocc
@@ -669,7 +671,7 @@ module array2_simple_operations
     ! **********
     nocc = MyFragment%noccAOS      ! (occ AOS size)
     nvirt = MyFragment%nunoccAOS   ! (virt AOS size)
-    nbasis = MyFragment%number_basis        ! (atomic extent)
+    nbasis = MyFragment%nbasis        ! (atomic extent)
     occocc = [nocc,nocc]
     virtvirt = [nvirt,nvirt]
     occAO = [nbasis,nocc]
@@ -715,10 +717,10 @@ module array2_simple_operations
     !
     ! CDIAGocc = CLOCALocc Uocc     (*)
     !
-    ! where CLOCALocc are the basis MO coefficients in MyFragment%ypo
+    ! where CLOCALocc are the basis MO coefficients in MyFragment%Co
 
     ! Local MO coefficients
-    Ctmp = array2_init(occAO,MyFragment%ypo)
+    Ctmp = array2_init(occAO,MyFragment%Co)
 
     ! Determine CDIAGocc
     CDIAGocc = array2_init(occAO)
@@ -734,7 +736,7 @@ module array2_simple_operations
     ! ***************************************************************************************
 
     ! For the virtual space we do exactly the same with the virt-virt blocks of the Fock matrix
-    ! and the virtual local MO coefficients (MyFragment%ypv). (Thus, comments are omitted below)
+    ! and the virtual local MO coefficients (MyFragment%Cv). (Thus, comments are omitted below)
 
 
     Uvirt = array2_init(virtvirt)
@@ -747,7 +749,7 @@ module array2_simple_operations
     call solve_eigenvalue_problem(nvirt,MyFragment%qqfock,S,EVvirt,Uvirt%val)
     call mem_dealloc(S)
 
-    Ctmp = array2_init(virtAO,MyFragment%ypv)
+    Ctmp = array2_init(virtAO,MyFragment%Cv)
     CDIAGvirt = array2_init(virtAO)
     call array2_matmul(Ctmp,Uvirt,CDIAGvirt,'n','n',1.0E0_realk,0.0E0_realk)
     call array2_free(Ctmp)
@@ -764,7 +766,7 @@ module array2_simple_operations
   !> \author Janus Juul Eriksen (adapted from mp2 routine by Kasper Kristensen),changed by PE
   !> \date February 2013
   subroutine get_canonical_integral_transformation_matrices(no,nv,nb,ppfock,qqfock,&
-             &ypo,ypv,CDIAGocc, CDIAGvirt, Uocc, Uvirt,EVocc, EVvirt)
+             &Co,Cv,CDIAGocc, CDIAGvirt, Uocc, Uvirt,EVocc, EVvirt)
 
     implicit none
 
@@ -773,10 +775,12 @@ module array2_simple_operations
     !> ppfock and qqfock for fragment or full molecule
     real(realk), intent(in) :: ppfock(no,no), qqfock(nv,nv)
     !> mo coefficents for occ and virt space for fragment or full molecule
-    real(realk), intent(in) :: ypo(nb,no), ypv(nb,nv)
+    real(realk), intent(in) :: Co(nb,no), Cv(nb,nv)
     !> Transforming from AO to occupied orbitals in the basis where the fock matrix is diagonal
+    !> - indices: (aobasis,psuedo-canonical)
     real(realk),intent(inout) :: CDIAGocc(nb,no)
     !> Transforming from AO to virtual orbitals in the basis where the fock matrix is diagonal
+    !> - indices: (aobasis,pseudo-canonical)
     real(realk),intent(inout) :: CDIAGvirt(nb,nv)
     !> Occupied space: Transforming between local basis and basis where the fock matrix is diagonal
     real(realk),intent(inout) :: Uocc(no,no)
@@ -794,10 +798,10 @@ module array2_simple_operations
 
     ! Init stuff
     ! **********
-    occocc = [no,no]
+    occocc   = [no,no]
     virtvirt = [nv,nv]
-    occAO = [nb,no]
-    virtAO = [nb,nv]
+    occAO    = [nb,no]
+    virtAO   = [nb,nv]
 
     ! ****************************************************************************************
     ! *                                  OCCUPIED ORBITAL SPACE                              *
@@ -833,17 +837,17 @@ module array2_simple_operations
     !
     ! CDIAGocc = CLOCALocc Uocc     (*)
     !
-    ! where CLOCALocc are the basis MO coefficients in MyFragment%ypo
+    ! where CLOCALocc are the basis MO coefficients in MyFragment%Co
 
     ! Determine CDIAGocc
-    call dgemm('n','n',nb,no,no,1.0E0_realk,ypo,nb,Uocc,no,0.0E0_realk,CDIAGocc,nb)
+    call dgemm('n','n',nb,no,no,1.0E0_realk,Co,nb,Uocc,no,0.0E0_realk,CDIAGocc,nb)
 
     ! ***************************************************************************************
     ! *                                  VIRTUAL ORBITAL SPACE                              *
     ! ***************************************************************************************
 
     ! For the virtual space we do exactly the same with the virt-virt blocks of the Fock matrix
-    ! and the virtual local MO coefficients (MyFragment%ypv). (Thus, comments are omitted below)
+    ! and the virtual local MO coefficients (MyFragment%Cv). (Thus, comments are omitted below)
 
     call mem_alloc(S,nv,nv)
     S=0.0E0_realk
@@ -853,7 +857,7 @@ module array2_simple_operations
     call solve_eigenvalue_problem(nv,qqfock,S,EVvirt,Uvirt)
     call mem_dealloc(S)
 
-    call dgemm('n','n',nb,nv,nv,1.0E0_realk,ypv,nb,Uvirt,nv,0.0E0_realk,CDIAGvirt,nb)
+    call dgemm('n','n',nb,nv,nv,1.0E0_realk,Cv,nb,Uvirt,nv,0.0E0_realk,CDIAGvirt,nb)
 
 
   end subroutine get_canonical_integral_transformation_matrices
@@ -874,7 +878,7 @@ module array2_simple_operations
 
     implicit none
     !> Fragment info
-    type(ccatom),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: MyFragment
     !> Transforming from AO to valence occupied orbitals in Fock-diagonal basis
     type(array2),intent(inout) :: CDIAGocc
     !> Transforming from AO to virtual orbitals in Fock-diagonal basis
@@ -911,7 +915,7 @@ module array2_simple_operations
     ncore = MyFragment%ncore   ! number of core orbitals
     nval = MyFragment%noccAOS      ! (occ AOS valence size)
     nvirt = MyFragment%nunoccAOS   ! (virt AOS size)
-    nbasis = MyFragment%number_basis        ! (atomic extent)
+    nbasis = MyFragment%nbasis        ! (atomic extent)
     nocctot = MyFragment%nocctot   ! occ AOS core+valence
     virtvirt = [nvirt,nvirt]
     occAO = [nbasis,nocctot]
@@ -994,7 +998,7 @@ module array2_simple_operations
        LoccALL%val(:,j) = MyFragment%coreMO(:,j)
     end do
     do j=1,nval      ! Put valence orbitals into LoccALL
-       LoccALL%val(:,j+ncore) = MyFragment%ypo(:,j)
+       LoccALL%val(:,j+ncore) = MyFragment%Co(:,j)
     end do
 
 
@@ -1071,7 +1075,7 @@ module array2_simple_operations
     call solve_eigenvalue_problem(nvirt,MyFragment%qqfock,S,EVvirt,Uvirt%val)
     call mem_dealloc(S)
 
-    Ctmp = array2_init(virtAO,MyFragment%ypv)
+    Ctmp = array2_init(virtAO,MyFragment%Cv)
     CDIAGvirt = array2_init(virtAO)
     call array2_matmul(Ctmp,Uvirt,CDIAGvirt,'n','n',1.0E0_realk,0.0E0_realk)
     call array2_free(Ctmp)

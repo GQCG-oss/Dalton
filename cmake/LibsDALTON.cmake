@@ -21,7 +21,11 @@ if(ENABLE_GEN1INT)
 endif()
 
 if(ENABLE_PELIB)
-    set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
+    if(ENABLE_OPENRSP)
+        set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER -DBUILD_OPENRSP")
+    else()
+        set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
+    endif()
     if(ENABLE_GEN1INT)
         set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DBUILD_GEN1INT")
     else()
@@ -29,6 +33,9 @@ if(ENABLE_PELIB)
     endif()
     if(MPI_FOUND)
         set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
+        if(MPI_COMPILER_MATCHES)
+            set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DUSE_MPI_MOD_F90")
+        endif()
     endif()
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -51,6 +58,10 @@ if(ENABLE_PELIB)
         )
 endif()
 
+if(ENABLE_OPENRSP)
+    include(LibsOpenRSP)
+endif()
+
 add_executable(
     dalton.x
     ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
@@ -62,14 +73,24 @@ target_link_libraries(
     dalton.x
     dalton
     ${DALTON_LIBS}
-    ${LIBS}
+    ${EXTERNAL_LIBS}
     )
 
-# compile Peter's utilities
+# compile utilities
+
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/tools) 
+
 add_library(peter_utils_blocks ${CMAKE_SOURCE_DIR}/DALTON/tools/blocks.f90)
-add_executable(aces2dalton ${CMAKE_SOURCE_DIR}/DALTON/tools/aces2dalton.f90)
-add_executable(xyz2dalton  ${CMAKE_SOURCE_DIR}/DALTON/tools/xyz2dalton.f90)
-add_executable(distances   ${CMAKE_SOURCE_DIR}/DALTON/tools/distances.f90)
-target_link_libraries(aces2dalton peter_utils_blocks)
-target_link_libraries(xyz2dalton peter_utils_blocks)
-target_link_libraries(distances peter_utils_blocks)
+
+add_executable(tools/aces2dalton ${CMAKE_SOURCE_DIR}/DALTON/tools/aces2dalton.f90)
+add_executable(tools/xyz2dalton  ${CMAKE_SOURCE_DIR}/DALTON/tools/xyz2dalton.f90)
+add_executable(tools/distances   ${CMAKE_SOURCE_DIR}/DALTON/tools/distances.f90)
+
+target_link_libraries(tools/aces2dalton peter_utils_blocks)
+target_link_libraries(tools/xyz2dalton  peter_utils_blocks)
+target_link_libraries(tools/distances   peter_utils_blocks)
+
+add_executable(tools/FChk2HES ${CMAKE_SOURCE_DIR}/DALTON/tools/FChk2HES.f)
+add_executable(tools/labread  ${CMAKE_SOURCE_DIR}/DALTON/tools/labread.f)
+# radovan: compilation broken
+#add_executable(tools/ODCPRG   ${CMAKE_SOURCE_DIR}/DALTON/tools/ODCPRG.f)

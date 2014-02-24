@@ -227,28 +227,46 @@ module lspdm_basic_module
     real(realk) :: vector_size
     real(realk) :: tcpu1,twall1,tcpu2,twall2
     integer(kind=long) :: i,counter
-    integer :: j,loc_idx,nnod,me,mpi_realk,ierr
+    integer :: j,loc_idx
     integer, pointer :: idx(:)
-    logical :: doit=.true.,master
-    master = .true.
-    nnod=1
-    me=0
+    integer(kind=ls_mpik) :: ibuf(2)
+    logical :: doit=.true.,lg_master,parent
+    integer(kind=ls_mpik) :: lg_me,lg_nnod,pc_me,pc_nnod
+    integer(kind=8)       :: ne
+    lg_master = .true.
+    lg_nnod   = 1
+    lg_me     = 0
 #ifdef VAR_MPI
-    !print *,infpar%lg_mynum,"in routine"
-    nnod=infpar%lg_nodtot
-    me=infpar%lg_mynum
-    if(infpar%master/=me)master=.false.
-    nnod=infpar%lg_nodtot
+    parent    = (infpar%parent_comm == MPI_COMM_NULL)
+    if( parent ) then
+      lg_nnod   = infpar%lg_nodtot
+      lg_me     = infpar%lg_mynum
+      lg_master = (infpar%master==lg_me)
+    else
+      lg_nnod   = MAXINT32
+      lg_me     = MAXINT32
+      lg_master = .false.
+    endif
+    !get info to children
+    if( lspdm_use_comm_proc ) then
+      pc_me     = infpar%pc_mynum
+      pc_nnod   = infpar%pc_nodtot
+      ibuf(1) = lg_nnod
+      ibuf(2) = lg_me
+      call ls_mpibcast(ibuf,2,infpar%master,infpar%pc_comm)
+      lg_nnod = ibuf(1)
+      lg_me   = ibuf(2)
+    endif
 #else
     call lsquit("Do not use MPI-WINDOWS wihout MPI",lspdm_errout)
 #endif
+
     !get zero dummy matrix in size of largest tile --> size(dummy)=tsize
     call memory_allocate_dummy(arr)
     !prepare the integer window in the array --> ntiles windows should be created
     call memory_allocate_window(arr)
 
     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
-    !call memory_deallocate_array(arr)
     call mem_alloc(idx,arr%mode)
 
     !write(*,'(I2," in here and nlti ",I5)'),infpar%lg_mynum,arr%nlti
@@ -269,8 +287,13 @@ module lspdm_basic_module
         if(.not.mod(i+arr%offset,infpar%lg_nodtot)==infpar%lg_mynum)doit=.false.
 #endif
         if(doit)then
-          call mem_alloc(arr%ti(counter)%t,arr%tsize)
-          call mem_alloc(arr%ti(counter)%d,arr%mode)
+          if( lspdm_use_comm_proc )then
+            print *,"ERRROR alloc, should normaly not occur"
+            stop 0 
+          else
+            call mem_alloc(arr%ti(counter)%t,arr%tsize)
+            call mem_alloc(arr%ti(counter)%d,arr%mode)
+          endif
           arr%ti(counter)%t=0.0d0
           arr%ti(counter)%e=arr%tsize
           vector_size = dble(arr%ti(counter)%e)*realk
@@ -296,18 +319,16 @@ module lspdm_basic_module
         !Check if the current tile resides on the current node
         doit=.true.
 #ifdef VAR_MPI
-        if(arr%atype==TILED_DIST.and.&
-        &.not.mod(i-1+arr%offset,infpar%lg_nodtot)==infpar%lg_mynum)doit=.false.
+        if(arr%itype==TILED_DIST.and.mod(i-1+arr%offset,lg_nnod)/=lg_me)doit=.false.
 #endif
         !convert global tile index i to local tile index loc_idx
-        loc_idx=((i-1)/nnod) + 1
+        loc_idx=((i-1)/lg_nnod) + 1
+        if (arr%itype==TILED) loc_idx=i 
          
         if(doit)then
           !only do these things if tile belongs to node
           !save global tile number
           arr%ti(loc_idx)%gt=i
-          !if(loc_idx>arr%nlti)then
-          !  write( *,'(I2," has wrong index:",I3," of ",I3," in ",I3)'),infpar%lg_mynum,loc_idx,arr%nlti,i
           !endif
           call mem_alloc(arr%ti(loc_idx)%d,arr%mode)
           vector_size = dble(size(arr%ti(loc_idx)%d))
@@ -326,34 +347,44 @@ module lspdm_basic_module
 
 #ifdef VAR_MPI
           !if(act_ts/=arr%ti(loc_idx)%e)print*,"something wrong"
-          call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
-          call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm)
+          if( lspdm_use_comm_proc )then
+            ne = 0_long
+            if(pc_me==pc_nnod-1) ne = arr%nelms
+            call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,ne,arr%ti(loc_idx)%wi,&
+            &infpar%pc_comm,arr%ti(loc_idx)%e)
+          else
+            call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
+          endif
+          if( parent )&
+           &call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm)
 #endif
 
           vector_size = dble(arr%ti(loc_idx)%e)*realk
 !$OMP CRITICAL
           array_tiled_allocd_mem = array_tiled_allocd_mem + vector_size
-          array_memory_in_use = array_memory_in_use + vector_size
-          array_max_memory = max(array_max_memory,array_memory_in_use)
+          array_memory_in_use    = array_memory_in_use + vector_size
+          array_max_memory       = max(array_max_memory,array_memory_in_use)
 !$OMP END CRITICAL
-          !print *,"actual tilesizes intile on:",i,loc_idx,counter,act_ts,infpar%lg_mynum
+
           counter = counter +1
         else
+
          !open a window of size zero on the nodes where the tile does not
          !reside
 #ifdef VAR_MPI
-          call lsmpi_win_create(arr%dummy,arr%wi(i),0,infpar%lg_comm)
+          if( parent )call lsmpi_win_create(arr%dummy,arr%wi(i),0,infpar%lg_comm)
 #endif
         endif
 #ifdef VAR_MPI
-        call lsmpi_win_fence(arr%wi(i),.true.)
+        ! fence the window in preparation for comm
+        if( parent )call lsmpi_win_fence(arr%wi(i),.true.)
 #endif
       enddo
     endif
     call mem_dealloc(idx)
 
     if(counter-1/=arr%nlti)then
-      print*,counter-1,arr%nlti,arr%ntiles
+      print*," counted wrong of node",lg_me,lg_nnod,counter-1,arr%nlti,arr%ntiles,arr%offset
       call lsquit("something went wrong with the numbering of tiles on the nodes",lspdm_errout)
     endif
     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
@@ -364,13 +395,13 @@ module lspdm_basic_module
       implicit none
       type(array),intent(inout) :: arr
       integer, intent(in),optional :: nel
-      integer :: nelms
-      real(realk) :: vector_size
-      real(realk) :: tcpu1,twall1,tcpu2,twall2
+      integer(kind=8) :: nelms
+      real(realk)     :: vector_size
+      real(realk)     :: tcpu1,twall1,tcpu2,twall2
+      integer(kind=8) :: ne
 
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
-      !call memory_deallocate_array(arr)
       if(associated(arr%dummy)) then
         call lsquit("ERROR(memory_allocate_dummy):array already initialized, please free first",lspdm_errout)
       endif
@@ -383,7 +414,13 @@ module lspdm_basic_module
       vector_size = dble(nelms)*realk
 
 #ifdef VAR_MPI
-      call mem_alloc(arr%dummy,arr%dummyc,nelms)
+      if( lspdm_use_comm_proc )then
+        ne = 0_long
+        if(infpar%pc_mynum==infpar%pc_nodtot-1) ne = arr%nelms
+        call mem_alloc(arr%dummy,arr%dummyc,ne,arr%dummyw,infpar%pc_comm,nelms)
+      else
+        call mem_alloc(arr%dummy,arr%dummyc,nelms)
+      endif
 #endif
 
 !$OMP CRITICAL
@@ -410,7 +447,11 @@ module lspdm_basic_module
          dim1 = dble(size(arr%dummy(:)))
          vector_size = dim1*realk
 #ifdef VAR_MPI
-         call mem_dealloc(arr%dummy,arr%dummyc)
+         if( lspdm_use_comm_proc )then
+           call mem_dealloc(arr%dummy,arr%dummyc,arr%dummyw)
+         else
+           call mem_dealloc(arr%dummy,arr%dummyc)
+         endif
 #endif
          nullify(arr%dummy)
 !$OMP CRITICAL
@@ -423,12 +464,16 @@ module lspdm_basic_module
 
 
     end subroutine memory_deallocate_dummy
+
+
     subroutine array_pdm_free_special_aux(arr)
       implicit none
       type(array), intent(inout) :: arr
       call memory_deallocate_window(arr)
       call memory_deallocate_dummy(arr)
     end subroutine array_pdm_free_special_aux
+
+    
     
   
 end module lspdm_basic_module

@@ -60,7 +60,7 @@ TRILEVEL
 .CCSD
 .ccThr
 1e-9
-.Memory
+.MEMORY
 1.0
 *END OF INPUT
 %EOF%

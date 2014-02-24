@@ -176,6 +176,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # MM/MM interaction energy compared:
 CRIT1=`$GREP "Eelec = Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n - R_s\| \]        \| * ( |0)\.00061981" $log | wc -l`
 CRIT2=`$GREP "Epol  = - 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * (\-|\-0)\.00003482" $log | wc -l`
@@ -195,11 +200,11 @@ CTRL[2]=2
 ERROR[2]="QM/MM ENERGY NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "x * ( |0)\.6924949. * 1\.7601463." $log | wc -l`
-CRIT2=`$GREP "y * (\-|\-0)\.00334991 * (\-|\-0)\.00851461" $log | wc -l`
+CRIT1=`$GREP "x * ( |0)\.692494(8|9). * 1\.7601463." $log | wc -l`
+CRIT2=`$GREP "y * (\-|\-0)\.0033499. * (\-|\-0)\.008514(5|6)." $log | wc -l`
 CRIT3=`$GREP "z * ( |0)\.00062181 * ( |0)\.00158049" $log | wc -l` 
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[3]=9
+CTRL[3]=12
 ERROR[3]="DIPOLE MOMENT NOT CORRECT"
 
 # Three lowest ground state excitation energies compared:
@@ -221,7 +226,7 @@ ERROR[5]="OSCILLATOR STRENGTH NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

@@ -8,8 +8,7 @@
 !   Basis set -i will be density fitting basis set for basis +i
 !   Basis set 0 (zero) is for Huckel basis set
 !
-!     IF you change any of these parameters you should do a "make depend"
-!     and then rebuild the program using the command "make".
+!     IF you change any of these parameters, rebuild with "make".
 !
       INTEGER MXBSETS, MXBSETS_TOT
       PARAMETER (MXBSETS = 2, MXBSETS_TOT = 2*MXBSETS+1)

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -4435,15 +4435,15 @@ C
 C     Calculates the electric field from the PCM charges at the
 C     polarizable points
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <inftap.h>
-#include <pcmdef.h>
-#include <orgcom.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "inftap.h"
+#include "pcmdef.h"
+#include "orgcom.h"
+#include "pcm.h"
+#include "pcmlog.h"
 #include "nuclei.h"
  
       PARAMETER  (D0 = 0.0D0)
@@ -4515,15 +4515,15 @@ C  /* Deck GIVEMY */
 C
 C     Transfer the induced dipole moments to pcm
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <inftap.h>
-#include <pcmdef.h>
-#include <orgcom.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "inftap.h"
+#include "pcmdef.h"
+#include "orgcom.h"
+#include "pcm.h"
+#include "pcmlog.h"
 #include "nuclei.h"
  
       PARAMETER  (D0 = 0.0D0)
@@ -4578,8 +4578,8 @@ C     1: initialized
 C     0: not converged
 C    -1: converged 
 
-#include <implicit.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "qm3.h"
 
       DO 100 I=1,NSTATES
          ICQM3(I) = 1
@@ -4593,12 +4593,12 @@ C  /* Deck MMPCM_FIXMOM */
       SUBROUTINE MMPCM_FIXMOM()
 C*************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  MYIND(3,MXQM3)
 C
@@ -4630,7 +4630,7 @@ C
 #include "qmmm.h"
 #include "codata.h"
 C
-      PARAMETER ( NTABLE = 27, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 26, D1 = 1.0D0)
       LOGICAL NEWDEF,RCUT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
@@ -4650,9 +4650,9 @@ C
 !                  17         18         19         20
      *            '.ISOPOL', '.PRINT ', '.MMREST', '.RELMAT',
 !                  21         22         23         24
-     *            '.ZERODI', '.ZEROQU', '.ZEROOC', '.NOPOL ',
-!                  25         26         27
-     *            '.NOMB  ', '.MMTIME', '.NEWEXC'/
+     *            '.ZERODI', '.ZEROQU', '.NOPOL ', '.NOMB  ', 
+!                  25         26
+     *            '.MMTIME', '.NEWEXC'/
  
       CALL QENTER('QMMMIN')
  
@@ -4685,7 +4685,6 @@ C      SELPOL   = .FALSE.   ! Skip selected systems response related to the elec
       DELFLD   = 0.01      ! Keywd FDSTEP: FD step in calculation of electric field Hessian integrals
       ZERODI   = .FALSE.   ! Zero the dipole moments
       ZEROQU   = .FALSE.   ! Zero the quadrupole moments
-      ZEROOC   = .FALSE.   ! Zero the octupole moments
       ISOPOL   = .FALSE.   ! Make anisotropic polarizabilities isotropic
       NOPOL    = .FALSE.   ! Zero the static polarizabilities
       IPQMMM   = 1         ! QMMM print level
@@ -4714,7 +4713,7 @@ C
           DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-     &               19,20,21,22,23,24,25,26,27), I
+     &               19,20,21,22,23,24,25,26), I
             END IF
   200     CONTINUE
           IF (WORD .EQ. '.OPTION') THEN
@@ -4874,31 +4873,25 @@ C           See if further input is provided for this option
    21     CONTINUE
             ZERODI = .TRUE.
             ZEROQU = .TRUE.
-            ZEROOC = .TRUE.
           GO TO 100
 
    22     CONTINUE
             ZEROQU = .TRUE.
-            ZEROOC = .TRUE.
           GO TO 100
 
    23     CONTINUE
-            ZEROOC = .TRUE.
-          GO TO 100
-
-   24     CONTINUE
             NOPOL = .TRUE.
           GO TO 100
 
-   25     CONTINUE
+   24     CONTINUE
             NOMB = .TRUE.
           GO TO 100
 
-   26     CONTINUE
+   25     CONTINUE
             MMTIME = .TRUE.
           GO TO 100
 
-   27     CONTINUE
+   26     CONTINUE
             NEWEXC = .TRUE.
           GO TO 100
 
@@ -4998,10 +4991,6 @@ C
         WRITE(LUPRI,*) 'Quadrupoles are reset to zero'
       ENDIF 
 
-      IF (ZEROOC) THEN
-        WRITE(LUPRI,*) 'Octupoles are reset to zero'
-      ENDIF 
-
       IF (ISOPOL) THEN
         WRITE(LUPRI,*) 'Anisotropic polarizabilites are made isotropic'
       ENDIF 
@@ -5059,16 +5048,6 @@ C     First we zero everything
         MUL2MM(4,J) = 0.0D0
         MUL2MM(5,J) = 0.0D0
         MUL2MM(6,J) = 0.0D0
-        MUL3MM(1,J) = 0.0D0
-        MUL3MM(2,J) = 0.0D0
-        MUL3MM(3,J) = 0.0D0
-        MUL3MM(4,J) = 0.0D0
-        MUL3MM(5,J) = 0.0D0
-        MUL3MM(6,J) = 0.0D0
-        MUL3MM(7,J) = 0.0D0
-        MUL3MM(8,J) = 0.0D0
-        MUL3MM(9,J) = 0.0D0
-        MUL3MM(10,J) = 0.0D0
         POLMM(1,J)  = 0.0D0
         POLMM(2,J)  = 0.0D0
         POLMM(3,J)  = 0.0D0
@@ -5135,7 +5114,7 @@ C     - length of excluded list = 0
       WRITE(LUPRI,*) POLWRD
       WRITE(LUPRI,*) ' *********************************** '
 
-      IF (NMULT. GT. 3) THEN
+      IF (NMULT. GT. 2) THEN
         CALL QUIT('Multipole order only impl. for 0,1,2')
       ENDIF
 
@@ -5224,45 +5203,6 @@ C     Charges + dipoles + quadrupoles ...  No polarizabilities
             MMCORD(2,J) = MMCORD(2,J)/SCAL
             MMCORD(3,J) = MMCORD(3,J)/SCAL
   302     CONTINUE
-        ENDIF
-      ENDIF
-
-C     Charges + dipoles + quadrupoles + octupoles...  No polarizabilities
-
-      IF ( (NMULT .EQ. 3) .AND. (IPOLTP .EQ. 0) ) THEN
-        LREAD = .TRUE.
-        IF (NELEME .EQ. 0) THEN
-          DO 112 J = 1,MMCENT
-            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
-     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
-     *                     MUL0MM(J),
-     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
-     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
-     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
-     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
-     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
-     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
-     *                     MUL3MM(10,J)
-            MMCORD(1,J) = MMCORD(1,J)/SCAL
-            MMCORD(2,J) = MMCORD(2,J)/SCAL
-            MMCORD(3,J) = MMCORD(3,J)/SCAL
-  112     CONTINUE
-        ELSE
-          DO 312 J = 1,MMCENT
-            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
-     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
-     *                     MUL0MM(J),
-     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
-     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
-     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
-     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
-     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
-     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
-     *                     MUL3MM(10,J)
-            MMCORD(1,J) = MMCORD(1,J)/SCAL
-            MMCORD(2,J) = MMCORD(2,J)/SCAL
-            MMCORD(3,J) = MMCORD(3,J)/SCAL
-  312     CONTINUE
         ENDIF
       ENDIF
 
@@ -5361,49 +5301,6 @@ C     Charges + dipoles + quadrupoles + anisotropic polarizabiblities
         ENDIF
       ENDIF
 
-C     Charges + dipoles + quadrupoles + octupoles + anisotropic polarizabiblities
-
-      IF ( (NMULT .EQ. 3) .AND. (IPOLTP .EQ. 2) ) THEN
-        LREAD = .TRUE.
-        IF (NELEME .EQ. 0) THEN
-          DO 115 J = 1,MMCENT
-            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
-     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
-     *                     MUL0MM(J),
-     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
-     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
-     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
-     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
-     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
-     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
-     *                     MUL3MM(10,J),
-     *                     POLMM(1,J),POLMM(2,J),POLMM(3,J),
-     *                     POLMM(4,J),POLMM(5,J),POLMM(6,J)
-            MMCORD(1,J) = MMCORD(1,J)/SCAL
-            MMCORD(2,J) = MMCORD(2,J)/SCAL
-            MMCORD(3,J) = MMCORD(3,J)/SCAL
-  115     CONTINUE
-        ELSE
-          DO 315 J = 1,MMCENT
-            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
-     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
-     *                     MUL0MM(J),
-     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
-     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
-     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
-     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
-     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
-     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
-     *                     MUL3MM(10,J),
-     *                     POLMM(1,J),POLMM(2,J),POLMM(3,J),
-     *                     POLMM(4,J),POLMM(5,J),POLMM(6,J)
-            MMCORD(1,J) = MMCORD(1,J)/SCAL
-            MMCORD(2,J) = MMCORD(2,J)/SCAL
-            MMCORD(3,J) = MMCORD(3,J)/SCAL
-  315     CONTINUE
-        ENDIF
-      ENDIF
-
 C     Only charges + isotropic polarizabiblities 
 
       IF ( (NMULT .EQ. 0) .AND. (IPOLTP .EQ. 1) ) THEN
@@ -5493,62 +5390,12 @@ C     Charges + dipoles + quadrupoles + isotropic polarizabiblities
         ENDIF
       ENDIF
 
-C     Charges + dipoles + quadrupoles + octupoles + isotropic polarizabiblities
-
-      IF ( (NMULT .EQ. 3) .AND. (IPOLTP .EQ. 1) ) THEN
-        LREAD = .TRUE.
-        IF (NELEME .EQ. 0) THEN
-          DO 118 J = 1,MMCENT
-            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),
-     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
-     *                     MUL0MM(J),
-     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
-     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
-     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
-     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
-     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
-     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
-     *                     MUL3MM(10,J),
-     *                     POLIMM(J)
-            MMCORD(1,J) = MMCORD(1,J)/SCAL
-            MMCORD(2,J) = MMCORD(2,J)/SCAL
-            MMCORD(3,J) = MMCORD(3,J)/SCAL
-  118     CONTINUE
-        ELSE
-          DO 318 J = 1,MMCENT
-            READ(LUQMMM,*) (EXLIST(I,J), I=1,NEXLST),ELEME(J),
-     *                     MMCORD(1,J),MMCORD(2,J),MMCORD(3,J),
-     *                     MUL0MM(J),
-     *                     MUL1MM(1,J),MUL1MM(2,J),MUL1MM(3,J),
-     *                     MUL2MM(1,J),MUL2MM(2,J),MUL2MM(3,J),
-     *                     MUL2MM(4,J),MUL2MM(5,J),MUL2MM(6,J),
-     *                     MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
-     *                     MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
-     *                     MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
-     *                     MUL3MM(10,J),
-     *                     POLIMM(J)
-            MMCORD(1,J) = MMCORD(1,J)/SCAL
-            MMCORD(2,J) = MMCORD(2,J)/SCAL
-            MMCORD(3,J) = MMCORD(3,J)/SCAL
-  318     CONTINUE
-        ENDIF
-      ENDIF
-
       CALL GPCLOSE(LUQMMM,'KEEP')
 
       IF (.NOT. LREAD) THEN
         CALL QUIT('No read option for this potential')
       ENDIF
 
-C     Remove octupoles
-      IF ( (ZEROOC) .AND. (NMULT .GE. 3) ) THEN
-         DO 324 J = 1,MMCENT
-            DO 325 I=1,10
-               MUL3MM(I,J) = 0.0D0
- 325        CONTINUE
- 324     CONTINUE 
-         NMULT = 2
-      ENDIF
 C     Remove quadrupoles
       IF ( (ZEROQU) .AND. (NMULT .GE. 2) ) THEN
          DO 322 J = 1,MMCENT
@@ -5697,19 +5544,6 @@ C     Do some testing on the QM to MM distances
                 MUL2MM(6,J) = 0.0D0
                 LMMNUL(J) = .TRUE.
               ENDIF
-              IF (NMULT .GE. 3) THEN
-                MUL3MM(1,J) = 0.0D0
-                MUL3MM(2,J) = 0.0D0
-                MUL3MM(3,J) = 0.0D0
-                MUL3MM(4,J) = 0.0D0
-                MUL3MM(5,J) = 0.0D0
-                MUL3MM(6,J) = 0.0D0
-                MUL3MM(7,J) = 0.0D0
-                MUL3MM(8,J) = 0.0D0
-                MUL3MM(9,J) = 0.0D0
-                MUL3MM(10,J) = 0.0D0
-                LMMNUL(J) = .TRUE.
-              ENDIF
               IF (IPOLTP .EQ. 1) THEN
                 POLIMM(J) = 0.0D0
                 LMMNUL(J) = .TRUE.
@@ -5830,30 +5664,6 @@ C         for the affecte sites.
             LMMNUL(JSAVE)   = .TRUE.
             LMMNUL(IMM)     = .TRUE.
           ENDIF
-          IF (NMULT .GE. 3) THEN
-            MUL3MM(1,JSAVE) = MUL3MM(1,JSAVE) + MUL3MM(1,IMM)
-            MUL3MM(2,JSAVE) = MUL3MM(2,JSAVE) + MUL3MM(2,IMM)
-            MUL3MM(3,JSAVE) = MUL3MM(3,JSAVE) + MUL3MM(3,IMM)
-            MUL3MM(4,JSAVE) = MUL3MM(4,JSAVE) + MUL3MM(4,IMM)
-            MUL3MM(5,JSAVE) = MUL3MM(5,JSAVE) + MUL3MM(5,IMM)
-            MUL3MM(6,JSAVE) = MUL3MM(6,JSAVE) + MUL3MM(6,IMM)
-            MUL3MM(7,JSAVE) = MUL3MM(7,JSAVE) + MUL3MM(7,IMM)
-            MUL3MM(8,JSAVE) = MUL3MM(8,JSAVE) + MUL3MM(8,IMM)
-            MUL3MM(9,JSAVE) = MUL3MM(9,JSAVE) + MUL3MM(9,IMM)
-            MUL3MM(10,JSAVE) = MUL3MM(10,JSAVE) + MUL3MM(10,IMM)
-            MUL3MM(1,IMM)   = 0.0D0
-            MUL3MM(2,IMM)   = 0.0D0
-            MUL3MM(3,IMM)   = 0.0D0
-            MUL3MM(4,IMM)   = 0.0D0
-            MUL3MM(5,IMM)   = 0.0D0
-            MUL3MM(6,IMM)   = 0.0D0
-            MUL3MM(7,IMM)   = 0.0D0
-            MUL3MM(8,IMM)   = 0.0D0
-            MUL3MM(9,IMM)   = 0.0D0
-            MUL3MM(10,IMM)   = 0.0D0
-            LMMNUL(JSAVE)   = .TRUE.
-            LMMNUL(IMM)     = .TRUE.
-          ENDIF
           IF (IPOLTP .EQ. 1) THEN
             POLIMM(JSAVE) = POLIMM(JSAVE) + POLIMM(IMM)
             POLIMM(IMM)   = 0.0D0
@@ -5921,19 +5731,6 @@ C       print now the closest QM-MM distance for MM sites with non-zero paramete
      *                 MUL2MM(4,J)*MUL2MM(4,J) +
      *                 MUL2MM(5,J)*MUL2MM(5,J) +
      *                 MUL2MM(6,J)*MUL2MM(6,J) 
-                IF (TEMP .GT. THRMM) LHIT = .TRUE.
-            ENDIF
-            IF (NMULT .GE. 3) THEN
-                TEMP = MUL3MM(1,J)*MUL3MM(1,J) +
-     *                 MUL3MM(2,J)*MUL3MM(2,J) +
-     *                 MUL3MM(3,J)*MUL3MM(3,J) +
-     *                 MUL3MM(4,J)*MUL3MM(4,J) +
-     *                 MUL3MM(5,J)*MUL3MM(5,J) +
-     *                 MUL3MM(6,J)*MUL3MM(6,J) +
-     *                 MUL3MM(7,J)*MUL3MM(7,J) +
-     *                 MUL3MM(8,J)*MUL3MM(8,J) +
-     *                 MUL3MM(9,J)*MUL3MM(9,J) +
-     *                 MUL3MM(10,J)*MUL3MM(10,J)
                 IF (TEMP .GT. THRMM) LHIT = .TRUE.
             ENDIF
             IF (IPOLTP .EQ. 1) THEN
@@ -6086,28 +5883,6 @@ C     Output information
   203   CONTINUE  
       ENDIF
 
-      IF (NMULT .GE. 3) THEN
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,4004) ' MM octupoles (xxx,xxy,xxz,xyy,xyz,xzz,yyy,yy
-     *z,yyz,yzz,zzz) '
-        WRITE(LUPRI,*) ' -----------------------------------------------
-     *-------------------------------'
-        DO 225 J = 1,MMCENT
-          IF (IOPT .EQ. 1) THEN
-            WRITE(LUPRI,4003) J,MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
-     *                          MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
-     *                          MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
-     *                          MUL3MM(10,J)
-          ELSE IF (LMMNUL(J)) THEN
-              WRITE(LUPRI,4003) J,MUL3MM(1,J),MUL3MM(2,J),MUL3MM(3,J),
-     *                            MUL3MM(4,J),MUL3MM(5,J),MUL3MM(6,J),
-     *                            MUL3MM(7,J),MUL3MM(8,J),MUL3MM(9,J),
-     *                            MUL3MM(10,J)
-          ENDIF
-  225   CONTINUE
-      ENDIF
-
-
       IF (IPOLTP .EQ. 1) THEN
         WRITE(LUPRI,*)
         WRITE(LUPRI,*) ' MM isotropic polarizabilities in au '
@@ -6140,7 +5915,6 @@ C     Output information
 4000    FORMAT(I6,3(2X,F12.6))
 4001    FORMAT(I6,2X,F12.6)
 4002    FORMAT(I6,6(2X,F12.6))
-4003    FORMAT(I6,10(2X,F12.6))
 4004    FORMAT(A80)
 
       CALL QEXIT('OUTMM')

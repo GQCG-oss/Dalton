@@ -15,6 +15,7 @@ LSDALTON=$SCRIPT_DIR/lsdalton.x
 LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
 DALMPI=$SCRIPT_DIR/lsdalton.x
 MPIRUN=@MPIEXEC@
+INSTALL_BASDIR=$SCRIPT_DIR/basis
 
 if [ -z "$DALTON_TMPDIR" ]; then
     scratch_dir_candidates="/global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
@@ -27,8 +28,10 @@ if [ -z "$DALTON_TMPDIR" ]; then
     done
 fi
 
-WRKDIR=`pwd`
-export WRKDIR
+WRKDIR=`pwd`; export WRKDIR
+# always search for basis sets in job work directory
+# (before standard dalton basis library in INSTALL_BASDIR, appended below)
+BASDIR=$WRKDIR
 #
 paramlist="$*"
 # default extensions
@@ -39,11 +42,10 @@ AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 #deafult values for options
 opt_valgrind=0
 opt_lslib_test=0
+opt_restart=0
 opta=0
 optA=0
 optd=0
-optgeo1=0
-optgeo2=0
 optdens=0
 optpg=0
 optD=1
@@ -75,6 +77,7 @@ usage (){
 	  echo ' -pg       do profiling'
 	  echo ' -dens     copy dens.restart and maybe fock.restart lcm_orbitals.u'
 	  echo ' -valgrind run with valgrind'
+	  echo ' -restart  run the calc twice to test restart option'	  
 	  echo ' -lslib_test run lslib test'	  
 	  echo ' -D        do not delete DALTON_TMPDIR after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
@@ -82,7 +85,7 @@ usage (){
 	  echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
 	  echo ' -m mem    set scratch memory to mem Mwords'
 	  echo ' -M mem    set scratch memory to mem Mb'
-	  echo ' -N num    use num MPI procs (defaults to DALTON_NR_MPI_PROCS)'
+	  echo ' -N num    use num MPI procs (defaults to DALTON_NUM_MPI_PROCS)'
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
 	  echo ' -t dir    change DALTON_TMPDIR from default to dir'
 	  echo ' -w dir    change WRKDIR from default to dir'
@@ -115,14 +118,13 @@ backup () {
 #
 while [ -n "`echo $1 | grep '^-'`" ]; do
     case $1 in
-      -b ) BASDIR="$2"; export BASDIR; shift;;
+      -b ) BASDIR="$2:$BASDIR"; shift;;
       -d ) optd=1;;
       -D ) optD=0;;
       -pg ) optpg=1;;
       -valgrind ) opt_valgrind=1;;
       -lslib_test ) opt_lslib_test=1;;
-      -geo1 ) optgeo1=1;;
-      -geo2 ) optgeo2=1;;
+      -restart ) opt_restart=1;;
       -dens ) optdens=1;;
       -ext ) OUTEXT=$2; shift;;
       -f ) optf="$2"; shift;;
@@ -132,12 +134,21 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -M ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
       -t ) DALTON_TMPDIR=$2; shift;;
-      -w ) WRKDIR="`pwd`/$2"; shift;;
+      -w ) WRKDIR=$2; shift;;
       -exe ) DALTON=$2; DALMPI=$2; shift;;
       * ) usage; exit 1;;
    esac
    shift
 done
+
+# append default basis set directory
+len_INSTALL_BASDIR=`echo $INSTALL_BASDIR | wc -c`
+if [ $len_INSTALL_BASDIR -gt 1 ]; then
+   # do not count newline char
+   BASDIR="$BASDIR:$INSTALL_BASDIR"
+fi
+export BASDIR
+
 # check for correct input
 if [ -z "$1" ]; then
    echo 'Input file[s] not specified'
@@ -176,7 +187,7 @@ export DALTON_TMPDIR
 echo
 echo "   ******************************************* "
 echo "   **** OUTPUT FROM LSDALTON SHELL SCRIPT **** "
-echo "   ****        Release 2011               **** "
+echo "   ****        Release 2013               **** "
 echo "   ******************************************* "
 echo; echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
@@ -221,16 +232,6 @@ if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
       [ -f $WRKDIR/$molfil.fock.restart ] && cp -f $WRKDIR/$molfil.fock.restart fock.restart
       [ -f $WRKDIR/$molfil.lcm_orbitals.u ] && cp -f $WRKDIR/$molfil.lcm_orbitals.u lcm_orbitals.u
    fi 
-   if [ $optgeo2 -eq 1 ] ; then
-      [ -f $WRKDIR/$molfil.runopt.history ] && cp -f $WRKDIR/$molfil.runopt.history runopt.history 
-      [ -f $WRKDIR/$molfil.$MOLEXT ] && cp -f $WRKDIR/$molfil.$MOLEXT runopt.initMOLECULE
-      if [ -s $WRKDIR/$dalfil.$DALEXT.2 -a -r $WRKDIR/$dalfil.$DALEXT.2 ]; then
-	  cp $WRKDIR/$dalfil.$DALEXT.2 LSDALTON.INP
-      else
-	  echo "$WRKDIR/$dalfil.$DALEXT.2 does not exist or is not readable"
-	  exit 1
-      fi
-   fi
    if [ "$optf" != "" ] ; then
       if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
          echo "Unpacking restart files..."
@@ -240,16 +241,24 @@ if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
 	 exit 1
       fi
    fi
+   if [ $opt_restart -eq 1 ] ; then
+    if [ -s $WRKDIR/$dalfil.$DALEXT.2 -a -r $WRKDIR/$dalfil.$DALEXT.2 ]; then
+       cp $WRKDIR/$dalfil.$DALEXT.2 LSDALTON.INP.2
+    else
+       echo "$WRKDIR/$dalfil.$DALEXT.2 does not exist or is not readable"
+       exit 1
+    fi 
+   fi
 else
    echo "$DALTON_TMPDIR does not exist or is not writeable"
    exit 1
 fi
 
-if [ -n "$DALTON_NR_MPI_PROCS" ]; then
+if [ -n "$DALTON_NUM_MPI_PROCS" ]; then
     if [ $optn -eq 0 ] ; then
-        # DALTON_NR_MPI_PROCS is set but -N is not
-        # in this case default -N to DALTON_NR_MPI_PROCS
-        optn=$DALTON_NR_MPI_PROCS
+        # DALTON_NUM_MPI_PROCS is set but -N is not
+        # in this case default -N to DALTON_NUM_MPI_PROCS
+        optn=$DALTON_NUM_MPI_PROCS
     fi
 fi
 
@@ -263,9 +272,19 @@ if [ $optn -gt 1 ] ; then
       if [ -a $MPI -a -x $MPI ]; then
 	 if [ $optlam -eq 0 ] ; then
 	    $MPIRUN -np $optn $MPI
+            if [ $opt_restart -eq 1 ] ; then
+  	       cp LSDALTON.INP.2 LSDALTON.INP
+	       $MPIRUN -np $optn $MPI
+            fi
+	    lsdalton_exitcode=$?
 	 else
 	    lamboot -v  $WRKDIR/$optlam
 	    $MPIRUN -np $optn $MPI
+            if [ $opt_restart -eq 1 ] ; then
+  	       cp LSDALTON.INP.2 LSDALTON.INP
+	       $MPIRUN -np $optn $MPI
+            fi
+	    lsdalton_exitcode=$?
 	    wipe    -v  $WRKDIR/$optlam
 	 fi
       else
@@ -278,28 +297,26 @@ if [ $optn -gt 1 ] ; then
    fi
 else
    if [ -s $LSDALTON -a -x $LSDALTON ]; then
-      if [ $optgeo1 -eq 1 ] ; then
-      	 $LSDALTON
-	 lsdalton_exitcode=$?
-      else
-	if [ $optgeo2 -eq 1 ] ; then
-	   $GEOOPT
-	   lsdalton_exitcode=$?
-        else
-	 if [ $opt_valgrind -eq 1 ]; then	
+      if [ $opt_valgrind -eq 1 ]; then	
+	 valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON
+         if [ $opt_restart -eq 1 ] ; then
+  	    cp LSDALTON.INP.2 LSDALTON.INP
 	    valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON
+         fi
+	 lsdalton_exitcode=$?
+      else	
+         if [ $opt_lslib_test -eq 1 ]; then
+            $LSLIB_TEST
 	    lsdalton_exitcode=$?
-	 else	
-               if [ $opt_lslib_test -eq 1 ]; then
-                  $LSLIB_TEST
-	          lsdalton_exitcode=$?
-	       else	  
-	          $LSDALTON	 	
-	          lsdalton_exitcode=$?
-               fi
-   	 fi		   
-	fi
-      fi
+	 else	  
+	    $LSDALTON
+            if [ $opt_restart -eq 1 ] ; then
+  	       cp LSDALTON.INP.2 LSDALTON.INP
+	       $LSDALTON	 	
+            fi
+	    lsdalton_exitcode=$?
+         fi
+      fi		   
       if [ $optpg -eq 1 ] ; then
 	 gprof $LSDALTON gmon.out > PROFILE
       fi      
@@ -308,13 +325,6 @@ else
 	 [ -f dens.restart ] && cp -f dens.restart $WRKDIR/$molfil.dens.restart
 	 [ -f fock.restart ] && cp -f fock.restart $WRKDIR/$molfil.fock.restart
 	 [ -f lcm_orbitals.u ] && cp -f lcm_orbitals.u $WRKDIR/$molfil.lcm_orbitals.u
-      fi
-      if [ $optgeo1 -eq 1 ] ; then
-	  [ -f runopt.history ] && cp -f runopt.history $WRKDIR/$molfil.runopt.history
-	  [ -f MOLECULE.OUT ] && cp -f MOLECULE.OUT $WRKDIR/$molfil.molout1
-      fi
-      if [ $optgeo2 -eq 1 ] ; then
-	 [ -f MOLECULE.OUT ] && cp -f MOLECULE.OUT $WRKDIR/$molfil.molout2
       fi
    else
       echo; echo  "FATAL ERROR:"
@@ -368,9 +378,6 @@ fi
       if [ -s LSDALTON.OUT -a -r LSDALTON.OUT ]; then
          cp LSDALTON.OUT $WRKDIR/$outnam.$OUTEXT
          [ -f PROFILE ] && cp -f PROFILE $WRKDIR/$outnam.prof.$OUTEXT
-	 if [ $optgeo1 -eq 1 ] ; then
-	 	 cp $WRKDIR/$outnam.$OUTEXT $WRKDIR/$outnam.$OUTEXT.original
-	 fi
       else
          echo "LSDALTON.OUT has not been created from the present run."
          if [ $optD -eq 1 ] ; then

@@ -90,6 +90,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Molecular geometry
 CRIT1=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT2=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
@@ -158,7 +163,7 @@ ERROR[6]="Open shell MP2 not correct"
 PASSED=1
 for i in 1 2 6 3 4 5
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

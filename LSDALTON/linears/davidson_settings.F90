@@ -40,6 +40,12 @@ logical :: NOL2OPT
 logical :: OnlyLocalize
 ! True if you want to print info useful for debug
 logical :: debug_info
+! Number of starting vectors
+integer :: start_it
+! TRUE if b3 coupling to b1 and b2 is too weak
+logical :: singularity
+! if using quadratic fit for line search
+logical :: lines_fit
 ! *************************
 ! * convergence settings  *
 ! *************************
@@ -51,7 +57,8 @@ real(realk)  :: local_conv_thresh
 real(realk)  :: global_conv_thresh
 ! Thresh for converging macro iterations
 real(realk)  :: macro_thresh
-
+! Maximum number of macro iterations 
+integer :: max_macroit
 
 
 !*******************
@@ -217,11 +224,19 @@ CFG%leastl_occ=0
 CFG%leastl_virt=0
 CFG%mostl_occ=0
 CFG%mostl_virt=0
+! Convergence thresh for micro
+CFG%conv_thresh = 0.01_realk
+! Global convergence threshold for micro
+CFG%global_conv_thresh = 0.01_realk
+! Local convergence threshold for micro
+CFG%local_conv_thresh = 0.005_realk
+CFG%lines_fit =.true.
 
 
 
 !General solver related keywords
 CFG%max_it = 25
+CFG%max_macroit = 200
 end subroutine davidson_default
 
 subroutine davidson_default_SCF(CFG)
@@ -244,15 +259,13 @@ subroutine davidson_reset(CFG)
 implicit none
 type(RedSpaceItem) :: CFG
 
+
+
+CFG%singularity=.false.
+CFG%start_it = 0
 !**********************************
 !*       Solver settings          *
 !**********************************
-! Convergence thresh for micro
-CFG%conv_thresh = 0.01_realk
-! Global convergence threshold for micro
-CFG%global_conv_thresh = 0.01_realk
-! Local convergence threshold for micro
-CFG%local_conv_thresh = 0.005_realk
 ! convergence threshold for macro
 CFG%macro_thresh = 0.0001_realk
 

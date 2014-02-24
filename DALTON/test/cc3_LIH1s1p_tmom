@@ -29,22 +29,15 @@ cat > cc3_LIH1s1p_tmom.info <<%EOF%
 #  INTEGRAL INPUT
 #######################################################################
 cat > cc3_LIH1s1p_tmom.mol <<%EOF%
-INTGRL
-CC3 transition moment
+BASIS
+cc-pVDZ
+CC3 polarizability 
 LiH molecule
     2    2  X  Y      1.00D-15
         3.0   1    2    0    1
 Li    0.0000000000000000   0.000000000   0.20000000
-f   3    1
-      0.6362897  0.15591627
-      0.1478601  0.60768372
-      0.0480887  0.39195739
         1.0   1    1    1
 H     0.0000000000000000   0.000000000  -0.60000000
-f   3    1
-      3.4252509  0.15432897
-      0.6239137  0.53532814
-      0.1688554  0.44463454
 %EOF%
 
 #######################################################################
@@ -79,9 +72,9 @@ cat > cc3_LIH1s1p_tmom.dal <<%EOF%
  100
 *CCEXCI
 .THREXC
- 1.0D-14
+ 1.0D-9
 .TOLSC
- 1.0D-13
+ 1.0D-8
 .NCCEXCI
  0 1 0 0
  0 0 0 0
@@ -109,24 +102,29 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2 and CC3 energies:
-CRIT1=`$GREP "Total SCF   energy: * -2\.7801922471" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -2\.7824034471" $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -2\.7976480465" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * -6\.8631724538" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -6\.8980596685" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -6\.9161293098" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 transition moments:
-CRIT1=`$GREP  " *\| XDIPLEN *\| *(|0)\.09414391 *\| *(|0)\.09514908 *\| *(|0)\.00895771 *\|" $log | wc -l`
+CRIT1=`$GREP  " *\| XDIPLEN *\| *1\.42988471 *\| *2\.40690326 *\| *3\.44159419 *\|" $log | wc -l`
 
 TEST[2]=$CRIT1
 CTRL[2]=1
 ERROR[2]="CC3 TRANSITION MOMENT NOT CORRECT"
 
 # CC3 excitation energies:
-CRIT1=`$GREP  " *\| *\^1B1 *\| *1 *\| *(-|-0)\.0145342 *\| *(-|-0)\.39550 *\| *-3189\.88. *\| *100\.00 *\|" $log | wc -l`
+CRIT1=`$GREP  " *\| *\^1B1 *\| *1 *\| *( |0)\.1144759 *\| *3\.11505 *\| *25124\.5(5|6). *\| *72\... *\|" $log | wc -l`
 TEST[3]=$CRIT1
 CTRL[3]=1
 ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT"

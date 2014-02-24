@@ -1,3 +1,26 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C
 C  /* Deck lrscinp */
 C This module read nesserary input for LRESC calculations.
@@ -23,8 +46,8 @@ C jim  aca van las opctiones para LRESC , aun no las defino todas
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
      &            '.DIAM1S'/
 C
-c#include <dorps.h>
-c#include <spnout.h>
+c#include "dorps.h"
+c#include "spnout.h"
 C
 c      write(lupri,*) ' LRSCOPTS :  called with : ' , WORD
 
@@ -149,7 +172,7 @@ c jim-dbg ICHANG < 0 no cambios
          CALL HEADER('Changes of defaults for LRESC :',0)
          IF (GAUCHANG) THEN
            write(lupri,*)' - Remember to set GAUGEO on INTEGRAL ' //
-     &     ' SECTION. GAUGEO MUST be placed on selected NUCLEUS'
+     &   ' SECTION. GAUGEO MUST be placed on selected NUCLEUS, in a.u.'
            WRITE (LUPRI,*) ' - cambiaste origen de gauge .. ojo  '
          END IF
          IF (JIMPRT.NE.0) THEN
@@ -375,8 +398,8 @@ C
        SGP1S = SGP1S + LRLKIN(i,i) + LRPSOK(i,i) 
        SGD0S = SGD0S + LRFCAV(i,i) + LRDIAK(i,i) + LRANGP(i,i)
        SGD1S = SGD1S + LRDIAD(i,i) + LRDIAM(i,i)
-       relall= relall + SGD0S + SGD1S + SGP1S + SGP1T
       ENDDO
+      relall= relall + SGD0S + SGD1S + SGP1S + SGP1T
 C
 C  shielding constant is the trace of each tensor
 C
@@ -415,7 +438,7 @@ c      WRITE(LUPRI,*)' Gaugeo placed at : ', GAGORG
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(4X,A)')'-  Remember : '
       WRITE(LUPRI,'(14X,A)')'*  GAUGEO should be placed at selected '//
-     &  'nucleus, on INTEGRALS SECTION' 
+     &  'nucleus, on INTEGRALS SECTION, in a.u' 
       IF (.NOT. PRTALL) THEN 
          WRITE(LUPRI,'(14X,A)')'*  For individual contributions, add '//
      &   '.PRTALL in your input file under *LROPTS'
@@ -441,7 +464,7 @@ C
             WRITE(LUPRI,*)
             IF(PRTALL) THEN 
               aa =(LRLKIN(1,1)+LRLKIN(2,2)+LRLKIN(3,3))/3.0
-              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+            WRITE(LUPRI,*)'       Detailed info : [.PARA1S] Diagonal'// 
      &                      ' components, for each operator'
               WRITE(LUPRI,*)'       ---------------            xx  '//
      &                       '          yy             zz          iso'
@@ -459,7 +482,7 @@ C
      &      'Second Order Triplets. Total Value : ', SGP1T,'[ppm]'
             WRITE(LUPRI,*)
             IF(PRTALL) THEN
-              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+            WRITE(LUPRI,*)'       Detailed info : [.PARA1T] Diagonal'// 
      &                      ' components, for each operator'
               WRITE(LUPRI,*)'       ---------------            xx  '//
      &                       '          yy             zz          iso'
@@ -477,11 +500,12 @@ C
      &       'SdBso :',LRSDBS(1,1),LRSDBS(2,2),LRSDBS(3,3),aa,' [ppm]'
             ENDIF
          ENDIF
+         IF((SIGMAP1S.AND.SIGMAP1T).OR.LRESCALL) THEN
             WRITE(LUPRI,*)
             WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
      &      'Total Paramagnetic Corrections :     ',
      &       (SGP1S+SGP1T),' [ppm]'
-
+         ENDIF
       ENDIF
 C
 C diamagnetic 0th or 1st order singlet
@@ -493,10 +517,10 @@ c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
          IF(SIGMAD0S) THEN 
             WRITE(LUPRI,*)
             WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
-     &      'First Order. Total Value :           ', SGD0S,' [ppm]'
+     &      'First Order Singlets. Total Value :  ', SGD0S,' [ppm]'
             WRITE(LUPRI,*)
             IF(PRTALL) THEN
-              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+            WRITE(LUPRI,*)'       Detailed info : [.DIAM1S] Diagonal'// 
      &                      ' components, for each operator'
               WRITE(LUPRI,*)'       ---------------            xx  '//
      &                       '          yy             zz          iso'
@@ -517,7 +541,7 @@ c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
      &      'Second Order Singlets. Total Value : ', SGD1S,' [ppm]'
             WRITE(LUPRI,*)
             IF(PRTALL) THEN
-              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+            WRITE(LUPRI,*)'       Detailed info : [.DIAM1S] Diagonal'// 
      &                      ' components, for each operator'
               WRITE(LUPRI,*)'       ---------------            xx  '//
      &                       '          yy             zz          iso'
@@ -529,11 +553,13 @@ c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
      &       'DiaDw  :',LRDIAD(1,1),LRDIAD(2,2),LRDIAD(3,3),aa,' [ppm]'
             ENDIF
          ENDIF
-      ENDIF
+         IF((SIGMAD1S.AND.SIGMAD0S).OR.LRESCALL) THEN
             WRITE(LUPRI,*)
             WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
      &      'Total Diamagnetic Corrections :      ',
      &       (SGD0S+SGD1S),' [ppm]'
+         ENDIF
+      ENDIF
 C
 C All of them in detail
 C

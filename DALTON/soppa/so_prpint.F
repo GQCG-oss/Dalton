@@ -21,7 +21,7 @@ C
 #include "inftap.h"
 CSPAS:10/11-2003: is merged with maxorb.h
 #include "maxorb.h"
-C#include <mxorb.h>
+C#include "mxorb.h"
 CKeinSPASmehr
 #include "maxaqn.h"
 #include "symmet.h"
@@ -87,31 +87,48 @@ C-----------------------------------------------
 C
       IF (LTYPE .EQ. 'EXCITA') THEN
 C
-C-----------------------------------------------------------------------
-C        Dipole strength and conventional rotatory strength is set true.
-C-----------------------------------------------------------------------
+C---------------------------------------
+C        For triplet excitation energies
+C---------------------------------------
 C
-         LSECMOM = .TRUE.
+         IF (TRIPLET) THEN
 C
-         DIPSTR  = .TRUE.
-         ROTVEL  = .TRUE.
+            LSECMOM = .TRUE.
+C
+C---------------------------------------
+C        For singlet excitation energies
+C---------------------------------------
+C
+         ELSE
+C
+C-------------------------------------------------------------
+C           Dipole strength and conventional rotatory strength 
+C           is set true.
+C-------------------------------------------------------------
+C
+            LSECMOM = .TRUE.
+C
+            DIPSTR  = .TRUE.
+            ROTVEL  = .TRUE.
 C
 C
 CSPAS:23/5-11: second and third moment sum rules
-         IF (SUMRUL) THEN           ! sum rules, dip, quad, oct.
-            LDIPLEN = .TRUE.
-            LDIPVEL = .TRUE.
-            LSECMOM = .TRUE.
-            LTHIRDM = .TRUE.
-         END IF
+            IF (SUMRUL) THEN           ! sum rules, dip, quad, oct.
+               LDIPLEN = .TRUE.
+               LDIPVEL = .TRUE.
+               LSECMOM = .TRUE.
+               LTHIRDM = .TRUE.
+            END IF
 CKeinSPASmehr
-         IF ( DIPSTR )              LDIPLEN = .TRUE.
-         IF ( DIPSTR )              LDIPVEL = .TRUE.
-         IF ( ROTSTR )              LDIPLEN = .TRUE.
-         IF ( ROTSTR )              LLONMAG = .TRUE.
+            IF ( DIPSTR )              LDIPLEN = .TRUE.
+            IF ( DIPSTR )              LDIPVEL = .TRUE.
+            IF ( ROTSTR )              LDIPLEN = .TRUE.
+            IF ( ROTSTR )              LLONMAG = .TRUE.
 cKeld      IF ( ROTSTR .AND. NODIFC ) LHBDO   = .TRUE.
-         IF ( ROTVEL )              LDIPVEL = .TRUE.
-         IF ( ROTVEL )              LANGMOM = .TRUE.
+            IF ( ROTVEL )              LDIPVEL = .TRUE.
+            IF ( ROTVEL )              LANGMOM = .TRUE.
+C
+         END IF
 C
 C
 C------------------------------------------------------
@@ -311,6 +328,8 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('SO_PRPINT')
 C

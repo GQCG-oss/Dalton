@@ -1,0 +1,154 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc_rsp_lanczos_alpha.info <<'%EOF%'
+   cc_rsp_lanczos_alpha
+   --------------------
+   Molecule:         H2O in C2v
+   Wave Functions:   CCSD / 3-21G
+   Test Purpose:     Frequency-dependent real and imaginary 
+                     polarizabilities using Lanczos solver (damping =/0)
+                     Jchain = full space
+
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > cc_rsp_lanczos_alpha.mol <<'%EOF%'
+ATOMBASIS
+H2O, Lanczos spectrum
+using 3-21G
+ATOMTYPES=2 Generators=2 X Z
+    8.0    1    basis=3-21G
+O     0.000000      0.000000      0.000000
+    1.0    1    basis=3-21G
+H     1.429937284000 -1.1071751130000000 0.0
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc_rsp_lanczos_alpha.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+**WAVE FUNCTIONS
+.TITLE
+  Lanczos cmplx dipole-dipole polarizability with damping
+  (coupled cluster damped linear response function)
+.CC
+*SCF INPUT 
+.THRESH
+ 1.0d-12
+*CC INPUT 
+.CCSD
+.PRINT
+ 1
+.THRENR
+ 1.0d-10
+.THRLEQ
+ 1.0d-8
+*CCLRLANCZOS
+.CHAINLENGTH
+1310
+.OPERATOR
+XDIPLEN XDIPLEN
+.DAMPING
+  1
+0.004556
+.FREQ INTERVAL
+0.0 0.2 0.1
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >cc_rsp_lanczos_alpha.check
+cat >>cc_rsp_lanczos_alpha.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-75.58537789." | wc -l`
+CRIT2=`$GREP "Total MP2 * energy: * \-75.70777049." $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy: * \-75.71503148." $log | wc -l`
+TESTA=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRLA=5
+ERRORA="ENERGIES NOT CORRECT"
+
+# EIGENVALUES
+CRIT1=`$GREP "EIGENVALUE NO.   1 " $log | $GREP "( |0)\.5065557" | wc -l`
+CRIT2=`$GREP "EIGENVALUE NO.  19 " $log | $GREP "2\.0850556" | wc -l`
+CRIT3=`$GREP "EIGENVALUE NO. 199 " $log | $GREP "23\.035203" | wc -l`
+TESTB=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 ` 
+CTRLB=3
+ERRORB="LANCZOS EIGENVALUES NOT CORRECT"
+
+# CCSD XX polarizabilities
+CRIT1=`$GREP "fun with gamma = * 0.00455600 J= * 249" $log | wc -l`
+CRIT2=`$GREP "( |0)\.00000000 *  \-6\.46815038  *  (\-0|0| |\-)\.00000000" $log | wc -l`
+CRIT3=`$GREP "2\.72113842  * \-6\.64521271  *  ( \-|\-0)\.01665755" $log | wc -l`
+CRIT4=`$GREP "5\.44227684  * \-7\.25241597  *  ( \-|\-0)\.04088594" $log | wc -l`
+TESTC=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
+CTRLC=4
+ERRORC="LANCZOS XX POLARIZABILITY NOT CORRECT"
+#
+
+TESTSUM=`expr $TESTA \+ $TESTB \+ $TESTC`
+CTRLSUM=`expr $CTRLA \+ $CTRLB \+ $CTRLC`
+
+if [ $TESTSUM -eq $CTRLSUM ]
+then
+  echo TEST ENDED PROPERLY
+else
+
+  if [ $TESTA -ne $CTRLA ]; then
+    echo $ERRORA
+  fi
+
+  if [ $TESTB -ne $CTRLB ]; then
+    echo $ERRORB
+  fi
+
+  if [ $TESTC -ne $CTRLC ]; then
+    echo $ERRORC
+  fi
+
+  echo THERE IS A PROBLEM 
+  exit 1
+
+fi
+
+exit 0
+
+%EOF%
+chmod +x cc_rsp_lanczos_alpha.check
+#######################################################################

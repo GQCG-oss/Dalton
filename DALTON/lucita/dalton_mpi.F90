@@ -12,7 +12,7 @@ module dalton_mpi
 !           written by radovan bast, for DIRAC.
 !           adapted and extended for DALTON by sknecht, december 2010.
 
-#ifndef VAR_USE_MPIF
+#ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
 #else

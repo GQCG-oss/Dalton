@@ -34,12 +34,11 @@ CONTAINS
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
-SUBROUTINE II_precalc_DECScreenMat(DECscreen,LUPRI,LUERR,SETTING,nbatches,ndimA,ndimG,intspec)
+SUBROUTINE II_precalc_DECScreenMat(DECscreen,LUPRI,LUERR,SETTING,ndimA,ndimG,intspec)
 IMPLICIT NONE
 TYPE(DECscreenITEM),intent(INOUT)    :: DecScreen
 TYPE(LSSETTING)      :: SETTING
 INTEGER,intent(in)   :: LUPRI,LUERR,ndimA,ndimG
-integer,intent(inout):: nbatches
 Character,intent(IN)          :: intSpec(5)
 !
 TYPE(lstensor),pointer :: GAB
@@ -470,11 +469,11 @@ end subroutine II_getBatchOrbitalScreen2K_RHS
 !> \param dim4 the dimension of batch index 
 !> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
 SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,SETTING,&
-     &outputintegral,batchC,batchD,batchsizeC,batchSizeD,nbast1,nbast2,dim3,dim4,fullRHS,nbatches,intSpec)
+     &outputintegral,batchC,batchD,batchsizeC,batchSizeD,nbast1,nbast2,dim3,dim4,fullRHS,intSpec)
 IMPLICIT NONE
 TYPE(LSSETTING),intent(inout) :: SETTING
 INTEGER,intent(in)            :: LUPRI,LUERR,nbast1,nbast2,dim3,dim4,batchC,batchD
-INTEGER,intent(in)            :: batchsizeC,batchSizeD,nbatches
+INTEGER,intent(in)            :: batchsizeC,batchSizeD
 REAL(REALK),target            :: outputintegral(nbast1,nbast2,dim3,dim4,1)
 logical,intent(in)            :: FullRhs
 Character,intent(IN)          :: intSpec(5)
@@ -588,15 +587,7 @@ setting%output%DECPACKED = .TRUE.
 setting%output%Resultmat => outputintegral
 
 ! Set to zero
-do l=1,dim4
-   do k=1,dim3
-      do j=1,nbast2
-         do i=1,nbast1
-            setting%output%ResultMat(i,j,k,l,1) = 0.0E0_realk
-         end do
-      end do
-   end do
-end do
+call JZERO(setting%output%ResultMat,nbast1,nbast2,dim3,dim4)
 
 CALL ls_setDefaultFragments(setting)
 IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
@@ -654,6 +645,23 @@ ENDIF
 
 call time_II_operations2(JOB_II_GET_DECPACKED4CENTER_J_ERI)
 END SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI
+
+subroutine JZERO(ResultMat,dim1,dim2,dim3,dim4)
+implicit none
+integer,intent(in) :: dim1,dim2,dim3,dim4
+real(realk),intent(inout) :: ResultMat(dim1,dim2,dim3,dim4)
+!
+integer :: i,j,k,l
+do l=1,dim4
+   do k=1,dim3
+      do j=1,dim2
+         do i=1,dim1
+            ResultMat(i,j,k,l) = 0.0E0_realk
+         end do
+      end do
+   end do
+end do
+end subroutine JZERO
 
 !> \brief Calculates the decpacked explicit 4 center eri 
 !> \author T. Kjaergaard
@@ -787,15 +795,7 @@ setting%output%DECPACKED2 = .TRUE.
 setting%output%Resultmat => outputintegral
 
 ! Set to zero
-do j=1,nbast2
- do l=1,dim4
-  do k=1,dim3
-   do i=1,nbast1
-    setting%output%ResultMat(i,k,l,j,1) = 0.0E0_realk
-   end do
-  end do
- end do
-end do
+call JZERO(setting%output%ResultMat,nbast1,dim3,dim4,nbast2)
 
 CALL ls_setDefaultFragments(setting)
 IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
@@ -847,11 +847,11 @@ END SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI2
 !> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
 SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      & outputintegral,batchA,batchC,batchsizeA,batchSizeC,&
-     & dim1,nbast2,dim3,nbast4,nbatches,intSpec,FULLRHS)
+     & dim1,nbast2,dim3,nbast4,intSpec,FULLRHS)
   IMPLICIT NONE
   TYPE(LSSETTING),intent(inout) :: SETTING
   INTEGER,intent(in)            :: LUPRI,LUERR,nbast2,nbast4,dim1,dim3,batchA,batchC
-  INTEGER,intent(in)            :: batchsizeA,batchSizeC,nbatches
+  INTEGER,intent(in)            :: batchsizeA,batchSizeC
   REAL(REALK),target            :: outputintegral(dim1,nbast2,dim3,nbast4,1)
   Character,intent(IN)          :: intSpec(5)
   LOGICAL,intent(IN) :: FULLRHS 
@@ -877,7 +877,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      WRITE(lupri,*)'II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int'
      CALL II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,SETTING,&
           & outputintegral,batchA,batchC,batchsizeA,batchSizeC,&
-          & nbast2,nbast4,dim1,dim3,fullRHS,nbatches,intSpec)
+          & nbast2,nbast4,dim1,dim3,fullRHS,intSpec)
   ELSE
      IF (intSpec(5).NE.'C') THEN
         nGaussian = 6
@@ -964,15 +964,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      setting%output%Resultmat => outputintegral
 
      ! Set to zero
-     do l=1,nbast4
-        do k=1,dim3
-           do j=1,nbast2
-              do i=1,dim1
-                 setting%output%ResultMat(i,j,k,l,1) = 0.0E0_realk
-              end do
-           end do
-        end do
-     end do
+     call JZERO(setting%output%ResultMat,dim1,nbast2,dim3,nbast4)
 
      CALL ls_setDefaultFragments(setting)
      IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN

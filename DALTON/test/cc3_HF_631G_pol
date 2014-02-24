@@ -96,6 +96,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2 and CC3 energies:
 CRIT1=`$GREP "Total SCF   energy: * -99\.9834089353" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * -100\.1121031642" $log | wc -l`
@@ -106,8 +111,8 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 polarizability :
-CRIT1=`$GREP  "YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *YDIPLEN *\(unrel\.\)  (|-|-0|0)\.0000 *(|0)\.68743753" $log | wc -l`
-CRIT2=`$GREP  " *(-|-0)\.5000 *(|0)\.5000 *(|0)\.19660267" $log | wc -l`
+CRIT1=`$GREP  "YDIPLEN *\(unrel\.\) *( |-|-0|0)\.0000 *YDIPLEN *\(unrel\.\)  ( |-|-0|0)\.0000 *( |0)\.68743753" $log | wc -l`
+CRIT2=`$GREP  " *(-|-0)\.5000 *( |0)\.5000 *( |0)\.19660267" $log | wc -l`
 
 TEST[2]=`expr $CRIT1  \+ $CRIT2`
 CTRL[2]=2

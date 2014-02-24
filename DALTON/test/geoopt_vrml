@@ -98,16 +98,17 @@ CTRL[2]=1
 ERROR[2]="VISUALIZATION NOT CORRECT"
 
 # Other parts
+# ctrl = 12 because of output header
 CRIT1=`$GREP "SIRIUS" $log | wc -l`
 CRIT2=`$GREP "ABACUS" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[3]=0
+CTRL[3]=12
 ERROR[3]="OTHER PARTS OF DALTON SHOULD NOT BE RUN"
 
 PASSED=1
 for i in 1 2 3
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi

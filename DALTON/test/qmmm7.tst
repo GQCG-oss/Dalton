@@ -12,7 +12,6 @@ qm3energy
 qmmmq
 qmmmdip
 qmmmquad
-qmmmoct
 qmmmelpol
 qmmmnucpol
 qmmmmulpol
@@ -630,7 +629,6 @@ Point group: C1
      Charge contribution:         -0.017327610248
      Dipole contribution:          0.005805786464
      Quadrupole contribution:     -0.008761541465
-     Octuple contribution:         0.000000000000
      Electronic Pol. energy:      -0.069987879641
      Nuclear pol. energy:          0.065657291300
      Multipole Pol. energy:       -0.005617953588

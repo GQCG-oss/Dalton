@@ -7,9 +7,18 @@
 !     MXCORB = maximum number of orbitals (possibly contracted).
 !     MAXOCC = maximum number of occupied orbitals
 !
-!     IF you change any of these parameters you should do a "make depend"
-!     and then rebuild the program using the command "make".
+!     IF you change any of these parameters you should rebuild with "make".
 !
-      INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT, MAXOCC
-      PARAMETER (MXSHEL = 1000, MXPRIM = 8000, MXCORB = 1200,           &
-     &           MAXOCC = 400, MXORBT = MXCORB*(MXCORB + 1)/2)
+      INTEGER    MXSHEL, MXPRIM, MXCORB, MXORBT, MAXOCC
+      PARAMETER (MXSHEL = 1000, MXPRIM = 8000 )
+      PARAMETER (MXCORB = 2400, MXORBT = MXCORB*(MXCORB + 1)/2 )
+      PARAMETER (MAXOCC = 800 )
+
+!     MXCORB_CC = max number of orbitals in CC modules
+!     (normally less than MXCORB because of a lot of static allocations
+!      in the CC module for address pointers)
+
+      INTEGER    MXCORB_CC
+      PARAMETER (MXCORB_CC = 600 )
+
+! -- end of maxorb.h --

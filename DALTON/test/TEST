@@ -1,7 +1,7 @@
 #!/bin/bash    
 #########################################################################
 #
-# Shell script for running DALTON test suite
+# Shell script for running DALTON tests
 #
 # First version by Christof Haettig and Kasper Hald, Sep. 2000
 #
@@ -50,7 +50,7 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
        -benchmark             : print CPU time for each testcase as part of the summary
        -param "option list"   : pass "option list" to dalton-script
        -dalton script         : use "script" instead of the default
-                                dalton-script "`pwd`/../dalton" (absolute path) 
+                                dalton-script "`pwd`/../../build/dalton" (absolute path) 
        -log logfile           : write output into logfile instead of to "DALTON_TESTLOG"
        -result-directory path : change default result directory to path
 %EOF%
@@ -80,7 +80,11 @@ errprint(){
 #########################################################################
 TESTparams="$0 $*"
 help=""
-keep="false"
+if [ -n "$KEEP_TEST_OUTPUTS" ]; then
+    keep="true"
+else
+    keep="false"
+fi
 paramlist=""
 par_paramlist="-N 4"
 reftest=""
@@ -170,16 +174,14 @@ fi
 cp functions $testdir
 cd $testdir || exit 1
 
-myprint "#####################################################################"
-myprint "                          DALTON test suite"
-myprint "#####################################################################"
+myprint ""
+myprint "DALTON test           : $testcase"
 myprint "invoked with          : $TESTparams"
 myprint "date and time         : `date`"
 myprint "dalton script         : $TIMING_OF $DALTON"
 myprint "parameter list passed : $paramlist"
 myprint "test job directory    : $testdir"
 myprint "test listing          : $listing"
-myprint "test cases            : $testcase"
 
 #########################################################################
 # loop over test cases:
@@ -212,13 +214,6 @@ do
       shift ;;
   esac
 
-  # errprint is necessary to see what test a system error message came from, in case stderr and stdout are different
-  errprint "##########################################################################################"
-  errprint "`date` -- Starting test number $total_tests_run out of $total_tests: $item"
-
-  myprint  "##########################################################################################"
-  myprint  "`date` -- Starting test number $total_tests_run out of $total_tests: $item"
-  myprint  "------------------------------------------------------------------------------------------"
   chmod +x $SCRIPT_DIR/$item || exit 1
   $SCRIPT_DIR/$item
 # remove any directory path now the files are unpacked
@@ -430,6 +425,8 @@ if [ "$result_directory" != "" ]; then
       # test passed, we remove the custom result directory
       if [ "$keep" = "false" ]; then
          rm -r $result_directory
+      else
+         mv $result_directory ${result_directory}_passed_"`date +'%Y-%m-%dT%H_%M'`-$$"
       fi
   else
       mv $result_directory ${result_directory}_failed_"`date +'%Y-%m-%dT%H_%M'`-$$"

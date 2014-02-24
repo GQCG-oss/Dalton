@@ -12,6 +12,7 @@ import string
 import re
 import subprocess
 import shutil
+import datetime
 
 sys.path.append('cmake')
 from argparse import ArgumentParser
@@ -60,6 +61,14 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable 64bit integers [default: %(default)s]')
+    group.add_argument('--openacc',
+            action='store_true',
+            default=False,
+            help='enable OpenACC [default: %(default)s]')
+    group.add_argument('--collapse',
+            action='store_true',
+            default=False,
+            help='enable COLLAPSE clause for reorderings [default: %(default)s]')
     group.add_argument('--prefix',
             action='store',
             default=None,
@@ -69,6 +78,11 @@ def parse_input():
             action='store_true',
             default=False,
             help='show cmake command and exit [default: %(default)s]')
+    group.add_argument('--cmake',
+            action='store',
+            default='cmake',
+            help='set the cmake command [default: cmake; e.g. --cmake cmake28]',
+            metavar='STRING')
     
     group = parser.add_argument_group('parallelization')
     group.add_argument('--mpi',
@@ -89,31 +103,28 @@ def parse_input():
             nargs='?',
             action='store',
             choices=('sequential', 'parallel', 'cluster'),
-            default=None,
-            help='pass -mkl=STRING flag to the compiler and linker, sets --blas and --lapack to off [default: %(default)s]')
+            default='none',
+            help='pass -mkl=STRING flag to the compiler and linker (sequential: link using the non-threaded libraries; parallel: link using the OMP threaded libraries; cluster: link using the MKL CLuster libraries) [default: None]')
+
     group.add_argument('--blas',
-            nargs='?',
             action='store',
-            choices=('on','off'),
-            default='on',
-            const='on',
-            help='enable BLAS [default: %(default)s]')
+            default='auto',
+            help='specify BLAS library; possible choices are "auto", "builtin", "none", or full path [default: %(default)s]',
+            metavar='[{auto,builtin,none,/full/path/lib.a}]')
     group.add_argument('--lapack',
-            nargs='?',
             action='store',
-            choices=('on','off'),
-            default='on',
-            const='on',
-            help='enable LAPACK [default: %(default)s]')
+            default='auto',
+            help='specify LAPACK library; possible choices are "auto", "builtin", "none", or full path [default: %(default)s]',
+            metavar='[{auto,builtin,none,/full/path/lib.a}]')
     group.add_argument('--explicit-libs',
             action='store',
             default=None,
-            help='explicit linker specification for exotic libraries',
+            help='explicit linker specification for extra libraries; passed directly to the linker',
             metavar='STRING')
     group.add_argument('--cray',
             action='store_true',
             default=False,
-            help='use cray wrappers for BLAS/LAPACK and MPI which disables math detection and internal math implementation [default: %(default)s]')
+            help='use cray wrappers for BLAS/LAPACK and MPI which disables math detection and builtin math implementation [default: %(default)s]')
     group.add_argument('--csr',
             action='store_true',
             default=False,
@@ -126,6 +137,10 @@ def parse_input():
             action='store_true',
             default=False,
             help='build using SCALASCA profiler mode [default: %(default)s]')
+    group.add_argument('--vampirtrace',
+            action='store_true',
+            default=False,
+            help='build using Vampirtrace instrumentation [default: %(default)s]')
     
     group = parser.add_argument_group('advanced options')
     group.add_argument('--check',
@@ -172,6 +187,10 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable interest external library [default: %(default)s]')
+    group.add_argument('--ichor',
+            action='store_true',
+            default=False,
+            help='enable ichor integrals library [default: %(default)s]')
     
     group = parser.add_argument_group('pass extra flags to the compiler')
     group.add_argument('--extra-fc-flags',
@@ -193,8 +212,8 @@ def parse_input():
     return parser.parse_args()
 
 
-def check_cmake_exists():
-    p = subprocess.Popen('cmake --version',
+def check_cmake_exists(cmake_command):
+    p = subprocess.Popen('%s --version' % cmake_command,
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
@@ -227,32 +246,74 @@ def gen_cmake_command(args):
         command += ' CXX=%s' % args.cxx
 
     if sys.platform != "win32":
-        command += ' cmake'
+        command += ' %s' % args.cmake
     else:
         # fix for windows
-        command = ' cmake ' + command
+        command = ' %s ' % args.cmake + command
 
     command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
     command += ' -DENABLE_OMP=%s'            % translate_cmake(args.omp)
     command += ' -DENABLE_64BIT_INTEGERS=%s' % translate_cmake(args.int64)
+    command += ' -DENABLE_OPENACC=%s'        % translate_cmake(args.openacc)
+    command += ' -DENABLE_COLLAPSE=%s'        % translate_cmake(args.collapse)
     command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
     command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
+    command += ' -DENABLE_VAMPIRTRACE=%s'    % translate_cmake(args.vampirtrace)
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
     command += ' -DENABLE_XCFUN=%s'          % translate_cmake(args.xcfun)
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
-    command += ' -DENABLE_CRAY_WRAPPERS=%s'  % translate_cmake(args.cray)
+    command += ' -DENABLE_ICHOR=%s'          % translate_cmake(args.ichor)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
 
-    if args.mkl:
-        command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
+    if args.blas == 'builtin':
+        command += ' -DENABLE_BUILTIN_BLAS=ON'
+        command += ' -DENABLE_AUTO_BLAS=OFF'
+    elif args.blas == 'auto':
+        if (args.mkl != 'none') and not args.cray:
+            command += ' -DENABLE_AUTO_BLAS=ON'
+    elif args.blas == 'none':
+        command += ' -DENABLE_AUTO_BLAS=OFF'
     else:
-        command += ' -DENABLE_BLAS=%s'     % args.blas.upper()
-        command += ' -DENABLE_LAPACK=%s'   % args.lapack.upper()
+        if not os.path.isfile(args.blas):
+            print('--blas=%s does not exist' % args.blas)
+            sys.exit(1)
+        command += ' -DEXPLICIT_BLAS_LIB=%s' % args.blas
+        command += ' -DENABLE_AUTO_BLAS=OFF'
+
+    if args.lapack == 'builtin':
+        command += ' -DENABLE_BUILTIN_LAPACK=ON'
+        command += ' -DENABLE_AUTO_LAPACK=OFF'
+    elif args.lapack == 'auto':
+        if (args.mkl != 'none') and not args.cray:
+            command += ' -DENABLE_AUTO_LAPACK=ON'
+    elif args.lapack == 'none':
+        command += ' -DENABLE_AUTO_LAPACK=OFF'
+    else:
+        if not os.path.isfile(args.lapack):
+            print('--lapack=%s does not exist' % args.lapack)
+            sys.exit(1)
+        command += ' -DEXPLICIT_LAPACK_LIB=%s' % args.lapack
+        command += ' -DENABLE_AUTO_LAPACK=OFF'
+
+    if args.cray:
+        command += ' -DENABLE_CRAY_WRAPPERS=ON'
+        command += ' -DENABLE_AUTO_BLAS=OFF'
+        command += ' -DENABLE_AUTO_LAPACK=OFF'
+
+    if args.mkl != 'none':
+        if args.mkl == None:
+            print('you have to choose between --mkl=[{sequential,parallel,cluster}]')
+            sys.exit(1)
+        command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
+        command += ' -DENABLE_AUTO_BLAS=OFF'
+        command += ' -DENABLE_AUTO_LAPACK=OFF'
 
     if args.explicit_libs:
-        command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs
+        # remove leading and trailing whitespace
+        # otherwise CMake complains
+        command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs.strip()
 
     if args.extra_fc_flags:
         command += ' -DEXTRA_Fortran_FLAGS="%s"' % args.extra_fc_flags
@@ -298,6 +359,7 @@ def print_build_help(build_path):
 def save_setup_command(argv, build_path):
     file_name = os.path.join(build_path, 'setup_command')
     f = open(file_name, 'w')
+    f.write('# setup command was executed '+datetime.datetime.now().strftime("%d-%B-%Y %H:%M:%S"+"\n"))
     f.write(" ".join(argv[:])+"\n")
     f.close()
 
@@ -332,7 +394,7 @@ def run_cmake(command, build_path):
 
 def main(argv):
     args = parse_input()
-    check_cmake_exists()
+    check_cmake_exists(args.cmake)
     build_path = args.builddir
     if not args.show:
         setup_build_path(build_path)

@@ -20,12 +20,13 @@ use dec_typedef_module, only: DECinfo
 use lsdalton_fock_module, only: lsint_fock_data
 use matrix_operations_aux, only: mat_density_from_orbs
 use integralinterfaceMod, only: II_get_molecular_gradient,&
-     & II_get_nucpot,II_get_overlap,II_get_h1
+     & II_get_nucpot,II_get_overlap,II_get_h1,II_precalc_ScreenMat
 use lsdalton_rsp_mod,only: get_excitation_energy, GET_EXCITED_STATE_GRADIENT
-use dec_main_mod!, only: get_total_mp2energy_from_inputs, get_mp2gradient_and_energy_from_inputs
+use dec_main_mod
 use ls_util, only: ls_print_gradient
 use molecule_typetype, only: moleculeinfo
 use optimlocMOD, only: optimloc
+use screen_mod, only: screen_free, screen_init
 private
 public :: Get_Energy, Get_Gradient, get_num_grad
 !
@@ -58,10 +59,10 @@ contains
 
        Eerr = 0E0_realk
        nbast = D(1)%nrow
-       do_decomp =(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
-            & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
-            & config%decomp%cfg_check_converged_solution .or. &
-            & config%decomp%cfg_rsp_nexcit > 0 .or. config%integral%locallink) 
+       do_decomp =.TRUE. !(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
+!           & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
+!           & config%decomp%cfg_check_converged_solution .or. &
+!           & config%decomp%cfg_rsp_nexcit > 0 .or. config%integral%locallink) 
        integraltransformGC = ls%setting%integraltransformGC
        if (do_decomp) then
           call decomp_shutdown(config%decomp)
@@ -73,7 +74,13 @@ contains
        !call mat_zero(D)
        !
        call typedef_free_setting(ls%setting)
+       call screen_free()
+       call screen_init()
+       ls%lupri = lupri
+       ls%luerr = luerr
+       ls%optlevel = 3
        call typedef_init_setting(ls%setting)
+
        ! Empirical dispersion correction in case of dft
        !CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
 
@@ -102,6 +109,9 @@ contains
           if(config%decomp%cfg_gcbasis) call trilevel_basis(config%opt,ls)
        endif
        ls%setting%integraltransformGC = integraltransformGC
+       !
+       ! Precalculate screening matrices
+       call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
        !
        ! New nuclear repulsion
        PotNuc = 0E0_realk
@@ -172,7 +182,7 @@ contains
 
        If (config%doDEC.AND.(.NOT.config%noDecEnergy)) then
           ! Get dec energy
-          call get_total_mp2energy_from_inputs(ls,F(1),D(1),S,C,E(1),Eerr)
+          call get_total_CCenergy_from_inputs(ls,F(1),D(1),S,C,E(1),Eerr)
        elseif(config%doESGopt)then
           call get_excitation_energy(ls,config,F(1),D(1),S,ExcitE,&
                & config%decomp%cfg_rsp_nexcit)       
@@ -253,8 +263,8 @@ call mat_assign(Fmat(1),F)
 
 do i=1,ls%INPUT%MOLECULE%nAtoms
    do j=1, 3
-write (*,*) "atom index:",i,"  coord:",j
-write (lupri,*) "atom index:",i,"  coord:",j
+      write (*,*) "atom index:",i,"  coord:",j
+      write (lupri,*) "atom index:",i,"  coord:",j
       ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)-h 
       CALL get_energy(E,Eerr,config,H1,Fmat,Dmat,S,ls,C,nAtoms,lupri,luerr)
       Emin=E(1)
@@ -268,9 +278,7 @@ write (lupri,*) "atom index:",i,"  coord:",j
       numerical_gradient(j,i)=(Eplus-Emin)/(2*h)
     enddo
 enddo
-write (*,*) "print gradient"
-write (lupri,*) "print gradient"
-CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,numerical_gradient,nAtoms,'TOTAL')
+CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,numerical_gradient,nAtoms,'NUM_GRAD')
 end subroutine get_num_grad
 
 End module Energy_and_deriv

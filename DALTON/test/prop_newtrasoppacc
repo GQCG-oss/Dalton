@@ -121,6 +121,16 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+if $GREP -q "ERI does not work with Cartesian basis." $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Basis set
 CRIT1=`$GREP "O * 1 * 8\.0000 * 44 * 27 * \[11s7p2d\|6s5p1d\]" $log | wc -l`
 CRIT2=`$GREP "H * 2 * 1\.0000 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
@@ -202,7 +212,7 @@ ERROR[7]="H-H SPIN-SPIN COUPLING NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6 7
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -216,6 +226,5 @@ else
   echo THERE IS A PROBLEM
   exit 1
 fi
-
-' > prop_newtrasoppacc.check
+%EOF%
 #######################################################################

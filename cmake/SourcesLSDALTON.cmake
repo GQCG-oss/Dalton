@@ -30,6 +30,12 @@ set(DFTFUNC_SOURCES
     LSDALTON/dft/fun-pz81.c
     LSDALTON/dft/fun-slater.c
     LSDALTON/dft/fun-vwn.c
+    LSDALTON/dft/fun-revpbex.c
+    LSDALTON/dft/fun-rpbex.c
+    LSDALTON/dft/fun-mpbex.c
+    LSDALTON/dft/fun-pw91x.c
+    LSDALTON/dft/fun-g96.c
+    LSDALTON/dft/fun-lg93.c
     LSDALTON/dft/functionals.c
     LSDALTON/dft/general.c
     )
@@ -49,7 +55,10 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     LSDALTON/lsdaltonsrc/init_lsdalton.F90
     LSDALTON/lsdaltonsrc/configuration.F90
     LSDALTON/lsdaltonsrc/LSlib.F90
+    LSDALTON/lsdaltonsrc/LSlibState.F90
     LSDALTON/lsdaltonsrc/Profile.F90
+    LSDALTON/lsdaltonsrc/IchorTesting.F90
+    LSDALTON/lsdaltonsrc/IchorProfile.F90
     )
 set(DDYNAM_SOURCES
     LSDALTON/ddynam/LSinput.F90
@@ -66,13 +75,13 @@ set(DEC_SOURCES
     LSDALTON/deccc/CABS.F90
     LSDALTON/deccc/mp2.F90
     LSDALTON/deccc/ccsdpt.F90
-    LSDALTON/deccc/cc_crop.F90
+    LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/ccsd.F90
     LSDALTON/deccc/rpa.F90
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/f12_routines.F90
-    LSDALTON/deccc/wangy_playground.F90 
     LSDALTON/deccc/cc_driver.F90
+    LSDALTON/deccc/cc_debug_routines.F90
     LSDALTON/deccc/cc_integrals.F90
     LSDALTON/deccc/ccarray2_simple.F90
     LSDALTON/deccc/ccarray4_simple.F90
@@ -84,6 +93,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/dec_main.F90
     LSDALTON/deccc/dec_settings.F90
     LSDALTON/deccc/dec_utils.F90
+    LSDALTON/deccc/dec_workarounds.F90
     LSDALTON/deccc/full_driver_f12contractions.F90
     LSDALTON/deccc/fullmolecule.F90
     LSDALTON/deccc/mp2_gradient.F90
@@ -97,6 +107,8 @@ set(GEOOPT_SOURCES
     LSDALTON/geomopt/ls_opt.F90
     LSDALTON/geomopt/ls_opt2.F90
     LSDALTON/geomopt/ls_redint.F90
+    LSDALTON/geomopt/q_to_x.F90
+    LSDALTON/geomopt/dqdx.cpp           
     )
 set(LINEARS_SOURCES	
     LSDALTON/linears/configurationType.F90
@@ -174,17 +186,15 @@ if(DEVELOPMENT_CODE)
 endif()
 set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc_compare.F90
-    LSDALTON/pbc2/pbc-multipole.F90
     LSDALTON/pbc2/pbc-matop.F90
-    LSDALTON/pbc2/pbc-harmonics.F90
     LSDALTON/pbc2/pbc-msc.F90
     LSDALTON/pbc2/pbc-krsp-op.F90
-    LSDALTON/pbc2/pbc_kscf.F90
-    LSDALTON/pbc2/pbc_mmit.F90
-    LSDALTON/pbc2/pbc_eigsolv.F90
+    LSDALTON/pbc2/pbc-nfinteractions.F90
+    LSDALTON/pbc2/pbc-ffinteractions.F90
+    LSDALTON/pbc2/pbc-scf.F90
     LSDALTON/pbc2/pbc-data.F90
     LSDALTON/pbc2/pbc-ffdata.F90
-    LSDALTON/pbc2/pbc_int.F90
+    LSDALTON/pbc2/pbcmain.F90
     )
 set(FMM_SOURCES
     LSDALTON/mm/mm_T_contractors.F90
@@ -219,11 +229,99 @@ set(INTERESTLIB_SOURCES
     LSDALTON/interest/src/module_interest_hrr.f90
     LSDALTON/interest/src/module_interest_osr.f90
     )
+set(ICHORINT_SOURCES
+    LSDALTON/IchorIntegrals/IchorPresicion.F90
+    LSDALTON/IchorIntegrals/IchorParameters.F90
+    LSDALTON/IchorIntegrals/IchorCommon.F90
+    LSDALTON/IchorIntegrals/IchorMem.F90
+    LSDALTON/IchorIntegrals/IchorGammaTabulation.F90
+    LSDALTON/IchorIntegrals/IchorBatchTools.F90
+    LSDALTON/IchorIntegrals/IchorSaveGab.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_general.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Gen.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_SegQ.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_SegP.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Seg.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_OBS_Seg1Prim.F90
+    LSDALTON/IchorIntegrals/IchorEri.F90
+    LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_Gen.F90
+    LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_Seg.F90
+    LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_general.F90
+    LSDALTON/IchorIntegrals/IchorGab.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPA.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPB.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPC.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPD.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPASegQ.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPBSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPCSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPDSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPASegP.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPBSegP.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPCSegP.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPDSegP.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPASeg.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPBSeg.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPCSeg.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPDSeg.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPASeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPBSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPCSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPDSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoAGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoAGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoCGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoDGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoBGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoBGen.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoASegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoASegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoCSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoDSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoBSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoBSegQ.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoASegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoASegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoCSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoDSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoBSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoBSegP.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoASeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoASeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoCSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoDSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoBSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoBSeg.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoCSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceAtoDSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoASeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoASeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoCSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceBtoDSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceDtoBSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_TransferRecurrenceCtoBSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePAtoB.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePBtoA.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQCtoD.F90
+    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQDtoC.F90
+    LSDALTON/IchorIntegrals/AGC_SphContractOBS1.F90
+    LSDALTON/IchorIntegrals/AGC_SphContractOBS2.F90
+    )
+#    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_SSSS.F90
 set(LSINT_SOURCES
+    LSDALTON/LSint/IchorInterface.F90
     LSDALTON/LSint/dft_gridLL.F90
     LSDALTON/LSint/BuildBasis.F90
     LSDALTON/LSint/BuildMolFile.F90
-    LSDALTON/LSint/II_Fragment.F90
     LSDALTON/LSint/gridgeneration.F90
     LSDALTON/LSint/gridgeneration_boxify.F90
     LSDALTON/LSint/II_XC_interface.F90
@@ -252,6 +350,7 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ls_IntegralInterface.F90
     LSDALTON/LSint/pari.F90
     LSDALTON/LSint/lsmpi.F90
+    LSDALTON/LSint/II_dft_dftd.F90
     )
 #####################################################
 #WARNING: READ ME BEFORE ADDING FILES TO LSUTIL
@@ -310,6 +409,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/ls_math.F90
     LSDALTON/lsutil/SphCartMatrices.F90
     LSDALTON/lsutil/OverlapDistributionType.F90
+    LSDALTON/lsutil/pbc_lattice_type.F90
     )
 set(LSUTIL_MATRIXO_SOURCES
     LSDALTON/lsutil/matop_csr.F90
@@ -341,7 +441,6 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/IntegralOutput_operations.F90 
     LSDALTON/lsutil/TYPE-OP.F90
     LSDALTON/lsutil/GCtrans.F90
-    LSDALTON/lsutil/pbc_lattice_type.F90
     LSDALTON/lsutil/Build_AOBATCH.F90
     LSDALTON/lsutil/lspdm_basic.F90
     LSDALTON/lsutil/tensor_basic.F90
@@ -364,6 +463,8 @@ set(LSUTILLIB_SOURCES
     )
 set(LSLIB_SOURCES
     LSDALTON/lsdaltonsrc/LSlib.F90
+    LSDALTON/lsdaltonsrc/LSlibState.F90
+    LSDALTON/lsdaltonsrc/LSlib_tester_module.F90
     LSDALTON/lsdaltonsrc/LSlib_tester.F90
     )
 set(LSDALTON_FIXED_FORTRAN_SOURCES
@@ -401,6 +502,7 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${FMM_SOURCES}
     ${INTERESTLIB_SOURCES}
     ${LSINT_SOURCES}
+    ${ICHORINT_SOURCES}
     ${LSUTIL_PRECISION_SOURCES}
     ${LSUTIL_MATRIXM_SOURCES}
     ${LSUTIL_COMMON_SOURCES}
@@ -410,4 +512,5 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${LSUTIL_TYPE_SOURCES}
     ${LSUTILLIB_SOURCES}
     ${LSLIB_SOURCES}
+    ${ICHORLIB_SOURCES}
  )

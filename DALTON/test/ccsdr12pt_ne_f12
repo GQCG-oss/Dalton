@@ -165,6 +165,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 
 #           Total SCF   energy:                  -128.4963497305
 #           Total MP2-R12/B energy:              -128.7979375063
@@ -209,7 +214,7 @@ ERROR[6]="CCSD(R12)(T) ENERGY NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4 5 6
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

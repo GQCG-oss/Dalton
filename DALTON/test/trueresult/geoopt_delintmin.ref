@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,196 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Mon Oct 21 14:51:14 2013
+     Host name              : c10-6.local                             
 
-     Date and time (Linux)  : Wed Mar 16 18:07:42 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/arnfinn/release_dalton/DALTON/test/2013-10-21T14_51-testjob-pid-48752
+   2) /home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | arnfinn
+ Host                     | stallo-2.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/ifort
+ C compiler               | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
+                          | intel64/icpc
+ C++ compiler version     | icpc (ICC) 13.0.1 20121010
+ BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
+                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
+                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
+                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
+                          | mp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
+                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
+                          | nmp;-Wl,--end-group
+ Static linking           | OFF
+ Last Git revision        | 9e5bb7f558e1ee66d0614a37cb4fb8c71086ba4e
+ Configuration time       | 2013-10-15 12:56:50.249803
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.OPTIMIZE                                         
+*OPTIMIZE                                         
+.DELINT                                           
+.DFP                                              
+.BAKER                                            
+**WAVE FUNCTION                                   
+.HF                                               
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+STO-3G                                                                         
+First order minimization in delocalized internal coordinates                   
+                                                                               
+Atomtypes=3 Generators=1 Z                                                     
+Charge=8.0 Atoms=1                                                             
+O     6.1169594363        0.0000000000        0.0000000000             *       
+Charge=6.0 Atoms=7                                                             
+C    -0.4281183799       -2.2595362151        0.0000000000             *       
+C    -2.9286935224       -1.4347871225        0.0000000000             *       
+C    -3.4656164013        1.1411808224        0.0000000000             *       
+C    -1.5061149145        2.8972276388        0.0000000000             *       
+C     0.9961412279        2.0785184368        0.0000000000             *       
+C     1.5529020669       -0.5103443405        0.0000000000             *       
+C     4.3100239391       -1.4696981757        0.0000000000             *       
+Charge=1.0 Atoms=6                                                             
+H     4.6927731310       -3.5243404323        0.0000000000             *       
+H    -0.0483891239       -4.2673340819        0.0000000000             *       
+H    -4.4516781974       -2.7942683921        0.0000000000             *       
+H    -5.4051670195        1.7780840801        0.0000000000             *       
+H    -1.9265366341        4.8949599174        0.0000000000             *       
+H     2.4915143918        3.4703378645        0.0000000000             *       
 
 
        *******************************************************************
@@ -105,7 +218,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     "Old" integral transformation used (limited to max 255 basis functions)
  --------------------------------------------------------------------------------
@@ -118,11 +231,10 @@
  Optimization will be performed in delocalized internal coordinates.
  Model Hessian will be used as initial Hessian.
  The model Hessian parameters of Roland Lindh will be used.
-
-
+ 
+ 
  Trust region method will be used to control step (default).
-
-
+ 
  Baker's convergence criteria will be used.
 
 
@@ -131,13 +243,7 @@
               >>>>>>>>>> 1st Order Geometry Optimization >>>>>>>>>>
               >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
- Read .mol file to determine number of atoms:
-
-
- **************************************************************************************
- ****************** Output of molecule and basis set info suppressed ******************
- **************************************************************************************
-
+ Reading .mol file to determine number of atoms for parallel runs.
 
 
    ****************************************************************************
@@ -156,24 +262,24 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   6.00000
   Number of symmetry independent centers:    7
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   6 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    6
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -248,13 +354,81 @@ Point group: Cs
   total:     14   56.0000   138    46
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   42
+  O       :     1  x   6.1169594363    2  y   0.0000000000    3  z   0.0000000000
+  C       :     4  x  -0.4281183799    5  y  -2.2595362151    6  z   0.0000000000
+  C       :     7  x  -2.9286935224    8  y  -1.4347871225    9  z   0.0000000000
+  C       :    10  x  -3.4656164013   11  y   1.1411808224   12  z   0.0000000000
+  C       :    13  x  -1.5061149145   14  y   2.8972276388   15  z   0.0000000000
+  C       :    16  x   0.9961412279   17  y   2.0785184368   18  z   0.0000000000
+  C       :    19  x   1.5529020669   20  y  -0.5103443405   21  z   0.0000000000
+  C       :    22  x   4.3100239391   23  y  -1.4696981757   24  z   0.0000000000
+  H       :    25  x   4.6927731310   26  y  -3.5243404323   27  z   0.0000000000
+  H       :    28  x  -0.0483891239   29  y  -4.2673340819   30  z   0.0000000000
+  H       :    31  x  -4.4516781974   32  y  -2.7942683921   33  z   0.0000000000
+  H       :    34  x  -5.4051670195   35  y   1.7780840801   36  z   0.0000000000
+  H       :    37  x  -1.9265366341   38  y   4.8949599174   39  z   0.0000000000
+  H       :    40  x   2.4915143918   41  y   3.4703378645   42  z   0.0000000000
 
 
   Symmetry Coordinates
   --------------------
 
   Number of coordinates in each symmetry:    28   14
+
+  Symmetry  A'  ( 1)
+
+    1   O     x    1
+    2   O     y    2
+    3   C     x    4
+    4   C     y    5
+    5   C     x    7
+    6   C     y    8
+    7   C     x   10
+    8   C     y   11
+    9   C     x   13
+   10   C     y   14
+   11   C     x   16
+   12   C     y   17
+   13   C     x   19
+   14   C     y   20
+   15   C     x   22
+   16   C     y   23
+   17   H     x   25
+   18   H     y   26
+   19   H     x   28
+   20   H     y   29
+   21   H     x   31
+   22   H     y   32
+   23   H     x   34
+   24   H     y   35
+   25   H     x   37
+   26   H     y   38
+   27   H     x   40
+   28   H     y   41
+
+  Symmetry  A"  ( 2)
+
+   29   O     z    3
+   30   C     z    6
+   31   C     z    9
+   32   C     z   12
+   33   C     z   15
+   34   C     z   18
+   35   C     z   21
+   36   C     z   24
+   37   H     z   27
+   38   H     z   30
+   39   H     z   33
+   40   H     z   36
+   41   H     z   39
+   42   H     z   42
 
 
    Interatomic separations (in Angstrom):
@@ -294,8 +468,12 @@ Point group: Cs
  H     :    2.456472    0.000000
 
 
-  Max interatomic separation is    6.1694 Angstrom (   11.6585 Bohr)
+  Max    interatomic separation is    6.1694 Angstrom (   11.6585 Bohr)
   between atoms   12 and    1, "H     " and "O     ".
+
+  Min HX interatomic separation is    1.0803 Angstrom (    2.0414 Bohr)
+
+  Min YX interatomic separation is    1.2325 Angstrom (    2.3292 Bohr)
 
 
   Bond distances (Angstrom):
@@ -368,7 +546,7 @@ Point group: Cs
             0.174626            0.050887            0.039404 cm-1
 
 
-@  Nuclear repulsion energy :  318.786099174063
+@  Nuclear repulsion energy :  318.786099174063 Hartree
 
 
   Symmetry Orbitals
@@ -451,14 +629,14 @@ Point group: Cs
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
- Number of two-electron integrals written:      326665 ( 55.9% )
- Megabytes written:                              3.744
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:      317804 ( 54.3% )
+ Megabytes written:                              3.641
 
- >>> Time used in TWOINT is   1.14 seconds
- >>>> Total CPU  time used in HERMIT:   1.22 seconds
- >>>> Total wall time used in HERMIT:   2.00 seconds
+ >>>  Time used in TWOINT     is   0.62 seconds
+ >>>> Total CPU  time used in HERMIT:   0.67 seconds
+ >>>> Total wall time used in HERMIT:   0.69 seconds
 
 
                         .----------------------------------.
@@ -501,8 +679,8 @@ Point group: Cs
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:44 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:15 2013
+     Host name              : c10-6.local                             
 
  Title lines from ".mol" input file:
      First order minimization in delocalized internal coordinates            
@@ -511,21 +689,21 @@ Point group: Cs
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Hartree-Fock calculation.
+@    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EWMO  " input option.
+ ".MOSTART EWMO  " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> HF       <<<
-     Number of closed shell electrons         56
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> HF <<<
+@    Number of closed shell electrons          56
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                2
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 2
+@    Reference state symmetry                   1
 
      Orbital specifications
      ======================
@@ -538,7 +716,7 @@ Point group: Cs
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals              28 |   24    4
+@    Occupied SCF orbitals              28 |   24    4
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -548,78 +726,79 @@ Point group: Cs
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Automatic occupation of symmetries with  56 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1  -338.641754918       2.27D+00  -3.39D+02   24  4
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -338.641754918       2.27D+00  -3.39D+02    24   4
       Virial theorem: -V/T =      2.005526
-      MULPOP  O      -1.04; C       0.22; C       0.15; C       0.23; C       0.16; C       0.20; C       0.14; C       0.87; H      -0.16; H      -0.15; 
-              H      -0.15; H      -0.15; H      -0.15; H      -0.15; 
+@      MULPOP O      -1.04; C       0.22; C       0.15; C       0.23; C       0.16; C       0.20; C       0.14; C       0.87; H      -0.16; H      -0.15; 
+@             H      -0.15; H      -0.15; H      -0.15; H      -0.15; 
  -----------------------------------------------------------------------------
-   2  -338.950716588       1.55D+00  -3.09D-01   24  4
+@  2  -338.950716588       1.55D+00  -3.09D-01    24   4
       Virial theorem: -V/T =      2.009688
-      MULPOP  O       0.48; C      -0.14; C      -0.06; C      -0.10; C      -0.05; C      -0.07; C      -0.15; C      -0.45; H       0.06; H       0.10; 
-              H       0.09; H       0.09; H       0.09; H       0.12; 
+@      MULPOP O       0.48; C      -0.14; C      -0.06; C      -0.10; C      -0.05; C      -0.07; C      -0.15; C      -0.45; H       0.06; H       0.10; 
+@             H       0.09; H       0.09; H       0.09; H       0.12; 
  -----------------------------------------------------------------------------
-   3  -339.113084668       2.14D-01  -1.62D-01   24  4
+@  3  -339.113084668       2.14D-01  -1.62D-01    24   4
       Virial theorem: -V/T =      2.008738
-      MULPOP  O      -0.27; C      -0.05; C      -0.07; C      -0.07; C      -0.08; C      -0.08; C       0.01; C       0.22; H       0.03; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.27; C      -0.05; C      -0.07; C      -0.07; C      -0.08; C      -0.08; C       0.01; C       0.22; H       0.03; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   4  -339.117474314       5.04D-02  -4.39D-03   24  4
+@  4  -339.117474314       5.04D-02  -4.39D-03    24   4
       Virial theorem: -V/T =      2.008993
-      MULPOP  O      -0.20; C      -0.06; C      -0.06; C      -0.05; C      -0.06; C      -0.05; C      -0.03; C       0.12; H       0.06; H       0.07; 
-              H       0.06; H       0.06; H       0.06; H       0.08; 
+@      MULPOP O      -0.20; C      -0.06; C      -0.06; C      -0.05; C      -0.06; C      -0.05; C      -0.03; C       0.12; H       0.06; H       0.07; 
+@             H       0.06; H       0.06; H       0.06; H       0.08; 
  -----------------------------------------------------------------------------
-   5  -339.117832434       1.61D-02  -3.58D-04   24  4
+@  5  -339.117832434       1.61D-02  -3.58D-04    24   4
       Virial theorem: -V/T =      2.008960
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.07; C      -0.06; C      -0.01; C       0.12; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.07; C      -0.06; C      -0.01; C       0.12; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   6  -339.117871104       4.91D-03  -3.87D-05   24  4
+@  6  -339.117871104       4.91D-03  -3.87D-05    24   4
       Virial theorem: -V/T =      2.008959
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   7  -339.117875754       1.66D-03  -4.65D-06   24  4
+@  7  -339.117875627       1.79D-03  -4.52D-06    24   4
+      Virial theorem: -V/T =      2.008961
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+@  8  -339.117876311       8.10D-04  -6.84D-07    24   4
       Virial theorem: -V/T =      2.008962
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   8  -339.117876338       7.37D-04  -5.84D-07   24  4
+@  9  -339.117876450       2.60D-04  -1.39D-07    24   4
       Virial theorem: -V/T =      2.008962
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   9  -339.117876451       2.46D-04  -1.13D-07   24  4
+@ 10  -339.117876466       1.39D-04  -1.57D-08    24   4
       Virial theorem: -V/T =      2.008963
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-  10  -339.117876469       5.91D-05  -1.80D-08   24  4
+@ 11  -339.117876470       4.77D-05  -3.64D-09    24   4
       Virial theorem: -V/T =      2.008963
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-  11  -339.117876470       2.71D-05  -8.36D-10   24  4
+@ 12  -339.117876470       1.70D-05  -2.76D-10    24   4
       Virial theorem: -V/T =      2.008963
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-  12  -339.117876470       1.05D-05  -1.18D-10   24  4
-      Virial theorem: -V/T =      2.008963
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
- -----------------------------------------------------------------------------
-  13  -339.117876470       2.28D-06  -2.36D-11   24  4
+@ 13  -339.117876470       7.41D-06  -6.38D-11    24   4
 
- *** DIIS converged in  13 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  13 iterations !
+@     Converged SCF energy, gradient:   -339.117876469908    7.41D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -631,22 +810,24 @@ Point group: Cs
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.28497840   -11.11845697   -11.04702067   -11.04219510   -11.04167102
-       -11.04119227   -11.03857092   -11.03831288    -1.31772097    -1.10288751
-        -0.97551165    -0.96612554    -0.81763366    -0.78025245    -0.73269291
-        -0.66419549    -0.61291094    -0.57703286    -0.55601115    -0.54405131
-        -0.51850845    -0.45727702    -0.44154901    -0.33588342     0.55316119
-         0.60637305     0.63487340     0.67887660     0.71203380
+  1    -20.28497823   -11.11845694   -11.04702118   -11.04219629   -11.04167112
+       -11.04119198   -11.03857082   -11.03831184    -1.31772092    -1.10288758
+        -0.97551170    -0.96612558    -0.81763368    -0.78025249    -0.73269292
+        -0.66419553    -0.61291096    -0.57703291    -0.55601117    -0.54405136
+        -0.51850843    -0.45727704    -0.44154906    -0.33588335     0.55316112
+         0.60637307     0.63487339     0.67887641     0.71203353
 
-  2     -0.48381705    -0.42303852    -0.29036087    -0.28123572     0.21206448
-         0.25969516     0.33867896     0.50638120
+  2     -0.48381715    -0.42303845    -0.29036092    -0.28123570     0.21206443
+         0.25969514     0.33867899     0.50638113
 
-    E(LUMO) :     0.21206448 au (symmetry 2)
-  - E(HOMO) :    -0.28123572 au (symmetry 2)
+    E(LUMO) :     0.21206443 au (symmetry 2)
+  - E(HOMO) :    -0.28123570 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.49330020 au
+    gap     :     0.49330013 au
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.095       0.119
 
 
                        .-----------------------------------.
@@ -654,19 +835,19 @@ Point group: Cs
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -339.117876469940                 
-     Nuclear repulsion:           318.786099174063
-     Electronic energy:          -657.903975644003
+@    Final HF energy:            -339.117876469908                 
+@    Nuclear repulsion:           318.786099174063
+@    Electronic energy:          -657.903975643971
 
-     Final gradient norm:           0.000002275238
+@    Final gradient norm:           0.000007413330
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:44 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:15 2013
+     Host name              : c10-6.local                             
 
  (Only coefficients >0.0100 are printed.)
 
@@ -685,9 +866,9 @@ Point group: Cs
    9 C   :1s    -0.0194  -0.0155  -0.0039  -0.0076  -0.0096   0.0424  -0.0433
   10 C   :1s     0.0610   0.0548   0.0171   0.0168   0.0357  -0.2646   0.2831
   11 C   :2px    0.2823   0.0511  -0.2484   0.1252   0.0951   0.0669  -0.4197
-  12 C   :2py    0.1212  -0.0482   0.1998   0.2492  -0.0239   0.1627  -0.2172
+  12 C   :2py    0.1212  -0.0482   0.1998   0.2492  -0.0239   0.1627  -0.2171
   13 C   :1s     0.0026  -0.0058  -0.0103   0.0025  -0.0023   0.0338  -0.0452
-  14 C   :1s    -0.0073   0.0159   0.0263  -0.0073   0.0115  -0.2157   0.2904
+  14 C   :1s    -0.0073   0.0159   0.0263  -0.0073   0.0115  -0.2158   0.2904
   15 C   :2px   -0.0849   0.2179   0.2752  -0.1516  -0.0193   0.1249  -0.4750
   16 C   :2py   -0.0469   0.0872  -0.1737  -0.2854   0.0103  -0.0592   0.0578
   17 C   :1s     0.0264  -0.0049  -0.0006   0.0057  -0.0081   0.0541  -0.0100
@@ -703,7 +884,7 @@ Point group: Cs
   27 C   :2px   -0.0740   0.1521  -0.0958   0.1406   0.3120  -0.5151  -0.3219
   28 C   :2py   -0.0497   0.0439   0.0992   0.3013  -0.1094   0.0930  -0.1026
   29 C   :1s    -0.0033   0.0239   0.0254  -0.0025  -0.0065  -0.1423  -0.0954
-  30 C   :1s     0.0107  -0.0785  -0.0991   0.0115   0.0341   0.8345   0.5760
+  30 C   :1s     0.0107  -0.0785  -0.0991   0.0115   0.0341   0.8345   0.5761
   31 C   :2px    0.0630  -0.2676   0.2121  -0.0775  -0.1390  -0.4382  -0.1417
   32 C   :2py   -0.0283  -0.2805   0.0127  -0.0568   0.1281  -0.0405  -0.2761
   33 H   :1s     0.0260   0.1773  -0.0534   0.0713  -0.3335  -0.4700  -0.5340
@@ -723,17 +904,17 @@ Point group: Cs
    4 C   :2pz    0.2367   0.2854  -0.0412   0.4979   0.4966  -0.0044
    5 C   :2pz    0.2499   0.2454  -0.4799   0.2037  -0.1903   0.5728
    6 C   :2pz    0.2890   0.1410  -0.4394  -0.3013  -0.3440  -0.5664
-   7 C   :2pz    0.3647   0.0103   0.0373  -0.5122   0.4631  -0.0122
+   7 C   :2pz    0.3647   0.0102   0.0373  -0.5122   0.4631  -0.0122
    8 C   :2pz    0.3277  -0.4956  -0.0098   0.1166   0.4297   0.0025
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.08 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.13 seconds
+ >>>> Total wall time used in SIRIUS :      0.17 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:44 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:15 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -746,6 +927,8 @@ Point group: Cs
 
  Center of mass dipole origin  :    0.712197    0.045875    0.000000
 
+ Center of mass gauge origin   :    0.712197    0.045875    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -753,8 +936,8 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:44 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:15 2013
+     Host name              : c10-6.local                             
 
 
    ***************************************************************************
@@ -763,8 +946,8 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:47 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:17 2013
+     Host name              : c10-6.local                             
 
 
                              Molecular geometry (au)
@@ -802,11 +985,11 @@ Point group: Cs
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.4014799581 au
-     Mass-velocity correction:                  -0.5102515438 au
+     Darwin correction:                          0.4014799572 au
+     Mass-velocity correction:                  -0.5102515425 au
 
-     Total relativistic correction:             -0.1087715857 au (0.0321%)
-     Non-relativistic + relativistic energy:  -339.2266480556 au
+     Total relativistic correction:             -0.1087715853 au (0.0321%)
+     Non-relativistic + relativistic energy:  -339.2266480552 au
 
 
 
@@ -814,51 +997,51 @@ Point group: Cs
                              Molecular gradient (au)
                              -----------------------
 
-                         O    x     0.0166176914
-                         O    y     0.0120914844
-                         C    x     0.0070982068
-                         C    y    -0.0107260707
-                         C    x    -0.0088990215
-                         C    y    -0.0062742971
-                         C    x    -0.0077394660
-                         C    y     0.0034851811
-                         C    x    -0.0045685210
-                         C    y     0.0116287720
-                         C    x     0.0082324189
-                         C    y     0.0055832733
-                         C    x    -0.0083714207
-                         C    y     0.0143935194
-                         C    x    -0.0116865602
-                         C    y    -0.0311743616
-                         H    x     0.0134007243
-                         H    y    -0.0005072209
-                         H    x    -0.0032386096
-                         H    y     0.0011563955
-                         H    x     0.0014315340
-                         H    y     0.0015614542
-                         H    x     0.0024594974
-                         H    y    -0.0007489695
-                         H    x    -0.0000302057
-                         H    y    -0.0021103949
-                         H    x    -0.0047062681
-                         H    y     0.0016412347
+                         O    x     0.0166181707
+                         O    y     0.0120917750
+                         C    x     0.0070983803
+                         C    y    -0.0107263964
+                         C    x    -0.0088989439
+                         C    y    -0.0062740457
+                         C    x    -0.0077395813
+                         C    y     0.0034853173
+                         C    x    -0.0045685962
+                         C    y     0.0116283997
+                         C    x     0.0082326947
+                         C    y     0.0055833298
+                         C    x    -0.0083720175
+                         C    y     0.0143938234
+                         C    x    -0.0116867446
+                         C    y    -0.0311748942
+                         H    x     0.0134007458
+                         H    y    -0.0005071195
+                         H    x    -0.0032386246
+                         H    y     0.0011565011
+                         H    x     0.0014315185
+                         H    y     0.0015614024
+                         H    x     0.0024595005
+                         H    y    -0.0007489985
+                         H    x    -0.0000302270
+                         H    y    -0.0021102848
+                         H    x    -0.0047062754
+                         H    y     0.0016411901
 
 
 
- O          0.0166176914            0.0120914844            0.0000000000
- C          0.0070982068           -0.0107260707            0.0000000000
- C         -0.0088990215           -0.0062742971            0.0000000000
- C         -0.0077394660            0.0034851811            0.0000000000
- C         -0.0045685210            0.0116287720            0.0000000000
- C          0.0082324189            0.0055832733            0.0000000000
- C         -0.0083714207            0.0143935194            0.0000000000
- C         -0.0116865602           -0.0311743616            0.0000000000
- H          0.0134007243           -0.0005072209            0.0000000000
- H         -0.0032386096            0.0011563955            0.0000000000
- H          0.0014315340            0.0015614542            0.0000000000
- H          0.0024594974           -0.0007489695            0.0000000000
- H         -0.0000302057           -0.0021103949            0.0000000000
- H         -0.0047062681            0.0016412347            0.0000000000
+ O          0.0166181707            0.0120917750            0.0000000000
+ C          0.0070983803           -0.0107263964            0.0000000000
+ C         -0.0088989439           -0.0062740457            0.0000000000
+ C         -0.0077395813            0.0034853173            0.0000000000
+ C         -0.0045685962            0.0116283997            0.0000000000
+ C          0.0082326947            0.0055833298            0.0000000000
+ C         -0.0083720175            0.0143938234            0.0000000000
+ C         -0.0116867446           -0.0311748942            0.0000000000
+ H          0.0134007458           -0.0005071195            0.0000000000
+ H         -0.0032386246            0.0011565011            0.0000000000
+ H          0.0014315185            0.0015614024            0.0000000000
+ H          0.0024595005           -0.0007489985            0.0000000000
+ H         -0.0000302270           -0.0021102848            0.0000000000
+ H         -0.0047062754            0.0016411901            0.0000000000
 
 
 
@@ -868,7 +1051,7 @@ Point group: Cs
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.739177           1.878801           6.267004
+              0.739177           1.878802           6.267007
 
 
                              Dipole moment components
@@ -876,8 +1059,8 @@ Point group: Cs
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.67941267        -1.72689465        -5.76030051
-      y     -0.29117214        -0.74008571        -2.46866020
+      x     -0.67941126        -1.72689105        -5.76028852
+      y     -0.29117632        -0.74009634        -2.46869567
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -923,8 +1106,12 @@ Point group: Cs
  H     :    2.456472    0.000000
 
 
-  Max interatomic separation is    6.1694 Angstrom (   11.6585 Bohr)
+  Max    interatomic separation is    6.1694 Angstrom (   11.6585 Bohr)
   between atoms   12 and    1, "H     " and "O     ".
+
+  Min HX interatomic separation is    1.0803 Angstrom (    2.0414 Bohr)
+
+  Min YX interatomic separation is    1.2325 Angstrom (    2.3292 Bohr)
 
 
   Bond distances (Angstrom):
@@ -981,13 +1168,13 @@ Point group: Cs
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:03      96 %
+ TWOTEX     00:00:01      96 %
 
- TOTAL      00:00:03     100 %
+ TOTAL      00:00:01     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   2.64 seconds
- >>>> Total wall time used in ABACUS:   3.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.49 seconds
+ >>>> Total wall time used in ABACUS:   1.50 seconds
 
 
                    .-------------------------------------------.
@@ -1005,20 +1192,20 @@ Point group: Cs
                                 Next geometry (au)
                                 ------------------
 
- O          6.0917539236            0.0351239908            0.0000000000
- C         -0.4240757461           -2.2615604930            0.0000000000
- C         -2.9118341755           -1.4403392968            0.0000000000
- C         -3.4414653770            1.1272693377            0.0000000000
- C         -1.4811708973            2.8710446246            0.0000000000
- C          1.0063216724            2.0521131594            0.0000000000
- C          1.5470344014           -0.5203334691            0.0000000000
- C          4.2767534385           -1.3923394102            0.0000000000
- H          4.5353547218           -3.4607634493            0.0000000000
- H         -0.0182805335           -4.2679494777            0.0000000000
- H         -4.4384609168           -2.8022351599            0.0000000000
- H         -5.3842660336            1.7709719277            0.0000000000
- H         -1.8931251785            4.8748737206            0.0000000000
- H          2.5354607006            3.4141239950            0.0000000000
+ O          6.0917527101            0.0351249370            0.0000000000
+ C         -0.4240759160           -2.2615605379            0.0000000000
+ C         -2.9118343290           -1.4403395861            0.0000000000
+ C         -3.4414649702            1.1272692135            0.0000000000
+ C         -1.4811705997            2.8710447968            0.0000000000
+ C          1.0063216128            2.0521127079            0.0000000000
+ C          1.5470348059           -0.5203340226            0.0000000000
+ C          4.2767533405           -1.3923389936            0.0000000000
+ H          4.5353551245           -3.4607631922            0.0000000000
+ H         -0.0182809259           -4.2679497869            0.0000000000
+ H         -4.4384612740           -2.8022350788            0.0000000000
+ H         -5.3842655347            1.7709721651            0.0000000000
+ H         -1.8931246708            4.8748737058            0.0000000000
+ H          2.5354606264            3.4141236718            0.0000000000
 
 
 
@@ -1030,8 +1217,8 @@ Point group: Cs
  Iteration number               :       0
  End of optimization            :       F 
  Energy at this geometry is     :    -339.117876
- Norm of gradient               :       0.051489
- Norm of step                   :       0.383002
+ Norm of gradient               :       0.051490
+ Norm of step                   :       0.383003
  Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
@@ -1054,14 +1241,14 @@ Point group: Cs
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
- Number of two-electron integrals written:      326964 ( 55.9% )
- Megabytes written:                              3.744
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:      318454 ( 54.5% )
+ Megabytes written:                              3.648
 
- >>> Time used in TWOINT is   1.11 seconds
- >>>> Total CPU  time used in HERMIT:   1.16 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>  Time used in TWOINT     is   0.62 seconds
+ >>>> Total CPU  time used in HERMIT:   0.66 seconds
+ >>>> Total wall time used in HERMIT:   0.67 seconds
 
 
                         .----------------------------------.
@@ -1084,61 +1271,62 @@ Point group: Cs
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1    -339.120295269        6.51479D-02   -2.42D-03    1
+      Threshold for discarding integrals :  1.00D-12 )
+@  1    -339.120295292        6.51475D-02   -2.42D-03    1
       Virial theorem: -V/T =      2.008563
-      MULPOP  O      -0.20; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.20; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.02; C       0.13; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   2    -339.120705787        1.72476D-02   -4.11D-04    2
+@  2    -339.120705794        1.72475D-02   -4.11D-04    2
       Virial theorem: -V/T =      2.008659
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.05; C      -0.06; C      -0.05; C      -0.03; C       0.13; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.05; C      -0.06; C      -0.05; C      -0.03; C       0.13; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   3    -339.120744636        5.63251D-03   -3.88D-05    3
+@  3    -339.120744640        5.63376D-03   -3.88D-05    3
       Virial theorem: -V/T =      2.008669
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   4    -339.120747616        1.79324D-03   -2.98D-06    4
+@  4    -339.120747620        1.79306D-03   -2.98D-06    4
       Virial theorem: -V/T =      2.008673
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   5    -339.120748145        7.38499D-04   -5.29D-07    5
+@  5    -339.120748149        7.38444D-04   -5.29D-07    5
       Virial theorem: -V/T =      2.008671
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   6    -339.120748221        2.60035D-04   -7.66D-08    6
+@  6    -339.120748226        2.59971D-04   -7.66D-08    5
       Virial theorem: -V/T =      2.008671
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   7    -339.120748241        9.90724D-05   -1.96D-08    7
+@  7    -339.120748244        1.15578D-04   -1.89D-08    5
       Virial theorem: -V/T =      2.008671
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   8    -339.120748243        3.28357D-05   -2.15D-09    8
+@  8    -339.120748247        3.53321D-05   -2.80D-09    5
       Virial theorem: -V/T =      2.008671
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   9    -339.120748243        1.00582D-05   -2.09D-10    9
+@  9    -339.120748248        1.30876D-05   -2.86D-10    5
       Virial theorem: -V/T =      2.008671
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.13; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-  10    -339.120748243        3.38372D-06   -2.66D-11   10
+@ 10    -339.120748248        5.46098D-06   -3.55D-11    5
 
- *** DIIS converged in  10 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:   -339.120748247604    5.46D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1150,22 +1338,24 @@ Point group: Cs
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.28924757   -11.12128380   -11.04458297   -11.04368109   -11.04258425
-       -11.04122062   -11.03975981   -11.03854522    -1.32574764    -1.10849623
-        -0.98095803    -0.96932337    -0.82360224    -0.78343025    -0.73282898
-        -0.66559731    -0.61349946    -0.57988371    -0.55663399    -0.54532940
-        -0.52437999    -0.45944319    -0.44184730    -0.33653200     0.56689742
-         0.61550220     0.63127915     0.68494994     0.71389535
+  1    -20.28924791   -11.12128393   -11.04458279   -11.04368102   -11.04258401
+       -11.04122063   -11.03975981   -11.03854525    -1.32574800    -1.10849617
+        -0.98095797    -0.96932336    -0.82360226    -0.78343020    -0.73282899
+        -0.66559728    -0.61349949    -0.57988373    -0.55663397    -0.54532939
+        -0.52438012    -0.45944315    -0.44184724    -0.33653216     0.56689755
+         0.61550225     0.63127923     0.68494995     0.71389538
 
-  2     -0.49059908    -0.42888129    -0.29306848    -0.28367094     0.21057577
-         0.26140609     0.34421287     0.51254149
+  2     -0.49059912    -0.42888143    -0.29306846    -0.28367087     0.21057574
+         0.26140615     0.34421294     0.51254155
 
-    E(LUMO) :     0.21057577 au (symmetry 2)
-  - E(HOMO) :    -0.28367094 au (symmetry 2)
+    E(LUMO) :     0.21057574 au (symmetry 2)
+  - E(HOMO) :    -0.28367087 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.49424671 au
+    gap     :     0.49424662 au
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.078       0.095
 
 
                        .-----------------------------------.
@@ -1173,28 +1363,28 @@ Point group: Cs
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -339.120748243477                 
-     Nuclear repulsion:           320.813934335059
-     Electronic energy:          -659.934682578535
+@    Final HF energy:            -339.120748247604                 
+@    Nuclear repulsion:           320.813952127738
+@    Electronic energy:          -659.934700375342
 
-     Final gradient norm:           0.000003383724
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:07:48 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+@    Final gradient norm:           0.000005460983
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:48 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:17 2013
+     Host name              : c10-6.local                             
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total wall time used in SIRIUS :      0.14 seconds
+
+ 
+     Date and time (Linux)  : Mon Oct 21 14:51:17 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1209,6 +1399,8 @@ Point group: Cs
 
  Center of mass dipole origin  :    0.712889    0.050144    0.000000
 
+ Center of mass gauge origin   :    0.712889    0.050144    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -1216,8 +1408,8 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:48 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:17 2013
+     Host name              : c10-6.local                             
 
 
    ***************************************************************************
@@ -1226,20 +1418,20 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:51 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:19 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:03      96 %
+ TWOTEX     00:00:01      96 %
 
- TOTAL      00:00:03     100 %
+ TOTAL      00:00:01     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   2.64 seconds
- >>>> Total wall time used in ABACUS:   3.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.48 seconds
+ >>>> Total wall time used in ABACUS:   1.49 seconds
 
 
                    .-------------------------------------------.
@@ -1257,20 +1449,20 @@ Point group: Cs
                                 Next geometry (au)
                                 ------------------
 
- O          6.0896329692            0.0155946857            0.0000000000
- C         -0.4127529764           -2.2547518764            0.0000000000
- C         -2.9004645536           -1.4398998754            0.0000000000
- C         -3.4386646829            1.1263959748            0.0000000000
- C         -1.4863000331            2.8774782959            0.0000000000
- C          1.0006580236            2.0617994658            0.0000000000
- C          1.5521052799           -0.5099600047            0.0000000000
- C          4.2681049567           -1.3983932196            0.0000000000
- H          4.4942781864           -3.4715968780            0.0000000000
- H          0.0087012439           -4.2582955996            0.0000000000
- H         -4.4228966904           -2.8063788730            0.0000000000
- H         -5.3836992224            1.7633983275            0.0000000000
- H         -1.9060486519            4.8799218297            0.0000000000
- H          2.5373461510            3.4146877472            0.0000000000
+ O          6.0896302098            0.0155999536            0.0000000000
+ C         -0.4127544772           -2.2547530170            0.0000000000
+ C         -2.9004659288           -1.4398996240            0.0000000000
+ C         -3.4386650029            1.1263963214            0.0000000000
+ C         -1.4862991543            2.8774775674            0.0000000000
+ C          1.0006585133            2.0617978307            0.0000000000
+ C          1.5521047723           -0.5099622304            0.0000000000
+ C          4.2681058212           -1.3983932114            0.0000000000
+ H          4.4942849888           -3.4715961920            0.0000000000
+ H          0.0086983189           -4.2582969900            0.0000000000
+ H         -4.4228988504           -2.8063777213            0.0000000000
+ H         -5.3836990990            1.7633998146            0.0000000000
+ H         -1.9060466670            4.8799213222            0.0000000000
+ H          2.5373465552            3.4146861760            0.0000000000
 
 
 
@@ -1283,8 +1475,8 @@ Point group: Cs
  End of optimization            :       F 
  Energy at this geometry is     :    -339.120748
  Energy change from last geom.  :      -0.002872
- Norm of gradient               :       0.008137
- Norm of step                   :       0.083623
+ Norm of gradient               :       0.008136
+ Norm of step                   :       0.083613
  Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
@@ -1307,14 +1499,14 @@ Point group: Cs
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
- Number of two-electron integrals written:      327001 ( 55.9% )
- Megabytes written:                              3.751
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:      318505 ( 54.5% )
+ Megabytes written:                              3.648
 
- >>> Time used in TWOINT is   1.08 seconds
- >>>> Total CPU  time used in HERMIT:   1.14 seconds
- >>>> Total wall time used in HERMIT:   2.00 seconds
+ >>>  Time used in TWOINT     is   0.62 seconds
+ >>>> Total CPU  time used in HERMIT:   0.66 seconds
+ >>>> Total wall time used in HERMIT:   0.67 seconds
 
 
                         .----------------------------------.
@@ -1337,51 +1529,52 @@ Point group: Cs
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1    -339.120783115        2.19312D-02   -3.49D-05    1
+      Threshold for discarding integrals :  1.00D-12 )
+@  1    -339.120783134        2.19271D-02   -3.49D-05    1
       Virial theorem: -V/T =      2.008623
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.07; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.07; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   2    -339.120833198        5.85299D-03   -5.01D-05    2
+@  2    -339.120833199        5.85187D-03   -5.01D-05    2
       Virial theorem: -V/T =      2.008635
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   3    -339.120837370        7.47933D-04   -4.17D-06    3
+@  3    -339.120837370        7.47624D-04   -4.17D-06    3
       Virial theorem: -V/T =      2.008636
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   4    -339.120837424        3.56362D-04   -5.39D-08    4
+@  4    -339.120837424        3.56348D-04   -5.38D-08    4
       Virial theorem: -V/T =      2.008637
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   5    -339.120837439        1.02263D-04   -1.43D-08    5
+@  5    -339.120837438        1.02333D-04   -1.43D-08    5
       Virial theorem: -V/T =      2.008637
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   6    -339.120837441        3.90450D-05   -2.70D-09    6
+@  6    -339.120837441        3.90710D-05   -2.70D-09    5
       Virial theorem: -V/T =      2.008637
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   7    -339.120837442        1.64939D-05   -4.83D-10    7
+@  7    -339.120837442        1.86028D-05   -4.64D-10    5
       Virial theorem: -V/T =      2.008637
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   8    -339.120837442        4.15946D-06   -8.58D-11    8
+@  8    -339.120837442        5.56878D-06   -1.01D-10    5
 
- *** DIIS converged in   8 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in   8 iterations !
+@     Converged SCF energy, gradient:   -339.120837441624    5.57D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1393,22 +1586,24 @@ Point group: Cs
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.28974583   -11.12173650   -11.04395535   -11.04343183   -11.04274940
-       -11.04134492   -11.03966127   -11.03885095    -1.32695338    -1.10888159
-        -0.98171594    -0.96939435    -0.82445178    -0.78364603    -0.73259424
-        -0.66553896    -0.61412877    -0.57990001    -0.55681361    -0.54568089
-        -0.52490281    -0.46004768    -0.44132557    -0.33672498     0.56844568
-         0.61498165     0.63234862     0.68529060     0.71627587
+  1    -20.28974592   -11.12173655   -11.04395543   -11.04343161   -11.04274927
+       -11.04134461   -11.03966136   -11.03885111    -1.32695336    -1.10888149
+        -0.98171583    -0.96939426    -0.82445170    -0.78364596    -0.73259428
+        -0.66553899    -0.61412871    -0.57989998    -0.55681356    -0.54568080
+        -0.52490281    -0.46004761    -0.44132551    -0.33672509     0.56844561
+         0.61498166     0.63234857     0.68529061     0.71627579
 
-  2     -0.49132074    -0.42963620    -0.29340947    -0.28355450     0.21032409
-         0.26170700     0.34493177     0.51312999
+  2     -0.49132065    -0.42963616    -0.29340939    -0.28355443     0.21032407
+         0.26170704     0.34493165     0.51312997
 
-    E(LUMO) :     0.21032409 au (symmetry 2)
-  - E(HOMO) :    -0.28355450 au (symmetry 2)
+    E(LUMO) :     0.21032407 au (symmetry 2)
+  - E(HOMO) :    -0.28355443 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.49387858 au
+    gap     :     0.49387851 au
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.069       0.085
 
 
                        .-----------------------------------.
@@ -1416,28 +1611,28 @@ Point group: Cs
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -339.120837441814                 
-     Nuclear repulsion:           321.027012227809
-     Electronic energy:          -660.147849669623
+@    Final HF energy:            -339.120837441624                 
+@    Nuclear repulsion:           321.027008919273
+@    Electronic energy:          -660.147846360897
 
-     Final gradient norm:           0.000004159456
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:07:53 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.05 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+@    Final gradient norm:           0.000005568780
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:53 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:20 2013
+     Host name              : c10-6.local                             
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.09 seconds
+ >>>> Total wall time used in SIRIUS :      0.12 seconds
+
+ 
+     Date and time (Linux)  : Mon Oct 21 14:51:20 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1450,7 +1645,9 @@ Point group: Cs
      Order of analytical energy-derivatives available:   2
      This will be the default.
 
- Center of mass dipole origin  :    0.713742    0.050164    0.000000
+ Center of mass dipole origin  :    0.713741    0.050164    0.000000
+
+ Center of mass gauge origin   :    0.713741    0.050164    0.000000
 
 
                  .------------------------------------------------.
@@ -1459,8 +1656,8 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:53 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:20 2013
+     Host name              : c10-6.local                             
 
 
    ***************************************************************************
@@ -1469,20 +1666,20 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:55 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:21 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:03      96 %
+ TWOTEX     00:00:01      96 %
 
- TOTAL      00:00:03     100 %
+ TOTAL      00:00:01     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   2.64 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.48 seconds
+ >>>> Total wall time used in ABACUS:   1.49 seconds
 
 
                    .-------------------------------------------.
@@ -1500,20 +1697,20 @@ Point group: Cs
                                 Next geometry (au)
                                 ------------------
 
- O          6.0924052294            0.0150729902            0.0000000000
- C         -0.4133082961           -2.2545021236            0.0000000000
- C         -2.9013885500           -1.4403492625            0.0000000000
- C         -3.4390034862            1.1260112831            0.0000000000
- C         -1.4868180295            2.8782702373            0.0000000000
- C          0.9998607067            2.0629227345            0.0000000000
- C          1.5525459287           -0.5093436290            0.0000000000
- C          4.2696433001           -1.3982133605            0.0000000000
- H          4.4920627084           -3.4716861100            0.0000000000
- H          0.0106586259           -4.2572727405            0.0000000000
- H         -4.4243156561           -2.8061305859            0.0000000000
- H         -5.3841107971            1.7624643220            0.0000000000
- H         -1.9077843929            4.8802464305            0.0000000000
- H          2.5395527087            3.4125098143            0.0000000000
+ O          6.0924000675            0.0150834950            0.0000000000
+ C         -0.4133113137           -2.2545051875            0.0000000000
+ C         -2.9013906214           -1.4403490936            0.0000000000
+ C         -3.4390033497            1.1260123139            0.0000000000
+ C         -1.4868163697            2.8782688891            0.0000000000
+ C          0.9998615427            2.0629186534            0.0000000000
+ C          1.5525444253           -0.5093479513            0.0000000000
+ C          4.2696443918           -1.3982109458            0.0000000000
+ H          4.4920730597           -3.4716825611            0.0000000000
+ H          0.0106531940           -4.2572762964            0.0000000000
+ H         -4.4243193673           -2.8061286649            0.0000000000
+ H         -5.3841099110            1.7624674412            0.0000000000
+ H         -1.9077804554            4.8802456598            0.0000000000
+ H          2.5395547072            3.4125042480            0.0000000000
 
 
 
@@ -1527,7 +1724,7 @@ Point group: Cs
  Energy at this geometry is     :    -339.120837
  Energy change from last geom.  :      -0.000089
  Norm of gradient               :       0.002152
- Norm of step                   :       0.010505
+ Norm of step                   :       0.010504
  Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
@@ -1550,14 +1747,14 @@ Point group: Cs
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
- Number of two-electron integrals written:      326989 ( 55.9% )
- Megabytes written:                              3.744
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:      318474 ( 54.5% )
+ Megabytes written:                              3.648
 
- >>> Time used in TWOINT is   1.15 seconds
- >>>> Total CPU  time used in HERMIT:   1.20 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>  Time used in TWOINT     is   0.62 seconds
+ >>>> Total CPU  time used in HERMIT:   0.65 seconds
+ >>>> Total wall time used in HERMIT:   0.67 seconds
 
 
                         .----------------------------------.
@@ -1580,46 +1777,47 @@ Point group: Cs
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1    -339.120841082        2.40965D-03   -3.64D-06    1
+      Threshold for discarding integrals :  1.00D-12 )
+@  1    -339.120841084        2.40780D-03   -3.64D-06    1
       Virial theorem: -V/T =      2.008649
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   2    -339.120841690        6.88342D-04   -6.08D-07    2
+@  2    -339.120841691        6.87863D-04   -6.07D-07    2
       Virial theorem: -V/T =      2.008647
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   3    -339.120841753        1.96557D-04   -6.30D-08    3
+@  3    -339.120841754        1.96654D-04   -6.30D-08    3
       Virial theorem: -V/T =      2.008646
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   4    -339.120841759        9.42905D-05   -5.26D-09    4
+@  4    -339.120841759        9.44062D-05   -5.27D-09    4
       Virial theorem: -V/T =      2.008646
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   5    -339.120841760        3.31838D-05   -1.59D-09    5
+@  5    -339.120841761        3.32455D-05   -1.60D-09    5
       Virial theorem: -V/T =      2.008646
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   6    -339.120841761        1.55317D-05   -3.74D-10    6
+@  6    -339.120841761        1.55415D-05   -3.75D-10    5
       Virial theorem: -V/T =      2.008646
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   7    -339.120841761        3.16844D-06   -6.43D-11    7
+@  7    -339.120841761        3.74970D-06   -6.37D-11    5
 
- *** DIIS converged in   7 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:   -339.120841761085    3.75D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1631,22 +1829,24 @@ Point group: Cs
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.28982584   -11.12177939   -11.04385524   -11.04341067   -11.04275207
-       -11.04132890   -11.03967724   -11.03887931    -1.32680737    -1.10873483
-        -0.98156962    -0.96937143    -0.82440575    -0.78365854    -0.73254432
-        -0.66546514    -0.61406283    -0.57987638    -0.55666170    -0.54571130
-        -0.52495468    -0.46013666    -0.44117209    -0.33676199     0.56844069
-         0.61493197     0.63226456     0.68532907     0.71606538
+  1    -20.28982596   -11.12177937   -11.04385528   -11.04341064   -11.04275202
+       -11.04132866   -11.03967721   -11.03887926    -1.32680748    -1.10873475
+        -0.98156951    -0.96937135    -0.82440564    -0.78365851    -0.73254433
+        -0.66546526    -0.61406273    -0.57987635    -0.55666162    -0.54571122
+        -0.52495475    -0.46013658    -0.44117205    -0.33676208     0.56844065
+         0.61493224     0.63226440     0.68532930     0.71606506
 
-  2     -0.49113909    -0.42957574    -0.29342390    -0.28342622     0.21022484
-         0.26173591     0.34474474     0.51297030
+  2     -0.49113906    -0.42957574    -0.29342383    -0.28342618     0.21022488
+         0.26173596     0.34474470     0.51297033
 
-    E(LUMO) :     0.21022484 au (symmetry 2)
-  - E(HOMO) :    -0.28342622 au (symmetry 2)
+    E(LUMO) :     0.21022488 au (symmetry 2)
+  - E(HOMO) :    -0.28342618 au (symmetry 2)
   ------------------------------------------
     gap     :     0.49365106 au
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.064       0.078
 
 
                        .-----------------------------------.
@@ -1654,28 +1854,28 @@ Point group: Cs
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -339.120841760719                 
-     Nuclear repulsion:           320.965237472425
-     Electronic energy:          -660.086079233144
+@    Final HF energy:            -339.120841761085                 
+@    Nuclear repulsion:           320.965263632445
+@    Electronic energy:          -660.086105393530
 
-     Final gradient norm:           0.000003168439
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:07:57 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+@    Final gradient norm:           0.000003749705
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:57 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:22 2013
+     Host name              : c10-6.local                             
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.09 seconds
+ >>>> Total wall time used in SIRIUS :      0.11 seconds
+
+ 
+     Date and time (Linux)  : Mon Oct 21 14:51:22 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1688,7 +1888,9 @@ Point group: Cs
      Order of analytical energy-derivatives available:   2
      This will be the default.
 
- Center of mass dipole origin  :    0.714014    0.050310    0.000000
+ Center of mass dipole origin  :    0.714013    0.050311    0.000000
+
+ Center of mass gauge origin   :    0.714013    0.050311    0.000000
 
 
                  .------------------------------------------------.
@@ -1697,8 +1899,8 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:07:57 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:22 2013
+     Host name              : c10-6.local                             
 
 
    ***************************************************************************
@@ -1707,20 +1909,20 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:08:00 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:24 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:03      96 %
+ TWOTEX     00:00:01      96 %
 
- TOTAL      00:00:03     100 %
+ TOTAL      00:00:01     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   2.64 seconds
- >>>> Total wall time used in ABACUS:   3.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.48 seconds
+ >>>> Total wall time used in ABACUS:   1.49 seconds
 
 
                    .-------------------------------------------.
@@ -1738,20 +1940,20 @@ Point group: Cs
                                 Next geometry (au)
                                 ------------------
 
- O          6.0920999460            0.0157099652            0.0000000000
- C         -0.4136484764           -2.2547522802            0.0000000000
- C         -2.9018096130           -1.4404844205            0.0000000000
- C         -3.4389207095            1.1259014052            0.0000000000
- C         -1.4866850735            2.8784862797            0.0000000000
- C          0.9997378979            2.0631707281            0.0000000000
- C          1.5522618378           -0.5094310307            0.0000000000
- C          4.2698870968           -1.3982058218            0.0000000000
- H          4.4929044522           -3.4715220896            0.0000000000
- H          0.0109784072           -4.2573881944            0.0000000000
- H         -4.4251586080           -2.8057431281            0.0000000000
- H         -5.3840065016            1.7624475336            0.0000000000
- H         -1.9082289712            4.8803056963            0.0000000000
- H          2.5405883154            3.4115053572            0.0000000000
+ O          6.0920998369            0.0157093692            0.0000000000
+ C         -0.4136483047           -2.2547523197            0.0000000000
+ C         -2.9018090128           -1.4404844693            0.0000000000
+ C         -3.4389204759            1.1259015536            0.0000000000
+ C         -1.4866853517            2.8784865366            0.0000000000
+ C          0.9997379370            2.0631709931            0.0000000000
+ C          1.5522615741           -0.5094304481            0.0000000000
+ C          4.2698865930           -1.3982058721            0.0000000000
+ H          4.4929035698           -3.4715220839            0.0000000000
+ H          0.0109789517           -4.2573882088            0.0000000000
+ H         -4.4251581151           -2.8057431465            0.0000000000
+ H         -5.3840064159            1.7624472167            0.0000000000
+ H         -1.9082296824            4.8803059019            0.0000000000
+ H          2.5405888960            3.4115049772            0.0000000000
 
 
 
@@ -1764,8 +1966,8 @@ Point group: Cs
  End of optimization            :       F 
  Energy at this geometry is     :    -339.120842
  Energy change from last geom.  :      -0.000004
- Norm of gradient               :       0.000567
- Norm of step                   :       0.003707
+ Norm of gradient               :       0.000566
+ Norm of step                   :       0.003690
  Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
@@ -1788,14 +1990,14 @@ Point group: Cs
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
- Number of two-electron integrals written:      326988 ( 55.9% )
- Megabytes written:                              3.744
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:      318470 ( 54.5% )
+ Megabytes written:                              3.648
 
- >>> Time used in TWOINT is   1.24 seconds
- >>>> Total CPU  time used in HERMIT:   1.29 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>  Time used in TWOINT     is   0.62 seconds
+ >>>> Total CPU  time used in HERMIT:   0.66 seconds
+ >>>> Total wall time used in HERMIT:   0.67 seconds
 
 
                         .----------------------------------.
@@ -1818,41 +2020,42 @@ Point group: Cs
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    5
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-15 )
-   1    -339.120841949        1.08105D-03   -1.88D-07    1
+      Threshold for discarding integrals :  1.00D-12 )
+@  1    -339.120841951        1.07335D-03   -1.90D-07    1
       Virial theorem: -V/T =      2.008648
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   2    -339.120842085        3.30616D-04   -1.36D-07    2
+@  2    -339.120842085        3.28485D-04   -1.34D-07    2
       Virial theorem: -V/T =      2.008648
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   3    -339.120842102        1.07508D-04   -1.72D-08    3
+@  3    -339.120842102        1.07402D-04   -1.70D-08    3
       Virial theorem: -V/T =      2.008648
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   4    -339.120842103        4.42788D-05   -1.59D-09    4
+@  4    -339.120842103        4.42459D-05   -1.60D-09    4
       Virial theorem: -V/T =      2.008648
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   5    -339.120842104        1.54641D-05   -6.41D-10    5
+@  5    -339.120842104        1.54440D-05   -6.43D-10    5
       Virial theorem: -V/T =      2.008648
-      MULPOP  O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
-              H       0.07; H       0.07; H       0.07; H       0.08; 
+@      MULPOP O      -0.21; C      -0.06; C      -0.06; C      -0.06; C      -0.06; C      -0.05; C      -0.02; C       0.14; H       0.05; H       0.06; 
+@             H       0.07; H       0.07; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-   6    -339.120842104        5.30111D-06   -1.06D-10    6
+@  6    -339.120842104        5.28018D-06   -1.05D-10    5
 
- *** DIIS converged in   6 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in   6 iterations !
+@     Converged SCF energy, gradient:   -339.120842104033    5.28D-06
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1864,22 +2067,24 @@ Point group: Cs
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.28983935   -11.12179123   -11.04382402   -11.04340377   -11.04273418
-       -11.04131784   -11.03967838   -11.03888478    -1.32683396    -1.10869052
-        -0.98150130    -0.96937028    -0.82434857    -0.78366228    -0.73252383
-        -0.66546904    -0.61404228    -0.57986501    -0.55661623    -0.54573625
-        -0.52496670    -0.46014560    -0.44113356    -0.33675815     0.56840309
-         0.61490650     0.63223293     0.68533951     0.71602812
+  1    -20.28983933   -11.12179121   -11.04382401   -11.04340376   -11.04273418
+       -11.04131785   -11.03967838   -11.03888481    -1.32683396    -1.10869056
+        -0.98150131    -0.96937030    -0.82434857    -0.78366230    -0.73252380
+        -0.66546905    -0.61404228    -0.57986501    -0.55661623    -0.54573628
+        -0.52496669    -0.46014561    -0.44113357    -0.33675814     0.56840309
+         0.61490649     0.63223295     0.68533955     0.71602819
 
-  2     -0.49109847    -0.42958353    -0.29343509    -0.28338168     0.21024012
-         0.26174835     0.34471364     0.51293306
+  2     -0.49109849    -0.42958353    -0.29343511    -0.28338169     0.21024014
+         0.26174834     0.34471366     0.51293308
 
-    E(LUMO) :     0.21024012 au (symmetry 2)
-  - E(HOMO) :    -0.28338168 au (symmetry 2)
+    E(LUMO) :     0.21024014 au (symmetry 2)
+  - E(HOMO) :    -0.28338169 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.49362180 au
+    gap     :     0.49362183 au
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.059       0.075
 
 
                        .-----------------------------------.
@@ -1887,28 +2092,28 @@ Point group: Cs
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final HF energy:            -339.120842104082                 
-     Nuclear repulsion:           320.956795550561
-     Electronic energy:          -660.077637654643
+@    Final HF energy:            -339.120842104033                 
+@    Nuclear repulsion:           320.956804144779
+@    Electronic energy:          -660.077646248812
 
-     Final gradient norm:           0.000005301115
-
- 
-     Date and time (Linux)  : Wed Mar 16 18:08:02 2011 
-     Host name              : fe6                                     
-
-
-
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+@    Final gradient norm:           0.000005280178
 
  
-     Date and time (Linux)  : Wed Mar 16 18:08:02 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:24 2013
+     Host name              : c10-6.local                             
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.08 seconds
+ >>>> Total wall time used in SIRIUS :      0.10 seconds
+
+ 
+     Date and time (Linux)  : Mon Oct 21 14:51:24 2013
+     Host name              : c10-6.local                             
 
 
                      .---------------------------------------.
@@ -1923,6 +2128,8 @@ Point group: Cs
 
  Center of mass dipole origin  :    0.713897    0.050389    0.000000
 
+ Center of mass gauge origin   :    0.713897    0.050389    0.000000
+
 
                  .------------------------------------------------.
                  | Starting in Static Property Section (ABACUS) - |
@@ -1930,8 +2137,8 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:08:02 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:24 2013
+     Host name              : c10-6.local                             
 
 
    ***************************************************************************
@@ -1940,20 +2147,20 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:08:04 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:26 2013
+     Host name              : c10-6.local                             
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:03      96 %
+ TWOTEX     00:00:01      96 %
 
- TOTAL      00:00:03     100 %
+ TOTAL      00:00:01     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   2.65 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.48 seconds
+ >>>> Total wall time used in ABACUS:   1.49 seconds
 
 
                    .-------------------------------------------.
@@ -1971,20 +2178,20 @@ Point group: Cs
                                Final geometry (au)
                                -------------------
 
- O          6.0920999460            0.0157099652            0.0000000000
- C         -0.4136484764           -2.2547522802            0.0000000000
- C         -2.9018096130           -1.4404844205            0.0000000000
- C         -3.4389207095            1.1259014052            0.0000000000
- C         -1.4866850735            2.8784862797            0.0000000000
- C          0.9997378979            2.0631707281            0.0000000000
- C          1.5522618378           -0.5094310307            0.0000000000
- C          4.2698870968           -1.3982058218            0.0000000000
- H          4.4929044522           -3.4715220896            0.0000000000
- H          0.0109784072           -4.2573881944            0.0000000000
- H         -4.4251586080           -2.8057431281            0.0000000000
- H         -5.3840065016            1.7624475336            0.0000000000
- H         -1.9082289712            4.8803056963            0.0000000000
- H          2.5405883154            3.4115053572            0.0000000000
+ O          6.0920998369            0.0157093692            0.0000000000
+ C         -0.4136483047           -2.2547523197            0.0000000000
+ C         -2.9018090128           -1.4404844693            0.0000000000
+ C         -3.4389204759            1.1259015536            0.0000000000
+ C         -1.4866853517            2.8784865366            0.0000000000
+ C          0.9997379370            2.0631709931            0.0000000000
+ C          1.5522615741           -0.5094304481            0.0000000000
+ C          4.2698865930           -1.3982058721            0.0000000000
+ H          4.4929035698           -3.4715220839            0.0000000000
+ H          0.0109789517           -4.2573882088            0.0000000000
+ H         -4.4251581151           -2.8057431465            0.0000000000
+ H         -5.3840064159            1.7624472167            0.0000000000
+ H         -1.9082296824            4.8803059019            0.0000000000
+ H          2.5405888960            3.4115049772            0.0000000000
 
 
 
@@ -1997,14 +2204,16 @@ Point group: Cs
  End of optimization            :       T 
  Energy at this geometry is     :    -339.120842
  Energy change from last geom.  :      -0.000000
- Norm of gradient               :       0.000232
- Norm of step                   :       0.001552
+ Norm of gradient               :       0.000233
+ Norm of step                   :       0.001551
  Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
 
 
  Center of mass dipole origin  :    0.713897    0.050389    0.000000
+
+ Center of mass gauge origin   :    0.713897    0.050389    0.000000
 
 
                  .------------------------------------------------.
@@ -2013,8 +2222,8 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:08:05 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:26 2013
+     Host name              : c10-6.local                             
 
 
    ***************************************************************************
@@ -2023,27 +2232,27 @@ Point group: Cs
 
 
  
-     Date and time (Linux)  : Wed Mar 16 18:08:05 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:26 2013
+     Host name              : c10-6.local                             
 
 
                              Molecular geometry (au)
                              -----------------------
 
- O          6.0920999460            0.0157099652            0.0000000000
- C         -0.4136484764           -2.2547522802            0.0000000000
- C         -2.9018096130           -1.4404844205            0.0000000000
- C         -3.4389207095            1.1259014052            0.0000000000
- C         -1.4866850735            2.8784862797            0.0000000000
- C          0.9997378979            2.0631707281            0.0000000000
- C          1.5522618378           -0.5094310307            0.0000000000
- C          4.2698870968           -1.3982058218            0.0000000000
- H          4.4929044522           -3.4715220896            0.0000000000
- H          0.0109784072           -4.2573881944            0.0000000000
- H         -4.4251586080           -2.8057431281            0.0000000000
- H         -5.3840065016            1.7624475336            0.0000000000
- H         -1.9082289712            4.8803056963            0.0000000000
- H          2.5405883154            3.4115053572            0.0000000000
+ O          6.0920998369            0.0157093692            0.0000000000
+ C         -0.4136483047           -2.2547523197            0.0000000000
+ C         -2.9018090128           -1.4404844693            0.0000000000
+ C         -3.4389204759            1.1259015536            0.0000000000
+ C         -1.4866853517            2.8784865366            0.0000000000
+ C          0.9997379370            2.0631709931            0.0000000000
+ C          1.5522615741           -0.5094304481            0.0000000000
+ C          4.2698865930           -1.3982058721            0.0000000000
+ H          4.4929035698           -3.4715220839            0.0000000000
+ H          0.0109789517           -4.2573882088            0.0000000000
+ H         -4.4251581151           -2.8057431465            0.0000000000
+ H         -5.3840064159            1.7624472167            0.0000000000
+ H         -1.9082296824            4.8803059019            0.0000000000
+ H          2.5405888960            3.4115049772            0.0000000000
 
 
 
@@ -2054,7 +2263,7 @@ Point group: Cs
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-     Total energy       -339.1208421041 au (Hartrees)
+     Total energy       -339.1208421040 au (Hartrees)
                          -9227.94752810 eV
                            -890361.6337 kJ/mol
 
@@ -2062,10 +2271,10 @@ Point group: Cs
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.4014810633 au
-     Mass-velocity correction:                  -0.5102605380 au
+     Darwin correction:                          0.4014810634 au
+     Mass-velocity correction:                  -0.5102605382 au
 
-     Total relativistic correction:             -0.1087794747 au (0.0321%)
+     Total relativistic correction:             -0.1087794748 au (0.0321%)
      Non-relativistic + relativistic energy:  -339.2296215788 au
 
 
@@ -2075,7 +2284,7 @@ Point group: Cs
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.753651           1.915591           6.389723
+              0.753652           1.915591           6.389724
 
 
                              Dipole moment components
@@ -2083,8 +2292,8 @@ Point group: Cs
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.70332050        -1.78766229        -5.96299953
-      y     -0.27079660        -0.68829626        -2.29590920
+      x     -0.70332065        -1.78766267        -5.96300080
+      y     -0.27079641        -0.68829578        -2.29590759
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -2100,38 +2309,42 @@ Point group: Cs
             ------      ------      ------      ------      ------      ------
  O     :    0.000000
  C     :    3.646325    0.000000
- C     :    4.821351    1.385391    0.000000
- C     :    5.077700    2.400686    1.387497    0.000000
+ C     :    4.821350    1.385391    0.000000
+ C     :    5.077699    2.400686    1.387497    0.000000
  C     :    4.287102    2.775107    2.405056    1.388299    0.000000
  C     :    2.904419    2.404243    2.774911    2.400632    1.384690    0.000000
  C     :    2.418398    1.391137    2.407937    2.779375    2.408377    1.392406
  C     :    1.220510    2.519527    3.795164    4.292434    3.794913    2.519851
- H     :    2.030153    2.675083    4.058031    4.851437    4.615630    3.463384
+ H     :    2.030152    2.675083    4.058030    4.851436    4.615630    3.463384
  H     :    3.933015    1.083310    2.144264    3.383492    3.858413    3.385374
- H     :    5.762284    2.142730    1.082491    2.144996    3.386118    3.857401
+ H     :    5.762283    2.142730    1.082491    2.144996    3.386118    3.857401
  H     :    6.142836    3.381867    2.144316    1.083011    2.145267    3.381878
- H     :    4.954793    3.857656    3.385890    2.145523    1.082550    2.142516
- H     :    2.600230    3.381521    3.858333    3.387499    2.149726    1.083486
+ H     :    4.954794    3.857656    3.385890    2.145523    1.082550    2.142516
+ H     :    2.600229    3.381521    3.858333    3.387500    2.149726    1.083486
 
             C           C           H           H           H           H     
             ------      ------      ------      ------      ------      ------
  C     :    0.000000
  C     :    1.513059    0.000000
  H     :    2.208728    1.103481    0.000000
- H     :    2.144489    2.714490    2.407916    0.000000
- H     :    3.388495    4.661117    4.732369    2.469993    0.000000
- H     :    3.862387    5.375445    5.915146    4.277647    2.470059    0.000000
- H     :    3.389390    4.661232    5.568381    4.940963    4.279807    2.470871
- H     :    2.139770    2.704701    3.786026    4.273277    4.940821    4.283349
+ H     :    2.144490    2.714489    2.407915    0.000000
+ H     :    3.388495    4.661116    4.732368    2.469993    0.000000
+ H     :    3.862386    5.375445    5.915145    4.277647    2.470059    0.000000
+ H     :    3.389390    4.661232    5.568381    4.940963    4.279806    2.470870
+ H     :    2.139769    2.704701    3.786025    4.273277    4.940821    4.283349
 
             H           H     
             ------      ------
  H     :    0.000000
- H     :    2.479202    0.000000
+ H     :    2.479203    0.000000
 
 
-  Max interatomic separation is    6.1428 Angstrom (   11.6083 Bohr)
+  Max    interatomic separation is    6.1428 Angstrom (   11.6083 Bohr)
   between atoms   12 and    1, "H     " and "O     ".
+
+  Min HX interatomic separation is    1.0825 Angstrom (    2.0456 Bohr)
+
+  Min YX interatomic separation is    1.2205 Angstrom (    2.3064 Bohr)
 
 
   Bond distances (Angstrom):
@@ -2160,7 +2373,7 @@ Point group: Cs
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     C          C          C            120.281
+  bond angle:     C          C          C            120.280
   bond angle:     C          C          H            120.092
   bond angle:     C          C          H            119.627
   bond angle:     C          C          C            119.942
@@ -2173,7 +2386,7 @@ Point group: Cs
   bond angle:     C          C          H            120.024
   bond angle:     C          C          H            120.046
   bond angle:     C          C          C            120.276
-  bond angle:     C          C          H            120.657
+  bond angle:     C          C          H            120.658
   bond angle:     C          C          H            119.066
   bond angle:     C          C          C            119.477
   bond angle:     C          C          C            120.292
@@ -2191,8 +2404,8 @@ Point group: Cs
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.04 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.03 seconds
+ >>>> Total wall time used in ABACUS:   0.03 seconds
 
 
                    .-------------------------------------------.
@@ -2210,32 +2423,32 @@ Point group: Cs
                                   Final geometry
                                   --------------
 
- O          6.0920999460            0.0157099652            0.0000000000
- C         -0.4136484764           -2.2547522802            0.0000000000
- C         -2.9018096130           -1.4404844205            0.0000000000
- C         -3.4389207095            1.1259014052            0.0000000000
- C         -1.4866850735            2.8784862797            0.0000000000
- C          0.9997378979            2.0631707281            0.0000000000
- C          1.5522618378           -0.5094310307            0.0000000000
- C          4.2698870968           -1.3982058218            0.0000000000
- H          4.4929044522           -3.4715220896            0.0000000000
- H          0.0109784072           -4.2573881944            0.0000000000
- H         -4.4251586080           -2.8057431281            0.0000000000
- H         -5.3840065016            1.7624475336            0.0000000000
- H         -1.9082289712            4.8803056963            0.0000000000
- H          2.5405883154            3.4115053572            0.0000000000
+ O          6.0920998369            0.0157093692            0.0000000000
+ C         -0.4136483047           -2.2547523197            0.0000000000
+ C         -2.9018090128           -1.4404844693            0.0000000000
+ C         -3.4389204759            1.1259015536            0.0000000000
+ C         -1.4866853517            2.8784865366            0.0000000000
+ C          0.9997379370            2.0631709931            0.0000000000
+ C          1.5522615741           -0.5094304481            0.0000000000
+ C          4.2698865930           -1.3982058721            0.0000000000
+ H          4.4929035698           -3.4715220839            0.0000000000
+ H          0.0109789517           -4.2573882088            0.0000000000
+ H         -4.4251581151           -2.8057431465            0.0000000000
+ H         -5.3840064159            1.7624472167            0.0000000000
+ H         -1.9082296824            4.8803059019            0.0000000000
+ H          2.5405888960            3.4115049772            0.0000000000
 
 
 
- Iter      Energy        Change       GradNorm  Index   StepLen    TrustRad #Rej
- -------------------------------------------------------------------------------
-   0     -339.117876     0.000000     0.051489    0    0.383002*   0.500000   0 
-   1     -339.120748    -0.002872     0.008137    0    0.083623*   0.500000   0 
-   2     -339.120837    -0.000089     0.002152    0    0.010505*   0.500000   0 
-   3     -339.120842    -0.000004     0.000567    0    0.003707*   0.500000   0 
-   4     -339.120842    -0.000000     0.000232    0    0.001552*   0.500000   0 
+@ Iter      Energy        Change       GradNorm  Index   StepLen    TrustRad #Rej
+@ -------------------------------------------------------------------------------
+@   0     -339.117876     0.000000     0.051490    0    0.383003*   0.500000   0 
+@   1     -339.120748    -0.002872     0.008136    0    0.083613*   0.500000   0 
+@   2     -339.120837    -0.000089     0.002152    0    0.010504*   0.500000   0 
+@   3     -339.120842    -0.000004     0.000566    0    0.003690*   0.500000   0 
+@   4     -339.120842    -0.000000     0.000233    0    0.001551*   0.500000   0 
 
- *) Newton step taken.
+@  *) Newton step taken.
 
 
    Interatomic separations (in Angstrom):
@@ -2245,38 +2458,42 @@ Point group: Cs
             ------      ------      ------      ------      ------      ------
  O     :    0.000000
  C     :    3.646325    0.000000
- C     :    4.821351    1.385391    0.000000
- C     :    5.077700    2.400686    1.387497    0.000000
+ C     :    4.821350    1.385391    0.000000
+ C     :    5.077699    2.400686    1.387497    0.000000
  C     :    4.287102    2.775107    2.405056    1.388299    0.000000
  C     :    2.904419    2.404243    2.774911    2.400632    1.384690    0.000000
  C     :    2.418398    1.391137    2.407937    2.779375    2.408377    1.392406
  C     :    1.220510    2.519527    3.795164    4.292434    3.794913    2.519851
- H     :    2.030153    2.675083    4.058031    4.851437    4.615630    3.463384
+ H     :    2.030152    2.675083    4.058030    4.851436    4.615630    3.463384
  H     :    3.933015    1.083310    2.144264    3.383492    3.858413    3.385374
- H     :    5.762284    2.142730    1.082491    2.144996    3.386118    3.857401
+ H     :    5.762283    2.142730    1.082491    2.144996    3.386118    3.857401
  H     :    6.142836    3.381867    2.144316    1.083011    2.145267    3.381878
- H     :    4.954793    3.857656    3.385890    2.145523    1.082550    2.142516
- H     :    2.600230    3.381521    3.858333    3.387499    2.149726    1.083486
+ H     :    4.954794    3.857656    3.385890    2.145523    1.082550    2.142516
+ H     :    2.600229    3.381521    3.858333    3.387500    2.149726    1.083486
 
             C           C           H           H           H           H     
             ------      ------      ------      ------      ------      ------
  C     :    0.000000
  C     :    1.513059    0.000000
  H     :    2.208728    1.103481    0.000000
- H     :    2.144489    2.714490    2.407916    0.000000
- H     :    3.388495    4.661117    4.732369    2.469993    0.000000
- H     :    3.862387    5.375445    5.915146    4.277647    2.470059    0.000000
- H     :    3.389390    4.661232    5.568381    4.940963    4.279807    2.470871
- H     :    2.139770    2.704701    3.786026    4.273277    4.940821    4.283349
+ H     :    2.144490    2.714489    2.407915    0.000000
+ H     :    3.388495    4.661116    4.732368    2.469993    0.000000
+ H     :    3.862386    5.375445    5.915145    4.277647    2.470059    0.000000
+ H     :    3.389390    4.661232    5.568381    4.940963    4.279806    2.470870
+ H     :    2.139769    2.704701    3.786025    4.273277    4.940821    4.283349
 
             H           H     
             ------      ------
  H     :    0.000000
- H     :    2.479202    0.000000
+ H     :    2.479203    0.000000
 
 
-  Max interatomic separation is    6.1428 Angstrom (   11.6083 Bohr)
+  Max    interatomic separation is    6.1428 Angstrom (   11.6083 Bohr)
   between atoms   12 and    1, "H     " and "O     ".
+
+  Min HX interatomic separation is    1.0825 Angstrom (    2.0456 Bohr)
+
+  Min YX interatomic separation is    1.2205 Angstrom (    2.3064 Bohr)
 
 
   Bond distances (Angstrom):
@@ -2305,7 +2522,7 @@ Point group: Cs
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     C          C          C            120.281
+  bond angle:     C          C          C            120.280
   bond angle:     C          C          H            120.092
   bond angle:     C          C          H            119.627
   bond angle:     C          C          C            119.942
@@ -2318,7 +2535,7 @@ Point group: Cs
   bond angle:     C          C          H            120.024
   bond angle:     C          C          H            120.046
   bond angle:     C          C          C            120.276
-  bond angle:     C          C          H            120.657
+  bond angle:     C          C          H            120.658
   bond angle:     C          C          H            119.066
   bond angle:     C          C          C            119.477
   bond angle:     C          C          C            120.292
@@ -2329,15 +2546,15 @@ Point group: Cs
 
 
 
- Geometry converged in            5  iterations!
+@ Geometry converged in  5 iterations!
 
- Energy at final geometry is       :    -339.120842 a.u.
- Energy change during optimization :      -0.002966 a.u.
-                                             -7.786 kJ/mol
-
- >>>> Total CPU  time used in DALTON:  19.77 seconds
- >>>> Total wall time used in DALTON:  23.00 seconds
+@ Energy at final geometry is       :    -339.120842 a.u.
+@ Energy change during optimization :      -0.002966 a.u.
+@                                             -7.786 kJ/mol
+ 
+ >>>> Total CPU  time used in DALTON:  11.57 seconds
+ >>>> Total wall time used in DALTON:  11.91 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:08:05 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Mon Oct 21 14:51:26 2013
+     Host name              : c10-6.local                             

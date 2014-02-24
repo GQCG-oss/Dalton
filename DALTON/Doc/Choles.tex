@@ -12,13 +12,13 @@ In this Section, we describe the keywords controlling the algorithm to
 decompose the two-electron integrals, which is activated by the 
 keyword \Key{CHOLES} in the \Sec{*DALTON} input module.
 Note that apart from
-the options related to restart and, sometimes, to the decompostion
+the options related to restart and, sometimes, to the decomposition
 threshold, the following keywords are very seldom needed,
 except for pathological cases. The same is the case for the sections
 \Sec{CHOMP2}~\ref{sec:chomp2} and \Sec{CHOCC2}~\ref{sec:chocc2} 
 of the coupled cluster input.
 
-Note that two types of Cholesky decomposition are implemented in Dalton.
+Note that two types of Cholesky decomposition are implemented in \dalton.
 The other type, the Cholesky decomposition of energy denominators in CCSD(T) \index{CCSD(T)} is
 invoked with keyword \Key{CHO(T)} (or \Sec{CHO(T)}~\ref{sec:chopt} if 
 closer control is needed) in \Sec{CC INP}.
@@ -50,7 +50,7 @@ closer control is needed) in \Sec{CC INP}.
 %
 \item[\Key{LENBUF}] \verb| |\newline
 \verb|READ (LUCMD,*) LENBUF|\newline
-        Buffer length used in the decompostion. Mainly for debugging purposes.
+        Buffer length used in the decomposition. Mainly for debugging purposes.
 %
 \item[\Key{NOSCDI}] 
         Do not screen  the initial diagonal 
@@ -65,7 +65,7 @@ closer control is needed) in \Sec{CC INP}.
         diagonal. This is the default.
 %
 \item[\Key{RSTCHO}]
-        Restart the decompostion. File CHOLESKY.RST must be available.
+        Restart the decomposition. File CHOLESKY.RST must be available.
 %
 \item[\Key{RSTDIA}]
         Use the diagonal computed in a previous calculation. File CHODIAG
@@ -73,7 +73,7 @@ closer control is needed) in \Sec{CC INP}.
 %
 \item[\Key{SPANDI}] \verb| |\newline
 \verb|READ (LUCMD,*) SPAN|\newline
-        Span factor ($s$) used in the decompostion. Only diagonals elements 
+        Span factor ($s$) used in the decomposition. Only diagonals elements 
         \newline 
         \begin{center}
         $D^{(J)}_{\alpha \beta} \geq s \times (D^{(J)}_{\alpha \beta})_{max}$

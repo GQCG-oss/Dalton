@@ -87,6 +87,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-75.98351120" | wc -l`
 CRIT2=`$GREP "Total MP2 * energy: * \-76.11276975" $log | wc -l`
@@ -145,7 +150,7 @@ ERROR[4]="CCSD EXCITATION ENERGIES NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -22,7 +22,8 @@
 !
 !
       SUBROUTINE DIISWEIGHTS(METHOD,ENERG,H1AO,SAOUNP,FAOS,DAOS,INDEVC,
-     &                       NEVC,GVEC,BMAT,CVEC,MXERRV,KFREE,LFREE,WRK)
+     &                       NEVC,GVEC,BMAT,CVEC,MXERRV,KFREE,LFREE,WRK,
+     &                       PNOROT)
 c
 c     Computes weights that old density matrices are summed up with
 c     to create new trial density matrix.
@@ -66,14 +67,14 @@ c     setup the default that acts only when NEVC == 1
 c        GVEC is not accessed for DIIS
          IF(NEVC.GT.1) THEN
             CALL diis_update_bmat(H1AO,SAOUNP,FAOS,DAOS,BMAT,NEVC,
-     &           MXERRV,KFREE,LFREE,WRK)
+     &           MXERRV,KFREE,LFREE,WRK,PNOROT)
             CALL diis_solve_for_coefs(NEVC,GVEC,BMAT,CVEC)
          ENDIF
       ELSE IF (METHOD(1:6).EQ.'C2DIIS') THEN
 c        GVEC is not accessed for C2DIIS
          IF(NEVC.GT.1) THEN
             CALL diis_update_bmat(H1AO,SAOUNP,FAOS,DAOS,BMAT,NEVC,
-     &           MXERRV,KFREE,LFREE,WRK)
+     &           MXERRV,KFREE,LFREE,WRK,PNOROT)
             CALL c2diis_solve_for_coefs(NEVC,BMAT,CVEC,WRK,KFREE,LFREE)
          ENDIF
 
@@ -87,7 +88,7 @@ c        GVEC is not accessed for C2DIIS
      &                                 FEASIBLE)
             IF(.NOT.FEASIBLE) THEN
                CALL diis_update_bmat(H1AO,SAOUNP,FAOS,DAOS,BMAT,NEVC,
-     &        MXERRV,KFREE,LFREE,WRK)
+     &        MXERRV,KFREE,LFREE,WRK,PNOROT)
                CALL diis_solve_for_coefs(NEVC,GVEC,BMAT,CVEC)
             END IF
          END IF
@@ -106,6 +107,8 @@ c     -------------------------------------------------------------------
      &     MXERRV,KFRSAV,LFRSAV,WRK)
 #include "implicit.h"
 #include "inforb.h"
+#include "maxorb.h"
+#include "infinp.h"
       DIMENSION H1AO(*),SAOUNP(*)
       DIMENSION FAOS(NNBAST,MXERRV,2),DAOS(NNBAST,MXERRV,2)
       DIMENSION BMAT(NEVC,NEVC),WRK(*)
@@ -135,6 +138,7 @@ C     S*DC*FV-FV*DC*S
      &           SAOUNP,WRK(KTMP2),KFREE,LFREE,WRK)
             CALL DAXPY(N2BASX,D1,WRK(KTMP2),1,WRK(KCOMMi),1)
          ENDIF
+         IF (LNOROT) CALL PHPT(PNOROT,WRK(KCOMMi),NBAST)
          DO J = 1,NEVC
          CALL DCOPY(NNBAST,FAOS(1,J,1),1,WRK(KTMP1),1)
          CALL DAXPY(NNBAST,D1,H1AO,1,WRK(KTMP1),1)
@@ -146,6 +150,7 @@ C     S*DC*FV-FV*DC*S
      &           SAOUNP,WRK(KTMP2),KFREE,LFREE,WRK)
             CALL DAXPY(N2BASX,D1,WRK(KTMP2),1,WRK(KCOMMj),1)
          ENDIF
+         IF (LNOROT) CALL PHPT(PNOROT,WRK(KCOMMj),NBAST)
          BMAT(I,J)=2*DDOT(N2BASX,WRK(KCOMMi),1,WRK(KCOMMj),1)
          ENDDO
       ENDDO
@@ -541,3 +546,23 @@ c        ELSE No solution lowering the energy found
       print *, (weightvec(i),i=1,nevc)
       END
 C --- end of opt-solvers.F ---
+         SUBROUTINE PHPT(P,H,N)
+#include "implicit.h"
+         INTEGER N
+         DIMENSION P(N,N)
+         DIMENSION H(N,N)
+
+         DIMENSION T(N,N)
+         PARAMETER(D1=1.0D0, D0=0.0D0)
+
+         CALL DGEMM('N','N',N,N,N,
+     &      D1,P,N,
+     &         H,N,
+     &      D0,T,N
+     &       )
+         CALL DGEMM('N','T',N,N,N,
+     &      D1,T,N,
+     &         P,N,
+     &      D0,H,N
+     &       )
+         END SUBROUTINE PHPT

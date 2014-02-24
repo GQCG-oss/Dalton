@@ -103,6 +103,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Total energy and solvation energy compared:
 CRIT1=`$GREP "CC2      Total energy:                 -76\.2386471." $log | wc -l`
 CRIT2=`$GREP "CC2      Solvation energy:              ( \-|\-0)\.0076651." $log | wc -l`
@@ -135,7 +140,7 @@ ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"
 PASSED=1
 for i in 1 2 3 4
 do 
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -150,5 +155,5 @@ else
   exit 1
 fi
 
-%EOF%                  
+%EOF%
 #######################################################################

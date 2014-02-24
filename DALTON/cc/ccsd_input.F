@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...    Release DALTON2013 (2013), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -109,7 +109,6 @@ C
       CHARACTER*(80) LINE
 C
       SAVE SET
-CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
 CSONIA/FRAN/TBPEDERSEN
 CNew method keywords ring-CCD (rCCD), direct ring CCD (drCCD),
 Cring-CCD for triplet (rTCCD), and SOSEX added
@@ -146,236 +145,18 @@ C
       IF (SET) RETURN
       SET = .TRUE.
 C
+CSPAS:8/11-13: Initialization of CCSDINP, CCLR, CCSDSYM 
+C              and other common blocks is moved to a new routine
+C              CCSD_INIT0, because the initialization has to be done
+C              also in the AO-SOPPA module.
+C 
 C     Initialize /CCSDINP/ ,/CCLR / and /CCSDSYM/
 C
-      LGLO = .FALSE.
-      SKIP   = .FALSE.
-      CCRSTR = .FALSE.
-      CCSDT  = .FALSE.
-      CC2    = .FALSE.
-      MP2    = .FALSE.
-      DCPT2  = .FALSE.
-      CIS    = .FALSE.
-      CCS    = .FALSE.
-      CCD    = .FALSE.
-!SONIA/FRAN
-      rCCD   = .FALSE.
-      drCCD  = .FALSE.
-      rTCCD  = .FALSE.
-      SOSEX  = .FALSE.
-!
-      CCP2   = .FALSE.
-      CC1A   = .FALSE.
-      CC1B   = .FALSE.
-      CCPT   = .FALSE.
-      CCP3   = .FALSE.
-      CCRT   = .FALSE.
-      CCR3   = .FALSE.
-      CCR1A  = .FALSE.
-      CCR1B  = .FALSE.
-      RSPIM  = .FALSE.
-      TRIPIM = .FALSE.
-      LSEC   = .FALSE.
-      LCOR   = .FALSE.
-      NOCCIT = .FALSE.
-      FROIMP = .FALSE.
-      FROEXP = .FALSE.
-      CCFOP  = .FALSE.
-      CCSTST = .FALSE.
-      T2TCOR = .TRUE.
-      DEBUG  = .FALSE.
-      CCLR   = .FALSE.
-      CCQR   = .FALSE.
-      CCCR   = .FALSE.
-      CC4R   = .FALSE.
-      CC5R   = .FALSE.
-      CCTM   = .FALSE.
-      CCMCD  = .FALSE.
-      CCLRSD = .FALSE.
-      CCQR2R = .FALSE.
-      CCOPA  = .FALSE.
-      CCXOPA = .FALSE.
-      CCTPA  = .FALSE.
-      CCEXLR = .FALSE.
-      CCDERI = .FALSE.
-!     Lanczos
-      CCLRLCZ = .FALSE.
-C     
-Cholesky
-C 
-      CHOPT  = .FALSE.
-      CALL CC_CHOPTINIT
-      CHODBG = .FALSE.
-C     
-Cholesky
-C 
-      LVVVV  = .FALSE.
-
-      L0SKIP = .FALSE.
-
-      F1SKIP = .FALSE.
-      R1SKIP = .FALSE.
-      L1SKIP = .FALSE.
-
-      RCSKIP = .FALSE.
-      FCSKIP = .FALSE.
-      LCSKIP = .FALSE.
-
-      O2SKIP = .FALSE.
-      R2SKIP = .FALSE.
-      X2SKIP = .FALSE.
-      F2SKIP = .FALSE.
-      L2SKIP = .FALSE.
-
-      CO2SKIP= .FALSE.
-      CR2SKIP= .FALSE.
-      CX2SKIP= .FALSE.
-      CF2SKIP= .FALSE.
-      CL2SKIP= .FALSE.
-
-      RESKIP = .FALSE.
-      LESKIP = .FALSE.
-      E0SKIP = .FALSE.
-      IMSKIP = .FALSE.
-      LISKIP = .FALSE.
-      M1SKIP = .FALSE.
-      FRSKIP = .FALSE.
-      BESKIP = .FALSE.
-      N2SKIP = .FALSE.
-      BRSKIP = .FALSE.
-      ETADSC = .FALSE.
-
-      FREEZE = .FALSE.
-      ONLYMO = .FALSE.
-      CCSLV  = .FALSE.
-      NCCSLV = 0
-
-      HERDIR = .FALSE.
-
-      NOSORT = .FALSE.
-
-      ANAAOD   = .FALSE.
-      MAXRED   = 200
-      MXLRV    = MAXRED - 1
-      MXDIIS   = 8
-      MAXITE   = 40
-      NOEONL   = .FALSE.
-      THRLEQ   = 1.0D-05
-      THRENR   = 1.0D-08
-      THRVEC   = 1.0D9
-      MTRIP    = .FALSE.
-      THRLDPHF = 1.0D-13
-CWMK  NFIELD = 0
-      NSIMLE = 0
-      NEWCAU = .FALSE.
-      LBUF   = 250000
-C
-      KEEPAOTWO = 0
-      KEEPAOIN  = .FALSE.
-      LPACKINT  = .FALSE.
-      THRPCKINT = 1.0D-15
-C
-C DRCCD/DRPA related stuff
-C
-C IT2UPD: decide on doubles amplitude updating scheme for RCCD and DRCCD
-C         (not used for other methods)
-C   =0 --- use conventional MP2-like update
-C   =1 --- use gradient update of Henderson and Scuseria,
-C          Mol. Phys. 108, 2511-2517 (2010)
-      IT2UPD=1
-C
-C IT2START: decide on doubles amplitude start guess for RCCD and DRCCD
-C         (not used for other methods)
-C   =-1 --- use zero amplitudes as initial guess (DEC-CC)
-C   =0  --- use conventional MP2 guess
-C   =1  --- use gradient start guess along the lines of Henderson and Scuseria,
-C           Mol. Phys. 108, 2511-2517 (2010)
-      IT2START=1
-C
-C HURWITZ_CHECK: check that solution is stabilizing for DRCCD
-      HURWITZ_CHECK=.FALSE.
-C end
-
-C
-CSPAS 22.10.2003 implementing SOPPA(CCSD)
-      SIRSOP    = .FALSE.
-CKeinSPASmehr
-      AOSOPPA   = .FALSE.
-C
-      CONNECTION = 'SYMMETR'
-C
-      CALL CC_NODINP(WORD,.TRUE.)
+      CALL CCSD_INIT0(WORD)
 C
       MSYMS = MSYM 
-C----------------------------------------------------------------
-C Initialize additional labels for CCSD(T)-gradient optimization
-C and FOP
-C----------------------------------------------------------------
-
-      ETACCPT = .FALSE.
-      DIRKAPB = .FALSE.
 C
-C-----------------------------
-C     Cholesky initializations
-C-----------------------------
-C
-      CALL CC_CHOMP2INIT
-      CALL CC_CHOCC2INIT
-C
-C---------------------------------------------------------------------
-C     CCSAVE is true for all case, but can be turned of in *ccexci
-C     Only used for linear response - mandatory for oscstr and 
-C     polarizabilities
-C---------------------------------------------------------------------
-C
-      CCSAVE = .TRUE. 
-C
-C     Initialize the length of the list of response operator labels
-C
-      NPRLBL_CC = 0
-C
-C     Default for evaluation of first derivative integrals
-C
-      DIRGRD = DIRCAL
-C
-C     Default values based on gnrinf common block
-C
-      DIRECT = DIRCAL
-      IPRINT = IPRUSR
-C
-      CALL IZERO(NRHFFR,8)
-      CALL IZERO(NVIRFR,8)
-      CALL IZERO(KFRRHF,8*MAXFRO)
-      CALL IZERO(KFRVIR,8*MAXFRO)
-      CALL IZERO(NOMINP,3*8)
-C
-      ITEST = 0
-      DO I=1,8
-        NRHFFR(I) = LOCFRO(I)
-        ITEST = ITEST + NRHFFR(I)
-      END DO
-      FROIMP = ITEST .NE. 0
-C
-      CALL DZERO(EFIELD,MXFELT)
-C
-      ITEST  = 0
-C
-      MINSCR = .TRUE.
-      MINMEM = .FALSE.
-      CCPAIR = .FALSE.
-ccn      MKVAJKL = .FALSE.
-ckr      R12CAL = .TRUE.
-ckr      R12NOA = .FALSE.
-ckr      R12NOP = .FALSE.
-ckr      R12NOB = .FALSE.
-ckr      R12HYB = .TRUE.
-ckr      NORXR  = .FALSE.
-cwk      VCLTHR =  0D0
-cwk      SVDTHR =  1D-15
-ckr      R12XXL = .FALSE.
-
-      BRASCL = 1.0D0
-      KETSCL = 1.0D0
+CKeinSPASmehr
 C
 C     If this is a restart run, we read MSYM from SIRIFC
 C
@@ -410,6 +191,14 @@ C
       NEWDEF = (WORD .EQ. '*CC INP' .OR. WORD .EQ. '**CC   '.OR.
      *          WORD .EQ. '*CC    ')
       IF (NEWDEF) THEN
+         IF (PARCAL) THEN
+           WRITE(LUPRI,*) "ERROR: CC is not MPI parallelized!"
+           ! WRITE(LUPRI,*) "For parallelization speedup, please use OMP"
+           ! hjaaj Oct 2013: no OpenMP in current code !
+           WRITE(LUPRI,*)
+     &     "For parallelization speedup, e.g. use parallel MKL"
+           CALL PARQUIT("CC")
+         ENDIF
          WORD1 = WORD
  1000    CONTINUE
             READ (LUCMD, '(A7)') WORD
@@ -475,7 +264,16 @@ C
                   CALL CC_EXCINP(WORD,MSYM)
                GO TO 1000
     7          CONTINUE
-                  CALL CC_LRSINP(WORD,MSYM)
+c filip, 21.10.2013
+c In case of CC3 the ground state-excited state
+c transition moments are calculated via the CC_OPAINP
+c module, hence:
+                  IF (CC3) THEN
+                     WORD = '*CCOPA '
+                     GOTO 99
+                  ELSE
+                     CALL CC_LRSINP(WORD,MSYM)
+                  ENDIF
                GO TO 1000
     8          CONTINUE
                   CCSTST = .TRUE.
@@ -653,11 +451,9 @@ C                '*CCXOPA'
                   CALL CC_FOPINP(WORD)
                GO TO 1000
    52          CONTINUE
-CSPAS 22.10.2003 implementing SOPPA(CCSD)
                   SIRSOP = .TRUE.
                   CCSD   = .TRUE.
                   KEEPAOTWO = MAX(KEEPAOTWO,2)
-CKeinSPASmehr
                GO TO 1000
    53          CONTINUE
                   CCR3   = .TRUE.
@@ -687,7 +483,16 @@ CKeinSPASmehr
                   DEBUG = .TRUE.
                GO TO 1000
    57          CONTINUE
-                  CALL CC_QR2RINP(WORD)
+c filip, 21.10.2013
+c In case of CC3 the transition moments 
+c between two excited state are calculated 
+c via the CC_OPAINP module, hence:
+                  IF (CC3) THEN
+                     WORD = '*CCXOPA'
+                     GOTO 18
+                  ELSE
+                     CALL CC_QR2RINP(WORD)
+                  ENDIF
                GO TO 1000
    58          CONTINUE
                   HERDIR = .TRUE.
@@ -1368,6 +1173,7 @@ C=====================================================================*
 #include "cclrinf.h"
 #include "ccrspprp.h"
 #include "ccexci.h"
+
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -2504,7 +2310,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_OPAINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 16)
 
 * variables:
       LOGICAL SETGSTOPA, SETGSTTPA, SETXSTOPA
@@ -2530,7 +2336,8 @@ C=====================================================================*
       DATA SETXSTOPA /.FALSE./
       DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
      *             '.ANGMOM','.HALFFR','.PRINT ','.USE X2','.USE O2',
-     *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR'/
+     *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR',
+     *             '.DIPOLE'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2604,7 +2411,7 @@ c         table look up:
 
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
 
 C           ---------------------------------------------------------
@@ -2889,6 +2696,11 @@ C           ------------------------------------------------------
               WRITE(LUPRI,*) 'input will be ignored...'
             END IF
             GO TO 100
+C           ------------------------------------------------------
+C           .DIPOLE is the synonim od .DIPLEN.
+C           ------------------------------------------------------
+16          CONTINUE
+            GO TO 4
 
 C
           ELSE
@@ -4354,7 +4166,7 @@ C=====================================================================*
 C#if defined (IMPLICIT_NONE)
 C      IMPLICIT NONE  
 C#else
-#  include <implicit.h>
+#  include "implicit.h"
 C#endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -5256,6 +5068,15 @@ c /* deck cc_qrinp */
 
       ICHANG = 0
 
+C filip, 21.10.2013:
+C Currently CC3 is not working without the .NOBMAT option,
+C because the B-matrix transformation is going through the
+C F-matrix routines (for the triples part), hence:
+      IF (CC3) THEN
+         USEBTRAN = .FALSE.
+         WRITE(LUPRI,*)'CC_QRINP: USEBTRAN set to false for CC3'
+      ENDIF
+C
 *---------------------------------------------------------------------*
 * read input:
 *---------------------------------------------------------------------*
@@ -5761,13 +5582,13 @@ c /* deck cc_crinp */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
 #include "ccsections.h"
 #include "cccrinf.h"
-C#include <ccrspprp.h>
+C#include "ccrspprp.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -6461,7 +6282,7 @@ c /* deck CC_4RINP */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -6794,7 +6615,7 @@ c /* deck CC_5RINP */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -7308,7 +7129,7 @@ c /* deck cc_exlrinp */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -7377,6 +7198,16 @@ c /* deck cc_exlrinp */
 
       ICHANG = 0
 
+C filip, 21.10.2013:
+C Currently the projection onto the orthogonal 
+C complement for the EL1/ER1 equations for
+C excited state polarizabilities is not
+C implemented for CC3.
+C We need therefore to switch this projection off whenever we enter
+C the CC_EXLRINP module with CC3:
+      IF (CC3) THEN
+         NOPROJ = .TRUE.
+      ENDIF
 *---------------------------------------------------------------------*
 * read input:
 *---------------------------------------------------------------------*
@@ -7674,7 +7505,7 @@ C           -----------------------------------------------------------
 C#if defined (IMPLICIT_NONE)
 C      IMPLICIT NONE  
 C#else
-#  include <implicit.h>
+#  include "implicit.h"
 C#endif
 #include "priunit.h"
 #include "cctm.h"
@@ -8014,7 +7845,7 @@ C           _______________________________________________
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccmcdinf.h"
@@ -9878,12 +9709,12 @@ C     Alfredo Sanchez de Meras. May 2008
 C
 C     Purpose: Read input for CC Active section
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*7 WORD
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <center.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "center.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_ACTINP')

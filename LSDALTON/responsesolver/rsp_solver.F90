@@ -387,9 +387,9 @@ contains
     CALL LSCLOSE(lusigma_rsp,'DELETE')
     CALL LSCLOSE(lurho_rsp,'DELETE')
     CALL LSCLOSE(lub_rsp,'DELETE')
-    if(nmcdvec /= 0) then
+    if(nmcdvec .GT. 0) then
        CALL LSCLOSE(lub_mcdvec,'DELETE')
-       molcfg%solver%UseExcitationVecs = UseExcitationVecs
+       if(nmcdvec .GT. 1)molcfg%solver%UseExcitationVecs = UseExcitationVecs
     endif
 
     IF(.NOT.LINEQ_x)THEN
@@ -1120,7 +1120,7 @@ contains
   end subroutine rsp_normalize
 
 !> \brief Interface routine to carry out linear transformations
-!> \author S. Coriani
+!> \author S. Coriani, T. Kjaergaard 
 !> \date June 2003
 !>  
 !>   SIGMAS(I) = E[2]*N(I) (sigma)
@@ -1178,6 +1178,85 @@ contains
 
   end subroutine transform_vectors
 
+!> \brief Interface routine to carry out linear transformations
+!> \author S. Coriani, T. Kjaergaard 
+!> \date June 2003
+!>  
+!>   SIGMAS(I) = E[2]*N(I) (sigma)
+!>   RHOS(I) = S[2]*N(I) (rho) > check omega of RPA
+!>
+  subroutine transform_vectors_symAsym(molcfg,D,S,F,&
+       & nnew_sym,bvecs_sym,sigmas_sym,rhos_sym,&
+       & nnew_asym,bvecs_asym,sigmas_asym,rhos_asym,&
+       & make_rhos)
+    implicit none
+    !> Contains settings for response solver 
+    type(rsp_molcfg), intent(inout) :: molcfg
+    !> Density matrix
+    type(Matrix), intent(in) :: D
+    !> Overlap matrix
+    type(Matrix), intent(in) :: S
+    !> Fock/KS matrix
+    type(Matrix), intent(in) :: F
+    !> Number of trial vectors in bvecs to be linearly transformed
+    integer, intent(in) :: nnew_sym
+    !> Trial vectors in bvecs to be linearly transformed
+    type(Matrix), intent(in) :: bvecs_sym(:)
+    !> Sigma part of linear transformations (output)
+    type(Matrix), pointer :: sigmas_sym(:)
+    !> Rho part of linear transformations, if make_rhos = true (output)
+    type(Matrix), pointer :: rhos_sym(:)
+    !> Number of trial vectors in bvecs to be linearly transformed
+    integer, intent(in) :: nnew_asym
+    !> Trial vectors in bvecs to be linearly transformed
+    type(Matrix), intent(in) :: bvecs_asym(:)
+    !> Sigma part of linear transformations (output)
+    type(Matrix), pointer :: sigmas_asym(:)
+    !> Rho part of linear transformations, if make_rhos = true (output)
+    type(Matrix), pointer :: rhos_asym(:)
+    !> True if the rho part of linear transformation should be calculated
+    logical, intent(in) :: make_rhos
+    type(Matrix) :: scr
+    integer :: i,ndim,l,nnew 
+    ndim = S%nrow
+!    if(make_rhos)then
+       call mem_alloc(rhos_sym,nnew_sym)
+!    endif
+    call mem_alloc(sigmas_sym,nnew_sym)
+    do i=1,nnew_sym
+!    if(make_rhos)then
+       call mat_init(rhos_sym(i),Bvecs_sym(1)%nrow,Bvecs_sym(1)%ncol)
+!    endif
+       call mat_init(sigmas_sym(i),Bvecs_sym(1)%nrow,Bvecs_sym(1)%ncol)
+    enddo
+!    if(make_rhos)then
+       call mem_alloc(rhos_asym,nnew_asym)
+!    endif
+    call mem_alloc(sigmas_asym,nnew_asym)
+    do i=1,nnew_asym
+!    if(make_rhos)then
+       call mat_init(rhos_asym(i),Bvecs_asym(1)%nrow,Bvecs_asym(1)%ncol)
+!    endif
+       call mat_init(sigmas_asym(i),Bvecs_asym(1)%nrow,Bvecs_asym(1)%ncol)
+    enddo
+
+    if(molcfg%solver%cfg_unres)then
+       call lsquit('transform_vectors_symAsym not implemented for unres',-1)
+    endif
+
+    call make_lintran_vecsArray_symAsym(molcfg,D,S,F,Bvecs_sym,sigmas_sym,rhos_sym,&
+         & Bvecs_asym,sigmas_asym,rhos_asym,make_rhos,nnew_sym,nnew_asym)
+
+!    alternative
+!    do i = 1, nnew_sym
+!       call make_lintran_vecs(molcfg,D,S,F,Bvecs_sym(i),sigmas_sym(i),rhos_sym(i),make_rhos)
+!    enddo
+!    do i = 1, nnew_sym
+!       call make_lintran_vecs(molcfg,D,S,F,Bvecs_asym(i),sigmas_asym(i),rhos_asym(i),make_rhos)
+!    enddo
+
+  end subroutine transform_vectors_symAsym
+  
 !> \brief Linear transformation routine
 !> \author S. Coriani
 !> \date June 2003
@@ -1227,9 +1306,10 @@ contains
     endif
     call ABCcommutator(ndim,F,S,prod2(1),sigma_i)
     
-	call di_GET_GbDs_and_XC_linrsp(GbDs,prod,molcfg%lupri,&
-						& molcfg%luerr,prod2,1,ndim,D,&
-						& molcfg%setting%do_dft,molcfg%setting)
+    call di_GET_GbDs_and_XC_linrsp(GbDs,prod,molcfg%lupri,&
+         & molcfg%luerr,prod2,1,ndim,D,&
+         & molcfg%setting%do_dft,molcfg%setting)
+
 !    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
 !         &prod2(1),GbDs(1),molcfg%setting)
 !   	 if (molcfg%setting%do_dft) THEN 
@@ -1256,6 +1336,125 @@ contains
     call mat_free(prod2(1))
     call mat_free(GbDs(1))
   end subroutine make_lintran_vecs
+
+!> \brief See make_lintran_vecs - this one is just for many at a time
+!> \author T. Kjaergaard
+!> \date 2009
+  subroutine make_lintran_vecsArray_symAsym(molcfg,D,S,F,&
+       & Bvecs_sym,sigma_sym,rho_sym,&
+       & Bvecs_asym,sigma_asym,rho_asym,&
+       & make_rhos,nnew_sym,nnew_asym)
+    implicit none
+    !> Contains settings for response solver 
+    type(rsp_molcfg), intent(inout) :: molcfg
+    !> Density matrix
+    type(Matrix), intent(in) :: D
+    !> Overlap matrix
+    type(Matrix), intent(in) :: S
+    !> Fock/KS matrix
+    type(Matrix), intent(in) :: F
+    !> Number of trial vectors in Bvecs
+    integer, intent(in)      :: nnew_sym
+    !> Trial vector to be linearly transformed
+    type(Matrix), intent(in) :: Bvecs_sym(nnew_sym)
+    !> Sigma parts of linear transformations (output)
+    type(Matrix), intent(inout) :: sigma_sym(nnew_sym)
+    !> Rho parts of linear transformations, if make_rhos = true (output)
+    type(Matrix), intent(inout) :: rho_sym(nnew_sym)  !output
+    !> Number of trial vectors in Bvecs
+    integer, intent(in)      :: nnew_asym
+    !> Trial vector to be linearly transformed
+    type(Matrix), intent(in) :: Bvecs_asym(nnew_asym)
+    !> Sigma parts of linear transformations (output)
+    type(Matrix), intent(inout) :: sigma_asym(nnew_asym)
+    !> Rho parts of linear transformations, if make_rhos = true (output)
+    type(Matrix), intent(inout) :: rho_asym(nnew_asym)  !output
+    !> If true, construct rho parts of linear transformations
+    logical, intent(in) :: make_rhos
+    type(matrix) :: prod1
+    type(matrix),pointer :: prod2(:),GbDs(:),Sigma(:)
+    logical :: cov
+    integer :: ndim,i,nnew
+
+    nnew = nnew_sym+nnew_asym
+    ndim = S%nrow
+
+    nullify(prod2)
+    allocate(prod2(nnew))
+    nullify(GbDs)
+    allocate(GbDs(nnew))
+    nullify(Sigma)
+    allocate(Sigma(nnew))
+    do i=1,nnew
+       call mat_init(prod2(i),ndim,ndim)
+       call mat_init(GbDs(i),ndim,ndim)
+       call mat_init(Sigma(i),ndim,ndim)
+    enddo
+
+    call mat_init(prod1,ndim,ndim)
+    molcfg%solver%rsp_nlintra = molcfg%solver%rsp_nlintra + 1 !Count no of linear transformations
+
+    do i=1,nnew_sym
+       call ABCcommutator(ndim,bvecs_sym(i),D,S,prod2(i))
+       if (make_rhos) then
+          call mat_mul(prod2(i),S,'n','n',1E0_realk,0E0_realk,prod1)
+          call mat_mul(S,prod1,'n','n',2E0_realk,0E0_realk,rho_sym(i))    !Sign changed 15/7-09!
+       endif
+    enddo
+    do i=1,nnew_asym
+       call ABCcommutator(ndim,bvecs_asym(i),D,S,prod2(nnew_sym+i))
+       if (make_rhos) then
+          call mat_mul(prod2(nnew_sym+i),S,'n','n',1E0_realk,0E0_realk,prod1)
+          call mat_mul(S,prod1,'n','n',2E0_realk,0E0_realk,rho_asym(i))    !Sign changed 15/7-09!
+       endif
+    enddo
+    
+    call di_GET_GbDs_and_XC_linrsp(GbDs,sigma,molcfg%lupri,&
+         & molcfg%luerr,prod2,nnew,ndim,D,&
+         & molcfg%setting%do_dft,molcfg%setting)
+    do i=1,nnew
+       call mat_free(sigma(i))
+    enddo
+    deallocate(Sigma)
+    nullify(Sigma)
+    
+    do i=1,nnew_sym
+       call ABCcommutator(ndim,F,S,prod2(i),sigma_sym(i))    
+       call ABCcommutator(ndim,GbDs(i),S,D,prod1)
+       call mat_DAXPY(1E0_realk,prod1,sigma_sym(i))
+       call mat_scal(2.0E0_realk,sigma_sym(i))
+       ! Project out redundancies
+       call util_scriptPx('T',D,S,sigma_sym(i))
+    
+       if (make_rhos) then
+          call util_scriptPx('T',D,S,rho_sym(i))
+       end if
+    enddo
+    do i=1,nnew_asym
+       call ABCcommutator(ndim,F,S,prod2(nnew_sym+i),sigma_asym(i))    
+       call ABCcommutator(ndim,GbDs(nnew_sym+i),S,D,prod1)
+       call mat_DAXPY(1E0_realk,prod1,sigma_asym(i))
+       call mat_scal(2.0E0_realk,sigma_asym(i))
+       ! Project out redundancies
+       call util_scriptPx('T',D,S,sigma_asym(i))
+    
+       if (make_rhos) then
+          call util_scriptPx('T',D,S,rho_asym(i))
+       end if
+    enddo
+
+    !FREE matrices!
+    do i=1,nnew
+       call mat_free(prod2(i))
+       call mat_free(GbDs(i))
+    enddo
+    call mat_free(prod1)
+    deallocate(prod2)
+    deallocate(GbDs)
+    nullify(GbDs)
+    nullify(prod2)
+
+  end subroutine make_lintran_vecsArray_symAsym
 
 !> \brief See make_lintran_vecs - this one is just for many at a time
 !> \author T. Kjaergaard

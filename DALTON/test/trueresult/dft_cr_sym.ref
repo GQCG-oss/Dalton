@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    Dalton is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -22,81 +20,188 @@
     See the home page "http://daltonprogram.org" for further information.
      
     If results obtained with this code are published,
-    an appropriate citation would be:
+    the appropriate citations would be both of:
      
-    "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
-  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
-  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
-  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
   Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
-  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
-  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
-  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
-  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
-  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
-  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
-  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
-  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
-  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
-  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
-  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
-  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
+     Date and time (Linux)  : Sun Sep  8 20:54:50 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
-     Date and time (Linux)  : Wed Mar 16 18:59:20 2011 
-     Host name              : fe6                                     
-
- * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
+ * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /home/bast/DALTON-2013.0-Source/build/test_dft_cr_sym
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+**WAVE FUNCTIONS                                  
+.DFT                                              
+ B3LYP                                            
+*SCF INPUT                                        
+.THRESHOLD                                        
+1e-10                                             
+*DFT INPUT                                        
+.GRID TYPE                                        
+LMG BLOCK                                         
+**RESPONSE                                        
+*CUBIC                                            
+.DIPLEN                                           
+.BFREQ                                            
+2                                                 
+0.0 0.067                                         
+.CFREQ                                            
+2                                                 
+0.0 0.067                                         
+.DFREQ                                            
+2                                                 
+0.0 0.067                                         
+**END OF DALTON INPUT                             
+                                                  
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+3-21G                                                                          
+Water                                                                          
+STO-3G basis                                                                   
+    2    2  X  Z                                                               
+        8.    1                                                                
+O      .0000   -.2249  0.0000000000                                            
+        1.    1                                                                
+H     1.4523    .8996   .0000000000                                            
+                                                                               
 
 
        *******************************************************************
@@ -105,7 +210,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -130,8 +235,8 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/3-21G"
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/3-21G"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
@@ -141,8 +246,8 @@
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/3-21G"
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/3-21G"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
@@ -215,7 +320,7 @@ Point group: C2v
   total:      3   10.0000    21    13
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for neglecting AO integrals:  1.00D-12
 
 
   Cartesian Coordinates (a.u.)
@@ -264,8 +369,10 @@ Point group: C2v
  H   _2:    0.971970    1.537048    0.000000
 
 
-  Max interatomic separation is    1.5370 Angstrom (    2.9046 Bohr)
+  Max    interatomic separation is    1.5370 Angstrom (    2.9046 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9720 Angstrom (    1.8368 Bohr)
 
 
   Bond distances (Angstrom):
@@ -306,7 +413,7 @@ Point group: C2v
            26.595342           14.160104            9.240306 cm-1
 
 
-@  Nuclear repulsion energy :    9.055287756882
+@  Nuclear repulsion energy :    9.055287756882 Hartree
 
 
   Symmetry Orbitals
@@ -358,28 +465,17 @@ Point group: C2v
     *************************************************************************
 
 
- Default print level:        1
-
- * Nuclear model: Point charge
-
- Calculation of one- and two-electron Hamiltonian integrals.
-
- Center of mass  (bohr):      0.000000000000     -0.099051731220      0.000000000000
- Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
- Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
- Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
-
 
      ************************************************************************
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-12
  Number of two-electron integrals written:        1270 ( 30.3% )
  Megabytes written:                              0.021
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -398,9 +494,9 @@ Point group: C2v
  Settings for DFT calculation:
  -----------------------------
 
-     Default thresholds:                       0.10D-08    0.10D-09    0.20D-11
-     Default threshold for number of electrons:                        0.10D-02
-     DFT radial quadrature accuracy/ang. expansion order:  0.10E-12  35
+     Default thresholds:                                       1.00D-09    1.00D-10    2.00D-12
+     Default threshold for number of electrons:                1.00D-03
+     DFT radial quadrature accuracy and ang. expansion order:              1.00D-13  35
 
  *** Output from Huckel module :
 
@@ -422,8 +518,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 18:59:20 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:54:50 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  Title lines from ".mol" input file:
      Water                                                                   
@@ -432,24 +528,23 @@ Point group: C2v
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Kohn-Sham DFT calculation.
+@    Restricted, closed shell Kohn-Sham DFT calculation.
 
-     Time-dependent Kohn-Sham DFT calculation (TD-DFT).
-
+@    Time-dependent Kohn-Sham DFT calculation (TD-DFT).
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EHT   " input option.
+ ".MOSTART EHT   " input option
 
      Wave function specification
      ============================
-     For the wave function of type :      >>> KS-DFT   <<<
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
+@    For the wave function of type :      >>> KS-DFT <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
 
-     Spin multiplicity                         1
-     Total number of symmetries                4
-     Reference state symmetry                  1
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
  
      This is a DFT calculation of type: B3LYP
  Weighted mixed functional:
@@ -470,7 +565,7 @@ Point group: C2v
 
       -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
-     Occupied SCF orbitals               5 |    3    1    1    0
+@    Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -492,65 +587,59 @@ Point group: C2v
 
  Automatic occupation of symmetries with  10 electrons.
 
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-         DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Blocked partitioning for large molecules/parallel calc:s.
-         DFT grid generation - Radial integration threshold: 1e-13
-         DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 18912 compressed from 18912 ( 96 radial)
-         DFT grid generation - Atom:    2*2 points= 18406 compressed from 18406 ( 77 radial)
-         DFT grid generation - Number of grid points:    37318; grid generation time:      0.0 s
       K-S energy, electrons, error :     -7.461563613096   9.9999995404   -4.60D-07
-   1  -75.7528913356       2.22D+00  -7.58D+01    3  1  1  0
+@  1  -75.7528913356       2.22D+00  -7.58D+01     3   1   1   0
       Virial theorem: -V/T =      2.001811
-      MULPOP  O      -0.39; H   _1  0.19; H   _2  0.19; 
+@      MULPOP O      -0.39; H   _1  0.19; H   _2  0.19; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.530933374732   9.9999992830   -7.17D-07
-   2  -75.9351900808       1.23D-01  -1.82D-01    3  1  1  0
+      K-S energy, electrons, error :     -7.530933374733   9.9999992830   -7.17D-07
+@  2  -75.9351900808       1.23D-01  -1.82D-01     3   1   1   0
       Virial theorem: -V/T =      2.004647
-      MULPOP  O      -0.65; H   _1  0.32; H   _2  0.32; 
+@      MULPOP O      -0.65; H   _1  0.32; H   _2  0.32; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -7.515844437097   9.9999992948   -7.05D-07
-   3  -75.9357881247       3.89D-02  -5.98D-04    3  1  1  0
+      K-S energy, electrons, error :     -7.515844437096   9.9999992948   -7.05D-07
+@  3  -75.9357881247       3.89D-02  -5.98D-04     3   1   1   0
       Virial theorem: -V/T =      2.006273
-      MULPOP  O      -0.64; H   _1  0.32; H   _2  0.32; 
+@      MULPOP O      -0.64; H   _1  0.32; H   _2  0.32; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.525455309943   9.9999992967   -7.03D-07
-   4  -75.9358112725       2.87D-02  -2.31D-05    3  1  1  0
+@  4  -75.9358112725       2.87D-02  -2.31D-05     3   1   1   0
       Virial theorem: -V/T =      2.005085
-      MULPOP  O      -0.66; H   _1  0.33; H   _2  0.33; 
+@      MULPOP O      -0.66; H   _1  0.33; H   _2  0.33; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.521212912873   9.9999992955   -7.04D-07
-   5  -75.9358448758       1.46D-03  -3.36D-05    3  1  1  0
+@  5  -75.9358448758       1.46D-03  -3.36D-05     3   1   1   0
       Virial theorem: -V/T =      2.005588
-      MULPOP  O      -0.65; H   _1  0.32; H   _2  0.32; 
+@      MULPOP O      -0.65; H   _1  0.32; H   _2  0.32; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.521403260470   9.9999992956   -7.04D-07
-   6  -75.9358449700       2.29D-05  -9.42D-08    3  1  1  0
+@  6  -75.9358449700       2.29D-05  -9.42D-08     3   1   1   0
       Virial theorem: -V/T =      2.005565
-      MULPOP  O      -0.65; H   _1  0.33; H   _2  0.33; 
+@      MULPOP O      -0.65; H   _1  0.33; H   _2  0.33; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
-   7  -75.9358449701       1.82D-06  -1.17D-10    3  1  1  0
+@  7  -75.9358449701       1.82D-06  -1.17D-10     3   1   1   0
       Virial theorem: -V/T =      2.005565
-      MULPOP  O      -0.65; H   _1  0.33; H   _2  0.33; 
+@      MULPOP O      -0.65; H   _1  0.33; H   _2  0.33; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.521403445769   9.9999992956   -7.04D-07
-   8  -75.9358449701       8.37D-08  -5.97D-13    3  1  1  0
+@  8  -75.9358449701       8.37D-08  -5.40D-13     3   1   1   0
       Virial theorem: -V/T =      2.005565
-      MULPOP  O      -0.65; H   _1  0.33; H   _2  0.33; 
+@      MULPOP O      -0.65; H   _1  0.33; H   _2  0.33; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.521403456960   9.9999992956   -7.04D-07
-   9  -75.9358449701       1.00D-09   1.42D-14    3  1  1  0
+@  9  -75.9358449701       1.00D-09   0.00D+00     3   1   1   0
       Virial theorem: -V/T =      2.005565
-      MULPOP  O      -0.65; H   _1  0.33; H   _2  0.33; 
+@      MULPOP O      -0.65; H   _1  0.33; H   _2  0.33; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :     -7.521403456997   9.9999992956   -7.04D-07
-  10  -75.9358449701       2.26D-11   5.68D-14    3  1  1  0
+@ 10  -75.9358449701       2.26D-11  -4.26D-14     3   1   1   0
 
- *** DIIS converged in  10 iterations !
-   - total time used in SIRFCK :              0.00 seconds
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -75.935844970075    2.26D-11
+    - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -576,25 +665,27 @@ Point group: C2v
 
  >>> Writing SIRIFC interface file <<<
 
+ >>>> CPU and wall time for SCF :       1.343       1.351
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
 
-     Final DFT energy:            -75.935844970076                 
-     Nuclear repulsion:             9.055287756882
-     Electronic energy:           -84.991132726958
+@    Final DFT energy:            -75.935844970075                 
+@    Nuclear repulsion:             9.055287756882
+@    Electronic energy:           -84.991132726957
 
-     Final gradient norm:           0.000000000023
+@    Final gradient norm:           0.000000000023
 
  
-     Date and time (Linux)  : Wed Mar 16 18:59:22 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:54:52 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
  (Only coefficients >0.0100 are printed.)
 
@@ -623,17 +714,17 @@ Point group: C2v
  ------------------------------------------
 
     Orbital         1        2
-   1 O   :2pz    0.5295  -1.0251
-   2 O   :2pz    0.6244   0.9702
+   1 O   :2pz    0.5295   1.0251
+   2 O   :2pz    0.6244  -0.9702
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.89 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.35 seconds
+ >>>> Total wall time used in SIRIUS :      1.35 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 18:59:22 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:54:52 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
 
 
                      .---------------------------------------.
@@ -720,9 +811,11 @@ Point group: C2v
 
           ZDIPLEN 
 
+ Integral transformation: Total CPU and WALL times (sec)       0.001       0.001
 
-   SCF energy         :      -75.935844970075522
- -- inactive part     :      -84.991132726957559
+
+   SCF energy         :      -75.935844970074669
+ -- inactive part     :      -84.991132726956707
  -- nuclear repulsion :        9.055287756882032
 
 
@@ -753,9 +846,6 @@ Point group: C2v
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*4 evaluation time:       0.7 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*4 evaluation time:       0.7 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*4 evaluation time:       0.7 s
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
@@ -794,9 +884,6 @@ Point group: C2v
 
  Operator symmetry =  2; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*4 evaluation time:       0.7 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*4 evaluation time:       0.6 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*4 evaluation time:       0.6 s
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
@@ -835,19 +922,17 @@ Point group: C2v
 
  Operator symmetry =  3; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*4 evaluation time:       0.6 s
 RSPORT:    1 out of    4 new trial vectors linear dependent
- Electrons: 9.999999(-7.04e-07): LR-DFT*3 evaluation time:       0.5 s
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   1.05D-15
- RSP solution vector no.    2; norm of residual   4.83D-16
- RSP solution vector no.    3; norm of residual   1.02D-15
- RSP solution vector no.    4; norm of residual   1.05D-15
+ RSP solution vector no.    1; norm of residual   5.70D-16
+ RSP solution vector no.    2; norm of residual   4.49D-16
+ RSP solution vector no.    3; norm of residual   8.24D-16
+ RSP solution vector no.    4; norm of residual   8.31D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -864,30 +949,9 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
  Orbital variables.         KZWOPT:       4
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       4
- >>> Time used in CRVEC1 is   5.07 seconds
+ >>>  Time used in CRVEC1     is   3.38 seconds
  DFT-QR computed in a linearly-scaling fashion.
 
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -909,10 +973,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -946,10 +1006,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -983,10 +1039,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1020,10 +1072,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  2; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1057,10 +1105,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  2; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1094,10 +1138,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  2; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1131,10 +1171,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  2; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1168,9 +1204,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  3; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1204,9 +1237,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  3; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1240,9 +1270,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  3; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1276,9 +1303,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  3; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1312,10 +1336,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1349,10 +1369,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1386,10 +1402,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1423,10 +1435,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1460,10 +1468,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1497,10 +1501,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  1; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1534,8 +1534,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  4; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1569,8 +1567,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  4; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1604,8 +1600,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  4; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1639,8 +1633,6 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
  Operator symmetry =  4; triplet =   F
 
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1653,7 +1645,7 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
     ZDIPLEN     XDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
                           0.067000  0.067000          3.99669765
- >>> Time used in CRVEC2 is  21.30 seconds
+ >>>  Time used in CRVEC2     is  16.80 seconds
 
 
  <<<<< CALCULATING CONTRIBUTIONS TO SECOND HYPERPOLARIZABILITY >>>>>
@@ -1661,13 +1653,12 @@ RSPORT:    1 out of    4 new trial vectors linear dependent
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:      5.765778619673
+Contribution from C4FOCK:      5.765778619688
  
  DFT-CR uses symmetry adapted matrix multipication code.
- DFT-CR integration time:       3.42 s
+ DFT-CR integration time:       3.63 s
 Contribution from DFTCRCS:                -2.0
  Na T[4] Nb Nc Nd       -3.71842991         -3.71842991
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         66.96645522         63.24802531
  Na X[3] Ny Nz          45.17262471        108.42065002
  Nx A[3] Ny Nz          15.05754157        123.47819159
@@ -1686,12 +1677,10 @@ Contribution from DFTCRCS:                -2.0
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     31.669580804356
- DFT-CR integration time:       3.30 s
+Contribution from C4FOCK:     31.669580804446
+ DFT-CR integration time:       3.51 s
 Contribution from DFTCRCS:                -6.9
  Na T[4] Nb Nc Nd      -24.78281947        -24.78281947
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         42.36345373         17.58063426
  Na X[3] Ny Nz          61.51171602         79.09235028
  Nx A[3] Ny Nz          20.44518460         99.53753488
@@ -1710,12 +1699,10 @@ Contribution from DFTCRCS:                -6.9
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -0.739332918362
- DFT-CR integration time:       3.21 s
+Contribution from C4FOCK:     -0.739332918365
+ DFT-CR integration time:       3.34 s
 Contribution from DFTCRCS:                 0.1
  Na T[4] Nb Nc Nd        0.66203187          0.66203187
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz          2.62734733          3.28937920
  Na X[3] Ny Nz           1.39338144          4.68276064
  Nx A[3] Ny Nz           0.39288625          5.07564689
@@ -1734,11 +1721,10 @@ Contribution from DFTCRCS:                 0.1
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     47.433062074576
- DFT-CR integration time:       2.95 s
+Contribution from C4FOCK:     47.433062074706
+ DFT-CR integration time:       3.32 s
 Contribution from DFTCRCS:               -14.5
  Na T[4] Nb Nc Nd      -32.95727143        -32.95727143
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         61.80917118         28.85189975
  Na X[3] Ny Nz         110.68444267        139.53634242
  Nx A[3] Ny Nz          36.89481422        176.43115664
@@ -1757,12 +1743,10 @@ Contribution from DFTCRCS:               -14.5
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -0.996256689916
- DFT-CR integration time:       2.90 s
+Contribution from C4FOCK:     -0.996256689920
+ DFT-CR integration time:       3.09 s
 Contribution from DFTCRCS:                 0.0
  Na T[4] Nb Nc Nd        0.96624775          0.96624775
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz          2.16395358          3.13020133
  Na X[3] Ny Nz           1.16184906          4.29205039
  Nx A[3] Ny Nz           0.21948208          4.51153247
@@ -1782,10 +1766,9 @@ Contribution from DFTCRCS:                 0.0
    Contribution                Term         Accumulated
  ------------------------------------------------------
 Contribution from C4FOCK:      0.083722889782
- DFT-CR integration time:       2.75 s
+ DFT-CR integration time:       2.97 s
 Contribution from DFTCRCS:                 0.1
  Na T[4] Nb Nc Nd       -0.14307472         -0.14307472
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         -0.14413695         -0.28721167
  Na X[3] Ny Nz           2.02844950          1.74123783
  Nx A[3] Ny Nz           0.67614983          2.41738766
@@ -1836,12 +1819,10 @@ Contribution from DFTCRCS:                 0.1
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:      5.746454450163
- DFT-CR integration time:       3.42 s
+Contribution from C4FOCK:      5.746454450178
+ DFT-CR integration time:       3.67 s
 Contribution from DFTCRCS:                -2.1
  Na T[4] Nb Nc Nd       -3.54471998         -3.54471998
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         73.66748434         70.12276436
  Na X[3] Ny Nz          47.73316255        117.85592691
  Nx A[3] Ny Nz          15.46001351        133.31594043
@@ -1860,12 +1841,10 @@ Contribution from DFTCRCS:                -2.1
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     32.583806556468
- DFT-CR integration time:       3.30 s
+Contribution from C4FOCK:     32.583806556561
+ DFT-CR integration time:       3.54 s
 Contribution from DFTCRCS:                -7.1
  Na T[4] Nb Nc Nd      -25.40281974        -25.40281974
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         45.07872757         19.67590783
  Na X[3] Ny Nz          63.50340442         83.17931224
  Nx A[3] Ny Nz          20.75187977        103.93119202
@@ -1884,12 +1863,10 @@ Contribution from DFTCRCS:                -7.1
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -0.779211245185
- DFT-CR integration time:       3.20 s
+Contribution from C4FOCK:     -0.779211245189
+ DFT-CR integration time:       3.36 s
 Contribution from DFTCRCS:                 0.1
  Na T[4] Nb Nc Nd        0.70683190          0.70683190
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz          3.34423436          4.05106627
  Na X[3] Ny Nz           1.60789369          5.65895996
  Nx A[3] Ny Nz           0.41377820          6.07273816
@@ -1908,18 +1885,15 @@ Contribution from DFTCRCS:                 0.1
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     32.795211432513
- DFT-CR integration time:       3.80 s
-Contribution from DFTCRCS:                -7.7
- Na T[4] Nb Nc Nd      -25.02635438        -25.02635438
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz         45.58937677         20.56302239
- Na X[3] Ny Nz          63.71723937         84.28026176
- Nx A[3] Ny Nz          20.89729753        105.17755929
- Na X[2] Nyz           -98.79006048          6.38749881
- Nx A[2] Nyz          -109.79776892       -103.41027011
+Contribution from C4FOCK:     32.795211432607
+ DFT-CR integration time:       3.54 s
+Contribution from DFTCRCS:                -7.1
+ Na T[4] Nb Nc Nd      -25.55641705        -25.55641705
+ Na T[3] Nx Nyz         45.58937677         20.03295972
+ Na X[3] Ny Nz          63.71723937         83.75019908
+ Nx A[3] Ny Nz          20.89729753        104.64749662
+ Na X[2] Nyz           -98.79006048          5.85743614
+ Nx A[2] Nyz          -109.79776892       -103.94033278
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.067000
@@ -1927,24 +1901,21 @@ Contribution from DFTCRCS:                -7.7
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.000000
 @ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
-@ << A; B, C, D >>  =        -103.41027011
+@ << A; B, C, D >>  =        -103.94033278
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     34.549477321297
- DFT-CR integration time:       3.15 s
-Contribution from DFTCRCS:                -7.9
- Na T[4] Nb Nc Nd      -26.52542005        -26.52542005
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz         61.60043460         35.07501455
- Na X[3] Ny Nz          64.93874336        100.01375791
- Nx A[3] Ny Nz          21.19143378        121.20519169
- Na X[2] Nyz          -122.79595379         -1.59076210
- Nx A[2] Nyz          -101.80245639       -103.39321849
+Contribution from C4FOCK:     34.549477321398
+ DFT-CR integration time:       3.43 s
+Contribution from DFTCRCS:                -7.4
+ Na T[4] Nb Nc Nd      -27.07202741        -27.07202741
+ Na T[3] Nx Nyz         61.60043460         34.52840719
+ Na X[3] Ny Nz          64.93874336         99.46715055
+ Nx A[3] Ny Nz          21.19143378        120.65858433
+ Na X[2] Nyz          -122.79595379         -2.13736946
+ Nx A[2] Nyz          -101.80245639       -103.93982586
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    1 -0.067000
@@ -1952,24 +1923,21 @@ Contribution from DFTCRCS:                -7.9
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.000000
 @ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
-@ << A; B, C, D >>  =        -103.39321849
+@ << A; B, C, D >>  =        -103.93982586
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -0.785248366396
- DFT-CR integration time:       3.25 s
+Contribution from C4FOCK:     -0.785248366400
+ DFT-CR integration time:       3.35 s
 Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd        0.69477733          0.69477733
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          2.99631133          3.69108865
- Na X[3] Ny Nz           1.50874989          5.19983855
- Nx A[3] Ny Nz           0.40472128          5.60455983
- Na X[2] Nyz           -12.46083851         -6.85627868
- Nx A[2] Nyz            -6.72894744        -13.58522612
+ Na T[4] Nb Nc Nd        0.70170884          0.70170884
+ Na T[3] Nx Nyz          2.99631133          3.69802017
+ Na X[3] Ny Nz           1.50874989          5.20677006
+ Nx A[3] Ny Nz           0.40472128          5.61149134
+ Na X[2] Nyz           -12.46083851         -6.84934717
+ Nx A[2] Nyz            -6.72894744        -13.57829461
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    3 -0.067000
@@ -1977,24 +1945,21 @@ Contribution from DFTCRCS:                 0.1
 @ C operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 @ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
-@ << A; B, C, D >>  =         -13.58522612
+@ << A; B, C, D >>  =         -13.57829461
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -0.852494651451
- DFT-CR integration time:       2.99 s
+Contribution from C4FOCK:     -0.852494651455
+ DFT-CR integration time:       3.14 s
 Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd        0.76634684          0.76634684
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          4.46467069          5.23101754
- Na X[3] Ny Nz           1.33218120          6.56319874
- Nx A[3] Ny Nz           0.51242912          7.07562786
- Na X[2] Nyz            -8.14243691         -1.06680905
- Nx A[2] Nyz           -12.51523934        -13.58204839
+ Na T[4] Nb Nc Nd        0.77058893          0.77058893
+ Na T[3] Nx Nyz          4.46467069          5.23525962
+ Na X[3] Ny Nz           1.33218120          6.56744083
+ Nx A[3] Ny Nz           0.51242912          7.07986995
+ Na X[2] Nyz            -8.14243691         -1.06256696
+ Nx A[2] Nyz           -12.51523934        -13.57780630
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    1 -0.067000
@@ -2002,18 +1967,16 @@ Contribution from DFTCRCS:                 0.1
 @ C operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 @ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
-@ << A; B, C, D >>  =         -13.58204839
+@ << A; B, C, D >>  =         -13.57780630
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     34.690919070733
- DFT-CR integration time:       3.17 s
+Contribution from C4FOCK:     34.690919070835
+ DFT-CR integration time:       3.43 s
 Contribution from DFTCRCS:                -7.5
  Na T[4] Nb Nc Nd      -27.09345849        -27.09345849
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         61.50823109         34.41477260
  Na X[3] Ny Nz          65.69543030        100.11020290
  Nx A[3] Ny Nz          21.29589626        121.40609916
@@ -2032,12 +1995,10 @@ Contribution from DFTCRCS:                -7.5
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     48.798188589143
- DFT-CR integration time:       2.95 s
+Contribution from C4FOCK:     48.798188589278
+ DFT-CR integration time:       3.33 s
 Contribution from DFTCRCS:               -14.9
  Na T[4] Nb Nc Nd      -33.69446818        -33.69446818
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         65.52053376         31.82606558
  Na X[3] Ny Nz         114.12109672        145.94716230
  Nx A[3] Ny Nz          37.43732813        183.38449043
@@ -2056,12 +2017,10 @@ Contribution from DFTCRCS:               -14.9
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.024360041148
- DFT-CR integration time:       2.90 s
+Contribution from C4FOCK:     -1.024360041153
+ DFT-CR integration time:       3.10 s
 Contribution from DFTCRCS:                 0.0
  Na T[4] Nb Nc Nd        1.01593205          1.01593205
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz          2.61646393          3.63239598
  Na X[3] Ny Nz           1.43223621          5.06463219
  Nx A[3] Ny Nz           0.23292652          5.29755871
@@ -2080,18 +2039,15 @@ Contribution from DFTCRCS:                 0.0
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.039041979001
- DFT-CR integration time:       2.94 s
+Contribution from C4FOCK:     -1.039041979005
+ DFT-CR integration time:       3.09 s
 Contribution from DFTCRCS:                 0.0
- Na T[4] Nb Nc Nd        0.99704514          0.99704514
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          2.38534354          3.38238868
- Na X[3] Ny Nz           1.25634149          4.63873017
- Nx A[3] Ny Nz           0.22396133          4.86269150
- Na X[2] Nyz           -14.52999293         -9.66730143
- Nx A[2] Nyz            -4.86540363        -14.53270507
+ Na T[4] Nb Nc Nd        1.00750997          1.00750997
+ Na T[3] Nx Nyz          2.38534354          3.39285351
+ Na X[3] Ny Nz           1.25634149          4.64919500
+ Nx A[3] Ny Nz           0.22396133          4.87315633
+ Na X[2] Nyz           -14.52999293         -9.65683660
+ Nx A[2] Nyz            -4.86540363        -14.52224024
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    3 -0.067000
@@ -2099,24 +2055,21 @@ Contribution from DFTCRCS:                 0.0
 @ C operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
 
-@ << A; B, C, D >>  =         -14.53270507
+@ << A; B, C, D >>  =         -14.52224024
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.160376958440
- DFT-CR integration time:       2.85 s
+Contribution from C4FOCK:     -1.160376958445
+ DFT-CR integration time:       2.99 s
 Contribution from DFTCRCS:                 0.0
- Na T[4] Nb Nc Nd        1.12351324          1.12351324
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          2.46775240          3.59126564
- Na X[3] Ny Nz           0.88073244          4.47199808
- Nx A[3] Ny Nz           0.47634424          4.94834232
- Na X[2] Nyz            -5.35482376         -0.40648144
- Nx A[2] Nyz           -14.12204695        -14.52852839
+ Na T[4] Nb Nc Nd        1.13073610          1.13073610
+ Na T[3] Nx Nyz          2.46775240          3.59848849
+ Na X[3] Ny Nz           0.88073244          4.47922093
+ Nx A[3] Ny Nz           0.47634424          4.95556517
+ Na X[2] Nyz            -5.35482376         -0.39925858
+ Nx A[2] Nyz           -14.12204695        -14.52130554
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.067000
@@ -2124,18 +2077,16 @@ Contribution from DFTCRCS:                 0.0
 @ C operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
 
-@ << A; B, C, D >>  =         -14.52852839
+@ << A; B, C, D >>  =         -14.52130554
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -0.872666645272
- DFT-CR integration time:       3.01 s
+Contribution from C4FOCK:     -0.872666645276
+ DFT-CR integration time:       3.14 s
 Contribution from DFTCRCS:                 0.1
  Na T[4] Nb Nc Nd        0.79366001          0.79366001
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz          4.27895214          5.07261215
  Na X[3] Ny Nz           1.33371482          6.40632696
  Nx A[3] Ny Nz           0.50047513          6.90680209
@@ -2154,12 +2105,10 @@ Contribution from DFTCRCS:                 0.1
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.168721786588
- DFT-CR integration time:       2.86 s
+Contribution from C4FOCK:     -1.168721786593
+ DFT-CR integration time:       3.00 s
 Contribution from DFTCRCS:                 0.0
  Na T[4] Nb Nc Nd        1.13614291          1.13614291
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz          2.30453937          3.44068227
  Na X[3] Ny Nz           0.86344046          4.30412274
  Nx A[3] Ny Nz           0.45015352          4.75427625
@@ -2179,11 +2128,9 @@ Contribution from DFTCRCS:                 0.0
    Contribution                Term         Accumulated
  ------------------------------------------------------
 Contribution from C4FOCK:      0.072416519342
- DFT-CR integration time:       2.76 s
+ DFT-CR integration time:       2.97 s
 Contribution from DFTCRCS:                 0.1
  Na T[4] Nb Nc Nd       -0.13533952         -0.13533952
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         -0.16332944         -0.29866896
  Na X[3] Ny Nz           2.15840002          1.85973106
  Nx A[3] Ny Nz           0.69640205          2.55613311
@@ -2209,27 +2156,27 @@ Contribution from DFTCRCS:                 0.1
 
 @ gamma(X;X,X,X)        135.4111
 @ gamma(X;X,Y,Y)        101.3452
-@ gamma(X;Y,Y,X)        103.4103
-@ gamma(X;Y,X,Y)        103.4103
+@ gamma(X;Y,Y,X)        103.9403
+@ gamma(X;Y,X,Y)        103.9403
 @ gamma(X;X,Z,Z)         13.8175
-@ gamma(X;Z,Z,X)         14.5285
-@ gamma(X;Z,X,Z)         14.5285
+@ gamma(X;Z,Z,X)         14.5213
+@ gamma(X;Z,X,Z)         14.5213
 @ gamma(Y;Y,X,X)        104.7953
-@ gamma(Y;X,X,Y)        103.3932
-@ gamma(Y;X,Y,X)        103.3932
+@ gamma(Y;X,X,Y)        103.9398
+@ gamma(Y;X,Y,X)        103.9398
 @ gamma(Y;Y,Y,Y)        103.2087
 @ gamma(Y;Y,Z,Z)         13.3155
-@ gamma(Y;Z,Z,Y)         13.5820
-@ gamma(Y;Z,Y,Z)         13.5820
+@ gamma(Y;Z,Z,Y)         13.5778
+@ gamma(Y;Z,Y,Z)         13.5778
 @ gamma(Z;Z,X,X)         15.8578
-@ gamma(Z;X,X,Z)         14.5327
-@ gamma(Z;X,Z,X)         14.5327
+@ gamma(Z;X,X,Z)         14.5222
+@ gamma(Z;X,Z,X)         14.5222
 @ gamma(Z;Z,Y,Y)         14.3703
-@ gamma(Z;Y,Y,Z)         13.5852
-@ gamma(Z;Y,Z,Y)         13.5852
+@ gamma(Z;Y,Y,Z)         13.5783
+@ gamma(Z;Y,Z,Y)         13.5783
 @ gamma(Z;Z,Z,Z)          2.4052
 
-@ Averaged gamma parallel to the applied field is       100.842712
+@ Averaged gamma parallel to the applied field is       100.982420
 
 
   Summary of gamma values for a set of frequencies
@@ -2243,261 +2190,235 @@ Contribution from DFTCRCS:                 0.1
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:      5.823735466900
- DFT-CR integration time:       3.42 s
-Contribution from DFTCRCS:                -2.2
- Na T[4] Nb Nc Nd       -3.46489651         -3.46489651
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz         91.18510560         87.72020909
- Na X[3] Ny Nz          54.70183026        142.42203935
- Nx A[3] Ny Nz          15.70023177        158.12227112
- Na X[2] Nyz          -163.27864406         -5.15637294
- Nx A[2] Nyz          -120.50685886       -125.66323180
-
-@ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   YDIPLEN    1 -0.134000
-@ B operator, symmetry, frequency:   YDIPLEN    1  0.067000
-@ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
-@ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
-
-@ << A; B, C, D >>  =        -125.66323180
-
-
-
-   Contribution                Term         Accumulated
- ------------------------------------------------------
-Contribution from C4FOCK:     34.906084041738
- DFT-CR integration time:       3.30 s
-Contribution from DFTCRCS:                -7.6
- Na T[4] Nb Nc Nd      -27.15000846        -27.15000846
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz         52.59516310         25.44515464
- Na X[3] Ny Nz          68.79145079         94.23660543
- Nx A[3] Ny Nz          21.08520988        115.32181531
- Na X[2] Nyz          -118.01268625         -2.69087094
- Nx A[2] Nyz          -112.61141064       -115.30228158
-
-@ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   XDIPLEN    2 -0.134000
-@ B operator, symmetry, frequency:   XDIPLEN    2  0.067000
-@ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
-@ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
-
-@ << A; B, C, D >>  =        -115.30228158
-
-
-
-   Contribution                Term         Accumulated
- ------------------------------------------------------
-Contribution from C4FOCK:     -0.880522717203
- DFT-CR integration time:       3.20 s
-Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd        0.79906293          0.79906293
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          5.16148945          5.96055237
- Na X[3] Ny Nz           2.09518537          8.05573774
- Nx A[3] Ny Nz           0.42480537          8.48054312
- Na X[2] Nyz           -20.94905326        -12.46851014
- Nx A[2] Nyz            -7.39534436        -19.86385450
-
-@ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   ZDIPLEN    3 -0.134000
-@ B operator, symmetry, frequency:   ZDIPLEN    3  0.067000
-@ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
-@ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
-
-@ << A; B, C, D >>  =         -19.86385450
-
-
-
-   Contribution                Term         Accumulated
- ------------------------------------------------------
-Contribution from C4FOCK:     37.908594420332
- DFT-CR integration time:       3.15 s
-Contribution from DFTCRCS:                -8.7
- Na T[4] Nb Nc Nd      -29.14778660        -29.14778660
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz         74.54518992         45.39740332
- Na X[3] Ny Nz          71.95735722        117.35476055
- Nx A[3] Ny Nz          21.37697110        138.73173164
- Na X[2] Nyz          -156.24176022        -17.51002858
- Nx A[2] Nyz          -107.20415490       -124.71418348
-
-@ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   YDIPLEN    1 -0.134000
-@ B operator, symmetry, frequency:   XDIPLEN    2  0.067000
-@ C operator, symmetry, frequency:   XDIPLEN    2  0.067000
-@ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
-
-@ << A; B, C, D >>  =        -124.71418348
-
-
-
-   Contribution                Term         Accumulated
- ------------------------------------------------------
-Contribution from C4FOCK:     -0.969097833253
- DFT-CR integration time:       3.39 s
-Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd        0.84484736          0.84484736
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          5.39180948          6.23665684
- Na X[3] Ny Nz           1.51976543          7.75642226
- Nx A[3] Ny Nz           0.50914074          8.26556300
- Na X[2] Nyz           -11.47428149         -3.20871848
- Nx A[2] Nyz           -13.07298309        -16.28170157
-
-@ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   YDIPLEN    1 -0.134000
-@ B operator, symmetry, frequency:   ZDIPLEN    3  0.067000
-@ C operator, symmetry, frequency:   ZDIPLEN    3  0.067000
-@ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
-
-@ << A; B, C, D >>  =         -16.28170157
-
-
-
-   Contribution                Term         Accumulated
- ------------------------------------------------------
-Contribution from C4FOCK:     35.284970175132
- DFT-CR integration time:       3.78 s
-Contribution from DFTCRCS:                -7.1
- Na T[4] Nb Nc Nd      -28.06161218        -28.06161218
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz         53.63977486         25.57816268
- Na X[3] Ny Nz          68.84450888         94.42267156
- Nx A[3] Ny Nz          20.99933573        115.42200729
- Na X[2] Nyz          -122.87184764         -7.44984035
- Nx A[2] Nyz          -113.97882057       -121.42866092
-
-@ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   XDIPLEN    2 -0.134000
-@ B operator, symmetry, frequency:   YDIPLEN    1  0.067000
-@ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
-@ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
-
-@ << A; B, C, D >>  =        -121.42866092
-
-
-
-   Contribution                Term         Accumulated
- ------------------------------------------------------
-Contribution from C4FOCK:     37.965750125907
- DFT-CR integration time:       3.62 s
-Contribution from DFTCRCS:                -7.7
- Na T[4] Nb Nc Nd      -30.06408590        -30.06408590
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz         71.87399730         41.80991140
- Na X[3] Ny Nz          73.36039574        115.17030714
- Nx A[3] Ny Nz          21.45473355        136.62504070
- Na X[2] Nyz          -156.48554522        -19.86050452
- Nx A[2] Nyz          -104.41488893       -124.27539344
-
-@ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   YDIPLEN    1 -0.134000
-@ B operator, symmetry, frequency:   XDIPLEN    2  0.067000
-@ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
-@ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
-
-@ << A; B, C, D >>  =        -124.27539344
-
-
-
-   Contribution                Term         Accumulated
- ------------------------------------------------------
-Contribution from C4FOCK:     51.924948308776
- DFT-CR integration time:       3.35 s
-Contribution from DFTCRCS:               -16.0
- Na T[4] Nb Nc Nd      -35.68840125        -35.68840125
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz         74.76842034         39.08001909
- Na X[3] Ny Nz         122.83844513        161.91846422
- Nx A[3] Ny Nz          37.75224384        199.67070806
- Na X[2] Nyz          -193.47161192          6.19909613
- Nx A[2] Nyz          -160.96742481       -154.76832867
-
-@ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   XDIPLEN    2 -0.134000
-@ B operator, symmetry, frequency:   XDIPLEN    2  0.067000
-@ C operator, symmetry, frequency:   XDIPLEN    2  0.067000
-@ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
-
-@ << A; B, C, D >>  =        -154.76832867
-
-
-
-   Contribution                Term         Accumulated
- ------------------------------------------------------
-Contribution from C4FOCK:     -1.115836400307
- DFT-CR integration time:       3.29 s
-Contribution from DFTCRCS:                 0.0
- Na T[4] Nb Nc Nd        1.12619366          1.12619366
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          3.62964027          4.75583394
- Na X[3] Ny Nz           1.95062790          6.70646184
- Nx A[3] Ny Nz           0.23893598          6.94539782
- Na X[2] Nyz           -23.25455626        -16.30915844
- Nx A[2] Nyz            -5.16582990        -21.47498834
-
-@ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   ZDIPLEN    3 -0.134000
-@ B operator, symmetry, frequency:   ZDIPLEN    3  0.067000
-@ C operator, symmetry, frequency:   XDIPLEN    2  0.067000
-@ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
-
-@ << A; B, C, D >>  =         -21.47498834
-
-
-
-   Contribution                Term         Accumulated
- ------------------------------------------------------
-Contribution from C4FOCK:     -1.251254724458
- DFT-CR integration time:       3.23 s
-Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd        1.18738787          1.18738787
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          2.93663605          4.12402392
- Na X[3] Ny Nz           0.93391941          5.05794333
- Nx A[3] Ny Nz           0.46484211          5.52278544
- Na X[2] Nyz            -7.22435405         -1.70156862
- Nx A[2] Nyz           -14.48636384        -16.18793246
-
-@ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   XDIPLEN    2 -0.134000
-@ B operator, symmetry, frequency:   ZDIPLEN    3  0.067000
-@ C operator, symmetry, frequency:   ZDIPLEN    3  0.067000
-@ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
-
-@ << A; B, C, D >>  =         -16.18793246
-
-
-
-   Contribution                Term         Accumulated
- ------------------------------------------------------
-Contribution from C4FOCK:     -0.875512940287
+Contribution from C4FOCK:      5.823735466917
  DFT-CR integration time:       3.67 s
+Contribution from DFTCRCS:                -2.2
+ Na T[4] Nb Nc Nd       -3.48848216         -3.48848216
+ Na T[3] Nx Nyz         91.18510560         87.69662344
+ Na X[3] Ny Nz          54.70183026        142.39845371
+ Nx A[3] Ny Nz          15.70023177        158.09868547
+ Na X[2] Nyz          -163.27864406         -5.17995859
+ Nx A[2] Nyz          -120.50685886       -125.68681745
+
+@ Cubic response function value in a.u. for
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.134000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.067000
+@ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
+@ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
+
+@ << A; B, C, D >>  =        -125.68681745
+
+
+
+   Contribution                Term         Accumulated
+ ------------------------------------------------------
+Contribution from C4FOCK:     34.906084041841
+ DFT-CR integration time:       3.56 s
+Contribution from DFTCRCS:                -7.6
+ Na T[4] Nb Nc Nd      -27.18558040        -27.18558040
+ Na T[3] Nx Nyz         52.59516310         25.40958270
+ Na X[3] Ny Nz          68.79145079         94.20103349
+ Nx A[3] Ny Nz          21.08520988        115.28624338
+ Na X[2] Nyz          -118.01268625         -2.72644288
+ Nx A[2] Nyz          -112.61141064       -115.33785352
+
+@ Cubic response function value in a.u. for
+@ A operator, symmetry, frequency:   XDIPLEN    2 -0.134000
+@ B operator, symmetry, frequency:   XDIPLEN    2  0.067000
+@ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
+@ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
+
+@ << A; B, C, D >>  =        -115.33785352
+
+
+
+   Contribution                Term         Accumulated
+ ------------------------------------------------------
+Contribution from C4FOCK:     -0.880522717208
+ DFT-CR integration time:       3.38 s
 Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd        0.74418873          0.74418873
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          4.17374546          4.91793419
- Na X[3] Ny Nz           1.87234467          6.79027886
- Nx A[3] Ny Nz           0.40457065          7.19484952
- Na X[2] Nyz           -17.95012663        -10.75527712
- Nx A[2] Nyz            -7.05718711        -17.81246422
+ Na T[4] Nb Nc Nd        0.79891044          0.79891044
+ Na T[3] Nx Nyz          5.16148945          5.96039988
+ Na X[3] Ny Nz           2.09518537          8.05558525
+ Nx A[3] Ny Nz           0.42480537          8.48039063
+ Na X[2] Nyz           -20.94905326        -12.46866263
+ Nx A[2] Nyz            -7.39534436        -19.86400699
+
+@ Cubic response function value in a.u. for
+@ A operator, symmetry, frequency:   ZDIPLEN    3 -0.134000
+@ B operator, symmetry, frequency:   ZDIPLEN    3  0.067000
+@ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
+@ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
+
+@ << A; B, C, D >>  =         -19.86400699
+
+
+
+   Contribution                Term         Accumulated
+ ------------------------------------------------------
+Contribution from C4FOCK:     37.908594420448
+ DFT-CR integration time:       3.48 s
+Contribution from DFTCRCS:                -8.1
+ Na T[4] Nb Nc Nd      -29.78521534        -29.78521534
+ Na T[3] Nx Nyz         74.54518992         44.75997458
+ Na X[3] Ny Nz          71.95735722        116.71733181
+ Nx A[3] Ny Nz          21.37697110        138.09430291
+ Na X[2] Nyz          -156.24176022        -18.14745732
+ Nx A[2] Nyz          -107.20415490       -125.35161222
+
+@ Cubic response function value in a.u. for
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.134000
+@ B operator, symmetry, frequency:   XDIPLEN    2  0.067000
+@ C operator, symmetry, frequency:   XDIPLEN    2  0.067000
+@ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
+
+@ << A; B, C, D >>  =        -125.35161222
+
+
+
+   Contribution                Term         Accumulated
+ ------------------------------------------------------
+Contribution from C4FOCK:     -0.969097833258
+ DFT-CR integration time:       3.16 s
+Contribution from DFTCRCS:                 0.1
+ Na T[4] Nb Nc Nd        0.84973634          0.84973634
+ Na T[3] Nx Nyz          5.39180948          6.24154582
+ Na X[3] Ny Nz           1.51976543          7.76131125
+ Nx A[3] Ny Nz           0.50914074          8.27045199
+ Na X[2] Nyz           -11.47428149         -3.20382950
+ Nx A[2] Nyz           -13.07298309        -16.27681258
+
+@ Cubic response function value in a.u. for
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.134000
+@ B operator, symmetry, frequency:   ZDIPLEN    3  0.067000
+@ C operator, symmetry, frequency:   ZDIPLEN    3  0.067000
+@ D operator, symmetry, frequency:   YDIPLEN    1  0.000000
+
+@ << A; B, C, D >>  =         -16.27681258
+
+
+
+   Contribution                Term         Accumulated
+ ------------------------------------------------------
+Contribution from C4FOCK:     35.284970175236
+ DFT-CR integration time:       3.71 s
+Contribution from DFTCRCS:                -7.6
+ Na T[4] Nb Nc Nd      -27.60372092        -27.60372092
+ Na T[3] Nx Nyz         53.63977486         26.03605394
+ Na X[3] Ny Nz          68.84450888         94.88056282
+ Nx A[3] Ny Nz          20.99933573        115.87989855
+ Na X[2] Nyz          -122.87184764         -6.99194909
+ Nx A[2] Nyz          -113.97882057       -120.97076967
+
+@ Cubic response function value in a.u. for
+@ A operator, symmetry, frequency:   XDIPLEN    2 -0.134000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.067000
+@ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
+@ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
+
+@ << A; B, C, D >>  =        -120.97076967
+
+
+
+   Contribution                Term         Accumulated
+ ------------------------------------------------------
+Contribution from C4FOCK:     37.965750126023
+ DFT-CR integration time:       3.54 s
+Contribution from DFTCRCS:                -8.2
+ Na T[4] Nb Nc Nd      -29.60795452        -29.60795452
+ Na T[3] Nx Nyz         71.87399730         42.26604278
+ Na X[3] Ny Nz          73.36039574        115.62643852
+ Nx A[3] Ny Nz          21.45473355        137.08117208
+ Na X[2] Nyz          -156.48554522        -19.40437314
+ Nx A[2] Nyz          -104.41488893       -123.81926207
+
+@ Cubic response function value in a.u. for
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.134000
+@ B operator, symmetry, frequency:   XDIPLEN    2  0.067000
+@ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
+@ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
+
+@ << A; B, C, D >>  =        -123.81926207
+
+
+
+   Contribution                Term         Accumulated
+ ------------------------------------------------------
+Contribution from C4FOCK:     51.924948308922
+ DFT-CR integration time:       3.46 s
+Contribution from DFTCRCS:               -16.0
+ Na T[4] Nb Nc Nd      -35.74990499        -35.74990499
+ Na T[3] Nx Nyz         74.76842034         39.01851535
+ Na X[3] Ny Nz         122.83844513        161.85696048
+ Nx A[3] Ny Nz          37.75224384        199.60920432
+ Na X[2] Nyz          -193.47161192          6.13759239
+ Nx A[2] Nyz          -160.96742481       -154.82983241
+
+@ Cubic response function value in a.u. for
+@ A operator, symmetry, frequency:   XDIPLEN    2 -0.134000
+@ B operator, symmetry, frequency:   XDIPLEN    2  0.067000
+@ C operator, symmetry, frequency:   XDIPLEN    2  0.067000
+@ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
+
+@ << A; B, C, D >>  =        -154.82983241
+
+
+
+   Contribution                Term         Accumulated
+ ------------------------------------------------------
+Contribution from C4FOCK:     -1.115836400312
+ DFT-CR integration time:       3.22 s
+Contribution from DFTCRCS:                 0.0
+ Na T[4] Nb Nc Nd        1.12603749          1.12603749
+ Na T[3] Nx Nyz          3.62964027          4.75567776
+ Na X[3] Ny Nz           1.95062790          6.70630567
+ Nx A[3] Ny Nz           0.23893598          6.94524165
+ Na X[2] Nyz           -23.25455626        -16.30931461
+ Nx A[2] Nyz            -5.16582990        -21.47514451
+
+@ Cubic response function value in a.u. for
+@ A operator, symmetry, frequency:   ZDIPLEN    3 -0.134000
+@ B operator, symmetry, frequency:   ZDIPLEN    3  0.067000
+@ C operator, symmetry, frequency:   XDIPLEN    2  0.067000
+@ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
+
+@ << A; B, C, D >>  =         -21.47514451
+
+
+
+   Contribution                Term         Accumulated
+ ------------------------------------------------------
+Contribution from C4FOCK:     -1.251254724464
+ DFT-CR integration time:       3.06 s
+Contribution from DFTCRCS:                 0.1
+ Na T[4] Nb Nc Nd        1.19533253          1.19533253
+ Na T[3] Nx Nyz          2.93663605          4.13196858
+ Na X[3] Ny Nz           0.93391941          5.06588799
+ Nx A[3] Ny Nz           0.46484211          5.53073010
+ Na X[2] Nyz            -7.22435405         -1.69362396
+ Nx A[2] Nyz           -14.48636384        -16.17998780
+
+@ Cubic response function value in a.u. for
+@ A operator, symmetry, frequency:   XDIPLEN    2 -0.134000
+@ B operator, symmetry, frequency:   ZDIPLEN    3  0.067000
+@ C operator, symmetry, frequency:   ZDIPLEN    3  0.067000
+@ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
+
+@ << A; B, C, D >>  =         -16.17998780
+
+
+
+   Contribution                Term         Accumulated
+ ------------------------------------------------------
+Contribution from C4FOCK:     -0.875512940291
+ DFT-CR integration time:       3.38 s
+Contribution from DFTCRCS:                 0.1
+ Na T[4] Nb Nc Nd        0.75268342          0.75268342
+ Na T[3] Nx Nyz          4.17374546          4.92642887
+ Na X[3] Ny Nz           1.87234467          6.79877355
+ Nx A[3] Ny Nz           0.40457065          7.20334420
+ Na X[2] Nyz           -17.95012663        -10.74678243
+ Nx A[2] Nyz            -7.05718711        -17.80396954
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    3 -0.134000
@@ -2505,24 +2426,21 @@ Contribution from DFTCRCS:                 0.1
 @ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
 @ D operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
-@ << A; B, C, D >>  =         -17.81246422
+@ << A; B, C, D >>  =         -17.80396954
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.015275383375
- DFT-CR integration time:       3.45 s
+Contribution from C4FOCK:     -1.015275383380
+ DFT-CR integration time:       3.16 s
 Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd        0.92045199          0.92045199
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          5.20295838          6.12341037
- Na X[3] Ny Nz           1.57823922          7.70164958
- Nx A[3] Ny Nz           0.52864112          8.23029070
- Na X[2] Nyz           -11.24156956         -3.01127886
- Nx A[2] Nyz           -13.81087619        -16.82215505
+ Na T[4] Nb Nc Nd        0.92484624          0.92484624
+ Na T[3] Nx Nyz          5.20295838          6.12780462
+ Na X[3] Ny Nz           1.57823922          7.70604383
+ Nx A[3] Ny Nz           0.52864112          8.23468495
+ Na X[2] Nyz           -11.24156956         -3.00688461
+ Nx A[2] Nyz           -13.81087619        -16.81776080
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    1 -0.134000
@@ -2530,23 +2448,21 @@ Contribution from DFTCRCS:                 0.1
 @ C operator, symmetry, frequency:   YDIPLEN    1  0.067000
 @ D operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
-@ << A; B, C, D >>  =         -16.82215505
+@ << A; B, C, D >>  =         -16.81776080
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.135696740151
- DFT-CR integration time:       3.31 s
-Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd        1.07403684          1.07403684
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          3.16924386          4.24328070
- Na X[3] Ny Nz           1.58580068          5.82908138
- Nx A[3] Ny Nz           0.22335545          6.05243683
- Na X[2] Nyz           -19.83712557        -13.78468874
- Nx A[2] Nyz            -5.13069778        -18.91538652
+Contribution from C4FOCK:     -1.135696740156
+ DFT-CR integration time:       3.12 s
+Contribution from DFTCRCS:                 0.0
+ Na T[4] Nb Nc Nd        1.08664294          1.08664294
+ Na T[3] Nx Nyz          3.16924386          4.25588680
+ Na X[3] Ny Nz           1.58580068          5.84168748
+ Nx A[3] Ny Nz           0.22335545          6.06504293
+ Na X[2] Nyz           -19.83712557        -13.77208264
+ Nx A[2] Nyz            -5.13069778        -18.90278042
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    3 -0.134000
@@ -2554,24 +2470,21 @@ Contribution from DFTCRCS:                 0.1
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.067000
 @ D operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
-@ << A; B, C, D >>  =         -18.91538652
+@ << A; B, C, D >>  =         -18.90278042
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.286971415499
- DFT-CR integration time:       3.29 s
-Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd        1.24692421          1.24692421
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          2.70621153          3.95313574
- Na X[3] Ny Nz           0.97036634          4.92350208
- Nx A[3] Ny Nz           0.48730762          5.41080970
- Na X[2] Nyz            -6.59569422         -1.18488452
- Nx A[2] Nyz           -14.87795487        -16.06283938
+Contribution from C4FOCK:     -1.286971415505
+ DFT-CR integration time:       3.00 s
+Contribution from DFTCRCS:                 0.0
+ Na T[4] Nb Nc Nd        1.25423196          1.25423196
+ Na T[3] Nx Nyz          2.70621153          3.96044349
+ Na X[3] Ny Nz           0.97036634          4.93080983
+ Nx A[3] Ny Nz           0.48730762          5.41811745
+ Na X[2] Nyz            -6.59569422         -1.17757677
+ Nx A[2] Nyz           -14.87795487        -16.05553164
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.134000
@@ -2579,23 +2492,21 @@ Contribution from DFTCRCS:                 0.1
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.067000
 @ D operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
-@ << A; B, C, D >>  =         -16.06283938
+@ << A; B, C, D >>  =         -16.05553164
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:      0.052483373299
- DFT-CR integration time:       3.13 s
+Contribution from C4FOCK:      0.052483373298
+ DFT-CR integration time:       2.99 s
 Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd       -0.13265283         -0.13265283
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz         -0.21260469         -0.34525752
- Na X[3] Ny Nz           2.54805405          2.20279653
- Nx A[3] Ny Nz           0.70768581          2.91048234
- Na X[2] Nyz            -3.47714186         -0.56665952
- Nx A[2] Nyz            -2.45867988         -3.02533940
+ Na T[4] Nb Nc Nd       -0.13271264         -0.13271264
+ Na T[3] Nx Nyz         -0.21260469         -0.34531734
+ Na X[3] Ny Nz           2.54805405          2.20273671
+ Nx A[3] Ny Nz           0.70768581          2.91042252
+ Na X[2] Nyz            -3.47714186         -0.56671934
+ Nx A[2] Nyz            -2.45867988         -3.02539922
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    3 -0.134000
@@ -2603,7 +2514,7 @@ Contribution from DFTCRCS:                 0.1
 @ C operator, symmetry, frequency:   ZDIPLEN    3  0.067000
 @ D operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
-@ << A; B, C, D >>  =          -3.02533940
+@ << A; B, C, D >>  =          -3.02539922
 
 
 
@@ -2614,29 +2525,29 @@ Contribution from DFTCRCS:                 0.1
 @ C-freq:  0.067000
 @ D-freq:  0.000000
 
-@ gamma(X;X,X,X)        154.7683
-@ gamma(X;X,Y,Y)        115.3023
-@ gamma(X;Y,Y,X)        121.4287
-@ gamma(X;Y,X,Y)        115.3023
-@ gamma(X;X,Z,Z)         16.0628
-@ gamma(X;Z,Z,X)         16.1879
-@ gamma(X;Z,X,Z)         16.0628
-@ gamma(Y;Y,X,X)        124.2754
-@ gamma(Y;X,X,Y)        124.7142
-@ gamma(Y;X,Y,X)        124.2754
-@ gamma(Y;Y,Y,Y)        125.6632
-@ gamma(Y;Y,Z,Z)         16.8222
-@ gamma(Y;Z,Z,Y)         16.2817
-@ gamma(Y;Z,Y,Z)         16.8222
-@ gamma(Z;Z,X,X)         21.4750
-@ gamma(Z;X,X,Z)         18.9154
-@ gamma(Z;X,Z,X)         21.4750
-@ gamma(Z;Z,Y,Y)         19.8639
-@ gamma(Z;Y,Y,Z)         17.8125
-@ gamma(Z;Y,Z,Y)         19.8639
-@ gamma(Z;Z,Z,Z)          3.0253
+@ gamma(X;X,X,X)        154.8298
+@ gamma(X;X,Y,Y)        115.3379
+@ gamma(X;Y,Y,X)        120.9708
+@ gamma(X;Y,X,Y)        115.3379
+@ gamma(X;X,Z,Z)         16.0555
+@ gamma(X;Z,Z,X)         16.1800
+@ gamma(X;Z,X,Z)         16.0555
+@ gamma(Y;Y,X,X)        123.8193
+@ gamma(Y;X,X,Y)        125.3516
+@ gamma(Y;X,Y,X)        123.8193
+@ gamma(Y;Y,Y,Y)        125.6868
+@ gamma(Y;Y,Z,Z)         16.8178
+@ gamma(Y;Z,Z,Y)         16.2768
+@ gamma(Y;Z,Y,Z)         16.8178
+@ gamma(Z;Z,X,X)         21.4751
+@ gamma(Z;X,X,Z)         18.9028
+@ gamma(Z;X,Z,X)         21.4751
+@ gamma(Z;Z,Y,Y)         19.8640
+@ gamma(Z;Y,Y,Z)         17.8040
+@ gamma(Z;Y,Z,Y)         19.8640
+@ gamma(Z;Z,Z,Z)          3.0254
 
-@ Averaged gamma parallel to the applied field is       119.554270
+@ Averaged gamma parallel to the applied field is       119.523413
 
 
   Summary of gamma values for a set of frequencies
@@ -2668,11 +2579,10 @@ Contribution from DFTCRCS:                 0.1
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:      6.074443872466
- DFT-CR integration time:       3.89 s
+Contribution from C4FOCK:      6.074443872485
+ DFT-CR integration time:       3.69 s
 Contribution from DFTCRCS:                -2.4
  Na T[4] Nb Nc Nd       -3.63531218         -3.63531218
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz        128.88309152        125.24777934
  Na X[3] Ny Nz          69.67228003        194.92005937
  Nx A[3] Ny Nz          15.76311772        210.68317709
@@ -2691,12 +2601,10 @@ Contribution from DFTCRCS:                -2.4
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     39.074414671636
- DFT-CR integration time:       3.74 s
+Contribution from C4FOCK:     39.074414671755
+ DFT-CR integration time:       3.55 s
 Contribution from DFTCRCS:                -8.4
  Na T[4] Nb Nc Nd      -30.65191148        -30.65191148
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         67.17151300         36.51960152
  Na X[3] Ny Nz          78.14987069        114.66947221
  Nx A[3] Ny Nz          21.06084940        135.73032161
@@ -2715,12 +2623,10 @@ Contribution from DFTCRCS:                -8.4
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.119702892010
- DFT-CR integration time:       3.49 s
+Contribution from C4FOCK:     -1.119702892016
+ DFT-CR integration time:       3.39 s
 Contribution from DFTCRCS:                 0.1
  Na T[4] Nb Nc Nd        0.97260387          0.97260387
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         10.24279637         11.21540024
  Na X[3] Ny Nz           3.46092035         14.67632059
  Nx A[3] Ny Nz           0.42312647         15.09944706
@@ -2739,17 +2645,15 @@ Contribution from DFTCRCS:                 0.1
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     44.843416119013
- DFT-CR integration time:       3.15 s
-Contribution from DFTCRCS:               -10.4
- Na T[4] Nb Nc Nd      -34.43242271        -34.43242271
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz         96.36729795         61.93487524
- Na X[3] Ny Nz          89.26094436        151.19581960
- Nx A[3] Ny Nz          21.47376528        172.66958488
- Na X[2] Nyz          -230.67700106        -58.00741618
- Nx A[2] Nyz          -108.03593344       -166.04334962
+Contribution from C4FOCK:     44.843416119163
+ DFT-CR integration time:       3.48 s
+Contribution from DFTCRCS:                -9.7
+ Na T[4] Nb Nc Nd      -35.11776919        -35.11776919
+ Na T[3] Nx Nyz         96.36729795         61.24952877
+ Na X[3] Ny Nz          89.26094436        150.51047313
+ Nx A[3] Ny Nz          21.47376528        171.98423841
+ Na X[2] Nyz          -230.67700106        -58.69276265
+ Nx A[2] Nyz          -108.03593344       -166.72869610
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    1 -0.201000
@@ -2757,23 +2661,21 @@ Contribution from DFTCRCS:               -10.4
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.067000
 @ D operator, symmetry, frequency:   YDIPLEN    1  0.067000
 
-@ << A; B, C, D >>  =        -166.04334962
+@ << A; B, C, D >>  =        -166.72869610
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.285294759524
- DFT-CR integration time:       2.99 s
-Contribution from DFTCRCS:                 0.2
- Na T[4] Nb Nc Nd        1.13169363          1.13169363
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.2 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          6.80574030          7.93743393
- Na X[3] Ny Nz           2.03613023          9.97356415
- Nx A[3] Ny Nz           0.52526741         10.49883156
- Na X[2] Nyz           -18.86520171         -8.36637015
- Nx A[2] Nyz           -14.58797635        -22.95434649
+Contribution from C4FOCK:     -1.285294759532
+ DFT-CR integration time:       3.20 s
+Contribution from DFTCRCS:                 0.1
+ Na T[4] Nb Nc Nd        1.13775275          1.13775275
+ Na T[3] Nx Nyz          6.80574030          7.94349305
+ Na X[3] Ny Nz           2.03613023          9.97962328
+ Nx A[3] Ny Nz           0.52526741         10.50489069
+ Na X[2] Nyz           -18.86520171         -8.36031102
+ Nx A[2] Nyz           -14.58797635        -22.94828737
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    1 -0.201000
@@ -2781,17 +2683,16 @@ Contribution from DFTCRCS:                 0.2
 @ C operator, symmetry, frequency:   ZDIPLEN    3  0.067000
 @ D operator, symmetry, frequency:   YDIPLEN    1  0.067000
 
-@ << A; B, C, D >>  =         -22.95434649
+@ << A; B, C, D >>  =         -22.94828737
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     57.439953298395
- DFT-CR integration time:       2.95 s
+Contribution from C4FOCK:     57.439953298562
+ DFT-CR integration time:       3.39 s
 Contribution from DFTCRCS:               -17.9
  Na T[4] Nb Nc Nd      -39.56876643        -39.56876643
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         92.16053006         52.59176363
  Na X[3] Ny Nz         138.72577463        191.31753826
  Nx A[3] Ny Nz          37.82975930        229.14729756
@@ -2810,12 +2711,10 @@ Contribution from DFTCRCS:               -17.9
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.344331021129
- DFT-CR integration time:       2.90 s
+Contribution from C4FOCK:     -1.344331021135
+ DFT-CR integration time:       3.15 s
 Contribution from DFTCRCS:                -0.0
  Na T[4] Nb Nc Nd        1.37513108          1.37513108
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz          6.64540088          8.02053196
  Na X[3] Ny Nz           3.39232610         11.41285806
  Nx A[3] Ny Nz           0.23950738         11.65236544
@@ -2834,17 +2733,15 @@ Contribution from DFTCRCS:                -0.0
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:     -1.469993880804
- DFT-CR integration time:       2.85 s
+Contribution from C4FOCK:     -1.469993880811
+ DFT-CR integration time:       3.10 s
 Contribution from DFTCRCS:                 0.1
- Na T[4] Nb Nc Nd        1.39505430          1.39505430
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
- Na T[3] Nx Nyz          3.39088628          4.78594058
- Na X[3] Ny Nz           1.08950562          5.87544620
- Nx A[3] Ny Nz           0.47913993          6.35458613
- Na X[2] Nyz            -9.90468215         -3.55009602
- Nx A[2] Nyz           -15.37924158        -18.92933760
+ Na T[4] Nb Nc Nd        1.40398048          1.40398048
+ Na T[3] Nx Nyz          3.39088628          4.79486676
+ Na X[3] Ny Nz           1.08950562          5.88437238
+ Nx A[3] Ny Nz           0.47913993          6.36351231
+ Na X[2] Nyz            -9.90468215         -3.54116984
+ Nx A[2] Nyz           -15.37924158        -18.92041142
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.201000
@@ -2852,17 +2749,16 @@ Contribution from DFTCRCS:                 0.1
 @ C operator, symmetry, frequency:   ZDIPLEN    3  0.067000
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.067000
 
-@ << A; B, C, D >>  =         -18.92933760
+@ << A; B, C, D >>  =         -18.92041142
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:      0.008174480518
- DFT-CR integration time:       2.75 s
+Contribution from C4FOCK:      0.008174480516
+ DFT-CR integration time:       3.05 s
 Contribution from DFTCRCS:                 0.1
  Na T[4] Nb Nc Nd       -0.14332783         -0.14332783
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
  Na T[3] Nx Nyz         -0.35188688         -0.49521471
  Na X[3] Ny Nz           3.68673936          3.19152465
  Nx A[3] Ny Nz           0.70954184          3.90106649
@@ -2890,16 +2786,16 @@ Contribution from DFTCRCS:                 0.1
 @ gamma(X;X,Y,Y)        142.2426
 @ gamma(X;Y,Y,X)        142.2426
 @ gamma(X;Y,X,Y)        142.2426
-@ gamma(X;X,Z,Z)         18.9293
-@ gamma(X;Z,Z,X)         18.9293
-@ gamma(X;Z,X,Z)         18.9293
-@ gamma(Y;Y,X,X)        166.0433
-@ gamma(Y;X,X,Y)        166.0433
-@ gamma(Y;X,Y,X)        166.0433
+@ gamma(X;X,Z,Z)         18.9204
+@ gamma(X;Z,Z,X)         18.9204
+@ gamma(X;Z,X,Z)         18.9204
+@ gamma(Y;Y,X,X)        166.7287
+@ gamma(Y;X,X,Y)        166.7287
+@ gamma(Y;X,Y,X)        166.7287
 @ gamma(Y;Y,Y,Y)        172.5012
-@ gamma(Y;Y,Z,Z)         22.9543
-@ gamma(Y;Z,Z,Y)         22.9543
-@ gamma(Y;Z,Y,Z)         22.9543
+@ gamma(Y;Y,Z,Z)         22.9483
+@ gamma(Y;Z,Z,Y)         22.9483
+@ gamma(Y;Z,Y,Z)         22.9483
 @ gamma(Z;Z,X,X)         37.6138
 @ gamma(Z;X,X,Z)         37.6138
 @ gamma(Z;X,Z,X)         37.6138
@@ -2908,19 +2804,19 @@ Contribution from DFTCRCS:                 0.1
 @ gamma(Z;Y,Z,Y)         34.9543
 @ gamma(Z;Z,Z,Z)          4.8314
 
-@ Averaged gamma parallel to the applied field is       158.018764
+@ Averaged gamma parallel to the applied field is       158.152836
 
- >>>> Total CPU  time used in RESPONSE:  3 minutes 19 seconds
- >>>> Total wall time used in RESPONSE:  3 minutes 20 seconds
+ >>>> Total CPU  time used in RESPONSE:  3 minutes 15 seconds
+ >>>> Total wall time used in RESPONSE:  3 minutes 21 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  3 minutes 21 seconds
+ >>>> Total CPU  time used in DALTON:  3 minutes 16 seconds
  >>>> Total wall time used in DALTON:  3 minutes 22 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 19:02:42 2011 
-     Host name              : fe6                                     
+     Date and time (Linux)  : Sun Sep  8 20:58:13 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

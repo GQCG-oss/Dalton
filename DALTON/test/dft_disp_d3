@@ -91,9 +91,9 @@ else
 fi
 
 # Check 1:
-CRIT1=`$GREP "E_disp:   *  -0.002241" $log | wc -l`
+CRIT1=`$GREP "E_disp *: *  -0.002241" $log | wc -l`
 TEST[1]=`expr $CRIT1`
-CTRL[1]=1
+CTRL[1]=2
 ERROR[1]="1ST DISPERSION ENERGY NOT CORRECT"
 
 
@@ -104,24 +104,24 @@ CTRL[2]=1
 ERROR[2]="1ST DFT ENERGY NOT CORRECT"
 
 # Check 3:
-CRIT1=`$GREP "C   _1: *   ( |0)\.000000" $log | wc -l`
-CRIT2=`$GREP "C   _2: *   3\.498195  *  ( |0)\.000000" $log | wc -l`
-CRIT3=`$GREP "H   _1: *   1\.104411  *  3\.308885  *  ( |0)\.000000" $log | wc -l`
-CRIT4=`$GREP "H   _2: *   1\.104411  *  3\.308885  *  1\.802243  *  ( |0)\.000000" $log | wc -l`
-CRIT5=`$GREP "H   _3: *   3\.308885  *  1\.104411  *  2\.975136  *  3\.478436  *  ( |0)\.000000" $log | wc -l`
-CRIT6=`$GREP "H   _4: *   3\.308885  *  1\.104411  *  3\.478436  *  2\.975136  *  1\.802243  *  ( |0)\.000000" $log | wc -l`
-CRIT7=`$GREP "H   _1: *   1\.104395  *  3\.271648  *  1\.802124  *  1\.802124  *  2\.933734  *  2\.933734" $log | wc -l`
-CRIT8=`$GREP "H   _2: *   3\.271648  *  1\.104395  *  2\.933734  *  2\.933734  *  1\.802124  *  1\.802124" $log | wc -l`
-CRIT9=`$GREP "H   _1: *   1\.104705  *  4\.602690  *  1\.805035  *  1\.805035  *  4\.367843  *  4\.367843" $log | wc -l`
-CRIT10=`$GREP "H   _2: *   4\.602690 *   1\.104705 *   4\.367843 *   4\.367843 *   1\.805035 *   1\.805035" $log | wc -l`
-TEST[3]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6 + $CRIT7 + $CRIT8 + $CRIT9 + $CRIT10`
-CTRL[3]=10
+#CRIT1=`$GREP "C   _1: *   ( |0)\.000000" $log | wc -l`
+CRIT2=`$GREP "C   _2: *   3\.498[12]..  *  ( |0)\.00000" $log | wc -l`
+CRIT3=`$GREP "H   _1: *   1\.1044..  *  3\.3088..  *  ( |0)\.00000" $log | wc -l`
+CRIT4=`$GREP "H   _2: *   1\.1044..  *  3\.3088..  *  1\.8022..  *  ( |0)\.00000" $log | wc -l`
+CRIT5=`$GREP "H   _3: *   3\.3088..  *  1\.1044..  *  2\.9751..  *  3\.4784..  *  ( |0)\.00000" $log | wc -l`
+CRIT6=`$GREP "H   _4: *   3\.3088..  *  1\.1044..  *  3\.4784..  *  2\.9751..  *  1\.8022..  *  ( |0)\.00000" $log | wc -l`
+CRIT7=`$GREP "H   _1: *   1\.1043..  *  3\.2716..  *  1\.8021..  *  1\.8021..  *  2\.9337..  *  2\.9337.." $log | wc -l`
+CRIT8=`$GREP "H   _2: *   3\.2716..  *  1\.1043..  *  2\.9337..  *  2\.9337..  *  1\.8021..  *  1\.8021.." $log | wc -l`
+CRIT9=`$GREP "H   _1: *   1\.1047..  *  4\.6026..  *  1\.8050..  *  1\.8050..  *  4\.3678..  *  4\.3678.." $log | wc -l`
+CRIT10=`$GREP "H   _2: *   4\.6026.. *   1\.1047.. *   4\.3678.. *   4\.3678.. *   1\.8050.. *   1\.8050.." $log | wc -l`
+TEST[3]=`expr $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6 + $CRIT7 + $CRIT8 + $CRIT9 + $CRIT10`
+CTRL[3]=18
 ERROR[3]="FINAL GEOMETRY NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 
 do
-   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} )"
      PASSED=0
    fi
