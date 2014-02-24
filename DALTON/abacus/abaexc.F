@@ -173,7 +173,7 @@ C
       CALL HEADER('Changes of defaults for .EXCITA:',0)
       IF (EXCTRP) WRITE (LUPRI,'(A)') ' Triplet excitation energies'
       WRITE (LUPRI,'(A,8I5)')
-     &   ' Number of excitation energies:',(NEXCIT(I),I=1,8)
+     &   ' Number of excitation energies:', NEXCIT(1:NSYM)
 C
       IF (ICHANG .GT. 0) THEN
          IF (SKIP) THEN
@@ -184,7 +184,7 @@ C
             WRITE (LUPRI,'(A,I5)')
      &         ' Integral print level :',IPR1IN
             WRITE (LUPRI,'(A,1P,E9.2)')
-     &         ' Threshold            :',THREXC
+     &         ' Convergence threshold:',THREXC
             WRITE(LUPRI,'(A,I5)')
      &         ' Maximum iterations   :',MAXITE
             IF (ROTVEL)
@@ -261,8 +261,7 @@ C
       IF (SKIP) RETURN
       CALL QENTER('EXCITA')
       CALL TIMER('START ',TIMEIN,TIMOUT)
-      IF (IPREXC .GT. 0) WRITE (LUPRI,'(A,/)')
-     *    '  <<<<<<<<<< Output from EXCITA >>>>>>>>>> '
+      CALL TITLER('ABACUS - Excitation energies (.EXCITA)','*',103)
 C
       IPRRSP = IPREXC
 C
