@@ -3488,12 +3488,12 @@ contains
     call mem_alloc(jobs%jobsdone,njobs)
     call mem_alloc(jobs%dofragopt,njobs)
     call mem_alloc(jobs%esti,njobs)
-    jobs%atom1=0
-    jobs%atom2=0
-    jobs%jobsize=0
-    jobs%jobsdone=.false. ! no jobs are done
-    jobs%dofragopt=.false. 
-    jobs%esti=.false.
+    jobs%atom1     = 0
+    jobs%atom2     = 0
+    jobs%jobsize   = 0
+    jobs%jobsdone  = .false. ! no jobs are done
+    jobs%dofragopt = .false. 
+    jobs%esti      = .false.
 
     ! MPI fragment statistics
     call mem_alloc(jobs%nslaves,njobs)
@@ -3504,14 +3504,17 @@ contains
     call mem_alloc(jobs%flops,njobs)
     call mem_alloc(jobs%LMtime,njobs)
     call mem_alloc(jobs%load,njobs)
-    jobs%nslaves=0
-    jobs%nocc=0
-    jobs%nunocc=0
-    jobs%nbasis=0
-    jobs%ntasks=0
-    jobs%flops=0.0E0_realk
-    jobs%LMtime=0.0E0_realk
-    jobs%load=0.0E0_realk
+    call mem_alloc(jobs%RmaxMO,njobs)
+    call mem_alloc(jobs%RmaxAO,njobs)
+    jobs%nslaves = 0
+    jobs%nocc    = 0
+    jobs%nunocc  = 0
+    jobs%nbasis  = 0
+    jobs%ntasks  = 0
+    jobs%flops   = 0.0E0_realk
+    jobs%LMtime  = 0.0E0_realk
+    jobs%load    = 0.0E0_realk
+    jobs%RmaxMO  = 0.0E0_realk
 
   end subroutine init_joblist
 
@@ -3596,7 +3599,15 @@ contains
        nullify(jobs%load)
     end if
 
+    if(associated(jobs%RmaxMO)) then
+       call mem_dealloc(jobs%RmaxMO)
+       nullify(jobs%RmaxMO)
+    end if
 
+    if(associated(jobs%RmaxAO)) then
+       call mem_dealloc(jobs%RmaxAO)
+       nullify(jobs%RmaxAO)
+    end if
   end subroutine free_joblist
 
 
@@ -3625,20 +3636,22 @@ contains
     end if
 
     ! Copy info from single job into big job list
-    jobs%atom1(position) = singlejob%atom1(1)
-    jobs%atom2(position) = singlejob%atom2(1)
-    jobs%jobsize(position) = singlejob%jobsize(1)
-    jobs%jobsdone(position) = singlejob%jobsdone(1)
+    jobs%atom1(position)     = singlejob%atom1(1)
+    jobs%atom2(position)     = singlejob%atom2(1)
+    jobs%jobsize(position)   = singlejob%jobsize(1)
+    jobs%jobsdone(position)  = singlejob%jobsdone(1)
     jobs%dofragopt(position) = singlejob%dofragopt(1)
-    jobs%esti(position) = singlejob%esti(1)
-    jobs%nslaves(position) = singlejob%nslaves(1)
-    jobs%nocc(position) = singlejob%nocc(1)
-    jobs%nunocc(position) = singlejob%nunocc(1)
-    jobs%nbasis(position) = singlejob%nbasis(1)
-    jobs%ntasks(position) = singlejob%ntasks(1)
-    jobs%flops(position) = singlejob%flops(1)
-    jobs%LMtime(position) = singlejob%LMtime(1)
-    jobs%load(position) = singlejob%load(1)
+    jobs%esti(position)      = singlejob%esti(1)
+    jobs%nslaves(position)   = singlejob%nslaves(1)
+    jobs%nocc(position)      = singlejob%nocc(1)
+    jobs%nunocc(position)    = singlejob%nunocc(1)
+    jobs%nbasis(position)    = singlejob%nbasis(1)
+    jobs%ntasks(position)    = singlejob%ntasks(1)
+    jobs%flops(position)     = singlejob%flops(1)
+    jobs%LMtime(position)    = singlejob%LMtime(1)
+    jobs%load(position)      = singlejob%load(1)
+    jobs%RmaxMO(position)    = singlejob%RmaxMO(1)
+    jobs%RmaxAO(position)    = singlejob%RmaxAO(1)
 
   end subroutine put_job_into_joblist
 

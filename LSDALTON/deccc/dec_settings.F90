@@ -103,32 +103,33 @@ contains
 
 
     ! -- Fragment
-    DECinfo%MaxIter=20
-    DECinfo%FOTlevel=4
-    DECinfo%maxFOTlevel=8   ! if you modify this remember to modify dimension of ncalc as well!
-    DECinfo%FOT=1.0E-4_realk
-    DECinfo%InclFullMolecule = .false.
-    DECinfo%PL=0
-    DECinfo%PurifyMOs=.false.
-    DECinfo%precondition_with_full=.false.
-    DECinfo%FragmentExpansionSize = 5
-    DECinfo%fragadapt=.false.
+    DECinfo%MaxIter                = 20
+    DECinfo%FOTlevel               = 4
+    DECinfo%maxFOTlevel            = 8   ! if you modify this remember to modify dimension of ncalc as well!
+    DECinfo%FOT                    = 1.0E-4_realk
+    DECinfo%InclFullMolecule       = .false.
+    DECinfo%PL                     = 0
+    DECinfo%PurifyMOs              = .false.
+    DECinfo%precondition_with_full = .false.
+    DECinfo%FragmentExpansionSize  = 5
+    DECinfo%fragadapt              = .false.
+    DECinfo%only_one_frag_job      = .false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
-    DECinfo%fragopt_exp_model=MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
-    DECinfo%fragopt_red_model=MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
-    DECinfo%OnlyOccPart=.false.
+    DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
+    DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
+    DECinfo%OnlyOccPart            = .false.
     ! Repeat atomic fragment calcs after fragment optimization
-    DECinfo%RepeatAF=.true.
+    DECinfo%RepeatAF               = .true.
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
-    DECinfo%CorrDensScheme=1
+    DECinfo%CorrDensScheme         = 1
 
     ! -- Pair fragments
-    DECinfo%pair_distance_threshold=20.0E0_realk/bohr_to_angstrom
-    DECinfo%paircut_set=.false.
-    DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
-    DECinfo%pairFOthr = 0.0_realk
-    DECinfo%PairMP2=.false.
-    DECinfo%PairEstimate=.true.
+    DECinfo%pair_distance_threshold = 20.0E0_realk/bohr_to_angstrom
+    DECinfo%paircut_set             = .false.
+    DECinfo%PairMinDist             = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
+    DECinfo%pairFOthr               =  0.0_realk
+    DECinfo%PairMP2                 = .false.
+    DECinfo%PairEstimate            = .true.
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory=0E0_realk
@@ -442,6 +443,7 @@ contains
        case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
        case('.PNOTRIANGULAR');            DECinfo%PNOtriangular        = .true.
        case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
+       case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
 
        case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
        case('.EOSPNOTHR');     read(input,*) DECinfo%EOSPNOthr
@@ -497,7 +499,6 @@ contains
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
-       case('.CCSDEXPL'); DECinfo%ccsd_expl=.true.
        case('.PURIFICATION'); DECinfo%PurifyMOs=.true.
        case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.
        case('.SIMPLEMULLIKENTHRESH'); DECinfo%simple_mulliken_threshold=.true.
@@ -515,7 +516,8 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
-       case('.FRAGMENTADAPTED'); DECinfo%fragadapt=.true.
+       case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
+       case('.ONLY_ONE_JOB'); DECinfo%only_one_frag_job    = .true.
 
           ! kappabar multiplier equation
        case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 

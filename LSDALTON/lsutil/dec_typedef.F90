@@ -285,6 +285,8 @@ module dec_typedef_module
      logical :: PurifyMOs
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
+     !> Hack to only do fragment optimization
+     logical :: only_one_frag_job
      !> Has simple orbital threshold been defined manually in input (true),
      !> or should simple orbital threshold be adapted to FOT 
      !> as descripted under FOTlevel (false)?
@@ -646,6 +648,10 @@ module dec_typedef_module
      !> ********************************************************
      !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
+
+     !> Information about fragment size always set, this is the maximum distance
+     !between any two atoms in the fragment
+     real(realk) :: RmaxAE,RmaxAOS
 
      ! NOTE!!! occAOSorb and unoccAOSorb are ILL-DEFINED when fragmentadapted=.true. !!!!
 
@@ -1054,6 +1060,10 @@ module dec_typedef_module
      !> Measure of load distribution:
      !> { (total times for nodes) / (time for local master) } / number of nodes
      real(realk),pointer :: load(:)
+     !> max distance between atoms in the atoms that have AOS contribution
+     real(realk),pointer :: RmaxAOS(:)
+     !> max distance between atoms in the atoms that are used for fitting the MOs
+     real(realk),pointer :: RmaxAO(:)
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.
