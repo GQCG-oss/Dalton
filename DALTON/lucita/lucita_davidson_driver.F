@@ -494,10 +494,13 @@ C
 
          call rewine(lu1,-1)
 
-! Manu+Odile march 2013: testing a simple two-state ensemble CI-srDFT with w=0
+! Manu feb. 2014: weights(1) set to 1.0 when one single root is computed
+!                 like in GS CI-srDFT calculations for example
 
-!        weights(1) = 1.0d0
-!        write(luwrt,*) 'weights(1:nroots)',weights(1:nrootsl)
+         if(nrootsl ==1)then 
+         weights(1) = 1.0d0
+         end if
+         write(luwrt,*) 'weights(1:nroots)',weights(1:nrootsl)
 
 
 !        calculate ensemble density matrix
