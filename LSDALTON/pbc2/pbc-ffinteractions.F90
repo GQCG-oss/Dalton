@@ -1152,7 +1152,9 @@ call mem_dealloc(nucmomtmp)
 write(*,*) 'debug dealloc nucmomtmp '
 !write(lupri,*) 'nucmom before transformation'
 DO i=1,(lmax+1)**2
+  write(*,*) 'nucmom(i)',i
   nucmom(i) = sphnucmom(i)%elms(1)
+  write(*,*) 'nucmom done '
 !  write(lupri,*) nucmom(i)
 ENDDO
 write(*,*) 'debug nucmom(i)=sphnucmom '

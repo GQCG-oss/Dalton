@@ -58,7 +58,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_VIRTpT4  = 14  ! Fourth order (T) contribution, virt partitioning scheme
   integer,parameter :: FRAGMODEL_OCCpT5   = 15  ! Fifth order (T) contribution, occ partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
-  integer,parameter :: FRAGMODEL_F12      = 17  ! MP2-F12 energy correction
+  integer,parameter :: FRAGMODEL_MP2f12   = 17  ! MP2-F12 energy correction
 
 
   !> \author Kasper Kristensen
@@ -158,7 +158,7 @@ module dec_typedef_module
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
      !> if mpich is used CCSD has some special treats that can be used
-     logical :: CCSD_MPICH
+     logical :: CCSD_NO_DEBUG_COMM
      !> prevent canonicalization in the ccsolver
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out
@@ -185,6 +185,8 @@ module dec_typedef_module
      integer :: Max_num_MO
      !> do not update the singles residual
      logical :: CCDhack
+     !> Crash Calc Debug keyword - to test restart option
+     logical :: CRASHCALC
      !> Debug CC driver
      logical :: cc_driver_debug
      !> Integer specifying which scheme to use in CCSD calculations (debug)

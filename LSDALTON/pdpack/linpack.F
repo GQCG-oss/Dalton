@@ -577,1011 +577,1012 @@ C
       RETURN
       END
 #endif
-C  /* Deck dsplinpck */
-#if !defined (VAR_NOLINPACK)
-      SUBROUTINE DSPCO(AP,N,KPVT,RCOND,Z)
-      INTEGER N,KPVT(*)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
-      REAL AP(*),Z(*)
-      REAL RCOND
-#else
-      DOUBLE PRECISION AP(*),Z(*)
-      DOUBLE PRECISION RCOND
-#endif
-C
-C     DSPCO FACTORS A DOUBLE PRECISION SYMMETRIC MATRIX STORED IN
-C     PACKED FORM BY ELIMINATION WITH SYMMETRIC PIVOTING AND ESTIMATES
-C     THE CONDITION OF THE MATRIX.
-C
-C     IF  RCOND  IS NOT NEEDED, DSPFA IS SLIGHTLY FASTER.
-C     TO SOLVE  A*X = B , FOLLOW DSPCO BY DSPSL.
-C     TO COMPUTE  INVERSE(A)*C , FOLLOW DSPCO BY DSPSL.
-C     TO COMPUTE  INVERSE(A) , FOLLOW DSPCO BY DSPDI.
-C     TO COMPUTE  DETERMINANT(A) , FOLLOW DSPCO BY DSPDI.
-C     TO COMPUTE  INERTIA(A), FOLLOW DSPCO BY DSPDI.
-C
-C     ON ENTRY
-C
-C        AP      DOUBLE PRECISION (N*(N+1)/2)
-C                THE PACKED FORM OF A SYMMETRIC MATRIX  A .  THE
-C                COLUMNS OF THE UPPER TRIANGLE ARE STORED SEQUENTIALLY
-C                IN A ONE-DIMENSIONAL ARRAY OF LENGTH  N*(N+1)/2 .
-C                SEE COMMENTS BELOW FOR DETAILS.
-C
-C        N       INTEGER
-C                THE ORDER OF THE MATRIX  A .
-C
-C     OUTPUT
-C
-C        AP      A BLOCK DIAGONAL MATRIX AND THE MULTIPLIERS WHICH
-C                WERE USED TO OBTAIN IT STORED IN PACKED FORM.
-C                THE FACTORIZATION CAN BE WRITTEN  A = U*D*TRANS(U)
-C                WHERE  U  IS A PRODUCT OF PERMUTATION AND UNIT
-C                UPPER TRIANGULAR MATRICES , TRANS(U) IS THE
-C                TRANSPOSE OF  U , AND  D  IS BLOCK DIAGONAL
-C                WITH 1 BY 1 AND 2 BY 2 BLOCKS.
-C
-C        KPVT    INTEGER(N)
-C                AN INTEGER VECTOR OF PIVOT INDICES.
-C
-C        RCOND   DOUBLE PRECISION
-C                AN ESTIMATE OF THE RECIPROCAL CONDITION OF  A .
-C                FOR THE SYSTEM  A*X = B , RELATIVE PERTURBATIONS
-C                IN  A  AND  B  OF SIZE  EPSILON  MAY CAUSE
-C                RELATIVE PERTURBATIONS IN  X  OF SIZE  EPSILON/RCOND .
-C                IF  RCOND  IS SO SMALL THAT THE LOGICAL EXPRESSION
-C                           1.0 + RCOND .EQ. 1.0
-C                IS TRUE, THEN  A  MAY BE SINGULAR TO WORKING
-C                PRECISION.  IN PARTICULAR,  RCOND  IS ZERO  IF
-C                EXACT SINGULARITY IS DETECTED OR THE ESTIMATE
-C                UNDERFLOWS.
-C
-C        Z       DOUBLE PRECISION(N)
-C                A WORK VECTOR WHOSE CONTENTS ARE USUALLY UNIMPORTANT.
-C                IF  A  IS CLOSE TO A SINGULAR MATRIX, THEN  Z  IS
-C                AN APPROXIMATE NULL VECTOR IN THE SENSE THAT
-C                NORM(A*Z) = RCOND*NORM(A)*NORM(Z) .
-C
-C     PACKED STORAGE
-C
-C          THE FOLLOWING PROGRAM SEGMENT WILL PACK THE UPPER
-C          TRIANGLE OF A SYMMETRIC MATRIX.
-C
-C                K = 0
-C                DO 20 J = 1, N
-C                   DO 10 I = 1, J
-C                      K = K + 1
-C                      AP(K) = A(I,J)
-C             10    CONTINUE
-C             20 CONTINUE
-C
-C     LINPACK. THIS VERSION DATED 08/14/78 .
-C     CLEVE MOLER, UNIVERSITY OF NEW MEXICO, ARGONNE NATIONAL LAB.
-C
-C     SUBROUTINES AND FUNCTIONS
-C
-C     LINPACK DSPFA
-C     BLAS DAXPY,DDOT,DSCAL,DASUM
-C     FORTRAN ABS,DMAX1,IABS,DSIGN
-C
-C     INTERNAL VARIABLES
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
-      REAL AK,AKM1,BK,BKM1,DDOT,DENOM,EK,T
-      REAL ANORM,S,DASUM,YNORM
-#else
-      DOUBLE PRECISION AK,AKM1,BK,BKM1,DDOT,DENOM,EK,T
-      DOUBLE PRECISION ANORM,S,DASUM,YNORM
-#endif
-      INTEGER I,IJ,IK,IKM1,IKP1,INFO,J,JM1,J1
-      INTEGER K,KK,KM1K,KM1KM1,KP,KPS,KS
-C
-C
-C     FIND NORM OF A USING ONLY UPPER HALF
-C
-      J1 = 1
-      DO 30 J = 1, N
-         Z(J) = DASUM(J,AP(J1),1)
-         IJ = J1
-         J1 = J1 + J
-         JM1 = J - 1
-         IF (JM1 .LT. 1) GO TO 20
-         DO 10 I = 1, JM1
-            Z(I) = Z(I) + ABS(AP(IJ))
-            IJ = IJ + 1
-   10    CONTINUE
-   20    CONTINUE
-   30 CONTINUE
-      ANORM = 0.0D0
-      DO 40 J = 1, N
-         ANORM = DMAX1(ANORM,Z(J))
-   40 CONTINUE
-C
-C     FACTOR
-C
-      CALL DSPFA(AP,N,KPVT,INFO)
-C
-C     RCOND = 1/(NORM(A)*(ESTIMATE OF NORM(INVERSE(A)))) .
-C     ESTIMATE = NORM(Z)/NORM(Y) WHERE  A*Z = Y  AND  A*Y = E .
-C     THE COMPONENTS OF  E  ARE CHOSEN TO CAUSE MAXIMUM LOCAL
-C     GROWTH IN THE ELEMENTS OF W  WHERE  U*D*W = E .
-C     THE VECTORS ARE FREQUENTLY RESCALED TO AVOID OVERFLOW.
-C
-C     SOLVE U*D*W = E
-C
-      EK = 1.0D0
-      DO 50 J = 1, N
-         Z(J) = 0.0D0
-   50 CONTINUE
-      K = N
-      IK = (N*(N - 1))/2
-   60 IF (K .EQ. 0) GO TO 120
-         KK = IK + K
-         IKM1 = IK - (K - 1)
-         KS = 1
-         IF (KPVT(K) .LT. 0) KS = 2
-         KP = IABS(KPVT(K))
-         KPS = K + 1 - KS
-         IF (KP .EQ. KPS) GO TO 70
-            T = Z(KPS)
-            Z(KPS) = Z(KP)
-            Z(KP) = T
-   70    CONTINUE
-         IF (Z(K) .NE. 0.0D0) EK = DSIGN(EK,Z(K))
-         Z(K) = Z(K) + EK
-         CALL DAXPY(K-KS,Z(K),AP(IK+1),1,Z(1),1)
-         IF (KS .EQ. 1) GO TO 80
-            IF (Z(K-1) .NE. 0.0D0) EK = DSIGN(EK,Z(K-1))
-            Z(K-1) = Z(K-1) + EK
-            CALL DAXPY(K-KS,Z(K-1),AP(IKM1+1),1,Z(1),1)
-   80    CONTINUE
-         IF (KS .EQ. 2) GO TO 100
-            IF (ABS(Z(K)) .LE. ABS(AP(KK))) GO TO 90
-               S = ABS(AP(KK))/ABS(Z(K))
-               CALL DSCAL(N,S,Z,1)
-               EK = S*EK
-   90       CONTINUE
-            IF (AP(KK) .NE. 0.0D0) Z(K) = Z(K)/AP(KK)
-            IF (AP(KK) .EQ. 0.0D0) Z(K) = 1.0D0
-         GO TO 110
-  100    CONTINUE
-            KM1K = IK + K - 1
-            KM1KM1 = IKM1 + K - 1
-            AK = AP(KK)/AP(KM1K)
-            AKM1 = AP(KM1KM1)/AP(KM1K)
-            BK = Z(K)/AP(KM1K)
-            BKM1 = Z(K-1)/AP(KM1K)
-            DENOM = AK*AKM1 - 1.0D0
-            Z(K) = (AKM1*BK - BKM1)/DENOM
-            Z(K-1) = (AK*BKM1 - BK)/DENOM
-  110    CONTINUE
-         K = K - KS
-         IK = IK - K
-         IF (KS .EQ. 2) IK = IK - (K + 1)
-      GO TO 60
-  120 CONTINUE
-      S = 1.0D0/DASUM(N,Z,1)
-      CALL DSCAL(N,S,Z,1)
-C
-C     SOLVE TRANS(U)*Y = W
-C
-      K = 1
-      IK = 0
-  130 IF (K .GT. N) GO TO 160
-         KS = 1
-         IF (KPVT(K) .LT. 0) KS = 2
-         IF (K .EQ. 1) GO TO 150
-            Z(K) = Z(K) + DDOT(K-1,AP(IK+1),1,Z(1),1)
-            IKP1 = IK + K
-            IF (KS .EQ. 2)
-     *         Z(K+1) = Z(K+1) + DDOT(K-1,AP(IKP1+1),1,Z(1),1)
-            KP = IABS(KPVT(K))
-            IF (KP .EQ. K) GO TO 140
-               T = Z(K)
-               Z(K) = Z(KP)
-               Z(KP) = T
-  140       CONTINUE
-  150    CONTINUE
-         IK = IK + K
-         IF (KS .EQ. 2) IK = IK + (K + 1)
-         K = K + KS
-      GO TO 130
-  160 CONTINUE
-      S = 1.0D0/DASUM(N,Z,1)
-      CALL DSCAL(N,S,Z,1)
-C
-      YNORM = 1.0D0
-C
-C     SOLVE U*D*V = Y
-C
-      K = N
-      IK = N*(N - 1)/2
-  170 IF (K .EQ. 0) GO TO 230
-         KK = IK + K
-         IKM1 = IK - (K - 1)
-         KS = 1
-         IF (KPVT(K) .LT. 0) KS = 2
-         IF (K .EQ. KS) GO TO 190
-            KP = IABS(KPVT(K))
-            KPS = K + 1 - KS
-            IF (KP .EQ. KPS) GO TO 180
-               T = Z(KPS)
-               Z(KPS) = Z(KP)
-               Z(KP) = T
-  180       CONTINUE
-            CALL DAXPY(K-KS,Z(K),AP(IK+1),1,Z(1),1)
-            IF (KS .EQ. 2) CALL DAXPY(K-KS,Z(K-1),AP(IKM1+1),1,Z(1),1)
-  190    CONTINUE
-         IF (KS .EQ. 2) GO TO 210
-            IF (ABS(Z(K)) .LE. ABS(AP(KK))) GO TO 200
-               S = ABS(AP(KK))/ABS(Z(K))
-               CALL DSCAL(N,S,Z,1)
-               YNORM = S*YNORM
-  200       CONTINUE
-            IF (AP(KK) .NE. 0.0D0) Z(K) = Z(K)/AP(KK)
-            IF (AP(KK) .EQ. 0.0D0) Z(K) = 1.0D0
-         GO TO 220
-  210    CONTINUE
-            KM1K = IK + K - 1
-            KM1KM1 = IKM1 + K - 1
-            AK = AP(KK)/AP(KM1K)
-            AKM1 = AP(KM1KM1)/AP(KM1K)
-            BK = Z(K)/AP(KM1K)
-            BKM1 = Z(K-1)/AP(KM1K)
-            DENOM = AK*AKM1 - 1.0D0
-            Z(K) = (AKM1*BK - BKM1)/DENOM
-            Z(K-1) = (AK*BKM1 - BK)/DENOM
-  220    CONTINUE
-         K = K - KS
-         IK = IK - K
-         IF (KS .EQ. 2) IK = IK - (K + 1)
-      GO TO 170
-  230 CONTINUE
-      S = 1.0D0/DASUM(N,Z,1)
-      CALL DSCAL(N,S,Z,1)
-      YNORM = S*YNORM
-C
-C     SOLVE TRANS(U)*Z = V
-C
-      K = 1
-      IK = 0
-  240 IF (K .GT. N) GO TO 270
-         KS = 1
-         IF (KPVT(K) .LT. 0) KS = 2
-         IF (K .EQ. 1) GO TO 260
-            Z(K) = Z(K) + DDOT(K-1,AP(IK+1),1,Z(1),1)
-            IKP1 = IK + K
-            IF (KS .EQ. 2)
-     *         Z(K+1) = Z(K+1) + DDOT(K-1,AP(IKP1+1),1,Z(1),1)
-            KP = IABS(KPVT(K))
-            IF (KP .EQ. K) GO TO 250
-               T = Z(K)
-               Z(K) = Z(KP)
-               Z(KP) = T
-  250       CONTINUE
-  260    CONTINUE
-         IK = IK + K
-         IF (KS .EQ. 2) IK = IK + (K + 1)
-         K = K + KS
-      GO TO 240
-  270 CONTINUE
-C     MAKE ZNORM = 1.0
-      S = 1.0D0/DASUM(N,Z,1)
-      CALL DSCAL(N,S,Z,1)
-      YNORM = S*YNORM
-C
-      IF (ANORM .NE. 0.0D0) RCOND = YNORM/ANORM
-      IF (ANORM .EQ. 0.0D0) RCOND = 0.0D0
-      RETURN
-      END
-      SUBROUTINE DSPFA(AP,N,KPVT,INFO)
-      INTEGER N,KPVT(*),INFO
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
-      REAL AP(*)
-#else
-      DOUBLE PRECISION AP(*)
-#endif
-C
-C     DSPFA FACTORS A DOUBLE PRECISION SYMMETRIC MATRIX STORED IN
-C     PACKED FORM BY ELIMINATION WITH SYMMETRIC PIVOTING.
-C
-C     TO SOLVE  A*X = B , FOLLOW DSPFA BY DSPSL.
-C     TO COMPUTE  INVERSE(A)*C , FOLLOW DSPFA BY DSPSL.
-C     TO COMPUTE  DETERMINANT(A) , FOLLOW DSPFA BY DSPDI.
-C     TO COMPUTE  INERTIA(A) , FOLLOW DSPFA BY DSPDI.
-C     TO COMPUTE  INVERSE(A) , FOLLOW DSPFA BY DSPDI.
-C
-C     ON ENTRY
-C
-C        AP      DOUBLE PRECISION (N*(N+1)/2)
-C                THE PACKED FORM OF A SYMMETRIC MATRIX  A .  THE
-C                COLUMNS OF THE UPPER TRIANGLE ARE STORED SEQUENTIALLY
-C                IN A ONE-DIMENSIONAL ARRAY OF LENGTH  N*(N+1)/2 .
-C                SEE COMMENTS BELOW FOR DETAILS.
-C
-C        N       INTEGER
-C                THE ORDER OF THE MATRIX  A .
-C
-C     OUTPUT
-C
-C        AP      A BLOCK DIAGONAL MATRIX AND THE MULTIPLIERS WHICH
-C                WERE USED TO OBTAIN IT STORED IN PACKED FORM.
-C                THE FACTORIZATION CAN BE WRITTEN  A = U*D*TRANS(U)
-C                WHERE  U  IS A PRODUCT OF PERMUTATION AND UNIT
-C                UPPER TRIANGULAR MATRICES , TRANS(U) IS THE
-C                TRANSPOSE OF  U , AND  D  IS BLOCK DIAGONAL
-C                WITH 1 BY 1 AND 2 BY 2 BLOCKS.
-C
-C        KPVT    INTEGER(N)
-C                AN INTEGER VECTOR OF PIVOT INDICES.
-C
-C        INFO    INTEGER
-C                = 0  NORMAL VALUE.
-C                = K  IF THE K-TH PIVOT BLOCK IS SINGULAR. THIS IS
-C                     NOT AN ERROR CONDITION FOR THIS SUBROUTINE,
-C                     BUT IT DOES INDICATE THAT DSPSL OR DSPDI MAY
-C                     DIVIDE BY ZERO IF CALLED.
-C
-C     PACKED STORAGE
-C
-C          THE FOLLOWING PROGRAM SEGMENT WILL PACK THE UPPER
-C          TRIANGLE OF A SYMMETRIC MATRIX.
-C
-C                K = 0
-C                DO 20 J = 1, N
-C                   DO 10 I = 1, J
-C                      K = K + 1
-C                      AP(K)  = A(I,J)
-C             10    CONTINUE
-C             20 CONTINUE
-C
-C     LINPACK. THIS VERSION DATED 08/14/78 .
-C     JAMES BUNCH, UNIV. CALIF. SAN DIEGO, ARGONNE NAT. LAB.
-C
-C     SUBROUTINES AND FUNCTIONS
-C
-C     BLAS DAXPY,DSWAP,IDAMAX
-C     FORTRAN DABS,DMAX1,DSQRT
-C
-C     INTERNAL VARIABLES
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
-      REAL AK,AKM1,BK,BKM1,DENOM,MULK,MULKM1,T
-      REAL ABSAKK,ALPHA,COLMAX,ROWMAX
-#else
-      DOUBLE PRECISION AK,AKM1,BK,BKM1,DENOM,MULK,MULKM1,T
-      DOUBLE PRECISION ABSAKK,ALPHA,COLMAX,ROWMAX
-#endif
-      INTEGER IDAMAX,IJ,IJJ,IK,IKM1,IM,IMAX,IMAXP1,IMIM,IMJ,IMK
-      INTEGER J,JJ,JK,JKM1,JMAX,JMIM,K,KK,KM1,KM1K,KM1KM1,KM2,KSTEP
-      LOGICAL SWAP
-C
-C
-C     INITIALIZE
-C
-C     ALPHA IS USED IN CHOOSING PIVOT BLOCK SIZE.
-      ALPHA = (1.0D0 + DSQRT(17.0D0))/8.0D0
-C
-      INFO = 0
-C
-C     MAIN LOOP ON K, WHICH GOES FROM N TO 1.
-C
-      K = N
-      IK = (N*(N - 1))/2
-   10 CONTINUE
-C
-C        LEAVE THE LOOP IF K=0 OR K=1.
-C
-C     ...EXIT
-         IF (K .EQ. 0) GO TO 200
-         IF (K .GT. 1) GO TO 20
-            KPVT(1) = 1
-            IF (AP(1) .EQ. 0.0D0) INFO = 1
-C     ......EXIT
-            GO TO 200
-   20    CONTINUE
-C
-C        THIS SECTION OF CODE DETERMINES THE KIND OF
-C        ELIMINATION TO BE PERFORMED.  WHEN IT IS COMPLETED,
-C        KSTEP WILL BE SET TO THE SIZE OF THE PIVOT BLOCK, AND
-C        SWAP WILL BE SET TO .TRUE. IF AN INTERCHANGE IS
-C        REQUIRED.
-C
-         KM1 = K - 1
-         KK = IK + K
-         ABSAKK = ABS(AP(KK))
-C
-C        DETERMINE THE LARGEST OFF-DIAGONAL ELEMENT IN
-C        COLUMN K.
-C
-         IMAX = IDAMAX(K-1,AP(IK+1),1)
-         IMK = IK + IMAX
-         COLMAX = ABS(AP(IMK))
-         IF (ABSAKK .LT. ALPHA*COLMAX) GO TO 30
-            KSTEP = 1
-            SWAP = .FALSE.
-         GO TO 90
-   30    CONTINUE
-C
-C           DETERMINE THE LARGEST OFF-DIAGONAL ELEMENT IN
-C           ROW IMAX.
-C
-            ROWMAX = 0.0D0
-            IMAXP1 = IMAX + 1
-            IM = IMAX*(IMAX - 1)/2
-            IMJ = IM + 2*IMAX
-            DO 40 J = IMAXP1, K
-               ROWMAX = DMAX1(ROWMAX,ABS(AP(IMJ)))
-               IMJ = IMJ + J
-   40       CONTINUE
-            IF (IMAX .EQ. 1) GO TO 50
-               JMAX = IDAMAX(IMAX-1,AP(IM+1),1)
-               JMIM = JMAX + IM
-               ROWMAX = DMAX1(ROWMAX,ABS(AP(JMIM)))
-   50       CONTINUE
-            IMIM = IMAX + IM
-            IF (ABS(AP(IMIM)) .LT. ALPHA*ROWMAX) GO TO 60
-               KSTEP = 1
-               SWAP = .TRUE.
-            GO TO 80
-   60       CONTINUE
-            IF (ABSAKK .LT. ALPHA*COLMAX*(COLMAX/ROWMAX)) GO TO 70
-               KSTEP = 1
-               SWAP = .FALSE.
-            GO TO 80
-   70       CONTINUE
-               KSTEP = 2
-               SWAP = IMAX .NE. KM1
-   80       CONTINUE
-   90    CONTINUE
-         IF (DMAX1(ABSAKK,COLMAX) .NE. 0.0D0) GO TO 100
-C
-C           COLUMN K IS ZERO.  SET INFO AND ITERATE THE LOOP.
-C
-            KPVT(K) = K
-            INFO = K
-         GO TO 190
-  100    CONTINUE
-         IF (KSTEP .EQ. 2) GO TO 140
-C
-C           1 X 1 PIVOT BLOCK.
-C
-            IF (.NOT.SWAP) GO TO 120
-C
-C              PERFORM AN INTERCHANGE.
-C
-               CALL DSWAP(IMAX,AP(IM+1),1,AP(IK+1),1)
-               IMJ = IK + IMAX
-               DO 110 JJ = IMAX, K
-                  J = K + IMAX - JJ
-                  JK = IK + J
-                  T = AP(JK)
-                  AP(JK) = AP(IMJ)
-                  AP(IMJ) = T
-                  IMJ = IMJ - (J - 1)
-  110          CONTINUE
-  120       CONTINUE
-C
-C           PERFORM THE ELIMINATION.
-C
-            IJ = IK - (K - 1)
-            DO 130 JJ = 1, KM1
-               J = K - JJ
-               JK = IK + J
-               MULK = -AP(JK)/AP(KK)
-               T = MULK
-               CALL DAXPY(J,T,AP(IK+1),1,AP(IJ+1),1)
-               IJJ = IJ + J
-               AP(JK) = MULK
-               IJ = IJ - (J - 1)
-  130       CONTINUE
-C
-C           SET THE PIVOT ARRAY.
-C
-            KPVT(K) = K
-            IF (SWAP) KPVT(K) = IMAX
-         GO TO 190
-  140    CONTINUE
-C
-C           2 X 2 PIVOT BLOCK.
-C
-            KM1K = IK + K - 1
-            IKM1 = IK - (K - 1)
-            IF (.NOT.SWAP) GO TO 160
-C
-C              PERFORM AN INTERCHANGE.
-C
-               CALL DSWAP(IMAX,AP(IM+1),1,AP(IKM1+1),1)
-               IMJ = IKM1 + IMAX
-               DO 150 JJ = IMAX, KM1
-                  J = KM1 + IMAX - JJ
-                  JKM1 = IKM1 + J
-                  T = AP(JKM1)
-                  AP(JKM1) = AP(IMJ)
-                  AP(IMJ) = T
-                  IMJ = IMJ - (J - 1)
-  150          CONTINUE
-               T = AP(KM1K)
-               AP(KM1K) = AP(IMK)
-               AP(IMK) = T
-  160       CONTINUE
-C
-C           PERFORM THE ELIMINATION.
-C
-            KM2 = K - 2
-            IF (KM2 .EQ. 0) GO TO 180
-               AK = AP(KK)/AP(KM1K)
-               KM1KM1 = IKM1 + K - 1
-               AKM1 = AP(KM1KM1)/AP(KM1K)
-               DENOM = 1.0D0 - AK*AKM1
-               IJ = IK - (K - 1) - (K - 2)
-               DO 170 JJ = 1, KM2
-                  J = KM1 - JJ
-                  JK = IK + J
-                  BK = AP(JK)/AP(KM1K)
-                  JKM1 = IKM1 + J
-                  BKM1 = AP(JKM1)/AP(KM1K)
-                  MULK = (AKM1*BK - BKM1)/DENOM
-                  MULKM1 = (AK*BKM1 - BK)/DENOM
-                  T = MULK
-                  CALL DAXPY(J,T,AP(IK+1),1,AP(IJ+1),1)
-                  T = MULKM1
-                  CALL DAXPY(J,T,AP(IKM1+1),1,AP(IJ+1),1)
-                  AP(JK) = MULK
-                  AP(JKM1) = MULKM1
-                  IJJ = IJ + J
-                  IJ = IJ - (J - 1)
-  170          CONTINUE
-  180       CONTINUE
-C
-C           SET THE PIVOT ARRAY.
-C
-            KPVT(K) = 1 - K
-            IF (SWAP) KPVT(K) = -IMAX
-            KPVT(K-1) = KPVT(K)
-  190    CONTINUE
-         IK = IK - (K - 1)
-         IF (KSTEP .EQ. 2) IK = IK - (K - 2)
-         K = K - KSTEP
-      GO TO 10
-  200 CONTINUE
-      RETURN
-      END
-      SUBROUTINE DSPSL(AP,N,KPVT,B)
-      INTEGER N,KPVT(*)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
-      REAL AP(*),B(*)
-#else
-      DOUBLE PRECISION AP(*),B(*)
-#endif
-C
-C     DSISL SOLVES THE DOUBLE PRECISION SYMMETRIC SYSTEM
-C     A * X = B
-C     USING THE FACTORS COMPUTED BY DSPFA.
-C
-C     ON ENTRY
-C
-C        AP      DOUBLE PRECISION(N*(N+1)/2)
-C                THE OUTPUT FROM DSPFA.
-C
-C        N       INTEGER
-C                THE ORDER OF THE MATRIX  A .
-C
-C        KPVT    INTEGER(N)
-C                THE PIVOT VECTOR FROM DSPFA.
-C
-C        B       DOUBLE PRECISION(N)
-C                THE RIGHT HAND SIDE VECTOR.
-C
-C     ON RETURN
-C
-C        B       THE SOLUTION VECTOR  X .
-C
-C     ERROR CONDITION
-C
-C        A DIVISION BY ZERO MAY OCCUR IF  DSPCO  HAS SET RCOND .EQ. 0.0
-C        OR  DSPFA  HAS SET INFO .NE. 0  .
-C
-C     TO COMPUTE  INVERSE(A) * C  WHERE  C  IS A MATRIX
-C     WITH  P  COLUMNS
-C           CALL DSPFA(AP,N,KPVT,INFO)
-C           IF (INFO .NE. 0) GO TO ...
-C           DO 10 J = 1, P
-C              CALL DSPSL(AP,N,KPVT,C(1,J))
-C        10 CONTINUE
-C
-C     LINPACK. THIS VERSION DATED 08/14/78 .
-C     JAMES BUNCH, UNIV. CALIF. SAN DIEGO, ARGONNE NAT. LAB.
-C
-C     SUBROUTINES AND FUNCTIONS
-C
-C     BLAS DAXPY,DDOT
-C     FORTRAN IABS
-C
-C     INTERNAL VARIABLES.
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
-      REAL AK,AKM1,BK,BKM1,DDOT,DENOM,TEMP
-#else
-      DOUBLE PRECISION AK,AKM1,BK,BKM1,DDOT,DENOM,TEMP
-#endif
-      INTEGER IK,IKM1,IKP1,K,KK,KM1K,KM1KM1,KP
-C
-C     LOOP BACKWARD APPLYING THE TRANSFORMATIONS AND
-C     D INVERSE TO B.
-C
-      K = N
-      IK = (N*(N - 1))/2
-   10 IF (K .EQ. 0) GO TO 80
-         KK = IK + K
-         IF (KPVT(K) .LT. 0) GO TO 40
-C
-C           1 X 1 PIVOT BLOCK.
-C
-            IF (K .EQ. 1) GO TO 30
-               KP = KPVT(K)
-               IF (KP .EQ. K) GO TO 20
-C
-C                 INTERCHANGE.
-C
-                  TEMP = B(K)
-                  B(K) = B(KP)
-                  B(KP) = TEMP
-   20          CONTINUE
-C
-C              APPLY THE TRANSFORMATION.
-C
-               CALL DAXPY(K-1,B(K),AP(IK+1),1,B(1),1)
-   30       CONTINUE
-C
-C           APPLY D INVERSE.
-C
-            B(K) = B(K)/AP(KK)
-            K = K - 1
-            IK = IK - K
-         GO TO 70
-   40    CONTINUE
-C
-C           2 X 2 PIVOT BLOCK.
-C
-            IKM1 = IK - (K - 1)
-            IF (K .EQ. 2) GO TO 60
-               KP = IABS(KPVT(K))
-               IF (KP .EQ. K - 1) GO TO 50
-C
-C                 INTERCHANGE.
-C
-                  TEMP = B(K-1)
-                  B(K-1) = B(KP)
-                  B(KP) = TEMP
-   50          CONTINUE
-C
-C              APPLY THE TRANSFORMATION.
-C
-               CALL DAXPY(K-2,B(K),AP(IK+1),1,B(1),1)
-               CALL DAXPY(K-2,B(K-1),AP(IKM1+1),1,B(1),1)
-   60       CONTINUE
-C
-C           APPLY D INVERSE.
-C
-            KM1K = IK + K - 1
-            KK = IK + K
-            AK = AP(KK)/AP(KM1K)
-            KM1KM1 = IKM1 + K - 1
-            AKM1 = AP(KM1KM1)/AP(KM1K)
-            BK = B(K)/AP(KM1K)
-            BKM1 = B(K-1)/AP(KM1K)
-            DENOM = AK*AKM1 - 1.0D0
-            B(K) = (AKM1*BK - BKM1)/DENOM
-            B(K-1) = (AK*BKM1 - BK)/DENOM
-            K = K - 2
-            IK = IK - (K + 1) - K
-   70    CONTINUE
-      GO TO 10
-   80 CONTINUE
-C
-C     LOOP FORWARD APPLYING THE TRANSFORMATIONS.
-C
-      K = 1
-      IK = 0
-   90 IF (K .GT. N) GO TO 160
-         IF (KPVT(K) .LT. 0) GO TO 120
-C
-C           1 X 1 PIVOT BLOCK.
-C
-            IF (K .EQ. 1) GO TO 110
-C
-C              APPLY THE TRANSFORMATION.
-C
-               B(K) = B(K) + DDOT(K-1,AP(IK+1),1,B(1),1)
-               KP = KPVT(K)
-               IF (KP .EQ. K) GO TO 100
-C
-C                 INTERCHANGE.
-C
-                  TEMP = B(K)
-                  B(K) = B(KP)
-                  B(KP) = TEMP
-  100          CONTINUE
-  110       CONTINUE
-            IK = IK + K
-            K = K + 1
-         GO TO 150
-  120    CONTINUE
-C
-C           2 X 2 PIVOT BLOCK.
-C
-            IF (K .EQ. 1) GO TO 140
-C
-C              APPLY THE TRANSFORMATION.
-C
-               B(K) = B(K) + DDOT(K-1,AP(IK+1),1,B(1),1)
-               IKP1 = IK + K
-               B(K+1) = B(K+1) + DDOT(K-1,AP(IKP1+1),1,B(1),1)
-               KP = IABS(KPVT(K))
-               IF (KP .EQ. K) GO TO 130
-C
-C                 INTERCHANGE.
-C
-                  TEMP = B(K)
-                  B(K) = B(KP)
-                  B(KP) = TEMP
-  130          CONTINUE
-  140       CONTINUE
-            IK = IK + K + K + 1
-            K = K + 2
-  150    CONTINUE
-      GO TO 90
-  160 CONTINUE
-      RETURN
-      END
-      SUBROUTINE DSPDI(AP,N,KPVT,DET,INERT,WORK,JOB)
-      INTEGER N,JOB
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
-      REAL AP(*),WORK(*)
-      REAL DET(2)
-#else
-      DOUBLE PRECISION AP(*),WORK(*)
-      DOUBLE PRECISION DET(2)
-#endif
-      INTEGER KPVT(*),INERT(3)
-C
-C     DSPDI COMPUTES THE DETERMINANT, INERTIA AND INVERSE
-C     OF A DOUBLE PRECISION SYMMETRIC MATRIX USING THE FACTORS FROM
-C     DSPFA, WHERE THE MATRIX IS STORED IN PACKED FORM.
-C
-C     ON ENTRY
-C
-C        AP      DOUBLE PRECISION (N*(N+1)/2)
-C                THE OUTPUT FROM DSPFA.
-C
-C        N       INTEGER
-C                THE ORDER OF THE MATRIX A.
-C
-C        KPVT    INTEGER(N)
-C                THE PIVOT VECTOR FROM DSPFA.
-C
-C        WORK    DOUBLE PRECISION(N)
-C                WORK VECTOR.  CONTENTS IGNORED.
-C
-C        JOB     INTEGER
-C                JOB HAS THE DECIMAL EXPANSION  ABC  WHERE
-C                   IF  C .NE. 0, THE INVERSE IS COMPUTED,
-C                   IF  B .NE. 0, THE DETERMINANT IS COMPUTED,
-C                   IF  A .NE. 0, THE INERTIA IS COMPUTED.
-C
-C                FOR EXAMPLE, JOB = 111  GIVES ALL THREE.
-C
-C     ON RETURN
-C
-C        VARIABLES NOT REQUESTED BY JOB ARE NOT USED.
-C
-C        AP     CONTAINS THE UPPER TRIANGLE OF THE INVERSE OF
-C               THE ORIGINAL MATRIX, STORED IN PACKED FORM.
-C               THE COLUMNS OF THE UPPER TRIANGLE ARE STORED
-C               SEQUENTIALLY IN A ONE-DIMENSIONAL ARRAY.
-C
-C        DET    DOUBLE PRECISION(2)
-C               DETERMINANT OF ORIGINAL MATRIX.
-C               DETERMINANT = DET(1) * 10.0**DET(2)
-C               WITH 1.0 .LE. DABS(DET(1)) .LT. 10.0
-C               OR DET(1) = 0.0.
-C
-C        INERT  INTEGER(3)
-C               THE INERTIA OF THE ORIGINAL MATRIX.
-C               INERT(1)  =  NUMBER OF POSITIVE EIGENVALUES.
-C               INERT(2)  =  NUMBER OF NEGATIVE EIGENVALUES.
-C               INERT(3)  =  NUMBER OF ZERO EIGENVALUES.
-C
-C     ERROR CONDITION
-C
-C        A DIVISION BY ZERO WILL OCCUR IF THE INVERSE IS REQUESTED
-C        AND  DSPCO  HAS SET RCOND .EQ. 0.0
-C        OR  DSPFA  HAS SET  INFO .NE. 0 .
-C
-C     LINPACK. THIS VERSION DATED 08/14/78 .
-C     JAMES BUNCH, UNIV. CALIF. SAN DIEGO, ARGONNE NAT. LAB.
-C
-C     SUBROUTINES AND FUNCTIONS
-C
-C     BLAS DAXPY,DCOPY,DDOT,DSWAP
-C     FORTRAN DABS,IABS,MOD
-C
-C     INTERNAL VARIABLES.
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
-      REAL AKKP1,DDOT,TEMP
-      REAL TEN,D,T,AK,AKP1
-#else
-      DOUBLE PRECISION AKKP1,DDOT,TEMP
-      DOUBLE PRECISION TEN,D,T,AK,AKP1
-#endif
-      INTEGER IJ,IK,IKP1,IKS,J,JB,JK,JKP1
-      INTEGER K,KK,KKP1,KM1,KS,KSJ,KSKP1,KSTEP
-      LOGICAL NOINV,NODET,NOERT
-C
-      NOINV = MOD(JOB,10) .EQ. 0
-      NODET = MOD(JOB,100)/10 .EQ. 0
-      NOERT = MOD(JOB,1000)/100 .EQ. 0
-C
-      IF (NODET .AND. NOERT) GO TO 140
-         IF (NOERT) GO TO 10
-            INERT(1) = 0
-            INERT(2) = 0
-            INERT(3) = 0
-   10    CONTINUE
-         IF (NODET) GO TO 20
-            DET(1) = 1.0D0
-            DET(2) = 0.0D0
-            TEN = 10.0D0
-   20    CONTINUE
-         T = 0.0D0
-         IK = 0
-         DO 130 K = 1, N
-            KK = IK + K
-            D = AP(KK)
-C
-C           CHECK IF 1 BY 1
-C
-            IF (KPVT(K) .GT. 0) GO TO 50
-C
-C              2 BY 2 BLOCK
-C              USE DET (D  S)  =  (D/T * C - T) * T  ,  T = DABS(S)
-C                      (S  C)
-C              TO AVOID UNDERFLOW/OVERFLOW TROUBLES.
-C              TAKE TWO PASSES THROUGH SCALING.  USE  T  FOR FLAG.
-C
-               IF (T .NE. 0.0D0) GO TO 30
-                  IKP1 = IK + K
-                  KKP1 = IKP1 + K
-                  T = ABS(AP(KKP1))
-                  D = (D/T)*AP(KKP1+1) - T
-               GO TO 40
-   30          CONTINUE
-                  D = T
-                  T = 0.0D0
-   40          CONTINUE
-   50       CONTINUE
-C
-            IF (NOERT) GO TO 60
-               IF (D .GT. 0.0D0) INERT(1) = INERT(1) + 1
-               IF (D .LT. 0.0D0) INERT(2) = INERT(2) + 1
-               IF (D .EQ. 0.0D0) INERT(3) = INERT(3) + 1
-   60       CONTINUE
-C
-            IF (NODET) GO TO 120
-               DET(1) = D*DET(1)
-               IF (DET(1) .EQ. 0.0D0) GO TO 110
-   70             IF (ABS(DET(1)) .GE. 1.0D0) GO TO 80
-                     DET(1) = TEN*DET(1)
-                     DET(2) = DET(2) - 1.0D0
-                  GO TO 70
-   80             CONTINUE
-   90             IF (ABS(DET(1)) .LT. TEN) GO TO 100
-                     DET(1) = DET(1)/TEN
-                     DET(2) = DET(2) + 1.0D0
-                  GO TO 90
-  100             CONTINUE
-  110          CONTINUE
-  120       CONTINUE
-            IK = IK + K
-  130    CONTINUE
-  140 CONTINUE
-C
-C     COMPUTE INVERSE(A)
-C
-      IF (NOINV) GO TO 270
-         K = 1
-         IK = 0
-  150    IF (K .GT. N) GO TO 260
-            KM1 = K - 1
-            KK = IK + K
-            IKP1 = IK + K
-            KKP1 = IKP1 + K
-            IF (KPVT(K) .LT. 0) GO TO 180
-C
-C              1 BY 1
-C
-               AP(KK) = 1.0D0/AP(KK)
-               IF (KM1 .LT. 1) GO TO 170
-                  CALL DCOPY(KM1,AP(IK+1),1,WORK,1)
-                  IJ = 0
-                  DO 160 J = 1, KM1
-                     JK = IK + J
-                     AP(JK) = DDOT(J,AP(IJ+1),1,WORK,1)
-                     CALL DAXPY(J-1,WORK(J),AP(IJ+1),1,AP(IK+1),1)
-                     IJ = IJ + J
-  160             CONTINUE
-                  AP(KK) = AP(KK) + DDOT(KM1,WORK,1,AP(IK+1),1)
-  170          CONTINUE
-               KSTEP = 1
-            GO TO 220
-  180       CONTINUE
-C
-C              2 BY 2
-C
-               T = ABS(AP(KKP1))
-               AK = AP(KK)/T
-               AKP1 = AP(KKP1+1)/T
-               AKKP1 = AP(KKP1)/T
-               D = T*(AK*AKP1 - 1.0D0)
-               AP(KK) = AKP1/D
-               AP(KKP1+1) = AK/D
-               AP(KKP1) = -AKKP1/D
-               IF (KM1 .LT. 1) GO TO 210
-                  CALL DCOPY(KM1,AP(IKP1+1),1,WORK,1)
-                  IJ = 0
-                  DO 190 J = 1, KM1
-                     JKP1 = IKP1 + J
-                     AP(JKP1) = DDOT(J,AP(IJ+1),1,WORK,1)
-                     CALL DAXPY(J-1,WORK(J),AP(IJ+1),1,AP(IKP1+1),1)
-                     IJ = IJ + J
-  190             CONTINUE
-                  AP(KKP1+1) = AP(KKP1+1)
-     *                         + DDOT(KM1,WORK,1,AP(IKP1+1),1)
-                  AP(KKP1) = AP(KKP1)
-     *                       + DDOT(KM1,AP(IK+1),1,AP(IKP1+1),1)
-                  CALL DCOPY(KM1,AP(IK+1),1,WORK,1)
-                  IJ = 0
-                  DO 200 J = 1, KM1
-                     JK = IK + J
-                     AP(JK) = DDOT(J,AP(IJ+1),1,WORK,1)
-                     CALL DAXPY(J-1,WORK(J),AP(IJ+1),1,AP(IK+1),1)
-                     IJ = IJ + J
-  200             CONTINUE
-                  AP(KK) = AP(KK) + DDOT(KM1,WORK,1,AP(IK+1),1)
-  210          CONTINUE
-               KSTEP = 2
-  220       CONTINUE
-C
-C           SWAP
-C
-            KS = IABS(KPVT(K))
-            IF (KS .EQ. K) GO TO 250
-               IKS = (KS*(KS - 1))/2
-               CALL DSWAP(KS,AP(IKS+1),1,AP(IK+1),1)
-               KSJ = IK + KS
-               DO 230 JB = KS, K
-                  J = K + KS - JB
-                  JK = IK + J
-                  TEMP = AP(JK)
-                  AP(JK) = AP(KSJ)
-                  AP(KSJ) = TEMP
-                  KSJ = KSJ - (J - 1)
-  230          CONTINUE
-               IF (KSTEP .EQ. 1) GO TO 240
-                  KSKP1 = IKP1 + KS
-                  TEMP = AP(KSKP1)
-                  AP(KSKP1) = AP(KKP1)
-                  AP(KKP1) = TEMP
-  240          CONTINUE
-  250       CONTINUE
-            IK = IK + K
-            IF (KSTEP .EQ. 2) IK = IK + K + 1
-            K = K + KSTEP
-         GO TO 150
-  260    CONTINUE
-  270 CONTINUE
-      RETURN
-      END
-#endif
+
+c$$$C  /* Deck dsplinpck */
+c$$$#if !defined (VAR_NOLINPACK)
+c$$$      SUBROUTINE DSPCO(AP,N,KPVT,RCOND,Z)
+c$$$      INTEGER N,KPVT(*)
+c$$$#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
+c$$$      REAL AP(*),Z(*)
+c$$$      REAL RCOND
+c$$$#else
+c$$$      DOUBLE PRECISION AP(*),Z(*)
+c$$$      DOUBLE PRECISION RCOND
+c$$$#endif
+c$$$C
+c$$$C     DSPCO FACTORS A DOUBLE PRECISION SYMMETRIC MATRIX STORED IN
+c$$$C     PACKED FORM BY ELIMINATION WITH SYMMETRIC PIVOTING AND ESTIMATES
+c$$$C     THE CONDITION OF THE MATRIX.
+c$$$C
+c$$$C     IF  RCOND  IS NOT NEEDED, DSPFA IS SLIGHTLY FASTER.
+c$$$C     TO SOLVE  A*X = B , FOLLOW DSPCO BY DSPSL.
+c$$$C     TO COMPUTE  INVERSE(A)*C , FOLLOW DSPCO BY DSPSL.
+c$$$C     TO COMPUTE  INVERSE(A) , FOLLOW DSPCO BY DSPDI.
+c$$$C     TO COMPUTE  DETERMINANT(A) , FOLLOW DSPCO BY DSPDI.
+c$$$C     TO COMPUTE  INERTIA(A), FOLLOW DSPCO BY DSPDI.
+c$$$C
+c$$$C     ON ENTRY
+c$$$C
+c$$$C        AP      DOUBLE PRECISION (N*(N+1)/2)
+c$$$C                THE PACKED FORM OF A SYMMETRIC MATRIX  A .  THE
+c$$$C                COLUMNS OF THE UPPER TRIANGLE ARE STORED SEQUENTIALLY
+c$$$C                IN A ONE-DIMENSIONAL ARRAY OF LENGTH  N*(N+1)/2 .
+c$$$C                SEE COMMENTS BELOW FOR DETAILS.
+c$$$C
+c$$$C        N       INTEGER
+c$$$C                THE ORDER OF THE MATRIX  A .
+c$$$C
+c$$$C     OUTPUT
+c$$$C
+c$$$C        AP      A BLOCK DIAGONAL MATRIX AND THE MULTIPLIERS WHICH
+c$$$C                WERE USED TO OBTAIN IT STORED IN PACKED FORM.
+c$$$C                THE FACTORIZATION CAN BE WRITTEN  A = U*D*TRANS(U)
+c$$$C                WHERE  U  IS A PRODUCT OF PERMUTATION AND UNIT
+c$$$C                UPPER TRIANGULAR MATRICES , TRANS(U) IS THE
+c$$$C                TRANSPOSE OF  U , AND  D  IS BLOCK DIAGONAL
+c$$$C                WITH 1 BY 1 AND 2 BY 2 BLOCKS.
+c$$$C
+c$$$C        KPVT    INTEGER(N)
+c$$$C                AN INTEGER VECTOR OF PIVOT INDICES.
+c$$$C
+c$$$C        RCOND   DOUBLE PRECISION
+c$$$C                AN ESTIMATE OF THE RECIPROCAL CONDITION OF  A .
+c$$$C                FOR THE SYSTEM  A*X = B , RELATIVE PERTURBATIONS
+c$$$C                IN  A  AND  B  OF SIZE  EPSILON  MAY CAUSE
+c$$$C                RELATIVE PERTURBATIONS IN  X  OF SIZE  EPSILON/RCOND .
+c$$$C                IF  RCOND  IS SO SMALL THAT THE LOGICAL EXPRESSION
+c$$$C                           1.0 + RCOND .EQ. 1.0
+c$$$C                IS TRUE, THEN  A  MAY BE SINGULAR TO WORKING
+c$$$C                PRECISION.  IN PARTICULAR,  RCOND  IS ZERO  IF
+c$$$C                EXACT SINGULARITY IS DETECTED OR THE ESTIMATE
+c$$$C                UNDERFLOWS.
+c$$$C
+c$$$C        Z       DOUBLE PRECISION(N)
+c$$$C                A WORK VECTOR WHOSE CONTENTS ARE USUALLY UNIMPORTANT.
+c$$$C                IF  A  IS CLOSE TO A SINGULAR MATRIX, THEN  Z  IS
+c$$$C                AN APPROXIMATE NULL VECTOR IN THE SENSE THAT
+c$$$C                NORM(A*Z) = RCOND*NORM(A)*NORM(Z) .
+c$$$C
+c$$$C     PACKED STORAGE
+c$$$C
+c$$$C          THE FOLLOWING PROGRAM SEGMENT WILL PACK THE UPPER
+c$$$C          TRIANGLE OF A SYMMETRIC MATRIX.
+c$$$C
+c$$$C                K = 0
+c$$$C                DO 20 J = 1, N
+c$$$C                   DO 10 I = 1, J
+c$$$C                      K = K + 1
+c$$$C                      AP(K) = A(I,J)
+c$$$C             10    CONTINUE
+c$$$C             20 CONTINUE
+c$$$C
+c$$$C     LINPACK. THIS VERSION DATED 08/14/78 .
+c$$$C     CLEVE MOLER, UNIVERSITY OF NEW MEXICO, ARGONNE NATIONAL LAB.
+c$$$C
+c$$$C     SUBROUTINES AND FUNCTIONS
+c$$$C
+c$$$C     LINPACK DSPFA
+c$$$C     BLAS DAXPY,DDOT,DSCAL,DASUM
+c$$$C     FORTRAN ABS,DMAX1,IABS,DSIGN
+c$$$C
+c$$$C     INTERNAL VARIABLES
+c$$$C
+c$$$#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
+c$$$      REAL AK,AKM1,BK,BKM1,DDOT,DENOM,EK,T
+c$$$      REAL ANORM,S,DASUM,YNORM
+c$$$#else
+c$$$      DOUBLE PRECISION AK,AKM1,BK,BKM1,DDOT,DENOM,EK,T
+c$$$      DOUBLE PRECISION ANORM,S,DASUM,YNORM
+c$$$#endif
+c$$$      INTEGER I,IJ,IK,IKM1,IKP1,INFO,J,JM1,J1
+c$$$      INTEGER K,KK,KM1K,KM1KM1,KP,KPS,KS
+c$$$C
+c$$$C
+c$$$C     FIND NORM OF A USING ONLY UPPER HALF
+c$$$C
+c$$$      J1 = 1
+c$$$      DO 30 J = 1, N
+c$$$         Z(J) = DASUM(J,AP(J1),1)
+c$$$         IJ = J1
+c$$$         J1 = J1 + J
+c$$$         JM1 = J - 1
+c$$$         IF (JM1 .LT. 1) GO TO 20
+c$$$         DO 10 I = 1, JM1
+c$$$            Z(I) = Z(I) + ABS(AP(IJ))
+c$$$            IJ = IJ + 1
+c$$$   10    CONTINUE
+c$$$   20    CONTINUE
+c$$$   30 CONTINUE
+c$$$      ANORM = 0.0D0
+c$$$      DO 40 J = 1, N
+c$$$         ANORM = DMAX1(ANORM,Z(J))
+c$$$   40 CONTINUE
+c$$$C
+c$$$C     FACTOR
+c$$$C
+c$$$      CALL DSPFA(AP,N,KPVT,INFO)
+c$$$C
+c$$$C     RCOND = 1/(NORM(A)*(ESTIMATE OF NORM(INVERSE(A)))) .
+c$$$C     ESTIMATE = NORM(Z)/NORM(Y) WHERE  A*Z = Y  AND  A*Y = E .
+c$$$C     THE COMPONENTS OF  E  ARE CHOSEN TO CAUSE MAXIMUM LOCAL
+c$$$C     GROWTH IN THE ELEMENTS OF W  WHERE  U*D*W = E .
+c$$$C     THE VECTORS ARE FREQUENTLY RESCALED TO AVOID OVERFLOW.
+c$$$C
+c$$$C     SOLVE U*D*W = E
+c$$$C
+c$$$      EK = 1.0D0
+c$$$      DO 50 J = 1, N
+c$$$         Z(J) = 0.0D0
+c$$$   50 CONTINUE
+c$$$      K = N
+c$$$      IK = (N*(N - 1))/2
+c$$$   60 IF (K .EQ. 0) GO TO 120
+c$$$         KK = IK + K
+c$$$         IKM1 = IK - (K - 1)
+c$$$         KS = 1
+c$$$         IF (KPVT(K) .LT. 0) KS = 2
+c$$$         KP = IABS(KPVT(K))
+c$$$         KPS = K + 1 - KS
+c$$$         IF (KP .EQ. KPS) GO TO 70
+c$$$            T = Z(KPS)
+c$$$            Z(KPS) = Z(KP)
+c$$$            Z(KP) = T
+c$$$   70    CONTINUE
+c$$$         IF (Z(K) .NE. 0.0D0) EK = DSIGN(EK,Z(K))
+c$$$         Z(K) = Z(K) + EK
+c$$$         CALL DAXPY(K-KS,Z(K),AP(IK+1),1,Z(1),1)
+c$$$         IF (KS .EQ. 1) GO TO 80
+c$$$            IF (Z(K-1) .NE. 0.0D0) EK = DSIGN(EK,Z(K-1))
+c$$$            Z(K-1) = Z(K-1) + EK
+c$$$            CALL DAXPY(K-KS,Z(K-1),AP(IKM1+1),1,Z(1),1)
+c$$$   80    CONTINUE
+c$$$         IF (KS .EQ. 2) GO TO 100
+c$$$            IF (ABS(Z(K)) .LE. ABS(AP(KK))) GO TO 90
+c$$$               S = ABS(AP(KK))/ABS(Z(K))
+c$$$               CALL DSCAL(N,S,Z,1)
+c$$$               EK = S*EK
+c$$$   90       CONTINUE
+c$$$            IF (AP(KK) .NE. 0.0D0) Z(K) = Z(K)/AP(KK)
+c$$$            IF (AP(KK) .EQ. 0.0D0) Z(K) = 1.0D0
+c$$$         GO TO 110
+c$$$  100    CONTINUE
+c$$$            KM1K = IK + K - 1
+c$$$            KM1KM1 = IKM1 + K - 1
+c$$$            AK = AP(KK)/AP(KM1K)
+c$$$            AKM1 = AP(KM1KM1)/AP(KM1K)
+c$$$            BK = Z(K)/AP(KM1K)
+c$$$            BKM1 = Z(K-1)/AP(KM1K)
+c$$$            DENOM = AK*AKM1 - 1.0D0
+c$$$            Z(K) = (AKM1*BK - BKM1)/DENOM
+c$$$            Z(K-1) = (AK*BKM1 - BK)/DENOM
+c$$$  110    CONTINUE
+c$$$         K = K - KS
+c$$$         IK = IK - K
+c$$$         IF (KS .EQ. 2) IK = IK - (K + 1)
+c$$$      GO TO 60
+c$$$  120 CONTINUE
+c$$$      S = 1.0D0/DASUM(N,Z,1)
+c$$$      CALL DSCAL(N,S,Z,1)
+c$$$C
+c$$$C     SOLVE TRANS(U)*Y = W
+c$$$C
+c$$$      K = 1
+c$$$      IK = 0
+c$$$  130 IF (K .GT. N) GO TO 160
+c$$$         KS = 1
+c$$$         IF (KPVT(K) .LT. 0) KS = 2
+c$$$         IF (K .EQ. 1) GO TO 150
+c$$$            Z(K) = Z(K) + DDOT(K-1,AP(IK+1),1,Z(1),1)
+c$$$            IKP1 = IK + K
+c$$$            IF (KS .EQ. 2)
+c$$$     *         Z(K+1) = Z(K+1) + DDOT(K-1,AP(IKP1+1),1,Z(1),1)
+c$$$            KP = IABS(KPVT(K))
+c$$$            IF (KP .EQ. K) GO TO 140
+c$$$               T = Z(K)
+c$$$               Z(K) = Z(KP)
+c$$$               Z(KP) = T
+c$$$  140       CONTINUE
+c$$$  150    CONTINUE
+c$$$         IK = IK + K
+c$$$         IF (KS .EQ. 2) IK = IK + (K + 1)
+c$$$         K = K + KS
+c$$$      GO TO 130
+c$$$  160 CONTINUE
+c$$$      S = 1.0D0/DASUM(N,Z,1)
+c$$$      CALL DSCAL(N,S,Z,1)
+c$$$C
+c$$$      YNORM = 1.0D0
+c$$$C
+c$$$C     SOLVE U*D*V = Y
+c$$$C
+c$$$      K = N
+c$$$      IK = N*(N - 1)/2
+c$$$  170 IF (K .EQ. 0) GO TO 230
+c$$$         KK = IK + K
+c$$$         IKM1 = IK - (K - 1)
+c$$$         KS = 1
+c$$$         IF (KPVT(K) .LT. 0) KS = 2
+c$$$         IF (K .EQ. KS) GO TO 190
+c$$$            KP = IABS(KPVT(K))
+c$$$            KPS = K + 1 - KS
+c$$$            IF (KP .EQ. KPS) GO TO 180
+c$$$               T = Z(KPS)
+c$$$               Z(KPS) = Z(KP)
+c$$$               Z(KP) = T
+c$$$  180       CONTINUE
+c$$$            CALL DAXPY(K-KS,Z(K),AP(IK+1),1,Z(1),1)
+c$$$            IF (KS .EQ. 2) CALL DAXPY(K-KS,Z(K-1),AP(IKM1+1),1,Z(1),1)
+c$$$  190    CONTINUE
+c$$$         IF (KS .EQ. 2) GO TO 210
+c$$$            IF (ABS(Z(K)) .LE. ABS(AP(KK))) GO TO 200
+c$$$               S = ABS(AP(KK))/ABS(Z(K))
+c$$$               CALL DSCAL(N,S,Z,1)
+c$$$               YNORM = S*YNORM
+c$$$  200       CONTINUE
+c$$$            IF (AP(KK) .NE. 0.0D0) Z(K) = Z(K)/AP(KK)
+c$$$            IF (AP(KK) .EQ. 0.0D0) Z(K) = 1.0D0
+c$$$         GO TO 220
+c$$$  210    CONTINUE
+c$$$            KM1K = IK + K - 1
+c$$$            KM1KM1 = IKM1 + K - 1
+c$$$            AK = AP(KK)/AP(KM1K)
+c$$$            AKM1 = AP(KM1KM1)/AP(KM1K)
+c$$$            BK = Z(K)/AP(KM1K)
+c$$$            BKM1 = Z(K-1)/AP(KM1K)
+c$$$            DENOM = AK*AKM1 - 1.0D0
+c$$$            Z(K) = (AKM1*BK - BKM1)/DENOM
+c$$$            Z(K-1) = (AK*BKM1 - BK)/DENOM
+c$$$  220    CONTINUE
+c$$$         K = K - KS
+c$$$         IK = IK - K
+c$$$         IF (KS .EQ. 2) IK = IK - (K + 1)
+c$$$      GO TO 170
+c$$$  230 CONTINUE
+c$$$      S = 1.0D0/DASUM(N,Z,1)
+c$$$      CALL DSCAL(N,S,Z,1)
+c$$$      YNORM = S*YNORM
+c$$$C
+c$$$C     SOLVE TRANS(U)*Z = V
+c$$$C
+c$$$      K = 1
+c$$$      IK = 0
+c$$$  240 IF (K .GT. N) GO TO 270
+c$$$         KS = 1
+c$$$         IF (KPVT(K) .LT. 0) KS = 2
+c$$$         IF (K .EQ. 1) GO TO 260
+c$$$            Z(K) = Z(K) + DDOT(K-1,AP(IK+1),1,Z(1),1)
+c$$$            IKP1 = IK + K
+c$$$            IF (KS .EQ. 2)
+c$$$     *         Z(K+1) = Z(K+1) + DDOT(K-1,AP(IKP1+1),1,Z(1),1)
+c$$$            KP = IABS(KPVT(K))
+c$$$            IF (KP .EQ. K) GO TO 250
+c$$$               T = Z(K)
+c$$$               Z(K) = Z(KP)
+c$$$               Z(KP) = T
+c$$$  250       CONTINUE
+c$$$  260    CONTINUE
+c$$$         IK = IK + K
+c$$$         IF (KS .EQ. 2) IK = IK + (K + 1)
+c$$$         K = K + KS
+c$$$      GO TO 240
+c$$$  270 CONTINUE
+c$$$C     MAKE ZNORM = 1.0
+c$$$      S = 1.0D0/DASUM(N,Z,1)
+c$$$      CALL DSCAL(N,S,Z,1)
+c$$$      YNORM = S*YNORM
+c$$$C
+c$$$      IF (ANORM .NE. 0.0D0) RCOND = YNORM/ANORM
+c$$$      IF (ANORM .EQ. 0.0D0) RCOND = 0.0D0
+c$$$      RETURN
+c$$$      END
+c$$$      SUBROUTINE DSPFA(AP,N,KPVT,INFO)
+c$$$      INTEGER N,KPVT(*),INFO
+c$$$#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
+c$$$      REAL AP(*)
+c$$$#else
+c$$$      DOUBLE PRECISION AP(*)
+c$$$#endif
+c$$$C
+c$$$C     DSPFA FACTORS A DOUBLE PRECISION SYMMETRIC MATRIX STORED IN
+c$$$C     PACKED FORM BY ELIMINATION WITH SYMMETRIC PIVOTING.
+c$$$C
+c$$$C     TO SOLVE  A*X = B , FOLLOW DSPFA BY DSPSL.
+c$$$C     TO COMPUTE  INVERSE(A)*C , FOLLOW DSPFA BY DSPSL.
+c$$$C     TO COMPUTE  DETERMINANT(A) , FOLLOW DSPFA BY DSPDI.
+c$$$C     TO COMPUTE  INERTIA(A) , FOLLOW DSPFA BY DSPDI.
+c$$$C     TO COMPUTE  INVERSE(A) , FOLLOW DSPFA BY DSPDI.
+c$$$C
+c$$$C     ON ENTRY
+c$$$C
+c$$$C        AP      DOUBLE PRECISION (N*(N+1)/2)
+c$$$C                THE PACKED FORM OF A SYMMETRIC MATRIX  A .  THE
+c$$$C                COLUMNS OF THE UPPER TRIANGLE ARE STORED SEQUENTIALLY
+c$$$C                IN A ONE-DIMENSIONAL ARRAY OF LENGTH  N*(N+1)/2 .
+c$$$C                SEE COMMENTS BELOW FOR DETAILS.
+c$$$C
+c$$$C        N       INTEGER
+c$$$C                THE ORDER OF THE MATRIX  A .
+c$$$C
+c$$$C     OUTPUT
+c$$$C
+c$$$C        AP      A BLOCK DIAGONAL MATRIX AND THE MULTIPLIERS WHICH
+c$$$C                WERE USED TO OBTAIN IT STORED IN PACKED FORM.
+c$$$C                THE FACTORIZATION CAN BE WRITTEN  A = U*D*TRANS(U)
+c$$$C                WHERE  U  IS A PRODUCT OF PERMUTATION AND UNIT
+c$$$C                UPPER TRIANGULAR MATRICES , TRANS(U) IS THE
+c$$$C                TRANSPOSE OF  U , AND  D  IS BLOCK DIAGONAL
+c$$$C                WITH 1 BY 1 AND 2 BY 2 BLOCKS.
+c$$$C
+c$$$C        KPVT    INTEGER(N)
+c$$$C                AN INTEGER VECTOR OF PIVOT INDICES.
+c$$$C
+c$$$C        INFO    INTEGER
+c$$$C                = 0  NORMAL VALUE.
+c$$$C                = K  IF THE K-TH PIVOT BLOCK IS SINGULAR. THIS IS
+c$$$C                     NOT AN ERROR CONDITION FOR THIS SUBROUTINE,
+c$$$C                     BUT IT DOES INDICATE THAT DSPSL OR DSPDI MAY
+c$$$C                     DIVIDE BY ZERO IF CALLED.
+c$$$C
+c$$$C     PACKED STORAGE
+c$$$C
+c$$$C          THE FOLLOWING PROGRAM SEGMENT WILL PACK THE UPPER
+c$$$C          TRIANGLE OF A SYMMETRIC MATRIX.
+c$$$C
+c$$$C                K = 0
+c$$$C                DO 20 J = 1, N
+c$$$C                   DO 10 I = 1, J
+c$$$C                      K = K + 1
+c$$$C                      AP(K)  = A(I,J)
+c$$$C             10    CONTINUE
+c$$$C             20 CONTINUE
+c$$$C
+c$$$C     LINPACK. THIS VERSION DATED 08/14/78 .
+c$$$C     JAMES BUNCH, UNIV. CALIF. SAN DIEGO, ARGONNE NAT. LAB.
+c$$$C
+c$$$C     SUBROUTINES AND FUNCTIONS
+c$$$C
+c$$$C     BLAS DAXPY,DSWAP,IDAMAX
+c$$$C     FORTRAN DABS,DMAX1,DSQRT
+c$$$C
+c$$$C     INTERNAL VARIABLES
+c$$$C
+c$$$#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
+c$$$      REAL AK,AKM1,BK,BKM1,DENOM,MULK,MULKM1,T
+c$$$      REAL ABSAKK,ALPHA,COLMAX,ROWMAX
+c$$$#else
+c$$$      DOUBLE PRECISION AK,AKM1,BK,BKM1,DENOM,MULK,MULKM1,T
+c$$$      DOUBLE PRECISION ABSAKK,ALPHA,COLMAX,ROWMAX
+c$$$#endif
+c$$$      INTEGER IDAMAX,IJ,IJJ,IK,IKM1,IM,IMAX,IMAXP1,IMIM,IMJ,IMK
+c$$$      INTEGER J,JJ,JK,JKM1,JMAX,JMIM,K,KK,KM1,KM1K,KM1KM1,KM2,KSTEP
+c$$$      LOGICAL SWAP
+c$$$C
+c$$$C
+c$$$C     INITIALIZE
+c$$$C
+c$$$C     ALPHA IS USED IN CHOOSING PIVOT BLOCK SIZE.
+c$$$      ALPHA = (1.0D0 + DSQRT(17.0D0))/8.0D0
+c$$$C
+c$$$      INFO = 0
+c$$$C
+c$$$C     MAIN LOOP ON K, WHICH GOES FROM N TO 1.
+c$$$C
+c$$$      K = N
+c$$$      IK = (N*(N - 1))/2
+c$$$   10 CONTINUE
+c$$$C
+c$$$C        LEAVE THE LOOP IF K=0 OR K=1.
+c$$$C
+c$$$C     ...EXIT
+c$$$         IF (K .EQ. 0) GO TO 200
+c$$$         IF (K .GT. 1) GO TO 20
+c$$$            KPVT(1) = 1
+c$$$            IF (AP(1) .EQ. 0.0D0) INFO = 1
+c$$$C     ......EXIT
+c$$$            GO TO 200
+c$$$   20    CONTINUE
+c$$$C
+c$$$C        THIS SECTION OF CODE DETERMINES THE KIND OF
+c$$$C        ELIMINATION TO BE PERFORMED.  WHEN IT IS COMPLETED,
+c$$$C        KSTEP WILL BE SET TO THE SIZE OF THE PIVOT BLOCK, AND
+c$$$C        SWAP WILL BE SET TO .TRUE. IF AN INTERCHANGE IS
+c$$$C        REQUIRED.
+c$$$C
+c$$$         KM1 = K - 1
+c$$$         KK = IK + K
+c$$$         ABSAKK = ABS(AP(KK))
+c$$$C
+c$$$C        DETERMINE THE LARGEST OFF-DIAGONAL ELEMENT IN
+c$$$C        COLUMN K.
+c$$$C
+c$$$         IMAX = IDAMAX(K-1,AP(IK+1),1)
+c$$$         IMK = IK + IMAX
+c$$$         COLMAX = ABS(AP(IMK))
+c$$$         IF (ABSAKK .LT. ALPHA*COLMAX) GO TO 30
+c$$$            KSTEP = 1
+c$$$            SWAP = .FALSE.
+c$$$         GO TO 90
+c$$$   30    CONTINUE
+c$$$C
+c$$$C           DETERMINE THE LARGEST OFF-DIAGONAL ELEMENT IN
+c$$$C           ROW IMAX.
+c$$$C
+c$$$            ROWMAX = 0.0D0
+c$$$            IMAXP1 = IMAX + 1
+c$$$            IM = IMAX*(IMAX - 1)/2
+c$$$            IMJ = IM + 2*IMAX
+c$$$            DO 40 J = IMAXP1, K
+c$$$               ROWMAX = DMAX1(ROWMAX,ABS(AP(IMJ)))
+c$$$               IMJ = IMJ + J
+c$$$   40       CONTINUE
+c$$$            IF (IMAX .EQ. 1) GO TO 50
+c$$$               JMAX = IDAMAX(IMAX-1,AP(IM+1),1)
+c$$$               JMIM = JMAX + IM
+c$$$               ROWMAX = DMAX1(ROWMAX,ABS(AP(JMIM)))
+c$$$   50       CONTINUE
+c$$$            IMIM = IMAX + IM
+c$$$            IF (ABS(AP(IMIM)) .LT. ALPHA*ROWMAX) GO TO 60
+c$$$               KSTEP = 1
+c$$$               SWAP = .TRUE.
+c$$$            GO TO 80
+c$$$   60       CONTINUE
+c$$$            IF (ABSAKK .LT. ALPHA*COLMAX*(COLMAX/ROWMAX)) GO TO 70
+c$$$               KSTEP = 1
+c$$$               SWAP = .FALSE.
+c$$$            GO TO 80
+c$$$   70       CONTINUE
+c$$$               KSTEP = 2
+c$$$               SWAP = IMAX .NE. KM1
+c$$$   80       CONTINUE
+c$$$   90    CONTINUE
+c$$$         IF (DMAX1(ABSAKK,COLMAX) .NE. 0.0D0) GO TO 100
+c$$$C
+c$$$C           COLUMN K IS ZERO.  SET INFO AND ITERATE THE LOOP.
+c$$$C
+c$$$            KPVT(K) = K
+c$$$            INFO = K
+c$$$         GO TO 190
+c$$$  100    CONTINUE
+c$$$         IF (KSTEP .EQ. 2) GO TO 140
+c$$$C
+c$$$C           1 X 1 PIVOT BLOCK.
+c$$$C
+c$$$            IF (.NOT.SWAP) GO TO 120
+c$$$C
+c$$$C              PERFORM AN INTERCHANGE.
+c$$$C
+c$$$               CALL DSWAP(IMAX,AP(IM+1),1,AP(IK+1),1)
+c$$$               IMJ = IK + IMAX
+c$$$               DO 110 JJ = IMAX, K
+c$$$                  J = K + IMAX - JJ
+c$$$                  JK = IK + J
+c$$$                  T = AP(JK)
+c$$$                  AP(JK) = AP(IMJ)
+c$$$                  AP(IMJ) = T
+c$$$                  IMJ = IMJ - (J - 1)
+c$$$  110          CONTINUE
+c$$$  120       CONTINUE
+c$$$C
+c$$$C           PERFORM THE ELIMINATION.
+c$$$C
+c$$$            IJ = IK - (K - 1)
+c$$$            DO 130 JJ = 1, KM1
+c$$$               J = K - JJ
+c$$$               JK = IK + J
+c$$$               MULK = -AP(JK)/AP(KK)
+c$$$               T = MULK
+c$$$               CALL DAXPY(J,T,AP(IK+1),1,AP(IJ+1),1)
+c$$$               IJJ = IJ + J
+c$$$               AP(JK) = MULK
+c$$$               IJ = IJ - (J - 1)
+c$$$  130       CONTINUE
+c$$$C
+c$$$C           SET THE PIVOT ARRAY.
+c$$$C
+c$$$            KPVT(K) = K
+c$$$            IF (SWAP) KPVT(K) = IMAX
+c$$$         GO TO 190
+c$$$  140    CONTINUE
+c$$$C
+c$$$C           2 X 2 PIVOT BLOCK.
+c$$$C
+c$$$            KM1K = IK + K - 1
+c$$$            IKM1 = IK - (K - 1)
+c$$$            IF (.NOT.SWAP) GO TO 160
+c$$$C
+c$$$C              PERFORM AN INTERCHANGE.
+c$$$C
+c$$$               CALL DSWAP(IMAX,AP(IM+1),1,AP(IKM1+1),1)
+c$$$               IMJ = IKM1 + IMAX
+c$$$               DO 150 JJ = IMAX, KM1
+c$$$                  J = KM1 + IMAX - JJ
+c$$$                  JKM1 = IKM1 + J
+c$$$                  T = AP(JKM1)
+c$$$                  AP(JKM1) = AP(IMJ)
+c$$$                  AP(IMJ) = T
+c$$$                  IMJ = IMJ - (J - 1)
+c$$$  150          CONTINUE
+c$$$               T = AP(KM1K)
+c$$$               AP(KM1K) = AP(IMK)
+c$$$               AP(IMK) = T
+c$$$  160       CONTINUE
+c$$$C
+c$$$C           PERFORM THE ELIMINATION.
+c$$$C
+c$$$            KM2 = K - 2
+c$$$            IF (KM2 .EQ. 0) GO TO 180
+c$$$               AK = AP(KK)/AP(KM1K)
+c$$$               KM1KM1 = IKM1 + K - 1
+c$$$               AKM1 = AP(KM1KM1)/AP(KM1K)
+c$$$               DENOM = 1.0D0 - AK*AKM1
+c$$$               IJ = IK - (K - 1) - (K - 2)
+c$$$               DO 170 JJ = 1, KM2
+c$$$                  J = KM1 - JJ
+c$$$                  JK = IK + J
+c$$$                  BK = AP(JK)/AP(KM1K)
+c$$$                  JKM1 = IKM1 + J
+c$$$                  BKM1 = AP(JKM1)/AP(KM1K)
+c$$$                  MULK = (AKM1*BK - BKM1)/DENOM
+c$$$                  MULKM1 = (AK*BKM1 - BK)/DENOM
+c$$$                  T = MULK
+c$$$                  CALL DAXPY(J,T,AP(IK+1),1,AP(IJ+1),1)
+c$$$                  T = MULKM1
+c$$$                  CALL DAXPY(J,T,AP(IKM1+1),1,AP(IJ+1),1)
+c$$$                  AP(JK) = MULK
+c$$$                  AP(JKM1) = MULKM1
+c$$$                  IJJ = IJ + J
+c$$$                  IJ = IJ - (J - 1)
+c$$$  170          CONTINUE
+c$$$  180       CONTINUE
+c$$$C
+c$$$C           SET THE PIVOT ARRAY.
+c$$$C
+c$$$            KPVT(K) = 1 - K
+c$$$            IF (SWAP) KPVT(K) = -IMAX
+c$$$            KPVT(K-1) = KPVT(K)
+c$$$  190    CONTINUE
+c$$$         IK = IK - (K - 1)
+c$$$         IF (KSTEP .EQ. 2) IK = IK - (K - 2)
+c$$$         K = K - KSTEP
+c$$$      GO TO 10
+c$$$  200 CONTINUE
+c$$$      RETURN
+c$$$      END
+c$$$      SUBROUTINE DSPSL(AP,N,KPVT,B)
+c$$$      INTEGER N,KPVT(*)
+c$$$#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
+c$$$      REAL AP(*),B(*)
+c$$$#else
+c$$$      DOUBLE PRECISION AP(*),B(*)
+c$$$#endif
+c$$$C
+c$$$C     DSISL SOLVES THE DOUBLE PRECISION SYMMETRIC SYSTEM
+c$$$C     A * X = B
+c$$$C     USING THE FACTORS COMPUTED BY DSPFA.
+c$$$C
+c$$$C     ON ENTRY
+c$$$C
+c$$$C        AP      DOUBLE PRECISION(N*(N+1)/2)
+c$$$C                THE OUTPUT FROM DSPFA.
+c$$$C
+c$$$C        N       INTEGER
+c$$$C                THE ORDER OF THE MATRIX  A .
+c$$$C
+c$$$C        KPVT    INTEGER(N)
+c$$$C                THE PIVOT VECTOR FROM DSPFA.
+c$$$C
+c$$$C        B       DOUBLE PRECISION(N)
+c$$$C                THE RIGHT HAND SIDE VECTOR.
+c$$$C
+c$$$C     ON RETURN
+c$$$C
+c$$$C        B       THE SOLUTION VECTOR  X .
+c$$$C
+c$$$C     ERROR CONDITION
+c$$$C
+c$$$C        A DIVISION BY ZERO MAY OCCUR IF  DSPCO  HAS SET RCOND .EQ. 0.0
+c$$$C        OR  DSPFA  HAS SET INFO .NE. 0  .
+c$$$C
+c$$$C     TO COMPUTE  INVERSE(A) * C  WHERE  C  IS A MATRIX
+c$$$C     WITH  P  COLUMNS
+c$$$C           CALL DSPFA(AP,N,KPVT,INFO)
+c$$$C           IF (INFO .NE. 0) GO TO ...
+c$$$C           DO 10 J = 1, P
+c$$$C              CALL DSPSL(AP,N,KPVT,C(1,J))
+c$$$C        10 CONTINUE
+c$$$C
+c$$$C     LINPACK. THIS VERSION DATED 08/14/78 .
+c$$$C     JAMES BUNCH, UNIV. CALIF. SAN DIEGO, ARGONNE NAT. LAB.
+c$$$C
+c$$$C     SUBROUTINES AND FUNCTIONS
+c$$$C
+c$$$C     BLAS DAXPY,DDOT
+c$$$C     FORTRAN IABS
+c$$$C
+c$$$C     INTERNAL VARIABLES.
+c$$$C
+c$$$#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
+c$$$      REAL AK,AKM1,BK,BKM1,DDOT,DENOM,TEMP
+c$$$#else
+c$$$      DOUBLE PRECISION AK,AKM1,BK,BKM1,DDOT,DENOM,TEMP
+c$$$#endif
+c$$$      INTEGER IK,IKM1,IKP1,K,KK,KM1K,KM1KM1,KP
+c$$$C
+c$$$C     LOOP BACKWARD APPLYING THE TRANSFORMATIONS AND
+c$$$C     D INVERSE TO B.
+c$$$C
+c$$$      K = N
+c$$$      IK = (N*(N - 1))/2
+c$$$   10 IF (K .EQ. 0) GO TO 80
+c$$$         KK = IK + K
+c$$$         IF (KPVT(K) .LT. 0) GO TO 40
+c$$$C
+c$$$C           1 X 1 PIVOT BLOCK.
+c$$$C
+c$$$            IF (K .EQ. 1) GO TO 30
+c$$$               KP = KPVT(K)
+c$$$               IF (KP .EQ. K) GO TO 20
+c$$$C
+c$$$C                 INTERCHANGE.
+c$$$C
+c$$$                  TEMP = B(K)
+c$$$                  B(K) = B(KP)
+c$$$                  B(KP) = TEMP
+c$$$   20          CONTINUE
+c$$$C
+c$$$C              APPLY THE TRANSFORMATION.
+c$$$C
+c$$$               CALL DAXPY(K-1,B(K),AP(IK+1),1,B(1),1)
+c$$$   30       CONTINUE
+c$$$C
+c$$$C           APPLY D INVERSE.
+c$$$C
+c$$$            B(K) = B(K)/AP(KK)
+c$$$            K = K - 1
+c$$$            IK = IK - K
+c$$$         GO TO 70
+c$$$   40    CONTINUE
+c$$$C
+c$$$C           2 X 2 PIVOT BLOCK.
+c$$$C
+c$$$            IKM1 = IK - (K - 1)
+c$$$            IF (K .EQ. 2) GO TO 60
+c$$$               KP = IABS(KPVT(K))
+c$$$               IF (KP .EQ. K - 1) GO TO 50
+c$$$C
+c$$$C                 INTERCHANGE.
+c$$$C
+c$$$                  TEMP = B(K-1)
+c$$$                  B(K-1) = B(KP)
+c$$$                  B(KP) = TEMP
+c$$$   50          CONTINUE
+c$$$C
+c$$$C              APPLY THE TRANSFORMATION.
+c$$$C
+c$$$               CALL DAXPY(K-2,B(K),AP(IK+1),1,B(1),1)
+c$$$               CALL DAXPY(K-2,B(K-1),AP(IKM1+1),1,B(1),1)
+c$$$   60       CONTINUE
+c$$$C
+c$$$C           APPLY D INVERSE.
+c$$$C
+c$$$            KM1K = IK + K - 1
+c$$$            KK = IK + K
+c$$$            AK = AP(KK)/AP(KM1K)
+c$$$            KM1KM1 = IKM1 + K - 1
+c$$$            AKM1 = AP(KM1KM1)/AP(KM1K)
+c$$$            BK = B(K)/AP(KM1K)
+c$$$            BKM1 = B(K-1)/AP(KM1K)
+c$$$            DENOM = AK*AKM1 - 1.0D0
+c$$$            B(K) = (AKM1*BK - BKM1)/DENOM
+c$$$            B(K-1) = (AK*BKM1 - BK)/DENOM
+c$$$            K = K - 2
+c$$$            IK = IK - (K + 1) - K
+c$$$   70    CONTINUE
+c$$$      GO TO 10
+c$$$   80 CONTINUE
+c$$$C
+c$$$C     LOOP FORWARD APPLYING THE TRANSFORMATIONS.
+c$$$C
+c$$$      K = 1
+c$$$      IK = 0
+c$$$   90 IF (K .GT. N) GO TO 160
+c$$$         IF (KPVT(K) .LT. 0) GO TO 120
+c$$$C
+c$$$C           1 X 1 PIVOT BLOCK.
+c$$$C
+c$$$            IF (K .EQ. 1) GO TO 110
+c$$$C
+c$$$C              APPLY THE TRANSFORMATION.
+c$$$C
+c$$$               B(K) = B(K) + DDOT(K-1,AP(IK+1),1,B(1),1)
+c$$$               KP = KPVT(K)
+c$$$               IF (KP .EQ. K) GO TO 100
+c$$$C
+c$$$C                 INTERCHANGE.
+c$$$C
+c$$$                  TEMP = B(K)
+c$$$                  B(K) = B(KP)
+c$$$                  B(KP) = TEMP
+c$$$  100          CONTINUE
+c$$$  110       CONTINUE
+c$$$            IK = IK + K
+c$$$            K = K + 1
+c$$$         GO TO 150
+c$$$  120    CONTINUE
+c$$$C
+c$$$C           2 X 2 PIVOT BLOCK.
+c$$$C
+c$$$            IF (K .EQ. 1) GO TO 140
+c$$$C
+c$$$C              APPLY THE TRANSFORMATION.
+c$$$C
+c$$$               B(K) = B(K) + DDOT(K-1,AP(IK+1),1,B(1),1)
+c$$$               IKP1 = IK + K
+c$$$               B(K+1) = B(K+1) + DDOT(K-1,AP(IKP1+1),1,B(1),1)
+c$$$               KP = IABS(KPVT(K))
+c$$$               IF (KP .EQ. K) GO TO 130
+c$$$C
+c$$$C                 INTERCHANGE.
+c$$$C
+c$$$                  TEMP = B(K)
+c$$$                  B(K) = B(KP)
+c$$$                  B(KP) = TEMP
+c$$$  130          CONTINUE
+c$$$  140       CONTINUE
+c$$$            IK = IK + K + K + 1
+c$$$            K = K + 2
+c$$$  150    CONTINUE
+c$$$      GO TO 90
+c$$$  160 CONTINUE
+c$$$      RETURN
+c$$$      END
+c$$$      SUBROUTINE DSPDI(AP,N,KPVT,DET,INERT,WORK,JOB)
+c$$$      INTEGER N,JOB
+c$$$#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
+c$$$      REAL AP(*),WORK(*)
+c$$$      REAL DET(2)
+c$$$#else
+c$$$      DOUBLE PRECISION AP(*),WORK(*)
+c$$$      DOUBLE PRECISION DET(2)
+c$$$#endif
+c$$$      INTEGER KPVT(*),INERT(3)
+c$$$C
+c$$$C     DSPDI COMPUTES THE DETERMINANT, INERTIA AND INVERSE
+c$$$C     OF A DOUBLE PRECISION SYMMETRIC MATRIX USING THE FACTORS FROM
+c$$$C     DSPFA, WHERE THE MATRIX IS STORED IN PACKED FORM.
+c$$$C
+c$$$C     ON ENTRY
+c$$$C
+c$$$C        AP      DOUBLE PRECISION (N*(N+1)/2)
+c$$$C                THE OUTPUT FROM DSPFA.
+c$$$C
+c$$$C        N       INTEGER
+c$$$C                THE ORDER OF THE MATRIX A.
+c$$$C
+c$$$C        KPVT    INTEGER(N)
+c$$$C                THE PIVOT VECTOR FROM DSPFA.
+c$$$C
+c$$$C        WORK    DOUBLE PRECISION(N)
+c$$$C                WORK VECTOR.  CONTENTS IGNORED.
+c$$$C
+c$$$C        JOB     INTEGER
+c$$$C                JOB HAS THE DECIMAL EXPANSION  ABC  WHERE
+c$$$C                   IF  C .NE. 0, THE INVERSE IS COMPUTED,
+c$$$C                   IF  B .NE. 0, THE DETERMINANT IS COMPUTED,
+c$$$C                   IF  A .NE. 0, THE INERTIA IS COMPUTED.
+c$$$C
+c$$$C                FOR EXAMPLE, JOB = 111  GIVES ALL THREE.
+c$$$C
+c$$$C     ON RETURN
+c$$$C
+c$$$C        VARIABLES NOT REQUESTED BY JOB ARE NOT USED.
+c$$$C
+c$$$C        AP     CONTAINS THE UPPER TRIANGLE OF THE INVERSE OF
+c$$$C               THE ORIGINAL MATRIX, STORED IN PACKED FORM.
+c$$$C               THE COLUMNS OF THE UPPER TRIANGLE ARE STORED
+c$$$C               SEQUENTIALLY IN A ONE-DIMENSIONAL ARRAY.
+c$$$C
+c$$$C        DET    DOUBLE PRECISION(2)
+c$$$C               DETERMINANT OF ORIGINAL MATRIX.
+c$$$C               DETERMINANT = DET(1) * 10.0**DET(2)
+c$$$C               WITH 1.0 .LE. DABS(DET(1)) .LT. 10.0
+c$$$C               OR DET(1) = 0.0.
+c$$$C
+c$$$C        INERT  INTEGER(3)
+c$$$C               THE INERTIA OF THE ORIGINAL MATRIX.
+c$$$C               INERT(1)  =  NUMBER OF POSITIVE EIGENVALUES.
+c$$$C               INERT(2)  =  NUMBER OF NEGATIVE EIGENVALUES.
+c$$$C               INERT(3)  =  NUMBER OF ZERO EIGENVALUES.
+c$$$C
+c$$$C     ERROR CONDITION
+c$$$C
+c$$$C        A DIVISION BY ZERO WILL OCCUR IF THE INVERSE IS REQUESTED
+c$$$C        AND  DSPCO  HAS SET RCOND .EQ. 0.0
+c$$$C        OR  DSPFA  HAS SET  INFO .NE. 0 .
+c$$$C
+c$$$C     LINPACK. THIS VERSION DATED 08/14/78 .
+c$$$C     JAMES BUNCH, UNIV. CALIF. SAN DIEGO, ARGONNE NAT. LAB.
+c$$$C
+c$$$C     SUBROUTINES AND FUNCTIONS
+c$$$C
+c$$$C     BLAS DAXPY,DCOPY,DDOT,DSWAP
+c$$$C     FORTRAN DABS,IABS,MOD
+c$$$C
+c$$$C     INTERNAL VARIABLES.
+c$$$C
+c$$$#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_REAL)
+c$$$      REAL AKKP1,DDOT,TEMP
+c$$$      REAL TEN,D,T,AK,AKP1
+c$$$#else
+c$$$      DOUBLE PRECISION AKKP1,DDOT,TEMP
+c$$$      DOUBLE PRECISION TEN,D,T,AK,AKP1
+c$$$#endif
+c$$$      INTEGER IJ,IK,IKP1,IKS,J,JB,JK,JKP1
+c$$$      INTEGER K,KK,KKP1,KM1,KS,KSJ,KSKP1,KSTEP
+c$$$      LOGICAL NOINV,NODET,NOERT
+c$$$C
+c$$$      NOINV = MOD(JOB,10) .EQ. 0
+c$$$      NODET = MOD(JOB,100)/10 .EQ. 0
+c$$$      NOERT = MOD(JOB,1000)/100 .EQ. 0
+c$$$C
+c$$$      IF (NODET .AND. NOERT) GO TO 140
+c$$$         IF (NOERT) GO TO 10
+c$$$            INERT(1) = 0
+c$$$            INERT(2) = 0
+c$$$            INERT(3) = 0
+c$$$   10    CONTINUE
+c$$$         IF (NODET) GO TO 20
+c$$$            DET(1) = 1.0D0
+c$$$            DET(2) = 0.0D0
+c$$$            TEN = 10.0D0
+c$$$   20    CONTINUE
+c$$$         T = 0.0D0
+c$$$         IK = 0
+c$$$         DO 130 K = 1, N
+c$$$            KK = IK + K
+c$$$            D = AP(KK)
+c$$$C
+c$$$C           CHECK IF 1 BY 1
+c$$$C
+c$$$            IF (KPVT(K) .GT. 0) GO TO 50
+c$$$C
+c$$$C              2 BY 2 BLOCK
+c$$$C              USE DET (D  S)  =  (D/T * C - T) * T  ,  T = DABS(S)
+c$$$C                      (S  C)
+c$$$C              TO AVOID UNDERFLOW/OVERFLOW TROUBLES.
+c$$$C              TAKE TWO PASSES THROUGH SCALING.  USE  T  FOR FLAG.
+c$$$C
+c$$$               IF (T .NE. 0.0D0) GO TO 30
+c$$$                  IKP1 = IK + K
+c$$$                  KKP1 = IKP1 + K
+c$$$                  T = ABS(AP(KKP1))
+c$$$                  D = (D/T)*AP(KKP1+1) - T
+c$$$               GO TO 40
+c$$$   30          CONTINUE
+c$$$                  D = T
+c$$$                  T = 0.0D0
+c$$$   40          CONTINUE
+c$$$   50       CONTINUE
+c$$$C
+c$$$            IF (NOERT) GO TO 60
+c$$$               IF (D .GT. 0.0D0) INERT(1) = INERT(1) + 1
+c$$$               IF (D .LT. 0.0D0) INERT(2) = INERT(2) + 1
+c$$$               IF (D .EQ. 0.0D0) INERT(3) = INERT(3) + 1
+c$$$   60       CONTINUE
+c$$$C
+c$$$            IF (NODET) GO TO 120
+c$$$               DET(1) = D*DET(1)
+c$$$               IF (DET(1) .EQ. 0.0D0) GO TO 110
+c$$$   70             IF (ABS(DET(1)) .GE. 1.0D0) GO TO 80
+c$$$                     DET(1) = TEN*DET(1)
+c$$$                     DET(2) = DET(2) - 1.0D0
+c$$$                  GO TO 70
+c$$$   80             CONTINUE
+c$$$   90             IF (ABS(DET(1)) .LT. TEN) GO TO 100
+c$$$                     DET(1) = DET(1)/TEN
+c$$$                     DET(2) = DET(2) + 1.0D0
+c$$$                  GO TO 90
+c$$$  100             CONTINUE
+c$$$  110          CONTINUE
+c$$$  120       CONTINUE
+c$$$            IK = IK + K
+c$$$  130    CONTINUE
+c$$$  140 CONTINUE
+c$$$C
+c$$$C     COMPUTE INVERSE(A)
+c$$$C
+c$$$      IF (NOINV) GO TO 270
+c$$$         K = 1
+c$$$         IK = 0
+c$$$  150    IF (K .GT. N) GO TO 260
+c$$$            KM1 = K - 1
+c$$$            KK = IK + K
+c$$$            IKP1 = IK + K
+c$$$            KKP1 = IKP1 + K
+c$$$            IF (KPVT(K) .LT. 0) GO TO 180
+c$$$C
+c$$$C              1 BY 1
+c$$$C
+c$$$               AP(KK) = 1.0D0/AP(KK)
+c$$$               IF (KM1 .LT. 1) GO TO 170
+c$$$                  CALL DCOPY(KM1,AP(IK+1),1,WORK,1)
+c$$$                  IJ = 0
+c$$$                  DO 160 J = 1, KM1
+c$$$                     JK = IK + J
+c$$$                     AP(JK) = DDOT(J,AP(IJ+1),1,WORK,1)
+c$$$                     CALL DAXPY(J-1,WORK(J),AP(IJ+1),1,AP(IK+1),1)
+c$$$                     IJ = IJ + J
+c$$$  160             CONTINUE
+c$$$                  AP(KK) = AP(KK) + DDOT(KM1,WORK,1,AP(IK+1),1)
+c$$$  170          CONTINUE
+c$$$               KSTEP = 1
+c$$$            GO TO 220
+c$$$  180       CONTINUE
+c$$$C
+c$$$C              2 BY 2
+c$$$C
+c$$$               T = ABS(AP(KKP1))
+c$$$               AK = AP(KK)/T
+c$$$               AKP1 = AP(KKP1+1)/T
+c$$$               AKKP1 = AP(KKP1)/T
+c$$$               D = T*(AK*AKP1 - 1.0D0)
+c$$$               AP(KK) = AKP1/D
+c$$$               AP(KKP1+1) = AK/D
+c$$$               AP(KKP1) = -AKKP1/D
+c$$$               IF (KM1 .LT. 1) GO TO 210
+c$$$                  CALL DCOPY(KM1,AP(IKP1+1),1,WORK,1)
+c$$$                  IJ = 0
+c$$$                  DO 190 J = 1, KM1
+c$$$                     JKP1 = IKP1 + J
+c$$$                     AP(JKP1) = DDOT(J,AP(IJ+1),1,WORK,1)
+c$$$                     CALL DAXPY(J-1,WORK(J),AP(IJ+1),1,AP(IKP1+1),1)
+c$$$                     IJ = IJ + J
+c$$$  190             CONTINUE
+c$$$                  AP(KKP1+1) = AP(KKP1+1)
+c$$$     *                         + DDOT(KM1,WORK,1,AP(IKP1+1),1)
+c$$$                  AP(KKP1) = AP(KKP1)
+c$$$     *                       + DDOT(KM1,AP(IK+1),1,AP(IKP1+1),1)
+c$$$                  CALL DCOPY(KM1,AP(IK+1),1,WORK,1)
+c$$$                  IJ = 0
+c$$$                  DO 200 J = 1, KM1
+c$$$                     JK = IK + J
+c$$$                     AP(JK) = DDOT(J,AP(IJ+1),1,WORK,1)
+c$$$                     CALL DAXPY(J-1,WORK(J),AP(IJ+1),1,AP(IK+1),1)
+c$$$                     IJ = IJ + J
+c$$$  200             CONTINUE
+c$$$                  AP(KK) = AP(KK) + DDOT(KM1,WORK,1,AP(IK+1),1)
+c$$$  210          CONTINUE
+c$$$               KSTEP = 2
+c$$$  220       CONTINUE
+c$$$C
+c$$$C           SWAP
+c$$$C
+c$$$            KS = IABS(KPVT(K))
+c$$$            IF (KS .EQ. K) GO TO 250
+c$$$               IKS = (KS*(KS - 1))/2
+c$$$               CALL DSWAP(KS,AP(IKS+1),1,AP(IK+1),1)
+c$$$               KSJ = IK + KS
+c$$$               DO 230 JB = KS, K
+c$$$                  J = K + KS - JB
+c$$$                  JK = IK + J
+c$$$                  TEMP = AP(JK)
+c$$$                  AP(JK) = AP(KSJ)
+c$$$                  AP(KSJ) = TEMP
+c$$$                  KSJ = KSJ - (J - 1)
+c$$$  230          CONTINUE
+c$$$               IF (KSTEP .EQ. 1) GO TO 240
+c$$$                  KSKP1 = IKP1 + KS
+c$$$                  TEMP = AP(KSKP1)
+c$$$                  AP(KSKP1) = AP(KKP1)
+c$$$                  AP(KKP1) = TEMP
+c$$$  240          CONTINUE
+c$$$  250       CONTINUE
+c$$$            IK = IK + K
+c$$$            IF (KSTEP .EQ. 2) IK = IK + K + 1
+c$$$            K = K + KSTEP
+c$$$         GO TO 150
+c$$$  260    CONTINUE
+c$$$  270 CONTINUE
+c$$$      RETURN
+c$$$      END
+c$$$#endif

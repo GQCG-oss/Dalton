@@ -32,7 +32,7 @@ module ccsd_module
   use tensor_interface_module!, only: precondition_doubles_parallel
   use lspdm_tensor_operations_module!, only: array_init, array_change_atype_to_rep,&
   use tensor_basic_module!, only: DENSE,TILED,TILED_DIST,SCALAPACK,&
-!         & NO_PDM,MASTER_INIT,REPLICATED,ALL_INIT,ass_1to3,ass_1to2,&
+!         & NO_PDM,MASTER_ACCESS,REPLICATED,ALL_ACCESS,ass_1to3,ass_1to2,&
 !         & ass_1to4,ass_2to1,&
 !         & ass_4to1,ARR_MSG_LEN
   use tensor_type_def_module
@@ -133,7 +133,7 @@ contains
     !make sure all data is in the correct for this routine, that is omega2 is
     !TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
 
-      prec = array_init(dims,4,TILED_DIST,MASTER_INIT,omega2%tdim)
+      prec = array_init(dims,4,TILED_DIST,MASTER_ACCESS,omega2%tdim)
       call array_change_atype_to_rep(ppfock,loc)
       call array_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
@@ -1054,7 +1054,7 @@ contains
 #ifdef VAR_MPI
     lg_me                    = infpar%lg_mynum
     lg_nnod                  = infpar%lg_nodtot
-    lock_outside             = DECinfo%CCSD_MPICH
+    lock_outside             = DECinfo%CCSD_NO_DEBUG_COMM
     mode                     = MPI_MODE_NOCHECK
 
     parent                   = (infpar%parent_comm==MPI_COMM_NULL)
@@ -1158,12 +1158,12 @@ contains
 #else
       !allocate the dense part of the arrays if all can be kept in local memory.
       !do that for master only, as the slaves recieve the data via StartUpSlaves
-      govov%init_type = ALL_INIT
+      govov%access_type = ALL_ACCESS
       if((scheme==4).and.govov%itype/=DENSE)then
         if(iter==1) call memory_allocate_array_dense_pc(govov)
         if(iter/=1.and.master) call array_cp_tiled2dense(govov,.false.)
       endif 
-      govov%init_type = MASTER_INIT
+      govov%access_type = MASTER_ACCESS
 #endif
     endif
 
@@ -1212,9 +1212,9 @@ contains
       govov%itype    = DENSE
     endif
 
-    govov%init_type  = ALL_INIT
-    omega2%init_type = ALL_INIT
-    t2%init_type     = ALL_INIT
+    govov%access_type  = ALL_ACCESS
+    omega2%access_type = ALL_ACCESS
+    t2%access_type     = ALL_ACCESS
 
 #endif
 
@@ -2197,10 +2197,10 @@ contains
       if((master.and..not.(scheme==2)).or.scheme==3) call arr_deallocate_dense(govov)
       govov%itype      = TILED_DIST
     endif
-    govov%init_type  = MASTER_INIT
-    omega2%init_type = MASTER_INIT
-    t2%init_type     = MASTER_INIT
-    if(scheme==2) u2%init_type     = MASTER_INIT
+    govov%access_type  = MASTER_ACCESS
+    omega2%access_type = MASTER_ACCESS
+    t2%access_type     = MASTER_ACCESS
+    if(scheme==2) u2%access_type     = MASTER_ACCESS
 #endif
     
 
@@ -2412,7 +2412,7 @@ contains
     type(array),intent(inout) :: omega2
     integer, intent(in) :: s
     logical, intent(in) :: pd
-    logical,intent(in) :: lock_outside
+    logical,intent(inout) :: lock_outside
     integer :: no2,nv2,v2o,o2v
     logical :: master 
     real(realk),pointer :: w2(:),w3(:)
@@ -2425,6 +2425,7 @@ contains
     real(realk) :: nrm
     integer(kind=8) :: w3size
     integer(kind=ls_mpik) :: mode
+    logical :: lock_safe
 
     master       = .true.
     nrm          = 0.0E0_realk
@@ -2483,11 +2484,13 @@ contains
 #ifdef VAR_MPI
     !THE INTENSIVE SCHEMES
     elseif(s==2)then
-       omega2%init_type = ALL_INIT
-       t2%init_type     = ALL_INIT
+       omega2%access_type = ALL_ACCESS
+       t2%access_type     = ALL_ACCESS
        nnod             = infpar%lg_nodtot
        me               = infpar%lg_mynum
        mode             = int(MPI_MODE_NOCHECK,kind=ls_mpik)
+       lock_safe        = lock_outside
+       lock_outside     = .false.
       
       !Setting transformation variables for each rank
       !**********************************************
@@ -2543,9 +2546,10 @@ contains
         call lsmpi_local_reduction(w1,o2v2,infpar%master)
         call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
       else
-        call arr_lock_wins(omega2,'s',mode)
+        !call arr_lock_wins(omega2,'s',mode)
         call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1,tl1)
-        call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,lock_outside)
+        print *,infpar%lg_mynum,"fai",fai1,"tl",tl1,size(w1),tl1*no
+        call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,.false.)
       endif
 
 
@@ -2602,8 +2606,8 @@ contains
       call mem_dealloc(w2)
 
       !INTRODUCE PERMUTATION
-      omega2%init_type = MASTER_INIT
-      t2%init_type     = MASTER_INIT
+      omega2%access_type = MASTER_ACCESS
+      t2%access_type     = MASTER_ACCESS
 
       if(.not.lock_outside)then
         call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1,o2v2,wrk=w3,iwrk=w3size)
@@ -2621,6 +2625,7 @@ contains
       endif
 
       call mem_dealloc(w3)
+      lock_outside     = lock_safe
 #endif
     endif
     
@@ -3723,11 +3728,9 @@ contains
 #ifdef VAR_MPI
        if( t .and. lock_outside )call arr_lock_wins(omega,'s',mode)
        if( w ) then
-          print *,"if DONE124 is not printed, this is a prob"
           !$OMP WORKSHARE
           w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
           !$OMP END WORKSHARE
-          print *,"DONE124"
        endif
        if( lspdm_use_comm_proc )call lsmpi_barrier(infpar%pc_comm)
        if( t )call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
@@ -4516,8 +4519,10 @@ contains
       &max(max(max(max(max(max(max((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
       &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no)*nor*nba),(i8*no)*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FO + w2 + w3 + govov
-      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,i8*nb*nb)+max(i8*nb*nb,max(2_long*tl1,i8*tl2)))
+      ! w1 + FO + w2 + w3 + govov + full gvvoo + full gvoov
+      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,i8*nb*nb) &
+           & + max(i8*nb*nb,max(2_long*tl1,i8*tl2)))       &
+           & + 2.0E0_realk * (i8*nv**2)*no**2
       !memrq=memrq+max(memin,memout)
     elseif(s==2)then
       call array_default_batches(d1,mode,tdim,splt)
@@ -5423,10 +5428,11 @@ contains
     real(realk), pointer :: goooo(:), govoo(:), gvooo(:)
 
     !> MPI info:
-    integer :: myrank, nnod, double_2G_nel
+    integer :: double_2G_nel
     integer, pointer :: joblist(:)
     logical :: master, local
-
+    integer(kind=ls_mpik) :: tile_master, myrank, nnod
+ 
     !> Working arrays:
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
     integer(kind=long) :: tmp_size, no2v2
@@ -5434,7 +5440,7 @@ contains
     integer :: i, a, O, V, N, X
 
     !> debug:
-    logical :: print_debug
+    logical :: print_debug, local_moccsd
     real(realk), external :: ddot
     real(realk) :: tcpu, twall, tcpu1, twall1, dummy
     integer :: pos1, pos2, ncopy, idb, iub
@@ -5448,18 +5454,19 @@ contains
     nullify(u2)
     nullify(G_Pi)
     nullify(H_aQ)
-
     nullify(tmp0)
     nullify(tmp1)
     nullify(tmp2)
-
     nullify(gvoov)
     nullify(gvvoo)
     nullify(goooo)
     nullify(govoo)
     nullify(gvooo)
-  
     nullify(joblist)
+
+    ! find out how the MO int. are stored:
+    local_moccsd = .false.
+    if (pgmo_diag%atype=='RTAR') local_moccsd = .true.
 
     ! Set MPI related info
     ! ********************
@@ -5482,7 +5489,7 @@ contains
     V = nvir
     N = ntot
     X = MOinfo%DimInd1(1)
-    print_debug = (DECinfo%PL>2.or.DECinfo%cc_driver_debug.and.master)
+    print_debug = (DECinfo%PL>5.or.DECinfo%cc_driver_debug.and.master)
 
     ! Allocate working memory:
     dimMO = MOinfo%DimInd1(1)
@@ -5557,23 +5564,36 @@ contains
  
 #ifdef VAR_MPI
     call get_mo_ccsd_joblist(MOinfo, joblist)
-     
+
     ! all communication for MPI prior to the loop
     StartUpSlaves: if (master.and.nnod>1) then
-     
-      ! Check that the slaves have finished to write in pdm arrays
-      if (iter==1)  call lsmpi_reduction(dummy,infpar%master,infpar%lg_comm)
-     
       call ls_mpibcast(MOCCSDDATA,infpar%master,infpar%lg_comm)
       call mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
              & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock)
-     
     end if StartUpSlaves
+
+    if (iter==1.and.local_moccsd) then 
+      ! reduce the batches on the corresponding nodes:
+      do PQ_batch=1,Nbat 
+        tile_master = joblist(PQ_batch) - 1
+        
+        P_sta = MOinfo%StartInd1(PQ_batch)
+        Q_sta = MOinfo%StartInd2(PQ_batch)
+
+        if (P_sta==Q_sta) then
+          idb = MOinfo%tileInd(PQ_batch)
+          call lsmpi_reduction(pgmo_diag%ti(idb)%t,pgmo_diag%ti(idb)%e,tile_master,infpar%lg_comm)
+        else
+          iub = MOinfo%tileInd(PQ_batch)
+          call lsmpi_reduction(pgmo_up%ti(iub)%t,pgmo_up%ti(iub)%e,tile_master,infpar%lg_comm)
+        end if
+      end do
+    end if
 #endif
 
-    if (print_debug) call LSTIMER('MO-CCSD INIT',tcpu1,twall1,DECinfo%output)
 
+    call LSTIMER('MO-CCSD INIT',tcpu1,twall1,DECinfo%output)
 
     !===========================================================================!
     !                        START LOOP OVER MO BATCHES                         !
@@ -5606,7 +5626,7 @@ contains
     end do BatchPQ
  
 
-    if (print_debug) call LSTIMER('MO-CCSD main loop',tcpu1,twall1,DECinfo%output)
+    call LSTIMER('MO-CCSD main loop',tcpu1,twall1,DECinfo%output)
 
     !===========================================================================
     ! Calculate norm of A2:
@@ -5683,7 +5703,7 @@ contains
                   & goooo,govoo,gvooo,gvoov,gvvoo,ppfock%elm1,pqfock%elm1, & 
                   & qpfock%elm1,qqfock%elm1,deltafock%elm1,MyLsItem)
 
-    if (DECinfo%cc_driver_debug) then
+    if (print_debug) then
       call print_norm(ppfock,"MO-CCSD (ppfock):                ")
       call print_norm(pqfock,"MO-CCSD (pqfock):                ")
       call print_norm(qpfock,"MO-CCSD (qpfock):                ")
@@ -5742,8 +5762,6 @@ contains
       call LSTIMER('MO-CCSD E2',tcpu1,twall1,DECinfo%output)
     end if
 
-    if (print_debug) call LSTIMER('MO-CCSD residual',tcpu,twall,DECinfo%output)
-
     ! Free arrays:
     call mem_dealloc(xvir)
     call mem_dealloc(yocc)
@@ -5763,6 +5781,8 @@ contains
 #ifdef VAR_MPI
     call mem_dealloc(joblist)
 #endif 
+
+    call LSTIMER('MO-CCSD residual',tcpu,twall,DECinfo%output)
 
   end subroutine get_mo_ccsd_residual
 
@@ -6639,7 +6659,7 @@ subroutine ccsd_data_preparation()
   use tensor_interface_module, only: array_ainit,array_free,&
       &memory_allocate_array_dense_pc,memory_deallocate_array_dense_pc,&
       &memory_deallocate_window,&
-      &lspdm_use_comm_proc,get_arr_from_parr,DENSE,ALL_INIT,MASTER_INIT
+      &lspdm_use_comm_proc,get_arr_from_parr,DENSE,ALL_ACCESS,MASTER_ACCESS
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use decmpi_module, only: mpi_communicate_ccsd_calcdata
@@ -6719,14 +6739,14 @@ subroutine ccsd_data_preparation()
       govov  = array_ainit( [nocc,nvirt,nocc,nvirt], 4, local=local, atype='LDAR' )
       om2    = array_ainit( [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
   else
-     t2%init_type=ALL_INIT
-     govov%init_type=ALL_INIT
+     t2%access_type=ALL_ACCESS
+     govov%access_type=ALL_ACCESS
      call memory_allocate_array_dense_pc(t2)
      if(scheme==4)then
        call memory_allocate_array_dense_pc(govov)
      endif
-     t2%init_type=MASTER_INIT
-     govov%init_type=MASTER_INIT
+     t2%access_type=MASTER_ACCESS
+     govov%access_type=MASTER_ACCESS
   endif
   
   ! Quantities, that need to be defined and setset

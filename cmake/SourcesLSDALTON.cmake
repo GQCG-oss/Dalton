@@ -55,6 +55,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     LSDALTON/lsdaltonsrc/init_lsdalton.F90
     LSDALTON/lsdaltonsrc/configuration.F90
     LSDALTON/lsdaltonsrc/LSlib.F90
+    LSDALTON/lsdaltonsrc/LSlibState.F90
     LSDALTON/lsdaltonsrc/Profile.F90
     LSDALTON/lsdaltonsrc/IchorTesting.F90
     LSDALTON/lsdaltonsrc/IchorProfile.F90
@@ -462,6 +463,8 @@ set(LSUTILLIB_SOURCES
     )
 set(LSLIB_SOURCES
     LSDALTON/lsdaltonsrc/LSlib.F90
+    LSDALTON/lsdaltonsrc/LSlibState.F90
+    LSDALTON/lsdaltonsrc/LSlib_tester_module.F90
     LSDALTON/lsdaltonsrc/LSlib_tester.F90
     )
 set(LSDALTON_FIXED_FORTRAN_SOURCES

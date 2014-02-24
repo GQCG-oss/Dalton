@@ -255,12 +255,12 @@ contains
 
     ! Internal control of first order property keywords
     ! (Necessary because these must be false during fragment optimization.)
-    dens_save = DECinfo%MP2density
-    FO_save = DECinfo%first_order
-    grad_save = DECinfo%gradient
-    DECinfo%MP2density=.false.
-    DECinfo%first_order=.false.
-    DECinfo%gradient=.false.
+    dens_save           = DECinfo%MP2density
+    FO_save             = DECinfo%first_order
+    grad_save           = DECinfo%gradient
+    DECinfo%MP2density  = .false.
+    DECinfo%first_order = .false.
+    DECinfo%gradient    = .false.
 
     call LSTIMER('DEC INIT',tcpu,twall,DECinfo%output)
 
@@ -269,6 +269,19 @@ contains
     ! ********************************************************
     call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
          & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
+
+
+    !Crash calculation on purpose to test restart option
+    IF(DECinfo%CRASHCALC)THEN
+       print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
+       print*,'This keyword is only used for debug and testing purposes'
+       print*,'We want to be able to test the .RESTART keyword'
+       WRITE(DECinfo%output,*)'Calculation was intentionally crashed due to keyword .CRASHCALC'
+       WRITE(DECinfo%output,*)'This keyword is only used for debug and testing purposes'
+       WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
+       call lsquit('Crashed Calculation due to .CRASHCALC keyword',DECinfo%output)
+    ENDIF
+
 
     ! Send CC models to use for all pairs based on estimates
     if(esti) then
@@ -460,6 +473,11 @@ contains
     case(MODEL_MP2)
        ! MP2, use occ energy
        Ecorr = energies(FRAGMODEL_OCCMP2)
+#ifdef MOD_UNRELEASED
+       if(DECinfo%F12) then
+          Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
+       endif
+#endif 
     case(MODEL_RPA)
        ! RPA, use occ energy
        Ecorr = energies(FRAGMODEL_OCCRPA)
@@ -1051,6 +1069,7 @@ contains
     ! Initialize job list for atomic fragment optimizations
     call create_dec_joblist_fragopt(natoms,nocc,nunocc,MyMolecule%DistanceTable,&
          & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
+
     if(DECinfo%DECrestart) then
        write(DECinfo%output,*) 'Restarting atomic fragment optimizations....'
        call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&

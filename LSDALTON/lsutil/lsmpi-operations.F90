@@ -525,16 +525,18 @@ integer(kind=ls_mpik) :: COUNT,TAG,IERR,request,COUNT2
 real(realk),pointer :: buffer2(:)
 integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE),nMess,j,i
 logical(kind=ls_mpik) :: MessageRecieved
-logical :: ALLOC
+logical :: ALLOC,MessageRecievedW
 TAG = 155534879
 call set_lstmemrealkbufferpointer(lstmem_index,buffer,nbuffer)
 IF(nbuffer.GT.HUGE(COUNT))call lsquit('64 bit error in lsmpi_isend_lstmemrealkbuf',-1)
 COUNT = nbuffer
 MessageRecieved = .TRUE.
+MessageRecievedW = .TRUE.
 ALLOC=.FALSE.
-DO WHILE(MessageRecieved)
+DO WHILE(MessageRecievedW)
    call MPI_IPROBE(MPI_ANY_SOURCE,TAG,comm,MessageRecieved,status,ierr)
-   IF(MessageRecieved)THEN
+   MessageRecievedW = MessageRecieved 
+   IF(MessageRecievedW)THEN
       IF(.NOT.ALLOC)THEN
          call mem_alloc(buffer2,COUNT)
          ALLOC=.TRUE.
@@ -1259,6 +1261,7 @@ call LS_MPI_BUFFER(dalton%ADMM_GCBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_JKBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_DFBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_MCWEENY,Master)
+call LS_MPI_BUFFER(dalton%ADMM_2ERI,Master)
 call LS_MPI_BUFFER(dalton%SR_EXCHANGE,Master)
 !Coulomb attenuated method CAM parameters
 call LS_MPI_BUFFER(dalton%CAM,Master)

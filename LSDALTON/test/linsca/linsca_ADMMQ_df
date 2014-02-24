@@ -76,7 +76,7 @@ else
 fi
 
 # ENERGY test
-CRIT1=`$GREP "Final DFT energy.* -91.8921456" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy.* -91.8922268" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT -"
