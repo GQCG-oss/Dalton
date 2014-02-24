@@ -3504,8 +3504,8 @@ contains
     call mem_alloc(jobs%flops,njobs)
     call mem_alloc(jobs%LMtime,njobs)
     call mem_alloc(jobs%load,njobs)
-    call mem_alloc(jobs%RmaxMO,njobs)
-    call mem_alloc(jobs%RmaxAO,njobs)
+    call mem_alloc(jobs%RmaxAE,njobs)
+    call mem_alloc(jobs%RmaxAOS,njobs)
     jobs%nslaves = 0
     jobs%nocc    = 0
     jobs%nunocc  = 0
@@ -3514,7 +3514,8 @@ contains
     jobs%flops   = 0.0E0_realk
     jobs%LMtime  = 0.0E0_realk
     jobs%load    = 0.0E0_realk
-    jobs%RmaxMO  = 0.0E0_realk
+    jobs%RmaxAE  = 0.0E0_realk
+    jobs%RmaxAOS = 0.0E0_realk
 
   end subroutine init_joblist
 
@@ -3599,14 +3600,14 @@ contains
        nullify(jobs%load)
     end if
 
-    if(associated(jobs%RmaxMO)) then
-       call mem_dealloc(jobs%RmaxMO)
-       nullify(jobs%RmaxMO)
+    if(associated(jobs%RmaxAOS)) then
+       call mem_dealloc(jobs%RmaxAOS)
+       nullify(jobs%RmaxAOS)
     end if
 
-    if(associated(jobs%RmaxAO)) then
-       call mem_dealloc(jobs%RmaxAO)
-       nullify(jobs%RmaxAO)
+    if(associated(jobs%RmaxAE)) then
+       call mem_dealloc(jobs%RmaxAE)
+       nullify(jobs%RmaxAE)
     end if
   end subroutine free_joblist
 
@@ -3650,8 +3651,8 @@ contains
     jobs%flops(position)     = singlejob%flops(1)
     jobs%LMtime(position)    = singlejob%LMtime(1)
     jobs%load(position)      = singlejob%load(1)
-    jobs%RmaxMO(position)    = singlejob%RmaxMO(1)
-    jobs%RmaxAO(position)    = singlejob%RmaxAO(1)
+    jobs%RmaxAE(position)    = singlejob%RmaxAE(1)
+    jobs%RmaxAOS(position)   = singlejob%RmaxAOS(1)
 
   end subroutine put_job_into_joblist
 

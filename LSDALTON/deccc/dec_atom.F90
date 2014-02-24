@@ -267,7 +267,7 @@ contains
           fragment%occAOSidx(idx) = i
        end if
 
-       all_atoms( OccOrbitals(j)%centralatom ) = .true.
+       all_atoms( OccOrbitals(i)%centralatom ) = .true.
 
     end do
     if(idx /= fragment%noccAOS) &
@@ -305,7 +305,7 @@ contains
           fragment%unoccAOSidx(idx) = i
        end if
 
-       all_atoms( UnoccOrbitals(j)%centralatom ) = .true.
+       all_atoms( UnoccOrbitals(i)%centralatom ) = .true.
 
     end do
     if(idx /= fragment%nunoccAOS) &
@@ -318,7 +318,7 @@ contains
       if( all_atoms(i))then
         do j=i+1,natoms
           if(all_atoms(j))then
-            fragment%RmaxAOS = max(fragmentRmaxAOS,MyMolecule%DistanceTable(j,i))
+            fragment%RmaxAOS = max(fragment%RmaxAOS,MyMolecule%DistanceTable(j,i))
           endif
         enddo
       endif
@@ -399,7 +399,8 @@ contains
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Occ AOS     : ',Fragment%noccAOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Unocc AOS   : ',Fragment%nunoccAOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Basis       : ',Fragment%nbasis
-       write(DECinfo%output,'(a,2f10.3)')   ' FRAGINIT: Dist AOS/AE : ',Fragment%RmaxAOS,Fragment%RmaxAE
+       write(DECinfo%output,'(a,2f10.3)')   ' FRAGINIT: Dist AOS/AE : ',&
+       &Fragment%RmaxAOS*bohr_to_angstrom,Fragment%RmaxAE*bohr_to_angstrom
        write(DECinfo%output,*)
     end if
 
@@ -4143,7 +4144,7 @@ contains
        maxRmaxAE     = max(maxRmaxAE,RmaxAE(atom))
        maxRmaxAOS    = max(maxRmaxAOS,RmaxAOS(atom))
        avRmaxAE      = avRmaxAE  + RmaxAE(atom)
-       acRmaxAOS     = acRmaxAOS + RmaxAOS(atom)
+       avRmaxAOS     = avRmaxAOS + RmaxAOS(atom)
        minRmaxAE     = min(minRmaxAE,RmaxAE(atom))
        minRmaxAOS    = min(minRmaxAOS,RmaxAOS(atom))
 
@@ -4188,24 +4189,26 @@ contains
 
        PrintFragInfo: if(which_fragments(myatom)) then
 
-          write(DECinfo%output,'(1X,i6,10X,i6,17X,i6,10X,i6,9X,g10.4,2X,g10.4)') myatom, occsize(myatom),&
-               & unoccsize(myatom),basissize(myatom),RmaxAOS(myatom),RmaxAE(myatom
+          write(DECinfo%output,'(1X,i6,10X,i6,17X,i6,10X,i6,9X,g10.4,"/",g10.4)') myatom, occsize(myatom),&
+               & unoccsize(myatom),basissize(myatom),RmaxAOS(myatom)*bohr_to_angstrom,RmaxAE(myatom)*bohr_to_angstrom
 
        end if PrintFragInfo
 
     end do
     write(DECinfo%output,*)
 
-    write(DECinfo%output,'(1X,a,i8,"/",g15.5,"/",i8)')&
+    write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
     &'FRAGANALYSIS: Max/Ave/Min occ     : ', maxocc,avocc,minocc
-    write(DECinfo%output,'(1X,a,i8,"/",g15.5,"/",i8)')&
+    write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
     &'FRAGANALYSIS: Max/Ave/Min unocc   : ', maxunocc,avunocc,minunocc
-    write(DECinfo%output,'(1X,a,i8,"/",g15.5,"/",i8)')&
+    write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
     &'FRAGANALYSIS: Max/Ave/Min basis   : ', maxbasis,avbasis,minbasis
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min dist AE : ', maxRmaxAE,avRmaxAE,minRmaxAE
+    &'FRAGANALYSIS: Max/Ave/Min dist AE : ', &
+    &maxRmaxAE*bohr_to_angstrom,avRmaxAE*bohr_to_angstrom,minRmaxAE*bohr_to_angstrom
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min dist AOS: ', maxRmaxAOS,avRmaxAOS,minRmaxAOS
+    &'FRAGANALYSIS: Max/Ave/Min dist AOS: ',&
+    &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
     write(DECinfo%output,*)
 
 
@@ -4436,8 +4439,6 @@ contains
     real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
     !> Use estimated fragments?
     logical,intent(in) :: esti
-    !> Fragment radii
-    real(realk),dimension(natoms)
     !> Job list for fragments
     type(joblist),intent(inout) :: jobs
     logical,pointer :: occpairAOS(:), unoccpairAOS(:),basispair(:)

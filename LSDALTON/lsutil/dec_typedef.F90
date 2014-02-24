@@ -1063,7 +1063,7 @@ module dec_typedef_module
      !> max distance between atoms in the atoms that have AOS contribution
      real(realk),pointer :: RmaxAOS(:)
      !> max distance between atoms in the atoms that are used for fitting the MOs
-     real(realk),pointer :: RmaxAO(:)
+     real(realk),pointer :: RmaxAE(:)
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.
