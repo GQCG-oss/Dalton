@@ -4078,7 +4078,7 @@ contains
     real(realk) :: avocc,avunocc,tcpu,twall,avbasis,avRmaxAOS, avRmaxAE, maxRmaxAOS, maxRmaxAE, minRmaxAOS, minRmaxAE
     logical,pointer :: occAOS(:,:),unoccAOS(:,:),fragbasis(:,:)
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
-    real(realk), pointer :: RmaxAOS(:), RmaxAE(:)
+    real(realk), pointer :: RmaxAOS(:), RmaxAE(:), RaveAOS(:),RaveAE(:), RsdvAE(:),RsdvAOS(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -4115,6 +4115,10 @@ contains
     call mem_alloc(basissize,natoms)
     call mem_alloc(RmaxAOS,natoms)
     call mem_alloc(RmaxAE,natoms)
+    call mem_alloc(RaveAOS,natoms)
+    call mem_alloc(RaveAE,natoms)
+    call mem_alloc(RsdvAOS,natoms)
+    call mem_alloc(RsdvAE,natoms)
     occAOS    = .false.
     unoccAOS  = .false.
     fragbasis = .false.
@@ -4177,6 +4181,10 @@ contains
        !Get max distances in Fragment
        RmaxAE(atom)  = AtomicFragments(atom)%RmaxAE
        RmaxAOS(atom) = AtomicFragments(atom)%RmaxAOS
+       RaveAE(atom)  = AtomicFragments(atom)%RaveAE
+       RaveAOS(atom) = AtomicFragments(atom)%RaveAOS
+       RsdvAE(atom)  = AtomicFragments(atom)%RsdvAE
+       RsdvAOS(atom) = AtomicFragments(atom)%RsdvAOS
        maxRmaxAE     = max(maxRmaxAE,RmaxAE(atom))
        maxRmaxAOS    = max(maxRmaxAOS,RmaxAOS(atom))
        avRmaxAE      = avRmaxAE  + RmaxAE(atom)
@@ -4232,7 +4240,11 @@ contains
                & unoccsize(myatom), &
                & basissize(myatom), &
                & RmaxAOS(myatom)*bohr_to_angstrom, &
-               & RmaxAE(myatom)*bohr_to_angstrom
+               & RmaxAE(myatom)*bohr_to_angstrom, &
+               & RaveAOS(myatom)*bohr_to_angstrom, &
+               & RaveAE(myatom)*bohr_to_angstrom, &
+               & RsdvAOS(myatom)*bohr_to_angstrom, &
+               & RsdvAE(myatom)*bohr_to_angstrom
 
        end if PrintFragInfo
 
@@ -4323,6 +4335,10 @@ contains
     call mem_dealloc( basissize )
     call mem_dealloc( RmaxAOS   )
     call mem_dealloc( RmaxAE    )
+    call mem_dealloc( RaveAOS   )
+    call mem_dealloc( RaveAE    )
+    call mem_dealloc( RsdvAOS   )
+    call mem_dealloc( RsdvAE    )
 
 
   end subroutine create_dec_joblist_driver
