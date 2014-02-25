@@ -342,7 +342,6 @@ contains
       endif
     enddo
     if(cntr>1)fragment%RsdvAOS = ( fragment%RsdvAOS / float( cntr - 1 ) )**(0.5E0_realk)
-    print *,"FRAGSTATS:",fragment%RaveAOS,fragment%RsdvAOS,cntr
 
     call mem_dealloc( all_atoms )
 
@@ -4184,7 +4183,7 @@ contains
        RmaxAOS(atom) = AtomicFragments(atom)%RmaxAOS
        RaveAE(atom)  = AtomicFragments(atom)%RaveAE
        RaveAOS(atom) = AtomicFragments(atom)%RaveAOS
-       print *,"STUFF: ", RaveAE(atom), RaveAOS(atom),RaveAE(atom) * bohr_to_angstrom,RaveAOS(atom) * bohr_to_angstrom
+       print *,atom,"STUFF: ", RaveAE(atom), RaveAOS(atom),RaveAE(atom) * bohr_to_angstrom,RaveAOS(atom) * bohr_to_angstrom
        RsdvAE(atom)  = AtomicFragments(atom)%RsdvAE
        RsdvAOS(atom) = AtomicFragments(atom)%RsdvAOS
        maxRmaxAE     = max(maxRmaxAE,RmaxAE(atom))
@@ -4236,7 +4235,7 @@ contains
 
        PrintFragInfo: if(which_fragments(myatom)) then
 
-          write(DECinfo%output,'(1X,i6,6X,i6,5X,i6,8X,i5,7X,g8.2,"/",g8.2,1X,g10.4,"/",g10.4,1X,g10.4,"/",g10.4)') &
+          write(DECinfo%output,'(1X,i6,6X,i6,5X,i6,8X,i5,7X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3)') &
                & myatom, &
                & occsize(myatom), &
                & unoccsize(myatom), &
@@ -4267,6 +4266,7 @@ contains
     &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
     write(DECinfo%output,*)
 
+    stop 0
 
     ! Number of pair fragments
     npair=0
