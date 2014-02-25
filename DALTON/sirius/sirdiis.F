@@ -352,7 +352,7 @@ C
 C
       LOGICAL   ONLYFC, C2DIIS, DIFDEN, DODIFDEN, NEWTHR, RHFWOP, OLDWOP
       LOGICAL   LCONV, LNEWOCC
-      DIMENSION MISH(8)
+      DIMENSION NISH_SAVE(8), NCAN(8)
       CHARACTER*8 CMOLBL
 C
       CALL QENTER('DIIS_CTL')
@@ -723,7 +723,7 @@ C           .. subtract DCOVLP*FVAO_previous to get DCOVLP*FCAO_previous
 C
          IF (ONLYFC) THEN
             EACTIV = D0
-         ELSE 
+         ELSE
 C           EACTIV = DV(u,u)FC(u,u) = FC(u,u)
 C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
             IF (HSFOCK) THEN
@@ -854,8 +854,8 @@ C            First the MM part ...
 
              TEMP = ESOLT
 
-C            Now the PCM part ...        
-              
+C            Now the PCM part ...
+
              CALL DZERO(WRK(KFCSOL),NNBAST)
              CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
      &                   DUMMY,.FALSE.,ESOLT,WRK(KFREE),
@@ -1198,7 +1198,7 @@ C           is higher in energy with lower gradient, especially if MOSTART H1DIA
 C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
-!  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT 
+!  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT
           IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
               EMCDIF_test = 0.0D0
           ELSE
@@ -1364,17 +1364,24 @@ chjaaj: and "0.5*occ(i)* " /23may09 hjaaj
 C
 C        Diagonalize (level-shifted) FC (saved in DCAO)
 C
-         CALL ICOPY(8,NISH,1,MISH,1)
+         CALL ICOPY(8,NISH,1,NISH_SAVE,1)
          JOPRHF = IOPRHF
-         THR_JACO = MAX(THDIIS, 0.01D0*GRDNRM)
+         IF ( THDIIS .GE. 0.01D0*GRDNRM ) THEN
+            THR_FCKEIG = THDIIS
+            CALL ICOPY(8,NORB,1,NCAN,1) ! we need all orbitals canonical for CC
+         ELSE
+            THR_FCKEIG = 0.01D0*GRDNRM
+            CALL ICOPY(8,NOCC,1,NCAN,1) ! we only need oocupied orbitals canonical in global region
+         END IF
+
          call gettim(t1,w1)
-         CALL FCKEIG(CMO,DCAO,SHFTLVL,WRK(KFREE),LFREE,
-     &      THR_JACO,IPR_DIIS)
+         CALL FCKEIG(CMO,DCAO,SHFTLVL,THR_FCKEIG,NCAN,IPR_DIIS,
+     &               WRK(KFREE),LFREE)
          IF (IPR_DIIS .GT. 2) THEN
             call gettim(t2,w2)
             write(lupri,'(A,1P,3D10.2)')
-     &         ' CPU and wall times used in FCKEIG, THR_JACO: ',
-     &         t2-t1,w2-w1,thr_jaco
+     &         ' CPU and wall times used in FCKEIG, THR_FCKEIG: ',
+     &         t2-t1,w2-w1,thr_fckeig
          END IF
 
 C        Test if AUTOCC has changed occupation :
@@ -1382,7 +1389,7 @@ C        Test if AUTOCC has changed occupation :
          IF (AUTOCC) THEN
           NTEST = 0
           DO ISYM = 1,8
-            NTEST = NTEST + ABS(NISH(ISYM)-MISH(ISYM))
+            NTEST = NTEST + ABS(NISH(ISYM)-NISH_SAVE(ISYM))
           END DO
           NTEST = NTEST + ABS(IOPRHF-JOPRHF)
           IF (NTEST .GT. 0) THEN
@@ -2061,7 +2068,8 @@ C     EDFTY = EDFTY +EXCTRO-DP5*DDOT(N2BASX,DCAO,1,FCAO,1)
       RETURN
       END
 C  /* Deck fckeig */
-      SUBROUTINE FCKEIG(CMO,FC,SHFTLVL,SCRA,LSCRA,THDIIS,IPR_DIIS)
+      SUBROUTINE FCKEIG(CMO,FC,SHFTLVL,THR_FCKEIG,NCAN,IPR_DIIS,
+     &                  SCRA,LSCRA)
 C
 C Written 20-May-1993 by Hans Jorgen Aa. Jensen
 C
@@ -2075,6 +2083,7 @@ C Input:
 C  CMO; initial molecular orbitals used to build Fock matrix,
 C       assumed to be orthonormal.
 C  FC;  the inactive Fock matrix
+C  NCAN(8); number of orbitals in each symmetry to  make canonical
 C
 C Output:
 C  CMO; molecular orbitals diagonalizing Fock matrix
@@ -2084,7 +2093,7 @@ C Scratch:
 C  SCRA; general scratch area
 C
 #include "implicit.h"
-      DIMENSION CMO(*),FC(*),SCRA(*)
+      DIMENSION CMO(*),FC(*),NCAN(8),SCRA(*)
 C
 C Used from common blocks:
 C  INFINP : SUPSYM, LNOROT, NOROT()
@@ -2123,8 +2132,8 @@ C
 C     Step 1: Diagonalize (level-shifted) Fock-matrix:
 C
       DO 200 ISYM = 1,NSYM
-         NOCCI = NOCC(ISYM)
-      IF ( .NOT.AUTOCC .AND. NOCCI.EQ.0 ) GO TO 200
+         NCANI = NCAN(ISYM)
+      IF ( .NOT.AUTOCC .AND. NCANI.EQ.0 ) GO TO 200
          NORBI = NORB(ISYM)
       IF (NORBI.EQ.0) GO TO 200
          IORBI = IORB(ISYM)
@@ -2171,7 +2180,7 @@ C                  because then ORDRSS cannot be called
   120             CONTINUE
                   IF (NOROT(IK).NE.0 .AND. IOBTYP(IK).EQ.JTACT) THEN
                      KK = (IFSYM+K)+IROW(K)
-                     FC(KK) = DUMMY 
+                     FC(KK) = DUMMY
 C
 C This assignment puts it last in the sorting  - put back in place later
 C
@@ -2182,16 +2191,16 @@ C
   130       CONTINUE
          END IF
 C
-         IF (NOCCI .gt. 0) THEN
-            THR_JACO = NOCCI*NORBI*NSYM
-            THR_JACO = THDIIS / THR_JACO
+         IF (NCANI .gt. 0) THEN
+            THR_JACO = NCANI*NORBI*NSYM
+            THR_JACO = THR_FCKEIG / THR_JACO
          ELSE IF (AUTOCC) THEN
             THR_JACO = 1.D-4
          ELSE
             GO TO 200
          END IF
 
-         NMAX = MIN(NORBI, NOCCI + 2)
+         NMAX = MIN(NORBI, NCANI + 5)
          CALL JACO_THR(FC(IFSYM+1),CMO(ICSYM),NORBI,NMAX,NBASI,THR_JACO)
 C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_CONV)
 C
@@ -2211,7 +2220,7 @@ C
          JORBI = IORBI + JFRZI + 1
          NNOTFR= NORBI - JFRZI
          CALL ORDRSS(CMO(JCSYM),FC(JORBI),ISSMO(JORBI),NNOTFR,NBASI)
-C 
+C
 C         CALL HEADER('Sorted orbitals',-1)
 C         CALL PRORB(CMO,.FALSE.,LUPRI)
 C
@@ -2249,7 +2258,7 @@ C
       KSCR1 = KSAO + NNBAST
       LSCR1 = LSCRA - KSCR1
 
-      IF (DFTASC) CALL GETHOMOAC(FC,SCRA(KSCR1),LSCR1)
+      IF (DFTASC) CALL GET_HOMO_ASC(FC,SCRA(KSCR1),LSCR1)
 
       CALL ORTHO(CMO,SCRA(KSAO),SCRA(KSCR1),LSCR1)
       IF (SUPSYM) THEN
@@ -2295,7 +2304,9 @@ C
       CALL QTRACE(LUPRI)
       CALL QUIT('FCKEIG error, cannot handle orbitals '//
      &          'frozen with ".FREEZE"')
+
       CONTAINS
+
       SUBROUTINE ROTCOL(A,NR,NC,I1,I2)
 C
 C Cyclic permutation of columns in A
@@ -2319,33 +2330,9 @@ C
       DEALLOCATE(TMP)
       RETURN
       END SUBROUTINE ROTCOL
-      END
-#ifdef MOD_DFTASC
- -- hjaaj: DFTASC is not active (June 09)
-C  /* Deck gethom */
-      SUBROUTINE DFTASC_GETHOMO(FD)
-C find homo energy. tuh 16.05.03
-#include "implicit.h"
-      DIMENSION FD(*)
-      PARAMETER (DBIG = 1.D+12)
-#include "maxash.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "inforb.h"
-#include "infind.h"
-#include "dftacb.h"
-C
-      EHOMO  = -DBIG
-      DO ISYM = 1,NSYM
-         II = NOCC(ISYM)
-         IF (II.GT.0) THEN
-            EHOMOI = FD(IIORB(ISYM) + IROW(II) + II)
-            EHOMO = MAX(EHOMO,EHOMOI)
-         END IF
-      END DO
-      RETURN
-      END
-#endif
+
+      END   ! subroutine FCKEIG
+
       SUBROUTINE FVCORR(NVEC,W,DAO,FAO,MXERRV,F,WRK,KFREE,LFREE)
       IMPLICIT NONE
 C
@@ -2447,8 +2434,7 @@ C
       CALL QEXIT('FVCORR')
       END
 
-
-      SUBROUTINE GETHOMOAC(FD,SCRA,LSCRA)
+      SUBROUTINE GET_HOMO_ASC(FD,SCRA,LSCRA)
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2467,7 +2453,7 @@ C
 C
       KORBEN = 1
       LNEED  = KORBEN + NORBT
-      IF (LNEED .GT. LSCRA) CALL ERRWRK('GETHOMOAC',LNEED,LSCRA)
+      IF (LNEED .GT. LSCRA) CALL ERRWRK('GET_HOMO_ASC',LNEED,LSCRA)
       CALL DZERO(SCRA,NORBT)
 
       call dcopy(NORBT,FD,1,SCRA,1)
@@ -2510,7 +2496,7 @@ C     Out: SDF-FDS
       DOUBLE PRECISION F(NNBAST),D(NNBAST),SAOUNP(NBAST,NBAST)
       DOUBLE PRECISION COMM(NBAST,NBAST),WRK(*)
       PARAMETER (D1=1.0D0, D0=0.0D0, DM1=-1.0D0)
- 
+
       KFREE = KFRSAV
       LFREE = LFRSAV
       CALL MEMGET('REAL',KFTMP2,N2BASX,WRK,KFREE,LFREE)
@@ -2541,5 +2527,6 @@ C     Out: SDF-FDS
       CALL DGEMM('N','N',NBAST,NBAST,NBAST,D1,SAOUNP,NBAST,
      &     WRK(KDForFD),NBAST,DM1,COMM,NBAST)
 
-      CALL MEMREL('SDFCOMM',WRK,KFRSAV,KFTMP2,KFREE,LFREE)      
+      CALL MEMREL('SDFCOMM',WRK,KFRSAV,KFTMP2,KFREE,LFREE)
       END
+! -- end of sirdiis.F --
