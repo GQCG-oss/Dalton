@@ -665,6 +665,8 @@ contains
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
     call ls_mpi_buffer(MyFragment%slavetime,master)
     call ls_mpi_buffer(MyFragment%RejectThr,2,master)
+    call ls_mpi_buffer(MyFragment%RmaxAE,master)
+    call ls_mpi_buffer(MyFragment%RmaxAOS,master)
 
 
     ! Integer pointers

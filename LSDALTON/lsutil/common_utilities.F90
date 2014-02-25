@@ -142,8 +142,8 @@
      allocate(wrk(5))
      lwrk = -1
 #ifdef VAR_LSESSL
-     no_ref=0.0E0_realk
-     tol = 0.0E0_realk
+     no_ref = 0.0E0_realk
+     tol    = 0.0E0_realk
      call DSYGVX( 1,'V','A','L', N, A, N, B, N, no_ref,no_ref,no_ref,&
       &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
 #else
@@ -153,7 +153,14 @@
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
         stop "programming error in my_DSYGV input. workarray inquiry"
      endif
+#ifdef VAR_LSDEBUG
+     ! sometimes the optimal batch sizes do not always work, especially when
+     ! compiled with ifort --debug and --check so I introduced this, PE
+     print *,"WARNING(my_sygv): using minimal lwrk instead of optimal, debug"
+     lwrk = 3*N-1
+#else
      lwrk = NINT(wrk(1))
+#endif
      deallocate(wrk)
      allocate(wrk(lwrk))
 #ifdef VAR_LSESSL
@@ -161,6 +168,7 @@
       &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
      call dcopy(N*N,Z,1,A,1)
 #else
+     print *,"calling DSYGV",1,'V','L',N,size(A),N,size(B),N,size(eigval),size(wrk),lwrk
      call DSYGV(1,'V','L',N,A,N,B,N,eigval,wrk,lwrk,ierr)
 #endif 
      if(ierr.ne. 0) THEN

@@ -74,9 +74,13 @@ contains
     !> Is it a pair fragment?
     logical,intent(in) :: pairfrag
     integer :: j,idx,i,natoms,startidx
-    integer :: CentralAtom
+    integer :: CentralAtom, cntr
     real(realk) :: tcpu, twall
     logical,pointer :: occ_listEFF(:),occEOS(:),unoccEOS(:)
+    !> list of atoms with AOS orbitals assigned
+    logical,pointer :: all_atoms(:)
+
+    all_atoms  => null()
 
     ! Integer pointers for some dimensions
     call fragment_init_dimension_pointers(fragment)
@@ -88,6 +92,11 @@ contains
     natoms = MyMolecule%natoms
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    call mem_alloc( all_atoms,  natoms )
+    all_atoms  = .false.
+
+
 
     ! To be on the safe side, initialize everything to zero or null
     call atomic_fragment_nullify(fragment)
@@ -154,11 +163,13 @@ contains
 
        ! Loop over atoms in pair fragment list (just one atom, MyAtom, if it is not a pairfragment)
        do i=1,fragment%nEOSatoms
-          if( CentralAtom== fragment%EOSatoms(i) ) then ! Orbital is included in the EOS
-             fragment%noccEOS = fragment%noccEOS + 1
-             occEOS(j)=.true.
+          if( CentralAtom == fragment%EOSatoms(i) ) then ! Orbital is included in the EOS
+             fragment%noccEOS         = fragment%noccEOS + 1
+             occEOS(j)                = .true.
+             all_atoms( CentralAtom ) = .true.
           end if
        end do
+
 
     end do OccEOSSize
 
@@ -176,8 +187,9 @@ contains
        ! Loop over atoms in pair fragment list (just one atom, Myatom, if it is not a pairfragment)
        do i=1,fragment%nEOSatoms
           if( CentralAtom==fragment%EOSatoms(i) ) then ! Orbital is included in the EOS
-             fragment%nunoccEOS = fragment%nunoccEOS + 1
-             unoccEOS(j)=.true.
+             fragment%nunoccEOS       = fragment%nunoccEOS + 1
+             unoccEOS(j)              = .true.
+             all_atoms( CentralAtom ) = .true.
 
              ! Special case: Only occupied partitioning
              ! ----------------------------------------
@@ -197,7 +209,9 @@ contains
           end if
        end do
 
+
     end do UnoccEOSLoop
+
 
     ! Size of occupied AOS - number of "true" elements in logical occupied vector
     ! ***************************************************************************
@@ -232,11 +246,17 @@ contains
     ! Loop over EOS orbitals
     idx=0
     do j=startidx,nOcc   ! no core orbitals in EOS for frozen core approx
+
        if(occEOS(j)) then
+
           idx=idx+1
           fragment%occEOSidx(idx)=j
           fragment%occAOSidx(idx)=j   ! also set
+          all_atoms( OccOrbitals(j)%centralatom ) = .true.
+
        end if
+
+
     end do
 
     if(idx /= fragment%noccEOS) then
@@ -245,10 +265,13 @@ contains
 
     ! Loop over remaining AOS orbitals (not EOS because they have already been set)
     do i=1,nocc
+
        if(occ_listEFF(i) .and. (.not. occEOS(i)) ) then
           idx=idx+1
           fragment%occAOSidx(idx) = i
+          all_atoms( OccOrbitals(i)%centralatom ) = .true.
        end if
+
     end do
     if(idx /= fragment%noccAOS) &
          & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%noccAOS',-1)
@@ -265,11 +288,14 @@ contains
     ! Loop over EOS orbitals
     idx=0
     do j=1,nunocc
+
        if(unoccEOS(j)) then
           idx=idx+1
           fragment%unoccEOSidx(idx)=j
           fragment%unoccAOSidx(idx)=j
+          all_atoms( UnoccOrbitals(j)%centralatom ) = .true.
        end if
+
     end do
     if(idx /= fragment%nunoccEOS) then
        call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccEOS',DECinfo%output)
@@ -277,15 +303,47 @@ contains
 
     ! Loop over remaining AOS orbitals (not EOS)
     do i=1,nunocc
+
        if(unocc_list(i) .and. (.not. unoccEOS(i)) ) then
           idx=idx+1
           fragment%unoccAOSidx(idx) = i
+          all_atoms( UnoccOrbitals(i)%centralatom ) = .true.
        end if
+
     end do
     if(idx /= fragment%nunoccAOS) &
          & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
 
 
+    !set max distance in AOS space
+    fragment%RmaxAOS = 0.0E0_realk
+    fragment%RaveAOS = 0.0E0_realk
+    fragment%RsdvAOS = 0.0E0_realk
+    cntr = 0
+    do i=1,natoms
+      if( all_atoms(i) )then
+        do j=i+1,natoms
+          if( all_atoms(j) )then
+            fragment%RmaxAOS = max(fragment%RmaxAOS,MyMolecule%DistanceTable(j,i))
+            fragment%RaveAOS = fragment%RaveAOS + MyMolecule%DistanceTable(j,i)
+            cntr = cntr + 1
+          endif
+        enddo
+      endif
+    enddo
+    fragment%RaveAOS = fragment%RaveAOS / float( cntr )
+    do i=1,natoms
+      if( all_atoms(i) )then
+        do j=i+1,natoms
+          if( all_atoms(j) )then
+            fragment%RsdvAOS = fragment%RsdvAOS + (MyMolecule%DistanceTable(j,i) - fragment%RaveAOS )**2
+          endif
+        enddo
+      endif
+    enddo
+    if(cntr>1)fragment%RsdvAOS = ( fragment%RsdvAOS / float( cntr - 1 ) )**(0.5E0_realk)
+
+    call mem_dealloc( all_atoms )
 
     ! Set core orbital info (redundant if we do not use frozen core approx, but do it anyway)
     call set_Core_orbitals_for_fragment(MyMolecule,nocc,OccOrbitals,Fragment)
@@ -321,12 +379,12 @@ contains
     ! Occ and virt energy contributions
     call mem_alloc(fragment%OccContribs,fragment%noccAOS)
     call mem_alloc(fragment%VirtContribs,fragment%nunoccAOS)
-    fragment%OccContribs=0.0E0_realk
-    fragment%VirtContribs=0.0E0_realk
-    fragment%energies = 0.0E0_realk
-    fragment%EoccFOP = 0.0_realk
-    fragment%EvirtFOP = 0.0_realk
-    fragment%LagFOP = 0.0_realk
+    fragment%OccContribs  = 0.0E0_realk
+    fragment%VirtContribs = 0.0E0_realk
+    fragment%energies     = 0.0E0_realk
+    fragment%EoccFOP      = 0.0_realk
+    fragment%EvirtFOP     = 0.0_realk
+    fragment%LagFOP       = 0.0_realk
 
 
     ! Information related to singles amplitudes - only relevant for CC2 and CCSD
@@ -357,9 +415,11 @@ contains
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Occ EOS     : ',Fragment%noccEOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Unocc EOS   : ',Fragment%nunoccEOS
        write(DECinfo%output,'(a)')      ' -- Target + Buffer --'
-       write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Occ AOS    : ',Fragment%noccAOS
-       write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Unocc AOS  : ',Fragment%nunoccAOS
-       write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Basis      : ',Fragment%nbasis
+       write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Occ AOS     : ',Fragment%noccAOS
+       write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Unocc AOS   : ',Fragment%nunoccAOS
+       write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Basis       : ',Fragment%nbasis
+       write(DECinfo%output,'(a,2f10.3)')   ' FRAGINIT: Dist AOS/AE : ',&
+       &Fragment%RmaxAOS*bohr_to_angstrom,Fragment%RmaxAE*bohr_to_angstrom
        write(DECinfo%output,*)
     end if
 
@@ -2176,7 +2236,7 @@ contains
     type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Fragment info
     type(decfrag), intent(inout) :: fragment
-    integer :: i,j,idx
+    integer :: i,j,idx,cntr
     logical,pointer :: which_atoms(:)
 
 
@@ -2220,15 +2280,41 @@ contains
     end do
 
     ! assign atomic extent
+    fragment%RmaxAE = 0.0E0_realk
+    fragment%RaveAE = 0.0E0_realk
+    fragment%RsdvAE = 0.0E0_realk
     fragment%natoms = count(which_atoms)
     call mem_alloc(fragment%atoms_idx,Fragment%natoms)
-    idx=0
+    idx  = 0
+    cntr = 0
     do i=1,MyMolecule%natoms
        if(which_atoms(i)) then
           idx=idx+1
           fragment%atoms_idx(idx)=i
+
+          !set RmaxAE
+          do j=i+1,MyMolecule%natoms
+            if(which_atoms(j)) then
+              fragment%RmaxAE = max(fragment%RmaxAE,MyMolecule%DistanceTable(j,i))
+              fragment%RaveAE = fragment%RaveAE + MyMolecule%DistanceTable(j,i)
+              cntr = cntr + 1
+            endif
+          enddo
+
        end if
     end do
+    fragment%RaveAE = fragment%RaveAE / float( cntr )
+    do i=1,MyMolecule%natoms
+       if(which_atoms(i)) then
+          do j=i+1,MyMolecule%natoms
+            if(which_atoms(j)) then
+              fragment%RsdvAE = fragment%RsdvAE + ( MyMolecule%DistanceTable(j,i)- fragment%RaveAE)**2
+            endif
+          enddo
+
+       end if
+    end do
+    fragment%RsdvAE = ( fragment%RsdvAE / float( cntr - 1 ) )**(0.5E0_realk)
     call mem_dealloc(which_atoms)
 
     ! count number of basis functions on selected atoms
@@ -3987,11 +4073,12 @@ contains
     logical,intent(in) :: esti
     !> Job list of fragments listed according to size
     type(joblist),intent(inout) :: jobs
-    integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags
+    integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags, minocc,minunocc,minbasis
     integer:: maxbasis, nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
-    real(realk) :: avocc,avunocc,tcpu,twall,avbasis
+    real(realk) :: avocc,avunocc,tcpu,twall,avbasis,avRmaxAOS, avRmaxAE, maxRmaxAOS, maxRmaxAE, minRmaxAOS, minRmaxAE
     logical,pointer :: occAOS(:,:),unoccAOS(:,:),fragbasis(:,:)
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
+    real(realk), pointer :: RmaxAOS(:), RmaxAE(:), RaveAOS(:),RaveAE(:), RsdvAE(:),RsdvAOS(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -4002,13 +4089,23 @@ contains
 
     ! Fragment dimension statistics
     ! *****************************
-    nsingle = count(which_fragments)
-    maxocc=0
-    maxunocc=0
-    maxbasis = 0
-    avocc=0.0_realk
-    avunocc=0.0_realk
-    avbasis = 0.0_realk
+    nsingle    = count(which_fragments)
+    maxocc     = 0
+    maxunocc   = 0
+    maxbasis   = 0
+    avocc      = 0.0_realk
+    avunocc    = 0.0_realk
+    avbasis    = 0.0_realk
+    minocc     = huge(minocc)
+    minunocc   = huge(minunocc)
+    minbasis   = huge(minbasis)
+    maxRmaxAOS = 0.0E0_realk
+    maxRmaxAE  = 0.0E0_realk
+    avRmaxAOS  = 0.0E0_realk
+    avRmaxAE   = 0.0E0_realk
+    minRmaxAOS = huge(minRmaxAOS)
+    minRmaxAE  = huge(minRmaxAE)
+
     call mem_alloc(occAOS,nocc,natoms)
     call mem_alloc(unoccAOS,nunocc,natoms)
     call mem_alloc(Fragbasis,nbasis,natoms)
@@ -4016,13 +4113,19 @@ contains
     call mem_alloc(occsize,natoms)
     call mem_alloc(unoccsize,natoms)
     call mem_alloc(basissize,natoms)
-    occAOS=.false.
-    unoccAOS=.false.
-    fragbasis=.false.
-    fragsize=0
-    occsize=0
-    unoccsize=0
-    basissize=0
+    call mem_alloc(RmaxAOS,natoms)
+    call mem_alloc(RmaxAE,natoms)
+    call mem_alloc(RaveAOS,natoms)
+    call mem_alloc(RaveAE,natoms)
+    call mem_alloc(RsdvAOS,natoms)
+    call mem_alloc(RsdvAE,natoms)
+    occAOS    = .false.
+    unoccAOS  = .false.
+    fragbasis = .false.
+    fragsize  = 0
+    occsize   = 0
+    unoccsize = 0
+    basissize = 0
 
 
     GetStandardFrag: do atom=1,natoms
@@ -4057,37 +4160,57 @@ contains
        ! Statistics: Fragment sizes
        ! ==========================
        if(DECinfo%fragadapt) then ! use dimensions for fragment-adapted orbitals
-          occdim = AtomicFragments(atom)%noccFA
+          occdim   = AtomicFragments(atom)%noccFA
           unoccdim = AtomicFragments(atom)%nunoccFA
        else ! use dimensions for local orbitals
-          occdim = AtomicFragments(atom)%noccAOS
+          occdim   = AtomicFragments(atom)%noccAOS
           unoccdim = AtomicFragments(atom)%nunoccAOS
        end if
        basisdim = AtomicFragments(atom)%nbasis
 
        ! Max and average dimensions
-       maxocc = max(maxocc,occdim)
+       maxocc   = max(maxocc,occdim)
        maxunocc = max(maxunocc,unoccdim)
        maxbasis = max(maxbasis,basisdim)
-       avOCC = avOCC +real(occdim)
-       avUNOCC = avUNOCC +real(unoccdim)
-       avbasis = avbasis + real(basisdim)
+       avOCC    = avOCC   + real(occdim)
+       avUNOCC  = avUNOCC + real(unoccdim)
+       avbasis  = avbasis + real(basisdim)
+       minocc   = min(minocc,occdim)
+       minunocc = min(minunocc,unoccdim)
+       minbasis = min(minbasis,basisdim)
+       !Get max distances in Fragment
+       RmaxAE(atom)  = AtomicFragments(atom)%RmaxAE
+       RmaxAOS(atom) = AtomicFragments(atom)%RmaxAOS
+       RaveAE(atom)  = AtomicFragments(atom)%RaveAE
+       RaveAOS(atom) = AtomicFragments(atom)%RaveAOS
+       print *,atom,"STUFF: ", RaveAE(atom), RaveAOS(atom),RaveAE(atom) * bohr_to_angstrom,RaveAOS(atom) * bohr_to_angstrom
+       RsdvAE(atom)  = AtomicFragments(atom)%RsdvAE
+       RsdvAOS(atom) = AtomicFragments(atom)%RsdvAOS
+       maxRmaxAE     = max(maxRmaxAE,RmaxAE(atom))
+       maxRmaxAOS    = max(maxRmaxAOS,RmaxAOS(atom))
+       avRmaxAE      = avRmaxAE  + RmaxAE(atom)
+       avRmaxAOS     = avRmaxAOS + RmaxAOS(atom)
+       minRmaxAE     = min(minRmaxAE,RmaxAE(atom))
+       minRmaxAOS    = min(minRmaxAOS,RmaxAOS(atom))
 
        ! Store dimensions
-       occsize(atom) = occdim
+       occsize(atom)   = occdim
        unoccsize(atom) = unoccdim
        basissize(atom) = basisdim
 
        ! Fragment size measure: occ*unocc*basis
        fragsize(atom) = occdim*unoccdim*basisdim
 
+
     end do GetStandardFrag
 
 
     ! Average dimensions
-    avOCC = avOCC/real(nsingle)
-    avUNOCC = avUNOCC/real(nsingle)
-    avbasis = avbasis/real(nsingle)
+    avOCC     = avOCC     / real(nsingle)
+    avUNOCC   = avUNOCC   / real(nsingle)
+    avbasis   = avbasis   / real(nsingle)
+    avRmaxAOS = avRmaxAOS / real(nsingle)
+    avRmaxAE  = avRmaxAE  / real(nsingle)
 
 
 
@@ -4104,27 +4227,42 @@ contains
     write(DECinfo%output,'(1X,a)') '***************************************************************&
          &****************'
 
-    write(DECinfo%output,*) '   Index     Occupied (no. orb)      Virtual (no. orb)   Basis funcs.'
+    write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Rave(AOS/AE)      Rsdv(AOS/AE)'
 
     do i=1,natoms
        myatom = fragtrack(i)
 
        PrintFragInfo: if(which_fragments(myatom)) then
 
-          write(DECinfo%output,'(1X,i6,10X,i6,17X,i6,10X,i6)') myatom, occsize(myatom),&
-               & unoccsize(myatom),basissize(myatom)
+          write(DECinfo%output,'(1X,i6,1X,i6,1X,i6,1X,i6,3X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3)') &
+               & myatom, &
+               & occsize(myatom), &
+               & unoccsize(myatom), &
+               & basissize(myatom), &
+               & RmaxAOS(myatom)*bohr_to_angstrom, &
+               & RmaxAE(myatom)*bohr_to_angstrom, &
+               & RaveAOS(myatom)*bohr_to_angstrom, &
+               & RaveAE(myatom)*bohr_to_angstrom, &
+               & RsdvAOS(myatom)*bohr_to_angstrom, &
+               & RsdvAE(myatom)*bohr_to_angstrom
 
        end if PrintFragInfo
 
     end do
     write(DECinfo%output,*)
 
-    write(DECinfo%output,'(1X,a,i8)') 'FRAGANALYSIS: Max occ   ', maxocc
-    write(DECinfo%output,'(1X,a,i8)') 'FRAGANALYSIS: Max unocc ', maxunocc
-    write(DECinfo%output,'(1X,a,i8)') 'FRAGANALYSIS: Max basis ', maxbasis
-    write(DECinfo%output,'(1X,a,g15.5)') 'FRAGANALYSIS: Ave occ   ', avocc
-    write(DECinfo%output,'(1X,a,g15.5)') 'FRAGANALYSIS: Ave unocc ', avunocc
-    write(DECinfo%output,'(1X,a,g15.5)') 'FRAGANALYSIS: Ave basis ', avbasis
+    write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
+    &'FRAGANALYSIS: Max/Ave/Min occ     : ', maxocc,avocc,minocc
+    write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
+    &'FRAGANALYSIS: Max/Ave/Min unocc   : ', maxunocc,avunocc,minunocc
+    write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
+    &'FRAGANALYSIS: Max/Ave/Min basis   : ', maxbasis,avbasis,minbasis
+    write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
+    &'FRAGANALYSIS: Max/Ave/Min dist AE : ', &
+    &maxRmaxAE*bohr_to_angstrom,avRmaxAE*bohr_to_angstrom,minRmaxAE*bohr_to_angstrom
+    write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
+    &'FRAGANALYSIS: Max/Ave/Min dist AOS: ',&
+    &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
     write(DECinfo%output,*)
 
 
@@ -4187,14 +4325,20 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
-    call mem_dealloc(occAOS)
-    call mem_dealloc(unoccAOS)
-    call mem_dealloc(Fragbasis)
-    call mem_dealloc(fragsize)
-    call mem_dealloc(fragtrack)
-    call mem_dealloc(occsize)
-    call mem_dealloc(unoccsize)
-    call mem_dealloc(basissize)
+    call mem_dealloc( occAOS    )
+    call mem_dealloc( unoccAOS  )
+    call mem_dealloc( Fragbasis )
+    call mem_dealloc( fragsize  )
+    call mem_dealloc( fragtrack )
+    call mem_dealloc( occsize   )
+    call mem_dealloc( unoccsize )
+    call mem_dealloc( basissize )
+    call mem_dealloc( RmaxAOS   )
+    call mem_dealloc( RmaxAE    )
+    call mem_dealloc( RaveAOS   )
+    call mem_dealloc( RaveAE    )
+    call mem_dealloc( RsdvAOS   )
+    call mem_dealloc( RsdvAE    )
 
 
   end subroutine create_dec_joblist_driver
