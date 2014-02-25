@@ -4265,7 +4265,6 @@ contains
     &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
     write(DECinfo%output,*)
 
-    stop 0
 
     ! Number of pair fragments
     npair=0
