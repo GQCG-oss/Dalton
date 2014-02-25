@@ -1783,7 +1783,7 @@ contains
     integer(kind=long) :: testint
     logical :: master
     integer :: no,nv,nb,na,i,j,succ
-    integer(kind=ls_mpik) :: sender, recver, nnod
+    integer(kind=ls_mpik) :: sender, recver, nnod, rnk
     character(len=7) :: teststatus
     character(ARR_MSG_LEN) :: msg
     master = .true.
@@ -1793,7 +1793,7 @@ contains
       master =.false.
     endif
     nnod = infpar%lg_nodtot
-    if(nnod < 5) call lsquit("ERROR(test_array_struct): This needs to be run with at least 5 processes",-1)
+    !if(nnod < 5) call lsquit("ERROR(test_array_struct): This needs to be run with at least 5 processes",-1)
 #endif
     nb =  21
     nv =  18
@@ -2000,10 +2000,15 @@ contains
     !call lsmpi_barrier(infpar%lg_comm)
 
     !IF MY RANK IS THREE, PUT A MATRIX CONTAINING 10 in TILE 2 (ON THE
-    !RESPECTIVE THREAD) 
+    !RESPECTIVE PROCESS) 
     teststatus="SUCCESS"
-    if(infpar%lg_mynum==3.or.master)then
-      recver=3
+    if(infpar%lg_nodtot>3)then
+      rnk = 3
+    else
+      rnk = 0
+    endif
+    if(infpar%lg_mynum==rnk.or.master)then
+      recver=rnk
       if(.not.master)then
         call get_tile_dim(j,test2,testint)
         call mem_alloc(tileget,j)
@@ -2018,9 +2023,14 @@ contains
       endif
     endif
     !BEFORE 2 CAN GET THE 
+    if(infpar%lg_nodtot>3)then
+      rnk = 2
+    else
+      rnk = 0
+    endif
     call lsmpi_barrier(infpar%lg_comm)
-    if(infpar%lg_mynum==2.or.master)then
-      recver=2
+    if(infpar%lg_mynum==rnk.or.master)then
+      recver=rnk
       if(.not.master)then
         call get_tile_dim(j,test2,testint)
         call mem_alloc(tileget,j)
@@ -2074,7 +2084,12 @@ contains
       write (msg,*)"local test norm master"
       call print_norm(test%elm1,test%nelms,msg)
     endif
-    if(infpar%lg_mynum==1)then
+    if(infpar%lg_nodtot>1)then
+      rnk = 1
+    else
+      rnk = 0
+    endif
+    if(infpar%lg_mynum==rnk)then
       write (msg,*)"local test norm slave"
       call print_norm(test%elm1,test%nelms,msg)
     endif
@@ -2102,7 +2117,12 @@ contains
       write (msg,*)"local test 2 norm master"
       call print_norm(test2%elm1,test2%nelms,msg)
     endif
-    if(infpar%lg_mynum==1)then
+    if(infpar%lg_nodtot>1)then
+      rnk = 1
+    else
+      rnk = 0
+    endif
+    if(infpar%lg_mynum==rnk)then
       write (msg,*)"local test 2 norm slave"
       call print_norm(test2%elm1,test2%nelms,msg)
     endif
