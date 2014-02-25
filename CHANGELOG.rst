@@ -21,6 +21,7 @@ DALTON
 - Fix of a bug which occasionally caused DALTON to abort a .STEX calculation
 - Print final geometry in xyz format (angstrom). File called "final_geometry.xyz" is put into the restart tarball.
 - Append PID to scratch directory to avoid multiple tests running in the same directory.
+- Improved manual for two-photon and non-adiabatic coupling
 
 
 LSDALTON
