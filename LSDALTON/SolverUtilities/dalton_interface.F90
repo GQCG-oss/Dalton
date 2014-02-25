@@ -3274,7 +3274,7 @@ CONTAINS
          call mat_print(Jdec,1,nbast,1,nbast,lupri)
          WRITE(lupri,*)'the Diff'
          call mat_print(tempm3,1,nbast,1,nbast,lupri)
-         CALL lsQUIT('DECPACKED K TEST FAILED',lupri)
+         CALL lsQUIT('DECPACKED J TEST FAILED',lupri)
       ENDIF
       call mat_free(J)
       call mat_free(Jdec)
@@ -3350,7 +3350,7 @@ CONTAINS
       CALL II_get_Coulomb_mat(lupri,luerr,ls%setting,D,J,1)
 
       call mem_alloc(JdecFULL,nbast,nbast)
-      JdecFULL = 0E0_realk
+      JdecFULL = 0.0E0_realk
 
       call LSTIMER('START',t1,t2,LUPRI)
       BatchY: do Y = 1,nbatchesXY
@@ -3361,7 +3361,7 @@ CONTAINS
 
             nullify(integrals)
             allocate(integrals(nbast,nbast,dimX,dimY))
-            integrals = 0E0_realk
+            integrals = 0.0E0_realk
             IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
             IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%batchGab(X,Y)%p
 
@@ -3424,7 +3424,7 @@ CONTAINS
       write(lupri,*) 'QQQ OLD DI_DEBUG_DECPACK J DECPACK',mat_trab(Jdec,Jdec)
       write(lupri,*) 'QQQ OLD DIFF',ABS(mat_trab(tempm3,tempm3))
       IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-         write(lupri,*)'QQQ SUCCESFUL DECPACK K TEST'
+         write(lupri,*)'QQQ SUCCESFUL DECPACK JOLD TEST'
       ELSE
          WRITE(lupri,*)'the Jref'
          call mat_print(J,1,nbast,1,nbast,lupri)
@@ -3432,7 +3432,7 @@ CONTAINS
          call mat_print(Jdec,1,nbast,1,nbast,lupri)
          WRITE(lupri,*)'the Diff'
          call mat_print(tempm3,1,nbast,1,nbast,lupri)
-         CALL lsQUIT('DECPACKED K TEST FAILED',lupri)
+         CALL lsQUIT('DECPACKED JOLD TEST FAILED',lupri)
       ENDIF
       call mat_free(J)
       call mat_free(Jdec)

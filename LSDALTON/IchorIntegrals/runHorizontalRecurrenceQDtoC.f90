@@ -81,7 +81,7 @@ CONTAINS
              WRITE(*,'(A)')'!         & Qdistance12,ThetaP2,ThetaP,lupri)'
              WRITE(*,'(A)')'!  implicit none'
              WRITE(*,'(A)')'!  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri'
-             WRITE(*,'(A)')'!  real(realk),intent(in) :: Qdistance12(3,nPasses)'
+             WRITE(*,'(A)')'!  real(realk),intent(in) :: Qdistance12(3)'
              WRITE(*,'(A)')'!  real(realk),intent(in) :: ThetaP2(nlmP,1,nContPQ*nPasses)'
              WRITE(*,'(A)')'!  real(realk),intent(inout) :: ThetaP(nlmP, 1,1,nContPQ*nPasses)'
              WRITE(*,'(A)')'!  !Local variables'
@@ -104,7 +104,7 @@ CONTAINS
           WRITE(*,'(A)')'         & Qdistance12,ThetaP2,ThetaP,lupri)'
           WRITE(*,'(A)')'  implicit none'
           WRITE(*,'(A)')'  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri'
-          WRITE(*,'(A)')'  real(realk),intent(in) :: Qdistance12(3,nPasses)'
+          WRITE(*,'(A)')'  real(realk),intent(in) :: Qdistance12(3)'
           WRITE(*,'(A,I5,A)')'  real(realk),intent(in) :: ThetaP2(nlmP,',nTUVP,',nContPQ*nPasses)'
           IF((nTUVAstart+1.EQ.1).AND.(nTUVA.EQ.1))THEN
              WRITE(*,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nlmP,1,',nTUVBstart+1,':',nTUVB,',nContPQ*nPasses)'
@@ -136,17 +136,13 @@ CONTAINS
              endif
              WRITE(*,'(A)')'!  real(realk) :: Tmp(nTUVA,nTUVB) ordering'
           ENDDO
-          IF(JA.EQ.0)THEN
-             WRITE(*,'(A)')'  DO iP = 1,nPasses*nContPQ'
-          ELSE
-             WRITE(*,'(A)')'  DO iPassQ = 1,nPasses'
-             WRITE(*,'(A)')'   Xcd = -Qdistance12(1,iPassQ)'
-             WRITE(*,'(A)')'   Ycd = -Qdistance12(2,iPassQ)'
-             WRITE(*,'(A)')'   Zcd = -Qdistance12(3,iPassQ)'
-             WRITE(*,'(A)')'   iP = (iPassQ-1)*nContPQ'
-             WRITE(*,'(A)')'   DO iC = 1,nContPQ'
-             WRITE(*,'(A)')'    iP = iP + 1'
+          WRITE(*,'(A)')'!$OMP SINGLE'
+          IF(JA.NE.0)THEN
+             WRITE(*,'(A)')'   Xcd = -Qdistance12(1)'
+             WRITE(*,'(A)')'   Ycd = -Qdistance12(2)'
+             WRITE(*,'(A)')'   Zcd = -Qdistance12(3)'
           ENDIF
+          WRITE(*,'(A)')'  DO iP = 1,nContPQ*nPasses'
           DO JTMP=0,JA
              IF(JTMP.EQ.0)THEN
                 IF(nTUVAstart+1.EQ.1)THEN
@@ -203,12 +199,8 @@ CONTAINS
           IF(JA.GT.0)THEN
              WRITE(*,'(A)')'    ENDDO'
           ENDIF
-          IF(JA.EQ.0)THEN
-             WRITE(*,'(A)')'  ENDDO'
-          ELSE
-             WRITE(*,'(A)')'   ENDDO'
-             WRITE(*,'(A)')'  ENDDO'
-          ENDIF
+          WRITE(*,'(A)')'   ENDDO'
+          WRITE(*,'(A)')'!$OMP END SINGLE'
           IF(JP.LT.10)THEN
              WRITE(*,'(A,I1,A,I1,A,I1,A)')'end subroutine HorizontalRR_RHS_Q',JP,'C',AngmomA,'D',AngmomB,'DtoC'
           ELSE

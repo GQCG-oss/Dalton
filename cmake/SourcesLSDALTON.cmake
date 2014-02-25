@@ -241,10 +241,12 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_Seg.F90
     LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_general.F90
     LSDALTON/IchorIntegrals/IchorGab.F90
-    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPA.F90
-    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPB.F90
-    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPC.F90
-    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPD.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_BuildRJ000Gen.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_BuildRJ000Seg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPAGen.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPBGen.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPCGen.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPDGen.F90
     LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPASegQ.F90
     LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPBSegQ.F90
     LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPCSegQ.F90

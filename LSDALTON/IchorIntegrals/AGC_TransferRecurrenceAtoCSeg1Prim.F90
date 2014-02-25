@@ -1,13 +1,15 @@
-MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
+MODULE AGC_CPU_OBS_TRMODAtoCSeg1Prim
  use IchorPrecisionModule
   
  CONTAINS
- subroutine TransferRecurrenceP1Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+ subroutine TransferRecurrenceCPUP1Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(1),Dexp(1)
   real(realk),intent(in) :: Aux(   10,nPasses)
   real(realk),intent(inout) :: Aux2(    4,    4,nPasses)
@@ -15,25 +17,37 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   !Local variables
   real(realk) :: Tmp0(  4,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expBX,expBY,expBZ,&
+!$OMP         Tmp0,&
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
+!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
+!$OMP       Bexp,Dexp,&
+!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
     expP = Pexp(iPrimP)
     expBX = Bexp(1)*Xab
     expBY = Bexp(1)*Yab
     expBZ = Bexp(1)*Zab
-    iPrimQ=1
      invexpQ = D1/Qexp(1)
      inv2expQ = D05*invexpQ
      facX = -(expBX+Dexp(1)*Xcd)*invexpQ
@@ -71,17 +85,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
      Tmp0(4,4) = Tmp0(4,4) + pinvq*Aux(10,IP)
      DO iTUVQ=1,  4
       DO iTUVP=1,  4
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVP,iTUVQ)
+        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP1Q1AtoCSeg1Prim
- subroutine TransferRecurrenceP2Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP1Q1AtoCSeg1Prim
+ subroutine TransferRecurrenceCPUP2Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(1),Dexp(1)
   real(realk),intent(in) :: Aux(   20,nPasses)
   real(realk),intent(inout) :: Aux2(   10,    4,nPasses)
@@ -89,25 +106,37 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   !Local variables
   real(realk) :: Tmp0( 10,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expBX,expBY,expBZ,&
+!$OMP         Tmp0,&
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
+!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
+!$OMP       Bexp,Dexp,&
+!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
     expP = Pexp(iPrimP)
     expBX = Bexp(1)*Xab
     expBY = Bexp(1)*Yab
     expBZ = Bexp(1)*Zab
-    iPrimQ=1
      invexpQ = D1/Qexp(1)
      inv2expQ = D05*invexpQ
      facX = -(expBX+Dexp(1)*Xcd)*invexpQ
@@ -172,17 +201,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
      Tmp0(10,4) = Tmp0(10,4) + pinvq*Aux(20,IP)
      DO iTUVQ=1,  4
       DO iTUVP=1, 10
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVP,iTUVQ)
+        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP2Q1AtoCSeg1Prim
- subroutine TransferRecurrenceP2Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP2Q1AtoCSeg1Prim
+ subroutine TransferRecurrenceCPUP2Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(1),Dexp(1)
   real(realk),intent(in) :: Aux(   35,nPasses)
   real(realk),intent(inout) :: Aux2(   10,   10,nPasses)
@@ -191,25 +223,38 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   real(realk) :: Tmp0( 10, 10)
   real(realk) :: Tmp1( 11: 20,  2:  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expBX,expBY,expBZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
+!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
+!$OMP       Bexp,Dexp,&
+!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
     expP = Pexp(iPrimP)
     expBX = Bexp(1)*Xab
     expBY = Bexp(1)*Yab
     expBZ = Bexp(1)*Zab
-    iPrimQ=1
      invexpQ = D1/Qexp(1)
      inv2expQ = D05*invexpQ
      facX = -(expBX+Dexp(1)*Xcd)*invexpQ
@@ -434,17 +479,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
      Tmp0(10,10) = Tmp0(10,10) + pinvq*Tmp1(20,4)
      DO iTUVQ=1, 10
       DO iTUVP=1, 10
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVP,iTUVQ)
+        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP2Q2AtoCSeg1Prim
- subroutine TransferRecurrenceP3Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP2Q2AtoCSeg1Prim
+ subroutine TransferRecurrenceCPUP3Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(1),Dexp(1)
   real(realk),intent(in) :: Aux(   35,nPasses)
   real(realk),intent(inout) :: Aux2(   20,    4,nPasses)
@@ -452,25 +500,37 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   !Local variables
   real(realk) :: Tmp0( 20,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expBX,expBY,expBZ,&
+!$OMP         Tmp0,&
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
+!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
+!$OMP       Bexp,Dexp,&
+!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
     expP = Pexp(iPrimP)
     expBX = Bexp(1)*Xab
     expBY = Bexp(1)*Yab
     expBZ = Bexp(1)*Zab
-    iPrimQ=1
      invexpQ = D1/Qexp(1)
      inv2expQ = D05*invexpQ
      facX = -(expBX+Dexp(1)*Xcd)*invexpQ
@@ -583,17 +643,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
      Tmp0(20,4) = Tmp0(20,4) + pinvq*Aux(35,IP)
      DO iTUVQ=1,  4
       DO iTUVP=1, 20
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVP,iTUVQ)
+        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP3Q1AtoCSeg1Prim
- subroutine TransferRecurrenceP3Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP3Q1AtoCSeg1Prim
+ subroutine TransferRecurrenceCPUP3Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(1),Dexp(1)
   real(realk),intent(in) :: Aux(   56,nPasses)
   real(realk),intent(inout) :: Aux2(   20,   10,nPasses)
@@ -602,7 +665,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   real(realk) :: Tmp0( 20, 10)
   real(realk) :: Tmp1( 21: 35,  2:  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
@@ -628,20 +691,33 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   !CARTDIR = 3
   integer,parameter, dimension(20) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expBX,expBY,expBZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
+!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
+!$OMP       Bexp,Dexp,&
+!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
     expP = Pexp(iPrimP)
     expBX = Bexp(1)*Xab
     expBY = Bexp(1)*Yab
     expBZ = Bexp(1)*Zab
-    iPrimQ=1
      invexpQ = D1/Qexp(1)
      inv2expQ = D05*invexpQ
      facX = -(expBX+Dexp(1)*Xcd)*invexpQ
@@ -812,17 +888,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
      enddo
      DO iTUVQ=1, 10
       DO iTUVP=1, 20
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVP,iTUVQ)
+        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP3Q2AtoCSeg1Prim
- subroutine TransferRecurrenceP4Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP3Q2AtoCSeg1Prim
+ subroutine TransferRecurrenceCPUP4Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(1),Dexp(1)
   real(realk),intent(in) :: Aux(   56,nPasses)
   real(realk),intent(inout) :: Aux2(   35,    4,nPasses)
@@ -830,7 +909,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   !Local variables
   real(realk) :: Tmp0( 35,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
@@ -856,20 +935,32 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   !CARTDIR = 3
   integer,parameter, dimension(20) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expBX,expBY,expBZ,&
+!$OMP         Tmp0,&
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
+!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
+!$OMP       Bexp,Dexp,&
+!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
     expP = Pexp(iPrimP)
     expBX = Bexp(1)*Xab
     expBY = Bexp(1)*Yab
     expBZ = Bexp(1)*Zab
-    iPrimQ=1
      invexpQ = D1/Qexp(1)
      inv2expQ = D05*invexpQ
      facX = -(expBX+Dexp(1)*Xcd)*invexpQ
@@ -916,17 +1007,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
      enddo
      DO iTUVQ=1,  4
       DO iTUVP=1, 35
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVP,iTUVQ)
+        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP4Q1AtoCSeg1Prim
- subroutine TransferRecurrenceP3Q3AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP4Q1AtoCSeg1Prim
+ subroutine TransferRecurrenceCPUP3Q3AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(1),Dexp(1)
   real(realk),intent(in) :: Aux(   84,nPasses)
   real(realk),intent(inout) :: Aux2(   20,   20,nPasses)
@@ -936,7 +1030,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   real(realk) :: Tmp1( 21: 56,  2:  4)
   real(realk) :: Tmp2( 21: 35,  5: 10)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
@@ -968,20 +1062,34 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   integer,parameter, dimension(35) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expBX,expBY,expBZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         Tmp2,&
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
+!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
+!$OMP       Bexp,Dexp,&
+!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
     expP = Pexp(iPrimP)
     expBX = Bexp(1)*Xab
     expBY = Bexp(1)*Yab
     expBZ = Bexp(1)*Zab
-    iPrimQ=1
      invexpQ = D1/Qexp(1)
      inv2expQ = D05*invexpQ
      facX = -(expBX+Dexp(1)*Xcd)*invexpQ
@@ -1369,17 +1477,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
      enddo
      DO iTUVQ=1, 20
       DO iTUVP=1, 20
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVP,iTUVQ)
+        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP3Q3AtoCSeg1Prim
- subroutine TransferRecurrenceP4Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP3Q3AtoCSeg1Prim
+ subroutine TransferRecurrenceCPUP4Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(1),Dexp(1)
   real(realk),intent(in) :: Aux(   84,nPasses)
   real(realk),intent(inout) :: Aux2(   35,   10,nPasses)
@@ -1388,7 +1499,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   real(realk) :: Tmp0( 35, 10)
   real(realk) :: Tmp1( 36: 56,  2:  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
@@ -1420,20 +1531,33 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   integer,parameter, dimension(35) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expBX,expBY,expBZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
+!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
+!$OMP       Bexp,Dexp,&
+!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
     expP = Pexp(iPrimP)
     expBX = Bexp(1)*Xab
     expBY = Bexp(1)*Yab
     expBZ = Bexp(1)*Zab
-    iPrimQ=1
      invexpQ = D1/Qexp(1)
      inv2expQ = D05*invexpQ
      facX = -(expBX+Dexp(1)*Xcd)*invexpQ
@@ -1604,17 +1728,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
      enddo
      DO iTUVQ=1, 10
       DO iTUVP=1, 35
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVP,iTUVQ)
+        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP4Q2AtoCSeg1Prim
- subroutine TransferRecurrenceP4Q3AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP4Q2AtoCSeg1Prim
+ subroutine TransferRecurrenceCPUP4Q3AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(1),Dexp(1)
   real(realk),intent(in) :: Aux(  120,nPasses)
   real(realk),intent(inout) :: Aux2(   35,   20,nPasses)
@@ -1624,7 +1751,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   real(realk) :: Tmp1( 36: 84,  2:  4)
   real(realk) :: Tmp2( 36: 56,  5: 10)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
@@ -1665,20 +1792,34 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5,1,1,2,1,2,3,&
           & 1,2,3,4,1,2,3,4,5,1,2,3,4,5,6 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expBX,expBY,expBZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         Tmp2,&
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
+!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
+!$OMP       Bexp,Dexp,&
+!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
     expP = Pexp(iPrimP)
     expBX = Bexp(1)*Xab
     expBY = Bexp(1)*Yab
     expBZ = Bexp(1)*Zab
-    iPrimQ=1
      invexpQ = D1/Qexp(1)
      inv2expQ = D05*invexpQ
      facX = -(expBX+Dexp(1)*Xcd)*invexpQ
@@ -2066,17 +2207,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
      enddo
      DO iTUVQ=1, 20
       DO iTUVP=1, 35
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVP,iTUVQ)
+        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP4Q3AtoCSeg1Prim
- subroutine TransferRecurrenceP4Q4AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP4Q3AtoCSeg1Prim
+ subroutine TransferRecurrenceCPUP4Q4AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(1),Dexp(1)
   real(realk),intent(in) :: Aux(  165,nPasses)
   real(realk),intent(inout) :: Aux2(   35,   35,nPasses)
@@ -2087,7 +2231,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
   real(realk) :: Tmp2( 36: 84,  5: 10)
   real(realk) :: Tmp3( 36: 56, 11: 20)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvpminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
@@ -2140,20 +2284,35 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
           & 1,2,3,4,1,2,3,4,5,1,2,3,4,5,6,1,1,&
           & 2,1,2,3,1,2,3,4,1,2,3,4,5,1,2,3,4,&
           & 5,6,1,2,3,4,5,6,7 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expBX,expBY,expBZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         Tmp2,&
+!$OMP         Tmp3,&
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
+!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
+!$OMP       Bexp,Dexp,&
+!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
     expP = Pexp(iPrimP)
     expBX = Bexp(1)*Xab
     expBY = Bexp(1)*Yab
     expBZ = Bexp(1)*Zab
-    iPrimQ=1
      invexpQ = D1/Qexp(1)
      inv2expQ = D05*invexpQ
      facX = -(expBX+Dexp(1)*Xcd)*invexpQ
@@ -2901,9 +3060,10 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim
      enddo
      DO iTUVQ=1, 35
       DO iTUVP=1, 35
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVP,iTUVQ)
+        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP4Q4AtoCSeg1Prim
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP4Q4AtoCSeg1Prim
 end module

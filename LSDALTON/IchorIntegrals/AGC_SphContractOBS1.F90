@@ -15,6 +15,7 @@ subroutine SphericalContractOBS1_maxAngP2_maxAngA2(ijkQcart,nContPasses,IN,OUT)
   real(realk),parameter :: SPHMAT2_1      =    1.0000000000000000E+00_realk
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
+!$OMP SINGLE
   DO iPass=1,nContPasses
    DO ijkQ=1,ijkQcart
     OUT(  1,ijkQ,iPass) = IN(  2,ijkQ,iPass)
@@ -27,6 +28,7 @@ subroutine SphericalContractOBS1_maxAngP2_maxAngA2(ijkQcart,nContPasses,IN,OUT)
     OUT(  5,ijkQ,iPass) = OUT(  5,ijkQ,iPass) + IN(  4,ijkQ,iPass)*SPHMAT4_5      
    ENDDO
   ENDDO
+!$OMP END SINGLE
 end subroutine SphericalContractOBS1_maxAngP2_maxAngA2 
   
   
@@ -41,6 +43,7 @@ subroutine SphericalContractOBS1_maxAngP2_maxAngA0(ijkQcart,nContPasses,IN,OUT)
   real(realk),parameter :: SPHMAT2_1      =    1.0000000000000000E+00_realk
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
+!$OMP SINGLE
   DO iPass=1,nContPasses
    DO ijkQ=1,ijkQcart
     OUT(  1,ijkQ,iPass) = IN(  2,ijkQ,iPass)
@@ -53,6 +56,7 @@ subroutine SphericalContractOBS1_maxAngP2_maxAngA0(ijkQcart,nContPasses,IN,OUT)
     OUT(  5,ijkQ,iPass) = OUT(  5,ijkQ,iPass) + IN(  4,ijkQ,iPass)*SPHMAT4_5      
    ENDDO
   ENDDO
+!$OMP END SINGLE
 end subroutine SphericalContractOBS1_maxAngP2_maxAngA0 
   
   
@@ -67,6 +71,7 @@ subroutine SphericalContractOBS1_maxAngP3_maxAngA2(ijkQcart,nContPasses,IN,OUT)
   real(realk),parameter :: SPHMAT2_1      =    1.0000000000000000E+00_realk
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
+!$OMP SINGLE
   DO iPass=1,nContPasses
    DO ijkQ=1,ijkQcart
     OUT(  1,ijkQ,iPass) = IN(  2,ijkQ,iPass)
@@ -95,6 +100,7 @@ subroutine SphericalContractOBS1_maxAngP3_maxAngA2(ijkQcart,nContPasses,IN,OUT)
     OUT( 15,ijkQ,iPass) = OUT( 15,ijkQ,iPass) + IN( 16,ijkQ,iPass)*SPHMAT4_5      
    ENDDO
   ENDDO
+!$OMP END SINGLE
 end subroutine SphericalContractOBS1_maxAngP3_maxAngA2 
   
   
@@ -109,6 +115,7 @@ subroutine SphericalContractOBS1_maxAngP3_maxAngA1(ijkQcart,nContPasses,IN,OUT)
   real(realk),parameter :: SPHMAT4_1      =    1.0000000000000000E+00_realk
   real(realk),parameter :: SPHMAT10_13    =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT16_7     =    5.7735026918962584E-01_realk
+!$OMP SINGLE
   DO iPass=1,nContPasses
    DO ijkQ=1,ijkQcart
     OUT(  1,ijkQ,iPass) = IN(  4,ijkQ,iPass)
@@ -137,6 +144,7 @@ subroutine SphericalContractOBS1_maxAngP3_maxAngA1(ijkQcart,nContPasses,IN,OUT)
     OUT( 15,ijkQ,iPass) = OUT( 15,ijkQ,iPass) + IN( 12,ijkQ,iPass)*SPHMAT10_13    
    ENDDO
   ENDDO
+!$OMP END SINGLE
 end subroutine SphericalContractOBS1_maxAngP3_maxAngA1 
   
   
@@ -159,6 +167,7 @@ subroutine SphericalContractOBS1_maxAngP4_maxAngA2(ijkQcart,nContPasses,IN,OUT)
   real(realk),parameter :: SPHMAT10_5     =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT12_3     =    5.7735026918962584E-01_realk
   real(realk),parameter :: SPHMAT36_13    =    3.3333333333333343E-01_realk
+!$OMP SINGLE
   DO iPass=1,nContPasses
    DO ijkQ=1,ijkQcart
     OUT(  1,ijkQ,iPass) = IN(  8,ijkQ,iPass)
@@ -227,6 +236,7 @@ subroutine SphericalContractOBS1_maxAngP4_maxAngA2(ijkQcart,nContPasses,IN,OUT)
     OUT( 25,ijkQ,iPass) = OUT( 25,ijkQ,iPass) + IN( 22,ijkQ,iPass)*SPHMAT1_25     
    ENDDO
   ENDDO
+!$OMP END SINGLE
 end subroutine SphericalContractOBS1_maxAngP4_maxAngA2 
   
   

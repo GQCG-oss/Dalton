@@ -244,7 +244,7 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
     call mem_ichor_alloc(StartOrbitalA)
     call build_exp_ContractCoeff_center(nPrimA,nContA,nAtomsA,ntypesA,iTypeA,&
          & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,StartOrbitalOfTypeA,&
-         & expA,ContractCoeffA,Acenter,StartOrbitalA,MaxnAtomsB,MaxnprimA,MaxnContA,lupri) 
+         & expA,ContractCoeffA,Acenter,StartOrbitalA,MaxnAtomsA,MaxnprimA,MaxnContA,lupri) 
     call mem_ichor_dealloc(startOrbitalA) !do not need it
     deallocate(startOrbitalA)
     TotalAngmom = AngmomA + AngmomB + AngmomA + AngmomB 
@@ -332,6 +332,8 @@ ENDDO
 
 IF(SameLHSaos)THEN
    call AddUpperTriAngular(OutputStorage,OutputDim1,lupri)
+!   print*,'SameLHSaos GAB OutputStorage'
+!   call output(OutputStorage,1,OutputDim1,1,OutputDim1,OutputDim1,OutputDim1,1,6)
 ENDIF
 
 call mem_ichor_dealloc(TABFJW)
@@ -423,6 +425,8 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
         IatomA = iPass - ((iPass-1)/nAtomsA)*nAtomsA
         IatomB = (iPass-1)/nAtomsA+1
      ENDIF
+!     print*,'IatomA',IatomA
+!     print*,'IatomB',IatomB
      iBatchB = iBatchIndexOfTypeB + IatomB
      BcenterSpec(1) = Bcenter(1,IatomB)
      BcenterSpec(2) = Bcenter(2,IatomB)
@@ -431,12 +435,14 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
      AcenterSpec(1) = Acenter(1,IatomA)
      AcenterSpec(2) = Acenter(2,IatomA)
      AcenterSpec(3) = Acenter(3,IatomA)
+!     print*,'iBatchA',iBatchA
+!     print*,'iBatchB',iBatchB
      CALL Build_qcent_Qdistance12_QpreExpFac(nPrimA,nPrimB,&
           & nContA,nContB,expA,expB,AcenterSpec,BcenterSpec,ContractCoeffA,&
           & ContractCoeffB,PSegmented,&
           & pcent,Pdistance12,PpreExpFac,INTPRINT)
      call IchorGabIntegral_OBS_general(nPrimA,nPrimB,nPrimP,&
-          & nPasses,MaxPasses,intprint,lupri,nContA,nContB,nContP,expP,&
+          & intprint,lupri,nContA,nContB,nContP,expP,&
           & ContractCoeffA,ContractCoeffB,&
           & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
           & expA,expB,Psegmented,reducedExponents,integralPrefactor,&
@@ -445,6 +451,7 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
           & BasisContmaxsize,BasisCont)
      OutputStorage(iBatchA,iBatchB) = CDAB(1)
+!     print*,'OutputStorage(iBatchA,iBatchB)',OutputStorage(iBatchA,iBatchB)
   ENDDO
 !!$OMP END DO NOWAIT
 

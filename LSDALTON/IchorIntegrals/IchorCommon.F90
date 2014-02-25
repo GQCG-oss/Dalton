@@ -721,6 +721,91 @@ ELSE
 ENDIF
 end SUBROUTINE Build_pcent_Pdistance12_PpreExpFac
 
+SUBROUTINE Build_pcent_PpreExpFac(nPrimA,nPrimB,natomsA,natomsB,nContA,nContB,&
+     & inversexpP,expA,expB,Acenter,Bcenter,ContractCoeffA,ContractCoeffB,Segmented,&
+     & pcentPass,PpreExpFacPass,INTPRINT)
+  implicit none
+  integer,intent(in) :: nPrimA,nPrimB,natomsA,natomsB,nContA,nContB,INTPRINT
+  real(realk),intent(in) :: inversexpP(nPrimA,nPrimB),expA(nPrimA),expB(nPrimB)
+  real(realk),intent(in) :: Acenter(3,natomsA),Bcenter(3,natomsB)
+  real(realk),intent(in) :: ContractCoeffA(nPrimA,nContA)
+  real(realk),intent(in) :: ContractCoeffB(nPrimB,nContB)
+  logical,intent(in)     :: Segmented!,noScreenAB(nAtomsA,nAtomsB)
+  real(realk),intent(inout) :: PcentPass(3,nPrimA,nPrimB,natomsA,natomsB)
+  real(realk),intent(inout) :: PpreExpFacPass(nPrimA,nPrimB,natomsA,natomsB)
+  !local variables
+  integer :: i12,i2,i1,offset,IatomA,IatomB
+  real(realk) :: e2,e1,X,Y,Z,d2,AX,AY,AZ,BX,BY,BZ,TMPCCB,tmpe2d2,eBX,eBY,eBZ
+  IF (Segmented) THEN
+!$OMP PARALLEL DO DEFAULT(none) PRIVATE(IatomB,BX,BY,BZ,IatomA,AX,AY,AZ,X,Y,Z,d2,&
+!$OMP e2,e1,eBX,eBY,eBZ,tmpe2d2,TMPCCB,i1,i2) FIRSTPRIVATE(nAtomsB,nAtomsA,nPrimA,&
+!$OMP nPrimB) SHARED(expA,expB,inversexpP,&
+!$OMP Acenter,Bcenter,pcentPass,ContractCoeffA,ContractCoeffB,PpreExpFacPass) SCHEDULE(DYNAMIC,1)
+  DO IatomB = 1,nAtomsB
+   BX = Bcenter(1,IatomB)
+   BY = Bcenter(2,IatomB)
+   BZ = Bcenter(3,IatomB)
+   DO IatomA = 1,nAtomsA
+     AX = Acenter(1,IatomA)
+     AY = Acenter(2,IatomA)
+     AZ = Acenter(3,IatomA)
+     X = AX - BX
+     Y = AY - BY
+     Z = AZ - BZ
+     d2 = X*X + Y*Y + Z*Z
+     DO i2=1,nPrimB
+      e2  = expB(i2)       
+      eBX = e2*BX
+      eBY = e2*BY
+      eBZ = e2*BZ
+      tmpe2d2 = e2*d2
+      TMPCCB = ContractCoeffB(i2,1)
+      DO i1=1,nPrimA
+        pcentPass(1,i1,i2,iAtomA,IatomB) = (AX*expA(i1) + eBX)*inversexpP(i1,i2)
+        pcentPass(2,i1,i2,iAtomA,IatomB) = (AY*expA(i1) + eBY)*inversexpP(i1,i2)
+        pcentPass(3,i1,i2,iAtomA,IatomB) = (AZ*expA(i1) + eBZ)*inversexpP(i1,i2)
+        PpreExpFacPass(i1,i2,iAtomA,IatomB) = exp(-expA(i1)*tmpe2d2*inversexpP(i1,i2))*ContractCoeffA(i1,1)*TMPCCB
+      ENDDO
+     ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO 
+ELSE
+!$OMP PARALLEL DO DEFAULT(none) PRIVATE(IatomB,BX,BY,BZ,IatomA,AX,AY,AZ,X,Y,Z,d2,&
+!$OMP e2,e1,eBX,eBY,eBZ,tmpe2d2,TMPCCB,i1,i2) FIRSTPRIVATE(nAtomsB,nAtomsA,nPrimA,&
+!$OMP nPrimB) SHARED(expA,expB,inversexpP,&
+!$OMP Acenter,Bcenter,pcentPass,ContractCoeffA,PpreExpFacPass) SCHEDULE(DYNAMIC,1)
+  DO IatomB = 1,nAtomsB
+   BX = Bcenter(1,IatomB)
+   BY = Bcenter(2,IatomB)
+   BZ = Bcenter(3,IatomB)
+   DO IatomA = 1,nAtomsA
+     AX = Acenter(1,IatomA)
+     AY = Acenter(2,IatomA)
+     AZ = Acenter(3,IatomA)
+     X = AX - BX
+     Y = AY - BY
+     Z = AZ - BZ
+     d2 = X*X + Y*Y + Z*Z
+     DO i2=1,nPrimB
+      e2  = expB(i2)       
+      eBX = e2*BX
+      eBY = e2*BY
+      eBZ = e2*BZ
+      tmpe2d2 = e2*d2
+      DO i1=1,nPrimA
+       pcentPass(1,i1,i2,iAtomA,IatomB) = (AX*expA(i1) + eBX)*inversexpP(i1,i2)
+       pcentPass(2,i1,i2,iAtomA,IatomB) = (AY*expA(i1) + eBY)*inversexpP(i1,i2)
+       pcentPass(3,i1,i2,iAtomA,IatomB) = (AZ*expA(i1) + eBZ)*inversexpP(i1,i2)
+       PpreExpFacPass(i1,i2,iAtomA,IatomB) = exp(-tmpe2d2*expA(i1)*inversexpP(i1,i2))
+      ENDDO
+     ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO 
+ENDIF
+end SUBROUTINE Build_pcent_PpreExpFac
+
 SUBROUTINE Build_pcent_Pdistance12_PpreExpFac2(nPrimP,nPasses,&
      & PcentPass,Pdistance12Pass,PpreExpFacPass,&
      & pcent,Pdistance12,PpreExpFac,nAtomsA,nAtomsB,IatomA,IatomB)

@@ -1,13 +1,15 @@
-MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
+MODULE AGC_CPU_OBS_TRMODDtoBSeg1Prim
  use IchorPrecisionModule
   
  CONTAINS
- subroutine TransferRecurrenceP1Q1DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+ subroutine TransferRecurrenceCPUP1Q1DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Cexp(1),Aexp(1)
   real(realk),intent(in) :: Aux(   10,nPasses)
   real(realk),intent(inout) :: Aux2(    4,    4,nPasses)
@@ -16,75 +18,89 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   real(realk) :: Tmp0(  4,  4)
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
 !  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines 
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expAX,expAY,expAZ,&
+!$OMP         Tmp0,&
+!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
+!$OMP        Aexp,Cexp,&
+!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
-    expP = Pexp(iPrimP)
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
+    expP = Pexp(1)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
     expAX = -Aexp(1)*Xab
     expAY = -Aexp(1)*Yab
     expAZ = -Aexp(1)*Zab
-    iPrimQ=1
      facX = -(expAX-Cexp(1)*Xcd)*invexpP
      facY = -(expAY-Cexp(1)*Ycd)*invexpP
      facZ = -(expAZ-Cexp(1)*Zcd)*invexpP
      qinvp = -Qexp(1)*invexpP
  ! Building for Angular momentum Jp = 0
      DO iTUVQ=1,  4
-      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,1) = Aux(iTUVQ,iP)
      ENDDO
  ! Building for Angular momentum Jp = 1
      do iTUVQ = 1,  4
-      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1,  4
-      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1,  4
-      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
-     Tmp0(2,2) = Tmp0(2,2) + inv2expP*Aux(1,IP) 
-     Tmp0(3,3) = Tmp0(3,3) + inv2expP*Aux(1,IP) 
-     Tmp0(4,4) = Tmp0(4,4) + inv2expP*Aux(1,IP) 
-     Tmp0(1,2) = Tmp0(1,2) + qinvp*Aux(2,IP)
-     Tmp0(2,2) = Tmp0(2,2) + qinvp*Aux(5,IP)
-     Tmp0(3,2) = Tmp0(3,2) + qinvp*Aux(6,IP)
-     Tmp0(4,2) = Tmp0(4,2) + qinvp*Aux(7,IP)
-     Tmp0(1,3) = Tmp0(1,3) + qinvp*Aux(3,IP)
-     Tmp0(2,3) = Tmp0(2,3) + qinvp*Aux(6,IP)
-     Tmp0(3,3) = Tmp0(3,3) + qinvp*Aux(8,IP)
-     Tmp0(4,3) = Tmp0(4,3) + qinvp*Aux(9,IP)
-     Tmp0(1,4) = Tmp0(1,4) + qinvp*Aux(4,IP)
-     Tmp0(2,4) = Tmp0(2,4) + qinvp*Aux(7,IP)
-     Tmp0(3,4) = Tmp0(3,4) + qinvp*Aux(9,IP)
-     Tmp0(4,4) = Tmp0(4,4) + qinvp*Aux(10,IP)
+     Tmp0(2,2) = Tmp0(2,2) + inv2expP*Aux(1,iP) 
+     Tmp0(3,3) = Tmp0(3,3) + inv2expP*Aux(1,iP) 
+     Tmp0(4,4) = Tmp0(4,4) + inv2expP*Aux(1,iP) 
+     Tmp0(1,2) = Tmp0(1,2) + qinvp*Aux(2,iP)
+     Tmp0(2,2) = Tmp0(2,2) + qinvp*Aux(5,iP)
+     Tmp0(3,2) = Tmp0(3,2) + qinvp*Aux(6,iP)
+     Tmp0(4,2) = Tmp0(4,2) + qinvp*Aux(7,iP)
+     Tmp0(1,3) = Tmp0(1,3) + qinvp*Aux(3,iP)
+     Tmp0(2,3) = Tmp0(2,3) + qinvp*Aux(6,iP)
+     Tmp0(3,3) = Tmp0(3,3) + qinvp*Aux(8,iP)
+     Tmp0(4,3) = Tmp0(4,3) + qinvp*Aux(9,iP)
+     Tmp0(1,4) = Tmp0(1,4) + qinvp*Aux(4,iP)
+     Tmp0(2,4) = Tmp0(2,4) + qinvp*Aux(7,iP)
+     Tmp0(3,4) = Tmp0(3,4) + qinvp*Aux(9,iP)
+     Tmp0(4,4) = Tmp0(4,4) + qinvp*Aux(10,iP)
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
 !    Hopefully Tmp0 is small enough that it can be in cache. 
      DO iTUVQ=1,  4
       DO iTUVP=1,  4
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)
+        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP1Q1DtoBSeg1Prim
- subroutine TransferRecurrenceP1Q2DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP1Q1DtoBSeg1Prim
+ subroutine TransferRecurrenceCPUP1Q2DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Cexp(1),Aexp(1)
   real(realk),intent(in) :: Aux(   20,nPasses)
   real(realk),intent(inout) :: Aux2(    4,   10,nPasses)
@@ -93,102 +109,116 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   real(realk) :: Tmp0( 10,  4)
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
 !  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines 
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expAX,expAY,expAZ,&
+!$OMP         Tmp0,&
+!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
+!$OMP        Aexp,Cexp,&
+!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
-    expP = Pexp(iPrimP)
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
+    expP = Pexp(1)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
     expAX = -Aexp(1)*Xab
     expAY = -Aexp(1)*Yab
     expAZ = -Aexp(1)*Zab
-    iPrimQ=1
      facX = -(expAX-Cexp(1)*Xcd)*invexpP
      facY = -(expAY-Cexp(1)*Ycd)*invexpP
      facZ = -(expAZ-Cexp(1)*Zcd)*invexpP
      qinvp = -Qexp(1)*invexpP
  ! Building for Angular momentum Jp = 0
      DO iTUVQ=1, 10
-      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,1) = Aux(iTUVQ,iP)
      ENDDO
  ! Building for Angular momentum Jp = 1
      do iTUVQ = 1, 10
-      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 10
-      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 10
-      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
-     Tmp0(2,2) = Tmp0(2,2) + inv2expP*Aux(1,IP) 
-     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expP*Aux(2,IP) 
-     Tmp0(6,2) = Tmp0(6,2) + inv2expP*Aux(3,IP) 
-     Tmp0(7,2) = Tmp0(7,2) + inv2expP*Aux(4,IP) 
-     Tmp0(3,3) = Tmp0(3,3) + inv2expP*Aux(1,IP) 
-     Tmp0(6,3) = Tmp0(6,3) + inv2expP*Aux(2,IP) 
-     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expP*Aux(3,IP) 
-     Tmp0(9,3) = Tmp0(9,3) + inv2expP*Aux(4,IP) 
-     Tmp0(4,4) = Tmp0(4,4) + inv2expP*Aux(1,IP) 
-     Tmp0(7,4) = Tmp0(7,4) + inv2expP*Aux(2,IP) 
-     Tmp0(9,4) = Tmp0(9,4) + inv2expP*Aux(3,IP) 
-     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expP*Aux(4,IP) 
-     Tmp0(1,2) = Tmp0(1,2) + qinvp*Aux(2,IP)
-     Tmp0(2,2) = Tmp0(2,2) + qinvp*Aux(5,IP)
-     Tmp0(3,2) = Tmp0(3,2) + qinvp*Aux(6,IP)
-     Tmp0(4,2) = Tmp0(4,2) + qinvp*Aux(7,IP)
-     Tmp0(5,2) = Tmp0(5,2) + qinvp*Aux(11,IP)
-     Tmp0(6,2) = Tmp0(6,2) + qinvp*Aux(12,IP)
-     Tmp0(7,2) = Tmp0(7,2) + qinvp*Aux(13,IP)
-     Tmp0(8,2) = Tmp0(8,2) + qinvp*Aux(14,IP)
-     Tmp0(9,2) = Tmp0(9,2) + qinvp*Aux(15,IP)
-     Tmp0(10,2) = Tmp0(10,2) + qinvp*Aux(16,IP)
-     Tmp0(1,3) = Tmp0(1,3) + qinvp*Aux(3,IP)
-     Tmp0(2,3) = Tmp0(2,3) + qinvp*Aux(6,IP)
-     Tmp0(3,3) = Tmp0(3,3) + qinvp*Aux(8,IP)
-     Tmp0(4,3) = Tmp0(4,3) + qinvp*Aux(9,IP)
-     Tmp0(5,3) = Tmp0(5,3) + qinvp*Aux(12,IP)
-     Tmp0(6,3) = Tmp0(6,3) + qinvp*Aux(14,IP)
-     Tmp0(7,3) = Tmp0(7,3) + qinvp*Aux(15,IP)
-     Tmp0(8,3) = Tmp0(8,3) + qinvp*Aux(17,IP)
-     Tmp0(9,3) = Tmp0(9,3) + qinvp*Aux(18,IP)
-     Tmp0(10,3) = Tmp0(10,3) + qinvp*Aux(19,IP)
-     Tmp0(1,4) = Tmp0(1,4) + qinvp*Aux(4,IP)
-     Tmp0(2,4) = Tmp0(2,4) + qinvp*Aux(7,IP)
-     Tmp0(3,4) = Tmp0(3,4) + qinvp*Aux(9,IP)
-     Tmp0(4,4) = Tmp0(4,4) + qinvp*Aux(10,IP)
-     Tmp0(5,4) = Tmp0(5,4) + qinvp*Aux(13,IP)
-     Tmp0(6,4) = Tmp0(6,4) + qinvp*Aux(15,IP)
-     Tmp0(7,4) = Tmp0(7,4) + qinvp*Aux(16,IP)
-     Tmp0(8,4) = Tmp0(8,4) + qinvp*Aux(18,IP)
-     Tmp0(9,4) = Tmp0(9,4) + qinvp*Aux(19,IP)
-     Tmp0(10,4) = Tmp0(10,4) + qinvp*Aux(20,IP)
+     Tmp0(2,2) = Tmp0(2,2) + inv2expP*Aux(1,iP) 
+     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expP*Aux(2,iP) 
+     Tmp0(6,2) = Tmp0(6,2) + inv2expP*Aux(3,iP) 
+     Tmp0(7,2) = Tmp0(7,2) + inv2expP*Aux(4,iP) 
+     Tmp0(3,3) = Tmp0(3,3) + inv2expP*Aux(1,iP) 
+     Tmp0(6,3) = Tmp0(6,3) + inv2expP*Aux(2,iP) 
+     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expP*Aux(3,iP) 
+     Tmp0(9,3) = Tmp0(9,3) + inv2expP*Aux(4,iP) 
+     Tmp0(4,4) = Tmp0(4,4) + inv2expP*Aux(1,iP) 
+     Tmp0(7,4) = Tmp0(7,4) + inv2expP*Aux(2,iP) 
+     Tmp0(9,4) = Tmp0(9,4) + inv2expP*Aux(3,iP) 
+     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expP*Aux(4,iP) 
+     Tmp0(1,2) = Tmp0(1,2) + qinvp*Aux(2,iP)
+     Tmp0(2,2) = Tmp0(2,2) + qinvp*Aux(5,iP)
+     Tmp0(3,2) = Tmp0(3,2) + qinvp*Aux(6,iP)
+     Tmp0(4,2) = Tmp0(4,2) + qinvp*Aux(7,iP)
+     Tmp0(5,2) = Tmp0(5,2) + qinvp*Aux(11,iP)
+     Tmp0(6,2) = Tmp0(6,2) + qinvp*Aux(12,iP)
+     Tmp0(7,2) = Tmp0(7,2) + qinvp*Aux(13,iP)
+     Tmp0(8,2) = Tmp0(8,2) + qinvp*Aux(14,iP)
+     Tmp0(9,2) = Tmp0(9,2) + qinvp*Aux(15,iP)
+     Tmp0(10,2) = Tmp0(10,2) + qinvp*Aux(16,iP)
+     Tmp0(1,3) = Tmp0(1,3) + qinvp*Aux(3,iP)
+     Tmp0(2,3) = Tmp0(2,3) + qinvp*Aux(6,iP)
+     Tmp0(3,3) = Tmp0(3,3) + qinvp*Aux(8,iP)
+     Tmp0(4,3) = Tmp0(4,3) + qinvp*Aux(9,iP)
+     Tmp0(5,3) = Tmp0(5,3) + qinvp*Aux(12,iP)
+     Tmp0(6,3) = Tmp0(6,3) + qinvp*Aux(14,iP)
+     Tmp0(7,3) = Tmp0(7,3) + qinvp*Aux(15,iP)
+     Tmp0(8,3) = Tmp0(8,3) + qinvp*Aux(17,iP)
+     Tmp0(9,3) = Tmp0(9,3) + qinvp*Aux(18,iP)
+     Tmp0(10,3) = Tmp0(10,3) + qinvp*Aux(19,iP)
+     Tmp0(1,4) = Tmp0(1,4) + qinvp*Aux(4,iP)
+     Tmp0(2,4) = Tmp0(2,4) + qinvp*Aux(7,iP)
+     Tmp0(3,4) = Tmp0(3,4) + qinvp*Aux(9,iP)
+     Tmp0(4,4) = Tmp0(4,4) + qinvp*Aux(10,iP)
+     Tmp0(5,4) = Tmp0(5,4) + qinvp*Aux(13,iP)
+     Tmp0(6,4) = Tmp0(6,4) + qinvp*Aux(15,iP)
+     Tmp0(7,4) = Tmp0(7,4) + qinvp*Aux(16,iP)
+     Tmp0(8,4) = Tmp0(8,4) + qinvp*Aux(18,iP)
+     Tmp0(9,4) = Tmp0(9,4) + qinvp*Aux(19,iP)
+     Tmp0(10,4) = Tmp0(10,4) + qinvp*Aux(20,iP)
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
 !    Hopefully Tmp0 is small enough that it can be in cache. 
      DO iTUVQ=1, 10
       DO iTUVP=1,  4
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)
+        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP1Q2DtoBSeg1Prim
- subroutine TransferRecurrenceP1Q3DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP1Q2DtoBSeg1Prim
+ subroutine TransferRecurrenceCPUP1Q3DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Cexp(1),Aexp(1)
   real(realk),intent(in) :: Aux(   35,nPasses)
   real(realk),intent(inout) :: Aux2(    4,   20,nPasses)
@@ -197,150 +227,164 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   real(realk) :: Tmp0( 20,  4)
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
 !  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines 
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expAX,expAY,expAZ,&
+!$OMP         Tmp0,&
+!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
+!$OMP        Aexp,Cexp,&
+!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
-    expP = Pexp(iPrimP)
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
+    expP = Pexp(1)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
     expAX = -Aexp(1)*Xab
     expAY = -Aexp(1)*Yab
     expAZ = -Aexp(1)*Zab
-    iPrimQ=1
      facX = -(expAX-Cexp(1)*Xcd)*invexpP
      facY = -(expAY-Cexp(1)*Ycd)*invexpP
      facZ = -(expAZ-Cexp(1)*Zcd)*invexpP
      qinvp = -Qexp(1)*invexpP
  ! Building for Angular momentum Jp = 0
      DO iTUVQ=1, 20
-      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,1) = Aux(iTUVQ,iP)
      ENDDO
  ! Building for Angular momentum Jp = 1
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
-     Tmp0(2,2) = Tmp0(2,2) + inv2expP*Aux(1,IP) 
-     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expP*Aux(2,IP) 
-     Tmp0(6,2) = Tmp0(6,2) + inv2expP*Aux(3,IP) 
-     Tmp0(7,2) = Tmp0(7,2) + inv2expP*Aux(4,IP) 
-     Tmp0(11,2) = Tmp0(11,2) + 3*inv2expP*Aux(5,IP) 
-     Tmp0(12,2) = Tmp0(12,2) + 2*inv2expP*Aux(6,IP) 
-     Tmp0(13,2) = Tmp0(13,2) + 2*inv2expP*Aux(7,IP) 
-     Tmp0(14,2) = Tmp0(14,2) + inv2expP*Aux(8,IP) 
-     Tmp0(15,2) = Tmp0(15,2) + inv2expP*Aux(9,IP) 
-     Tmp0(16,2) = Tmp0(16,2) + inv2expP*Aux(10,IP) 
-     Tmp0(3,3) = Tmp0(3,3) + inv2expP*Aux(1,IP) 
-     Tmp0(6,3) = Tmp0(6,3) + inv2expP*Aux(2,IP) 
-     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expP*Aux(3,IP) 
-     Tmp0(9,3) = Tmp0(9,3) + inv2expP*Aux(4,IP) 
-     Tmp0(12,3) = Tmp0(12,3) + inv2expP*Aux(5,IP) 
-     Tmp0(14,3) = Tmp0(14,3) + 2*inv2expP*Aux(6,IP) 
-     Tmp0(15,3) = Tmp0(15,3) + inv2expP*Aux(7,IP) 
-     Tmp0(17,3) = Tmp0(17,3) + 3*inv2expP*Aux(8,IP) 
-     Tmp0(18,3) = Tmp0(18,3) + 2*inv2expP*Aux(9,IP) 
-     Tmp0(19,3) = Tmp0(19,3) + inv2expP*Aux(10,IP) 
-     Tmp0(4,4) = Tmp0(4,4) + inv2expP*Aux(1,IP) 
-     Tmp0(7,4) = Tmp0(7,4) + inv2expP*Aux(2,IP) 
-     Tmp0(9,4) = Tmp0(9,4) + inv2expP*Aux(3,IP) 
-     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expP*Aux(4,IP) 
-     Tmp0(13,4) = Tmp0(13,4) + inv2expP*Aux(5,IP) 
-     Tmp0(15,4) = Tmp0(15,4) + inv2expP*Aux(6,IP) 
-     Tmp0(16,4) = Tmp0(16,4) + 2*inv2expP*Aux(7,IP) 
-     Tmp0(18,4) = Tmp0(18,4) + inv2expP*Aux(8,IP) 
-     Tmp0(19,4) = Tmp0(19,4) + 2*inv2expP*Aux(9,IP) 
-     Tmp0(20,4) = Tmp0(20,4) + 3*inv2expP*Aux(10,IP) 
-     Tmp0(1,2) = Tmp0(1,2) + qinvp*Aux(2,IP)
-     Tmp0(2,2) = Tmp0(2,2) + qinvp*Aux(5,IP)
-     Tmp0(3,2) = Tmp0(3,2) + qinvp*Aux(6,IP)
-     Tmp0(4,2) = Tmp0(4,2) + qinvp*Aux(7,IP)
-     Tmp0(5,2) = Tmp0(5,2) + qinvp*Aux(11,IP)
-     Tmp0(6,2) = Tmp0(6,2) + qinvp*Aux(12,IP)
-     Tmp0(7,2) = Tmp0(7,2) + qinvp*Aux(13,IP)
-     Tmp0(8,2) = Tmp0(8,2) + qinvp*Aux(14,IP)
-     Tmp0(9,2) = Tmp0(9,2) + qinvp*Aux(15,IP)
-     Tmp0(10,2) = Tmp0(10,2) + qinvp*Aux(16,IP)
-     Tmp0(11,2) = Tmp0(11,2) + qinvp*Aux(21,IP)
-     Tmp0(12,2) = Tmp0(12,2) + qinvp*Aux(22,IP)
-     Tmp0(13,2) = Tmp0(13,2) + qinvp*Aux(23,IP)
-     Tmp0(14,2) = Tmp0(14,2) + qinvp*Aux(24,IP)
-     Tmp0(15,2) = Tmp0(15,2) + qinvp*Aux(25,IP)
-     Tmp0(16,2) = Tmp0(16,2) + qinvp*Aux(26,IP)
-     Tmp0(17,2) = Tmp0(17,2) + qinvp*Aux(27,IP)
-     Tmp0(18,2) = Tmp0(18,2) + qinvp*Aux(28,IP)
-     Tmp0(19,2) = Tmp0(19,2) + qinvp*Aux(29,IP)
-     Tmp0(20,2) = Tmp0(20,2) + qinvp*Aux(30,IP)
-     Tmp0(1,3) = Tmp0(1,3) + qinvp*Aux(3,IP)
-     Tmp0(2,3) = Tmp0(2,3) + qinvp*Aux(6,IP)
-     Tmp0(3,3) = Tmp0(3,3) + qinvp*Aux(8,IP)
-     Tmp0(4,3) = Tmp0(4,3) + qinvp*Aux(9,IP)
-     Tmp0(5,3) = Tmp0(5,3) + qinvp*Aux(12,IP)
-     Tmp0(6,3) = Tmp0(6,3) + qinvp*Aux(14,IP)
-     Tmp0(7,3) = Tmp0(7,3) + qinvp*Aux(15,IP)
-     Tmp0(8,3) = Tmp0(8,3) + qinvp*Aux(17,IP)
-     Tmp0(9,3) = Tmp0(9,3) + qinvp*Aux(18,IP)
-     Tmp0(10,3) = Tmp0(10,3) + qinvp*Aux(19,IP)
-     Tmp0(11,3) = Tmp0(11,3) + qinvp*Aux(22,IP)
-     Tmp0(12,3) = Tmp0(12,3) + qinvp*Aux(24,IP)
-     Tmp0(13,3) = Tmp0(13,3) + qinvp*Aux(25,IP)
-     Tmp0(14,3) = Tmp0(14,3) + qinvp*Aux(27,IP)
-     Tmp0(15,3) = Tmp0(15,3) + qinvp*Aux(28,IP)
-     Tmp0(16,3) = Tmp0(16,3) + qinvp*Aux(29,IP)
-     Tmp0(17,3) = Tmp0(17,3) + qinvp*Aux(31,IP)
-     Tmp0(18,3) = Tmp0(18,3) + qinvp*Aux(32,IP)
-     Tmp0(19,3) = Tmp0(19,3) + qinvp*Aux(33,IP)
-     Tmp0(20,3) = Tmp0(20,3) + qinvp*Aux(34,IP)
-     Tmp0(1,4) = Tmp0(1,4) + qinvp*Aux(4,IP)
-     Tmp0(2,4) = Tmp0(2,4) + qinvp*Aux(7,IP)
-     Tmp0(3,4) = Tmp0(3,4) + qinvp*Aux(9,IP)
-     Tmp0(4,4) = Tmp0(4,4) + qinvp*Aux(10,IP)
-     Tmp0(5,4) = Tmp0(5,4) + qinvp*Aux(13,IP)
-     Tmp0(6,4) = Tmp0(6,4) + qinvp*Aux(15,IP)
-     Tmp0(7,4) = Tmp0(7,4) + qinvp*Aux(16,IP)
-     Tmp0(8,4) = Tmp0(8,4) + qinvp*Aux(18,IP)
-     Tmp0(9,4) = Tmp0(9,4) + qinvp*Aux(19,IP)
-     Tmp0(10,4) = Tmp0(10,4) + qinvp*Aux(20,IP)
-     Tmp0(11,4) = Tmp0(11,4) + qinvp*Aux(23,IP)
-     Tmp0(12,4) = Tmp0(12,4) + qinvp*Aux(25,IP)
-     Tmp0(13,4) = Tmp0(13,4) + qinvp*Aux(26,IP)
-     Tmp0(14,4) = Tmp0(14,4) + qinvp*Aux(28,IP)
-     Tmp0(15,4) = Tmp0(15,4) + qinvp*Aux(29,IP)
-     Tmp0(16,4) = Tmp0(16,4) + qinvp*Aux(30,IP)
-     Tmp0(17,4) = Tmp0(17,4) + qinvp*Aux(32,IP)
-     Tmp0(18,4) = Tmp0(18,4) + qinvp*Aux(33,IP)
-     Tmp0(19,4) = Tmp0(19,4) + qinvp*Aux(34,IP)
-     Tmp0(20,4) = Tmp0(20,4) + qinvp*Aux(35,IP)
+     Tmp0(2,2) = Tmp0(2,2) + inv2expP*Aux(1,iP) 
+     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expP*Aux(2,iP) 
+     Tmp0(6,2) = Tmp0(6,2) + inv2expP*Aux(3,iP) 
+     Tmp0(7,2) = Tmp0(7,2) + inv2expP*Aux(4,iP) 
+     Tmp0(11,2) = Tmp0(11,2) + 3*inv2expP*Aux(5,iP) 
+     Tmp0(12,2) = Tmp0(12,2) + 2*inv2expP*Aux(6,iP) 
+     Tmp0(13,2) = Tmp0(13,2) + 2*inv2expP*Aux(7,iP) 
+     Tmp0(14,2) = Tmp0(14,2) + inv2expP*Aux(8,iP) 
+     Tmp0(15,2) = Tmp0(15,2) + inv2expP*Aux(9,iP) 
+     Tmp0(16,2) = Tmp0(16,2) + inv2expP*Aux(10,iP) 
+     Tmp0(3,3) = Tmp0(3,3) + inv2expP*Aux(1,iP) 
+     Tmp0(6,3) = Tmp0(6,3) + inv2expP*Aux(2,iP) 
+     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expP*Aux(3,iP) 
+     Tmp0(9,3) = Tmp0(9,3) + inv2expP*Aux(4,iP) 
+     Tmp0(12,3) = Tmp0(12,3) + inv2expP*Aux(5,iP) 
+     Tmp0(14,3) = Tmp0(14,3) + 2*inv2expP*Aux(6,iP) 
+     Tmp0(15,3) = Tmp0(15,3) + inv2expP*Aux(7,iP) 
+     Tmp0(17,3) = Tmp0(17,3) + 3*inv2expP*Aux(8,iP) 
+     Tmp0(18,3) = Tmp0(18,3) + 2*inv2expP*Aux(9,iP) 
+     Tmp0(19,3) = Tmp0(19,3) + inv2expP*Aux(10,iP) 
+     Tmp0(4,4) = Tmp0(4,4) + inv2expP*Aux(1,iP) 
+     Tmp0(7,4) = Tmp0(7,4) + inv2expP*Aux(2,iP) 
+     Tmp0(9,4) = Tmp0(9,4) + inv2expP*Aux(3,iP) 
+     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expP*Aux(4,iP) 
+     Tmp0(13,4) = Tmp0(13,4) + inv2expP*Aux(5,iP) 
+     Tmp0(15,4) = Tmp0(15,4) + inv2expP*Aux(6,iP) 
+     Tmp0(16,4) = Tmp0(16,4) + 2*inv2expP*Aux(7,iP) 
+     Tmp0(18,4) = Tmp0(18,4) + inv2expP*Aux(8,iP) 
+     Tmp0(19,4) = Tmp0(19,4) + 2*inv2expP*Aux(9,iP) 
+     Tmp0(20,4) = Tmp0(20,4) + 3*inv2expP*Aux(10,iP) 
+     Tmp0(1,2) = Tmp0(1,2) + qinvp*Aux(2,iP)
+     Tmp0(2,2) = Tmp0(2,2) + qinvp*Aux(5,iP)
+     Tmp0(3,2) = Tmp0(3,2) + qinvp*Aux(6,iP)
+     Tmp0(4,2) = Tmp0(4,2) + qinvp*Aux(7,iP)
+     Tmp0(5,2) = Tmp0(5,2) + qinvp*Aux(11,iP)
+     Tmp0(6,2) = Tmp0(6,2) + qinvp*Aux(12,iP)
+     Tmp0(7,2) = Tmp0(7,2) + qinvp*Aux(13,iP)
+     Tmp0(8,2) = Tmp0(8,2) + qinvp*Aux(14,iP)
+     Tmp0(9,2) = Tmp0(9,2) + qinvp*Aux(15,iP)
+     Tmp0(10,2) = Tmp0(10,2) + qinvp*Aux(16,iP)
+     Tmp0(11,2) = Tmp0(11,2) + qinvp*Aux(21,iP)
+     Tmp0(12,2) = Tmp0(12,2) + qinvp*Aux(22,iP)
+     Tmp0(13,2) = Tmp0(13,2) + qinvp*Aux(23,iP)
+     Tmp0(14,2) = Tmp0(14,2) + qinvp*Aux(24,iP)
+     Tmp0(15,2) = Tmp0(15,2) + qinvp*Aux(25,iP)
+     Tmp0(16,2) = Tmp0(16,2) + qinvp*Aux(26,iP)
+     Tmp0(17,2) = Tmp0(17,2) + qinvp*Aux(27,iP)
+     Tmp0(18,2) = Tmp0(18,2) + qinvp*Aux(28,iP)
+     Tmp0(19,2) = Tmp0(19,2) + qinvp*Aux(29,iP)
+     Tmp0(20,2) = Tmp0(20,2) + qinvp*Aux(30,iP)
+     Tmp0(1,3) = Tmp0(1,3) + qinvp*Aux(3,iP)
+     Tmp0(2,3) = Tmp0(2,3) + qinvp*Aux(6,iP)
+     Tmp0(3,3) = Tmp0(3,3) + qinvp*Aux(8,iP)
+     Tmp0(4,3) = Tmp0(4,3) + qinvp*Aux(9,iP)
+     Tmp0(5,3) = Tmp0(5,3) + qinvp*Aux(12,iP)
+     Tmp0(6,3) = Tmp0(6,3) + qinvp*Aux(14,iP)
+     Tmp0(7,3) = Tmp0(7,3) + qinvp*Aux(15,iP)
+     Tmp0(8,3) = Tmp0(8,3) + qinvp*Aux(17,iP)
+     Tmp0(9,3) = Tmp0(9,3) + qinvp*Aux(18,iP)
+     Tmp0(10,3) = Tmp0(10,3) + qinvp*Aux(19,iP)
+     Tmp0(11,3) = Tmp0(11,3) + qinvp*Aux(22,iP)
+     Tmp0(12,3) = Tmp0(12,3) + qinvp*Aux(24,iP)
+     Tmp0(13,3) = Tmp0(13,3) + qinvp*Aux(25,iP)
+     Tmp0(14,3) = Tmp0(14,3) + qinvp*Aux(27,iP)
+     Tmp0(15,3) = Tmp0(15,3) + qinvp*Aux(28,iP)
+     Tmp0(16,3) = Tmp0(16,3) + qinvp*Aux(29,iP)
+     Tmp0(17,3) = Tmp0(17,3) + qinvp*Aux(31,iP)
+     Tmp0(18,3) = Tmp0(18,3) + qinvp*Aux(32,iP)
+     Tmp0(19,3) = Tmp0(19,3) + qinvp*Aux(33,iP)
+     Tmp0(20,3) = Tmp0(20,3) + qinvp*Aux(34,iP)
+     Tmp0(1,4) = Tmp0(1,4) + qinvp*Aux(4,iP)
+     Tmp0(2,4) = Tmp0(2,4) + qinvp*Aux(7,iP)
+     Tmp0(3,4) = Tmp0(3,4) + qinvp*Aux(9,iP)
+     Tmp0(4,4) = Tmp0(4,4) + qinvp*Aux(10,iP)
+     Tmp0(5,4) = Tmp0(5,4) + qinvp*Aux(13,iP)
+     Tmp0(6,4) = Tmp0(6,4) + qinvp*Aux(15,iP)
+     Tmp0(7,4) = Tmp0(7,4) + qinvp*Aux(16,iP)
+     Tmp0(8,4) = Tmp0(8,4) + qinvp*Aux(18,iP)
+     Tmp0(9,4) = Tmp0(9,4) + qinvp*Aux(19,iP)
+     Tmp0(10,4) = Tmp0(10,4) + qinvp*Aux(20,iP)
+     Tmp0(11,4) = Tmp0(11,4) + qinvp*Aux(23,iP)
+     Tmp0(12,4) = Tmp0(12,4) + qinvp*Aux(25,iP)
+     Tmp0(13,4) = Tmp0(13,4) + qinvp*Aux(26,iP)
+     Tmp0(14,4) = Tmp0(14,4) + qinvp*Aux(28,iP)
+     Tmp0(15,4) = Tmp0(15,4) + qinvp*Aux(29,iP)
+     Tmp0(16,4) = Tmp0(16,4) + qinvp*Aux(30,iP)
+     Tmp0(17,4) = Tmp0(17,4) + qinvp*Aux(32,iP)
+     Tmp0(18,4) = Tmp0(18,4) + qinvp*Aux(33,iP)
+     Tmp0(19,4) = Tmp0(19,4) + qinvp*Aux(34,iP)
+     Tmp0(20,4) = Tmp0(20,4) + qinvp*Aux(35,iP)
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
 !    Hopefully Tmp0 is small enough that it can be in cache. 
      DO iTUVQ=1, 20
       DO iTUVP=1,  4
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)
+        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP1Q3DtoBSeg1Prim
- subroutine TransferRecurrenceP2Q2DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP1Q3DtoBSeg1Prim
+ subroutine TransferRecurrenceCPUP2Q2DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Cexp(1),Aexp(1)
   real(realk),intent(in) :: Aux(   35,nPasses)
   real(realk),intent(inout) :: Aux2(   10,   10,nPasses)
@@ -350,147 +394,159 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
   real(realk) :: Tmp1( 11: 20,  2:  4)
 !  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines 
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expAX,expAY,expAZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
+!$OMP        Aexp,Cexp,&
+!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
-    expP = Pexp(iPrimP)
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
+    expP = Pexp(1)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
     expAX = -Aexp(1)*Xab
     expAY = -Aexp(1)*Yab
     expAZ = -Aexp(1)*Zab
-    iPrimQ=1
      facX = -(expAX-Cexp(1)*Xcd)*invexpP
      facY = -(expAY-Cexp(1)*Ycd)*invexpP
      facZ = -(expAZ-Cexp(1)*Zcd)*invexpP
      qinvp = -Qexp(1)*invexpP
  ! Building for Angular momentum Jp = 0
      DO iTUVQ=1, 10
-      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,1) = Aux(iTUVQ,iP)
      ENDDO
  ! Building for Angular momentum Jp = 1
      do iTUVQ = 1, 10
-      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 10
-      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 10
-      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  11, 20
-      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  11, 20
-      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  11, 20
-      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
-     Tmp0(2,2) = Tmp0(2,2) + inv2expP*Aux(1,IP) 
-     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expP*Aux(2,IP) 
-     Tmp0(6,2) = Tmp0(6,2) + inv2expP*Aux(3,IP) 
-     Tmp0(7,2) = Tmp0(7,2) + inv2expP*Aux(4,IP) 
-     Tmp0(3,3) = Tmp0(3,3) + inv2expP*Aux(1,IP) 
-     Tmp0(6,3) = Tmp0(6,3) + inv2expP*Aux(2,IP) 
-     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expP*Aux(3,IP) 
-     Tmp0(9,3) = Tmp0(9,3) + inv2expP*Aux(4,IP) 
-     Tmp0(4,4) = Tmp0(4,4) + inv2expP*Aux(1,IP) 
-     Tmp0(7,4) = Tmp0(7,4) + inv2expP*Aux(2,IP) 
-     Tmp0(9,4) = Tmp0(9,4) + inv2expP*Aux(3,IP) 
-     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expP*Aux(4,IP) 
-     Tmp1(11,2) = Tmp1(11,2) + 3*inv2expP*Aux(5,IP) 
-     Tmp1(12,2) = Tmp1(12,2) + 2*inv2expP*Aux(6,IP) 
-     Tmp1(13,2) = Tmp1(13,2) + 2*inv2expP*Aux(7,IP) 
-     Tmp1(14,2) = Tmp1(14,2) + inv2expP*Aux(8,IP) 
-     Tmp1(15,2) = Tmp1(15,2) + inv2expP*Aux(9,IP) 
-     Tmp1(16,2) = Tmp1(16,2) + inv2expP*Aux(10,IP) 
-     Tmp1(12,3) = Tmp1(12,3) + inv2expP*Aux(5,IP) 
-     Tmp1(14,3) = Tmp1(14,3) + 2*inv2expP*Aux(6,IP) 
-     Tmp1(15,3) = Tmp1(15,3) + inv2expP*Aux(7,IP) 
-     Tmp1(17,3) = Tmp1(17,3) + 3*inv2expP*Aux(8,IP) 
-     Tmp1(18,3) = Tmp1(18,3) + 2*inv2expP*Aux(9,IP) 
-     Tmp1(19,3) = Tmp1(19,3) + inv2expP*Aux(10,IP) 
-     Tmp1(13,4) = Tmp1(13,4) + inv2expP*Aux(5,IP) 
-     Tmp1(15,4) = Tmp1(15,4) + inv2expP*Aux(6,IP) 
-     Tmp1(16,4) = Tmp1(16,4) + 2*inv2expP*Aux(7,IP) 
-     Tmp1(18,4) = Tmp1(18,4) + inv2expP*Aux(8,IP) 
-     Tmp1(19,4) = Tmp1(19,4) + 2*inv2expP*Aux(9,IP) 
-     Tmp1(20,4) = Tmp1(20,4) + 3*inv2expP*Aux(10,IP) 
-     Tmp0(1,2) = Tmp0(1,2) + qinvp*Aux(2,IP)
-     Tmp0(2,2) = Tmp0(2,2) + qinvp*Aux(5,IP)
-     Tmp0(3,2) = Tmp0(3,2) + qinvp*Aux(6,IP)
-     Tmp0(4,2) = Tmp0(4,2) + qinvp*Aux(7,IP)
-     Tmp0(5,2) = Tmp0(5,2) + qinvp*Aux(11,IP)
-     Tmp0(6,2) = Tmp0(6,2) + qinvp*Aux(12,IP)
-     Tmp0(7,2) = Tmp0(7,2) + qinvp*Aux(13,IP)
-     Tmp0(8,2) = Tmp0(8,2) + qinvp*Aux(14,IP)
-     Tmp0(9,2) = Tmp0(9,2) + qinvp*Aux(15,IP)
-     Tmp0(10,2) = Tmp0(10,2) + qinvp*Aux(16,IP)
-     Tmp1(11,2) = Tmp1(11,2) + qinvp*Aux(21,IP)
-     Tmp1(12,2) = Tmp1(12,2) + qinvp*Aux(22,IP)
-     Tmp1(13,2) = Tmp1(13,2) + qinvp*Aux(23,IP)
-     Tmp1(14,2) = Tmp1(14,2) + qinvp*Aux(24,IP)
-     Tmp1(15,2) = Tmp1(15,2) + qinvp*Aux(25,IP)
-     Tmp1(16,2) = Tmp1(16,2) + qinvp*Aux(26,IP)
-     Tmp1(17,2) = Tmp1(17,2) + qinvp*Aux(27,IP)
-     Tmp1(18,2) = Tmp1(18,2) + qinvp*Aux(28,IP)
-     Tmp1(19,2) = Tmp1(19,2) + qinvp*Aux(29,IP)
-     Tmp1(20,2) = Tmp1(20,2) + qinvp*Aux(30,IP)
-     Tmp0(1,3) = Tmp0(1,3) + qinvp*Aux(3,IP)
-     Tmp0(2,3) = Tmp0(2,3) + qinvp*Aux(6,IP)
-     Tmp0(3,3) = Tmp0(3,3) + qinvp*Aux(8,IP)
-     Tmp0(4,3) = Tmp0(4,3) + qinvp*Aux(9,IP)
-     Tmp0(5,3) = Tmp0(5,3) + qinvp*Aux(12,IP)
-     Tmp0(6,3) = Tmp0(6,3) + qinvp*Aux(14,IP)
-     Tmp0(7,3) = Tmp0(7,3) + qinvp*Aux(15,IP)
-     Tmp0(8,3) = Tmp0(8,3) + qinvp*Aux(17,IP)
-     Tmp0(9,3) = Tmp0(9,3) + qinvp*Aux(18,IP)
-     Tmp0(10,3) = Tmp0(10,3) + qinvp*Aux(19,IP)
-     Tmp1(11,3) = Tmp1(11,3) + qinvp*Aux(22,IP)
-     Tmp1(12,3) = Tmp1(12,3) + qinvp*Aux(24,IP)
-     Tmp1(13,3) = Tmp1(13,3) + qinvp*Aux(25,IP)
-     Tmp1(14,3) = Tmp1(14,3) + qinvp*Aux(27,IP)
-     Tmp1(15,3) = Tmp1(15,3) + qinvp*Aux(28,IP)
-     Tmp1(16,3) = Tmp1(16,3) + qinvp*Aux(29,IP)
-     Tmp1(17,3) = Tmp1(17,3) + qinvp*Aux(31,IP)
-     Tmp1(18,3) = Tmp1(18,3) + qinvp*Aux(32,IP)
-     Tmp1(19,3) = Tmp1(19,3) + qinvp*Aux(33,IP)
-     Tmp1(20,3) = Tmp1(20,3) + qinvp*Aux(34,IP)
-     Tmp0(1,4) = Tmp0(1,4) + qinvp*Aux(4,IP)
-     Tmp0(2,4) = Tmp0(2,4) + qinvp*Aux(7,IP)
-     Tmp0(3,4) = Tmp0(3,4) + qinvp*Aux(9,IP)
-     Tmp0(4,4) = Tmp0(4,4) + qinvp*Aux(10,IP)
-     Tmp0(5,4) = Tmp0(5,4) + qinvp*Aux(13,IP)
-     Tmp0(6,4) = Tmp0(6,4) + qinvp*Aux(15,IP)
-     Tmp0(7,4) = Tmp0(7,4) + qinvp*Aux(16,IP)
-     Tmp0(8,4) = Tmp0(8,4) + qinvp*Aux(18,IP)
-     Tmp0(9,4) = Tmp0(9,4) + qinvp*Aux(19,IP)
-     Tmp0(10,4) = Tmp0(10,4) + qinvp*Aux(20,IP)
-     Tmp1(11,4) = Tmp1(11,4) + qinvp*Aux(23,IP)
-     Tmp1(12,4) = Tmp1(12,4) + qinvp*Aux(25,IP)
-     Tmp1(13,4) = Tmp1(13,4) + qinvp*Aux(26,IP)
-     Tmp1(14,4) = Tmp1(14,4) + qinvp*Aux(28,IP)
-     Tmp1(15,4) = Tmp1(15,4) + qinvp*Aux(29,IP)
-     Tmp1(16,4) = Tmp1(16,4) + qinvp*Aux(30,IP)
-     Tmp1(17,4) = Tmp1(17,4) + qinvp*Aux(32,IP)
-     Tmp1(18,4) = Tmp1(18,4) + qinvp*Aux(33,IP)
-     Tmp1(19,4) = Tmp1(19,4) + qinvp*Aux(34,IP)
-     Tmp1(20,4) = Tmp1(20,4) + qinvp*Aux(35,IP)
+     Tmp0(2,2) = Tmp0(2,2) + inv2expP*Aux(1,iP) 
+     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expP*Aux(2,iP) 
+     Tmp0(6,2) = Tmp0(6,2) + inv2expP*Aux(3,iP) 
+     Tmp0(7,2) = Tmp0(7,2) + inv2expP*Aux(4,iP) 
+     Tmp0(3,3) = Tmp0(3,3) + inv2expP*Aux(1,iP) 
+     Tmp0(6,3) = Tmp0(6,3) + inv2expP*Aux(2,iP) 
+     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expP*Aux(3,iP) 
+     Tmp0(9,3) = Tmp0(9,3) + inv2expP*Aux(4,iP) 
+     Tmp0(4,4) = Tmp0(4,4) + inv2expP*Aux(1,iP) 
+     Tmp0(7,4) = Tmp0(7,4) + inv2expP*Aux(2,iP) 
+     Tmp0(9,4) = Tmp0(9,4) + inv2expP*Aux(3,iP) 
+     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expP*Aux(4,iP) 
+     Tmp1(11,2) = Tmp1(11,2) + 3*inv2expP*Aux(5,iP) 
+     Tmp1(12,2) = Tmp1(12,2) + 2*inv2expP*Aux(6,iP) 
+     Tmp1(13,2) = Tmp1(13,2) + 2*inv2expP*Aux(7,iP) 
+     Tmp1(14,2) = Tmp1(14,2) + inv2expP*Aux(8,iP) 
+     Tmp1(15,2) = Tmp1(15,2) + inv2expP*Aux(9,iP) 
+     Tmp1(16,2) = Tmp1(16,2) + inv2expP*Aux(10,iP) 
+     Tmp1(12,3) = Tmp1(12,3) + inv2expP*Aux(5,iP) 
+     Tmp1(14,3) = Tmp1(14,3) + 2*inv2expP*Aux(6,iP) 
+     Tmp1(15,3) = Tmp1(15,3) + inv2expP*Aux(7,iP) 
+     Tmp1(17,3) = Tmp1(17,3) + 3*inv2expP*Aux(8,iP) 
+     Tmp1(18,3) = Tmp1(18,3) + 2*inv2expP*Aux(9,iP) 
+     Tmp1(19,3) = Tmp1(19,3) + inv2expP*Aux(10,iP) 
+     Tmp1(13,4) = Tmp1(13,4) + inv2expP*Aux(5,iP) 
+     Tmp1(15,4) = Tmp1(15,4) + inv2expP*Aux(6,iP) 
+     Tmp1(16,4) = Tmp1(16,4) + 2*inv2expP*Aux(7,iP) 
+     Tmp1(18,4) = Tmp1(18,4) + inv2expP*Aux(8,iP) 
+     Tmp1(19,4) = Tmp1(19,4) + 2*inv2expP*Aux(9,iP) 
+     Tmp1(20,4) = Tmp1(20,4) + 3*inv2expP*Aux(10,iP) 
+     Tmp0(1,2) = Tmp0(1,2) + qinvp*Aux(2,iP)
+     Tmp0(2,2) = Tmp0(2,2) + qinvp*Aux(5,iP)
+     Tmp0(3,2) = Tmp0(3,2) + qinvp*Aux(6,iP)
+     Tmp0(4,2) = Tmp0(4,2) + qinvp*Aux(7,iP)
+     Tmp0(5,2) = Tmp0(5,2) + qinvp*Aux(11,iP)
+     Tmp0(6,2) = Tmp0(6,2) + qinvp*Aux(12,iP)
+     Tmp0(7,2) = Tmp0(7,2) + qinvp*Aux(13,iP)
+     Tmp0(8,2) = Tmp0(8,2) + qinvp*Aux(14,iP)
+     Tmp0(9,2) = Tmp0(9,2) + qinvp*Aux(15,iP)
+     Tmp0(10,2) = Tmp0(10,2) + qinvp*Aux(16,iP)
+     Tmp1(11,2) = Tmp1(11,2) + qinvp*Aux(21,iP)
+     Tmp1(12,2) = Tmp1(12,2) + qinvp*Aux(22,iP)
+     Tmp1(13,2) = Tmp1(13,2) + qinvp*Aux(23,iP)
+     Tmp1(14,2) = Tmp1(14,2) + qinvp*Aux(24,iP)
+     Tmp1(15,2) = Tmp1(15,2) + qinvp*Aux(25,iP)
+     Tmp1(16,2) = Tmp1(16,2) + qinvp*Aux(26,iP)
+     Tmp1(17,2) = Tmp1(17,2) + qinvp*Aux(27,iP)
+     Tmp1(18,2) = Tmp1(18,2) + qinvp*Aux(28,iP)
+     Tmp1(19,2) = Tmp1(19,2) + qinvp*Aux(29,iP)
+     Tmp1(20,2) = Tmp1(20,2) + qinvp*Aux(30,iP)
+     Tmp0(1,3) = Tmp0(1,3) + qinvp*Aux(3,iP)
+     Tmp0(2,3) = Tmp0(2,3) + qinvp*Aux(6,iP)
+     Tmp0(3,3) = Tmp0(3,3) + qinvp*Aux(8,iP)
+     Tmp0(4,3) = Tmp0(4,3) + qinvp*Aux(9,iP)
+     Tmp0(5,3) = Tmp0(5,3) + qinvp*Aux(12,iP)
+     Tmp0(6,3) = Tmp0(6,3) + qinvp*Aux(14,iP)
+     Tmp0(7,3) = Tmp0(7,3) + qinvp*Aux(15,iP)
+     Tmp0(8,3) = Tmp0(8,3) + qinvp*Aux(17,iP)
+     Tmp0(9,3) = Tmp0(9,3) + qinvp*Aux(18,iP)
+     Tmp0(10,3) = Tmp0(10,3) + qinvp*Aux(19,iP)
+     Tmp1(11,3) = Tmp1(11,3) + qinvp*Aux(22,iP)
+     Tmp1(12,3) = Tmp1(12,3) + qinvp*Aux(24,iP)
+     Tmp1(13,3) = Tmp1(13,3) + qinvp*Aux(25,iP)
+     Tmp1(14,3) = Tmp1(14,3) + qinvp*Aux(27,iP)
+     Tmp1(15,3) = Tmp1(15,3) + qinvp*Aux(28,iP)
+     Tmp1(16,3) = Tmp1(16,3) + qinvp*Aux(29,iP)
+     Tmp1(17,3) = Tmp1(17,3) + qinvp*Aux(31,iP)
+     Tmp1(18,3) = Tmp1(18,3) + qinvp*Aux(32,iP)
+     Tmp1(19,3) = Tmp1(19,3) + qinvp*Aux(33,iP)
+     Tmp1(20,3) = Tmp1(20,3) + qinvp*Aux(34,iP)
+     Tmp0(1,4) = Tmp0(1,4) + qinvp*Aux(4,iP)
+     Tmp0(2,4) = Tmp0(2,4) + qinvp*Aux(7,iP)
+     Tmp0(3,4) = Tmp0(3,4) + qinvp*Aux(9,iP)
+     Tmp0(4,4) = Tmp0(4,4) + qinvp*Aux(10,iP)
+     Tmp0(5,4) = Tmp0(5,4) + qinvp*Aux(13,iP)
+     Tmp0(6,4) = Tmp0(6,4) + qinvp*Aux(15,iP)
+     Tmp0(7,4) = Tmp0(7,4) + qinvp*Aux(16,iP)
+     Tmp0(8,4) = Tmp0(8,4) + qinvp*Aux(18,iP)
+     Tmp0(9,4) = Tmp0(9,4) + qinvp*Aux(19,iP)
+     Tmp0(10,4) = Tmp0(10,4) + qinvp*Aux(20,iP)
+     Tmp1(11,4) = Tmp1(11,4) + qinvp*Aux(23,iP)
+     Tmp1(12,4) = Tmp1(12,4) + qinvp*Aux(25,iP)
+     Tmp1(13,4) = Tmp1(13,4) + qinvp*Aux(26,iP)
+     Tmp1(14,4) = Tmp1(14,4) + qinvp*Aux(28,iP)
+     Tmp1(15,4) = Tmp1(15,4) + qinvp*Aux(29,iP)
+     Tmp1(16,4) = Tmp1(16,4) + qinvp*Aux(30,iP)
+     Tmp1(17,4) = Tmp1(17,4) + qinvp*Aux(32,iP)
+     Tmp1(18,4) = Tmp1(18,4) + qinvp*Aux(33,iP)
+     Tmp1(19,4) = Tmp1(19,4) + qinvp*Aux(34,iP)
+     Tmp1(20,4) = Tmp1(20,4) + qinvp*Aux(35,iP)
  ! Building for Angular momentum Jp = 2
      do iTUVQ = 1, 10
-      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 10
       Tmp0(iTUVQ,6) = facX*Tmp0(iTUVQ,3)
@@ -499,13 +555,13 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
       Tmp0(iTUVQ,7) = facX*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 10
-      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 10
       Tmp0(iTUVQ,9) = facY*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 10
-      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      Tmp0(2,5) = Tmp0(2,5) + inv2expP*Tmp0(1,2) 
      Tmp0(5,5) = Tmp0(5,5) + 2*inv2expP*Tmp0(2,2) 
@@ -595,17 +651,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
 !    Hopefully Tmp0 is small enough that it can be in cache. 
      DO iTUVQ=1, 10
       DO iTUVP=1, 10
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)
+        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP2Q2DtoBSeg1Prim
- subroutine TransferRecurrenceP1Q4DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP2Q2DtoBSeg1Prim
+ subroutine TransferRecurrenceCPUP1Q4DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Cexp(1),Aexp(1)
   real(realk),intent(in) :: Aux(   56,nPasses)
   real(realk),intent(inout) :: Aux2(    4,   35,nPasses)
@@ -614,7 +673,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   real(realk) :: Tmp0( 35,  4)
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
 !  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines 
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
@@ -640,79 +699,93 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   !CARTDIR = 3
   integer,parameter, dimension(20) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expAX,expAY,expAZ,&
+!$OMP         Tmp0,&
+!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
+!$OMP        Aexp,Cexp,&
+!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
-    expP = Pexp(iPrimP)
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
+    expP = Pexp(1)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
     expAX = -Aexp(1)*Xab
     expAY = -Aexp(1)*Yab
     expAZ = -Aexp(1)*Zab
-    iPrimQ=1
      facX = -(expAX-Cexp(1)*Xcd)*invexpP
      facY = -(expAY-Cexp(1)*Ycd)*invexpP
      facZ = -(expAZ-Cexp(1)*Zcd)*invexpP
      qinvp = -Qexp(1)*invexpP
  ! Building for Angular momentum Jp = 0
      DO iTUVQ=1, 35
-      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,1) = Aux(iTUVQ,iP)
      ENDDO
  ! Building for Angular momentum Jp = 1
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
 !    Hopefully Tmp0 is small enough that it can be in cache. 
      DO iTUVQ=1, 35
       DO iTUVP=1,  4
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)
+        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP1Q4DtoBSeg1Prim
- subroutine TransferRecurrenceP2Q3DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP1Q4DtoBSeg1Prim
+ subroutine TransferRecurrenceCPUP2Q3DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Cexp(1),Aexp(1)
   real(realk),intent(in) :: Aux(   56,nPasses)
   real(realk),intent(inout) :: Aux2(   10,   20,nPasses)
@@ -722,7 +795,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
   real(realk) :: Tmp1( 21: 35,  2:  4)
 !  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines 
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
@@ -748,100 +821,112 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   !CARTDIR = 3
   integer,parameter, dimension(20) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expAX,expAY,expAZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
+!$OMP        Aexp,Cexp,&
+!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
-    expP = Pexp(iPrimP)
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
+    expP = Pexp(1)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
     expAX = -Aexp(1)*Xab
     expAY = -Aexp(1)*Yab
     expAZ = -Aexp(1)*Zab
-    iPrimQ=1
      facX = -(expAX-Cexp(1)*Xcd)*invexpP
      facY = -(expAY-Cexp(1)*Ycd)*invexpP
      facZ = -(expAZ-Cexp(1)*Zcd)*invexpP
      qinvp = -Qexp(1)*invexpP
  ! Building for Angular momentum Jp = 0
      DO iTUVQ=1, 20
-      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,1) = Aux(iTUVQ,iP)
      ENDDO
  ! Building for Angular momentum Jp = 1
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  21, 35
-      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  21, 35
-      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  21, 35
-      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 11,20
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 11,20
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 11,20
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
  ! Building for Angular momentum Jp = 2
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,6) = facX*Tmp0(iTUVQ,3)
@@ -850,13 +935,13 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
       Tmp0(iTUVQ,7) = facX*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,9) = facY*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX1(ituvqminus1)
@@ -934,17 +1019,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
 !    Hopefully Tmp0 is small enough that it can be in cache. 
      DO iTUVQ=1, 20
       DO iTUVP=1, 10
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)
+        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP2Q3DtoBSeg1Prim
- subroutine TransferRecurrenceP2Q4DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP2Q3DtoBSeg1Prim
+ subroutine TransferRecurrenceCPUP2Q4DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Cexp(1),Aexp(1)
   real(realk),intent(in) :: Aux(   84,nPasses)
   real(realk),intent(inout) :: Aux2(   10,   35,nPasses)
@@ -954,7 +1042,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
   real(realk) :: Tmp1( 36: 56,  2:  4)
 !  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines 
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
@@ -986,100 +1074,112 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   integer,parameter, dimension(35) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expAX,expAY,expAZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
+!$OMP        Aexp,Cexp,&
+!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
-    expP = Pexp(iPrimP)
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
+    expP = Pexp(1)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
     expAX = -Aexp(1)*Xab
     expAY = -Aexp(1)*Yab
     expAZ = -Aexp(1)*Zab
-    iPrimQ=1
      facX = -(expAX-Cexp(1)*Xcd)*invexpP
      facY = -(expAY-Cexp(1)*Ycd)*invexpP
      facZ = -(expAZ-Cexp(1)*Zcd)*invexpP
      qinvp = -Qexp(1)*invexpP
  ! Building for Angular momentum Jp = 0
      DO iTUVQ=1, 35
-      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,1) = Aux(iTUVQ,iP)
      ENDDO
  ! Building for Angular momentum Jp = 1
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 56
-      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 56
-      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 56
-      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
  ! Building for Angular momentum Jp = 2
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,6) = facX*Tmp0(iTUVQ,3)
@@ -1088,13 +1188,13 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
       Tmp0(iTUVQ,7) = facX*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,9) = facY*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
@@ -1172,17 +1272,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
 !    Hopefully Tmp0 is small enough that it can be in cache. 
      DO iTUVQ=1, 35
       DO iTUVP=1, 10
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)
+        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP2Q4DtoBSeg1Prim
- subroutine TransferRecurrenceP3Q3DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP2Q4DtoBSeg1Prim
+ subroutine TransferRecurrenceCPUP3Q3DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Cexp(1),Aexp(1)
   real(realk),intent(in) :: Aux(   84,nPasses)
   real(realk),intent(inout) :: Aux2(   20,   20,nPasses)
@@ -1193,7 +1296,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   real(realk) :: Tmp1( 21: 56,  2:  4)
   real(realk) :: Tmp2( 21: 35,  5: 10)
 !  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines 
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
@@ -1225,100 +1328,113 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   integer,parameter, dimension(35) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expAX,expAY,expAZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         Tmp2,&
+!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
+!$OMP        Aexp,Cexp,&
+!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
-    expP = Pexp(iPrimP)
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
+    expP = Pexp(1)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
     expAX = -Aexp(1)*Xab
     expAY = -Aexp(1)*Yab
     expAZ = -Aexp(1)*Zab
-    iPrimQ=1
      facX = -(expAX-Cexp(1)*Xcd)*invexpP
      facY = -(expAY-Cexp(1)*Ycd)*invexpP
      facZ = -(expAZ-Cexp(1)*Zcd)*invexpP
      qinvp = -Qexp(1)*invexpP
  ! Building for Angular momentum Jp = 0
      DO iTUVQ=1, 20
-      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,1) = Aux(iTUVQ,iP)
      ENDDO
  ! Building for Angular momentum Jp = 1
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  21, 56
-      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  21, 56
-      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  21, 56
-      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 11,35
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 11,35
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 11,35
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 21,56
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 21,56
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 21,56
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
  ! Building for Angular momentum Jp = 2
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,6) = facX*Tmp0(iTUVQ,3)
@@ -1327,16 +1443,16 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
       Tmp0(iTUVQ,7) = facX*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,9) = facY*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 20
-      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  21, 35
-      Tmp2(iTUVQ,5) = facX*Tmp1(iTUVQ,2)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp2(iTUVQ,5) = facX*Tmp1(iTUVQ,2)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  21, 35
       Tmp2(iTUVQ,6) = facX*Tmp1(iTUVQ,3)
@@ -1345,13 +1461,13 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
       Tmp2(iTUVQ,7) = facX*Tmp1(iTUVQ,4)
      enddo
      do iTUVQ =  21, 35
-      Tmp2(iTUVQ,8) = facY*Tmp1(iTUVQ,3)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp2(iTUVQ,8) = facY*Tmp1(iTUVQ,3)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  21, 35
       Tmp2(iTUVQ,9) = facY*Tmp1(iTUVQ,4)
      enddo
      do iTUVQ =  21, 35
-      Tmp2(iTUVQ,10) = facZ*Tmp1(iTUVQ,4)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp2(iTUVQ,10) = facZ*Tmp1(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX1(ituvqminus1)
@@ -1628,17 +1744,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
 !    Hopefully Tmp0 is small enough that it can be in cache. 
      DO iTUVQ=1, 20
       DO iTUVP=1, 20
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)
+        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP3Q3DtoBSeg1Prim
- subroutine TransferRecurrenceP3Q4DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP3Q3DtoBSeg1Prim
+ subroutine TransferRecurrenceCPUP3Q4DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Cexp(1),Aexp(1)
   real(realk),intent(in) :: Aux(  120,nPasses)
   real(realk),intent(inout) :: Aux2(   20,   35,nPasses)
@@ -1649,7 +1768,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   real(realk) :: Tmp1( 36: 84,  2:  4)
   real(realk) :: Tmp2( 36: 56,  5: 10)
 !  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines 
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
@@ -1690,100 +1809,113 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5,1,1,2,1,2,3,&
           & 1,2,3,4,1,2,3,4,5,1,2,3,4,5,6 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expAX,expAY,expAZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         Tmp2,&
+!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
+!$OMP        Aexp,Cexp,&
+!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
-    expP = Pexp(iPrimP)
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
+    expP = Pexp(1)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
     expAX = -Aexp(1)*Xab
     expAY = -Aexp(1)*Yab
     expAZ = -Aexp(1)*Zab
-    iPrimQ=1
      facX = -(expAX-Cexp(1)*Xcd)*invexpP
      facY = -(expAY-Cexp(1)*Ycd)*invexpP
      facZ = -(expAZ-Cexp(1)*Zcd)*invexpP
      qinvp = -Qexp(1)*invexpP
  ! Building for Angular momentum Jp = 0
      DO iTUVQ=1, 35
-      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,1) = Aux(iTUVQ,iP)
      ENDDO
  ! Building for Angular momentum Jp = 1
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 84
-      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 84
-      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 84
-      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,56
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,56
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,56
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,84
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,84
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,84
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
  ! Building for Angular momentum Jp = 2
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,6) = facX*Tmp0(iTUVQ,3)
@@ -1792,16 +1924,16 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
       Tmp0(iTUVQ,7) = facX*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,9) = facY*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 56
-      Tmp2(iTUVQ,5) = facX*Tmp1(iTUVQ,2)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp2(iTUVQ,5) = facX*Tmp1(iTUVQ,2)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 56
       Tmp2(iTUVQ,6) = facX*Tmp1(iTUVQ,3)
@@ -1810,13 +1942,13 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
       Tmp2(iTUVQ,7) = facX*Tmp1(iTUVQ,4)
      enddo
      do iTUVQ =  36, 56
-      Tmp2(iTUVQ,8) = facY*Tmp1(iTUVQ,3)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp2(iTUVQ,8) = facY*Tmp1(iTUVQ,3)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 56
       Tmp2(iTUVQ,9) = facY*Tmp1(iTUVQ,4)
      enddo
      do iTUVQ =  36, 56
-      Tmp2(iTUVQ,10) = facZ*Tmp1(iTUVQ,4)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp2(iTUVQ,10) = facZ*Tmp1(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
@@ -2093,17 +2225,20 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
 !    Hopefully Tmp0 is small enough that it can be in cache. 
      DO iTUVQ=1, 35
       DO iTUVP=1, 20
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)
+        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP3Q4DtoBSeg1Prim
- subroutine TransferRecurrenceP4Q4DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP3Q4DtoBSeg1Prim
+ subroutine TransferRecurrenceCPUP4Q4DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+         & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD
+  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
-  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Cexp(1),Aexp(1)
   real(realk),intent(in) :: Aux(  165,nPasses)
   real(realk),intent(inout) :: Aux2(   35,   35,nPasses)
@@ -2115,7 +2250,7 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
   real(realk) :: Tmp2( 36: 84,  5: 10)
   real(realk) :: Tmp3( 36: 56, 11: 20)
 !  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines 
-  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1
+  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB
   real(realk),parameter :: D1=1.0E0_realk,D05=0.5E0_realk
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
@@ -2168,100 +2303,114 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
           & 1,2,3,4,1,2,3,4,5,1,2,3,4,5,6,1,1,&
           & 2,1,2,3,1,2,3,4,1,2,3,4,5,1,2,3,4,&
           & 5,6,1,2,3,4,5,6,7 /)
-  Xab = Pdistance12(1)
-  Yab = Pdistance12(2)
-  Zab = Pdistance12(3)
-  DO iPassQ = 1,nPasses
-   Xcd = Qdistance12(1,iPassQ)
-   Ycd = Qdistance12(2,iPassQ)
-   Zcd = Qdistance12(3,iPassQ)
-   IP = iPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
+!$OMP         iP,iPrimQ,iPrimP,iPassP,&
+!$OMP         expAX,expAY,expAZ,&
+!$OMP         Tmp0,&
+!$OMP         Tmp1,&
+!$OMP         Tmp2,&
+!$OMP         Tmp3,&
+!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
+!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
+!$OMP        Aexp,Cexp,&
+!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+  DO iP = 1,nPasses
+   iPassP = iP
    iPrimP=1
-    expP = Pexp(iPrimP)
+   iPrimQ=1
+   Xcd = Qdistance12(1)
+   Ycd = Qdistance12(2)
+   Zcd = Qdistance12(3)
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Xab = Pdistance12(1,iAtomA,iAtomB)
+   Yab = Pdistance12(2,iAtomA,iAtomB)
+   Zab = Pdistance12(3,iAtomA,iAtomB)
+    expP = Pexp(1)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
     expAX = -Aexp(1)*Xab
     expAY = -Aexp(1)*Yab
     expAZ = -Aexp(1)*Zab
-    iPrimQ=1
      facX = -(expAX-Cexp(1)*Xcd)*invexpP
      facY = -(expAY-Cexp(1)*Ycd)*invexpP
      facZ = -(expAZ-Cexp(1)*Zcd)*invexpP
      qinvp = -Qexp(1)*invexpP
  ! Building for Angular momentum Jp = 0
      DO iTUVQ=1, 35
-      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,1) = Aux(iTUVQ,iP)
      ENDDO
  ! Building for Angular momentum Jp = 1
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36,120
-      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,2) = facX*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36,120
-      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,3) = facY*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36,120
-      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,IP)
+      Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,84
       iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,84
       iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,84
       iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,IP) 
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,120
       iTUVplus1 = TUVindexX1(iTUVQ)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,120
       iTUVplus1 = TUVindexX2(iTUVQ)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,120
       iTUVplus1 = TUVindexX3(iTUVQ)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,IP)
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
  ! Building for Angular momentum Jp = 2
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,6) = facX*Tmp0(iTUVQ,3)
@@ -2270,16 +2419,16 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
       Tmp0(iTUVQ,7) = facX*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,9) = facY*Tmp0(iTUVQ,4)
      enddo
      do iTUVQ = 1, 35
-      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 84
-      Tmp2(iTUVQ,5) = facX*Tmp1(iTUVQ,2)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp2(iTUVQ,5) = facX*Tmp1(iTUVQ,2)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 84
       Tmp2(iTUVQ,6) = facX*Tmp1(iTUVQ,3)
@@ -2288,13 +2437,13 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
       Tmp2(iTUVQ,7) = facX*Tmp1(iTUVQ,4)
      enddo
      do iTUVQ =  36, 84
-      Tmp2(iTUVQ,8) = facY*Tmp1(iTUVQ,3)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp2(iTUVQ,8) = facY*Tmp1(iTUVQ,3)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do iTUVQ =  36, 84
       Tmp2(iTUVQ,9) = facY*Tmp1(iTUVQ,4)
      enddo
      do iTUVQ =  36, 84
-      Tmp2(iTUVQ,10) = facZ*Tmp1(iTUVQ,4)+ inv2expP*Aux(iTUVQ,IP)
+      Tmp2(iTUVQ,10) = facZ*Tmp1(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
@@ -2931,9 +3080,10 @@ MODULE AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim
 !    Hopefully Tmp0 is small enough that it can be in cache. 
      DO iTUVQ=1, 35
       DO iTUVP=1, 35
-        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)
+        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)
       ENDDO
      ENDDO
-  ENDDO
- end subroutine TransferRecurrenceP4Q4DtoBSeg1Prim
+  ENDDO !iP = 1,nPasses
+!$OMP END PARALLEL DO
+ end subroutine TransferRecurrenceCPUP4Q4DtoBSeg1Prim
 end module

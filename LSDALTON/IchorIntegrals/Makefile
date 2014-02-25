@@ -8,10 +8,12 @@ INCLUDES := $(INCLUDES)
 
 F90_OBJS = \
         IchorPresicion.o \
-        AGC_CPU_VerticalRecurrenceQPA.o \
-        AGC_CPU_VerticalRecurrenceQPB.o \
-        AGC_CPU_VerticalRecurrenceQPC.o \
-        AGC_CPU_VerticalRecurrenceQPD.o \
+        AGC_CPU_BuildRJ000Gen.o\
+        AGC_CPU_BuildRJ000Seg1Prim.o\
+        AGC_CPU_VerticalRecurrenceQPAGen.o \
+        AGC_CPU_VerticalRecurrenceQPBGen.o \
+        AGC_CPU_VerticalRecurrenceQPCGen.o \
+        AGC_CPU_VerticalRecurrenceQPDGen.o \
         AGC_CPU_VerticalRecurrenceQPASegQ.o \
         AGC_CPU_VerticalRecurrenceQPBSegQ.o \
         AGC_CPU_VerticalRecurrenceQPCSegQ.o \

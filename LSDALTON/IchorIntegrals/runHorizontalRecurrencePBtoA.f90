@@ -76,23 +76,24 @@ CONTAINS
 
           WRITE(*,'(A)')''
           IF(JP.LT.10)THEN
-             WRITE(*,'(A,I1,A,I1,A,I1,A)')'subroutine HorizontalRR_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA(nContPasses,nTUVQ,&'
+             WRITE(*,'(A,I1,A,I1,A,I1,A)')'subroutine HorizontalRR_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA(nContQP,nPasses,nTUVQ,&'
           ELSE
-             WRITE(*,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA(nContPasses,nTUVQ,&'
+             WRITE(*,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA(nContQP,nPasses,nTUVQ,&'
           ENDIF
-          WRITE(*,'(A)')'         & Pdistance12,AuxCont,ThetaP,lupri)'
+          WRITE(*,'(A)')'         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)'
           WRITE(*,'(A)')'  implicit none'
-          WRITE(*,'(A)')'  integer,intent(in) :: nContPasses,nTUVQ,lupri'
-          WRITE(*,'(A)')'  real(realk),intent(in) :: Pdistance12(3)'
-          WRITE(*,'(A,I5,A)')'  real(realk),intent(in) :: AuxCont(',nTUVP,',nTUVQ,nContPasses)'
+          WRITE(*,'(A)')'  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB'
+          WRITE(*,'(A)')'  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)'
+          WRITE(*,'(A,I5,A)')'  real(realk),intent(in) :: AuxCont(',nTUVP,',nTUVQ,nContQP*nPasses)'
+          WRITE(*,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
           !             WRITE(*,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',nTUVAspec,',',nTUVBspec,',nTUVQ,nContPasses)'
-          WRITE(*,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ,nContPasses)'
+          WRITE(*,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ,nContQP*nPasses)'
           WRITE(*,'(A)')'  !Local variables'
           IF(ANGMOMA.NE.0)THEN
-             WRITE(*,'(A)')'  integer :: iP,iTUVQ,iTUVB'
+             WRITE(*,'(A)')'  integer :: iPassP,iP,iTUVQ,iTUVB,iAtomA,iAtomB'
              WRITE(*,'(A)')'  real(realk) :: Xab,Yab,Zab'
           ELSE
-             WRITE(*,'(A)')'  integer :: iP,iTUVQ,iTUVB'
+             WRITE(*,'(A)')'  integer :: iPassP,iP,iTUVQ,iTUVB,iAtomA,iAtomB'
           ENDIF
           allocate(CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
           CREATED  = .FALSE.
@@ -114,13 +115,17 @@ CONTAINS
           IF(JA.GT.1)THEN
              WRITE(*,'(A)')'!  real(realk) :: Tmp(nTUVA,nTUVB) ordering'
           ENDIF
-          IF(JA.NE.0)THEN
-             WRITE(*,'(A)')'  Xab = -Pdistance12(1)'
-             WRITE(*,'(A)')'  Yab = -Pdistance12(2)'
-             WRITE(*,'(A)')'  Zab = -Pdistance12(3)'
-          ENDIF
-          WRITE(*,'(A)')'  DO iP = 1,nContPasses'
+          WRITE(*,'(A)')'!$OMP SINGLE'
+          WRITE(*,'(A)')'  DO iP = 1,nContQP*nPasses'
           WRITE(*,'(A)')'   DO iTUVQ = 1,nTUVQ'
+          IF(JA.NE.0)THEN
+             WRITE(*,'(A)')'   iPassP = (iP-1)/nContQP+1'
+             WRITE(*,'(A)')'   iAtomA = iAtomApass(iPassP)'
+             WRITE(*,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+             WRITE(*,'(A)')'   Xab = -Pdistance12(1,iAtomA,iAtomB)'
+             WRITE(*,'(A)')'   Yab = -Pdistance12(2,iAtomA,iAtomB)'
+             WRITE(*,'(A)')'   Zab = -Pdistance12(3,iAtomA,iAtomB)'
+          ENDIF
 
 
           DO JTMP=0,JA
@@ -171,6 +176,7 @@ CONTAINS
           deallocate(CREATED)
           WRITE(*,'(A)')'   ENDDO'
           WRITE(*,'(A)')'  ENDDO'
+          WRITE(*,'(A)')'!$OMP END SINGLE'
           IF(JP.LT.10)THEN
              WRITE(*,'(A,I1,A,I1,A,I1,A)')'end subroutine HorizontalRR_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA'
           ELSE

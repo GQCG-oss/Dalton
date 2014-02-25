@@ -194,6 +194,7 @@ PROGRAM TUV
               !              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(in)    :: IN(',ijkcartP,',ijkQcart,nPasses)'
               !              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(',ijkP,',ijkQcart,nPasses)'
 
+              WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
               WRITE(LUMOD3,'(A)')'  DO iPass=1,nContPasses'
               WRITE(LUMOD3,'(A)')'   DO ijkQ=1,ijkQcart'
               do ilmP=1,ijk
@@ -234,6 +235,7 @@ PROGRAM TUV
               enddo
               WRITE(LUMOD3,'(A)')'   ENDDO'
               WRITE(LUMOD3,'(A)')'  ENDDO'
+              WRITE(LUMOD3,'(A)')'!$OMP END SINGLE'
               IF(l12.LT.10)THEN
                  WRITE(LUMOD3,'(A,I1,A,I1,A)')'end subroutine SphericalContractOBS1_maxAngP',l1+l2,'_maxAngA',l1,' '
               ELSE
