@@ -25,6 +25,8 @@ subroutine pdm_array_slave(comm)
    integer, external :: numroc
    integer, pointer :: dims(:),dims2(:)
    logical :: loc
+   character (4) :: at 
+   integer       :: it
 #ifdef VAR_MPI
    loc = (infpar%parent_comm /= MPI_COMM_NULL)
    CALL PDM_ARRAY_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
@@ -40,7 +42,7 @@ subroutine pdm_array_slave(comm)
        call mem_alloc(dims,A%mode)
        dims =A%dims
        call arr_free_aux(A)
-       A=array_init_standard(dims,A%mode,MASTER_INIT) 
+       A=array_init_standard(dims,A%mode,MASTER_ACCESS) 
        call mem_dealloc(dims)
      CASE(JOB_INIT_ARR_TILED)
        call mem_alloc(idiag,A%mode)
@@ -48,7 +50,7 @@ subroutine pdm_array_slave(comm)
        idiag=A%tdim
        dims =A%dims
        call arr_free_aux(A)
-       A=array_init_tiled(dims,A%mode,MASTER_INIT,idiag,A%zeros) 
+       A=array_init_tiled(dims,A%mode,at,it,MASTER_ACCESS,idiag,A%zeros) 
        call mem_dealloc(idiag)
        call mem_dealloc(dims)
      CASE(JOB_FREE_ARR_STD)
@@ -59,7 +61,7 @@ subroutine pdm_array_slave(comm)
        call mem_alloc(dims,A%mode)
        dims =A%dims
        call arr_free_aux(A)
-       A=array_init_replicated(dims,A%mode,MASTER_INIT) 
+       A=array_init_replicated(dims,A%mode,MASTER_ACCESS) 
        call mem_dealloc(dims)
      CASE(JOB_PRINT_MEM_INFO1)
        call print_mem_per_node(DECinfo%output,.false.)
@@ -112,8 +114,8 @@ subroutine pdm_array_slave(comm)
 
        call mem_dealloc(dims)
        call mem_dealloc(dims2)
-     CASE(JOB_CHANGE_INIT_TYPE)
-       call change_init_type_td(A,i)
+     CASE(JOB_CHANGE_ACCESS_TYPE)
+       call change_access_type_td(A,i)
      CASE(JOB_ARRAY_SCALE)
        call ls_mpibcast(AF,infpar%master,infpar%lg_comm)
        call array_scale_td(A,AF)

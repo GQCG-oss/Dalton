@@ -2347,8 +2347,21 @@ C
       LOGICAL RED
       TMPNRG = 0.0D0
       RED = .FALSE.
-      CALL HEADER('Final geometry',-1)
+      CALL HEADER('Final geometry (bohr)',-1)
       CALL PRIGEO(CORD)
+
+      ! print to screen
+      CALL HEADER('Final geometry (xyz format; angstrom)',-1)
+      call print_xyz(cord, lupri)
+      write(lupri, '(//)')
+
+      ! print to file
+      io_xyz = -1
+      CALL GPOPEN(io_xyz, 'final_geometry.xyz', 'UNKNOWN', ' ',
+     &      'FORMATTED', IDUMMY, .FALSE.)
+      call print_xyz(cord, io_xyz)
+      CALL GPCLOSE(io_xyz, 'KEEP')
+
       WRITE(LUPRI,'(A)')
      & '@ Iter      Energy        Change       GradNorm  Index   '
      & // 'StepLen    TrustRad #Rej',
@@ -7395,7 +7408,7 @@ C
              RETURN
          END IF
          DO 20 I = 1, NONTRO
-            IF (GRDDIA(I) .NE. D0) THEN
+            IF (abs(GRDDIA(I)) .gt. ZERGRD) THEN
               GRDMIN = ABS(GRDDIA(I))
               HESMIN = EVAL(I)
               GO TO 30
@@ -7414,12 +7427,12 @@ C
          SPECAS = (HESMIN .LT. D0) .AND. (GRDMIN .LT. ZERGRD)
       END IF
       GRDNRM = SQRT(DDOT(NONTRO,GRDDIA,1,GRDDIA,1))
-      HESMAX = MAXVAL( EVAL(1:NONTRO) )
+      GRD_ASUM = DASUM(NONTRO,GRDDIA,1)
       IF (IPRINT .GT. 5) THEN
          WRITE (LUPRI,'(A,1P,D12.5)') ' HESMIN: ', HESMIN
-         WRITE (LUPRI,'(A,1P,D12.5)') ' HESMAX: ', HESMAX
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDMIN: ', GRDMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDNRM: ', GRDNRM
+         WRITE (LUPRI,'(A,1P,D12.5)') ' GRD_ASUM', GRD_ASUM
          WRITE (LUPRI,'(A,1P,D12.5)') ' ZERGRD: ', ZERGRD
       END IF
 C
@@ -7431,16 +7444,20 @@ C
          IF (IPRINT .GT. 3) WRITE (LUPRI,'(/A/)') ' General case.'
 C
 C        Determine level shift
-C        hjaaj Oct 2013:
+C        hjaaj Jan 2014
 C           We want to find the RNU for which the step length SL is TRUSTR
 C           We want RNU = 0 (Newton step) or RNU > 0 (restricted step)
 C           We know that SL = norm(- (Hess + RNU)^-1 grad )
-C                   Thus SL ≥ norm(grad) / (HESMAX + RNU)
-C                   and  SL ≤ norm(grad) / (HESMIN + RNU)
-C           From this you can derive the formulas for XMIN and XMAX
+C               SL ≤ contribution if all eigenvalues where equal to EVAL(1)
+C                  = GRD_ASUM  / (EVAL(1) + RNU)
+C               SL ≥ contribution from first eigenvector
+C                  = GRDDIA(1) / (EVAL(1) + RNU)
+C           From this you can derive the formulas for XMIN and XMAX,
+C           when we also remember that if RNU corresponding to trust
+C           radius is negative, then we select Newton step, RNU = 0.
 C
-         XMIN = MAX(D0,GRDNRM/TRUSTR - HESMIN)
-         XMAX = MAX(D0,GRDNRM/TRUSTR - HESMAX)
+         XMIN = MAX(D0,  -HESMIN + GRD_ASUM/TRUSTR)
+         XMAX = MAX(D0, - HESMIN + DP5*GRDMIN/TRUSTR)
          IF (IPRINT .GT. 5) THEN
             WRITE (LUPRI,'(/A,2(1P,D12.5,2X))')
      *         ' XMIN and XMAX before WLKBIS (WSTPLN) minimum walk: ',

@@ -47,7 +47,7 @@ contains
   subroutine mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
   implicit none
   real(realk),intent(INOUT) :: Vijij(nocc,nocc)
-  real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+  real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
   real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
   integer,intent(IN)        :: nocc,nvirt
   !
@@ -55,7 +55,7 @@ contains
   real(realk) :: tmp
 
   ! Setting Ciajb = 0
-  !Ciajb = 0.0E0_realk
+  ! Ciajb = 0.0E0_realk
 
   do j=1,nocc
    do i=1,nocc
@@ -75,7 +75,7 @@ contains
   subroutine mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
   implicit none
   real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
-  real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+  real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
   real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
   integer,intent(IN)        :: nocc,nvirt
   !
@@ -83,7 +83,7 @@ contains
   real(realk) :: tmp
 
   ! Setting Ciajb = 0
-  !Ciajb = 0.0E0_realk
+  ! Ciajb = 0.0E0_realk
 
   do j=1,nocc
    do i=1,nocc

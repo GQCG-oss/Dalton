@@ -65,12 +65,15 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    type(matrix) :: x, Dchol !For debug
    type(matrix) :: unitmat
    type(matrix), pointer :: Dpointer, Fpointer
-   LOGICAL :: dalink, incremental,onmaster,cs00,NotLastSCFLevel
+   LOGICAL :: dalink, incremental,onmaster,cs00,NotLastSCFLevel,gradalloc
    real(realk) :: acceptratio, limitratio
+   real(realk) :: h
+   type(matrix) :: Dtest
+   !
    ndmat = 1
    OnMaster=.true.
    NotLastSCFLevel = config%opt%purescf.OR.config%integral%LOW_ACCURACY_START
-
+   gradalloc = .FALSE.
    CALL LSTIMER('START',TSTR,TEN,config%LUPRI)
    !INITIALISE SCF CYCLE THINGS 
    nbast = H1%nrow
@@ -96,8 +99,6 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    WRITE(config%lupri,*)' SCF Convergence criteria for gradient norm:',config%opt%set_convergence_threshold
    
    CALL LSTIMER('INIT SCF',TSTR,TEN,config%LUPRI)
-   
-   call mat_init(grad,nbast,nbast)
    
    ! attach pointers for RedSpaceItem to make use of davidson solver possible
    if (.not. config%solver%set_arhterms) write(config%lupri,*) ' ARH PART OF LINEAR TRANSFORMATIONS IS TURNED OFF ' 
@@ -139,14 +140,18 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
          CALL get_fock(config, fifoqueue, queue, iteration, D2, H1, F2, ndmat2,E2,ls)
          IF(config%opt%cfg_oao_gradnrm)THEN
             call get_oao_transformed_matrices(config%decomp,F2(1),D2(1))
+            call mat_init(grad,nbast,nbast)
+            gradalloc = .TRUE.
             call get_OAO_gradient(config%decomp%FU, config%decomp%DU, grad) !wrk = gradient
             call mat_scal(0.25E0_realk,grad) !To match linear transformation, also divided by 4!
+            gradnrm = sqrt(mat_sqnorm2(grad))
+
             call get_oao_transformed_matrices(config%decomp,F2(2),D2(2))
             call mat_init(grad2,nbast,nbast)
             call get_OAO_gradient(config%decomp%FU, config%decomp%DU, grad2) !wrk = gradient
             call mat_scal(0.25E0_realk,grad2) !To match linear transformation, also divided by 4!
-            gradnrm = sqrt(mat_sqnorm2(grad))
             gradnrm2 = sqrt(mat_sqnorm2(grad2))
+
 
             iteration = 0
             call scf_stats_update(iteration,gradnrm,E2(1),config%opt)
@@ -160,10 +165,13 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
             CALL get_AO_gradient(F2(2), D2(2), S, grad2)
 
          ELSE
+            gradalloc = .TRUE.
+            call mat_init(grad,nbast,nbast)
             CALL get_AO_gradient(F2(1), D2(1), S, grad)
+            gradnrm = sqrt(mat_sqnorm2(grad))
+
             call mat_init(grad2,nbast,nbast)
             CALL get_AO_gradient(F2(2), D2(2), S, grad2)
-            gradnrm = sqrt(mat_sqnorm2(grad))
             gradnrm2 = sqrt(mat_sqnorm2(grad2))
 
             iteration = 0
@@ -176,10 +184,12 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
          iteration = 0
          config%solver%step_accepted = .TRUE.
          CALL Density_subspace_minimization(config, fifoqueue, queue, E2(1),S,H1, grad, F2(1), D2(1),iteration)
+         call mat_free(grad)
          iteration = 1
          config%solver%step_accepted = .TRUE.
          CALL Density_subspace_minimization(config, fifoqueue, queue, E2(2),S,H1, grad2, F2(2), D2(2),iteration)
          call mat_free(grad2)
+         gradalloc = .FALSE.
          call mat_assign(D(1),D2(2))
          call mat_assign(F(1),F2(2))
          gradnrm = gradnrm2
@@ -205,7 +215,6 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
 !
 ! SCF iterations
 !
-  
    DO iteration = istart, config%opt%cfg_max_linscf_iterations
       CALL LSTIMER('START ',t1,t2,config%lupri)
 !     Incremental scheme set for the density-fitting gradient contribution. /SR 2010-10-19
@@ -222,27 +231,96 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
          ls%setting%scheme%DALINK = dalink     !Turn DaLink back on, if requested:
          ls%setting%scheme%DFT%CS00 = CS00
       else
+         if (iteration == istart+1) then
+            IF(config%opt%crashcalc)THEN
+               print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
+               print*,'This keyword is only used for debug and testing purposes'
+               print*,'We want to be able to test the .RESTART keyword'
+               WRITE(config%lupri,*)'Calculation was intentionally crashed due to keyword .CRASHCALC'
+               WRITE(config%lupri,*)'This keyword is only used for debug and testing purposes'
+               WRITE(config%lupri,*)'We want to be able to test the .RESTART keyword'
+               call lsquit('Crash SCF calculation due to keyword .CRASHCALC',config%lupri)
+            ENDIF
+         endif
+ !        ! START DEBUG: PATRICK
+ !         call mat_init(Dtest,D(1)%nrow,D(1)%ncol)
+ !         call mat_assign(Dtest,D(1))
+
+ !        h=1E-5_realk
+ !         dalink = ls%setting%scheme%DALINK
+ !         ls%setting%scheme%DALINK = .false.
+ !         cs00 = ls%setting%scheme%DFT%CS00
+ !         ls%setting%scheme%DFT%CS00 = .FALSE.
+ !         D(1)%elms(1)= D(1)%elms(1)-h
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT DENSITY MAT for D(1,1)min"
+ !        call mat_print(D(1),1,D(1)%nrow,1,D(1)%ncol,config%lupri)
+ !         CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)         
+ !         call mat_assign(D(1),Dtest)
+ !         ls%setting%scheme%DALINK = dalink     !Turn DaLink back on, if requested:
+ !         ls%setting%scheme%DFT%CS00 = CS00
+ !      write(config%lupri,*) "** DEBUG ADMM - PRINT ENERGY for D(1,1)min"
+ !      write(config%lupri,*) "Emin", E(1)
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT FOCK MAT for D(1,1)min"
+ !        call mat_print(F(1),1,F(1)%nrow,1,F(1)%ncol,config%lupri)
+
+
+ !         dalink = ls%setting%scheme%DALINK
+ !         ls%setting%scheme%DALINK = .false.
+ !         cs00 = ls%setting%scheme%DFT%CS00
+ !         ls%setting%scheme%DFT%CS00 = .FALSE.
+ !         D(1)%elms(1)= D(1)%elms(1)+1E0_realk*h
+ !         CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)         
+ !         call mat_assign(D(1),Dtest)
+ !         ls%setting%scheme%DALINK = dalink     !Turn DaLink back on, if requested:
+ !         ls%setting%scheme%DFT%CS00 = CS00
+ !      write(config%lupri,*) "** DEBUG ADMM - PRINT ENERGY for D(1,1)max"
+ !      write(config%lupri,*) "Emax",E(1)
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT DENSITY MAT for D(1,1)max"
+ !        call mat_print(D(1),1,D(1)%nrow,1,D(1)%ncol,config%lupri)
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT FOCK MAT for D(1,1)max"
+ !        call mat_print(F(1),1,F(1)%nrow,1,F(1)%ncol,config%lupri)
+
+ !  ! back to original density
+ !         CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)
+
+ !      write(config%lupri,*) "** DEBUG ADMM - PRINT ENERGY for D0"
+ !      write(config%lupri,*) "Eexact",E(1)
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT DENSITY MAT for D0"
+ !        call mat_print(D(1),1,D(1)%nrow,1,D(1)%ncol,config%lupri)
+ !      WRITE(config%LUPRI,*) "** DEBUG ADMM - PRINT FOCK MAT for D0"
+ !        call mat_print(F(1),1,F(1)%nrow,1,F(1)%ncol,config%lupri)
+
+ !         call mat_free(Dtest)
+ ! call lsquit('Stop SCF after first iteration for DEBUGGING ADMM',-1)
+ !        ! END  DEBUG: PATRICK
+
          CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)
       endif
       CALL LSTIMER('FCK_FO ',TIMSTR,TIMEND,config%LUPRI)
 
-      if (config%solver%step_accepted)Then
+!      if (config%solver%step_accepted)Then
          IF(config%opt%cfg_oao_gradnrm)THEN
-            call get_oao_transformed_matrices(config%decomp,F(1),D(1))
+            call get_oao_transformed_matrices(config%decomp,F(1),D(1)) 
+            call mat_init(grad,nbast,nbast)
+            gradalloc = .TRUE.
             call get_OAO_gradient(config%decomp%FU, config%decomp%DU, grad) !wrk = gradient
             call mat_scal(0.25E0_realk,grad) !To match linear transformation, also divided by 4!
             gradnrm = sqrt(mat_sqnorm2(grad))         !gradnrm in OAO
             CALL get_AO_gradient(F(1), D(1), S, grad) !grad in AO grad
          ELSE
+            call mat_init(grad,nbast,nbast)
+            gradalloc = .TRUE.
             CALL get_AO_gradient(F(1), D(1), S, grad) !grad in AO grad
             gradnrm = sqrt(mat_sqnorm2(grad))         !gradnrm in OAO
          ENDIF
-      else
-         !in principel the printet gradient norm is wrong
-         !but the calculation of the gradient would modify
-         !config%decomp%FU and config%decomp%DU which 
-         !is not desirerable when we want to revert back to old D
-      endif
+!!$      else
+!!$            !in principel the printet gradient norm is wrong
+!!$            !but the calculation of the gradient 
+!!$            !(the get_oao_transformed_matrices call) 
+!!$            !would modify config%decomp%FU and config%decomp%DU which 
+!!$            !is not desirerable when we want to revert back to old D
+!!$         IF(.NOT.gradalloc)call mat_init(grad,nbast,nbast)
+!!$      endif
       CALL LSTIMER('G_GRAD',TIMSTR,TIMEND,config%LUPRI)
 
       ! Statistic stuff
@@ -274,11 +352,13 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
       ENDIF
       WRITE(config%LUPRI,'("** Make average of the last F and D matrices")')
       CALL Density_subspace_minimization(config, fifoqueue, queue, E(1), S, H1, grad, F(1), D(1), iteration)
+      call mat_free(grad)
+      gradalloc = .FALSE.
       CALL LSTIMER('AVERAG',TIMSTR,TIMEND,config%LUPRI)
 
       WRITE(config%LUPRI,'("** Get new density ")')
       call mat_no_of_matmuls(matmul1)
-      CALL DOPT_get_density(config, fifoqueue, queue, F(1), H1, D(1), iteration,ls)
+      CALL DOPT_get_density(config, fifoqueue, queue, F(1), H1, D(1), iteration,ls) 
       call mat_no_of_matmuls(matmul2)
       WRITE(config%LUPRI,'("No. of matmuls in get_density: ",I5)') matmul2-matmul1
       CALL LSTIMER('G_DENS',TIMSTR,TIMEND,config%LUPRI)
@@ -293,6 +373,9 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
       ENDIF
    END DO
    CALL LSTIMER('**ITER',TSTR,TEN,config%LUPRI)
+   IF(gradalloc)THEN
+      call mat_free(grad)
+   ENDIF
 
    IF(config%opt%cfg_saveF0andD0)THEN
       call ks_free_linesearch_fock()
@@ -319,7 +402,6 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
   else
      call queue_free(config%av,queue)
   endif
-  CALL mat_free(grad)
   call scf_stats_shutdown
 !!!!Moved outside scfloop, needed also for lcv localization
 !#if 0

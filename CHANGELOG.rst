@@ -3,6 +3,13 @@
 2013.2 (this will be the next patch)
 ====================================
 
+COMMON
+------
+
+- Recognize CYGWIN as a LINUX and UNIX system, for proper definition of compilation flags
+- Define M_PI in C-code if not already defined (problem seen with Cygwin)
+
+
 DALTON
 ------
 
@@ -10,13 +17,29 @@ DALTON
 - More efficient evaluation of numerical Hessian when C1 symmetry
   (in each geometry step start wave function optimization from a
   converged wave function from a neighboring geometry rather than from scratch each time).
-- Document changes here.
+- Fix of error which sometimes caused a geometry optimization to stop with " *** ERROR, Wrong interval in WLKBIS".
+- Fix of a bug which occasionally caused DALTON to abort a .STEX calculation
+- Print final geometry in xyz format (angstrom). File called "final_geometry.xyz" is put into the restart tarball.
+- Append PID to scratch directory to avoid multiple tests running in the same directory.
+- Improved manual for two-photon and non-adiabatic coupling
 
 
 LSDALTON
 --------
 
-- Document changes here.
+- Print sensible error message when running out of memory.
+- Added funcitonality to search through several basis-set libraries.
+- Increased max length of WRKDIR from 60 to 200.
+- Fixed a bug related to improber shutdown of MPI calculation. In the case
+  of wrong LSDALTON.INP for instance the calculation will issue a error 
+  statement and afterward hang forever in a MPI call. 
+- Fixed a OpenMP bug in the calculation of how much memory there should be used during an exchange-correlation calculation - resulting in huge memory usage for large molecular system.   
+
+
+
+===============================
+PUBLISHED PATCHES - DO NOT EDIT
+===============================
 
 
 2013.1 (2013-12-19)
@@ -45,3 +68,6 @@ LSDALTON
 - Fixed errors in the MCD B terms output files (.dat files) now one file is generated
   for each B term and each A term (thanks to Raul Crespo) .
 - Modified the input section of the manual concerning MCD B terms. Added desciption of MCDEXSTATES.
+- Fixed a bug for lsdalton geometry optimization and dynamics related to 
+  screening. The initial Cauchy-Schwartz screening matrices were incorrectly
+  used in each subsequent geometry step

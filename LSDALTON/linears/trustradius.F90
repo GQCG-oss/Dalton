@@ -61,10 +61,10 @@ contains
 
   !if (.not. cfg_do_2nd_order) then
       if (arh%set_optxelm) then
-      write (arh%lupri, "(F8.5, A8, F11.5, F11.5, F8.2, F10.4, F10.4, i10, i11, '    %%%')") &
+      write (arh%lupri, "(F8.5, A8, F11.5, F11.5, F8.2, F14.4, F10.4, i10, i11, '    %%%')") &
            & arh%set_max_element, tr_criterion, arh%maxelm, arh%xnorm, -arh%current_mu, r, arh%D_para_D_tot, ndens, SCF_it-1
       else
-      write (arh%lupri, "(F8.5, A8, F11.5, F11.5, F8.2, F10.4, F10.4, i10, i11, '    %%%')") &
+      write (arh%lupri, "(F8.5, A8, F11.5, F11.5, F8.2, F14.4, F10.4, i10, i11, '    %%%')") &
            & arh%set_max_step, tr_criterion, arh%maxelm, arh%xnorm, -arh%current_mu, r, &
            & arh%D_para_D_tot, ndens, SCF_it-1
       endif

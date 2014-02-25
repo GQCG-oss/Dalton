@@ -57,20 +57,13 @@ target_link_libraries(matrixmlib lsutillib_precision)
 set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord.F90
-#if(ENABLE_OPENACC)
-#    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_acc_reord.F90
-#endif()
     ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_reord.F90
-#if(ENABLE_OPENACC)
-#    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_acc_reord.F90
-#endif()
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord.F90
-#    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_acc_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_f2t.F90
@@ -84,7 +77,7 @@ if(ENABLE_OPENACC)
     set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
         ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_acc_reord.F90
         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_acc_reord.F90
-#        ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_acc_reord.F90
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_acc_reord.F90
        )
 endif()
 

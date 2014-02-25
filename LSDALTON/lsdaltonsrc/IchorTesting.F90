@@ -41,6 +41,7 @@ IMPLICIT NONE
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR
 !
+#ifdef VAR_ICHOR
 real(realk),pointer   :: integralsII(:,:,:,:),integralsIchor(:,:,:,:)
 integer :: dim1,dim2,dim3,dim4,A,B,C,D,iprint,nbast(4),ibasiselm(4)
 integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass,itest
@@ -344,6 +345,7 @@ WRITE(lupri,*)'done II_test_Ichor'
 !WRITE(lupri,*)'After IchorUnitTest'
 !call debug_mem_stats(LUPRI)
 
+#endif
 END SUBROUTINE II_unittest_Ichor
 
 subroutine build_unittest_atomicmolecule(atomicmolecule,ICHARGE,Rxyz,nAtoms,lupri)
@@ -351,6 +353,7 @@ implicit none
 type(moleculeinfo) :: atomicmolecule
 real(realk)        :: Rxyz(3)
 integer,intent(in) :: ICHARGE,lupri,nAtoms
+#ifdef VAR_ICHOR
 character(len=22) :: label
 character(len=4) :: Name
 integer :: I
@@ -424,6 +427,7 @@ do I=1,nAtoms
    atomicmolecule%ATOM(I)%molecularIndex =0 
 ENDDO
 
+#endif
 end subroutine build_unittest_atomicmolecule
 
 End MODULE IntegralInterfaceIchorMod
