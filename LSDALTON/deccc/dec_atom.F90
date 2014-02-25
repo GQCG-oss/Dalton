@@ -341,7 +341,8 @@ contains
         enddo
       endif
     enddo
-    fragment%RsdvAOS = ( fragment%RsdvAOS / float( cntr - 1 ) )**(0.5E0_realk)
+    if(cntr>1)fragment%RsdvAOS = ( fragment%RsdvAOS / float( cntr - 1 ) )**(0.5E0_realk)
+    print *,"FRAGSTATS:",fragment%RaveAOS,fragment%RsdvAOS,cntr
 
     call mem_dealloc( all_atoms )
 
@@ -4183,6 +4184,7 @@ contains
        RmaxAOS(atom) = AtomicFragments(atom)%RmaxAOS
        RaveAE(atom)  = AtomicFragments(atom)%RaveAE
        RaveAOS(atom) = AtomicFragments(atom)%RaveAOS
+       print *,"STUFF: ", RaveAE(atom), RaveAOS(atom),RaveAE(atom) * bohr_to_angstrom,RaveAOS(atom) * bohr_to_angstrom
        RsdvAE(atom)  = AtomicFragments(atom)%RsdvAE
        RsdvAOS(atom) = AtomicFragments(atom)%RsdvAOS
        maxRmaxAE     = max(maxRmaxAE,RmaxAE(atom))
@@ -4226,7 +4228,7 @@ contains
     write(DECinfo%output,'(1X,a)') '***************************************************************&
          &****************'
 
-    write(DECinfo%output,*) '   Index     Occupied    Virtual    #Basis funcs.  Rmax(AOS/AE) Rave(AOS/AE) Rsdv(AOS/AE)'
+    write(DECinfo%output,*) '   Index     Occupied    Virtual    #Basis funcs.  Rmax(AOS/AE)  Rave(AOS/AE)  Rsdv(AOS/AE)'
     write(DECinfo%output,*) '             (no. orb)  (no. orb)  '
 
     do i=1,natoms
@@ -4234,7 +4236,7 @@ contains
 
        PrintFragInfo: if(which_fragments(myatom)) then
 
-          write(DECinfo%output,'(1X,i6,6X,i6,5X,i6,8X,i5,7X,g9.4,"/",g9.4,5X,g9.4,"/",g9.4,5X,g9.4,"/",g9.4)') &
+          write(DECinfo%output,'(1X,i6,6X,i6,5X,i6,8X,i5,7X,g8.2,"/",g8.2,1X,g10.4,"/",g10.4,1X,g10.4,"/",g10.4)') &
                & myatom, &
                & occsize(myatom), &
                & unoccsize(myatom), &
