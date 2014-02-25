@@ -74,7 +74,7 @@ contains
     !> Is it a pair fragment?
     logical,intent(in) :: pairfrag
     integer :: j,idx,i,natoms,startidx
-    integer :: CentralAtom
+    integer :: CentralAtom, cntr
     real(realk) :: tcpu, twall
     logical,pointer :: occ_listEFF(:),occEOS(:),unoccEOS(:)
     !> list of atoms with AOS orbitals assigned
@@ -163,13 +163,13 @@ contains
 
        ! Loop over atoms in pair fragment list (just one atom, MyAtom, if it is not a pairfragment)
        do i=1,fragment%nEOSatoms
-          if( CentralAtom== fragment%EOSatoms(i) ) then ! Orbital is included in the EOS
-             fragment%noccEOS = fragment%noccEOS + 1
-             occEOS(j)=.true.
+          if( CentralAtom == fragment%EOSatoms(i) ) then ! Orbital is included in the EOS
+             fragment%noccEOS         = fragment%noccEOS + 1
+             occEOS(j)                = .true.
+             all_atoms( CentralAtom ) = .true.
           end if
        end do
 
-       all_atoms(CentralAtom) = .true.
 
     end do OccEOSSize
 
@@ -187,8 +187,9 @@ contains
        ! Loop over atoms in pair fragment list (just one atom, Myatom, if it is not a pairfragment)
        do i=1,fragment%nEOSatoms
           if( CentralAtom==fragment%EOSatoms(i) ) then ! Orbital is included in the EOS
-             fragment%nunoccEOS = fragment%nunoccEOS + 1
-             unoccEOS(j)=.true.
+             fragment%nunoccEOS       = fragment%nunoccEOS + 1
+             unoccEOS(j)              = .true.
+             all_atoms( CentralAtom ) = .true.
 
              ! Special case: Only occupied partitioning
              ! ----------------------------------------
@@ -208,7 +209,6 @@ contains
           end if
        end do
 
-       all_atoms( CentralAtom ) = .true.
 
     end do UnoccEOSLoop
 
@@ -246,13 +246,16 @@ contains
     ! Loop over EOS orbitals
     idx=0
     do j=startidx,nOcc   ! no core orbitals in EOS for frozen core approx
+
        if(occEOS(j)) then
+
           idx=idx+1
           fragment%occEOSidx(idx)=j
           fragment%occAOSidx(idx)=j   ! also set
+          all_atoms( OccOrbitals(j)%centralatom ) = .true.
+
        end if
 
-       all_atoms( OccOrbitals(j)%centralatom ) = .true.
 
     end do
 
@@ -262,12 +265,12 @@ contains
 
     ! Loop over remaining AOS orbitals (not EOS because they have already been set)
     do i=1,nocc
+
        if(occ_listEFF(i) .and. (.not. occEOS(i)) ) then
           idx=idx+1
           fragment%occAOSidx(idx) = i
+          all_atoms( OccOrbitals(i)%centralatom ) = .true.
        end if
-
-       all_atoms( OccOrbitals(i)%centralatom ) = .true.
 
     end do
     if(idx /= fragment%noccAOS) &
@@ -285,13 +288,13 @@ contains
     ! Loop over EOS orbitals
     idx=0
     do j=1,nunocc
+
        if(unoccEOS(j)) then
           idx=idx+1
           fragment%unoccEOSidx(idx)=j
           fragment%unoccAOSidx(idx)=j
+          all_atoms( UnoccOrbitals(j)%centralatom ) = .true.
        end if
-
-       all_atoms( UnoccOrbitals(j)%centralatom ) = .true.
 
     end do
     if(idx /= fragment%nunoccEOS) then
@@ -300,12 +303,12 @@ contains
 
     ! Loop over remaining AOS orbitals (not EOS)
     do i=1,nunocc
+
        if(unocc_list(i) .and. (.not. unoccEOS(i)) ) then
           idx=idx+1
           fragment%unoccAOSidx(idx) = i
+          all_atoms( UnoccOrbitals(i)%centralatom ) = .true.
        end if
-
-       all_atoms( UnoccOrbitals(i)%centralatom ) = .true.
 
     end do
     if(idx /= fragment%nunoccAOS) &
@@ -314,15 +317,31 @@ contains
 
     !set max distance in AOS space
     fragment%RmaxAOS = 0.0E0_realk
+    fragment%RaveAOS = 0.0E0_realk
+    fragment%RsdvAOS = 0.0E0_realk
+    cntr = 0
     do i=1,natoms
-      if( all_atoms(i))then
+      if( all_atoms(i) )then
         do j=i+1,natoms
-          if(all_atoms(j))then
+          if( all_atoms(j) )then
             fragment%RmaxAOS = max(fragment%RmaxAOS,MyMolecule%DistanceTable(j,i))
+            fragment%RaveAOS = fragment%RaveAOS + MyMolecule%DistanceTable(j,i)
+            cntr = cntr + 1
           endif
         enddo
       endif
     enddo
+    fragment%RaveAOS = fragment%RaveAOS / float( cntr )
+    do i=1,natoms
+      if( all_atoms(i) )then
+        do j=i+1,natoms
+          if( all_atoms(j) )then
+            fragment%RsdvAOS = fragment%RsdvAOS + (MyMolecule%DistanceTable(j,i) - fragment%RaveAOS )**2
+          endif
+        enddo
+      endif
+    enddo
+    fragment%RsdvAOS = ( fragment%RsdvAOS / float( cntr - 1 ) )**(0.5E0_realk)
 
     call mem_dealloc( all_atoms )
 
@@ -2217,7 +2236,7 @@ contains
     type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Fragment info
     type(decfrag), intent(inout) :: fragment
-    integer :: i,j,idx
+    integer :: i,j,idx,cntr
     logical,pointer :: which_atoms(:)
 
 
@@ -2262,9 +2281,12 @@ contains
 
     ! assign atomic extent
     fragment%RmaxAE = 0.0E0_realk
+    fragment%RaveAE = 0.0E0_realk
+    fragment%RsdvAE = 0.0E0_realk
     fragment%natoms = count(which_atoms)
     call mem_alloc(fragment%atoms_idx,Fragment%natoms)
-    idx=0
+    idx  = 0
+    cntr = 0
     do i=1,MyMolecule%natoms
        if(which_atoms(i)) then
           idx=idx+1
@@ -2274,11 +2296,25 @@ contains
           do j=i+1,MyMolecule%natoms
             if(which_atoms(j)) then
               fragment%RmaxAE = max(fragment%RmaxAE,MyMolecule%DistanceTable(j,i))
+              fragment%RaveAE = fragment%RaveAE + MyMolecule%DistanceTable(j,i)
+              cntr = cntr + 1
             endif
           enddo
 
        end if
     end do
+    fragment%RaveAE = fragment%RaveAE / float( cntr )
+    do i=1,MyMolecule%natoms
+       if(which_atoms(i)) then
+          do j=i+1,MyMolecule%natoms
+            if(which_atoms(j)) then
+              fragment%RsdvAE = fragment%RsdvAE + ( MyMolecule%DistanceTable(j,i)- fragment%RaveAE)**2
+            endif
+          enddo
+
+       end if
+    end do
+    fragment%RsdvAE = ( fragment%RsdvAE / float( cntr - 1 ) )**(0.5E0_realk)
     call mem_dealloc(which_atoms)
 
     ! count number of basis functions on selected atoms
@@ -4182,15 +4218,21 @@ contains
     write(DECinfo%output,'(1X,a)') '***************************************************************&
          &****************'
 
-    write(DECinfo%output,*) '   Index     Occupied (no. orb)      Virtual (no. orb)   Basis funcs.  Rmax(AOS/AE)'
+    write(DECinfo%output,*) '   Index     Occupied    Virtual    #Basis funcs.  Rmax(AOS/AE) Rave(AOS/AE) Rsdv(AOS/AE)'
+    write(DECinfo%output,*) '             (no. orb)  (no. orb)  '
 
     do i=1,natoms
        myatom = fragtrack(i)
 
        PrintFragInfo: if(which_fragments(myatom)) then
 
-          write(DECinfo%output,'(1X,i6,10X,i6,17X,i6,10X,i6,9X,g10.4,"/",g10.4)') myatom, occsize(myatom),&
-               & unoccsize(myatom),basissize(myatom),RmaxAOS(myatom)*bohr_to_angstrom,RmaxAE(myatom)*bohr_to_angstrom
+          write(DECinfo%output,'(1X,i6,6X,i6,5X,i6,8X,i5,7X,g9.4,"/",g9.4,5X,g9.4,"/",g9.4,5X,g9.4,"/",g9.4)') &
+               & myatom, &
+               & occsize(myatom), &
+               & unoccsize(myatom), &
+               & basissize(myatom), &
+               & RmaxAOS(myatom)*bohr_to_angstrom, &
+               & RmaxAE(myatom)*bohr_to_angstrom
 
        end if PrintFragInfo
 
