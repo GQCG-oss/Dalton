@@ -4227,15 +4227,14 @@ contains
     write(DECinfo%output,'(1X,a)') '***************************************************************&
          &****************'
 
-    write(DECinfo%output,*) '   Index     Occupied    Virtual    #Basis funcs.  Rmax(AOS/AE)  Rave(AOS/AE)  Rsdv(AOS/AE)'
-    write(DECinfo%output,*) '             (no. orb)  (no. orb)  '
+    write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Rave(AOS/AE)      Rsdv(AOS/AE)'
 
     do i=1,natoms
        myatom = fragtrack(i)
 
        PrintFragInfo: if(which_fragments(myatom)) then
 
-          write(DECinfo%output,'(1X,i6,6X,i6,5X,i6,8X,i5,7X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3)') &
+          write(DECinfo%output,'(1X,i6,1X,i6,1X,i6,1X,i6,3X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3)') &
                & myatom, &
                & occsize(myatom), &
                & unoccsize(myatom), &
