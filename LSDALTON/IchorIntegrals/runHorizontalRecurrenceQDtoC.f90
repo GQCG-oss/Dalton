@@ -74,24 +74,24 @@ CONTAINS
           NTUVAstart = (AngmomA)*(AngmomA+1)*(AngmomA+2)/6
           NTUVBstart = (AngmomB)*(AngmomB+1)*(AngmomB+2)/6
           IF(JP.EQ.0)THEN
-             WRITE(*,'(A)')' '
-             WRITE(*,'(A)')'!Unnecesarry as this is a simpel copy'
-             WRITE(*,'(A)')'!Transfer angmom from D to C'
-             WRITE(*,'(A)')'!subroutine HorizontalRR_RHS_Q0C0D0DtoC(nContPQ,nPasses,nlmP,&'
-             WRITE(*,'(A)')'!         & Qdistance12,ThetaP2,ThetaP,lupri)'
-             WRITE(*,'(A)')'!  implicit none'
-             WRITE(*,'(A)')'!  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri'
-             WRITE(*,'(A)')'!  real(realk),intent(in) :: Qdistance12(3)'
-             WRITE(*,'(A)')'!  real(realk),intent(in) :: ThetaP2(nlmP,1,nContPQ*nPasses)'
-             WRITE(*,'(A)')'!  real(realk),intent(inout) :: ThetaP(nlmP, 1,1,nContPQ*nPasses)'
-             WRITE(*,'(A)')'!  !Local variables'
-             WRITE(*,'(A)')'!  integer :: iP,ilmP'
-             WRITE(*,'(A)')'!  DO iP = 1,nPasses*nContPQ'
-             WRITE(*,'(A)')'!     DO ilmP = 1,nlmP'
-             WRITE(*,'(A)')'!        ThetaP(ilmP,1,1,IP) = ThetaP2(ilmP,1,IP)'
-             WRITE(*,'(A)')'!     ENDDO'
-             WRITE(*,'(A)')'!  ENDDO'
-             WRITE(*,'(A)')'!end subroutine HorizontalRR_RHS_Q0C0D0DtoC'
+!!$             WRITE(*,'(A)')' '
+!!$             WRITE(*,'(A)')'!Unnecesarry as this is a simpel copy'
+!!$             WRITE(*,'(A)')'!Transfer angmom from D to C'
+!!$             WRITE(*,'(A)')'!subroutine HorizontalRR_RHS_Q0C0D0DtoC(nContPQ,nPasses,nlmP,&'
+!!$             WRITE(*,'(A)')'!         & Qdistance12,ThetaP2,ThetaP,lupri)'
+!!$             WRITE(*,'(A)')'!  implicit none'
+!!$             WRITE(*,'(A)')'!  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri'
+!!$             WRITE(*,'(A)')'!  real(realk),intent(in) :: Qdistance12(3)'
+!!$             WRITE(*,'(A)')'!  real(realk),intent(in) :: ThetaP2(nlmP,1,nContPQ*nPasses)'
+!!$             WRITE(*,'(A)')'!  real(realk),intent(inout) :: ThetaP(nlmP, 1,1,nContPQ*nPasses)'
+!!$             WRITE(*,'(A)')'!  !Local variables'
+!!$             WRITE(*,'(A)')'!  integer :: iP,ilmP'
+!!$             WRITE(*,'(A)')'!  DO iP = 1,nPasses*nContPQ'
+!!$             WRITE(*,'(A)')'!     DO ilmP = 1,nlmP'
+!!$             WRITE(*,'(A)')'!        ThetaP(ilmP,1,1,IP) = ThetaP2(ilmP,1,IP)'
+!!$             WRITE(*,'(A)')'!     ENDDO'
+!!$             WRITE(*,'(A)')'!  ENDDO'
+!!$             WRITE(*,'(A)')'!end subroutine HorizontalRR_RHS_Q0C0D0DtoC'
              CYCLE
           ENDIF
           WRITE(*,'(A)')''
@@ -136,13 +136,29 @@ CONTAINS
              endif
              WRITE(*,'(A)')'!  real(realk) :: Tmp(nTUVA,nTUVB) ordering'
           ENDDO
-          WRITE(*,'(A)')'!$OMP SINGLE'
+          WRITE(*,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+          IF(JA.NE.0)THEN
+             WRITE(*,'(A)')'!$OMP PRIVATE(iP,&'
+             DO JTMP=1,JA-1
+                if(JTMP.LT.10)THEN
+                   WRITE(*,'(A,I1,A)')'!$OMP         Tmp',JTMP,',&'
+                else
+                   WRITE(*,'(A,I2,A)')'!$OMP         Tmp',JTMP,',&'
+                endif
+             ENDDO
+             WRITE(*,'(A)')'!$OMP         iTUVD,ilmP,Xcd,Ycd,Zcd) &'
+             WRITE(*,'(A)')'!$OMP SHARED(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)'
+          ELSE
+             WRITE(*,'(A)')'!$OMP PRIVATE(iP,iTUVD,ilmP) &'
+             WRITE(*,'(A)')'!$OMP SHARED(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)'
+          ENDIF
+
+          WRITE(*,'(A)')'  DO iP = 1,nContPQ*nPasses'
           IF(JA.NE.0)THEN
              WRITE(*,'(A)')'   Xcd = -Qdistance12(1)'
              WRITE(*,'(A)')'   Ycd = -Qdistance12(2)'
              WRITE(*,'(A)')'   Zcd = -Qdistance12(3)'
           ENDIF
-          WRITE(*,'(A)')'  DO iP = 1,nContPQ*nPasses'
           DO JTMP=0,JA
              IF(JTMP.EQ.0)THEN
                 IF(nTUVAstart+1.EQ.1)THEN
@@ -200,7 +216,7 @@ CONTAINS
              WRITE(*,'(A)')'    ENDDO'
           ENDIF
           WRITE(*,'(A)')'   ENDDO'
-          WRITE(*,'(A)')'!$OMP END SINGLE'
+          WRITE(*,'(A)')'!$OMP END PARALLEL DO'
           IF(JP.LT.10)THEN
              WRITE(*,'(A,I1,A,I1,A,I1,A)')'end subroutine HorizontalRR_RHS_Q',JP,'C',AngmomA,'D',AngmomB,'DtoC'
           ELSE
