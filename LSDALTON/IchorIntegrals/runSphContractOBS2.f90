@@ -187,7 +187,7 @@ PROGRAM TUV
               !              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(in)    :: IN(',ijkcartP,',ijkQcart,nPasses)'
               !              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(',ijkP,',ijkQcart,nPasses)'
 
-              WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
+              WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) PRIVATE(iPass,ijkP) SHARED(nlmP,nContPasses,IN,OUT)'
               WRITE(LUMOD3,'(A)')'  DO iPass=1,nContPasses'
               WRITE(LUMOD3,'(A)')'   DO ijkP=1,nlmP'
               do ilmP=1,ijk
@@ -228,7 +228,7 @@ PROGRAM TUV
               enddo
               WRITE(LUMOD3,'(A)')'   ENDDO'
               WRITE(LUMOD3,'(A)')'  ENDDO'
-              WRITE(LUMOD3,'(A)')'!$OMP END SINGLE'
+              WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
               IF(l12.LT.10)THEN
                  WRITE(LUMOD3,'(A,I1,A,I1,A)')'end subroutine SphericalContractOBS2_maxAngQ',l1+l2,'_maxAngC',l1,' '
               ELSE
