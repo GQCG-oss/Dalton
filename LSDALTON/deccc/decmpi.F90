@@ -667,6 +667,10 @@ contains
     call ls_mpi_buffer(MyFragment%RejectThr,2,master)
     call ls_mpi_buffer(MyFragment%RmaxAE,master)
     call ls_mpi_buffer(MyFragment%RmaxAOS,master)
+    call ls_mpi_buffer(MyFragment%RaveAE,master)
+    call ls_mpi_buffer(MyFragment%RaveAOS,master)
+    call ls_mpi_buffer(MyFragment%RsdvAE,master)
+    call ls_mpi_buffer(MyFragment%RsdvAOS,master)
 
 
     ! Integer pointers
