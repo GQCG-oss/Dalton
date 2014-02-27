@@ -212,14 +212,14 @@ CRIT7=`$GREP "bond distance\: * H * C * 1\.0743.." $log | wc -l`
 CRIT8=`$GREP "bond angle\: * C * C * O * 123\.62." $log | wc -l`  
 CRIT9=`$GREP "bond angle\: * C * C * H * 117\.01." $log | wc -l`
 CRIT10=`$GREP "bond angle\: * O * C * H * 119\.37." $log | wc -l`
-CRIT11=`$GREP "bond angle\: * C * C * C * 119\.06." $log | wc -l`
+CRIT11=`$GREP "bond angle\: * C * C * C * 120\.06." $log | wc -l`
 CRIT12=`$GREP "bond angle\: * C * C * H * 116\.78." $log | wc -l`
 CRIT13=`$GREP "bond angle\: * C * C * H * 123\.14." $log | wc -l`
 CRIT14=`$GREP "bond angle\: * C * C * H * 121\.72." $log | wc -l`
-CRIT15=`$GREP "bond angle\: * C * C * H * 122\.65." $log | wc -l`
+CRIT15=`$GREP "bond angle\: * C * C * H * 121\.65." $log | wc -l`
 CRIT16=`$GREP "bond angle\: * H * C * H * 116\.61." $log | wc -l`
-TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ CRIT15 \+ $CRIT16`
-CTRL[2]=16
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16`
+CTRL[2]=32
 ERROR[2]="OPTIMIZED GEOMETRY NOT CORRECT"
 
 
