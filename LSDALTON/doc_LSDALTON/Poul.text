@@ -10,7 +10,7 @@ He is one of the main authors of the DALTON program (www.daltonprogram.org).
 Awards
 
 Appointed "Knight of the Order of the Dannebrog" by the Queen of Denmark 
-in 20?? for his meritorious civil service, in particular for his oustanding 
+in 20?? for his meritorious civil service, in particular for his outstanding 
 contributions to the sciences.
 
 Awards for extraordinary scientific accomplishment by the International Conference of Computation Methods in Science and Engineering (ICCMSE). Crete, October 2006.
@@ -120,7 +120,7 @@ Linear-scaling Coupled-Cluster algorithms
 To describe large molecular systems with coupled cluster methods, the computational scaling with the system size of existing methods represents a roadblock to progress. Poul and co-workers have introduced the Divide-Expand-Consolidate scheme and have thereby made substantial strides in obtaining coupled cluster methods that scale linearly with system size and where the calculations are embarrassingly parallel, such that calculations for small and large molecular systems require the same computational wall time, retaining error control of the calculation. 
 
 Optimization theory for Hartree–Fock and Kohn Sham theory, including linear-scaling algorithms
-Poul and co-workers have introduced the Augmented Roothaan-Hall method for opimizing Hartree-Fock and Kohn-Sham density matrices. A novel method that does not suffer from the flaws of the conventionally used two-step Roothaan-Hall (RH) with direct inversion in iterative subspace (DIIS) acceleration scheme, improving the reliability of the optimization while reducing its cost. The key to its success is the replacement of the two separate steps of a each RH/DIIS iteration by a single concerted step that fully exploits the Hessian information available from the previous iterations. It is a trust-region based method and therefore by design converges to an energy minimum. The algorithm is based on matrix multiplications and becomes linearly scaling for sufficiently sparse systems.
+Poul and co-workers have introduced the Augmented Roothaan-Hall method for optimizing Hartree-Fock and Kohn-Sham density matrices. A novel method that does not suffer from the flaws of the conventionally used two-step Roothaan-Hall (RH) with direct inversion in iterative subspace (DIIS) acceleration scheme, improving the reliability of the optimization while reducing its cost. The key to its success is the replacement of the two separate steps of a each RH/DIIS iteration by a single concerted step that fully exploits the Hessian information available from the previous iterations. It is a trust-region based method and therefore by design converges to an energy minimum. The algorithm is based on matrix multiplications and becomes linearly scaling for sufficiently sparse systems.
 
 Localization of Hartree-Fock and Kohn Sham orbitals
 Poul and co-workers have introduced methods which for the first time was able to localize both occupied and virtual Hartree-Fock molecular orbitals. A substantial feat as the task was deemed impossible and the rest of the community had forsaken the cause and had settled on using projected atomic orbitals for the virtual orbital space. 
