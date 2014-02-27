@@ -445,7 +445,10 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'    real(realk) :: TMP,TMPACC,TMPBCC'
   WRITE(LUMOD3,'(A)')'    real(realk) :: BasisCont(nPrimB,nPrimB)'
   WRITE(LUMOD3,'(A)')'    !Scaling p**4*c: nPrimA*nPrimB*nPrimC*nPrimD*nContC'
-  WRITE(LUMOD3,'(A)')'    !$OMP SINGLE'
+  WRITE(LUMOD3,'(A)')'    !$OMP PARALLEL DO DEFAULT(none) &'
+  WRITE(LUMOD3,'(A)')'    !$OMP PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&'
+  WRITE(LUMOD3,'(A)')'    !$OMP         BasisCont,TMPACC,TMPBCC) &'
+  WRITE(LUMOD3,'(A)')'    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) '
   WRITE(LUMOD3,'(A)')'     do iContC=1,nContA'
   WRITE(LUMOD3,'(A)')'      do iPrimB=1,nPrimB'
   WRITE(LUMOD3,'(A)')'       do iPrimD=1,nPrimB'
@@ -470,7 +473,7 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'       AUXarrayCont(iContC,iContD) = TMP'
   WRITE(LUMOD3,'(A)')'      enddo'
   WRITE(LUMOD3,'(A)')'     enddo'
-  WRITE(LUMOD3,'(A)')'    !$OMP END SINGLE'
+  WRITE(LUMOD3,'(A)')'    !$OMP END PARALLEL DO'
   WRITE(LUMOD3,'(A)')'  end subroutine GabPrimitiveContractionGen1'
 
 
@@ -519,7 +522,11 @@ PROGRAM TUV
          WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMP'
          WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont(',nTUVP*nTUVP,',nPrimB,nPrimB)'
          WRITE(LUMOD3,'(A)')'    real(realk) :: ACCTMP,BCCTMP'
-         WRITE(LUMOD3,'(A)')'    !$OMP SINGLE'
+         WRITE(LUMOD3,'(A)')'    !$OMP PARALLEL DO DEFAULT(none) &'
+         WRITE(LUMOD3,'(A)')'    !$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&'
+         WRITE(LUMOD3,'(A)')'    !$OMP         BasisCont,ACCTMP,BCCTMP) &'
+         WRITE(LUMOD3,'(A)')'    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) '
+!         WRITE(LUMOD3,'(A)')'    !$OMP SINGLE'
          WRITE(LUMOD3,'(A)')'     do iContC=1,nContA'
          WRITE(LUMOD3,'(A)')'      do iPrimB=1,nPrimB'
          WRITE(LUMOD3,'(A)')'       do iPrimD=1,nPrimB'
@@ -548,7 +555,7 @@ PROGRAM TUV
          WRITE(LUMOD3,'(A)')'       enddo'
          WRITE(LUMOD3,'(A)')'      enddo'
          WRITE(LUMOD3,'(A)')'     enddo'
-         WRITE(LUMOD3,'(A)')'    !$OMP END SINGLE'
+         WRITE(LUMOD3,'(A)')'    !$OMP END PARALLEL DO'
          IF(nTUVP*nTUVP.LT.10)THEN
             WRITE(LUMOD3,'(A,I1)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP
          ELSEIF(nTUVP*nTUVP.LT.100)THEN
@@ -587,6 +594,7 @@ WRITE(LUMOD3,'(A)')'     enddo'
 WRITE(LUMOD3,'(A)')'     Output(1) = SQRT(TMP)'
 !WRITE(LUMOD3,'(A)')'    Output(1) = MAX(ABS(MAX(AUXarray)),ABS(MIN(AUXarray)))'
 WRITE(LUMOD3,'(A)')'    !$OMP END SINGLE'
+WRITE(LUMOD3,'(A)')'    !$OMP BARRIER'
 WRITE(LUMOD3,'(A)')'  end subroutine ExtractGabElmP1Gen'
 WRITE(LUMOD3,'(A)')''
 WRITE(LUMOD6,'(A)')'  subroutine ExtractGabElmP1Seg(AUXarray,Output)'
@@ -596,6 +604,7 @@ WRITE(LUMOD6,'(A)')'    real(realk),intent(inout) :: Output(1)'
 WRITE(LUMOD6,'(A)')'    !$OMP SINGLE'
 WRITE(LUMOD6,'(A)')'     Output(1) = SQRT(ABS(AUXarray(1)))'
 WRITE(LUMOD6,'(A)')'    !$OMP END SINGLE'
+WRITE(LUMOD6,'(A)')'    !$OMP BARRIER'
 WRITE(LUMOD6,'(A)')'  end subroutine ExtractGabElmP1Seg'
 
 allocate(UniquenTUVs(3*3*3*3))
@@ -654,6 +663,7 @@ DO AngmomA = 0,2
          WRITE(LUMOD3,'(A)')'     enddo'
          WRITE(LUMOD3,'(A)')'     Output(1) = SQRT(TotalMaxValue)'
          WRITE(LUMOD3,'(A)')'    !$OMP END SINGLE'
+         WRITE(LUMOD3,'(A)')'    !$OMP BARRIER'
          IF(nlmA*nlmB.LT.10)THEN
             WRITE(LUMOD3,'(A,I1,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
          ELSEIF(nlmA*nlmB.LT.100)THEN
@@ -696,6 +706,7 @@ DO AngmomA = 0,2
          WRITE(LUMOD6,'(A)')'     enddo'
          WRITE(LUMOD6,'(A)')'     Output(1) = SQRT(MAXVAL(TMP))'
          WRITE(LUMOD6,'(A)')'    !$OMP END SINGLE'
+         WRITE(LUMOD6,'(A)')'    !$OMP BARRIER'
          IF(nlmA*nlmB.LT.10)THEN
             WRITE(LUMOD6,'(A,I1,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Seg'
          ELSEIF(nlmA*nlmB.LT.100)THEN

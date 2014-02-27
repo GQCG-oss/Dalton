@@ -5394,9 +5394,15 @@ CONTAINS
     real(realk) :: BasisCont2(nPrimA,nPrimB)
     real(realk) :: BasisCont3(nPrimB)
     !Scaling p**4*c*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nPassQ
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+!!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iPrimD,iPrimC,TMP,iContC,iPassP)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iPrimD,iPrimC,TMP,iContC,iPassP)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -5408,9 +5414,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iPrimD,TMP,iContD,iContC,iPassP)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iPrimD,TMP,iContD,iContC,iPassP)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          TMP = 0.0E0_realk
@@ -5420,9 +5426,9 @@ CONTAINS
          BasisCont2(iPrimA,iPrimB) = TMP
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO PRIVATE(iPrimB,iPrimA,TMP,iContA,iContD,iContC,iPassP)
+!!$OMP DO PRIVATE(iPrimB,iPrimA,TMP,iContA,iContD,iContC,iPassP)
         do iPrimB=1,nPrimB
          TMP = 0.0E0_realk
          do iPrimA=1,nPrimA
@@ -5430,8 +5436,8 @@ CONTAINS
          enddo
          BasisCont3(iPrimB) = TMP
         enddo
-!$OMP END DO
-!$OMP DO PRIVATE(iPrimB,TMP,iContA,iContB,iContD,iContC,iPassP)
+!!$OMP END DO
+!!$OMP DO PRIVATE(iPrimB,TMP,iContA,iContB,iContD,iContC,iPassP)
         do iContB=1,nContB
          TMP = 0.0E0_realk
          do iPrimB=1,nPrimB
@@ -5439,11 +5445,13 @@ CONTAINS
          enddo
          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP) = TMP
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!!$OMP END SINGLE
+!$OMP END PARALLEL DO
   end subroutine PrimitiveContractionGen1
 
    subroutine PrimitiveContractionGen4(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5465,9 +5473,14 @@ CONTAINS
     real(realk) :: BasisCont2(    4,nPrimA,nPrimB)
     real(realk) :: BasisCont3(    4,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -5482,9 +5495,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,    4
@@ -5497,9 +5510,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,    4
           TMP = 0.0E0_realk
@@ -5510,8 +5523,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,    4
           TMP = 0.0E0_realk
@@ -5522,11 +5535,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen4
 
    subroutine PrimitiveContractionGen10(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5548,9 +5562,14 @@ CONTAINS
     real(realk) :: BasisCont2(   10,nPrimA,nPrimB)
     real(realk) :: BasisCont3(   10,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -5565,9 +5584,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   10
@@ -5580,9 +5599,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,   10
           TMP = 0.0E0_realk
@@ -5593,8 +5612,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,   10
           TMP = 0.0E0_realk
@@ -5605,11 +5624,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen10
 
    subroutine PrimitiveContractionGen20(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5631,9 +5651,14 @@ CONTAINS
     real(realk) :: BasisCont2(   20,nPrimA,nPrimB)
     real(realk) :: BasisCont3(   20,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -5648,9 +5673,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   20
@@ -5663,9 +5688,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,   20
           TMP = 0.0E0_realk
@@ -5676,8 +5701,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,   20
           TMP = 0.0E0_realk
@@ -5688,11 +5713,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen20
 
    subroutine PrimitiveContractionGen35(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5714,9 +5740,14 @@ CONTAINS
     real(realk) :: BasisCont2(   35,nPrimA,nPrimB)
     real(realk) :: BasisCont3(   35,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -5731,9 +5762,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   35
@@ -5746,9 +5777,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,   35
           TMP = 0.0E0_realk
@@ -5759,8 +5790,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,   35
           TMP = 0.0E0_realk
@@ -5771,11 +5802,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen35
 
    subroutine PrimitiveContractionGen16(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5797,9 +5829,14 @@ CONTAINS
     real(realk) :: BasisCont2(   16,nPrimA,nPrimB)
     real(realk) :: BasisCont3(   16,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -5814,9 +5851,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   16
@@ -5829,9 +5866,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,   16
           TMP = 0.0E0_realk
@@ -5842,8 +5879,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,   16
           TMP = 0.0E0_realk
@@ -5854,11 +5891,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen16
 
    subroutine PrimitiveContractionGen40(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5880,9 +5918,14 @@ CONTAINS
     real(realk) :: BasisCont2(   40,nPrimA,nPrimB)
     real(realk) :: BasisCont3(   40,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -5897,9 +5940,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   40
@@ -5912,9 +5955,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,   40
           TMP = 0.0E0_realk
@@ -5925,8 +5968,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,   40
           TMP = 0.0E0_realk
@@ -5937,11 +5980,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen40
 
    subroutine PrimitiveContractionGen80(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5963,9 +6007,14 @@ CONTAINS
     real(realk) :: BasisCont2(   80,nPrimA,nPrimB)
     real(realk) :: BasisCont3(   80,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -5980,9 +6029,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,   80
@@ -5995,9 +6044,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,   80
           TMP = 0.0E0_realk
@@ -6008,8 +6057,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,   80
           TMP = 0.0E0_realk
@@ -6020,11 +6069,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen80
 
    subroutine PrimitiveContractionGen140(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -6046,9 +6096,14 @@ CONTAINS
     real(realk) :: BasisCont2(  140,nPrimA,nPrimB)
     real(realk) :: BasisCont3(  140,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -6063,9 +6118,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  140
@@ -6078,9 +6133,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,  140
           TMP = 0.0E0_realk
@@ -6091,8 +6146,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,  140
           TMP = 0.0E0_realk
@@ -6103,11 +6158,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen140
 
    subroutine PrimitiveContractionGen100(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -6129,9 +6185,14 @@ CONTAINS
     real(realk) :: BasisCont2(  100,nPrimA,nPrimB)
     real(realk) :: BasisCont3(  100,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -6146,9 +6207,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  100
@@ -6161,9 +6222,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,  100
           TMP = 0.0E0_realk
@@ -6174,8 +6235,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,  100
           TMP = 0.0E0_realk
@@ -6186,11 +6247,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen100
 
    subroutine PrimitiveContractionGen200(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -6212,9 +6274,14 @@ CONTAINS
     real(realk) :: BasisCont2(  200,nPrimA,nPrimB)
     real(realk) :: BasisCont3(  200,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -6229,9 +6296,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  200
@@ -6244,9 +6311,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,  200
           TMP = 0.0E0_realk
@@ -6257,8 +6324,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,  200
           TMP = 0.0E0_realk
@@ -6269,11 +6336,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen200
 
    subroutine PrimitiveContractionGen350(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -6295,9 +6363,14 @@ CONTAINS
     real(realk) :: BasisCont2(  350,nPrimA,nPrimB)
     real(realk) :: BasisCont3(  350,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -6312,9 +6385,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  350
@@ -6327,9 +6400,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,  350
           TMP = 0.0E0_realk
@@ -6340,8 +6413,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,  350
           TMP = 0.0E0_realk
@@ -6352,11 +6425,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen350
 
    subroutine PrimitiveContractionGen400(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -6378,9 +6452,14 @@ CONTAINS
     real(realk) :: BasisCont2(  400,nPrimA,nPrimB)
     real(realk) :: BasisCont3(  400,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -6395,9 +6474,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  400
@@ -6410,9 +6489,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,  400
           TMP = 0.0E0_realk
@@ -6423,8 +6502,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,  400
           TMP = 0.0E0_realk
@@ -6435,11 +6514,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen400
 
    subroutine PrimitiveContractionGen700(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -6461,9 +6541,14 @@ CONTAINS
     real(realk) :: BasisCont2(  700,nPrimA,nPrimB)
     real(realk) :: BasisCont3(  700,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -6478,9 +6563,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1,  700
@@ -6493,9 +6578,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1,  700
           TMP = 0.0E0_realk
@@ -6506,8 +6591,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1,  700
           TMP = 0.0E0_realk
@@ -6518,11 +6603,12 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen700
 
    subroutine PrimitiveContractionGen1225(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -6544,9 +6630,14 @@ CONTAINS
     real(realk) :: BasisCont2( 1225,nPrimA,nPrimB)
     real(realk) :: BasisCont3( 1225,nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
     do iPassP = 1,nPasses
      do iContC=1,nContC
-!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
       do iPrimB=1,nPrimB
        do iPrimA=1,nPrimA
         do iPrimD=1,nPrimD
@@ -6561,9 +6652,9 @@ CONTAINS
         enddo
        enddo
       enddo
-!$OMP END DO
+!!$OMP END DO
       do iContD=1,nContD
-!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
          do iTUV=1, 1225
@@ -6576,9 +6667,9 @@ CONTAINS
          enddo
         enddo
        enddo
-!$OMP END DO
+!!$OMP END DO
        do iContA=1,nContA
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
         do iPrimB=1,nPrimB
          do iTUV=1, 1225
           TMP = 0.0E0_realk
@@ -6589,8 +6680,8 @@ CONTAINS
           BasisCont3(iTUV,iPrimB) = TMP
          enddo
         enddo
-!$OMP END DO
-!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
         do iContB=1,nContB
          do iTUV=1, 1225
           TMP = 0.0E0_realk
@@ -6601,10 +6692,11 @@ CONTAINS
           AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
          enddo
         enddo
-!$OMP END DO
+!!$OMP END DO
        enddo
       enddo
      enddo
     enddo
+!$OMP END PARALLEL DO
    end subroutine PrimitiveContractionGen1225
 END MODULE IchorEriCoulombintegralOBSGeneralModGen

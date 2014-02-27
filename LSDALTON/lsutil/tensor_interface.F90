@@ -1782,18 +1782,20 @@ contains
     real(realk) :: normher,ref,ref2,ref3
     integer(kind=long) :: testint
     logical :: master
-    integer :: no,nv,nb,na,i,j,succ
-    integer(kind=ls_mpik) :: sender, recver, nnod, rnk
+    integer :: no,nv,nb,na,i,j,succ,to_get_from,ti,midx(4)
+    integer(kind=ls_mpik) :: sender, recver, nnod, rnk, me
     character(len=7) :: teststatus
     character(ARR_MSG_LEN) :: msg
     master = .true.
     nnod   = 1_ls_mpik
+    me     = 0
 #ifdef VAR_MPI
-    if(infpar%lg_mynum /= 0) then
+    me = infpar%lg_mynum
+    if(me /= 0) then
       master =.false.
     endif
     nnod = infpar%lg_nodtot
-    !if(nnod < 5) call lsquit("ERROR(test_array_struct): This needs to be run with at least 5 processes",-1)
+    if(nnod < 3) print*,"WARNING(test_array_struct): not enough MPI processes to test all features"
 #endif
     nb =  21
     nv =  18
@@ -1821,6 +1823,7 @@ contains
       write (DECinfo%output,*) "TESTING SIMPLE ARRAY FUNCTIONS - MASTER DIRECTED"
       write (DECinfo%output,*) ""
       write (DECinfo%output,*)"ALLOC-DEALLOC TESTS"
+      print *,"alloc dealloc tests"
       teststatus="SUCCESS"
       test=array_init([nv,na,nv,nb],4,TILED_DIST,MASTER_ACCESS,[nv,no-1,1,2])
       test2=array_init([na,nb,nv,no],4,TILED_DIST,MASTER_ACCESS,[nv,no-1,1,2])
@@ -1832,6 +1835,7 @@ contains
       if(succ/=0)teststatus=" FAILED"
       test2=array_init([nb,no,nv,no+1],4,TILED_DIST,MASTER_ACCESS,[nb,2,3,4])
       write (DECinfo%output,'(" ALLOC-DEALLOC TESTS: ",A7)')teststatus  
+      print *,"DIFFERENT ALLOCATION AND DEALLOCATION STEPS: ",teststatus
 
       !ALLOCATING A FULL MATRIX AND PUT IT TO DISTRIBUTED MEMORY
       !check for errors via norm
@@ -1845,49 +1849,75 @@ contains
       write(DECinfo%output,'("NORM OF PDM ARRAY  : ",f20.15)')normher
       if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
       write (DECinfo%output,'("CNVRT: NORM, TEST STATUS:",f19.10," : ",A7)')normher,teststatus
+      print *,"ALLOCATING A FULL MATRIX AND PUT IT TO DISTRIBUTED MEMORY: ",normher,teststatus
+
+
       !GET A TILE OF A PDM ARRAY
       !calculate how many elements are in the desired tile, and allocate the
       !respective amount of memory in a fortran array
       write(DECinfo%output,*)""
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_GET"
-      testint=2
+      do ti = 1, test%ntiles
+        to_get_from = get_residence_of_tile(ti,test)
+        if(to_get_from /= me .or. nnod==1)then
+         testint = ti
+         exit
+        endif 
+      enddo
       call get_tile_dim(j,test,testint)
+      print *,"trying to get",testint," with size", j
       call mem_alloc(tileget,j)
       call random_number(tileget)
       !initiatilize with some weird number here 10 and after get compare the
       !norms of the tile and the local fortran array
       teststatus="SUCCESS"
-      call array_print_tile_norm(test,2,ref)
+      if(nnod>1) call array_print_tile_norm(test,ti,ref)
       write(DECinfo%output,'("NORM OF TILE IN ARRAY   : ",f20.15)')ref
-      call print_norm(tileget,int(j,kind=8),normher)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT BEFORE GET : ",f20.15)')normher
-      call array_get_tile(test,2,tileget,j)
-      call print_norm(tileget,int(j,kind=8),normher)
+      if(nnod>1) call array_get_tile(test,ti,tileget,j)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT AFTER GET  : ",f20.15)')normher
-      if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      if(nnod>1)then
+        if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      else
+        print *,"GET A TILE OF A PDM ARRAY has been skipped"
+      endif
       write (DECinfo%output,'("GET: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
       call mem_dealloc(tileget)
+      print *,"GET A TILE OF A PDM ARRAY: ",normher,teststatus
 
       write(DECinfo%output,*)""
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_PUT"
       teststatus="SUCCESS"
-      testint=2
+      do ti = test%ntiles,1, -1
+        to_get_from = get_residence_of_tile(ti,test)
+        if(to_get_from /= me .or. nnod==1)then
+         testint = ti
+         exit
+        endif 
+      enddo
       call get_tile_dim(j,test,testint)
       call mem_alloc(tileget,j)
       call random_number(tileget)
       !initiatilize with some weird number here 10 and after get compare the
       !norms of the tile and the local fortran array
-      call array_print_tile_norm(test,2,normher)
+      if(nnod>1) call array_print_tile_norm(test,ti,normher)
       write(DECinfo%output,'("NORM OF TILE BEFORE PUT : ",f20.15)')normher
-      call print_norm(tileget,int(j,kind=8),ref)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),ref)
       write(DECinfo%output,'("NORM OF FORT TO PUT     : ",f20.15)')ref
-      call array_put_tile(test,2,tileget,j)
-      call array_print_tile_norm(test,2,normher)
+      if(nnod>1) call array_put_tile(test,ti,tileget,j)
+      if(nnod>1) call array_print_tile_norm(test,ti,normher)
       write(DECinfo%output,'("NORM OF TILE AFTER PUT  : ",f20.15)')normher
-      if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      if(nnod>1)then 
+        if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      else
+        print *,"PUT A TILE OF A PDM ARRAY has been skipped"
+      endif
       write (DECinfo%output,'("PUT: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
+      print *,"TESTING MPI_PUT",normher,teststatus
      
 
       !GET A TILE FROM YOURSELF AS CHECK
@@ -1907,21 +1937,28 @@ contains
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_ACCUMULATE"
       teststatus="SUCCESS"
-      do i=1,j
-        tileget(i)=tileget(i)+3.0E0_realk
-      enddo
-      call print_norm(tileget,int(j,kind=8),ref)
+      if(nnod>1)then
+        do i=1,j
+          tileget(i)=tileget(i)+3.0E0_realk
+        enddo
+        call print_norm(tileget,int(j,kind=8),ref)
+      endif
       write(DECinfo%output,'("NORM LOCAL ACCUMULATION : ",f20.15)')ref
       !initialize the local tile with 3 and accumulate it --> compare norm
       tileget=3.0E0_realk
-      call print_norm(tileget,int(j,kind=8),normher)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT TO ADD:      ",f20.15)')normher
-      call array_accumulate_tile(test,2,tileget,j)
-      call array_print_tile_norm(test,2,normher)
+      if(nnod>1) call array_accumulate_tile(test,ti,tileget,j)
+      if(nnod>1) call array_print_tile_norm(test,ti,normher)
       write(DECinfo%output,'("NORM REMOTE ACCUMULATION: ",f20.15)')normher
       !use the tile with three in it, print its norm put and compare norms
-      if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      if(nnod>1)then 
+        if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      else
+        print *,"ACCUMULATE A TILE OF A PDM ARRAY has been skipped"
+      endif
       write (DECinfo%output,'("ACC: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
+      print *,"TESTING MPI_ACCUMULATE: ",normher,teststatus
 
 
       call array_free(test)
@@ -1949,6 +1986,7 @@ contains
         endif
       enddo
       write (DECinfo%output,'("ORDER: TEST STATUS:                              ",A7)')teststatus
+      print *,"TESTING CONVERSION TO FORT: ",teststatus
 
 
 
@@ -1997,44 +2035,56 @@ contains
     if(master) write (DECinfo%output,*)"DONE -- NOW COMMUNICATION"
     if(master) write(DECinfo%output,*)""
     if(master) write(DECinfo%output,*)""
+    print *,"ALL-INIT ALLOC-DEALLOC TESTS",teststatus
     !call lsmpi_barrier(infpar%lg_comm)
 
-    !IF MY RANK IS THREE, PUT A MATRIX CONTAINING 10 in TILE 2 (ON THE
-    !RESPECTIVE PROCESS) 
+    !IF MY RANK IS NNOD-1, PUT A MATRIX CONTAINING 10 the first tile not on the
+    !current rank
     teststatus="SUCCESS"
-    if(infpar%lg_nodtot>3)then
-      rnk = 3
-    else
-      rnk = 0
-    endif
-    if(infpar%lg_mynum==rnk.or.master)then
+    rnk = nnod - 1
+    do ti = test%ntiles,1, -1
+      to_get_from = get_residence_of_tile(ti,test)
+      if(to_get_from /= nnod-1 .and. to_get_from/=nnod-2)then
+       testint = ti
+       exit
+      endif 
+    enddo
+
+
+    if((infpar%lg_mynum==rnk.or.master).and. nnod > 2)then
+
       recver=rnk
+
       if(.not.master)then
-        call get_tile_dim(j,test2,testint)
+        call get_tile_dim(j,test2,ti)
         call mem_alloc(tileget,j)
         tileget = 1.0E1_realk
-        call array_put_tile(test2,2,tileget,j)
+        call array_put_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         call mem_dealloc(tileget)
+
       else
         call ls_mpisendrecv(ref,infpar%lg_comm,recver,infpar%master)
         write(DECinfo%output,'("NORM PARALLEL 3LPN: ",f20.15)')ref
       endif
-    endif
-    !BEFORE 2 CAN GET THE 
-    if(infpar%lg_nodtot>3)then
-      rnk = 2
+
     else
-      rnk = 0
+      if(master) print*,"WARNING: skipping test NORM PARALLEL 3LPN, not enough nodes"
     endif
+
+
+    !BEFORE rank NNOD - 2  CAN GET THE TILE
+    rnk = nnod - 2
+
+    
     call lsmpi_barrier(infpar%lg_comm)
-    if(infpar%lg_mynum==rnk.or.master)then
+    if((infpar%lg_mynum==rnk.or.master).and.nnod>2)then
       recver=rnk
       if(.not.master)then
-        call get_tile_dim(j,test2,testint)
+        call get_tile_dim(j,test2,ti)
         call mem_alloc(tileget,j)
-        call array_get_tile(test2,2,tileget,j)
+        call array_get_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         do i=1,j
@@ -2043,7 +2093,8 @@ contains
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         tileget = 2.4E0_realk
-        call array_accumulate_tile(test2,[2,1,1,1],tileget,j)
+        call get_midx(ti,midx,test2%ntpm,test2%mode)
+        call array_accumulate_tile(test2,midx,tileget,j)
         call mem_dealloc(tileget)
       else
         teststatus="SUCCESS"
@@ -2056,16 +2107,23 @@ contains
         write(DECinfo%output,'("NORM PARALLEL 2LAC: ",f20.15)')ref
       endif
     endif
+
     !BE CAREFUL ABOUT WHETER THE INFORMATION IS ALREADY TRANSMITTED --> AT
     !CRITICAL POINTS INSERT BARRIER STATEMENTS TO SYNCHONIZE THE NODES 
     call lsmpi_barrier(infpar%lg_comm)
-    call array_print_tile_norm(test2,2,normher)
+
+    if(nnod>2)call array_print_tile_norm(test2,ti,normher)
     call array_free(test2)
     if(master)then
        teststatus="SUCCESS"
        write(DECinfo%output,'("NORM PARALLEL WORK: ",f20.15)')normher
-       if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+       if(nnod>2)then
+         if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+       else
+         print *,"AS TEST WAS SKIPPED WE DO NOT CHECK FOR THE RESULT"
+       endif
        write (DECinfo%output,'("ACC2    : NORM, TEST STATUS: ",f19.10," : ",A7)')ref,teststatus
+       print *,"ACC2    : NORM, TEST STATUS:",teststatus
     endif
     if(master) write (DECinfo%output,*)""
 
@@ -2089,7 +2147,7 @@ contains
     else
       rnk = 0
     endif
-    if(infpar%lg_mynum==rnk)then
+    if(me==rnk)then
       write (msg,*)"local test norm slave"
       call print_norm(test%elm1,test%nelms,msg)
     endif

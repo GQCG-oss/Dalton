@@ -694,7 +694,10 @@ CONTAINS
     real(realk) :: TMP,TMPACC,TMPBCC
     real(realk) :: BasisCont(nPrimB,nPrimB)
     !Scaling p**4*c: nPrimA*nPrimB*nPrimC*nPrimD*nContC
-    !$OMP SINGLE
+    !$OMP PARALLEL DO DEFAULT(none) &
+    !$OMP PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&
+    !$OMP         BasisCont,TMPACC,TMPBCC) &
+    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) 
      do iContC=1,nContA
       do iPrimB=1,nPrimB
        do iPrimD=1,nPrimB
@@ -719,7 +722,7 @@ CONTAINS
        AUXarrayCont(iContC,iContD) = TMP
       enddo
      enddo
-    !$OMP END SINGLE
+    !$OMP END PARALLEL DO
   end subroutine GabPrimitiveContractionGen1
 
   subroutine GabPrimitiveContractionGen16(AUXarray2,AUXarrayCont,nPrimP,&
@@ -737,7 +740,10 @@ CONTAINS
     real(realk) :: TMP
     real(realk) :: BasisCont(   16,nPrimB,nPrimB)
     real(realk) :: ACCTMP,BCCTMP
-    !$OMP SINGLE
+    !$OMP PARALLEL DO DEFAULT(none) &
+    !$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&
+    !$OMP         BasisCont,ACCTMP,BCCTMP) &
+    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) 
      do iContC=1,nContA
       do iPrimB=1,nPrimB
        do iPrimD=1,nPrimB
@@ -766,7 +772,7 @@ CONTAINS
        enddo
       enddo
      enddo
-    !$OMP END SINGLE
+    !$OMP END PARALLEL DO
   end subroutine GabPrimitiveContractionGen16
 
   subroutine GabPrimitiveContractionGen100(AUXarray2,AUXarrayCont,nPrimP,&
@@ -784,7 +790,10 @@ CONTAINS
     real(realk) :: TMP
     real(realk) :: BasisCont(  100,nPrimB,nPrimB)
     real(realk) :: ACCTMP,BCCTMP
-    !$OMP SINGLE
+    !$OMP PARALLEL DO DEFAULT(none) &
+    !$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&
+    !$OMP         BasisCont,ACCTMP,BCCTMP) &
+    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) 
      do iContC=1,nContA
       do iPrimB=1,nPrimB
        do iPrimD=1,nPrimB
@@ -813,7 +822,7 @@ CONTAINS
        enddo
       enddo
      enddo
-    !$OMP END SINGLE
+    !$OMP END PARALLEL DO
   end subroutine GabPrimitiveContractionGen100
 
   subroutine GabPrimitiveContractionGen400(AUXarray2,AUXarrayCont,nPrimP,&
@@ -831,7 +840,10 @@ CONTAINS
     real(realk) :: TMP
     real(realk) :: BasisCont(  400,nPrimB,nPrimB)
     real(realk) :: ACCTMP,BCCTMP
-    !$OMP SINGLE
+    !$OMP PARALLEL DO DEFAULT(none) &
+    !$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&
+    !$OMP         BasisCont,ACCTMP,BCCTMP) &
+    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) 
      do iContC=1,nContA
       do iPrimB=1,nPrimB
        do iPrimD=1,nPrimB
@@ -860,7 +872,7 @@ CONTAINS
        enddo
       enddo
      enddo
-    !$OMP END SINGLE
+    !$OMP END PARALLEL DO
   end subroutine GabPrimitiveContractionGen400
 
   subroutine GabPrimitiveContractionGen1225(AUXarray2,AUXarrayCont,nPrimP,&
@@ -878,7 +890,10 @@ CONTAINS
     real(realk) :: TMP
     real(realk) :: BasisCont( 1225,nPrimB,nPrimB)
     real(realk) :: ACCTMP,BCCTMP
-    !$OMP SINGLE
+    !$OMP PARALLEL DO DEFAULT(none) &
+    !$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&
+    !$OMP         BasisCont,ACCTMP,BCCTMP) &
+    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) 
      do iContC=1,nContA
       do iPrimB=1,nPrimB
        do iPrimD=1,nPrimB
@@ -907,7 +922,7 @@ CONTAINS
        enddo
       enddo
      enddo
-    !$OMP END SINGLE
+    !$OMP END PARALLEL DO
   end subroutine GabPrimitiveContractionGen1225
 
   subroutine ExtractGabElmP1Gen(AUXarray,Output,nContP)
@@ -927,6 +942,7 @@ CONTAINS
      enddo
      Output(1) = SQRT(TMP)
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP1Gen
 
 
@@ -955,6 +971,7 @@ CONTAINS
      enddo
      Output(1) = SQRT(TotalMaxValue)
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP3Gen
 
   subroutine ExtractGabElmP5Gen(AUXarray,Output,nContP)
@@ -982,6 +999,7 @@ CONTAINS
      enddo
      Output(1) = SQRT(TotalMaxValue)
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP5Gen
 
   subroutine ExtractGabElmP9Gen(AUXarray,Output,nContP)
@@ -1009,6 +1027,7 @@ CONTAINS
      enddo
      Output(1) = SQRT(TotalMaxValue)
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP9Gen
 
   subroutine ExtractGabElmP15Gen(AUXarray,Output,nContP)
@@ -1036,6 +1055,7 @@ CONTAINS
      enddo
      Output(1) = SQRT(TotalMaxValue)
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP15Gen
 
   subroutine ExtractGabElmP25Gen(AUXarray,Output,nContP)
@@ -1063,5 +1083,6 @@ CONTAINS
      enddo
      Output(1) = SQRT(TotalMaxValue)
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP25Gen
 END MODULE IchorEriGabintegralOBSGeneralModGen

@@ -609,6 +609,7 @@ CONTAINS
     !$OMP SINGLE
      Output(1) = SQRT(ABS(AUXarray(1)))
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP1Seg
 
   subroutine ExtractGabElmP3Seg(AUXarray,Output)
@@ -625,6 +626,7 @@ CONTAINS
      enddo
      Output(1) = SQRT(MAXVAL(TMP))
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP3Seg
 
   subroutine ExtractGabElmP5Seg(AUXarray,Output)
@@ -641,6 +643,7 @@ CONTAINS
      enddo
      Output(1) = SQRT(MAXVAL(TMP))
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP5Seg
 
   subroutine ExtractGabElmP9Seg(AUXarray,Output)
@@ -657,6 +660,7 @@ CONTAINS
      enddo
      Output(1) = SQRT(MAXVAL(TMP))
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP9Seg
 
   subroutine ExtractGabElmP15Seg(AUXarray,Output)
@@ -673,6 +677,7 @@ CONTAINS
      enddo
      Output(1) = SQRT(MAXVAL(TMP))
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP15Seg
 
   subroutine ExtractGabElmP25Seg(AUXarray,Output)
@@ -689,5 +694,6 @@ CONTAINS
      enddo
      Output(1) = SQRT(MAXVAL(TMP))
     !$OMP END SINGLE
+    !$OMP BARRIER
   end subroutine ExtractGabElmP25Seg
 END MODULE IchorEriGabintegralOBSGeneralModSeg

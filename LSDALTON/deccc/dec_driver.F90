@@ -1009,7 +1009,7 @@ contains
          if(DECinfo%only_one_frag_job)then
            print *,"HACK: only one fragment job was requested. The fragment was&
            & saved and the master is crashed to kill the job"
-           stop -1
+           stop 0
          endif
 
        end if RestartStuff

@@ -179,6 +179,13 @@ CONTAINS
 !                         WRITE(LUFILE,'(A)')'   iPassP = (IP-1)/(nPrimQ*nPrimP) + 1'
 !                i1 = i12 - ((i12-1)/n1)*n1
 !                i2 = (i12-1)/n1+1
+
+!DO i123 = 1,n1*n2*n3'
+!i1 = mod(I123-1,n1)+1'
+!i2 = mod((I123-(mod(I123-1,n1)+1))/n1,n2)+1'
+!i3 = (I123-1)/(n1*n2) + 1'
+
+
                 IF(Collapse)THEN
                    call PrintCollapseLoopStart(Gen,SegQ,SegP,Seg,seg1prim,LUFILE)
                    WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'

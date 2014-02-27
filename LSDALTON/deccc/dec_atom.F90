@@ -331,7 +331,7 @@ contains
         enddo
       endif
     enddo
-    fragment%DaveAOS = fragment%DaveAOS / float( cntr )
+    if( cntr > 0 )fragment%RaveAOS = fragment%RaveAOS / float( cntr )
     do i=1,natoms
       if( all_atoms(i) )then
         do j=i+1,natoms
@@ -341,7 +341,7 @@ contains
         enddo
       endif
     enddo
-    if(cntr>1)fragment%DsdvAOS = ( fragment%DsdvAOS / float( cntr - 1 ) )**(0.5E0_realk)
+    if( cntr > 1 )fragment%RsdvAOS = ( fragment%RsdvAOS / float( cntr - 1 ) )**(0.5E0_realk)
 
     call mem_dealloc( all_atoms )
 
@@ -2303,7 +2303,7 @@ contains
 
        end if
     end do
-    fragment%DaveAE = fragment%DaveAE / float( cntr )
+    if( cntr > 0 )fragment%RaveAE = fragment%RaveAE / float( cntr )
     do i=1,MyMolecule%natoms
        if(which_atoms(i)) then
           do j=i+1,MyMolecule%natoms
@@ -2314,7 +2314,7 @@ contains
 
        end if
     end do
-    fragment%DsdvAE = ( fragment%DsdvAE / float( cntr - 1 ) )**(0.5E0_realk)
+    if( cntr > 1 )fragment%RsdvAE = ( fragment%RsdvAE / float( cntr - 1 ) )**(0.5E0_realk)
     call mem_dealloc(which_atoms)
 
     ! count number of basis functions on selected atoms
