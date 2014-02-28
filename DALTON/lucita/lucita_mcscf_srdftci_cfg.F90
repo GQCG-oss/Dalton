@@ -20,6 +20,8 @@ module lucita_mcscf_srdftci_cfg
   real(8),              public :: weights(1:nr_of_weights_max) =  0.0d0
   integer,              public :: nr_of_weights                = -1
 
+  integer,              public :: srdft_restart_ci             =  0
+
 ! parameters
 
 ! logical block

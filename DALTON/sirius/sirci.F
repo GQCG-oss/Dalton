@@ -373,10 +373,10 @@ C
 !     set keyword for saving the final vector(s) in SIRSAV (called from CISAVE)
       keywrd = 'CISAVE' 
       if(DOCISRDFT)then
-        thrcit = 5.0d-4
+!       thrcit = 5.0d-4
         maxitc = 50
       end if
-!     write(lupri,*) ' incoming thrcit ==> ',thrcit
+
 !     thrcit = 1.0d-11
 !     write(lupri,*) ' incoming thrcit (updated) ==> ',thrcit
 
@@ -386,6 +386,10 @@ C
 !
         xctype1 = -1
         xctype2 = -1
+
+!       restart CI if in iteration > 1
+        if(icictl == 5) srdft_restart_ci     = 1
+        if(docisrdft)   srdft_ci_with_lucita = .true. 
 
         call define_lucita_cfg_dynamic(lsym,
      &                                 lsym,
@@ -415,7 +419,6 @@ C
 
         IF(DOCISRDFT)THEN
 
-          srdft_ci_with_lucita = .true. 
 
           if(.not.allocated(srdft_srac_lucita))then
             allocate(srdft_srac_lucita(nnashx))
@@ -2686,7 +2689,7 @@ C
         call skpvcd(luci_cvec,ist-1,wrk(kcref),-1,-1)
         call dzero(wrk(kcref),nconf)
         call readvcd_exp(luci_cvec,wrk(kcref),0,-1)
-        call wrtmatmn(wrk(kcref),1,nconf,1,nconf,lupri)
+!       call wrtmatmn(wrk(kcref),1,nconf,1,nconf,lupri)
         close(luci_cvec,status='keep')
 !       set logical flag for new reference CI vector in WRK(KCREF) - 
 !        in the interface to lucita we use this info to save/broadcast the new
@@ -2842,8 +2845,8 @@ C       write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
          EMY = EMY + EMYDFT
 C        ... extract and save SR over active indices
          CALL GETAC(WRK(KFSR),WRK(KSRAC))
-           call wrtmatmn(wrk(ksrac),1,nnashx,1,nnashx,lupri)
-           call wrtmatmn(wrk(kfcac),1,nnashx,1,nnashx,lupri)
+!          call wrtmatmn(wrk(ksrac),1,nnashx,1,nnashx,lupri)
+!          call wrtmatmn(wrk(kfcac),1,nnashx,1,nnashx,lupri)
 C        ... add the contributions over the active indices
          CALL DAXPY(NNASHX,D1,WRK(KSRAC),1,WRK(KFCAC),1)
           !call wrtmatmn(wrk(kfcac),1,nnashx,1,nnashx,lupri)

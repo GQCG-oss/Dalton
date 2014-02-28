@@ -490,7 +490,7 @@ C
      &        form='unformatted',action='write',position='rewind')
 
 !        debug print
-         call wrtvcd(vec1,lu1,-1,-1)
+!        call wrtvcd(vec1,lu1,-1,-1)
 
          call rewine(lu1,-1)
 
@@ -544,10 +544,12 @@ C
 
          end do ! loop over # roots
 
-         CALL HEADER(
-     &   'lucita: ensemble one-el. density matrix, active part',-1)
-         CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
-     &               -11,luwrt)
+!        debug print
+!        CALL HEADER(
+!    &   'lucita: ensemble one-el. density matrix, active part',-1)
+!        CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
+!    &               -11,luwrt)
+
          call lucita_putdens_generic(work(krho1_ens),work(krho2),
      &                              fsr,xxdummy,xxdummy,i12,2,1,nrootsl)
 !                                                            2: density matrix
@@ -598,7 +600,8 @@ C
 !          ... extract and save SR over active indices
            CALL GETAC(fsr,srdft_srac_lucita)
 
-           call wrtmatmn(srdft_srac_lucita,1,nnashx,1,nnashx,luwrt)
+!          debug print
+!          call wrtmatmn(srdft_srac_lucita,1,nnashx,1,nnashx,luwrt)
 !          call wrtmatmn(work(kint1),1,3,1,3,luwrt)
 
            call dzero(work(krho1),ntoob**2)
