@@ -386,7 +386,6 @@ C
       END IF
 C
       IF (ABSLRS) THEN
-        ABS_DIRFCK=DIRFCK
         CALL GPINQ('ABSVECS','EXIST',EX)
         IF (.NOT.EX) THEN
           OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
@@ -682,7 +681,7 @@ C
 C
       KFREE = 1
       LFREE = LWRK
-      IF (ABSLRS .AND. ABS_DIRFCK .AND. NCONF.LE.1) THEN
+      IF (ABSLRS .AND. NCONF.LE.1) THEN
         CALL MEMGET('REAL',KRES,2*3*3*NFREQ_INTERVAL,WRK,KFREE,
      &              LFREE)
         CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
