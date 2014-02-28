@@ -25,13 +25,6 @@ module cc_debug_routines_module
    use ccsdpt_module
    use orbital_operations
    use rpa_module
-   type SpaceInfo
-     integer              :: n,ns1,ns2,pno,red1,red2
-     integer, pointer     :: iaos(:)
-     real(realk), pointer :: d(:,:)
-     real(realk), pointer :: s1(:,:),s2(:,:)
-     logical              :: allocd
-   end type SpaceInfo
    integer,parameter :: SOLVE_AMPLITUDES  = 1
    integer,parameter :: SOLVE_MULTIPLIERS = 2
    
@@ -148,7 +141,7 @@ module cc_debug_routines_module
      type(array4),optional,intent(inout) :: m2
      type(array2),optional,intent(inout) :: m1
      logical,optional,intent(in)         :: use_pnos
-     type(decfrag),optional,intent(in)   :: fraginfo
+     type(decfrag),optional,intent(inout)   :: fraginfo
      !> Include long-range singles effects using singles amplitudes
      !> from previous fragment calculations.
      !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
@@ -184,6 +177,8 @@ module cc_debug_routines_module
      integer :: MaxSubSpace
      logical :: restart, u_pnos
      type(array) :: govov
+     integer :: nspaces
+     type(PNOSpaceInfo), pointer :: pno_cv(:)
 
 
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
@@ -441,6 +436,31 @@ module cc_debug_routines_module
              & govov,ccmodel,mylsitem)
      end if
 
+     set_pno_info:if(u_pnos)then
+       if(fragment_job)then
+
+                   !COUNT PAIRS OUTSIDE EOS
+         nspaces = ( nocc - fraginfo%noccEOS ) * ( nocc - fraginfo%noccEOS + 1) / 2 &
+                   !COUNT PAIRS WITH 1 IDX IN EOS   !EOS
+                &+ fraginfo%noccEOS * ( nocc - fraginfo%noccEOS ) + 1
+
+         fraginfo%nspaces = nspaces
+
+         allocate(fraginfo%CLocPNO(nspaces))
+         call get_pno_trafo_matrices(nocc,nvirt,nbasis,m2%val,&
+         &fraginfo%CLocPNO,fraginfo%nspaces,fragment_job,f=fraginfo)
+         !pno_cv => fraginfo%CLocPNO
+
+       else
+                   !ALL PAIRS
+         nspaces = nocc * ( nocc + 1 ) / 2
+         allocate(pno_cv(nspaces))
+         call get_pno_trafo_matrices(nocc,nvirt,nbasis,m2%val,&
+         &pno_cv,nspaces,fragment_job,f=fraginfo)
+
+       endif
+     endif set_pno_info
+
 
      ! readme : the iteration sequence is universal and may be used for all
      !          iterative cc models (linear or non-linear) and is
@@ -621,11 +641,11 @@ module cc_debug_routines_module
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
                 &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-                &fragment_job,m2%val,ppfock%val,qqfock%val,delta_fock%val,iter)
+                &fragment_job,pno_cv,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter)
               else
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
                 &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-                &fragment_job,m2%val,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
+                &fragment_job,fraginfo%CLocPNO,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
               endif
 
               !transform to pseudo diagonal basis for the solver
@@ -1041,6 +1061,28 @@ module cc_debug_routines_module
      call array2_free(Cv)
      call array2_free(Cv2)
      call array2_free(fock)
+
+
+     !Free PNO information
+     if(u_pnos)then
+       if(.not.fragment_job)then
+         do i = 1, nspaces
+           if( pno_cv(i)%allocd )then
+             call mem_dealloc( pno_cv(i)%iaos )
+             call mem_dealloc( pno_cv(i)%d    )
+           endif
+         enddo
+         deallocate( pno_cv )
+       else
+         do i = 1, nspaces
+           if( fraginfo%CLocPNO(i)%allocd )then
+             call mem_dealloc( fraginfo%CLocPNO(i)%iaos )
+             call mem_dealloc( fraginfo%CLocPNO(i)%d    )
+           endif
+         enddo
+         deallocate( fraginfo%CLocPNO )
+       endif
+     endif
 
 
      !transform back to original basis   
@@ -2583,23 +2625,22 @@ module cc_debug_routines_module
   !>        doubles amplitudes to their respective set of PNO's and then
   !>        transforming the result vector back to the reference basis. 
   subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,no,nv,nb,xo,xv,yo,yv,&
-             &mylsitem,fj,t_mp2,oof,vvf,ifo,iter,f)
+             &mylsitem,fj,pno_cv,nspaces,oof,vvf,ifo,iter,f)
     implicit none
     !ARGUMENTS
-    integer, intent(in) :: no, nv, nb
+    integer, intent(in) :: no, nv, nb,iter,nspaces
+    logical, intent(in) :: fj
     real(realk), intent(inout) :: t1(nv,no), t2(nv,no,nv,no)
     real(realk), intent(inout) :: o1(nv,no), o2(nv,no,nv,no)
     real(realk), intent(in) :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),ifo(nb,nb)
     type(lsitem), intent(inout) :: mylsitem
-    real(realk), intent(in) :: t_mp2(nv,no,nv,no)
     real(realk), intent(inout) :: oof(no,no),vvf(nv,nv)
-    logical, intent(in) :: fj
-    integer, intent(in) :: iter
     type(decfrag),intent(in),optional :: f
+    type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
     !INTERNAL VARIABLES
-    type(SpaceInfo),pointer :: pno_cv(:),pno_S(:)
+    type(PNOSpaceInfo),pointer :: pno_S(:)
     type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:),pno_govov(:),pno_gvovo(:)
-    integer :: nspaces,ns,ns2,ns3,c,nc,nc2
+    integer :: ns,ns2,ns3,c,nc,nc2
     real(realk),pointer :: w1(:),w2(:),w3(:), w4(:),w5(:)
     real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:),h1(:), h2(:), r1(:,:),r2(:,:)
     real(realk),pointer :: gvvvv(:), gvovo(:), govov(:), goooo(:), goovv(:), gvvov(:), gooov(:)
@@ -2657,16 +2698,7 @@ module cc_debug_routines_module
 
     if(fj.and..not.present(f))call lsquit("ERROR(get_ccsd_residual_pno_style):wrong input fj without f",-1)
 
-    !DETERMINE NUMBER OF SPACES TO BE CONSIDERED
-    if(fj)then
-                !COUNT PAIRS OUTSIDE EOS                        !COUNT PAIRS WITH 1 IDX IN EOS   !EOS
-      nspaces = ( no - f%noccEOS ) * ( no - f%noccEOS + 1) / 2 + f%noccEOS * ( no - f%noccEOS ) + 1
-    else
-                !ALL PAIRS
-      nspaces = no * ( no + 1 ) / 2
-    endif
 
-    allocate(pno_cv(nspaces))
     allocate(pno_S(nspaces*(nspaces-1)/2))
     call mem_alloc( pno_t2, nspaces  )
     call mem_alloc( pno_o2, nspaces  )
@@ -2700,13 +2732,8 @@ module cc_debug_routines_module
     ! if  we have a fragment job the basis of the atomic (pair) site has to be
     ! treated in a special way, either LO or FNO basis, this will be element 1
     ! in all the array arrays
-    if(fj)then
-      call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj,save_gvvvv_is,f=f)
-      spacemax = max(f%noccEOS,2)
-    else
-      call get_pno_trafo_matrices(no,nv,nb,t_mp2,pno_cv,nspaces,fj,save_gvvvv_is)
-      spacemax = 2
-    endif
+    spacemax = 2
+    if(present(f))spacemax = max(f%noccEOS,spacemax)
 
 
     !Get all the overlap matrices necessary
@@ -3414,16 +3441,13 @@ module cc_debug_routines_module
 
       enddo
 
-      if( pno_cv(ns)%allocd )then
-        call mem_dealloc( pno_cv(ns)%iaos )
-        call mem_dealloc( pno_cv(ns)%d    )
+      if(  pno_cv(ns)%allocd )then
         call array_free( pno_t2(ns) )
         call array_free( pno_o2(ns) )
       endif
 
     enddo
 
-    deallocate( pno_cv )
     deallocate( pno_S )
     call mem_dealloc( pno_t2 )
     call mem_dealloc( pno_o2 )
@@ -3450,7 +3474,7 @@ module cc_debug_routines_module
   subroutine get_overlap_idx(n1,n2,cv,idx,nidx)
     implicit none
     integer,intent(in) :: n1,n2
-    type(SpaceInfo), intent(in) :: cv(:)
+    type(PNOSpaceInfo), intent(in) :: cv(:)
     integer, intent(out) :: idx(:,:),nidx 
     integer :: nc1,nc2
 
@@ -3499,7 +3523,7 @@ module cc_debug_routines_module
   subroutine get_overlap_ptr(n1,n2,pS,tr1,tr2,st,S,ldS,U,ldU,VT,ldVT,red1,red2,ns1,ns2)
     implicit none
     integer,intent(in) :: n1,n2
-    type(SpaceInfo), intent(in) :: pS(:)
+    type(PNOSpaceInfo), intent(in) :: pS(:)
     character, intent(out) :: tr1,tr2
     logical, intent(out) :: st
     real(realk), pointer, intent(out) :: S(:,:)
@@ -3571,7 +3595,7 @@ module cc_debug_routines_module
   subroutine get_pair_space_info(cv,p_idx,p_nidx,s_idx,s_nidx,ns,no)
     implicit none
     integer, intent(in) :: ns,no
-    type(SpaceInfo),intent(in) :: cv(ns)
+    type(PNOSpaceInfo),intent(in) :: cv(ns)
     integer,intent(inout) :: p_idx(ns,ns),p_nidx(ns),s_idx(2,ns,no),s_nidx(no)
     integer :: cntr,n1,n2,k,l
     p_idx  = -1
@@ -3626,7 +3650,7 @@ module cc_debug_routines_module
     implicit none
     integer,intent(in) :: n,no,nv
     type(array), intent(in) :: pno_o2(n)
-    type(SpaceInfo),intent(in) :: pno_cv(n)
+    type(PNOSpaceInfo),intent(in) :: pno_cv(n)
     real(realk), intent(inout) :: o2(nv,no,nv,no)
     integer :: ns,pno,pnv,i,j,a,b
     real(realk), pointer :: tmp1(:),tmp2(:),d(:,:),po2(:,:,:,:), w1(:,:,:,:)
@@ -3701,7 +3725,7 @@ module cc_debug_routines_module
   subroutine check_if_contributes(n1,n2,cv,S,cyc)
     implicit none
     integer,intent(in) :: n1,n2
-    type(SpaceInfo),intent(in) :: cv(:),S(:)
+    type(PNOSpaceInfo),intent(in) :: cv(:),S(:)
     logical, intent(out) :: cyc
     integer :: Sidx
 
@@ -3749,7 +3773,7 @@ module cc_debug_routines_module
   subroutine do_overlap_trafo(ns1,ns2,pos_of_overlap,S,m,n,k,A,C,ptr,ptr2)
     implicit none
     integer, intent(in) :: pos_of_overlap,m,n,k,ns1,ns2
-    type(SpaceInfo),intent(inout) :: S(:)
+    type(PNOSpaceInfo),intent(inout) :: S(:)
     real(realk),intent(in),target :: A(:)
     real(realk),intent(inout),target :: C(:)
     real(realk),pointer,optional :: ptr(:),ptr2(:)
@@ -3836,8 +3860,8 @@ module cc_debug_routines_module
   subroutine get_pno_overlap_matrices(no,nv,pno_cv,pno_S,n,with_svd)
     implicit none
     integer :: no, nv, n
-    type(SpaceInfo),intent(in) :: pno_cv(n)
-    type(SpaceInfo),intent(inout) :: pno_S(n*(n-1)/2)
+    type(PNOSpaceInfo),intent(in) :: pno_cv(n)
+    type(PNOSpaceInfo),intent(inout) :: pno_S(n*(n-1)/2)
     logical, intent(in) :: with_svd
     integer :: i, j, c, t1,t2,dg, n1
     integer :: ns1,ns2,INFO,lwork,mindim,maxdim,red1,red2,kerdim,diag,remove
@@ -4009,7 +4033,7 @@ module cc_debug_routines_module
   subroutine init_pno_residual(cv,o2,n)
     implicit none
     integer, intent(in) :: n
-    type(SpaceInfo),intent(in) :: cv(n)
+    type(PNOSpaceInfo),intent(in) :: cv(n)
     type(array),intent(inout) :: o2(n)
     integer :: nn, pnv,pno
 
@@ -4030,7 +4054,7 @@ module cc_debug_routines_module
     implicit none
     integer, intent(in) :: n,no,nv
     real(realk),intent(in) :: t2(:,:,:,:)
-    type(SpaceInfo), intent(in) :: cv(n)
+    type(PNOSpaceInfo), intent(in) :: cv(n)
     type(array), intent(inout) :: pno_t2(n)
     real(realk), pointer :: tmp1(:),tmp2(:)
     real(realk), pointer :: w1(:,:,:,:)
@@ -4082,14 +4106,13 @@ module cc_debug_routines_module
     call mem_dealloc(tmp2)
   end subroutine get_pno_amplitudes
 
-  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,fj,sgvvvvis,f)
+  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,fj,f)
     implicit none
     !ARGUMENTS
     integer, intent(in) :: no, nv, nb, n
     real(realk), intent(in) :: t_mp2(nv,no,nv,no)
-    type(SpaceInfo),pointer :: cv(:)
+    type(PNOSpaceInfo),pointer :: cv(:)
     logical,intent(in) :: fj
-    logical,intent(out) :: sgvvvvis
     type(decfrag),intent(in),optional :: f
     !INTERNAL
     real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
@@ -4205,11 +4228,15 @@ module cc_debug_routines_module
       !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
       doiful :do i = 1, no
         dojful: do j = 1, no
+
           if(j<i) cycle dojful
+
           counter = find_pos(i,j)
+
           call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
           call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
           call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
+
           if(cv(counter)%allocd)then
             if(i==j)then
               cv(counter)%n = 1
@@ -4225,6 +4252,7 @@ module cc_debug_routines_module
             calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
             pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
           endif
+
         enddo dojful
       enddo doiful
       !$OMP END DO NOWAIT
@@ -4235,9 +4263,8 @@ module cc_debug_routines_module
     call mem_TurnOffThread_Memory()
 
     print *,"I have to determine",det_parameters," of ",no**2*nv**2," using ",calc_parameters
-    print *,"full gvvvv",nv**4," vs ",pno_gvvvv_size
+    !print *,"full gvvvv",nv**4," vs ",pno_gvvvv_size
 
-    sgvvvvis = (pno_gvvvv_size<nv**4)
 
   end subroutine get_pno_trafo_matrices
 
@@ -4276,17 +4303,13 @@ module cc_debug_routines_module
     !ARGUMENTS
     integer,intent(in) :: n
     real(realk), intent(in) :: U(n,n),EV(n)
-    type(SpaceInfo),intent(inout) :: NU
+    type(PNOSpaceInfo),intent(inout) :: NU
     real(realk), intent(in),optional :: ext_thr
     !INTERNAL
     integer :: i,nn
     real(realk) :: thr
 
-    if(DECinfo%noPNOtrunc)then
-      thr = -1.0*huge(thr)
-    else
-      thr = DECinfo%simplePNOthr
-    endif
+    thr = DECinfo%simplePNOthr
     if(present(ext_thr)) thr = ext_thr
 
     !on finishing the loop i contains the position of the first element that should be in the
@@ -4299,16 +4322,15 @@ module cc_debug_routines_module
     ! n elements in the transformation
     nn = n - i + 1
 
+    !DEBUGGING KEYWORD to avoid truncation
+    if(DECinfo%noPNOtrunc.and..not.present(ext_thr)) nn = n
+    if(DECinfo%noFAtrunc.and.present(ext_thr)) nn = n
+
     if(DECinfo%PL>2.and.present(ext_thr))write(DECinfo%output,'("The FO trafo  matrix has dims",2I4)')n,nn
 
    
-    if(DECinfo%noPNOtrafo.and..not.present(ext_thr))then
-      NU%ns1 = n
-      NU%ns2 = n
-    else
-      NU%ns1 = n
-      NU%ns2 = nn
-    endif
+    NU%ns1 = n
+    NU%ns2 = nn
 
     if(nn<=0)then
 
@@ -4318,7 +4340,8 @@ module cc_debug_routines_module
 
       call mem_alloc(NU%d,n,nn)
 
-      if(DECinfo%noPNOtrafo)then
+      if((DECinfo%noPNOtrafo.and..not.present(ext_thr)).or.&
+         (DECinfo%noFAtrafo .and.     present(ext_thr))       )then
 
         NU%d = 0.0E0_realk
         do i = 1, n
@@ -4416,7 +4439,7 @@ module cc_debug_routines_module
              &w1,w2,w3,w4,w5,goooo,govov,vvf,nspaces)
     implicit none
     integer, intent(in) :: no,ns,nspaces
-    type(SpaceInfo), intent(inout) :: pno_cv(nspaces),pno_S(nspaces*(nspaces-1)/2)
+    type(PNOSpaceInfo), intent(inout) :: pno_cv(nspaces),pno_S(nspaces*(nspaces-1)/2)
     type(array), intent(in) :: pno_t2(nspaces)
     real(realk),pointer,intent(inout) :: o2_space(:)
     real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)
@@ -4620,7 +4643,7 @@ module cc_debug_routines_module
              &w1,w2,w3,w4,w5,goovv,govov,Lvoov,oof,p_idx,p_nidx,oidx1,oidx2,nspaces)
     implicit none
     integer, intent(in) :: no,ns,nspaces
-    type(SpaceInfo), intent(inout) :: pno_cv(nspaces),pno_S(nspaces*(nspaces-1)/2)
+    type(PNOSpaceInfo), intent(inout) :: pno_cv(nspaces),pno_S(nspaces*(nspaces-1)/2)
     type(array), intent(in) :: pno_t2(nspaces)
     real(realk),pointer,intent(inout) :: o2_space(:)
     real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)

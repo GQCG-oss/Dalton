@@ -5866,10 +5866,11 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest,win
     integer,intent(in)               :: pos
 #ifdef VAR_MPI
-    integer(kind=ls_mpik)            :: n
+    integer(kind=ls_mpik)            :: n,ierr
     integer(kind=MPI_ADDRESS_KIND)   :: offset
     
-    n=1
+    n      = 1
+    ierr   = 0
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 #ifdef VAR_HAVE_MPI3
     call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER8,obuf,n,&
@@ -5887,10 +5888,11 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest,win
     integer,intent(in)               :: pos
 #ifdef VAR_MPI
-    integer(kind=ls_mpik)            :: n
+    integer(kind=ls_mpik)            :: n,ierr
     integer(kind=MPI_ADDRESS_KIND)   :: offset
     
-    n=1
+    n      = 1
+    ierr   = 0
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 #ifdef VAR_HAVE_MPI3
     call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER4,obuf,n,&

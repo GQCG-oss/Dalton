@@ -2017,6 +2017,8 @@ contains
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)
+    call ls_mpi_buffer(DECitem%noFAtrafo,Master)
+    call ls_mpi_buffer(DECitem%noFAtrunc,Master)
     call ls_mpi_buffer(DECitem%simplePNOthr,Master)
     call ls_mpi_buffer(DECitem%use_pnos,Master)
     call ls_mpi_buffer(DECitem%EOSPNOthr,Master)

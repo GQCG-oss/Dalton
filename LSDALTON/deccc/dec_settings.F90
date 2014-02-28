@@ -75,6 +75,8 @@ contains
     DECinfo%noPNOtrunc           = .false.
     DECinfo%simplePNOthr         = 1.0E-7
     DECinfo%EOSPNOthr            = 1.0E-5
+    DECinfo%noFAtrunc            = .true.
+    DECinfo%noFAtrafo            = .true.
     DECinfo%noPNOoverlaptrunc    = .false.
     DECinfo%PNOoverlapthr        = 1.0E-5
     DECinfo%PNOtriangular        = .false.
@@ -439,6 +441,8 @@ contains
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
        case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
+       case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.
+       case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
        case('.PNOTRIANGULAR');            DECinfo%PNOtriangular        = .true.
