@@ -5636,6 +5636,7 @@ C
 #include "infinp.h"
 #include "gnrinf.h"
 #include "optinf.h"
+#include "infopt.h"
       PARAMETER (DP25=0.25D0)
       LOGICAL REJGEO
 C
@@ -5643,7 +5644,7 @@ C     Define threshold for numerical noise in Delta energy
 C     by using that SCF/MCSCF/DFT energies are of quadratic
 C     accuracy in the wave function gradient norm.
 C
-      THDE = MAX(1.D-10,10.0D0*GRDNRM**2)
+      THDE = MAX(1.0D-10, 10.0D0*GRDNRM**2)
 C
 C     CC energies are less precise and we have to decrease the
 C     energy threshold
@@ -5658,7 +5659,7 @@ C     The ratio between actual and predicted energy change is calculated,
 C     and this ratio is then used to update the trust radius.
 C
       IF (ABS(ERGPRD) .GT. THDE) THEN
-         RATIO = ERGDIF/ERGPRD 
+         RATIO = ERGDIF/ERGPRD
          IF (IPRINT .GT. 2) THEN
             CALL HEADER('Energy difference to previous geometry:',-1)
             WRITE(LUPRI,'(/A/5X,F15.10,2(A,F15.10))')
