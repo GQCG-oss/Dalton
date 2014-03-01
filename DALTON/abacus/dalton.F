@@ -508,17 +508,16 @@ C
          CALL DALTON_GNRLINP
 
 #if !defined (VAR_MPI)
-      END IF ! mynum .eq. master
+      END IF masterif!  mynum .eq. master ! This is the end of masterif in case MPI is not set.
 #else /* VAR_MPI */
          CALL RECVNAMES
 
          CALL MOLDEN_HEAD
 !
-!        call main driver routine
+!        call main DALTON driver routine
          call dalton_exedrv(lmwork,wrkdlm)
 
          CALL MOLDEN_TAIL
-
          CALL FLSHFO(LUPRI)
 
          LABEL1 = 'ALL_DONE'
@@ -542,7 +541,7 @@ C
          CALL GPCLOSE(LUSTAT,'KEEP')
          LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
          CALL GPCLOSE(LUPRI,'KEEP')
-      ELSE
+      ELSE !If not equal to master 
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
 C ahs only print if number of cores are less than 20
          IF (MYNUM .LE. 20) THEN
@@ -564,7 +563,7 @@ C ahs only print if number of cores are less than 20
            END IF
            CALL FLSHFO(LUPRI)
          END IF
-         IF (PARIO) THEN
+         pariotest: IF (PARIO) THEN
             CALL DALTON_GNRLINP
 
             CALL MOLDEN_HEAD
@@ -595,7 +594,7 @@ C
             CALL GPCLOSE(LUSTAT,'KEEP')
             LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
             CALL GPCLOSE(LUPRI,'KEEP')
-         ELSE
+         ELSE !If PARIO=.FALSE.
             CALL SENDNAME(MASTER,MYNUM)
 
 !           call main co-workers driver routine
@@ -603,7 +602,7 @@ C
 !           IPRTYP to be set. Once set the slaves are redirected to 
 !           the appropriate subroutine.
             call dalton_nodedriver(lmwork,wrkdlm)
-         END IF
+         END IF pariotest
       END IF masterif
 
 #if defined(BUILD_GEN1INT)

@@ -33,7 +33,6 @@ C LWORK: Total needed length of the work-vector.
 
 #include "implicit.h"
 #include "priunit.h"
-C
 #include "maxorb.h"
 #include "maxash.h"
 #include "mxcent.h"
@@ -59,9 +58,11 @@ C
 
 #ifdef VAR_MPI
 #include "iprtyp.h"
+!#include "infpar.h"
 #include "parrpa.h" !This initializes most parameters for ERIDI1 and connects with the parallel calculation.
+      !integer :: numprocs, ierr
+      !call mpi_comm_size(mpi_comm_world, numprocs, ierr) !This call to comm_size makes loop 220 crash with a write statement!!!!! What the actual fuck???
 #endif
-
 
 
 C
@@ -145,6 +146,7 @@ C
 C------------------------------------------
 C        Write new trial vectors to output.
 C------------------------------------------
+         !write(*,*) "testing crashes 444"
          DO 50 INEWTR = 1,NNEWTR
 C----------------------------------------------------
 C           Determine pointer to INEWTR trial vector.
@@ -164,6 +166,7 @@ C================================================
 C     Loop over number of excitations considered.
 C================================================
 C
+      !write(*,*) "testing crashes 333"
       DO 100 INEWTR = 1,NNEWTR
 C
 C-------------------------------------------------
@@ -219,6 +222,7 @@ C=======================================================
 C        Start the loop over distributions of integrals.
 C=======================================================
 C
+      !write(*,*) "testing crashes 222"
          IF (DIRECT) THEN
             NTOSYM = 1
             DTIME     = SECOND()
@@ -248,6 +252,7 @@ C
          LWORKSV = LWORK2
 C
          ICDEL1 = 0
+      !write(*,*) "testing crashes 111"
          DO 210 ISYMD1 = 1,NTOSYM
 C
             IF (DIRECT) THEN  
@@ -256,32 +261,25 @@ C
                NTOT = NBAS(ISYMD1)
             ENDIF
 C
-C TODO Beyer
-! $$$ ### &&& !!! @@@  ***
-! mainloop
-C TODO ... Beyer
             DO 220 ILLL = 1,NTOT
-
-
-
-C TEST LINES DO NOT KEEP UNDER ANY CIRCUMSTANCES !!!!!!!!!!!
-C F.Beyer Dec. 2013
-
-#ifdef VAR_MPI
-      DO i=1, 1
-          call mpixbcast(85, 1, 'INTEGE', 0) !starts the rpa_e_lintrans calculation for the slaves.
-          call mpixbcast(0, 1, 'INTEGE', 0) !sets the Iprint for the calculation for the slaves.
-          CALL RPA_E_LIN_TRANSFORM(WORK, LWORK, 0, LUPRI, IPRINT) !Join the parallel calculation along with the slaves...
-      ENDDO
-#endif
-C ... F.Beyer
-
-
 C
 C------------------------------------------------
 C              If direct calculate the integrals.
 C------------------------------------------------
 C
+C TODO delete/move/remove/rewrite these lines
+#ifdef VAR_MPI
+C qwer
+C asdfasdf
+      if (.true.) then
+          ISYMPAR = ISYMTR
+          call mpixbcast(85, 1, 'INTEGE', 0)
+          call mpixbcast(0, 1, 'INTEGE', 0)
+          CALL RPA_E_LIN_TRANSFORM(WORK, LWORK, 0, LUPRI, IPRINT)
+          goto 888
+      endif
+#endif
+C ... F.Beyer
                IF (DIRECT) THEN
 C
                   KEND2  = KENDSV
@@ -293,7 +291,6 @@ C
      &                          IPRINT)
                   ELSE
 C
-
 
                      CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
      &                           WORK(KODCL1),WORK(KODCL2),
@@ -365,11 +362,6 @@ C--------------------------------------------
 C                 Read in batch of integrals.
 C--------------------------------------------
 C
-C TODO BEYER
-C Is this the array this will be calculated by the master and then broadcast to all slaves?
-C Now it looks like it's recalculated for ever ILLL so there is no need to broadcast heavily. 
-C I'd rather recalculate this for every slave
-C TODO ... BEYER
                   DTIME      = SECOND()
                   CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND3),LWORK3,
      &                        WORK(KRECNR),DIRECT)
@@ -407,8 +399,13 @@ C
                      CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
      &                              WORK(KFOCK),WORK(KEND4),
      &                              LWORK4,IDEL,ISYMD,.FALSE.,
-     &                              DUMMY,ISYMTR)
-C
+     &                              'CrashifNecessary',ISYMTR)
+C Jan 30. 2014. F.Beyer:
+C Ive altered the penultimate variable to 'CrashifNecessary' to make sure CC_aofock crashes
+C If the boolean is ever true for any reason.
+C If you use .TRUE. instead of .FALSE. in the call to CC_AOFOCK then make sure you 
+C correct the variable that follows. The last variable that was in place before I changed it to 'CrashifNecessary' was uninitialized
+C and could potentially cause a lot of havoc if the calculation didn't fail every time.
                   END IF
                   DTIME      = SECOND()   - DTIME
                   SOTIME(11) = SOTIME(11) + DTIME
@@ -418,6 +415,8 @@ C
   220       CONTINUE ! End of ILLL loop.
 C
   210    CONTINUE
+  888    continue
+         write(*,*) "I'm past 888"
 c BEYER: hele KFOCK matricen skal vaere samlet her! 
 C
 C====================================================
@@ -513,23 +512,20 @@ C-----------------------
 C
       CALL FLSHFO(LUPRI)
 C
-
-
-
-
-
-
-
-
-
-
-
-
-
       CALL QEXIT('RP_ERES')
 C
       RETURN
       END
+
+
+
+
+
+
+
+
+
+
 
 
 #ifdef VAR_MPI
@@ -537,17 +533,10 @@ C  /* Deck RPA_E_LIN_TRANSFORM */
       SUBROUTINE RPA_E_LIN_TRANSFORM(WORK, LWORK, MYID)
 C AS OF DEC 2013 THIS IS NOT A FUNCTIONING ROUTINE!!!!
 C Parallel subroutine for RP_ERES.F
-C Calculates the AO-FOCK matrix in parallel.
+C Calculates the AO-FOCK matrix in parallel by distributing the two-electron integrals over several processes and assembling the partial Fock matrices from every process before returning.
 C
-C !!!!!  NOTE  !!!!!
-C Should the master be redirected here as well so all processes participate in the calculation? That way this routine will always utilize all available resources. Hopefully it will also make it easier to see how the parallelization works and will make it easier to replace this parallel call later on.
-
-
-
 C WORK is the array where master and every slave assembles the fock matrix incrementally
-C fock is the final assembled matrix of same length as the work array...
-
-
+C fock is the final assembled matrix 
 C Every slave calculates it own batch of intgrals depending on the last index in the two-electron integral.
 C Every iteration is added as a direct sum for the final matrix and all Fock matrices are sent back to the 
 C master for assembly after completing all iterations.
@@ -555,20 +544,25 @@ C
 C The CCRDAO routine is called by the master and the result is sent to every slave.
 C TODO: if there is an excess of processes compared to the number of tasks, you need to set all elements in the fock matric for the surplus tasks to 0 so they can participate in the call mpi_reduce functio later on.
 C TODO:  There are calls to reduce later on and this collective operation will stall because not all processes participate in the parallel calculation.
+C TODO: implement a dynamic load balancing with a pool of jobs and maybe a mutex solution to handle job allocation
+C TODO: Implement a synchronization routine that uses iterative non-blocking sends to avoid the barrier/broadcast call when synching arrays and common block variables.
 C
+C AS OF FEB 2013 THIS IS NOT A FUNCTIONING ROUTINE!!!!
 C
-C AS OF DEC 2013 THIS IS NOT A FUNCTIONING ROUTINE!!!!
-C AS OF DEC 2013 THIS IS NOT A FUNCTIONING ROUTINE!!!!
-C AS OF DEC 2013 THIS IS NOT A FUNCTIONING ROUTINE!!!!
-C
+C IMPORTANT! This routine is called from rp_eres. rp_eres takes the variable ISYMTR as an input parameter. To move ISYMTR to the common block /parrpa/ I have copied it to isympar (which is in the common block) right before calling PAR_RP_ERES. That is why ISYMTR is set equal to ISYMPAR at the beginning of this routine. If you do not update ISYMTR before calling PAR_RP_ERES the routine will not calculate two-electron integrals for the correct symmetries.
+
+
+
+
+
       use mpi 
 #ifdef VAR_IFORT
-!      subroutine sleep is in IFPORT module
-       use IFPORT, ONLY: SLEEP
+!      subroutine sleepqq is in IFPORT module. Sleeping time is in milliseconds
+      use IFPORT, ONLY: SLEEPQQ
 #endif
-c asdf aaincludes xxincludes
+c aaincludes xxincludes
+C common blocks from RP_ERES
 #include "implicit.h"
-#include "iprtyp.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "maxash.h"
@@ -585,122 +579,88 @@ c asdf aaincludes xxincludes
 #include "distcl.h"
 #include "cbieri.h"
 #include "soppinf.h"
+
+
+
+#include "maxaqn.h" ! NOTE: maxaqn has to be included before the remaining include files because some of them are dependent on the initialization order.
+#include "aobtch.h"
+#include "odclss.h"
+#include "ccom.h"
+#include "ericom.h"
+#include "eridst.h"
+#include "r12int.h"
+#include "hertop.h"
+#include "nuclei.h"
+#include "infpar.h"
+C Common blocks from  PICKAO
+#include "cbirea.h"
+c#include "shells.h" ! this conflicts with ccorb.h
+#include "erisel.h"
+
+
+#include "iprtyp.h"
 #include "parrpa.h"
 
-      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION INDEXA(MXCORB)
-c      DIMENSION FOCKD(LFOCKD)
-c      DIMENSION WORK(LWORK)
-
-
-
-
-
-
-
-
-      logical :: master, slave, reset, release, flag
-      integer, intent(in) :: myid
-      integer :: numprocs, ntot, sharedwork, rest, firstindex, lastindex
-      integer :: temp, first
+C     Intent of Dummy arguments
+      integer, intent(in) :: myid, lwork
+      dimension work(lwork) !intent(inout) !! This uses DALTON's implicit type rather than hardcoding it to real(kind=8)
+      logical :: reset, release, flag, exitspinningbarrier
+      integer :: numprocs, sharedwork, rest, firstindex, lastindex
+      integer :: isymtr 
       integer, dimension(MPI_STATUS_SIZE) :: mpistatus
-      real, dimension(LWORK), intent(inout) :: WORK
-      real, allocatable, dimension(:) :: fockd 
+      DIMENSION INDEXA(MXCORB)
+      DIMENSION FOCKD(LFOCK)
+      logical :: debugging = .false.
+      isymtr = isympar !Inherit the symmetry from a common block.
 
 C      CALL QENTER('RPA_E_LIN_TRANSFORM')
-
-
-      ntot=11 !mxcall !Where should this be set exactly??? TODO 
-      lfockd = 5 ! TODO alter this! It's set in the main routine, but needs to be transferred here!
-
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
 
-      allocate(fockd(5))
 
-      if (myid.eq.0) then
-          master =.true.
-          slave  =.false.
-      else
-          master =.false.
-          slave  =.true.
-      endif
-
-
-      anotherfalseblock: if(.false.) then
-      if (reset.and.master) then 
-         fockd(1:lfockd) = 0.0
-      endif
-      endif anotherfalseblock
+C     First broadcast updates every variable in the /common/ block PARRPA. 
+C     These are all the pointers to the work array. The second bcast 
+C     updates the contents of the work array. Right now the unneeded trial vectors
+C     and results vectors are broadcast as well. 
+C     Be aware that the mpi_real8 data type is due to the value of REAL in
+C     implicit.h. 
+      call mpi_bcast(NTOT, lparrp, mpi_integer, 0, mpi_comm_world, ierr)
+      call mpi_bcast(work(1), kendsv, mpi_real8, 0,mpi_comm_world, ierr)
 
 
-
-
-
-
-
-
-
-      if (myid.eq.0) then
-          do i=1, 5
-              fockd(i)=0.0
-          enddo
-      endif
-
-      do i=1, 5
-         work(i) = (myid*3)
-      enddo
-
-
-
-
-      goto 555 !Assemble matrices with mpi_reduce
-
-
-
-
+      write(*,*) "Entered RPA in parallel"
 
 
 C **********************************************************
-C
-C     This is where the loop starts. The master needs to 
-C     load balance before anyone enters these loops.
-C
 C     The load balancing depends on the master participating in the
-C     parallel calculation!
+C     parallel calculation! 
 C
 C     The number of indexes to be handled is distributed evenly over 
 C     available processes. The tasks that are leftover once all processes
 C     have received their share of jobs is distributed among the slaves
-C     only. The master only handles the minimum number of jobs.
-C
-C     If you want to exclude the master from participating make
-C     a counter that registers how many processes have entered 
-C     this routine before load balancing and use that number instead
-C     of numprocs. NOTE: the parallel processes have to be numbered from
-C     zero and upwards otherwise the load balance will not function
-C     as inteded.
+C     only. The master handles the minimum number of jobs.
 C
 C     !If the number of processes is larger than the 
 C     number of tasks, the remaining processes will 
 C     sleep to release CPU time for threaded MKL applications.
+C     ERIDI2 makes use of DGEMM which will run in parallel if there are
+C     available processes for MKL threading.
+C
+C     Once a scheme has been chosen, it redirects with a GOTO to label 666
+C     This was done to it's easier to alter any of the balancing schemes later on.
 C
 C     TODO The excess processes need a fock matrix with only 0's so that
 C     they can participate in the reduce call without adding anything.
 C
 C     TODO consider dynamic load balancing instead of static load balancing.
 C **********************************************************
-      firstindex = -1 ! TODO Just here for debugging, delete before release
-      lastindex = -1 !TODO Just here for debugging, delete before release
-
-      falseblock: if (.true.) then !TODO remove this
       sharedwork = ntot/numprocs 
       rest = mod(ntot, numprocs)
-      if (sharedwork.eq.1) goto 200
-      if (sharedwork.lt.1) goto 210
+      if (sharedwork.eq.1) goto 200 !load balancing for low task/process ratio
+      if (sharedwork.lt.1) goto 210 !load balancing when there are excess processes 
 
 
 C     Normal static load balancing
-      loadbalance: if (myid.eq.0) then
+      staticbalance: if (myid.eq.0) then
          firstindex = 1
          lastindex = sharedwork
       elseif ((myid.le.rest).and.(myid.ne.0)) then 
@@ -709,13 +669,13 @@ C     Normal static load balancing
       elseif ((myid.gt.rest).and.(myid.lt.ntot)) then
          firstindex = myid*sharedwork + 1 + rest
          lastindex = firstindex + sharedwork - 1
-      endif loadbalance
-      goto 220 !end of normal balance
+      endif staticbalance
+      goto 666 !end of normal balance
 
 
-C     In case there is only one task to be solved per process, this loadbalance is used. 
 200   continue
-      onebalance: if (myid.eq.0) then
+C     In case there is only one task to be solved per process (very special case), this loadbalance is used. 
+      lowbalance: if (myid.eq.0) then
          firstindex = 1
          lastindex = firstindex 
       elseif (myid.le.rest) then
@@ -724,21 +684,19 @@ C     In case there is only one task to be solved per process, this loadbalance 
       elseif (myid.gt.rest) then
          firstindex = myid*sharedwork + rest + 1
          lastindex =  firstindex
-      endif onebalance
-      goto 220 !end of sparse balance
+      endif lowbalance
+      goto 666 !end of sparse balance
 
 
-C     If there is more processes than tasks, this load balance is used.
 210   continue
-      tightbalance: if (myid.lt.rest) then      
+C     If there are more processes than tasks, this load balance is used.
+      excessbalance: if (myid.lt.rest) then      
          firstindex = myid + 1 
          lastindex = myid + 1
-      endif tightbalance
-      goto 220 ! end of surplus balance
+      endif excessbalance
+      goto 666 ! end of surplus balance
 
-      endif falseblock ! TODO remove this
-220   continue ! End of load balancing
-
+220   continue 
 
 
 
@@ -746,74 +704,74 @@ C     If there is more processes than tasks, this load balance is used.
 
 
 
-C **********************************************************
-C Spinning barrier
-C *********************************************************
-      falseblock123: if (.false.) then ! TODO remove this
+
+
+C   This spinning barrier will only work if INTEL is used.
+C   The sleepqq command is not available otherwise
+
 C   Spinning barrier in case there are too many processes compared
 C   to number of tasks.  The processes will sleep, enabling the 
 C   remaining processes to use them for threaded MKL applications.
+      exitspinningbarrier = .false. 
       spinningbarrier: if (myid.ge.ntot) then
-         release=.false.
-         call mpi_irecv(release, 1, MPI_LOGICAL, 0, myid,
+         if (debugging) then
+            write(*,'(i2, a)') myid, " entering the spinning barrier"
+         endif
+C        TODO set all Fock matrix elements to zero here before continuing
+         call mpi_irecv(exitspinningbarrier, 1, MPI_LOGICAL, 0, myid,
      &   mpi_comm_world, isreleased, ierr) 
 230      continue 
-         call sleep(1) !Sleep to release CPU time from surplus processes
+#ifdef VAR_IFORT
+         call sleepqq(10)  !sleep 10 milliseconds to release CPU time for the MKL library for working slaves.
+#endif
          call mpi_test(isreleased, flag, mpistatus, ierr)
-         if (.not.release) then
+         if (.not.exitspinningbarrier) then
             goto 230
          else
-             continue
+             continue !TODO This should redirect to the assembly of the Fock matrix. Alternatively it should return from the paralle routine.
          endif
       endif spinningbarrier
 
 
 
-C     The master sends a termination signal to all surplus 
-C     processes participating in the spinning barrier.
-C     all IDs .le. ntot
-      if (numprocs.ge.ntot) then
-         if (myid.eq.0) then
-            release = .true.
-            do i=ntot, (numprocs-1)
-               call mpi_isend(.true., 1, MPI_LOGICAL, i,
-     &         i, mpi_comm_world, isreleased, ierr)
-            enddo
-         endif
-      endif
-      endif falseblock123 ! TODO remove this
 
+
+666   continue !All load balancing schemes redirect here.
+
+      if (debugging) then
+         write(*, '(a, i3, a, i2, a, i2, a, i3)' )
+     &   "Slave with ID:", myid, " has first index: "
+     &   ,firstindex, " and last index: ", lastindex," out of: ",ntot,
+     &   " total jobs."
+         write(lupri, '(a, i3, a, i2, a, i2, a, i3)' )
+     &   "Slave with ID:", myid, " has first index: "
+     &   ,firstindex, " and last index: ", lastindex," out of: ",ntot,
+     &   " total jobs."
+      endif
+
+
+
+C *******************************************
+C            Primary parallel loop. 
+C *******************************************
+            doilll: DO 300 ILLL = firstindex, lastindex
+                  write(*,'(a, i2, a, i2)')
+     &     "MYID: ", myid, " Entered ILLL: ", ILLL
+                  if (.not.direct) then
+                     call quit('RPA in parallel must use .DIRECT.',
+     & ' integral transformations')
+                  endif
 
                   KEND2  = KENDSV
                   LWORK2 = LWORKSV
 
-                  DTIME     = SECOND()
-                  IF (HERDIR) THEN
+                  IF (HERDIR) THEN 
                     CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
      &                          IPRINT)
                   ELSE
 C
-
-
-C TODO BEYER
-C Ill:  major loop index.
-C Indexa: INDEXA(MXCORB) bliver skrevet til i eridi2
-C Numdis
-C kodcl1
-C kodcl2
-C kodbc1
-C kodbc2
-C krdbc1
-C krdbc2
-C kodpp1
-C kodpp2
-C kccfb1
-C kindxb
-C kend2
-C lwork2
-C iprint
-C TODO ... BEYER
-                     write(*,*) myid, 'calling ERIDI2' !TODO
+C TODO ERIDI2 dies when it enters pickao
+                     write(*,*) "about to call eridi2"
                      CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
      &                           WORK(KODCL1),WORK(KODCL2),
      &                           WORK(KODBC1),WORK(KODBC2),
@@ -823,12 +781,10 @@ C TODO ... BEYER
      &                           WORK(KCCFB1),WORK(KINDXB), 
      &                           WORK(KEND2),LWORK2,IPRINT)
 C
-
-                     DTIME     = SECOND()  - DTIME
-                     SOTIME(9) = SOTIME(9) + DTIME
                   ENDIF
 C
-c                  LRECNR = ((NBUFX(0) - 1)/IRAT) +1
+                  write(*,*) "done calling eridi2"
+                  LRECNR = ((NBUFX(0) - 1)/IRAT) + 1 
 C
                   KRECNR  = KEND2
                   KEND2   = KRECNR + LRECNR
@@ -839,66 +795,123 @@ C
      &               CALL STOPIT('RP_ERES.2B',' ',KEND2,LWORK)
 C
 C
+C------------------------------------------------------------------------
+C              Loop over number of distributions in disk.
+C------------------------------------------------------------------------
+C
+               idel2loop: DO 310 IDEL2 = 1,NUMDIS
+C
+                  IDEL  = INDEXA(IDEL2)
+                  ISYMD = ISAO(IDEL)
+C
+                  ISYDIS = MULD2H(ISYMD,ISYMOP)
+C
+                  IT2DEL(IDEL) = ICDEL1
+                  ICDEL1       = ICDEL1 + NT2BCD(ISYDIS)
+C
+C---------------------------------------------
+C                 Work space allocation no. 3.
+C---------------------------------------------
+C
+                  LXINT  = NDISAO(ISYDIS)
+C
+                  KXINT   = KEND2
+                  KEND3   = KXINT  + LXINT
+                  LWORK3  = LWORK  - KEND3
+C
+                  CALL SO_MEMMAX ('RP_ERES.3',LWORK3)
+                  IF (LWORK3 .LT. 0) 
+     &               CALL STOPIT('RP_ERES.3',' ',KEND3,LWORK)
+C
+C--------------------------------------------
+C                 Read in batch of integrals.
+C--------------------------------------------
+C
+                  CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND3),LWORK3,
+     &                        WORK(KRECNR),DIRECT)
+C
+C---------------------------------------------
+C                 Work space allocation no. 4.
+C---------------------------------------------
+C
+                  LDSRHF = NDSRHF(ISYMD)
+C
+                  KDSRHF  = KEND3
+                  KEND4   = KDSRHF + LDSRHF
+                  LWORK4  = LWORK  - KEND4
+C
+                  CALL SO_MEMMAX ('RP_ERES.4',LWORK4)
+                  IF (LWORK4 .LT. 0) 
+     &               CALL STOPIT('RP_ERES.4',' ',KEND4,LWORK)
+C
+C
+C----------------------------------------------
+C                 Calculate the AO-Fock matrix.
+C----------------------------------------------
+C
+                  IF (TRIPLET) THEN
+                     CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
+     &                               WORK(KFOCK),WORK(KEND4),
+     &                               LWORK4,IDEL,ISYMD,ISYMTR)
+                  ELSE
+
+                     CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
+     &                              WORK(KFOCK),WORK(KEND4),
+     &                              LWORK4,IDEL,ISYMD,.FALSE.,
+     &                              'CrashIfNecessary',ISYMTR)
+C Jan 30. 2014. F.Beyer:
+C Ive altered the penultimate variable to 'CrashifNecessary' to make sure CC_aofock crashes
+C If the boolean is ever true for any reason.
+C If you use .TRUE. instead of .FALSE. in the call to CC_AOFOCK then make sure you 
+C correct the variable that follows. The last variable that was in place before I changed it to 'CrashifNecessary' was uninitialized
+C and could potentially cause a lot of havoc if the calculation didn't fail every time.
+                  END IF
+C
+  310          enddo idel2loop
+  300       enddo doilll
+
+C
 
 
+C     The master sends a termination signal to all surplus 
+C     processes participating in the spinning barrier.
+C     all IDs .le. ntot
+      if (numprocs.ge.ntot) then
+         if (myid.eq.0) then
+            exitspinningbarrier = .true.
+            do i=ntot, (numprocs-1)
+               call mpi_isend(exitspinningbarrier, 1, MPI_LOGICAL, i,
+     &         i, mpi_comm_world, isreleased, ierr)
+            enddo
+         endif
+      endif
 
 
-
-
-C MEMORY ALLOCATION
-c      KFOCK=1
-c      SOMETHIGNELSE = KFOCK + LFOCK
-
-
-
-555   continue
-
-      kfock = 1
-      skipall: if (.false.) then
+C TODO make sure that the processes participating in the spinning barrier will contribute with 0 to this reduce call
 C     !!! IMPORTANT !!!
 C     This reduce call will only reduce for an intracommunicator call.
 C     If you have split processes into different communicators, you will
-C     need to reduce by other means than MPI_IN_PLACE in the root call.
-      if  (master) then
-         call mpi_reduce(MPI_IN_PLACE, fockd(1),5 
+C     need to reduce by other means than MPI_IN_PLACE in the master's call.
+c      goto 900
+      if  (myid.eq.0) then
+         call mpi_reduce(MPI_IN_PLACE, fockd(1), lfock 
      & , MPI_REAL, MPI_SUM,0, MPI_COMM_WORLD, ierr)
       else
-         call mpi_reduce(work(kfock), fockd(1), 5
+         call mpi_reduce(work(kfock), fockd(1), lfock
      &      , MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
       endif
+900   continue
 
+c      write(*,*) "from parallel kfock:"
+c      do i=0, 20
+c         write(*,*) work(kfock+i)
+c      enddo
+c      write(*,*) "end parallel kfock:"
 
-      if (myid.eq.0) then
-      do i=-3, 8 
-         write(*,*) fockd(i)
-      enddo
-      endif
+990   continue
 
-      call mpi_barrier(mpi_comm_world, ierr)
-      endif skipall
-
+c      deallocate(sync) 
       RETURN
       END SUBROUTINE
 
-#endif
-
-
-
-#ifdef VAR_MPI
-C  /* Deck RPA_PAR_INIT
-      SUBROUTINE RPA_PAR_INIT()
-c Initialization routine for slaves participating in a parallel RPA calculation.
-c The slaves receive all matrices, pointers and parameters necessary to calculate
-c two-electron integrals in parallel, using the direct AO method.
-c
-c
-c
-
-  
-
-      use mpi
-      numentries = 8 ! should be hardcoded number...
-      call mpixbcast(assembly, numentries, 'INTEGE', 0) 
-
-      END SUBROUTINE
 #endif

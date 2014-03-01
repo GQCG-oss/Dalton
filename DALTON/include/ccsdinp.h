@@ -1,13 +1,15 @@
       LOGICAL SKIP,   DIRECT, DIRGRD, CCRSTR,
      &        FROIMP, FROEXP, NOCCIT,
      &        CCSAVE, STOLD,  JACEXP, LHTR,
-     &        DEBUG,  CCSTST, ANAAOD,
+     &        DEBUG, CCSTST, ANAAOD,
      &        HERDIR, FREEZE, KEEPAOIN, NOEONL, NOSORT,
      &        HURWITZ_CHECK,
 CSPAS 15.11.2009 implementing AO-SOPPA
 C    &        SIRSOP, LVVVV, ONLYMO
      &        SIRSOP, LVVVV, ONLYMO, AOSOPPA
 CKeinSPASmehr
+C
+
 
       LOGICAL ETACCPT, DIRKAPB
 
