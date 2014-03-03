@@ -1,7 +1,7 @@
 
 
-2013.2 (this will be the next patch)
-====================================
+2013.2 (2014-03-05)
+===================
 
 Common
 ------
@@ -20,7 +20,7 @@ DALTON
   (in each geometry step start wave function optimization from a
   converged wave function from a neighboring geometry rather than from scratch each time).
 - Fix of error which sometimes caused a geometry optimization to stop with " *** ERROR, Wrong interval in WLKBIS".
-- Fix of a bug which occasionally caused DALTON to abort a .STEX calculation
+- Fix of a bug which occasionally caused DALTON to abort a .STEX calculation.
 - Print final geometry in xyz format (angstrom). File called "final_geometry.xyz" is put into the restart tarball.
 - Append PID to scratch directory to avoid multiple tests running in the same directory.
 - Improved manual for two-photon and non-adiabatic coupling.
@@ -36,7 +36,7 @@ LSDALTON
 - Fixed a bug related to improber shutdown of MPI calculation. In the case
   of wrong LSDALTON.INP for instance the calculation will issue a error 
   statement and afterward hang forever in a MPI call. 
-- Fixed a OpenMP bug in the calculation of how much memory there should be used during
+- Fixed an OpenMP bug in the calculation of how much memory there should be used during
   an exchange-correlation calculation - resulting in huge memory usage for large molecular system.   
 
 
