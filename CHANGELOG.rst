@@ -3,7 +3,7 @@
 2013.2 (this will be the next patch)
 ====================================
 
-COMMON
+Common
 ------
 
 - Recognize CYGWIN as a LINUX and UNIX system, for proper definition of compilation flags.
@@ -23,6 +23,7 @@ DALTON
 - Print final geometry in xyz format (angstrom). File called "final_geometry.xyz" is put into the restart tarball.
 - Append PID to scratch directory to avoid multiple tests running in the same directory.
 - Improved manual for two-photon and non-adiabatic coupling.
+- Updated/corrected g-factors for Ag, Nd, and Tl (thanks to M. Jaszunski).
 
 
 LSDALTON
@@ -36,12 +37,6 @@ LSDALTON
   statement and afterward hang forever in a MPI call. 
 - Fixed a OpenMP bug in the calculation of how much memory there should be used during
   an exchange-correlation calculation - resulting in huge memory usage for large molecular system.   
-
-
-
-===============================
-PUBLISHED PATCHES - DO NOT EDIT
-===============================
 
 
 2013.1 (2013-12-19)
