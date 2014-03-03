@@ -8,6 +8,7 @@ Common
 
 - Recognize CYGWIN as a LINUX and UNIX system, for proper definition of compilation flags.
 - Define M_PI in C-code if not already defined (problem seen with Cygwin).
+- Added setup option --blacs to be used in combination with --scalapack; defaults to --blacs=intelmpi.
 
 
 DALTON

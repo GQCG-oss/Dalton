@@ -133,6 +133,12 @@ def parse_input():
             action='store_true',
             default=False,
             help='build using SCALAPACK [default: %(default)s]')
+    group.add_argument('--blacs',
+            nargs='?',
+            action='store',
+            choices=('intelmpi', 'openmpi', 'sgimpt'),
+            default='intelmpi',
+            help='specify the BLACS implementation; only used in combination with --scalapack [default: %(default)s]')
     group.add_argument('--scalasca',
             action='store_true',
             default=False,
@@ -258,7 +264,6 @@ def gen_cmake_command(args):
     command += ' -DENABLE_OPENACC=%s'        % translate_cmake(args.openacc)
     command += ' -DENABLE_COLLAPSE=%s'        % translate_cmake(args.collapse)
     command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
-    command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
     command += ' -DENABLE_VAMPIRTRACE=%s'    % translate_cmake(args.vampirtrace)
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
@@ -266,6 +271,10 @@ def gen_cmake_command(args):
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
     command += ' -DENABLE_ICHOR=%s'          % translate_cmake(args.ichor)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
+
+    command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
+    if args.scalapack:
+        command += ' -DBLACS_IMPLEMENTATION=%s' % args.blacs
 
     if args.blas == 'builtin':
         command += ' -DENABLE_BUILTIN_BLAS=ON'
