@@ -1,41 +1,55 @@
 MODULE TESTMODULE
   use stringsMODULE
 CONTAINS
-  subroutine PASSsub
-    IMPLICIT NONE
-    INTEGER :: JMAX,nTUV,nTUVprev,ituvP,J,Tp,Up,Vp,N,N2,ntuvP,ituv,C
-    INTEGER :: nTUVQ,nTUVTMPP,nTUVTMPQ,JPQ,JP,JQ,nTUVTMP,nTUVTMPprev
-    integer :: tq,uq,vq,ituvq,ituvpminus1x,ituvpminus1y,ituvpminus1z
-    integer :: iTUVplus1x,iTUVplus1y,iTUVplus1z,nTUVTMPPs,I,nTUVTMPQ2,nTUVP2
-    Integer :: MaxAngmomQP,nTUVplus,JTMP,ntuvprev2,ntuvprev3,iTUVQminus1
-    !    logical :: CREATED(-2:8,-2:8,-2:8)
-    logical,pointer :: CREATED(:,:,:),ituvqplus1LEnTUVQarray(:)
-    logical,pointer :: ituvpminus1LEnTUVParray(:)
-    logical :: TREC,UREC,VREC,TREC2,UREC2,VREC2,DoneCartDir(3),ituvqplus1LEnTUVQ
-    logical :: ituvqminus1LEnTUVQ
-    integer,pointer :: TUVINDEX(:,:,:)
-    integer,pointer :: TINDEX(:)
-    integer,pointer :: UINDEX(:)
-    integer,pointer :: VINDEX(:)
-    integer,pointer :: JINDEX(:)
-    integer :: nTUVLIST,nTUVLISTactual,CARTDIR,iTUVPminus1,iTUVPminus2,Tpminus1
-    integer,pointer :: TwoTermTUVLIST(:)
-    integer :: iTUVQplus1,nLength
-    integer :: LUFILE,LUSPECIAL,LUFILE1
-    Character(len=48) :: FileName    
-    Character(len=44) :: FromPrimLabel, ToPrimLabel
-    Character(len=1)  :: FromLabel,ToLabel,FromExpLabel,ToExpLabel,SIGN2
-    Character(len=8)  :: SegLabel
-    integer :: iseg,ifile,iseglabel
-    logical :: Gen,SegQ,Segp,Seg,Seg1Prim,LOOPUNROLL
-    integer,pointer :: IfacX(:,:),TUVindexX(:,:)
-!    LUSPECIAL = 2
-!    open(unit = LUSPECIAL, file="runNewTransferRecurrenceQPBasic.F90",status="unknown")
-!    WRITE(LUSPECIAL,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODBASIC'
-!    WRITE(LUSPECIAL,'(A)')' use IchorPrecisionModule'
-!    WRITE(LUSPECIAL,'(A)')'  '
-!    WRITE(LUSPECIAL,'(A)')' CONTAINS'
-    
+subroutine PASSsub
+  IMPLICIT NONE
+  INTEGER :: JMAX,nTUV,nTUVprev,ituvP,J,Tp,Up,Vp,N,N2,ntuvP,ituv,C
+  INTEGER :: nTUVQ,nTUVTMPP,nTUVTMPQ,JPQ,JP,JQ,nTUVTMP,nTUVTMPprev
+  integer :: tq,uq,vq,ituvq,ituvpminus1x,ituvpminus1y,ituvpminus1z
+  integer :: iTUVplus1x,iTUVplus1y,iTUVplus1z,nTUVTMPPs,I,nTUVTMPQ2,nTUVP2
+  Integer :: MaxAngmomQP,nTUVplus,JTMP,ntuvprev2,ntuvprev3,iTUVQminus1
+  !    logical :: CREATED(-2:8,-2:8,-2:8)
+  logical,pointer :: CREATED(:,:,:),ituvqplus1LEnTUVQarray(:)
+  logical,pointer :: ituvpminus1LEnTUVParray(:)
+  logical :: TREC,UREC,VREC,TREC2,UREC2,VREC2,DoneCartDir(3),ituvqplus1LEnTUVQ
+  logical :: ituvqminus1LEnTUVQ
+  integer,pointer :: TUVINDEX(:,:,:)
+  integer,pointer :: TINDEX(:)
+  integer,pointer :: UINDEX(:)
+  integer,pointer :: VINDEX(:)
+  integer,pointer :: JINDEX(:)
+  integer :: nTUVLIST,nTUVLISTactual,CARTDIR,iTUVPminus1,iTUVPminus2,Tpminus1
+  integer,pointer :: TwoTermTUVLIST(:)
+  integer :: iTUVQplus1,nLength
+  integer :: LUFILE,LUSPECIAL,LUFILE1,GPUrun
+  Character(len=51) :: FileName    
+  Character(len=44) :: FromPrimLabel, ToPrimLabel
+  Character(len=1)  :: FromLabel,ToLabel,FromExpLabel,ToExpLabel,SIGN2
+  Character(len=8)  :: SegLabel
+  character(len=3) :: ARCSTRING
+  character(len=20) :: PrimLabelAux
+  integer :: iPrimLabelAux
+  integer :: iseg,ifile,iseglabel
+  logical :: Gen,SegQ,Segp,Seg,Seg1Prim,LOOPUNROLL,DoOpenMP
+  logical :: Collapse,CPU
+  integer,pointer :: IfacX(:,:),TUVindexX(:,:)
+  !    LUSPECIAL = 2
+  !    open(unit = LUSPECIAL, file="runNewTRQPBasic.F90",status="unknown")
+  !    WRITE(LUSPECIAL,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODBASIC'
+  !    WRITE(LUSPECIAL,'(A)')' use IchorPrecisionModule'
+  !    WRITE(LUSPECIAL,'(A)')'  '
+  !    WRITE(LUSPECIAL,'(A)')' CONTAINS'
+  DO GPUrun = 1,1!2
+    CPU = .TRUE.
+    IF(GPUrun.EQ.2)CPU = .FALSE.
+    DoOpenMP = .FALSE.
+    COLLAPSE=.TRUE.
+    IF(CPU)DoOpenMP = .TRUE.
+    IF(CPU)THEN
+       ARCSTRING = 'CPU'
+    ELSE
+       ARCSTRING = 'GPU'
+    ENDIF
     DO iseg = 1,5
        DO ifile = 1,4
           IF(ifile.EQ.1)THEN
@@ -70,12 +84,12 @@ CONTAINS
           DO I = 1,48
              FileName(I:I) = ' '
           ENDDO
-          WRITE(FileName,'(6A)')'runNewTransferRecurrenceQP',FromLabel,'to',ToLabel,SegLabel(1:iSegLabel),'output.F90'
+          WRITE(FileName,'(8A)')'runNewTransferRecurrenceQP',FromLabel,'to',ToLabel,SegLabel(1:iSegLabel),'output',ARCSTRING,'.F90'
           print*,'FileName:',FileName
           LUFILE1 = 1
           open(unit = LUFILE1, file=TRIM(FileName),status="unknown")
 
-          WRITE(LUFILE1,'(5A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMOD',FromLabel,'to',ToLabel,SegLabel(1:iSegLabel)
+          WRITE(LUFILE1,'(7A)')'MODULE AGC_',ARCSTRING,'_OBS_TRMOD',FromLabel,'to',ToLabel,SegLabel(1:iSegLabel)
           WRITE(LUFILE1,'(A)')' use IchorPrecisionModule'
           WRITE(LUFILE1,'(A)')'  '
           WRITE(LUFILE1,'(A)')' CONTAINS'
@@ -128,7 +142,7 @@ CONTAINS
                 ENDDO
 
                 call initString(1)          
-                call AddToString('subroutine TransferRecurrenceP')
+                call AddToString('subroutine TransferRecurrence'//ARCSTRING//'P')
                 call AddToString(JP)
                 call AddToString('Q')
                 call AddToString(JQ)
@@ -141,20 +155,24 @@ CONTAINS
 
                 call initString(9)          
                 call AddToString('& Pexp,Qexp,Pdistance12,Qdistance12,')
-                call AddToString(ToExpLabel)
-                call AddToString('exp,')
                 call AddToString(FromExpLabel)
-                call AddToString('exp,nPrimA,nPrimB,nPrimC,nPrimD,Aux,Aux2)')
+                call AddToString('exp,')
+                call AddToString(ToExpLabel)
+                call AddToString('exp,nPrimA,nPrimB,nPrimC,nPrimD,&')
+                call writeString(LUFILE)
+                call initString(9)          
+                call AddToString('& MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)')
                 call writeString(LUFILE)
 
                 WRITE(LUFILE,'(A)')'  implicit none'
-                WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD'
+                WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses'
                 IF(.NOT.Seg1Prim)THEN
                    WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)'
                 ELSE
                    WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)'
                 ENDIF
-                WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pdistance12(3),Qdistance12(3,nPasses)'
+                WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)'
+                WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
                 call initString(2)          
                 call AddToString('real(realk),intent(in) :: ')
                 call AddToString(FromExpLabel)
@@ -176,18 +194,46 @@ CONTAINS
                 call writeString(LUFILE)
                 !          WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)'
                 IF(.NOT.Seg1Prim)THEN
-                   WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: Aux(',nTUV,',nPrimQ*nPrimP*nPasses)'
+                   IF(COLLAPSE)THEN
+                      IF(Gen)THEN
+                         WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: Aux(',nTUV,',nPrimQ*nPrimP*nPasses)'
+                         PrimLabelAux = 'iP'
+                         iPrimLabelAux = 2
+                      ELSE
+                         WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: Aux(',nTUV,',nPrimQ,nPrimP,nPasses)'
+                         PrimLabelAux = 'iPrimQ,iPrimP,iPassP'
+                         iPrimLabelAux = 20
+                      ENDIF
+                   ELSE
+                      WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: Aux(',nTUV,',nPrimQ*nPrimP*nPasses)'
+                      PrimLabelAux = 'iP'
+                      iPrimLabelAux = 2
+                   ENDIF
                 ELSE
                    WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: Aux(',nTUV,',nPasses)'
+                   PrimLabelAux = 'iP'
+                   iPrimLabelAux = 2
                 ENDIF
-                IF(Gen)THEN
-                   WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimQ*nPrimP*nPasses)'
-                ELSEIF(SegQ)THEN
-                   WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimP,nPasses)'
-                ELSEIF(SegP)THEN
-                   WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimQ,nPasses)'
-                ELSEIF(Seg.OR.Seg1Prim)THEN
-                   WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPasses)'
+                IF(COLLAPSE)THEN
+                   IF(Gen)THEN
+                      WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimQ*nPrimP*nPasses)'
+                   ELSEIF(SegQ)THEN
+                      WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimP*nPasses)'
+                   ELSEIF(SegP)THEN
+                      WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimQ*nPasses)'
+                   ELSEIF(Seg.OR.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPasses)'
+                   ENDIF
+                ELSE
+                   IF(Gen)THEN
+                      WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimQ*nPrimP*nPasses)'
+                   ELSEIF(SegQ)THEN
+                      WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimP,nPasses)'
+                   ELSEIF(SegP)THEN
+                      WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPrimQ,nPasses)'
+                   ELSEIF(Seg.OR.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: Aux2(',nTUVP,',',nTUVQ,',nPasses)'
+                   ENDIF
                 ENDIF
                 WRITE(LUFILE,'(A)')'!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)'
                 WRITE(LUFILE,'(A)')'  !Local variables'
@@ -206,7 +252,7 @@ CONTAINS
                    endif
                 ENDDO
                 WRITE(LUFILE,'(A)')'!  Note Tmp(nTUVQ,nTUVP) ordering different from Aux2 and the PtoQ routines '
-                WRITE(LUFILE,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1'
+                WRITE(LUFILE,'(A)')'  integer :: iPassP,iPrimP,iPrimQ,iPrimQP,IP,iTUVP,iTUVQ,iTUVplus1,ituvqminus1,iAtomA,iAtomB'
                 IF(.NOT.Seg1Prim)THEN
                    call initString(2)          
                    call AddToString('integer :: iPrim')
@@ -365,90 +411,216 @@ CONTAINS
                    ENDDO
                 ENDDO
                 deallocate(CREATED)
-                WRITE(LUFILE,'(A)')'  Xab = Pdistance12(1)'
-                WRITE(LUFILE,'(A)')'  Yab = Pdistance12(2)'
-                WRITE(LUFILE,'(A)')'  Zab = Pdistance12(3)'
-                WRITE(LUFILE,'(A)')'  DO iPassQ = 1,nPasses'
-                IF(Seg)THEN
-                   WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
-                   WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
-                      WRITE(LUFILE,'(A)')'     Aux2(iTUVP,iTUVQ,iPassQ) = 0.0E0_realk'
+
+                !init AUX
+                IF(COLLAPSE)THEN
+                   IF(SegP.OR.SegQ.OR.Seg)THEN
+                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(shared) COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ) '
+!                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
+                      IF(SegP)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPasses'
+                      IF(SegQ)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimP*nPasses'
+                      IF(Seg)WRITE(LUFILE,'(A)') '  DO iP = 1,nPasses'
+                      WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                      WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                      WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
+                      WRITE(LUFILE,'(A)')   '    ENDDO'
+                      WRITE(LUFILE,'(A)')   '   ENDDO'
+                      WRITE(LUFILE,'(A)')   '  ENDDO'
+!                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END DO'
+                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+                   ELSE
+                      !no need to init
+                   ENDIF
+                ENDIF
+
+                !OPENMP
+                IF(Doopenmp)THEN
+!                   WRITE(LUFILE,'(A)')'!$OMP DO &'
+                   WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+                   WRITE(LUFILE,'(A)')'!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&'
+                   IF(Seg)THEN
+                      WRITE(LUFILE,'(A)')'!$OMP         iP,iPrimQ,iPrimP,iPrimQP,iPassP,&'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'!$OMP         iP,iPrimQ,iPrimP,iPassP,&'
+                   ENDIF
+                   WRITE(LUFILE,'(A,A,A,A,A,A,A)')'!$OMP         exp',ToExpLabel,'X,exp',ToExpLabel,'Y,exp',ToExpLabel,'Z,&'
+                   IF(.NOT.seg1Prim)THEN
+                      WRITE(LUFILE,'(A,A,A,A,A,A,A)')'!$OMP         iPrim',FromExpLabel,',iPrim',ToExpLabel,',&'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'!$OMP         Tmp0,&'
+                   DO JTMP=1,JP-1
+                      if(JTMP.LT.10)THEN
+                         WRITE(LUFILE,'(A,I1,A)')'!$OMP         Tmp',JTMP,',&'
+                      else
+                         WRITE(LUFILE,'(A,I2,A)')'!$OMP         Tmp',JTMP,',&'
+                      endif
+                   ENDDO
+                   WRITE(LUFILE,'(A)')'!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &'
+                   WRITE(LUFILE,'(A)')'!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&'
+                   WRITE(LUFILE,'(A,A,A,A,A)')'!$OMP        ',ToExpLabel,'exp,',FromExpLabel,'exp,&'
+                   WRITE(LUFILE,'(A)')'!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)'
+                ENDIF
+                !START LOOP
+                IF(COLLAPSE)THEN
+                   IF(Gen)THEN
+                      WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimQ*nPrimP*nPasses'
+                      WRITE(LUFILE,'(A)') '   iPrimQ = mod(IP-1,nPrimQ)+1'
+                      WRITE(LUFILE,'(A)') '   iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1'
+                      WRITE(LUFILE,'(A)') '   iPassP = (IP-1)/(nPrimQ*nPrimP) + 1'
+                   ELSEIF(SegP)THEN
+                      WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimQ*nPasses'
+                      WRITE(LUFILE,'(A)') '   DO iPrimP=1, nPrimP'
+                      WRITE(LUFILE,'(A)') '    iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ'
+                      WRITE(LUFILE,'(A)') '    iPassP = (iP-1)/nPrimQ + 1'
+                   ELSEIF(SegQ)THEN
+                      WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimP*nPasses'
+                      WRITE(LUFILE,'(A)') '   DO iPrimQ=1, nPrimQ'
+                      WRITE(LUFILE,'(A)') '    iPrimP = iP - ((iP-1)/nPrimP)*nPrimP'
+                      WRITE(LUFILE,'(A)') '    iPassP = (iP-1)/nPrimP + 1'
+                   ELSEIF(Seg)THEN
+                      WRITE(LUFILE,'(A)') '  DO iP = 1,nPasses'
+                      WRITE(LUFILE,'(A)') '   DO iPrimQP=1,nPrimQ*nPrimP'
+                      WRITE(LUFILE,'(A)') '    iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ'
+                      WRITE(LUFILE,'(A)') '    iPrimP = (iPrimQP-1)/nPrimQ + 1'       
+                      WRITE(LUFILE,'(A)') '    iPassP = iP'
+                   ELSEIF(Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)') '  DO iP = 1,nPasses'
+                      WRITE(LUFILE,'(A)') '   iPassP = iP'
+                      WRITE(LUFILE,'(A)') '   iPrimP=1'
+                      WRITE(LUFILE,'(A)') '   iPrimQ=1'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'   Xcd = Qdistance12(1)'
+                   WRITE(LUFILE,'(A)')'   Ycd = Qdistance12(2)'
+                   WRITE(LUFILE,'(A)')'   Zcd = Qdistance12(3)'
+                   WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+                   WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+                   WRITE(LUFILE,'(A)')'   Xab = Pdistance12(1,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'   Yab = Pdistance12(2,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'   Zab = Pdistance12(3,iAtomA,iAtomB)'
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    expP = Pexp(iPrimP)'
+                      WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(iPrimP)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    expP = Pexp(1)'
+                      WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(1)'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'    inv2expP = D05*invexpP'
+                   IF(ToExpLabel.EQ.'A')THEN
+                      IF(.NOT.Seg1Prim)THEN
+                         WRITE(LUFILE,'(A,A)')'    ',ToPrimLabel
+                         !          WRITE(LUFILE,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'          
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Xab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Yab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Zab'
+                      ELSE
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = -',ToExpLabel,'exp(1)*Xab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = -',ToExpLabel,'exp(1)*Yab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = -',ToExpLabel,'exp(1)*Zab'
+                      ENDIF
+                   ELSE !B
+                      IF(.NOT.Seg1Prim)THEN
+                         WRITE(LUFILE,'(A,A)')'    ',ToPrimLabel
+                         !          WRITE(LUFILE,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'          
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Xab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Yab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Zab'
+                      ELSE
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = ',ToExpLabel,'exp(1)*Xab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = ',ToExpLabel,'exp(1)*Yab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = ',ToExpLabel,'exp(1)*Zab'
+                      ENDIF
+                   ENDIF
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A,A)')'     ',FromPrimLabel
+                   ENDIF
+                ELSE !no collapse
+                   WRITE(LUFILE,'(A)')'  Xcd = Qdistance12(1)'
+                   WRITE(LUFILE,'(A)')'  Ycd = Qdistance12(2)'
+                   WRITE(LUFILE,'(A)')'  Zcd = Qdistance12(3)'
+                   WRITE(LUFILE,'(A)')'  DO iPassP = 1,nPasses'
+                   WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+                   WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+                   WRITE(LUFILE,'(A)')'   Xab = Pdistance12(1,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'   Yab = Pdistance12(2,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'   Zab = Pdistance12(3,iAtomA,iAtomB)'
+                   IF(Seg)THEN
+                      WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                      WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                      WRITE(LUFILE,'(A)')'     Aux2(iTUVP,iTUVQ,iPassP) = 0.0E0_realk'
                       WRITE(LUFILE,'(A)')'    ENDDO'
                       WRITE(LUFILE,'(A)')'   ENDDO'
-                ENDIF
-                IF(SegP)THEN
-                   WRITE(LUFILE,'(A)')'   DO iPrimQ = 1,nPrimQ'
-                   WRITE(LUFILE,'(A,I3)')'    DO iTUVQ=1,',nTUVQ
-                   WRITE(LUFILE,'(A,I3)')'     DO iTUVP=1,',nTUVP
-                   WRITE(LUFILE,'(A)')'      Aux2(iTUVP,iTUVQ,iPrimQ,iPassQ) = 0.0E0_realk'
-                   WRITE(LUFILE,'(A)')'     ENDDO'
-                   WRITE(LUFILE,'(A)')'    ENDDO'
-                   WRITE(LUFILE,'(A)')'   ENDDO'
-                ENDIF                   
-                WRITE(LUFILE,'(A)')'   Xcd = Qdistance12(1,iPassQ)'
-                WRITE(LUFILE,'(A)')'   Ycd = Qdistance12(2,iPassQ)'
-                WRITE(LUFILE,'(A)')'   Zcd = Qdistance12(3,iPassQ)'
-                IF(.NOT.Seg1Prim)THEN
-                   WRITE(LUFILE,'(A)')'   IP = (iPassQ-1)*nPrimQ*nPrimP'
-                   WRITE(LUFILE,'(A)')'   DO iPrimP=1, nPrimP'
-                ELSE
-                   WRITE(LUFILE,'(A)')'   IP = iPassQ'
-                   WRITE(LUFILE,'(A)')'   iPrimP=1'
-                ENDIF
-                IF(SegQ)THEN
-                   WRITE(LUFILE,'(A,I3)')'    DO iTUVQ=1,',nTUVQ
-                   WRITE(LUFILE,'(A,I3)')'     DO iTUVP=1,',nTUVP
-                      WRITE(LUFILE,'(A)')'      Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = 0.0E0_realk'
+                   ENDIF
+                   IF(SegP)THEN
+                      WRITE(LUFILE,'(A)')'   DO iPrimQ = 1,nPrimQ'
+                      WRITE(LUFILE,'(A,I3)')'    DO iTUVQ=1,',nTUVQ
+                      WRITE(LUFILE,'(A,I3)')'     DO iTUVP=1,',nTUVP
+                      WRITE(LUFILE,'(A)')'      Aux2(iTUVP,iTUVQ,iPrimQ,iPassP) = 0.0E0_realk'
                       WRITE(LUFILE,'(A)')'     ENDDO'
                       WRITE(LUFILE,'(A)')'    ENDDO'
-                ENDIF
-                WRITE(LUFILE,'(A)')'    expP = Pexp(iPrimP)'
-                IF(.NOT.Seg1Prim)THEN
-                   WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(iPrimP)'
-                ELSE
-                   WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(1)'
-                ENDIF
-                WRITE(LUFILE,'(A)')'    inv2expP = D05*invexpP'
-                IF(ToExpLabel.EQ.'A')THEN
-                   IF(.NOT.Seg1Prim)THEN
-                      WRITE(LUFILE,'(A,A)')'    ',ToPrimLabel
-                      !          WRITE(LUFILE,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'          
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Xab'
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Yab'
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Zab'
-                   ELSE
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = -',ToExpLabel,'exp(1)*Xab'
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = -',ToExpLabel,'exp(1)*Yab'
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = -',ToExpLabel,'exp(1)*Zab'
+                      WRITE(LUFILE,'(A)')'   ENDDO'
                    ENDIF
-                ELSE !B
                    IF(.NOT.Seg1Prim)THEN
-                      WRITE(LUFILE,'(A,A)')'    ',ToPrimLabel
-                      !          WRITE(LUFILE,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'          
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Xab'
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Yab'
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Zab'
+                      WRITE(LUFILE,'(A)')'   IP = (iPassP-1)*nPrimQ*nPrimP'
+                      WRITE(LUFILE,'(A)')'   DO iPrimP=1, nPrimP'
                    ELSE
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = ',ToExpLabel,'exp(1)*Xab'
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = ',ToExpLabel,'exp(1)*Yab'
-                      WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = ',ToExpLabel,'exp(1)*Zab'
+                      WRITE(LUFILE,'(A)')'   IP = iPassP'
+                      WRITE(LUFILE,'(A)')'   iPrimP=1'
                    ENDIF
-                ENDIF
-                !          WRITE(LUFILE,'(A)')'    expBX = Bexp(iPrimB)*Zab'
-                !          WRITE(LUFILE,'(A)')'    expBY = Bexp(iPrimB)*Zab'
-                !          WRITE(LUFILE,'(A)')'    expBZ = Bexp(iPrimB)*Zab'
+                   IF(SegQ)THEN
+                      WRITE(LUFILE,'(A,I3)')'    DO iTUVQ=1,',nTUVQ
+                      WRITE(LUFILE,'(A,I3)')'     DO iTUVP=1,',nTUVP
+                      WRITE(LUFILE,'(A)')'      Aux2(iTUVP,iTUVQ,iPrimP,iPassP) = 0.0E0_realk'
+                      WRITE(LUFILE,'(A)')'     ENDDO'
+                      WRITE(LUFILE,'(A)')'    ENDDO'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'    expP = Pexp(iPrimP)'
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(iPrimP)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(1)'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'    inv2expP = D05*invexpP'
+                   IF(ToExpLabel.EQ.'A')THEN
+                      IF(.NOT.Seg1Prim)THEN
+                         WRITE(LUFILE,'(A,A)')'    ',ToPrimLabel
+                         !          WRITE(LUFILE,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'          
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Xab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Yab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = -',ToExpLabel,'exp(iPrim',ToExpLabel,')*Zab'
+                      ELSE
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = -',ToExpLabel,'exp(1)*Xab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = -',ToExpLabel,'exp(1)*Yab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = -',ToExpLabel,'exp(1)*Zab'
+                      ENDIF
+                   ELSE !B
+                      IF(.NOT.Seg1Prim)THEN
+                         WRITE(LUFILE,'(A,A)')'    ',ToPrimLabel
+                         !          WRITE(LUFILE,'(A)')'    iPrimB = (iPrimP-1)/nPrimA+1'          
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Xab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Yab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = ',ToExpLabel,'exp(iPrim',ToExpLabel,')*Zab'
+                      ELSE
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'X = ',ToExpLabel,'exp(1)*Xab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Y = ',ToExpLabel,'exp(1)*Yab'
+                         WRITE(LUFILE,'(7A)')'    exp',ToExpLabel,'Z = ',ToExpLabel,'exp(1)*Zab'
+                      ENDIF
+                   ENDIF
+                   !          WRITE(LUFILE,'(A)')'    expBX = Bexp(iPrimB)*Zab'
+                   !          WRITE(LUFILE,'(A)')'    expBY = Bexp(iPrimB)*Zab'
+                   !          WRITE(LUFILE,'(A)')'    expBZ = Bexp(iPrimB)*Zab'
 
-                IF(.NOT.Seg1Prim)THEN
-                   WRITE(LUFILE,'(A)')'    DO iPrimQ=1, nPrimQ'
-                ELSE
-                   WRITE(LUFILE,'(A)')'    iPrimQ=1'
-                ENDIF
-                IF(.NOT.Seg1Prim)THEN
-                   WRITE(LUFILE,'(A,A)')'     ',FromPrimLabel
-                   !          WRITE(LUFILE,'(A)')'     iPrimD = (iPrimQ-1)/nPrimC+1'
-                   WRITE(LUFILE,'(A)')'     IP = IP + 1'
-                ENDIF
-
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    DO iPrimQ=1, nPrimQ'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    iPrimQ=1'
+                   ENDIF
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A,A)')'     ',FromPrimLabel
+                      !          WRITE(LUFILE,'(A)')'     iPrimD = (iPrimQ-1)/nPrimC+1'
+                      WRITE(LUFILE,'(A)')'     IP = IP + 1'
+                   ENDIF
+                ENDIF !COLLAPSE
+                   
                 IF(.NOT.Seg1Prim)THEN
                    WRITE(LUFILE,'(8A)')'     facX = -(exp',ToExpLabel,'X',SIGN2,FromExpLabel,'exp(iPrim',FromExpLabel,')*Xcd)*invexpP'
                    WRITE(LUFILE,'(8A)')'     facY = -(exp',ToExpLabel,'Y',SIGN2,FromExpLabel,'exp(iPrim',FromExpLabel,')*Ycd)*invexpP'
@@ -468,34 +640,67 @@ CONTAINS
                 ENDIF
 
                 CALL SUBROUTINE_MAIN(LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS,TUVINDEX,&
-                     & TINDEX,UINDEX,VINDEX,JINDEX,nTUVprev3,nTUVprev2,nTUVprev,IfacX,TUVindexX,LOOPUNROLL)
+                     & TINDEX,UINDEX,VINDEX,JINDEX,nTUVprev3,nTUVprev2,nTUVprev,IfacX,TUVindexX,LOOPUNROLL,&
+                     & PrimLabelAux,iPrimLabelAux)
 
                 WRITE(LUFILE,'(A,I3)')'!    Warning Note Tmp0 have the opposite ordering so this is not that efficient. '
                 WRITE(LUFILE,'(A,I3)')'!    Hopefully Tmp0 is small enough that it can be in cache. '
                 WRITE(LUFILE,'(A,I3)')'     DO iTUVQ=1,',nTUVQ
                 WRITE(LUFILE,'(A,I3)')'      DO iTUVP=1,',nTUVP
-                IF(Gen)THEN
-                   WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVQ,iTUVP)'
-                ELSEIF(SegQ)THEN
-                   WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) = Aux2(iTUVP,iTUVQ,iPrimP,iPassQ) + Tmp0(iTUVQ,iTUVP)'
-                ELSEIF(SegP)THEN
-                   WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iPrimQ,iPassQ) = Aux2(iTUVP,iTUVQ,iPrimQ,iPassQ) + Tmp0(iTUVQ,iTUVP)'
-                ELSEIF(Seg)THEN
-                   WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iPassQ) = Aux2(iTUVP,iTUVQ,iPassQ) + Tmp0(iTUVQ,iTUVP)'
-                ELSEIF(Seg1Prim)THEN
-                   WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iPassQ) = Tmp0(iTUVQ,iTUVP)'
+                IF(COLLAPSE)THEN
+                   IF(Gen)THEN
+                      WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVQ,iTUVP)'
+                   ELSEIF(SegQ)THEN
+                      WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iP) = Aux2(iTUVP,iTUVQ,iP) + Tmp0(iTUVQ,iTUVP)'
+                   ELSEIF(SegP)THEN
+                      WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iP) = Aux2(iTUVP,iTUVQ,iP) + Tmp0(iTUVQ,iTUVP)'
+                   ELSEIF(Seg)THEN
+                      WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iP) = Aux2(iTUVP,iTUVQ,iP) + Tmp0(iTUVQ,iTUVP)'
+                   ELSEIF(Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iP) = Tmp0(iTUVQ,iTUVP)'
+                   ENDIF
+                ELSE
+                   IF(Gen)THEN
+                      WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,IP) = Tmp0(iTUVQ,iTUVP)'
+                   ELSEIF(SegQ)THEN
+                      WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iPrimP,iPassP) = Aux2(iTUVP,iTUVQ,iPrimP,iPassP) + Tmp0(iTUVQ,iTUVP)'
+                   ELSEIF(SegP)THEN
+                      WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iPrimQ,iPassP) = Aux2(iTUVP,iTUVQ,iPrimQ,iPassP) + Tmp0(iTUVQ,iTUVP)'
+                   ELSEIF(Seg)THEN
+                      WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iPassP) = Aux2(iTUVP,iTUVQ,iPassP) + Tmp0(iTUVQ,iTUVP)'
+                   ELSEIF(Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')   '        Aux2(iTUVP,iTUVQ,iPassP) = Tmp0(iTUVQ,iTUVP)'
+                   ENDIF
                 ENDIF
                 WRITE(LUFILE,'(A)')   '      ENDDO'
                 WRITE(LUFILE,'(A)')   '     ENDDO'
-
-                IF(.NOT.Seg1Prim)THEN
-                   WRITE(LUFILE,'(A)')'    ENDDO'
-                   WRITE(LUFILE,'(A)')'   ENDDO'
+                IF(COLLAPSE)THEN
+                   IF(Gen)THEN
+                      WRITE(LUFILE,'(A)') '  ENDDO !iP = 1,nPrimQ*nPrimP*nPasses'
+                   ELSEIF(SegQ)THEN
+                      WRITE(LUFILE,'(A)') '   ENDDO !iPrimP=1, nPrimP'       
+                      WRITE(LUFILE,'(A)') '  ENDDO !iP = 1,nPrimQ*nPasses'
+                   ELSEIF(SegP)THEN
+                      WRITE(LUFILE,'(A)') '   ENDDO !iPrimQ=1, nPrimQ'
+                      WRITE(LUFILE,'(A)') '  ENDDO !iP = 1,nPrimP*nPasses'
+                   ELSEIF(Seg)THEN
+                      WRITE(LUFILE,'(A)') '   ENDDO !iPrimQP = 1,nPrimQ*nPrimP'
+                      WRITE(LUFILE,'(A)') '  ENDDO !iP = 1,nPasses'
+                   ELSEIF(Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)') '  ENDDO !iP = 1,nPasses'
+                   ENDIF
+                ELSE
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    ENDDO'
+                      WRITE(LUFILE,'(A)')'   ENDDO'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'  ENDDO'
                 ENDIF
-                WRITE(LUFILE,'(A)')'  ENDDO'
+!                IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END DO'
+                IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
 
                 call initString(1)          
-                call AddToString('end subroutine TransferRecurrenceP')
+                call AddToString('end subroutine TransferRecurrence'//ARCSTRING//'P')
                 call AddToString(JP)
                 call AddToString('Q')
                 call AddToString(JQ)
@@ -516,12 +721,14 @@ CONTAINS
           close(unit = LUFILE1)
        ENDDO
     ENDDO
+ ENDDO
 !    WRITE(LUFILE1,'(A)')'end module'
 !    close(unit = LUSPECIAL)
-  END subroutine PASSsub
+END subroutine PASSsub
 
   subroutine SUBROUTINE_MAIN(LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS,TUVINDEX,&
-               & TINDEX,UINDEX,VINDEX,JINDEX,nTUVprev3,nTUVprev2,nTUVprev,IfacX,TUVindexX,LOOPUNROLL)
+               & TINDEX,UINDEX,VINDEX,JINDEX,nTUVprev3,nTUVprev2,nTUVprev,IfacX,TUVindexX,&
+               & LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
     implicit none
     INTEGER,intent(in) :: LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS
     integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
@@ -531,6 +738,8 @@ CONTAINS
     integer :: JINDEX(nTUVPLUS)
     logical :: LOOPUNROLL
     INTEGER,intent(in) :: nTUVprev3,nTUVprev2,nTUVprev
+    character(len=20),intent(in) :: PrimLabelAux
+    integer,intent(in) :: iPrimLabelAux
     !local
     INTEGER :: ituvP,J,Tp,Up,Vp,N,N2,ituv,C
     INTEGER :: nTUVTMPP,nTUVTMPQ,nTUVTMP,nTUVTMPprev
@@ -545,6 +754,7 @@ CONTAINS
     integer :: nTUVLIST,nTUVLISTactual,CARTDIR,iTUVPminus1,iTUVPminus2,Tpminus1
     integer,pointer :: TwoTermTUVLIST(:)
     integer :: iTUVQplus1,nLength
+
     allocate(CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
     CREATED  = .FALSE.
     CREATED(0,0,0) = .TRUE.
@@ -553,8 +763,8 @@ CONTAINS
        !           print*,'!JTMP = ',JTMP
        WRITE(LUFILE,'(A,I2)')   ' ! Building for Angular momentum Jp =',JTMP
        IF(JTMP.EQ.0)THEN
-          WRITE(LUFILE,'(A,I3)')'     DO iTUVQ=1,',nTUVQ
-          WRITE(LUFILE,'(A)')   '      Tmp0(iTUVQ,1) = Aux(iTUVQ,IP)'
+          WRITE(LUFILE,'(A,I3)')'     DO iTUVQ=1,',nTUVQ          
+          WRITE(LUFILE,'(A,A,A)')   '      Tmp0(iTUVQ,1) = Aux(iTUVQ,',PrimLabelAux(1:iPrimLabelAux),')'
           WRITE(LUFILE,'(A)')   '     ENDDO'
           CYCLE
        ELSE
@@ -571,7 +781,7 @@ CONTAINS
                 CALL DETERMINE_CARTDIR(CARTDIR,iTUVP,iTUVPminus1,iTUVPminus2,Tpminus1,Tp,Up,Vp,CREATED,JMAX,TUVINDEX)
                 WRITE(LUFILE,'(A,I3)')'     do iTUVQ = 1,',nTUVQ
                 !Theta(i,0,k,0) = -(b*X_{ab}+dX_{cd})/q Theta(i,0,k-1,0) + (k-1)/(2q)*Theta(i,0,k-2,0)
-                CALL LOOPRECURRENCE1(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,LUFILE)
+                CALL LOOPRECURRENCE1(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,LUFILE,PrimLabelAux,iPrimLabelAux)
                 WRITE(LUFILE,'(A,I3)')'     enddo'
                 !                   CREATED(Tq,Uq,Vq) = .TRUE.
              ENDDO
@@ -585,7 +795,7 @@ CONTAINS
                 IF(nTUVTMPQ.GE.nTUVQ+1)THEN
                    WRITE(LUFILE,'(A,I3,A,I3)')'     do iTUVQ = ',nTUVQ+1,',',nTUVTMPQ !place in tmp array 
                    !Theta(i,0,k,0) = -(b*X_{ab}+dX_{cd})/q Theta(i,0,k-1,0) + (k-1)/(2q)*Theta(i,0,k-2,0)
-                   CALL LOOPRECURRENCE2(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,JTMP,LUFILE)
+                   CALL LOOPRECURRENCE2(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,JTMP,LUFILE,PrimLabelAux,iPrimLabelAux)
                    WRITE(LUFILE,'(A,I3,A,I3)')'     enddo'
                 ENDIF
                 
@@ -603,7 +813,7 @@ CONTAINS
                 iTUVQminus1 = 1
                 ituvQminus1LEnTUVQ = .TRUE. 
                 CALL WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,1,nTUVQ2,&
-                     & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.TRUE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL)
+                     & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.TRUE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
              ENDDO
           ENDDO
 
@@ -618,19 +828,19 @@ CONTAINS
                       iTUVQminus1 = 1
                       ituvQminus1LEnTUVQ = .TRUE. !dummy
                       CALL WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,nTUVQ2+1,nTUVTMPQ2,&
-                           & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL)
+                           & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                    ELSE
                       IF(nTUVTMPQ2.LE.nTUVQ)THEN
                          ituvqminus1LEnTUVQ = .TRUE.
                          CALL WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,nTUVQ2+1,nTUVTMPQ2,&
-                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL)
+                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                       ELSE
                          ituvqminus1LEnTUVQ = .TRUE.
                          CALL WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,nTUVQ2+1,nTUVQ,&
-                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL)
+                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                          ituvqminus1LEnTUVQ = .FALSE.
                          CALL WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,nTUVQ+1,nTUVTMPQ2,&
-                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvqminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL)
+                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvqminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                       ENDIF
                    ENDIF
                 ENDIF                
@@ -648,7 +858,7 @@ CONTAINS
                 
                 IF(iTUVPminus1.EQ.1)THEN
                    ituvQplus1LEnTUVQ = .TRUE. !dummy argument 
-                   CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,1,ituvQplus1LEnTUVQ,nTUVQ,nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL)
+                   CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,1,ituvQplus1LEnTUVQ,nTUVQ,nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                 ELSE
                    allocate(ituvqplus1LEnTUVQarray(nTUVQ))
                    DO iTUVQ = 1, nTUVQ
@@ -664,22 +874,22 @@ CONTAINS
                       !all true
                       ituvqplus1LEnTUVQ = .TRUE.
                       CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,1,ituvqplus1LEnTUVQ,nTUVQ,&
-                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL)
+                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                    ELSEIF(COUNT(ituvqplus1LEnTUVQarray).EQ.0)THEN
                       !all false
                       ituvqplus1LEnTUVQ = .FALSE.
                       CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,1,ituvqplus1LEnTUVQ,nTUVQ,&
-                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL)
+                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                    ELSE                      
                       IF(ALL(ituvqplus1LEnTUVQarray(1:COUNT(ituvqplus1LEnTUVQarray))))THEN
                          !all T are sequential in the beginning
                          ituvqplus1LEnTUVQ = .TRUE.
                          CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,1,ituvqplus1LEnTUVQ,COUNT(ituvqplus1LEnTUVQarray),&
-                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL)
+                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                          !all F are sequential at the end
                          ituvqplus1LEnTUVQ = .FALSE.
                          CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,COUNT(ituvqplus1LEnTUVQarray)+1,ituvqplus1LEnTUVQ,nTUVQ,&
-                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL)
+                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                       ELSE
                          print*,'ituvqplus1LEnTUVQarray',ituvqplus1LEnTUVQarray
                          stop 'ERROR'
@@ -692,7 +902,7 @@ CONTAINS
                    IF(iTUVPminus1.EQ.1)THEN
                       ituvQplus1LEnTUVQ = .TRUE. !dummy argument 
                       CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,nTUVQ+1,ituvqplus1LEnTUVQ,nTUVTMPQ,&
-                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL)
+                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                    ELSE
                       !Theta(i,0,k,0) += - p/q*Theta(i+1,0,k-1,0) 
                       allocate(ituvqplus1LEnTUVQarray(nTUVQ+1:nTUVTMPQ))
@@ -709,22 +919,22 @@ CONTAINS
                          !all true
                          ituvqplus1LEnTUVQ = .TRUE.
                          CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,nTUVQ+1,ituvqplus1LEnTUVQ,nTUVTMPQ,&
-                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL)
+                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                       ELSEIF(COUNT(ituvqplus1LEnTUVQarray).EQ.0)THEN
                          !all false
                          ituvqplus1LEnTUVQ = .FALSE.
                          CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,nTUVQ+1,ituvqplus1LEnTUVQ,nTUVTMPQ,&
-                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL)
+                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                       ELSE
                          IF(ALL(ituvqplus1LEnTUVQarray(nTUVQ+1:nTUVQ+COUNT(ituvqplus1LEnTUVQarray))))THEN
                             !all T are sequential in the beginning
                             ituvqplus1LEnTUVQ = .TRUE.
                             CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,nTUVQ+1,ituvqplus1LEnTUVQ,nTUVQ+COUNT(ituvqplus1LEnTUVQarray),&
-                                 & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL)
+                                 & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                             !all F are sequential at the end
                             ituvqplus1LEnTUVQ = .FALSE.
                             CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,nTUVQ+COUNT(ituvqplus1LEnTUVQarray)+1,ituvqplus1LEnTUVQ,nTUVTMPQ,&
-                                 & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL)
+                                 & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
                          ELSE
                             print*,'ituvpplus1LEnTUVParray',ituvqplus1LEnTUVQarray
                             stop 'ERROR2'
@@ -812,12 +1022,15 @@ CONTAINS
     ENDIF
   END subroutine DETERMINE_CARTDIR
 
-  SUBROUTINE LOOPRECURRENCE1(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,LUPRI)
+  SUBROUTINE LOOPRECURRENCE1(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,&
+       & LUPRI,PrimLabelAux,iPrimLabelAux)
     implicit none
     integer :: iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,lupri
     character(len=132) :: STRING 
     integer :: iString
     character(len=4) :: DIRECTIONSTRING
+    character(len=20),intent(in) :: PrimLabelAux
+    integer,intent(in) :: iPrimLabelAux
     STRING(1:8) = '        '
     iSTRING = 9
     IF(CARTDIR.EQ.1)THEN
@@ -834,7 +1047,9 @@ CONTAINS
     call AddToString(DIRECTIONSTRING)
     call AddToString('*')
     IF(iTUVPminus1.EQ.1)THEN
-       call AddToString('Aux(iTUVQ,IP)')
+       call AddToString('Aux(iTUVQ,')
+       call AddToString(PrimLabelAux(1:iPrimLabelAux))
+       call AddToString(')')
     ELSE
        call AddToString('Tmp0(iTUVQ,')
        call AddToString(iTUVPminus1)
@@ -843,7 +1058,9 @@ CONTAINS
     !possibly add term 3   
     IF(Tpminus1.EQ.1.AND.iTUVPminus2.GT.0)THEN
        IF(iTUVPminus2.EQ.1)THEN
-          call AddToString('+ inv2expP*Aux(iTUVQ,IP)')
+          call AddToString('+ inv2expP*Aux(iTUVQ,')
+          call AddToString(PrimLabelAux(1:iPrimLabelAux))
+          call AddToString(')')
        ELSE
           call AddToString('+ inv2expP*Tmp0(iTUVQ,')
           call AddToString(iTUVPminus2)
@@ -853,7 +1070,9 @@ CONTAINS
        IF(iTUVPminus2.EQ.1)THEN
           call AddToString('+')
           call AddToString(Tpminus1)
-          call AddToString('*inv2expP*Aux(iTUVQ,IP)')
+          call AddToString('*inv2expP*Aux(iTUVQ,')
+          call AddToString(PrimLabelAux(1:iPrimLabelAux))
+          call AddToString(')')
        ELSE
           call AddToString('+')
           call AddToString(Tpminus1)
@@ -865,12 +1084,15 @@ CONTAINS
     call writeString(LUPRI)
   END SUBROUTINE LOOPRECURRENCE1
   
-  SUBROUTINE LOOPRECURRENCE2(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,JTMP,LUPRI)
+  SUBROUTINE LOOPRECURRENCE2(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,JTMP,&
+       & LUPRI,PrimLabelAux,iPrimLabelAux)
     implicit none
     integer :: iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,JTMP,LUPRI
     character(len=132) :: STRING 
     integer :: iString
     character(len=4) :: DIRECTIONSTRING
+    character(len=20),intent(in) :: PrimLabelAux
+    integer,intent(in) :: iPrimLabelAux
     STRING(1:8) = '        '
     iSTRING = 9
     IF(CARTDIR.EQ.1)THEN
@@ -890,7 +1112,9 @@ CONTAINS
     call AddToString(DIRECTIONSTRING)
     call AddToString('*')
     IF(iTUVPminus1.EQ.1)THEN
-       call AddToString('Aux(iTUVQ,IP)')
+       call AddToString('Aux(iTUVQ,')
+       call AddToString(PrimLabelAux(1:iPrimLabelAux))
+       call AddToString(')')
     ELSE
        call AddToString('Tmp')
        call AddToString(JTMP-1)
@@ -901,7 +1125,9 @@ CONTAINS
     !possibly add term 3   
     IF(Tpminus1.EQ.1.AND.iTUVPminus2.GT.0)THEN
        IF(iTUVPminus2.EQ.1)THEN
-          call AddToString('+ inv2expP*Aux(iTUVQ,IP)') 
+          call AddToString('+ inv2expP*Aux(iTUVQ,')
+          call AddToString(PrimLabelAux(1:iPrimLabelAux))
+          call AddToString(')') 
        ELSE
           call AddToString('+ inv2expP*Tmp') 
           call AddToString(JTMP-2) 
@@ -913,7 +1139,9 @@ CONTAINS
        IF(iTUVPminus2.EQ.1)THEN
           call AddToString('+') 
           call AddToString(Tpminus1) 
-          call AddToString('*inv2expP*Aux(iTUVQ,IP)') 
+          call AddToString('*inv2expP*Aux(iTUVQ,') 
+          call AddToString(PrimLabelAux(1:iPrimLabelAux))
+          call AddToString(')') 
        ELSE
           call AddToString('+') 
           call AddToString(Tpminus1) 
@@ -931,7 +1159,8 @@ CONTAINS
 
   subroutine WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,iTUVstart,nTUVQ_tmp,&
        & nTUVQ,TUVINDEX,JTMP,JMAX,LUPRI,iTUVQminus1,iTUVQLEnTUVQ,&
-       & ituvqminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL)
+       & ituvqminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,&
+       & PrimLabelAux,iPrimLabelAux)
     implicit none
     !A to C
     !Theta(i,0,k,0) = i/(2p)*Theta(i-1,0,k-1,0) 
@@ -939,6 +1168,8 @@ CONTAINS
     integer,intent(in) :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),LUPRI,iTUVstart
     integer,intent(in) :: IfacX(:,:),TUVindexX(:,:)
     logical,intent(in) :: iTUVQLEnTUVQ,ituvqminus1LEnTUVQ,LOOPUNROLL
+    character(len=20),intent(in) :: PrimLabelAux
+    integer,intent(in) :: iPrimLabelAux
     !
     integer :: iTUVQ,iTUVP,iTUVPplus1,I,iTUVPminus1
     character(len=132) :: STRING 
@@ -1042,7 +1273,9 @@ CONTAINS
           ENDIF
           call AddToString(',')
           IF(iTUVPminus1.EQ.1)THEN
-             call AddToString('IP) ')
+             call AddToString(PrimLabelAux(1:iPrimLabelAux))
+             call AddToString(') ') 
+!             call AddToString('IP) ')
           ELSE
              call AddToString(iTUVPminus1)
              call AddToString(') ')
@@ -1062,13 +1295,15 @@ CONTAINS
   END subroutine WRITERECURRENCE5
 
 subroutine WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,iTUVstart,ituvqplus1LEnTUVQ,nTUVQ_tmp,&
-     & nTUVQ,TUVINDEX,JTMP,JMAX,LUPRI,TUVindexX,LOOPUNROLL)
+     & nTUVQ,TUVINDEX,JTMP,JMAX,LUPRI,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux)
   implicit none
   !A to C
   !Theta(i,0,k,0) = i/(2q)*Theta(i-1,0,k-1,0) - p/q*Theta(i+1,0,k-1,0) 
   integer,intent(in) :: CARTDIR,Tp,Up,Vp,nTUVQ,JTMP,JMAX,iTUVstart,nTUVQ_tmp
   integer,intent(in) :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),LUPRI,TUVindexX(:,:)
   logical,intent(in) :: ituvqplus1LEnTUVQ,LOOPUNROLL
+  character(len=20),intent(in) :: PrimLabelAux
+  integer,intent(in) :: iPrimLabelAux
   !
   integer :: iTUVQ,iTUVP,iTUVQplus1,iTUVQminus1,I,iTUVPminus1
   character(len=132) :: STRING 
@@ -1155,7 +1390,10 @@ subroutine WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,iTUVstart,ituvqplus1LEnTUVQ,nTUVQ_t
            ELSEIF(ituvQ.EQ.iTUVstart)THEN
               call AddToString('iTUVplus1')
            ENDIF
-           call AddToString(',IP)')
+!           call AddToString(',IP)')
+           call AddToString(',') 
+           call AddToString(PrimLabelAux(1:iPrimLabelAux))
+           call AddToString(')') 
         ELSE
            IF(ituvqplus1LEnTUVQ)THEN
               call AddToString('Tmp0')

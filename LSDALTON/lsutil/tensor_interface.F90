@@ -78,7 +78,7 @@ contains
     arr_out%itype = arr_in%itype
     arr_out%nelms = arr_in%nelms
     arr_out%ntiles = arr_in%ntiles
-    arr_out%init_type = arr_in%init_type
+    arr_out%access_type = arr_in%access_type
     if(associated(arr_in%dims))call arr_set_dims(arr_out,arr_in%dims,arr_out%mode)
     if(associated(arr_in%ntpm))call arr_set_ntpm(arr_out,arr_in%ntpm,arr_out%mode)
     if(associated(arr_in%tdim))call arr_set_tdims(arr_out,arr_in%tdim,arr_out%mode)
@@ -313,7 +313,7 @@ contains
         enddo
         k=right%dims(1) 
         call dgemm('n','n',m,n,k,p1,left%elm1,m,right%elm1,k,p2,res%elm1,m)
-        if(res%init_type==MASTER_INIT)call array_sync_replicated(res)
+        if(res%access_type==MASTER_ACCESS)call array_sync_replicated(res)
       case(TILED)
               call lsquit("ERROR(array_contract_outer_indices_rl):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
@@ -385,7 +385,7 @@ contains
         enddo
         k=right%dims(1) 
         call dgemm('t','n',m,n,k,p1,left%elm1,k,right%elm1,k,p2,res%elm1,m)
-        if(res%init_type==MASTER_INIT)call array_sync_replicated(res)
+        if(res%access_type==MASTER_ACCESS)call array_sync_replicated(res)
       case(TILED)
               call lsquit("ERROR(array_contract_outer_indices_ll):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
@@ -465,7 +465,7 @@ contains
         print *,right%dims
         print *,res%dims
         call dgemm('t','t',m,n,k,p1,left%elm1,k,right%elm1,n,p2,res%elm1,m)
-        if(res%init_type==MASTER_INIT)call array_sync_replicated(res)
+        if(res%access_type==MASTER_ACCESS)call array_sync_replicated(res)
       case(TILED)
               call lsquit("ERROR(array_contract_outer_indices_lr):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
@@ -536,7 +536,7 @@ contains
         enddo
         k=left%dims(left%mode) 
         call dgemm('n','t',m,n,k,p1,left%elm1,m,right%elm1,n,p2,res%elm1,m)
-        if(res%init_type==MASTER_INIT)call array_sync_replicated(res)
+        if(res%access_type==MASTER_ACCESS)call array_sync_replicated(res)
       case(TILED)
               call lsquit("ERROR(array_contract_outer_indices_rr):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
@@ -567,7 +567,7 @@ contains
 
     !get the destination of the contraction
     dest = -1
-    if(arr1%init_type==MASTER_INIT)dest=0
+    if(arr1%access_type==MASTER_ACCESS)dest=0
     if(present(opt_par))dest=opt_par
 
     select case(arr1%itype)
@@ -610,9 +610,14 @@ contains
     logical, intent(in),optional     :: local
     character(4),intent(in),optional :: atype
     character(4)  :: at
+    integer       :: it
     logical :: loc
 
+    ! Sanity check
     !if(arr%initialized)call lsquit("ERROR(array_minit):array already initialized",-1) 
+    do i=1, nmodes
+      if (dims(i) == 0) call lsquit("ERROR(array_minit): 0 dimendion not allowed",-1)
+    end do
 
     !set defaults
     loc = .true.
@@ -626,10 +631,10 @@ contains
     if(loc) then
       select case(at)
       case('LDAR','REAR','REPD','TDAR','TDPD')
-        arr=array_init_standard(dims,nmodes,pdm=NO_PDM)
+        arr=array_init_standard(dims,nmodes,pdm=NO_PDM_ACCESS)
         arr%atype='LDAR'
       !case('TDAR','TDPD')
-      !  arr=array_init_tiled(dims,nmodes,pdm=NO_PDM)
+      !  arr=array_init_tiled(dims,nmodes,pdm=NO_PDM_ACCESS)
       !  arr%atype='LTAR'
       case default
         call lsquit("ERROR(array_minit): atype not known",-1)
@@ -638,37 +643,45 @@ contains
       select case(at)
       case('LDAR')
         !INITIALIZE a Local Dense ARray
-        arr              = array_init_standard(dims,nmodes,pdm=MASTER_INIT)
+        arr              = array_init_standard(dims,nmodes,pdm=MASTER_ACCESS)
         arr%atype        = 'LDAR'
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
+        it               = TILED_DIST
         if(present(tdims))then
-          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT,tdims=tdims)
+          arr            = array_init_tiled(dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims)
         else
-          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT)
+          arr            = array_init_tiled(dims,nmodes,at,it,pdm=MASTER_ACCESS)
         endif
         CreatedPDMArrays = CreatedPDMArrays+1
-        arr%itype        = TILED_DIST
-        arr%atype        = 'TDAR'
+      case('RTAR')
+        !INITIALIZE a Replicated Tiled ARray (all nodes have all tiles)
+        it               = TILED
+        if(present(tdims))then
+          arr            = array_init_tiled(dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims)
+        else
+          arr            = array_init_tiled(dims,nmodes,at,it,pdm=MASTER_ACCESS)
+        endif
+        CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
         !INITIALIZE a REplicated ARray
-        arr              = array_init_replicated(dims,nmodes,pdm=MASTER_INIT)
+        arr              = array_init_replicated(dims,nmodes,pdm=MASTER_ACCESS)
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = REPLICATED
         arr%atype        = 'REAR'
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
+        it               = TILED_DIST ! for array_init_tiled routine
         if(present(tdims))then
-          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT,tdims=tdims,ps_d=.true.)
+          arr            = array_init_tiled(dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims,ps_d=.true.)
         else
-          arr            = array_init_tiled(dims,nmodes,pdm=MASTER_INIT,ps_d=.true.)
+          arr            = array_init_tiled(dims,nmodes,at,it,pdm=MASTER_ACCESS,ps_d=.true.)
         endif
+        arr%itype        = DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
-        arr%itype        = DENSE
-        arr%atype        = 'TDPD'
       case('REPD')
         !INITIALIZE a REplicated Pseudo Dense array
-        arr              = array_init_replicated(dims,nmodes,pdm=MASTER_INIT)
+        arr              = array_init_replicated(dims,nmodes,pdm=MASTER_ACCESS)
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = DENSE
         arr%atype        = 'REPD'
@@ -692,9 +705,14 @@ contains
     logical, intent(in),optional     :: local
     character(4),intent(in),optional :: atype
     character(4)  :: at
+    integer       :: it
     logical :: loc
  
+    ! Sanity check
     if(arr%initialized)call lsquit("ERROR(array_ainit):array already initialized",-1) 
+    do i=1, nmodes
+      if (dims(i) == 0) call lsquit("ERROR(array_minit): 0 dimendion not allowed",-1)
+    end do
  
     !set defaults
     loc = .true.
@@ -708,10 +726,10 @@ contains
       select case(at)
       case('LDAR','REAR','REPD','TDAR','TDPD')
         !if local recast to a local dense array
-        arr=array_init_standard(dims,nmodes,pdm=NO_PDM)
+        arr=array_init_standard(dims,nmodes,pdm=NO_PDM_ACCESS)
         arr%atype='LDAR'
       !case('TDAR','TDPD')
-      !  arr=array_init_tiled(dims,nmodes,pdm=NO_PDM)
+      !  arr=array_init_tiled(dims,nmodes,pdm=NO_PDM_ACCESS)
       !  arr%atype='LTAR'
       case default
         call lsquit("ERROR(array_minit): atype not known",-1)
@@ -720,37 +738,36 @@ contains
       select case(at)
       case('LDAR')
         !INITIALIZE a Local Dense ARray
-        arr              = array_init_standard(dims,nmodes,pdm=ALL_INIT)
+        arr              = array_init_standard(dims,nmodes,pdm=ALL_ACCESS)
         arr%atype        = 'LDAR'
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
+        it               = TILED_DIST
         if(present(tdims))then
-          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT,tdims=tdims)
+          arr            = array_init_tiled(dims,nmodes,at,it,pdm=ALL_ACCESS,tdims=tdims)
         else
-          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT)
+          arr            = array_init_tiled(dims,nmodes,at,it,pdm=ALL_ACCESS)
         endif
         CreatedPDMArrays = CreatedPDMArrays+1
-        arr%itype        = TILED_DIST
-        arr%atype        = 'TDAR'
       case('REAR')
         !INITIALIZE a REplicated ARray
-        arr              = array_init_replicated(dims,nmodes,pdm=ALL_INIT)
+        arr              = array_init_replicated(dims,nmodes,pdm=ALL_ACCESS)
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = REPLICATED
         arr%atype        = 'REAR'
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
+        it               = TILED_DIST ! for array_init_tiled routine
         if(present(tdims))then
-          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT,tdims=tdims,ps_d=.true.)
+          arr            = array_init_tiled(dims,nmodes,at,it,pdm=ALL_ACCESS,tdims=tdims,ps_d=.true.)
         else
-          arr            = array_init_tiled(dims,nmodes,pdm=ALL_INIT,ps_d=.true.)
+          arr            = array_init_tiled(dims,nmodes,at,it,pdm=ALL_ACCESS,ps_d=.true.)
         endif
+        arr%itype        = DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
-        arr%itype        = DENSE
-        arr%atype        = 'TDPD'
       case('REPD')
         !INITIALIZE a REplicated Pseudo Dense array
-        arr              = array_init_replicated(dims,nmodes,pdm=ALL_INIT)
+        arr              = array_init_replicated(dims,nmodes,pdm=ALL_ACCESS)
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = DENSE
         arr%atype        = 'REPD'
@@ -759,7 +776,7 @@ contains
       end select
     endif
 #else
-    arr=array_init_standard(dims,nmodes,NO_PDM)
+    arr=array_init_standard(dims,nmodes,NO_PDM_ACCESS)
     arr%atype='LDAR'
 #endif
     arr%initialized=.true.
@@ -779,20 +796,20 @@ contains
     integer, optional :: arr_type
     !> if tiled then the size of the tile in each mode can be specified explicitly 
     integer, optional :: tdims(nmodes)
-    !> specifies the type of access to the array (NO_PDM,MASTER_INIT,ALL_INIT)
+    !> specifies the type of access to the array (NO_PDM_ACCESS,MASTER_ACCESS,ALL_ACCESS)
     integer, optional :: pdm
-    integer :: sel_type,pdmtype,atype
+    integer :: sel_type,pdmtype,it
     logical :: zeros_in_tiles,wcps
     !choose which kind of array
 
     if(arr%initialized)call lsquit("ERROR(array_init):array already initialized",-1) 
 
     !DEFAULTS
-    atype   = DENSE
-    pdmtype = NO_PDM !NO PDM
+    it     = DENSE
+    pdmtype = NO_PDM_ACCESS !NO PDM
 
     !OPTIONAL SPECIFICATIONS
-    if(present(arr_type))    atype   = arr_type
+    if(present(arr_type))    it      = arr_type
     if(present(pdm))         pdmtype = pdm
 
     !CHECK INPUT
@@ -806,7 +823,7 @@ contains
     ArraysCreated = ArraysCreated+1
     
     !select corresponding routine
-    select case(atype)
+    select case(it)
       case(DENSE)
         arr=array_init_standard(dims,nmodes,pdmtype)
         arr%atype = 'LDAR'
@@ -815,17 +832,15 @@ contains
         arr%atype = 'REAR'
         CreatedPDMArrays = CreatedPDMArrays+1
       case(TILED)
-        if(present(tdims))arr=array_init_tiled(dims,nmodes,pdmtype,tdims,zeros_in_tiles)
-        if(.not.present(tdims))arr=array_init_tiled(dims,nmodes,pdmtype)
-        arr%atype = 'TIAR'
+        if(present(tdims))arr=array_init_tiled(dims,nmodes,'TIAR',it,pdmtype,tdims,zeros_in_tiles)
+        if(.not.present(tdims))arr=array_init_tiled(dims,nmodes,'TIAR',it,pdmtype)
       case(TILED_DIST)
-        if(present(tdims))arr=array_init_tiled(dims,nmodes,pdmtype,tdims,zeros_in_tiles)
-        if(.not.present(tdims))arr=array_init_tiled(dims,nmodes,pdmtype)
+        if(present(tdims))arr=array_init_tiled(dims,nmodes,'TDAR',it,pdmtype,tdims,zeros_in_tiles)
+        if(.not.present(tdims))arr=array_init_tiled(dims,nmodes,'TDAR',it,pdmtype)
         CreatedPDMArrays = CreatedPDMArrays+1
-        arr%atype = 'TDAR'
     end select
-    arr%init_type   = pdmtype
-    arr%itype       = atype
+    arr%access_type   = pdmtype
+    arr%itype       = it
     arr%initialized = .true.
   end function array_init
 
@@ -872,12 +887,12 @@ contains
 
     !SET INIT TYPE
     !default
-    p_arr%a(addr)%init_type = NO_PDM
-    !if one uses comm threads the following replace the init_type
-    if( pdm == MASTER_INIT .and. lspdm_use_comm_proc )&
-    & p_arr%a(addr)%init_type = MASTER_INIT
-    if( pdm == ALL_INIT .and. lspdm_use_comm_proc )&
-    & p_arr%a(addr)%init_type = ALL_INIT
+    p_arr%a(addr)%access_type = NO_PDM_ACCESS
+    !if one uses comm threads the following replace the access_type
+    if( pdm == MASTER_ACCESS .and. lspdm_use_comm_proc )&
+    & p_arr%a(addr)%access_type = MASTER_ACCESS
+    if( pdm == ALL_ACCESS .and. lspdm_use_comm_proc )&
+    & p_arr%a(addr)%access_type = ALL_ACCESS
 
     !SET IF ALLOCATED WITH COMM PROCS
     p_arr%a(addr)%allocd_w_c_p = lspdm_use_comm_proc
@@ -898,7 +913,7 @@ contains
 
     !if master init only master has to init the addresses addresses before
     !pdm syncronization
-    if(master .and. p_arr%a(addr)%init_type==MASTER_INIT .and. lspdm_use_comm_proc)then
+    if(master .and. p_arr%a(addr)%access_type==MASTER_ACCESS .and. lspdm_use_comm_proc)then
       call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 #ifdef VAR_MPI
       call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_PC,p_arr%a(addr),loc_addr=.true.)
@@ -907,8 +922,8 @@ contains
 
 
 
-    !if all_init all have to have the addresses allocated
-    if(p_arr%a(addr)%init_type==ALL_INIT.and. lspdm_use_comm_proc)&
+    !if ALL_ACCESS all have to have the addresses allocated
+    if(p_arr%a(addr)%access_type==ALL_ACCESS.and. lspdm_use_comm_proc)&
        &call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 
     !SET THE ADDRESSES ON ALL NODES     
@@ -1000,7 +1015,7 @@ contains
     select case(arr%atype)
     case('LDAR')
       call array_free_standard(arr)
-    case('TDAR','REAR','TDPD','REPD')
+    case('TDAR','REAR','TDPD','REPD','RTAR')
       call array_free_pdm(arr)
       DestroyedPDMArrays = DestroyedPDMArrays + 1
     case('TIAR')
@@ -1094,7 +1109,7 @@ contains
         call lsquit("ERROR(array_cp_tiled2dense):dense is already allocated,&
         & please make sure you are not doing someting stupid",DECinfo%output)
       endif
-      if(arr%init_type>0)pdm=.true.
+      if(arr%access_type>0)pdm=.true.
       if(.not.present(order))call cp_tileddata2fort(arr,arr%elm1,arr%nelms,pdm)
       if(present(order))call cp_tileddata2fort(arr,arr%elm1,arr%nelms,pdm,order)
       if(change)arr%itype=DENSE
@@ -1118,7 +1133,7 @@ contains
       call lsquit("ERROR(array_cp_dense2tiled):dense is NOT allocated,&
       & please make sure you are not doing someting stupid",DECinfo%output)
     endif
-    if(arr%init_type>0)pdm=.true.
+    if(arr%access_type>0)pdm=.true.
     if(change)arr%itype=TILED_DIST
     call array_convert_fort2arr(arr%elm1,arr,arr%nelms)
     call arr_deallocate_dense(arr)
@@ -1234,7 +1249,7 @@ contains
         call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
       case(TILED_DIST)
         !if enough memory is available the lower one should be faster      
-        if(arr%init_type==ALL_INIT)then
+        if(arr%access_type==ALL_ACCESS)then
           do i=1,arr%nlti
             call tile_from_fort(1.0E0_realk,fortarr,fullfortdims,arr%mode,&
                                &0.0E0_realk,arr%ti(i)%t,arr%ti(i)%gt,arr%tdim,o)
@@ -1250,7 +1265,7 @@ contains
   !> \brief change the init type for a fortan array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine change_init_type(arr,totype)
+  subroutine change_access_type(arr,totype)
     implicit none
     !> array to chage the init type
     type(array),intent(inout) :: arr
@@ -1258,11 +1273,11 @@ contains
     integer,intent(in) :: totype
     if(arr%itype==TILED_DIST.or.arr%itype==REPLICATED.or.&
          &totype==TILED_DIST.or.totype==REPLICATED)then
-      call change_init_type_td(arr,totype)
+      call change_access_type_td(arr,totype)
     else
-      call lsquit("ERROR(change_init_type): what you want to do is not implemented",-1)
+      call lsquit("ERROR(change_access_type): what you want to do is not implemented",-1)
     endif
-  end subroutine change_init_type
+  end subroutine change_access_type
 
   
   !> \brief put data of an arbitrary array into a basic fortan type array
@@ -1388,9 +1403,13 @@ contains
         zeroed%elm1=0.0E0_realk
         call array_sync_replicated(zeroed)
       case(TILED)
-        do i=1,zeroed%ntiles
-          zeroed%ti(i)%t=0.0E0_realk
-        enddo
+        if (zeroed%atype=='RTAR') then
+          call array_zero_tiled_dist(zeroed)
+        else
+          do i=1,zeroed%ntiles
+            zeroed%ti(i)%t=0.0E0_realk
+          enddo
+        end if
       case(TILED_DIST)
         call array_zero_tiled_dist(zeroed)
       case default
@@ -1763,18 +1782,20 @@ contains
     real(realk) :: normher,ref,ref2,ref3
     integer(kind=long) :: testint
     logical :: master
-    integer :: no,nv,nb,na,i,j,succ
-    integer(kind=ls_mpik) :: sender, recver, nnod
+    integer :: no,nv,nb,na,i,j,succ,to_get_from,ti,midx(4)
+    integer(kind=ls_mpik) :: sender, recver, nnod, rnk, me
     character(len=7) :: teststatus
     character(ARR_MSG_LEN) :: msg
     master = .true.
     nnod   = 1_ls_mpik
+    me     = 0
 #ifdef VAR_MPI
-    if(infpar%lg_mynum /= 0) then
+    me = infpar%lg_mynum
+    if(me /= 0) then
       master =.false.
     endif
     nnod = infpar%lg_nodtot
-    if(nnod < 5) call lsquit("ERROR(test_array_struct): This needs to be run with at least 5 processes",-1)
+    if(nnod < 3) print*,"WARNING(test_array_struct): not enough MPI processes to test all features"
 #endif
     nb =  21
     nv =  18
@@ -1802,73 +1823,101 @@ contains
       write (DECinfo%output,*) "TESTING SIMPLE ARRAY FUNCTIONS - MASTER DIRECTED"
       write (DECinfo%output,*) ""
       write (DECinfo%output,*)"ALLOC-DEALLOC TESTS"
+      print *,"alloc dealloc tests"
       teststatus="SUCCESS"
-      test=array_init([nv,na,nv,nb],4,TILED_DIST,MASTER_INIT,[nv,no-1,1,2])
-      test2=array_init([na,nb,nv,no],4,TILED_DIST,MASTER_INIT,[nv,no-1,1,2])
+      test=array_init([nv,na,nv,nb],4,TILED_DIST,MASTER_ACCESS,[nv,no-1,1,2])
+      test2=array_init([na,nb,nv,no],4,TILED_DIST,MASTER_ACCESS,[nv,no-1,1,2])
       call array_free(test2)
-      test2=array_init([no,no+1,no-1,no+1],4,TILED_DIST,MASTER_INIT,[no,no-1,nv,nb])
+      test2=array_init([no,no+1,no-1,no+1],4,TILED_DIST,MASTER_ACCESS,[no,no-1,nv,nb])
       call array_free(test)
       call array_free(test2)
       call array_print_mem_info(DECinfo%output,.true.,.false.,succ)
       if(succ/=0)teststatus=" FAILED"
-      test2=array_init([nb,no,nv,no+1],4,TILED_DIST,MASTER_INIT,[nb,2,3,4])
+      test2=array_init([nb,no,nv,no+1],4,TILED_DIST,MASTER_ACCESS,[nb,2,3,4])
       write (DECinfo%output,'(" ALLOC-DEALLOC TESTS: ",A7)')teststatus  
+      print *,"DIFFERENT ALLOCATION AND DEALLOCATION STEPS: ",teststatus
 
       !ALLOCATING A FULL MATRIX AND PUT IT TO DISTRIBUTED MEMORY
       !check for errors via norm
       write(DECinfo%output,*)""
       write(DECinfo%output,*)""
       teststatus="SUCCESS"
-      test=array_init([nb,na,nv,no],4,TILED_DIST,MASTER_INIT,[nb,na-1,3,no/2])
+      test=array_init([nb,na,nv,no],4,TILED_DIST,MASTER_ACCESS,[nb,na-1,3,no/2])
       write (DECinfo%output,*) "CONVERT PREVIOUS ARRAY TO PDM TILED" 
       call array_convert(dummy1,test,[1,2,3,4])
       call print_norm(test,normher)
       write(DECinfo%output,'("NORM OF PDM ARRAY  : ",f20.15)')normher
       if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
       write (DECinfo%output,'("CNVRT: NORM, TEST STATUS:",f19.10," : ",A7)')normher,teststatus
+      print *,"ALLOCATING A FULL MATRIX AND PUT IT TO DISTRIBUTED MEMORY: ",normher,teststatus
+
+
       !GET A TILE OF A PDM ARRAY
       !calculate how many elements are in the desired tile, and allocate the
       !respective amount of memory in a fortran array
       write(DECinfo%output,*)""
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_GET"
-      testint=2
+      do ti = 1, test%ntiles
+        to_get_from = get_residence_of_tile(ti,test)
+        if(to_get_from /= me .or. nnod==1)then
+         testint = ti
+         exit
+        endif 
+      enddo
       call get_tile_dim(j,test,testint)
+      print *,"trying to get",testint," with size", j
       call mem_alloc(tileget,j)
       call random_number(tileget)
       !initiatilize with some weird number here 10 and after get compare the
       !norms of the tile and the local fortran array
       teststatus="SUCCESS"
-      call array_print_tile_norm(test,2,ref)
+      if(nnod>1) call array_print_tile_norm(test,ti,ref)
       write(DECinfo%output,'("NORM OF TILE IN ARRAY   : ",f20.15)')ref
-      call print_norm(tileget,int(j,kind=8),normher)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT BEFORE GET : ",f20.15)')normher
-      call array_get_tile(test,2,tileget,j)
-      call print_norm(tileget,int(j,kind=8),normher)
+      if(nnod>1) call array_get_tile(test,ti,tileget,j)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT AFTER GET  : ",f20.15)')normher
-      if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      if(nnod>1)then
+        if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      else
+        print *,"GET A TILE OF A PDM ARRAY has been skipped"
+      endif
       write (DECinfo%output,'("GET: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
       call mem_dealloc(tileget)
+      print *,"GET A TILE OF A PDM ARRAY: ",normher,teststatus
 
       write(DECinfo%output,*)""
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_PUT"
       teststatus="SUCCESS"
-      testint=2
+      do ti = test%ntiles,1, -1
+        to_get_from = get_residence_of_tile(ti,test)
+        if(to_get_from /= me .or. nnod==1)then
+         testint = ti
+         exit
+        endif 
+      enddo
       call get_tile_dim(j,test,testint)
       call mem_alloc(tileget,j)
       call random_number(tileget)
       !initiatilize with some weird number here 10 and after get compare the
       !norms of the tile and the local fortran array
-      call array_print_tile_norm(test,2,normher)
+      if(nnod>1) call array_print_tile_norm(test,ti,normher)
       write(DECinfo%output,'("NORM OF TILE BEFORE PUT : ",f20.15)')normher
-      call print_norm(tileget,int(j,kind=8),ref)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),ref)
       write(DECinfo%output,'("NORM OF FORT TO PUT     : ",f20.15)')ref
-      call array_put_tile(test,2,tileget,j)
-      call array_print_tile_norm(test,2,normher)
+      if(nnod>1) call array_put_tile(test,ti,tileget,j)
+      if(nnod>1) call array_print_tile_norm(test,ti,normher)
       write(DECinfo%output,'("NORM OF TILE AFTER PUT  : ",f20.15)')normher
-      if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      if(nnod>1)then 
+        if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      else
+        print *,"PUT A TILE OF A PDM ARRAY has been skipped"
+      endif
       write (DECinfo%output,'("PUT: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
+      print *,"TESTING MPI_PUT",normher,teststatus
      
 
       !GET A TILE FROM YOURSELF AS CHECK
@@ -1888,25 +1937,32 @@ contains
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_ACCUMULATE"
       teststatus="SUCCESS"
-      do i=1,j
-        tileget(i)=tileget(i)+3.0E0_realk
-      enddo
-      call print_norm(tileget,int(j,kind=8),ref)
+      if(nnod>1)then
+        do i=1,j
+          tileget(i)=tileget(i)+3.0E0_realk
+        enddo
+        call print_norm(tileget,int(j,kind=8),ref)
+      endif
       write(DECinfo%output,'("NORM LOCAL ACCUMULATION : ",f20.15)')ref
       !initialize the local tile with 3 and accumulate it --> compare norm
       tileget=3.0E0_realk
-      call print_norm(tileget,int(j,kind=8),normher)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT TO ADD:      ",f20.15)')normher
-      call array_accumulate_tile(test,2,tileget,j)
-      call array_print_tile_norm(test,2,normher)
+      if(nnod>1) call array_accumulate_tile(test,ti,tileget,j)
+      if(nnod>1) call array_print_tile_norm(test,ti,normher)
       write(DECinfo%output,'("NORM REMOTE ACCUMULATION: ",f20.15)')normher
       !use the tile with three in it, print its norm put and compare norms
-      if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      if(nnod>1)then 
+        if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      else
+        print *,"ACCUMULATE A TILE OF A PDM ARRAY has been skipped"
+      endif
       write (DECinfo%output,'("ACC: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
+      print *,"TESTING MPI_ACCUMULATE: ",normher,teststatus
 
 
       call array_free(test)
-      test=array_init([nb,na,nv,no],4,TILED_DIST,MASTER_INIT,[0,0,0,0])
+      test=array_init([nb,na,nv,no],4,TILED_DIST,MASTER_ACCESS,[0,0,0,0])
       write(DECinfo%output,*)""
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING CONVERSION TO FORT"
@@ -1930,6 +1986,7 @@ contains
         endif
       enddo
       write (DECinfo%output,'("ORDER: TEST STATUS:                              ",A7)')teststatus
+      print *,"TESTING CONVERSION TO FORT: ",teststatus
 
 
 
@@ -1965,47 +2022,69 @@ contains
     !initialize a matrix
     teststatus="SUCCESS"
     if(master) write (DECinfo%output,*)"ALLOC-DEALLOC TESTS"
-    test=array_init([nb,nb+2,nb+3,nb+4],4,TILED_DIST,ALL_INIT,[nb,nb+2,40,2])
-    test2=array_init([no+3,no+2,no+1,no],4,TILED_DIST,ALL_INIT,[no,40,40,10])
+    test=array_init([nb,nb+2,nb+3,nb+4],4,TILED_DIST,ALL_ACCESS,[nb,nb+2,40,2])
+    test2=array_init([no+3,no+2,no+1,no],4,TILED_DIST,ALL_ACCESS,[no,40,40,10])
     call array_free(test)
     call array_free(test2)
-    test2=array_init([nb,na,nv,no],4,TILED_DIST,ALL_INIT,[nb,nv-1,1,2])
+    test2=array_init([nb,na,nv,no],4,TILED_DIST,ALL_ACCESS,[nb,nv-1,1,2])
     call array_free(test2)
     call array_print_mem_info(DECinfo%output,.true.,.true.,succ)
     if(succ/=0)teststatus=" FAILED"
-    test2=array_init([nb,no,nv,no+1],4,TILED_DIST,ALL_INIT,[nb,2,3,4])
+    test2=array_init([nb,no,nv,no+1],4,TILED_DIST,ALL_ACCESS,[nb,2,3,4])
     if(master) write (DECinfo%output,'(" ALLOC-DEALLOC TESTS: ",A7)')teststatus  
     if(master) write (DECinfo%output,*)"DONE -- NOW COMMUNICATION"
     if(master) write(DECinfo%output,*)""
     if(master) write(DECinfo%output,*)""
+    print *,"ALL-INIT ALLOC-DEALLOC TESTS",teststatus
     !call lsmpi_barrier(infpar%lg_comm)
 
-    !IF MY RANK IS THREE, PUT A MATRIX CONTAINING 10 in TILE 2 (ON THE
-    !RESPECTIVE THREAD) 
+    !IF MY RANK IS NNOD-1, PUT A MATRIX CONTAINING 10 the first tile not on the
+    !current rank
     teststatus="SUCCESS"
-    if(infpar%lg_mynum==3.or.master)then
-      recver=3
+    rnk = nnod - 1
+    do ti = test%ntiles,1, -1
+      to_get_from = get_residence_of_tile(ti,test)
+      if(to_get_from /= nnod-1 .and. to_get_from/=nnod-2)then
+       testint = ti
+       exit
+      endif 
+    enddo
+
+
+    if((infpar%lg_mynum==rnk.or.master).and. nnod > 2)then
+
+      recver=rnk
+
       if(.not.master)then
-        call get_tile_dim(j,test2,testint)
+        call get_tile_dim(j,test2,ti)
         call mem_alloc(tileget,j)
         tileget = 1.0E1_realk
-        call array_put_tile(test2,2,tileget,j)
+        call array_put_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         call mem_dealloc(tileget)
+
       else
         call ls_mpisendrecv(ref,infpar%lg_comm,recver,infpar%master)
         write(DECinfo%output,'("NORM PARALLEL 3LPN: ",f20.15)')ref
       endif
+
+    else
+      if(master) print*,"WARNING: skipping test NORM PARALLEL 3LPN, not enough nodes"
     endif
-    !BEFORE 2 CAN GET THE 
+
+
+    !BEFORE rank NNOD - 2  CAN GET THE TILE
+    rnk = nnod - 2
+
+    
     call lsmpi_barrier(infpar%lg_comm)
-    if(infpar%lg_mynum==2.or.master)then
-      recver=2
+    if((infpar%lg_mynum==rnk.or.master).and.nnod>2)then
+      recver=rnk
       if(.not.master)then
-        call get_tile_dim(j,test2,testint)
+        call get_tile_dim(j,test2,ti)
         call mem_alloc(tileget,j)
-        call array_get_tile(test2,2,tileget,j)
+        call array_get_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         do i=1,j
@@ -2014,7 +2093,8 @@ contains
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         tileget = 2.4E0_realk
-        call array_accumulate_tile(test2,[2,1,1,1],tileget,j)
+        call get_midx(ti,midx,test2%ntpm,test2%mode)
+        call array_accumulate_tile(test2,midx,tileget,j)
         call mem_dealloc(tileget)
       else
         teststatus="SUCCESS"
@@ -2027,16 +2107,23 @@ contains
         write(DECinfo%output,'("NORM PARALLEL 2LAC: ",f20.15)')ref
       endif
     endif
+
     !BE CAREFUL ABOUT WHETER THE INFORMATION IS ALREADY TRANSMITTED --> AT
     !CRITICAL POINTS INSERT BARRIER STATEMENTS TO SYNCHONIZE THE NODES 
     call lsmpi_barrier(infpar%lg_comm)
-    call array_print_tile_norm(test2,2,normher)
+
+    if(nnod>2)call array_print_tile_norm(test2,ti,normher)
     call array_free(test2)
     if(master)then
        teststatus="SUCCESS"
        write(DECinfo%output,'("NORM PARALLEL WORK: ",f20.15)')normher
-       if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+       if(nnod>2)then
+         if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+       else
+         print *,"AS TEST WAS SKIPPED WE DO NOT CHECK FOR THE RESULT"
+       endif
        write (DECinfo%output,'("ACC2    : NORM, TEST STATUS: ",f19.10," : ",A7)')ref,teststatus
+       print *,"ACC2    : NORM, TEST STATUS:",teststatus
     endif
     if(master) write (DECinfo%output,*)""
 
@@ -2046,8 +2133,8 @@ contains
     !reordering back into the full array, check norms and order
     teststatus="SUCCESS"
     call lsmpi_barrier(infpar%lg_comm)
-    test2=array_init([no-4,nv+3,nv/7,no],4,TILED_DIST,ALL_INIT,[no-4,nv+3,5,2])
-    test=array_init([nv/7,nv+3,no,no-4],4,TILED_DIST,ALL_INIT)
+    test2=array_init([no-4,nv+3,nv/7,no],4,TILED_DIST,ALL_ACCESS,[no-4,nv+3,5,2])
+    test=array_init([nv/7,nv+3,no,no-4],4,TILED_DIST,ALL_ACCESS)
     call memory_allocate_array_dense(test)
     call random_number(test%elm1)
     call lsmpi_allreduce(test%elm1,test%nelms,infpar%lg_comm)
@@ -2055,7 +2142,12 @@ contains
       write (msg,*)"local test norm master"
       call print_norm(test%elm1,test%nelms,msg)
     endif
-    if(infpar%lg_mynum==1)then
+    if(infpar%lg_nodtot>1)then
+      rnk = 1
+    else
+      rnk = 0
+    endif
+    if(me==rnk)then
       write (msg,*)"local test norm slave"
       call print_norm(test%elm1,test%nelms,msg)
     endif
@@ -2083,7 +2175,12 @@ contains
       write (msg,*)"local test 2 norm master"
       call print_norm(test2%elm1,test2%nelms,msg)
     endif
-    if(infpar%lg_mynum==1)then
+    if(infpar%lg_nodtot>1)then
+      rnk = 1
+    else
+      rnk = 0
+    endif
+    if(infpar%lg_mynum==rnk)then
       write (msg,*)"local test 2 norm slave"
       call print_norm(test2%elm1,test2%nelms,msg)
     endif

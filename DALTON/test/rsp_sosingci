@@ -81,7 +81,7 @@ Z2SPNORB
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo '#!/bin/bash
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -115,7 +115,7 @@ ERROR[3]="GRADIENT NOT CORRECT"
 
 # ?
 CRIT1=`$GREP "\@ Transition operator type\: * Z2SPNORB" $log | wc -l`
-CRIT2=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * 6\.00877184(D|E)\-05 \*ENERGY\(eV\)\:" $log | wc -l`
+CRIT2=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * 6\.00877[0-9]+(D|E)\-05 \*ENERGY\(eV\)\:" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[4]=2
 ERROR[4]="TRANSITION NOT CORRECT"

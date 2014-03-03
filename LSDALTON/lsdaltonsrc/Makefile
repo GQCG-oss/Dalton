@@ -15,6 +15,7 @@ F90_OBJS = \
 	lsmpiSlave.o \
 	init_lsdalton.o \
 	configuration.o \
+	LSlibState.o \
 	LSlib.o \
 	Profile.o\
 	IchorTesting.o\

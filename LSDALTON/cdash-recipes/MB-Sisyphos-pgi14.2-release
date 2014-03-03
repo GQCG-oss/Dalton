@@ -1,0 +1,23 @@
+TMP_DIR=/home/sisyphos/NightlyTesting/tmp/DaltonPGIRelease
+SCRATCH_DIR=/tmp/sisyphos/DaltonPGIRelease
+rm -rf $TMP_DIR
+rm -rf $SCRATCH_DIR
+
+PATH=/opt/pgi/linux86-64/14.2/bin:$PATH
+export LM_LICENSE_FILE=/opt/pgi/linux86-64/14.1/license.file
+
+git clone git@repo.ctcc.no:dalton.git $TMP_DIR
+cd $TMP_DIR
+export OMP_NUM_THREADS=1
+#export MATH_ROOT=
+export DALTON_TMPDIR=$SCRATCH_DIR
+export DALTON_NUM_MPI_PROCS=1
+export CTEST_PROJECT_NAME=LSDALTON
+
+./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp -D BUILDNAME="MB-Sisyphos-pgi14.2-release" build
+
+cd build
+ctest -D Nightly -L linsca
+#ctest -D Experimental -L linsca
+exit 0
+

@@ -2476,8 +2476,21 @@ C
       LOGICAL RED
       TMPNRG = 0.0D0
       RED = .FALSE.
-      CALL HEADER('Final geometry',-1)
+      CALL HEADER('Final geometry (bohr)',-1)
       CALL PRIGEO(CORD)
+
+      ! print to screen
+      CALL HEADER('Final geometry (xyz format; angstrom)',-1)
+      call print_xyz(cord, lupri)
+      write(lupri, '(//)')
+
+      ! print to file
+      io_xyz = -1
+      CALL GPOPEN(io_xyz, 'final_geometry.xyz', 'UNKNOWN', ' ',
+     &      'FORMATTED', IDUMMY, .FALSE.)
+      call print_xyz(cord, io_xyz)
+      CALL GPCLOSE(io_xyz, 'KEEP')
+
       WRITE(LUPRI,'(A)')
      & '@ Iter      Energy        Change       GradNorm  Index   '
      & // 'StepLen    TrustRad #Rej',

@@ -200,7 +200,10 @@ SUBROUTINE kspc_2_rspc_loop_k(density,Nk,kmat,ll,kvec,weight_k,volbz,nbast&
   INTEGER,intent(in)           :: nbast,k,Nk,lupri
   integer                      :: volbz
   COMPLEX(complexk),intent(in) :: kmat(nbast,nbast)
-  TYPE(lvec_list_t),intent(IN) :: ll
+!  TYPE(lvec_list_t),intent(IN) :: ll
+! YOU ARE CHANGING THE LL VARIABLE - SO YOU CANNOT HAVE IT INTENT(IN)
+! TK - PLEASE REMOVE THIS AS IN INDICATION THAT YOU ACKNOWLEDGE THIS FACT
+  TYPE(lvec_list_t),intent(INOUT) :: ll
   TYPE(matrix), intent(inout)  :: density(size(ll%lvec))
   REAL(realk),intent(in)       :: kvec(3),weight_k
   LOGICAL,INTENT(IN)           :: diis_exit
