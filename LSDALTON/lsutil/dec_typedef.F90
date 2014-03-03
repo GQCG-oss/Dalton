@@ -285,6 +285,8 @@ module dec_typedef_module
      logical :: PurifyMOs
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
+     !> Hack to only do fragment optimization
+     logical :: only_one_frag_job
      !> Has simple orbital threshold been defined manually in input (true),
      !> or should simple orbital threshold be adapted to FOT 
      !> as descripted under FOTlevel (false)?
@@ -646,6 +648,10 @@ module dec_typedef_module
      !> ********************************************************
      !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
+
+     !> Information about fragment size always set, this is the maximum distance
+     !between any two atoms in the fragment
+     real(realk) :: RmaxAE,RmaxAOS,RaveAE,RaveAOS,RsdvAE,RsdvAOS
 
      ! NOTE!!! occAOSorb and unoccAOSorb are ILL-DEFINED when fragmentadapted=.true. !!!!
 

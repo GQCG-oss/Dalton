@@ -32,7 +32,7 @@ MODULE dal_interface
    use memory_handling,only: mem_alloc, mem_dealloc
    use ks_settings, only: incremental_scheme, SaveF0andD0
    use lsdalton_fock_module, only: lsint_fock_data
-   use screen_mod, only: DECscreenITEM, free_decscreen
+   use screen_mod, only: DECscreenITEM, free_decscreen,screen_init, screen_free
    use IntegralInterfaceMOD
    use II_XC_interfaceModule
    use IIDFTINT, only: II_DFTsetFunc
@@ -3017,12 +3017,10 @@ CONTAINS
       nullify(batchindex)
       
       call determine_maxBatchOrbitalsize(lupri,ls%setting,MinAObatch,'R')
-      print*,'MinAObatch',MinAObatch
       MaxAllowedDim = MinAObatch
       call mem_alloc(orb2batch,nbast)
       call build_batchesofAOS(lupri,ls%setting,MaxAllowedDim,&
            & nbast,MaxActualDim,batchsize,batchdim,batchindex,nbatchesXY,orb2Batch,'R')
-      print*,'nbatchesXY',nbatchesXY
       call mem_alloc(batch2orb,nbatchesXY)
       do idx=1,nbatchesXY
          call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
@@ -3265,7 +3263,7 @@ CONTAINS
          call mat_print(Jdec,1,nbast,1,nbast,lupri)
          WRITE(lupri,*)'the Diff'
          call mat_print(tempm3,1,nbast,1,nbast,lupri)
-         CALL lsQUIT('DECPACKED K TEST FAILED',lupri)
+         CALL lsQUIT('DECPACKED J TEST FAILED',lupri)
       ENDIF
       call mat_free(J)
       call mat_free(Jdec)
@@ -3285,12 +3283,19 @@ CONTAINS
       real(realk),pointer :: Dfull(:,:),JdecFull(:,:)
       integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx,nthreads,idx,nbatchesXY
       integer :: X,Y,dimX,dimY,batch_iX,batch_iY,i,k,MinAObatch,MaxAllowedDim,MaxActualDim,ib,id,ix,iy
-      logical :: doscreen,fullrhs
+      logical :: doscreen,fullrhs,NOFAMILY
       TYPE(DECscreenITEM)    :: DecScreen
       integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
       type(batchtoorb), pointer :: batch2orb(:)
       character :: INTSPEC(5)
       doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
+
+      NOFAMILY = ls%setting%SCHEME%NOFAMILY
+      ls%setting%SCHEME%NOFAMILY = .TRUE.
+      call screen_free()
+      call screen_init()
+      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+      
       nullify(orb2batch)
       nullify(batchdim)
       nullify(batch2orb)
@@ -3298,12 +3303,10 @@ CONTAINS
       nullify(batchindex)
       
       call determine_maxBatchOrbitalsize(lupri,ls%setting,MinAObatch,'R')
-      print*,'MinAObatch',MinAObatch
       MaxAllowedDim = MinAObatch
       call mem_alloc(orb2batch,nbast)
       call build_batchesofAOS(lupri,ls%setting,MaxAllowedDim,&
            & nbast,MaxActualDim,batchsize,batchdim,batchindex,nbatchesXY,orb2Batch,'R')
-      print*,'nbatchesXY',nbatchesXY
       call mem_alloc(batch2orb,nbatchesXY)
       do idx=1,nbatchesXY
          call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
@@ -3341,7 +3344,7 @@ CONTAINS
       CALL II_get_Coulomb_mat(lupri,luerr,ls%setting,D,J,1)
 
       call mem_alloc(JdecFULL,nbast,nbast)
-      JdecFULL = 0E0_realk
+      JdecFULL = 0.0E0_realk
 
       call LSTIMER('START',t1,t2,LUPRI)
       BatchY: do Y = 1,nbatchesXY
@@ -3352,7 +3355,7 @@ CONTAINS
 
             nullify(integrals)
             allocate(integrals(nbast,nbast,dimX,dimY))
-            integrals = 0E0_realk
+            integrals = 0.0E0_realk
             IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
             IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%batchGab(X,Y)%p
 
@@ -3415,7 +3418,7 @@ CONTAINS
       write(lupri,*) 'QQQ OLD DI_DEBUG_DECPACK J DECPACK',mat_trab(Jdec,Jdec)
       write(lupri,*) 'QQQ OLD DIFF',ABS(mat_trab(tempm3,tempm3))
       IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-         write(lupri,*)'QQQ SUCCESFUL DECPACK K TEST'
+         write(lupri,*)'QQQ SUCCESFUL DECPACK JOLD TEST'
       ELSE
          WRITE(lupri,*)'the Jref'
          call mat_print(J,1,nbast,1,nbast,lupri)
@@ -3423,11 +3426,15 @@ CONTAINS
          call mat_print(Jdec,1,nbast,1,nbast,lupri)
          WRITE(lupri,*)'the Diff'
          call mat_print(tempm3,1,nbast,1,nbast,lupri)
-         CALL lsQUIT('DECPACKED K TEST FAILED',lupri)
+         CALL lsQUIT('DECPACKED JOLD TEST FAILED',lupri)
       ENDIF
       call mat_free(J)
       call mat_free(Jdec)
       call mat_free(tempm3)
+      ls%setting%SCHEME%NOFAMILY = NOFAMILY
+      call screen_free()
+      call screen_init()
+      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
     END SUBROUTINE DI_DECPACKEDJOLD
 
 #endif

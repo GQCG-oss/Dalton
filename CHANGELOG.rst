@@ -6,14 +6,15 @@
 COMMON
 ------
 
-- Recognize CYGWIN as a LINUX and UNIX system, for proper definition of compilation flags
-- Define M_PI in C-code if not already defined (problem seen with Cygwin)
+- Recognize CYGWIN as a LINUX and UNIX system, for proper definition of compilation flags.
+- Define M_PI in C-code if not already defined (problem seen with Cygwin).
 
 
 DALTON
 ------
 
 - Fixed a bug in printing results in CPP-QRF.
+- New CPP solver works also for non-direct calculation.
 - More efficient evaluation of numerical Hessian when C1 symmetry
   (in each geometry step start wave function optimization from a
   converged wave function from a neighboring geometry rather than from scratch each time).
@@ -21,7 +22,7 @@ DALTON
 - Fix of a bug which occasionally caused DALTON to abort a .STEX calculation
 - Print final geometry in xyz format (angstrom). File called "final_geometry.xyz" is put into the restart tarball.
 - Append PID to scratch directory to avoid multiple tests running in the same directory.
-- Improved manual for two-photon and non-adiabatic coupling
+- Improved manual for two-photon and non-adiabatic coupling.
 
 
 LSDALTON
@@ -33,7 +34,8 @@ LSDALTON
 - Fixed a bug related to improber shutdown of MPI calculation. In the case
   of wrong LSDALTON.INP for instance the calculation will issue a error 
   statement and afterward hang forever in a MPI call. 
-- Fixed a OpenMP bug in the calculation of how much memory there should be used during an exchange-correlation calculation - resulting in huge memory usage for large molecular system.   
+- Fixed a OpenMP bug in the calculation of how much memory there should be used during
+  an exchange-correlation calculation - resulting in huge memory usage for large molecular system.   
 
 
 
@@ -66,7 +68,7 @@ LSDALTON
   Casida-Salahub asymptotic correction CS00 (thanks to Raul Crespo).
 - Changed defaults for Casida-Salahub asymptotic correction CS00 (thanks to Raul Crespo).
 - Fixed errors in the MCD B terms output files (.dat files) now one file is generated
-  for each B term and each A term (thanks to Raul Crespo) .
+  for each B term and each A term (thanks to Raul Crespo).
 - Modified the input section of the manual concerning MCD B terms. Added desciption of MCDEXSTATES.
 - Fixed a bug for lsdalton geometry optimization and dynamics related to 
   screening. The initial Cauchy-Schwartz screening matrices were incorrectly

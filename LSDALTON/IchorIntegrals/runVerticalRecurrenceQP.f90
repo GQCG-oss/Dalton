@@ -16,1472 +16,1701 @@ CONTAINS
     integer :: nTUVLIST,nTUVLISTactual,I
     integer,pointer :: TwoTermTUVLIST(:)
     logical,pointer :: TwoTermsUsed(:)
-    integer :: LUMODA1,LUMODA2,LUMODA3,LUMODA4,LUMODA5
-    integer :: LUMODB1,LUMODB2,LUMODB3,LUMODB4,LUMODB5
-    integer :: LUMODC1,LUMODC2,LUMODC3,LUMODC4,LUMODC5
-    integer :: LUMODD1,LUMODD2,LUMODD3,LUMODD4,LUMODD5
-    integer :: non1Prim(16),pure1Prim(4),ia,ib,ic,id,GPUrun
-    logical :: Gen,SegQ,SegP,Seg,Seg1Prim,CPU
-    character(len=3) :: ARCSTRING
+    integer :: iseglabel,lufile,iseg,iPrim,nPrim
+    integer :: non1Prim(16),pure1Prim(4),ia,ib,ic,id,GPUrun,K,center
+    logical :: Gen,SegQ,SegP,Seg,Seg1Prim,CPU,nPrimnTUV,DoOpenMP
+    logical :: Collapse,segwtuv
+    Character(len=48) :: FileName    
+    character(len=3) :: ARCSTRING,Xdir,Ydir,Zdir
+    character(len=1) :: centerString
+    Character(len=8)  :: SegLabel
+    Character(len=20) :: PrimLabel,nPrimLabel
+
+!=====================================================================================================0
+! Vertical
+!=====================================================================================================
     DO GPUrun = 1,1!2
        CPU = .TRUE.
        IF(GPUrun.EQ.2)CPU = .FALSE.
-
-       LUMODA1=1; LUMODA2=2; LUMODA3=3; LUMODA4=4; LUMODA5=5
-       LUMODB1=6; LUMODB2=7; LUMODB3=8; LUMODB4=9; LUMODB5=10
-       LUMODC1=11; LUMODC2=12; LUMODC3=13; LUMODC4=14; LUMODC5=15
-       LUMODD1=16; LUMODD2=17; LUMODD3=18; LUMODD4=19; LUMODD5=20
-
-       non1Prim(1) = 1; non1Prim(2) = 2; non1Prim(3) = 3; non1Prim(4) = 4
-       non1Prim(5) = 6; non1Prim(6) = 7; non1Prim(7) = 8; non1Prim(8) = 9
-       non1Prim(9) = 11; non1Prim(10) = 12; non1Prim(11) = 13; non1Prim(12) = 14
-       non1Prim(13) = 16; non1Prim(14) = 17; non1Prim(15) = 18; non1Prim(16) = 19
-       pure1Prim(1) = 5; pure1Prim(2) = 10; pure1Prim(3) = 15; pure1Prim(4) = 20
-       IF(CPU)THEN
-          ARCSTRING = 'CPU'
-       ELSE
-          ARCSTRING = 'GPU'
-       ENDIF
-
-       open(unit = LUMODA1, file="runVerticalRecurrence"//ARCSTRING//"QPA.F90",status="unknown")
-       open(unit = LUMODA2, file="runVerticalRecurrence"//ARCSTRING//"QPASegQ.F90",status="unknown")
-       open(unit = LUMODA3, file="runVerticalRecurrence"//ARCSTRING//"QPASegP.F90",status="unknown")
-       open(unit = LUMODA4, file="runVerticalRecurrence"//ARCSTRING//"QPASeg.F90",status="unknown")
-       open(unit = LUMODA5, file="runVerticalRecurrence"//ARCSTRING//"QPASeg1Prim.F90",status="unknown")
-
-       open(unit = LUMODB1, file="runVerticalRecurrence"//ARCSTRING//"QPB.F90",status="unknown")
-       open(unit = LUMODB2, file="runVerticalRecurrence"//ARCSTRING//"QPBSegQ.F90",status="unknown")
-       open(unit = LUMODB3, file="runVerticalRecurrence"//ARCSTRING//"QPBSegP.F90",status="unknown")
-       open(unit = LUMODB4, file="runVerticalRecurrence"//ARCSTRING//"QPBSeg.F90",status="unknown")
-       open(unit = LUMODB5, file="runVerticalRecurrence"//ARCSTRING//"QPBSeg1Prim.F90",status="unknown")
-
-       open(unit = LUMODC1, file="runVerticalRecurrence"//ARCSTRING//"QPC.F90",status="unknown")
-       open(unit = LUMODC2, file="runVerticalRecurrence"//ARCSTRING//"QPCSegQ.F90",status="unknown")
-       open(unit = LUMODC3, file="runVerticalRecurrence"//ARCSTRING//"QPCSegP.F90",status="unknown")
-       open(unit = LUMODC4, file="runVerticalRecurrence"//ARCSTRING//"QPCSeg.F90",status="unknown")
-       open(unit = LUMODC5, file="runVerticalRecurrence"//ARCSTRING//"QPCSeg1Prim.F90",status="unknown")
-
-       open(unit = LUMODD1, file="runVerticalRecurrence"//ARCSTRING//"QPD.F90",status="unknown")
-       open(unit = LUMODD2, file="runVerticalRecurrence"//ARCSTRING//"QPDSegQ.F90",status="unknown")
-       open(unit = LUMODD3, file="runVerticalRecurrence"//ARCSTRING//"QPDSegP.F90",status="unknown")
-       open(unit = LUMODD4, file="runVerticalRecurrence"//ARCSTRING//"QPDSeg.F90",status="unknown")
-       open(unit = LUMODD5, file="runVerticalRecurrence"//ARCSTRING//"QPDSeg1Prim.F90",status="unknown")
-
-       WRITE(LUMODA1,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODA'
-       WRITE(LUMODA2,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASegQ'
-       WRITE(LUMODA3,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASegP'
-       WRITE(LUMODA4,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASeg'
-       WRITE(LUMODA5,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASeg1Prim'
-
-       WRITE(LUMODB1,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODB'
-       WRITE(LUMODB2,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSegQ'
-       WRITE(LUMODB3,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSegP'
-       WRITE(LUMODB4,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSeg'
-       WRITE(LUMODB5,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSeg1Prim'
-
-       WRITE(LUMODC1,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODC'
-       WRITE(LUMODC2,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSegQ'
-       WRITE(LUMODC3,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSegP'
-       WRITE(LUMODC4,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSeg'
-       WRITE(LUMODC5,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSeg1Prim'
-
-       WRITE(LUMODD1,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODD'
-       WRITE(LUMODD2,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSegQ'
-       WRITE(LUMODD3,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSegP'
-       WRITE(LUMODD4,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSeg'
-       WRITE(LUMODD5,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSeg1Prim'
-
-       MaxAngmomQP = 8
-       do I=1,20
-          WRITE(I,'(A)')' use IchorPrecisionModule'
-          WRITE(I,'(A)')'  '
-          WRITE(I,'(A)')' CONTAINS'
-       enddo
-
-       !========================================================================================================
-       !    VerticalRecurrence 0
-       !========================================================================================================
-
-       do IA=1,5
-          WRITE(IA,'(A)')''
-       enddo
-       WRITE(LUMODA1,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'0(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODA2,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegQ0(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODA3,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegP0(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODA4,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg0(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODA5,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim0(nPasses,nPrimP,nPrimQ,&'
-       do IA=1,5
-          WRITE(IA,'(A)')'         & reducedExponents,TABFJW,&'
-          WRITE(IA,'(A)')'         & Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
-          WRITE(IA,'(A)')'         & AUXarray)'
-          WRITE(IA,'(A)')'  implicit none'
-          WRITE(IA,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ'
-       enddo
-       do IA=1,4
-          WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: reducedExponents(nPrimQ,nPrimP)'
-          WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)'
-          WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)'
-          WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: TABFJW(0:3,0:1200)'
-          WRITE(IA,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)'
-       enddo
-       WRITE(LUMODA1,'(A)')'  real(realk),intent(inout) :: AUXarray(nPrimQ,nPrimP,nPasses)'
-       WRITE(LUMODA2,'(A)')'  real(realk),intent(inout) :: AUXarray(nPrimP,nPasses)'
-       WRITE(LUMODA3,'(A)')'  real(realk),intent(inout) :: AUXarray(nPrimQ,nPasses)'
-       WRITE(LUMODA4,'(A)')'  real(realk),intent(inout) :: AUXarray(nPasses)'
-
-       WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: reducedExponents(1)'
-       WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: integralPrefactor(1)'
-       WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: Pcent(3),Qcent(3,nPasses)'
-       WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: TABFJW(0:3,0:1200)'
-       WRITE(LUMODA5,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(nPasses),PpreExpFac(1)'
-       WRITE(LUMODA5,'(A)')'  real(realk),intent(inout) :: AUXarray(nPasses)'
-
-       do IA=1,5
-          WRITE(IA,'(A)')'  !local variables'
-          WRITE(IA,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',36.0d0,'_realk'
-          WRITE(IA,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: D05 =0.5E0_realk,D1=1E0_realk'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
-          WRITE(IA,'(A)')'  Real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
-          WRITE(IA,'(A)')'  Real(realk),parameter :: PI=3.14159265358979323846E0_realk'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2'
-          WRITE(IA,'(A)')'  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
-          WRITE(IA,'(A)')'!  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk'
-          WRITE(IA,'(A)')'  Real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL,Pexpfac'
-          WRITE(IA,'(A)')'  Real(realk) :: W2,W3,PX,PY,PZ,PQX,PQY,PQZ,squaredDistance,RJ000'
-          WRITE(IA,'(A)')'  Integer :: IPNT,iPassQ,iPrimP,iPrimQ,iPQ'
-       enddo
-
-       do IA=1,4
-          WRITE(IA,'(A)')'  DO iPassQ = 1,nPasses'
-       enddo
-       !seg
-       WRITE(LUMODA4,'(A)')'   AUXarray(iPassQ)=0.0E0_realk'
-       !segP
-       WRITE(LUMODA3,'(A)')'   DO iPrimQ=1, nPrimQ'
-       WRITE(LUMODA3,'(A)')'    AUXarray(iPrimQ,iPassQ)=0.0E0_realk'
-       WRITE(LUMODA3,'(A)')'   ENDDO'
-       do IA=1,4
-          WRITE(IA,'(A)')'   DO iPrimP=1, nPrimP'
-       enddo
-       !segQ
-       WRITE(LUMODA2,'(A)')'    AUXarray(iPrimP,iPassQ)=0.0E0_realk'
-       do IA=1,4
-          WRITE(IA,'(A)')'    Pexpfac = PpreExpFac(iPrimP)'
-          WRITE(IA,'(A)')'    px = Pcent(1,iPrimP)'
-          WRITE(IA,'(A)')'    py = Pcent(2,iPrimP)'
-          WRITE(IA,'(A)')'    pz = Pcent(3,iPrimP)'
-          WRITE(IA,'(A)')'    DO iPrimQ=1, nPrimQ'
-          WRITE(IA,'(A)')'     pqx = px - Qcent(1,iPrimQ,iPassQ)'
-          WRITE(IA,'(A)')'     pqy = py - Qcent(2,iPrimQ,iPassQ)'
-          WRITE(IA,'(A)')'     pqz = pz - Qcent(3,iPrimQ,iPassQ)'
-          WRITE(IA,'(A)')'     squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz'
-          WRITE(IA,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
-       enddo
-
-       WRITE(LUMODA5,'(A)')'  DO iPassQ = 1,nPasses'
-       WRITE(LUMODA5,'(A)')'   px = Pcent(1)'
-       WRITE(LUMODA5,'(A)')'   py = Pcent(2)'
-       WRITE(LUMODA5,'(A)')'   pz = Pcent(3)'
-       WRITE(LUMODA5,'(A)')'   pqx = px - Qcent(1,iPassQ)'
-       WRITE(LUMODA5,'(A)')'   pqy = py - Qcent(2,iPassQ)'
-       WRITE(LUMODA5,'(A)')'   pqz = pz - Qcent(3,iPassQ)'
-       WRITE(LUMODA5,'(A)')'   squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz'
-       WRITE(LUMODA5,'(A)')'   WVAL = reducedExponents(1)*squaredDistance'
-
-       do IA=1,5
-          WRITE(IA,'(A)')'     !  0 < WVAL < 0.000001'
-          WRITE(IA,'(A)')'!     IF (ABS(WVAL) .LT. SMALL) THEN'     
-          WRITE(IA,'(A)')'!      RJ000 = D1'
-          WRITE(IA,'(A)')'!     !  0 < WVAL < 12 '
-          WRITE(IA,'(A)')'     IF (WVAL .LT. D12) THEN'
-          WRITE(IA,'(A)')'      IPNT = NINT(D100*WVAL)'
-          WRITE(IA,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
-          WRITE(IA,'(A)')'      W2    = WDIFF*WDIFF'
-          WRITE(IA,'(A)')'      W3    = W2*WDIFF'
-          WRITE(IA,'(A)')'      W2    = W2*D05'
-          WRITE(IA,'(A)')'      W3    = W3*COEF3'
-          WRITE(IA,'(A)')'      RJ000 = TABFJW(0,IPNT)-TABFJW(1,IPNT)*WDIFF+TABFJW(2,IPNT)*W2+TABFJW(3,IPNT)*W3'
-          WRITE(IA,'(A)')'     !  12 < WVAL <= (2J+36) '
-          WRITE(IA,'(A)')'     ELSE IF (WVAL.LE.D2JP36) THEN'
-          WRITE(IA,'(A)')'      REXPW = D05*EXP(-WVAL)'
-          WRITE(IA,'(A)')'      RWVAL = D1/WVAL'
-          WRITE(IA,'(A)')'      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))'
-          WRITE(IA,'(A)')'      RJ000 = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
-          WRITE(IA,'(A)')'     !  (2J+36) < WVAL '
-          WRITE(IA,'(A)')'     ELSE'
-          WRITE(IA,'(A)')'      RJ000 = SQRT(PID4/WVAL)'
-          WRITE(IA,'(A)')'     ENDIF'
-       enddo
-       WRITE(LUMODA1,'(A)')'     AUXarray(iPrimQ,iPrimP,iPassQ)=integralPrefactor(iPrimQ,iPrimP)*&'
-       WRITE(LUMODA1,'(A)')'          & QpreExpFac(iPrimQ,iPassQ)*Pexpfac*RJ000'
-
-       WRITE(LUMODA2,'(A)')'     AUXarray(iPrimP,iPassQ)=AUXarray(iPrimP,iPassQ) + integralPrefactor(iPrimQ,iPrimP)*&'
-       WRITE(LUMODA2,'(A)')'          & QpreExpFac(iPrimQ,iPassQ)*Pexpfac*RJ000'
-
-       WRITE(LUMODA3,'(A)')'     AUXarray(iPrimQ,iPassQ)=AUXarray(iPrimQ,iPassQ)+integralPrefactor(iPrimQ,iPrimP)*&'
-       WRITE(LUMODA3,'(A)')'          & QpreExpFac(iPrimQ,iPassQ)*Pexpfac*RJ000'
-
-       WRITE(LUMODA4,'(A)')'     AUXarray(iPassQ)=AUXarray(iPassQ) + integralPrefactor(iPrimQ,iPrimP)*&'
-       WRITE(LUMODA4,'(A)')'          & QpreExpFac(iPrimQ,iPassQ)*Pexpfac*RJ000'
-       do IA=1,4
-          WRITE(IA,'(A)')'    enddo'
-          WRITE(IA,'(A)')'   enddo'
-          WRITE(IA,'(A)')'  enddo'
-       enddo
-       WRITE(LUMODA5,'(A)')'     AUXarray(iPassQ)=integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)*RJ000'
-       WRITE(LUMODA5,'(A)')'  enddo'
-
-       WRITE(LUMODA1,'(A)')'end subroutine VerticalRecurrence'//ARCSTRING//'0'
-       WRITE(LUMODA2,'(A)')'end subroutine VerticalRecurrence'//ARCSTRING//'SegQ0'
-       WRITE(LUMODA3,'(A)')'end subroutine VerticalRecurrence'//ARCSTRING//'SegP0'
-       WRITE(LUMODA4,'(A)')'end subroutine VerticalRecurrence'//ARCSTRING//'Seg0'
-       WRITE(LUMODA5,'(A)')'end subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim0'
-
-       !========================================================================================================
-       !    VerticalRecurrence 1 
-       !========================================================================================================
-
-       do IA=1,20
-          WRITE(IA,'(A)')''
-       enddo
-       WRITE(LUMODA1,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'1A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       WRITE(LUMODA2,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegQ1A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       WRITE(LUMODA3,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegP1A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       WRITE(LUMODA4,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       WRITE(LUMODA5,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim1A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       do IA=1,5
-          WRITE(IA,'(A)')'         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&'
-          WRITE(IA,'(A)')'         & QpreExpFac,AUXarray)'
-       enddo
-       WRITE(LUMODB1,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'1B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       WRITE(LUMODB2,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegQ1B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       WRITE(LUMODB3,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegP1B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       WRITE(LUMODB4,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       WRITE(LUMODB5,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim1B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       do IB=6,10
-          WRITE(IB,'(A)')'         & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&'
-          WRITE(IB,'(A)')'         & QpreExpFac,AUXarray)'
-       enddo
-
-       WRITE(LUMODC1,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'1C(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODC2,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegQ1C(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODC3,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegP1C(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODC4,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1C(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODC5,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim1C(nPasses,nPrimP,nPrimQ,&'
-
-       do IC=11,15
-          WRITE(IC,'(A)')'         & reducedExponents,TABFJW,Qexp,Ccenter,Pcent,Qcent,&'
-          WRITE(IC,'(A)')'         & integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)'
-       enddo
-
-       WRITE(LUMODD1,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'1D(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODD2,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegQ1D(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODD3,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegP1D(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODD4,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1D(nPasses,nPrimP,nPrimQ,&'
-       WRITE(LUMODD5,'(A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim1D(nPasses,nPrimP,nPrimQ,&'
-       do ID=16,20
-          WRITE(ID,'(A)')'         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,&'
-          WRITE(ID,'(A)')'         & integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)'
-       enddo
-
-       do I=1,20
-          WRITE(I,'(A)')'  implicit none'
-          WRITE(I,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ'
-       enddo
-       !C and D
-       !    do I=11,20
-       !       WRITE(I,'(A)')'  integer,intent(in) :: nAtomsC,nAtomsD'
-       !    enddo
-       do I=1,20
-          WRITE(I,'(A)')'  REAL(REALK),intent(in) :: TABFJW(0:4,0:1200)'
-       enddo
-       do J=1,8
-          I = non1Prim(J)
-          WRITE(I,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)'
-       enddo
-       WRITE(LUMODA5,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Pexp(1)'
-       WRITE(LUMODB5,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Pexp(1)'
-       do J=9,16
-          I = non1Prim(J)
-          WRITE(I,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)'
-       enddo
-       WRITE(LUMODC5,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Qexp(1)'
-       WRITE(LUMODD5,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Qexp(1)'
-       do J=1,16
-          I = non1Prim(J)
-          WRITE(I,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)'
-          WRITE(I,'(A)')'  real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)'
-       enddo
-       WRITE(LUMODA5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-       WRITE(LUMODB5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-       WRITE(LUMODC5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-       WRITE(LUMODD5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-       do IA=1,5
-          WRITE(IA,'(A)')'  real(realk),intent(in) :: Acenter(3)'
-       enddo
-       do IB=6,10
-          WRITE(IB,'(A)')'  real(realk),intent(in) :: Bcenter(3)'
-       enddo
-       !    do IC=11,15
-       !       WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3,nAtomsC)'
-       !    enddo
-       !    do ID=16,20
-       !       WRITE(ID,'(A)')'  real(realk),intent(in) :: Dcenter(3,nAtomsD)'
-       !    enddo
-       do IC=11,15
-          WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3)'
-       enddo
-       do ID=16,20
-          WRITE(ID,'(A)')'  real(realk),intent(in) :: Dcenter(3)'
-       enddo
-       !standard
-       do I=1,16,5
-          WRITE(I,'(A)')'  real(realk),intent(inout) :: AUXarray(4,nPrimQ,nPrimP,nPasses)'
-       enddo
-       !segQ
-       do I=2,17,5
-          WRITE(I,'(A)')'  real(realk),intent(inout) :: AUXarray(4,nPrimP,nPasses)'
-       enddo
-       !segP
-       do I=3,18,5
-          WRITE(I,'(A)')'  real(realk),intent(inout) :: AUXarray(4,nPrimQ,nPasses)'
-       enddo
-       !seg
-       do I=4,19,5
-          WRITE(I,'(A)')'  real(realk),intent(inout) :: AUXarray(4,nPasses)'
-       enddo
-       !seg1Prim
-       do I=5,20,5
-          WRITE(I,'(A)')'  real(realk),intent(inout) :: AUXarray(4,nPasses)'
-       enddo
-       !==================================================================================================
-       do I=1,20
-          WRITE(I,'(A)')'  !local variables'
-          WRITE(I,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,ipnt'
-       enddo
-       !    do I=11,15
-       !       WRITE(I,'(A)')'  integer :: iAtomC'
-       !    enddo
-       !    do I=16,20
-       !       WRITE(I,'(A)')'  integer :: iAtomD'
-       !    enddo
-
-       do I=1,5
-          WRITE(I,'(A)')'  real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa'
-       enddo
-       do I=6,10
-          WRITE(I,'(A)')'  real(realk) :: Bx,By,Bz,Xpb,Ypb,Zpb'
-       enddo
-       do I=11,15
-          WRITE(I,'(A)')'  real(realk) :: Cx,Cy,Cz,Xqc,Yqc,Zqc'
-       enddo
-       do I=16,20
-          WRITE(I,'(A)')'  real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd'
-       enddo
-       do I=1,10
-          WRITE(I,'(A)')'  real(realk) :: mPX,mPY,mPZ,invexpP,alphaP,RJ000(0:1)'
-       enddo
-       do J=9,16
-          I=non1Prim(J)
-          WRITE(I,'(A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),alphaQ,RJ000(0:1)'
-       enddo
-       WRITE(LUMODC5,'(A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ,alphaQ,RJ000(0:1)'
-       WRITE(LUMODD5,'(A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ,alphaQ,RJ000(0:1)'
-       do I=1,20
-          WRITE(I,'(A)')'  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq'
-          WRITE(I,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
-          WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
-          WRITE(I,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
-          WRITE(I,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.0d0 + 36.0d0,'_realk'
-          WRITE(I,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
-          WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
-          WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
-          WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
-          WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
-          WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
-          WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
-          WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
-          WRITE(I,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
-          WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
-          WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
-          WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
-       enddo
-       do I=1,5
-          WRITE(I,'(A)')'  !ThetaAux(n,1,0,0) = Xpa*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)'
-       enddo
-       do I=6,10
-          WRITE(I,'(A)')'  !ThetaAux(n,1,0,0) = Xpb*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)'
-       enddo
-       do I=11,15
-          WRITE(I,'(A)')'  !ThetaAux(n,1,0,0) = Xqc*ThetaAux(n,0,0,0) + (-alpha/q*Xpq)*ThetaAux(n+1,0,0,0)'
-       enddo
-       do I=16,20
-          WRITE(I,'(A)')'  !ThetaAux(n,1,0,0) = Xqd*ThetaAux(n,0,0,0) + (-alpha/q*Xpq)*ThetaAux(n+1,0,0,0)'
-       enddo
-       do I=1,20
-          WRITE(I,'(A)')'  !i = 0 last 2 term vanish'
-          WRITE(I,'(A)')'  !We include scaling of RJ000 '
-       enddo
-       do I=1,5
-          WRITE(I,'(A)')'  Ax = -Acenter(1)'
-          WRITE(I,'(A)')'  Ay = -Acenter(2)'
-          WRITE(I,'(A)')'  Az = -Acenter(3)'
-       enddo
-       do I=6,10
-          WRITE(I,'(A)')'  Bx = -Bcenter(1)'
-          WRITE(I,'(A)')'  By = -Bcenter(2)'
-          WRITE(I,'(A)')'  Bz = -Bcenter(3)'
-       enddo
-       do J=9,16
-          I=non1Prim(J)
-          WRITE(I,'(A)')'  DO iPrimQ=1, nPrimQ'
-          WRITE(I,'(A)')'     invexpQ(iPrimQ) = D1/Qexp(iPrimQ)'
-          WRITE(I,'(A)')'  ENDDO'
-       enddo
-       WRITE(LUMODC5,'(A)')'  invexpQ = D1/Qexp(1)'
-       WRITE(LUMODD5,'(A)')'  invexpQ = D1/Qexp(1)'
-       do I=1,20
-          WRITE(I,'(A)')'  DO iPassQ = 1,nPasses'
-       enddo
-       !seg
-       do I=4,19,5
-          WRITE(I,'(A)')'   AUXarray(1,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'   AUXarray(2,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'   AUXarray(3,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'   AUXarray(4,iPassQ)=0.0E0_realk'
-       enddo
-       !segP
-       do I=3,18,5
-          WRITE(I,'(A)')'   DO iPrimQ=1, nPrimQ'
-          WRITE(I,'(A)')'    AUXarray(1,iPrimQ,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(2,iPrimQ,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(3,iPrimQ,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(4,iPrimQ,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'   ENDDO'
-       enddo
-       do I=11,15
-          !       WRITE(I,'(A)')'   iAtomC = iPassQ - ((iPassQ-1)/nAtomsC)*nAtomsC'
-          !       WRITE(I,'(A)')'   Cx = -Ccenter(1,iAtomC)'
-          !       WRITE(I,'(A)')'   Cy = -Ccenter(2,iAtomC)'
-          !       WRITE(I,'(A)')'   Cz = -Ccenter(3,iAtomC)'
-          WRITE(I,'(A)')'   Cx = -Ccenter(1)'
-          WRITE(I,'(A)')'   Cy = -Ccenter(2)'
-          WRITE(I,'(A)')'   Cz = -Ccenter(3)'
-       enddo
-       do I=16,20
-          !       WRITE(I,'(A)')'   iAtomD = (iPassQ-1)/nAtomsC+1'
-          !       WRITE(I,'(A)')'   Dx = -Dcenter(1,iAtomD)'
-          !       WRITE(I,'(A)')'   Dy = -Dcenter(2,iAtomD)'
-          !       WRITE(I,'(A)')'   Dz = -Dcenter(3,iAtomD)'
-          WRITE(I,'(A)')'   Dx = -Dcenter(1)'
-          WRITE(I,'(A)')'   Dy = -Dcenter(2)'
-          WRITE(I,'(A)')'   Dz = -Dcenter(3)'
-       enddo
-       do J=1,16
-          I = non1Prim(J)
-          WRITE(I,'(A)')'   DO iPrimP=1, nPrimP'
-       enddo
-       !segQ
-       do I=2,17,5
-          WRITE(I,'(A)')'    AUXarray(1,iPrimP,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(2,iPrimP,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(3,iPrimP,iPassQ)=0.0E0_realk'
-          WRITE(I,'(A)')'    AUXarray(4,iPrimP,iPassQ)=0.0E0_realk'
-       enddo
-       do J=1,16
-          I = non1Prim(J)
-          WRITE(I,'(A)')'    Pexpfac = PpreExpFac(iPrimP)'
-          WRITE(I,'(A)')'    mPX = -Pcent(1,iPrimP)'
-          WRITE(I,'(A)')'    mPY = -Pcent(2,iPrimP)'
-          WRITE(I,'(A)')'    mPZ = -Pcent(3,iPrimP)'
-       enddo
-       do J=1,8
-          I = non1Prim(J)
-          WRITE(I,'(A)')'    invexpP = D1/Pexp(iPrimP)'
-       enddo
-       do J=1,4
-          I = pure1Prim(J)
-          WRITE(I,'(A)')'    Pexpfac = PpreExpFac(1)'
-          WRITE(I,'(A)')'    mPX = -Pcent(1)'
-          WRITE(I,'(A)')'    mPY = -Pcent(2)'
-          WRITE(I,'(A)')'    mPZ = -Pcent(3)'
-       enddo
-       do J=1,2
-          I = pure1Prim(J)
-          WRITE(I,'(A)')'    invexpP = D1/Pexp(1)'
-       enddo
-       do I=1,4
-          WRITE(I,'(A)')'    Xpa = Pcent(1,iPrimP) + Ax'
-          WRITE(I,'(A)')'    Ypa = Pcent(2,iPrimP) + Ay'
-          WRITE(I,'(A)')'    Zpa = Pcent(3,iPrimP) + Az'
-       enddo
-       WRITE(LUMODA5,'(A)')'    Xpa = Pcent(1) + Ax'
-       WRITE(LUMODA5,'(A)')'    Ypa = Pcent(2) + Ay'
-       WRITE(LUMODA5,'(A)')'    Zpa = Pcent(3) + Az'
-       do I=6,9
-          WRITE(I,'(A)')'    Xpb = Pcent(1,iPrimP) + Bx'
-          WRITE(I,'(A)')'    Ypb = Pcent(2,iPrimP) + By'
-          WRITE(I,'(A)')'    Zpb = Pcent(3,iPrimP) + Bz'
-       enddo
-       WRITE(LUMODB5,'(A)')'    Xpb = Pcent(1) + Bx'
-       WRITE(LUMODB5,'(A)')'    Ypb = Pcent(2) + By'
-       WRITE(LUMODB5,'(A)')'    Zpb = Pcent(3) + Bz'
-
-       do J=1,16
-          I=non1Prim(J)
-          WRITE(I,'(A)')'    DO iPrimQ=1, nPrimQ'
-          WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)'
-          WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)'
-          WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)'
-       enddo
-       do J=1,4
-          I=pure1Prim(J)
-          WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPassQ)'
-          WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPassQ)'
-          WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPassQ)'
-       enddo
-       do J=9,12
-          I=non1Prim(J)
-          WRITE(I,'(A)')'     Xqc = Qcent(1,iPrimQ,iPassQ) + Cx'
-          WRITE(I,'(A)')'     Yqc = Qcent(2,iPrimQ,iPassQ) + Cy'
-          WRITE(I,'(A)')'     Zqc = Qcent(3,iPrimQ,iPassQ) + Cz'
-       enddo
-       I=pure1Prim(3)
-       WRITE(I,'(A)')'     Xqc = Qcent(1,iPassQ) + Cx'
-       WRITE(I,'(A)')'     Yqc = Qcent(2,iPassQ) + Cy'
-       WRITE(I,'(A)')'     Zqc = Qcent(3,iPassQ) + Cz'
-       do J=13,16
-          I=non1Prim(J)
-          WRITE(I,'(A)')'     Xqd = Qcent(1,iPrimQ,iPassQ) + Dx'
-          WRITE(I,'(A)')'     Yqd = Qcent(2,iPrimQ,iPassQ) + Dy'
-          WRITE(I,'(A)')'     Zqd = Qcent(3,iPrimQ,iPassQ) + Dz'
-       enddo
-       I=pure1Prim(4)
-       WRITE(I,'(A)')'     Xqd = Qcent(1,iPassQ) + Dx'
-       WRITE(I,'(A)')'     Yqd = Qcent(2,iPassQ) + Dy'
-       WRITE(I,'(A)')'     Zqd = Qcent(3,iPassQ) + Dz'
-
-       do J=1,8
-          I=non1Prim(J)
-          WRITE(I,'(A)')'     alphaP = reducedExponents(iPrimQ,iPrimP)*invexpP'    
-       enddo
-       WRITE(LUMODA5,'(A)')'     alphaP = reducedExponents(1)*invexpP'    
-       WRITE(LUMODB5,'(A)')'     alphaP = reducedExponents(1)*invexpP'    
-       do J=9,16
-          I=non1Prim(J)
-          WRITE(I,'(A)')'     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ(iPrimQ)'
-       enddo
-       WRITE(LUMODC5,'(A)')'     alphaQ = -reducedExponents(1)*invexpQ'
-       WRITE(LUMODD5,'(A)')'     alphaQ = -reducedExponents(1)*invexpQ'
-       do I=1,10
-          WRITE(I,'(A)')'     alphaXpq = alphaP*Xpq'
-          WRITE(I,'(A)')'     alphaYpq = alphaP*Ypq'
-          WRITE(I,'(A)')'     alphaZpq = alphaP*Zpq'
-       enddo
-       do I=11,20
-          WRITE(I,'(A)')'     alphaXpq = alphaQ*Xpq'
-          WRITE(I,'(A)')'     alphaYpq = alphaQ*Ypq'
-          WRITE(I,'(A)')'     alphaZpq = alphaQ*Zpq'
-       enddo
-       do I=1,200
-          WRITE(I,'(A)')'     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq'
-       enddo
-       do J=1,16
-          I=non1Prim(J)
-          WRITE(I,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
-       enddo
-       do J=1,4
-          I=pure1Prim(J)
-          WRITE(I,'(A)')'     WVAL = reducedExponents(1)*squaredDistance'
-       enddo
-       do I=1,20
-          !       WRITE(I,'(A)')'     !  0 < WVAL < 0.000001'
-          !       WRITE(I,'(A)')'!     IF (ABS(WVAL) .LT. SMALL) THEN'     
-          !       WRITE(I,'(A)')'!      RJ000(0) = D1'
-          !       WRITE(I,'(A)')'!      RJ000(1)= D03333 !THE BOYS FUNCTION FOR ZERO ARGUMENT'
-          !       WRITE(I,'(A)')'!     !  0 < WVAL < 12 '
-          WRITE(I,'(A)')'     IF (WVAL .LT. D12) THEN'
-          WRITE(I,'(A)')'      IPNT = NINT(D100*WVAL)'
-          WRITE(I,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
-          WRITE(I,'(A)')'      W2    = WDIFF*WDIFF'
-          WRITE(I,'(A)')'      W3    = W2*WDIFF'
-          WRITE(I,'(A)')'      W2    = W2*D05'
-          WRITE(I,'(A)')'      W3    = W3*COEF3'
-          WRITE(I,'(A)')'      RJ000(0)=TABFJW(0,IPNT)-TABFJW(1,IPNT)*WDIFF+TABFJW(2,IPNT)*W2+TABFJW(3,IPNT)*W3'
-          WRITE(I,'(A)')'      RJ000(1)=TABFJW(1,IPNT)-TABFJW(2,IPNT)*WDIFF+TABFJW(3,IPNT)*W2+TABFJW(4,IPNT)*W3'
-          WRITE(I,'(A)')'     !  12 < WVAL <= (2J+36) '
-          WRITE(I,'(A)')'     ELSE IF (WVAL.LE.D2JP36) THEN'
-          WRITE(I,'(A)')'      REXPW = D05*EXP(-WVAL)'
-          WRITE(I,'(A)')'      RWVAL = D1/WVAL'
-          WRITE(I,'(A)')'      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))'
-          WRITE(I,'(A)')'      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
-          WRITE(I,'(A)')'      RJ000(1) = RWVAL*(D05*RJ000(0)-REXPW)'
-          WRITE(I,'(A)')'     !  (2J+36) < WVAL '
-          WRITE(I,'(A)')'     ELSE'
-          WRITE(I,'(A)')'      RWVAL = PID4/WVAL'
-          WRITE(I,'(A)')'      RJ000(0) = SQRT(RWVAL)'
-          WRITE(I,'(A)')'      RJ000(1) = RWVAL*PID4I*D05*RJ000(0)'
-          WRITE(I,'(A)')'     ENDIF'
-       enddo
-       do J=1,16
-          I=non1Prim(J)
-          WRITE(I,'(A)')'     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac'
-       enddo
-       do J=1,4
-          I=pure1Prim(J)
-          WRITE(I,'(A)')'     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)'
-       enddo
-       do I=1,20
-          WRITE(I,'(A)')'     TMP1 = PREF*RJ000(0)'
-          WRITE(I,'(A)')'     TMP2 = PREF*RJ000(1)'
-       enddo
-       !standard
-       do I=1,16,5
-          WRITE(I,'(A)')'     AUXarray(1,iPrimQ,iPrimP,iPassQ) = TMP1'
-       enddo
-       !segQ
-       do I=2,17,5
-          WRITE(I,'(A)')'     AUXarray(1,iPrimP,iPassQ) = AUXarray(1,iPrimP,iPassQ) + TMP1'
-       enddo
-       !segP
-       do I=3,18,5
-          WRITE(I,'(A)')'     AUXarray(1,iPrimQ,iPassQ) = AUXarray(1,iPrimQ,iPassQ) + TMP1'
-       enddo
-       !seg
-       do I=4,19,5
-          WRITE(I,'(A)')'     AUXarray(1,iPassQ) = AUXarray(1,iPassQ) + TMP1'
-       enddo
-       !seg1Prim
-       do I=5,20,5
-          WRITE(I,'(A)')'     AUXarray(1,iPassQ) = TMP1'
-       enddo
-
-       WRITE(LUMODA1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xpa*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODA1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassQ) = Ypa*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODA1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassQ) = Zpa*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODA2,'(A)')'     AUXarray(2,iPrimP,iPassQ) = AUXarray(2,iPrimP,iPassQ) + Xpa*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODA2,'(A)')'     AUXarray(3,iPrimP,iPassQ) = AUXarray(3,iPrimP,iPassQ) + Ypa*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODA2,'(A)')'     AUXarray(4,iPrimP,iPassQ) = AUXarray(4,iPrimP,iPassQ) + Zpa*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODA3,'(A)')'     AUXarray(2,iPrimQ,iPassQ) = AUXarray(2,iPrimQ,iPassQ) + Xpa*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODA3,'(A)')'     AUXarray(3,iPrimQ,iPassQ) = AUXarray(3,iPrimQ,iPassQ) + Ypa*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODA3,'(A)')'     AUXarray(4,iPrimQ,iPassQ) = AUXarray(4,iPrimQ,iPassQ) + Zpa*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODA4,'(A)')'     AUXarray(2,iPassQ) = AUXarray(2,iPassQ) + Xpa*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODA4,'(A)')'     AUXarray(3,iPassQ) = AUXarray(3,iPassQ) + Ypa*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODA4,'(A)')'     AUXarray(4,iPassQ) = AUXarray(4,iPassQ) + Zpa*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODA5,'(A)')'     AUXarray(2,iPassQ) = Xpa*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODA5,'(A)')'     AUXarray(3,iPassQ) = Ypa*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODA5,'(A)')'     AUXarray(4,iPassQ) = Zpa*TMP1 + alphaZpq*TMP2'
-
-       WRITE(LUMODB1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xpb*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODB1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassQ) = Ypb*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODB1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassQ) = Zpb*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODB2,'(A)')'     AUXarray(2,iPrimP,iPassQ) = AUXarray(2,iPrimP,iPassQ) + Xpb*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODB2,'(A)')'     AUXarray(3,iPrimP,iPassQ) = AUXarray(3,iPrimP,iPassQ) + Ypb*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODB2,'(A)')'     AUXarray(4,iPrimP,iPassQ) = AUXarray(4,iPrimP,iPassQ) + Zpb*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODB3,'(A)')'     AUXarray(2,iPrimQ,iPassQ) = AUXarray(2,iPrimQ,iPassQ) + Xpb*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODB3,'(A)')'     AUXarray(3,iPrimQ,iPassQ) = AUXarray(3,iPrimQ,iPassQ) + Ypb*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODB3,'(A)')'     AUXarray(4,iPrimQ,iPassQ) = AUXarray(4,iPrimQ,iPassQ) + Zpb*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODB4,'(A)')'     AUXarray(2,iPassQ) = AUXarray(2,iPassQ) + Xpb*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODB4,'(A)')'     AUXarray(3,iPassQ) = AUXarray(3,iPassQ) + Ypb*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODB4,'(A)')'     AUXarray(4,iPassQ) = AUXarray(4,iPassQ) + Zpb*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODB5,'(A)')'     AUXarray(2,iPassQ) = Xpb*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODB5,'(A)')'     AUXarray(3,iPassQ) = Ypb*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODB5,'(A)')'     AUXarray(4,iPassQ) = Zpb*TMP1 + alphaZpq*TMP2'
-
-       WRITE(LUMODC1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xqc*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODC1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassQ) = Yqc*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODC1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassQ) = Zqc*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODC2,'(A)')'     AUXarray(2,iPrimP,iPassQ) = AUXarray(2,iPrimP,iPassQ) + Xqc*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODC2,'(A)')'     AUXarray(3,iPrimP,iPassQ) = AUXarray(3,iPrimP,iPassQ) + Yqc*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODC2,'(A)')'     AUXarray(4,iPrimP,iPassQ) = AUXarray(4,iPrimP,iPassQ) + Zqc*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODC3,'(A)')'     AUXarray(2,iPrimQ,iPassQ) = AUXarray(2,iPrimQ,iPassQ) + Xqc*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODC3,'(A)')'     AUXarray(3,iPrimQ,iPassQ) = AUXarray(3,iPrimQ,iPassQ) + Yqc*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODC3,'(A)')'     AUXarray(4,iPrimQ,iPassQ) = AUXarray(4,iPrimQ,iPassQ) + Zqc*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODC4,'(A)')'     AUXarray(2,iPassQ) = AUXarray(2,iPassQ) + Xqc*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODC4,'(A)')'     AUXarray(3,iPassQ) = AUXarray(3,iPassQ) + Yqc*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODC4,'(A)')'     AUXarray(4,iPassQ) = AUXarray(4,iPassQ) + Zqc*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODC5,'(A)')'     AUXarray(2,iPassQ) = Xqc*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODC5,'(A)')'     AUXarray(3,iPassQ) = Yqc*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODC5,'(A)')'     AUXarray(4,iPassQ) = Zqc*TMP1 + alphaZpq*TMP2'
-
-       WRITE(LUMODD1,'(A)')'     AUXarray(2,iPrimQ,iPrimP,iPassQ) = Xqd*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODD1,'(A)')'     AUXarray(3,iPrimQ,iPrimP,iPassQ) = Yqd*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODD1,'(A)')'     AUXarray(4,iPrimQ,iPrimP,iPassQ) = Zqd*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODD2,'(A)')'     AUXarray(2,iPrimP,iPassQ) = AUXarray(2,iPrimP,iPassQ) + Xqd*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODD2,'(A)')'     AUXarray(3,iPrimP,iPassQ) = AUXarray(3,iPrimP,iPassQ) + Yqd*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODD2,'(A)')'     AUXarray(4,iPrimP,iPassQ) = AUXarray(4,iPrimP,iPassQ) + Zqd*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODD3,'(A)')'     AUXarray(2,iPrimQ,iPassQ) = AUXarray(2,iPrimQ,iPassQ) + Xqd*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODD3,'(A)')'     AUXarray(3,iPrimQ,iPassQ) = AUXarray(3,iPrimQ,iPassQ) + Yqd*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODD3,'(A)')'     AUXarray(4,iPrimQ,iPassQ) = AUXarray(4,iPrimQ,iPassQ) + Zqd*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODD4,'(A)')'     AUXarray(2,iPassQ) = AUXarray(2,iPassQ) + Xqd*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODD4,'(A)')'     AUXarray(3,iPassQ) = AUXarray(3,iPassQ) + Yqd*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODD4,'(A)')'     AUXarray(4,iPassQ) = AUXarray(4,iPassQ) + Zqd*TMP1 + alphaZpq*TMP2'
-       WRITE(LUMODD5,'(A)')'     AUXarray(2,iPassQ) = Xqd*TMP1 + alphaXpq*TMP2'
-       WRITE(LUMODD5,'(A)')'     AUXarray(3,iPassQ) = Yqd*TMP1 + alphaYpq*TMP2'
-       WRITE(LUMODD5,'(A)')'     AUXarray(4,iPassQ) = Zqd*TMP1 + alphaZpq*TMP2'
-
-
-       do J=1,16
-          I=non1Prim(J)       
-          WRITE(I,'(A)')'    enddo'
-          WRITE(I,'(A)')'   enddo'
-       enddo
-       do I=1,20
-          WRITE(I,'(A)')'  enddo'
-          WRITE(I,'(A)')'end subroutine'
-       enddo
-
-
-       !============================================================================================================
-       !         VerticalRecurrence GENERAL
-       !============================================================================================================
-
-       DO JMAX=2,MaxAngmomQP
-          nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
-          nTUVPLUS = (JMAX+2)*(JMAX+3)*(JMAX+4)/6   
-          allocate(TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
-          TUVINDEX = 0
-          allocate(TINDEX(nTUVPLUS))
-          allocate(UINDEX(nTUVPLUS))
-          allocate(VINDEX(nTUVPLUS))
-          allocate(JINDEX(nTUVPLUS))
-
-          nTUVprev3 = (JMAX-2)*(JMAX-1)*(JMAX)/6
-          nTUVprev2 = (JMAX-1)*(JMAX)*(JMAX+1)/6
-          nTUVprev = (JMAX)*(JMAX+1)*(JMAX+2)/6
-          ituv = 0 
-          TUVINDEX = 0
-          DO J = 0, JMAX
-             DO Tp=J,0,-1       
-                DO Up=J-Tp,0,-1
-                   Vp=J-Tp-Up
-                   ituv = ituv + 1 
-                   TUVINDEX(Tp,Up,Vp) = ituv
-                   TINDEX(iTUV) = Tp
-                   UINDEX(iTUV) = Up
-                   VINDEX(iTUV) = Vp
-                   JINDEX(iTUV) = J
-                ENDDO
-             ENDDO
-          ENDDO
-
-          do IA=1,20
-             WRITE(IA,'(A)')''
-          enddo
-          WRITE(LUMODA1,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING,JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-          WRITE(LUMODA2,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegQ',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-          WRITE(LUMODA3,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegP',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-          WRITE(LUMODA4,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-          WRITE(LUMODA5,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim',JMAX,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-          do I=1,5
-             WRITE(I,'(A)')'         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
-             WRITE(I,'(A)')'         & AUXarray)'
-          enddo
-
-          WRITE(LUMODB1,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING,JMAX,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-          WRITE(LUMODB2,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegQ',JMAX,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-          WRITE(LUMODB3,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegP',JMAX,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-          WRITE(LUMODB4,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg',JMAX,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-          WRITE(LUMODB5,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim',JMAX,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-          do I=6,10
-             WRITE(I,'(A)')'         & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&'
-             WRITE(I,'(A)')'         & AUXarray)'
-          enddo
-
-          WRITE(LUMODC1,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING,JMAX,'C(nPasses,nPrimP,nPrimQ,&'
-          WRITE(LUMODC2,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegQ',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
-          WRITE(LUMODC3,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegP',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
-          WRITE(LUMODC4,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
-          WRITE(LUMODC5,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim',JMAX,'C(nPasses,nPrimP,nPrimQ,&'
-          do I=11,15
-             WRITE(I,'(A)')'         & reducedExponents,TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&'
-             WRITE(I,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
-          enddo
-
-          WRITE(LUMODD1,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING,JMAX,'D(nPasses,nPrimP,nPrimQ,&'
-          WRITE(LUMODD2,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegQ',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
-          WRITE(LUMODD3,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'SegP',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
-          WRITE(LUMODD4,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
-          WRITE(LUMODD5,'(A,I1,A)')'subroutine VerticalRecurrence'//ARCSTRING//'Seg1Prim',JMAX,'D(nPasses,nPrimP,nPrimQ,&'
-          do I=16,20
-             WRITE(I,'(A)')'         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&'
-             WRITE(I,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
-          enddo
-          do I=1,20
-             WRITE(I,'(A)')'  implicit none'
-             WRITE(I,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ'
-          enddo
-          !C and D
-          !       do I=11,20
-          !          WRITE(I,'(A)')'  integer,intent(in) :: nAtomsC,nAtomsD'
-          !       enddo
-          do I=1,20
-             WRITE(I,'(A,I2,A)')'  REAL(REALK),intent(in) :: TABFJW(0:',JMAX+3,',0:1200)'
-          enddo
-          do J=1,8
-             I = non1Prim(J)
-             WRITE(I,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)'
-          enddo
-          WRITE(LUMODA5,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Pexp(1)'
-          WRITE(LUMODB5,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Pexp(1)'
-          do J=9,16
-             I = non1Prim(J)
-             WRITE(I,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)'
-          enddo
-          WRITE(LUMODC5,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Qexp(1)'
-          WRITE(LUMODD5,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Qexp(1)'
-          do J=1,16
-             I = non1Prim(J)
-             WRITE(I,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP),Qcent(3,nPrimQ,nPasses)'
-             WRITE(I,'(A)')'  real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ,nPasses),PpreExpFac(nPrimP)'
-          enddo
-          WRITE(LUMODA5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-          WRITE(LUMODB5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-          WRITE(LUMODC5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-          WRITE(LUMODD5,'(A)')'  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)'
-          do IA=1,5
-             WRITE(IA,'(A)')'  real(realk),intent(in) :: Acenter(3)'
-          enddo
-          do IB=6,10    
-             WRITE(IB,'(A)')'  real(realk),intent(in) :: Bcenter(3)'
-          enddo
-          !       do IC=11,15
-          !          WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3,nAtomsC)'
-          !       enddo
-          !       do ID=16,20
-          !          WRITE(ID,'(A)')'  real(realk),intent(in) :: Dcenter(3,nAtomsD)'
-          !       enddo
-          do IC=11,15
-             WRITE(IC,'(A)')'  real(realk),intent(in) :: Ccenter(3)'
-          enddo
-          do ID=16,20
-             WRITE(ID,'(A)')'  real(realk),intent(in) :: Dcenter(3)'
-          enddo
-          do I=1,16,5
-             WRITE(I,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimQ*nPrimP*nPasses)'
-          enddo
-          !segQ
-          do I=2,17,5
-             WRITE(I,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimP*nPasses)'
-          enddo
-          !segP
-          do I=3,18,5
-             WRITE(I,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimQ*nPasses)'
-          enddo
-          !seg
-          do I=4,19,5
-             WRITE(I,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPasses)'
-          enddo
-          !seg1Prim
-          do I=5,20,5
-             WRITE(I,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPasses)'
-          enddo
-          !==================================================================================================
-          do I=1,20
-             WRITE(I,'(A)')'  !local variables'
-             WRITE(I,'(A)')'  integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV'
-          enddo
-          !       do I=11,15
-          !          WRITE(I,'(A)')'  integer :: iAtomC'
-          !       enddo
-          !       do I=16,20
-          !          WRITE(I,'(A)')'  integer :: iAtomD'
-          !       enddo
-          do I=2,17,5
-             WRITE(I,'(A,I5,A)')'  real(realk) :: TMPAUXarray(',nTUVprev,')'
-          enddo
-          do I=3,18,5
-             WRITE(I,'(A,I5,A)')'  real(realk) :: TMPAUXarray(',nTUVprev,')'
-          enddo
-          do I=4,19,5
-             WRITE(I,'(A,I5,A)')'  real(realk) :: TMPAUXarray(',nTUVprev,')'
-          enddo
-          do I=5,20,5
-             WRITE(I,'(A,I5,A)')'  real(realk) :: TMPAUXarray(',nTUVprev,')'
-          enddo
-          do I=1,5
-             WRITE(I,'(A)')'  real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa'
-          enddo
-          do I=6,10
-             WRITE(I,'(A)')'  real(realk) :: Bx,By,Bz,Xpb,Ypb,Zpb'
-          enddo
-          do I=11,15
-             WRITE(I,'(A)')'  real(realk) :: Cx,Cy,Cz,Xqc,Yqc,Zqc'
-          enddo
-          do I=16,20
-             WRITE(I,'(A)')'  real(realk) :: Dx,Dy,Dz,Xqd,Yqd,Zqd'
-          enddo
-          do I=1,10
-             WRITE(I,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP,RJ000(0:',JMAX,')'
-          enddo
-          do J=9,16
-             I=non1Prim(J)
-             WRITE(I,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ(nPrimQ),inv2expQ,alphaQ,RJ000(0:',JMAX,')'
-          enddo
-          WRITE(LUMODC5,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ,inv2expQ,alphaQ,RJ000(0:',JMAX,')'
-          WRITE(LUMODD5,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ,inv2expQ,alphaQ,RJ000(0:',JMAX,')'
-          do I=1,20
-             WRITE(I,'(A,i4,A)')'  real(realk) :: TwoTerms(',MAX(1,nTUVprev2-nTUVprev3),')'
-             WRITE(I,'(A)')'  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq'
-             WRITE(I,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
-             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
-             WRITE(I,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
-             WRITE(I,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
-             WRITE(I,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
-             WRITE(I,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
-             WRITE(I,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
-          enddo
-          do I=1,20
-             C = JMAX+2
-             DO JTMP=1,JMAX
-                C = C-1
-                nTUVTMPprev=(JTMP-1)*(JTMP)*(JTMP+1)/6
-                nTUVTMP=(JTMP)*(JTMP+1)*(JTMP+2)/6
-                if(JTMP.LT.10)THEN
-                   WRITE(I,'(A,I1,A,I3,A,I3,A,I1,A)')'  real(realk) :: TMParray',JTMP,'(',nTUVTMPprev+1,':',nTUVTMP,',2:',C,')'
-                else
-                   WRITE(I,'(A,I2,A,I3,A,I3,A,I1,A)')'  real(realk) :: TMParray',JTMP,'(',nTUVTMPprev+1,':',nTUVTMP,',2:',C,')'
-
-                endif
-             ENDDO
-          enddo
-          do I=1,5
-             WRITE(I,'(A)')'  !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)'
-             WRITE(I,'(A)')'  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))'
-          enddo
-          do I=6,10
-             WRITE(I,'(A)')'  !TUV(T,0,0,N) = Xpb*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)'
-             WRITE(I,'(A)')'  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))'
-          enddo
-          do I=11,15
-             WRITE(I,'(A)')'  !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)'
-             WRITE(I,'(A)')'  !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))'
-          enddo
-          do I=16,20
-             WRITE(I,'(A)')'  !TUV(T,0,0,N) = Xqd*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)'
-             WRITE(I,'(A)')'  !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))'
-          enddo
-          do I=1,20
-             WRITE(I,'(A)')'  !We include scaling of RJ000 '
-          enddo
-          do I=1,5
-             WRITE(I,'(A)')'  Ax = -Acenter(1)'
-             WRITE(I,'(A)')'  Ay = -Acenter(2)'
-             WRITE(I,'(A)')'  Az = -Acenter(3)'
-          enddo
-          do I=6,10
-             WRITE(I,'(A)')'  Bx = -Bcenter(1)'
-             WRITE(I,'(A)')'  By = -Bcenter(2)'
-             WRITE(I,'(A)')'  Bz = -Bcenter(3)'
-          enddo
-          do J=9,16
-             I=non1Prim(J)
-             WRITE(I,'(A)')'  DO iPrimQ=1, nPrimQ'
-             WRITE(I,'(A)')'     invexpQ(iPrimQ) = D1/Qexp(iPrimQ)'
-             WRITE(I,'(A)')'  ENDDO'
-          enddo
-          WRITE(LUMODC5,'(A)')'  invexpQ = D1/Qexp(1)'
-          WRITE(LUMODD5,'(A)')'  invexpQ = D1/Qexp(1)'
-          ! ======================================================================
-          !    iPassQ Loop 
-          ! ======================================================================
-          do I=1,20
-             WRITE(I,'(A)')'  DO iPassQ = 1,nPasses'
-          enddo
-          !general
-          do I=1,16,5
-             WRITE(I,'(A)')'   iP = (iPassQ-1)*nPrimQ*nPrimP'
-          enddo
-          !segQ
-          do I=2,17,5
-             WRITE(I,'(A)')'   iP = (iPassQ-1)*nPrimP'
-          enddo
-          !segP
-          do I=3,18,5
-             WRITE(I,'(A)')'   iP = (iPassQ-1)*nPrimQ'
-             WRITE(I,'(A)')'   DO iPrimQ=1, nPrimQ'
-             WRITE(I,'(A)')'    iP = iP + 1'
-             WRITE(I,'(A,i5)')'    DO iTUV=1,',nTUV
-             WRITE(I,'(A)')'     AUXarray(iTUV,iP)=0.0E0_realk'
-             WRITE(I,'(A)')'    ENDDO'
-             WRITE(I,'(A)')'   ENDDO'
-             WRITE(I,'(A)')'   iP = (iPassQ-1)*nPrimQ'
-          enddo
-          !seg
-          do I=4,19,5
-             WRITE(I,'(A)')'   iP = iPassQ'
-             WRITE(I,'(A,i5)')'   DO iTUV=1,',nTUV
-             WRITE(I,'(A)')'    AUXarray(iTUV,iPassQ)=0.0E0_realk'
-             WRITE(I,'(A)')'   ENDDO'
-          enddo
-          do I=5,20,5
-             WRITE(I,'(A)')'   iP = iPassQ'
-          enddo
-          do I=11,15
-             !          WRITE(I,'(A)')'   iAtomC = iPassQ - ((iPassQ-1)/nAtomsC)*nAtomsC'
-             !          WRITE(I,'(A)')'   Cx = -Ccenter(1,iAtomC)'
-             !          WRITE(I,'(A)')'   Cy = -Ccenter(2,iAtomC)'
-             !          WRITE(I,'(A)')'   Cz = -Ccenter(3,iAtomC)'
-             WRITE(I,'(A)')'   Cx = -Ccenter(1)'
-             WRITE(I,'(A)')'   Cy = -Ccenter(2)'
-             WRITE(I,'(A)')'   Cz = -Ccenter(3)'
-          enddo
-          do I=16,20
-             !          WRITE(I,'(A)')'   iAtomD = (iPassQ-1)/nAtomsC+1'
-             !          WRITE(I,'(A)')'   Dx = -Dcenter(1,iAtomD)'
-             !          WRITE(I,'(A)')'   Dy = -Dcenter(2,iAtomD)'
-             !          WRITE(I,'(A)')'   Dz = -Dcenter(3,iAtomD)'
-             WRITE(I,'(A)')'   Dx = -Dcenter(1)'
-             WRITE(I,'(A)')'   Dy = -Dcenter(2)'
-             WRITE(I,'(A)')'   Dz = -Dcenter(3)'
-          enddo
-          ! ======================================================================
-          !    iPrimP Loop 
-          ! ======================================================================
-          do J=1,16
-             I = non1Prim(J)
-             WRITE(I,'(A)')'   DO iPrimP=1, nPrimP'
-          enddo
-          !segP
-          do I=3,18,5
-             WRITE(I,'(A)')'    iP = (iPassQ-1)*nPrimQ'
-          enddo
-          !segQ
-          do I=2,17,5
-             WRITE(I,'(A)')'    iP = iP + 1'
-             WRITE(I,'(A,i5)')'    DO iTUV=1,',nTUV
-             WRITE(I,'(A)')'     AUXarray(iTUV,iP)=0.0E0_realk'
-             WRITE(I,'(A)')'    ENDDO'
-          enddo
-          do J=1,16
-             I = non1Prim(J)
-             WRITE(I,'(A)')'    Pexpfac = PpreExpFac(iPrimP)'
-             WRITE(I,'(A)')'    mPX = -Pcent(1,iPrimP)'
-             WRITE(I,'(A)')'    mPY = -Pcent(2,iPrimP)'
-             WRITE(I,'(A)')'    mPZ = -Pcent(3,iPrimP)'
-          enddo
-          do J=1,8
-             I = non1Prim(J)
-             WRITE(I,'(A)')'    invexpP = D1/Pexp(iPrimP)'
-             WRITE(I,'(A)')'    inv2expP = D05*invexpP'
-          enddo
-          do J=1,4
-             I = pure1Prim(J)
-             WRITE(I,'(A)')'    Pexpfac = PpreExpFac(1)'
-             WRITE(I,'(A)')'    mPX = -Pcent(1)'
-             WRITE(I,'(A)')'    mPY = -Pcent(2)'
-             WRITE(I,'(A)')'    mPZ = -Pcent(3)'
-          enddo
-          do J=1,2
-             I = pure1Prim(J)
-             WRITE(I,'(A)')'    invexpP = D1/Pexp(1)'
-             WRITE(I,'(A)')'    inv2expP = D05*invexpP'
-          enddo
-
-          do I=1,4
-             WRITE(I,'(A)')'    Xpa = Pcent(1,iPrimP) + Ax'
-             WRITE(I,'(A)')'    Ypa = Pcent(2,iPrimP) + Ay'
-             WRITE(I,'(A)')'    Zpa = Pcent(3,iPrimP) + Az'
-          enddo
-          WRITE(LUMODA5,'(A)')'    Xpa = Pcent(1) + Ax'
-          WRITE(LUMODA5,'(A)')'    Ypa = Pcent(2) + Ay'
-          WRITE(LUMODA5,'(A)')'    Zpa = Pcent(3) + Az'
-          do I=6,9
-             WRITE(I,'(A)')'    Xpb = Pcent(1,iPrimP) + Bx'
-             WRITE(I,'(A)')'    Ypb = Pcent(2,iPrimP) + By'
-             WRITE(I,'(A)')'    Zpb = Pcent(3,iPrimP) + Bz'
-          enddo
-          WRITE(LUMODB5,'(A)')'    Xpb = Pcent(1) + Bx'
-          WRITE(LUMODB5,'(A)')'    Ypb = Pcent(2) + By'
-          WRITE(LUMODB5,'(A)')'    Zpb = Pcent(3) + Bz'
-
-          ! ======================================================================
-          !    iPrimQ Loop 
-          ! ======================================================================
-          do J=1,16
-             I=non1Prim(J)
-             WRITE(I,'(A)')'    DO iPrimQ=1, nPrimQ'
-          enddo
-          !if Seg or seg1prim iP not used
-          !if SegQ then IP should be increased after iPrimP only 
-          !if Gen then IP should be increased after iPrimQ 
-          !if SegP then IP should be increased after iPrimQ 
-          !general
-          do I=1,16,5
-             WRITE(I,'(A)')'     iP = iP + 1'
-          enddo
-          !segP
-          do I=3,18,5
-             WRITE(I,'(A)')'   iP = iP + 1'
-          enddo
-
-          do J=1,16
-             I=non1Prim(J)
-             WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ,iPassQ)'
-             WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ,iPassQ)'
-             WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ,iPassQ)'
-          enddo
-          do J=1,4
-             I=pure1Prim(J)
-             WRITE(I,'(A)')'     Xpq = mPX + Qcent(1,iPassQ)'
-             WRITE(I,'(A)')'     Ypq = mPY + Qcent(2,iPassQ)'
-             WRITE(I,'(A)')'     Zpq = mPZ + Qcent(3,iPassQ)'
-          enddo
-          do J=9,12
-             I=non1Prim(J)
-             WRITE(I,'(A)')'     Xqc = Qcent(1,iPrimQ,iPassQ) + Cx'
-             WRITE(I,'(A)')'     Yqc = Qcent(2,iPrimQ,iPassQ) + Cy'
-             WRITE(I,'(A)')'     Zqc = Qcent(3,iPrimQ,iPassQ) + Cz'
-          enddo
-          I=pure1Prim(3)
-          WRITE(I,'(A)')'     Xqc = Qcent(1,iPassQ) + Cx'
-          WRITE(I,'(A)')'     Yqc = Qcent(2,iPassQ) + Cy'
-          WRITE(I,'(A)')'     Zqc = Qcent(3,iPassQ) + Cz'       
-          do J=13,16
-             I=non1Prim(J)
-             WRITE(I,'(A)')'     Xqd = Qcent(1,iPrimQ,iPassQ) + Dx'
-             WRITE(I,'(A)')'     Yqd = Qcent(2,iPrimQ,iPassQ) + Dy'
-             WRITE(I,'(A)')'     Zqd = Qcent(3,iPrimQ,iPassQ) + Dz'
-          enddo
-          I=pure1Prim(4)
-          WRITE(I,'(A)')'     Xqd = Qcent(1,iPassQ) + Dx'
-          WRITE(I,'(A)')'     Yqd = Qcent(2,iPassQ) + Dy'
-          WRITE(I,'(A)')'     Zqd = Qcent(3,iPassQ) + Dz'
-          do J=1,8
-             I=non1Prim(J)
-             WRITE(I,'(A)')'     alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP'    
-          enddo
-          WRITE(LUMODA5,'(A)')'     alphaP = -reducedExponents(1)*invexpP'    
-          WRITE(LUMODB5,'(A)')'     alphaP = -reducedExponents(1)*invexpP'    
-          do J=9,16
-             I=non1Prim(J)
-             WRITE(I,'(A)')'     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ(iPrimQ)'
-          enddo
-          WRITE(LUMODC5,'(A)')'     alphaQ = -reducedExponents(1)*invexpQ'
-          WRITE(LUMODD5,'(A)')'     alphaQ = -reducedExponents(1)*invexpQ'
-          do I=1,10
-             WRITE(I,'(A)')'     alphaXpq = -alphaP*Xpq'
-             WRITE(I,'(A)')'     alphaYpq = -alphaP*Ypq'
-             WRITE(I,'(A)')'     alphaZpq = -alphaP*Zpq'
-          enddo
-          do J=9,16
-             I=non1Prim(J)
-             WRITE(I,'(A)')'     inv2expQ = D05*invexpQ(iPrimQ)'
-          enddo
-          do J=3,4
-             I=pure1Prim(J)
-             WRITE(I,'(A)')'     inv2expQ = D05*invexpQ'
-          enddo
-          do I=11,20
-             WRITE(I,'(A)')'     alphaXpq = alphaQ*Xpq'
-             WRITE(I,'(A)')'     alphaYpq = alphaQ*Ypq'
-             WRITE(I,'(A)')'     alphaZpq = alphaQ*Zpq'
-          enddo
-          do I=1,200
-             WRITE(I,'(A)')'     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq'
-          enddo
-          do J=1,16
-             I=non1Prim(J)
-             WRITE(I,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
-          enddo
-          do J=1,4
-             I=pure1Prim(J)
-             WRITE(I,'(A)')'     WVAL = reducedExponents(1)*squaredDistance'
-          enddo
-          do I=1,20
-             !          WRITE(I,'(A)')'     !  0 < WVAL < 0.000001'
-             !          WRITE(I,'(A)')'!     IF (ABS(WVAL) .LT. SMALL) THEN'     
-             !          WRITE(I,'(A)')'!      RJ000(0) = D1 !THE BOYS FUNCTION FOR ZERO ARGUMENT'
-             !          DO J=1,JMAX
-             !             WRITE(I,'(A,I1,A,ES23.16,A)')'!      RJ000(',J,')= ',1.0d0/(2*J + 1),'_realk'
-             !          ENDDO
-             WRITE(I,'(A)')'     !  0 < WVAL < 12 '
-             WRITE(I,'(A)')'     IF (WVAL .LT. D12) THEN'
-             WRITE(I,'(A)')'      IPNT = NINT(D100*WVAL)'
-             WRITE(I,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
-             WRITE(I,'(A)')'      W2    = WDIFF*WDIFF'
-             WRITE(I,'(A)')'      W3    = W2*WDIFF'
-             WRITE(I,'(A)')'      W2    = W2*D05'
-             WRITE(I,'(A)')'      W3    = W3*COEF3'
-             DO J=0,JMAX
-                WRITE(I,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000(',J,') = TABFJW(',J,',IPNT)-TABFJW(',J+1,',IPNT)*WDIFF+TABFJW(',J+2,',IPNT)*W2+TABFJW(',J+3,',IPNT)*W3'
-             ENDDO
-             !     WRITE(I,'(A)')'        DO J=0,JMAX'
-             !      WRITE(I,'(A)')'           R = TABFJW(J,IPNT)'
-             !      WRITE(I,'(A)')'           R = R -TABFJW(J+1,IPNT)*WDIFF'
-             !      WRITE(I,'(A)')'           R = R + TABFJW(J+2,IPNT)*W2'
-             !      WRITE(I,'(A)')'           R = R + TABFJW(J+3,IPNT)*W3'
-             !      WRITE(I,'(A)')'           RJ000(J,ipq,ipassq) = R'
-             !     WRITE(I,'(A)')'        ENDDO'
-             WRITE(I,'(A)')'     !  12 < WVAL <= (2J+36) '
-             WRITE(I,'(A)')'     ELSE IF (WVAL.LE.D2JP36) THEN'
-             WRITE(I,'(A)')'      REXPW = D05*EXP(-WVAL)'
-             WRITE(I,'(A)')'      RWVAL = D1/WVAL'
-             WRITE(I,'(A)')'      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))'
-             WRITE(I,'(A)')'      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
-             !        WRITE(I,'(A)')'        RJ000(0,ipq,ipassq) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
-             DO J=1,JMAX
-                WRITE(I,'(A,I2,A,I2,A,I2,A)')'      RJ000(',J,') = RWVAL*((',J,' - D05)*RJ000(',J-1,')-REXPW)'          
-             ENDDO
-             !        WRITE(I,'(A)')'        DO J=1,JMAX'
-             !        WRITE(I,'(A)')'           RJ000(J,ipq,ipassq) = RWVAL*((J - D05)*RJ000(J-1,ipq,ipassq)-REXPW)'
-             !        WRITE(I,'(A)')'        ENDDO'
-             WRITE(I,'(A)')'     !  (2J+36) < WVAL '
-             WRITE(I,'(A)')'     ELSE'
-             WRITE(I,'(A)')'      RWVAL = PID4/WVAL'
-             WRITE(I,'(A)')'      RJ000(0) = SQRT(RWVAL)'
-             !        WRITE(I,'(A)')'        RJ000(0,ipq,ipassq) = SQRT(RWVAL)'
-             WRITE(I,'(A)')'      RWVAL = RWVAL*PID4I'
-             DO J=1,JMAX
-                WRITE(I,'(A,I2,A,I2,A,I2,A)')'      RJ000(',J,') = RWVAL*(',J,' - D05)*RJ000(',J-1,')'
-             ENDDO
-             !        WRITE(I,'(A)')'        DO J = 1, JMAX'
-             !        WRITE(I,'(A)')'           RJ000(J,ipq,ipassq) = RWVAL*(J - D05)*RJ000(J-1,ipq,ipassq)'
-             !        WRITE(I,'(A)')'        ENDDO'
-             WRITE(I,'(A)')'     ENDIF'
-          enddo
-          do J=1,16
-             I=non1Prim(J)
-             WRITE(I,'(A)')'     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ,iPassQ)*Pexpfac'
-          enddo
-          do J=1,4
-             I=pure1Prim(J)
-             WRITE(I,'(A)')'     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)'
-          enddo
-          !gen og seg
-          DO I=1,16,5
-             WRITE(I,'(A)')'     Auxarray(1,IP) = PREF*RJ000(0)'
-             WRITE(I+1,'(A)')'     TMPAuxarray(1) = PREF*RJ000(0)'
-             WRITE(I+2,'(A)')'     TMPAuxarray(1) = PREF*RJ000(0)'
-             WRITE(I+3,'(A)')'     TMPAuxarray(1) = PREF*RJ000(0)'
-             WRITE(I+4,'(A)')'     TMPAuxarray(1) = PREF*RJ000(0)'
-          ENDDO
-          !seg TMPAuxarray
-          do I=1,20
-             DO J=2,JMAX+1
-                WRITE(I,'(A,I2,A,I2,A)')'     TMParray1(1,',J,') = PREF*RJ000(',J-1,')'
-             ENDDO
-          enddo
-          do I=1,20
-             Gen = .FALSE.; SegQ = .FALSE.; SegP = .FALSE.; Seg = .FALSE.; Seg1Prim = .FALSE.
-             IF(MOD(I,5).EQ.1)Gen = .TRUE.
-             IF(MOD(I,5).EQ.2)SegQ = .TRUE.
-             IF(MOD(I,5).EQ.3)SegP = .TRUE.
-             IF(MOD(I,5).EQ.4)Seg = .TRUE.
-             IF(MOD(I,5).EQ.0)THEN
-                Seg = .TRUE.
-                Seg1Prim=.TRUE.
+       DoOpenMP = .FALSE.
+       IF(CPU)DoOpenMP = .TRUE.
+       Collapse = .TRUE.
+       IF(.NOT.CPU)Collapse = .TRUE.
+!       Collapse = .FALSE.
+       IF(.NOT.CPU)nPrimnTUV = .FALSE.
+       do center=1,4
+          IF(center.EQ.1)centerString='A'
+          IF(center.EQ.2)centerString='B'
+          IF(center.EQ.3)centerString='C'
+          IF(center.EQ.4)centerString='D'
+          DO iseg = 1,5
+             Gen = .FALSE.; SegQ=.FALSE.; SegP=.FALSE.;Seg=.FALSE.;Seg1Prim=.FALSE.
+             IF(iseg.EQ.1)THEN
+                Gen = .TRUE.      ; SegLabel = 'Gen     '; iSegLabel = 3
+             ELSEIF(iseg.EQ.2)THEN
+                SegQ = .TRUE.     ; SegLabel = 'SegQ    '; iSegLabel = 4
+             ELSEIF(iseg.EQ.3)THEN
+                SegP = .TRUE.     ; SegLabel = 'SegP    '; iSegLabel = 4
+             ELSEIF(iseg.EQ.4)THEN
+                Seg = .TRUE.      ; SegLabel = 'Seg     '; iSegLabel = 3
+             ELSEIF(iseg.EQ.5)THEN
+                Seg1Prim = .TRUE. ; SegLabel = 'Seg1Prim'; iSegLabel = 8
              ENDIF
-             !Gen,SegQ,SegP,Seg
-             allocate(CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
-             CREATED  = .FALSE.
-             CREATED(0,0,0) = .TRUE.
-             DO JTMP=1,JMAX
+             IF(CPU)THEN
+                ARCSTRING = 'CPU'
+             ELSE
+                ARCSTRING = 'GPU'
+             ENDIF
+             DO I =1,48
+                FileName(I:I) = ' '
+             ENDDO
+             WRITE(FileName,'(4A)')'runVerticalRecurrence'//ARCSTRING//'QP',centerString,SegLabel(1:iSegLabel),'.F90'
+             print*,'FileName:',FileName
+             LUFILE = 12
+             open(unit = LUFILE, file=TRIM(FileName),status="unknown")
 
-                DO J = 1,JMAX-JTMP+1
+             IF(COLLAPSE)THEN
+                IF(Gen)THEN
+                   PrimLabel = 'iP'; iPrim = 2
+                   nPrimLabel = 'nPrimQ*nPrimP*nPassP'; nPrim = 20 
+                ELSEIF(SegQ)THEN
+!                   PrimLabel = 'iPrimP,iPassP'; iPrim = 13 
+!                   nPrimLabel = 'nPrimP,nPassP'; nPrim = 13 
+                   PrimLabel = 'iP'; iPrim = 2
+                   nPrimLabel = 'nPrimP*nPassP'; nPrim = 13 
+                ELSEIF(SegP)THEN
+!                   PrimLabel = 'iPrimQ,iPassP'; iPrim = 13 
+!                   nPrimLabel = 'nPrimQ,nPassP'; nPrim = 13 
+                   PrimLabel = 'iP'; iPrim = 2
+                   nPrimLabel = 'nPrimQ*nPassP'; nPrim = 13 
+                ELSEIF(Seg)THEN
+                   PrimLabel = 'iPassP'; iPrim = 2
+                   nPrimLabel = 'nPassP'; nPrim = 6 
+                ELSE
+                   PrimLabel = 'iPassP'; iPrim = 2
+                   nPrimLabel = 'nPassP'; nPrim = 6 
+                ENDIF
+             ELSE
+                IF(Gen)THEN
+                   PrimLabel = 'iPrimQ,iPrimP,iPassP'; iPrim = 20 
+                   nPrimLabel = 'nPrimQ,nPrimP,nPassP'; nPrim = 20 
+                ELSEIF(SegQ)THEN
+                   PrimLabel = 'iPrimP,iPassP'; iPrim = 13 
+                   nPrimLabel = 'nPrimP,nPassP'; nPrim = 13 
+                ELSEIF(SegP)THEN
+                   PrimLabel = 'iPrimQ,iPassP'; iPrim = 13 
+                   nPrimLabel = 'nPrimQ,nPassP'; nPrim = 13 
+                ELSEIF(Seg)THEN
+                   PrimLabel = 'iPassP'; iPrim = 6 
+                   nPrimLabel = 'nPassP'; nPrim = 6 
+                ELSE
+                   PrimLabel = 'iPassP'; iPrim = 6 
+                   nPrimLabel = 'nPassP'; nPrim = 6 
+                ENDIF
+             ENDIF
 
-                   !determine twoterms
-                   nTUVLIST = (JTMP+1)*(JTMP+2)*(JTMP+3)/6   
-                   allocate(TwoTermTUVLIST(nTUVLIST))
-                   allocate(TwoTermsUsed(nTUVLIST))
-                   call TwoTerms1(J,JTMP,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
-                   DO Tp=JTMP,0,-1       
-                      DO Up=JTMP-Tp,0,-1
-                         Vp=JTMP-Tp-Up                
-                         iTUV = TUVINDEX(Tp,Up,Vp)
-                         TREC = CREATED(Tp-1,Up,Vp); UREC = CREATED(Tp,Up-1,Vp);VREC = CREATED(Tp,Up,Vp-1)
-                         N=0
-                         IF(TREC)N=N+1
-                         IF(UREC)N=N+1
-                         IF(VREC)N=N+1
-                         IF(N.EQ.1)THEN
-                            !only one possible way to construct it
-                            IF(TREC)THEN
-                               call TRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
-                            ELSEIF(UREC)THEN
-                               call URECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
-                            ELSEIF(VREC)THEN
-                               call VRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
-                            ENDIF
-                         ELSE
-                            !several ways to construct it
-                            TREC2 = CREATED(Tp-2,Up,Vp)
-                            UREC2 = CREATED(Tp,Up-2,Vp)
-                            VREC2 = CREATED(Tp,Up,Vp-2)
-                            N2=0
-                            IF(TREC2)N2=N2+1
-                            IF(UREC2)N2=N2+1
-                            IF(VREC2)N2=N2+1
-                            IF(N2.LT.N)THEN
-                               !two term recurrence possible for one or more the possibilities 
-                               !we chose the one term possibility
-                               IF(.NOT.(TREC.AND.TREC2).AND.TREC)THEN
-                                  !                         print*,'!B TRECURRENCE iTUV',iTUV
-                                  CALL TRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
-                               ELSEIF(.NOT.(UREC.AND.UREC2).AND.UREC)THEN
-                                  !                         print*,'!B URECURRENCE iTUV',iTUV
-                                  CALL URECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
-                               ELSEIF(.NOT.(VREC.AND.VREC2).AND.VREC)THEN
-                                  !                         print*,'!B VRECURRENCE iTUV',iTUV
-                                  CALL VRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
-                               ENDIF
-                            ELSE
-                               !chose one of the possibilities
-                               IF(TREC)THEN
-                                  !                         print*,'!C TRECURRENCE iTUV',iTUV
-                                  CALL TRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
-                               ELSEIF(UREC)THEN
-                                  !                         print*,'!C URECURRENCE iTUV',iTUV
-                                  call URECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
-                               ELSEIF(VREC)THEN
-                                  !                         print*,'!D VRECURRENCE iTUV',iTUV
-                                  call VRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
-                               ENDIF
-                            ENDIF
-                         ENDIF
-                         CREATED(Tp,Up,Vp) = .TRUE.
-                      ENDDO
-                   ENDDO
+             WRITE(LUFILE,'(5A)')'MODULE AGC_',ARCSTRING,'_OBS_VERTICALRECURRENCEMOD',centerString,SegLabel(1:iSegLabel)
+             MaxAngmomQP = 8
+             WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+             WRITE(LUFILE,'(A)')'  '
+             WRITE(LUFILE,'(A)')' CONTAINS'
 
-                   call WriteTwoTerms(J,JTMP,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed,I,Gen,SegQ,SegP,Seg,seg1prim)
+             !========================================================================================================
+             !    VerticalRecurrence 0 only in Acenter
+             !========================================================================================================
+             WRITE(LUFILE,'(A)')''
+             JMAX = 0
+             IF(center.EQ.1)THEN
+                WRITE(LUFILE,'(3A)')'subroutine VerticalRecurrence'//ARCSTRING,SegLabel(1:iSegLabel),'0(nPassP,nPrimP,nPrimQ,&'
+                WRITE(LUFILE,'(A)')'         & reducedExponents,TABFJW,&'
+                WRITE(LUFILE,'(A)')'         & Pcent,Qcent,integralPrefactor,&'
+                WRITE(LUFILE,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&'
+                WRITE(LUFILE,'(A)')'         & AUXarray)'
+                WRITE(LUFILE,'(A)')'  implicit none'
+                WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
+                WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
+                WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: TABFJW(0:3,0:1200)'
+                IF(Seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: reducedExponents(1)'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: integralPrefactor(1)'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: reducedExponents(nPrimQ,nPrimP)'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)'
+                ENDIF
+                WRITE(LUFILE,'(A,A,A)')'  real(realk),intent(inout) :: AUXarray(',nPrimLabel(1:nPrim),')'
+                WRITE(LUFILE,'(A)')'  !local variables'
+                WRITE(LUFILE,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',36.0d0,'_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: D05 =0.5E0_realk,D1=1E0_realk'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+                WRITE(LUFILE,'(A)')'  Real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+                WRITE(LUFILE,'(A)')'  Real(realk),parameter :: PI=3.14159265358979323846E0_realk'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2'
+                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+                WRITE(LUFILE,'(A)')'!  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk'
+                WRITE(LUFILE,'(A)')'  Real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL'
+                WRITE(LUFILE,'(A)')'  Real(realk) :: W2,W3,PX,PY,PZ,XPQ,YPQ,ZPQ,squaredDistance,RJ000'
+                WRITE(LUFILE,'(A)')'  Integer :: IPNT,iAtomA,iAtomB'
+                IF(COLLAPSE.AND.Seg)THEN
+                   WRITE(LUFILE,'(A)')'  Integer :: iPrimQP'
+                ENDIF
+                WRITE(LUFILE,'(A)')'  Integer :: iP,iPrimQ,iPrimP,iPassP'
+                IF(COLLAPSE)THEN
+                   call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,nTUV,DoOpenMP)
+                ENDIF
+                IF(DoOpenMP)THEN
+                   call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,Collapse,Center,centerstring)
+                ENDIF
+!                         WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPrimP*nPassP'
+!                         WRITE(LUFILE,'(A)')'   iPrimQ = mod(IP-1,nPrimQ)+1'
+!                         WRITE(LUFILE,'(A)')'   iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1'
+!                         WRITE(LUFILE,'(A)')'   iPassP = (IP-1)/(nPrimQ*nPrimP) + 1'
+!                i1 = i12 - ((i12-1)/n1)*n1
+!                i2 = (i12-1)/n1+1
+
+!DO i123 = 1,n1*n2*n3'
+!i1 = mod(I123-1,n1)+1'
+!i2 = mod((I123-(mod(I123-1,n1)+1))/n1,n2)+1'
+!i3 = (I123-1)/(n1*n2) + 1'
 
 
-                   DO Tp=JTMP,0,-1       
-                      DO Up=JTMP-Tp,0,-1
-                         Vp=JTMP-Tp-Up                
-                         iTUV = TUVINDEX(Tp,Up,Vp)
+                IF(Collapse)THEN
+                   call PrintCollapseLoopStart(Gen,SegQ,SegP,Seg,seg1prim,LUFILE)
+                   WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+                   WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    px = Pcent(1,iPrimP,iAtomA,iAtomB)'
+                      WRITE(LUFILE,'(A)')'    py = Pcent(2,iPrimP,iAtomA,iAtomB)'
+                      WRITE(LUFILE,'(A)')'    pz = Pcent(3,iPrimP,iAtomA,iAtomB)'
+                      WRITE(LUFILE,'(A)')'     Xpq = px - Qcent(1,iPrimQ)'
+                      WRITE(LUFILE,'(A)')'     Ypq = py - Qcent(2,iPrimQ)'
+                      WRITE(LUFILE,'(A)')'     Zpq = pz - Qcent(3,iPrimQ)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'     Xpq = Pcent(1,iAtomA,iAtomB) - Qcent(1)'
+                      WRITE(LUFILE,'(A)')'     Ypq = Pcent(2,iAtomA,iAtomB) - Qcent(2)'
+                      WRITE(LUFILE,'(A)')'     Zpq = Pcent(3,iAtomA,iAtomB) - Qcent(3)'
+                   ENDIF
+                ELSE
+                   WRITE(LUFILE,'(A)')'  DO iPassP = 1,nPassP'
+                   WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+                   WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+                   IF(Seg)WRITE(LUFILE,'(A)')'   AUXarray(iPassP)=0.0E0_realk'
+                   IF(SegP)THEN
+                      WRITE(LUFILE,'(A)')'   DO iPrimQ=1, nPrimQ'
+                      WRITE(LUFILE,'(A)')'    AUXarray(iPrimQ,iPassP)=0.0E0_realk'
+                      WRITE(LUFILE,'(A)')'   ENDDO'
+                   ENDIF
+                   IF(.NOT.Seg1Prim)WRITE(LUFILE,'(A)')'   DO iPrimP=1, nPrimP'
+                   IF(SegQ)WRITE(LUFILE,'(A)')'    AUXarray(iPrimP,iPassP)=0.0E0_realk'
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    px = Pcent(1,iPrimP,iAtomA,iAtomB)'
+                      WRITE(LUFILE,'(A)')'    py = Pcent(2,iPrimP,iAtomA,iAtomB)'
+                      WRITE(LUFILE,'(A)')'    pz = Pcent(3,iPrimP,iAtomA,iAtomB)'
+                      WRITE(LUFILE,'(A)')'    DO iPrimQ=1, nPrimQ'
+                      WRITE(LUFILE,'(A)')'     Xpq = px - Qcent(1,iPrimQ)'
+                      WRITE(LUFILE,'(A)')'     Ypq = py - Qcent(2,iPrimQ)'
+                      WRITE(LUFILE,'(A)')'     Zpq = pz - Qcent(3,iPrimQ)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'     Xpq = Pcent(1,iAtomA,iAtomB) - Qcent(1)'
+                      WRITE(LUFILE,'(A)')'     Ypq = Pcent(2,iAtomA,iAtomB) - Qcent(2)'
+                      WRITE(LUFILE,'(A)')'     Zpq = Pcent(3,iAtomA,iAtomB) - Qcent(3)'
+                   ENDIF
+                ENDIF
+                WRITE(LUFILE,'(A)')'     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq'
+                IF(.NOT.Seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
+                ELSE
+                   WRITE(LUFILE,'(A)')'     WVAL = reducedExponents(1)*squaredDistance'
+                ENDIF
+                WRITE(LUFILE,'(A)')'     !  0 < WVAL < 0.000001'
+                WRITE(LUFILE,'(A)')'!     IF (ABS(WVAL) .LT. SMALL) THEN'     
+                WRITE(LUFILE,'(A)')'!      RJ000 = D1'
+                WRITE(LUFILE,'(A)')'!     !  0 < WVAL < 12 '
+                WRITE(LUFILE,'(A)')'     IF (WVAL .LT. D12) THEN'
+                WRITE(LUFILE,'(A)')'      IPNT = NINT(D100*WVAL)'
+                WRITE(LUFILE,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
+                WRITE(LUFILE,'(A)')'      W2    = WDIFF*WDIFF'
+                WRITE(LUFILE,'(A)')'      W3    = W2*WDIFF'
+                WRITE(LUFILE,'(A)')'      W2    = W2*D05'
+                WRITE(LUFILE,'(A)')'      W3    = W3*COEF3'
+                WRITE(LUFILE,'(A)')'      RJ000 = TABFJW(0,IPNT)-TABFJW(1,IPNT)*WDIFF+TABFJW(2,IPNT)*W2+TABFJW(3,IPNT)*W3'
+                WRITE(LUFILE,'(A)')'     !  12 < WVAL <= (2J+36) '
+                WRITE(LUFILE,'(A)')'     ELSE IF (WVAL.LE.D2JP36) THEN'
+                WRITE(LUFILE,'(A)')'      REXPW = D05*EXP(-WVAL)'
+                WRITE(LUFILE,'(A)')'      RWVAL = D1/WVAL'
+                WRITE(LUFILE,'(A)')'      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))'
+                WRITE(LUFILE,'(A)')'      RJ000 = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
+                WRITE(LUFILE,'(A)')'     !  (2J+36) < WVAL '
+                WRITE(LUFILE,'(A)')'     ELSE'
+                WRITE(LUFILE,'(A)')'      RJ000 = SQRT(PID4/WVAL)'
+                WRITE(LUFILE,'(A)')'     ENDIF'
+                IF(Gen)THEN
+                   WRITE(LUFILE,'(A,A,A)')'     AUXarray(',PrimLabel(1:iPrim),')=integralPrefactor(iPrimQ,iPrimP)*&'
+                   WRITE(LUFILE,'(A)')'          & QpreExpFac(iPrimQ)*PpreExpFac(iPrimP,iAtomA,iAtomB)*RJ000'
+                ELSEIF(Seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'     AUXarray(iP)=integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)*RJ000'
+                ELSE
+                   WRITE(LUFILE,'(A,A,A,A,A)')'     AUXarray(',PrimLabel(1:iPrim),')=AUXarray(',PrimLabel(1:iPrim),') + integralPrefactor(iPrimQ,iPrimP)*&'
+                   WRITE(LUFILE,'(A)')'          & QpreExpFac(iPrimQ)*PpreExpFac(iPrimP,iAtomA,iAtomB)*RJ000'
+                ENDIF
+                IF(Collapse)THEN
+                   call PrintCollapseLoopEnd(Gen,SegQ,SegP,Seg,seg1prim,LUFILE)
+                ELSE
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    enddo'
+                      WRITE(LUFILE,'(A)')'   enddo'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'  enddo'
+                ENDIF
+                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+!                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+                WRITE(LUFILE,'(3A)')'end subroutine VerticalRecurrence'//ARCSTRING,SegLabel(1:iSegLabel),'0'
+             endif
+             !========================================================================================================
+             !    VerticalRecurrence 1 
+             !========================================================================================================
+             JMAX = 1
+             WRITE(LUFILE,'(A)')''
+             WRITE(LUFILE,'(5A)')'subroutine VerticalRecurrence'//ARCSTRING,SegLabel(1:iSegLabel),'1',centerString,'(nPassP,nPrimP,nPrimQ,&'
+             IF(center.EQ.1)THEN
+                WRITE(LUFILE,'(A)')'         & reducedExponents,TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&'
+             ELSEIF(center.EQ.2)THEN
+                WRITE(LUFILE,'(A)')'         & reducedExponents,TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&'
+             ELSEIF(center.EQ.3)THEN
+                WRITE(LUFILE,'(A)')'         & reducedExponents,TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&'
+             ELSEIF(center.EQ.4)THEN
+                WRITE(LUFILE,'(A)')'         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&'
+             ENDIF
+             WRITE(LUFILE,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
+             WRITE(LUFILE,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
+             WRITE(LUFILE,'(A)')'  implicit none'
+             WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
+             WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
+             WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
+             WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: TABFJW(0:4,0:1200)'
+             IF(.NOT.Seg1Prim)THEN
+                IF(center.LE.2)THEN
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)'
+                ENDIF
+             ELSE
+                IF(center.LE.2)THEN
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Pexp(1)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Qexp(1)'
+                ENDIF
+             ENDIF
+             IF(.NOT.Seg1Prim)THEN
+                WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
+                WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)'
+             ELSE
+                WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
+             ENDIF
+             IF(center.LE.2)THEN
+                WRITE(LUFILE,'(A,A1,A,A1,A1)')'  real(realk),intent(in) :: ',centerString,'center(3,nAtoms',centerString,')'
+             ELSE
+                WRITE(LUFILE,'(A,A1,A)')'  real(realk),intent(in) :: ',centerString,'center(3)'
+             ENDIF
+             WRITE(LUFILE,'(A,A,A)')'  real(realk),intent(inout) :: AUXarray(4,',nPrimLabel(1:nPrim),')'
+             WRITE(LUFILE,'(A)')'  !local variables'
+             IF(.NOT.Seg1Prim)THEN
+                WRITE(LUFILE,'(A)')'  Integer :: iP,iPrimQ,iPrimP,iPassP,ipnt,iAtomA,iAtomB'
+             ELSE
+                WRITE(LUFILE,'(A)')'  Integer :: iP,iPassP,ipnt,iAtomA,iAtomB'
+             ENDIF
+             IF(COLLAPSE.AND.Seg)THEN
+                WRITE(LUFILE,'(A)')'  Integer :: iPrimQP'
+             ENDIF
+             IF(center.EQ.1)WRITE(LUFILE,'(A)')'  real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa'
+             IF(center.EQ.2)WRITE(LUFILE,'(A)')'  real(realk) :: Bx,By,Bz,Xpb,Ypb,Zpb'
+             IF(center.EQ.3)WRITE(LUFILE,'(A)')'  real(realk) :: Xqc,Yqc,Zqc'
+             IF(center.EQ.4)WRITE(LUFILE,'(A)')'  real(realk) :: Xqd,Yqd,Zqd'
+             IF(center.LE.2)THEN
+                WRITE(LUFILE,'(A)')'  real(realk) :: mPX,mPY,mPZ,invexpP,alphaP,RJ000(0:1)'
+             else
+                WRITE(LUFILE,'(A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ,alphaQ,RJ000(0:1)'
+             endif
+             WRITE(LUFILE,'(A)')'  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq'
+             WRITE(LUFILE,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
+             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
+             WRITE(LUFILE,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
+             WRITE(LUFILE,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.0d0 + 36.0d0,'_realk'
+             WRITE(LUFILE,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
+             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
+             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+             WRITE(LUFILE,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
+             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
+             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+             IF(center.EQ.1)WRITE(LUFILE,'(A)')'  !ThetaAux(n,1,0,0) = Xpa*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)'
+             IF(center.EQ.2)WRITE(LUFILE,'(A)')'  !ThetaAux(n,1,0,0) = Xpb*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)'
+             IF(center.EQ.3)WRITE(LUFILE,'(A)')'  !ThetaAux(n,1,0,0) = Xqc*ThetaAux(n,0,0,0) + (-alpha/q*Xpq)*ThetaAux(n+1,0,0,0)'
+             IF(center.EQ.4)WRITE(LUFILE,'(A)')'  !ThetaAux(n,1,0,0) = Xqd*ThetaAux(n,0,0,0) + (-alpha/q*Xpq)*ThetaAux(n+1,0,0,0)'
+             WRITE(LUFILE,'(A)')'  !i = 0 last 2 term vanish'
+             WRITE(LUFILE,'(A)')'  !We include scaling of RJ000 '
+             IF(Collapse)THEN
+                call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
+             ENDIF
+             IF(DoOpenMP)THEN
+                call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring)
+             ENDIF
+             IF(Collapse)THEN
+                call PrintCollapseLoopStart(Gen,SegQ,SegP,Seg,seg1prim,LUFILE)
+                WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+                WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+                IF(center.EQ.1)THEN
+                   WRITE(LUFILE,'(A)')'   Ax = -Acenter(1,iAtomA)'
+                   WRITE(LUFILE,'(A)')'   Ay = -Acenter(2,iAtomA)'
+                   WRITE(LUFILE,'(A)')'   Az = -Acenter(3,iAtomA)'
+                ELSEIF(center.eq.2)THEN
+                   WRITE(LUFILE,'(A)')'   Bx = -Bcenter(1,iAtomB)'
+                   WRITE(LUFILE,'(A)')'   By = -Bcenter(2,iAtomB)'
+                   WRITE(LUFILE,'(A)')'   Bz = -Bcenter(3,iAtomB)'
+                ENDIF
+                IF(seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'    mPX = -Pcent(1,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'    mPY = -Pcent(2,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'    mPZ = -Pcent(3,iAtomA,iAtomB)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
+                ENDIF
+                IF(center.LE.2)THEN
+                   IF(seg1Prim)THEN 
+                      WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(1)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(iPrimP)'
+                   ENDIF
+                ENDIF
+                IF(center.GT.2)THEN
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    invexpQ = D1/Qexp(iPrimQ)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    invexpQ = D1/Qexp(1)'
+                   ENDIF
+                ENDIF
+                IF(center.EQ.1)THEN
+                   IF(seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    Xpa = Pcent(1,iAtomA,iAtomB) + Ax'
+                      WRITE(LUFILE,'(A)')'    Ypa = Pcent(2,iAtomA,iAtomB) + Ay'
+                      WRITE(LUFILE,'(A)')'    Zpa = Pcent(3,iAtomA,iAtomB) + Az'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    Xpa = Pcent(1,iPrimP,iAtomA,iAtomB) + Ax'
+                      WRITE(LUFILE,'(A)')'    Ypa = Pcent(2,iPrimP,iAtomA,iAtomB) + Ay'
+                      WRITE(LUFILE,'(A)')'    Zpa = Pcent(3,iPrimP,iAtomA,iAtomB) + Az'
+                   ENDIF
+                ELSEIF(center.EQ.2)THEN
+                   IF(seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    Xpb = Pcent(1,iAtomA,iAtomB) + Bx'
+                      WRITE(LUFILE,'(A)')'    Ypb = Pcent(2,iAtomA,iAtomB) + By'
+                      WRITE(LUFILE,'(A)')'    Zpb = Pcent(3,iAtomA,iAtomB) + Bz'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    Xpb = Pcent(1,iPrimP,iAtomA,iAtomB) + Bx'
+                      WRITE(LUFILE,'(A)')'    Ypb = Pcent(2,iPrimP,iAtomA,iAtomB) + By'
+                      WRITE(LUFILE,'(A)')'    Zpb = Pcent(3,iPrimP,iAtomA,iAtomB) + Bz'
+                   ENDIF
+                ENDIF
+                IF(.NOT.Seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'   Xpq = mPX + Qcent(1,iPrimQ)'
+                   WRITE(LUFILE,'(A)')'   Ypq = mPY + Qcent(2,iPrimQ)'
+                   WRITE(LUFILE,'(A)')'   Zpq = mPZ + Qcent(3,iPrimQ)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'   Xpq = mPX + Qcent(1)'
+                   WRITE(LUFILE,'(A)')'   Ypq = mPY + Qcent(2)'
+                   WRITE(LUFILE,'(A)')'   Zpq = mPZ + Qcent(3)'
+                ENDIF
+             ELSE
+                WRITE(LUFILE,'(A)')'  DO iPassP = 1,nPassP'
+                WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+                WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+                IF(center.EQ.1)THEN
+                   WRITE(LUFILE,'(A)')'   Ax = -Acenter(1,iAtomA)'
+                   WRITE(LUFILE,'(A)')'   Ay = -Acenter(2,iAtomA)'
+                   WRITE(LUFILE,'(A)')'   Az = -Acenter(3,iAtomA)'
+                ELSEIF(center.eq.2)THEN
+                   WRITE(LUFILE,'(A)')'   Bx = -Bcenter(1,iAtomB)'
+                   WRITE(LUFILE,'(A)')'   By = -Bcenter(2,iAtomB)'
+                   WRITE(LUFILE,'(A)')'   Bz = -Bcenter(3,iAtomB)'
+                ENDIF
+                IF(SegP)WRITE(LUFILE,'(A)')'   DO iPrimQ=1, nPrimQ'
+                IF(Seg.OR.SegP)THEN
+                   WRITE(LUFILE,'(A,A,A)')'   AUXarray(1,',PrimLabel(1:iPrim),')=0.0E0_realk'
+                   WRITE(LUFILE,'(A,A,A)')'   AUXarray(2,',PrimLabel(1:iPrim),')=0.0E0_realk'
+                   WRITE(LUFILE,'(A,A,A)')'   AUXarray(3,',PrimLabel(1:iPrim),')=0.0E0_realk'
+                   WRITE(LUFILE,'(A,A,A)')'   AUXarray(4,',PrimLabel(1:iPrim),')=0.0E0_realk'
+                ENDIF
+                IF(SegP)WRITE(LUFILE,'(A)')'   ENDDO'
+                IF(.NOT.seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'   DO iPrimP=1, nPrimP'
+                ENDIF
+                IF(SegQ)THEN
+                   WRITE(LUFILE,'(A)')'    AUXarray(1,iPrimP,iPassP)=0.0E0_realk'
+                   WRITE(LUFILE,'(A)')'    AUXarray(2,iPrimP,iPassP)=0.0E0_realk'
+                   WRITE(LUFILE,'(A)')'    AUXarray(3,iPrimP,iPassP)=0.0E0_realk'
+                   WRITE(LUFILE,'(A)')'    AUXarray(4,iPrimP,iPassP)=0.0E0_realk'
+                ENDIF
+                IF(seg1Prim)THEN
+                   !          WRITE(LUFILE,'(A)')'    Pexpfac = PpreExpFac(iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'    mPX = -Pcent(1,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'    mPY = -Pcent(2,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'    mPZ = -Pcent(3,iAtomA,iAtomB)'
+                ELSE
+!                   WRITE(LUFILE,'(A)')'    Pexpfac = PpreExpFac(iPrimP,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
+                ENDIF
+                IF(center.LE.2)THEN
+                   IF(seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(1)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(iPrimP)'
+                   ENDIF
+                ENDIF
+                IF(center.GT.2)THEN
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    invexpQ = D1/Qexp(iPrimQ)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    invexpQ = D1/Qexp(1)'
+                   ENDIF
+                ENDIF
+                IF(center.EQ.1)THEN
+                   IF(seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    Xpa = Pcent(1,iAtomA,iAtomB) + Ax'
+                      WRITE(LUFILE,'(A)')'    Ypa = Pcent(2,iAtomA,iAtomB) + Ay'
+                      WRITE(LUFILE,'(A)')'    Zpa = Pcent(3,iAtomA,iAtomB) + Az'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    Xpa = Pcent(1,iPrimP,iAtomA,iAtomB) + Ax'
+                      WRITE(LUFILE,'(A)')'    Ypa = Pcent(2,iPrimP,iAtomA,iAtomB) + Ay'
+                      WRITE(LUFILE,'(A)')'    Zpa = Pcent(3,iPrimP,iAtomA,iAtomB) + Az'
+                   ENDIF
+                ELSEIF(center.EQ.2)THEN
+                   IF(seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    Xpb = Pcent(1,iAtomA,iAtomB) + Bx'
+                      WRITE(LUFILE,'(A)')'    Ypb = Pcent(2,iAtomA,iAtomB) + By'
+                      WRITE(LUFILE,'(A)')'    Zpb = Pcent(3,iAtomA,iAtomB) + Bz'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'    Xpb = Pcent(1,iPrimP,iAtomA,iAtomB) + Bx'
+                      WRITE(LUFILE,'(A)')'    Ypb = Pcent(2,iPrimP,iAtomA,iAtomB) + By'
+                      WRITE(LUFILE,'(A)')'    Zpb = Pcent(3,iPrimP,iAtomA,iAtomB) + Bz'
+                   ENDIF
+                ENDIF
+                IF(.NOT.Seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'    DO iPrimQ=1, nPrimQ'
+                   WRITE(LUFILE,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ)'
+                   WRITE(LUFILE,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ)'
+                   WRITE(LUFILE,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'     Xpq = mPX + Qcent(1)'
+                   WRITE(LUFILE,'(A)')'     Ypq = mPY + Qcent(2)'
+                   WRITE(LUFILE,'(A)')'     Zpq = mPZ + Qcent(3)'
+                ENDIF
+             ENDIF !collapse
+             IF(center.EQ.3)THEN
+                IF(seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'     Xqc = Qcent(1) - Ccenter(1)'
+                   WRITE(LUFILE,'(A)')'     Yqc = Qcent(2) - Ccenter(2)'
+                   WRITE(LUFILE,'(A)')'     Zqc = Qcent(3) - Ccenter(3)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'     Xqc = Qcent(1,iPrimQ) - Ccenter(1)'
+                   WRITE(LUFILE,'(A)')'     Yqc = Qcent(2,iPrimQ) - Ccenter(2)'
+                   WRITE(LUFILE,'(A)')'     Zqc = Qcent(3,iPrimQ) - Ccenter(3)'
+                ENDIF
+             ELSEIF(center.EQ.4)THEN
+                IF(seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'     Xqd = Qcent(1) - Dcenter(1)'
+                   WRITE(LUFILE,'(A)')'     Yqd = Qcent(2) - Dcenter(2)'
+                   WRITE(LUFILE,'(A)')'     Zqd = Qcent(3) - Dcenter(3)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'     Xqd = Qcent(1,iPrimQ) - Dcenter(1)'
+                   WRITE(LUFILE,'(A)')'     Yqd = Qcent(2,iPrimQ) - Dcenter(2)'
+                   WRITE(LUFILE,'(A)')'     Zqd = Qcent(3,iPrimQ) - Dcenter(3)'
+                ENDIF
+             ENDIF
+             IF(.NOT.Seg1Prim)THEN
+                IF(center.LE.2)THEN
+                   WRITE(LUFILE,'(A)')'     alphaP = reducedExponents(iPrimQ,iPrimP)*invexpP'    
+                ELSE
+                   WRITE(LUFILE,'(A)')'     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ'
+                ENDIF
+             ELSE
+                IF(center.LE.2)THEN
+                   WRITE(LUFILE,'(A)')'     alphaP = reducedExponents(1)*invexpP'    
+                ELSE
+                   WRITE(LUFILE,'(A)')'     alphaQ = -reducedExponents(1)*invexpQ'
+                ENDIF
+             ENDIF
+             IF(center.LE.2)THEN
+                WRITE(LUFILE,'(A)')'     alphaXpq = alphaP*Xpq'
+                WRITE(LUFILE,'(A)')'     alphaYpq = alphaP*Ypq'
+                WRITE(LUFILE,'(A)')'     alphaZpq = alphaP*Zpq'
+             ELSE
+                WRITE(LUFILE,'(A)')'     alphaXpq = alphaQ*Xpq'
+                WRITE(LUFILE,'(A)')'     alphaYpq = alphaQ*Ypq'
+                WRITE(LUFILE,'(A)')'     alphaZpq = alphaQ*Zpq'
+             ENDIF
+             WRITE(LUFILE,'(A)')'     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq'
+             IF(.NOT.Seg1Prim)THEN
+                WRITE(LUFILE,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
+             ELSE
+                WRITE(LUFILE,'(A)')'     WVAL = reducedExponents(1)*squaredDistance'
+             ENDIF
+             !       WRITE(LUFILE,'(A)')'     !  0 < WVAL < 0.000001'
+             !       WRITE(LUFILE,'(A)')'!     IF (ABS(WVAL) .LT. SMALL) THEN'     
+             !       WRITE(LUFILE,'(A)')'!      RJ000(0) = D1'
+             !       WRITE(LUFILE,'(A)')'!      RJ000(1)= D03333 !THE BOYS FUNCTION FOR ZERO ARGUMENT'
+             !       WRITE(LUFILE,'(A)')'!     !  0 < WVAL < 12 '
+             WRITE(LUFILE,'(A)')'     IF (WVAL .LT. D12) THEN'
+             WRITE(LUFILE,'(A)')'      IPNT = NINT(D100*WVAL)'
+             WRITE(LUFILE,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
+             WRITE(LUFILE,'(A)')'      W2    = WDIFF*WDIFF'
+             WRITE(LUFILE,'(A)')'      W3    = W2*WDIFF'
+             WRITE(LUFILE,'(A)')'      W2    = W2*D05'
+             WRITE(LUFILE,'(A)')'      W3    = W3*COEF3'
+             WRITE(LUFILE,'(A)')'      RJ000(0)=TABFJW(0,IPNT)-TABFJW(1,IPNT)*WDIFF+TABFJW(2,IPNT)*W2+TABFJW(3,IPNT)*W3'
+             WRITE(LUFILE,'(A)')'      RJ000(1)=TABFJW(1,IPNT)-TABFJW(2,IPNT)*WDIFF+TABFJW(3,IPNT)*W2+TABFJW(4,IPNT)*W3'
+             WRITE(LUFILE,'(A)')'     !  12 < WVAL <= (2J+36) '
+             WRITE(LUFILE,'(A)')'     ELSE IF (WVAL.LE.D2JP36) THEN'
+             WRITE(LUFILE,'(A)')'      REXPW = D05*EXP(-WVAL)'
+             WRITE(LUFILE,'(A)')'      RWVAL = D1/WVAL'
+             WRITE(LUFILE,'(A)')'      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))'
+             WRITE(LUFILE,'(A)')'      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
+             WRITE(LUFILE,'(A)')'      RJ000(1) = RWVAL*(D05*RJ000(0)-REXPW)'
+             WRITE(LUFILE,'(A)')'     !  (2J+36) < WVAL '
+             WRITE(LUFILE,'(A)')'     ELSE'
+             WRITE(LUFILE,'(A)')'      RWVAL = PID4/WVAL'
+             WRITE(LUFILE,'(A)')'      RJ000(0) = SQRT(RWVAL)'
+             WRITE(LUFILE,'(A)')'      RJ000(1) = RWVAL*PID4I*D05*RJ000(0)'
+             WRITE(LUFILE,'(A)')'     ENDIF'
+             IF(.NOT.Seg1Prim)THEN
+                WRITE(LUFILE,'(A)')'     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ)*PpreExpFac(iPrimP,iAtomA,iAtomB)'
+             ELSE
+                WRITE(LUFILE,'(A)')'     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)'
+             ENDIF
+             WRITE(LUFILE,'(A)')'     TMP1 = PREF*RJ000(0)'
+             WRITE(LUFILE,'(A)')'     TMP2 = PREF*RJ000(1)'
+             IF(Gen.OR.Seg1Prim) THEN
+                WRITE(LUFILE,'(A,A,A)')'     AUXarray(1,',PrimLabel(1:iPrim),') = TMP1'
+             ELSE
+                WRITE(LUFILE,'(A,A,A,A,A)')'     AUXarray(1,',PrimLabel(1:iPrim),') = AUXarray(1,',PrimLabel(1:iPrim),') + TMP1'
+             ENDIF
+             IF(center.EQ.1)THEN
+                Xdir='Xpa';Ydir='Ypa';Zdir='Zpa' 
+             ENDIF
+             IF(center.EQ.2)THEN
+                Xdir='Xpb';Ydir='Ypb';Zdir='Zpb' 
+             ENDIF
+             IF(center.EQ.3)THEN
+                Xdir='Xqc';Ydir='Yqc';Zdir='Zqc' 
+             ENDIF
+             IF(center.EQ.4)THEN
+                Xdir='Xqd';Ydir='Yqd';Zdir='Zqd' 
+             ENDIF
+             IF(Gen.OR.Seg1prim)THEN
+                WRITE(LUFILE,'(A,A,A,A,A)')'     AUXarray(2,',PrimLabel(1:iPrim),') = ',Xdir,'*TMP1 + alphaXpq*TMP2'
+                WRITE(LUFILE,'(A,A,A,A,A)')'     AUXarray(3,',PrimLabel(1:iPrim),') = ',Ydir,'*TMP1 + alphaYpq*TMP2'
+                WRITE(LUFILE,'(A,A,A,A,A)')'     AUXarray(4,',PrimLabel(1:iPrim),') = ',Zdir,'*TMP1 + alphaZpq*TMP2'
+             ELSE
+                WRITE(LUFILE,'(A,A,A,A,A,A,A)')'     AUXarray(2,',PrimLabel(1:iPrim),') = AUXarray(2,',PrimLabel(1:iPrim),') + ',Xdir,'*TMP1 + alphaXpq*TMP2'
+                WRITE(LUFILE,'(A,A,A,A,A,A,A)')'     AUXarray(3,',PrimLabel(1:iPrim),') = AUXarray(3,',PrimLabel(1:iPrim),') + ',Ydir,'*TMP1 + alphaYpq*TMP2'
+                WRITE(LUFILE,'(A,A,A,A,A,A,A)')'     AUXarray(4,',PrimLabel(1:iPrim),') = AUXarray(4,',PrimLabel(1:iPrim),') + ',Zdir,'*TMP1 + alphaZpq*TMP2'
+             ENDIF
+             IF(Collapse)THEN
+                call PrintCollapseLoopEnd(Gen,SegQ,SegP,Seg,seg1prim,LUFILE)
+             ELSE
+                IF(.NOT.seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'    enddo'
+                   WRITE(LUFILE,'(A)')'   enddo'
+                ENDIF
+                WRITE(LUFILE,'(A)')'  enddo'
+             ENDIF
+             IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+!             IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+             WRITE(LUFILE,'(4A)')'end subroutine VerticalRecurrence'//ARCSTRING,SegLabel(1:iSegLabel),'1',centerString
 
-                         !                print*,'!iTUV=',iTUV
-                         !step 1.
-                         !how can the (Tp,Up,Vp) be built from lower
-                         TREC = CREATED(Tp-1,Up,Vp)
-                         UREC = CREATED(Tp,Up-1,Vp)
-                         VREC = CREATED(Tp,Up,Vp-1)
-                         N=0
-                         IF(TREC)N=N+1
-                         IF(UREC)N=N+1
-                         IF(VREC)N=N+1
-                         IF(N.EQ.1)THEN
-                            !only one possible way to construct it
-                            IF(TREC)THEN
-                               !                      print*,'!A TRECURRENCE iTUV',iTUV
-                               call TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-                            ELSEIF(UREC)THEN
-                               !                      print*,'!A URECURRENCE iTUV',iTUV
-                               call URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-                            ELSEIF(VREC)THEN
-                               !                      print*,'!A VRECURRENCE iTUV',iTUV
-                               call VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-                            ENDIF
-                         ELSE
-                            !several ways to construct it
-                            TREC2 = CREATED(Tp-2,Up,Vp)
-                            UREC2 = CREATED(Tp,Up-2,Vp)
-                            VREC2 = CREATED(Tp,Up,Vp-2)
-                            N2=0
-                            IF(TREC2)N2=N2+1
-                            IF(UREC2)N2=N2+1
-                            IF(VREC2)N2=N2+1
-                            IF(N2.LT.N)THEN
-                               !two term recurrence possible for one or more the possibilities 
-                               !we chose the one term possibility
-                               IF(.NOT.(TREC.AND.TREC2).AND.TREC)THEN
-                                  !                         print*,'!B TRECURRENCE iTUV',iTUV
-                                  CALL TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-                               ELSEIF(.NOT.(UREC.AND.UREC2).AND.UREC)THEN
-                                  !                         print*,'!B URECURRENCE iTUV',iTUV
-                                  CALL URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-                               ELSEIF(.NOT.(VREC.AND.VREC2).AND.VREC)THEN
-                                  !                         print*,'!B VRECURRENCE iTUV',iTUV
-                                  CALL VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-                               ENDIF
-                            ELSE
-                               !chose one of the possibilities
-                               IF(TREC)THEN
-                                  !                         print*,'!C TRECURRENCE iTUV',iTUV
-                                  CALL TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-                               ELSEIF(UREC)THEN
-                                  !                         print*,'!C URECURRENCE iTUV',iTUV
-                                  call URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-                               ELSEIF(VREC)THEN
-                                  !                         print*,'!D VRECURRENCE iTUV',iTUV
-                                  call VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,I,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-                               ENDIF
-                            ENDIF
-                         ENDIF
-                         CREATED(Tp,Up,Vp) = .TRUE.
+             !============================================================================================================
+             !         VerticalRecurrence GENERAL
+             !============================================================================================================
+
+             DO JMAX=2,MaxAngmomQP
+                nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
+                nTUVPLUS = (JMAX+2)*(JMAX+3)*(JMAX+4)/6   
+                allocate(TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
+                TUVINDEX = 0
+                allocate(TINDEX(nTUVPLUS))
+                allocate(UINDEX(nTUVPLUS))
+                allocate(VINDEX(nTUVPLUS))
+                allocate(JINDEX(nTUVPLUS))
+
+                nTUVprev3 = (JMAX-2)*(JMAX-1)*(JMAX)/6
+                nTUVprev2 = (JMAX-1)*(JMAX)*(JMAX+1)/6
+                nTUVprev = (JMAX)*(JMAX+1)*(JMAX+2)/6
+                ituv = 0 
+                TUVINDEX = 0
+                DO J = 0, JMAX
+                   DO Tp=J,0,-1       
+                      DO Up=J-Tp,0,-1
+                         Vp=J-Tp-Up
+                         ituv = ituv + 1 
+                         TUVINDEX(Tp,Up,Vp) = ituv
+                         TINDEX(iTUV) = Tp
+                         UINDEX(iTUV) = Up
+                         VINDEX(iTUV) = Vp
+                         JINDEX(iTUV) = J
                       ENDDO
                    ENDDO
                 ENDDO
-                deallocate(TwoTermTUVLIST)
-                deallocate(TwoTermsUsed)
-                ! WRITE(I,'(A,I4)')'           ENDDO'
+                WRITE(LUFILE,'(A)')''
+                WRITE(LUFILE,'(A,A,I1,A,A)')'subroutine VerticalRecurrence'//ARCSTRING,SegLabel(1:iSegLabel),JMAX,centerString,'(nPassP,nPrimP,nPrimQ,&'
+                IF(center.EQ.1)THEN
+                   WRITE(LUFILE,'(A)')'         & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&'
+                ELSEIF(center.EQ.2)THEN
+                   WRITE(LUFILE,'(A)')'         & reducedExponents,RJ000Array,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&'
+                ELSEIF(center.EQ.3)THEN
+                   WRITE(LUFILE,'(A)')'         & reducedExponents,RJ000Array,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&'
+                ELSEIF(center.EQ.4)THEN
+                   WRITE(LUFILE,'(A)')'         & reducedExponents,RJ000Array,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&'
+                ENDIF
+                WRITE(LUFILE,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)'
+                WRITE(LUFILE,'(A)')'  implicit none'
+                WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
+                WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
+                WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
+                IF(.NOT.Seg1Prim)THEN
+                   WRITE(LUFILE,'(A,I2,A)')'  REAL(REALK),intent(in) :: RJ000Array(0:',JMAX,',nPrimQ,nPrimP,nPassP)'
+                   IF(center.LE.2)THEN
+                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)'
+                ELSE
+                   WRITE(LUFILE,'(A,I2,A)')'  REAL(REALK),intent(in) :: RJ000Array(0:',JMAX,',nPassP)'
+                   IF(center.LE.2)THEN
+                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Pexp(1)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Qexp(1)'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
+                ENDIF
+                IF(center.EQ.1)WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Acenter(3,nAtomsA)'
+                IF(center.EQ.2)WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Bcenter(3,nAtomsB)'
+                IF(center.EQ.3)WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Ccenter(3)'
+                IF(center.EQ.4)WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Dcenter(3)'
+                IF(COLLAPSE)THEN
+                   IF(Gen) WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimQ*nPrimP*nPassP)'
+                   IF(SegQ)WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimP*nPassP)'
+                   IF(SegP)WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimQ*nPassP)'
+                   IF(Seg) WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPassP)'
+                   IF(Seg1Prim)WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPassP)'
+                ELSE
+                   IF(Gen) WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimQ,nPrimP,nPassP)'
+                   IF(SegQ)WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimP,nPassP)'
+                   IF(SegP)WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPrimQ,nPassP)'
+                   IF(Seg) WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPassP)'
+                   IF(Seg1Prim)WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(',nTUV,',nPassP)'
+                ENDIF
+                WRITE(LUFILE,'(A)')'  !local variables'
+                IF(.NOT.Seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'  integer :: iPassP,iPrimP,iPrimQ,ipnt,IP,iTUV,iAtomA,iAtomB'
+                ELSE
+                   WRITE(LUFILE,'(A)')'  integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB'
+                ENDIF
+                IF(COLLAPSE.AND.Seg)THEN
+                   WRITE(LUFILE,'(A)')'  Integer :: iPrimQP'
+                ENDIF
+                IF(.NOT.Gen)THEN
+                   WRITE(LUFILE,'(A,I5,A)')'  real(realk) :: TMPAUXarray(',nTUVprev,')'
+                ENDIF
+                IF(center.EQ.1)WRITE(LUFILE,'(A)')'  real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa'
+                IF(center.EQ.2)WRITE(LUFILE,'(A)')'  real(realk) :: Bx,By,Bz,Xpb,Ypb,Zpb'
+                IF(center.EQ.3)WRITE(LUFILE,'(A)')'  real(realk) :: Xqc,Yqc,Zqc'
+                IF(center.EQ.4)WRITE(LUFILE,'(A)')'  real(realk) :: Xqd,Yqd,Zqd'
+                IF(center.LE.2)THEN
+                   WRITE(LUFILE,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP'
+                ELSE
+                   WRITE(LUFILE,'(A,i2,A)')'  real(realk) :: mPX,mPY,mPZ,invexpQ,inv2expQ,alphaQ'
+                ENDIF
+                WRITE(LUFILE,'(A,i4,A)')'  real(realk) :: TwoTerms(',MAX(1,nTUVprev2-nTUVprev3),')'
+                WRITE(LUFILE,'(A)')'  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq'
+                !             WRITE(LUFILE,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),parameter :: D2=2.0E0_realk,D05 =0.5E0_realk'
+                !             WRITE(LUFILE,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),parameter :: D1=1.0E0_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+                !             WRITE(LUFILE,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
+                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+                C = JMAX+2
+                DO JTMP=1,JMAX
+                   C = C-1
+                   nTUVTMPprev=(JTMP-1)*(JTMP)*(JTMP+1)/6
+                   nTUVTMP=(JTMP)*(JTMP+1)*(JTMP+2)/6
+                   if(JTMP.LT.10)THEN
+                      WRITE(LUFILE,'(A,I1,A,I3,A,I3,A,I1,A)')'  real(realk) :: TMParray',JTMP,'(',nTUVTMPprev+1,':',nTUVTMP,',2:',C,')'
+                   else
+                      WRITE(LUFILE,'(A,I2,A,I3,A,I3,A,I1,A)')'  real(realk) :: TMParray',JTMP,'(',nTUVTMPprev+1,':',nTUVTMP,',2:',C,')'
+
+                   endif
+                ENDDO
+                IF(center.Eq.1)then
+                   WRITE(LUFILE,'(A)')'  !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)'
+                   WRITE(LUFILE,'(A)')'  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))'
+                elseif(center.eq.2)then
+                   WRITE(LUFILE,'(A)')'  !TUV(T,0,0,N) = Xpb*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)'
+                   WRITE(LUFILE,'(A)')'  !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))'
+                elseif(center.eq.3)then
+                   WRITE(LUFILE,'(A)')'  !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)'
+                   WRITE(LUFILE,'(A)')'  !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))'
+                elseif(center.eq.4)then
+                   WRITE(LUFILE,'(A)')'  !TUV(T,0,0,N) = Xqd*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)'
+                   WRITE(LUFILE,'(A)')'  !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))'
+                endif
+                WRITE(LUFILE,'(A)')'  !We include scaling of RJ000 '
+                IF(Collapse)THEN
+                   call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
+                ENDIF
+                IF(DoOpenMP)THEN
+                   call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring)
+                ENDIF
+                ! ======================================================================
+                !    iPassP Loop 
+                ! ======================================================================
+                IF(Collapse)THEN
+                   call PrintCollapseLoopStart(Gen,SegQ,SegP,Seg,seg1prim,LUFILE)
+                   WRITE(LUFILE,'(A)')'     iAtomA = iAtomApass(iPassP)'
+                   WRITE(LUFILE,'(A)')'     iAtomB = iAtomBpass(iPassP)'
+                   IF(center.EQ.1)THEN
+                      WRITE(LUFILE,'(A)')'   Ax = -Acenter(1,iAtomA)'
+                      WRITE(LUFILE,'(A)')'   Ay = -Acenter(2,iAtomA)'
+                      WRITE(LUFILE,'(A)')'   Az = -Acenter(3,iAtomA)'
+                   ELSEIF(center.eq.2)THEN
+                      WRITE(LUFILE,'(A)')'   Bx = -Bcenter(1,iAtomB)'
+                      WRITE(LUFILE,'(A)')'   By = -Bcenter(2,iAtomB)'
+                      WRITE(LUFILE,'(A)')'   Bz = -Bcenter(3,iAtomB)'
+                   ENDIF
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+                      WRITE(LUFILE,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+                      WRITE(LUFILE,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
+                   ENDIF
+                   IF(center.LE.2)THEN
+                      IF(.NOT.Seg1Prim)THEN
+                         WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(iPrimP)'
+                         WRITE(LUFILE,'(A)')'    inv2expP = D05*invexpP'
+                      ELSE
+                         WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(1)'
+                         WRITE(LUFILE,'(A)')'    inv2expP = D05*invexpP'
+                      ENDIF                      
+                   ENDIF
+                   IF(center.EQ.1)THEN
+                      IF(.NOT.Seg1Prim)THEN             
+                         WRITE(LUFILE,'(A)')'    Xpa = Pcent(1,iPrimP,iAtomA,iAtomB) + Ax'
+                         WRITE(LUFILE,'(A)')'    Ypa = Pcent(2,iPrimP,iAtomA,iAtomB) + Ay'
+                         WRITE(LUFILE,'(A)')'    Zpa = Pcent(3,iPrimP,iAtomA,iAtomB) + Az'
+                      ELSE
+                         WRITE(LUFILE,'(A)')'    Xpa = Pcent(1,iAtomA,iAtomB) + Ax'
+                         WRITE(LUFILE,'(A)')'    Ypa = Pcent(2,iAtomA,iAtomB) + Ay'
+                         WRITE(LUFILE,'(A)')'    Zpa = Pcent(3,iAtomA,iAtomB) + Az'
+                      ENDIF
+                   ENDIF
+                   IF(center.EQ.2)THEN
+                      IF(.NOT.Seg1Prim)THEN             
+                         WRITE(LUFILE,'(A)')'    Xpb = Pcent(1,iPrimP,iAtomA,iAtomB) + Bx'
+                         WRITE(LUFILE,'(A)')'    Ypb = Pcent(2,iPrimP,iAtomA,iAtomB) + By'
+                         WRITE(LUFILE,'(A)')'    Zpb = Pcent(3,iPrimP,iAtomA,iAtomB) + Bz'
+                      ELSE
+                         WRITE(LUFILE,'(A)')'    Xpb = Pcent(1,iAtomA,iAtomB) + Bx'
+                         WRITE(LUFILE,'(A)')'    Ypb = Pcent(2,iAtomA,iAtomB) + By'
+                         WRITE(LUFILE,'(A)')'    Zpb = Pcent(3,iAtomA,iAtomB) + Bz'
+                      ENDIF
+                   ENDIF
+                ELSE
+                   WRITE(LUFILE,'(A)')'  DO iPassP = 1,nPassP'
+                   WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+                   WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+                   IF(center.EQ.1)THEN
+                      WRITE(LUFILE,'(A)')'   Ax = -Acenter(1,iAtomA)'
+                      WRITE(LUFILE,'(A)')'   Ay = -Acenter(2,iAtomA)'
+                      WRITE(LUFILE,'(A)')'   Az = -Acenter(3,iAtomA)'
+                   ELSEIF(center.eq.2)THEN
+                      WRITE(LUFILE,'(A)')'   Bx = -Bcenter(1,iAtomB)'
+                      WRITE(LUFILE,'(A)')'   By = -Bcenter(2,iAtomB)'
+                      WRITE(LUFILE,'(A)')'   Bz = -Bcenter(3,iAtomB)'
+                   ENDIF
+                   IF(Gen) WRITE(LUFILE,'(A)')'   iP = (iPassP-1)*nPrimQ*nPrimP'
+                   IF(SegQ)WRITE(LUFILE,'(A)')'   iP = (iPassP-1)*nPrimP'
+                   IF(SegP)THEN
+                      WRITE(LUFILE,'(A)')'   DO iPrimQ=1, nPrimQ'
+                      WRITE(LUFILE,'(A,i5)')'    DO iTUV=1,',nTUV
+                      WRITE(LUFILE,'(A)')'     AUXarray(iTUV,iPrimQ,iPassP)=0.0E0_realk'
+                      WRITE(LUFILE,'(A)')'    ENDDO'
+                      WRITE(LUFILE,'(A)')'   ENDDO'
+                      WRITE(LUFILE,'(A)')'   iP = (iPassP-1)*nPrimQ'
+                   ENDIF
+                   !seg
+                   IF(Seg)THEN
+                      WRITE(LUFILE,'(A)')'   iP = iPassP'
+                      WRITE(LUFILE,'(A,i5)')'   DO iTUV=1,',nTUV
+                      WRITE(LUFILE,'(A)')'    AUXarray(iTUV,iPassP)=0.0E0_realk'
+                      WRITE(LUFILE,'(A)')'   ENDDO'
+                   endif
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'   DO iPrimP=1, nPrimP'
+                   ENDIF
+                   IF(SegP)WRITE(LUFILE,'(A)')'    iP = (iPassP-1)*nPrimQ'
+                   IF(SegQ)THEN
+                      WRITE(LUFILE,'(A,i5)')'    DO iTUV=1,',nTUV
+                      WRITE(LUFILE,'(A)')'     AUXarray(iTUV,iPrimP,iPassP)=0.0E0_realk'
+                      WRITE(LUFILE,'(A)')'    ENDDO'
+                   ENDIF
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+                      WRITE(LUFILE,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+                      WRITE(LUFILE,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
+                   ENDIF
+                   IF(center.LE.2)THEN
+                      IF(.NOT.Seg1Prim)THEN
+                         WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(iPrimP)'
+                         WRITE(LUFILE,'(A)')'    inv2expP = D05*invexpP'
+                      ELSE
+                         WRITE(LUFILE,'(A)')'    invexpP = D1/Pexp(1)'
+                         WRITE(LUFILE,'(A)')'    inv2expP = D05*invexpP'
+                      ENDIF
+                   ENDIF
+                   IF(center.EQ.1)THEN
+                      IF(.NOT.Seg1Prim)THEN             
+                         WRITE(LUFILE,'(A)')'    Xpa = Pcent(1,iPrimP,iAtomA,iAtomB) + Ax'
+                         WRITE(LUFILE,'(A)')'    Ypa = Pcent(2,iPrimP,iAtomA,iAtomB) + Ay'
+                         WRITE(LUFILE,'(A)')'    Zpa = Pcent(3,iPrimP,iAtomA,iAtomB) + Az'
+                      ELSE
+                         WRITE(LUFILE,'(A)')'    Xpa = Pcent(1,iAtomA,iAtomB) + Ax'
+                         WRITE(LUFILE,'(A)')'    Ypa = Pcent(2,iAtomA,iAtomB) + Ay'
+                         WRITE(LUFILE,'(A)')'    Zpa = Pcent(3,iAtomA,iAtomB) + Az'
+                      ENDIF
+                   ENDIF
+                   IF(center.EQ.2)THEN
+                      IF(.NOT.Seg1Prim)THEN             
+                         WRITE(LUFILE,'(A)')'    Xpb = Pcent(1,iPrimP,iAtomA,iAtomB) + Bx'
+                         WRITE(LUFILE,'(A)')'    Ypb = Pcent(2,iPrimP,iAtomA,iAtomB) + By'
+                         WRITE(LUFILE,'(A)')'    Zpb = Pcent(3,iPrimP,iAtomA,iAtomB) + Bz'
+                      ELSE
+                         WRITE(LUFILE,'(A)')'    Xpb = Pcent(1,iAtomA,iAtomB) + Bx'
+                         WRITE(LUFILE,'(A)')'    Ypb = Pcent(2,iAtomA,iAtomB) + By'
+                         WRITE(LUFILE,'(A)')'    Zpb = Pcent(3,iAtomA,iAtomB) + Bz'
+                      ENDIF
+                   ENDIF
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    DO iPrimQ=1, nPrimQ'
+                   ENDIF
+                   IF(Gen) WRITE(LUFILE,'(A)')'     iP = iP + 1'
+                   IF(SegP)WRITE(LUFILE,'(A)')'   iP = iP + 1'
+                ENDIF !collapse
+                IF(center.gt.2)THEN
+                   IF(Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'     invexpQ = D1/Qexp(1)'
+                      WRITE(LUFILE,'(A)')'     inv2expQ = D05*invexpQ'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'     invexpQ = D1/Qexp(iPrimQ)'
+                      WRITE(LUFILE,'(A)')'     inv2expQ = D05*invexpQ'
+                   ENDIF
+                ENDIF
+                !if Seg or seg1prim iP not used
+                !if SegQ then IP should be increased after iPrimP only 
+                !if Gen then IP should be increased after iPrimQ 
+                !if SegP then IP should be increased after iPrimQ 
+                IF(.NOT.Seg1Prim)THEN
+                   WRITE(LUFILE,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ)'
+                   WRITE(LUFILE,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ)'
+                   WRITE(LUFILE,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)'
+                   WRITE(LUFILE,'(A)')'     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)'
+                ENDIF
+                IF(center.EQ.3)THEN
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'     Xqc = Qcent(1,iPrimQ) - Ccenter(1)'
+                      WRITE(LUFILE,'(A)')'     Yqc = Qcent(2,iPrimQ) - Ccenter(2)'
+                      WRITE(LUFILE,'(A)')'     Zqc = Qcent(3,iPrimQ) - Ccenter(3)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'     Xqc = Qcent(1) - Ccenter(1)'
+                      WRITE(LUFILE,'(A)')'     Yqc = Qcent(2) - Ccenter(2)'
+                      WRITE(LUFILE,'(A)')'     Zqc = Qcent(3) - Ccenter(3)'
+                   ENDIF
+                ENDIF
+                IF(center.EQ.4)THEN
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'     Xqd = Qcent(1,iPrimQ) - Dcenter(1)'
+                      WRITE(LUFILE,'(A)')'     Yqd = Qcent(2,iPrimQ) - Dcenter(2)'
+                      WRITE(LUFILE,'(A)')'     Zqd = Qcent(3,iPrimQ) - Dcenter(3)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'     Xqd = Qcent(1) - Dcenter(1)'
+                      WRITE(LUFILE,'(A)')'     Yqd = Qcent(2) - Dcenter(2)'
+                      WRITE(LUFILE,'(A)')'     Zqd = Qcent(3) - Dcenter(3)'
+                   ENDIF
+                ENDIF
+                IF(.NOT.Seg1Prim)THEN
+                   IF(center.LE.2)THEN
+                      WRITE(LUFILE,'(A)')'     alphaP = -reducedExponents(iPrimQ,iPrimP)*invexpP'    
+                   ELSE
+                      WRITE(LUFILE,'(A)')'     alphaQ = -reducedExponents(iPrimQ,iPrimP)*invexpQ'
+                   ENDIF
+                ELSE
+                   IF(center.LE.2)THEN
+                      WRITE(LUFILE,'(A)')'     alphaP = -reducedExponents(1)*invexpP'    
+                   ELSE
+                      WRITE(LUFILE,'(A)')'     alphaQ = -reducedExponents(1)*invexpQ'
+                   ENDIF
+                ENDIF
+                IF(center.LE.2)THEN
+                   WRITE(LUFILE,'(A)')'     alphaXpq = -alphaP*Xpq'
+                   WRITE(LUFILE,'(A)')'     alphaYpq = -alphaP*Ypq'
+                   WRITE(LUFILE,'(A)')'     alphaZpq = -alphaP*Zpq'
+                ENDIF
+!                IF(.NOT.Seg1Prim)THEN
+!                   IF(center.GT.2)THEN
+!                      WRITE(LUFILE,'(A)')'     inv2expQ = D05*invexpQ'
+!                   ENDIF
+!                ENDIF
+                IF(center.GT.2)THEN
+                   WRITE(LUFILE,'(A)')'     alphaXpq = alphaQ*Xpq'
+                   WRITE(LUFILE,'(A)')'     alphaYpq = alphaQ*Ypq'
+                   WRITE(LUFILE,'(A)')'     alphaZpq = alphaQ*Zpq'
+                ENDIF
+                IF(.NOT.Seg1Prim)THEN             
+                   WRITE(LUFILE,'(A)')'     PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ)*PpreExpFac(iPrimP,iAtomA,iAtomB)'
+                ElSE
+                   WRITE(LUFILE,'(A)')'     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)'
+                ENDIF
+                IF(COLLAPSE)THEN
+                   IF(Gen) WRITE(LUFILE,'(A)')'     Auxarray(1,IP) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)'
+                ELSE
+                   IF(Gen) WRITE(LUFILE,'(A)')'     Auxarray(1,iPrimQ,iPrimP,iPassP) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)'
+                ENDIF
+                IF(SegQ)WRITE(LUFILE,'(A)')'     TMPAuxarray(1) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)'
+                IF(SegP)WRITE(LUFILE,'(A)')'     TMPAuxarray(1) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)'
+                IF(Seg) WRITE(LUFILE,'(A)')'     TMPAuxarray(1) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)'
+                IF(Seg1Prim) WRITE(LUFILE,'(A)')'     TMPAuxarray(1) = PREF*RJ000Array(0,iPassP)'
+                DO J=2,JMAX+1
+                   IF(.NOT.seg1Prim)THEN
+                      WRITE(LUFILE,'(A,I2,A,I2,A)')'     TMParray1(1,',J,') = PREF*RJ000Array(',J-1,',iPrimQ,iPrimP,iPassP)'
+                   ELSE
+                      WRITE(LUFILE,'(A,I2,A,I2,A)')'     TMParray1(1,',J,') = PREF*RJ000Array(',J-1,',iPassP)'
+                   ENDIF
+                ENDDO
+
+                SegWTUV =.FALSE.
+                IF(Seg) SegWTUV =.TRUE.
+                IF(Seg1Prim) SegWTUV =.TRUE.
+
+                !Gen,SegQ,SegP,Seg
+                allocate(CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
+                CREATED  = .FALSE.
+                CREATED(0,0,0) = .TRUE.
+                DO JTMP=1,JMAX
+                 DO J = 1,JMAX-JTMP+1
+                  !determine twoterms
+                  nTUVLIST = (JTMP+1)*(JTMP+2)*(JTMP+3)/6   
+                  allocate(TwoTermTUVLIST(nTUVLIST))
+                  allocate(TwoTermsUsed(nTUVLIST))
+                  call TwoTerms1(J,JTMP,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
+                  DO Tp=JTMP,0,-1       
+                   DO Up=JTMP-Tp,0,-1
+                    Vp=JTMP-Tp-Up                
+                    iTUV = TUVINDEX(Tp,Up,Vp)
+                    TREC = CREATED(Tp-1,Up,Vp); UREC = CREATED(Tp,Up-1,Vp);VREC = CREATED(Tp,Up,Vp-1)
+                    N=0
+                    IF(TREC)N=N+1
+                    IF(UREC)N=N+1
+                    IF(VREC)N=N+1
+                    IF(N.EQ.1)THEN
+                     !only one possible way to construct it
+                     IF(TREC)THEN
+                      call TRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
+                     ELSEIF(UREC)THEN
+                      call URECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
+                     ELSEIF(VREC)THEN
+                      call VRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
+                     ENDIF
+                    ELSE
+                     !several ways to construct it
+                     TREC2 = CREATED(Tp-2,Up,Vp)
+                     UREC2 = CREATED(Tp,Up-2,Vp)
+                     VREC2 = CREATED(Tp,Up,Vp-2)
+                     N2=0
+                     IF(TREC2)N2=N2+1
+                     IF(UREC2)N2=N2+1
+                     IF(VREC2)N2=N2+1
+                     IF(N2.LT.N)THEN
+                        !two term recurrence possible for one or more the possibilities 
+                        !we chose the one term possibility
+                        IF(.NOT.(TREC.AND.TREC2).AND.TREC)THEN
+                           !                         print*,'!B TRECURRENCE iTUV',iTUV
+                           CALL TRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
+                        ELSEIF(.NOT.(UREC.AND.UREC2).AND.UREC)THEN
+                                     !                         print*,'!B URECURRENCE iTUV',iTUV
+                                     CALL URECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
+                                  ELSEIF(.NOT.(VREC.AND.VREC2).AND.VREC)THEN
+                                     !                         print*,'!B VRECURRENCE iTUV',iTUV
+                                     CALL VRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
+                                  ENDIF
+                               ELSE
+                                  !chose one of the possibilities
+                                  IF(TREC)THEN
+                                     !                         print*,'!C TRECURRENCE iTUV',iTUV
+                                     CALL TRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
+                                  ELSEIF(UREC)THEN
+                                     !                         print*,'!C URECURRENCE iTUV',iTUV
+                                     call URECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
+                                  ELSEIF(VREC)THEN
+                                     !                         print*,'!D VRECURRENCE iTUV',iTUV
+                                     call VRECURRENCETWOTERMS(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
+                                  ENDIF
+                               ENDIF
+                            ENDIF
+                            CREATED(Tp,Up,Vp) = .TRUE.
+                         ENDDO
+                      ENDDO
+
+                      call WriteTwoTerms(J,JTMP,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,&
+                           & TwoTermTUVLIST,JTMP,TwoTermsUsed,LUFILE,Gen,SegQ,SegP,Segwtuv,&
+                           & seg1prim,center,COLLAPSE,PrimLabel,iPrim)
+
+
+                      DO Tp=JTMP,0,-1       
+                         DO Up=JTMP-Tp,0,-1
+                            Vp=JTMP-Tp-Up                
+                            iTUV = TUVINDEX(Tp,Up,Vp)
+
+                            !                print*,'!iTUV=',iTUV
+                            !step 1.
+                            !how can the (Tp,Up,Vp) be built from lower
+                            TREC = CREATED(Tp-1,Up,Vp)
+                            UREC = CREATED(Tp,Up-1,Vp)
+                            VREC = CREATED(Tp,Up,Vp-1)
+                            N=0
+                            IF(TREC)N=N+1
+                            IF(UREC)N=N+1
+                            IF(VREC)N=N+1
+                            IF(N.EQ.1)THEN
+                               !only one possible way to construct it
+                               IF(TREC)THEN
+                                  !                      print*,'!A TRECURRENCE iTUV',iTUV
+                                  call TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,LUFILE,Gen,SegQ,SegP,Segwtuv,seg1prim,nTUVprev,center,PrimLabel,iPrim)
+                               ELSEIF(UREC)THEN
+                                  !                      print*,'!A URECURRENCE iTUV',iTUV
+                                  call URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,LUFILE,Gen,SegQ,SegP,Segwtuv,seg1prim,nTUVprev,center,PrimLabel,iPrim)
+                               ELSEIF(VREC)THEN
+                                  !                      print*,'!A VRECURRENCE iTUV',iTUV
+                                  call VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,LUFILE,Gen,SegQ,SegP,Segwtuv,seg1prim,nTUVprev,center,PrimLabel,iPrim)
+                               ENDIF
+                            ELSE
+                               !several ways to construct it
+                               TREC2 = CREATED(Tp-2,Up,Vp)
+                               UREC2 = CREATED(Tp,Up-2,Vp)
+                               VREC2 = CREATED(Tp,Up,Vp-2)
+                               N2=0
+                               IF(TREC2)N2=N2+1
+                               IF(UREC2)N2=N2+1
+                               IF(VREC2)N2=N2+1
+                               IF(N2.LT.N)THEN
+                                  !two term recurrence possible for one or more the possibilities 
+                                  !we chose the one term possibility
+                                  IF(.NOT.(TREC.AND.TREC2).AND.TREC)THEN
+                                     !                         print*,'!B TRECURRENCE iTUV',iTUV
+                                     CALL TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,LUFILE,Gen,SegQ,SegP,Segwtuv,seg1prim,nTUVprev,center,PrimLabel,iPrim)
+                                  ELSEIF(.NOT.(UREC.AND.UREC2).AND.UREC)THEN
+                                     !                         print*,'!B URECURRENCE iTUV',iTUV
+                                     CALL URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,LUFILE,Gen,SegQ,SegP,Segwtuv,seg1prim,nTUVprev,center,PrimLabel,iPrim)
+                                  ELSEIF(.NOT.(VREC.AND.VREC2).AND.VREC)THEN
+                                     !                         print*,'!B VRECURRENCE iTUV',iTUV
+                                     CALL VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,LUFILE,Gen,SegQ,SegP,Segwtuv,seg1prim,nTUVprev,center,PrimLabel,iPrim)
+                                  ENDIF
+                               ELSE
+                                  !chose one of the possibilities
+                                  IF(TREC)THEN
+                                     !                         print*,'!C TRECURRENCE iTUV',iTUV
+                                     CALL TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,LUFILE,Gen,SegQ,SegP,Segwtuv,seg1prim,nTUVprev,center,PrimLabel,iPrim)
+                                  ELSEIF(UREC)THEN
+                                     !                         print*,'!C URECURRENCE iTUV',iTUV
+                                     call URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,LUFILE,Gen,SegQ,SegP,Segwtuv,seg1prim,nTUVprev,center,PrimLabel,iPrim)
+                                  ELSEIF(VREC)THEN
+                                     !                         print*,'!D VRECURRENCE iTUV',iTUV
+                                     call VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,LUFILE,Gen,SegQ,SegP,Segwtuv,seg1prim,nTUVprev,center,PrimLabel,iPrim)
+                                  ENDIF
+                               ENDIF
+                            ENDIF
+                            CREATED(Tp,Up,Vp) = .TRUE.
+                         ENDDO
+                      ENDDO
+                   ENDDO
+                   deallocate(TwoTermTUVLIST)
+                   deallocate(TwoTermsUsed)
+                ENDDO
+                IF(Collapse)THEN
+                   call PrintCollapseLoopEnd(Gen,SegQ,SegP,Seg,seg1prim,LUFILE)
+                ELSE
+                   IF(.NOT.seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'    ENDDO'
+                      WRITE(LUFILE,'(A)')'   ENDDO'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'  ENDDO'
+                ENDIF
+                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+!                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+                WRITE(LUFILE,'(A)')' end subroutine'
+
+
+                deallocate(TUVINDEX)
+                deallocate(TINDEX)
+                deallocate(UINDEX)
+                deallocate(VINDEX)
+                deallocate(JINDEX)
              ENDDO
-          enddo
-          do J=1,16
-             I=non1Prim(J)       
-             WRITE(I,'(A)')'    ENDDO'
-             WRITE(I,'(A)')'   ENDDO'
-          enddo
-          do I=1,20
-             WRITE(I,'(A)')'  ENDDO'
-             WRITE(I,'(A)')' end subroutine'
-          enddo
-          deallocate(TUVINDEX)
-          deallocate(TINDEX)
-          deallocate(UINDEX)
-          deallocate(VINDEX)
-          deallocate(JINDEX)
+             WRITE(LUFILE,'(A)')'end module'
+             close(unit = LUFILE)
+          END DO
        ENDDO
-       do I=1,20
-          WRITE(I,'(A)')'end module'
-       enddo
+    ENDDO
 
+!BUILDRJ000
+    DO GPUrun = 1,1!2
+       CPU = .TRUE.
+       IF(GPUrun.EQ.2)CPU = .FALSE.
+       DoOpenMP = .FALSE.
+       IF(CPU)DoOpenMP = .TRUE.
+       Collapse = .TRUE.
+       IF(.NOT.CPU)Collapse = .TRUE.
+       IF(.NOT.CPU)nPrimnTUV = .FALSE.
+       center=1
+       centerString='A'
+       DO iseg = 1,5
+          IF(iseg.GT.1.AND.iseg.LT.5)CYCLE
+          Gen = .FALSE.; SegQ=.FALSE.; SegP=.FALSE.;Seg=.FALSE.;Seg1Prim=.FALSE.
+          IF(iseg.EQ.1)THEN
+             Gen = .TRUE.      ; SegLabel = 'Gen     '; iSegLabel = 3
+          ELSE!IF(iseg.EQ.5)THEN
+             Seg1Prim = .TRUE. ; SegLabel = 'Seg1Prim'; iSegLabel = 8
+          ENDIF
+          IF(CPU)THEN
+             ARCSTRING = 'CPU'
+          ELSE
+             ARCSTRING = 'GPU'
+          ENDIF
+          DO I =1,48
+             FileName(I:I) = ' '
+          ENDDO
+          WRITE(FileName,'(4A)')'BUILDRJ000'//ARCSTRING//'QP',SegLabel(1:iSegLabel),'.F90'
+          print*,'FileName:',FileName
+          LUFILE = 12
+          open(unit = LUFILE, file=TRIM(FileName),status="unknown")
+          IF(COLLAPSE)THEN
+             IF(Gen)THEN
+                PrimLabel = 'iP'; iPrim = 2
+                nPrimLabel = 'nPrimQ*nPrimP*nPassP'; nPrim = 20 
+             ELSE
+                PrimLabel = 'iPassP'; iPrim = 2
+                nPrimLabel = 'nPassP'; nPrim = 6 
+             ENDIF
+          ELSE
+             IF(Gen)THEN
+                PrimLabel = 'iPrimQ,iPrimP,iPassP'; iPrim = 20 
+                nPrimLabel = 'nPrimQ,nPrimP,nPassP'; nPrim = 20 
+             ELSE
+                PrimLabel = 'iPassP'; iPrim = 6 
+                nPrimLabel = 'nPassP'; nPrim = 6 
+             ENDIF
+          ENDIF
+          
+          WRITE(LUFILE,'(5A)')'MODULE AGC_',ARCSTRING,'_OBS_BUILDRJ000MOD',SegLabel(1:iSegLabel)
+          MaxAngmomQP = 8
+          WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+          WRITE(LUFILE,'(A)')'  '
+          WRITE(LUFILE,'(A)')' CONTAINS'
 
-       close(unit = LUMODA1)
-       close(unit = LUMODA2)
-       close(unit = LUMODA3)
-       close(unit = LUMODA4)
-       close(unit = LUMODA5)
+          !============================================================================================================
+          !         BuildRj000 angmom > 2 only for center A and seg1prim and Gen 
+          !============================================================================================================
+          IF(center.EQ.1)THEN
+             IF(Gen.OR.Seg1Prim)THEN
+                DO JMAX=2,MaxAngmomQP
+                   nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
+                   nTUVPLUS = (JMAX+2)*(JMAX+3)*(JMAX+4)/6   
+                   allocate(TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
+                   TUVINDEX = 0
+                   allocate(TINDEX(nTUVPLUS))
+                   allocate(UINDEX(nTUVPLUS))
+                   allocate(VINDEX(nTUVPLUS))
+                   allocate(JINDEX(nTUVPLUS))
+                   
+                   nTUVprev3 = (JMAX-2)*(JMAX-1)*(JMAX)/6
+                   nTUVprev2 = (JMAX-1)*(JMAX)*(JMAX+1)/6
+                   nTUVprev = (JMAX)*(JMAX+1)*(JMAX+2)/6
+                   ituv = 0 
+                   TUVINDEX = 0
+                   DO J = 0, JMAX
+                      DO Tp=J,0,-1       
+                         DO Up=J-Tp,0,-1
+                            Vp=J-Tp-Up
+                            ituv = ituv + 1 
+                            TUVINDEX(Tp,Up,Vp) = ituv
+                            TINDEX(iTUV) = Tp
+                            UINDEX(iTUV) = Up
+                            VINDEX(iTUV) = Vp
+                            JINDEX(iTUV) = J
+                         ENDDO
+                      ENDDO
+                   ENDDO
+                   
+                   WRITE(LUFILE,'(A)')''
+                   IF(JMAX.LT.10)THEN
+                      WRITE(LUFILE,'(A,A,I1,A)')'subroutine BuildRJ000'//ARCSTRING,SegLabel(1:iSegLabel),JMAX,'(nPassP,nPrimP,nPrimQ,reducedExponents,&'
+                   ELSE
+                      WRITE(LUFILE,'(A,A,I2,A)')'subroutine BuildRJ000'//ARCSTRING,SegLabel(1:iSegLabel),JMAX,'(nPassP,nPrimP,nPrimQ,reducedExponents,&'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'         & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
+                   WRITE(LUFILE,'(A)')'         & RJ000array)'
+                   WRITE(LUFILE,'(A)')'  implicit none'
+                   WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
+                   WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
+                   WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
+                   WRITE(LUFILE,'(A,I2,A)')'  REAL(REALK),intent(in) :: TABFJW(0:',JMAX+3,',0:1200)'
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP)'
+                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(1)'
+                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)'
+                   ENDIF
+                   IF(.NOT.Seg1Prim)THEN
+                      WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(inout) :: RJ000array(0:',JMAX,',nPrimQ*nPrimP*nPassP)'
+                   ELSE
+                      WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(inout) :: RJ000array(0:',JMAX,',nPassP)'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'  !local variables'
+                   IF(COLLAPSE)THEN
+                      IF(Seg1Prim)THEN
+                         WRITE(LUFILE,'(A)')'  integer :: iP,iPassP,ipnt,iAtomA,iAtomB'
+                      ELSE
+                         WRITE(LUFILE,'(A)')'  integer :: iP,iPrimQ,iPrimP,iPassP,ipnt,iAtomA,iAtomB'
+                      ENDIF
+                   ELSE
+                      WRITE(LUFILE,'(A)')'  integer :: iPrimQ,iPrimP,iPassP,ipnt,iAtomA,iAtomB' 
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'  real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq'
+                   WRITE(LUFILE,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
+                   WRITE(LUFILE,'(A,I2,A)')'  real(realk) :: RJ000(0:',JMAX,')'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
+                   WRITE(LUFILE,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+                   WRITE(LUFILE,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
+                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+                   IF(DoOpenMP)THEN
+                      !OPENMP
+!                      WRITE(LUFILE,'(A)')  '!$OMP DO &'
+                      WRITE(LUFILE,'(A)')  '!$OMP PARALLEL DO DEFAULT(none) &'
+                      WRITE(LUFILE,'(A)')  '!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
+                      IF(COLLAPSE)THEN
+                       IF(Seg1Prim)THEN
+                        WRITE(LUFILE,'(A)')'!$OMP         iP,iPassP,&'
+                       ELSE
+                        WRITE(LUFILE,'(A)')'!$OMP         iP,iPrimQ,iPrimP,iPassP,&'
+                       ENDIF
+                      ELSE
+                       WRITE(LUFILE,'(A)') '!$OMP         iPrimQ,iPrimP,iPassP,&'
+                      ENDIF
+                      WRITE(LUFILE,'(A)')  '!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
+                      WRITE(LUFILE,'(A)')  '!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &'
+                      WRITE(LUFILE,'(A)')  '!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&'
+                      WRITE(LUFILE,'(A)')  '!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)'
 
-       close(unit = LUMODB1)
-       close(unit = LUMODB2)
-       close(unit = LUMODB3)
-       close(unit = LUMODB4)
-       close(unit = LUMODB5)
-
-       close(unit = LUMODC1)
-       close(unit = LUMODC2)
-       close(unit = LUMODC3)
-       close(unit = LUMODC4)
-       close(unit = LUMODC5)
-
-       close(unit = LUMODD1)
-       close(unit = LUMODD2)
-       close(unit = LUMODD3)
-       close(unit = LUMODD4)
-       close(unit = LUMODD5)
+                   ENDIF
+                   IF(Collapse)THEN
+                      IF(Seg1Prim)THEN
+                         WRITE(LUFILE,'(A)')'  DO iP = 1,nPassP'
+                         WRITE(LUFILE,'(A)')'   iPassP = iP'
+                      ELSE !gen
+                         WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPrimP*nPassP'
+                         WRITE(LUFILE,'(A)')'   iPrimQ = mod(IP-1,nPrimQ)+1'
+                         WRITE(LUFILE,'(A)')'   iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1'
+                         WRITE(LUFILE,'(A)')'   iPassP = (IP-1)/(nPrimQ*nPrimP) + 1'
+                      ENDIF
+                      WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+                      WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+                      IF(.NOT.seg1Prim)THEN
+                         WRITE(LUFILE,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+                         WRITE(LUFILE,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+                         WRITE(LUFILE,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
+                         WRITE(LUFILE,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ)'
+                         WRITE(LUFILE,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ)'
+                         WRITE(LUFILE,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ)'
+                      ELSE
+                         WRITE(LUFILE,'(A)')'     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)'
+                         WRITE(LUFILE,'(A)')'     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)'
+                         WRITE(LUFILE,'(A)')'     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)'
+                      ENDIF
+                   ELSE
+                      WRITE(LUFILE,'(A)')'  DO iPassP = 1,nPassP'
+                      WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+                      WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+                      IF(.NOT.seg1Prim)THEN
+                         WRITE(LUFILE,'(A)')'   DO iPrimP=1, nPrimP'
+                         WRITE(LUFILE,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+                         WRITE(LUFILE,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+                         WRITE(LUFILE,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
+                         WRITE(LUFILE,'(A)')'    DO iPrimQ=1, nPrimQ'
+                         WRITE(LUFILE,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ)'
+                         WRITE(LUFILE,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ)'
+                         WRITE(LUFILE,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ)'
+                      ELSE
+                         WRITE(LUFILE,'(A)')'     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)'
+                         WRITE(LUFILE,'(A)')'     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)'
+                         WRITE(LUFILE,'(A)')'     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)'
+                      ENDIF
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq'
+                   IF(.NOT.seg1Prim)THEN
+                      WRITE(LUFILE,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'     WVAL = reducedExponents(1)*squaredDistance'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'     !  0 < WVAL < 12 '
+                   WRITE(LUFILE,'(A)')'     IF (WVAL .LT. D12) THEN'
+                   WRITE(LUFILE,'(A)')'      IPNT = NINT(D100*WVAL)'
+                   WRITE(LUFILE,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
+                   WRITE(LUFILE,'(A)')'      W2    = WDIFF*WDIFF'
+                   WRITE(LUFILE,'(A)')'      W3    = W2*WDIFF'
+                   WRITE(LUFILE,'(A)')'      W2    = W2*D05'
+                   WRITE(LUFILE,'(A)')'      W3    = W3*COEF3'
+                   DO J=0,JMAX
+                      IF(COLLAPSE)THEN
+                         WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000Array(',J,',iP) = TABFJW(',J,',IPNT)-TABFJW(',J+1,',IPNT)*WDIFF+TABFJW(',J+2,',IPNT)*W2+TABFJW(',J+3,',IPNT)*W3'
+                      ELSE
+                         WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000Array(',J,',iPrimQ,iPrimP,iPassP) = TABFJW(',J,',IPNT)-TABFJW(',J+1,',IPNT)*WDIFF+TABFJW(',J+2,',IPNT)*W2+TABFJW(',J+3,',IPNT)*W3'
+                      ENDIF
+                   ENDDO
+                   WRITE(LUFILE,'(A)')'     !  12 < WVAL <= (2J+36) '
+                   WRITE(LUFILE,'(A)')'     ELSE IF (WVAL.LE.D2JP36) THEN'
+                   WRITE(LUFILE,'(A)')'      REXPW = D05*EXP(-WVAL)'
+                   WRITE(LUFILE,'(A)')'      RWVAL = D1/WVAL'
+                   WRITE(LUFILE,'(A)')'      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))'
+                   WRITE(LUFILE,'(A)')'      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
+                   DO J=1,JMAX
+                      WRITE(LUFILE,'(A,I2,A,I2,A,I2,A)')'      RJ000(',J,') = RWVAL*((',J,' - D05)*RJ000(',J-1,')-REXPW)'          
+                   ENDDO
+                   IF(COLLAPSE)THEN
+                      WRITE(LUFILE,'(A)')'      RJ000Array( 0,iP) = RJ000(0)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'      RJ000Array( 0,iPrimQ,iPrimP,iPassP) = RJ000(0)'
+                   ENDIF
+                   DO J=1,JMAX
+                      IF(COLLAPSE)THEN
+                         WRITE(LUFILE,'(A,I2,A,I2,A)')'      RJ000Array(',J,',iP) = RJ000(',J,')'
+                      ELSE
+                         WRITE(LUFILE,'(A,I2,A,I2,A)')'      RJ000Array(',J,',iPrimQ,iPrimP,iPassP) = RJ000(',J,')'
+                      ENDIF
+                   ENDDO
+                   WRITE(LUFILE,'(A)')'     !  (2J+36) < WVAL '
+                   WRITE(LUFILE,'(A)')'     ELSE'
+                   WRITE(LUFILE,'(A)')'      RWVAL = PID4/WVAL'
+                   WRITE(LUFILE,'(A)')'      RJ000(0) = SQRT(RWVAL)'
+                   !        WRITE(LUFILE,'(A)')'        RJ000(0,ipq,ipassq) = SQRT(RWVAL)'
+                   WRITE(LUFILE,'(A)')'      RWVAL = RWVAL*PID4I'
+                   DO J=1,JMAX
+                      WRITE(LUFILE,'(A,I2,A,I2,A,I2,A)')'      RJ000(',J,') = RWVAL*(',J,' - D05)*RJ000(',J-1,')'
+                   ENDDO
+                   IF(COLLAPSE)THEN
+                      WRITE(LUFILE,'(A)')'      RJ000Array( 0,iP) = RJ000(0)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'      RJ000Array( 0,iPrimQ,iPrimP,iPassP) = RJ000(0)'
+                   ENDIF
+                   DO J=1,JMAX
+                      IF(COLLAPSE)THEN
+                         WRITE(LUFILE,'(A,I2,A,I2,A)')'      RJ000Array(',J,',iP) = RJ000(',J,')'
+                      ELSE
+                         WRITE(LUFILE,'(A,I2,A,I2,A)')'      RJ000Array(',J,',iPrimQ,iPrimP,iPassP) = RJ000(',J,')'
+                      ENDIF
+                   ENDDO
+                   WRITE(LUFILE,'(A)')'     ENDIF'
+                   IF(.NOT.seg1Prim)THEN
+                      IF(.NOT.COLLAPSE)THEN
+                         WRITE(LUFILE,'(A)')'    ENDDO'
+                         WRITE(LUFILE,'(A)')'   ENDDO'
+                      ENDIF
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'  ENDDO'
+!                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+                   WRITE(LUFILE,'(A)')' end subroutine'
+                   deallocate(TUVINDEX)
+                   deallocate(TINDEX)
+                   deallocate(UINDEX)
+                   deallocate(VINDEX)
+                   deallocate(JINDEX)
+                ENDDO
+             ENDIF
+          ENDIF
+          WRITE(LUFILE,'(A)')'end module'
+          close(unit = LUFILE)
+       ENDDO
     END DO
-
   END subroutine PASSsub
+
+  Subroutine PrintCollapseLoopEnd(Gen,SegQ,SegP,Seg,seg1prim,LUFILE)
+    implicit none
+    logical,intent(in) :: Gen,SegQ,SegP,Seg,seg1prim
+    integer,intent(in) :: LUFILE   
+    IF(Gen)THEN
+       WRITE(LUFILE,'(A)') '  ENDDO !iP = 1,nPrimQ*nPrimP*nPassP'
+    ELSEIF(SegQ)THEN
+       WRITE(LUFILE,'(A)') '   ENDDO !iPrimP=1, nPrimP'       
+       WRITE(LUFILE,'(A)') '  ENDDO !iP = 1,nPrimQ*nPassP'
+    ELSEIF(SegP)THEN
+       WRITE(LUFILE,'(A)') '   ENDDO !iPrimQ=1, nPrimQ'
+       WRITE(LUFILE,'(A)') '  ENDDO !iP = 1,nPrimP*nPassP'
+    ELSEIF(Seg)THEN
+       WRITE(LUFILE,'(A)') '   ENDDO !iPrimQP = 1,nPrimQ*nPrimP'
+       WRITE(LUFILE,'(A)') '  ENDDO !iP = 1,nPassP'
+    ELSEIF(Seg1Prim)THEN
+       WRITE(LUFILE,'(A)') '  ENDDO !iP = 1,nPassP'
+    ENDIF
+  End Subroutine PrintCollapseLoopEnd
+
+  Subroutine PrintCollapseLoopStart(Gen,SegQ,SegP,Seg,seg1prim,LUFILE)
+    implicit none
+    logical,intent(in) :: Gen,SegQ,SegP,Seg,seg1prim
+    integer,intent(in) :: LUFILE   
+    IF(Gen)THEN
+       WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimQ*nPrimP*nPassP'
+       WRITE(LUFILE,'(A)') '   iPrimQ = mod(IP-1,nPrimQ)+1'
+       WRITE(LUFILE,'(A)') '   iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1'
+       WRITE(LUFILE,'(A)') '   iPassP = (IP-1)/(nPrimQ*nPrimP) + 1'
+    ELSEIF(SegP)THEN
+       WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimQ*nPassP'
+       WRITE(LUFILE,'(A)') '   DO iPrimP=1, nPrimP'
+       WRITE(LUFILE,'(A)') '    iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ'
+       WRITE(LUFILE,'(A)') '    iPassP = (iP-1)/nPrimQ + 1'
+    ELSEIF(SegQ)THEN
+       WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimP*nPassP'
+       WRITE(LUFILE,'(A)') '   DO iPrimQ=1, nPrimQ'
+       WRITE(LUFILE,'(A)') '    iPrimP = iP - ((iP-1)/nPrimP)*nPrimP'
+       WRITE(LUFILE,'(A)') '    iPassP = (iP-1)/nPrimP + 1'
+    ELSEIF(Seg)THEN
+!       WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimP*nPrimQ*nPassP'
+!       WRITE(LUFILE,'(A)') '   iPrimQ = mod(IP-1,nPrimQ)+1'
+!       WRITE(LUFILE,'(A)') '   iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1'
+!       WRITE(LUFILE,'(A)') '   iPassP = (IP-1)/(nPrimQ*nPrimP) + 1'
+       WRITE(LUFILE,'(A)') '  DO iP = 1,nPassP'
+       WRITE(LUFILE,'(A)') '   DO iPrimQP=1,nPrimQ*nPrimP'
+       WRITE(LUFILE,'(A)') '    iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ'
+       WRITE(LUFILE,'(A)') '    iPrimP = (iPrimQP-1)/nPrimQ + 1'       
+       WRITE(LUFILE,'(A)') '    iPassP = iP'
+    ELSEIF(Seg1Prim)THEN
+       WRITE(LUFILE,'(A)') '  DO iP = 1,nPassP'
+       WRITE(LUFILE,'(A)') '   iPassP = iP'
+    ENDIF
+  End Subroutine PrintCollapseLoopStart
+
+  Subroutine PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring)
+    implicit none
+    logical,intent(in) :: Gen,SegQ,SegP,Seg,seg1prim,Collapse
+    integer,intent(in) :: LUFILE,JMAX,Center                
+    integer :: JTMP
+    character(len=1) :: centerString
+!    WRITE(LUFILE,'(A)')'!$OMP DO &'
+    WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+    WRITE(LUFILE,'(A)')'!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
+    IF(JMAX.EQ.0.OR.JMAX.EQ.1)THEN !RJ000 calc
+       WRITE(LUFILE,'(A)')'!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
+       WRITE(LUFILE,'(A)')'!$OMP         RWVAL,GVAL,&'
+    ENDIF
+    IF(JMAX.EQ.0)THEN
+       WRITE(LUFILE,'(A)')'!$OMP         Px,Py,Pz,&'             
+    ELSE
+       WRITE(LUFILE,'(A)')'!$OMP         mPx,mPy,mPz,&'             
+    ENDIF
+    IF(JMAX.GE.1)THEN
+       IF(center.EQ.1)WRITE(LUFILE,'(A)')'!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&'             
+       IF(center.EQ.2)WRITE(LUFILE,'(A)')'!$OMP         Bx,By,Bz,Xpb,Ypb,Zpb,alphaP,&'             
+       IF(center.EQ.3)WRITE(LUFILE,'(A)')'!$OMP         Xqc,Yqc,Zqc,alphaQ,&'             
+       IF(center.EQ.4)WRITE(LUFILE,'(A)')'!$OMP         Xqd,Yqd,Zqd,alphaQ,&'             
+       WRITE(LUFILE,'(A)')'!$OMP         alphaXpq,alphaYpq,alphaZpq,&'
+    ENDIF
+    IF(center.GT.2)THEN
+       IF(JMAX.GT.1)THEN
+          WRITE(LUFILE,'(A)')'!$OMP         invexpQ,inv2expQ,&'   
+       ELSE
+          WRITE(LUFILE,'(A)')'!$OMP         invexpQ,&'   
+       ENDIF
+    ELSE
+       IF(JMAX.GT.1)THEN
+          WRITE(LUFILE,'(A)')'!$OMP         invexpP,inv2expP,&'  
+       ELSEIF(JMAX.GT.0)THEN
+          WRITE(LUFILE,'(A)')'!$OMP         invexpP,&'   
+       ENDIF
+    ENDIF
+    IF(JMAX.GT.0)THEN    
+       WRITE(LUFILE,'(A)')'!$OMP         PREF,&'   
+    ENDIF
+    IF(JMAX.EQ.1)THEN    
+       WRITE(LUFILE,'(A)')'!$OMP         TMP1,TMP2,&'   
+    ENDIF
+    IF(JMAX.GT.1)THEN
+       IF(.NOT.Gen)THEN
+          WRITE(LUFILE,'(A)')'!$OMP         TMPAUXarray,&'
+       ENDIF
+       DO JTMP=1,JMAX
+          WRITE(LUFILE,'(A,I1,A)')'!$OMP         TMParray',JTMP,',&'
+       ENDDO
+       WRITE(LUFILE,'(A)')'!$OMP         TwoTerms,&'
+    ENDIF
+    IF(COLLAPSE)THEN
+       IF(Seg1Prim)THEN
+          WRITE(LUFILE,'(A,A,A)')'!$OMP         iP,iPassP) &'
+       ELSEIF(Seg)THEN
+          WRITE(LUFILE,'(A,A,A)')'!$OMP         iP,iPrimQ,iPrimP,iPrimQP,iPassP) &'
+       ELSE !Gen
+          WRITE(LUFILE,'(A,A,A)')'!$OMP         iP,iPrimQ,iPrimP,iPassP) &'
+       ENDIF
+    ELSE
+       IF(.Not.Seg1Prim)THEN
+          WRITE(LUFILE,'(A,A,A)')'!$OMP         iPrimQ,iPrimP,iPassP) &'
+       ELSE
+          WRITE(LUFILE,'(A,A,A)')'!$OMP         iPassP) &'
+       ENDIF
+    ENDIF
+    IF(JMAX.LT.2)THEN
+       WRITE(LUFILE,'(A)')'!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&'
+    ELSE
+       WRITE(LUFILE,'(A)')'!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&'
+    ENDIF
+    WRITE(LUFILE,'(A)')'!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&'
+    IF(center.GT.2)THEN
+       IF(JMAX.GT.0)THEN
+          WRITE(LUFILE,'(A,A,A)')'!$OMP        Qexp,',centerstring,'center, &'
+       ENDIF
+    ELSE
+       IF(JMAX.GT.0)THEN
+          WRITE(LUFILE,'(A,A,A)')'!$OMP        Pexp,',centerstring,'center, &'
+       ENDIF
+    ENDIF
+    WRITE(LUFILE,'(A,A,A)')      '!$OMP        nPrimP,nPrimQ,nPassP)'
+
+!!This is a CPU code so if OpenMP it uses OpenMP. However, I would like 
+!!to test OpenACC so in case of no OpenMP and OpenACC it uses OpenACC)
+!#ifdef VAR_OMP
+!!$OMP DO &
+!!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
+!!$OMP         RWVAL,GVAL,&
+!!$OMP         Px,Py,Pz,&
+!!$OMP         iP,iPrimQ,iPrimP,iPassP) 
+!!!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&
+!!!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)
+!#else
+!#ifdef VAR_OPENACC
+!!$ACC parallel loop gang worker vector &
+!!$ACC present(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&
+!!$ACC         integralPrefactor,PpreExpFac,QpreExpFac,AUXarray)&
+!!$ACC private(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!!$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
+!!$ACC         RWVAL,GVAL,&
+!!$ACC         Px,Py,Pz,&
+!!$ACC         iP,iPrimQ,iPrimP,iPassP)  
+!#endif
+!#endif
+  end Subroutine PrintOpenMP
   
+  Subroutine PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
+    implicit none
+    logical,intent(in) :: Gen,SegQ,SegP,Seg,seg1prim,DoOpenMP
+    integer,intent(in) :: LUFILE,JMAX,nTUV
+    IF(SegQ.OR.SegP)THEN
+       IF(JMAX.LT.2)THEN
+          IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iP)'
+       ELSE
+          IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iP,iTUV)'          
+       ENDIF
+       IF(SegP)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPassP'
+       IF(SegQ)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimP*nPassP'
+       IF(JMAX.EQ.0)THEN
+          WRITE(LUFILE,'(A)')'    AUXarray(iP)=0.0E0_realk'
+       ELSEIF(JMAX.EQ.1)THEN
+          WRITE(LUFILE,'(A)')'    AUXarray(1,iP)=0.0E0_realk'
+          WRITE(LUFILE,'(A)')'    AUXarray(2,iP)=0.0E0_realk'
+          WRITE(LUFILE,'(A)')'    AUXarray(3,iP)=0.0E0_realk'
+          WRITE(LUFILE,'(A)')'    AUXarray(4,iP)=0.0E0_realk'
+       ELSE
+          WRITE(LUFILE,'(A,I5)')'    DO iTUV=1,',nTUV
+          WRITE(LUFILE,'(A)')'     AUXarray(iTUV,iP)=0.0E0_realk'
+          WRITE(LUFILE,'(A)')'    ENDDO'
+       ENDIF
+       WRITE(LUFILE,'(A)')'  ENDDO'
+       IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+    ELSEIF(Seg)THEN
+       IF(JMAX.LT.2)THEN
+          IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iPassP)'
+       ELSE
+          IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iPassP,iTUV)'
+       ENDIF
+       WRITE(LUFILE,'(A)')'  DO iPassP = 1,nPassP'
+       IF(JMAX.EQ.0)THEN
+          WRITE(LUFILE,'(A)')'   AUXarray(iPassP)=0.0E0_realk'
+       ELSEIF(JMAX.EQ.1)THEN
+          WRITE(LUFILE,'(A)')'   AUXarray(1,iPassP)=0.0E0_realk'
+          WRITE(LUFILE,'(A)')'   AUXarray(2,iPassP)=0.0E0_realk'
+          WRITE(LUFILE,'(A)')'   AUXarray(3,iPassP)=0.0E0_realk'
+          WRITE(LUFILE,'(A)')'   AUXarray(4,iPassP)=0.0E0_realk'
+       ELSE
+          WRITE(LUFILE,'(A,I5)')'   DO iTUV=1,',nTUV
+          WRITE(LUFILE,'(A)')'    AUXarray(iTUV,iPassP)=0.0E0_realk'
+          WRITE(LUFILE,'(A)')'   ENDDO'
+       ENDIF
+       WRITE(LUFILE,'(A)')'  ENDDO'
+       IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+    ENDIF
+  End Subroutine PrintCollapseInitLoop
+
 subroutine TwoTerms1(J1,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,TwoTermsUsed)
 implicit none
 integer :: Tp,Up,Vp,J,ituvP,TM1,ituvP2,ituvP3,JMAX,ituvp0,ituvp1,JTMP,I,J1
@@ -1540,14 +1769,16 @@ ENDDO
 end subroutine TwoTerms1
 
 subroutine WriteTwoTerms(J1,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,&
-     & TwoTermTUVLIST,JTMP,TwoTermsUsed,LUPRI,Gen,SegQ,SegP,Seg,seg1prim)
+     & TwoTermTUVLIST,JTMP,TwoTermsUsed,LUPRI,Gen,SegQ,SegP,Seg,seg1prim,center,&
+     & COLLAPSE,PrimLabel,iPrim)
 implicit none
 integer :: Tp,Up,Vp,J,ituvP,TM1,ituvP2,ituvP3,JMAX,ituvp0,ituvp1,JTMP,I,J1
-integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
+integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),center
 logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg,seg1prim
 integer :: nTUVLIST,nTUVLISTactual,LUPRI
-integer :: TwoTermTUVLIST(nTUVLIST)
-logical :: Unique,TREC,UREC,VREC,TwoTermsUsed(nTUVLIST)
+integer :: TwoTermTUVLIST(nTUVLIST),iPrim
+logical :: Unique,TREC,UREC,VREC,TwoTermsUsed(nTUVLIST),COLLAPSE
+Character(len=20) :: PrimLabel
 
 i=0 
 DO ituvP2 = 1,nTUVLISTactual
@@ -1560,9 +1791,9 @@ DO ituvP2 = 1,nTUVLISTactual
          call AddToString('TwoTerms(')
 !         call AddToString(ituvP2)
          call AddToString(i)
-         IF(lupri.LT.11)THEN
+         IF(center.LT.3)THEN
             call AddToString(') = inv2expP*(')
-         ELSEIF(lupri.GT.10)THEN
+         ELSEIF(center.GT.2)THEN
             call AddToString(') = inv2expQ*(')
          ENDIF
          IF(Gen)THEN
@@ -1572,14 +1803,20 @@ DO ituvP2 = 1,nTUVLISTactual
          ENDIF
          call AddToString(TwoTermTUVLIST(ituvP2))
          IF(Gen)THEN
-            call AddToString(',IP)')
+            IF(COLLAPSE)THEN
+               call AddToString(',IP)')
+            ELSE
+               call AddToString(',')
+               call AddToString(PrimLabel(1:iPrim))
+               call AddToString(')')
+            ENDIF
          ELSE
             call AddToString(')')
          ENDIF
          call AddToString(' + ')
-         IF(lupri.LT.11)THEN
+         IF(center.LT.3)THEN
             call AddToString('alphaP*TmpArray')
-         ELSEIF(lupri.GT.10)THEN
+         ELSEIF(center.GT.2)THEN
             call AddToString('alphaQ*TmpArray')
          ENDIF
          call AddToString(JTMP-1)
@@ -1590,9 +1827,9 @@ DO ituvP2 = 1,nTUVLISTactual
          call AddToString('TwoTerms(')
 !         call AddToString(ituvP2)
          call AddToString(i)
-         IF(lupri.LT.11)THEN
+         IF(center.LT.3)THEN
             call AddToString(') = inv2expP*(')
-         ELSEIF(lupri.GT.10)THEN
+         ELSEIF(center.GT.2)THEN
             call AddToString(') = inv2expQ*(')
          ENDIF
          call AddToString('TmpArray')
@@ -1601,9 +1838,9 @@ DO ituvP2 = 1,nTUVLISTactual
          call AddToString(TwoTermTUVLIST(ituvP2))
          call AddToString(',')
          call AddToString(J1)
-         IF(lupri.LT.11)THEN
+         IF(center.LT.3)THEN
             call AddToString(') + alphaP*TmpArray')
-         ELSEIF(lupri.GT.10)THEN
+         ELSEIF(center.GT.2)THEN
             call AddToString(') + alphaQ*TmpArray')
          ENDIF
          call AddToString(JTMP-1)
@@ -1728,14 +1965,17 @@ ENDIF
 
 end subroutine VRECURRENCETWOTERMS
 
-subroutine TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
+subroutine TRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev,center,PrimLabel,iPrim)
 implicit none
 integer :: Tp,Up,Vp,J,ituvP,TM1,ituvP2,ituvP3,JMAX,ituvp0,ituvp1,I,iTwoTerms,lupri,nTUVprev
-integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
+integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),center
 logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg,seg1prim
 integer :: nTUVLIST,nTUVLISTactual,JTMP,TM2
 integer :: TwoTermTUVLIST(nTUVLIST)
 character(len=3) :: DIRECTIONSTRING
+integer :: iPrim
+Character(len=20) :: PrimLabel
+
 !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
 !               +T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
 !TwoTerms are all  TUV(T-2) that is non zero ! to start with maybe not all needed
@@ -1755,29 +1995,31 @@ IF(TM2.GE.0)THEN
       ENDIF
    ENDDO
 ENDIF
-IF(lupri.LT.6)THEN
+IF(center.EQ.1)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Xpa','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-ELSEIF(lupri.LT.11)THEN
+        & 'Xpa','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev,PrimLabel,iPrim)
+ELSEIF(center.EQ.2)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Xpb','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-ELSEIF(lupri.LT.16)THEN
+        & 'Xpb','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev,PrimLabel,iPrim)
+ELSEIF(center.EQ.3)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Xqc','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-ELSEIF(lupri.LT.21)THEN
+        & 'Xqc','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev,PrimLabel,iPrim)
+ELSEIF(center.EQ.4)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Xqd','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
+        & 'Xqd','alphaXpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev,PrimLabel,iPrim)
 ENDIF
 end subroutine TRECURRENCE
 
 
-subroutine URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
+subroutine URECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev,center,PrimLabel,iPrim)
 implicit none
 integer :: Tp,Up,Vp,J,ituvP,TM1,ituvP2,ituvP3,JMAX,ituvp0,ituvp1,I,iTwoTerms,lupri,nTUVprev
-integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
+integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),center
 logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg,seg1prim
 integer :: nTUVLIST,nTUVLISTactual,JTMP,TM2
 integer :: TwoTermTUVLIST(nTUVLIST)
+integer :: iPrim
+Character(len=20) :: PrimLabel
 
 ituvP0 = TUVINDEX(Tp,Up,Vp)
 ituvP1 = TUVINDEX(Tp,Up-1,Vp)
@@ -1795,28 +2037,30 @@ IF(TM2.GE.0)THEN
       ENDIF
    ENDDO
 ENDIF
-IF(lupri.LT.6)THEN
+IF(center.EQ.1)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Ypa','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-ELSEIF(lupri.LT.11)THEN
+        & 'Ypa','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev,PrimLabel,iPrim)
+ELSEIF(center.EQ.2)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Ypb','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-ELSEIF(lupri.LT.16)THEN
+        & 'Ypb','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev,PrimLabel,iPrim)
+ELSEIF(center.EQ.3)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Yqc','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
-ELSEIF(lupri.LT.21)THEN
+        & 'Yqc','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev,PrimLabel,iPrim)
+ELSEIF(center.EQ.4)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Yqd','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev)
+        & 'Yqd','alphaYpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,seg1prim,nTUVprev,PrimLabel,iPrim)
 ENDIF
 end subroutine URECURRENCE
 
-subroutine VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
+subroutine VRECURRENCE(Tp,Up,Vp,J,TUVINDEX,CREATED,JMAX,nTUVLIST,nTUVLISTactual,TwoTermTUVLIST,JTMP,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev,center,PrimLabel,iPrim)
 implicit none
-integer :: Tp,Up,Vp,J,ituvP,TM1,ituvP2,ituvP3,JMAX,ituvp0,ituvp1,I,iTwoTerms,lupri,nTUVprev
+integer :: Tp,Up,Vp,J,ituvP,TM1,ituvP2,ituvP3,JMAX,ituvp0,ituvp1,I,iTwoTerms,lupri,nTUVprev,center
 integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
 logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),Gen,SegQ,SegP,Seg,Seg1Prim
 integer :: nTUVLIST,nTUVLISTactual,JTMP,TM2
 integer :: TwoTermTUVLIST(nTUVLIST)
+integer :: iPrim
+Character(len=20) :: PrimLabel
 
 ituvP0 = TUVINDEX(Tp,Up,Vp)
 ituvP1 = TUVINDEX(Tp,Up,Vp-1)
@@ -1834,30 +2078,32 @@ IF(TM2.GE.0)THEN
       ENDIF
    ENDDO
 ENDIF
-IF(lupri.LT.6)THEN
+IF(center.EQ.1)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Zpa','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
-ELSEIF(lupri.LT.11)THEN
+        & 'Zpa','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev,PrimLabel,iPrim)
+ELSEIF(center.EQ.2)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Zpb','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
-ELSEIF(lupri.LT.16)THEN
+        & 'Zpb','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev,PrimLabel,iPrim)
+ELSEIF(center.EQ.3)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Zqc','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
-ELSEIF(lupri.LT.21)THEN
+        & 'Zqc','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev,PrimLabel,iPrim)
+ELSEIF(center.EQ.4)THEN
    CALL XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
-        & 'Zqd','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
+        & 'Zqd','alphaZpq',TM1,TM2,lupri,Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev,PrimLabel,iPrim)
 ENDIF
 
 end subroutine VRECURRENCE
 
 SUBROUTINE XYZVERTICALRECURRENCE(J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,&
      & DIRECTIONSTRING1,DIRECTIONSTRING2,TM1,TM2,lupri,&
-     & Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev)
+     & Gen,SegQ,SegP,Seg,Seg1prim,nTUVprev,PrimLabel,iPrim)
 implicit none
 integer :: J,JMAX,ituvP0,ituvP1,JTMP,iTwoTerms,TM1,TM2,lupri,nTUVprev
 logical :: Gen,SegQ,SegP,Seg,Seg1Prim
 character(len=3) :: DIRECTIONSTRING1 !Xpa
 character(len=8) :: DIRECTIONSTRING2 !alphaXpq
+integer :: iPrim
+Character(len=20) :: PrimLabel
    
 call initString(5)
 IF(J.EQ.1)THEN
@@ -1865,12 +2111,18 @@ IF(J.EQ.1)THEN
       !place in AuxArray and use AuxArray in X*Aux
       call AddToString('AuxArray(')
       call AddToString(ituvP0)
-      call AddToString(',IP) = ')
+!      call AddToString(',IP) = ')
+call AddToString(',')
+call AddToString(PrimLabel(1:iPrim))
+call AddToString(') = ')
       !      call AddToString('Xpa')
       call AddToString(DIRECTIONSTRING1) !Xpa
       call AddToString('*AuxArray(')
       call AddToString(ituvP1)
-      call AddToString(',IP)')
+!      call AddToString(',IP)')
+call AddToString(',')
+call AddToString(PrimLabel(1:iPrim))
+call AddToString(')')
    ELSE !segmentet 
       IF(ituvP0.LE.nTUVprev)THEN
          !place in TMPAuxArray and use TMPAuxArray in X*Aux
@@ -1887,31 +2139,38 @@ IF(J.EQ.1)THEN
          IF(ituvP0.EQ.nTUVprev+1)THEN
             WRITE(lupri,'(A,I5)')'     do iTUV = 1,',nTUVprev
             IF(Seg1Prim)THEN
-               WRITE(lupri,'(A)')'      AuxArray(iTUV,IPassQ) = TMPAuxarray(iTUV)'
+               WRITE(lupri,'(A,A,A)')'      AuxArray(iTUV,',PrimLabel(1:iPrim),') = TMPAuxarray(iTUV)'
             ELSEIF(Seg)THEN
-               WRITE(lupri,'(A)')'      AuxArray(iTUV,IPassQ) = AuxArray(iTUV,IPassQ) + TMPAuxarray(iTUV)'
+               WRITE(lupri,'(A,A,A,A,A)')'      AuxArray(iTUV,',PrimLabel(1:iPrim),') = AuxArray(iTUV,',PrimLabel(1:iPrim),') + TMPAuxarray(iTUV)'
             ELSE !segQ or SegP
-               WRITE(lupri,'(A)')'      AuxArray(iTUV,IP) = AuxArray(iTUV,IP) + TMPAuxarray(iTUV)'
+               WRITE(lupri,'(A,A,A,A,A)')'      AuxArray(iTUV,',PrimLabel(1:iPrim),') = AuxArray(iTUV,',PrimLabel(1:iPrim),') + TMPAuxarray(iTUV)'
             ENDIF
             WRITE(lupri,'(A)')'     enddo'
          ENDIF
          !place in AuxArray and use AuxArray in X*Aux
          call AddToString('AuxArray(')
          call AddToString(ituvP0)
-         IF(Seg)THEN
-            call AddToString(',IPassQ)')
-         ELSE !segQ or SegP or Gen
-            call AddToString(',IP)')
-         ENDIF
+!         IF(Seg)THEN
+!            call AddToString(',IPassP)')
+!         ELSE !segQ or SegP or Gen
+!            call AddToString(',IP)')
+!         ENDIF
+call AddToString(',')
+call AddToString(PrimLabel(1:iPrim))
+call AddToString(')')
+
          call AddToString(' = ')
          IF(.NOT.Seg1Prim)THEN
             call AddToString('AuxArray(')
             call AddToString(ituvP0)
-            IF(Seg)THEN
-               call AddToString(',IPassQ)')
-            ELSE !segQ or SegP or Gen
-               call AddToString(',IP)')
-            ENDIF
+!            IF(Seg)THEN
+!               call AddToString(',IPassP)')
+!            ELSE !segQ or SegP or Gen
+!               call AddToString(',IP)')
+!            ENDIF
+call AddToString(',')
+call AddToString(PrimLabel(1:iPrim))
+call AddToString(')')
             call AddToString(' + ')
          ENDIF
          !      call AddToString('Xpa')

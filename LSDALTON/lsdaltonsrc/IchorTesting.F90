@@ -117,16 +117,18 @@ do Ipass = 1,2
    !   call build_unittest_atomicmolecule(atomicmolecule(3),ICHARGE,Rxyz,nPass,lupri)
    !   ICHARGE=17; Rxyz(1)=0.574178167982901E0_realk; Rxyz(2)=6.886728949849219E-2_realk;Rxyz(3)=9.213548738546455E-2_realk; 
    !   call build_unittest_atomicmolecule(atomicmolecule(4),ICHARGE,Rxyz,1,lupri)
-   nPass = ipass
+   !nPassesP = 20 (OpenMP improved)
+   nPass = 1
+   IF(iPass.EQ.2)nPass = 5
    ICHARGE=6; Rxyz(1)=0.813381591740787E0_realk; Rxyz(2)=1.059191498062862E0_realk;Rxyz(3)=0.889158554601339E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(1),ICHARGE,Rxyz,nPass,lupri)
-   IF(iPass.EQ.2)nPass = 3
+   IF(iPass.EQ.2)nPass = 4
    ICHARGE=8; Rxyz(1)=0.762266389544351E0_realk; Rxyz(2)=0.983877565461657E0_realk;Rxyz(3)=0.624979148086261E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(2),ICHARGE,Rxyz,nPass,lupri)
-   IF(iPass.EQ.2)nPass = 4
+   IF(iPass.EQ.2)nPass = 3
    ICHARGE=9; Rxyz(1)=0.736938390171405E0_realk; Rxyz(2)=1.108186821166992E0_realk;Rxyz(3)=0.713699152299640E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(3),ICHARGE,Rxyz,nPass,lupri)
-   IF(iPass.EQ.2)nPass = 5
+   IF(iPass.EQ.2)nPass = 2
    ICHARGE=17; Rxyz(1)=0.574178167982901E0_realk; Rxyz(2)=1.086728949849219E0_realk;Rxyz(3)=0.913548738546455E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(4),ICHARGE,Rxyz,nPass,lupri)
    
@@ -150,11 +152,17 @@ do Ipass = 1,2
    spherical = .TRUE.!.FALSE.
    nullify(integralsII)
    
-   do iBasis1 = 1,nBasis
+   basisloop: do iBasis1 = 1,nBasis
     do iBasis2 = 1,nBasis
      do iBasis3 = 1,nBasis
       do iBasis4 = 1,nBasis
 
+         !Skip forward 
+!         IF(iBasis4+(iBasis3-1)*nBasis+(iBasis2-1)*nBasis*nBasis+&
+!              & (iBasis1-1)*nBasis*nBasis*nBasis.LT.14) CYCLE
+
+         print*,'iBasis:',iBasis4+(iBasis3-1)*nBasis+(iBasis2-1)*nBasis*nBasis+&
+              & (iBasis1-1)*nBasis*nBasis*nBasis,'of',nBasis*nBasis*nBasis*nbasis
        ibasiselm(1) = iBasis1
        ibasiselm(2) = iBasis2
        ibasiselm(3) = iBasis3
@@ -271,7 +279,7 @@ do Ipass = 1,2
     ENDDO
    ENDDO
   ENDDO
- ENDDO
+ ENDDO basisloop
 
  write(lupri,'(A,I4)')'Summary of Unit Test for nPasses=',ipass
  do iBasis1 = 1,nBasis

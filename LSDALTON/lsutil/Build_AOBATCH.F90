@@ -1112,6 +1112,12 @@ call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
 maxBatchOrbitalsize = 0
 do I=1,AO%nbatches
    tmporb = 0
+   IF(AO%BATCH(I)%nAngmom.GT.1)THEN
+      print*,'The Framework around determine_maxBatchOrbitalsize, '
+      print*,'build_batchesofAOS and II_GET_DECPACKED4CENTER_J_ERI'
+      print*,'requires .NOFAMILY keyword'
+      CALL LSQUIT('NOFAMILY required in determine_maxBatchOrbitalsize',-1)
+   ENDIF
    DO A=1,AO%BATCH(I)%nAngmom
       tmporb = tmporb + AO%BATCH(I)%norbitals(A)
    ENDDO
