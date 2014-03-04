@@ -1031,7 +1031,7 @@ C
 !     - this saves a lot of cpu time on other cores in a sequential section
 !     - may make it possible to go into turbo mode
 !     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
-      CALL SLEEP(1)
+c      CALL SLEEP(1)
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER) !stall slaves with blocking broadcast
 C
       IF (IPRTYP.GT.0) THEN
@@ -1164,6 +1164,8 @@ C added by Bin Gao, May 12, 2012
 #endif
          ELSE IF (IPRTYP.EQ.RPA_E_LINTRANS) THEN
             CALL RPA_E_LIN_TRANSFORM(work, mwork, mytid )
+         ELSE IF (IPRTYP.EQ.SLAVESLEEP) THEN
+            CALL SLEEPSLAVES2()
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,

@@ -38,9 +38,6 @@ C
       DIMENSION REDE(LREDE,LREDE),REDS(LREDS,LREDS)
       DIMENSION EXVAL(LEXVAL)
       DIMENSION WORK(LWORK)
-C TODO beyer
-      write(lupri, *) "dimensions of matrices is:", LREDS, LREDE
-C TODO ...beyer
 C
 C------------------
 C     Add to trace.

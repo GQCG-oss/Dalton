@@ -58,10 +58,10 @@ C
 
 #ifdef VAR_MPI
 #include "iprtyp.h"
-!#include "infpar.h"
+#include "infpar.h"
 #include "parrpa.h" !This initializes most parameters for ERIDI1 and connects with the parallel calculation.
-      !integer :: numprocs, ierr
-      !call mpi_comm_size(mpi_comm_world, numprocs, ierr) !This call to comm_size makes loop 220 crash with a write statement!!!!! What the actual fuck???
+c         integer :: numprocs, ierr
+c      call mpi_comm_size(mpi_comm_world, numprocs, ierr) !This call to comm_size makes loop 220 crash with a write statement!!!!! What the actual fuck???
 #endif
 
 
@@ -146,7 +146,6 @@ C
 C------------------------------------------
 C        Write new trial vectors to output.
 C------------------------------------------
-         !write(*,*) "testing crashes 444"
          DO 50 INEWTR = 1,NNEWTR
 C----------------------------------------------------
 C           Determine pointer to INEWTR trial vector.
@@ -166,7 +165,6 @@ C================================================
 C     Loop over number of excitations considered.
 C================================================
 C
-      !write(*,*) "testing crashes 333"
       DO 100 INEWTR = 1,NNEWTR
 C
 C-------------------------------------------------
@@ -196,6 +194,7 @@ C---------------------------------------------------
 C
 C TODO BEYER
 C        Check if AODENS contains stuff that need to be broadcast to all slaves.
+C        SO_AODENS makes use of DGEMM. Insert a call to utilize the slaves for this calculation
 C TODO ... BEYER
          DTIME     = SECOND()
          CALL SO_AODENS(WORK(KDENS),LDENS,WORK(KCMO),LCMO,
@@ -222,7 +221,6 @@ C=======================================================
 C        Start the loop over distributions of integrals.
 C=======================================================
 C
-      !write(*,*) "testing crashes 222"
          IF (DIRECT) THEN
             NTOSYM = 1
             DTIME     = SECOND()
@@ -252,7 +250,6 @@ C
          LWORKSV = LWORK2
 C
          ICDEL1 = 0
-      !write(*,*) "testing crashes 111"
          DO 210 ISYMD1 = 1,NTOSYM
 C
             IF (DIRECT) THEN  
@@ -261,6 +258,9 @@ C
                NTOT = NBAS(ISYMD1)
             ENDIF
 C
+C Experimental beyer todo
+            call sleepslaves(300)
+C end experiment beyer todo 
             DO 220 ILLL = 1,NTOT
 C
 C------------------------------------------------
@@ -271,14 +271,16 @@ C TODO delete/move/remove/rewrite these lines
 #ifdef VAR_MPI
 C qwer
 C asdfasdf
-      if (.true.) then
-          ISYMPAR = ISYMTR
-          call mpixbcast(85, 1, 'INTEGE', 0)
-          call mpixbcast(0, 1, 'INTEGE', 0)
-          CALL RPA_E_LIN_TRANSFORM(WORK, LWORK, 0, LUPRI, IPRINT)
-          goto 888
+      if (.false.) then
+          !ISYMPAR = ISYMTR
+          !call mpixbcast(85, 1, 'INTEGE', 0)
+          !call mpixbcast(0, 1, 'INTEGE', 0)
+          !CALL RPA_E_LIN_TRANSFORM(WORK, LWORK, 0, LUPRI, IPRINT)
+          !goto 888
+
       endif
 #endif
+      
 C ... F.Beyer
                IF (DIRECT) THEN
 C
@@ -414,9 +416,13 @@ C
 C
   220       CONTINUE ! End of ILLL loop.
 C
+C Experimental beyer todo
+         call wakeslaves()
+C end experiment beyer todo 
   210    CONTINUE
+
+
   888    continue
-         write(*,*) "I'm past 888"
 c BEYER: hele KFOCK matricen skal vaere samlet her! 
 C
 C====================================================
@@ -606,7 +612,7 @@ C     Intent of Dummy arguments
       dimension work(lwork) !intent(inout) !! This uses DALTON's implicit type rather than hardcoding it to real(kind=8)
       logical :: reset, release, flag, exitspinningbarrier
       integer :: numprocs, sharedwork, rest, firstindex, lastindex
-      integer :: isymtr 
+      integer :: isymtr, request 
       integer, dimension(MPI_STATUS_SIZE) :: mpistatus
       DIMENSION INDEXA(MXCORB)
       DIMENSION FOCKD(LFOCK)
@@ -625,9 +631,6 @@ C     Be aware that the mpi_real8 data type is due to the value of REAL in
 C     implicit.h. 
       call mpi_bcast(NTOT, lparrp, mpi_integer, 0, mpi_comm_world, ierr)
       call mpi_bcast(work(1), kendsv, mpi_real8, 0,mpi_comm_world, ierr)
-
-
-      write(*,*) "Entered RPA in parallel"
 
 
 C **********************************************************
@@ -694,9 +697,6 @@ C     If there are more processes than tasks, this load balance is used.
          firstindex = myid + 1 
          lastindex = myid + 1
       endif excessbalance
-      goto 666 ! end of surplus balance
-
-220   continue 
 
 
 
@@ -705,6 +705,8 @@ C     If there are more processes than tasks, this load balance is used.
 
 
 
+C   TODO is it a better idea to create a communicator for the spinning slaves that includes the master?
+C   is it faster to do it that way rather than with a irecv?
 
 C   This spinning barrier will only work if INTEL is used.
 C   The sleepqq command is not available otherwise
@@ -715,28 +717,29 @@ C   remaining processes to use them for threaded MKL applications.
       exitspinningbarrier = .false. 
       spinningbarrier: if (myid.ge.ntot) then
          if (debugging) then
-            write(*,'(i2, a)') myid, " entering the spinning barrier"
          endif
 C        TODO set all Fock matrix elements to zero here before continuing
          call mpi_irecv(exitspinningbarrier, 1, MPI_LOGICAL, 0, myid,
-     &   mpi_comm_world, isreleased, ierr) 
+     &   mpi_comm_world, request, ierr) 
 230      continue 
 #ifdef VAR_IFORT
-         call sleepqq(10)  !sleep 10 milliseconds to release CPU time for the MKL library for working slaves.
+         call sleepqq(100)  !sleep 100 milliseconds to release CPU time for the MKL library for working slaves.
 #endif
-         call mpi_test(isreleased, flag, mpistatus, ierr)
+         call mpi_test(request, flag, mpistatus, ierr)
          if (.not.exitspinningbarrier) then
             goto 230
          else
-             continue !TODO This should redirect to the assembly of the Fock matrix. Alternatively it should return from the paralle routine.
+             goto 800 !Skip to the assembly of the Fock matrix 
          endif
+
       endif spinningbarrier
 
 
 
+666   continue !load balancing schemes redirect here.
 
 
-666   continue !All load balancing schemes redirect here.
+
 
       if (debugging) then
          write(*, '(a, i3, a, i2, a, i2, a, i3)' )
@@ -881,10 +884,12 @@ C     all IDs .le. ntot
             exitspinningbarrier = .true.
             do i=ntot, (numprocs-1)
                call mpi_isend(exitspinningbarrier, 1, MPI_LOGICAL, i,
-     &         i, mpi_comm_world, isreleased, ierr)
+     &         i, mpi_comm_world, request, ierr)
             enddo
          endif
       endif
+
+800   continue !Slaves exiting from the spinning barrier are redirected here
 
 
 C TODO make sure that the processes participating in the spinning barrier will contribute with 0 to this reduce call

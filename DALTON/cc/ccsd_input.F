@@ -192,12 +192,19 @@ C
      *          WORD .EQ. '*CC    ')
       IF (NEWDEF) THEN
          IF (PARCAL) THEN
-           WRITE(LUPRI,*) "ERROR: CC is not MPI parallelized!"
-           ! WRITE(LUPRI,*) "For parallelization speedup, please use OMP"
-           ! hjaaj Oct 2013: no OpenMP in current code !
-           WRITE(LUPRI,*)
-     &     "For parallelization speedup, e.g. use parallel MKL"
-           CALL PARQUIT("CC")
+C TODO BEYER ##QWER
+           write(lupri, *) "WARNING!: If you see this message ",
+     & "Please go to cc/ccds_input.F and search for BEYER ##QWER. ",
+     & "Comment the HJAAJ section back in and remove this warning. ",
+     & "I've disabled the automatic stop to work on parallelizing ",
+     & " parts of the SOPPA(CCDS) code."
+C ... TODO BEYER  ! the next 6 lines should be commented back in!
+C           WRITE(LUPRI,*) "ERROR: CC is not MPI parallelized!"
+C           ! WRITE(LUPRI,*) "For parallelization speedup, please use OMP"
+C           ! hjaaj Oct 2013: no OpenMP in current code !
+C           WRITE(LUPRI,*)
+C     &     "For parallelization speedup, e.g. use parallel MKL"
+C           CALL PARQUIT("CC")
          ENDIF
          WORD1 = WORD
  1000    CONTINUE
