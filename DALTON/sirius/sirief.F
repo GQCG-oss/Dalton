@@ -121,7 +121,7 @@ C
          LSTART = NTSIRR * LSYM + 1
          CALL MATPCM(DPAK(1,LSTART),SPAK(1,LSTART),AS,CPAK(1,LSTART),
      $        NTSIRR,FACT,1)
-      ENDDO               
+      ENDDO              
 C
 Clf Check if the off-diagonal terms of DMATM1 are too big
 C   If they are not, then are properly stored
@@ -534,14 +534,6 @@ C
          ENDDO
       ENDDO
 
-      write(lupri, *) "UMAT"
-      do i = 0, maxrep 
-        write(lupri, *) (umat(i, j), j = 0, 7)
-      end do
-
-      write(lupri, *) "DMAT"
-      call OUTPUT(dmat,1,nts,1,nts,nts,nts,1,LUPRI)
-
 C
 C Computation of WORK = DMAT * UMAT
 C      
@@ -598,8 +590,6 @@ C
             ENDDO
          ENDDO
       ENDDO
-      write(lupri, *) "Block diagonal, DMAT"
-      call OUTPUT(dmat,1,nts,1,nts,nts,nts,1,LUPRI)
 C         
 C     Check that we have done the block-diagonalization in the proper way 
 C (this test will be skipped after debugging)  

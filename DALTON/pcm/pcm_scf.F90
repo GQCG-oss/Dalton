@@ -136,6 +136,33 @@ module pcm_scf
       
       end subroutine collect_atoms
 
+      subroutine set_point_group(pg) bind(c, name='set_point_group')
+
+#include "pgroup.h"
+
+      integer(c_int), intent(inout) :: pg
+
+      select case (group)
+        case('C1 ')
+                pg = 0
+        case('Cs ')
+                pg = 1
+        case('C2 ')
+                pg = 2
+        case('Ci ')
+                pg = 3
+        case('C2h')
+                pg = 4
+        case('D2 ')
+                pg = 5
+        case('C2v')
+                pg = 6
+        case('D2h')
+                pg = 7
+      end select
+
+      end subroutine set_point_group
+
       subroutine pcm_energy_driver(density_matrix, pol_ene, work, lfree)
 
       real(8)        :: density_matrix(*)

@@ -287,10 +287,6 @@ C
 Clf      WRITE(LUPRI,*)'MAXREP', MAXREP
 C
       CALL SPHPER(NESF,NESFP,NUMSPH,NPERM,NEWSPH,XE,YE,ZE,RE)
-      write(lvpri, *) "PRINT NPERM"
-      do i = 1, numsph
-        write(lupri, *) (nperm(i, j), j = 1, 8)
-      end do
 C
 Clf Determination of eigenvalues and eigenvectors of the inertia tensor
 C
@@ -743,7 +739,6 @@ C
             ENDIF 
             NewSph(NESF1,1)=N1
             NewSph(NESF1,2)=N2
-            WRITE(LUPRI,*) 'new!',NESF1,N1,N2
           ENDIF
  10       CONTINUE
         ENDDO
