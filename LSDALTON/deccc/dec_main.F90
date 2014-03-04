@@ -65,6 +65,9 @@ contains
     ! ************************************
     call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
 
+    !> F12
+    !call molecule_init_f12(molecule,mylsitem,D)
+      
     ! Fock, overlap, and MO coefficient matrices are now stored
     ! in Molecule, and there is no reason to store them twice.
     ! So we delete them now and reset them at the end.
@@ -97,9 +100,9 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     type(matrix) :: D
     type(fullmolecule) :: Molecule
+    integer :: nbasis
 
-    print *, 'Hartree-Fock info is read from file...'
-
+    
     ! Minor tests
     ! ***********
     !Array test
@@ -115,15 +118,21 @@ contains
       return
     endif
 
-    ! Get informations about full molecule by reading from file
-    call molecule_init_from_files(molecule,mylsitem)
+    print *, 'Hartree-Fock info is read from file...'
 
     ! Get density matrix
+    Molecule%nbasis = get_num_basis_functions(mylsitem)
     call dec_get_density_matrix_from_file(Molecule%nbasis,D)
-
+    
+    ! Get informations about full molecule by reading from file
+    call molecule_init_from_files(molecule,mylsitem,D)
+ 
+    !> F12
+    !call molecule_init_f12(molecule,mylsitem,D)
+       
     ! Main DEC program
     call dec_main_prog(MyLsitem,molecule,D)
-
+     
     ! Delete molecule structure and density
     call molecule_finalize(molecule)
     call mat_free(D)

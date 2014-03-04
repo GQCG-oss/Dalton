@@ -2043,7 +2043,7 @@ C
      &        ' B operator, symmetry, frequency: ',BLAB,ISYMB,FREQB,
      &        ' C operator, symmetry, frequency: ',CLAB,ISYMC,FREQC
 C
-         IF (ABSLRS.AND.(NCONF.LE.1).AND.ABS_DIRFCK) THEN
+         IF (ABSLRS.AND.(NCONF.LE.1)) THEN
               CALL ABS_QRRDVE(ISYMA,ISYMB,ISYMC,ALAB,BLAB,CLAB,
      &        FREQA,FREQB,FREQC,KZYVA,KZYVB,KZYVC,WRK(KVECA),WRK(KVECB),
      &        WRK(KVECC))

@@ -790,6 +790,11 @@ module cc_debug_routines_module
         if(DECinfo%PL>1) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+        !HACK to get CCD
+        if(DECinfo%CCDHACK)then
+          omega1(iter)%val = 0.0E0_realk
+        endif
+
         ! check for the convergence
         one_norm1 = 0.0E0_realk
         one_norm2 = 0.0E0_realk
@@ -3863,7 +3868,12 @@ module cc_debug_routines_module
     !$OMP keep_pair)
     call init_threadmemvar()
 
-    !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+    !CURRENT HACK FOR PGI COMPILER, SOMETHING WITH THE ALLOCATIONS IN THE LOOP
+    !(AND MAYBE STACK MEMORY), FIXME: MOVE ALLOCATION OUTSIDE OF PARALLEL REGION
+
+    !$OMP SINGLE
+
+    !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
     do i=1,n
       do j=1,n
 
@@ -3986,7 +3996,8 @@ module cc_debug_routines_module
 
       enddo
     enddo
-    !$OMP END DO NOWAIT
+    !$OMP END SINGLE
+    !OMP END DO NOWAIT
     call collect_thread_memory()
     !$OMP END PARALLEL
     call mem_TurnOffThread_Memory()

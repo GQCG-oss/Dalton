@@ -2034,8 +2034,17 @@ contains
     if(fragment%FAset) then
        call mem_dealloc(fragment%CoFA)
        call mem_dealloc(fragment%CvFA)
-       call mem_dealloc(fragment%ppfockFA)
-       call mem_dealloc(fragment%qqfockFA)
+
+       !Check if associated because that might be different on master and slaves
+       !due to the "Expensive Box"
+       if(associated(fragment%ppfockFA))then
+         call mem_dealloc(fragment%ppfockFA)
+       endif
+
+       if(associated(fragment%qqfockFA))then
+         call mem_dealloc(fragment%qqfockFA)
+       endif
+
        if(.not. fragment%pairfrag) then
           call mem_dealloc(fragment%CDocceival)
           call mem_dealloc(fragment%CDunocceival)
@@ -3479,12 +3488,12 @@ contains
     call mem_alloc(jobs%jobsdone,njobs)
     call mem_alloc(jobs%dofragopt,njobs)
     call mem_alloc(jobs%esti,njobs)
-    jobs%atom1=0
-    jobs%atom2=0
-    jobs%jobsize=0
-    jobs%jobsdone=.false. ! no jobs are done
-    jobs%dofragopt=.false. 
-    jobs%esti=.false.
+    jobs%atom1     = 0
+    jobs%atom2     = 0
+    jobs%jobsize   = 0
+    jobs%jobsdone  = .false. ! no jobs are done
+    jobs%dofragopt = .false. 
+    jobs%esti      = .false.
 
     ! MPI fragment statistics
     call mem_alloc(jobs%nslaves,njobs)
@@ -3495,14 +3504,14 @@ contains
     call mem_alloc(jobs%flops,njobs)
     call mem_alloc(jobs%LMtime,njobs)
     call mem_alloc(jobs%load,njobs)
-    jobs%nslaves=0
-    jobs%nocc=0
-    jobs%nunocc=0
-    jobs%nbasis=0
-    jobs%ntasks=0
-    jobs%flops=0.0E0_realk
-    jobs%LMtime=0.0E0_realk
-    jobs%load=0.0E0_realk
+    jobs%nslaves = 0
+    jobs%nocc    = 0
+    jobs%nunocc  = 0
+    jobs%nbasis  = 0
+    jobs%ntasks  = 0
+    jobs%flops   = 0.0E0_realk
+    jobs%LMtime  = 0.0E0_realk
+    jobs%load    = 0.0E0_realk
 
   end subroutine init_joblist
 
@@ -3587,7 +3596,6 @@ contains
        nullify(jobs%load)
     end if
 
-
   end subroutine free_joblist
 
 
@@ -3616,20 +3624,20 @@ contains
     end if
 
     ! Copy info from single job into big job list
-    jobs%atom1(position) = singlejob%atom1(1)
-    jobs%atom2(position) = singlejob%atom2(1)
-    jobs%jobsize(position) = singlejob%jobsize(1)
-    jobs%jobsdone(position) = singlejob%jobsdone(1)
+    jobs%atom1(position)     = singlejob%atom1(1)
+    jobs%atom2(position)     = singlejob%atom2(1)
+    jobs%jobsize(position)   = singlejob%jobsize(1)
+    jobs%jobsdone(position)  = singlejob%jobsdone(1)
     jobs%dofragopt(position) = singlejob%dofragopt(1)
-    jobs%esti(position) = singlejob%esti(1)
-    jobs%nslaves(position) = singlejob%nslaves(1)
-    jobs%nocc(position) = singlejob%nocc(1)
-    jobs%nunocc(position) = singlejob%nunocc(1)
-    jobs%nbasis(position) = singlejob%nbasis(1)
-    jobs%ntasks(position) = singlejob%ntasks(1)
-    jobs%flops(position) = singlejob%flops(1)
-    jobs%LMtime(position) = singlejob%LMtime(1)
-    jobs%load(position) = singlejob%load(1)
+    jobs%esti(position)      = singlejob%esti(1)
+    jobs%nslaves(position)   = singlejob%nslaves(1)
+    jobs%nocc(position)      = singlejob%nocc(1)
+    jobs%nunocc(position)    = singlejob%nunocc(1)
+    jobs%nbasis(position)    = singlejob%nbasis(1)
+    jobs%ntasks(position)    = singlejob%ntasks(1)
+    jobs%flops(position)     = singlejob%flops(1)
+    jobs%LMtime(position)    = singlejob%LMtime(1)
+    jobs%load(position)      = singlejob%load(1)
 
   end subroutine put_job_into_joblist
 
@@ -4185,7 +4193,11 @@ contains
           write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr
+          if (DECinfo%F12) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+          else          
+             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+          endif
        elseif(DECinfo%ccmodel==MODEL_CC2) then
           write(lupri,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
@@ -4201,7 +4213,13 @@ contains
           write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total MP2 energy    :', Ehf+Ecorr
+          if (DECinfo%F12) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+          else          
+             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+          endif
+       elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CC2) then
           write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
@@ -4455,13 +4473,20 @@ contains
             & for model: ', DECinfo%ccmodel
     end select
 
+#ifdef MOD_UNRELEASED
     ! MODIFY FOR NEW CORRECTION
-    if(DECInfo%F12debug) then
+    if(DECInfo%F12) then
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') 'MP2F12-V_gr_term occupied correlation energy : ', energies(FRAGMODEL_F12)
+       write(DECinfo%output,'(13X,a)') '**********************************************************'
+       write(DECinfo%output,'(13X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
+       write(DECinfo%output,'(13X,a)') '**********************************************************'
+       write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY : ', energies(FRAGMODEL_OCCMP2)  
+       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY : ', energies(FRAGMODEL_MP2f12)
+       write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+            & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
        write(DECinfo%output,*)       
-
     endif
+#endif
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)

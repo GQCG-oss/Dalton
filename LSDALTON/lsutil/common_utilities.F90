@@ -142,8 +142,8 @@
      allocate(wrk(5))
      lwrk = -1
 #ifdef VAR_LSESSL
-     no_ref=0.0E0_realk
-     tol = 0.0E0_realk
+     no_ref = 0.0E0_realk
+     tol    = 0.0E0_realk
      call DSYGVX( 1,'V','A','L', N, A, N, B, N, no_ref,no_ref,no_ref,&
       &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
 #else
@@ -153,7 +153,14 @@
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
         stop "programming error in my_DSYGV input. workarray inquiry"
      endif
+#ifdef VAR_LSDEBUG
+     ! sometimes the optimal batch sizes do not always work, especially when
+     ! compiled with ifort --debug and --check so I introduced this, PE
+     print *,"WARNING(my_sygv): using minimal lwrk instead of optimal, debug"
+     lwrk = 3*N-1
+#else
      lwrk = NINT(wrk(1))
+#endif
      deallocate(wrk)
      allocate(wrk(lwrk))
 #ifdef VAR_LSESSL
@@ -161,6 +168,7 @@
       &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
      call dcopy(N*N,Z,1,A,1)
 #else
+     print *,"calling DSYGV",1,'V','L',N,size(A),N,size(B),N,size(eigval),size(wrk),lwrk
      call DSYGV(1,'V','L',N,A,N,B,N,eigval,wrk,lwrk,ierr)
 #endif 
      if(ierr.ne. 0) THEN
@@ -603,10 +611,23 @@ end subroutine ls_dcopy
       CALL ls_TIMTXT('>>>> Total CPU  time used in LSDALTON:',CTOT,LUPRIN)
       CALL ls_TIMTXT('>>>> Total wall time used in LSDALTON:',WTOT,LUPRIN)
       CALL ls_FLSHFO(LUPRIN)
-
-#ifdef VAR_MPI
-      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
-#endif
+!It may seem like a good idea to wake up the slaves so that the slaves can all call mpi_finalize and quit. However in the case of MPI the lsquit can be called in many ways.
+! Option 1: The Master is awake and the slaves are sleeping. Master calls lsquit
+!           Here it can make sense to wake up the slaves and have the slaves 
+!           call mpi_finalize and quit
+! Option 2: The Master and the Slaves are awake. Master calls lsquit
+!           In this case Master should not broadcast a wake up call as the 
+!           slaves are already sleeping - so it does not make sense 
+!           and the calculation will hang in the MPI broadcast routine. 
+!           The MPI slaves will wait in some reduction routine or something
+!           While the Master i waiting in the bcast routine 
+! Option 3: The Master and the Slaves are awake. Slave calls lsquit
+!           Clearly it should not wake up the other slaves
+!
+!If master and slaves calls EXIT directly the mpiexec should kill the slaves!
+!#ifdef VAR_MPI
+!      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
+!#endif
       !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
 #if defined (SYS_LINUX)
       CALL EXIT(100)
@@ -614,6 +635,27 @@ end subroutine ls_dcopy
       STOP 100
 #endif
       end subroutine lsquit
+
+      !> \brief Print Stack
+      !> \author T. Kjaergaard
+      !> \date Jan 2014
+      subroutine LsTraceBack(text)
+        use precision
+#ifdef VAR_IFORT
+#ifndef VAR_INT64
+        use IFCORE
+        implicit none
+        !> Text string to be printed
+        CHARACTER(len=*), intent(in) :: TEXT
+        WRITE (*,'(/2A/)')"TRACEBACKQQ INFO:",TEXT
+        CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE=-1)
+#else
+        WRITE (*,'(/2A/)')"LsTraceBack do not work using -int64"
+#endif
+#else
+        WRITE (*,'(/2A/)')"LsTraceBack do not work unless ifort is used"
+#endif
+      end subroutine LsTraceBack
 
       !> \brief Print a header. Based on HEADER by T. Helgaker
       !> \author S. Host

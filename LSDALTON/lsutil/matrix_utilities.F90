@@ -378,15 +378,9 @@ contains
       CALL mat_init(FDS, F%nrow, F%ncol)
       CALL mat_init(SDF, F%nrow, F%ncol)
       call mat_init(SD , F%nrow, F%ncol)
-#ifdef THE_MORE_EFFICIENT_CODE_BUT_NOT_WORKING_WITH_PURIFICATION_YET
       CALL mat_mul(S,   D,'n','n', 1E0_realk, 0E0_realk, SD)
       CALL mat_mul(SD, F,'n','n', 4E0_realk, 0E0_realk, SDF)
       call mat_mul(F,SD,'n','t',4.0E0_realk,0E0_realk, FDS)
-#else
-      CALL mat_mul(S,   D,'n','n', 1E0_realk, 0E0_realk, SD)
-      CALL mat_mul(SD, F,'n','n', 4E0_realk, 0E0_realk, SDF)
-      call mat_mul(F,SD,'n','t',4.0E0_realk,0E0_realk, FDS)
-#endif
       CALL mat_add(1E0_realk, SDF, -1E0_realk, FDS, grad) ! res = SDF - tmp
       CALL mat_free(FDS)
       CALL mat_free(SDF)

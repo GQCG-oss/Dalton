@@ -166,11 +166,12 @@ do iGrid=1,size(gridObject)
 enddo
 end subroutine init_gridObject
 
-subroutine init_dftfunc(dft)
+subroutine init_dftfunc(dft,admm_exchange_func)
 TYPE(dftparam) :: dft
 !
 integer :: iDFT,ialpha
-character(80) :: word
+character(80)         :: word
+character(*),optional :: admm_exchange_func
 
 do iDFT=1,size(dft%dftfuncObject)
    DFT%DFTfuncObject(iDFT) = dft%dftfunc
@@ -184,7 +185,11 @@ IF ((INDEX(dft%dftfunc,'cam').NE.0).OR.(INDEX(dft%dftfunc,'CAM').NE.0)) THEN
     word = 'Camcompx'
   ENDIF
 ELSE
-  word = 'BX'
+  IF (present(admm_exchange_func)) THEN
+    word = admm_exchange_func
+  ELSE
+    word = 'BX'
+  ENDIF
 ENDIF
 call set_admmfun(dft,word)
 

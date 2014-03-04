@@ -2669,7 +2669,7 @@ C -- end of subroutine RSPPRO
 C
       END
 C  /* Deck rspprw */
-      SUBROUTINE RSPPRW (WOP,MJWOP,NZWOPT,NWOPSY,IOFFY,UDV,IUNITX)
+      SUBROUTINE RSPPRW (WOP,MJWOP,NZWOPT,NWOPSY,IOFFY,IUNITX)
 C
 C Written Jan 92, pj and ov, based on RSPPRO
 C Modified Mar 920314 ov, symmetry in parameter list (more RSPPRO-like)
@@ -2690,7 +2690,7 @@ C
 #include "infdim.h"
 #include "infind.h"
 #include "infvar.h"
-      DIMENSION WOP(*), MJWOP(2,MAXWOP,8), UDV(NASHDI,*)
+      DIMENSION WOP(*), MJWOP(2,MAXWOP,8)
       PARAMETER (PRFAC = 1.D-1)
 C
 C Used from common blocks:

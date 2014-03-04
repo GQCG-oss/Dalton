@@ -32,7 +32,7 @@ MODULE dal_interface
    use memory_handling,only: mem_alloc, mem_dealloc
    use ks_settings, only: incremental_scheme, SaveF0andD0
    use lsdalton_fock_module, only: lsint_fock_data
-   use screen_mod, only: DECscreenITEM, free_decscreen
+   use screen_mod, only: DECscreenITEM, free_decscreen,screen_init, screen_free
    use IntegralInterfaceMOD
    use II_XC_interfaceModule
    use IIDFTINT, only: II_DFTsetFunc
@@ -982,168 +982,168 @@ CONTAINS
       call mat_free(NONsym)
     end subroutine di_debug_PropertyIntegrals
 #ifdef MOD_UNRELEASED
-   SUBROUTINE di_debug_4center_eri(lupri,lu_err,ls,nbast)
-     IMPLICIT NONE
-     integer,intent(in)      :: lupri,lu_err,nbast
-     type(lsitem),intent(inout) :: ls
-     !
-     real(realk),pointer   :: integrals(:,:,:,:)
-     integer :: iB,iA,iC,iD
-     !THIS IS A SPECIAL HARDCODED DEBUG ROUTINE FOR WATER (TESTCASE LS_DEBUG4CENTER)
-     call mem_alloc(integrals,nbast,nbast,nbast,nbast)
-     call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast)
-     WRITE(lupri,*)'di_debug_4center_eri: some random 4 center integrals'
-     !SAME ATOM ON ALL 4
-     iA = 1; iB = 1; iC = 1; iD = 1
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 2; iC = 4; iD = 4
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 3; iB = 3; iC = 9; iD = 9
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 3; iC = 6; iD = 9
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     !SAME ATOM ON 1,2,3 and new on 4.
-     iA = 1; iB = 1; iC = 1; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 2; iC = 4; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 3; iB = 3; iC = 9; iD = 12
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 3; iC = 6; iD = 12
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     !SAME ATOM ON LHS and same on RHS.
-     iA = 1; iB = 1; iC = 11; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 2; iC = 11; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 3; iB = 3; iC = 11; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 3; iC = 11; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     !SAME ATOM ON LHS and different on RHS.
-     iA = 1; iB = 1; iC = 13; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 2; iC = 13; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 3; iB = 3; iC = 10; iD = 12
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 3; iC = 10; iD = 12
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     !SAME ATOM ON 1 and same on 2,3,4
-     iA = 10; iB = 10; iC = 10; iD = 10
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 11; iB = 10; iC = 10; iD = 10
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 12; iB = 10; iC = 10; iD = 10
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 13; iB = 10; iC = 10; iD = 10
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 10; iB = 1; iC = 1; iD = 1
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 11; iB = 1; iC = 1; iD = 1
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 12; iB = 1; iC = 1; iD = 1
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 13; iB = 1; iC = 1; iD = 1
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     call mem_dealloc(integrals)
-
-   END SUBROUTINE di_debug_4center_eri
-
-   SUBROUTINE di_debug_4center(lupri,lu_err,ls,nbast,D)
-      IMPLICIT NONE
-      TYPE(Matrix),intent(in) :: D
-      integer,intent(in)      :: lupri,lu_err,nbast
-      type(lsitem),intent(inout) :: ls
-      !
-      TYPE(Matrix)  :: tempm1,tempm2,tempm3
-      real(realk),pointer   :: integrals(:,:,:,:)
-      real(realk) :: CoulombFactor,FAB,int
-      integer,pointer :: orb2batch(:),batchdim(:)
-      type(batchTOorb),pointer :: batch2orb(:)
-      integer :: Abatch,Bbatch,IORB,JORB,dimA,dimB,J,nbatches
-      integer :: iB,iA,iC,iD,offset,offset2,BORB,AORB,iprint
-
-      CoulombFactor = 2E0_realk
-      !build the coulomb matrix 
-      call mat_init(tempm1,nbast,nbast)
-      call mat_init(tempm2,nbast,nbast)
-      call mat_init(tempm3,nbast,nbast)
-      CALL II_get_coulomb_mat(lupri,lu_err,ls%setting,D,tempm1,1)
-
-      allocate(orb2batch(nbast))
-      CALL II_getBatchOrbitalInfo(ls%setting,nBast,orb2Batch,&
-           & nBatches,lupri,lu_err)
-      
-
-      allocate(batchdim(nbatches))
-      batchdim = 0
-      DO IORB=1,nbast
-         batchdim(orb2batch(IORB)) = batchdim(orb2batch(IORB))+1 
-      ENDDO
-
-      allocate(batch2orb(nbatches))
-      DO Abatch=1,nbatches
-         allocate(batch2orb(Abatch)%orbindex(batchdim(Abatch)))
-         batch2orb(Abatch)%orbindex = 0
-         batch2orb(Abatch)%norbindex = 0
-      ENDDO
-      DO IORB=1,nbast
-         Abatch = orb2batch(IORB)
-         batch2orb(Abatch)%norbindex = batch2orb(Abatch)%norbindex+1 
-         J = batch2orb(Abatch)%norbindex
-         batch2orb(Abatch)%orbindex(J) = IORB
-      ENDDO
-      DO Bbatch=1,nbatches
-         dimB = batchdim(Bbatch)
-         DO Abatch=1,nbatches
-            dimA = batchdim(Abatch)
-            nullify(integrals)
-            allocate(integrals(dimA,dimB,nbast,nbast))
-!            integrals=0E0_realk
-            CALL II_get_ABres_4CenterEri(ls%setting,integrals,Abatch,&
-                 & Bbatch,dimA,dimB,nbast,lupri,lu_err)            
-            DO iB = 1,dimB
-               !translate to orbitalindex: B orbital
-               BORB = batch2orb(Bbatch)%orbindex(iB)
-               offset2 = (BORB-1)*nbast
-               DO iA = 1,dimA
-                  !translate to orbitalindex: B orbital
-                  AORB = batch2orb(Abatch)%orbindex(iA) 
-                  FAB =0E0_realk
-                  DO id=1,nbast
-                     offset=(id-1)*nbast
-                     DO ic=1,nbast
-                        FAB=FAB+D%elms(ic+offset)*CoulombFactor*integrals(ia,ib,ic,id)
-                     ENDDO
-                  ENDDO
-                  tempm2%elms(AORB+offset2) = FAB
-               ENDDO
-            ENDDO
-            deallocate(integrals)
-            nullify(integrals)
-!            call mem_dealloc(integrals)
-         ENDDO
-      ENDDO
-      DO Abatch=1,nbatches
-         deallocate(batch2orb(Abatch)%orbindex)
-      ENDDO
-      deallocate(batch2orb)
-      deallocate(batchdim)
-      deallocate(orb2batch)
-      call mat_add(1E0_realk,tempm1,-1E0_realk,tempm2,tempm3)
-      write(lupri,*) 'QQQ DI_DEBUG_4CENTER STD ',mat_trab(tempm1,tempm1)
-      write(lupri,*) 'QQQ DI_DEBUG_4CENTER CHOL',mat_trab(tempm2,tempm2)
-      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-         write(lupri,*)'QQQ SUCCESFUL CHOLESKY TEST'
-      ELSE
-         CALL lsQUIT('CHOLESKY TEST TEST',lupri)
-      ENDIF
-      call mat_free(tempm1)
-      call mat_free(tempm2)
-      call mat_free(tempm3)
-
-    END SUBROUTINE DI_DEBUG_4CENTER
+!!$   SUBROUTINE di_debug_4center_eri(lupri,lu_err,ls,nbast)
+!!$     IMPLICIT NONE
+!!$     integer,intent(in)      :: lupri,lu_err,nbast
+!!$     type(lsitem),intent(inout) :: ls
+!!$     !
+!!$     real(realk),pointer   :: integrals(:,:,:,:)
+!!$     integer :: iB,iA,iC,iD
+!!$     !THIS IS A SPECIAL HARDCODED DEBUG ROUTINE FOR WATER (TESTCASE LS_DEBUG4CENTER)
+!!$     call mem_alloc(integrals,nbast,nbast,nbast,nbast)
+!!$     call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast)
+!!$     WRITE(lupri,*)'di_debug_4center_eri: some random 4 center integrals'
+!!$     !SAME ATOM ON ALL 4
+!!$     iA = 1; iB = 1; iC = 1; iD = 1
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 2; iC = 4; iD = 4
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 3; iB = 3; iC = 9; iD = 9
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 3; iC = 6; iD = 9
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     !SAME ATOM ON 1,2,3 and new on 4.
+!!$     iA = 1; iB = 1; iC = 1; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 2; iC = 4; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 3; iB = 3; iC = 9; iD = 12
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 3; iC = 6; iD = 12
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     !SAME ATOM ON LHS and same on RHS.
+!!$     iA = 1; iB = 1; iC = 11; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 2; iC = 11; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 3; iB = 3; iC = 11; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 3; iC = 11; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     !SAME ATOM ON LHS and different on RHS.
+!!$     iA = 1; iB = 1; iC = 13; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 2; iC = 13; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 3; iB = 3; iC = 10; iD = 12
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 3; iC = 10; iD = 12
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     !SAME ATOM ON 1 and same on 2,3,4
+!!$     iA = 10; iB = 10; iC = 10; iD = 10
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 11; iB = 10; iC = 10; iD = 10
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 12; iB = 10; iC = 10; iD = 10
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 13; iB = 10; iC = 10; iD = 10
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 10; iB = 1; iC = 1; iD = 1
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 11; iB = 1; iC = 1; iD = 1
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 12; iB = 1; iC = 1; iD = 1
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 13; iB = 1; iC = 1; iD = 1
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     call mem_dealloc(integrals)
+!!$
+!!$   END SUBROUTINE di_debug_4center_eri
+!!$
+!!$   SUBROUTINE di_debug_4center(lupri,lu_err,ls,nbast,D)
+!!$      IMPLICIT NONE
+!!$      TYPE(Matrix),intent(in) :: D
+!!$      integer,intent(in)      :: lupri,lu_err,nbast
+!!$      type(lsitem),intent(inout) :: ls
+!!$      !
+!!$      TYPE(Matrix)  :: tempm1,tempm2,tempm3
+!!$      real(realk),pointer   :: integrals(:,:,:,:)
+!!$      real(realk) :: CoulombFactor,FAB,int
+!!$      integer,pointer :: orb2batch(:),batchdim(:)
+!!$      type(batchTOorb),pointer :: batch2orb(:)
+!!$      integer :: Abatch,Bbatch,IORB,JORB,dimA,dimB,J,nbatches
+!!$      integer :: iB,iA,iC,iD,offset,offset2,BORB,AORB,iprint
+!!$
+!!$      CoulombFactor = 2E0_realk
+!!$      !build the coulomb matrix 
+!!$      call mat_init(tempm1,nbast,nbast)
+!!$      call mat_init(tempm2,nbast,nbast)
+!!$      call mat_init(tempm3,nbast,nbast)
+!!$      CALL II_get_coulomb_mat(lupri,lu_err,ls%setting,D,tempm1,1)
+!!$
+!!$      allocate(orb2batch(nbast))
+!!$      CALL II_getBatchOrbitalInfo(ls%setting,nBast,orb2Batch,&
+!!$           & nBatches,lupri,lu_err)
+!!$      
+!!$
+!!$      allocate(batchdim(nbatches))
+!!$      batchdim = 0
+!!$      DO IORB=1,nbast
+!!$         batchdim(orb2batch(IORB)) = batchdim(orb2batch(IORB))+1 
+!!$      ENDDO
+!!$
+!!$      allocate(batch2orb(nbatches))
+!!$      DO Abatch=1,nbatches
+!!$         allocate(batch2orb(Abatch)%orbindex(batchdim(Abatch)))
+!!$         batch2orb(Abatch)%orbindex = 0
+!!$         batch2orb(Abatch)%norbindex = 0
+!!$      ENDDO
+!!$      DO IORB=1,nbast
+!!$         Abatch = orb2batch(IORB)
+!!$         batch2orb(Abatch)%norbindex = batch2orb(Abatch)%norbindex+1 
+!!$         J = batch2orb(Abatch)%norbindex
+!!$         batch2orb(Abatch)%orbindex(J) = IORB
+!!$      ENDDO
+!!$      DO Bbatch=1,nbatches
+!!$         dimB = batchdim(Bbatch)
+!!$         DO Abatch=1,nbatches
+!!$            dimA = batchdim(Abatch)
+!!$            nullify(integrals)
+!!$            allocate(integrals(dimA,dimB,nbast,nbast))
+!!$!            integrals=0E0_realk
+!!$            CALL II_get_ABres_4CenterEri(ls%setting,integrals,Abatch,&
+!!$                 & Bbatch,dimA,dimB,nbast,lupri,lu_err)            
+!!$            DO iB = 1,dimB
+!!$               !translate to orbitalindex: B orbital
+!!$               BORB = batch2orb(Bbatch)%orbindex(iB)
+!!$               offset2 = (BORB-1)*nbast
+!!$               DO iA = 1,dimA
+!!$                  !translate to orbitalindex: B orbital
+!!$                  AORB = batch2orb(Abatch)%orbindex(iA) 
+!!$                  FAB =0E0_realk
+!!$                  DO id=1,nbast
+!!$                     offset=(id-1)*nbast
+!!$                     DO ic=1,nbast
+!!$                        FAB=FAB+D%elms(ic+offset)*CoulombFactor*integrals(ia,ib,ic,id)
+!!$                     ENDDO
+!!$                  ENDDO
+!!$                  tempm2%elms(AORB+offset2) = FAB
+!!$               ENDDO
+!!$            ENDDO
+!!$            deallocate(integrals)
+!!$            nullify(integrals)
+!!$!            call mem_dealloc(integrals)
+!!$         ENDDO
+!!$      ENDDO
+!!$      DO Abatch=1,nbatches
+!!$         deallocate(batch2orb(Abatch)%orbindex)
+!!$      ENDDO
+!!$      deallocate(batch2orb)
+!!$      deallocate(batchdim)
+!!$      deallocate(orb2batch)
+!!$      call mat_add(1E0_realk,tempm1,-1E0_realk,tempm2,tempm3)
+!!$      write(lupri,*) 'QQQ DI_DEBUG_4CENTER STD ',mat_trab(tempm1,tempm1)
+!!$      write(lupri,*) 'QQQ DI_DEBUG_4CENTER CHOL',mat_trab(tempm2,tempm2)
+!!$      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
+!!$         write(lupri,*)'QQQ SUCCESFUL CHOLESKY TEST'
+!!$      ELSE
+!!$         CALL lsQUIT('CHOLESKY TEST TEST',lupri)
+!!$      ENDIF
+!!$      call mat_free(tempm1)
+!!$      call mat_free(tempm2)
+!!$      call mat_free(tempm3)
+!!$
+!!$    END SUBROUTINE DI_DEBUG_4CENTER
 #endif
     SUBROUTINE di_debug_magderiv_4center_eri(lupri,luerr,ls,nbast,D)
       IMPLICIT NONE
@@ -2137,10 +2137,11 @@ CONTAINS
       type(lsitem) :: ls
       real(realk), INTENT(INOUT) :: Etotal(ndmat)
       !
-      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp
+      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp,EK3,EK2
       integer nbast, lupri,luerr,idmat
       logical :: Dsym,ADMMexchange
       TYPE(Matrix) :: K(ndmat),dXC(ndmat)
+      logical :: DEBUG_PATRICK
       !
       nbast = D(1)%nrow
       fac = 2E0_realk
@@ -2180,10 +2181,30 @@ CONTAINS
             call mat_init(dXC(idmat),nbast,nbast)
             call mat_zero(K(idmat))
             call mat_zero(dXC(idmat))
-            CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
-            Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM
+
+         DEBUG_PATRICK=.FALSE.
+         IF(DEBUG_PATRICK)THEN
+            ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
+            call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),ndmat,Dsym,K(idmat))
+            EK3 = mat_dotproduct(K(idmat),D(idmat))
+            call mat_zero(K(idmat))
+         ENDIF
+
+            call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
+         IF(DEBUG_PATRICK)THEN
+            EK2 = mat_dotproduct(K(idmat),D(idmat))
+            write(*,*)     "E(K3)= ",EK3
+            write(lupri,*) "E(K3)= ",EK3
+            write(*,*)     "E(k2)= ",EK2
+            write(lupri,*) "E(k2)= ",EK2
+            write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
+            write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
+         ENDIF
+
+            Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
             call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
-            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat)
+            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+            Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
             EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
             write(lupri,*) "ADMM exchange energy contribution: ",EADMM
             call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
@@ -2715,13 +2736,16 @@ CONTAINS
             type(lssetting) :: setting
             integer :: n2,n3,AO3,AO2,lupri,luerr
             logical :: McWeeny,GCAO2,GCAO3
+            real(realk)                :: constrain_factor
             !
             TYPE(MATRIX) :: S22,S23,T23
             Logical :: purify_failed
             !
+            constrain_factor = 1.0E0_realk
             call mat_init(T23,n2,n3)
             call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,&
+                         &GCAO2,GCAO3,constrain_factor)
             call mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
             call mat_mul(S23,T23,'n','t',1E0_realk,0E0_realk,D2)
 
@@ -2738,42 +2762,6 @@ CONTAINS
             call mat_free(S23)
         END SUBROUTINE TRANSFORM_D3_TO_D2
         
-        SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
-            use io
-            implicit none
-            TYPE(lssetting),intent(inout) :: setting
-            TYPE(MATRIX),intent(inout)    :: T23
-            Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
-            Logical,intent(IN)            :: GCAO2,GCAO3
-            !
-            TYPE(MATRIX) :: S23,S22,S22inv
-            Character(80) :: Filename = 'ADMM_T23'
-            Logical :: onMaster
-
-            onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-
-!           IF (io_file_exist(Filename,setting%IO)) THEN
-            IF (.FALSE.) THEN
-                call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-            ELSE
-                call mat_init(S22,n2,n2)
-                call mat_init(S22inv,n2,n2)
-                call mat_init(S23,n2,n3)
-
-                call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-                call II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-
-                call mat_inv(S22,S22inv)
-                call mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
-
-                call mat_free(S22inv)
-                call mat_free(S23)
-                call mat_free(S22)
-                call io_add_filename(setting%IO,Filename,LUPRI)
-                call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-            ENDIF
-        END SUBROUTINE get_T23
-        
         SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
             implicit none
             type(matrix),intent(inout) :: F  !level 3 matrix output 
@@ -2781,11 +2769,14 @@ CONTAINS
             type(lssetting) :: setting
             Integer :: n2,n3,AO2,AO3,lupri,luerr
             Logical :: GCAO2,GCAO3
+            real(realk)                :: constrain_factor
             !
             type(matrix) :: S23,T23
+            constrain_factor = 1.0E0_realk
             call mat_init(T23,n2,n3)
             call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,&
+                         &GCAO2,GCAO3,constrain_factor)
             call mat_mul(F2,T23,'n','n',1E0_realk,0E0_realk,S23)
             call mat_mul(T23,S23,'t','n',1E0_realk,0E0_realk,F)
             call mat_free(T23)
@@ -3026,12 +3017,10 @@ CONTAINS
       nullify(batchindex)
       
       call determine_maxBatchOrbitalsize(lupri,ls%setting,MinAObatch,'R')
-      print*,'MinAObatch',MinAObatch
       MaxAllowedDim = MinAObatch
       call mem_alloc(orb2batch,nbast)
       call build_batchesofAOS(lupri,ls%setting,MaxAllowedDim,&
            & nbast,MaxActualDim,batchsize,batchdim,batchindex,nbatchesXY,orb2Batch,'R')
-      print*,'nbatchesXY',nbatchesXY
       call mem_alloc(batch2orb,nbatchesXY)
       do idx=1,nbatchesXY
          call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
@@ -3274,7 +3263,7 @@ CONTAINS
          call mat_print(Jdec,1,nbast,1,nbast,lupri)
          WRITE(lupri,*)'the Diff'
          call mat_print(tempm3,1,nbast,1,nbast,lupri)
-         CALL lsQUIT('DECPACKED K TEST FAILED',lupri)
+         CALL lsQUIT('DECPACKED J TEST FAILED',lupri)
       ENDIF
       call mat_free(J)
       call mat_free(Jdec)
@@ -3294,12 +3283,19 @@ CONTAINS
       real(realk),pointer :: Dfull(:,:),JdecFull(:,:)
       integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx,nthreads,idx,nbatchesXY
       integer :: X,Y,dimX,dimY,batch_iX,batch_iY,i,k,MinAObatch,MaxAllowedDim,MaxActualDim,ib,id,ix,iy
-      logical :: doscreen,fullrhs
+      logical :: doscreen,fullrhs,NOFAMILY
       TYPE(DECscreenITEM)    :: DecScreen
       integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
       type(batchtoorb), pointer :: batch2orb(:)
       character :: INTSPEC(5)
       doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
+
+      NOFAMILY = ls%setting%SCHEME%NOFAMILY
+      ls%setting%SCHEME%NOFAMILY = .TRUE.
+      call screen_free()
+      call screen_init()
+      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+      
       nullify(orb2batch)
       nullify(batchdim)
       nullify(batch2orb)
@@ -3307,12 +3303,10 @@ CONTAINS
       nullify(batchindex)
       
       call determine_maxBatchOrbitalsize(lupri,ls%setting,MinAObatch,'R')
-      print*,'MinAObatch',MinAObatch
       MaxAllowedDim = MinAObatch
       call mem_alloc(orb2batch,nbast)
       call build_batchesofAOS(lupri,ls%setting,MaxAllowedDim,&
            & nbast,MaxActualDim,batchsize,batchdim,batchindex,nbatchesXY,orb2Batch,'R')
-      print*,'nbatchesXY',nbatchesXY
       call mem_alloc(batch2orb,nbatchesXY)
       do idx=1,nbatchesXY
          call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
@@ -3350,7 +3344,7 @@ CONTAINS
       CALL II_get_Coulomb_mat(lupri,luerr,ls%setting,D,J,1)
 
       call mem_alloc(JdecFULL,nbast,nbast)
-      JdecFULL = 0E0_realk
+      JdecFULL = 0.0E0_realk
 
       call LSTIMER('START',t1,t2,LUPRI)
       BatchY: do Y = 1,nbatchesXY
@@ -3361,7 +3355,7 @@ CONTAINS
 
             nullify(integrals)
             allocate(integrals(nbast,nbast,dimX,dimY))
-            integrals = 0E0_realk
+            integrals = 0.0E0_realk
             IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
             IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%batchGab(X,Y)%p
 
@@ -3424,7 +3418,7 @@ CONTAINS
       write(lupri,*) 'QQQ OLD DI_DEBUG_DECPACK J DECPACK',mat_trab(Jdec,Jdec)
       write(lupri,*) 'QQQ OLD DIFF',ABS(mat_trab(tempm3,tempm3))
       IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-         write(lupri,*)'QQQ SUCCESFUL DECPACK K TEST'
+         write(lupri,*)'QQQ SUCCESFUL DECPACK JOLD TEST'
       ELSE
          WRITE(lupri,*)'the Jref'
          call mat_print(J,1,nbast,1,nbast,lupri)
@@ -3432,11 +3426,15 @@ CONTAINS
          call mat_print(Jdec,1,nbast,1,nbast,lupri)
          WRITE(lupri,*)'the Diff'
          call mat_print(tempm3,1,nbast,1,nbast,lupri)
-         CALL lsQUIT('DECPACKED K TEST FAILED',lupri)
+         CALL lsQUIT('DECPACKED JOLD TEST FAILED',lupri)
       ENDIF
       call mat_free(J)
       call mat_free(Jdec)
       call mat_free(tempm3)
+      ls%setting%SCHEME%NOFAMILY = NOFAMILY
+      call screen_free()
+      call screen_init()
+      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
     END SUBROUTINE DI_DECPACKEDJOLD
 
 #endif
