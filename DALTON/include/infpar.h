@@ -3,6 +3,9 @@
 !     my_MPI_INTEGER is used both in .c and .F routines in MPI calls
 !        so we can handle "-i8" compilations on 32-bit machines,
 !        using VAR_INT64 /Jan-2007 hjaaj
+!
+!    infpar.h depends on maxorb.h
+!    use #include "maxorb.h" before including infpar. - FBeyer 20140302
 #endif
 #if defined (VAR_INT64)
 #define my_MPI_INTEGER MPI_INTEGER8
