@@ -34,7 +34,7 @@ module pcm_linear_response
       integer :: lwork
 
       character(7) :: potName, chgName
-      integer      :: kfree, lfree
+      integer      :: kfree, lfree, irrep
                                                                                            
                                                                                            
       kfree = 1                                                                            
@@ -45,8 +45,11 @@ module pcm_linear_response
                                                                                            
       call pcm_v1(trial_vec, density, cmo, work(kfree), lfree)                             
       potName = 'PotOIT'//CHAR(0)                                                          
-      chgName = 'ChgOIT'//CHAR(0)                                                          
-      call compute_asc(potName, chgName)                                                  
+      chgName = 'ChgOIT'//CHAR(0)        
+      ! This will have to be modified. When doing linear response we might be
+      ! interested in some other irreducible representation
+      irrep = 0
+      call compute_asc(potName, chgName, irrep)
                                                                                            
     !  call pcm_v1q0                                                                     
                                                                                            

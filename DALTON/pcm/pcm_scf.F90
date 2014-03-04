@@ -252,7 +252,7 @@ module pcm_scf
       real(c_double), allocatable :: ele_pot(:), ele_pol_chg(:)
       character(7)                :: potName, chgName
       character(7)                :: potName1, chgName1, potName2, chgName2
-      integer                     :: kfree, i
+      integer                     :: kfree, i, irrep
       
       kfree   = 1
       
@@ -260,6 +260,8 @@ module pcm_scf
       mep = 0.0d0
       allocate(asc(nr_points))
       asc = 0.0d0
+      ! The totally symmetric irrep
+      irrep = 0
 
       if (.not.(pcmmod_separate)) then
          potName = 'TotMEP'//char(0) 
@@ -269,7 +271,7 @@ module pcm_scf
 ! Set a cavity surface function with the MEP
          call set_surface_function(nr_points, mep, potName)
 ! Compute polarization charges and set the proper surface function
-         call compute_asc(potName, chgName)
+         call compute_asc(potName, chgName, irrep)
 ! Get polarization charges @tesserae centers
          call get_surface_function(nr_points, asc, chgName)
 
@@ -299,14 +301,14 @@ module pcm_scf
          chgName1 = 'NucASC'//char(0)
          call get_nuclear_mep(nr_points, tess_cent, nuc_pot)
          call set_surface_function(nr_points, nuc_pot, potName1)
-         call compute_asc(potName1, chgName1)
+         call compute_asc(potName1, chgName1, irrep)
          call get_surface_function(nr_points, nuc_pol_chg, chgName1)
 
          potName2 = 'EleMEP'//char(0)
          chgName2 = 'EleASC'//char(0)
          call get_electronic_mep(nr_points, tess_cent, ele_pot, density_matrix, work(kfree), lfree, .false.)
          call set_surface_function(nr_points, ele_pot, potName2)
-         call compute_asc(potName2, chgName2)
+         call compute_asc(potName2, chgName2, irrep)
          call get_surface_function(nr_points, ele_pol_chg, chgName2)
 
 ! Print some information
