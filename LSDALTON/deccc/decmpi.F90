@@ -665,6 +665,8 @@ contains
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
     call ls_mpi_buffer(MyFragment%slavetime,master)
     call ls_mpi_buffer(MyFragment%RejectThr,2,master)
+    call ls_mpi_buffer(MyFragment%RmaxAE,master)
+    call ls_mpi_buffer(MyFragment%RmaxAOS,master)
 
 
     ! Integer pointers
@@ -2016,6 +2018,7 @@ contains
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)
     call ls_mpi_buffer(DECitem%simplePNOthr,Master)
+    call ls_mpi_buffer(DECitem%use_pnos,Master)
     call ls_mpi_buffer(DECitem%EOSPNOthr,Master)
     call ls_mpi_buffer(DECitem%noPNOoverlaptrunc,Master)
     call ls_mpi_buffer(DECitem%PNOoverlapthr,Master)

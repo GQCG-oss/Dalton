@@ -950,10 +950,24 @@ end subroutine linesearch_thresholds
 
    !The maximum number of rejections is currently set to six
    ! - if there are that many rejections, the calculation is definitely
-   ! unhealthy and should be stopped. This is almost always caused by lack of
-   ! integral accuracy.
+   ! unhealthy and should be stopped. 
    if (arh%Nrejections > 6) then
-     WRITE(arh%LUPRI, "('Too many rejections - probably related to lack of integral accuracy!')")
+     print*,'Too many rejections; Number of rejections',arh%Nrejections
+     print*,'This could be related to lack of integral accuracy or a complicated electronic structure.'
+     print*,'Try to restart the calculation by adding the .RESTART option under *DENSOPT (and save the dens.restart)'
+     print*,'or try to increase the integral accuracy by addint for instance'
+     print*,'**INTEGRALS'
+     print*,'.THRESH'
+     print*,'1.0d-13'
+     print*,'to the LSDALTON.INP file'
+     WRITE(arh%LUPRI,*)'Too many rejections; Number of rejections',arh%Nrejections
+     WRITE(arh%LUPRI,*)'This could be related to lack of integral accuracy or a complicated electronic structure.'
+     WRITE(arh%LUPRI,*)'Try to restart the calculation by adding the .RESTART option under *DENSOPT (and save the dens.restart)'
+     WRITE(arh%LUPRI,*)'or try to increase the integral accuracy by addint for instance'
+     WRITE(arh%LUPRI,*)'**INTEGRALS'
+     WRITE(arh%LUPRI,*)'.THRESH'
+     WRITE(arh%LUPRI,*)'1.0d-13'
+     WRITE(arh%LUPRI,*)'to the LSDALTON.INP file'
      CALL lsQUIT('Too many rejections - probably related to lack of integral accuracy!',decomp%lupri)
    endif
 

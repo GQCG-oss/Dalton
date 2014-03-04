@@ -548,8 +548,8 @@ C
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
-C ahs only print if number of cores are less than 20
-         IF (MYNUM .LE. 20) THEN
+C ahs only print if number of cores are less than 16
+         IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
            WRITE(LUPRI,'(/A)') ' * Release: DALTON2013.1'

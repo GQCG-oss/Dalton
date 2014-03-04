@@ -371,6 +371,47 @@ C
       WRITE (LUPRI,'(//)')
       RETURN
       END
+
+
+      subroutine print_xyz(coord, io_unit)
+!     prints coordinates in xyz format to io_unit
+!     optionally writes coordinates to file_name
+!     author: radovan bast <bast@kth.se>
+
+      implicit none
+
+      real(8), intent(in) :: coord(3, *)
+      integer, intent(in) :: io_unit
+
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "codata.h"
+
+      integer :: iatom
+      integer :: icent
+      integer :: isymop
+      integer :: mulcnt
+      integer :: i
+
+      write (io_unit, '(i0/)') nucdep
+      iatom = 0
+      do icent = 1, nucind
+         mulcnt = istbnu(icent)
+         do isymop = 0, maxopr
+            if (iand(isymop,mulcnt) .eq. 0) then
+               iatom = iatom + 1
+               write (io_unit,'(a,f17.10,2f24.10)') namdep(iatom)(1:4),
+     &        (pt(iand(isymax(i,1),isymop))*coord(i,icent)*xtang,i=1,3)
+            end if
+         end do
+      end do
+
+      end subroutine
+
+
 C  /* Deck symhes */
       SUBROUTINE SYMHES(HESS)
 #include "implicit.h"
@@ -478,6 +519,11 @@ C     Nuclear moments and spins:
 C
 C        P. Raghavan,
 C        Atomic Data and Nuclear Data Tables 42 (1989) 189
+C
+C        2014-03-03 Radovan Bast: updated Ag value as suggested by Michal Jaszunski in private communication
+C                                 corrected values for Nd (lines interchanged) and Tl (typo)
+C                                 as suggested by Michal Jaszunski in private communication
+C
 C
 C     Quadrupole moments:
 C
@@ -964,7 +1010,7 @@ C
 C     Ag:
 C
      &106.905095D0, 51.839000D0,   .500000D0,  -.113570D0,   .000000D0,
-     &108.904754D0, 48.161000D0,   .500000D0,   .130563D0,   .000000D0,
+     &108.904754D0, 48.161000D0,   .500000D0,  -.130691D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
@@ -1091,8 +1137,8 @@ C
      &141.907719D0, 27.130000D0,   0.00000D0,  0.000000D0,   0.000000D0,
      &143.910083D0, 23.800000D0,   0.00000D0,  0.000000D0,   0.000000D0,
      &145.913113D0, 17.190000D0,   0.00000D0,  0.000000D0,   0.000000D0,
-     &142.909810D0, 12.180000D0,   3.50000D0, -0.065000D0,  -0.630000D0,
-     &144.912570D0,  8.300000D0,   3.50000D0, -1.065000D0,  -0.330000D0,
+     &142.909810D0, 12.180000D0,   3.50000D0, -1.065000D0,  -0.630000D0,
+     &144.912570D0,  8.300000D0,   3.50000D0, -0.650000D0,  -0.330000D0,
      &147.916889D0,  5.760000D0,   0.00000D0,  0.000000D0,   0.000000D0,
 C
 C     Pm:
@@ -1283,7 +1329,7 @@ C     Tl:
 C
       DATA (((DATNUC(I,J,K),I=1,5),J=1,MAXISO),K=81,86) /
 C
-     &204.974401D0, 70.476000D0,   0.500000D0, 1.63831461D0, 0.000000D0,
+     &204.974401D0, 70.476000D0,   0.500000D0, 1.63821461D0, 0.000000D0,
      &202.972320D0, 29.524000D0,   0.500000D0, 1.62225787D0, 0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,

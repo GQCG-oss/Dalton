@@ -33,6 +33,7 @@ character(len=1),intent(in) :: AOspec
 TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: iAO
 integer,intent(inout)     :: MinimumAllowedAObatchSize
+#ifdef VAR_ICHOR
 !
 TYPE(BASISSETINFO),pointer :: AObasis
 integer :: nAOBatches
@@ -54,6 +55,7 @@ call Determine_OrbSizeOfBatches(setting%MOLECULE(iAO)%p,AObasis,&
      & nAOBatches,OrbSizeOfAOBatches,Spherical)
 MinimumAllowedAObatchSize = MAXVAL(OrbSizeOfAOBatches)
 call mem_dealloc(OrbSizeOfAOBatches)
+#endif
 end SUBROUTINE determine_MinimumAllowedAObatchSize
 
 SUBROUTINE determine_Ichor_nbatchesofAOS(setting,iAO,AOSPEC,&
@@ -65,6 +67,7 @@ integer,intent(in)        :: iAO,lupri
 integer,intent(inout)     :: nbatchesofAOS
 integer,intent(inout)     :: RequestedOrbitalDimOfAObatch
 !
+#ifdef VAR_ICHOR
 TYPE(BASISSETINFO),pointer :: AObasis
 integer     :: MaxOrbitalDimOfAObatch,nBatches,MinimumAllowedAObatchSize
 integer     :: MinOrbitalDimOfAObatch,J,n,k
@@ -136,6 +139,7 @@ call loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
      & MaxOrbitalDimOfAObatch,MinOrbitalDimOfAObatch,&
      & RequestedOrbitalDimOfAObatch)
 
+#endif
 end SUBROUTINE determine_Ichor_nbatchesofAOS
 
 SUBROUTINE determine_Ichor_nAObatches(setting,iAO,AOSPEC,nAObatches,lupri)
@@ -145,6 +149,7 @@ TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: iAO,lupri
 integer,intent(inout)     :: nAObatches
 !
+#ifdef VAR_ICHOR
 TYPE(BASISSETINFO),pointer :: AObasis
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
@@ -156,6 +161,7 @@ ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 call Determine_nBatches(setting%MOLECULE(iAO)%p,AObasis,nAOBatches)
+#endif
 end SUBROUTINE determine_Ichor_nAObatches
 
 subroutine loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
@@ -167,6 +173,7 @@ integer,intent(inout) :: nbatchesofAOS,MaxOrbitalDimOfAObatch
 integer,intent(inout) :: MinOrbitalDimOfAObatch 
 integer,intent(in) :: OrbSizeOfBatches(nBatches)
 !local
+#ifdef VAR_ICHOR
 integer :: I,DIM
 nbatchesofAOS=1
 DIM = 0
@@ -185,6 +192,7 @@ DO I=1,nBatches
 ENDDO
 MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
 MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
+#endif
 end subroutine loop1
 
 SUBROUTINE determine_Ichor_batchesofAOS(setting,iAO,AOSPEC,&
@@ -198,6 +206,7 @@ type(DecAObatchinfo)      :: AObatchinfo(nbatchesofAOS)
 integer,intent(in)        :: RequestedOrbitalDimOfAObatch
 integer,intent(inout)     :: MaxOrbitalDimOfAObatch
 !
+#ifdef VAR_ICHOR
 TYPE(BASISSETINFO),pointer :: AObasis
 integer,pointer :: OrbSizeOfBatches(:)
 integer :: nBatches,MinimumAllowedAObatchSize,ibatchesofAOS
@@ -277,6 +286,7 @@ ENDIF
 MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
 MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
 
+#endif
 end SUBROUTINE determine_Ichor_batchesofAOS
 
 SUBROUTINE MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
@@ -289,6 +299,7 @@ integer,intent(in)        :: nbatchAstart,nbatchAend,nbatchBstart,nbatchBend
 integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
 real(realk),intent(inout) :: integrals(dim1,dim2,dim3,dim4)
 Character,intent(IN)      :: intSpec(5)
+#ifdef VAR_ICHOR
 !
 integer                :: nTypes
 !A
@@ -481,7 +492,6 @@ call build_TypeInfo2(setting%MOLECULE(4)%p,AObasis,nTypesD,&
      & spherical,MaxnAtomsD,MaxnPrimD,MaxnContD,startOrbitalOfTypeD,&
      & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,nbatchDstart2,nbatchDend2)
 
-#ifdef VAR_ICHOR 
 SphericalSpec=SphericalParam 
 IchorJobSpec=IcorJobEri          !4 center 2 electronic repulsion integrals
 IchorInputSpec=IcorInputNoInput  !no input in inputstorage (no Density matrix)
@@ -583,9 +593,6 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & integrals,lupri)
 call mem_dealloc(InputStorage)
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
 !=====================================================================
 
 
@@ -630,6 +637,9 @@ call mem_dealloc(startOrbitalOfTypeD)
 call mem_dealloc(exponentsOfTypeD)
 call mem_dealloc(ContractCoeffOfTypeD)
 call mem_dealloc(Dcenters)
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
 
 END SUBROUTINE MAIN_ICHORERI_DRIVER
 
@@ -639,6 +649,7 @@ TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: LUPRI,IPRINT
 Character,intent(IN)      :: intSpec(5)
 logical,intent(IN) :: SameMOL
+#ifdef VAR_ICHOR
 !
 integer                :: nTypes
 !A
@@ -676,7 +687,6 @@ Integer(kind=long) :: MaxMem,MaxMemAllocated,MemAllocated
 logical   :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
 
-#ifdef VAR_ICHOR 
 call FreeIchorSaveGabModule
 call InitIchorSaveGabModule()
 
@@ -958,6 +968,7 @@ SUBROUTINE GenerateIdentifier(INTSPEC,GabIdentifier)
   Character,intent(IN)      :: intSpec(5)
   integer,intent(inout) :: GabIdentifier
   !
+#ifdef VAR_ICHOR 
   Integer :: I
   GabIdentifier = 0 
   DO I = 1,4
@@ -975,6 +986,7 @@ SUBROUTINE GenerateIdentifier(INTSPEC,GabIdentifier)
   ELSE
      call lsquit('unknown spec in GENERATEIDENTIFIER',-1)
   ENDIF
+#endif
 END SUBROUTINE GENERATEIDENTIFIER
 
 Subroutine Determine_nTypesForBatch(BASISINFO,ntypes)
@@ -984,6 +996,7 @@ TYPE(BASISSETINFO),intent(in):: BASISINFO
 !> the number of different types of batches
 INTEGER,intent(inout)        :: ntypes
 !
+#ifdef VAR_ICHOR 
 INTEGER                   :: SUM1,I,K
 IF(BASISINFO%natomtypes.EQ. 0)&
      & CALL LSQUIT('Error Determine_nTypesForBatch called with empty basis',-1)
@@ -995,6 +1008,7 @@ DO I=1,BASISINFO%natomtypes
    ENDDO
    ntypes=ntypes + SUM1
 ENDDO
+#endif
 END Subroutine DETERMINE_NTYPESFORBATCH
 
 Subroutine Determine_nBatches(MOLECULE,BASISINFO,nBatches)
@@ -1005,6 +1019,7 @@ TYPE(MOLECULEINFO),intent(in) :: MOLECULE
 TYPE(BASISSETINFO),intent(in):: BASISINFO
 !> the number of Batches
 integer,intent(inout)    :: nBatches
+#ifdef VAR_ICHOR 
 !local variables
 integer :: R,I,ICHARGE,TYPE,K,iseg
 !build nAtomsOfType
@@ -1025,6 +1040,7 @@ DO I=1,MOLECULE%natoms
   ENDDO
  ENDDO
 ENDDO
+#endif
 END Subroutine DETERMINE_NBATCHES
 
 Subroutine Determine_OrbSizeOfBatches(MOLECULE,BASISINFO,nBatches,OrbSizeOfBatches,Spherical)
@@ -1040,6 +1056,7 @@ integer,intent(in)    :: nBatches
 !> the orbital size of Batches
 integer,intent(inout) :: OrbSizeOfBatches(nBatches)
 
+#ifdef VAR_ICHOR 
 !local variables
 integer :: R,I,ICHARGE,TYPE,K,iseg,ncol,nOrbComp,iBatches
 !build nAtomsOfType
@@ -1068,6 +1085,7 @@ DO I=1,MOLECULE%natoms
   ENDDO
  ENDDO
 ENDDO
+#endif
 END Subroutine DETERMINE_ORBSIZEOFBATCHES
 
 Subroutine build_TypeInfo1(MOLECULE,BASISINFO,nTypes,nAtomsOfType,&
@@ -1098,6 +1116,7 @@ integer,intent(in)      :: iBatchStart
 !> the end Batch index (normally nBatches else not the full set is used)
 integer,intent(in)      :: iBatchEnd
 
+#ifdef VAR_ICHOR 
 !
 INTEGER,pointer          :: MODELTYPES(:),MODELBATCHTYPES(:,:,:)
 INTEGER                  :: maxseg,maxang,I,K,L,iBatchType,R,icharge,type,iseg
@@ -1181,6 +1200,7 @@ do iBatchType=1,nBatchType
    MaxnCont = MAX(MaxnCont,nContOfType(iBatchType))
 enddo
 
+#endif
 end Subroutine Build_TypeInfo1
 
 Subroutine Build_TypeInfo2(MOLECULE,BASISINFO,nTypes,spherical,MaxnAtoms,MaxnPrim,&
@@ -1212,6 +1232,7 @@ real(realk),intent(inout) :: CentersOfType(3,MaxnAtoms,nTypes)
 integer,intent(in)      :: iBatchStart
 !> the end Batch index (normally nBatches else not the full set is used)
 integer,intent(in)      :: iBatchEnd
+#ifdef VAR_ICHOR 
 !
 INTEGER,pointer          :: MODELTYPES(:),MODELBATCHTYPES(:,:,:)
 INTEGER                  :: maxseg,maxang,I,K,L,iBatchType,R,icharge,type,iseg
@@ -1297,6 +1318,7 @@ ENDDO
 call mem_dealloc(MODELTYPES)
 call mem_dealloc(MODELBATCHTYPES)
 
+#endif
 end Subroutine Build_TypeInfo2
 
 END MODULE IchorErimoduleHost

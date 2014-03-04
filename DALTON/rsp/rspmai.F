@@ -476,8 +476,7 @@ C
 C     Calculate response properties with absorption
 C     =============================================
 C
-      IF (ABSORP .OR. (ABSLRS .AND. (NCONF.GT.1)).OR.
-     *   (ABSLRS .AND. (.NOT.DIRFCK))) THEN
+      IF (ABSORP .OR. (ABSLRS .AND. (NCONF.GT.1))) THEN
 C     Use the old linear response solver
 C     for MCSCF (or SCF if OLDCPP is requested by user)         
          CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),

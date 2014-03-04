@@ -1094,7 +1094,9 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.4CENTERERI');  INTEGRAL%DO4CENTERERI = .TRUE.
         CASE ('.AOPRINT');  READ(LUCMD,*) INTEGRAL%AOPRINT
         CASE ('.BASPRINT');  READ(LUCMD,*) INTEGRAL%BASPRINT
-        CASE ('.DEBUGICHOR');  INTEGRAL%DEBUGICHOR = .TRUE.
+        CASE ('.DEBUGICHOR')
+           INTEGRAL%DEBUGICHOR = .TRUE.
+           READ(LUCMD,*) INTEGRAL%DEBUGICHORoption
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
 #ifdef BUILD_GEN1INT_LSDALTON
@@ -1224,6 +1226,8 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_JKBASIS    = .FALSE.
         CASE ('.ADMM-McWeeny'); ! EXPERIMENTAL
            INTEGRAL%ADMM_MCWEENY    = .TRUE.
+        CASE ('.ADMM-2ERI'); ! EXPERIMENTAL
+           INTEGRAL%ADMM_2ERI       = .TRUE.
         CASE ('.ADMM-CONST-EL');
            IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
