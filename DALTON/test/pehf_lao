@@ -17,21 +17,20 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > pehf_small_redthr.info <<'%EOF%'
-   pehf_small_redthr
+cat > pehf_lao.info <<'%EOF%'
+   pehf_lao
    -----------
    Molecule:         Acrolein and two classical water molecules
-   Wave Function:    PE-HF / 6-31+G*
-   Test Purpose:     Test of energies, dipole moment and excitation
-                     energies through ABACUS using reduced thresholds
-                     during beginning of SCF optimization
+   Wave Function:    PE-HF / STO-3G
+   Test Purpose:     Test of nuclear magnetic shieldings through
+                     ABACUS using LAOs and the PE library
 %EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > pehf_small_redthr.mol <<'%EOF%'
+cat > pehf_lao.mol <<'%EOF%'
 BASIS
-6-31+G*
+STO-3G
 Acrolein
 ------------------------
 AtomTypes=3 NoSymmetry Angstrom
@@ -50,9 +49,10 @@ H              2.675323   -2.516779   -0.000673
 #######################################################################
 #  POTENTIAL INPUT
 #######################################################################
-cat > pehf_small_redthr.pot <<'%EOF%'
+cat > pehf_lao.pot <<'%EOF%'
 ! Two water molecules modelled by a Polarizable Embedding potential
-coordinates
+! notice that the ORDER 3 have been removed
+@COORDINATES
 10
 AA
 O   -3.3285510  -0.1032300  -0.0004160
@@ -65,15 +65,16 @@ H   0.8416780   1.9718070   -0.0008200
 H   1.6325590   3.2983010   0.0041540
 X   1.2919875   2.1565840   -0.0007825
 X   1.6874280   2.8198310   0.0017045
-monopoles
+@MULTIPOLES
+ORDER 0
 6
-1    -0.7423294438  
-2     0.3699305781  
-3     0.3723988657  
-6    -0.7424407021  
-7     0.3699635356  
-8     0.3724771666  
-dipoles
+1    -0.7423294438
+2     0.3699305781
+3     0.3723988657
+6    -0.7424407021
+7     0.3699635356
+8     0.3724771666
+ORDER 1
 10
 1        0.0303539300        0.3280749969        0.0000894127
 2       -0.1005787187       -0.0557286568       -0.0000906399
@@ -85,7 +86,7 @@ dipoles
 8        0.0058194611       -0.1165815150       -0.0005822607
 9        0.1562106237        0.0289341838       -0.0001592549
 10       0.0501665747       -0.1493857957       -0.0008283012
-quadrupoles
+ORDER 2
 10
 1       -3.9516312016       -0.0561791973        0.0008348984       -4.5778807726        0.0000430036       -5.0206878337
 2       -0.5774205281       -0.0533068952       -0.0000246837       -0.6043997755       -0.0000510833       -0.5595888419
@@ -97,19 +98,8 @@ quadrupoles
 8       -0.5562677027        0.0450154899        0.0002165578       -0.6244100291       -0.0004104801       -0.5583164804
 9        0.9309922644        0.2280573432       -0.0002276453        0.2429875998       -0.0003906527        0.2330344430
 10       0.2176177849       -0.1663997493       -0.0007688598        0.9642929866        0.0038606681        0.2416297737
-octopoles
-10
-1       -0.0150265431       -0.0987395310       -0.0000662324        0.0267925411       -0.0002404801        0.0219905017        0.0316173819       -0.0000537894        0.2063402594        0.0001754735
-2       -0.1619181713        0.0850921795        0.0000929568       -0.1146181832        0.0000703947       -0.1289664836        0.0249611871       -0.0000856861       -0.0002388295       -0.0003063695
-3        0.2225477804        0.0892957698       -0.0000119240        0.0847835272        0.0000788789        0.1297854415       -0.0229222402        0.0000709112       -0.0215875620        0.0002947454
-4        1.1456775180        0.1549332625        0.0007929257        0.4485264365        0.0002257656        0.0913068047        0.1384100831        0.0003985145       -0.0411780894        0.0001923295
-5       -1.0679926401        0.1883003226       -0.0006460315       -0.4727878386        0.0000929861       -0.1029722061        0.3945907516       -0.0002891323       -0.0214685564       -0.0002611650
-6        0.0330216712        0.0760732530       -0.0003899377        0.0087745562        0.0009840165       -0.1813726316       -0.1218544851       -0.0016261873        0.1033223765        0.0025668497
-7        0.0810557396        0.0035896134        0.0001532545       -0.0090165544       -0.0002204117        0.0757377031        0.2842212967        0.0003840935        0.1046774555        0.0011004803
-8       -0.2048195849       -0.1193833899       -0.0004155498       -0.0283899604        0.0001497946       -0.0584957773       -0.0907038156        0.0007682659       -0.1181777112       -0.0013985302
-9       -0.9479164549       -0.3465723180        0.0000503448       -0.2208226146       -0.0005070175       -0.0203355542       -0.7822646206       -0.0024267913       -0.1000074397       -0.0013521451
-10       0.3960654724        0.3304373259        0.0011603890        0.0383098210       -0.0006969579        0.0790638970        1.2632196844        0.0054054256        0.0723757018        0.0006068808
-alphas
+@POLARIZABILITIES
+ORDER 1 1
 10
 1        1.5931619660        0.0800886126       -0.0012113893        2.5255643422        0.0013486011        3.3670040387
 2        0.7929865198        0.1542303414        0.0001503753        0.6015087761        0.0002890322        0.5925152779
@@ -121,8 +111,8 @@ alphas
 8        0.4993246061       -0.0196042351        0.0000571000        0.8612729797        0.0020132268        0.5750737753
 9        4.2946372081        1.2694080541        0.0004092117        1.0566337570       -0.0044943748        1.4133256363
 10       0.6174280837       -0.4402546796       -0.0002937434        4.6220075983        0.0174865911        1.4307100148
-exclists
-5
+EXCLISTS
+10 5
 1 2 3 4 5
 2 1 3 4 5
 3 1 2 4 5
@@ -137,34 +127,21 @@ exclists
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > pehf_small_redthr.dal <<'%EOF%'
+cat > pehf_lao.dal <<'%EOF%'
 **DALTON
 .RUN PROPERTIES
-*PEQM
 .PEQM
-.ITERATIVE
-1.0d-8
-.REDTHR
 **WAVE FUNCTIONS
 .HF
-*SCF INPUT
-.THRESHOLD
-1.0d-8
 **PROPERTIES
-.EXCITA
-*EXCITA
-.NEXCIT
-4
-.DIPSTR
-.THRESH
-1.0D-4
+.SHIELD
 **END OF
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > pehf_small_redthr.check
-cat >> pehf_small_redthr.check <<'%EOF%'
+echo $CHECK_SHELL > pehf_lao.check
+cat >> pehf_lao.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -177,61 +154,31 @@ fi
 # Potential readin test
 #
 CRIT1=`$GREP "Number of classical sites: * 10" $log | wc -l`
-CRIT2=`$GREP "Multipole moments upto 3rd order." $log | wc -l`
+CRIT2=`$GREP "Multipole moments upto 2nd order." $log | wc -l`
 CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
 CRIT4=`$GREP "Iterative solver for induced moments" $log | wc -l`
 CRIT5=`$GREP "convergence threshold: 1.0E-08" $log | wc -l`
-CRIT6=`$GREP "Using reduced threshold in first few SCF iterations" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
-CTRL[1]=6
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
+CTRL[1]=5
 ERROR[1]="INCORRECT POTENTIAL"
 #
-# Potential readin test
+# Test of PE-HF shielding constants.
 #
-CRIT1=`$GREP "*** DIIS converged in  18 iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
-#
-# Energy tests
-#
-CRIT1=`$GREP "Monopoles * (\-|\-0)\.028474" $log | wc -l`
-CRIT2=`$GREP "Dipoles * (|0)\.006956" $log | wc -l`
-CRIT3=`$GREP "Quadrupoles * (\-|\-0)\.009139" $log | wc -l`
-CRIT4=`$GREP "Octopoles * (\-|\-0)\.002683" $log | wc -l`
-CRIT5=`$GREP "Electronic * (\-|\-0)\.087358" $log | wc -l`
-CRIT6=`$GREP "Nuclear       * (|0)\.084104" $log | wc -l`
-CRIT7=`$GREP "Multipole * (|0)\.000258" $log | wc -l`
-CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.036337" $log | wc -l`
-CRIT9=`$GREP "Final HF energy: * \-190\.797638" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
-CTRL[3]=9
-ERROR[3]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
+CRIT1=`$GREP "\@1 London orbitals \(GIAOs\) has been used." $log | wc -l`
+CRIT2=`$GREP "\@1 C * 84\.6763 * 333\.1422 * \-248\.4658 * (\-|\-0)\.4929 * 230\.5177 * 144\.4844 * 1\.7863" $log | wc -l`
+CRIT3=`$GREP "\@1 C * 122\.5623 * 354\.6627 * \-232\.1004 * (\-|\-0)\.1852 * 212\.2199 * 149\.3400 * 1\.2632" $log | wc -l`
+CRIT4=`$GREP "\@1 C * 117\.0104 *  354\.7206 * \-237\.7102 * (\-|\-0)\.1643 * 222\.8340 * 157\.9754 * 1\.2317" $log | wc -l`
+CRIT5=`$GREP "\@1 O * \-285\.1979 * 508\.8677 * \-794\.0655 * ( |0)\.1812 * 1469\.5355 * 1168\.7113 * ( |0)\.7722" $log | wc -l`
+CRIT6=`$GREP "\@1 H * 22\.0459 * 34\.8890 * \-12\.8431 * (\-|\-0)\.1643 * 5\.1122 * 3\.6242 * 1\.2317" $log | wc -l`
+CRIT7=`$GREP "\@1 H * 25\.4466 * 34\.4174 * \-8\.9708 * ( |0)\.4629 * 6\.6647 * 5\.7697 * ( |0)\.4654" $log | wc -l`
+CRIT8=`$GREP "\@1 H * 26\.5789 * 32\.6268 * \-6\.0479 * ( |0)\.0762 * 7\.6162 * 5\.8572 * ( |0)\.9009" $log | wc -l`
+CRIT9=`$GREP "\@1 H * 26\.2839 * 20\.3984 * 5\.8856 * ( |0)\.0334 * 6\.5958 * 5\.0020 * ( |0)\.9559" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[2]=9
+ERROR[2]="PE-HF MAGNETIC PROPERTIES NOT CORRECT"
 
-#
-# dipole moment of acrolein
-#
-CRIT1=`$GREP "x * 1\.00264" $log | wc -l`
-CRIT2=`$GREP "y * \-1\.81087" $log | wc -l`
-CRIT3=`$GREP "z * (\-|\-0)\.00005" $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
-CTRL[4]=3
-ERROR[4]="DIPOLE MOMENT NOT CORRECT"
-
-
-#
-# Test of PE-HF excitation energies
-#
-CRIT1=`$GREP "   1        1 * (|0)\.1893" $log | wc -l`
-CRIT2=`$GREP "   1        2 * (|0)\.2410" $log | wc -l`
-CRIT3=`$GREP "   1        3 * (|0)\.3104" $log | wc -l`
-CRIT4=`$GREP "   1        4 * (|0)\.3230" $log | wc -l`
-TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
-CTRL[5]=4
-ERROR[5]="PE-HF EXCITATION ENERGIES NOT CORRECT"
-
-PASSED=1 
-for i in 1 2 3 4 5
+PASSED=1
+for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -246,7 +193,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
-chmod +x pehf_small_redthr.check
+chmod +x pehf_lao.check
 #######################################################################

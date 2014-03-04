@@ -17,20 +17,20 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > pehf_fixsol_direct.info <<'%EOF%'
-   pehf_fixsol_direct
-   -----------
-   Molecule:         Acrolein
-   Wave Function:    PE-HF / 6-31+G*
-   Test Purpose:     Test of energies, dipole moment and excitation
-                     energies through ABACUS using FIXSOL solvation
+cat > pehf_fixsol_iter_2.info <<'%EOF%'
+   pehf_fixsol_iter_2
+   ------------------
+   Molecule:         Acrolein and FIXSOL solvation
+   Wave Function:    PE-HF / STO-3G
+   Test Purpose:     Test of energies using FIXSOL solvation and
+                     iterative solver.
 %EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > pehf_fixsol_direct.mol <<'%EOF%'
+cat > pehf_fixsol_iter_2.mol <<'%EOF%'
 BASIS
-6-31+G*
+STO-3G
 Acrolein
 ------------------------
 AtomTypes=3 NoSymmetry Angstrom
@@ -49,25 +49,25 @@ H              2.675323   -2.516779   -0.000673
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > pehf_fixsol_direct.dal <<'%EOF%'
-**DALTON                                          
-.RUN WAVEFUNCTION                                 
+cat > pehf_fixsol_iter_2.dal <<'%EOF%'
+**DALTON
+.RUN WAVEFUNCTION
 .PEQM
-*PEQM                                             
-.FIXPVA                                           
-.MAXTES                                           
- 500                                              
-.DIRECT                                           
-.SOLVAT                                           
-**WAVE FUNCTIONS                                  
-.HF                                               
-**END OF                                          
+*PEQM
+.FIXPVA
+.MAXTES
+ 500
+.DIIS
+.SOLVAT
+**WAVE FUNCTIONS
+.HF
+**END OF
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > pehf_fixsol_direct.check
-cat >> pehf_fixsol_direct.check <<'%EOF%'
+echo $CHECK_SHELL > pehf_fixsol_iter_2.check
+cat >> pehf_fixsol_iter_2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -79,32 +79,28 @@ fi
 #
 # Potential readin test
 #
-CRIT1=`$GREP "Number of surface points:  228" $log | wc -l`
-CRIT2=`$GREP "Surface area FIXA   107.103" $log | wc -l`
-CRIT3=`$GREP "Direct solver for induced moments will be used." $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
-CTRL[1]=3
+CRIT1=`$GREP "Surface area FIXA * 107\.103" $log | wc -l`
+CRIT2=`$GREP "Iterative solver for induced moments will be used" $log | wc -l`
+CRIT3=`$GREP "with convergence threshold\: 1\.0E\-08" $log | wc -l`
+CRIT4=`$GREP "and DIIS accelerator\." $log | wc -l`
+CRIT5=`$GREP "Continuum solvation in H2O solvent\." $log | wc -l`
+CRIT6=`$GREP "Number of surface points\: * 228" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[1]=6
 ERROR[1]="INCORRECT POTENTIAL"
-#
-# Convergence test 
-#
-CRIT1=`$GREP "*** DIIS converged in  14 iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
 #
 # Energy tests
 #
-CRIT1=`$GREP "Electronic * (|0)\.000695" $log | wc -l`
-CRIT2=`$GREP "Nuclear       * (\-|\-0)\.014960" $log | wc -l`
-CRIT3=`$GREP "Total PE energy: * (\-|\-0)\.014264" $log | wc -l`
-CRIT4=`$GREP "Final HF energy: * \-190\.777225" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
-CTRL[3]=4
-ERROR[3]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
+CRIT1=`$GREP "Electronic * ( |0)\.00576851...." $log | wc -l`
+CRIT2=`$GREP "Nuclear * (\-|\-0)\.00910151...." $log | wc -l`
+CRIT3=`$GREP "Total PE energy\: * (\-|\-0)\.00333300...." $log | wc -l`
+CRIT4=`$GREP "Final HF energy\: * \-188\.30292326...." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
+CTRL[2]=4
+ERROR[2]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
 
-PASSED=1 
-for i in 1 2 3 
+PASSED=1
+for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -119,7 +115,6 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
-chmod +x pehf_fixsol_direct.check
 #######################################################################

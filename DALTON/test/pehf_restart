@@ -67,12 +67,12 @@ X   1.6874280   2.8198310   0.0017045
 @MULTIPOLES
 ORDER 0
 6
-1    -0.7423294438  
-2     0.3699305781  
-3     0.3723988657  
-6    -0.7424407021  
-7     0.3699635356  
-8     0.3724771666  
+1    -0.7423294438
+2     0.3699305781
+3     0.3723988657
+6    -0.7424407021
+7     0.3699635356
+8     0.3724771666
 ORDER 1
 10
 1        0.0303539300        0.3280749969        0.0000894127
@@ -217,7 +217,7 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Convergence
 #
-CRIT1=`$GREP " DIIS converged in  12 iterations" $log | wc -l`
+CRIT1=`$GREP " DIIS converged in  1[0-4] iterations" $log | wc -l`
 TEST[2]=`expr $CRIT1 `
 CTRL[2]=1
 ERROR[2]="CONVERGENCE PROBLEM"
@@ -255,7 +255,7 @@ TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7
 CTRL[4]=10
 ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -271,7 +271,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
 echo $CHECK_SHELL > pehf_restart__2.check
 cat >> pehf_restart__2.check <<'%EOF%'
@@ -337,7 +337,7 @@ TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7
 CTRL[4]=10
 ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -353,7 +353,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
 echo $CHECK_SHELL > pehf_restart__3.check
 cat >> pehf_restart__3.check <<'%EOF%'
@@ -379,7 +379,7 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Convergence
 #
-CRIT1=`$GREP " DIIS converged in  12 iterations" $log | wc -l`
+CRIT1=`$GREP " DIIS converged in  1[0-4] iterations" $log | wc -l`
 TEST[2]=`expr $CRIT1 `
 CTRL[2]=1
 ERROR[2]="CONVERGENCE PROBLEM"
@@ -417,7 +417,7 @@ TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7
 CTRL[4]=10
 ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -433,7 +433,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
 echo $CHECK_SHELL > pehf_restart__4.check
 cat >> pehf_restart__4.check <<'%EOF%'
@@ -498,7 +498,7 @@ TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7
 CTRL[4]=10
 ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -514,7 +514,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
 
 #######################################################################
