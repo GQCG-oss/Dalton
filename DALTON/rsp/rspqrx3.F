@@ -397,23 +397,21 @@ C
          END IF
       END IF
 
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        if (.not. tdhf) then 
-            call quit('ERROR: MCSCF quadratic response not'//
+      IF (PEQM) THEN
+        IF (.NOT. TDHF) then 
+            CALL QUIT('ERROR: MCSCF quadratic response not'//
      &                ' implemented with the PE library.')
-        else if (nasht > 0) then
-            call quit('ERROR: quadratic response not implemented for'//
+        ELSE IF (NASHT > 0) THEN
+            CALL QUIT('ERROR: quadratic response not implemented for'//
      &                ' open shell systems with the PE library.')
-        else if (trplet) then
-            call quit('ERROR: triplets not implemented for quadratic'//
+        ELSE IF (TRPLET) THEN
+            CALL QUIT('ERROR: triplets not implemented for quadratic'//
      &                ' response with the PE library.')
-        endif
-        call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
-     &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
-     &                 isyma, isymb, isymc, cmo, mjwop)
-      end if
-#endif
+        ENDIF
+        CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
+     &                 UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
+     &                 ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+      END IF
 
       IF (QM3) THEN
          IF (TDHF) THEN
@@ -4102,7 +4100,7 @@ C
 #include "priunit.h"
 #include "qrinf.h"
 #include "inflin.h"
-#include <infrank.h>
+#include "infrank.h"
       LOGICAL LREFST, LORB, LCON, TRPSAVE
       PARAMETER (D1     = 1.0D0)
 C

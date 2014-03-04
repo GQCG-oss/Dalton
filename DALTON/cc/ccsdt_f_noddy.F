@@ -462,7 +462,7 @@ C           ----------------------------------
 *---------------------------------------------------------------------*
 *     Compute contribution from  <L_3|[[H^B,T^0_2],\tau_nu_1]|HF>
 *                          and   <L_3|[[H^0,T^B_2],\tau_nu_1]|HF>
-*     for finite difference include <L_3|[V,T^B_3],\tau_nu_1]|HF>
+*     for finite difference include "L_3|[V,T^B_3],\tau_nu_1]|HF>
 *---------------------------------------------------------------------*
       KT02AM = KEND3
       KTB2AM = KT02AM + NT1AMX*NT1AMX
@@ -525,7 +525,7 @@ C           ----------------------------------
 
 *---------------------------------------------------------------------*
 *     Compute contribution from  <L_3|[H^B,\tau_nu_2]|HF>
-*     for finite difference include <L_3|[[V,T^B_2],\tau_nu_2]|HF>
+*     for finite difference include "L_3|[[V,T^B_2],\tau_nu_2]|HF>
 *---------------------------------------------------------------------*
 
       CALL CC3_L3_OMEGA2_NODDY(WORK(KOME2),WORK(KL3AM),
@@ -746,7 +746,7 @@ c       -------------------------------------------
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -861,7 +861,7 @@ C------------------------------------------------------
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -1521,7 +1521,7 @@ c       -------------------------------
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"

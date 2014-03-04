@@ -695,7 +695,7 @@ C
 #include "orgcom.h"
 #include "infinp.h"
 #include "nuclei.h"
-C#include <infpar.h>
+C#include "infpar.h"
 
       DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(*), EVECS(KZYVAR,*)
       DIMENSION UDVTR(*)

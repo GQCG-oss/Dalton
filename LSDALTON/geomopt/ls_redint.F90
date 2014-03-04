@@ -3863,6 +3863,13 @@ Implicit Real(realk) (A-H,O-Z)
      &           MX2CRD,1,LUPRI)
          END IF
       END IF
+!
+!     After the step is corrected, energy is predicted again, will be used later to update trust radius.
+!     The same is done for the step norm
+!
+      optinfo%predictedChange = DDOT(optinfo%NIntCoord,optinfo%GRDDIA,1,optinfo%STPDIA,1) &
+     &        + 0.5E0_realk*dv3dot_ls(optinfo%NIntCoord,optinfo%STPDIA,optinfo%EVAL,optinfo%STPDIA)
+!      optinfo%stepNorm = SQRT(DDOT(optinfo%NIntCoord,optinfo%STPINT,1,optinfo%STPINT,1))
 ! Deallocate memory
       Call mem_dealloc(CRDORG)
       Call mem_dealloc(CRDOLD)
@@ -4055,6 +4062,7 @@ use ls_util
 use optimization_input 
 use files
 use Fundamental
+use q_to_x_mod
 use molecule_type
 use molecule_typetype
 !
@@ -4080,6 +4088,11 @@ Implicit Real(realk) (A-H,O-Z)
       CHARACTER STPTXT*16
 !     Remove by merging!
       Real(realk) STEPINT(MXCOOR)
+!
+!     Apply the new polynomial step-converter (back-transformation)
+If (optinfo%New_stepping .OR. optinfo%IBT .OR. optinfo%OldIBT) then 
+    Call Back_transform(CSTEP,optinfo%ICartCoord,optinfo%NIntCoord,lupri,optinfo)
+Else
 ! Write the topology file if needed
       Call write_topology(optinfo)
 !
@@ -4200,6 +4213,15 @@ Implicit Real(realk) (A-H,O-Z)
             call output(SCTRA,1,1,1,NRIC,1,MXCOOR,1,LUPRI)
          END IF
       END IF
+      ! 
+      ! We combine the HOBIT and the iterative back transformation
+      !
+      If (optinfo%New_stepping) then
+         Do i = 1,optinfo%ICartCoord
+            TMPVEC(i) = CSTEP(i)
+         Enddo
+      Endif
+      !
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Inverse of B^t')
          call output(BMTINV,1,optinfo%NIntCoord,1,optinfo%ICartCoord,MXRCRD,MXCOOR,1,LUPRI)
@@ -4479,6 +4501,8 @@ Implicit Real(realk) (A-H,O-Z)
          IF ((optinfo%IterFreeze .GT. 0) .AND. ((optinfo%ItrNmr+1) .GE. optinfo%IterFreeze)) &
      &        optinfo%NFreeze = 0
       END IF
+! Polynomial stepping
+Endif
       RETURN 
       END
 

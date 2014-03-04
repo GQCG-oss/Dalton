@@ -15,6 +15,9 @@ module profile_int
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
   use ProfileIchorMod
+#ifdef MOD_UNRELEASED
+  use dal_interface, only: di_decpackedJ,di_decpackedJold
+#endif
 private
 public :: di_profile_lsint
 
@@ -100,6 +103,16 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      CALL mat_free(H1)
      CALL mat_free(S)
   endif
+  print*,'config%prof%IchorDEC',config%prof%IchorDEC
+#ifdef VAR_ICHOR
+  IF(config%prof%IchorDEC)THEN
+     print*,'call di_decpackedJ'
+     call di_decpackedJ(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
+     print*,'call di_decpackedJOLD'
+     call di_decpackedJOLD(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
+     RETURN
+  ENDIF
+#endif
      
 !#ifdef VAR_OMP
 !  DO I = 1,2

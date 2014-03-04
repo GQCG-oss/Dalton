@@ -31,6 +31,7 @@ module ccdriver
   use array4_simple_operations
   use ri_simple_operations!,only: get_ao_ri_intermediate, ri_reset,ri_init, ri_free
   use mp2_module!,only: get_VOVO_integrals
+  use atomic_fragment_operations
   use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
 !       & get_gmo_simple,get_h1
   use cc_debug_routines_module
@@ -91,7 +92,7 @@ contains
     integer, intent(in) :: ccPrintLevel
     !> Coupled cluster energy for fragment/full molecule
     real(realk) :: ccenergy!,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
-    type(array4) :: t2_final,VOVO!,ccsdpt_t2
+    type(array4) :: t2_final,VOVO, mp2_amp!,ccsdpt_t2
     type(array2) :: t1_final!,ccsdpt_t1
     logical :: local
 
@@ -99,17 +100,45 @@ contains
 #ifdef VAR_MPI
     if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
 #endif
+    ! temporary default for moccsd:
+    if (DECinfo%MOCCSD) local = .true.
+
 
 
     if(DECinfo%CCDEBUG)then
-      call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-       & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-       & t1_final,t2_final,VOVO,.false.)
+
+      if(DECinfo%use_pnos)then
+
+        !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
+        call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, Cv_f, Co_f, VOVO )
+        call mp2_solver( nocc, nvirt, ppfock_f, qqfock_f, VOVO, mp2_amp )
+        call array4_free( VOVO )
+
+        !CALL THE SOLVER WITH PNO ARGUMENT
+        call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
+         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+         & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
+
+        !FREE MP2 AMPLITUDES
+        call array4_free( mp2_amp )
+
+      else
+
+        !CALL DEBUG SOLVER WITHOUT PNOS
+        call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
+         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+         & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
+
+      endif
     else
+
+      ! CALL PRODUCTION SOLVER
       call ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
          & t1_final,t2_final,VOVO,.false.,local)
+
     endif
+
 
     ! Print fragment energies (currently only for occupied partitioning scheme)
     if(DECinfo%full_molecular_cc .and. DECinfo%full_print_frag_energies) then
@@ -276,7 +305,7 @@ contains
        if (DECinfo%CCDEBUG) then
           call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
              & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-             & t1_final,t2_final,VOVO,.false.)
+             & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
        else
           call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
@@ -289,7 +318,7 @@ contains
        if (DECinfo%CCDEBUG) then
           call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
              & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-             & t1_final,t2_final,VOVO,.false.)
+             & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
        else
           call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
@@ -456,6 +485,9 @@ contains
     type(array4),intent(inout) :: t2
     !> Two electron integrals (a i | b j) stored as (a,i,b,j)
     type(array4),intent(inout) :: VOVO
+
+    !INTERNAL PARAMETERS
+    type(array4) :: mp2_amp
     integer :: dims(2)
     real(realk) :: ccenergy
     logical :: local
@@ -470,6 +502,8 @@ contains
 #ifdef VAR_MPI
     if(infpar%lg_nodtot>1)local=.false.
 #endif
+    ! temporary default for moccsd:
+    if (DECinfo%MOCCSD) local = .true.
 
     ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
     ! from previous fragment calculations to describe long-range
@@ -482,10 +516,38 @@ contains
     end if
 
     if(DECinfo%CCDEBUG)then
-      call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
+      if(DECinfo%use_pnos)then
+
+        !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
+        call get_VOVO_integrals( myfragment%mylsitem, myfragment%nbasis, &
+          &myfragment%noccAOS, myfragment%nunoccAOS, myfragment%Cv, myfragment%Co, VOVO )
+        call mp2_solver( myfragment%noccAOS, myfragment%nunoccAOS, myfragment%ppfock,&
+          & myfragment%qqfock, VOVO, mp2_amp )
+        call array4_free( VOVO )
+
+        !GET THE CORRELATION DENSITY FOR THE CENTRAL ATOM
+        call mem_alloc(MyFragment%occmat,MyFragment%noccAOS,MyFragment%noccAOS)
+        call mem_alloc(MyFragment%virtmat,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
+        call calculate_corrdens_EOS(mp2_amp,MyFragment) 
+        MyFragment%CDset=.true.
+ 
+        !CALL THE SOLVER WITH PNO ARGUMENT
+        call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
+          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
+          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
+          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,&
+          &MyFragment%t1_stored,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos, fraginfo=myfragment)
+
+        call array4_free(mp2_amp)
+
+      else
+
+        call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored)
+         & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,SOLVE_AMPLITUDES)
+
+      endif
     else
       call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
@@ -1312,6 +1374,12 @@ contains
     logical,intent(in)                        :: longrange_singles
     logical,intent(in)                        :: local
     !
+    !> Do an MO-based CCSD calculation?
+    logical :: mo_ccsd
+    !> full set of MO integrals (non-T1-transformed)
+    type(array) :: pgmo_diag, pgmo_up
+    type(MObatchInfo) :: MOinfo
+    !
     !work stuff
     real(realk),pointer :: Co_d(:,:),Cv_d(:,:),Co2_d(:,:), Cv2_d(:,:),focc(:),fvirt(:)
     real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:),Uocc(:,:),Uvirt(:,:)
@@ -1509,6 +1577,8 @@ contains
        if(DECinfo%frozencore) then
           ! Fock matrix from input MOs
           ifock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
+          !print *,"DEBUGGGING: zero iFOck instead of calculating it"
+          !call array_zero(ifock)
           call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
           ! Correction to actual Fock matrix
           delta_fock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
@@ -1591,6 +1661,21 @@ contains
     call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
     call mem_alloc( c, DECinfo%ccMaxIter                    )
 
+
+    !============================================================================!
+    !                          MO-CCSD initialization                            !
+    !____________________________________________________________________________!
+    !
+    mo_ccsd = .false.
+    if (DECinfo%MOCCSD.and.(nb<=DECinfo%Max_num_MO)) mo_ccsd = .true.
+    !
+    ! Check if there is enough memory to performed an MO-CCSD calculation.
+    !   YES: get full set of t1 free gmo and pack them
+    !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
+    if (mo_ccsd) then
+      call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
+                          & nb,no,nv,CCmodel,MOinfo)
+    end if
 
 
     ! readme : the iteration sequence is universal and may be used for all
@@ -1675,8 +1760,9 @@ contains
        case(MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT) !CC2 or  CCSD or CCSD(T)
 
           call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2(iter),t2(iter),&
-             & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
-             & xv,yo,yv,nb,MyLsItem,omega1(iter),iter,local,restart)
+               & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
+               & MyLsItem,omega1(iter),t1(iter),pgmo_diag,pgmo_up,MOinfo,&
+               & mo_ccsd,iter,local,restart)
 
        case(MODEL_RPA)
           call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
@@ -1785,9 +1871,19 @@ contains
        call print_norm(omega2(iter),one_norm2,.true.)
        one_norm_total = one_norm1 + one_norm2
        two_norm_total = sqrt(one_norm_total)
-       !if(iter==3)then
-       !  print*,"SETTING TWONORM TO QUIT";two_norm_total=0.9E-5_realk
-       !endif
+
+       !intentionally crash the calculation prematurely
+       if(iter==5.and.DECinfo%CRASHCALC.and.DECinfo%full_molecular_cc)then
+         print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
+         print*,'This keyword is only used for debug and testing purposes'
+         print*,'We want to be able to test the .RESTART keyword'
+         print*,'In the CC case only quit prematurely, then this keyword is even more handy'
+         WRITE(DECinfo%output,*)'Calculation was intentionally crashed due to keyword .CRASHCALC'
+         WRITE(DECinfo%output,*)'This keyword is only used for debug and testing purposes'
+         WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
+         print*,"SETTING TWONORM TO QUIT";two_norm_total=0.9*DECinfo%ccConvergenceThreshold
+       endif
+
        ! simple crop diagnostics
        if(two_norm_total < prev_norm) then
           crop_ok=.true.
@@ -1817,6 +1913,9 @@ contains
        case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
           ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
+
+       case(MODEL_RPA)
+          call lsquit("ERROR(ccsolver_par): RPA energy not yet implemented",-1)
 
        case default
           call lsquit("ERROR(ccsolver_par):energy expression for your model&
@@ -1985,12 +2084,29 @@ contains
     call array_free(Cv2)
     call array_free(fock)
 
+    ! free memory from MO-based CCSD
+    if (mo_ccsd) then
+      if (pgmo_diag%dims(2)>1) call array_free(pgmo_up)
+      call array_free(pgmo_diag)
+      call mem_dealloc(MOinfo%dimInd1)
+      call mem_dealloc(MOinfo%dimInd2)
+      call mem_dealloc(MOinfo%StartInd1)
+      call mem_dealloc(MOinfo%StartInd2)
+      call mem_dealloc(MOinfo%dimTot)
+      call mem_dealloc(MOinfo%tileInd)
+    end if
 
     !transform back to original basis   
     if(DECinfo%use_singles)then
-      call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt,t1_final%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &vovo=t2_final%val,vo=t1_final%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &vovo=VOVO%val)
     else
-      call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &vovo=t2_final%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
+      &vovo=VOVO%val)
     endif
 
     call mem_dealloc(Uocc)

@@ -109,6 +109,9 @@ MODULE Integralparameters
   integer,parameter :: LSPDM_SLAVES_SHUT_DOWN_CHILD = 40
   integer,parameter :: CHILD_SHUT_DOWN              = 41
   integer,parameter :: CCSD_COMM_PROC_MASTER        = 42
+  integer,parameter :: CCGETGMO                     = 43
+  integer,parameter :: RPAGETRESIDUAL               = 44
+  integer,parameter :: MOCCSDDATA                   = 45
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2

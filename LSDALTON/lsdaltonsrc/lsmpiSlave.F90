@@ -109,8 +109,8 @@
             call lsmpi_addSlaveFunc
          case(LSMPI_IIDFTKSM);
             call lsmpi_II_DFT_KSM_Slave(comm)
-         case(LSMPI_IIDFTABSVALOVERLAP);
-            call lsmpi_II_DFT_ABSVALOVERLAP_Slave(comm)
+!         case(LSMPI_IIDFTABSVALOVERLAP);
+!            call lsmpi_II_DFT_ABSVALOVERLAP_Slave(comm)
          case(LSMPI_IIDFTKSME);
             call lsmpi_II_DFT_KSME_Slave(comm)
          case(IIDFTGEO);
@@ -136,12 +136,18 @@
 ! DEC MP2 integrals and amplitudes
          case(MP2INAMP);
             call MP2_integrals_and_amplitudes_workhorse_slave
+         case(CCGETGMO);
+            call cc_gmo_data_slave
+         case(MOCCSDDATA);
+            call moccsd_data_slave
          case(CCSDDATA);
             call ccsd_data_preparation
          case(CCSD_COMM_PROC_MASTER);
             call get_master_comm_proc_to_wrapper
          case(CCSDSLV4E2);
             call calculate_E2_and_permute_slave
+         case(RPAGETRESIDUAL);
+            call rpa_res_slave
 #ifdef MOD_UNRELEASED
          case(CCSDPTSLAVE);
             call ccsdpt_slave

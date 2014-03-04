@@ -54,10 +54,10 @@ module tensor_type_def_module
      integer :: ntiles,tsize                         !batching of tiles in one mode, number of tiles, tilesize (ts^mode), amount of modes of the array
      integer :: nlti                                 !number of local tiles
      integer :: offset                               !use offset in nodes for the distribution of arrays
-     integer :: init_type                            !type of initializtation
+     integer :: access_type                          !type of access to the array
      logical :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
      logical :: allocd_w_c_p                         ! allocated with comm_threads or not?
-     logical :: initialized=.false.                  !check variable if array is initialized
+     logical :: initialized = .false.                !check variable if array is initialized
 
   end type array
 
@@ -80,22 +80,22 @@ module tensor_type_def_module
 
 
   !parameters to define the data distribution in the array type
-  integer, parameter :: DENSE       = 1
-  integer, parameter :: REPLICATED  = 2
-  integer, parameter :: TILED       = 3
-  integer, parameter :: TILED_DIST  = 4
+  integer, parameter :: DENSE        = 1
+  integer, parameter :: REPLICATED   = 2
+  integer, parameter :: TILED        = 3
+  integer, parameter :: TILED_DIST   = 4
 
   !parameters for PDMTYPE:
-  integer,parameter :: NO_PDM       = 0
-  integer,parameter :: MASTER_INIT  = 1
-  integer,parameter :: ALL_INIT     = 2
+  integer,parameter :: NO_PDM_ACCESS = 0
+  integer,parameter :: MASTER_ACCESS = 1
+  integer,parameter :: ALL_ACCESS    = 2
 
   !other parameters
-  integer,parameter :: ARR_MSG_LEN  = 30
-  integer,parameter :: DEFAULT_TDIM = 10
+  integer,parameter :: ARR_MSG_LEN   = 30
+  integer,parameter :: DEFAULT_TDIM  = 10
   
-  integer,parameter :: lspdm_stdout = 6
-  integer,parameter :: lspdm_errout = 0
+  integer,parameter :: lspdm_stdout  = 6
+  integer,parameter :: lspdm_errout  = 0
 
 
   !> execution time variables

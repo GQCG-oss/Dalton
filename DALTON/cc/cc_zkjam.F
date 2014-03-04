@@ -37,7 +37,7 @@ C  /* Deck cc_zkjai */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "ccorb.h"
 #include "maxorb.h"

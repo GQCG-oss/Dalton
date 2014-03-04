@@ -21,11 +21,12 @@ PROGRAM TUV
   character(len=15),pointer :: uniqeparamNAME(:)
   character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
   character(len=4) :: SPEC
+  character(len=3) :: ARCSTRING
   logical :: BUILD(0:2,0:2,0:2,0:2),Gen,Seg,SegP,segQ,Seg1Prim,UNIQUE
   integer,pointer :: UniquenTUVs(:)
   !TODO
   !remove mem_alloc
-  !remove CDAB = TMParray2
+  !remove LOCALINTS = TMParray2
   !add PrimitiveContractionSeg to Transfer or Vertical 
   !
   LUMOD2=2
@@ -69,81 +70,84 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegralOBSGeneralModSeg'
   WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegralOBSGeneralModSeg1Prim'
 
+  ARCSTRING = 'CPU'
   DO ILUMOD=2,7
      WRITE(ILUMOD,'(A)')'use IchorprecisionModule'
      WRITE(ILUMOD,'(A)')'use IchorCommonModule'
      WRITE(ILUMOD,'(A)')'use IchorMemory'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000ModGen'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000ModSeg1Prim'
   ENDDO
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODA'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODASegQ'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODASegP'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODASeg'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODASeg1Prim'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODAGen'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASegQ'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASegP'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASeg'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASeg1Prim'
 
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODB'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODBSegQ'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODBSegP'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODBSeg'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODBSeg1Prim'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBGen'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSegQ'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSegP'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSeg'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBSeg1Prim'
 
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODD'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODDSegQ'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODDSegP'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODDSeg'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODDSeg1Prim'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDGen'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSegQ'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSegP'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSeg'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSeg1Prim'
 
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODC'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODCSegQ'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODCSegP'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODCSeg'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODCSeg1Prim'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCGen'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSegQ'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSegP'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSeg'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSeg1Prim'
   !also needed by the Segs
   DO ILUMOD=4,7
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODA'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODB'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODC'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_VERTICALRECURRENCEMODD'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODAGen'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBGen'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCGen'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDGen'
   ENDDO
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoCGen'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoDGen'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoCGen'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoDGen'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoAGen'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoAGen'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoBGen'
-  WRITE(LUMOD3,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoBGen'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoCSegQ'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoDSegQ'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoCSegQ'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoDSegQ'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoASegQ'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoASegQ'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoBSegQ'
-  WRITE(LUMOD4,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoBSegQ'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoCSegP'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoDSegP'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoCSegP'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoDSegP'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoASegP'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoASegP'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoBSegP'
-  WRITE(LUMOD5,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoBSegP'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoDSeg'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoCSeg'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoDSeg'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoASeg'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoASeg'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg'
-  WRITE(LUMOD6,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoCSeg1Prim'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODAtoDSeg1Prim'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoCSeg1Prim'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODBtoDSeg1Prim'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoASeg1Prim'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoASeg1Prim'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODCtoBSeg1Prim'
-  WRITE(LUMOD7,'(A)')'use AGC_OBS_TRANSFERRECURRENCEMODDtoBSeg1Prim'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCGen'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDGen'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCGen'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoDGen'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoAGen'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoAGen'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoBGen'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBGen'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegQ'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSegQ'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSegQ'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoDSegQ'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoASegQ'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoASegQ'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoBSegQ'
+  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSegQ'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegP'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSegP'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSegP'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoDSegP'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoASegP'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoASegP'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoBSegP'
+  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSegP'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoDSeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoASeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoASeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoBSeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSeg'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg1Prim'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSeg1Prim'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSeg1Prim'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoDSeg1Prim'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoASeg1Prim'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoASeg1Prim'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoBSeg1Prim'
+  WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSeg1Prim'
   DO ILUMOD=3,7
      WRITE(ILUMOD,'(A)')'use AGC_OBS_HorizontalRecurrenceLHSModAtoB'
      WRITE(ILUMOD,'(A)')'use AGC_OBS_HorizontalRecurrenceLHSModBtoA'
@@ -171,43 +175,51 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
-  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&'
+  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
-  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&'
-  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&'
-  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)'
+  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&'
+  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&'
+  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)'
   WRITE(LUMOD2,'(A)')'    implicit none'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nContA,nContB,nContC,nContD,nContP,nContQ,nTABFJW1,nTABFJW2'
-  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nAtomsC,nAtomsD'
-  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ),Piprim1(nPrimP),Piprim2(nPrimP)'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nAtomsA,nAtomsB'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB),Cexp(nPrimC),Dexp(nPrimD)'
   WRITE(LUMOD2,'(A)')'    logical,intent(in)     :: Qsegmented,Psegmented'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: pexp(nPrimP),qexp(nPrimQ)'
-  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: pcent(3*nPrimP)           !qcent(3,nPrimP)'
-  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: qcent(3*nPrimQ*MaxPasses) !qcent(3,nPrimQ,MaxPasses)'
-  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: QpreExpFac(nPrimQ*MaxPasses),PpreExpFac(nPrimP)'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: pcent(3*nPrimP*nAtomsA*nAtomsB)   !pcent(3,nPrimP)'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: qcent(3*nPrimQ)           !qcent(3,nPrimQ)'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: QpreExpFac(nPrimQ),PpreExpFac(nPrimP*nAtomsA*nAtomsB)'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2)'
   WRITE(LUMOD2,'(A)')'    !    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
   WRITE(LUMOD2,'(A)')'    !    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
   WRITE(LUMOD2,'(A)')'    real(realk) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
   WRITE(LUMOD2,'(A)')'    real(realk) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
-  WRITE(LUMOD2,'(A)')'    real(realk),intent(inout) :: CDAB(:)'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: localintsmaxsize'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(inout) :: LOCALINTS(localintsmaxsize)'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: integralPrefactor(nPrimQP)'
   WRITE(LUMOD2,'(A)')'    logical,intent(in) :: PQorder'
   WRITE(LUMOD2,'(A)')'    !integralPrefactor(nPrimP,nPrimQ)'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: reducedExponents(nPrimQP)'
   WRITE(LUMOD2,'(A)')'    !reducedExponents(nPrimP,nPrimQ)'
-  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Qdistance12(3*MaxPasses) !Ccenter-Dcenter'
-  WRITE(LUMOD2,'(A)')'    !Qdistance12(3,MaxPasses)'
-  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Pdistance12(3)           !Acenter-Bcenter '
-  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Acenter(3),Bcenter(3),Ccenter(3,nAtomsC),Dcenter(3,nAtomsD)'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Qdistance12(3) !Ccenter-Dcenter'
+  WRITE(LUMOD2,'(A)')'    !Qdistance12(3)'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Pdistance12(3*nAtomsA*nAtomsB)  !Acenter-Bcenter '
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Acenter(3,nAtomsA),Bcenter(3,nAtomsB),Ccenter(3),Dcenter(3)'
   WRITE(LUMOD2,'(A)')'    logical,intent(in) :: spherical'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize'
   WRITE(LUMOD2,'(A)')'!   TMP variables - allocated outside'  
   WRITE(LUMOD2,'(A)')'    real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(inout) :: BasisCont1(BasisCont1maxsize) !nTUVP*nTUVQ*nPrimD*nPrimA*nPrimB'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(inout) :: BasisCont2(BasisCont1maxsize) !nTUVP*nTUVQ*nPrimA*nPrimB'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(inout) :: BasisCont3(BasisCont1maxsize) !nTUVP*nTUVQ*nPrimB or nTUVP*nTUVQ*nPrimD'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
 
   !  WRITE(LUMOD2,'(A)')'!   Local variables '  
   !  WRITE(LUMOD2,'(A)')'    real(realk),pointer :: squaredDistance(:)'!,Rpq(:)'!,Rqc(:),Rpa(:)
@@ -215,13 +227,13 @@ PROGRAM TUV
   !  WRITE(LUMOD2,'(A)')'    real(realk),pointer :: RJ000(:),OUTPUTinterest(:)'
 
 
-  WRITE(LUMOD2,'(A)')'  '
-  WRITE(LUMOD2,'(A)')'    IF(nAtomsC*nAtomsD.NE.nPasses)Call ichorquit(''nPass error'',-1)'
+!  WRITE(LUMOD2,'(A)')'  '
+!  WRITE(LUMOD2,'(A)')'    IF(nAtomsC*nAtomsD.NE.nPasses)Call ichorquit(''nPass error'',-1)'
   WRITE(LUMOD2,'(A)')'  '
 !!$  WRITE(LUMOD2,'(A)')'!IF(.TRUE.)THEN'
 !!$  WRITE(LUMOD2,'(A)')'!    call interest_initialize()'
 !!$  WRITE(LUMOD2,'(A)')'!'
-!!$  WRITE(LUMOD2,'(A)')'!    nsize = size(CDAB)*10'
+!!$  WRITE(LUMOD2,'(A)')'!    nsize = size(LOCALINTS)*10'
 !!$  WRITE(LUMOD2,'(A)')'!    call mem_ichor_alloc(OUTPUTinterest,nsize)'
 !!$  WRITE(LUMOD2,'(A)')'!    nsize = nPrimQP'
 !!$  WRITE(LUMOD2,'(A)')'!    '
@@ -269,51 +281,61 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
-  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&'
+  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
-  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&'
-  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&'
-  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)' 
+  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&'
+  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&'
+  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)' 
   WRITE(LUMOD2,'(A)')'   ELSEIF(Psegmented.AND.Qsegmented)THEN'
   WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
-  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&'
+  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
-  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&'
-  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&'
-  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)' 
+  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&'
+  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&'
+  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)' 
   WRITE(LUMOD2,'(A)')'   ELSEIF(Psegmented)THEN'
   WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
-  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&'
+  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
-  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&'
-  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&'
-  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)' 
+  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&'
+  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&'
+  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)' 
   WRITE(LUMOD2,'(A)')'   ELSEIF(Qsegmented)THEN'
   WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
-  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&'
+  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
-  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&'
-  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&'
-  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)' 
+  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&'
+  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&'
+  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)' 
   WRITE(LUMOD2,'(A)')'   ELSE'
   WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
-  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&'
+  WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
-  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&'
-  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&'
-  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)' 
+  WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&'
+  WRITE(LUMOD2,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&'
+  WRITE(LUMOD2,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
+  WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)' 
   WRITE(LUMOD2,'(A)')'   ENDIF'
   WRITE(LUMOD2,'(A)')'  end subroutine IchorCoulombIntegral_OBS_general'
   WRITE(LUMOD2,'(A)')'  '
@@ -351,43 +373,51 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
      WRITE(ILUMOD,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
      WRITE(ILUMOD,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
-     WRITE(ILUMOD,'(A)')'       & Qiprim1,Qiprim2,Piprim1,Piprim2,Aexp,Bexp,Cexp,Dexp,&'
+     WRITE(ILUMOD,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
      WRITE(ILUMOD,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
-     WRITE(ILUMOD,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,CDAB,&'
-     WRITE(ILUMOD,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsC,nAtomsD,spherical,&'
-     WRITE(ILUMOD,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)'
+     WRITE(ILUMOD,'(A)')'       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&'
+     WRITE(ILUMOD,'(A)')'       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&'
+     WRITE(ILUMOD,'(A)')'       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
+     WRITE(ILUMOD,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
+     WRITE(ILUMOD,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)'
      WRITE(ILUMOD,'(A)')'    implicit none'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nContA,nContB,nContC,nContD,nContP,nContQ,nTABFJW1,nTABFJW2'
-     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nAtomsC,nAtomsD'
-     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ),Piprim1(nPrimP),Piprim2(nPrimP)'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nAtomsA,nAtomsB'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB),Cexp(nPrimC),Dexp(nPrimD)'
      WRITE(ILUMOD,'(A)')'    logical,intent(in)     :: Qsegmented,Psegmented'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: pexp(nPrimP),qexp(nPrimQ)'
-     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: pcent(3*nPrimP)           !qcent(3,nPrimP)'
-     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: qcent(3*nPrimQ*MaxPasses) !qcent(3,nPrimQ,MaxPasses)'
-     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: QpreExpFac(nPrimQ*MaxPasses),PpreExpFac(nPrimP)'
+     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: pcent(3*nPrimP*nAtomsA*nAtomsB)           !qcent(3,nPrimP)'
+     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: qcent(3*nPrimQ)           !qcent(3,nPrimQ)'
+     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: QpreExpFac(nPrimQ),PpreExpFac(nPrimP*nAtomsA*nAtomsB)'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2)'
      WRITE(ILUMOD,'(A)')'    !    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
      WRITE(ILUMOD,'(A)')'    !    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
      WRITE(ILUMOD,'(A)')'    real(realk) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
      WRITE(ILUMOD,'(A)')'    real(realk) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
-     WRITE(ILUMOD,'(A)')'    real(realk),intent(inout) :: CDAB(:)'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: localintsmaxsize'
+     WRITE(ILUMOD,'(A)')'    real(realk),intent(inout) :: LOCALINTS(localintsmaxsize)'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: integralPrefactor(nPrimQP)'
      WRITE(ILUMOD,'(A)')'    logical,intent(in) :: PQorder'
      WRITE(ILUMOD,'(A)')'    !integralPrefactor(nPrimP,nPrimQ)'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: reducedExponents(nPrimQP)'
      WRITE(ILUMOD,'(A)')'    !reducedExponents(nPrimP,nPrimQ)'
-     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Qdistance12(3*MaxPasses) !Ccenter-Dcenter'
-     WRITE(ILUMOD,'(A)')'    !Qdistance12(3,MaxPasses)'
-     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Pdistance12(3)           !Acenter-Bcenter '
-     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Acenter(3),Bcenter(3),Ccenter(3,nAtomsC),Dcenter(3,nAtomsD)'
+     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Qdistance12(3) !Ccenter-Dcenter'
+     WRITE(ILUMOD,'(A)')'    !Qdistance12(3)'
+     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Pdistance12(3*nAtomsA*nAtomsB)           !Acenter-Bcenter '
+     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Acenter(3,nAtomsA),Bcenter(3,nAtomsB),Ccenter(3),Dcenter(3)'
      WRITE(ILUMOD,'(A)')'    logical,intent(in) :: spherical'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize'
      WRITE(ILUMOD,'(A)')'!   TMP variables - allocated outside'  
      WRITE(ILUMOD,'(A)')'    real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize'
+     WRITE(ILUMOD,'(A)')'    real(realk) :: BasisCont1(BasisCont1maxsize) '
+     WRITE(ILUMOD,'(A)')'    real(realk) :: BasisCont2(BasisCont2maxsize) '
+     WRITE(ILUMOD,'(A)')'    real(realk) :: BasisCont3(BasisCont3maxsize) '
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
 
      WRITE(ILUMOD,'(A)')'!   Local variables '  
      !  WRITE(ILUMOD,'(A)')'    real(realk),pointer :: squaredDistance(:)'!,Rpq(:)'!,Rqc(:),Rpa(:)
@@ -467,11 +497,11 @@ PROGRAM TUV
                     nlmC = 2*AngmomC+1
                     nlmD = 2*AngmomD+1
                     STRINGIN(1:9)  = 'TMParray1'
-                    STRINGOUT(1:9) = 'TMParray2'
+                    STRINGOUT(1:9) = 'TMParray2'                                      
                     TMPSTRING(1:9) = '         '
                     !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
                     call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-                         & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
+                         & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
                     !         WRITE(ILUMOD,'(A)')'      ELSE'
                     !         spherical = .FALSE.
                     !         nlmA = nTUVAspec
@@ -494,7 +524,7 @@ PROGRAM TUV
                     STRINGOUT(1:9) = 'TMParray2'
                     TMPSTRING(1:9) = '         '
                     call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-                         & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
+                         & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
                  ENDIF
 
 
@@ -542,7 +572,7 @@ PROGRAM TUV
                        TMPSTRING(1:9) = '         '
                        !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
                        call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-                            & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
+                            & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
                        !         WRITE(ILUMOD,'(A)')'      ELSE'
                        !         spherical = .FALSE.
                        !         nlmA = nTUVAspec
@@ -565,7 +595,7 @@ PROGRAM TUV
                        STRINGOUT(1:9) = 'TMParray2'
                        TMPSTRING(1:9) = '         '
                        call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-                            & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
+                            & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
                     ENDIF
 
                     !==========================00=====================================
@@ -603,36 +633,49 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'  '
   ENDDO
 
-
   WRITE(LUMOD2,'(A)')'  '
   WRITE(LUMOD2,'(A)')'  subroutine IchorCoulombIntegral_OBS_general_size(TMParray1maxsize,&'
-  WRITE(LUMOD2,'(A)')'         &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
-  WRITE(LUMOD2,'(A)')'         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,Psegmented,Qsegmented)'
+  WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
+  WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,&'
+  WRITE(LUMOD2,'(A)')'         & nContP,nContQ,nPrimQP,nContQP,Psegmented,Qsegmented)'
   WRITE(LUMOD2,'(A)')'    implicit none'
   WRITE(LUMOD2,'(A)')'    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize'
+  WRITE(LUMOD2,'(A)')'    integer,intent(inout) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD'
   WRITE(LUMOD2,'(A)')'    logical,intent(in) :: Psegmented,Qsegmented'
   WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN'
   WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
-  WRITE(LUMOD2,'(A)')'         &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
-  WRITE(LUMOD2,'(A)')'         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+  WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
+  WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented.AND.Qsegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_OBS_general_sizeSeg(TMParray1maxsize,&'
-  WRITE(LUMOD2,'(A)')'         &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
-  WRITE(LUMOD2,'(A)')'         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+  WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
+  WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_OBS_general_sizeSegP(TMParray1maxsize,&'
-  WRITE(LUMOD2,'(A)')'         &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
-  WRITE(LUMOD2,'(A)')'         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+  WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
+  WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Qsegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_OBS_general_sizeSegQ(TMParray1maxsize,&'
-  WRITE(LUMOD2,'(A)')'         &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
-  WRITE(LUMOD2,'(A)')'         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+  WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
+  WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSE'
   WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_OBS_general_sizeGen(TMParray1maxsize,&'
-  WRITE(LUMOD2,'(A)')'         &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
-  WRITE(LUMOD2,'(A)')'         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+  WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
+  WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ENDIF'
   WRITE(LUMOD2,'(A)')'  end subroutine IchorCoulombIntegral_OBS_general_size'
   WRITE(LUMOD2,'(A)')'  '
@@ -669,18 +712,26 @@ PROGRAM TUV
         WRITE(LUMOD7,'(A)')'  subroutine IchorCoulombIntegral_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
         ILUMOD = LUMOD7
      ENDIF
-     WRITE(ILUMOD,'(A)')'         &TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
-     WRITE(ILUMOD,'(A)')'         &nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+     WRITE(ILUMOD,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
+     WRITE(ILUMOD,'(A)')'         & AngmomA,AngmomB,AngmomC,AngmomD,nPrimA,nPrimB,nPrimC,nPrimD,&'
+     WRITE(ILUMOD,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
      WRITE(ILUMOD,'(A)')'    implicit none'
      WRITE(ILUMOD,'(A)')'    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize'
+     WRITE(ILUMOD,'(A)')'    integer,intent(inout) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD'
      WRITE(ILUMOD,'(A)')'    ! local variables'
      WRITE(ILUMOD,'(A)')'    integer :: AngmomID'
      WRITE(ILUMOD,'(A)')'    '
      WRITE(ILUMOD,'(A)')'    AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD'
      WRITE(ILUMOD,'(A)')'    TMParray2maxSize = 1'
      WRITE(ILUMOD,'(A)')'    TMParray1maxSize = 1'
+
+     WRITE(ILUMOD,'(A)')'    BasisCont1maxsize = 1'
+     WRITE(ILUMOD,'(A)')'    BasisCont2maxsize = 1'
+     WRITE(ILUMOD,'(A)')'    BasisCont3maxsize = 1'
+     
      WRITE(ILUMOD,'(A)')'    SELECT CASE(AngmomID)'  
      DO AngmomA = 0,2
         DO AngmomB = 0,2
@@ -706,6 +757,16 @@ PROGRAM TUV
                  nTUVC = (AngmomC+1)*(AngmomC+2)*(AngmomC+3)/6
                  nTUVD = (AngmomD+1)*(AngmomD+2)*(AngmomD+3)/6
 
+                 IF(Gen)THEN
+                    WRITE(ILUMOD,'(A,I5,A)')'    BasisCont1maxsize = ',nTUVQ*nTUVP,'*nPrimD*nPrimA*nPrimB'
+                    WRITE(ILUMOD,'(A,I5,A)')'    BasisCont2maxsize = ',nTUVQ*nTUVP,'*nPrimA*nPrimB'
+                    WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = ',nTUVQ*nTUVP,'*nPrimB'
+                 ELSEIF(SegQ)THEN
+                    WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = ',nTUVQ*nTUVP,'*nPrimB'
+                 ELSEIF(SegP)THEN
+                    WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = ',nTUVQ*nTUVP,'*nPrimD'
+                 ENDIF
+
                  spherical = .TRUE.
                  nlmA = 2*AngmomA+1
                  nlmB = 2*AngmomB+1
@@ -715,7 +776,7 @@ PROGRAM TUV
                  STRINGOUT(1:9) = 'TMParray2'
                  TMPSTRING(1:9) = '         '
                  call determineSizes(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-                      & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
+                      & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
               ENDDO
            ENDDO
         ENDDO
@@ -745,7 +806,7 @@ PROGRAM TUV
 
   WRITE(LUMOD5,'(A)')''
   WRITE(LUMOD5,'(A)')'  subroutine PrimitiveContractionSegP1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-  WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD)'
+  WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)'
   WRITE(LUMOD5,'(A)')'    implicit none'
   WRITE(LUMOD5,'(A)')'    !Warning Primitive screening modifies this!!! '
   WRITE(LUMOD5,'(A)')'    !Due to P being segmented the P contraction have already been done and we need to '
@@ -756,9 +817,9 @@ PROGRAM TUV
   WRITE(LUMOD5,'(A)')'    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPasses)'
   WRITE(LUMOD5,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nPasses)'
   WRITE(LUMOD5,'(A)')'    !'
-  WRITE(LUMOD5,'(A)')'    integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
-  WRITE(LUMOD5,'(A)')'    real(realk) :: tmp,tmpC(nPrimD)'
-!!$  WRITE(LUMOD5,'(A)')'    do iPassQ = 1,nPasses'
+  WRITE(LUMOD5,'(A)')'    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
+  WRITE(LUMOD5,'(A)')'    real(realk) :: tmp,BasisCont3(nPrimD)'
+!!$  WRITE(LUMOD5,'(A)')'    do iPassP = 1,nPasses'
 !!$  WRITE(LUMOD5,'(A)')'     iContQ = 0'
 !!$  WRITE(LUMOD5,'(A)')'     do iContD=1,nContD'
 !!$  WRITE(LUMOD5,'(A)')'      do iContC=1,nContC'
@@ -767,36 +828,40 @@ PROGRAM TUV
 !!$  WRITE(LUMOD5,'(A)')'       do iPrimD=1,nPrimD'
 !!$  WRITE(LUMOD5,'(A)')'        DCCTMP = DCC(iPrimD,iContD)'
 !!$  WRITE(LUMOD5,'(A)')'        do iPrimC=1,nPrimC'
-!!$  WRITE(LUMOD5,'(A)')'         tmp = tmp + CCC(iPrimC,iContC)*DCCTMP*AUXarray2(iPrimC,iPrimD,iPassQ)'
+!!$  WRITE(LUMOD5,'(A)')'         tmp = tmp + CCC(iPrimC,iContC)*DCCTMP*AUXarray2(iPrimC,iPrimD,iPassP)'
 !!$  WRITE(LUMOD5,'(A)')'        enddo'
 !!$  WRITE(LUMOD5,'(A)')'       enddo'
-!!$  WRITE(LUMOD5,'(A)')'       AUXarrayCont(iContQ,iPassQ) = tmp'
+!!$  WRITE(LUMOD5,'(A)')'       AUXarrayCont(iContQ,iPassP) = tmp'
 !!$  WRITE(LUMOD5,'(A)')'      enddo'
 !!$  WRITE(LUMOD5,'(A)')'     enddo'
 !!$  WRITE(LUMOD5,'(A)')'    enddo'
-  WRITE(LUMOD5,'(A)')'    do iPassQ = 1,nPasses'
+  WRITE(LUMOD5,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+  WRITE(LUMOD5,'(A)')'!$OMP PRIVATE(iPassP,iContC,iContD,iPrimD,iPrimC,tmp,BasisCont3) &'
+  WRITE(LUMOD5,'(A)')'!$OMP SHARED(nPasses,nContC,nContD,nPrimD,nPrimC,DCC,CCC,AUXarrayCont,AUXarray2)'
+  WRITE(LUMOD5,'(A)')'    do iPassP = 1,nPasses'
   WRITE(LUMOD5,'(A)')'     do iContC=1,nContC'
   WRITE(LUMOD5,'(A)')'      do iPrimD=1,nPrimD'
   WRITE(LUMOD5,'(A)')'       tmp = 0.0E0_realk'
   WRITE(LUMOD5,'(A)')'       do iPrimC=1,nPrimC'
-  WRITE(LUMOD5,'(A)')'        tmp = tmp + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPassQ)'
+  WRITE(LUMOD5,'(A)')'        tmp = tmp + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPassP)'
   WRITE(LUMOD5,'(A)')'       enddo'
-  WRITE(LUMOD5,'(A)')'       tmpC(iPrimD) = tmp'  
+  WRITE(LUMOD5,'(A)')'       BasisCont3(iPrimD) = tmp'  
   WRITE(LUMOD5,'(A)')'      enddo'
   WRITE(LUMOD5,'(A)')'      do iContD=1,nContD'
   WRITE(LUMOD5,'(A)')'       tmp = 0.0E0_realk'
   WRITE(LUMOD5,'(A)')'       do iPrimD=1,nPrimD'
-  WRITE(LUMOD5,'(A)')'        tmp = tmp + DCC(iPrimD,iContD)*tmpC(iPrimD)'
+  WRITE(LUMOD5,'(A)')'        tmp = tmp + DCC(iPrimD,iContD)*BasisCont3(iPrimD)'
   WRITE(LUMOD5,'(A)')'       enddo'
-  WRITE(LUMOD5,'(A)')'       AUXarrayCont(iContC,iContD,iPassQ) = tmp'
+  WRITE(LUMOD5,'(A)')'       AUXarrayCont(iContC,iContD,iPassP) = tmp'
   WRITE(LUMOD5,'(A)')'      enddo'
   WRITE(LUMOD5,'(A)')'     enddo'
   WRITE(LUMOD5,'(A)')'    enddo'
+  WRITE(LUMOD5,'(A)')'!$OMP END PARALLEL DO'
   WRITE(LUMOD5,'(A)')'  end subroutine PrimitiveContractionSegP1'
   WRITE(LUMOD5,'(A)')''
 
   WRITE(LUMOD4,'(A)')'  subroutine PrimitiveContractionSegQ1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-  WRITE(LUMOD4,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB)'
+  WRITE(LUMOD4,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)'
   WRITE(LUMOD4,'(A)')'    implicit none'
   WRITE(LUMOD4,'(A)')'    !Warning Primitive screening modifies this!!! '
   WRITE(LUMOD4,'(A)')'    !Due to Q being segmented the Q contraction have already been done and we need to '
@@ -807,91 +872,111 @@ PROGRAM TUV
   WRITE(LUMOD4,'(A)')'    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses)'
   WRITE(LUMOD4,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses)'
   WRITE(LUMOD4,'(A)')'    !'
-  WRITE(LUMOD4,'(A)')'    integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
-  WRITE(LUMOD4,'(A)')'    real(realk) :: tmp,tmpA(nPrimB)'
-  WRITE(LUMOD4,'(A)')'    do iPassQ = 1,nPasses'
+  WRITE(LUMOD4,'(A)')'    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
+  WRITE(LUMOD4,'(A)')'    real(realk) :: tmp,BasisCont3(nPrimB)'
+  WRITE(LUMOD4,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+  WRITE(LUMOD4,'(A)')'!$OMP PRIVATE(iPassP,iContA,iContB,iPrimB,iPrimA,tmp,BasisCont3) &'
+  WRITE(LUMOD4,'(A)')'!$OMP SHARED(nPasses,nContA,nContB,nPrimB,nPrimA,ACC,BCC,AUXarrayCont,AUXarray2)'
+  WRITE(LUMOD4,'(A)')'    do iPassP = 1,nPasses'
   WRITE(LUMOD4,'(A)')'     do iContA=1,nContA'
   WRITE(LUMOD4,'(A)')'      do iPrimB=1,nPrimB'
   WRITE(LUMOD4,'(A)')'       tmp = 0.0E0_realk'
   WRITE(LUMOD4,'(A)')'       do iPrimA=1,nPrimA'
-  WRITE(LUMOD4,'(A)')'        tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassQ)'
+  WRITE(LUMOD4,'(A)')'        tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP)'
   WRITE(LUMOD4,'(A)')'       enddo'
-  WRITE(LUMOD4,'(A)')'       tmpA(iPrimB) = tmp'
+  WRITE(LUMOD4,'(A)')'       BasisCont3(iPrimB) = tmp'
   WRITE(LUMOD4,'(A)')'      enddo'
   WRITE(LUMOD4,'(A)')'      do iContB=1,nContB'
   WRITE(LUMOD4,'(A)')'       tmp = 0.0E0_realk'
   WRITE(LUMOD4,'(A)')'       do iPrimB=1,nPrimB'
-  WRITE(LUMOD4,'(A)')'        tmp = tmp + BCC(iPrimB,iContB)*tmpA(iPrimB)'
+  WRITE(LUMOD4,'(A)')'        tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)'
   WRITE(LUMOD4,'(A)')'       enddo'
-  WRITE(LUMOD4,'(A)')'       AUXarrayCont(iContA,iContB,iPassQ) = tmp'
+  WRITE(LUMOD4,'(A)')'       AUXarrayCont(iContA,iContB,iPassP) = tmp'
   WRITE(LUMOD4,'(A)')'      enddo'
   WRITE(LUMOD4,'(A)')'     enddo'
   WRITE(LUMOD4,'(A)')'    enddo'
+  WRITE(LUMOD4,'(A)')'!$OMP END PARALLEL DO'
   WRITE(LUMOD4,'(A)')'  end subroutine PrimitiveContractionSegQ1'
   WRITE(LUMOD4,'(A)')''
 
   WRITE(LUMOD3,'(A)')''
-  WRITE(LUMOD3,'(A,I1,A)')'  subroutine PrimitiveContractionGen1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-  WRITE(LUMOD3,'(A)')'       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD)'
+  WRITE(LUMOD3,'(A)')'  subroutine PrimitiveContractionGen1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
+  WRITE(LUMOD3,'(A)')'       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&'
+  WRITE(LUMOD3,'(A)')'       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)'
   WRITE(LUMOD3,'(A)')'    implicit none'
   WRITE(LUMOD3,'(A)')'    !Warning Primitive screening modifies this!!! '
   WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ'
   WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD'
   WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
   WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
-  WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses)'
-  WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses)'
+  WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses)'
+  WRITE(LUMOD3,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses)'
   WRITE(LUMOD3,'(A)')'    !'
-  WRITE(LUMOD3,'(A)')'    integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
-  WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMP'
-  WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: tmpArray1(nPrimD,nPrimA,nPrimB)'
-  WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: tmpArray2(nPrimA,nPrimB)'
-  WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: tmpArray3(nPrimB)'
+  WRITE(LUMOD3,'(A)')'    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
+  WRITE(LUMOD3,'(A)')'    real(realk) :: TMP'
+  WRITE(LUMOD3,'(A)')'    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)'
+  WRITE(LUMOD3,'(A)')'    real(realk) :: BasisCont2(nPrimA,nPrimB)'
+  WRITE(LUMOD3,'(A)')'    real(realk) :: BasisCont3(nPrimB)'
   WRITE(LUMOD3,'(A)')'    !Scaling p**4*c*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nPassQ'
-  WRITE(LUMOD3,'(A)')'    do iPassQ = 1,nPasses'
-!  WRITE(LUMOD3,'(A)')'     iContQP = 0'
+  WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+  WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&'
+  WRITE(LUMOD3,'(A)')'!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &'
+  WRITE(LUMOD3,'(A)')'!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
+  WRITE(LUMOD3,'(A)')'!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)'
+  WRITE(LUMOD3,'(A)')'!!$OMP SINGLE'
+  WRITE(LUMOD3,'(A)')'    do iPassP = 1,nPasses'
   WRITE(LUMOD3,'(A)')'     do iContC=1,nContC'
+  WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iPrimD,iPrimC,TMP,iContC,iPassP)'
   WRITE(LUMOD3,'(A)')'      do iPrimB=1,nPrimB'
   WRITE(LUMOD3,'(A)')'       do iPrimA=1,nPrimA'
   WRITE(LUMOD3,'(A)')'        do iPrimD=1,nPrimD'
   WRITE(LUMOD3,'(A)')'         TMP = 0.0E0_realk'
   WRITE(LUMOD3,'(A)')'         do iPrimC=1,nPrimC'
-  WRITE(LUMOD3,'(A)')'          TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)'
+  WRITE(LUMOD3,'(A)')'          TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP)'
   WRITE(LUMOD3,'(A)')'         enddo'
-  WRITE(LUMOD3,'(A)')'         tmpArray1(iPrimD,iPrimA,iPrimB) = TMP'
+  WRITE(LUMOD3,'(A)')'         BasisCont1(iPrimD,iPrimA,iPrimB) = TMP'
   WRITE(LUMOD3,'(A)')'        enddo'
   WRITE(LUMOD3,'(A)')'       enddo'
   WRITE(LUMOD3,'(A)')'      enddo'
+  WRITE(LUMOD3,'(A)')'!!$OMP END DO'
   WRITE(LUMOD3,'(A)')'      do iContD=1,nContD'
+  WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iPrimD,TMP,iContD,iContC,iPassP)'
   WRITE(LUMOD3,'(A)')'       do iPrimB=1,nPrimB'
   WRITE(LUMOD3,'(A)')'        do iPrimA=1,nPrimA'
   WRITE(LUMOD3,'(A)')'         TMP = 0.0E0_realk'
   WRITE(LUMOD3,'(A)')'         do iPrimD=1,nPrimD'
-  WRITE(LUMOD3,'(A)')'          TMP = TMP + DCC(iPrimD,iContD)*tmpArray1(iPrimD,iPrimA,iPrimB)'
+  WRITE(LUMOD3,'(A)')'          TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)'
   WRITE(LUMOD3,'(A)')'         enddo'
-  WRITE(LUMOD3,'(A)')'         tmpArray2(iPrimA,iPrimB) = TMP'
+  WRITE(LUMOD3,'(A)')'         BasisCont2(iPrimA,iPrimB) = TMP'
   WRITE(LUMOD3,'(A)')'        enddo'
   WRITE(LUMOD3,'(A)')'       enddo'
+  WRITE(LUMOD3,'(A)')'!!$OMP END DO'
   WRITE(LUMOD3,'(A)')'       do iContA=1,nContA'
+  WRITE(LUMOD3,'(A)')'!!$OMP DO PRIVATE(iPrimB,iPrimA,TMP,iContA,iContD,iContC,iPassP)'
   WRITE(LUMOD3,'(A)')'        do iPrimB=1,nPrimB'
   WRITE(LUMOD3,'(A)')'         TMP = 0.0E0_realk'
   WRITE(LUMOD3,'(A)')'         do iPrimA=1,nPrimA'
-  WRITE(LUMOD3,'(A)')'          TMP = TMP + ACC(iPrimA,iContA)*tmpArray2(iPrimA,iPrimB)'
+  WRITE(LUMOD3,'(A)')'          TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)'
   WRITE(LUMOD3,'(A)')'         enddo'
-  WRITE(LUMOD3,'(A)')'         tmpArray3(iPrimB) = TMP'
+  WRITE(LUMOD3,'(A)')'         BasisCont3(iPrimB) = TMP'
   WRITE(LUMOD3,'(A)')'        enddo'
+  WRITE(LUMOD3,'(A)')'!!$OMP END DO'
+  WRITE(LUMOD3,'(A)')'!!$OMP DO PRIVATE(iPrimB,TMP,iContA,iContB,iContD,iContC,iPassP)'
   WRITE(LUMOD3,'(A)')'        do iContB=1,nContB'
   WRITE(LUMOD3,'(A)')'         TMP = 0.0E0_realk'
   WRITE(LUMOD3,'(A)')'         do iPrimB=1,nPrimB'
-  WRITE(LUMOD3,'(A)')'          TMP = TMP + BCC(iPrimB,iContB)*tmpArray3(iPrimB)'
+  WRITE(LUMOD3,'(A)')'          TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)'
   WRITE(LUMOD3,'(A)')'         enddo'
-  WRITE(LUMOD3,'(A)')'         AUXarrayCont(iContC,iContD,iContA,iContB,iPassQ) = TMP'
+  WRITE(LUMOD3,'(A)')'         AUXarrayCont(iContC,iContD,iContA,iContB,iPassP) = TMP'
   WRITE(LUMOD3,'(A)')'        enddo'
+  WRITE(LUMOD3,'(A)')'!!$OMP END DO'
   WRITE(LUMOD3,'(A)')'       enddo'
   WRITE(LUMOD3,'(A)')'      enddo'
   WRITE(LUMOD3,'(A)')'     enddo'
   WRITE(LUMOD3,'(A)')'    enddo'
-  WRITE(LUMOD3,'(A,I1,A)')'  end subroutine PrimitiveContractionGen1'
+  WRITE(LUMOD3,'(A)')'!!$OMP END SINGLE'
+  WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
+  WRITE(LUMOD3,'(A)')'  end subroutine PrimitiveContractionGen1'
 
 !!$         WRITE(LUMOD3,'(A)')'      do iContA=1,nContA'
 !!$         WRITE(LUMOD3,'(A)')'        do iContC=1,nContC'
@@ -910,14 +995,14 @@ PROGRAM TUV
 !!$         WRITE(LUMOD3,'(A)')'             ABCDTMP = CCC(iPrimC,iContC)*ABDTMP'
 !!$         WRITE(LUMOD3,'(A)')'             iPrimQP = iPrimQP + 1'
 !!$      WRITE(LUMOD3,'(A,I5)')'             do iTUV=1,',nTUVP*nTUVQ
-!!$         WRITE(LUMOD3,'(A)')'               TMPArray(iTUV) = TMPArray(iTUV) + ABCDTMP*AUXarray2(iTUV,iPrimQP,iPassQ)'
+!!$         WRITE(LUMOD3,'(A)')'               TMPArray(iTUV) = TMPArray(iTUV) + ABCDTMP*AUXarray2(iTUV,iPrimQP,iPassP)'
 !!$         WRITE(LUMOD3,'(A)')'             enddo'
 !!$         WRITE(LUMOD3,'(A)')'            enddo'
 !!$         WRITE(LUMOD3,'(A)')'           enddo'
 !!$         WRITE(LUMOD3,'(A)')'          enddo'
 !!$         WRITE(LUMOD3,'(A)')'         enddo'
 !!$      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-!!$         WRITE(LUMOD3,'(A)')'          AUXarrayCont(iTUV,iContQP,iPassQ) = TMPArray(iTUV)'
+!!$         WRITE(LUMOD3,'(A)')'          AUXarrayCont(iTUV,iContQP,iPassP) = TMPArray(iTUV)'
 !!$         WRITE(LUMOD3,'(A)')'         enddo'
 !!$         WRITE(LUMOD3,'(A)')'        enddo'
 !!$         WRITE(LUMOD3,'(A)')'       enddo'
@@ -948,20 +1033,13 @@ PROGRAM TUV
          UniquenTUVs(nUniquenTUVs) = nTUVP*nTUVQ
 !GENERAL 
          WRITE(LUMOD3,'(A)')''
-         IF(nTUVP*nTUVQ.LT.10)THEN
-            WRITE(LUMOD3,'(A,I1,A)')'  subroutine PrimitiveContractionGen',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-            WRITE(LUMOD3,'(A,I2,A)')'  subroutine PrimitiveContractionGen',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-            WRITE(LUMOD3,'(A,I3,A)')'  subroutine PrimitiveContractionGen',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-            WRITE(LUMOD3,'(A,I4,A)')'  subroutine PrimitiveContractionGen',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.100000)THEN
-            WRITE(LUMOD3,'(A,I5,A)')'  subroutine PrimitiveContractionGen',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSE
-            STOP 'Primitive contraction'
-         ENDIF
-         WRITE(LUMOD3,'(A)')'       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD)'
+         call initString(1)
+         call AddToString('  subroutine PrimitiveContractionGen')
+         call AddToString(nTUVP*nTUVQ)
+         call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
+         call writeString(LUMOD3)
+         WRITE(LUMOD3,'(A)')'       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&'
+         WRITE(LUMOD3,'(A)')'       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)'
          WRITE(LUMOD3,'(A)')'    implicit none'
          WRITE(LUMOD3,'(A)')'    !Warning Primitive screening modifies this!!! '
          WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ'
@@ -971,12 +1049,13 @@ PROGRAM TUV
          WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimC,nPrimD,nPrimA,nPrimB,nPasses)'
          WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContC,nContD,nContA,nContB,nPasses)'
          WRITE(LUMOD3,'(A)')'    !'
-         WRITE(LUMOD3,'(A)')'    integer :: iPassQ,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
+         WRITE(LUMOD3,'(A)')'    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
          WRITE(LUMOD3,'(A)')'    integer :: iTUV,iContQP,iPrimQP'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMPArray(',nTUVP*nTUVQ,')'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: tmpArray1(',nTUVP*nTUVQ,',nPrimD,nPrimA,nPrimB)'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: tmpArray2(',nTUVP*nTUVQ,',nPrimA,nPrimB)'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: tmpArray3(',nTUVP*nTUVQ,',nPrimB)'
+!         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMPArray(',nTUVP*nTUVQ,')'
+         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMP'
+         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont1(',nTUVP*nTUVQ,',nPrimD,nPrimA,nPrimB)'
+         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont2(',nTUVP*nTUVQ,',nPrimA,nPrimB)'
+         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimB)'
          WRITE(LUMOD3,'(A)')'    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP'
 !         WRITE(LUMOD3,'(A)')'    !all passes have same ACCs,BCCs,...'
 !         WRITE(LUMOD3,'(A)')'    !maybe construct big CC(nPrimQP,nContQP) matrix and call dgemm nPass times'
@@ -988,81 +1067,90 @@ PROGRAM TUV
 !         WRITE(LUMOD3,'(A)')'    !special for nContA = 1 ...'
 !         WRITE(LUMOD3,'(A)')'    !memory should be c**4*p**4 + p**4*L**6 which is fine'
 !         WRITE(LUMOD3,'(A)')'    !this would be a simple sum for segmentet! or maybe the sum can be moved into the previous electron transfer reccurence'
-         WRITE(LUMOD3,'(A)')'    do iPassQ = 1,nPasses'
-         WRITE(LUMOD3,'(A)')'     iContQP = 0'
+!         WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
+
+         WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+         WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&'
+         WRITE(LUMOD3,'(A)')'!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &'
+         WRITE(LUMOD3,'(A)')'!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
+         WRITE(LUMOD3,'(A)')'!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)'
+         WRITE(LUMOD3,'(A)')'    do iPassP = 1,nPasses'
+!         WRITE(LUMOD3,'(A)')'     iContQP = 0'
          WRITE(LUMOD3,'(A)')'     do iContC=1,nContC'
+         WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)'
          WRITE(LUMOD3,'(A)')'      do iPrimB=1,nPrimB'
          WRITE(LUMOD3,'(A)')'       do iPrimA=1,nPrimA'
          WRITE(LUMOD3,'(A)')'        do iPrimD=1,nPrimD'
+!!$      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
+!!$         WRITE(LUMOD3,'(A)')'          TMPArray(iTUV) = 0.0E0_realk'
+!!$         WRITE(LUMOD3,'(A)')'         enddo'
+!!$         WRITE(LUMOD3,'(A)')'         do iPrimC=1,nPrimC'
+!!$         WRITE(LUMOD3,'(A)')'          CCCTMP = CCC(iPrimC,iContC)'
+!!$         WRITE(LUMOD3,'(A)')'          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ'
+!!$      WRITE(LUMOD3,'(A,I5)')'          do iTUV=1,',nTUVP*nTUVQ
+!!$         WRITE(LUMOD3,'(A)')'           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)'
+!!$         WRITE(LUMOD3,'(A)')'          enddo'
+!!$         WRITE(LUMOD3,'(A)')'         enddo'
+!!$      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
+!!$         WRITE(LUMOD3,'(A)')'          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)'
+!!$         WRITE(LUMOD3,'(A)')'         enddo'
       WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          TMPArray(iTUV) = 0.0E0_realk'
-         WRITE(LUMOD3,'(A)')'         enddo'
-         WRITE(LUMOD3,'(A)')'         do iPrimC=1,nPrimC'
-         WRITE(LUMOD3,'(A)')'          CCCTMP = CCC(iPrimC,iContC)'
-         WRITE(LUMOD3,'(A)')'          !Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ'
-      WRITE(LUMOD3,'(A,I5)')'          do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'           TMPArray(iTUV) = TMPArray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassQ)'
+         WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+         WRITE(LUMOD3,'(A)')'!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ'
+         WRITE(LUMOD3,'(A)')'          do iPrimC=1,nPrimC'
+         WRITE(LUMOD3,'(A)')'           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)'
          WRITE(LUMOD3,'(A)')'          enddo'
-         WRITE(LUMOD3,'(A)')'         enddo'
-      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)'
+         WRITE(LUMOD3,'(A)')'          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP'
          WRITE(LUMOD3,'(A)')'         enddo'
          WRITE(LUMOD3,'(A)')'        enddo'
          WRITE(LUMOD3,'(A)')'       enddo'
          WRITE(LUMOD3,'(A)')'      enddo'
+         WRITE(LUMOD3,'(A)')'!!$OMP END DO'
          WRITE(LUMOD3,'(A)')'      do iContD=1,nContD'
+         WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)'
          WRITE(LUMOD3,'(A)')'       do iPrimB=1,nPrimB'
          WRITE(LUMOD3,'(A)')'        do iPrimA=1,nPrimA'
       WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          TMPArray(iTUV) = 0.0E0_realk'
-         WRITE(LUMOD3,'(A)')'         enddo'
-         WRITE(LUMOD3,'(A)')'         do iPrimD=1,nPrimD'
-         WRITE(LUMOD3,'(A)')'          DCCTMP = DCC(iPrimD,iContD)'
-         WRITE(LUMOD3,'(A)')'          !Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ'
-      WRITE(LUMOD3,'(A,I5)')'          do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'           TMPArray(iTUV) = TMPArray(iTUV) + DCCTMP*tmpArray1(iTUV,iPrimD,iPrimA,iPrimB)'
+         WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+         WRITE(LUMOD3,'(A)')'!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ'
+         WRITE(LUMOD3,'(A)')'          do iPrimD=1,nPrimD'
+         WRITE(LUMOD3,'(A)')'           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)'
          WRITE(LUMOD3,'(A)')'          enddo'
-         WRITE(LUMOD3,'(A)')'         enddo'
-      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          tmpArray2(iTUV,iPrimA,iPrimB) = TMPArray(iTUV)'
+         WRITE(LUMOD3,'(A)')'          BasisCont2(iTUV,iPrimA,iPrimB) = TMP'
          WRITE(LUMOD3,'(A)')'         enddo'
          WRITE(LUMOD3,'(A)')'        enddo'
          WRITE(LUMOD3,'(A)')'       enddo'
+         WRITE(LUMOD3,'(A)')'!!$OMP END DO'
          WRITE(LUMOD3,'(A)')'       do iContA=1,nContA'
+         WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)'
          WRITE(LUMOD3,'(A)')'        do iPrimB=1,nPrimB'
       WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          TMPArray(iTUV) = 0.0E0_realk'
-         WRITE(LUMOD3,'(A)')'         enddo'
-         WRITE(LUMOD3,'(A)')'         do iPrimA=1,nPrimA'
-         WRITE(LUMOD3,'(A)')'          ACCTMP = ACC(iPrimA,iContA)'
-         WRITE(LUMOD3,'(A)')'          !Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ'
-      WRITE(LUMOD3,'(A,I5)')'          do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'           TMPArray(iTUV) = TMPArray(iTUV) + ACCTMP*tmpArray2(iTUV,iPrimA,iPrimB)'
+         WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+         WRITE(LUMOD3,'(A)')'!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ'
+         WRITE(LUMOD3,'(A)')'          do iPrimA=1,nPrimA'
+         WRITE(LUMOD3,'(A)')'           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)'
          WRITE(LUMOD3,'(A)')'          enddo'
-         WRITE(LUMOD3,'(A)')'         enddo'
-      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          tmpArray3(iTUV,iPrimB) = TMPArray(iTUV)'
+         WRITE(LUMOD3,'(A)')'          BasisCont3(iTUV,iPrimB) = TMP'
          WRITE(LUMOD3,'(A)')'         enddo'
          WRITE(LUMOD3,'(A)')'        enddo'
+         WRITE(LUMOD3,'(A)')'!!$OMP END DO'
+         WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)'
          WRITE(LUMOD3,'(A)')'        do iContB=1,nContB'
       WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          TMPArray(iTUV) = 0.0E0_realk'
-         WRITE(LUMOD3,'(A)')'         enddo'
-         WRITE(LUMOD3,'(A)')'         do iPrimB=1,nPrimB'
-         WRITE(LUMOD3,'(A)')'          BCCTMP = BCC(iPrimB,iContB)'
-         WRITE(LUMOD3,'(A)')'          !Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ'
-      WRITE(LUMOD3,'(A,I5)')'          do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'           TMPArray(iTUV) = TMPArray(iTUV) + BCCTMP*tmpArray3(iTUV,iPrimB)'
+         WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+         WRITE(LUMOD3,'(A)')'!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ'
+         WRITE(LUMOD3,'(A)')'          do iPrimB=1,nPrimB'
+         WRITE(LUMOD3,'(A)')'           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)'
          WRITE(LUMOD3,'(A)')'          enddo'
-         WRITE(LUMOD3,'(A)')'         enddo'
-      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassQ) = TMPArray(iTUV)'
+         WRITE(LUMOD3,'(A)')'          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP'
          WRITE(LUMOD3,'(A)')'         enddo'
          WRITE(LUMOD3,'(A)')'        enddo'
+         WRITE(LUMOD3,'(A)')'!!$OMP END DO'
          WRITE(LUMOD3,'(A)')'       enddo'
          WRITE(LUMOD3,'(A)')'      enddo'
          WRITE(LUMOD3,'(A)')'     enddo'
          WRITE(LUMOD3,'(A)')'    enddo'
+         WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
 
 !!$         WRITE(LUMOD3,'(A)')'      do iContA=1,nContA'
 !!$         WRITE(LUMOD3,'(A)')'        do iContC=1,nContC'
@@ -1081,50 +1169,32 @@ PROGRAM TUV
 !!$         WRITE(LUMOD3,'(A)')'             ABCDTMP = CCC(iPrimC,iContC)*ABDTMP'
 !!$         WRITE(LUMOD3,'(A)')'             iPrimQP = iPrimQP + 1'
 !!$      WRITE(LUMOD3,'(A,I5)')'             do iTUV=1,',nTUVP*nTUVQ
-!!$         WRITE(LUMOD3,'(A)')'               TMPArray(iTUV) = TMPArray(iTUV) + ABCDTMP*AUXarray2(iTUV,iPrimQP,iPassQ)'
+!!$         WRITE(LUMOD3,'(A)')'               TMPArray(iTUV) = TMPArray(iTUV) + ABCDTMP*AUXarray2(iTUV,iPrimQP,iPassP)'
 !!$         WRITE(LUMOD3,'(A)')'             enddo'
 !!$         WRITE(LUMOD3,'(A)')'            enddo'
 !!$         WRITE(LUMOD3,'(A)')'           enddo'
 !!$         WRITE(LUMOD3,'(A)')'          enddo'
 !!$         WRITE(LUMOD3,'(A)')'         enddo'
 !!$      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-!!$         WRITE(LUMOD3,'(A)')'          AUXarrayCont(iTUV,iContQP,iPassQ) = TMPArray(iTUV)'
+!!$         WRITE(LUMOD3,'(A)')'          AUXarrayCont(iTUV,iContQP,iPassP) = TMPArray(iTUV)'
 !!$         WRITE(LUMOD3,'(A)')'         enddo'
 !!$         WRITE(LUMOD3,'(A)')'        enddo'
 !!$         WRITE(LUMOD3,'(A)')'       enddo'
 !!$         WRITE(LUMOD3,'(A)')'      enddo'
 !!$         WRITE(LUMOD3,'(A)')'     enddo'
 !!$         WRITE(LUMOD3,'(A)')'    enddo'
-         IF(nTUVP*nTUVQ.LT.10)THEN
-            WRITE(LUMOD3,'(A,I1)')'  end subroutine PrimitiveContractionGen',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-            WRITE(LUMOD3,'(A,I2)')'  end subroutine PrimitiveContractionGen',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-            WRITE(LUMOD3,'(A,I3)')'  end subroutine PrimitiveContractionGen',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-            WRITE(LUMOD3,'(A,I4)')'  end subroutine PrimitiveContractionGen',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.100000)THEN
-            WRITE(LUMOD3,'(A,I5)')'  end subroutine PrimitiveContractionGen',nTUVP*nTUVQ
-         ELSE
-            STOP 'Primitive contraction'
-         ENDIF
+         call initString(1)
+         call AddToString('  end subroutine PrimitiveContractionGen')
+         call AddToString(nTUVP*nTUVQ)
+         call writeString(LUMOD3)
 ! PSEGMENTED
-
          WRITE(LUMOD5,'(A)')''
-         IF(nTUVP*nTUVQ.LT.10)THEN
-            WRITE(LUMOD5,'(A,I1,A)')'  subroutine PrimitiveContractionSegP',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-            WRITE(LUMOD5,'(A,I2,A)')'  subroutine PrimitiveContractionSegP',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-            WRITE(LUMOD5,'(A,I3,A)')'  subroutine PrimitiveContractionSegP',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-            WRITE(LUMOD5,'(A,I4,A)')'  subroutine PrimitiveContractionSegP',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.100000)THEN
-            WRITE(LUMOD5,'(A,I5,A)')'  subroutine PrimitiveContractionSegP',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSE
-            STOP 'Primitive contraction'
-         ENDIF
-         WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD)'
+         call initString(1)
+         call AddToString('  subroutine PrimitiveContractionSegP')
+         call AddToString(nTUVP*nTUVQ)
+         call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
+         call writeString(LUMOD5)
+         WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)'
          WRITE(LUMOD5,'(A)')'    implicit none'
          WRITE(LUMOD5,'(A)')'    !Warning Primitive screening modifies this!!! '
          WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContQ'
@@ -1133,70 +1203,50 @@ PROGRAM TUV
          WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimC,nPrimD,nPasses)'
          WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContC,nContD,nPasses)'
          WRITE(LUMOD5,'(A)')'    !'
-         WRITE(LUMOD5,'(A)')'    integer :: iPassQ,iContC,iContD,iPrimC,iPrimD,iTUV'
-         WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: TMPArray(',nTUVP*nTUVQ,')'
-         WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: TMPC(',nTUVP*nTUVQ,',nPrimD),CCCTMP,DCCTMP'
-         WRITE(LUMOD5,'(A)')'    do iPassQ = 1,nPasses'
+         WRITE(LUMOD5,'(A)')'    integer :: iPassP,iContC,iContD,iPrimC,iPrimD,iTUV'
+         WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: TMP'
+         WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimD)'
+!         WRITE(LUMOD5,'(A)')'!$OMP SINGLE'
+         WRITE(LUMOD5,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+         WRITE(LUMOD5,'(A)')'!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iPrimC,iPrimD,&'
+         WRITE(LUMOD5,'(A)')'!$OMP         BasisCont3,TMP) &'
+         WRITE(LUMOD5,'(A)')'!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&'
+         WRITE(LUMOD5,'(A)')'!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)'
+         WRITE(LUMOD5,'(A)')'    do iPassP = 1,nPasses'
          WRITE(LUMOD5,'(A)')'     do iContC=1,nContC'
          WRITE(LUMOD5,'(A)')'      do iPrimD=1,nPrimD'
-         WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD5,'(A)')'        tmparray(iTUV) = 0.0E0_realk'
-         WRITE(LUMOD5,'(A)')'       enddo'
-         WRITE(LUMOD5,'(A)')'       do iPrimC=1,nPrimC'
-         WRITE(LUMOD5,'(A)')'        CCCTMP = CCC(iPrimC,iContC)'
-         WRITE(LUMOD5,'(A,I5)')'        do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD5,'(A)')'         tmparray(iTUV) = tmparray(iTUV) + CCCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPassQ)'
+      WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
+         WRITE(LUMOD5,'(A)')'        tmp = 0.0E0_realk'
+         WRITE(LUMOD5,'(A)')'        do iPrimC=1,nPrimC'
+         WRITE(LUMOD5,'(A)')'         tmp = tmp + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPassP)'
          WRITE(LUMOD5,'(A)')'        enddo'
-         WRITE(LUMOD5,'(A)')'       enddo'
-         WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD5,'(A)')'        tmpC(iTUV,iPrimD) = tmparray(iTUV)'  
+         WRITE(LUMOD5,'(A)')'        BasisCont3(iTUV,iPrimD) = tmp'  
          WRITE(LUMOD5,'(A)')'       enddo'
          WRITE(LUMOD5,'(A)')'      enddo'
          WRITE(LUMOD5,'(A)')'      do iContD=1,nContD'
-         WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD5,'(A)')'        tmparray(iTUV) = 0.0E0_realk'
-         WRITE(LUMOD5,'(A)')'       enddo'
-         WRITE(LUMOD5,'(A)')'       do iPrimD=1,nPrimD'
-         WRITE(LUMOD5,'(A)')'        DCCTMP = DCC(iPrimD,iContD)'
-         WRITE(LUMOD5,'(A,I5)')'        do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD5,'(A)')'         tmparray(iTUV) = tmparray(iTUV) + DCCTMP*tmpC(iTUV,iPrimD)'
+      WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
+         WRITE(LUMOD5,'(A)')'        tmp = 0.0E0_realk'
+         WRITE(LUMOD5,'(A)')'        do iPrimD=1,nPrimD'
+         WRITE(LUMOD5,'(A)')'         tmp = tmp + DCC(iPrimD,iContD)*BasisCont3(iTUV,iPrimD)'
          WRITE(LUMOD5,'(A)')'        enddo'
-         WRITE(LUMOD5,'(A)')'       enddo'
-         WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD5,'(A)')'        AUXarrayCont(iTUV,iContC,iContD,iPassQ) = tmparray(iTUV)'
+         WRITE(LUMOD5,'(A)')'        AUXarrayCont(iTUV,iContC,iContD,iPassP) = tmp'
          WRITE(LUMOD5,'(A)')'       enddo'
          WRITE(LUMOD5,'(A)')'      enddo'
          WRITE(LUMOD5,'(A)')'     enddo'
          WRITE(LUMOD5,'(A)')'    enddo'
-         IF(nTUVP*nTUVQ.LT.10)THEN
-            WRITE(LUMOD5,'(A,I1)')'  end subroutine PrimitiveContractionSegP',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-            WRITE(LUMOD5,'(A,I2)')'  end subroutine PrimitiveContractionSegP',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-            WRITE(LUMOD5,'(A,I3)')'  end subroutine PrimitiveContractionSegP',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-            WRITE(LUMOD5,'(A,I4)')'  end subroutine PrimitiveContractionSegP',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.100000)THEN
-            WRITE(LUMOD5,'(A,I5)')'  end subroutine PrimitiveContractionSegP',nTUVP*nTUVQ
-         ELSE
-            STOP 'Primitive contraction'
-         ENDIF
+         WRITE(LUMOD5,'(A)')'!$OMP END PARALLEL DO'
+         call initString(1)
+         call AddToString('  end subroutine PrimitiveContractionSegP')
+         call AddToString(nTUVP*nTUVQ)
+         call writeString(LUMOD5)
 ! QSEGMENTED
          WRITE(LUMOD4,'(A)')''
-         IF(nTUVP*nTUVQ.LT.10)THEN
-            WRITE(LUMOD4,'(A,I1,A)')'  subroutine PrimitiveContractionSegQ',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-            WRITE(LUMOD4,'(A,I2,A)')'  subroutine PrimitiveContractionSegQ',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-            WRITE(LUMOD4,'(A,I3,A)')'  subroutine PrimitiveContractionSegQ',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-            WRITE(LUMOD4,'(A,I4,A)')'  subroutine PrimitiveContractionSegQ',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSEIF(nTUVP*nTUVQ.LT.100000)THEN
-            WRITE(LUMOD4,'(A,I5,A)')'  subroutine PrimitiveContractionSegQ',nTUVP*nTUVQ,'(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-         ELSE
-            STOP 'Primitive contraction'
-         ENDIF
-         WRITE(LUMOD4,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB)'
+         call initString(1)
+         call AddToString('  subroutine PrimitiveContractionSegQ')
+         call AddToString(nTUVP*nTUVQ)
+         call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
+         call writeString(LUMOD4)
+         WRITE(LUMOD4,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)'
          WRITE(LUMOD4,'(A)')'    implicit none'
          WRITE(LUMOD4,'(A)')'    !Warning Primitive screening modifies this!!! '
          WRITE(LUMOD4,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP'
@@ -1205,55 +1255,43 @@ PROGRAM TUV
          WRITE(LUMOD4,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimA,nPrimB,nPasses)'
          WRITE(LUMOD4,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContA,nContB,nPasses)'
          WRITE(LUMOD4,'(A)')'    !'
-         WRITE(LUMOD4,'(A)')'    integer :: iPassQ,iContA,iContB,iPrimA,iPrimB'
+         WRITE(LUMOD4,'(A)')'    integer :: iPassP,iContA,iContB,iPrimA,iPrimB'
          WRITE(LUMOD4,'(A)')'    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP'
-    WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: ACCTMP,BCCTMP,TMPArray(',nTUVP*nTUVQ,')'
-    WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: TMPA(',nTUVP*nTUVQ,',nPrimB)'
-         WRITE(LUMOD4,'(A)')'    do iPassQ = 1,nPasses'
+    WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: TMP'
+    WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimB)'
+         WRITE(LUMOD4,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+         WRITE(LUMOD4,'(A)')'!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&'
+         WRITE(LUMOD4,'(A)')'!$OMP         BasisCont3,TMP) &'
+         WRITE(LUMOD4,'(A)')'!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&'
+         WRITE(LUMOD4,'(A)')'!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)'
+!         WRITE(LUMOD4,'(A)')'!$OMP SINGLE'
+         WRITE(LUMOD4,'(A)')'    do iPassP = 1,nPasses'
          WRITE(LUMOD4,'(A)')'     do iContA=1,nContA'
          WRITE(LUMOD4,'(A)')'      do iPrimB=1,nPrimB'
       WRITE(LUMOD4,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD4,'(A)')'        TMPArray(iTUV) = 0.0E0_realk'
-         WRITE(LUMOD4,'(A)')'       enddo'
-         WRITE(LUMOD4,'(A)')'       do iPrimA=1,nPrimA'
-         WRITE(LUMOD4,'(A)')'        ACCTMP = ACC(iPrimA,iContA)'
-      WRITE(LUMOD4,'(A,I5)')'        do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD4,'(A)')'         tmpArray(iTUV) = tmpArray(iTUV) + ACCTMP*AUXarray2(iTUV,iPrimA,iPrimB,iPassQ)'
+         WRITE(LUMOD4,'(A)')'        TMP = 0.0E0_realk'
+         WRITE(LUMOD4,'(A)')'        do iPrimA=1,nPrimA'
+         WRITE(LUMOD4,'(A)')'         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)'
          WRITE(LUMOD4,'(A)')'        enddo'
-         WRITE(LUMOD4,'(A)')'       enddo'
-      WRITE(LUMOD4,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD4,'(A)')'        tmpA(iTUV,iPrimB) = tmpArray(iTUV)'
+         WRITE(LUMOD4,'(A)')'        BasisCont3(iTUV,iPrimB) = tmp'
          WRITE(LUMOD4,'(A)')'       enddo'
          WRITE(LUMOD4,'(A)')'      enddo'
          WRITE(LUMOD4,'(A)')'      do iContB=1,nContB'
       WRITE(LUMOD4,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD4,'(A)')'        TMPArray(iTUV) = 0.0E0_realk'
-         WRITE(LUMOD4,'(A)')'       enddo'
-         WRITE(LUMOD4,'(A)')'       do iPrimB=1,nPrimB'
-         WRITE(LUMOD4,'(A)')'        BCCTMP = BCC(iPrimB,iContB)'
-      WRITE(LUMOD4,'(A,I5)')'        do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD4,'(A)')'         tmpArray(iTUV) = tmpArray(iTUV) + BCC(iPrimB,iContB)*tmpA(iTUV,iPrimB)'
+         WRITE(LUMOD4,'(A)')'        TMP = 0.0E0_realk'
+         WRITE(LUMOD4,'(A)')'        do iPrimB=1,nPrimB'
+         WRITE(LUMOD4,'(A)')'         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)'
          WRITE(LUMOD4,'(A)')'        enddo'
-         WRITE(LUMOD4,'(A)')'       enddo'
-      WRITE(LUMOD4,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD4,'(A)')'        AUXarrayCont(iTUV,iContA,iContB,iPassQ) = tmpArray(iTUV)'
+         WRITE(LUMOD4,'(A)')'        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp'
          WRITE(LUMOD4,'(A)')'       enddo'
          WRITE(LUMOD4,'(A)')'      enddo'
          WRITE(LUMOD4,'(A)')'     enddo'
          WRITE(LUMOD4,'(A)')'    enddo'
-         IF(nTUVP*nTUVQ.LT.10)THEN
-            WRITE(LUMOD4,'(A,I1)')'  end subroutine PrimitiveContractionSegQ',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-            WRITE(LUMOD4,'(A,I2)')'  end subroutine PrimitiveContractionSegQ',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-            WRITE(LUMOD4,'(A,I3)')'  end subroutine PrimitiveContractionSegQ',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-            WRITE(LUMOD4,'(A,I4)')'  end subroutine PrimitiveContractionSegQ',nTUVP*nTUVQ
-         ELSEIF(nTUVP*nTUVQ.LT.100000)THEN
-            WRITE(LUMOD4,'(A,I5)')'  end subroutine PrimitiveContractionSegQ',nTUVP*nTUVQ
-         ELSE
-            STOP 'Primitive contraction'
-         ENDIF
+         WRITE(LUMOD4,'(A)')'!$OMP END PARALLEL DO'
+         call initString(1)
+         call AddToString('  end subroutine PrimitiveContractionSegQ')
+         call AddToString(nTUVP*nTUVQ)
+         call writeString(LUMOD4)
          WRITE(LUMOD4,'(A)')''
       ENDIF
      ENDDO
@@ -1289,21 +1327,21 @@ PROGRAM TUV
 !!$WRITE(LUMOD3,'(A)')'    real(realk),intent(inout) :: squaredDistance(nPrimQ,nPrimP,nPasses)'
 !!$WRITE(LUMOD3,'(A)')'    real(realk),intent(inout) :: Rpq(3,nPrimQ,nPrimP,nPasses)'
 !!$WRITE(LUMOD3,'(A)')'    !'
-!!$WRITE(LUMOD3,'(A)')'    integer :: iPrimQ,iPassQ,iPrimP'
+!!$WRITE(LUMOD3,'(A)')'    integer :: iPrimQ,iPassP,iPrimP'
 !!$WRITE(LUMOD3,'(A)')'    real(realk) :: px,py,pz,pqx,pqy,pqz'
-!!$WRITE(LUMOD3,'(A)')'    DO iPassQ=1, nPasses'
+!!$WRITE(LUMOD3,'(A)')'    DO iPassP=1, nPasses'
 !!$WRITE(LUMOD3,'(A)')'       DO iPrimP=1, nPrimP'
 !!$WRITE(LUMOD3,'(A)')'          px = Pcent(1,iPrimP)'
 !!$WRITE(LUMOD3,'(A)')'          py = Pcent(2,iPrimP)'
 !!$WRITE(LUMOD3,'(A)')'          pz = Pcent(3,iPrimP)'
 !!$WRITE(LUMOD3,'(A)')'          DO iPrimQ=1, nPrimQ'
-!!$WRITE(LUMOD3,'(A)')'             pqx = px - Qcent(1,iPrimQ,iPassQ)'
-!!$WRITE(LUMOD3,'(A)')'             pqy = py - Qcent(2,iPrimQ,iPassQ)'
-!!$WRITE(LUMOD3,'(A)')'             pqz = pz - Qcent(3,iPrimQ,iPassQ)'
-!!$WRITE(LUMOD3,'(A)')'             rPQ(1,iPrimQ,iPrimP,iPassQ) = pqx'
-!!$WRITE(LUMOD3,'(A)')'             rPQ(2,iPrimQ,iPrimP,iPassQ) = pqy'
-!!$WRITE(LUMOD3,'(A)')'             rPQ(3,iPrimQ,iPrimP,iPassQ) = pqz'
-!!$WRITE(LUMOD3,'(A)')'             squaredDistance(iPrimQ,iPrimP,iPassQ) = pqx*pqx+pqy*pqy+pqz*pqz'
+!!$WRITE(LUMOD3,'(A)')'             pqx = px - Qcent(1,iPrimQ,iPassP)'
+!!$WRITE(LUMOD3,'(A)')'             pqy = py - Qcent(2,iPrimQ,iPassP)'
+!!$WRITE(LUMOD3,'(A)')'             pqz = pz - Qcent(3,iPrimQ,iPassP)'
+!!$WRITE(LUMOD3,'(A)')'             rPQ(1,iPrimQ,iPrimP,iPassP) = pqx'
+!!$WRITE(LUMOD3,'(A)')'             rPQ(2,iPrimQ,iPrimP,iPassP) = pqy'
+!!$WRITE(LUMOD3,'(A)')'             rPQ(3,iPrimQ,iPrimP,iPassP) = pqz'
+!!$WRITE(LUMOD3,'(A)')'             squaredDistance(iPrimQ,iPrimP,iPassP) = pqx*pqx+pqy*pqy+pqz*pqz'
 !!$WRITE(LUMOD3,'(A)')'          ENDDO'
 !!$WRITE(LUMOD3,'(A)')'       ENDDO'
 !!$WRITE(LUMOD3,'(A)')'    ENDDO'
@@ -1336,11 +1374,11 @@ PROGRAM TUV
 !!$WRITE(LUMOD3,'(A)')'    Real(realk) :: W2,W3,R'
 !!$WRITE(LUMOD3,'(A)')'    REAL(REALK), PARAMETER :: SMALL = 1E-15_realk'
 !!$WRITE(LUMOD3,'(A)')'    REAL(REALK) :: PX,PY,PZ,PQX,PQY,PQZ,squaredDistance'
-!!$WRITE(LUMOD3,'(A)')'    integer :: iPassQ,iPQ,iPrimP,iPrimQ'
+!!$WRITE(LUMOD3,'(A)')'    integer :: iPassP,iPQ,iPrimP,iPrimQ'
 !!$WRITE(LUMOD3,'(A)')'    !make for different values of JMAX => loop unroll  '
 !!$WRITE(LUMOD3,'(A)')'    !sorting? '
 !!$WRITE(LUMOD3,'(A)')'    D2JP36 = 2*JMAX + 36'
-!!$WRITE(LUMOD3,'(A)')'    DO iPassQ=1, nPasses'
+!!$WRITE(LUMOD3,'(A)')'    DO iPassP=1, nPasses'
 !!$WRITE(LUMOD3,'(A)')'      ipq = 0'
 !!$WRITE(LUMOD3,'(A)')'      DO iPrimP=1, nPrimP'
 !!$WRITE(LUMOD3,'(A)')'        px = Pcent(1,iPrimP)'
@@ -1348,9 +1386,9 @@ PROGRAM TUV
 !!$WRITE(LUMOD3,'(A)')'        pz = Pcent(3,iPrimP)'
 !!$WRITE(LUMOD3,'(A)')'        DO iPrimQ=1, nPrimQ'
 !!$WRITE(LUMOD3,'(A)')'          ipq = ipq + 1'
-!!$WRITE(LUMOD3,'(A)')'          pqx = px - Qcent(1,iPrimQ,iPassQ)'
-!!$WRITE(LUMOD3,'(A)')'          pqy = py - Qcent(2,iPrimQ,iPassQ)'
-!!$WRITE(LUMOD3,'(A)')'          pqz = pz - Qcent(3,iPrimQ,iPassQ)'
+!!$WRITE(LUMOD3,'(A)')'          pqx = px - Qcent(1,iPrimQ,iPassP)'
+!!$WRITE(LUMOD3,'(A)')'          pqy = py - Qcent(2,iPrimQ,iPassP)'
+!!$WRITE(LUMOD3,'(A)')'          pqz = pz - Qcent(3,iPrimQ,iPassP)'
 !!$WRITE(LUMOD3,'(A)')'          squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz'
 !!$WRITE(LUMOD3,'(A)')'          WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
 !!$WRITE(LUMOD3,'(A)')'          !  0 < WVAL < 0.000001'
@@ -1415,13 +1453,18 @@ PROGRAM TUV
 
 contains
   subroutine subroutineMain(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-       & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
+       & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,&
+       & spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
+    implicit none
     integer,intent(in) :: LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,nTUV,AngmomP,AngmomQ
+    integer,intent(in) :: nlmA,nlmB,nlmC,nlmD
     integer,intent(in) :: AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec
     character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
-    logical :: spherical,OutputSet,Gen,SegQ,SegP,Seg,Seg1Prim,Contracted
+    logical :: spherical,OutputSet,Gen,SegQ,SegP,Seg,Seg1Prim,Contracted,noTransfer
     character(len=8) :: BASISSPEC
     integer :: iBasisSpec
+    Character(len=1)  :: FromLabel,ToLabel,FromExpLabel,ToExpLabel
+    Character(len=1)  :: CenterString,QPCenterString
     IF(Gen)THEN
        iBasisSpec = 3
        BASISSPEC = 'Gen     '
@@ -1440,455 +1483,296 @@ contains
     ENDIF
     OutputSet = .FALSE.
     Contracted = .FALSE.
-    IF(nTUV.LT.10)THEN
-       !       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ELSEIF(nTUV.LT.100)THEN
-       !       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ELSEIF(nTUV.LT.1000)THEN
-       !       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ELSEIF(nTUV.LT.10000)THEN
-       !       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ENDIF
     IF(AngmomPQ.EQ.0)THEN
        IF(Gen)THEN
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrence0(nPasses,nPrimP,nPrimQ,&'
+          call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
        ELSEIF(Seg)THEN
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrenceSeg0(nPasses,nPrimP,nPrimQ,&'
+          call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
+       ELSEIF(SegQ)THEN
+          call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
+       ELSEIF(SegP)THEN
+          call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
+       ELSEIF(Seg1Prim)THEN
+          call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
+       ENDIF
+       WRITE(LUMOD3,'(A)')'        call VerticalRecurrence'//ARCSTRING//BASISSPEC(1:iBasisSpec)//'0(nPasses,nPrimP,nPrimQ,&'
+       WRITE(LUMOD3,'(A)')'               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&'
+       WRITE(LUMOD3,'(A)')'               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
+       call initString(15)
+       call AddToString('& PpreExpFac,QpreExpFac,')
+       IF(Gen)THEN
+          call AddToString(STRINGOUT)
+          !          call AddToString('(1:nPrimP*nPrimQ*nPasses*')
+          !       call AddToString(nTUV)
+          !       call AddToString(')')                
+       ELSEIF(Seg)THEN
+          call AddToString('LOCALINTS')
+          !          call AddToString('(1:nPasses*')
+          !       call AddToString(nTUV)
+          !       call AddToString(')')                
           Contracted = .TRUE.
        ELSEIF(SegQ)THEN
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrenceSegQ0(nPasses,nPrimP,nPrimQ,&'
-          Contracted = .TRUE.
+          call AddToString(STRINGOUT)
+          !          call AddToString('(1:nPrimP*nPasses*')
+          !       call AddToString(nTUV)
+          !       call AddToString(')')                
+!          Contracted = .TRUE.
        ELSEIF(SegP)THEN
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrenceSegP0(nPasses,nPrimP,nPrimQ,&'
-          Contracted = .TRUE.
+          call AddToString(STRINGOUT)
+!          Contracted = .TRUE.
        ELSEIF(Seg1Prim)THEN
-          WRITE(LUMOD3,'(A)')'        call VerticalRecurrenceSeg1Prim0(nPasses,nPrimP,nPrimQ,&'
+          call AddToString('LOCALINTS')
           Contracted = .TRUE.
        ENDIF
-       WRITE(LUMOD3,'(A)')'               & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&'
-       WRITE(LUMOD3,'(A,A,A)')'               & PpreExpFac,QpreExpFac,',STRINGOUT,')'
+       call AddToString(')')                
+       call writeString(LUMOD3)
        !swap 
        TMPSTRING = STRINGIN
        STRINGIN  = STRINGOUT
        STRINGOUT  = TMPSTRING
        WRITE(LUMOD3,'(A)')'        !No reason for the Electron Transfer Recurrence Relation '
     ELSE
+       !build RJ000 
+       IF(AngmomPQ.GT.1)THEN
+          call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',AngmomPQ+1,LUMOD3)
+          call initString(8)
+          call AddToString('call BuildRJ000')
+          call AddToString(ARCSTRING)
+          IF(Seg1Prim)THEN
+             call AddToString(BASISSPEC(1:iBasisSpec))
+          ELSE
+             call AddToString('Gen')
+          ENDIF
+          call AddToString(AngmomPQ)
+!          call AddToString(centerstring)                
+          call AddToString('(nPasses,nPrimP,nPrimQ,reducedExponents,&')
+          call writeString(LUMOD3)
+
+          call initString(15)
+          call AddToString('& TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&')
+          call writeString(LUMOD3)
+
+          call initString(15)
+          call AddToString('& MaxPasses,nAtomsA,nAtomsB,')
+          call AddToString(STRINGOUT)
+          call AddToString(')')
+          call writeString(LUMOD3)
+          
+          TMPSTRING = STRINGIN
+          STRINGIN  = STRINGOUT
+          STRINGOUT  = TMPSTRING
+       ENDIF
+
        IF(AngmomP.GE.AngmomQ)THEN
+          noTransfer = AngmomQ.EQ.0
           IF(AngmomA.GE.AngmomB)THEN
              !A Vertical recurrence
-             IF(AngmomPQ.LT.10)THEN
-                IF(AngmomQ.EQ.0)THEN
-                   !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
-                   IF(Gen)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                   ELSEIF(Seg)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegQ)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegP)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(Seg1Prim)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ENDIF
-                ELSE
-                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                ENDIF
+             centerString='A'
+             QPcenterString='P'
+             IF(AngmomC.GE.AngmomD)THEN
+                !A to C TransferRecurrence
+                FromLabel = 'A'; ToLabel = 'C'; FromExpLabel = 'B'; ToExpLabel = 'D'
+                SPEC = 'AtoC'
              ELSE
-                IF(AngmomQ.EQ.0)THEN
-                   !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
-                   IF(Gen)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                   ELSEIF(Seg)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegQ)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegP)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(Seg1Prim)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ENDIF
-                ELSE
-                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'A(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                ENDIF
-             ENDIF
-             WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
-             !swap 
-             TMPSTRING = STRINGIN
-             STRINGIN  = STRINGOUT
-             STRINGOUT  = TMPSTRING
-             !determine TransferRecurrence
-             IF(AngmomQ.EQ.0)THEN
-                WRITE(LUMOD3,'(A)')'        !No reason for the Electron Transfer Recurrence Relation '
-                !No reason for the Electron Transfer Recurrence Relation 
-             ELSE
-                !                WRITE(LUMOD3,'(A)')'        !Electron Transfer Recurrence Relation '
-                !                call sub_alloc1(nTUVP,nTUVQ,STRINGOUT,LUMOD3) !call mem_alloc(STRINGOUT,nTUVP*nTUVQ,nPrimQP*nPasses)
-                IF(AngmomC.GE.AngmomD)THEN
-                   !A to C TransferRecurrence
-                   SPEC = 'AtoC'
-                ELSE
-                   !A to D TransferRecurrence
-                   SPEC = 'AtoD'
-                ENDIF
-
-                call initString(8)
-                call AddToString('call TransferRecurrenceP')
-                call AddToString(AngmomP)
-                call AddToString('Q')
-                call AddToString(AngmomQ)
-                call AddToString(SPEC)                
-                call AddToString(BASISSPEC(1:iBasisSpec))
-                call AddToString('(nPasses,nPrimP,nPrimQ,reducedExponents,&')
-                call writeString(LUMOD3)
-                IF(.NOT.Gen)Contracted = .TRUE.
-                !                IF(AngmomP.LT.10)THEN
-                !                   IF(AngmomQ.LT.10)THEN
-                !                      WRITE(LUMOD3,'(A,I1,A,I1,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                !                   ELSE
-                !                      WRITE(LUMOD3,'(A,I1,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                !                   ENDIF
-                !                ELSE
-                !                   IF(AngmomQ.LT.10)THEN
-                !                      WRITE(LUMOD3,'(A,I2,A,I1,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                !                   ELSE
-                !                      WRITE(LUMOD3,'(A,I2,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                !                   ENDIF
-                !                ENDIF
-                IF(AngmomC.GE.AngmomD)THEN ! A to C
-                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
-                ELSE                       ! A to D
-                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
-                ENDIF
-                WRITE(LUMOD3,'(A,A,A,A,A)')'               & ',STRINGIN,',',STRINGOUT,')'
-                !                WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-                !swap 
-                TMPSTRING = STRINGIN
-                STRINGIN  = STRINGOUT
-                STRINGOUT  = TMPSTRING
+                !A to D TransferRecurrence
+                FromLabel = 'A'; ToLabel = 'D'; FromExpLabel = 'B'; ToExpLabel = 'C' 
+                SPEC = 'AtoD'
              ENDIF
           ELSE
              !B Vertical recurrence
-             IF(AngmomPQ.LT.10)THEN
-                IF(AngmomQ.EQ.0)THEN
-                   !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
-                   IF(Gen)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                   ELSEIF(Seg)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegQ)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegP)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(Seg1Prim)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ENDIF
-                ELSE
-                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                ENDIF
+             centerString='B'
+             QPcenterString='P'
+             IF(AngmomC.GE.AngmomD)THEN
+                !A to C TransferRecurrence
+FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D' 
+                SPEC = 'BtoC'
              ELSE
-                IF(AngmomQ.EQ.0)THEN
-                   !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
-                   IF(Gen)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                   ELSEIF(Seg)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegQ)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegP)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(Seg1Prim)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ENDIF
-                ELSE
-                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'B(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-                ENDIF
-             ENDIF
-             WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
-             !swap 
-             TMPSTRING = STRINGIN
-             STRINGIN  = STRINGOUT
-             STRINGOUT  = TMPSTRING
-             !determine TransferRecurrence
-             IF(AngmomQ.EQ.0)THEN
-                WRITE(LUMOD3,'(A)')'        !No reason for the Electron Transfer Recurrence Relation '
-                !No reason for the Electron Transfer Recurrence Relation 
-             ELSE
-                !                WRITE(LUMOD3,'(A)')'        !Electron Transfer Recurrence Relation '
-                !                call sub_alloc1(nTUVP,nTUVQ,STRINGOUT,LUMOD3) !call mem_alloc(STRINGOUT,nTUVP*nTUVQ,nPrimQP*nPasses)
-                IF(AngmomC.GE.AngmomD)THEN
-                   !B to C TransferRecurrence
-                   SPEC = 'BtoC'
-                ELSE
-                   !B to D TransferRecurrence
-                   SPEC = 'BtoD'
-                ENDIF
-                call initString(8)
-                call AddToString('call TransferRecurrenceP')
-                call AddToString(AngmomP)
-                call AddToString('Q')
-                call AddToString(AngmomQ)
-                call AddToString(SPEC)                
-                call AddToString(BASISSPEC(1:iBasisSpec))
-                call AddToString('(nPasses,nPrimP,nPrimQ,reducedExponents,&')
-                call writeString(LUMOD3)
-                IF(.NOT.Gen)Contracted = .TRUE.
-!!$                IF(AngmomP.LT.10)THEN
-!!$                   IF(AngmomQ.LT.10)THEN
-!!$                      WRITE(LUMOD3,'(A,I1,A,I1,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ELSE
-!!$                      WRITE(LUMOD3,'(A,I1,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ENDIF
-!!$                ELSE
-!!$                   IF(AngmomQ.LT.10)THEN
-!!$                      WRITE(LUMOD3,'(A,I2,A,I1,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ELSE
-!!$                      WRITE(LUMOD3,'(A,I2,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ENDIF
-!!$                ENDIF
-                IF(AngmomC.GE.AngmomD)THEN
-                   !B to C TransferRecurrence
-                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
-                ELSE
-                   !B to D TransferRecurrence
-                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
-                ENDIF
-                WRITE(LUMOD3,'(A,A,A,A,A)')'               & ',STRINGIN,',',STRINGOUT,')'
-                !                WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-                !swap 
-                TMPSTRING = STRINGIN
-                STRINGIN  = STRINGOUT
-                STRINGOUT  = TMPSTRING
+                !A to D TransferRecurrence
+                FromLabel = 'B'; ToLabel = 'D'; FromExpLabel = 'A'; ToExpLabel = 'C' 
+                SPEC = 'BtoD'
              ENDIF
           ENDIF
        ELSE
+          noTransfer = AngmomP.EQ.0
           IF(AngmomC.GE.AngmomD)THEN
              !C Vertical recurrence
-             IF(AngmomPQ.LT.10)THEN
-                IF(AngmomP.EQ.0)THEN
-                   !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
-                   IF(Gen)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                   ELSEIF(Seg)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegQ)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegP)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(Seg1Prim)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ENDIF
-                ELSE
-                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                ENDIF
+             centerString='C'
+             QPcenterString='Q'
+             IF(AngmomA.GE.AngmomB)THEN
+                !C to A TransferRecurrence
+                FromLabel = 'C'; ToLabel = 'A'; FromExpLabel = 'D'; ToExpLabel = 'B'
+                SPEC = 'CtoA'
              ELSE
-                IF(AngmomP.EQ.0)THEN
-                   !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
-                   IF(Gen)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                   ELSEIF(Seg)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegQ)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegP)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(Seg1Prim)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ENDIF
-                ELSE
-                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                ENDIF
-             ENDIF
-             WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
-             !             IF(AngmomPQ.LT.10)THEN
-             !                WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-             !                WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
-             !             ELSE
-             !                WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-             !                WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
-             !             ENDIF
-             !swap 
-             TMPSTRING = STRINGIN
-             STRINGIN  = STRINGOUT
-             STRINGOUT  = TMPSTRING 
-             !determine TransferRecurrence
-             IF(AngmomP.EQ.0)THEN
-                WRITE(LUMOD3,'(A)')'        !No reason for the Electron Transfer Recurrence Relation '
-                !No reason for the Electron Transfer Recurrence Relation 
-             ELSE
-                !                WRITE(LUMOD3,'(A)')'        !Electron Transfer Recurrence Relation '
-                !                call sub_alloc1(nTUVP,nTUVQ,STRINGOUT,LUMOD3) !call mem_alloc(STRINGOUT,nTUVP*nTUVQ,nPrimQP*nPasses)
-                IF(AngmomA.GE.AngmomB)THEN
-                   !C to A TransferRecurrence
-                   SPEC = 'CtoA'
-                ELSE
-                   !C to B TransferRecurrence
-                   SPEC = 'CtoB'
-                ENDIF
-                call initString(8)
-                call AddToString('call TransferRecurrenceP')
-                call AddToString(AngmomP)
-                call AddToString('Q')
-                call AddToString(AngmomQ)
-                call AddToString(SPEC)                
-                call AddToString(BASISSPEC(1:iBasisSpec))
-                call AddToString('(nPasses,nPrimP,nPrimQ,reducedExponents,&')
-                call writeString(LUMOD3)
-                IF(.NOT.Gen)Contracted = .TRUE.
-!!$                IF(AngmomP.LT.10)THEN
-!!$                   IF(AngmomQ.LT.10)THEN
-!!$                      WRITE(LUMOD3,'(A,I1,A,I1,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ELSE
-!!$                      WRITE(LUMOD3,'(A,I1,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ENDIF
-!!$                ELSE
-!!$                   IF(AngmomQ.LT.10)THEN
-!!$                      WRITE(LUMOD3,'(A,I2,A,I1,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ELSE
-!!$                      WRITE(LUMOD3,'(A,I2,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ENDIF
-!!$                ENDIF
-                IF(AngmomA.GE.AngmomB)THEN   !C to A
-                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
-                ELSE                         !C to B
-                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
-                ENDIF
-                WRITE(LUMOD3,'(A,A,A,A,A)')'               & ',STRINGIN,',',STRINGOUT,')'
-                !                WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-                !swap 
-                TMPSTRING = STRINGIN
-                STRINGIN  = STRINGOUT
-                STRINGOUT  = TMPSTRING
+                !C to B TransferRecurrence
+                FromLabel = 'C'; ToLabel = 'B'; FromExpLabel = 'D'; ToExpLabel = 'A' 
+                SPEC = 'CtoB'
              ENDIF
           ELSE
              !D Vertical recurrence
-             IF(AngmomPQ.LT.10)THEN
-                IF(AngmomP.EQ.0)THEN
-                   !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
-                   IF(Gen)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                   ELSEIF(Seg)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegQ)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegP)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(Seg1Prim)THEN
-                      WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ENDIF
-                ELSE
-                   WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                ENDIF
+             centerString='D'
+             QPcenterString='Q'
+             IF(AngmomA.GE.AngmomB)THEN
+                !C to A TransferRecurrence
+                FromLabel = 'D'; ToLabel = 'A'; FromExpLabel = 'C'; ToExpLabel = 'B' 
+                SPEC = 'DtoA'
              ELSE
-                IF(AngmomP.EQ.0)THEN
-                   !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
-                   IF(Gen)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                   ELSEIF(Seg)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegQ)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegQ',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(SegP)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSegP',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ELSEIF(Seg1Prim)THEN
-                      WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrenceSeg1Prim',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                      Contracted = .TRUE.
-                   ENDIF
-                ELSE
-                   WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-                ENDIF
-             ENDIF
-             WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
-             !             IF(AngmomPQ.LT.10)THEN
-             !                WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-             !                WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
-             !             ELSE
-             !                WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,nAtomsC,nAtomsD,reducedExponents,&'
-             !                WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
-             !             ENDIF
-             !swap 
-             TMPSTRING = STRINGIN
-             STRINGIN  = STRINGOUT
-             STRINGOUT  = TMPSTRING             
-             IF(AngmomP.EQ.0)THEN
-                WRITE(LUMOD3,'(A)')'        !No reason for the Electron Transfer Recurrence Relation '
-                !No reason for the Electron Transfer Recurrence Relation 
-             ELSE
-                !                WRITE(LUMOD3,'(A)')'        !Electron Transfer Recurrence Relation '
-                !                call sub_alloc1(nTUVP,nTUVQ,STRINGOUT,LUMOD3) !call mem_alloc(STRINGOUT,nTUVP*nTUVQ,nPrimQP*nPasses)
-                IF(AngmomA.GE.AngmomB)THEN
-                   !D to A TransferRecurrence
-                   SPEC = 'DtoA'
-                ELSE
-                   !D to B TransferRecurrence
-                   SPEC = 'DtoB'
-                ENDIF
-                call initString(8)
-                call AddToString('call TransferRecurrenceP')
-                call AddToString(AngmomP)
-                call AddToString('Q')
-                call AddToString(AngmomQ)
-                call AddToString(SPEC)                
-                call AddToString(BASISSPEC(1:iBasisSpec))
-                call AddToString('(nPasses,nPrimP,nPrimQ,reducedExponents,&')
-                call writeString(LUMOD3)
-                IF(.NOT.Gen)Contracted = .TRUE.
-!!$                IF(AngmomP.LT.10)THEN
-!!$                   IF(AngmomQ.LT.10)THEN
-!!$                      WRITE(LUMOD3,'(A,I1,A,I1,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ELSE
-!!$                      WRITE(LUMOD3,'(A,I1,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ENDIF
-!!$                ELSE
-!!$                   IF(AngmomQ.LT.10)THEN
-!!$                      WRITE(LUMOD3,'(A,I2,A,I1,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ELSE
-!!$                      WRITE(LUMOD3,'(A,I2,A,I2,A4,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,SPEC,'(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-!!$                   ENDIF
-!!$                ENDIF
-                IF(AngmomA.GE.AngmomB)THEN !D to A
-                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
-                ELSE                       !D to B
-                   WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&'                
-                ENDIF
-                WRITE(LUMOD3,'(A,A,A,A,A)')'               & ',STRINGIN,',',STRINGOUT,')'
-                !                WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-                !swap 
-                TMPSTRING = STRINGIN
-                STRINGIN  = STRINGOUT
-                STRINGOUT  = TMPSTRING
+                !C to B TransferRecurrence
+                FromLabel = 'D'; ToLabel = 'B'; FromExpLabel = 'C'; ToExpLabel = 'A' 
+                SPEC = 'DtoB'
              ENDIF
           ENDIF
+       ENDIF
+
+       !VERTICAL
+       IF(noTransfer)THEN
+          !no Electron Transfer Recurrence Relation so in case of segmented we can add together now
+          IF(Gen)THEN
+             call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
+          ELSEIF(Seg)THEN
+             call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
+             Contracted = .TRUE.
+          ELSEIF(SegQ)THEN
+             call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUV,LUMOD3)
+             Contracted = .TRUE.
+          ELSEIF(SegP)THEN
+             call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUV,LUMOD3)
+             Contracted = .TRUE.
+          ELSEIF(Seg1Prim)THEN
+             call DebugMemoryTest(STRINGOUT,'nPasses',nTUV,LUMOD3)
+             Contracted = .TRUE.
+          ENDIF
+          call initString(8)
+          call AddToString('call VerticalRecurrence')
+          call AddToString(ARCSTRING)
+          call AddToString(BASISSPEC(1:iBasisSpec))
+       ELSE
+          call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUV,LUMOD3)
+          call initString(8)
+          call AddToString('call VerticalRecurrence')
+          call AddToString(ARCSTRING)
+          IF(Seg1Prim)THEN
+             call AddToString(BASISSPEC(1:iBasisSpec))
+          ELSE
+             call AddToString('Gen')
+          ENDIF
+       ENDIF
+       call AddToString(AngmomPQ)
+       call AddToString(centerstring)                
+       call AddToString('(nPasses,nPrimP,nPrimQ,reducedExponents,&')
+       call writeString(LUMOD3)
+
+       call initString(15)
+       call AddToString('& ')
+       IF(AngmomPQ.EQ.1)THEN
+          call AddToString('TABFJW')
+       ELSE
+          call AddToString(STRINGIN)
+       ENDIF
+       call AddToString(',')
+       call AddToString(QPcenterString)       
+       call AddToString('exp,')
+       call AddToString(centerString)
+       call AddToString('center,Pcent,Qcent,integralPrefactor,&')
+       call writeString(LUMOD3)
+       WRITE(LUMOD3,'(A)')'               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&'
+       call initString(15)
+       call AddToString('& ')
+       call AddToString(STRINGOUT)
+!             IF(Gen)THEN
+!                call AddToString('(1:nPrimP*nPrimQ*nPasses*')
+!             ELSEIF(Seg)THEN
+!                call AddToString('(1:nPasses*')
+!             ELSEIF(SegQ)THEN
+!                call AddToString('(1:nPrimP*nPasses*')
+!             ELSEIF(SegP)THEN
+!                call AddToString('(1:nPrimQ*nPasses*')
+!             ELSEIF(Seg1Prim)THEN
+!                call AddToString('(1:nPasses*')
+!             ENDIF
+!             call AddToString(nTUV)
+!             call AddToString(')')                
+       call AddToString(')')                
+       call writeString(LUMOD3)             
+
+       !WRITE(LUMOD3,'(A,A,A)')'               & ',STRINGOUT,')'
+       !swap 
+       TMPSTRING = STRINGIN
+       STRINGIN  = STRINGOUT
+       STRINGOUT  = TMPSTRING
+       
+       !determine TransferRecurrence
+       IF(noTransfer)THEN
+          WRITE(LUMOD3,'(A)')'        !No reason for the Electron Transfer Recurrence Relation '
+          !No reason for the Electron Transfer Recurrence Relation 
+       ELSE
+          IF(Gen)THEN
+             call DebugMemoryTest(STRINGOUT,'nPrimP*nPrimQ*nPasses',nTUVP*nTUVQ,LUMOD3)
+          ELSEIF(Seg)THEN
+             call DebugMemoryTest(STRINGOUT,'nPasses',nTUVP*nTUVQ,LUMOD3)
+          ELSEIF(SegP)THEN
+             call DebugMemoryTest(STRINGOUT,'nPrimQ*nPasses',nTUVP*nTUVQ,LUMOD3)
+          ELSEIF(SegQ)THEN
+             call DebugMemoryTest(STRINGOUT,'nPrimP*nPasses',nTUVP*nTUVQ,LUMOD3)
+          ELSEIF(Seg1Prim)THEN
+             call DebugMemoryTest(STRINGOUT,'nPasses',nTUVP*nTUVQ,LUMOD3)
+          ENDIF
+          call initString(8)
+          call AddToString('call TransferRecurrence'//ARCSTRING//'P')
+          call AddToString(AngmomP)
+          call AddToString('Q')
+          call AddToString(AngmomQ)
+          call AddToString(SPEC)                
+          call AddToString(BASISSPEC(1:iBasisSpec))
+          call AddToString('(nPasses,nPrimP,nPrimQ,reducedExponents,&')
+          call writeString(LUMOD3)
+          IF(.NOT.Gen)Contracted = .TRUE.
+          call initString(15)
+          call AddToString('& Pexp,Qexp,Pdistance12,Qdistance12,')          
+          call AddToString(FromExpLabel)
+          call AddToString('exp,')
+          call AddToString(ToExpLabel)
+          call AddToString('exp,nPrimA,nPrimB,nPrimC,nPrimD,&')
+          call writeString(LUMOD3)             
+          call initString(15)
+          call AddToString('& MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&')
+          call writeString(LUMOD3)             
+          call initString(15)
+          call AddToString('& ')
+          call AddToString(STRINGIN)
+!          IF(Gen)THEN
+!             call AddToString('(1:nPrimP*nPrimQ*nPasses*')
+!          ELSEIF(Seg)THEN
+!             call AddToString('(1:nPasses*')
+!          ELSEIF(SegQ)THEN
+!             call AddToString('(1:nPrimP*nPasses*')
+!          ELSEIF(SegP)THEN
+!             call AddToString('(1:nPrimQ*nPasses*')
+!          ELSEIF(Seg1Prim)THEN
+!             call AddToString('(1:nPasses*')
+!          ENDIF
+!          call AddToString(nTUV)
+!                call AddToString(')')
+          call AddToString(',')
+          call AddToString(STRINGOUT)
+!          IF(Gen)THEN
+!             call AddToString('(1:nPrimP*nPrimQ*nPasses*')
+!          ELSEIF(Seg)THEN
+!             call AddToString('(1:nPasses*')
+!          ELSEIF(SegQ)THEN
+!             call AddToString('(1:nPrimP*nPasses*')
+!          ELSEIF(SegP)THEN
+!             call AddToString('(1:nPrimQ*nPasses*')
+!          ELSEIF(Seg1Prim)THEN
+!             call AddToString('(1:nPasses*')
+!          ENDIF
+!          call AddToString(nTUVP*nTUVQ)
+!          call AddToString(')')
+          call AddToString(')')
+          call writeString(LUMOD3)             
+          !swap 
+          TMPSTRING = STRINGIN
+          STRINGIN  = STRINGOUT
+          STRINGOUT  = TMPSTRING
        ENDIF
     ENDIF
     !================= DONE WITH VERTICAL AND TRANSFER ================================================================
@@ -1908,70 +1792,67 @@ contains
     IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
        !no subsequent Horizontal or spherical transformations 
        IF(.NOT.OutputSet)THEN
-          STRINGOUT  = 'CDAB     '
+          STRINGOUT  = 'LOCALINTS     '
           OutputSet = .TRUE.
        ELSE
-          STOP 'CDAB already set MAJOER PROBLEM A2'
+          STOP 'LOCALINTS already set MAJOER PROBLEM A2'
        ENDIF
     ENDIF
     IF(Contracted)THEN
-       IF(SegP)THEN
-          IF(nTUVQ*nTUVP.LT.10)THEN       
-             WRITE(LUMOD3,'(A,I1,A,A,A,A,A)')'         call PrimitiveContractionSegP',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-          ELSEIF(nTUVQ*nTUVP.LT.100)THEN
-             WRITE(LUMOD3,'(A,I2,A,A,A,A,A)')'         call PrimitiveContractionSegP',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-          ELSEIF(nTUVQ*nTUVP.LT.1000)THEN
-             WRITE(LUMOD3,'(A,I3,A,A,A,A,A)')'         call PrimitiveContractionSegP',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-          ELSEIF(nTUVQ*nTUVP.LT.10000)THEN
-             WRITE(LUMOD3,'(A,I4,A,A,A,A,A)')'         call PrimitiveContractionSegP',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-          ELSE
-             STOP 'SegPPrimCont'
-          ENDIF          
-          WRITE(LUMOD3,'(A)')'              & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD)'
-          !swap 
+       IF(SegP.OR.SegQ)THEN
+          IF(SegP)call DebugMemoryTest(STRINGOUT,'nContQ*nPasses',nTUVP*nTUVQ,LUMOD3)
+          IF(SegQ)call DebugMemoryTest(STRINGOUT,'nContP*nPasses',nTUVP*nTUVQ,LUMOD3)
+          call initString(9)
+          call AddToString('call PrimitiveContraction')
+          call AddToString(BASISSPEC(1:iBasisSpec))
+          call AddToString(nTUVQ*nTUVP)
+          call AddToString('(')
+          call AddToString(STRINGIN)
+          call AddToString(',')
+          call AddToString(STRINGOUT)
+          call AddToString(',nPrimP,nPrimQ,nPasses,&')
+          call writeString(LUMOD3)             
+          call initString(15)
+          IF(SegP)THEN
+             call AddToString('& nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)')
+          ELSEIF(SegQ)THEN
+             call AddToString('& nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)')
+          ENDIF
+          call writeString(LUMOD3)             
+          
           TMPSTRING = STRINGIN
           STRINGIN  = STRINGOUT
           STRINGOUT  = TMPSTRING
-       ELSEIF(SegQ)THEN
-          IF(nTUVQ*nTUVP.LT.10)THEN       
-             WRITE(LUMOD3,'(A,I1,A,A,A,A,A)')'         call PrimitiveContractionSegQ',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-          ELSEIF(nTUVQ*nTUVP.LT.100)THEN
-             WRITE(LUMOD3,'(A,I2,A,A,A,A,A)')'         call PrimitiveContractionSegQ',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-          ELSEIF(nTUVQ*nTUVP.LT.1000)THEN
-             WRITE(LUMOD3,'(A,I3,A,A,A,A,A)')'         call PrimitiveContractionSegQ',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-          ELSEIF(nTUVQ*nTUVP.LT.10000)THEN
-             WRITE(LUMOD3,'(A,I4,A,A,A,A,A)')'         call PrimitiveContractionSegQ',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-          ELSE
-             STOP 'SegQPrimCont'
-          ENDIF          
-          WRITE(LUMOD3,'(A)')'              & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB)'
-          !swap 
-          TMPSTRING = STRINGIN
-          STRINGIN  = STRINGOUT
-          STRINGOUT  = TMPSTRING
+          
        ELSE
           WRITE(LUMOD3,'(A)')'        !Primitive Contraction have already been done'
        ENDIF
     ELSE
-       IF(nTUVQ*nTUVP.LT.10)THEN       
-          WRITE(LUMOD3,'(A,I1,A,A,A,A,A)')'         call PrimitiveContractionGen',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-       ELSEIF(nTUVQ*nTUVP.LT.100)THEN
-          WRITE(LUMOD3,'(A,I2,A,A,A,A,A)')'         call PrimitiveContractionGen',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-       ELSEIF(nTUVQ*nTUVP.LT.1000)THEN
-          WRITE(LUMOD3,'(A,I3,A,A,A,A,A)')'         call PrimitiveContractionGen',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
-       ELSEIF(nTUVQ*nTUVP.LT.10000)THEN
-          WRITE(LUMOD3,'(A,I4,A,A,A,A,A)')'         call PrimitiveContractionGen',nTUVQ*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPrimQ,nPasses,&'
+       call DebugMemoryTest(STRINGOUT,'nContQ*nContP*nPasses',nTUVP*nTUVQ,LUMOD3)
+
+       call initString(9)
+       call AddToString('call PrimitiveContraction')
+       call AddToString(BASISSPEC(1:iBasisSpec))
+       call AddToString(nTUVQ*nTUVP)
+       call AddToString('(')
+       call AddToString(STRINGIN)
+       call AddToString(',')
+       call AddToString(STRINGOUT)
+       call AddToString(',nPrimP,nPrimQ,nPasses,&')
+       call writeString(LUMOD3)             
+       IF(SegP)THEN
+          WRITE(LUMOD3,'(A)')'              & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)'
+       ELSEIF(SegQ)THEN
+          WRITE(LUMOD3,'(A)')'              & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)'
        ELSE
-          STOP 'GenPrimCont'
+          WRITE(LUMOD3,'(A)')'              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&'
+          WRITE(LUMOD3,'(A)')'              & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)'
        ENDIF
-       WRITE(LUMOD3,'(A)')'              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&'
-       WRITE(LUMOD3,'(A)')'              & nContC,nPrimD,nContD)'
-       !swap 
+          
        TMPSTRING = STRINGIN
        STRINGIN  = STRINGOUT
        STRINGOUT  = TMPSTRING
     ENDIF
-    !    WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
 
     !================= DONE WITH PRIMITIVE CONTRACTION ================================================================
 
@@ -1982,7 +1863,7 @@ contains
        IF(AngmomQ.EQ.0)THEN
           !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
           IF(.NOT.OutputSet)THEN
-             WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
+             WRITE(LUMOD3,'(A,A)')'        LOCALINTS = ',STRINGIN
              OutputSet = .TRUE.
           ENDIF
        ELSE
@@ -1990,16 +1871,16 @@ contains
        ENDIF
     ELSE
        IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
-          !need for Spherical Transformation so we cannot place output in CDAB yet
+          !need for Spherical Transformation so we cannot place output in LOCALINTS yet
        ELSE
           !no need for LHS Spherical Transformation
           IF(AngmomQ.EQ.0)THEN
              !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'CDAB     '
+                STRINGOUT  = 'LOCALINTS     '
                 OutputSet = .TRUE.
              ELSE
-                STOP 'CDAB already set MAJOER PROBLEM A2'
+                STOP 'LOCALINTS already set MAJOER PROBLEM A2'
              ENDIF
           ELSE
              !need for RHS Horizontal recurrence
@@ -2020,6 +1901,15 @@ contains
        ELSE
           SPEC = 'BtoA'
        ENDIF
+       IF(Gen)THEN
+          call DebugMemoryTest(STRINGOUT,'nContQP*nPasses',nTUVAspec*nTUVBspec*nTUVQ,LUMOD3)
+       ELSEIF(SegQ)THEN
+          call DebugMemoryTest(STRINGOUT,'nContP*nPasses',nTUVAspec*nTUVBspec*nTUVQ,LUMOD3)
+       ELSEIF(SegP)THEN
+          call DebugMemoryTest(STRINGOUT,'nContQ*nPasses',nTUVAspec*nTUVBspec*nTUVQ,LUMOD3)
+       ELSE
+          call DebugMemoryTest(STRINGOUT,'nPasses',nTUVAspec*nTUVBspec*nTUVQ,LUMOD3)
+       ENDIF
        call initString(8)
        call AddToString('call HorizontalRR_LHS_P')
        call AddToString(AngmomP)
@@ -2029,75 +1919,73 @@ contains
        call AddToString(AngmomB)
        call AddToString(SPEC)
        IF(Gen)THEN
-          call AddToString('(nContQP*nPasses,')
+          call AddToString('(nContQP,nPasses,')
        ELSEIF(SegQ)THEN
-          call AddToString('(nContP*nPasses,')
+          call AddToString('(nContP,nPasses,')
        ELSEIF(SegP)THEN
-          call AddToString('(nContQ*nPasses,')
+          call AddToString('(nContQ,nPasses,')
        ELSE
-          call AddToString('(nPasses,')
+          call AddToString('(1,nPasses,')
        ENDIF
        call AddToString(nTUVQ)
-       call AddToString(',Pdistance12,')
+       call AddToString(',Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,')
        call AddToString(STRINGIN)
-       call AddToString(',')
+!!$       IF(Gen)THEN
+!!$          call AddToString('(1:nContQP*nPasses*')
+!!$          call AddToString(nTUVP*nTUVQ)
+!!$          call AddToString(')')
+!!$       ELSEIF(SegQ)THEN
+!!$          call AddToString('(1:nContP*nPasses*')
+!!$          call AddToString(nTUVP*nTUVQ)
+!!$          call AddToString(')')
+!!$       ELSEIF(SegP)THEN
+!!$          call AddToString('(1:nContQ*nPasses*')
+!!$          call AddToString(nTUVP*nTUVQ)
+!!$          call AddToString(')')
+!!$       ELSE
+!!$          call AddToString('(1:nPasses*')
+!!$          call AddToString(nTUVP*nTUVQ)
+!!$          call AddToString(')')
+!!$       ENDIF
+       call AddToString(',&')
+       call writeString(LUMOD3)
+       call initString(12)
+       call AddToString('& ')
        call AddToString(STRINGOUT)
+!!$       IF(Gen)THEN
+!!$          call AddToString('(1:nContQP*nPasses*')
+!!$          call AddToString(nTUVAspec*nTUVBspec*nTUVQ)
+!!$          call AddToString(')')
+!!$       ELSEIF(SegQ)THEN
+!!$          call AddToString('(1:nContP*nPasses*')
+!!$          call AddToString(nTUVAspec*nTUVBspec*nTUVQ)
+!!$          call AddToString(')')
+!!$       ELSEIF(SegP)THEN
+!!$          call AddToString('(1:nContQ*nPasses*')
+!!$          call AddToString(nTUVAspec*nTUVBspec*nTUVQ)
+!!$          call AddToString(')')
+!!$       ELSE
+!!$          call AddToString('(1:nPasses*')
+!!$          call AddToString(nTUVAspec*nTUVBspec*nTUVQ)
+!!$          call AddToString(')')
+!!$       ENDIF
        call AddToString(',lupri)')
        call writeString(LUMOD3)
-!!$       IF(AngmomP.LT.10)THEN
-!!$          IF(AngmomA.LT.10)THEN
-!!$             IF(AngmomB.LT.10)THEN
-!!$                WRITE(LUMOD3,'(A,I1,A,I1,A,I1,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-!!$                     &AngmomA,'B',AngmomB,SPEC,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ELSEIF(AngmomB.LT.100)THEN
-!!$                WRITE(LUMOD3,'(A,I1,A,I1,A,I2,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-!!$                     &AngmomA,'B',AngmomB,SPEC,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ENDIF
-!!$          ELSEIF(AngmomA.LT.100)THEN
-!!$             IF(AngmomB.LT.10)THEN
-!!$                WRITE(LUMOD3,'(A,I1,A,I2,A,I1,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-!!$                     &AngmomA,'B',AngmomB,SPEC,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ELSEIF(AngmomB.LT.100)THEN
-!!$                WRITE(LUMOD3,'(A,I1,A,I2,A,I2,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-!!$                     &AngmomA,'B',AngmomB,SPEC,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ENDIF
-!!$          ENDIF
-!!$       ELSEIF(AngmomP.LT.100)THEN
-!!$          IF(AngmomA.LT.10)THEN
-!!$             IF(AngmomB.LT.10)THEN
-!!$                WRITE(LUMOD3,'(A,I2,A,I1,A,I1,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-!!$                     &AngmomA,'B',AngmomB,SPEC,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ELSEIF(AngmomB.LT.100)THEN
-!!$                WRITE(LUMOD3,'(A,I2,A,I1,A,I2,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-!!$                     &AngmomA,'B',AngmomB,SPEC,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ENDIF
-!!$          ELSEIF(AngmomA.LT.100)THEN
-!!$             IF(AngmomB.LT.10)THEN
-!!$                WRITE(LUMOD3,'(A,I2,A,I2,A,I1,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-!!$                     &AngmomA,'B',AngmomB,SPEC,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ELSEIF(AngmomB.LT.100)THEN
-!!$                WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-!!$                     &AngmomA,'B',AngmomB,SPEC,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ENDIF
-!!$          ENDIF
-!!$       ENDIF
-       !     WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
        !swap 
        TMPSTRING = STRINGIN
        STRINGIN  = STRINGOUT
        STRINGOUT  = TMPSTRING
     ENDIF
 
-
     IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
        IF(AngmomQ.EQ.0)THEN
           !no need for RHS horizontal transfer nor spherical transformation
           IF(.NOT.OutputSet)THEN
              !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
-             STRINGOUT  = 'CDAB     '
+             STRINGOUT  = 'LOCALINTS     '
              OutputSet = .TRUE.
           ELSE
-             STOP 'CDAB already set MAJOER PROBLEM B1'
+             STOP 'LOCALINTS already set MAJOER PROBLEM B1'
           ENDIF
        ELSE
           !need for RHS horizontal recurrence
@@ -2111,6 +1999,15 @@ contains
           !          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
        ELSEIF(nlmA*nlmB*nTUVQ.LT.10000)THEN
           !          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
+       ENDIF
+       IF(Gen)THEN
+          call DebugMemoryTest(STRINGOUT,'nContQP*nPasses',nlmA*nlmB*nTUVQ,LUMOD3)
+       ELSEIF(SegQ)THEN
+          call DebugMemoryTest(STRINGOUT,'nContP*nPasses',nlmA*nlmB*nTUVQ,LUMOD3)
+       ELSEIF(SegP)THEN
+          call DebugMemoryTest(STRINGOUT,'nContQ*nPasses',nlmA*nlmB*nTUVQ,LUMOD3)
+       ELSE
+          call DebugMemoryTest(STRINGOUT,'nPasses',nlmA*nlmB*nTUVQ,LUMOD3)
        ENDIF
        call initString(8)
        call AddToString('call SphericalContractOBS1_maxAngP')
@@ -2129,24 +2026,47 @@ contains
           call AddToString(',nPasses,')
        ENDIF
        call AddToString(STRINGIN)
-       call AddToString(',')
+       IF(Gen)THEN
+          call AddToString('(1:nContQP*nPasses*')
+          call AddToString(nTUVAspec*nTUVBspec*nTUVQ)
+          call AddToString(')')
+       ELSEIF(SegQ)THEN
+          call AddToString('(1:nContP*nPasses*')
+          call AddToString(nTUVAspec*nTUVBspec*nTUVQ)
+          call AddToString(')')
+       ELSEIF(SegP)THEN
+          call AddToString('(1:nContQ*nPasses*')
+          call AddToString(nTUVAspec*nTUVBspec*nTUVQ)
+          call AddToString(')')
+       ELSE
+          call AddToString('(1:nPasses*')
+          call AddToString(nTUVAspec*nTUVBspec*nTUVQ)
+          call AddToString(')')
+       ENDIF
+       call AddToString(',&')
+       call writeString(LUMOD3)
+       call initString(12)
+       call AddToString('& ')
        call AddToString(STRINGOUT)
+       IF(Gen)THEN
+          call AddToString('(1:nContQP*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVQ)
+          call AddToString(')')
+       ELSEIF(SegQ)THEN
+          call AddToString('(1:nContP*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVQ)
+          call AddToString(')')
+       ELSEIF(SegP)THEN
+          call AddToString('(1:nContQ*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVQ)
+          call AddToString(')')
+       ELSE
+          call AddToString('(1:nPasses*')
+          call AddToString(nlmA*nlmB*nTUVQ)
+          call AddToString(')')
+       ENDIF
        call AddToString(')')
        call writeString(LUMOD3)
-!!$       IF(AngmomP.LT.10)THEN
-!!$          IF(AngmomA.LT.10)THEN
-!!$             WRITE(LUMOD3,'(A,I1,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-!!$          ELSEIF(AngmomA.LT.100)THEN
-!!$             WRITE(LUMOD3,'(A,I1,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-!!$          ENDIF
-!!$       ELSEIF(AngmomP.LT.100)THEN
-!!$          IF(AngmomA.LT.10)THEN
-!!$             WRITE(LUMOD3,'(A,I2,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-!!$          ELSEIF(AngmomA.LT.100)THEN
-!!$             WRITE(LUMOD3,'(A,I2,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-!!$          ENDIF
-!!$       ENDIF
-       !       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
        !swap 
        TMPSTRING = STRINGIN
        STRINGIN  = STRINGOUT
@@ -2157,7 +2077,7 @@ contains
           !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
           !afterwards which means we can 
           IF(.NOT.OutputSet)THEN
-             WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
+             WRITE(LUMOD3,'(A,A)')'        LOCALINTS = ',STRINGIN
              OutputSet = .TRUE.
           ENDIF
        ELSE
@@ -2169,25 +2089,16 @@ contains
        WRITE(LUMOD3,'(A)')'        !no need for RHS Horizontal recurrence relations '
        !there will not be need for Spherical either 
        IF(.NOT.OutputSet)THEN
-          WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
+          WRITE(LUMOD3,'(A,A)')'        LOCALINTS = ',STRINGIN
           OutputSet = .TRUE.
           print*,'ouptutsat1'
        ENDIF
     ELSE
        !       WRITE(LUMOD3,'(A)')'        !RHS Horizontal recurrence relations '
-       IF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.10)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.100)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.1000)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.10000)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ENDIF
        IF(.NOT.OutputSet)THEN
           IF(.NOT.(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1)))THEN
              !no Spherical afterwards which means we can 
-             STRINGOUT  = 'CDAB     '
+             STRINGOUT  = 'LOCALINTS     '
              OutputSet = .TRUE.
           ENDIF
        ELSE
@@ -2197,6 +2108,15 @@ contains
           SPEC = 'CtoD'
        ELSE
           SPEC = 'DtoC'
+       ENDIF
+       IF(Gen)THEN
+          call DebugMemoryTest(STRINGOUT,'nContQP*nPasses',nlmA*nlmB*nTUVCspec*nTUVDspec,LUMOD3)
+       ELSEIF(SegQ)THEN
+          call DebugMemoryTest(STRINGOUT,'nContP*nPasses',nlmA*nlmB*nTUVCspec*nTUVDspec,LUMOD3)
+       ELSEIF(SegP)THEN
+          call DebugMemoryTest(STRINGOUT,'nContQ*nPasses',nlmA*nlmB*nTUVCspec*nTUVDspec,LUMOD3)
+       ELSE
+          call DebugMemoryTest(STRINGOUT,'nPasses',nlmA*nlmB*nTUVCspec*nTUVDspec,LUMOD3)
        ENDIF
        call initString(8)
        call AddToString('call HorizontalRR_RHS_Q')
@@ -2218,47 +2138,47 @@ contains
        call AddToString(nlmA*nlmB)
        call AddToString(',Qdistance12,')
        call AddToString(STRINGIN)
-       call AddToString(',')
+       IF(Gen)THEN
+          call AddToString('(1:nContQP*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVQ)
+          call AddToString(')')
+       ELSEIF(SegQ)THEN
+          call AddToString('(1:nContP*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVQ)
+          call AddToString(')')
+       ELSEIF(SegP)THEN
+          call AddToString('(1:nContQ*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVQ)
+          call AddToString(')')
+       ELSE
+          call AddToString('(1:nPasses*')
+          call AddToString(nlmA*nlmB*nTUVQ)
+          call AddToString(')')
+       ENDIF
+       call AddToString(',&')
+       call writeString(LUMOD3)
+       call initString(12)
+       call AddToString('& ')
        call AddToString(STRINGOUT)
+       IF(Gen)THEN
+          call AddToString('(1:nContQP*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVCspec*nTUVDspec)
+          call AddToString(')')
+       ELSEIF(SegQ)THEN
+          call AddToString('(1:nContP*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVCspec*nTUVDspec)
+          call AddToString(')')
+       ELSEIF(SegP)THEN
+          call AddToString('(1:nContQ*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVCspec*nTUVDspec)
+          call AddToString(')')
+       ELSE
+          call AddToString('(1:nPasses*')
+          call AddToString(nlmA*nlmB*nTUVCspec*nTUVDspec)
+          call AddToString(')')
+       ENDIF
        call AddToString(',lupri)')
        call writeString(LUMOD3)
-!!$       IF(AngmomQ.LT.10)THEN
-!!$          IF(AngmomC.LT.10)THEN
-!!$             IF(AngmomD.LT.10)THEN
-!!$                WRITE(LUMOD3,'(A,I1,A,I1,A,I1,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-!!$                     &AngmomC,'D',AngmomD,SPEC,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ELSEIF(AngmomD.LT.100)THEN
-!!$                WRITE(LUMOD3,'(A,I1,A,I1,A,I2,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-!!$                     &AngmomC,'D',AngmomD,SPEC,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ENDIF
-!!$          ELSEIF(AngmomC.LT.100)THEN
-!!$             IF(AngmomD.LT.10)THEN
-!!$                WRITE(LUMOD3,'(A,I1,A,I2,A,I1,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-!!$                     &AngmomC,'D',AngmomD,SPEC,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ELSEIF(AngmomD.LT.100)THEN
-!!$                WRITE(LUMOD3,'(A,I1,A,I2,A,I2,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-!!$                     &AngmomC,'D',AngmomD,SPEC,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ENDIF
-!!$          ENDIF
-!!$       ELSEIF(AngmomQ.LT.100)THEN
-!!$          IF(AngmomC.LT.10)THEN
-!!$             IF(AngmomD.LT.10)THEN
-!!$                WRITE(LUMOD3,'(A,I2,A,I1,A,I1,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-!!$                     &AngmomC,'D',AngmomD,SPEC,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ELSEIF(AngmomD.LT.100)THEN
-!!$                WRITE(LUMOD3,'(A,I2,A,I1,A,I2,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-!!$                     &AngmomC,'D',AngmomD,SPEC,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ENDIF
-!!$          ELSEIF(AngmomC.LT.100)THEN
-!!$             IF(AngmomD.LT.10)THEN
-!!$                WRITE(LUMOD3,'(A,I2,A,I2,A,I1,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-!!$                     &AngmomC,'D',AngmomD,SPEC,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ELSEIF(AngmomD.LT.100)THEN
-!!$                WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A4,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-!!$                     &AngmomC,'D',AngmomD,SPEC,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-!!$             ENDIF
-!!$          ENDIF
-!!$       ENDIF
        !       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
        !swap 
        TMPSTRING = STRINGIN
@@ -2269,18 +2189,18 @@ contains
     IF(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
        !       WRITE(LUMOD3,'(A)')'        !Spherical Transformation RHS'
        IF(.NOT.OutputSet)THEN
-          STRINGOUT  = 'CDAB     '
+          STRINGOUT  = 'LOCALINTS     '
        ELSE
           STOP 'MAJOR ERROR OUTPUT SET BUT RHS HORIZONTAL NEEDED D1'
        ENDIF
-       IF(nlmA*nlmB*nlmC*nlmD.LT.10)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.100)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.1000)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.10000)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
+       IF(Gen)THEN
+          call DebugMemoryTest(STRINGOUT,'nContQP*nPasses',nlmA*nlmB*nlmC*nlmD,LUMOD3)
+       ELSEIF(SegQ)THEN
+          call DebugMemoryTest(STRINGOUT,'nContP*nPasses',nlmA*nlmB*nlmC*nlmD,LUMOD3)
+       ELSEIF(SegP)THEN
+          call DebugMemoryTest(STRINGOUT,'nContQ*nPasses',nlmA*nlmB*nlmC*nlmD,LUMOD3)
+       ELSE
+          call DebugMemoryTest(STRINGOUT,'nPasses',nlmA*nlmB*nlmC*nlmD,LUMOD3)
        ENDIF
        call initString(8)
        call AddToString('call SphericalContractOBS2_maxAngQ')
@@ -2299,35 +2219,87 @@ contains
           call AddToString(',nPasses,')
        ENDIF
        call AddToString(STRINGIN)
-       call AddToString(',')
+       IF(Gen)THEN
+          call AddToString('(1:nContQP*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVCspec*nTUVDspec)
+          call AddToString(')')
+       ELSEIF(SegQ)THEN
+          call AddToString('(1:nContP*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVCspec*nTUVDspec)
+          call AddToString(')')
+       ELSEIF(SegP)THEN
+          call AddToString('(1:nContQ*nPasses*')
+          call AddToString(nlmA*nlmB*nTUVCspec*nTUVDspec)
+          call AddToString(')')
+       ELSE
+          call AddToString('(1:nPasses*')
+          call AddToString(nlmA*nlmB*nTUVCspec*nTUVDspec)
+          call AddToString(')')
+       ENDIF
+       call AddToString(',&')
+       call writeString(LUMOD3)
+       call initString(12)
+       call AddToString('& ')
        call AddToString(STRINGOUT)
+       IF(Gen)THEN
+          call AddToString('(1:nContQP*nPasses*')
+          call AddToString(nlmA*nlmB*nlmC*nlmD)
+          call AddToString(')')
+       ELSEIF(SegQ)THEN
+          call AddToString('(1:nContP*nPasses*')
+          call AddToString(nlmA*nlmB*nlmC*nlmD)
+          call AddToString(')')
+       ELSEIF(SegP)THEN
+          call AddToString('(1:nContQ*nPasses*')
+          call AddToString(nlmA*nlmB*nlmC*nlmD)
+          call AddToString(')')
+       ELSE
+          call AddToString('(1:nPasses*')
+          call AddToString(nlmA*nlmB*nlmC*nlmD)
+          call AddToString(')')
+       ENDIF
        call AddToString(')')
        call writeString(LUMOD3)
-!!$       IF(AngmomQ.LT.10)THEN
-!!$          IF(AngmomC.LT.10)THEN
-!!$             WRITE(LUMOD3,'(A,I1,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-!!$          ELSEIF(AngmomC.LT.100)THEN
-!!$             WRITE(LUMOD3,'(A,I1,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-!!$          ENDIF
-!!$       ELSEIF(AngmomQ.LT.100)THEN
-!!$          IF(AngmomC.LT.10)THEN
-!!$             WRITE(LUMOD3,'(A,I2,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-!!$          ELSEIF(AngmomC.LT.100)THEN
-!!$             WRITE(LUMOD3,'(A,I2,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-!!$          ENDIF
-!!$       ENDIF
        !       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
        !swap 
        !       TMPSTRING = STRINGIN
        !       STRINGIN  = STRINGOUT
        !       STRINGOUT  = TMPSTRING
-       !       WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
+       !       WRITE(LUMOD3,'(A,A)')'        LOCALINTS = ',STRINGIN
     ELSE
        WRITE(LUMOD3,'(A)')'        !no Spherical Transformation RHS needed'
     ENDIF
 
     !    WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
   end subroutine subroutineMain
+
+  subroutine DebugMemoryTest(STRING,DIMSTRING,DIMINT,LUPRI2)
+    implicit none
+    integer :: LUPRI2
+    character(len=9),intent(in) :: STRING
+    character*(*) :: DIMSTRING
+    integer :: DIMINT
+    IF(STRING(1:4).NE.'LOCALINTS')THEN
+       WRITE(LUPRI2,'(A)')'#ifdef VAR_DEBUGICHOR'
+       call initString(8)
+       call AddToString('IF(')
+       call AddToString(DIMSTRING)
+       call AddToString('*')
+       call AddToString(DIMINT)
+       call AddToString('.GT.')                
+       call AddToString(STRING)
+       call AddToString('maxsize)THEN')
+       call writeString(LUPRI2)
+       
+       call initString(10)
+       call AddToString('call ichorquit(''')
+       call AddToString(DIMSTRING)
+       call AddToString(' too small'',-1)')
+       call writeString(LUPRI2)
+       WRITE(LUPRI2,'(A)')'        ENDIF'
+       WRITE(LUPRI2,'(A)')'#endif'
+    ENDIF
+  end subroutine DebugMemoryTest
 
   subroutine sub_alloc1(nTUVP,nTUVQ,STRINGOUT,LUMOD3)
     implicit none
@@ -2360,9 +2332,11 @@ contains
   end subroutine sub_maxalloc1
 
   subroutine determineSizes(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-       & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
+       & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
+    implicit none
     integer,intent(in) :: LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,nTUV,AngmomP,AngmomQ
     integer,intent(in) :: AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec
+    integer,intent(in) :: nlmA,nlmB,nlmC,nlmD
     character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
     logical :: spherical,OutputSet,Gen,SegQ,SegP,Seg,Seg1Prim,Contracted
     character(len=8) :: BASISSPEC
@@ -2394,9 +2368,9 @@ contains
     OutputSet = .FALSE.
     Contracted = .FALSE.
 
-    PerformSphericaQAndPlaceInTmp = .FALSE. !always false as placed in CDAB 
+    PerformSphericaQAndPlaceInTmp = .FALSE. !always false as placed in LOCALINTS 
     IF(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
-       !RHS Spherical Transformation placed in CDAB
+       !RHS Spherical Transformation placed in LOCALINTS
        IF(AngmomC.EQ.0.AND.AngmomD.EQ.0)THEN
           !no RHS Horizontal Recurrence Relation
           PerformHorizontQAndPlaceInTmp = .FALSE. 
@@ -2430,7 +2404,7 @@ contains
     ELSE
        PerformHorizontQAndPlaceInTmp = .FALSE.        
        IF(.NOT.(AngmomC.EQ.0.AND.AngmomD.EQ.0))THEN
-          !RHS Horizontal Recurrence Relation place in CDAB
+          !RHS Horizontal Recurrence Relation place in LOCALINTS
           IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
              PerformSphericaPAndPlaceInTmp = .TRUE. 
           ELSE
@@ -2456,7 +2430,7 @@ contains
        ELSE
           PerformSphericaPAndPlaceInTmp = .FALSE. 
           IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
-             !LHS Spherical Transformation placed in CDAB
+             !LHS Spherical Transformation placed in LOCALINTS
              IF(AngmomA.EQ.0.AND.AngmomB.EQ.0)THEN
                 PerformHorizontPAndPlaceInTmp = .FALSE. 
              ELSE
@@ -2477,7 +2451,7 @@ contains
           ELSE
              PerformHorizontPAndPlaceInTmp = .FALSE. 
              IF(.NOT.(AngmomA.EQ.0.AND.AngmomB.EQ.0))THEN
-                !LHS Horizontal Recurrence Relation placed in CDAB
+                !LHS Horizontal Recurrence Relation placed in LOCALINTS
                 IF(Seg.OR.Seg1Prim)THEN
                    PerformBasisContAndPlaceInTmp = .FALSE. 
                 ELSE
@@ -2492,7 +2466,7 @@ contains
              ELSE
                 PerformBasisContAndPlaceInTmp = .FALSE. 
                 IF(.NOT.(Seg.OR.Seg1Prim))THEN
-                   !Basis set Contraction placed in CDAB
+                   !Basis set Contraction placed in LOCALINTS
                    IF(AngmomP.GT.0.AND.AngmomQ.GT.0)THEN
                       PerformTranserAndPlaceInTmp = .TRUE. 
                    ELSE
@@ -2502,10 +2476,10 @@ contains
                 ELSE
                    PerformTranserAndPlaceInTmp = .FALSE. 
                    IF(AngmomP.GT.0.AND.AngmomQ.GT.0)THEN
-                      !Electron Transfer placed in CDAB
+                      !Electron Transfer placed in LOCALINTS
                       PerformVerticalAndPlaceInTmp = .TRUE.                    
                    ELSE
-                      !Vertical Transfer placed in CDAB
+                      !Vertical Transfer placed in LOCALINTS
                       PerformVerticalAndPlaceInTmp = .FALSE.
                    ENDIF
                 ENDIF
@@ -2515,16 +2489,17 @@ contains
     ENDIF
 
     IF(PerformVerticalAndPlaceInTmp)THEN
-!       WRITE(LUMOD3,'(A)')'       ! Vertical Recurrence'
-       call initString(7)
-       call AddToString(STRINGOUT)
-       call AddToString('maxSize = MAX(')
-       call AddToString(STRINGOUT)
-       call AddToString('maxSize,')
-       call AddToString(nTUV)       
-       IF(PerformTranserAndPlaceInTmp)THEN
-          call AddToString('*nPrimQP)')
-       ELSE 
+       !       WRITE(LUMOD3,'(A)')'       ! Vertical Recurrence'
+       IF(AngmomPQ.EQ.0)THEN
+          call initString(7)
+          call AddToString(STRINGOUT)
+          call AddToString('maxSize = MAX(')
+          call AddToString(STRINGOUT)
+          call AddToString('maxSize,')
+          call AddToString(nTUV)       
+          !          IF(PerformTranserAndPlaceInTmp)THEN
+          !             call AddToString('*nPrimQP)')
+          !          ELSE 
           IF(Gen)THEN
              call AddToString('*nPrimQP)')
           ELSEIF(SegQ)THEN
@@ -2536,12 +2511,62 @@ contains
           ELSEIF(Seg1Prim)THEN
              call AddToString(')')
           ENDIF
+          !          ENDIF
+          call writeString(LUMOD3)                
+          !swap 
+          TMPSTRING = STRINGIN
+          STRINGIN  = STRINGOUT
+          STRINGOUT  = TMPSTRING
+       ELSE
+          IF(AngmomPQ.GT.1)THEN
+             call initString(7)
+             call AddToString(STRINGOUT)
+             call AddToString('maxSize = MAX(')
+             call AddToString(STRINGOUT)
+             call AddToString('maxSize,')
+             call AddToString(AngmomPQ+1)       
+             IF(PerformTranserAndPlaceInTmp)THEN
+                call AddToString('*nPrimQP)')
+             ELSE 
+                IF(Seg1Prim)THEN
+                   call AddToString(')')
+                ELSE
+                   call AddToString('*nPrimQP)')
+                ENDIF
+             ENDIF
+             call writeString(LUMOD3)                
+             !swap 
+             TMPSTRING = STRINGIN
+             STRINGIN  = STRINGOUT
+             STRINGOUT  = TMPSTRING
+          ENDIF
+          call initString(7)
+          call AddToString(STRINGOUT)
+          call AddToString('maxSize = MAX(')
+          call AddToString(STRINGOUT)
+          call AddToString('maxSize,')
+          call AddToString(nTUV)
+          IF(PerformTranserAndPlaceInTmp)THEN
+             call AddToString('*nPrimQP)')
+          ELSE 
+             IF(Gen)THEN
+                call AddToString('*nPrimQP)')
+             ELSEIF(SegQ)THEN
+                call AddToString('*nPrimP)')
+             ELSEIF(SegP)THEN
+                call AddToString('*nPrimQ)')
+             ELSEIF(Seg)THEN
+                call AddToString(')')
+             ELSEIF(Seg1Prim)THEN
+                call AddToString(')')
+             ENDIF
+          ENDIF
+          call writeString(LUMOD3)                
+          !swap 
+          TMPSTRING = STRINGIN
+          STRINGIN  = STRINGOUT
+          STRINGOUT  = TMPSTRING
        ENDIF
-       call writeString(LUMOD3)                
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
     ENDIF
     IF(PerformTranserAndPlaceInTmp)THEN
 !       WRITE(LUMOD3,'(A)')'       ! Transfer Recurrence'
@@ -2577,7 +2602,7 @@ contains
        call AddToString('maxSize,')
        call AddToString(nTUVQ*nTUVP)       
        IF(Gen)THEN
-          call AddToString('*nContQP)')
+          call AddToString('*nContQP)')          
        ELSEIF(SegQ)THEN
           call AddToString('*nContP)')
        ELSEIF(SegP)THEN
@@ -2661,630 +2686,6 @@ contains
        STRINGOUT  = TMPSTRING
     ENDIF
   end subroutine determineSizes
-
-  !IF(AngmomD.GT.AngmomC.AND.(AngmomQ.GT.AngmomP))THEN
-  subroutine subroutineMainD(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-       & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
-    integer,intent(in) :: LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,nTUV,AngmomP,AngmomQ
-    integer,intent(in) :: AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec
-    character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
-    logical :: spherical
-
-    WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I2,A)')'        !This is the Angmom(A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,') combi'
-    IF(nTUV.LT.10)THEN
-       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ELSEIF(nTUV.LT.100)THEN
-       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ELSEIF(nTUV.LT.1000)THEN
-       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ELSEIF(nTUV.LT.10000)THEN
-       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ENDIF
-    IF(AngmomPQ.EQ.0)THEN
-       stop 'this should never happenA'
-    ELSE
-       IF(AngmomPQ.LT.10)THEN
-          WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       ELSE
-          WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'D(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
-    ENDIF
-    !    WRITE(LUMOD3,'(A,I4,A)')'        call mem_ichor_dealloc(RJ000)'
-
-    !swap 
-    TMPSTRING = STRINGIN
-    STRINGIN  = STRINGOUT
-    STRINGOUT  = TMPSTRING
-
-    IF(AngmomP.EQ.0)THEN
-       WRITE(LUMOD3,'(A)')'        !No reason for the Electron Transfer Recurrence Relation '
-       !No reason for the Electron Transfer Recurrence Relation 
-    ELSE
-       IF(AngmomA.GE.AngmomB)THEN
-          WRITE(LUMOD3,'(A)')'        !Electron Transfer Recurrence Relation from electron 4 to electron 1'
-       ELSE
-          WRITE(LUMOD3,'(A)')'        !Electron Transfer Recurrence Relation from electron 4 to electron 2'
-       ENDIF
-       IF(nTUVP*nTUVQ.LT.10)THEN
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
-       ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
-       ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
-       ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
-       ENDIF
-       IF(AngmomA.GE.AngmomB)THEN
-          IF(AngmomP.LT.10)THEN
-             IF(AngmomQ.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ELSE
-                WRITE(LUMOD3,'(A,I1,A,I2,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ENDIF
-          ELSE
-             IF(AngmomQ.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ELSE
-                WRITE(LUMOD3,'(A,I2,A,I2,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'DtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ENDIF
-          ENDIF
-          WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'
-          WRITE(LUMOD3,'(A,A,A,A,A)')'               & ',STRINGIN,',',STRINGOUT,')'
-          WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-       ELSE
-          WRITE(LUMOD3,'(A)')'        NOT IMPLEMENTED '
-          WRITE(LUMOD3,'(A)')'        CALL ICHORQUIT(''NOT IMPLEMENTED'',-1)'          
-          IF(AngmomP.LT.10)THEN
-             IF(AngmomQ.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A)')'   !     call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ELSE
-                WRITE(LUMOD3,'(A,I1,A,I2,A)')'   !     call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ENDIF
-          ELSE
-             IF(AngmomQ.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A)')'   !     call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ELSE
-                WRITE(LUMOD3,'(A,I2,A,I2,A)')'   !     call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'DtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ENDIF
-          ENDIF
-          WRITE(LUMOD3,'(A)')'         !      & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&'
-          WRITE(LUMOD3,'(A,A,A,A,A)')' !              & ',STRINGIN,',',STRINGOUT,')'
-          WRITE(LUMOD3,'(A,A,A)')'     !   call mem_ichor_dealloc(',STRINGIN,')'
-       ENDIF
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
-    ENDIF
-
-    WRITE(LUMOD3,'(A)')'        nContQP = nContQ*nContP'
-    IF(nTUVP*nTUVQ.LT.10)THEN
-       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP)'
-    ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP)'
-    ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP)'
-    ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP)'
-    ENDIF
-
-    WRITE(LUMOD3,'(A)')'        IF(Qsegmented.AND.Psegmented)THEN'
-    WRITE(LUMOD3,'(A,A,A,A,A,I4,A)')'         call PrimitiveContractionSeg(',STRINGIN,',',STRINGOUT,',',nTUVQ*nTUVP,',nPrimP,nPrimQ,nPasses)'
-    WRITE(LUMOD3,'(A)')'        ELSE'
-    WRITE(LUMOD3,'(A,A,A,A,A,I4,A)')'         call PrimitiveContraction(',STRINGIN,',',STRINGOUT,',',nTUVQ*nTUVP,',nPrimP,nPrimQ,nPasses,&'
-    WRITE(LUMOD3,'(A)')'              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&'
-    WRITE(LUMOD3,'(A)')'              & nContC,nPrimD,nContD)'
-    WRITE(LUMOD3,'(A)')'        ENDIF'
-    WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-
-    !swap 
-    TMPSTRING = STRINGIN
-    STRINGIN  = STRINGOUT
-    STRINGOUT  = TMPSTRING
-    !     The horizontal recurrence also extract nTUVspec from nTUV       
-    IF(AngmomP.EQ.0)THEN
-       WRITE(LUMOD3,'(A)')'        !no need for LHS Horizontal recurrence relations a simply copy'
-    ELSE
-       IF(AngmomA.GE.AngmomB)THEN
-          WRITE(LUMOD3,'(A)')'        !LHS Horizontal recurrence relations A to B'
-       ELSE !B gt A
-          WRITE(LUMOD3,'(A)')'        !LHS Horizontal recurrence relations B to A'
-       ENDIF
-       IF(nTUVAspec*nTUVBspec*nTUVQ.LT.10)THEN
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nTUVAspec*nTUVBspec*nTUVQ.LT.100)THEN
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nTUVAspec*nTUVBspec*nTUVQ.LT.1000)THEN
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nTUVAspec*nTUVBspec*nTUVQ.LT.10000)THEN
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
-       ENDIF
-       IF(AngmomP.LT.10)THEN
-          IF(AngmomA.LT.10)THEN
-             IF(AngmomB.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomB.LT.100)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ELSEIF(AngmomA.LT.100)THEN
-             IF(AngmomB.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I2,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomB.LT.100)THEN
-                WRITE(LUMOD3,'(A,I1,A,I2,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ENDIF
-       ELSEIF(AngmomP.LT.100)THEN
-          IF(AngmomA.LT.10)THEN
-             IF(AngmomB.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomB.LT.100)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ELSEIF(AngmomA.LT.100)THEN
-             IF(AngmomB.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I2,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomB.LT.100)THEN
-                WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ENDIF
-       ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
-    ENDIF
-
-
-    IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
-       WRITE(LUMOD3,'(A)')'        !Spherical Transformation LHS'         
-       IF(nlmA*nlmB*nTUVQ.LT.10)THEN
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVQ.LT.100)THEN
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVQ.LT.1000)THEN
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVQ.LT.10000)THEN
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
-       ENDIF
-       IF(AngmomP.LT.10)THEN
-          IF(AngmomA.LT.10)THEN
-             WRITE(LUMOD3,'(A,I1,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ELSEIF(AngmomA.LT.100)THEN
-             WRITE(LUMOD3,'(A,I1,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ENDIF
-       ELSEIF(AngmomP.LT.100)THEN
-          IF(AngmomA.LT.10)THEN
-             WRITE(LUMOD3,'(A,I2,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ELSEIF(AngmomA.LT.100)THEN
-             WRITE(LUMOD3,'(A,I2,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ENDIF
-       ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
-    ELSE
-       WRITE(LUMOD3,'(A)')'        !no Spherical Transformation LHS needed'
-    ENDIF
-
-
-    IF(AngmomQ.EQ.0)THEN
-       stop 'this should never happenD'
-    ELSE
-       WRITE(LUMOD3,'(A)')'        !RHS Horizontal recurrence relations D to C'
-       IF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.10)THEN
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.100)THEN
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.1000)THEN
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.10000)THEN
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ENDIF
-       IF(AngmomQ.LT.10)THEN
-          IF(AngmomC.LT.10)THEN
-             IF(AngmomD.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'DtoC(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomD.LT.100)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'DtoC(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ELSEIF(AngmomC.LT.100)THEN
-             IF(AngmomD.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I2,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'DtoC(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomD.LT.100)THEN
-                WRITE(LUMOD3,'(A,I1,A,I2,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'DtoC(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ENDIF
-       ELSEIF(AngmomQ.LT.100)THEN
-          IF(AngmomC.LT.10)THEN
-             IF(AngmomD.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'DtoC(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomD.LT.100)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'DtoC(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ELSEIF(AngmomC.LT.100)THEN
-             IF(AngmomD.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I2,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'DtoC(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomD.LT.100)THEN
-                WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'DtoC(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ENDIF
-       ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
-    ENDIF
-
-    IF(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
-       WRITE(LUMOD3,'(A)')'        !Spherical Transformation RHS'
-
-       IF(nlmA*nlmB*nlmC*nlmD.LT.10)THEN
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.100)THEN
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.1000)THEN
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.10000)THEN
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ENDIF
-       IF(AngmomQ.LT.10)THEN
-          IF(AngmomC.LT.10)THEN
-             WRITE(LUMOD3,'(A,I1,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ELSEIF(AngmomC.LT.100)THEN
-             WRITE(LUMOD3,'(A,I1,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ENDIF
-       ELSEIF(AngmomQ.LT.100)THEN
-          IF(AngmomC.LT.10)THEN
-             WRITE(LUMOD3,'(A,I2,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ELSEIF(AngmomC.LT.100)THEN
-             WRITE(LUMOD3,'(A,I2,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ENDIF
-       ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
-    ELSE
-       WRITE(LUMOD3,'(A)')'        !no Spherical Transformation RHS needed'
-    ENDIF
-
-    WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
-    WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-  end subroutine subroutineMainD
-
-  !IF(AngmomD.GT.AngmomC.AND.(AngmomQ.GT.AngmomP))THEN
-  subroutine subroutineMainC(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
-       & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,spherical)
-    integer,intent(in) :: LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,nTUV,AngmomP,AngmomQ
-    integer,intent(in) :: AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec
-    character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
-    logical :: spherical
-
-    WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I2,A)')'        !This is the Angmom(A=',AngmomA,',B=',AngmomB,',C=',AngmomC,',D=',AngmomD,') combi'
-    IF(nTUV.LT.10)THEN
-       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ELSEIF(nTUV.LT.100)THEN
-       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ELSEIF(nTUV.LT.1000)THEN
-       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ELSEIF(nTUV.LT.10000)THEN
-       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUV,'*nPrimQP*nPasses)'
-    ENDIF
-    IF(AngmomPQ.EQ.0)THEN
-       stop 'this should never happenA'
-    ELSE
-       IF(AngmomPQ.LT.10)THEN
-          WRITE(LUMOD3,'(A,I1,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       ELSE
-          WRITE(LUMOD3,'(A,I2,A)')'        call VerticalRecurrence',AngmomPQ,'C(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-       ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,',STRINGOUT,')'
-    ENDIF
-    !    WRITE(LUMOD3,'(A,I4,A)')'        call mem_ichor_dealloc(RJ000)'
-
-    !swap 
-    TMPSTRING = STRINGIN
-    STRINGIN  = STRINGOUT
-    STRINGOUT  = TMPSTRING
-
-    IF(AngmomP.EQ.0)THEN
-       WRITE(LUMOD3,'(A)')'        !No reason for the Electron Transfer Recurrence Relation '
-       !No reason for the Electron Transfer Recurrence Relation 
-    ELSE
-       IF(AngmomA.GE.AngmomB)THEN
-          WRITE(LUMOD3,'(A)')'        !Electron Transfer Recurrence Relation from electron 3 to electron 1'
-       ELSE
-          WRITE(LUMOD3,'(A)')'        !Electron Transfer Recurrence Relation from electron 3 to electron 2'
-       ENDIF
-       IF(nTUVP*nTUVQ.LT.10)THEN
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
-       ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
-       ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
-       ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
-       ENDIF
-       IF(AngmomA.GE.AngmomB)THEN
-          IF(AngmomP.LT.10)THEN
-             IF(AngmomQ.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ELSE
-                WRITE(LUMOD3,'(A,I1,A,I2,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ENDIF
-          ELSE
-             IF(AngmomQ.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ELSE
-                WRITE(LUMOD3,'(A,I2,A,I2,A)')'        call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'CtoA(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ENDIF
-          ENDIF
-          WRITE(LUMOD3,'(A)')'               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&'
-          WRITE(LUMOD3,'(A,A,A,A,A)')'               & ',STRINGIN,',',STRINGOUT,')'
-          WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-       ELSE
-          WRITE(LUMOD3,'(A)')'        NOT IMPLEMENTED '
-          WRITE(LUMOD3,'(A)')'        CALL ICHORQUIT(''NOT IMPLEMENTED'',-1)'          
-          IF(AngmomP.LT.10)THEN
-             IF(AngmomQ.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A)')'   !     call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'CtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ELSE
-                WRITE(LUMOD3,'(A,I1,A,I2,A)')'   !     call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'CtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ENDIF
-          ELSE
-             IF(AngmomQ.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A)')'   !     call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'CtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ELSE
-                WRITE(LUMOD3,'(A,I2,A,I2,A)')'   !     call TransferRecurrenceP',AngmomP,'Q',AngmomQ,'CtoB(nPasses,nPrimP,nPrimQ,reducedExponents,&'
-             ENDIF
-          ENDIF
-          WRITE(LUMOD3,'(A)')'         !      & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&'
-          WRITE(LUMOD3,'(A,A,A,A,A)')' !              & ',STRINGIN,',',STRINGOUT,')'
-          WRITE(LUMOD3,'(A,A,A)')'     !   call mem_ichor_dealloc(',STRINGIN,')'
-       ENDIF
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
-    ENDIF
-
-    WRITE(LUMOD3,'(A)')'        nContQP = nContQ*nContP'
-    IF(nTUVP*nTUVQ.LT.10)THEN
-       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP*nPasses)'
-    ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP*nPasses)'
-    ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP*nPasses)'
-    ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP*nPasses)'
-    ENDIF
-
-    WRITE(LUMOD3,'(A)')'        IF(Qsegmented.AND.Psegmented)THEN'
-    WRITE(LUMOD3,'(A,A,A,A,A,I4,A)')'         call PrimitiveContractionSeg(',STRINGIN,',',STRINGOUT,',',nTUVQ*nTUVP,',nPrimP,nPrimQ,nPasses)'
-    WRITE(LUMOD3,'(A)')'        ELSE'
-    WRITE(LUMOD3,'(A,A,A,A,A,I4,A)')'         call PrimitiveContraction(',STRINGIN,',',STRINGOUT,',',nTUVQ*nTUVP,',nPrimP,nPrimQ,nPasses,&'
-    WRITE(LUMOD3,'(A)')'              & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&'
-    WRITE(LUMOD3,'(A)')'              & nContC,nPrimD,nContD)'
-    WRITE(LUMOD3,'(A)')'        ENDIF'
-    WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-
-    !swap 
-    TMPSTRING = STRINGIN
-    STRINGIN  = STRINGOUT
-    STRINGOUT  = TMPSTRING
-    !     The horizontal recurrence also extract nTUVspec from nTUV       
-    IF(AngmomP.EQ.0)THEN
-       WRITE(LUMOD3,'(A)')'        !no need for LHS Horizontal recurrence relations a simply copy'
-    ELSE
-       IF(AngmomA.GE.AngmomB)THEN
-          WRITE(LUMOD3,'(A)')'        !LHS Horizontal recurrence relations A to B'
-       ELSE !B gt A
-          WRITE(LUMOD3,'(A)')'        !LHS Horizontal recurrence relations B to A'
-       ENDIF
-       IF(nTUVAspec*nTUVBspec*nTUVQ.LT.10)THEN
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nTUVAspec*nTUVBspec*nTUVQ.LT.100)THEN
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nTUVAspec*nTUVBspec*nTUVQ.LT.1000)THEN
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nTUVAspec*nTUVBspec*nTUVQ.LT.10000)THEN
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
-       ENDIF
-       IF(AngmomP.LT.10)THEN
-          IF(AngmomA.LT.10)THEN
-             IF(AngmomB.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomB.LT.100)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ELSEIF(AngmomA.LT.100)THEN
-             IF(AngmomB.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I2,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomB.LT.100)THEN
-                WRITE(LUMOD3,'(A,I1,A,I2,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ENDIF
-       ELSEIF(AngmomP.LT.100)THEN
-          IF(AngmomA.LT.10)THEN
-             IF(AngmomB.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomB.LT.100)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ELSEIF(AngmomA.LT.100)THEN
-             IF(AngmomB.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I2,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomB.LT.100)THEN
-                WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_LHS_P',AngmomP,'A',&
-                     &AngmomA,'B',AngmomB,'(nContQP*nPasses,',nTUVQ,',Pdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ENDIF
-       ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
-    ENDIF
-
-
-    IF(Spherical.AND.(AngmomA.GT.1.OR.AngmomB.GT.1))THEN
-       WRITE(LUMOD3,'(A)')'        !Spherical Transformation LHS'         
-       IF(nlmA*nlmB*nTUVQ.LT.10)THEN
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVQ.LT.100)THEN
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVQ.LT.1000)THEN
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVQ.LT.10000)THEN
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
-       ENDIF
-       IF(AngmomP.LT.10)THEN
-          IF(AngmomA.LT.10)THEN
-             WRITE(LUMOD3,'(A,I1,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ELSEIF(AngmomA.LT.100)THEN
-             WRITE(LUMOD3,'(A,I1,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ENDIF
-       ELSEIF(AngmomP.LT.100)THEN
-          IF(AngmomA.LT.10)THEN
-             WRITE(LUMOD3,'(A,I2,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ELSEIF(AngmomA.LT.100)THEN
-             WRITE(LUMOD3,'(A,I2,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS1_maxAngP',AngmomP,'_maxAngA',AngmomA,'(',nTUVQ,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ENDIF
-       ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
-    ELSE
-       WRITE(LUMOD3,'(A)')'        !no Spherical Transformation LHS needed'
-    ENDIF
-
-
-    IF(AngmomQ.EQ.0)THEN
-       stop 'this should never happenD'
-    ELSE
-       WRITE(LUMOD3,'(A)')'        !RHS Horizontal recurrence relations D to C'
-       IF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.10)THEN
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.100)THEN
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.1000)THEN
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nTUVCspec*nTUVDspec.LT.10000)THEN
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVCspec*nTUVDspec,'*nContQP*nPasses)'
-       ENDIF
-       IF(AngmomQ.LT.10)THEN
-          IF(AngmomC.LT.10)THEN
-             IF(AngmomD.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomD.LT.100)THEN
-                WRITE(LUMOD3,'(A,I1,A,I1,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ELSEIF(AngmomC.LT.100)THEN
-             IF(AngmomD.LT.10)THEN
-                WRITE(LUMOD3,'(A,I1,A,I2,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomD.LT.100)THEN
-                WRITE(LUMOD3,'(A,I1,A,I2,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ENDIF
-       ELSEIF(AngmomQ.LT.100)THEN
-          IF(AngmomC.LT.10)THEN
-             IF(AngmomD.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomD.LT.100)THEN
-                WRITE(LUMOD3,'(A,I2,A,I1,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ELSEIF(AngmomC.LT.100)THEN
-             IF(AngmomD.LT.10)THEN
-                WRITE(LUMOD3,'(A,I2,A,I2,A,I1,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ELSEIF(AngmomD.LT.100)THEN
-                WRITE(LUMOD3,'(A,I2,A,I2,A,I2,A,I4,A,A,A,A,A)')'        call HorizontalRR_RHS_Q',AngmomQ,'C',&
-                     &AngmomC,'D',AngmomD,'(nContQP,nPasses,',nlmA*nlmB,',Qdistance12,',STRINGIN,',',STRINGOUT,',lupri)'
-             ENDIF
-          ENDIF
-       ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
-    ENDIF
-
-    IF(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
-       WRITE(LUMOD3,'(A)')'        !Spherical Transformation RHS'
-
-       IF(nlmA*nlmB*nlmC*nlmD.LT.10)THEN
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.100)THEN
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.1000)THEN
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ELSEIF(nlmA*nlmB*nlmC*nlmD.LT.10000)THEN
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nlmC*nlmD,'*nContQP*nPasses)'
-       ENDIF
-       IF(AngmomQ.LT.10)THEN
-          IF(AngmomC.LT.10)THEN
-             WRITE(LUMOD3,'(A,I1,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ELSEIF(AngmomC.LT.100)THEN
-             WRITE(LUMOD3,'(A,I1,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ENDIF
-       ELSEIF(AngmomQ.LT.100)THEN
-          IF(AngmomC.LT.10)THEN
-             WRITE(LUMOD3,'(A,I2,A,I1,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ELSEIF(AngmomC.LT.100)THEN
-             WRITE(LUMOD3,'(A,I2,A,I2,A,I4,A,A,A,A,A)')'        call SphericalContractOBS2_maxAngQ',AngmomQ,'_maxAngC',AngmomC,'(',nlmA*nlmB,',nContQP*nPasses,',STRINGIN,',',STRINGOUT,')'
-          ENDIF
-       ENDIF
-       WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-       !swap 
-       TMPSTRING = STRINGIN
-       STRINGIN  = STRINGOUT
-       STRINGOUT  = TMPSTRING
-    ELSE
-       WRITE(LUMOD3,'(A)')'        !no Spherical Transformation RHS needed'
-    ENDIF
-
-    WRITE(LUMOD3,'(A,A)')'        CDAB = ',STRINGIN
-    WRITE(LUMOD3,'(A,A,A)')'        call mem_ichor_dealloc(',STRINGIN,')'
-  end subroutine subroutineMainC
 
 END PROGRAM TUV
 

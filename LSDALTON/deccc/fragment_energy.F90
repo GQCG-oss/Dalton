@@ -12,6 +12,7 @@ module fragment_energy_module
   use memory_handling!, only: mem_alloc,mem_dealloc,collect_thread_memory,&
   !       & mem_TurnOffThread_Memory,mem_TurnONThread_Memory,init_threadmemvar
   use dec_typedef_module
+  use rpa_module
 
 
   ! DEC DEPENDENCIES (within deccc directory)                                                         
@@ -44,8 +45,6 @@ public :: optimize_atomic_fragment, pair_driver_singles, atomic_driver, &
 private
 
 contains
-
-
 
   !> \brief Construct new atomic fragment based on info in occ_atoms and Unocc_atoms,
   !> and calculate fragment energy. Energy contributions from each individual orbital
@@ -144,16 +143,12 @@ contains
          & MyMolecule%nocc, UnoccAOS, &
          & occAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,MyFragment,DoBasis,.false.)
 
-
     ! Calculate fragment energies
     call atomic_fragment_energy_and_prop(MyFragment)
 
     call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output)
 
-
   end subroutine get_fragment_and_Energy_orb_specific
-
-
 
 
   !> \brief Wrapper for atomic_driver with the following special features:
@@ -194,8 +189,8 @@ contains
     ! Init fragment basis information
     call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
          & UnoccOrbitals,MyMolecule,mylsitem,MyFragment)
-
-
+    
+ 
     ! Attach fragments singles amplitudes to fragment structure
     ! if long-range singles polarization effects are requested.
     if(DECinfo%SinglesPolari) then
@@ -205,7 +200,7 @@ contains
     ! Call main driver to get energy (and possibly density or gradient)
     call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
          & MyFragment,grad=grad)
-
+    
     ! Update full molecular singles amplitudes with (virt EOS,occ EOS) fragment contributions
     if(DECinfo%SinglesPolari) then
        ! Extract (virt EOS,occ EOS) indices from fragment
@@ -268,14 +263,19 @@ contains
     type(mp2grad),intent(inout),optional :: grad
     type(array2) :: t1, ccsdpt_t1
     type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2
-    real(realk) :: tcpu, twall
+    real(realk) :: tcpu, twall,debugenergy
+
+    ! type(matrix) :: Dmat
+    ! real(realk),pointer :: dens(:,:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+
     ! Which model? MP2,CC2, CCSD etc.
-    WhichCCmodel: if(MyFragment%ccmodel==MODEL_NONE) then ! SKip calculation
+    WhichCCmodel: select case(MyFragment%ccmodel)
+    case(MODEL_NONE) ! SKip calculation
        return
-    elseif(MyFragment%ccmodel==MODEL_MP2) then ! MP2 calculation
+    case(MODEL_MP2) ! MP2 calculation
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
@@ -283,7 +283,7 @@ contains
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
-    else ! higher order CC (currently CC2 or CCSD)
+    case(MODEL_CC2,MODEL_RPA,MODEL_CCSD,MODEL_CCSDpT) ! higher order CC (currently CC2 or CCSD)
 
 
        ! Solve CC equation to calculate amplitudes and integrals 
@@ -347,7 +347,9 @@ contains
        call array2_free(t1)
        call array4_free(t2)
 
-    end if WhichCCmodel
+    case default
+      call lsquit("ERROR(atomic_fragment_energy_and_prop):MODEL not implemented",-1)
+    end select WhichCCmodel
 
 
     ! Calcuate atomic fragment energy
@@ -377,9 +379,26 @@ contains
     ! see dec_readme file and FRAGMODEL_* definitions in dec_typedef.F90.
 
 #ifdef MOD_UNRELEASED
-    if(DECinfo%f12) then    
-       print *, "---------------F12-energy-single-fragment-------------"
-       call f12_single_fragment_energy(MyFragment)
+    if(DECinfo%F12) then    
+      
+       ! Get the wrong density matrix (Not equal to the one for the fullmolecule)
+       ! call mat_init(Dmat, myfragment%nbasis,myfragment%nbasis)
+       ! call mem_alloc(dens, myfragment%nbasis, myfragment%nbasis)
+       ! call get_density_from_occ_orbitals( myfragment%nbasis,myfragment%noccAOS,Myfragment%Co,dens)
+       ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
+
+       print *, "*******************************************"
+       print *, "       F12 energy single fragment          "  
+       print *, "*******************************************"
+       call get_f12_fragment_energy(MyFragment)
+       print *, "f12_signle_fragment_energy: ", MyFragment%energies(FRAGMODEL_MP2f12)
+
+
+       !> Free cabs after each calculation
+       call free_cabs()
+
+       ! call mem_dealloc(dens)
+       ! call mat_free(Dmat)
     endif
 #endif
     call LSTIMER('SINGLE L.ENERGY',tcpu,twall,DECinfo%output)
@@ -424,6 +443,7 @@ contains
     logical ::  something_wrong
     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     real(realk),pointer :: occ_tmp(:),virt_tmp(:)
+    real(realk) :: prefac_coul,prefac_k
 
     ! Lagrangian energy can be split into four contributions:
     ! The first two (e1 and e2) use occupied EOS orbitals and virtual AOS orbitals.
@@ -469,6 +489,13 @@ contains
     ! Just in case, zero individual orbital contributions for fragment
     MyFragment%OccContribs=0E0_realk
     MyFragment%VirtContribs=0E0_realk
+    if(MyFragment%ccmodel==MODEL_RPA) then
+      prefac_coul=1._realk
+      prefac_k=0.5_realk
+    else
+      prefac_coul=2._realk
+      prefac_k=1._realk
+    endif
 
 
     ! Sanity checks
@@ -532,7 +559,7 @@ contains
                 ! --------------
 
                 ! Energy contribution for orbitals (j,b,i,a)
-                tmp = t2occ%val(a,i,b,j)*(2.0_realk*gocc%val(a,i,b,j) - gocc%val(b,i,a,j))
+                tmp = t2occ%val(a,i,b,j)*(prefac_coul*gocc%val(a,i,b,j) -prefac_k*gocc%val(b,i,a,j))
 
                 ! Update total atomic fragment energy contribution 1
                 e1 = e1 + tmp
@@ -549,7 +576,7 @@ contains
                 ! Skip contribution 2 for anything but MP2
                 if(MyFragment%ccmodel==MODEL_MP2) then
                    ! Multiplier (multiplied by one half)
-                   multaibj = 2.0_realk*t2occ%val(a,i,b,j) - t2occ%val(b,i,a,j)
+                   multaibj = prefac_coul*t2occ%val(a,i,b,j) - prefac_k*t2occ%val(b,i,a,j)
 
                    do c=1,nvirtAOS
 
@@ -614,7 +641,6 @@ contains
 
 
     !$OMP DO SCHEDULE(dynamic,1)
-
     do j=1,noccAOS
        do b=1,nvirtEOS
           do i=1,noccAOS
@@ -625,7 +651,7 @@ contains
                 ! --------------
 
                 ! Multiplier (multiplied by one half)
-                multaibj = 2.0_realk*t2virt%val(a,i,b,j) - t2virt%val(b,i,a,j)
+                multaibj = prefac_coul*t2virt%val(a,i,b,j) -prefac_k*t2virt%val(b,i,a,j)
 
 
                 ! Energy contribution for orbitals (j,b,i,a)
@@ -861,8 +887,10 @@ contains
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
 
-    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    !type(matrix) :: Dmat
+    !real(realk),pointer :: dens(:,:)
 
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     WhichCCmodel: if(PairFragment%ccmodel==MODEL_NONE) then ! SKip calculation
        return
@@ -935,9 +963,23 @@ contains
     ! see dec_readme file.
 
 #ifdef MOD_UNRELEASED
-    if(DECinfo%f12) then    
-       print *, "---------------F12-energy-pair-fragment-------------"
-       call f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
+    if(DECinfo%F12) then
+       print *, "*******************************************"
+       print *, "       F12 energy pair fragment            "  
+       print *, "*******************************************"     
+       ! Get density matrix
+       ! call mem_alloc(dens,Pairfragment%nbasis,Pairfragment%nbasis)
+       ! call get_density_from_occ_orbitals(Pairfragment%nbasis,Pairfragment%noccAOS, &
+       !     & Pairfragment%Co,dens)
+       ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
+       
+       call get_f12_fragment_energy(PairFragment, Fragment1, Fragment2, natoms)
+       print *, "f12_pair_fragment_energy: ", PairFragment%energies(FRAGMODEL_MP2f12)
+
+       !> Free density matrix
+       call free_cabs()
+       ! call mem_dealloc(dens)
+       ! call mat_free(Dmat)
     endif
 #endif
     call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)
@@ -1037,6 +1079,7 @@ contains
     logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     logical :: something_wrong
+    real(realk) :: prefac_coul,prefac_k
 
 
     ! Pair interaction Lagrangian energy can be split into four contributions:
@@ -1079,6 +1122,13 @@ contains
     ! Distance between fragments in Angstrom
     pairdist = get_distance_between_fragments(Fragment1,Fragment2,natoms,DistanceTable)
     pairdist = bohr_to_angstrom*pairdist
+    if(PairFragment%ccmodel==MODEL_RPA) then
+      prefac_coul = 1._realk
+      prefac_k=0.5_realk
+    else
+      prefac_coul =2._realk
+      prefac_k = 1._realk
+    endif
 
     ! Which "interaction pairs" to include for occ and unocc space (avoid double counting)
     call mem_alloc(dopair_occ,noccEOS,noccEOS)
@@ -1143,14 +1193,14 @@ contains
                 do a=1,nvirtAOS
 
                    ! Update pair interaction energy contribution 1
-                   e1 = e1 + t2occ%val(a,i,b,j)*(2.0_realk*gocc%val(a,i,b,j) - gocc%val(b,i,a,j))
+                   e1 = e1 + t2occ%val(a,i,b,j)*(prefac_coul*gocc%val(a,i,b,j) -prefac_k*gocc%val(b,i,a,j))
 
 
                    ! Skip contribution 2 for anything but MP2
                    if(pairfragment%ccmodel==MODEL_MP2) then
 
                       ! Multiplier (multiplied by one half)
-                      multaibj = 2.0_realk*t2occ%val(a,i,b,j) - t2occ%val(b,i,a,j)
+                      multaibj = prefac_coul*t2occ%val(a,i,b,j) - prefac_k*t2occ%val(b,i,a,j)
 
                       tmp = 0E0_realk
                       do c=1,nvirtAOS
@@ -1204,7 +1254,7 @@ contains
                 if( dopair_virt(a,b) ) then !Dopair3and4
 
                    ! Multiplier (multiplied by one half)
-                   multaibj = 2.0_realk*t2virt%val(a,i,b,j) - t2virt%val(b,i,a,j)
+                   multaibj = prefac_coul*t2virt%val(a,i,b,j) - prefac_k*t2virt%val(b,i,a,j)
 
                    ! Update total atomic fragment energy contribution 3
                    e3 = e3 + multaibj*gvirt%val(a,i,b,j)
@@ -2087,7 +2137,6 @@ contains
       & Occ_Atoms,nocc,nunocc,OccOrbitals,UnoccOrbitals, &
       & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
-
  ! Information for fragment-adapted orbitals
  ! *****************************************
  ! For practical reasons we now simply repeat the MP2 calculation to get all AOS amplitudes
@@ -2105,7 +2154,7 @@ contains
          & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
     call array4_free(g)
     ! Get correlation density matrix for atomic fragment
-    call calculate_corrdens(t2,AtomicFragment)
+    call calculate_corrdens_frag(t2,AtomicFragment)
  end if FragAdapt
 
 
@@ -2541,6 +2590,7 @@ end subroutine optimize_atomic_fragment
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_orig, &
                & OccAOS_orig,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
                & AtomicFragment,.true.,.false.)
+
           call atomic_fragment_energy_and_prop(AtomicFragment)
           exit REDUCTION_LOOP
        end if
@@ -2766,7 +2816,7 @@ end subroutine optimize_atomic_fragment
             & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
        call array4_free(g)
        ! Get correlation density matrix
-       call calculate_corrdens(t2,AtomicFragment)
+       call calculate_corrdens_frag(t2,AtomicFragment)
        call array4_free(t2)
 
        ! Set MO coefficient matrices corresponding to fragment-adapted orbitals
@@ -2943,7 +2993,6 @@ end subroutine optimize_atomic_fragment
   end subroutine Expandfragment
 
 
-
   !> \brief Set logical vectors defining fragment to contain a fixed number of AOS atoms
   !> based on a prioritized track list.
   !> \date April 2013
@@ -3057,7 +3106,6 @@ end subroutine optimize_atomic_fragment
   end subroutine ReduceSpace_orbitalspecific
 
 
-
   !> \brief For a given model, get the occupied, virtual and Lagragian fragment energies
   !> to use for fragment optimization, i.e. simply copy the relevant energies from
   !> "fragment%energies" to fragment%EoccFOP, fragment%EvirtFOP, and fragment%LagFOP.
@@ -3081,12 +3129,28 @@ end subroutine optimize_atomic_fragment
        fragment%LagFOP = fragment%energies(FRAGMODEL_LAGMP2)
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCMP2)
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTMP2)
+
+#ifdef MOD_UNRELEASED         
+       if(Decinfo%F12) then
+          ! MP2-F12: MP2 + F12-correction
+          fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCMP2) + fragment%energies(FRAGMODEL_MP2f12)
+       endif
+#endif
+
     case(MODEL_CC2)
        ! CC2
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCC2)
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCC2)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
+    case(MODEL_RPA)
+       ! RPA
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRPA)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRPA)
+       print *,"JOHANNES: CURRENTLY LAGRANGIAN ENERGY IS NOT CONSIDERED; PLEASE IMPLEMENT"
+       ! simply use average of occ and virt energies since Lagrangian is not yet implemented
+       fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
+       !fragment%LagFOP = fragment%energies(FRAGMODEL_LAGRPA)
     case(MODEL_CCSD)
        ! CCSD
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCCSD)
@@ -3100,7 +3164,7 @@ end subroutine optimize_atomic_fragment
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCCSD) + fragment%energies(FRAGMODEL_VIRTpT)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
-!endif mod_unreleased
+       !endif mod_unreleased
 #endif
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
@@ -3108,8 +3172,6 @@ end subroutine optimize_atomic_fragment
     end select
 
   end subroutine get_occ_virt_lag_energies_fragopt
-
-
 
 
   !> \brief After the fragment optimization, make sure that the energies stored
@@ -3125,17 +3187,27 @@ end subroutine optimize_atomic_fragment
     ! MODIFY FOR NEW MODEL 
     ! If you implement a new model, please set fragment%energies(?) for your model,
     ! see FRAGMODEL_* definitions in dec_typedef.F90 to determine the "?".
-
+    
     select case(fragment%ccmodel)
     case(MODEL_MP2)
        ! MP2
        fragment%energies(FRAGMODEL_LAGMP2) = fragment%LagFOP 
        fragment%energies(FRAGMODEL_OCCMP2) = fragment%EoccFOP
        fragment%energies(FRAGMODEL_VIRTMP2) = fragment%EvirtFOP 
+#ifdef MOD_UNRELEASED 
+       if(DECinfo%F12) then
+          ! MP2-F12: MP2 + F12-correction
+          fragment%energies(FRAGMODEL_MP2f12) = fragment%EoccFOP
+       endif
+#endif
     case(MODEL_CC2)
        ! CC2
        fragment%energies(FRAGMODEL_OCCCC2) = fragment%EoccFOP
        fragment%energies(FRAGMODEL_VIRTCC2) = fragment%EvirtFOP
+    case(MODEL_RPA)
+       ! RPA
+       fragment%energies(FRAGMODEL_OCCRPA) = fragment%EoccFOP
+       fragment%energies(FRAGMODEL_VIRTRPA) = fragment%EvirtFOP
     case(MODEL_CCSD)
        ! CCSD
        fragment%energies(FRAGMODEL_OCCCCSD) = fragment%EoccFOP 
@@ -3210,6 +3282,10 @@ end subroutine optimize_atomic_fragment
        ! CC2
        energies(FRAGMODEL_OCCCC2) = Eocc   ! occupied
        energies(FRAGMODEL_VIRTCC2) = Evirt   ! virtual
+    case(MODEL_RPA)
+       ! RPA
+       energies(FRAGMODEL_OCCRPA) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTRPA) = Evirt   ! virtual
     case(MODEL_CCSD)
        ! CCSD
        energies(FRAGMODEL_OCCCCSD) = Eocc   ! occupied

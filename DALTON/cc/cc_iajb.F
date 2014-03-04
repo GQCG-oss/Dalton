@@ -137,7 +137,7 @@ c /* deck cc_iabj */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -411,7 +411,7 @@ c /* deck cc_iabj0 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -886,7 +886,7 @@ c /* deck cc_iajb1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "ccsdsym.h"
 #include "ccorb.h"
@@ -935,7 +935,7 @@ c /* deck cc_ijba1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "ccsdsym.h"
 #include "ccorb.h"

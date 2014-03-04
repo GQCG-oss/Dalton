@@ -6,6 +6,7 @@ END DESCRIPTION
 ########## Check list ##############################
 START CHECKLIST
 elactive
+enemc
 dipole
 OVERRIDE thr 1.0e-4
 nuc

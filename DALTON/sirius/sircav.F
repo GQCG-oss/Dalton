@@ -671,7 +671,7 @@ C
 #include "priunit.h"
 #include "symmet.h"
 C
-Clf#include <trans.h>
+Clf#include "trans.h"
 C
       DIMENSION XE(*),YE(*),ZE(*),RE(*),V1(3),V2(3)
       DIMENSION NPERM(NUMSPH,*),NEWSPH(NUMSPH,2)
@@ -1125,7 +1125,7 @@ C
 #include "pcmlog.h"
 #include "nuclei.h"
 #include "symmet.h"
-Clf#include <trans.h>
+Clf#include "trans.h"
 c
 c  reproduce the irreducibile part of the cavity
 c
@@ -2545,8 +2545,8 @@ ClfC     numeric algorithm. It is necessary in order to get a good
 ClfC     symmetric cavity.
 ClfC      
 ClfC
-Clf#include <implicit.h>
-Clf#include <priunit.h>
+Clf#include "implicit.h"
+Clf#include "priunit.h"
 ClfC
 Clf      DOUBLE PRECISION MAT(3,3),W(3),V(3)
 Clf      DOUBLE PRECISION H(3), A(3), B(3), P(3), Q(3)
@@ -2760,8 +2760,8 @@ ClfC
 ClfC
 ClfC/* Deck TRIROT*/
 Clf      SUBROUTINE TRIROT(M,V)
-Clf#include <implicit.h>
-Clf#include <priunit.h>
+Clf#include "implicit.h"
+Clf#include "priunit.h"
 Clf      DOUBLE PRECISION M(3,*),V(*),W(3)
 Clf      write(lupri,*) 'PRIMA', (V(I),I=1,3)
 Clf      DO I = 1,3

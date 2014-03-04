@@ -43,7 +43,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use matrix_module
   use memory_handling, only: mem_alloc,mem_dealloc, stats_mem
   use matrix_operations, only: set_matrix_default,max_no_of_matrices, no_of_matrices, &
-       & no_of_matmuls, mat_init, mat_free, mat_assign, &
+       & no_of_matmuls, mat_init, mat_free, mat_assign,mat_scal, &
        & mat_mul, mat_no_of_matmuls, mat_write_to_disk, mat_read_from_disk, mat_diag_f,&
        & mat_TrAB, mat_print, MatrixmemBuf_init, MatrixmemBuf_free, &
        & MatrixmemBuf_print
@@ -137,7 +137,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
-     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING)
+     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption)
      !the return statement leads to memory leaks but I do not care about this
      !for now atleast
      RETURN
@@ -193,6 +193,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         CALL II_get_h1(lupri,luerr,ls%setting,H1)
         call get_initial_dens(H1,S,D,ls,config)
 
+
         if(.not. config%latt_config%testcase) THEN
 
           lsint_fock_data%ls => ls
@@ -225,6 +226,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
                    config%latt_config%num_its_densmat
           config%opt%opt_quit=.false.
           call scfloop(H1,F,D,S,E,ls,config)
+
+
+          call mat_scal(2._realk,D(1))
 
           if (do_decomp) then
              call decomp_shutdown(config%decomp)
@@ -623,7 +627,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
-
+#ifdef VAR_ICHOR
+  use IchorSaveGabModule
+#endif
   implicit none
   logical, intent(inout)     :: OnMaster
   integer, intent(inout)     :: lupri, luerr
@@ -638,6 +644,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call init_rsp_util      !initialize response util module
   call lstmem_init
   call MatrixmemBuf_init()
+#ifdef VAR_ICHOR
+  call InitIchorSaveGabModule()
+#endif
   call init_AO2GCAO_GCAO2AO()
   call init_persistent_array
   call init_timers !initialize timers
@@ -664,6 +673,9 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
+#ifdef VAR_ICHOR
+  use IchorSaveGabModule
+#endif
 implicit none
   logical,intent(in)         :: OnMaster
   integer,intent(inout)      :: lupri,luerr
@@ -678,6 +690,9 @@ implicit none
   call lstmem_free
 
   call MatrixmemBuf_free()
+#ifdef VAR_ICHOR
+  call FreeIchorSaveGabModule()
+#endif
   call free_AO2GCAO_GCAO2AO()
   call free_persistent_array
 

@@ -569,15 +569,59 @@ DO iAngmomP=1,P%nAngmom
    startA = P%orbital1%startLocOrb(iA)
    startB = P%orbital2%startLocOrb(iB)
    CALL addPSGab(Gab,n1,n2,sA,sB,QPMAT2,dimQ,dimP,nA,nB,nContA,nAngA,nContB,nAngB,startA,startB,&
-        & input%PS_THRESHOLD,lupri)
+        & input%PS_THRESHOLD,input%contang,lupri)
    IF (dopermutation) THEN
       CALL addPSGba(Gba,n1,n2,sA,sB,QPMAT2,dimQ,dimP,nA,nB,nContA,nAngA,nContB,nAngB,startA,startB,&
-           & input%PS_THRESHOLD,lupri)
+           & input%PS_THRESHOLD,input%contang,lupri)
    ENDIF
 ENDDO
 
 CONTAINS
 SUBROUTINE addPSGab(PSGab,n1,n2,sA,sB,PSGabint,dimQ,dimP,nA,nB,nContA,nAngA,&
+     &              nContB,nAngB,startA,startB,thresh,contang,lupri)
+implicit none
+Integer,intent(IN)      :: lupri,nContA,nAngA,nContB,nAngB,dimQ,dimP,nA,nB,startA,startB
+Integer,intent(IN)      :: n1,n2,sA,sB
+integer(kind=short),intent(INOUT) :: PSGab(n1,n2)!(nContA,nContB)
+Real(realk),intent(IN)  :: PSGabint(nA,nB,nA,nB)
+Real(realk),intent(IN)  :: thresh
+Logical,intent(IN)      :: contang
+
+IF (.NOT.contang) THEN
+! Default ordering of angular components first, contracted second
+  CALL addPSGab_ac(PSGab,n1,n2,sA,sB,PSGabint,dimQ,dimP,nA,nB,nContA,nAngA,&
+     & nContB,nAngB,startA,startB,thresh,lupri)
+ELSE
+! CONTANG ordering of contracted components first, angular second
+  CALL addPSGab_ca(PSGab,n1,n2,sA,sB,PSGabint,dimQ,dimP,nA,nB,nContA,nAngA,&
+     & nContB,nAngB,startA,startB,thresh,lupri)
+ENDIF
+ 
+END SUBROUTINE addPSGab
+
+SUBROUTINE addPSGba(PSGba,n1,n2,sA,sB,PSGabint,dimQ,dimP,nA,nB,nContA,nAngA,&
+     &              nContB,nAngB,startA,startB,thresh,contang,lupri)
+implicit none
+Integer,intent(IN)      :: lupri,nContA,nAngA,nContB,nAngB,dimQ,dimP,nA,nB,startA,startB
+Integer,intent(IN)      :: n1,n2,sA,sB
+integer(kind=short),intent(INOUT) :: PSGba(n2,n1)!(nContB,nContA)
+Real(realk),intent(IN)  :: PSGabint(nA,nB,nA,nB)
+Real(realk),intent(IN)  :: thresh
+Logical,intent(IN)      :: contang
+
+IF (.NOT.contang) THEN
+! Default ordering of angular components first, contracted second
+  CALL addPSGba_ac(PSGba,n1,n2,sA,sB,PSGabint,dimQ,dimP,nA,nB,nContA,nAngA,&
+     & nContB,nAngB,startA,startB,thresh,lupri)
+ELSE
+! CONTANG ordering of contracted components first, angular second
+  CALL addPSGba_ca(PSGba,n1,n2,sA,sB,PSGabint,dimQ,dimP,nA,nB,nContA,nAngA,&
+     & nContB,nAngB,startA,startB,thresh,lupri)
+ENDIF
+ 
+END SUBROUTINE addPSGba
+
+SUBROUTINE addPSGab_ac(PSGab,n1,n2,sA,sB,PSGabint,dimQ,dimP,nA,nB,nContA,nAngA,&
      & nContB,nAngB,startA,startB,thresh,lupri)
 implicit none
 Integer,intent(IN)      :: lupri,nContA,nAngA,nContB,nAngB,dimQ,dimP,nA,nB,startA,startB
@@ -616,9 +660,9 @@ DO iContB=1,nContB
  ENDDO
 ENDDO
 
-END SUBROUTINE addPSGab
+END SUBROUTINE addPSGab_ac
 
-SUBROUTINE addPSGba(PSGba,n1,n2,sA,sB,PSGabint2,dimQ,dimP,nA,nB,nContA,nAngA,&
+SUBROUTINE addPSGba_ac(PSGba,n1,n2,sA,sB,PSGabint2,dimQ,dimP,nA,nB,nContA,nAngA,&
      &nContB,nAngB,startA,startB,thresh,lupri)
 implicit none
 Integer,intent(IN)      :: lupri,nContA,nAngA,nContB,nAngB,dimQ,dimP,nA,nB,startA,startB
@@ -658,7 +702,90 @@ DO iContB=1,nContB
  ENDDO
 ENDDO
 
-END SUBROUTINE addPSGba
+END SUBROUTINE addPSGba_ac
+
+SUBROUTINE addPSGab_ca(PSGab,n1,n2,sA,sB,PSGabint,dimQ,dimP,nA,nB,nContA,nAngA,&
+     & nContB,nAngB,startA,startB,thresh,lupri)
+implicit none
+Integer,intent(IN)      :: lupri,nContA,nAngA,nContB,nAngB,dimQ,dimP,nA,nB,startA,startB
+Integer,intent(IN)      :: n1,n2,sA,sB
+integer(kind=short),intent(INOUT) :: PSGab(n1,n2)!(nContA,nContB)
+Real(realk),intent(IN)  :: PSGabint(nA,nB,nA,nB)
+Real(realk),intent(IN)  :: thresh
+!
+integer(kind=short) :: PSGabIntTmp
+Integer :: iContB,iContA,iAngA,iAngB,iOrbP,iA,iB,offset
+
+iB = startB -1
+DO iAngB=1,nAngB
+ DO iContB=1,nContB
+  iB = iB + 1
+  iA = startA-1
+  DO iAngA=1,nAngA
+   DO iContA=1,nContA
+    iA = iA + 1
+    !Beware when converting from double precision to short integer 
+    !If double precision is less than 10^-33 then you can run into
+    !problems with short integer overflow
+    IF(PSGabint(iA,iB,iA,iB).GT. shortintcrit)THEN
+       PSgabIntTmp = CEILING(LOG10(sqrt(PSGabint(iA,iB,iA,iB))))
+       PSGab(sA+iContA,sB+iContB)=MAX(PSGab(sA+iContA,sB+iContB),PSgabIntTmp)
+    ELSE
+       IF (abs(PSGabint(iA,iB,iA,iB)).GT.thresh) THEN
+          PSgabIntTmp = CEILING(LOG10(sqrt(ABS(PSGabint(iA,iB,iA,iB)))))
+          PSGab(sA+iContA,sB+iContB)=MAX(PSGab(sA+iContA,sB+iContB),PSgabIntTmp)
+!          write(lupri,*) 'Error in addPSGab. Negative screening integral',PSGabint(iA,iB,iA,iB)
+!          call lsquit('Error in addPSGab. Negative screening integral',lupri)
+       ENDIF       
+    ENDIF
+   ENDDO
+  ENDDO
+ ENDDO
+ENDDO
+
+END SUBROUTINE addPSGab_ca
+
+SUBROUTINE addPSGba_ca(PSGba,n1,n2,sA,sB,PSGabint2,dimQ,dimP,nA,nB,nContA,nAngA,&
+     &nContB,nAngB,startA,startB,thresh,lupri)
+implicit none
+Integer,intent(IN)      :: lupri,nContA,nAngA,nContB,nAngB,dimQ,dimP,nA,nB,startA,startB
+Integer,intent(IN)      :: n1,n2,sA,sB
+integer(kind=short),intent(INOUT) :: PSGba(n2,n1)!(nContB,nContA)
+Real(realk),intent(IN)  :: PSGabint2(nA,nB,nA,nB)
+!Real(realk),intent(IN)  :: PSGabint2(dimQ,dimP)
+Real(realk),intent(IN)  :: thresh
+!
+integer(kind=short) :: PSGabIntTmp
+Integer :: iA,iB,iContB,iContA,iAngA,iAngB,offset,iOrbP
+
+iB = startB -1
+DO iAngB=1,nAngB
+ DO iContB=1,nContB
+  iB = iB + 1
+  iA = startA-1
+  DO iAngA=1,nAngA
+   DO iContA=1,nContA
+    iA = iA + 1
+    !Beware when converting from double precision to short integer 
+    !If double precision is less than 10^-33 then you can run into
+    !problems with short integer overflow
+    IF(PSGabint2(iA,iB,iA,iB).GT. shortintcrit)THEN
+       PSgabIntTmp = CEILING(LOG10(sqrt(PSGabint2(iA,iB,iA,iB))))
+       PSGba(sB+iContB,sA+iContA) = MAX(PSGba(sB+iContB,sA+iContA),PSgabIntTmp)  
+    ELSE
+       IF(ABS(PSGabint2(iA,iB,iA,iB)).GT.thresh)THEN
+          PSgabIntTmp = CEILING(LOG10(sqrt(ABS(PSGabint2(iA,iB,iA,iB)))))
+          PSGba(sB+iContB,sA+iContA) = MAX(PSGba(sB+iContB,sA+iContA),PSgabIntTmp)
+!          write(lupri,*)'Error in addPSGba. Negative screening integral',PSGabint2(iA,iB,iA,iB)
+!          call lsquit('Error in addPSGba. Negative screening integral',lupri)
+       ENDIF
+    ENDIF
+   ENDDO
+  ENDDO
+ ENDDO
+ENDDO
+
+END SUBROUTINE addPSGba_ca
 
 END SUBROUTINE distributePS
 

@@ -355,8 +355,8 @@ csonia 04/10/95
       ELSE IF (QMNPMM) THEN
          call quit('not implemented in this version')
 !        CALL SCF_QMNPMM_OUT()
-      else if (peqm) then
-         continue
+      ELSE IF (PEQM) THEN
+         CONTINUE
       ELSE
         ESOLT = D0
       END IF
@@ -406,7 +406,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,0)
          END IF
          IF (FLAG(16)) WRITE (LUPRI,5025) ESOLT
-         if (peqm) write(lupri,5026) esolt
+         IF (PEQM) WRITE(LUPRI,5026) ESOLT
          WRITE (LUPRI,5030) GRDNRM
       END IF
 
@@ -437,9 +437,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *       /'@    Nuclear repulsion:',T31,F20.12,
      *       /'@    Electronic energy:',T31,F20.12)
  5025 FORMAT( '@    Solvation  energy:',T31,F20.12)
-#if defined (BUILD_PELIB)
  5026 FORMAT( '@    Embedding energy:',T31,F20.12)
-#endif
  5030 FORMAT(/'@    Final gradient norm:',T31,F20.12)
 C
 C       stamp date, time, and hostname to LUPRI

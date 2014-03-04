@@ -43,8 +43,8 @@ c NCOMP (INPUT)  : number of independent perturbation (3)
 #include "nuclei.h"
 #include "qm3.h"
 #include "inforb.h"
-C#include <infpri.h>
-C#include <infvar.h>
+C#include "infpri.h"
+C#include "infvar.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
@@ -251,13 +251,13 @@ c NCOMP (INPUT)  : number of independent perturbation (3)
 #include "nuclei.h"
 #include "qm3.h"
 #include "inforb.h"
-Cahs#include <infpar.h>
-Cahs#include <mtags.h>
+Cahs#include "infpar.h"
+Cahs#include "mtags.h"
 Cahs#if defined(VAR_MPI)
-Cahs#include <mpif.h>
+Cahs#include "mpif.h"
 Cahs#endif
-C#include <infpri.h>
-C#include <infvar.h>
+C#include "infpri.h"
+C#include "infvar.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL

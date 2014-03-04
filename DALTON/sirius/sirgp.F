@@ -2212,8 +2212,8 @@ C   INFPRI : IPRI6
 C
 #include "maxorb.h"
 #include "mxcent.h"
-Clf#include <pcmdef.h>
-Clf#include <pcm.h>
+Clf#include "pcmdef.h"
+Clf#include "pcm.h"
 #include "pcmlog.h"
 #include "infinp.h"
 #include "infvar.h"

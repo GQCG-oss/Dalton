@@ -1650,10 +1650,11 @@ C
 C  Do we use embedding ?
 C  (that is, is QM part embedded in environment)
 C
-      if (qmmm .and. ECP) then
-         call quit('QMMM not working with ECP')
-      end if
-      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .or. peqm
+      IF (QMMM .AND. ECP) THEN
+         CALL QUIT('QMMM is not compatible with the use of ECPs')
+      END IF
+      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. PEQM .OR.
+     &            QMNPMM
 C
 C ***  PRINT INPUT DATA *****
 C
@@ -2192,6 +2193,10 @@ C  /* Deck sir_geninp */
       SUBROUTINE SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
 C
 C 1-Oct 1987 Hans Agren
+#ifdef MOD_XCINT
+      use xcint_integrator
+      use eri_contractions
+#endif
 C
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
@@ -2200,6 +2205,9 @@ C
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
+#ifdef MOD_XCINT
+      real(8) :: hfx_out, mu_out, beta_out
+#endif
 C
 C Used from common:
 C  INFINP : FLAG(*), IORTO, DO*
@@ -2479,6 +2487,19 @@ C        ... no P-supermatrix for DFT
 #ifdef MOD_XCFUN
          CALL xcfun_select(TITLIN)
 #endif
+#ifdef MOD_XCINT
+         call parse_functional(titlin, hfx_out, mu_out, beta_out)
+         open(42,
+     &        file   = 'xc_functional',
+     &        status = 'unknown',
+     &        form   = 'formatted',
+     &        access = 'sequential')
+         rewind(42)
+         write(42, *) titlin
+         close(42, status = 'keep')
+
+         call set_eri_contractions_xfac(hfx_out)
+#endif
          IF (WDFTMP.NE.0.0D0) THEN
             DOMP2    = .TRUE.
             FLAG(9)  = .TRUE.
@@ -2592,7 +2613,7 @@ C
 C
  8000 CONTINUE
 !     No QC if PE library is used
-      if (peqm) flag(21) = .false.
+      IF (PEQM) FLAG(21) = .FALSE.
 C     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
@@ -5470,7 +5491,7 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
-       IF (peqm) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
+       IF (PEQM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
       END IF
 C
 C ***** Wave function specifications
@@ -5484,12 +5505,12 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
-      if (peqm) then
-         write(iwunit,'(/5x,a/5x,a/)')
+      IF (PEQM) THEN
+         WRITE(IWUNIT,'(/5X,A/5X,A/)')
      &   'Wave function environment is modeled using the',
      &   'polarizable embedding model (PE library).'
         WFTYPE = 'PE-'//WFTYPE
-      end if
+      END IF
 C     for SIRIUS (not LUCITA) :
       NINEL = 2*NISHT
       CALL MOLCHR(ICHARG)

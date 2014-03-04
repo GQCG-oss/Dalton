@@ -17,6 +17,7 @@ module profile_type
      logical :: Fock
      logical :: overlap
      logical :: NEGRAD
+     logical :: IchorDEC
      logical :: Ichor
      logical :: IchorProfInputBasis
      CHARACTER(len=20) :: IchorProfInputBasisString(4)
@@ -44,6 +45,7 @@ CONTAINS
     profinput%NEGRAD = .FALSE.
 
     profinput%Ichor = .FALSE.
+    profinput%IchorDEC = .FALSE.
     profinput%IchorProfInputBasis = .FALSE.
     profinput%IchorProfInputBasisString(1) = '                    '
     profinput%IchorProfInputBasisString(2) = '                    '

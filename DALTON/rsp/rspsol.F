@@ -362,18 +362,16 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
-#if defined (BUILD_PELIB)
-      if (peqm) then
-        if (.not. tdhf) then
-            call quit('ERROR: MCSCF linear response not implemented'//
+      IF (PEQM) THEN
+        IF (.NOT. TDHF) THEN
+            CALL QUIT('ERROR: MCSCF linear response not implemented'//
      &                ' with the PE library.')
-        endif
-        call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
-     &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
-     &                 wrk(kdvt), wrk(kdvttr), evecs,
-     &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
-      end if
-#endif
+        ENDIF
+        CALL PE_RSPLIN(NCSIM, NOSIM, BCVECS, BOVECS, WRK(KCREF), CMO,
+     &                 INDXCI, UDV, WRK(KDV), WRK(KUDVTR), WRK(KDVTR),
+     &                 WRK(KDVT), WRK(KDVTTR), EVECS,
+     &                 EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
+      END IF
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)

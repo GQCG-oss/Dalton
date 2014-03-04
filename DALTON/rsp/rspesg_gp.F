@@ -342,8 +342,8 @@ C
 C  Old AO2MO for inputs without the symmetry
 C
 C      SUBROUTINE AO2MO(MAO,MMO,CMO,NORBT,WRK,LWRK)
-C#include <implicit.h>
-C#include <priunit.h> 
+C#include "implicit.h"
+C#include "priunit.h"
 C
 C
 C     Purpose: transforms a two-index matrix from 
@@ -372,7 +372,7 @@ C
       SUBROUTINE AO2MO(AAO,BMO,CMO,WRK,LWRK)
 #include "implicit.h"
 #include "priunit.h" 
-#include "inforb.h" 
+#include "inforb.h"
 
 C
 C     Purpose: transforms a two-index matrix from 
@@ -479,8 +479,8 @@ C This version was working for non-symmetry calc
 C
 C
 C      SUBROUTINE MO2AO_OLD(MMO,MAO,CMO,NORBT,WRK,LWRK)
-C#include <implicit.h>
-C#include <priunit.h> 
+C#include "implicit.h"
+C#include "priunit.h"
 C
 C
 C     Purpose: transforms a two-index matrix from 

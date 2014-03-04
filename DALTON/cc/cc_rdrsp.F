@@ -579,7 +579,7 @@ c/* Deck cc_rcrsp */
 #include "ccexci.h"
 #include "ccpl1rsp.h"
 !Lanczos
-#include <ccqlrlcz.h>
+#include "ccqlrlcz.h"
 Cholesky
 #include "maxorb.h"
 #include "ccdeco.h"
@@ -1633,7 +1633,7 @@ c /* deck CCPRPAO */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"

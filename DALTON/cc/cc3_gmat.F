@@ -1302,7 +1302,7 @@ C
 #include "distcl.h"
 #include "cbieri.h"
 #include "eribuf.h"
-C#include <cclr.h>
+C#include "cclr.h"
 C
       INTEGER ISYMX,ISYMY,ISYMZ,ISYMZ1,LWORK,LU3SRTR,LUCKJDR 
       INTEGER KLAMPX,KLAMHX,KLAMPY,KLAMHY,KLAMPZ,KEND1,LWRK1

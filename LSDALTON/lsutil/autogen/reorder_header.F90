@@ -7,6 +7,12 @@
     module procedure get_comp_idx
   end interface get_cidx
 
+  interface array_reorder
+    module procedure array_reorder_4d,&
+                    &array_reorder_3d,&
+                    &array_reorder_2d
+  end interface array_reorder
+
   contains
 
   !> \author Patrick Ettenhuber

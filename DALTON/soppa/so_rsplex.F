@@ -28,7 +28,7 @@ C
 #include "codata.h"
 #include "wrkrsp.h"
 CSPAS:15/03-2006: merge with Dalton-2.0      
-C#include <infpp.h>
+C#include "infpp.h"
 CKeinSPASmehr
 #include "inforb.h"
 #include "infpri.h"

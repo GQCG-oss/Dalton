@@ -387,9 +387,9 @@ contains
     CALL LSCLOSE(lusigma_rsp,'DELETE')
     CALL LSCLOSE(lurho_rsp,'DELETE')
     CALL LSCLOSE(lub_rsp,'DELETE')
-    if(nmcdvec /= 0) then
+    if(nmcdvec .GT. 0) then
        CALL LSCLOSE(lub_mcdvec,'DELETE')
-       molcfg%solver%UseExcitationVecs = UseExcitationVecs
+       if(nmcdvec .GT. 1)molcfg%solver%UseExcitationVecs = UseExcitationVecs
     endif
 
     IF(.NOT.LINEQ_x)THEN

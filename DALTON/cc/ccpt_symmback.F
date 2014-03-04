@@ -108,7 +108,7 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0 )
       PARAMETER (LOCDBG = .FALSE.)
 C
-C#include <leinf.h>
+C#include "leinf.h"
 C
       CALL QENTER('SYMMBACK')
 C
@@ -696,7 +696,7 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0 )
       PARAMETER (LOCDBG = .FALSE.)
 C
-C#include <leinf.h>
+C#include "leinf.h"
 C
       CALL QENTER('SYMMBACK_1')
 C

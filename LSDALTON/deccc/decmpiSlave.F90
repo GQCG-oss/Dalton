@@ -55,8 +55,14 @@
          call MP2_integrals_and_amplitudes_workhorse_slave
       case(CCSDDATA);
          call ccsd_data_preparation
+      case(CCGETGMO);
+         call cc_gmo_data_slave
+      case(MOCCSDDATA);
+         call moccsd_data_slave
       case(CCSDSLV4E2);
          call calculate_E2_and_permute_slave
+      case(RPAGETRESIDUAL);
+            call rpa_res_slave
 #ifdef MOD_UNRELEASED 
       case(CCSDPTSLAVE);
          call ccsdpt_slave

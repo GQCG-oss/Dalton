@@ -61,7 +61,7 @@ C
 C     PURPOSE:
 C             Calculate the C-term 
 C
-C#include <implicit.h>
+C#include "implicit.h"
       implicit none
 
 #include "priunit.h"
@@ -1334,7 +1334,7 @@ c /* deck cc_iajb2 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -1524,14 +1524,14 @@ c /* deck cc_iajb3 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
 #include "ccsdsym.h"
 #include "r12int.h"
-C#include <maxorb.h>
-C#include <ccisao.h>
+C#include "maxorb.h"
+C#include "ccisao.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2410,7 +2410,7 @@ c/* deck cc_cd */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -2707,7 +2707,7 @@ c           CALL CC_PRP(WORK(NI),WORK,ISYMBJ,1,0)
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "ccorb.h"
 #include "maxorb.h"
@@ -3010,7 +3010,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -3396,7 +3396,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

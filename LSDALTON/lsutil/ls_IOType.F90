@@ -9,7 +9,7 @@ Integer,parameter :: increment = 50
 TYPE IOITEM
 Integer       :: nallocFiles
 Integer       :: numFiles
-Character(80),pointer :: filename(:)
+Character(len=80),pointer :: filename(:)
 Integer,pointer       :: IUNIT(:)
 Logical,pointer       :: isOpen(:)
 END TYPE IOITEM

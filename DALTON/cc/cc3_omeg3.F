@@ -4897,8 +4897,8 @@ CC     K. Hald, Spring 2001.
 CC
 C      IMPLICIT NONE
 CC
-C#include <priunit.h>
-C#include <ccorb.h>
+C#include "priunit.h"
+C#include "ccorb.h"
 CC
 C      INTEGER ISYMB, ISYMD, B, D, nckij, i
 C      INTEGER KOFF1, KOFF2
@@ -4962,9 +4962,9 @@ CC
 CC     HOWEVER : PLEASE DO NOT REMOVE THIS ROUTINE
 CC
 CC     K. Hald, Spring 2001.
-C#include <priunit.h>
-C#include <ccorb.h>
-C#include <ccsdsym.h>
+C#include "priunit.h"
+C#include "ccorb.h"
+C#include "ccsdsym.h"
 CC
 C      integer isyamp, koff1, isckij, koff2, isyma, isymb, isymi, isymab
 CC

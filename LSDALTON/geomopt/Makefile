@@ -2,20 +2,26 @@ all: libgeomopt.a
 
 include ../Makefile.config 
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../LSint 
+INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I./dqdx
 
 F90_OBJS = \
         ls_opt.o \
         ls_opt2.o \
         ls_redint.o \
         LSopt-input.o \
+        q_to_x.o \
 
 F_CPPS = $(F_OBJS:.o=.i)
 
+CXXFILES =\
+	dqdx.o
+
+OBJS = $(F90_OBJS:.F90=.o) $(CXXFILES:.cpp=.o)
+
 pre: $(F_CPPS)
 
-libgeomopt.a: $(F90_OBJS)
-	$(AR) $(ARFLAGS) $@ $?
+libgeomopt.a: $(OBJS)
+	$(AR) $(ARFLAGS) $@ $(OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD

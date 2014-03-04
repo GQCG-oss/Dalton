@@ -419,11 +419,17 @@ module crop_tools_module
     type(array2),intent(inout) :: t1
     type(array4),intent(inout) :: t2
     real(realk) :: snorm,dnorm,tnorm
-     call print_norm(t1,snorm,.true.)
+     tnorm = 0.0E0_realk
+     dnorm = 0.0E0_realk
+     snorm = 0.0E0_realk
+
+     if(DECinfo%use_singles)call print_norm(t1,snorm,.true.)
      call print_norm(t2,dnorm,.true.)
      tnorm = sqrt(snorm+dnorm)
-     snorm = sqrt(snorm)
+     if(DECinfo%use_singles)snorm = sqrt(snorm)
      dnorm = sqrt(dnorm)
+
+
      if( .not. fj .or. DECinfo%PL>1)then
        write(DECinfo%output,*)
        write(DECinfo%output,'(/,a)') '-------------------------------'
@@ -463,7 +469,11 @@ module crop_tools_module
        end if
        write(DECinfo%output,'(a,i5)') 'Number of CC iterations  =', li
      else
-       print '(1X,a,2X,i4,5X,g19.9,4X,g19.9)', 'converged cc fragment job',li,tnorm,ce
+       print '(1X,a,1X,i4,1X,a,1X,g19.9)', 'Fragment CC converged after',li,'iterations with norm',tnorm
+       if(li==DECinfo%ccMaxIter)then
+         call lsquit("ERROR(print_ccjob_summary): ccequations not converged in&
+         & current fragment, the dec calculation becomes meaningless",-1)
+       endif
      endif
   end subroutine print_ccjob_summary
 
@@ -472,75 +482,103 @@ module crop_tools_module
   !> \date: April 2013
   !> \param: t2, gvovo, t1, no and nv are nocc and nvirt, respectively, 
   !<         and U_occ and U_virt are unitary matrices from canonical --> local basis
-  subroutine ccsolver_can_local_trans(gvovo,t2,no,nv,Uocc,Uvirt,t1)
+  subroutine ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,vovo,vo,bo,bv)
 
     implicit none
     !> integers
-    integer, intent(in) :: no, nv
-    !> ccsd_doubles and ccsdpt_doubles
-    real(realk), intent(inout) :: t2(nv*nv*no*no), gvovo(nv*nv*no*no)
-    !> unitary transformation matrices - indices: (local,semi-canonical)
+    integer, intent(in) :: no, nv, nb
+    !> general quantities with the respective sizes
+    real(realk), intent(inout),optional :: vovo(nv*nv*no*no)
+    real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
+    real(realk), intent(inout),optional :: vo(nv*no)
+    !> unitary transformation matrices - indices: (local,pseudo-canonical)
     real(realk), intent(inout) :: Uocc(no*no), Uvirt(nv*nv)
-    !> ccsdpt_singles
-    real(realk), intent(inout),optional :: t1(nv*no)
     !> temp array2 and array4 structures
     real(realk),pointer :: tmp(:)
+    integer(kind=8) :: wrksize
 
-    call mem_alloc(tmp,nv*nv*no*no)
+    wrksize = 0
+    if(present(vovo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
+    if(present(vo))   wrksize = max(wrksize,(i8*nv) * no)
+    if(present(bo))   wrksize = max(wrksize,(i8*nb) * no)
+    if(present(bv))   wrksize = max(wrksize,(i8*nb) * nv)
 
-    ! (a,i,b,j) are local basis indices and (A,I,B,J) refer to the canonical basis.
-    ! on input t2 and gvovo are ordered AIBJ and t1 AI
+    call mem_alloc(tmp,wrksize)
 
-    call successive_xyxy_trafo(nv,no,t2,Uvirt,Uocc,tmp)
-
-    !successive transformation of gvovo:
-    call successive_xyxy_trafo(nv,no,gvovo,Uvirt,Uocc,tmp)
+    !successive transformation of vovo:
+    if(present(vovo)) call successive_xyxy_trafo(nv,no,vovo,Uvirt,Uocc,tmp)
 
     !if t1 trafo has to be done as well
-    if(present(t1))then
+    if(present(vo))then
       !U(a,A) t(AI)    -> t(aI)
-      call dgemm('n','n',nv,no,nv,1.0E0_realk,Uvirt,nv,t1,nv,0.0E0_realk,tmp,nv)
+      call dgemm('n','n',nv,no,nv,1.0E0_realk,Uvirt,nv,vo,nv,0.0E0_realk,tmp,nv)
       ! tmp(aI) U(i,I)^T   -> t(ai)
-      call dgemm('n','t',nv,no,no,1.0E0_realk,tmp,nv,Uocc,no,0.0E0_realk,t1,nv)
+      call dgemm('n','t',nv,no,no,1.0E0_realk,tmp,nv,Uocc,no,0.0E0_realk,vo,nv)
+    endif
+
+    if(present(bo))then
+      tmp(1:nb*no) = bo
+      ! tmp(alpha,I) U(i,I)^T   -> Co(alpha,i)
+      call dgemm('n','t',nb,no,no,1.0E0_realk,tmp,nb,Uocc,no,0.0E0_realk,bo,nb)
+    endif
+
+    if(present(bv))then
+      tmp(1:nb*nv) = bv
+      ! tmp(alpha,A) U(a,A)^T   -> Cv(alpha,a)
+      call dgemm('n','t',nb,nv,nv,1.0E0_realk,tmp,nb,Uvirt,nv,0.0E0_realk,bv,nb)
     endif
 
     call mem_dealloc(tmp)
   end subroutine ccsolver_can_local_trans
 
-  subroutine ccsolver_local_can_trans(gvovo,t2,no,nv,Uocc,Uvirt,t1)
+  subroutine ccsolver_local_can_trans(no,nv,nb,Uocc,Uvirt,vovo,vo,bo,bv)
 
     implicit none
     !> integers
-    integer, intent(in) :: no, nv
-    !> ccsd_doubles and ccsdpt_doubles
-    real(realk), intent(inout) :: t2(nv*nv*no*no), gvovo(nv*nv*no*no)
+    integer, intent(in) :: no, nv, nb
+    !> general quantities with the respective sizes
+    real(realk), intent(inout),optional :: vovo(nv*nv*no*no)
+    real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
+    real(realk), intent(inout),optional :: vo(nv*no)
     !> unitary transformation matrices
-    !> unitary transformation matrices - indices: (local,semi-canonical)
+    !> unitary transformation matrices - indices: (local,pseudo-canonical)
     real(realk), intent(inout) :: Uocc(no*no), Uvirt(nv*nv)
     real(realk) :: UoccT(no*no), UvirtT(nv*nv)
-    !> ccsdpt_singles
-    real(realk), intent(inout),optional :: t1(nv*no)
     !> temp array2 and array4 structures
     real(realk),pointer :: tmp(:)
+    integer :: wrksize
 
     call mat_transpose(no,no,1.0E0_realk,Uocc,0.0E0_realk,UoccT)
     call mat_transpose(nv,nv,1.0E0_realk,Uvirt,0.0E0_realk,UvirtT)
-    call mem_alloc(tmp,nv*nv*no*no)
 
-    ! (a,i,b,j) are local basis indices and (A,I,B,J) refer to the canonical basis.
-    ! on input t2 and gvovo are ordered AIBJ and t1 AI
+    wrksize = 0
+    if(present(vovo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
+    if(present(vo))   wrksize = max(wrksize,(i8*nv) * no)
+    if(present(bo))   wrksize = max(wrksize,(i8*nb) * no)
+    if(present(bv))   wrksize = max(wrksize,(i8*nb) * nv)
 
-    call successive_xyxy_trafo(nv,no,t2,UvirtT,UoccT,tmp)
+    call mem_alloc(tmp,wrksize)
 
-    !successive transformation of gvovo:
-    !call successive_xyxy_trafo(nv,no,gvovo,UvirtT,UoccT,tmp)
+    !successive transformation of vovo:
+    if(present(vovo))call successive_xyxy_trafo(nv,no,vovo,UvirtT,UoccT,tmp)
 
-    !if t1 trafo has to be done as well
-    if(present(t1))then
+    if(present(vo))then
       !U(a,A) t(AI)    -> t(aI)
-      call dgemm('n','n',nv,no,nv,1.0E0_realk,UvirtT,nv,t1,nv,0.0E0_realk,tmp,nv)
+      call dgemm('n','n',nv,no,nv,1.0E0_realk,UvirtT,nv,vo,nv,0.0E0_realk,tmp,nv)
       ! tmp(aI) U(i,I)^T   -> t(ai)
-      call dgemm('n','n',nv,no,no,1.0E0_realk,tmp,nv,Uocc,no,0.0E0_realk,t1,nv)
+      call dgemm('n','n',nv,no,no,1.0E0_realk,tmp,nv,Uocc,no,0.0E0_realk,vo,nv)
+    endif
+
+    if(present(bo))then
+      tmp(1:nb*no) = bo
+      ! tmp(alpha,i) U(i,I)   -> Co(alpha,I)
+      call dgemm('n','n',nb,no,no,1.0E0_realk,tmp,nb,Uocc,no,0.0E0_realk,bo,nb)
+    endif
+
+    if(present(bv))then
+      tmp(1:nb*nv) = bv
+      ! tmp(alpha,a) U(a,A)   -> Cv(alpha,A)
+      call dgemm('n','n',nb,nv,nv,1.0E0_realk,tmp,nb,Uvirt,nv,0.0E0_realk,bv,nb)
     endif
 
     call mem_dealloc(tmp)

@@ -2886,26 +2886,29 @@ C
          CALL HEADER('Polarizability tensor Cartesian gradient)',1)
          DO 100 F = 1, NFRVAL
             WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-            CALL OUTPUT(ROAAFD(1,1,F,1),1,9,1,NUMMOD,9*MXFR,NCORD,
+C modified by Bin Gao and Kenneth Ruud, December 7, 2009
+            CALL OUTPUT(ROAAFD(1,1,F,1),1,9,1,NCORD,9*MXFR,NCORD,
      &                  1,LUPRI)
+C            CALL OUTPUT(ROAAFD(1,1,F,1),1,9,1,NUMMOD,9*MXFR,NCORD,
+C     &                  1,LUPRI)
   100    CONTINUE
          IF (VROA) THEN
             CALL HEADER('Non-London G tensor Cartesian gradient',1)
             DO 110 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAGND(1,1,F,1),1,9,1,NUMMOD,9*MXFR,NCORD,
+               CALL OUTPUT(ROAGND(1,1,F,1),1,9,1,NCORD,9*MXFR,NCORD,
      &                     1,LUPRI)
   110       CONTINUE
             CALL HEADER('London G tensor Cartesian gradient',1)
             DO 120 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAGLD(1,1,F,1),1,9,1,NUMMOD,9*MXFR,NCORD,
+               CALL OUTPUT(ROAGLD(1,1,F,1),1,9,1,NCORD,9*MXFR,NCORD,
      &                     1,LUPRI)
   120       CONTINUE
             CALL HEADER('A tensor Cartesian gradient',1)
             DO 130 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAAD(1,1,1,F,1),1,27,1,NUMMOD,27*MXFR,NCORD,
+               CALL OUTPUT(ROAAD(1,1,1,F,1),1,27,1,NCORD,27*MXFR,NCORD,
      &                     1,LUPRI)
   130       CONTINUE
 C

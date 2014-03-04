@@ -37,7 +37,7 @@ C
 C PURPOSE:
 C DRIVER ROUTINE FOR QUADRATIC RESPONSE
 C
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
 #include "mxcent.h"
@@ -153,7 +153,7 @@ C
 #include "implicit.h"
 #include "iratdef.h"
 C
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
 C VECTOR TO STORE NPPCNV(8)
@@ -953,7 +953,7 @@ C
 #include "infhso.h"
 #include "inftap.h"
 #include "inflr.h"
-#include <infrank.h>
+#include "infrank.h"
 C
 C     Local variables:
 C
@@ -1027,7 +1027,7 @@ C    *                      ' FREQUENCY ',TRFREQ(ICFRNU-NEXLB2-NLRLBL),
      *                               MZVAR(MSYMC),LUPRI)
                         CALL RSPPRW(VECC(1+MZCONF(MSYMC)),MJWOP,
      *                                MZWOPT(MSYMC),MSYMC,MZVAR(MSYMC),
-     *                                UDV,LUPRI)
+     *                                LUPRI)
                      END IF
                      DO 700 IBOP = 1,NBQROP(MSYMB)
                         DO 800 IBFR = 1,NBQRFR
@@ -1107,7 +1107,7 @@ C    *                             TRFREQ(IBFRNU-NEXLB2-NLRLBL),
      *                                     MZVAR(MSYMB),LUPRI)
                               CALL RSPPRW(VECB(1+MZCONF(MSYMB)),MJWOP,
      *                                    MZWOPT(MSYMB),MSYMB,
-     *                                    MZVAR(MSYMB),UDV,LUPRI)
+     *                                    MZVAR(MSYMB),LUPRI)
                            END IF
                            CALL FLSHFO(LUPRI)
 C
@@ -1304,7 +1304,7 @@ C                                FREQA  = QRFREQ(IAFRNU-NEXLB2)
      *                                       MZVAR(MSYMA),LUPRI)
                                     CALL RSPPRW(WRK(KAVEC+MZCONF(MSYMA))
      *                                       ,MJWOP,MZWOPT(MSYMA),MSYMA,
-     *                                       MZVAR(MSYMA),UDV,LUPRI)
+     *                                       MZVAR(MSYMA),LUPRI)
                                  END IF
                                  HYPVAL(IAOP) = -DDOT(MZYVAR(MSYMA),
      *                              WRK(KX3BC),1,WRK(KAVEC),1)
@@ -1667,7 +1667,7 @@ C
 C
       LOGICAL FOUND, CONV
       CHARACTER*8 BLANK, LABEL
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),VECB(*),VECC(*),WRK(*)
 C
       PARAMETER (BLANK = '        ')
@@ -1762,7 +1762,7 @@ C
      *                                  MZVAR(MSYMC),LUPRI)
                      CALL RSPPRW(VECC(1+MZCONF(MSYMC)),MJWOP,
      *                                  MZWOPT(MSYMC),MSYMC,
-     *                                  MZVAR(MSYMC),UDV,LUPRI)
+     *                                  MZVAR(MSYMC),LUPRI)
                   END IF
                   DO 700 IBOP = 1,NBSMOP(MSYMB)
                      DO 800 IBFR = 1,NBSMFR
@@ -1827,7 +1827,7 @@ C    *                      ' FREQUENCY ',TRFREQ(IBFRNU-NEXLB2-NLRLBL),
      *                                  MZVAR(MSYMB),LUPRI)
                            CALL RSPPRW(VECB(1+MZCONF(MSYMB)),MJWOP,
      *                                  MZWOPT(MSYMB),MSYMB,
-     *                                  MZVAR(MSYMB),UDV,LUPRI)
+     *                                  MZVAR(MSYMB),LUPRI)
                         END IF
                         CALL FLSHFO(LUPRI)
 C
@@ -1939,7 +1939,7 @@ C
                                 IWRKOF = MZYVAR(MSYMA)+MZCONF(MSYMA)+1
                                 CALL RSPPRW(WRK(IWRKOF),MJWOP,
      *                                   MZWOPT(MSYMA),MSYMA,
-     *                                   MZVAR(MSYMA),UDV,LUPRI)
+     *                                   MZVAR(MSYMA),LUPRI)
                               END IF
                               SMOM = FACMOM*DDOT(MZYVAR(MSYMA),WRK(1),1,
      *                                 WRK(1+MZYVAR(MSYMA)),1)
@@ -2544,7 +2544,7 @@ C
      *                                  MZVAR(MSYMC),LUPRI)
                      CALL RSPPRW(VECC(1+MZCONF(MSYMC)),MJWOP,
      *                                  MZWOPT(MSYMC),MSYMC,
-     *                                  MZVAR(MSYMC),UDV,LUPRI)
+     *                                  MZVAR(MSYMC),LUPRI)
                   END IF
                   IF (DOESA) THEN
                      IBE = 1
@@ -2607,7 +2607,7 @@ C
      *                                  MZVAR(MSYMB),LUPRI)
                         CALL RSPPRW(VECB(1+MZCONF(MSYMB)),MJWOP,
      *                                  MZWOPT(MSYMB),MSYMB,
-     *                                  MZVAR(MSYMB),UDV,LUPRI)
+     *                                  MZVAR(MSYMB),LUPRI)
                      END IF
                      CALL DSWAP(MZVAR(MSYMB),VECB,1,
      *                          VECB(1+MZVAR(MSYMB)),1)
@@ -2705,7 +2705,7 @@ C
                              IWRKOF = MZYVAR(MSYMA)+MZCONF(MSYMA)+1
                              CALL RSPPRW(WRK(IWRKOF),MJWOP,
      *                                MZWOPT(MSYMA),MSYMA,MZVAR(MSYMA),
-     *                                UDV,LUPRI)
+     *                                LUPRI)
                            END IF
                            XMOM = DDOT(MZYVAR(MSYMA),WRK(1),1,
      *                                 WRK(1+MZYVAR(MSYMA)),1)
@@ -3219,7 +3219,7 @@ C
       LOGICAL FOUND, CONV
       CHARACTER*8 BLANK
       PARAMETER ( D1 = 1.0D0, BLANK = '        ', D0 = 0.0D0 )
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),VECA(*),VECB(*),MJWOP(*),WRK(*)
 C
 #include "infrsp.h"
@@ -3293,7 +3293,7 @@ C
      *                 ' SYMMETRY',ISYM
                   CALL RSPPRC(VECB,MZCONF(ISYM),MZVAR(ISYM),LUPRI)
                   CALL RSPPRW(VECB(1+MZCONF(ISYM)),MJWOP,
-     *                 MZWOPT(ISYM),ISYM,MZVAR(ISYM),UDV,LUPRI)
+     *                 MZWOPT(ISYM),ISYM,MZVAR(ISYM),LUPRI)
                END IF
 C
                DO IAOP = 1,NAQROP(ISYM)
@@ -3313,7 +3313,7 @@ C
      *                    ' SYMMETRY',ISYM
                      CALL RSPPRC(VECA,MZCONF(ISYM),MZVAR(ISYM),LUPRI)
                      CALL RSPPRW(VECA(1+MZCONF(ISYM)),MJWOP,
-     *                    MZWOPT(ISYM),ISYM,MZVAR(ISYM),UDV,LUPRI)
+     *                    MZWOPT(ISYM),ISYM,MZVAR(ISYM),LUPRI)
                   END IF
 C
 C     Compute linear response value 

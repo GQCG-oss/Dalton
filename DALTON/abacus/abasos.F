@@ -2006,7 +2006,7 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 CPFP
-C#include <mxorb.h>
+C#include "mxorb.h"
 #include "maxorb.h"
 Cend-PFP
       PARAMETER (ZERO = 0.0D+00, D1 = 1.0D+00)
@@ -2419,7 +2419,7 @@ C PMASS used from include file pmass.h
 C
 #include "priunit.h"
 #include "codata.h"
-C#include <pmass.h>
+C#include "pmass.h"
 C
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D1O3 = 1.0D0/D3, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/
@@ -2432,7 +2432,7 @@ C MXCORB used from include file mxorb.h
 #include "maxaqn.h"
 #include "mxcent.h"
 CPFP
-C#include <mxorb.h>
+C#include "mxorb.h"
 #include "maxorb.h"
 Cend-PFP
 C

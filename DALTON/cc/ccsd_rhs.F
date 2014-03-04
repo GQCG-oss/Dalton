@@ -68,7 +68,7 @@ C
 #include "r12int.h"
 #include "ccr12int.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (XMHALF = -0.5D0, XMONE= -1.0D0 )
@@ -5635,7 +5635,7 @@ C
 C
 #include "ccorb.h"
 C
-C   #include <infind.h> replaced by: #include <ccisao.h>
+C   #include "infind.h" replaced by: #include <ccisao.h>
 C   (WK/UniKA/28-04-2003).
 C
 #include "ccisao.h"
@@ -8435,7 +8435,7 @@ C
 #include "leinf.h"
 #include "ccsections.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C

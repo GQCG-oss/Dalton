@@ -49,6 +49,7 @@ contains
 
 
     ! -- Debug modes
+    DECinfo%CRASHCALC            = .false.
     DECinfo%cc_driver_debug      = .false.
     DECinfo%CCDEBUG              = .false.
     DECinfo%manual_batchsizes    = .false.
@@ -66,12 +67,21 @@ contains
     DECinfo%CCSDnosaferun        = .false.
     DECinfo%solver_par           = .false.
     DECinfo%CCSDpreventcanonical = .false.
-    DECinfo%CCSD_MPICH           = .false.
+    DECinfo%CCSD_NO_DEBUG_COMM   = .true.
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%use_pnos             = .false.
+    DECinfo%noPNOtrafo           = .false.
+    DECinfo%noPNOtrunc           = .false.
+    DECinfo%simplePNOthr         = 1.0E-7
+    DECinfo%EOSPNOthr            = 1.0E-5
+    DECinfo%noPNOoverlaptrunc    = .false.
+    DECinfo%PNOoverlapthr        = 1.0E-5
+    DECinfo%PNOtriangular        = .false.
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
+    DECinfo%MOCCSD               = .false.
+    DECinfo%Max_num_MO           = 300
 
     ! -- Output options 
     DECinfo%output               = output
@@ -93,32 +103,33 @@ contains
 
 
     ! -- Fragment
-    DECinfo%MaxIter=20
-    DECinfo%FOTlevel=4
-    DECinfo%maxFOTlevel=8   ! if you modify this remember to modify dimension of ncalc as well!
-    DECinfo%FOT=1.0E-4_realk
-    DECinfo%InclFullMolecule = .false.
-    DECinfo%PL=0
-    DECinfo%PurifyMOs=.false.
-    DECinfo%precondition_with_full=.false.
-    DECinfo%FragmentExpansionSize = 5
-    DECinfo%fragadapt=.false.
+    DECinfo%MaxIter                = 20
+    DECinfo%FOTlevel               = 4
+    DECinfo%maxFOTlevel            = 8   ! if you modify this remember to modify dimension of ncalc as well!
+    DECinfo%FOT                    = 1.0E-4_realk
+    DECinfo%InclFullMolecule       = .false.
+    DECinfo%PL                     = 0
+    DECinfo%PurifyMOs              = .false.
+    DECinfo%precondition_with_full = .false.
+    DECinfo%FragmentExpansionSize  = 5
+    DECinfo%fragadapt              = .false.
+    DECinfo%only_one_frag_job      = .false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
-    DECinfo%fragopt_exp_model=MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
-    DECinfo%fragopt_red_model=MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
-    DECinfo%OnlyOccPart=.false.
+    DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
+    DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
+    DECinfo%OnlyOccPart            = .false.
     ! Repeat atomic fragment calcs after fragment optimization
-    DECinfo%RepeatAF=.true.
+    DECinfo%RepeatAF               = .true.
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
-    DECinfo%CorrDensScheme=1
+    DECinfo%CorrDensScheme         = 1
 
     ! -- Pair fragments
-    DECinfo%pair_distance_threshold=20.0E0_realk/bohr_to_angstrom
-    DECinfo%paircut_set=.false.
-    DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
-    DECinfo%pairFOthr = 0.0_realk
-    DECinfo%PairMP2=.false.
-    DECinfo%PairEstimate=.true.
+    DECinfo%pair_distance_threshold = 20.0E0_realk/bohr_to_angstrom
+    DECinfo%paircut_set             = .false.
+    DECinfo%PairMinDist             = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
+    DECinfo%pairFOthr               =  0.0_realk
+    DECinfo%PairMP2                 = .false.
+    DECinfo%PairEstimate            = .true.
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory=0E0_realk
@@ -134,6 +145,7 @@ contains
     DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
     DECinfo%F12                     = .false.
     DECinfo%F12debug                = .false.
+    DECinfo%PureHydrogenDebug       = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -192,7 +204,7 @@ contains
   !> configuration structure accordingly.
   !> \author Kasper Kristensen
   !> \date September 2010
-  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc)
+  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc,doF12)
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
@@ -206,6 +218,8 @@ contains
     !> Is this a full calculation (fullcalc=true, input **CC) 
     !> or a DEC calculation (fullcalc=false, input=**DEC)
     logical,intent(in) :: fullcalc
+    !> do we do F12 calc (is a CABS basis required?)
+    logical,intent(inout) :: doF12
     logical,save :: already_called = .false.
     integer :: fotlevel
 
@@ -255,7 +269,6 @@ contains
 
        ! See explanation of DEC parameters in type DEC_settings
        DEC_INPUT_INFO: SELECT CASE(WORD)
-
 
 
           ! ****************************************************************************
@@ -392,6 +405,7 @@ contains
        !CCSD testing
        case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
           read(input,*) DECinfo%en_mem
+       case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
@@ -401,23 +415,47 @@ contains
           ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
+       case('.CRASHCALC') 
+          DECinfo%CRASHCALC= .true.
+
+
 #ifndef VAR_MPI
           print *, 'WARNING: You have specified MPI groupsize - but this is a serial run!'
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
 
+
 #ifdef MOD_UNRELEASED
-       case('.CCDEBUG'); DECinfo%CCDEBUG=.true.
-       case('.CCSOLVER_LOCAL'); DECinfo%solver_par=.false.
-       case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
-       case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
-       case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.
-       case('.SPAWN_COMM_PROC'); DECinfo%spawn_comm_proc=.true.
-       case('.CCSDMULTIPLIERS'); DECinfo%CCSDmultipliers=.true.
-       case('.USE_PNOS'); DECinfo%use_pnos=.true.
-       case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
+
+       !CCSD SPECIFIC KEYWORDS
+       !**********************
+       case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
+       case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
+       case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
+       case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
+       case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
+       case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
+       case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
+       case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
+       case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
+       case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
+       case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
+       case('.PNOTRIANGULAR');            DECinfo%PNOtriangular        = .true.
+       case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
+       case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
+
+       case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
+       case('.EOSPNOTHR');     read(input,*) DECinfo%EOSPNOthr
+       case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
+
+
+
+       !OTHER STUFF
+       !***********
+
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
+       case('.MAX_NUM_MO'); read(input,*) DECinfo%Max_num_MO
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
@@ -429,8 +467,16 @@ contains
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
-       case('.F12'); DECinfo%F12=.true.
-       case('.F12DEBUG'); DECinfo%F12DEBUG=.true.
+
+       case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
+       case('.F12DEBUG')     
+          DECinfo%F12=.true.
+          DECinfo%F12DEBUG=.true.
+          doF12 = .TRUE.
+          !endif mod_unreleased
+       case('.PUREHYDROGENDEBUG')     
+          DECinfo%PureHydrogenDebug       = .true.
+
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -453,7 +499,6 @@ contains
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
-       case('.CCSDEXPL'); DECinfo%ccsd_expl=.true.
        case('.PURIFICATION'); DECinfo%PurifyMOs=.true.
        case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.
        case('.SIMPLEMULLIKENTHRESH'); DECinfo%simple_mulliken_threshold=.true.
@@ -471,7 +516,8 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
-       case('.FRAGMENTADAPTED'); DECinfo%fragadapt=.true.
+       case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
+       case('.ONLY_ONE_JOB'); DECinfo%only_one_frag_job    = .true.
 
           ! kappabar multiplier equation
        case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 
@@ -570,11 +616,6 @@ contains
        DECinfo%ccConvergenceThreshold=0.01E0_realk*DECinfo%FOT
     end if
 
-    ! Only full molecular for RPA at this stage
-    if(DECinfo%ccmodel==MODEL_RPA .and. .not. DECinfo%full_molecular_cc) then
-       call lsquit('RPA only implemented for full molecule! Use **CC rather than **DEC.',-1)
-    end if
-
     ! Never use gradient and density at the same time (density is a subset of gradient)
     if(DECinfo%MP2density .and. DECinfo%gradient) then
        call lsquit('Density and gradient cannot both be turned on at the same time! &
@@ -653,6 +694,7 @@ contains
     write(lupri,*) 'CCDEBUG ', DECitem%CCDEBUG
     write(lupri,*) 'CCSDno_restart ', DECitem%CCSDno_restart
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
+    write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
     write(lupri,*) 'en_mem ', DECitem%en_mem
     write(lupri,*) 'precondition_with_full ', DECitem%precondition_with_full
@@ -666,8 +708,10 @@ contains
     write(lupri,*) 'use_crop ', DECitem%use_crop
     write(lupri,*) 'simulate_eri ', DECitem%simulate_eri
     write(lupri,*) 'fock_with_ri ', DECitem%fock_with_ri
+#ifdef MOD_UNRELEASED    
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
+#endif
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
     write(lupri,*) 'manual_batchsizes ', DECitem%manual_batchsizes
@@ -817,12 +861,12 @@ contains
 
     SELECT CASE(MYWORD)
 
-    case('.MP2'); modelnumber=MODEL_MP2
-    case('.CC2'); modelnumber=MODEL_CC2
-    case('.CCSD'); modelnumber=MODEL_CCSD
-    case('.CCD'); modelnumber=MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
-    case('.CCSD(T)'); modelnumber=MODEL_CCSDpT
-    case('.RPA'); modelnumber=MODEL_RPA
+    case('.MP2');     modelnumber = MODEL_MP2
+    case('.CC2');     modelnumber = MODEL_CC2
+    case('.CCSD');    modelnumber = MODEL_CCSD
+    case('.CCD');     modelnumber = MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
+    case('.CCSD(T)'); modelnumber = MODEL_CCSDpT
+    case('.RPA');     modelnumber = MODEL_RPA
 
     case default
        print *, 'Model not found: ', myword

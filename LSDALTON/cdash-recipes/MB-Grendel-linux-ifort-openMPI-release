@@ -22,7 +22,7 @@ cd $TMP_DIR/build
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=5
 export CTEST_PROJECT_NAME=LSDALTON
-FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DCMAKE_BUILD_TYPE=Release -DENABLE_BLAS=OFF -DENABLE_LAPACK=OFF -DENABLE_RELEASE=0 -DBUILDNAME=MB-Grendel-linux-ifort-openMPI-release $TMP_DIR
+FC=mpif90 CC=mpicc CXX=mpic++ cmake -DENABLE_MPI=1 -DCMAKE_BUILD_TYPE=Release -DENABLE_BLAS=OFF -DENABLE_LAPACK=OFF -DENABLE_RELEASE=0 -DBUILDNAME=MB-Grendel-linux-ifort-openMPI-release $TMP_DIR
 #make depend
 #make Nightly
 ctest -D Nightly -L linsca

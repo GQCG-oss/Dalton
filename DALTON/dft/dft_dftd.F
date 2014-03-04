@@ -34,11 +34,8 @@ CAMT----------------------------------------------------------------------
 #include "dftd.h"
 #include "pgroup.h"
 #include "chrxyz.h"
-      DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
 #include "chrsgn.h"
-      DATA CHRSGN /'-',' ','+'/
 #include "chrnos.h"
-      DATA CHRNOS /'0','1','2','3','4','5','6','7','8','9'/
 #include "ibtfun.h"
       DIMENSION WORK(LWORK)
 CAMT----------------------------------------------------------------------
@@ -125,11 +122,8 @@ CAMT Perform the memory allocations... (all in one go!)
 #include "dftd.h" 
 #include "pgroup.h"
 #include "chrxyz.h"
-      DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
 #include "chrsgn.h"
-      DATA CHRSGN /'-',' ','+'/
 #include "chrnos.h"
-      DATA CHRNOS /'0','1','2','3','4','5','6','7','8','9'/
 #include "ibtfun.h"
       DIMENSION WORK(LWORK)
 !C6AB has dimensions of No. elements x No. elements x Coord No. Refs x Coord No. Refs. x 3
@@ -2469,11 +2463,8 @@ C          91          92          93          94
 #include "dftd.h"
 #include "pgroup.h"
 #include "chrxyz.h"
-      DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
 #include "chrsgn.h"
-      DATA CHRSGN /'-',' ','+'/
 #include "chrnos.h"
-      DATA CHRNOS /'0','1','2','3','4','5','6','7','8','9'/
 #include "ibtfun.h"
       DIMENSION FCOORD(NATOMS*3)
       DIMENSION FCOORD2(NATOMS,3)
@@ -2556,11 +2547,8 @@ C
 #include "dftd.h"
 #include "pgroup.h"
 #include "chrxyz.h"
-      DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
 #include "chrsgn.h"
-      DATA CHRSGN /'-',' ','+'/
 #include "chrnos.h"
-      DATA CHRNOS /'0','1','2','3','4','5','6','7','8','9'/
 #include "ibtfun.h"
       DIMENSION WORK(LWORK)
       DIMENSION TEMPG(NATOMS*3)
