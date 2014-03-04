@@ -194,7 +194,7 @@ CTRL[7]=3
 ERROR[7]="TOTAL MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Diamagnetic magnetizability tensor
-CRIT1=`$GREP "Bx *   \-3\.509386...... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT1=`$GREP "Bx *   \-3\.50938[56].*  * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
 CRIT2=`$GREP "By * \-*0*\.000000000000 *   \-3\.123016...... * \-*0*\.000000000000" $log | wc -l`
 CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 *   \-3\.301507......" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
