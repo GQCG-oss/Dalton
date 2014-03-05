@@ -478,8 +478,9 @@ C         if reading input from a terminal
   910 CONTINUE
          NWARN = NWARN + 1
          WRITE (LUPRI,'(//A)')
-     &   'WARNING INTEGRALS input: error reading Dalton input file'
+     &   'WARNING **INTEGRALS input: error reading Dalton input file'
   920 CONTINUE
+         WORD  = '**END O'
          WORD1 = '**END O'
          GOTO 300
   930 CONTINUE
