@@ -68,12 +68,12 @@ X   1.6874280   2.8198310   0.0017045
 @MULTIPOLES
 ORDER 0
 6
-1    -0.7423294438  
-2     0.3699305781  
-3     0.3723988657  
-6    -0.7424407021  
-7     0.3699635356  
-8     0.3724771666  
+1    -0.7423294438
+2     0.3699305781
+3     0.3723988657
+6    -0.7424407021
+7     0.3699635356
+8     0.3724771666
 ORDER 1
 10
 1        0.0303539300        0.3280749969        0.0000894127
@@ -192,14 +192,6 @@ CTRL[1]=6
 ERROR[1]="INCORRECT POTENTIAL"
 
 #
-# Convergence
-#
-CRIT1=`$GREP " DIIS converged in  12 iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
-
-#
 # Energies
 #
 CRIT1=`$GREP "Monopoles * (\-|\-0)\.015407......" $log | wc -l`
@@ -211,9 +203,9 @@ CRIT6=`$GREP "Nuclear * ( |0)\.043425......" $log | wc -l`
 CRIT7=`$GREP "Multipole * ( |0)\.000132......" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.019208......" $log | wc -l`
 CRIT9=`$GREP "Final HF energy: * \-188\.317408......" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
-CTRL[3]=9
-ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
+CTRL[2]=9
+ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
 # Induced dipole moments in environment
@@ -228,12 +220,12 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
  CRIT8=`$GREP "  8 * (\-|\-0)\.001416.. * (\-|\-0)\.000791.. * (\-|\-0)\.000004.." $log | wc -l`
  CRIT9=`$GREP "  9 * (\-|\-0)\.044463.. * (\-|\-0)\.014073.. * ( |0)\.000008.." $log | wc -l`
 CRIT10=`$GREP " 10 * (\-|\-0)\.002380.. * (\-|\-0)\.000434.. * (\-|\-0)\.000009.." $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
-CTRL[4]=10
-ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
+CTRL[3]=10
+ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
-PASSED=1 
-for i in 1 2 3 4
+PASSED=1
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -248,7 +240,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
 echo $CHECK_SHELL > pehf_nomb__2.check
 cat >> pehf_nomb__2.check <<'%EOF%'
@@ -273,14 +265,6 @@ CTRL[1]=5
 ERROR[1]="INCORRECT POTENTIAL"
 
 #
-# Convergence
-#
-CRIT1=`$GREP " DIIS converged in  12 iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
-
-#
 # Energies
 #
 CRIT1=`$GREP "Monopoles * (\-|\-0)\.015407......" $log | wc -l`
@@ -292,9 +276,9 @@ CRIT6=`$GREP "Nuclear * ( |0)\.043425......" $log | wc -l`
 CRIT7=`$GREP "Multipole * ( |0)\.000132......" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.019208......" $log | wc -l`
 CRIT9=`$GREP "Final HF energy: * \-188\.317408......" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
-CTRL[3]=9
-ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
+CTRL[2]=9
+ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
 # Induced dipole moments in environment
@@ -309,12 +293,12 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
  CRIT8=`$GREP "  8 * (\-|\-0)\.001416.. * (\-|\-0)\.000791.. * (\-|\-0)\.000004.." $log | wc -l`
  CRIT9=`$GREP "  9 * (\-|\-0)\.044463.. * (\-|\-0)\.014073.. * ( |0)\.000008.." $log | wc -l`
 CRIT10=`$GREP " 10 * (\-|\-0)\.002380.. * (\-|\-0)\.000434.. * (\-|\-0)\.000009.." $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
-CTRL[4]=10
-ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
+CTRL[3]=10
+ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
-PASSED=1 
-for i in 1 2 3 4
+PASSED=1
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -329,6 +313,6 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
 #######################################################################

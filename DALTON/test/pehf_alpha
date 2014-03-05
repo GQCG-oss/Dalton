@@ -68,12 +68,12 @@ X   1.6874280   2.8198310   0.0017045
 @MULTIPOLES
 ORDER 0
 6
-1    -0.7423294438  
-2     0.3699305781  
-3     0.3723988657  
-6    -0.7424407021  
-7     0.3699635356  
-8     0.3724771666  
+1    -0.7423294438
+2     0.3699305781
+3     0.3723988657
+6    -0.7424407021
+7     0.3699635356
+8     0.3724771666
 ORDER 1
 10
 1        0.0303539300        0.3280749969        0.0000894127
@@ -191,7 +191,7 @@ TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[2]=6
 ERROR[2]="FREQUENCY DEPENDENT POLARIZABILITY NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -207,7 +207,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
 chmod +x pehf_alpha.check
 #######################################################################

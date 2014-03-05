@@ -17,21 +17,22 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > pehf_small_london_cosmo.info <<'%EOF%'
-   pehf_small_london_cosmo
-   -----------
-   Molecule:         Acrolein and two classical water molecules and COSMO solvation
-   Wave Function:    PE-HF / 6-31+G*
-   Test Purpose:     Test of energies, dipole moment and nuclear
-                     magnetic shieldings through ABACUS using the
-                     DIIS solver for induced moments and induced charges
+cat > pehf_fixsol_direct_1.info <<'%EOF%'
+   pehf_fixsol_direct_1
+   ------------------
+   Molecule:         Acrolein, two classical water molecules and
+                     FIXSOL solvation
+   Wave Function:    PE-HF / STO-3G
+   Test Purpose:     Test of PE library using FIXSOL with direct
+                     solver for induced moments.
+                     (classical response matrix is ill-conditioned)
 %EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > pehf_small_london_cosmo.mol <<'%EOF%'
+cat > pehf_fixsol_direct_1.mol <<'%EOF%'
 BASIS
-6-31+G*
+STO-3G
 Acrolein
 ------------------------
 AtomTypes=3 NoSymmetry Angstrom
@@ -50,9 +51,8 @@ H              2.675323   -2.516779   -0.000673
 #######################################################################
 #  POTENTIAL INPUT
 #######################################################################
-cat > pehf_small_london_cosmo.pot <<'%EOF%'
+cat > pehf_fixsol_direct_1.pot <<'%EOF%'
 ! Two water molecules modelled by a Polarizable Embedding potential
-! notice that the octopoles have been removed
 @COORDINATES
 10
 AA
@@ -69,12 +69,12 @@ X   1.6874280   2.8198310   0.0017045
 @MULTIPOLES
 ORDER 0
 6
-1    -0.7423294438  
-2     0.3699305781  
-3     0.3723988657  
-6    -0.7424407021  
-7     0.3699635356  
-8     0.3724771666  
+1    -0.7423294438
+2     0.3699305781
+3     0.3723988657
+6    -0.7424407021
+7     0.3699635356
+8     0.3724771666
 ORDER 1
 10
 1        0.0303539300        0.3280749969        0.0000894127
@@ -128,34 +128,26 @@ EXCLISTS
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > pehf_small_london_cosmo.dal <<'%EOF%'
+cat > pehf_fixsol_direct_1.dal <<'%EOF%'
 **DALTON
-.RUN PROPERTIES
+.RUN WAVE FUNCTION
 .PEQM
 *PEQM
+.VERBOSE
 .SOLVAT
 .FIXPVA
 .MAXTES
  500
-.DIIS
- 1.0d-8
+.DIRECT
 **WAVE FUNCTIONS
 .HF
-*SCF INPUT
-.THRESHOLD
-1.0d-8
-**PROPERTIES
-.SHIELD
-*LINRES
-.THRESH
-1.0D-4
 **END OF
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > pehf_small_london_cosmo.check
-cat >> pehf_small_london_cosmo.check <<'%EOF%'
+echo $CHECK_SHELL > pehf_fixsol_direct_1.check
+cat >> pehf_fixsol_direct_1.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -167,64 +159,54 @@ fi
 #
 # Potential readin test
 #
-CRIT1=`$GREP "Number of classical sites: * 10" $log | wc -l`
-CRIT2=`$GREP "Multipole moments upto 2nd order." $log | wc -l`
-CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
-CRIT4=`$GREP "Iterative solver for induced moments" $log | wc -l`
-CRIT5=`$GREP "convergence threshold: 1.0E-08" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
-CTRL[1]=5
+CRIT1=`$GREP "Surface area FIXA * 167.899" $log | wc -l`
+CRIT2=`$GREP "Number of classical sites\: * 10" $log | wc -l`
+CRIT3=`$GREP "Multipole moments upto 2nd order\." $log | wc -l`
+CRIT4=`$GREP "Dipole-dipole polarizabilities\." $log | wc -l`
+CRIT5=`$GREP "Direct solver for induced moments will be used\." $log | wc -l`
+CRIT6=`$GREP "Continuum solvation in H2O solvent\." $log | wc -l`
+CRIT7=`$GREP "Number of surface points\: * 377" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7`
+CTRL[1]=7
 ERROR[1]="INCORRECT POTENTIAL"
-#
-# Potential readin test
-#
-CRIT1=`$GREP "*** DIIS converged in  22 iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
+
 #
 # Energy tests
-CRIT1=`$GREP "Monopoles * (\-|\-0)\.031212" $log | wc -l`
-CRIT2=`$GREP "Dipoles * (|0)\.007615" $log | wc -l`
-CRIT3=`$GREP "Quadrupoles * (\-|\-0)\.010321" $log | wc -l`
-CRIT4=0
-CRIT5=`$GREP "Electronic * (\-|\-0)\.156376" $log | wc -l`
-CRIT6=`$GREP "Nuclear       * (|0)\.15168" $log | wc -l`
-CRIT7=`$GREP "Multipole * (|0)\.000321" $log | wc -l`
-CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.059641" $log | wc -l`
-CRIT9=`$GREP "Final HF energy: * \-190\.814207" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
-CTRL[3]=8
-ERROR[3]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
+#
+ CRIT1=`$GREP "Monopoles * (\-|-0)\.01515......." $log | wc -l`
+ CRIT2=`$GREP "Dipoles * ( |0)\.00416......." $log | wc -l`
+ CRIT3=`$GREP "Quadrupoles  * (\-|-0)\.00495......." $log | wc -l`
+ CRIT4=`$GREP "Electronic * (\-|-0)\.06714......." $log | wc -l`
+ CRIT5=`$GREP "Nuclear * ( |0)\.06669......." $log | wc -l`
+ CRIT6=`$GREP "Multipole * ( |0)\.00005......." $log | wc -l`
+ CRIT7=`$GREP "Electronic * ( |0)\.00679......." $log | wc -l`
+ CRIT8=`$GREP "Nuclear * (\-|-0)\.00747......." $log | wc -l`
+ CRIT9=`$GREP "Multipole * (\-|-0)\.01340......." $log | wc -l`
+CRIT10=`$GREP "Total PE energy\: * (\-|-0)\.03042......." $log | wc -l`
+CRIT11=`$GREP "Final HF energy\: * \-188\.32865......." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11`
+CTRL[2]=11
+ERROR[2]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
-# dipole moment of acrolein
+# Induced dipole moments in environment
 #
-CRIT1=`$GREP "x * 1\.18219" $log | wc -l`
-CRIT2=`$GREP "y * \-2\.31901" $log | wc -l`
-CRIT3=`$GREP "z * (\-|\-0)\.00013" $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
-CTRL[4]=3
-ERROR[4]="DIPOLE MOMENT NOT CORRECT"
+ CRIT1=`$GREP " 1 * ( |0)\.007..... * (\-|\-0)\.019..... * (|-0)\.000....." $log | wc -l`
+ CRIT2=`$GREP " 2 * ( |0)\.012..... * ( |0)\.001..... * ( |0)\.000....." $log | wc -l`
+ CRIT3=`$GREP " 3 * ( |0)\.010..... * (\-|\-0)\.010..... * (|-0)\.000....." $log | wc -l`
+ CRIT4=`$GREP " 4 * ( |0)\.015..... * ( |0)\.006..... * ( |0)\.000....." $log | wc -l`
+ CRIT5=`$GREP " 5 * ( |0)\.048..... * (\-|\-0)\.047..... * (\-|\-0)\.000....." $log | wc -l`
+ CRIT6=`$GREP " 6 * ( |0)\.007..... * (\-|\-0)\.015..... * (\-|\-0)\.000....." $log | wc -l`
+ CRIT7=`$GREP " 7 * (\-|\-0)\.010..... * (\-|\-0)\.009..... * (\-|\-0)\.000....." $log | wc -l`
+ CRIT8=`$GREP " 8 * ( |0)\.001..... * (\-|\-0)\.014..... * (\-|\-0)\.000....." $log | wc -l`
+ CRIT9=`$GREP " 9 * (\-|\-0)\.021..... * (\-|\-0)\.012..... * (\-|\-0)\.000....." $log | wc -l`
+CRIT10=`$GREP "10 * ( |0)\.007..... * (\-|\-0)\.061..... * (\-|\-0)\.000....." $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[3]=10
+ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
-
-#
-# Test of PE-HF shielding constants.
-#
-CRIT1=`$GREP "@1 C        -4.4270  363.2957 -367.7228    0.6234  199.2738  180.5106    0.3118" $log | wc -l`
-CRIT2=`$GREP "@1 C        70.4778  349.5048 -279.0270   -0.1569  195.3127  138.8235    1.2207" $log | wc -l`
-CRIT3=`$GREP "@1 C        44.4570  277.9056 -233.4486    0.0642  277.7024  212.7339    0.9162" $log | wc -l`
-CRIT4=`$GREP "@1 O      -104.9101  422.3625 -527.2726    0.5297  826.1931  729.0453    0.3998" $log | wc -l`
-CRIT5=`$GREP "@1 H        22.6372   51.5513  -28.9141    0.7509    3.5320    3.3121    0.1992" $log | wc -l`
-CRIT6=`$GREP "@1 H        25.4416   45.9027  -20.4611    0.6303    5.0229    4.5587    0.3055" $log | wc -l`
-CRIT7=`$GREP "@1 H        24.9057   30.5367   -5.6309   -0.3467    7.5674    5.0197    1.5226" $log | wc -l`
-CRIT8=`$GREP "@1 H        24.7432  -13.0360   37.7792   -0.2626    6.3841    4.3690    1.3837" $log | wc -l`
-TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 `
-CTRL[5]=8
-ERROR[5]="PE-HF MAGNETIC PROPERTIES NOT CORRECT"
-
-PASSED=1 
-for i in 1 2 3 4 5
+PASSED=1
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -239,7 +221,6 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
-chmod +x pehf_small_london_cosmo.check
 #######################################################################

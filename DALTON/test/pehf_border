@@ -94,7 +94,7 @@ H    7.319000   67.822000  -10.702000
 #  POTENTIAL INPUT
 #######################################################################
 cat > pehf_border.pot <<'%EOF%'
-! Potential by PEAS 0.1 
+! Potential by PEAS 0.1
 ! B3LYP/A-6-31PGP LoProp multipole moments
 ! B3LYP/A-6-31PGP LoProp polarizabilities
 @COORDINATES
@@ -467,7 +467,7 @@ TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[1]=6
 ERROR[1]="REMOVAL OF PARAMETERS NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -512,7 +512,7 @@ TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7
 CTRL[1]=10
 ERROR[1]="REMOVAL OF PARAMETERS NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -569,7 +569,7 @@ TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
 CTRL[2]=4
 ERROR[2]="REDISTRIBUTION OF CHARGES NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -641,7 +641,7 @@ TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[3]=6
 ERROR[3]="REDISTRIBUTION OF DIPOLES NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -757,7 +757,7 @@ TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7
 CTRL[5]=10
 ERROR[5]="REDISTRIBUTION OF POLARIZABILITIES NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -829,7 +829,7 @@ TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[3]=6
 ERROR[3]="REDISTRIBUTION OF POLARIZABILITIES NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
