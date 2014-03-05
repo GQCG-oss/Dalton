@@ -1260,10 +1260,13 @@ C        .. change from CSf basis to determinant basis
           write(lupri,*) ' before sigma vec run: hc'
           call wrtmatmn(hc,1,NHCVEC,1,NHCVEC,lupri)
 #endif
+          write(lupri,*) ' before sigma vec run: c'
+          write(lupri,*) ' before sigma vec run: hc'
 
           call mcscf_lucita_interface(c,hc,fcac,h2ac,'sigma vec   ',
      &                                wrk,lfree,iprsig)
 
+          write(lupri,*) ' after sigma vec run: c'
 #ifdef LUCI_DEBUG
           write(lupri,*) ' after sigma vec run: c'
           call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)

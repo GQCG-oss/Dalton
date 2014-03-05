@@ -2269,6 +2269,7 @@ C
 C
 C     Dec 2010 : get EMY and get FCAC and H2AC matrices in Dalton
 C
+      use lucita_mc_response_cfg
 #include "implicit.h"
 
       DIMENSION X1INT(*), X2INT(*), tmp_dal_work(lwork)
@@ -2370,7 +2371,8 @@ C
         call sirint2luint(int1_mcscf,int2_mcscf,
      &                    dummy,x1int,x2int,mult_ptg,adsxa,nasht,nnashx,
      &                    ntoobs,nsym,mxpobs,nint1,nint2,ireost,ireots,
-     &                    ngas,is2e_active,iintden,-1)
+     &                    ngas,is2e_active,iintden,
+     &                    lucita_mc_response_prp_int)
       end if
 
       deallocate(mult_ptg)

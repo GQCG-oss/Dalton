@@ -2411,14 +2411,18 @@ C     |0(L)> =  SUM(N) S'(N)*|N>
 C
 C MODIFIED 5-5-1988 : ASSUME |0(L)> = 0 i.e. S' = 0 AND
 C                     NOT STORED'
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(KZCONF,*),FCAC(*),H2AC(*)
       DIMENSION EVECS(KZYVAR,*),XINDX(*),WRK(*)
 C
 #include "priunit.h"
+#include "maxorb.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
+#include "infinp.h"
 #include "infopt.h"
 #include "inforb.h"
 #include "infpri.h"
@@ -2452,8 +2456,25 @@ C     ... IADH2 .lt. 0: H2AC in core
       ISPIN1 = 0
       ISPIN2 = 0
       DO 100 ISIM = 1,NCSIM
-         CALL DSPTSI(NASHT,FCAC,WRK(KUFCAC))
-C     ... unpack FCAC using CALL DSPTSI(N,ASP,ASI)
+         if(ci_program .eq. 'SIRIUS-CI')then
+           CALL DSPTSI(NASHT,FCAC,WRK(KUFCAC))
+C     ...  unpack FCAC using CALL DSPTSI(N,ASP,ASI)
+         else if(ci_program .eq. 'LUCITA   ')then
+           call dcopy(NNASHX,FCAC,1,WRK(KUFCAC),1)
+!
+!          set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+           mcscf_ci_trial_vector = .true.
+
+!          set vector exchange type: cref
+           if(cref_is_active_bvec_for_sigma)then 
+             vector_exchange_type1 = 2
+             cref_is_active_bvec_for_sigma = .false.
+           else
+!           set vector exchange type: bvec trial vector
+            vector_exchange_type1 = 2
+           end if
+         end if
+
          CALL CISIGD(KSYMST,KSYMST,KZCONF,KZCONF,ZYCVEC(1,ISIM),
      *               EVECS(1,ISIM),WRK(KUFCAC),H2AC,NOH2,IH8SM,
      *               XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
@@ -2508,6 +2529,8 @@ C           CALL OUTPUT(EVECS(1+KZVAR,ISIM),
 C    *                  1,KZCONF,1,1,KZCONF,1,1,LUPRI)
 C        END IF
  100  CONTINUE
+!     reset flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
 C
 C END OF RSPCLI
 C
