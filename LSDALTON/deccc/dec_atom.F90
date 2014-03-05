@@ -6293,6 +6293,18 @@ contains
     call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Epair_est,Eskip_est,&
          & FragEnergies,MyMolecule%DistanceTable)
 
+    if(DECinfo%PairEstimateIgnore) then
+       write(DECinfo%output,*) ' ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** ' 
+       do P=1,natoms
+          if(.not. dofrag(P)) cycle
+          do Q=1,natoms
+             if(.not. dofrag(Q)) cycle
+             MyMolecule%ccmodel(P,Q)=DECinfo%ccmodel
+          end do
+       end do
+    end if
+
+
   end subroutine define_pair_calculations
 
 
