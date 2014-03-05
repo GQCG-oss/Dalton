@@ -146,16 +146,17 @@ C        this is restored from BASSAV just before RETURN.
 C panor/johhe 2005:
 C        Huckel guess now based on ANO-DK3 instead because it 
 C        includes all elements in the periodic table.
-C
-         ANO = .TRUE.
 C hjaaj mar 2006: use ano-4 for Z.le.36 to include
 C        2p for Li, Be; 3p for Na, Mg; 4p for K, Ca
 C        (these basis fu. does not exist in the minimum basis ANO-DK3)
+
+         ANO = .TRUE.
          IF (INTQ .LE. 36) THEN
             BASTMP = 'ano-4   for Huckel'
          ELSE
             BASTMP = 'ANO-DK3 for Huckel'
          END IF
+
 C        NOTE that ECP Huckel start guess is implemented
 C        in READ_ANO through the Q-QEFF parameter. 
          ISTART = 7
@@ -241,27 +242,41 @@ C           ...  Np
          ELSE IF (INTQ .LE. 95) THEN
 C           ...  Am
             BASNAM = 'HUCKEL    7 5 3 2'
-C         ELSE IF (INTQ .EQ. 92) THEN
-C           ...  Special dirty fix for U
-C            BASNAM = 'HUCKEL    7 5 4 2'
          ELSE IF (INTQ .LE. 103) THEN
 C           ...  Lr
             BASNAM = 'HUCKEL    7 6 4 2'
 C Manu end
+
          ELSE 
             CALL QUIT('BASLIB error: HUCKEL not defined for Z > 103')
          END IF
-C djw Feb 2005
-C notation changed from 'd' to 'd-' for consistency with EMSL
+
       ELSE
+
+C djw Feb 2005 - notation changed from 'd' to 'd-' for consistency with EMSL
          IF (BASNAM(3:10) .EQ. 'aug-cc-p') THEN
-            BASTMP(1:78) = BASNAM(3:80)
-            IF (BASNAM(1:2) .EQ. 'd-') THEN
+             BASTMP(1:78) = BASNAM(3:80)
+
+            IF (BASNAM(1:2) .EQ. 'd-' .OR.
+     &          BASNAM(1:2) .eq. '2-') THEN
                IAUG = 1
-            ELSE IF (BASNAM(1:2) .EQ. 't-') THEN
+            ELSE IF (BASNAM(1:2) .EQ. 't-' .OR.
+     &               BASNAM(1:2) .eq. '3-') THEN
                IAUG = 2
-            ELSE IF (BASNAM(1:2) .EQ. 'q-') THEN
+            ELSE IF (BASNAM(1:2) .EQ. 'q-' .OR.
+     &               BASNAM(1:2) .eq. '4-') THEN
                IAUG = 3
+
+!radovan: added some nonstandard augmentation prefixes
+!         i need them to test high-order response
+!         use at own risk
+            else if (basnam(1:2) .eq. '5-') then
+               iaug = 4
+            else if (basnam(1:2) .eq. '6-') then
+               iaug = 5
+            else if (basnam(1:2) .eq. '7-') then
+               iaug = 6
+
             ELSE
                WRITE (LUPRI,'(/A2,A)') BASNAM(1:2),' is an unknown'//
      &              'augmentation level'
@@ -356,7 +371,7 @@ C
       IF (IPRINT.GE.10) THEN
         CALL HEADER('Output from BASLIB',-1)
         WRITE(LUPRI,*) 'ISTART =',ISTART
-        WRITE(LUPRI,'(A,A)') ' BASTMP = ',BASTMP
+        WRITE(LUPRI,'(2A)') ' BASTMP = ',BASTMP
         WRITE(LUPRI,*) 'IPOLST =',IPOLST
         WRITE(LUPRI,*) 'POLFUN =',POLFUN
         WRITE(LUPRI,*) 'ANO    =',ANO
@@ -432,8 +447,8 @@ C           in her2drv:PAOSET, each segmented is put into its own block
 C           thus for UNCONT each primitive is in its own block and we
 C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     *      ' >>> BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
-     *      '                   current maximum number MXAOVC =',KAOVEC,
+     &      ' >>> BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
+     &      '                   current maximum number MXAOVC =',KAOVEC,
      &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
             END IF
@@ -497,8 +512,8 @@ C           in her2drv:PAOSET, each segmented is put into its own block
 C           thus for UNCONT each primitive is in its own block and we
 C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     *      ' >>> BASLIB error, number of AO-blocks for PAOSET ',INTORB,
-     *      '                   current maximum number MXAOVC =',KAOVEC,
+     &      ' >>> BASLIB error, number of AO-blocks for PAOSET ',INTORB,
+     &      '                   current maximum number MXAOVC =',KAOVEC,
      &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
          END IF
@@ -686,8 +701,8 @@ C
      +                 I = 1, KNTORB)
                   IF (IOS.NE.0) THEN
                     WRITE(LUPRI,*) 'KNTORB=',KNTORB
-                    WRITE(LUPRI,'(A,A)') 'STRING=',STRING
-                    WRITE(LUPRI,*) 'I,J,NBLOCK:',I,J,NBLOCK
+                    WRITE(LUPRI,'(3A)') ' STRING = "',STRING,'"'
+                    WRITE(LUPRI,*) 'J,NBLOCK:',J,NBLOCK
                     WRITE(LUPRI,*) 'ALPHA(J, NBLOCK)=',ALPHA(J, NBLOCK)
                     WRITE(LUPRI,*) 'CPRIMU(J,I,NBLOCK), I = 1, KNTORB:',
      &              ( CPRIMU(J,I,NBLOCK),I = 1, KNTORB )
@@ -754,7 +769,7 @@ C
                GOTO 20
             END IF
             CALL QUIT('REANU: this line should never be reached')
-         ELSE
+         ELSE    ! IF (SIGN .EQ. ' ') THEN
 C
 C Found a line with nothing sensible in it
 C
@@ -952,8 +967,8 @@ C*             line is a blank one.                          *
 C*************************************************************
       SUBROUTINE CHBLANK(BLANK,STRING)
 C
-      LOGICAL BLANK
       CHARACTER*(*) STRING
+      LOGICAL BLANK
 C
       BLANK = .TRUE.
 C
@@ -1033,7 +1048,7 @@ C*              proofing the subroutine.                 *
 C*********************************************************
 C
       CHARACTER*(*) BASNAM
-      CHARACTER*88 STRING
+      CHARACTER*200 STRING  ! long because contains the full directory path
       CHARACTER SIGN
 C
       CALL FIND_BASFIL(BASNAM,LUBAS,IPRINT)
@@ -1068,7 +1083,7 @@ C
      &' ERROR: Nuclear charge',INTQ,
      &   ' is an unsupported element for basis ',BASNAM,
      &' ERROR: You must choose another basis set, or enter it manually.'
-      CALL QUIT('Unsupported element in HERBAS')
+      CALL QUIT('Unsupported element in specified basis set file')
       END 
 C/* Deck finnqd */
       SUBROUTINE FIND_NQD(BASNAM, INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,
@@ -1135,7 +1150,8 @@ C
                END IF
                NBLOCK = NBLOCK + 1
                IF (NBLOCK .GT. KAOVEC) THEN
-                  CALL QUIT('Too many AO blocks; increase MXAOVC')
+                  CALL QUIT(
+     &            'FIND_NQD: Too many AO blocks; increase MXAOVC')
                END IF
 C
 C Setting ALPHA, CPRIMU AND CPRIM to zero. 
@@ -1288,13 +1304,13 @@ C
      &  ' >>> FIND_NQD error, number of primitives per block',ISPRIM,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
-        CALL QUIT('Too many primitives')
+        CALL QUIT('FIND_NQD: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
      &  ' >>> FIND_NQD error, number of contracted functions',ISCONT,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KAOVEC
-        CALL QUIT('Too many contracted functions')
+        CALL QUIT('FIND_NQD: Too many contracted functions')
       END 
 C/* Deck find_ref */
       SUBROUTINE FIND_REF(BASREF, LUBAS, BASNAM)
@@ -1586,7 +1602,7 @@ C
          WRITE (LUPRI,'(/A)')
      +   'NB! This basis must be available to use Huckel guess!'
       END IF
-      CALL QUIT('Non-existing basis set in HERBAS')
+      CALL QUIT('Basis set not found.')
       END
 C/* Deck ECP_LCORE */
       SUBROUTINE ECP_LCORE(IQCORE,IQM,ILOFF)

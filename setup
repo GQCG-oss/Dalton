@@ -227,10 +227,10 @@ def check_cmake_exists(cmake_command):
         print('   This code is built using CMake')
         print('')
         print('   CMake is not found')
-        print('   get CMake at http://www.cmake.org/')
-        print('   on many clusters CMake is installed')
-        print('   but you have to load it first:')
-        print('   $ module load cmake')
+        print('   1) on some clusters CMake is installed')
+        print('      but you have to load it first:')
+        print('      $ module load cmake')
+        print('   2) if not, get CMake at http://www.cmake.org/')
         sys.exit()
 
 def translate_cmake(s):

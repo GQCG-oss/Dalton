@@ -23,7 +23,8 @@ module f12_routines_module
  
 
   public :: MO_transform_AOMatrix, get_F12_mixed_MO_Matrices_real, get_F12_mixed_MO_Matrices, free_F12_mixed_MO_Matrices, &
-       & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D ! atomic_fragment_free_f12, atomic_fragment_init_f12
+       & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D,&
+       & F12_RI_transform_realMat, F12_CABS_transform_realMat ! atomic_fragment_free_f12, atomic_fragment_init_f12
 
   private
   
@@ -92,24 +93,28 @@ contains
 
 
   !> Needs documentation
+!WARNING THIS IS NOT THE SAME AS get_F12_mixed_MO_Matrices
+!THIS SUBROUTINE ONLY DOES HALF TRANSFORMATIONS 
+!ALL TRANSFORMATIONS RELATED TO CABS AND RI IS NOT DONE YET
+!THIS IS DONE AT THE FRAGMENT LEVEL. 
   subroutine get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-       & nocc,noccfull,nvirt,ncabs,HJir_real,Krr_real,Frr_real,Fac_real,Fii_real,Frm_real,Fcp_real)
+       & nocc,noccfull,nvirt,HJir_real,Krr_real,Frr_real,Fac_real,Fii_real,Frm_real,Fcp_real)
 
     implicit none
     !> Fragmet molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> Lsitem structure
     type(lsitem), intent(inout) :: MyLsitem
-    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
+    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO!,ncabs
     type(matrix), intent(in) :: Dmat
   
-    real(realk), intent(inout) :: HJir_real(nocc,ncabsAO) 
-    real(realk), intent(inout) :: Krr_real(ncabsAO,ncabsAO)
-    real(realk), intent(inout) :: Frr_real(ncabsAO,ncabsAO)
-    real(realk), intent(inout) :: Fac_real(nvirt,ncabs)
+    real(realk), intent(inout) :: HJir_real(nocc,ncabsAO)  !ONLY HALF TRANSFORMED
+    real(realk), intent(inout) :: Krr_real(ncabsAO,ncabsAO)!NOT TRANSFORMED
+    real(realk), intent(inout) :: Frr_real(ncabsAO,ncabsAO)!NOT TRANSFORMED
+    real(realk), intent(inout) :: Fac_real(nvirt,ncabsAO)  !HACK not (nvirt,ncabsMO)
     real(realk), intent(inout) :: Fii_real(nocc,nocc)
-    real(realk), intent(inout) :: Frm_real(ncabsAO,nocc)
-    real(realk), intent(inout) :: Fcp_real(ncabs,nbasis)
+    real(realk), intent(inout) :: Frm_real(ncabsAO,nocc)   !ONLY HALF TRANSFORMED
+    real(realk), intent(inout) :: Fcp_real(ncabsAO,nbasis) !HACK not (ncabsMO,nbasis)
 
     type(matrix) :: HJir
     type(matrix) :: Krr
@@ -124,87 +129,73 @@ contains
     type(matrix) :: Kcc
     type(matrix) :: Fcc
     type(matrix) :: Frc  
+    type(matrix) :: Fcr  
    
     !> Mixed regular/CABS one-electron and Coulomb matrix (h+J) combination in AO basis
     !> hJir
     call mat_init(HJrc,nbasis,ncabsAO)
     call get_AO_hJ(nbasis,ncabsAO,HJrc,Dmat,MyLsitem,'RCRRC')
     call mat_init(HJir,nocc,ncabsAO)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ir',HJrc,HJir)
-    call mat_to_full(HJir,1.0E0_realk,HJir_real)
+    call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'i',HJrc,HJir,1)
     call mat_free(HJrc)
+    call mat_to_full(HJir,1.0E0_realk,HJir_real)
     call mat_free(HJir)
 
-    !> Mixed CABS/CABS exchange matrix
+    !> Mixed CABS/CABS exchange matrix 
     !> Krr
     call mat_init(Kcc,ncabsAO,ncabsAO)
     call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
-    call mat_init(Krr,ncabsAO,ncabsAO)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rr',Kcc,Krr)
+    call mat_to_full(Kcc,1.0E0_realk,Krr_real)
     call mat_free(Kcc)
-    call mat_to_full(Krr,1.0E0_realk,Krr_real)
-    call mat_free(Krr)
     
     !> Mixed CABS/CABS Fock matrix
     !> Frr
     call mat_init(Fcc,ncabsAO,ncabsAO)
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
-    call mat_init(Frr,ncabsAO,ncabsAO)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rr',Fcc,Frr)
-    call mat_free(Fcc)   
-    call mat_to_full(Frr,1.0E0_realk,Frr_real)
-    call mat_free(Frr)
+    call mat_to_full(Fcc,1.0E0_realk,Frr_real)
+    call mat_free(Fcc)
     
     !> Mixed AO/CABS Fock matrix
     !> Fac
     call mat_init(Frc,nbasis,ncabsAO)
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
-    call mat_init(Fac,nvirt,ncabs)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ac',Frc,Fac)    
+    call mat_init(Fac,nvirt,ncabsAO)
+    call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'a',Frc,Fac,1)    
     call mat_free(Frc)
     call mat_to_full(Fac,1.0E0_realk,Fac_real)
     call mat_free(Fac)
 
     !> Mixed AO/AO full MO Fock matrix
-    !> Temp Fcc
-    call mat_init(Fcc,nbasis,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')
-
     !> Fii 
+    call mat_init(Frr,nbasis,nbasis)
+    call get_AO_Fock(nbasis,ncabsAO,Frr,Dmat,MyLsitem,'RRRRC')
     call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ii',Fcc,Fii)
+         & MyMolecule%Co, MyMolecule%Cv,'ii',Frr,Fii)
+    call mat_free(Frr)
     call mat_to_full(Fii,1.0E0_realk,Fii_real)
     call mat_free(Fii)
 
-    !> Free temp Fcc
-    call mat_free(Fcc)
 
     !> Mixed CABS/AO MO Fock matrix
-    !> Temp Fcc
-    call mat_init(Fcc,ncabsAO,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CRRRC')
-  
-    !> Frm
+    call mat_init(Fcr,ncabsAO,nbasis)
+    call get_AO_Fock(nbasis,ncabsAO,Fcr,Dmat,MyLsitem,'CRRRC')
+
     call mat_init(Frm,ncabsAO,noccfull)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rm',Fcc,Frm)
+    call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'m',Fcr,Frm,2)
     call mat_to_full(Frm,1.0E0_realk,Frm_real)
     call mat_free(Frm)
     
-    !> Fcp
-    call mat_init(Fcp,ncabs,nbasis)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'cp',Fcc,Fcp)
+    call mat_init(Fcp,ncabsAO,nbasis)
+    call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'p',Fcr,Fcp,2)
     call mat_to_full(Fcp,1.0E0_realk,Fcp_real)
     call mat_free(Fcp)
 
-    !> Free Temp Fcc
-    call mat_free(Fcc) 
+    call mat_free(Fcr) 
 
 !!$    print *, '****************************************'
 !!$    print *, '(Norm of HJir_real):', norm2(HJir_real)       
@@ -459,6 +450,115 @@ contains
     enddo
 
   end subroutine MO_transform_AOMatrix
+
+  !> Need documentation...
+  !> Half transform a AO matrix to MO matrix
+  subroutine MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+       & Cocc,Cvirt,inputstring,matAO,matMO,option)
+    implicit none
+    !> Lsitem structure
+    integer :: nocc,noccfull,nvirt,nCabsAO,nbasis,option
+    type(lsitem), intent(inout) :: mylsitem
+    integer :: ndim2(1),ndim1(1)
+    type(matrix) :: matAO,matMO
+    real(realk),pointer :: elms(:)
+    type(matrix) :: CMO(1)
+    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
+    !> Virtual MO coefficients
+    real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
+    type(matrix) :: CMO_cabs,CMO_ri,tmp
+    character(len=1) :: inputstring
+    logical :: doCABS,doRI
+    integer :: i,lupri
+    character :: string(1)
+    string(1)=inputstring(1:1) 
+    lupri=6
+    doCABS = .FALSE.
+       if(string(1).EQ.'i')then !occupied active
+          ndim1(1) = nbasis
+          ndim2(1) = nocc
+       elseif(string(1).EQ.'m')then !all occupied
+          ndim1(1) = nbasis
+          ndim2(1) = noccfull
+       elseif(string(1).EQ.'p')then !all occupied + virtual
+          ndim1(1) = nbasis
+          ndim2(1) = nbasis
+       elseif(string(1).EQ.'a')then !virtual
+          ndim1(1) = nbasis
+          ndim2(1) = nvirt
+       elseif(string(1).EQ.'c')then !cabs
+          call lsquit('input error MO_transform1_AOMatrix',-1)
+       elseif(string(1).EQ.'r')then !ri - MOs
+          call lsquit('input error MO_transform1_AOMatrix',-1)
+       endif
+       call mat_init(CMO(1),ndim1(1),ndim2(1))
+       if(string(1).EQ.'i')then !occupied active
+          call dcopy(ndim2(1)*ndim1(1),Cocc,1,CMO(1)%elms,1)
+       elseif(string(1).EQ.'m')then !all occupied
+          call dcopy(ndim2(1)*ndim1(1),Cocc,1,CMO(1)%elms,1)
+       elseif(string(1).EQ.'p')then !all occupied + virtual
+          call dcopy(noccfull*nbasis,Cocc,1,CMO(1)%elms,1)
+          call dcopy(nvirt*nbasis,Cvirt,1,CMO(1)%elms(noccfull*nbasis+1:nbasis*nbasis),1)
+       elseif(string(1).EQ.'a')then !virtual
+          call dcopy(ndim2(1)*ndim1(1),Cvirt,1,CMO(1)%elms,1)
+       endif
+       IF(option.EQ.1)THEN
+          call mat_mul(CMO(1),matAO,'t','n',1E0_realk,0E0_realk,matMO)
+       ELSE
+          call mat_mul(matAO,CMO(1),'n','n',1E0_realk,0E0_realk,matMO)
+       ENDIF
+    call mat_free(CMO(1))
+  end subroutine MO_halftransform_AOMatrix
+
+  subroutine F12_RI_transform_realMat(Mat,ndim1,ndim2,Cri,nCabsAO)
+    implicit none
+    integer,intent(in) :: ndim1,ndim2,nCabsAO
+    real(realk),intent(inout) :: Mat(ndim1,ndim2)
+    real(realk),intent(in) :: Cri(nCabsAO,nCabsAO)
+    !local variables
+    real(realk),pointer :: tmp(:,:)
+    call mem_alloc(tmp,ndim1,ndim2)
+    IF((ndim1.EQ.nCabsAO).AND.(ndim2.EQ.nCabsAO))THEN
+       !       call DGEMM('t','n',Cri%ncol,Mat%ncol,Cri%nrow,1E0_realk,&
+       !            &Cri,Cri%nrow,Mat,Mat%nrow,0E0_realk,tmp,tmp%nrow)
+       !       call DGEMM('n','n',Tmp%nrow,Cri%ncol,Tmp%ncol,1E0_realk,&
+       !            &Tmp,Tmp%nrow,Cri,Cri%nrow,0E0_realk,Mat,Mat%nrow)
+       call DGEMM('t','n',nCabsAO,ndim2,nCabsAO,1E0_realk,&
+            &Cri,nCabsAO,Mat,ndim1,0E0_realk,tmp,ndim1)
+       call DGEMM('n','n',ndim1,nCabsAO,ndim2,1E0_realk,&
+            &Tmp,ndim1,Cri,nCabsAO,0E0_realk,Mat,ndim1)
+    ELSEIF(ndim1.EQ.nCabsAO)THEN
+       call DGEMM('t','n',nCabsAO,ndim2,nCabsAO,1E0_realk,&
+            &Cri,nCabsAO,Mat,ndim1,0E0_realk,tmp,ndim1)
+       call DCOPY(ndim1*ndim2,Tmp,1,Mat,1)
+    ELSEIF(ndim2.EQ.nCabsAO)THEN
+       call DGEMM('n','n',ndim1,nCabsAO,ndim2,1E0_realk,&
+            &Mat,ndim1,Cri,nCabsAO,0E0_realk,Tmp,ndim1)
+       call DCOPY(ndim1*ndim2,Tmp,1,Mat,1)
+    ELSE
+       call lsquit('unknown option in F12_RI_transform_realMat',-1)
+    ENDIF
+    call mem_dealloc(tmp)
+
+  end subroutine F12_RI_transform_realMat
+
+  subroutine F12_CABS_transform_realMat(MOmat,AOmat,ndim1,ndim2,Ccabs,nCabsAO,nCabsMO)
+    implicit none
+    integer,intent(in) :: ndim1,ndim2,nCabsAO,nCabsMO
+    real(realk),intent(in) :: AOMat(ndim1,ndim2)
+    real(realk),intent(inout) :: MOMat(nCabsMO,ndim2)
+    real(realk),intent(in) :: Ccabs(nCabsAO,nCabsMO)
+
+    IF(ndim1.EQ.nCabsAO)THEN
+       !       call DGEMM('t','n',Cri%ncol,Mat%ncol,Cri%nrow,1E0_realk,&
+       !            &Cri,Cri%nrow,Mat,Mat%nrow,0E0_realk,tmp,tmp%nrow)
+       call DGEMM('t','n',nCabsMO,ndim2,nCabsAO,1E0_realk,&
+            &Ccabs,nCabsAO,AOMat,ndim1,0E0_realk,MOMat,nCabsMO)
+    ELSE
+       call lsquit('unknown option in F12_RI_transform_realMat',-1)
+    ENDIF
+
+  end subroutine F12_CABS_transform_realMat
 
 !!$  !> \brief Initialize atomic fragment based on a list of specific AOS orbitals for F12-related matrices
 !!$  !> \author Yang Min Wang

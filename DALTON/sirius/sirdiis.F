@@ -23,6 +23,11 @@
 !
 #include "single.h"
 C
+C
+C FILE : sirius/sirdiis.F
+C Principal author : Hans Jørgen Aa. Jensen
+C First version    : 1993
+C
 #ifdef OLD_REV_LOG
 !===========================================================================
 !se efter HJTODO
@@ -61,26 +66,14 @@ C
 !940501-hjaaj
 !FCKEIG: exit if ".FREEZE" not compatible with ORDRSS.
 !    ORDRSS now always called (this also fixes error in prev. version).
-!940408-hjaaj
-!DIIS_CTL: s/EMCACT/EACTIV/ to define active energy in /INFOPT/
-!940311-hjaaj
-!DIIS_CTL: s/EVCNRM/GRDNRM/ (so gradient norm is transferred to SIROUT)
-!        nice output to LUW4 if LUW4 .ne. LUPRI
 !931126-hjaaj
 !DIIS_CTL: call NEWORB after each iteration (for restart)
-!930720-hjaaj
-!SRDIIS: new parameter PROCC .FALSE. in CALL PRORB
-!930715-hjaaj
-!------: improved some print
-!SRDIIS: exit MXDGSS .GT. 0
-!930623-hjaaj
-!FCKEIG: inserted PARAMETER(D0=0.0D0)
 !===========================================================================
 #endif
 C  /* Deck srdiis */
       SUBROUTINE SRDIIS (ICONV,CMO,WRK,KFRSAV,LFRSAV)
 C
-C Copyright (c) 1993, 1997 Hans Joergen Aa. Jensen 
+C Copyright (c) 1993, 1997 Hans Joergen Aa. Jensen
 C
 C Driver for DIIS iterations in SIRIUS.
 C
@@ -133,8 +126,8 @@ C
       ! QM/NP/MM embedding
       IF (QMNPMM) THEN
          call quit('not implemented in this version')
-      ELSE 
-         KRELMAT = 1 
+      ELSE
+         KRELMAT = 1
       END IF
 C
 CHJMAERKE: define IPR_DIIS separately?
@@ -154,8 +147,10 @@ C         in the DIIS solver - an example has been seen !!!)
       C2DIIS = FLAG(22)
 C
       LUWOUT = LUPRI
-  10  WRITE (LUWOUT,'(//A)')
-     &      ' >>>>> DIIS optimization of Hartree-Fock <<<<<'
+  10  WRITE (LUWOUT,'(//A/A/A)')
+     &      ' *********************************************',
+     &      ' ***** DIIS optimization of Hartree-Fock *****',
+     &      ' *********************************************'
 Cholesky
       IF (CHOINT) THEN
          WRITE(LUWOUT,'(A)')
@@ -164,7 +159,7 @@ Cholesky
             WRITE(LUWOUT,'(A,1P,D9.2,A)')
      &      '     (decomposing density, thr = ',THRDC,')'
          END IF
-      ENDIF
+      END IF
 Cholesky
       IF (C2DIIS) THEN
          WRITE (LUWOUT,'(/A,I5)')
@@ -306,6 +301,7 @@ C  INFINP : FLAG(*)
 C  INFORB : NCMOT,NNBAST,NSYM
 C  INFOPT : EPOT,EMCSCF,EMY,EACTIV,GRDNRM
 C  SCBRHF : THRRHF,MXDIIS, ?
+C  DFTCOM : HFXFAC
 C  INFVAR : NWOPH
 C  SCBRHF : IOPRHF,AUTOCC
 C  CBIREA : LMULBS
@@ -322,11 +318,11 @@ C
 #include "infvar.h"
 #include "infopt.h"
 #include "scbrhf.h"
+#include "dftcom.h"
 #include "cbihr2.h"
 #include "infpri.h"
 #include "gnrinf.h"
 #include "dfterg.h"
-#include "dftcom.h"
 #include "cbirea.h"
 #include "r12int.h"
 #include "qm3.h"
@@ -356,7 +352,7 @@ C
 C
       LOGICAL   ONLYFC, C2DIIS, DIFDEN, DODIFDEN, NEWTHR, RHFWOP, OLDWOP
       LOGICAL   LCONV, LNEWOCC
-      DIMENSION MISH(8)
+      DIMENSION NISH_SAVE(8), NCAN(8)
       CHARACTER*8 CMOLBL
 C
       CALL QENTER('DIIS_CTL')
@@ -381,7 +377,7 @@ CAMT  If requested calculate the DFT-D energy correction
 C
       IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM) THEN
-C     this also includes the case of MMPCM   
+C     this also includes the case of MMPCM
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
      &      ' Iter      Total energy       Solvation energy    '//
@@ -456,7 +452,7 @@ C     -- Feb. 2001, Hans Joergen Aa. Jensen.
 C
 c     DEFLVL is read from SCF INPUT/.SHIFT
       SHFTLVL = DEFLVL
-      SHFTFAC = 0.7D0 
+      SHFTFAC = 0.7D0
 C ---  hjaaj: find safe screening factor depending on
 C             convergence threshold:
 C     SCRFAC = 100*NBAST
@@ -474,7 +470,7 @@ C       with a factor 10.   /01-Feb-2001 hjaaj
 C
 C       Yes, but for the gradient norm we in addition will have a sum
 C       of ca. NOCCT*NVIRT/NSYM elements, thus to be safe wrt
-C       gradient norm let us use 10*N2BAST in SCRFAC instead 
+C       gradient norm let us use 10*N2BAST in SCRFAC instead
 C       of 100*NBAST.
 C       Also minimum accuracy corresponding to error in
 C       GRDNORM ~ 0.1 (IFTMIN). /31-Jul-2006 hjaaj
@@ -484,8 +480,6 @@ C       keep vectors until GRDNRM fallen a factor 100
       DAMP   = D0
       EMCLOW = D0
       GNRMSV = D0
-      ITDIIS = 0
-      JTDIIS = 0
       ITNOCC = 0
       NEWOCC = 0
       LNEWOCC = AUTOCC
@@ -500,7 +494,7 @@ C
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
-Ctuh:   DIFDEN does not work with DFT either   
+Ctuh:   DIFDEN does not work with DFT either
 Cov:    DIFDEN disabled for high spin HF
 C-tbp: turn off DIFDEN for Cholesky decomposition (CHOINT true)
       DIFDEN   = DODIFDEN
@@ -570,35 +564,30 @@ C        IF (IPRDIS.GT.10) THEN
      &         )
 C        END IF
       END IF
+
+      ITDIIS = 0
+      JTDIIS = 0
+
   100 CONTINUE
+         WRITE(LUW4,'(A)')
+     &      ' -----------------------------------------------------'//
+     &      '------------------------'
          ITDIIS = ITDIIS + 1
          JTDIIS = JTDIIS + 1
          ITNOCC = ITNOCC + 1
          INDEVC = MOD(JTDIIS-1,MXERRV) + 1
          NEVC   = MIN(MXERRV,JTDIIS)
-         WRITE(LUW4,'(A)')
-     &      ' -----------------------------------------------------'//
-     &      '------------------------'
 C
 C
-         IF (DIRFCK .AND. IFTHRS.LT.20) THEN
-            IF (IPR_DIIS .GT. 1) THEN
-               WRITE (LUPRI,'(/A,2I5/A,I5,L5)')
-     &         ' *** START DIIS iteration ',ITDIIS,JTDIIS,
-     &         ' Screening settings (-IFTHRS, DIFDEN)',
-     &         -IFTHRS, DIFDEN
-            ELSE IF (IPR_DIIS .GE. 0) THEN
-               WRITE (LUPRI,'(I4,A,I5,L5)') 
-     &         ITDIIS,'  Screening settings (-IFTHRS, DIFDEN)',
-     &         -IFTHRS, DIFDEN
-            END IF
-         END IF
+         IF (IPR_DIIS .GT. 1) WRITE (LUPRI,'(/A,I5)')
+     &         ' *** DIIS iteration number',ITDIIS
          CALL FLSHFO(LUPRI)
 C
 C  ***** Construct folded inactive and active parts of the one-electron
 C        density matrix in AO-basis (DCAO and DVAO). DV is the active
 C        part of the one-electron density matrix in MO-basis.
 C
+         HSFOCK = ((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
          CALL FCKDEN((NISHT.GT.0.OR.HSFOCK),(.NOT.ONLYFC),
      &                DCAO,DCAO(1+N2BASX),CMO,DV,WRK(KFREE),LFREE)
 C        CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LWRK)
@@ -626,10 +615,10 @@ C
                    LEN = NBAS(ISYM)*NISH(ISYM)
                    CALL PUTWA2(LUCCMO,FCCMO,CMO(JCMO),IADR2,LEN)
                    IADR2 = IADR2 + LEN
-                ENDIF
+                END IF
              ENDDO
              CALL WCLOSE2(LUCCMO,FCCMO,'KEEP')
-         ENDIF
+         END IF
 C
          CALL MEMGET2('REAL','TMP1',KTMP1,NNBASX,WRK,KFREE,LFREE)
          CALL MEMGET2('REAL','TMP2',KTMP2,N2BASX,WRK,KFREE,LFREE)
@@ -673,13 +662,23 @@ C              ... difden: "DVAO" = "DVAO" - DVOVLP*DVOSAV(,2)
          END IF
          CALL MEMREL('DIIS_CTL.DIFDEN',WRK,KFRSAV,KTMP1,KFREE,LFREE)
 C
-C  ***** Calculate 2-electron part of Fock matrix with
-C        differential density
+C  ***** Calculate 2-electron part of Fock matrix with differential density
 C
+         CALL GETTIM(t1_fck,w1_fck)
          CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
+
+         IF (DIRFCK .AND. IFTHRS.LT.20) THEN
+            IF (IPR_DIIS .GE. 0) THEN
+               CALL GETTIM(t2_fck,w2_fck)
+               WRITE (LUPRI,'(I4,A,2I5,L5,1P,2D10.2)')
+     &  ITDIIS,'  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)',
+     &  -IFTHRS, JTDIIS,DIFDEN,T2_FCK-T1_FCK,W2_FCK-W1_FCK
+            END IF
+         END IF
+
          IF (HSFOCK) THEN
 C
-C Reset densities for call to dft
+C           Reset densities for call to dft
 C
             CALL DSCAL(N2BASX,-D1,DCAO(1+N2BASX),1)
             CALL DAXPY(N2BASX,-D1,DCAO(1+N2BASX),1,DCAO,1)
@@ -724,7 +723,7 @@ C           .. subtract DCOVLP*FVAO_previous to get DCOVLP*FCAO_previous
 C
          IF (ONLYFC) THEN
             EACTIV = D0
-         ELSE 
+         ELSE
 C           EACTIV = DV(u,u)FC(u,u) = FC(u,u)
 C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
             IF (HSFOCK) THEN
@@ -733,7 +732,7 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
                   EACT1 = +DDOT(NNBAS(ISYM),
      &                       DAOSAV(1+IIBAS(ISYM),2),1,
      &                       FAOSAV(1+IIBAS(ISYM),INDEVC,2),1) * DP5
-                  EACTIV = EACTIV + EACT1 
+                  EACTIV = EACTIV + EACT1
                END DO
             ELSE
             EACTIV = DDOT(NNBAS(IOPRHF),DAOSAV(1+IIBAS(IOPRHF),2),1,
@@ -790,8 +789,8 @@ CAMT If calculated add the empirical dispersion energy correction
 C
 c        we need to divide the solvent calls into mmpcm and not mmpcm
 c        since we in the latter iterate between the mm and pcm for a given QM
-c        density    
-       
+c        density
+
          IF (.NOT. MMPCM) THEN ! do as we usually do ...
            ESOLT = D0
            IF (QM3 .AND. .NOT. DOCCSD) THEN
@@ -819,8 +818,8 @@ c        density
               IF (MMTIME) THEN
                  DTIME = SECOND() - DTIME
                  TMMFCK = TMMFCK + DTIME
-              ENDIF
-           ENDIF
+              END IF
+           END IF
 
            IF (FLAG(16)) THEN
              CALL MEMGET2('REAL','FCSOL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
@@ -840,7 +839,7 @@ c        density
          ELSE  ! the mmpcm interface is only implemented for hf/dft so
 C                no reference to doccsd
 C          parameters on input: MXITMP and THRSMP
-           LCONV = .FALSE. 
+           LCONV = .FALSE.
            XTEST1 = D0
            CALL MEMGET2('REAL','FCSOL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
            CALL MEMGET2('REAL','MMPCM',KMMPCM,NNBAST,WRK,KFREE,LFREE)
@@ -855,8 +854,8 @@ C            First the MM part ...
 
              TEMP = ESOLT
 
-C            Now the PCM part ...        
-              
+C            Now the PCM part ...
+
              CALL DZERO(WRK(KFCSOL),NNBAST)
              CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
      &                   DUMMY,.FALSE.,ESOLT,WRK(KFREE),
@@ -871,18 +870,18 @@ C            Now the PCM part ...
                write(lupri,*) 'MMPCM converged for given density'
                write(lupri,*) 'No. of iterations: ',ITER
                GOTO 999
-             ELSE 
+             ELSE
                XTEST1 = XTEST2
-             ENDIF
+             END IF
  998       CONTINUE
  999       CONTINUE
            IF (.NOT. LCONV) write(lupri,*) 'MMPCM not converged !'
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
-         ENDIF
+         END IF
 C
          IF (PEQM) THEN
-           CALL MEMGET('REAL', KFPE, NNBASX, WRK, KFREE, LFREE)
-           CALL MEMGET('REAL', KEPE, 1, WRK, KFREE, LFREE)
+           CALL MEMGET2('REAL','fpe', KFPE, NNBASX, WRK, KFREE, LFREE)
+           CALL MEMGET2('REAL','epe', KEPE, 1, WRK, KFREE, LFREE)
            IF (NASHT == 0 .OR. HSFOCK) THEN
              CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE),
      &                        WRK(KFREE), LFREE-KFREE+1)
@@ -901,7 +900,7 @@ C
          EMCSCF = EMY + EACTIV + EPOT + ESOLT
 
          IF (QM3 .AND. (.NOT. OLDTG)) EMCSCF = EMCSCF - EELEL
-C        this also includes the case of MMPCM   
+C        this also includes the case of MMPCM
 
          EMCDIF = EMCSCF - EMCDIF
          EGSAV(1,INDEVC) = EMCSCF
@@ -1033,7 +1032,7 @@ Cholesky
                  WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
                  WRITE(LUPRI,4116) 'MO transform.',OSIRF
                  WRITE(LUPRI,4116) 'MO sorting   ',SSIRF
-              ENDIF
+              END IF
               WRITE(LUPRI,4115) TSIRF
               IF (QMMM) CALL QMMMTIMES('SIRIUS')
               IF (LUW4 .NE. LUPRI) THEN
@@ -1043,12 +1042,12 @@ Cholesky
                     WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
                     WRITE(LUPRI,4116) 'MO transform.',OSIRF
                     WRITE(LUPRI,4116) 'MO sorting   ',SSIRF
-                 ENDIF
+                 END IF
                  WRITE(LUW4,4115) TSIRF
-              ENDIF
-            ENDIF
+              END IF
+            END IF
 Cholesky
-C           Save converged CMO 
+C           Save converged CMO
             WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
             CALL NEWORB(CMOLBL,CMO,LNEWOCC)
 C           ... REWIT1 false: do not destroy any GEOWALK information
@@ -1089,7 +1088,7 @@ Chj-aug99: for effective DIFDEN; note this test is OK w. ILIM.eq.2
             ELSE
                ILIM = 1
             END IF
-            IF (.NOT. AOSAVE .AND. ABS(ITHRS-IFTHRS) .GE. ILIM) THEN 
+            IF (.NOT. AOSAVE .AND. ABS(ITHRS-IFTHRS) .GE. ILIM) THEN
                NEWTHR = .TRUE.
                IFTHRS = MIN(IFTMAX,MAX(IFTMIN,ITHRS))
             END IF
@@ -1199,7 +1198,7 @@ C           is higher in energy with lower gradient, especially if MOSTART H1DIA
 C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
-!  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT 
+!  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT
           IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
               EMCDIF_test = 0.0D0
           ELSE
@@ -1282,7 +1281,7 @@ C        print atomic populations in each iteration ? /hjaaj
 C
          IF (HSFOCK) THEN
 C
-C Update FCAO with the FV correction in AO basis 
+C Update FCAO with the FV correction in AO basis
 C
             CALL DAXPY(NNBAST,D1,H1AO,1,FAOSAV(1,INDEVC,1),1)
             CALL DCOPY(NNBAST,FAOSAV(1,INDEVC,1),1,FCAO,1)
@@ -1322,7 +1321,7 @@ C
                END IF
                CALL OUTPKB(DCAO,NORB,NSYM,-1,LUPRI)
             END IF
-         ELSE   
+         ELSE
            DO 300 ISYM = 1,NSYM
             IF (NASH(ISYM) .EQ. 0) GO TO 300
             IF (IPR_DIIS .GT. 15) THEN
@@ -1365,14 +1364,32 @@ chjaaj: and "0.5*occ(i)* " /23may09 hjaaj
 C
 C        Diagonalize (level-shifted) FC (saved in DCAO)
 C
-         CALL ICOPY(8,NISH,1,MISH,1)
+         CALL ICOPY(8,NISH,1,NISH_SAVE,1)
          JOPRHF = IOPRHF
-         CALL FCKEIG(CMO,DCAO,SHFTLVL,WRK(KFREE),LFREE,IPR_DIIS)
-C        test if AUTOCC has changed occupation
+         IF ( THDIIS .GE. 0.01D0*GRDNRM ) THEN
+            THR_FCKEIG = THDIIS
+            CALL ICOPY(8,NORB,1,NCAN,1) ! we need all orbitals canonical for CC
+         ELSE
+            THR_FCKEIG = 0.01D0*GRDNRM
+            CALL ICOPY(8,NOCC,1,NCAN,1) ! we only need oocupied orbitals canonical in global region
+         END IF
+
+         call gettim(t1,w1)
+         CALL FCKEIG(CMO,DCAO,SHFTLVL,THR_FCKEIG,NCAN,IPR_DIIS,
+     &               WRK(KFREE),LFREE)
+         IF (IPR_DIIS .GT. 2) THEN
+            call gettim(t2,w2)
+            write(lupri,'(A,1P,3D10.2)')
+     &         ' CPU and wall times used in FCKEIG, THR_FCKEIG: ',
+     &         t2-t1,w2-w1,thr_fckeig
+         END IF
+
+C        Test if AUTOCC has changed occupation :
+
          IF (AUTOCC) THEN
           NTEST = 0
           DO ISYM = 1,8
-            NTEST = NTEST + ABS(NISH(ISYM)-MISH(ISYM))
+            NTEST = NTEST + ABS(NISH(ISYM)-NISH_SAVE(ISYM))
           END DO
           NTEST = NTEST + ABS(IOPRHF-JOPRHF)
           IF (NTEST .GT. 0) THEN
@@ -1399,7 +1416,7 @@ Chj-sep99: and change index arrays to new occupation (for RHFENR and ?)
  4210 FORMAT(/' DIIS has changed occupation numbers',I2,' times now.'
      &       /' Program aborts because this indicates problems with'//
      &        ' automatic occupation.')
-C
+
 C     --> Next DIIS iteration
       GO TO 100
 C
@@ -1414,11 +1431,11 @@ C     hjaaj aug99: revised code for SIRIFC to fix some potential problems,
 C                  and call tractl if requested with ITRFIN
 C
 C     If converged (ICONV .eq. 1) and if this is final level of wave function:
-C     
+C
 C     Print orbital energy analysis for RHF if QCHF not called
 C     because ICONV = 1 and if either IPR_DIIS .gt. 0 or
 C     this is final level of wave function.
-C     
+C
 C
 C
 C           Check if we need new RHFWOP because of AUTOCC
@@ -1436,7 +1453,7 @@ C
       END DO
       IF (.NOT.RHFWOP) THEN
          OLDWOP = .FALSE.
-C     
+C
          IF (.NOT.DOMC) WRINDX = .TRUE.
 C        ... We need to correct orbital rotation information on file
 C            for response and ABACUS
@@ -1605,7 +1622,7 @@ C
          CALL MEMREL('DIIS_CTL.WR_SIRIFC',WRK,KFRSAV,KPV,KFREE,LFREE)
       END IF
 C
-C        Transform integrals for abacus or response, 
+C        Transform integrals for abacus or response,
 C        if converged and if not followed by higher level,
 C        and if not Cholesky decomposition
 C
@@ -1862,7 +1879,7 @@ C
       CALL MEMGET2('INTE','IWJ' ,KIWJ ,NEVC     ,WRK,KFREE,LFREE)
 C
       CALL DUNIT(WRK(KEVEC),NEVC)
-      CALL JACO(WRK(KBTMP),WRK(KEVEC),NEVC,NEVC,NEVC,WRK(KWJ),WRK(KIWJ))
+      CALL JACO_THR(WRK(KBTMP),WRK(KEVEC),NEVC,NEVC,NEVC,1.0D-12)
       DO 150 I = 1,NEVC
          II = KBTMP-1+IROW(I+1)
          WRK(KBTMP-1+I) = WRK(II)
@@ -1989,7 +2006,7 @@ C     EXCTRO = DP5*DDOT(NNBASX,DCAO,1,FCAO,1)
             CALL DAXPY(NNBAST,1D0,WRK(KKOHN),1,FCAO,1)
          ELSE
             CALL DAXPY(NNBAST,1D0,WRK(KTMP1),1,FCAO,1)
-         END IF 
+         END IF
       ELSE
 C     memory allocation
          KDENA = KLST
@@ -2009,30 +2026,30 @@ C     Kohn-Sham contribution evaluation
          END IF
          CALL DAXPY(N2BASX,1.D0,DCAO(1+N2BASX),1,WRK(KDENA),1)
 C
-C  For specific case of molecules bearing only alpha electron(s), 
-C  like hydrogen atom, we call "old" open-shell code, which  
-C  can handle zero beta density. 
-C    
-         IF (NISHT .EQ. 0) THEN 
+C  For specific case of molecules bearing only alpha electron(s),
+C  like hydrogen atom, we call "old" open-shell code, which
+C  can handle zero beta density.
+C
+         IF (NISHT .EQ. 0) THEN
             CALL dft_kohn_shamab(WRK(KDENA),WRK(KKSMA),EDFTY,
      &                           WRK(KFREE),LFREE,IPRFCK)
-         ELSE 
+         ELSE
             CALL dft_kohn_shamab_b(WRK(KDENA),WRK(KKSMA),EDFTY,
      &                             WRK(KFREE),LFREE,IPRFCK)
-         ENDIF         
+         END IF
 C     packing
          CALL DGETSP(NBAST,WRK(KKSMA),WRK(KTMP1))
          IF (NSYM .GT. 1) THEN
             CALL PKSYM1(WRK(KTMP1),WRK(KKSPA),NBAS,NSYM,1)
          ELSE
             CALL DAXPY(NNBAST,D1,WRK(KTMP1),1,WRK(KKSPA),1)
-         END IF  
+         END IF
          CALL DGETSP(NBAST,WRK(KKSMA+N2BASX),WRK(KTMP1))
          IF (NSYM .GT. 1) THEN
             CALL PKSYM1(WRK(KTMP1),WRK(KKSPB),NBAS,NSYM,1)
          ELSE
             CALL DAXPY(NNBAST,D1,WRK(KTMP1),1,WRK(KKSPB),1)
-         END IF  
+         END IF
 c     WRITE(LUPRI,'(/A)') 'ksma: '
 c     CALL OUTPKB(WRK(KKSPA),NORB,NSYM,-1,LUPRI)
 c     WRITE(LUPRI,'(/A)') 'ksmB: '
@@ -2040,7 +2057,7 @@ c     CALL OUTPKB(WRK(KKSPB),NORB,NSYM,-1,LUPRI)
 c
          CALL DAXPY(NNBAST, DP5,WRK(KKSPA),1,FCAO,1)
          CALL DAXPY(NNBAST, DP5,WRK(KKSPB),1,FCAO,1)
-c     
+c
          CALL DAXPY(NNBAST,-DP5,WRK(KKSPA),1,FVAO,1)
          CALL DAXPY(NNBAST, DP5,WRK(KKSPB),1,FVAO,1)
       END IF
@@ -2051,7 +2068,8 @@ C     EDFTY = EDFTY +EXCTRO-DP5*DDOT(N2BASX,DCAO,1,FCAO,1)
       RETURN
       END
 C  /* Deck fckeig */
-      SUBROUTINE FCKEIG(CMO,FC,SHFTLVL,SCRA,LSCRA,IPR_DIIS)
+      SUBROUTINE FCKEIG(CMO,FC,SHFTLVL,THR_FCKEIG,NCAN,IPR_DIIS,
+     &                  SCRA,LSCRA)
 C
 C Written 20-May-1993 by Hans Jorgen Aa. Jensen
 C
@@ -2065,6 +2083,7 @@ C Input:
 C  CMO; initial molecular orbitals used to build Fock matrix,
 C       assumed to be orthonormal.
 C  FC;  the inactive Fock matrix
+C  NCAN(8); number of orbitals in each symmetry to  make canonical
 C
 C Output:
 C  CMO; molecular orbitals diagonalizing Fock matrix
@@ -2074,7 +2093,7 @@ C Scratch:
 C  SCRA; general scratch area
 C
 #include "implicit.h"
-      DIMENSION CMO(*),FC(*),SCRA(*)
+      DIMENSION CMO(*),FC(*),NCAN(8),SCRA(*)
 C
 C Used from common blocks:
 C  INFINP : SUPSYM, LNOROT, NOROT()
@@ -2113,6 +2132,8 @@ C
 C     Step 1: Diagonalize (level-shifted) Fock-matrix:
 C
       DO 200 ISYM = 1,NSYM
+         NCANI = NCAN(ISYM)
+      IF ( .NOT.AUTOCC .AND. NCANI.EQ.0 ) GO TO 200
          NORBI = NORB(ISYM)
       IF (NORBI.EQ.0) GO TO 200
          IORBI = IORB(ISYM)
@@ -2159,7 +2180,7 @@ C                  because then ORDRSS cannot be called
   120             CONTINUE
                   IF (NOROT(IK).NE.0 .AND. IOBTYP(IK).EQ.JTACT) THEN
                      KK = (IFSYM+K)+IROW(K)
-                     FC(KK) = DUMMY 
+                     FC(KK) = DUMMY
 C
 C This assignment puts it last in the sorting  - put back in place later
 C
@@ -2170,19 +2191,28 @@ C
   130       CONTINUE
          END IF
 C
-         CALL JACO(FC(IFSYM+1),CMO(ICSYM),NORBI,NORBI,NBASI,
-     &             SCRA(KLAST),SCRA(KLAST+NORBI))
-C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         IF (NCANI .gt. 0) THEN
+            THR_JACO = NCANI*NORBI*NSYM
+            THR_JACO = THR_FCKEIG / THR_JACO
+         ELSE IF (AUTOCC) THEN
+            THR_JACO = 1.D-4
+         ELSE
+            GO TO 200
+         END IF
+
+         NMAX = MIN(NORBI, NCANI + 5)
+         CALL JACO_THR(FC(IFSYM+1),CMO(ICSYM),NORBI,NMAX,NBASI,THR_JACO)
+C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_CONV)
 C
-         DO 175 I=1,NORBI
+         DO, I=1,NORBI
             FC(IORBI+I)=FC(IFSYM+IROW(I+1))
-  175    CONTINUE
+         END DO
 C
          IF (AUTOCC) THEN
             CALL DCOPY(NORBI,FC(IORBI + 1),1,SCRA(KEIG + IORBI),1)
-            DO 99 IK = 1, NORBI
+            DO, IK = 1, NORBI
                SCRA(KSYMS + IORBI + IK - 1) = ISYM
- 99         CONTINUE
+            END DO
          END IF
 C
 C
@@ -2190,7 +2220,7 @@ C
          JORBI = IORBI + JFRZI + 1
          NNOTFR= NORBI - JFRZI
          CALL ORDRSS(CMO(JCSYM),FC(JORBI),ISSMO(JORBI),NNOTFR,NBASI)
-C 
+C
 C         CALL HEADER('Sorted orbitals',-1)
 C         CALL PRORB(CMO,.FALSE.,LUPRI)
 C
@@ -2228,7 +2258,7 @@ C
       KSCR1 = KSAO + NNBAST
       LSCR1 = LSCRA - KSCR1
 
-      IF (DFTASC) CALL GETHOMOAC(FC,SCRA(KSCR1),LSCR1)
+      IF (DFTASC) CALL GET_HOMO_ASC(FC,SCRA(KSCR1),LSCR1)
 
       CALL ORTHO(CMO,SCRA(KSAO),SCRA(KSCR1),LSCR1)
       IF (SUPSYM) THEN
@@ -2258,7 +2288,7 @@ C
             NOCC(IOPRHF) = NOCC(IOPRHF) + 1
             DO 96 ISYM = IOPRHF + 1, 8
                IASH(ISYM) = 1
- 96         CONTINUE 
+ 96         CONTINUE
          END IF
       END IF
 C
@@ -2274,7 +2304,9 @@ C
       CALL QTRACE(LUPRI)
       CALL QUIT('FCKEIG error, cannot handle orbitals '//
      &          'frozen with ".FREEZE"')
+
       CONTAINS
+
       SUBROUTINE ROTCOL(A,NR,NC,I1,I2)
 C
 C Cyclic permutation of columns in A
@@ -2298,44 +2330,20 @@ C
       DEALLOCATE(TMP)
       RETURN
       END SUBROUTINE ROTCOL
-      END
-#ifdef MOD_DFTASC
- -- hjaaj: DFTASC is not active (June 09)
-C  /* Deck gethom */
-      SUBROUTINE DFTASC_GETHOMO(FD)
-C find homo energy. tuh 16.05.03
-#include "implicit.h"
-      DIMENSION FD(*)
-      PARAMETER (DBIG = 1.D+12)
-#include "maxash.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "inforb.h"
-#include "infind.h"
-#include "dftacb.h"
-C
-      EHOMO  = -DBIG
-      DO ISYM = 1,NSYM
-         II = NOCC(ISYM)
-         IF (II.GT.0) THEN
-            EHOMOI = FD(IIORB(ISYM) + IROW(II) + II)
-            EHOMO = MAX(EHOMO,EHOMOI)
-         END IF
-      END DO
-      RETURN
-      END
-#endif
+
+      END   ! subroutine FCKEIG
+
       SUBROUTINE FVCORR(NVEC,W,DAO,FAO,MXERRV,F,WRK,KFREE,LFREE)
       IMPLICIT NONE
 C
 C Form projected (effective) fock matrix in AO basis for each accumulated
-C iteration and sum up with diis weights. 
+C iteration and sum up with diis weights.
 C
-C Input: NVEC accumulated Fock (FAO) and density (DAO) 
+C Input: NVEC accumulated Fock (FAO) and density (DAO)
 C        matrices from previous DIIS iterations
 C
 C Output: sum of weighted effective fock matrices to be diagonalized
-C         
+C
 C
       INTEGER NVEC, MXERRV, KFREE, LFREE
       REAL*8 W(NVEC)
@@ -2426,8 +2434,7 @@ C
       CALL QEXIT('FVCORR')
       END
 
-
-      SUBROUTINE GETHOMOAC(FD,SCRA,LSCRA)
+      SUBROUTINE GET_HOMO_ASC(FD,SCRA,LSCRA)
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2446,7 +2453,7 @@ C
 C
       KORBEN = 1
       LNEED  = KORBEN + NORBT
-      IF (LNEED .GT. LSCRA) CALL ERRWRK('GETHOMOAC',LNEED,LSCRA)
+      IF (LNEED .GT. LSCRA) CALL ERRWRK('GET_HOMO_ASC',LNEED,LSCRA)
       CALL DZERO(SCRA,NORBT)
 
       call dcopy(NORBT,FD,1,SCRA,1)
@@ -2489,7 +2496,7 @@ C     Out: SDF-FDS
       DOUBLE PRECISION F(NNBAST),D(NNBAST),SAOUNP(NBAST,NBAST)
       DOUBLE PRECISION COMM(NBAST,NBAST),WRK(*)
       PARAMETER (D1=1.0D0, D0=0.0D0, DM1=-1.0D0)
- 
+
       KFREE = KFRSAV
       LFREE = LFRSAV
       CALL MEMGET('REAL',KFTMP2,N2BASX,WRK,KFREE,LFREE)
@@ -2520,5 +2527,6 @@ C     Out: SDF-FDS
       CALL DGEMM('N','N',NBAST,NBAST,NBAST,D1,SAOUNP,NBAST,
      &     WRK(KDForFD),NBAST,DM1,COMM,NBAST)
 
-      CALL MEMREL('SDFCOMM',WRK,KFRSAV,KFTMP2,KFREE,LFREE)      
+      CALL MEMREL('SDFCOMM',WRK,KFRSAV,KFTMP2,KFREE,LFREE)
       END
+! -- end of sirdiis.F --

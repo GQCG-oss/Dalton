@@ -523,9 +523,9 @@ module dec_typedef_module
      !> Virtual MO coefficients (mu,a)
      real(realk), pointer :: Cv(:,:) => null()
      !> CABS MO coefficients (mu,x)
-     real(realk), pointer :: Ccabs(:,:) => null()
+!     real(realk), pointer :: Ccabs(:,:) => null()
      !> RI MO coefficients 
-     real(realk), pointer :: Cri(:,:) => null() 
+!     real(realk), pointer :: Cri(:,:) => null() 
 
      !> Fock matrix (AO basis)
      real(realk), pointer :: fock(:,:) => null()

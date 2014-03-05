@@ -242,6 +242,7 @@ contains
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
 
+
     ! ***********************************************************
     !   Printing Input variables 
     ! ***********************************************************
