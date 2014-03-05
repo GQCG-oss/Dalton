@@ -602,6 +602,11 @@ contains
                & .SimulateFull keyword', DECinfo%output)
        end if
 
+       if(DECinfo%onlyoccpart) then
+          call lsquit('DEC gradient cannot be evaluated when only occupied &
+               & partitioning scheme is used!',DECinfo%output)
+       end if
+
     end if MP2gradientCalculation
 
 

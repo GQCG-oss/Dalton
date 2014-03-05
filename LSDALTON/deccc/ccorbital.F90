@@ -2191,14 +2191,17 @@ contains
     something_wrong=.false.
     nfrags=0
     do i=1,natoms
-       if( (nocc_per_atom(i) == 0) .and. (nunocc_per_atom(i)/=0) ) something_wrong=.true.
-       if( (nocc_per_atom(i) /= 0) .and. (nunocc_per_atom(i)==0) ) something_wrong=.true.
-       if(something_wrong) then
-          write(DECinfo%output,*) 'Atom = ',i
-          write(DECinfo%output,*) 'Number of occupied orbitals   assigned = ', nocc_per_atom(i)
-          write(DECinfo%output,*) 'Number of unoccupied orbitals assigned = ', nunocc_per_atom(i)
-          call lsquit('Orbital assigment is inconsistent &
-               & with DEC scheme',DECinfo%output)
+
+       if( (.not. DECinfo%onlyoccpart) .and. (.NOT.decinfo%PureHydrogendebug) ) then
+          if( (nocc_per_atom(i) == 0) .and. (nunocc_per_atom(i)/=0) ) something_wrong=.true.
+          if( (nocc_per_atom(i) /= 0) .and. (nunocc_per_atom(i)==0) ) something_wrong=.true.
+          if(something_wrong) then
+             write(DECinfo%output,*) 'Atom = ',i
+             write(DECinfo%output,*) 'Number of occupied orbitals   assigned = ', nocc_per_atom(i)
+             write(DECinfo%output,*) 'Number of unoccupied orbitals assigned = ', nunocc_per_atom(i)
+             call lsquit('Orbital assigment is inconsistent &
+                  & with DEC scheme',DECinfo%output)
+          end if
        end if
 
        ! Count number of atomic fragments
