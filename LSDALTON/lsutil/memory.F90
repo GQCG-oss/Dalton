@@ -103,6 +103,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_allocated_ARRAY2, max_mem_used_ARRAY2       !Count 'ARRAY2' memory, deccc code
    integer(KIND=long),save :: mem_allocated_ARRAY4, max_mem_used_ARRAY4       !Count 'ARRAY4' memory, deccc code
    integer(KIND=long),save :: mem_allocated_ARRAY, max_mem_used_ARRAY         !Count 'ARRAY ' memory, deccc code
+   integer(KIND=long),save :: mem_allocated_PNOSPACEINFO, max_mem_used_PNOSPACEINFO         !Count 'PNOSpaceInfo ' memory, deccc code
    integer(KIND=long),save :: mem_allocated_MP2DENS, max_mem_used_MP2DENS       !Count 'MP2DENS' memory, deccc code
    integer(KIND=long),save :: mem_allocated_TRACEBACK, max_mem_used_TRACEBACK       !Count 'TRACEBACK' memory, deccc code
    integer(KIND=long),save :: mem_allocated_MP2GRAD, max_mem_used_MP2GRAD       !Count 'MP2GRAD' memory, deccc code
@@ -154,6 +155,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_tp_allocated_ARRAY2, max_mem_tp_used_ARRAY2       !Count 'ARRAY2' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_ARRAY4, max_mem_tp_used_ARRAY4       !Count 'ARRAY4' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_ARRAY, max_mem_tp_used_ARRAY         !Count 'ARRAY' memory, deccc code
+   integer(KIND=long),save :: mem_tp_allocated_PNOSPACEINFO, max_mem_tp_used_PNOSPACEINFO         !Count 'PNOSPACEINFO' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_MP2DENS, max_mem_tp_used_MP2DENS       !Count 'MP2DENS' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_TRACEBACK, max_mem_tp_used_TRACEBACK       !Count 'TRACEBACK' memory, deccc code
    integer(KIND=long),save :: mem_tp_allocated_MP2GRAD, max_mem_tp_used_MP2GRAD       !Count 'MP2GRAD' memory, deccc code
@@ -180,6 +182,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_check_allocated_ARRAY2
    integer(KIND=long),save :: mem_check_allocated_ARRAY4
    integer(KIND=long),save :: mem_check_allocated_ARRAY
+   integer(KIND=long),save :: mem_check_allocated_PNOSPACEINFO
    integer(KIND=long),save :: mem_check_allocated_MP2DENS
    integer(KIND=long),save :: mem_check_allocated_TRACEBACK
    integer(KIND=long),save :: mem_check_allocated_MP2GRAD
@@ -213,6 +216,7 @@ MODULE memory_handling
    integer(KIND=long),save :: max_mem_used_ARRAY2_tmp
    integer(KIND=long),save :: max_mem_used_ARRAY4_tmp
    integer(KIND=long),save :: max_mem_used_ARRAY_tmp
+   integer(KIND=long),save :: max_mem_used_PNOSPACEINFO_tmp
    integer(KIND=long),save :: max_mem_used_MP2DENS_tmp
    integer(KIND=long),save :: max_mem_used_TRACEBACK_tmp
    integer(KIND=long),save :: max_mem_used_MP2GRAD_tmp
@@ -244,6 +248,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_ARRAY2size
    integer(KIND=long),save :: mem_ARRAY4size
    integer(KIND=long),save :: mem_ARRAYsize
+   integer(KIND=long),save :: mem_PNOSPACEINFOsize
    integer(KIND=long),save :: mem_MP2DENSsize
    integer(KIND=long),save :: mem_TRACEBACKsize
    integer(KIND=long),save :: mem_MP2GRADsize
@@ -290,6 +295,7 @@ MODULE memory_handling
 !$OMP mem_tp_allocated_ARRAY2, max_mem_tp_used_ARRAY2,&
 !$OMP mem_tp_allocated_ARRAY4, max_mem_tp_used_ARRAY4,&
 !$OMP mem_tp_allocated_ARRAY, max_mem_tp_used_ARRAY,&
+!$OMP mem_tp_allocated_PNOSPACEINFO, max_mem_tp_used_PNOSPACEINFO,&
 !$OMP mem_tp_allocated_mpi, max_mem_tp_used_mpi, &
 !$OMP mem_tp_allocated_MP2DENS, max_mem_tp_used_MP2DENS,&
 !$OMP mem_tp_allocated_TRACEBACK, max_mem_tp_used_TRACEBACK,&
@@ -320,6 +326,7 @@ MODULE memory_handling
 !$OMP mem_check_allocated_BATCHTOORB,&
 !$OMP mem_check_allocated_DECAOBATCHINFO,&
 !$OMP mem_check_allocated_MYPOINTER,&
+!$OMP mem_check_allocated_PNOSPACEINFO,&
 !$OMP mem_check_allocated_ARRAY,&
 !$OMP mem_check_allocated_ARRAY2,&
 !$OMP mem_check_allocated_ARRAY4,&
@@ -366,7 +373,7 @@ INTERFACE mem_alloc
      &             MATRIX_allocate_1dim, MATRIXP_allocate_1dim, DECFRAG_allocate_1dim, &
      &             BATCHTOORB_allocate_1dim,MYPOINTER_allocate_1dim, MYPOINTER_allocate_2dim, &
      &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
-     &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,&
+     &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,PNOSPACEINFO_allocate_1dim, &
      &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
      &             lsmpi_allocate_dV4,lsmpi_allocate_dV8, lsmpi_local_allocate_dV8, &
      &             lsmpi_local_allocate_I8V8,lsmpi_local_allocate_I4V4,&
@@ -399,7 +406,7 @@ INTERFACE mem_dealloc
      &             BATCHTOORB_deallocate_1dim,MYPOINTER_deallocate_1dim,MYPOINTER_deallocate_2dim, &
      &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
      &             TRACEBACK_deallocate_1dim,MP2GRAD_deallocate_1dim, &
-     &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,&
+     &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,PNOSPACEINFO_deallocate_1dim, &
      &             lsmpi_local_deallocate_I4V,lsmpi_local_deallocate_I8V,&
      &             lsmpi_deallocate_d,DECAOBATCHINFO_deallocate_1dim,&
 #ifdef MOD_UNRELEASED
@@ -428,6 +435,7 @@ TYPE(MYPOINTER) :: MYPOINTERitem
 TYPE(ARRAY2) :: ARRAY2item
 TYPE(ARRAY4) :: ARRAY4item
 TYPE(ARRAY) :: ARRAYitem
+TYPE(PNOSpaceInfo) :: PNOSpaceitem
 TYPE(MP2DENS) :: MP2DENSitem
 TYPE(TRACEBACK) :: TRACEBACKitem
 TYPE(MP2GRAD) :: MP2GRADitem
@@ -444,7 +452,7 @@ TYPE(lvec_data_t) :: lvec_dataitem
 TYPE(lattice_cell_info_t) :: lattice_cellitem
 #endif
 ! Size of buffer handling for long integer buffer
-longintbuffersize = 76
+longintbuffersize = 78
 
 #if defined (VAR_XLF) || defined (VAR_G95) || defined (VAR_CRAY)
 #ifdef VAR_LSDEBUG
@@ -460,6 +468,7 @@ mem_MYPOINTERsize=72
 mem_ARRAY2size=80
 mem_ARRAY4size=384
 mem_ARRAYsize=1360
+mem_PNOSpaceInfosize=1360
 mem_MP2DENSsize=504
 mem_TRACEBACKsize=12
 mem_MP2GRADsize=848
@@ -488,6 +497,7 @@ mem_MYPOINTERsize=sizeof(MYPOINTERitem)
 mem_ARRAY2size=sizeof(ARRAY2item)
 mem_ARRAY4size=sizeof(ARRAY4item)
 mem_ARRAYsize=sizeof(ARRAYitem)
+mem_PNOSpaceInfosize=sizeof(PNOSpaceitem)
 mem_MP2DENSsize=sizeof(MP2DENSitem)
 mem_TRACEBACKsize=sizeof(TRACEBACKitem)
 mem_MP2GRADsize=sizeof(MP2GRADitem)
@@ -515,6 +525,7 @@ mem_lattice_cellsize=sizeof(lattice_cellitem)
 !print *,sizeof(ARRAY2item)
 !print *,sizeof(ARRAY4item)
 !print *,sizeof(ARRAYitem)
+!print *,sizeof(PNOSpaceitem)
 !print *,sizeof(MP2DENSitem)
 !print *,sizeof(TRACEBACKitem)
 !print *,sizeof(MP2GRADitem)
@@ -557,6 +568,7 @@ max_mem_used_MYPOINTER = MAX(max_mem_used_MYPOINTER,max_mem_used_MYPOINTER_tmp)
 max_mem_used_ARRAY2 = MAX(max_mem_used_ARRAY2,max_mem_used_ARRAY2_tmp)
 max_mem_used_ARRAY4 = MAX(max_mem_used_ARRAY4,max_mem_used_ARRAY4_tmp)
 max_mem_used_ARRAY = MAX(max_mem_used_ARRAY,max_mem_used_ARRAY_tmp)
+max_mem_used_PNOSpaceInfo = MAX(max_mem_used_PNOSpaceInfo,max_mem_used_PNOSpaceInfo_tmp)
 max_mem_used_MP2DENS = MAX(max_mem_used_MP2DENS,max_mem_used_MP2DENS_tmp)
 max_mem_used_TRACEBACK = MAX(max_mem_used_TRACEBACK,max_mem_used_TRACEBACK_tmp)
 max_mem_used_MP2GRAD = MAX(max_mem_used_MP2GRAD,max_mem_used_MP2GRAD_tmp)
@@ -605,6 +617,7 @@ max_mem_used_MYPOINTER_tmp = 0
 max_mem_used_ARRAY2_tmp = 0
 max_mem_used_ARRAY4_tmp = 0
 max_mem_used_ARRAY_tmp = 0
+max_mem_used_PNOSpaceInfo_tmp = 0
 max_mem_used_MP2DENS_tmp = 0
 max_mem_used_TRACEBACK_tmp = 0
 max_mem_used_MP2GRAD_tmp = 0
@@ -667,6 +680,7 @@ mem_allocated_MYPOINTER = 0
 mem_allocated_ARRAY2 = 0
 mem_allocated_ARRAY4 = 0
 mem_allocated_ARRAY = 0
+mem_allocated_PNOSpaceInfo = 0
 mem_allocated_MP2DENS = 0
 mem_allocated_TRACEBACK = 0
 mem_allocated_MP2GRAD = 0
@@ -677,6 +691,7 @@ max_mem_used_MYPOINTER = 0
 max_mem_used_ARRAY2 = 0
 max_mem_used_ARRAY4 = 0
 max_mem_used_ARRAY = 0
+max_mem_used_PNOSpaceInfo = 0
 max_mem_used_MP2DENS = 0
 max_mem_used_TRACEBACK = 0
 max_mem_used_MP2GRAD = 0
@@ -754,6 +769,7 @@ mem_tp_allocated_MYPOINTER = 0
 mem_tp_allocated_ARRAY2 = 0
 mem_tp_allocated_ARRAY4 = 0
 mem_tp_allocated_ARRAY = 0
+mem_tp_allocated_PNOSpaceInfo = 0
 mem_tp_allocated_MP2DENS = 0
 mem_tp_allocated_TRACEBACK = 0
 mem_tp_allocated_MP2GRAD = 0
@@ -764,6 +780,7 @@ max_mem_tp_used_MYPOINTER = 0
 max_mem_tp_used_ARRAY2 = 0
 max_mem_tp_used_ARRAY4 = 0
 max_mem_tp_used_ARRAY = 0
+max_mem_tp_used_PNOSpaceInfo = 0
 max_mem_tp_used_MP2DENS = 0
 max_mem_tp_used_TRACEBACK = 0
 max_mem_tp_used_MP2GRAD = 0
@@ -840,6 +857,7 @@ subroutine collect_thread_memory()
     mem_allocated_ARRAY2 = mem_allocated_ARRAY2+mem_tp_allocated_ARRAY2
     mem_allocated_ARRAY4 = mem_allocated_ARRAY4+mem_tp_allocated_ARRAY4
     mem_allocated_ARRAY = mem_allocated_ARRAY+mem_tp_allocated_ARRAY
+    mem_allocated_PNOSpaceInfo = mem_allocated_PNOSpaceInfo+mem_tp_allocated_PNOSpaceInfo
     mem_allocated_MP2DENS = mem_allocated_MP2DENS+mem_tp_allocated_MP2DENS
     mem_allocated_TRACEBACK = mem_allocated_TRACEBACK+mem_tp_allocated_TRACEBACK
     mem_allocated_MP2GRAD = mem_allocated_MP2GRAD+mem_tp_allocated_MP2GRAD
@@ -850,6 +868,7 @@ subroutine collect_thread_memory()
     max_mem_used_ARRAY2_tmp = max_mem_used_ARRAY2_tmp+max_mem_tp_used_ARRAY2
     max_mem_used_ARRAY4_tmp = max_mem_used_ARRAY4_tmp+max_mem_tp_used_ARRAY4
     max_mem_used_ARRAY_tmp = max_mem_used_ARRAY_tmp+max_mem_tp_used_ARRAY
+    max_mem_used_PNOSpaceInfo_tmp = max_mem_used_PNOSpaceInfo_tmp+max_mem_tp_used_PNOSpaceInfo
     max_mem_used_MP2DENS_tmp = max_mem_used_MP2DENS_tmp+max_mem_tp_used_MP2DENS
     max_mem_used_TRACEBACK_tmp = max_mem_used_TRACEBACK_tmp+max_mem_tp_used_TRACEBACK
     max_mem_used_MP2GRAD_tmp = max_mem_used_MP2GRAD_tmp+max_mem_tp_used_MP2GRAD
@@ -956,6 +975,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY4
     WRITE(LUPRI,'("  Allocated memory (ARRAY):             ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY
+    WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):             ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_PNOSpaceInfo
     WRITE(LUPRI,'("  Allocated memory (MP2DENS):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MP2DENS
     WRITE(LUPRI,'("  Allocated memory (TRACEBACK):         ",i9," byte  &
@@ -1012,6 +1033,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
     CALL print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
     CALL print_maxmem(lupri,max_mem_used_ARRAY,'ARRAY')
+    CALL print_maxmem(lupri,max_mem_used_PNOSpaceInfo,'PNOSpaceInfo')
     CALL print_maxmem(lupri,max_mem_used_MP2DENS,'MP2DENS') 
     CALL print_maxmem(lupri,max_mem_used_TRACEBACK,'TRACEBACK')
     CALL print_maxmem(lupri,max_mem_used_MP2GRAD,'MP2GRAD')
@@ -1104,6 +1126,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY4
     WRITE(LUPRI,'("  Allocated MPI memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY
+    WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):           ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_PNOSpaceInfo
     WRITE(LUPRI,'("  Allocated MPI memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MP2DENS
     WRITE(LUPRI,'("  Allocated MPI memory (TRACEBACK):       ",i9," byte  &
@@ -1160,6 +1184,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
     CALL print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
     CALL print_maxmem(lupri,max_mem_used_ARRAY,'ARRAY')
+    CALL print_maxmem(lupri,max_mem_used_PNOSpaceInfo,'PNOSpaceInfo')
     CALL print_maxmem(lupri,max_mem_used_MP2DENS,'MP2DENS')
     CALL print_maxmem(lupri,max_mem_used_TRACEBACK,'TRACEBACK')
     CALL print_maxmem(lupri,max_mem_used_MP2GRAD,'MP2GRAD')
@@ -1252,6 +1277,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY4
     WRITE(LUPRI,'("  Allocated memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY
+    WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):           ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_PNOSpaceInfo
     WRITE(LUPRI,'("  Allocated memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MP2DENS
     WRITE(LUPRI,'("  Allocated memory (TRACEBACK):       ",i9," byte  &
@@ -1306,6 +1333,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_tp_used_ARRAY2,'ARRAY2')
     CALL print_maxmem(lupri,max_mem_tp_used_ARRAY4,'ARRAY4')
     CALL print_maxmem(lupri,max_mem_tp_used_ARRAY,'ARRAY')
+    CALL print_maxmem(lupri,max_mem_tp_used_PNOSpaceInfo,'PNOSpaceInfo')
     CALL print_maxmem(lupri,max_mem_tp_used_MP2DENS,'MP2DENS')
     CALL print_maxmem(lupri,max_mem_tp_used_TRACEBACK,'TRACEBACK')
     CALL print_maxmem(lupri,max_mem_tp_used_MP2GRAD,'MP2GRAD')
@@ -1369,6 +1397,7 @@ end subroutine collect_thread_memory
        if (max_mem_used_ARRAY2 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
        if (max_mem_used_ARRAY4 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
        if (max_mem_used_ARRAY > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY,'ARRAY')
+       if (max_mem_used_PNOSpaceInfo > 0_long) call print_maxmem(lupri,max_mem_used_PNOSpaceInfo,'PNOSpaceInfo')
        if (max_mem_used_MP2DENS > 0_long) call print_maxmem(lupri,max_mem_used_MP2DENS,'MP2DENS')
        if (max_mem_used_TRACEBACK > 0_long) call print_maxmem(lupri,max_mem_used_TRACEBACK,'TRACEBACK')
        if (max_mem_used_MP2GRAD > 0_long) call print_maxmem(lupri,max_mem_used_MP2GRAD,'MP2GRAD')
@@ -1412,6 +1441,7 @@ end subroutine collect_thread_memory
        if (mem_allocated_ARRAY2 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY2,'ARRAY2')
        if (mem_allocated_ARRAY4 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY4,'ARRAY4')
        if (mem_allocated_ARRAY > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY,'ARRAY')
+       if (mem_allocated_PNOSpaceInfo > 0_long) call print_mem_alloc(lupri,mem_allocated_PNOSpaceInfo,'PNOSpaceInfo')
        if (mem_allocated_MP2DENS > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2DENS,'MP2DENS')
        if (mem_allocated_TRACEBACK > 0_long) call print_mem_alloc(lupri,mem_allocated_TRACEBACK,'TRACEBACK')
        if (mem_allocated_MP2GRAD > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2GRAD,'MP2GRAD')
@@ -1470,6 +1500,7 @@ end subroutine collect_thread_memory
     if (max_mem_used_ARRAY2 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
     if (max_mem_used_ARRAY4 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
     if (max_mem_used_ARRAY > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY,'ARRAY')
+    if (max_mem_used_PNOSpaceInfo > 0_long) call print_maxmem(lupri,max_mem_used_PNOSpaceInfo,'PNOSpaceInfo')
     if (max_mem_used_MP2DENS > 0_long) call print_maxmem(lupri,max_mem_used_MP2DENS,'MP2DENS')
     if (max_mem_used_TRACEBACK > 0_long) call print_maxmem(lupri,max_mem_used_TRACEBACK,'TRACEBACK')
     if (max_mem_used_MP2GRAD > 0_long) call print_maxmem(lupri,max_mem_used_MP2GRAD,'MP2GRAD')
@@ -1512,6 +1543,7 @@ end subroutine collect_thread_memory
     if (mem_allocated_ARRAY2 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY2,'ARRAY2')
     if (mem_allocated_ARRAY4 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY4,'ARRAY4')
     if (mem_allocated_ARRAY > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY,'ARRAY')
+    if (mem_allocated_PNOSpaceInfo > 0_long) call print_mem_alloc(lupri,mem_allocated_PNOSpaceInfo,'PNOSpaceInfo')
     if (mem_allocated_MP2DENS > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2DENS,'MP2DENS')
     if (mem_allocated_TRACEBACK > 0_long) call print_mem_alloc(lupri,mem_allocated_TRACEBACK,'TRACEBACK')
     if (mem_allocated_MP2GRAD > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2GRAD,'MP2GRAD')
@@ -4370,6 +4402,51 @@ END SUBROUTINE MP2GRAD_deallocate_1dim
 
 
 
+!----- ALLOCATE PNOSpaceInfo POINTERS -----!
+SUBROUTINE PNOSPACEINFO_allocate_1dim(SpaceItem,n)
+  implicit none
+  integer,intent(in) :: n
+  type(PNOSpaceInfo), intent(inout), pointer :: SpaceItem(:)
+  integer :: ierr
+  integer(kind=long) :: nsize
+
+  SpaceItem => null()
+
+  allocate(SpaceItem(n),STAT = ierr )
+
+  if (ierr.ne. 0) then
+     WRITE(*,*) 'ERROR(PNOSPACEINFO_allocate_1dim) Status/nel',ierr,"/",n
+     call memory_error_quit('ERROR(PNOSPACEINFO_allocate_1dim) status /= 0',nsize)
+  endif
+
+  nsize = size(SpaceItem,kind=long)*mem_PNOSpaceInfosize
+  call mem_allocated_mem_PNOSpaceInfo(nsize)
+ 
+END SUBROUTINE PNOSPACEINFO_allocate_1dim
+
+
+SUBROUTINE PNOSpaceInfo_deallocate_1dim(PNOSpaceInfoITEM)
+  implicit none
+  TYPE(PNOSpaceInfo),pointer,intent(inout) :: PNOSpaceInfoITEM(:)
+  integer :: IERR
+  integer (kind=long) :: nsize
+  nsize = size(PNOSpaceInfoITEM,KIND=long)*mem_PNOSpaceInfosize
+  call mem_deallocated_mem_PNOSpaceInfo(nsize)
+
+  if (.not.ASSOCIATED(PNOSpaceInfoITEM)) then
+     print *,'Memory previously released!!'
+     call memory_error_quit('Error in PNOSpaceInfo_deallocate_1dim - memory previously released',nsize)
+  endif
+  DEALLOCATE(PNOSpaceInfoITEM,STAT = IERR)
+  IF (IERR.NE. 0) THEN
+     write(*,*) 'Error in PNOSpaceInfo_deallocate_1dim',IERR
+     CALL MEMORY_ERROR_QUIT('Error in PNOSpaceInfo_deallocate_1dim',nsize)
+  ENDIF
+  NULLIFY(PNOSpaceInfoITEM)
+END SUBROUTINE PNOSpaceInfo_deallocate_1dim
+
+
+
 !----- ALLOCATE ODBATCH POINTERS -----!
 
 SUBROUTINE ODBATCH_allocate_1dim(ODBATCHITEM,n)
@@ -5608,6 +5685,50 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ARRAY
+
+  subroutine mem_allocated_mem_PNOSpaceInfo(nsize)
+     implicit none
+     integer (kind=long), intent(in) :: nsize
+     IF(mem_InsideOMPsection)THEN!we add to thread private variables
+        mem_tp_allocated_PNOSpaceInfo = mem_tp_allocated_PNOSpaceInfo + nsize
+        max_mem_tp_used_PNOSpaceInfo = MAX(max_mem_tp_used_PNOSpaceInfo,mem_tp_allocated_PNOSpaceInfo)
+        !Count also the total memory:
+        mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+        max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+     ELSE
+        mem_allocated_PNOSpaceInfo = mem_allocated_PNOSpaceInfo + nsize
+        max_mem_used_PNOSpaceInfo = MAX(max_mem_used_PNOSpaceInfo,mem_allocated_PNOSpaceInfo)
+        !Count also the total memory:
+        mem_allocated_global = mem_allocated_global  + nsize
+        max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+     ENDIF
+   end subroutine mem_allocated_mem_PNOSpaceInfo
+
+   subroutine mem_deallocated_mem_PNOSpaceInfo(nsize)
+     implicit none
+     integer (kind=long), intent(in) :: nsize
+     IF(mem_InsideOMPsection)THEN!we add to thread private variables
+        mem_tp_allocated_PNOSpaceInfo = mem_tp_allocated_PNOSpaceInfo - nsize
+        if (mem_tp_allocated_PNOSpaceInfo < 0) then
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_PNOSpaceInfo - probably integer overflow!',nsize)
+        endif
+        !Count also the total memory:
+        mem_tp_allocated_global = mem_tp_allocated_global - nsize
+        if (mem_tp_allocated_global < 0) then
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_PNOSpaceInfo - probably integer overflow!',nsize)
+        endif
+     ELSE
+        mem_allocated_PNOSpaceInfo = mem_allocated_PNOSpaceInfo - nsize
+        if (mem_allocated_PNOSpaceInfo < 0) then
+           call memory_error_quit('Error in mem_deallocated_mem_PNOSpaceInfo - probably integer overflow!',nsize)
+        endif
+        !Count also the total memory:
+        mem_allocated_global = mem_allocated_global - nsize
+        if (mem_allocated_global < 0) then
+           call memory_error_quit('Error in mem_deallocated_mem_PNOSpaceInfo - probably integer overflow!',nsize)
+        endif
+     ENDIF
+   end subroutine mem_deallocated_mem_PNOSpaceInfo
 
   subroutine mem_allocated_mem_MP2DENS(nsize)
      implicit none
@@ -6914,9 +7035,11 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      longintbufferInt(72) = max_mem_used_mpi
      longintbufferInt(73) = mem_allocated_DECAOBATCHINFO
      longintbufferInt(74) = max_mem_used_DECAOBATCHINFO
+     longintbufferInt(75) = mem_allocated_PNOSpaceInfo
+     longintbufferInt(76) = max_mem_used_PNOSpaceInfo
 #ifdef MOD_UNRELEASED
-     longintbufferInt(75) = mem_allocated_lvec_data
-     longintbufferInt(76) = mem_allocated_lattice_cell
+     longintbufferInt(77) = mem_allocated_lvec_data
+     longintbufferInt(78) = mem_allocated_lattice_cell
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!
@@ -6997,9 +7120,11 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      max_mem_used_mpi = longintbufferInt(72)
      mem_allocated_DECAOBATCHINFO = longintbufferInt(73)
      max_mem_used_DECAOBATCHINFO = longintbufferInt(74)
+     mem_allocated_PNOSpaceInfo = longintbufferInt(75)
+     max_mem_used_PNOSpaceInfo = longintbufferInt(76)
 #ifdef MOD_UNRELEASED
-     mem_allocated_lvec_data = longintbufferInt(75)
-     mem_allocated_lattice_cell = longintbufferInt(76)
+     mem_allocated_lvec_data = longintbufferInt(77)
+     mem_allocated_lattice_cell = longintbufferInt(78)
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!

@@ -1141,9 +1141,10 @@ module dec_typedef_module
   !> Space information specifically designed to keep PNO spaces nicely together
   type PNOSpaceInfo
     integer              :: n,ns1,ns2,pno,red1,red2 !dimensions
-    integer, pointer     :: iaos(:)                !number of orbitals in the corresponding space
-    real(realk), pointer :: d(:,:)                 ! (diagonal) matrix connecting the spaces, dimensions red1,red2
-    real(realk), pointer :: s1(:,:),s2(:,:)        !space1 with (ns1,red1) space2 with (red2,ns2)
+    integer, pointer     :: iaos(:) => null()      !number of orbitals in the corresponding space
+    real(realk), pointer :: d(:,:)  => null()      ! (density) matrix connecting the spaces, dimensions red1,red2
+    real(realk), pointer :: s1(:,:) => null()
+    real(realk), pointer :: s2(:,:) => null()      !space1 with (ns1,red1) space2 with (red2,ns2)
     logical              :: allocd                 ! logical to show the allocation status
   end type PNOSpaceInfo
 

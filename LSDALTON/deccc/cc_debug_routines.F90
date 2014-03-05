@@ -173,12 +173,12 @@ module cc_debug_routines_module
      real(realk) :: iter_cpu,iter_wall, sosex
      character(18) :: save_to,keep
      character(ARR_MSG_LEN) :: msg
-     integer :: ii,aa
+     integer :: ii,aa, cc
      integer :: MaxSubSpace
      logical :: restart, u_pnos
      type(array) :: govov
      integer :: nspaces
-     type(PNOSpaceInfo), pointer :: pno_cv(:)
+     type(PNOSpaceInfo), pointer :: pno_cv(:), pno_S(:)
 
 
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
@@ -436,12 +436,19 @@ module cc_debug_routines_module
              & govov,ccmodel,mylsitem)
      end if
 
+
+
+
      set_pno_info:if(u_pnos)then
+
+
+
+       !GET THE PNO TRANSFORMATION MATRICES
        if(fragment_job)then
 
                    !COUNT PAIRS OUTSIDE EOS
          nspaces = ( nocc - fraginfo%noccEOS ) * ( nocc - fraginfo%noccEOS + 1) / 2 &
-                   !COUNT PAIRS WITH 1 IDX IN EOS   !EOS
+                   !COUNT PAIRS WITH 1 IDX IN EOS                   !EOS
                 &+ fraginfo%noccEOS * ( nocc - fraginfo%noccEOS ) + 1
 
          fraginfo%nspaces = nspaces
@@ -449,7 +456,7 @@ module cc_debug_routines_module
          allocate(fraginfo%CLocPNO(nspaces))
          call get_pno_trafo_matrices(nocc,nvirt,nbasis,m2%val,&
          &fraginfo%CLocPNO,fraginfo%nspaces,fragment_job,f=fraginfo)
-         !pno_cv => fraginfo%CLocPNO
+         pno_cv => fraginfo%CLocPNO
 
        else
                    !ALL PAIRS
@@ -459,7 +466,18 @@ module cc_debug_routines_module
          &pno_cv,nspaces,fragment_job,f=fraginfo)
 
        endif
+
+
+
+       !GET THE OVERLAP BETWEEN THE PNO SPACES
+       allocate( pno_S( nspaces * (nspaces - 1) / 2 )  )
+       !Get all the overlap matrices necessary
+       call get_pno_overlap_matrices(nocc,nvirt,pno_cv,pno_S,nspaces,.true.)
+
+
      endif set_pno_info
+
+
 
 
      ! readme : the iteration sequence is universal and may be used for all
@@ -641,11 +659,11 @@ module cc_debug_routines_module
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
                 &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-                &fragment_job,pno_cv,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter)
+                &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter)
               else
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
                 &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-                &fragment_job,fraginfo%CLocPNO,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
+                &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
               endif
 
               !transform to pseudo diagonal basis for the solver
@@ -1065,23 +1083,31 @@ module cc_debug_routines_module
 
      !Free PNO information
      if(u_pnos)then
+
        if(.not.fragment_job)then
          do i = 1, nspaces
-           if( pno_cv(i)%allocd )then
-             call mem_dealloc( pno_cv(i)%iaos )
-             call mem_dealloc( pno_cv(i)%d    )
-           endif
+           if( pno_cv(i)%allocd ) call free_PNOSpaceInfo(pno_cv(i))
+           do j = 1, i - 1
+             cc = (j - i + 1) + i*(i-1)/2
+             if( pno_S(cc)%allocd )  call free_PNOSpaceInfo( pno_S(cc) )
+           enddo
          enddo
          deallocate( pno_cv )
+
        else
          do i = 1, nspaces
-           if( fraginfo%CLocPNO(i)%allocd )then
-             call mem_dealloc( fraginfo%CLocPNO(i)%iaos )
-             call mem_dealloc( fraginfo%CLocPNO(i)%d    )
-           endif
+           if( fraginfo%CLocPNO(i)%allocd ) call free_PNOSpaceInfo( fraginfo%CLocPNO(i) )
+           do j = 1, i - 1
+             cc = (j - i + 1) + i*(i-1)/2
+             if( pno_S(cc)%allocd )  call free_PNOSpaceInfo( pno_S(cc) )
+           enddo
          enddo
          deallocate( fraginfo%CLocPNO )
+         pno_cv => null()
        endif
+
+       deallocate( pno_S )
+
      endif
 
 
@@ -1104,6 +1130,30 @@ module cc_debug_routines_module
 
 
    end subroutine ccsolver_debug
+
+
+   subroutine free_PNOSpaceInfo(SPINFO)
+     implicit none
+     type(PNOSpaceInfo), intent(inout) :: SPINFO
+    
+     if(.not.SPINFO%allocd)then
+       call lsquit("ERROR(free_PNOSpaceInfo): structure not allocated, cannot free",-1)
+     endif
+
+     if(associated(SPINFO%iaos)) call mem_dealloc(SPINFO%iaos)
+     if(associated(SPINFO%d   )) call mem_dealloc(SPINFO%d   )
+     if(associated(SPINFO%s1  )) call mem_dealloc(SPINFO%s1  )
+     if(associated(SPINFO%s2  )) call mem_dealloc(SPINFO%s2  )
+     SPINFO%n    = 0
+     SPINFO%ns1  = 0
+     SPINFO%ns2  = 0
+     SPINFO%pno  = 0
+     SPINFO%red1 = 0
+     SPINFO%red2 = 0
+
+     SPINFO%allocd = .false.
+     
+   end subroutine  free_PNOSpaceInfo
 
 
 
@@ -2625,7 +2675,7 @@ module cc_debug_routines_module
   !>        doubles amplitudes to their respective set of PNO's and then
   !>        transforming the result vector back to the reference basis. 
   subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,no,nv,nb,xo,xv,yo,yv,&
-             &mylsitem,fj,pno_cv,nspaces,oof,vvf,ifo,iter,f)
+             &mylsitem,fj,pno_cv,pno_S,nspaces,oof,vvf,ifo,iter,f)
     implicit none
     !ARGUMENTS
     integer, intent(in) :: no, nv, nb,iter,nspaces
@@ -2637,8 +2687,8 @@ module cc_debug_routines_module
     real(realk), intent(inout) :: oof(no,no),vvf(nv,nv)
     type(decfrag),intent(in),optional :: f
     type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
+    type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
     !INTERNAL VARIABLES
-    type(PNOSpaceInfo),pointer :: pno_S(:)
     type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:),pno_govov(:),pno_gvovo(:)
     integer :: ns,ns2,ns3,c,nc,nc2
     real(realk),pointer :: w1(:),w2(:),w3(:), w4(:),w5(:)
@@ -2653,7 +2703,7 @@ module cc_debug_routines_module
     integer, pointer :: idx(:),idx1(:),idx2(:), p_idx(:,:), p_nidx(:), oidx1(:,:),oidx2(:,:)
     integer, pointer :: s_idx(:,:,:), s_nidx(:)
     integer :: pno,pno1,pno2,pnv,pnv1,pnv2, k, l, nidx1, nidx2, spacemax
-    logical :: skiptrafo,skiptrafo2,save_gvvvv_is,with_screening,cyc,use_triangular
+    logical :: skiptrafo,skiptrafo2,save_gvvvv_is,cyc,use_triangular
     real(realk), pointer :: iFock(:,:), Dens(:,:)
     integer(kind=8) :: maxsize, myload
     integer :: pair,paircontribs,paircontrib(2,2)
@@ -2688,7 +2738,6 @@ module cc_debug_routines_module
 
     
     o2v2 = (i8*no**2)*nv**2
-    with_screening = .true.
     use_triangular = .true.
     master         = .true.
 
@@ -2699,7 +2748,6 @@ module cc_debug_routines_module
     if(fj.and..not.present(f))call lsquit("ERROR(get_ccsd_residual_pno_style):wrong input fj without f",-1)
 
 
-    allocate(pno_S(nspaces*(nspaces-1)/2))
     call mem_alloc( pno_t2, nspaces  )
     call mem_alloc( pno_o2, nspaces  )
     call mem_alloc( gvvvv,  nv**4    )
@@ -2735,9 +2783,6 @@ module cc_debug_routines_module
     spacemax = 2
     if(present(f))spacemax = max(f%noccEOS,spacemax)
 
-
-    !Get all the overlap matrices necessary
-    call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,with_screening)
 
     !Get pair interaction space information
     call get_pair_space_info(pno_cv,p_idx,p_nidx,s_idx,s_nidx,nspaces,no)
@@ -3427,20 +3472,6 @@ module cc_debug_routines_module
 
     do ns = 1, nspaces
 
-      do ns2 = 1, ns-1
-
-        c = (ns2 - ns + 1) + ns*(ns-1)/2
-        if( pno_S(c)%allocd )then
-          call mem_dealloc( pno_S(c)%iaos )
-          call mem_dealloc( pno_S(c)%d    )
-          if( with_screening )then
-            call mem_dealloc( pno_S(c)%s1   )
-            call mem_dealloc( pno_S(c)%s2   )
-          endif
-        endif
-
-      enddo
-
       if(  pno_cv(ns)%allocd )then
         call array_free( pno_t2(ns) )
         call array_free( pno_o2(ns) )
@@ -3448,7 +3479,6 @@ module cc_debug_routines_module
 
     enddo
 
-    deallocate( pno_S )
     call mem_dealloc( pno_t2 )
     call mem_dealloc( pno_o2 )
     call mem_dealloc( gvvvv )
@@ -4324,7 +4354,7 @@ module cc_debug_routines_module
 
     !DEBUGGING KEYWORD to avoid truncation
     if(DECinfo%noPNOtrunc.and..not.present(ext_thr)) nn = n
-    if(DECinfo%noFAtrunc.and.present(ext_thr)) nn = n
+    if(DECinfo%noFAtrunc .and.     present(ext_thr)) nn = n
 
     if(DECinfo%PL>2.and.present(ext_thr))write(DECinfo%output,'("The FO trafo  matrix has dims",2I4)')n,nn
 
