@@ -354,6 +354,8 @@ module dec_typedef_module
      logical :: PairMP2
      !> Estimate pair interaction energies using simple estimates?
      logical :: PairEstimate
+     !> Carry out pair estimate, but anyway run all pairs.
+     logical :: PairEstimateIgnore
      ! --
 
 
