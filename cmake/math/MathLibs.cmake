@@ -138,24 +138,26 @@ endif()
 
 if(ENABLE_SCALAPACK)
     set(_scalapack_lib      mkl_scalapack${_lib_suffix})
-    set(_blacs_intelmpi_lib mkl_blacs_intelmpi${_lib_suffix})
-    set(_blacs_sgimpt_lib   mkl_blacs_sgimpt${_lib_suffix})
+    if(${BLACS_IMPLEMENTATION} STREQUAL "intelmpi")
+        set(_blacs_lib mkl_blacs_intelmpi${_lib_suffix})
+    elseif(${BLACS_IMPLEMENTATION} STREQUAL "openmpi")
+        set(_blacs_lib mkl_blacs_openmpi${_lib_suffix})
+    elseif(${BLACS_IMPLEMENTATION} STREQUAL "sgimpt")
+        set(_blacs_lib mkl_blacs_sgimpt${_lib_suffix})
+    else()
+        message(FATAL_ERROR "BLACS implementation ${BLACS_IMPLEMENTATION} not recognized/supported")
+    endif()
 else()
     set(_scalapack_lib)
-    set(_blacs_intelmpi_lib)
-    set(_blacs_sgimpt_lib)
+    set(_blacs_lib)
 endif()
 
 # first try this MKL BLAS combination with SGI MPT
-set(MKL_BLAS_LIBS  ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_sgimpt_lib}   guide pthread m)
-# now with Intel MPI
-set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_intelmpi_lib} guide pthread m)
+set(MKL_BLAS_LIBS  ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_lib}   guide pthread m)
 # newer MKL BLAS versions do not have libguide
-set(MKL_BLAS_LIBS3 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_sgimpt_lib}         pthread m)
-# now with Intel MPI
-set(MKL_BLAS_LIBS4 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_intelmpi_lib}       pthread m)
+set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_lib}         pthread m)
 # ancient MKL BLAS
-set(MKL_BLAS_LIBS5 mkl guide m)
+set(MKL_BLAS_LIBS3 mkl guide m)
 
 set(MKL_LAPACK_LIBS mkl_lapack95${_lib_suffix} ${_compiler_mkl_interface}${_lib_suffix})
 
@@ -166,5 +168,4 @@ unset(_lib_suffix)
 unset(_thread_lib)
 unset(_compiler_mkl_interface)
 unset(_scalapack_lib)
-unset(_blacs_intelmpi_lib)
-unset(_blacs_sgimpt_lib)
+unset(_blacs_lib)

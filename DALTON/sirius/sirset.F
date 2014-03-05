@@ -50,7 +50,6 @@ C
 #include "infind.h"
 #include "infdim.h"
 #include "inftap.h"
-C#include "infpri.h"
 C
       CALL QENTER('SIRINI')
 C

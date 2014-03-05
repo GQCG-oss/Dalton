@@ -142,7 +142,7 @@ CRIT4=`$GREP "The model Hessian parameters of Roland Lindh will be used\." $log 
 CRIT5=`$GREP "Trust region method will be used to control step \(default\)\." $log | wc -l`
 CRIT6=`$GREP "1st Order Geometry Optimization" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[1]=6
+CTRL[1]=4 ! no redundant internal coordinates for diatomics any more
 ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Basis set

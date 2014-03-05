@@ -189,9 +189,9 @@ ERROR[8]="LRESC DIAMAGENTIC Second Order Singlets NOT CORRECT"
 
 
 # Total LRESC corrections, checked if totals are ok
-CRIT1=`$GREP "Total Paramagnetic Corrections \: *   8\.72072" $log | wc -l`
+CRIT1=`$GREP "Total Paramagnetic Corrections \: *   8\.7207." $log | wc -l`
 CRIT2=`$GREP "Total Diamagnetic Corrections \:  * \-3\.67667" $log | wc -l`
-CRIT3=`$GREP "Sum of corrections \: * 5\.04404" $log | wc -l`
+CRIT3=`$GREP "Sum of corrections \: * 5\.0440." $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="LRESC Total contributions NOT CORRECT"

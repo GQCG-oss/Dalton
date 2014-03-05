@@ -200,9 +200,9 @@ ERROR[5]="FREQUENCY INDEPENDENT POLARIZABILITY NOT CORRECT"
 #
 # frequency dependent polarizability
 #
-CRIT1=`$GREP "Ex * 6\.4535.. * (\-|\-0)\.1585... * 3\.860....E\-02" $log | wc -l`
-CRIT2=`$GREP "Ey * (\-|\-0)\.1585... * 9\.5309.. * (\-|\-0)\.2186..." $log | wc -l`
-CRIT3=`$GREP "Ez * 3\.860....E\-02 * (\-|\-0)\.2186... * 2\.5788.." $log | wc -l`
+CRIT1=`$GREP "Ex * 6\.4535.. * \-0*\.1585... *   3\.86.....E\-02" $log | wc -l`
+CRIT2=`$GREP "Ey * \-0*\.1585... *   9\.5309.. * \-0*\.2186..." $log | wc -l`
+CRIT3=`$GREP "Ez * 3\.86.....E\-02 * \-0*\.2186... * 2\.5788.." $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[6]=3
 ERROR[6]="FREQUENCY DEPENDENT POLARIZABILITY NOT CORRECT"
