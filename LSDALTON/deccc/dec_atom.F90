@@ -438,6 +438,7 @@ contains
     integer :: nbasis, noccEOS, nunoccEOS, noccfull, nocvAOS, nvirtAOS, ncabsAO, ncabsMO
     integer :: noccAOS, nunoccAOS
     integer :: ix, iy
+    real(realk),pointer :: Fcp(:,:) 
 
     ! ============================================================
     !                        F12-Specific                        !
@@ -452,20 +453,10 @@ contains
     nocvAOS  = fragment%noccAOS + fragment%nunoccAOS
     nvirtAOS = fragment%nunoccAOS
     
-    if(DECinfo%f12debug) then
-       !CABS MO and RI AO (Fragment ncabsMO = Molecule ncabsMO) Needs to be changed
-       !ncabsAO = size(MyMolecule%Ccabs,1)
-       !ncabsMO = size(MyMolecule%Ccabs,2)
-       !print *, "associated(MyMolecule%Ccabs)", associated(MyMolecule%Ccabs)
-       !print *, "size(MyMolecule%Ccabs,2)", size(MyMolecule%Ccabs,2)
-    endif
+    !CURRENTLY THE full matrices are in the CABS AO BASIS and needs to be transformed 
+    !to the CABS-MO and RI-MO basis which happens in this routine
 
-    if(DECinfo%f12debug) then
-       print *, "associated(fragment%Ccabs)", associated(fragment%Ccabs)
-       print *, "size(fragment%Ccabs,2)", size(fragment%Ccabs,2)
-    endif
-
-    ncabsAO  = size(fragment%Ccabs,1)
+    ncabsAO = size(fragment%Ccabs,1)
     ncabsMO = size(fragment%Ccabs,2)
 
     if(DECinfo%F12debug) then
@@ -483,7 +474,6 @@ contains
        print *, "ncabsMO", ncabsMO
        print *, "---------------------------------------"
     end if 
-    
     ! hJir
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
     do j=1,ncabsAO
@@ -492,14 +482,17 @@ contains
           fragment%hJir(i,:) = MyMolecule%hJir(ix,:)
        enddo
     enddo
+    call F12_RI_transform_realMat(fragment%hJir,noccEOS,ncabsAO,fragment%Cri,ncabsAO)
   
     ! Krs
     call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
     call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
+    call F12_RI_transform_realMat(fragment%Krs,ncabsAO, ncabsAO,fragment%Cri,ncabsAO)
 
     ! Frs
     call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
     call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
+    call F12_RI_transform_realMat(fragment%Frs,ncabsAO,ncabsAO,fragment%Cri,ncabsAO)
 
     ! Frm
     call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
@@ -507,18 +500,22 @@ contains
        iy = fragment%occAOSidx(i)
        fragment%Frm(:,i) = MyMolecule%Frm(:,iy)
     enddo
+    call F12_RI_transform_realMat(fragment%Frm,ncabsAO,noccAOS,fragment%Cri,ncabsAO)
 
     ! Fcp in the order of the index (occ to virt)
-    call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
+    ! HACK NOT fragment%Fcp, ncabsMO, nocvAOS)
+    call mem_alloc(Fcp, ncabsAO, nocvAOS)
     do i=1, fragment%noccAOS
        iy = fragment%occAOSidx(i)
-       fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy)
+       Fcp(:,i) = MyMolecule%Fcp(:,iy)
     enddo
-  
     do i=fragment%noccAOS+1, fragment%nunoccAOS+fragment%noccAOS
        iy = fragment%unoccAOSidx(i-fragment%noccAOS)
-       fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy+MyMolecule%nocc)
+       Fcp(:,i) = MyMolecule%Fcp(:,iy+MyMolecule%nocc)
     enddo
+    call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
+    call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOS,fragment%Ccabs,ncabsAO,ncabsMO)
+    call mem_dealloc(Fcp)
 
     if(DECinfo%F12debug) then
        print *, "---------------------------------------"
