@@ -391,9 +391,6 @@ contains
        print *, "       F12 energy single fragment          "  
        print *, "*******************************************"
        call get_f12_fragment_energy(MyFragment)
-       print *, "f12_signle_fragment_energy: ", MyFragment%energies(FRAGMODEL_MP2f12)
-
-
        !> Free cabs after each calculation
        call free_cabs()
 
@@ -974,8 +971,6 @@ contains
        ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
        
        call get_f12_fragment_energy(PairFragment, Fragment1, Fragment2, natoms)
-       print *, "f12_pair_fragment_energy: ", PairFragment%energies(FRAGMODEL_MP2f12)
-
        !> Free density matrix
        call free_cabs()
        ! call mem_dealloc(dens)

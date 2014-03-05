@@ -764,25 +764,25 @@ contains
 
     if(DECinfo%F12DEBUG) then
 
-       print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', mp2_energy
-       write(*,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21_debug
-       write(*,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22_debug
-       write(*,*) 'TOYCODE: F12 E23 CORRECTION TO ENERGY = ',E23_debug
-       write(*,*) 'TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E22_debug + E23_debug
-       write(*,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21_debug+E22_debug+E23_debug
-       write(*,*) 'TOYCODE: MP2-F12 ENERGY = ',mp2_energy+E21_debug+E22_debug+E23_debug
+       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2 CORRELATION ENERGY = ', mp2_energy
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21_debug
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22_debug
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E23 CORRECTION TO ENERGY = ',E23_debug
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E22_debug + E23_debug
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21_debug+E22_debug+E23_debug
+       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12 ENERGY = ',mp2_energy+E21_debug+E22_debug+E23_debug
 
     else
 
        write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', mp2_energy
-       print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', mp2_energy
+       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2 CORRELATION ENERGY = ', mp2_energy
 
-       write(*,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
        write(DECinfo%output,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
-       write(*,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
        write(DECinfo%output,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
 
-       write(*,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21+E22
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21+E22
        write(DECinfo%output,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ', E21+E22       
 
 
@@ -791,7 +791,7 @@ contains
 
        mp2f12_energy = 0.0E0_realk
        mp2f12_energy = mp2_energy + E21 + E22
-       print *, 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', mp2f12_energy
+       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', mp2f12_energy
        write(DECinfo%output,*) 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', mp2f12_energy
 
     endif

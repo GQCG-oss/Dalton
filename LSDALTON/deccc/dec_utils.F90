@@ -4476,15 +4476,32 @@ contains
 #ifdef MOD_UNRELEASED
     ! MODIFY FOR NEW CORRECTION
     if(DECInfo%F12) then
+
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+            & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
+      
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+            & DistanceTable, 'MP2f12 occupied pair energies','PF_MP2f12_OCC')
+      
        write(DECinfo%output,*)
-       write(DECinfo%output,'(13X,a)') '**********************************************************'
-       write(DECinfo%output,'(13X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
-       write(DECinfo%output,'(13X,a)') '**********************************************************'
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+       write(DECinfo%output,'(1X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
        write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY : ', energies(FRAGMODEL_OCCMP2)  
        write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY : ', energies(FRAGMODEL_MP2f12)
        write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
             & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
        write(DECinfo%output,*)       
+
+       if(DECinfo%F12debug) then
+          write(*,'(1X,a)') '**********************************************************'
+          write(*,'(1X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
+          write(*,'(1X,a)') '**********************************************************'
+          write(*,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY : ', energies(FRAGMODEL_OCCMP2)  
+          write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY : ', energies(FRAGMODEL_MP2f12)
+          write(*,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+               & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
+       endif
     endif
 #endif
 

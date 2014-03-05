@@ -484,6 +484,9 @@ contains
        print *, "---------------------------------------"
     end if 
     
+    ! Change if else statement with option to do without info from fullmolecule
+    ! Debug code
+
     ! hJir
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
     do j=1,ncabsAO
@@ -1250,21 +1253,11 @@ contains
        call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
             fragment%natoms,DECinfo%output,0)
 
-       !Build F12 Ccabs and Ri for a fragment
-       if(DECinfo%F12) then
-          print *, "create_f12_cabs_and_ri_fragment_info(fragment)"
-          call create_f12_cabs_and_ri_fragment_info(fragment)
-       end if
-    end if
-
-    !F12-calculation F12-Fock terms
-    if(DECinfo%F12) then     
-       call atomic_fragment_init_f12(fragment,MyMolecule)
-    endif !F12
-
 #else
     call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
          fragment%natoms,DECinfo%output,0)
+
+#endif
 
     !Build F12 Cabs and Ri for a fragment
     if(DECinfo%F12) then
@@ -1276,8 +1269,6 @@ contains
     if(DECinfo%F12) then     
        call atomic_fragment_init_f12(fragment,MyMolecule)
     endif !F12
-
-#endif
 
     ! Basis info has now been set
     fragment%BasisInfoIsSet=.true.

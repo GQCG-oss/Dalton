@@ -55,7 +55,7 @@ contains
   real(realk) :: tmp
 
   ! Setting Ciajb = 0
-  ! Ciajb = 0.0E0_realk
+  Ciajb = 0.0E0_realk
 
   do j=1,nocc
    do i=1,nocc
@@ -83,7 +83,7 @@ contains
   real(realk) :: tmp
 
   ! Setting Ciajb = 0
-  ! Ciajb = 0.0E0_realk
+  Ciajb = 0.0E0_realk
 
   do j=1,nocc
    do i=1,nocc
