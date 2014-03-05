@@ -134,8 +134,6 @@ cat > pehf_fixsol_lao.dal <<'%EOF%'
 *PEQM
 .SOLVAT
 .FIXPVA
-.MAXTES
- 500
 .DIIS
 **WAVE FUNCTIONS
 .HF
@@ -159,33 +157,32 @@ fi
 #
 # Potential readin test
 #
-CRIT1=`$GREP "Surface area FIXA * 167.899" $log | wc -l`
-CRIT2=`$GREP "Number of classical sites\: * 10" $log | wc -l`
-CRIT3=`$GREP "Multipole moments upto 2nd order\." $log | wc -l`
-CRIT4=`$GREP "Dipole-dipole polarizabilities\." $log | wc -l`
-CRIT5=`$GREP "Iterative solver for induced moments will be used" $log | wc -l`
-CRIT6=`$GREP "with convergence threshold\: 1\.0E\-08" $log | wc -l`
-CRIT7=`$GREP "and DIIS accelerator\." $log | wc -l`
-CRIT8=`$GREP "Continuum solvation in H2O solvent\." $log | wc -l`
-CRIT9=`$GREP "Number of surface points\: * 377" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
-CTRL[1]=9
+CRIT1=`$GREP "Number of classical sites\: * 10" $log | wc -l`
+CRIT2=`$GREP "Multipole moments upto 2nd order\." $log | wc -l`
+CRIT3=`$GREP "Dipole-dipole polarizabilities\." $log | wc -l`
+CRIT4=`$GREP "Iterative DIIS solver for induced moments will be used" $log | wc -l`
+CRIT5=`$GREP "with convergence threshold\: 1\.0E\-08" $log | wc -l`
+CRIT6=`$GREP "Continuum solvation in H2O solvent\." $log | wc -l`
+CRIT7=`$GREP "Number of surface points\: * 377" $log | wc -l`
+CRIT8=`$GREP "Surface area .* 167\.899" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
+CTRL[1]=8
 ERROR[1]="INCORRECT POTENTIAL"
 
 #
 # Energy tests
 #
- CRIT1=`$GREP "Monopoles * (\-|-0)\.01515367...." $log | wc -l`
- CRIT2=`$GREP "Dipoles * ( |0)\.00416494...." $log | wc -l`
- CRIT3=`$GREP "Quadrupoles  * (\-|-0)\.00495317...." $log | wc -l`
- CRIT4=`$GREP "Electronic * (\-|-0)\.06698653...." $log | wc -l`
- CRIT5=`$GREP "Nuclear * ( |0)\.06653656...." $log | wc -l`
- CRIT6=`$GREP "Multipole * ( |0)\.00005840...." $log | wc -l`
- CRIT7=`$GREP "Electronic * ( |0)\.00746928...." $log | wc -l`
- CRIT8=`$GREP "Nuclear * (\-|-0)\.00815463...." $log | wc -l`
- CRIT9=`$GREP "Multipole * (\-|-0)\.01338778...." $log | wc -l`
-CRIT10=`$GREP "Total PE energy\: * (\-|-0)\.03040659...." $log | wc -l`
-CRIT11=`$GREP "Final HF energy\: * \-188\.32863768...." $log | wc -l`
+ CRIT1=`$GREP "Monopoles * (\-|-0)\.0151536....." $log | wc -l`
+ CRIT2=`$GREP "Dipoles * ( |0)\.0041649....." $log | wc -l`
+ CRIT3=`$GREP "Quadrupoles  * (\-|-0)\.0049531....." $log | wc -l`
+ CRIT4=`$GREP "Electronic * (\-|-0)\.0669864....." $log | wc -l`
+ CRIT5=`$GREP "Nuclear * ( |0)\.0665365....." $log | wc -l`
+ CRIT6=`$GREP "Multipole * ( |0)\.0000584....." $log | wc -l`
+ CRIT7=`$GREP "Electronic * ( |0)\.0074693....." $log | wc -l`
+ CRIT8=`$GREP "Nuclear * (\-|-0)\.0081547....." $log | wc -l`
+ CRIT9=`$GREP "Multipole * (\-|-0)\.0133877....." $log | wc -l`
+CRIT10=`$GREP "Total PE energy\: * (\-|-0)\.0304065....." $log | wc -l`
+CRIT11=`$GREP "Final HF energy\: * \-188\.3286376....." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11`
 CTRL[2]=11
 ERROR[2]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
@@ -204,15 +201,15 @@ ERROR[3]="DIPOLE MOMENT NOT CORRECT"
 #
 # Test of PE-HF shielding constants.
 #
-CRIT1=`$GREP "\@2 London orbitals \(GIAOs\) has been used\." $log | wc -l`
-CRIT2=`$GREP "\@2 C * 84\.6933 * 333\.1296 * \-248\.4362 * \-201\.9899 * ( |0)\.4295 * 208\.1070 * 1\.7900" $log | wc -l`
-CRIT3=`$GREP "\@2 C * 123\.8000 * 354\.6785 * \-230\.8785 * \-167\.5610 * ( |0)\.7455 * 182\.4230 * 5\.2777" $log | wc -l`
-CRIT4=`$GREP "\@2 C * 114\.8929 * 355\.1557 * \-240\.2628 * \-177\.0348 * ( |0)\.8322 * 196\.4069 * 7\.8138" $log | wc -l`
-CRIT5=`$GREP "\@2 O * \-279\.8557 * 508\.8521 * \-788\.7078 * 1160\.9970 * ( |0)\.7614 * 1268\.2254 * 12\.9102" $log | wc -l`
-CRIT6=`$GREP "\@2 H * 22\.0883 * 34\.9336 * \-12\.8453 * \-4\.0626 * ( |0)\.7828 * 4\.4583 * 2\.3867" $log | wc -l`
-CRIT7=`$GREP "\@2 H * 25\.8086 * 34\.8252 * \-9\.0166 * 5\.6199 * ( |0)\.4947 * 5\.8446 * 1\.9421" $log | wc -l`
-CRIT8=`$GREP "\@2 H * 26\.2644 * 32\.3492 * \-6\.0848 * 5\.8871 * ( |0)\.9051 * 6\.6425 * 2\.1616" $log | wc -l`
-CRIT9=`$GREP "\@2 H * 26\.0486 * 20\.1502 * 5\.8983 * 5\.0368 * ( |0)\.9911 * 5\.8031 * 1\.1015" $log | wc -l`
+CRIT1=`$GREP "\@1 London orbitals \(GIAOs\) has been used\." $log | wc -l`
+CRIT2=`$GREP "\@1 C * 84\.6933 * 333\.1296 * \-248\.4362 * (\-|\-0)\.4991 * 230\.9071 * 144\.3709 * 1\.7982" $log | wc -l`
+CRIT3=`$GREP "\@1 C * 123\.8000 * 354\.6785 * \-230\.8785 * (\-|\-0)\.2038 * 209\.2003 * 146\.2394 * 1\.2916" $log | wc -l`
+CRIT4=`$GREP "\@1 C * 114\.8929 * 355\.1557 * \-240\.2628 * (\-|\-0)\.1314 * 226\.1413 * 162\.1772 * 1\.1832" $log | wc -l`
+CRIT5=`$GREP "\@1 O * \-279\.8558 * 508\.8520 * \-788\.7078 * ( |0)\.1903 * 1455\.6617 * 1160\.9970 * ( |0)\.7614" $log | wc -l`
+CRIT6=`$GREP "\@1 H * 22\.0883 * 34\.9336 * \-12\.8453 * (\-|\-0)\.1723 * 5\.1227 * 3\.6214 * 1\.2437" $log | wc -l`
+CRIT7=`$GREP "\@1 H * 25\.8086 * 34\.8252 * \-9\.0166 * ( |0)\.4338 * 6\.5466 * 5\.6199 * ( |0)\.4947" $log | wc -l`
+CRIT8=`$GREP "\@1 H * 26\.2644 * 32\.3492 * \-6\.0848 * ( |0)\.0729 * 7\.6633 * 5\.8871 * ( |0)\.9051" $log | wc -l`
+CRIT9=`$GREP "\@1 H * 26\.0486 * 20\.1502 * 5\.8983 * ( |0)\.0067 * 6\.7008 * 5\.0368 * ( |0)\.9911" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[4]=9
 ERROR[4]="PE-HF MAGNETIC PROPERTIES NOT CORRECT"

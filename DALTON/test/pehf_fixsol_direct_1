@@ -136,8 +136,6 @@ cat > pehf_fixsol_direct_1.dal <<'%EOF%'
 .VERBOSE
 .SOLVAT
 .FIXPVA
-.MAXTES
- 500
 .DIRECT
 **WAVE FUNCTIONS
 .HF
@@ -159,13 +157,13 @@ fi
 #
 # Potential readin test
 #
-CRIT1=`$GREP "Surface area FIXA * 167.899" $log | wc -l`
-CRIT2=`$GREP "Number of classical sites\: * 10" $log | wc -l`
-CRIT3=`$GREP "Multipole moments upto 2nd order\." $log | wc -l`
-CRIT4=`$GREP "Dipole-dipole polarizabilities\." $log | wc -l`
-CRIT5=`$GREP "Direct solver for induced moments will be used\." $log | wc -l`
-CRIT6=`$GREP "Continuum solvation in H2O solvent\." $log | wc -l`
-CRIT7=`$GREP "Number of surface points\: * 377" $log | wc -l`
+CRIT1=`$GREP "Number of classical sites\: * 10" $log | wc -l`
+CRIT2=`$GREP "Multipole moments upto 2nd order\." $log | wc -l`
+CRIT3=`$GREP "Dipole-dipole polarizabilities\." $log | wc -l`
+CRIT4=`$GREP "Direct solver for induced moments will be used\." $log | wc -l`
+CRIT5=`$GREP "Continuum solvation in H2O solvent\." $log | wc -l`
+CRIT6=`$GREP "Number of surface points\: * 377" $log | wc -l`
+CRIT7=`$GREP "Surface area .* 167\.899" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7`
 CTRL[1]=7
 ERROR[1]="INCORRECT POTENTIAL"

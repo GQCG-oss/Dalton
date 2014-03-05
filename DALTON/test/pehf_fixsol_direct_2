@@ -55,8 +55,6 @@ cat > pehf_fixsol_direct_2.dal <<'%EOF%'
 .PEQM
 *PEQM
 .FIXPVA
-.MAXTES
- 500
 .DIRECT
 .SOLVAT
 **WAVE FUNCTIONS
@@ -79,10 +77,10 @@ fi
 #
 # Potential readin test
 #
-CRIT1=`$GREP "Surface area FIXA * 107\.103" $log | wc -l`
-CRIT2=`$GREP "Direct solver for induced moments will be used\." $log | wc -l`
-CRIT3=`$GREP "Continuum solvation in H2O solvent\." $log | wc -l`
-CRIT4=`$GREP "Number of surface points\: * 228" $log | wc -l`
+CRIT1=`$GREP "Direct solver for induced moments will be used\." $log | wc -l`
+CRIT2=`$GREP "Continuum solvation in H2O solvent\." $log | wc -l`
+CRIT3=`$GREP "Number of surface points\: * 228" $log | wc -l`
+CRIT4=`$GREP "Surface area .* 107\.103" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=4
 ERROR[1]="INCORRECT POTENTIAL"
@@ -90,10 +88,10 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Energy tests
 #
-CRIT1=`$GREP "Electronic * ( |0)\.00576851...." $log | wc -l`
-CRIT2=`$GREP "Nuclear * (\-|\-0)\.00910151...." $log | wc -l`
-CRIT3=`$GREP "Total PE energy\: * (\-|\-0)\.00333300...." $log | wc -l`
-CRIT4=`$GREP "Final HF energy\: * \-188\.30292326...." $log | wc -l`
+CRIT1=`$GREP "Electronic * ( |0)\.0057685....." $log | wc -l`
+CRIT2=`$GREP "Nuclear * (\-|\-0)\.0091015....." $log | wc -l`
+CRIT3=`$GREP "Total PE energy\: * (\-|\-0)\.0033330....." $log | wc -l`
+CRIT4=`$GREP "Final HF energy\: * \-188\.3029232....." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
 CTRL[2]=4
 ERROR[2]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
