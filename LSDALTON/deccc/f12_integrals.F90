@@ -246,22 +246,22 @@ contains
     ! ***********************************************************
     !   Printing Input variables 
     ! ***********************************************************
-
-    !  if(DECinfo%F12debug) then
-    print *, "--------------------------"
-    print *, "F12-integrals single fragment energy"
-    print *, "--------------------------"
-    print *, "nbasis: ", nbasis
-    print *, "noccEOS: ", noccEOS
-    print *, "nunoccEOS: ", nunoccEOS
-    print *, "--------------------------"
-    print *, "nocvAOS", nocvAOS
-    print *, "noccAOS", noccAOS
-    print *, "nvirtAOS", nvirtAOS
-    print *, "ncabsAO", ncabsAO
-    print *, "ncabsMO", ncabsMO
-    print *, "--------------------------"
-    !  end if
+    
+    if(DECinfo%F12debug) then
+       print *, "--------------------------"
+       print *, "F12-integrals single fragment energy"
+       print *, "--------------------------"
+       print *, "nbasis: ", nbasis
+       print *, "noccEOS: ", noccEOS
+       print *, "nunoccEOS: ", nunoccEOS
+       print *, "--------------------------"
+       print *, "nocvAOS", nocvAOS
+       print *, "noccAOS", noccAOS
+       print *, "nvirtAOS", nvirtAOS
+       print *, "ncabsAO", ncabsAO
+       print *, "ncabsMO", ncabsMO
+       print *, "--------------------------"
+    end if
 
     ! ***********************************************************
     !   Allocating memory for V matrix
@@ -752,35 +752,6 @@ contains
     !> B9ijkl Brute force with memory savings
     B9ijkl = 0.0E0_realk
 
-!!$    print *, "size(Fcp,1)", size(MyFragment%Fcp,1)
-!!$    print *, "size(Fcp,2)", size(MyFragment%Fcp,2)
-!!$
-!!$    print *, "size(Rijpa,1)", size(Rijpa,1)
-!!$    print *, "size(Rijpa,2)", size(Rijpa,2)
-!!$    print *, "size(Rijpa,3)", size(Rijpa,3)
-!!$    print *, "size(Rijpa,4)", size(Rijpa,4)
-!!$
-!!$    print *, "size(Rijca,1)", size(Rijca,1)
-!!$    print *, "size(Rijca,2)", size(Rijca,2)
-!!$    print *, "size(Rijca,3)", size(Rijca,3)
-!!$    print *, "size(Rijca,4)", size(Rijca,4)
-!!$
-!!$    !  if(DECinfo%F12debug) then
-!!$    print *, "--------------------------"
-!!$    print *, "F12-integrals single fragment energy"
-!!$    print *, "--------------------------"
-!!$    print *, "nbasis: ", nbasis
-!!$    print *, "noccEOS: ", noccEOS
-!!$    print *, "nunoccEOS: ", nunoccEOS
-!!$    print *, "--------------------------"
-!!$    print *, "nocvAOS", nocvAOS
-!!$    print *, "noccAOS", noccAOS
-!!$    print *, "nvirtAOS", nvirtAOS
-!!$    print *, "ncabsAO", ncabsAO
-!!$    print *, "ncabsMO", ncabsMO
-!!$    print *, "--------------------------"
-!!$    !  end if
-
     do i=1, noccEOS
        do j=1, noccEOS    
           tmp  = 0.0E0_realk
@@ -798,7 +769,7 @@ contains
           enddo
           B9ijkl(i,j,i,j) = tmp
           B9ijkl(i,j,j,i) = tmp2
-          print *, tmp, tmp2, B9ijkl(i,j,i,j), B9ijkl(i,j,j,i), i,j
+       !   print *, tmp, tmp2, B9ijkl(i,j,i,j), B9ijkl(i,j,j,i), i,j
        enddo
     enddo
 

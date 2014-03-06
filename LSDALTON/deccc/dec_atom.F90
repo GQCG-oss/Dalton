@@ -454,7 +454,7 @@ contains
     nvirtAOS = fragment%nunoccAOS
     
     !CURRENTLY THE full matrices are in the CABS AO BASIS and needs to be transformed 
-    !to the CABS-MO and RI-MO basis which happens in this routine
+    !to the CABS-MO and RI-MO basis which happens in this routine 
 
     ncabsAO = size(fragment%Ccabs,1)
     ncabsMO = size(fragment%Ccabs,2)
@@ -477,14 +477,14 @@ contains
     
     ! hJir
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
-    do j=1,ncabsAO
-       do i=1, fragment%noccEOS
-          ix = fragment%occEOSidx(i)
-          fragment%hJir(i,:) = MyMolecule%hJir(ix,:)
-       enddo
+
+    do i=1, fragment%noccEOS
+       ix = fragment%occEOSidx(i)
+       fragment%hJir(i,:) = MyMolecule%hJir(ix,:)
     enddo
+
     call F12_RI_transform_realMat(fragment%hJir,noccEOS,ncabsAO,fragment%Cri,ncabsAO)
-  
+
     ! Krs
     call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
     call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
