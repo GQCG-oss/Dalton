@@ -551,9 +551,8 @@ C
 C
 C        Diagonalize overlap matrix ( S * U = U * Seig )
 C
-         CALL JACO(SCRA(KS1T),CMO(ICSYM),NORBI,NORBI,NBASI,
-     *             SCRA(KSCR1),SCRA(KSCR2))
-C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(SCRA(KS1T),CMO(ICSYM),NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,V,NB,NMAX,NROWV,THR_JACO)
          II = 0
          DO 175 I = 1,NORBI
             II = II + I
@@ -977,9 +976,8 @@ C
      *             NBASI,NORBI)
 C        CALL UTHU(H,HT,U,WRK,NAO,NMO)
 C
-         CALL JACO(SCRA(KH1T),CMO(ICSYM),NORBI,NORBI,NBASI,
-     *             SCRA(KSCR1),SCRA(KSCR2))
-C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(SCRA(KH1T),CMO(ICSYM),NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,V,NB,NMAX,NROWV,THR_JACO)
          II = 0
          DO 175 I = 1,NORBI
             II = II + I
@@ -1205,9 +1203,8 @@ C
             ISSYM = IIORB(ISYM) + 1
             ICSYM = ICMO(ISYM) + 1
 C
-            CALL JACO(FC(ISSYM),CMO(ICSYM),NORBI,NORBI,NBASI,
-     *                SCRA,SCRA(1+NORBI))
-C           CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+            CALL JACO_THR(FC(ISSYM),CMO(ICSYM),NORBI,NORBI,NBASI,0.0D0)
+C           CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
             II = ISSYM - 1
             DO 175 I=1,NORBI
@@ -1382,11 +1379,8 @@ C
   167    CONTINUE
 C
 C
-         KBIG  = KWRK
-         KJBIG = KBIG + NORBI
-         CALL JACO(WRK(JXFC),CMO(JCMO),NORBI,NORBI,NBASI,
-     *             WRK(KBIG),WRK(KJBIG))
-C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(WRK(JXFC),CMO(JCMO),NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          DO 175 I = 1,NORBI
             WRK(I) = WRK(JXFC-1 + IROW(I+1))
