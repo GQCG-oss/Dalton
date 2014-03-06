@@ -643,6 +643,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
     CALL ls_mpi_buffer(MyFragment%nunoccLOC,master)
+    CALL ls_mpi_buffer(MyFragment%nspaces,master)
 
 
     ! Logicals that are not pointers
@@ -651,6 +652,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%t1_stored,master)
     CALL ls_mpi_buffer(MyFragment%CDset,master)
     CALL ls_mpi_buffer(MyFragment%FAset,master)
+    CALL ls_mpi_buffer(MyFragment%PNOset,master)
     CALL ls_mpi_buffer(MyFragment%fragmentadapted,master)
     CALL ls_mpi_buffer(MyFragment%pairfrag,master)
 
@@ -783,6 +785,7 @@ contains
     end if
 
 
+
     ! CCORBITAL types
     ! ---------------
     ! Allocate decorbitals
@@ -860,6 +863,19 @@ contains
          call ls_mpi_buffer(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA,master)
        endif
 
+       if(MyFragment%PNOset) then
+
+         if( .not. AddToBuffer )then
+
+           nullify(MyFragment%CLocPNO)
+           call mem_alloc( MyFragment%CLocPNO, MyFragment%nspaces )
+
+         endif
+
+         do i = 1, MyFragment%nspaces
+           call ls_mpi_buffer(MyFragment%CLocPNO(i),master)
+         enddo
+       endif
 
        ! INTEGRAL LSITEM
        ! '''''''''''''''
@@ -888,6 +904,47 @@ contains
     end if
 
   End subroutine mpicopy_fragment
+
+  subroutine bufferadd_PNOSpaceInfo_struct(inf,s_ass,master)
+    implicit none
+    type(PNOSpaceInfo),intent(inout) :: inf
+    logical, intent(in) :: s_ass
+    integer(kind=ls_mpik),intent(in) :: master
+    call ls_mpi_buffer(inf%n,master)
+    call ls_mpi_buffer(inf%ns1,master)
+    call ls_mpi_buffer(inf%ns2,master)
+    call ls_mpi_buffer(inf%pno,master)
+    call ls_mpi_buffer(inf%red1,master)
+    call ls_mpi_buffer(inf%red2,master)
+    call ls_mpi_buffer(inf%allocd,master)
+    call ls_mpi_buffer(inf%s_associated,master)
+
+    if(inf%allocd)then
+
+      !allocate the arrays correctly
+      if( .not. AddToBuffer )then
+        call mem_alloc(inf%iaos,n)
+        if (inf%s_associated) then
+          call mem_alloc(inf%s1,ns1,red1)
+          call mem_alloc(inf%s2,red2,ns2)
+          call mem_alloc(inf%d,red1,red2)
+        else
+          call mem_alloc(inf%d,ns1,ns2)
+        endif
+      endif
+    
+      call ls_mpi_buffer(inf%iaos,n,master)
+      if (inf%s_associated) then
+        call ls_mpi_buffer(inf%s1,ns1,red1,master)
+        call ls_mpi_buffer(inf%s2,red2,ns2,master)
+        call ls_mpi_buffer(inf%d,red1,red2,master)
+      else
+        call ls_mpi_buffer(inf%d,ns1,ns2,master)
+      endif
+
+    endif
+   
+  end subroutine bufferadd_PNOSpaceInfo_struct
 
   subroutine share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
     implicit none

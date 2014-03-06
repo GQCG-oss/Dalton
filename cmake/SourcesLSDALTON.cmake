@@ -77,6 +77,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccsdpt.F90
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/ccsd.F90
+    LSDALTON/deccc/pno_ccsd.F90
     LSDALTON/deccc/rpa.F90
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/f12_routines.F90

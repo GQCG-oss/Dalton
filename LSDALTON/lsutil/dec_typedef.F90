@@ -778,6 +778,8 @@ module dec_typedef_module
      ! Information used for pair-natural orbitals (this only applies to virtual
      ! oribtals, the occupied orbitals will be kept in the local basis)
      ! ******************************************
+     !> use PNO information?
+     logical :: PNOset
      !> collection of transformation matrices from LO space to PNO space
      type(PNOSpaceInfo), pointer :: CLocPNO(:)
      !> number of spaces to consider
@@ -1139,12 +1141,21 @@ module dec_typedef_module
 
 
   !> Space information specifically designed to keep PNO spaces nicely together
+  !> IMPORTANT:
+  !> if you modify this structure, also modify bufferadd_PNOSpaceInfo_struct in decmpi.F90
   type PNOSpaceInfo
-    integer              :: n,ns1,ns2,pno,red1,red2 !dimensions
-    integer, pointer     :: iaos(:) => null()      !number of orbitals in the corresponding space
-    real(realk), pointer :: d(:,:)  => null()      ! (density) matrix connecting the spaces, dimensions red1,red2
-    real(realk), pointer :: s1(:,:) => null()
-    real(realk), pointer :: s2(:,:) => null()      !space1 with (ns1,red1) space2 with (red2,ns2)
+
+    integer              :: pno
+    
+    integer              :: n                      ! number of occ orbitals in the corresponding space
+    integer, pointer     :: iaos(:) => null()      ! orbital index in the aos space
+
+    logical              :: s_associated           ! indicate whether s matrices are associated, i.e. a SVD  d = s1 d_new  s2^T  
+    integer              :: ns1,ns2,red1,red2      ! dimensions, depending on s_associated
+    real(realk), pointer :: d(:,:)  => null()      ! density matrix or overlap matrix. if s_associated d = d_new, either (ns1,ns2) or (red1,red2)
+    real(realk), pointer :: s1(:,:) => null()      ! the left unit matrix reduced to the kernel dimensions (ns1,red1)
+    real(realk), pointer :: s2(:,:) => null()      ! the right unit matrix reduced to the kernel dimensions (red2,ns2)
+
     logical              :: allocd                 ! logical to show the allocation status
   end type PNOSpaceInfo
 
