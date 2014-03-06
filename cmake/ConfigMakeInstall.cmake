@@ -7,7 +7,13 @@ install(
     ${INSTALL_DIRECTORY}
     )
 
-foreach(_executable dalton.x lsdalton.x lslib_tester.x)
+if(ENABLE_CHEMSHELL)
+    set(LIST_OF_EXECUTABLES          lsdalton.x lslib_tester.x)
+else()
+    set(LIST_OF_EXECUTABLES dalton.x lsdalton.x lslib_tester.x)
+endif()
+
+foreach(_executable ${LIST_OF_EXECUTABLES})
     install(
         TARGETS ${_executable}
         DESTINATION ${INSTALL_DIRECTORY}
