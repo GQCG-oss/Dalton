@@ -456,8 +456,12 @@ contains
     !CURRENTLY THE full matrices are in the CABS AO BASIS and needs to be transformed 
     !to the CABS-MO and RI-MO basis which happens in this routine 
 
-    ncabsAO = size(fragment%Ccabs,1)
+    ncabsAO = fragment%nCabsAO !size(fragment%Ccabs,1)
     ncabsMO = size(fragment%Ccabs,2)
+    
+    IF(fragment%nCabsAO.NE.size(fragment%Ccabs,1))THEN
+       call lsquit('Dimension mismatch in atomic_fragment_init_f12',-1)
+    ENDIF
 
     if(DECinfo%F12debug) then
        print *, "---------------------------------------"
@@ -2327,6 +2331,25 @@ contains
        call lsquit('init_atomic_fragment_extent: Counter does not equal number &
             & of basis functions!',-1)
     end if
+
+    IF(decinfo%F12)THEN
+       ! count number of basis functions on selected atoms
+       fragment%nCabsAO = 0
+       do i=1,fragment%natoms
+          fragment%nCabsAO = fragment%nCabsAO &
+               & + MyMolecule%atom_cabssize(fragment%atoms_idx(i))
+       end do
+       ! Set basis function indices
+       call mem_alloc(fragment%cabsbasis_idx,fragment%nCabsAO)
+       idx=0
+       do i=1,fragment%natoms
+          do j=1,MyMolecule%atom_cabssize(fragment%atoms_idx(i))
+             idx=idx+1
+             ! Basis function index
+             fragment%cabsbasis_idx(idx) = MyMolecule%atom_cabsstart(fragment%atoms_idx(i)) + j-1
+          end do
+       end do
+    ENDIF
 
   end subroutine init_atomic_fragment_extent
 

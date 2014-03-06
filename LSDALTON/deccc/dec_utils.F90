@@ -2060,6 +2060,10 @@ contains
        call mem_dealloc(fragment%basis_idx)
     end if
 
+    if(associated(fragment%cabsbasis_idx)) then
+       call mem_dealloc(fragment%cabsbasis_idx)
+    end if
+
     ! DEC orbitals
     if(associated(fragment%occAOSorb)) then
        do i=1,size(fragment%occAOSorb)
