@@ -354,6 +354,8 @@ module dec_typedef_module
      logical :: PairMP2
      !> Estimate pair interaction energies using simple estimates?
      logical :: PairEstimate
+     !> Carry out pair estimate, but anyway run all pairs.
+     logical :: PairEstimateIgnore
      ! --
 
 
@@ -652,6 +654,7 @@ module dec_typedef_module
      !> Information about fragment size always set, this is the maximum distance
      !between any two atoms in the fragment
      real(realk) :: RmaxAE,RmaxAOS,RaveAE,RaveAOS,RsdvAE,RsdvAOS
+     real(realk) :: DmaxAE,DmaxAOS,DaveAE,DaveAOS,DsdvAE,DsdvAOS
 
      ! NOTE!!! occAOSorb and unoccAOSorb are ILL-DEFINED when fragmentadapted=.true. !!!!
 
