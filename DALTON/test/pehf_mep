@@ -1,0 +1,182 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > pehf_mep.info <<'%EOF%'
+   pehf_mep
+   --------
+   Molecule:         Water molecule
+   Wave Function:    PE-HF / STO-3G
+   Test Purpose:     Test the calculation of cube files containing the
+                     classical electrostatic potential and electric field
+                     from the core region using the PE library.
+                     NOTE: if using the TEST script then the option
+                     -param "-get *.cube" is required
+%EOF%
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > pehf_mep.mol <<'%EOF%'
+BASIS
+STO-3G
+Water
+------------------------
+AtomTypes=2 NoSymmetry Angstrom
+Charge=8.0 Atoms=1
+O           0.975536     1.507219    -0.082590
+Charge=1.0 Atoms=2
+H           0.023200     1.300096    -0.088063
+H           1.113831     2.040431     0.704778
+%EOF%
+#######################################################################
+#  POTENTIAL INPUT
+#######################################################################
+cat > pehf_mep.pot <<'%EOF%'
+! Two water molecules
+@COORDINATES
+3
+AA
+O     0.975536     1.507219    -0.082590
+H     0.023200     1.300096    -0.088063
+H     1.113831     2.040431     0.704778
+@MULTIPOLES
+ORDER 0
+3
+ 1    -0.739083
+ 2     0.367781
+ 3     0.371302
+@POLARIZABILITIES
+ORDER 1 1
+3
+ 1     5.476036    -0.086680    -0.072168     5.582289    -0.124016     5.513301
+ 2     3.488465     0.298404    -0.071204     1.739307    -0.350308     1.360585
+ 3     1.185490     0.051653     0.313695     2.359411     0.746038     2.948993
+EXCLISTS
+3 3
+ 1 2 3
+ 2 1 3
+ 3 1 2
+%EOF%
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > pehf_mep.dal <<'%EOF%'
+**DALTON
+.PEMEP
+*PEQM
+.MEP
+COARSE
+FIELD
+EXTFLD
+0.03 0.01 0.02
+SKIPQM
+**END OF
+%EOF%
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL > pehf_mep.check
+cat >> pehf_mep.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+#
+# molecular electrostatic potential cube file test
+#
+CRIT1=`$GREP "3 * \-7\.956158 * \-5\.543175 * \-8\.166415" pehf_mep.m0_mep.cube | wc -l`
+CRIT2=`$GREP "55 * ( |0)\.333333 * ( |0)\.000000 * ( |0)\.000000" pehf_mep.m0_mep.cube | wc -l`
+CRIT3=`$GREP "53 * ( |0)\.000000 * ( |0)\.333333 * ( |0)\.000000" pehf_mep.m0_mep.cube | wc -l`
+CRIT4=`$GREP "53 * ( |0)\.000000 * ( |0)\.000000 * ( |0)\.333333" pehf_mep.m0_mep.cube | wc -l`
+# line 11
+CRIT5=`$GREP "( |0)\.47429E\-03 * ( |0)\.55338E\-03 * ( |0)\.63550E\-03 * ( |0)\.72041E\-03 * ( |0)\.80780E\-03 * ( |0)\.89732E\-03" pehf_mep.m0_mep.cube | wc -l`
+# line 100
+CRIT6=`$GREP "( |0)\.40513E\-03 * ( |0)\.50550E\-03 * ( |0)\.61343E\-03 * ( |0)\.72906E\-03 * ( |0)\.85250E\-03 * ( |0)\.98374E\-03" pehf_mep.m0_mep.cube | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
+CTRL[1]=6
+ERROR[1]="MOLECULAR ELECTROSTATIC POTENTIAL CUBE FILE NOT CORRECT"
+
+#
+# induced molecular electrostatic potential cube file test
+#
+CRIT1=`$GREP "3 * \-7\.956158 * \-5\.543175 * \-8\.166415" pehf_mep.ind_mep.cube | wc -l`
+CRIT2=`$GREP "55 * ( |0)\.333333 * ( |0)\.000000 * ( |0)\.000000" pehf_mep.ind_mep.cube | wc -l`
+CRIT3=`$GREP "53 * ( |0)\.000000 * ( |0)\.333333 * ( |0)\.000000" pehf_mep.ind_mep.cube | wc -l`
+CRIT4=`$GREP "53 * ( |0)\.000000 * ( |0)\.000000 * ( |0)\.333333" pehf_mep.ind_mep.cube | wc -l`
+# line 11
+CRIT5=`$GREP "(\-|\-0)\.18168E\-02 * (\-|\-0)\.18516E\-02 * (\-|\-0)\.18848E\-02 * (\-|\-0)\.19161E\-02 * (\-|\-0)\.19452E\-02 * (\-|\-0)\.19718E\-02" pehf_mep.ind_mep.cube | wc -l`
+# line 100
+CRIT6=`$GREP "(\-|\-0)\.20762E\-02 * (\-|\-0)\.21466E\-02 * (\-|\-0)\.22181E\-02 * (\-|\-0)\.22903E\-02 * (\-|\-0)\.23629E\-02 * (\-|\-0)\.24356E\-02" pehf_mep.ind_mep.cube | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
+CTRL[2]=6
+ERROR[2]="INDUCED POTENTIAL CUBE FILE NOT CORRECT"
+
+#
+# electric field cube file test
+#
+CRIT1=`$GREP "3 * \-7\.956158 * \-5\.543175 * \-8\.166415" pehf_mep.m0_field_2.cube | wc -l`
+CRIT2=`$GREP "55 * ( |0)\.333333 * ( |0)\.000000 * ( |0)\.000000" pehf_mep.m0_field_2.cube | wc -l`
+CRIT3=`$GREP "53 * ( |0)\.000000 * ( |0)\.333333 * ( |0)\.000000" pehf_mep.m0_field_2.cube | wc -l`
+CRIT4=`$GREP "53 * ( |0)\.000000 * ( |0)\.000000 * ( |0)\.333333" pehf_mep.m0_field_2.cube | wc -l`
+# line 11
+CRIT5=`$GREP "(\-|\-0)\.15551E\-03 * (\-|\-0)\.17098E\-03 * (\-|\-0)\.18725E\-03 * (\-|\-0)\.20425E\-03 * (\-|\-0)\.22190E\-03 * (\-|\-0)\.24011E\-03" pehf_mep.m0_field_2.cube | wc -l`
+# line 100
+CRIT6=`$GREP "(\-|\-0)\.11323E\-03 * (\-|\-0)\.12747E\-03 * (\-|\-0)\.14318E\-03 * (\-|\-0)\.16044E\-03 * (\-|\-0)\.17933E\-03 * (\-|\-0)\.19989E\-03" pehf_mep.m0_field_2.cube | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
+CTRL[3]=6
+ERROR[3]="ELECTRIC FIELD CUBE FILE NOT CORRECT"
+
+#
+# induced electric field cube file test
+#
+CRIT1=`$GREP "3 * \-7\.956158 * \-5\.543175 * \-8\.166415" pehf_mep.ind_field_3.cube | wc -l`
+CRIT2=`$GREP "55 * ( |0)\.333333 * ( |0)\.000000 * ( |0)\.000000" pehf_mep.ind_field_3.cube | wc -l`
+CRIT3=`$GREP "53 * ( |0)\.000000 * ( |0)\.333333 * ( |0)\.000000" pehf_mep.ind_field_3.cube | wc -l`
+CRIT4=`$GREP "53 * ( |0)\.000000 * ( |0)\.000000 * ( |0)\.333333" pehf_mep.ind_field_3.cube | wc -l`
+# line 11
+CRIT5=`$GREP "( |0)\.10678E\-03 * ( |0)\.10227E\-03 * ( |0)\.96926E\-04 * ( |0)\.90729E\-04 * ( |0)\.83655E\-04 * ( |0)\.75696E\-04" pehf_mep.ind_field_3.cube | wc -l`
+# line 100
+CRIT6=`$GREP "( |0)\.20952E\-03 * ( |0)\.21296E\-03 * ( |0)\.21565E\-03 * ( |0)\.21746E\-03 * ( |0)\.21823E\-03 * ( |0)\.21780E\-03" pehf_mep.ind_field_3.cube | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
+CTRL[4]=6
+ERROR[4]="INDUCED ELECTRIC FIELD CUBE FILE NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+%EOF%
+chmod +x pehf_mep.check
+#######################################################################

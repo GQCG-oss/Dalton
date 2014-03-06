@@ -677,6 +677,7 @@ C
       DIMENSION CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
+      INTEGER PE_IFC_MEP, PE_IFC_MEP_NOQM
       real(8), allocatable :: work(:)
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
@@ -1092,6 +1093,17 @@ Chj      IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
 Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
 Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 C
+Classical MEP calculations using PE library
+         IF (PEMEP) THEN
+            IF (PE_IFC_MEP() == 0) THEN
+                CALL QUIT('ERROR: .PEMEP requires also .MEP in *PEQM.')
+            ELSE IF (PE_IFC_MEP() == 1) THEN
+                IF (PE_IFC_MEP_NOQM() == 1) THEN
+                    CALL PE_IFC_MEPCALC_NOQM()
+                END IF
+            END IF
+         END IF
+
 Cholesky
          IF (CHOINT) CALL EXECHO(WORK(0),LMWORK,WRKDLM)
 Cholesky

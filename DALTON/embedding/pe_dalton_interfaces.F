@@ -92,6 +92,16 @@
         end if
       end function pe_ifc_mep
 
+      function pe_ifc_mep_noqm()
+        use pe_variables, only: pe_mep, mep_qmcube
+        integer :: pe_ifc_mep
+        if (pe_mep .and. .not. mep_qmcube) then
+            pe_ifc_mep = 1
+        else
+            pe_ifc_mep = 0
+        end if
+      end function pe_ifc_mep_noqm
+
       subroutine pe_ifc_mepcalc(denmats, nmats, work, nwrk)
         use polarizable_embedding, only: pe_master
 #include "inforb.h"
@@ -101,6 +111,12 @@
         call pe_master(runtype='mep', denmats=denmats,
      &                 nmats=nmats, dalwrk=work)
       end subroutine pe_ifc_mepcalc
+
+      subroutine pe_ifc_mepcalc_noqm()
+        use polarizable_embedding, only: pe_master
+        use pe_variables, only: pe_mep, mep_qmcube
+        call pe_master(runtype='mep')
+       end subroutine pe_ifc_mepcalc_noqm
 
       subroutine pe_ifc_london(fckmats, nmats, work, nwrk)
         use polarizable_embedding, only: pe_master

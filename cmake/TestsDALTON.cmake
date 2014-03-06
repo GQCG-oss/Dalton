@@ -1,5 +1,5 @@
 macro(add_dalton_test _name _labels)
-    if("${_name}" STREQUAL "pehf_cube")
+    if("${_name}" STREQUAL "pehf_cube" OR "${_name}" STREQUAL "pehf_mep")
         add_test(
             ${_name}
             ${CMAKE_SOURCE_DIR}/DALTON/test/TEST -param "-get *.cube" -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null -result-directory ${CMAKE_BINARY_DIR}/test_${_name} ${_name}
@@ -330,6 +330,7 @@ add_dalton_test(pehf_alpha            "dalton;peqm;parallel;short")
 add_dalton_test(pehf_beta             "dalton;peqm;parallel;short")
 add_dalton_test(pehf_border           "dalton;peqm;parallel;short")
 add_dalton_test(pehf_cube             "dalton;peqm;parallel;short")
+add_dalton_test(pehf_mep              "dalton;peqm;parallel;short")
 add_dalton_test(perohf_prop           "dalton;peqm;parallel;short")
 add_dalton_test(pehsrohf_wft          "dalton;peqm;parallel;short")
 add_dalton_test(pehf_lao              "dalton;peqm;parallel;short")
