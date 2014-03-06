@@ -219,8 +219,9 @@ C
       character (len=6) :: keywrd
       integer           :: xctype1, xctype2
 C
-      double precision  :: EMYDFTAUX
+      double precision  :: EMYDFTAUX, EENSEMB
       EMYDFTAUX = 0.0D0 ! initialization
+      EENSEMB = 0.0D0 
 C
 C     *****************************************************************
 C     Analyze input control specification
@@ -522,7 +523,14 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
            WRITE(LUPRI,805) 'ESRDV        :',ESRDV
            WRITE(LUPRI,805) 'POTNUC       :',POTNUC
            WRITE(LUPRI,806) 'Auxiliary CI-srDFT energy     :',ECIAUX
+!          compute the ensemble CI-srDFT energy 
+           EENSEMB = EENSEMB + weights(IST) * ECI(IST)
         END DO
+
+        write(lupri,806) '*******************************'
+        WRITE(LUPRI,806) 'Final ensemble CI-srDFT energy:',EENSEMB
+        write(lupri,806) '*******************************'
+!           
   805   FORMAT( 1X,A,F25.12)
   806   FORMAT(/1X,A,F25.12)
       ENDIF
