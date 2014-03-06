@@ -11,9 +11,13 @@
 
 #if defined(VAR_INT64)
 #include <stdint.h>
-typedef int64_t integer;
+   typedef int64_t integer;
 #else
-typedef int integer;
+   typedef int integer;
+#endif
+
+#if !defined(M_PI)
+#define M_PI		3.14159265358979323846
 #endif
 
 #if !defined(RESTRICT)
@@ -200,20 +204,21 @@ void dft_lin_resp_slave     (real* work, integer* lwork, integer* iprint);
 void dft_lin_respf_slave    (real* work, integer* lwork, integer* iprint);
 void dft_kohn_shamab_slave  (real* work, integer* lwork, integer* iprint);
 void dft_lin_respab_slave   (real* work, integer* lwork, integer* iprint);
+
 void dft_mol_grad_slave     (real* work, integer* lwork, integer* iprint);
 void dft_qr_resp_slave      (real* work, integer* lwork, integer* iprint);
-void dft_qrbl_slave         (real* work, integer* lwork, integer* iprint);
 void dft_cr_resp_slave      (real* work, integer* lwork, integer* iprint);
+void dft_qrbl_slave         (real* work, integer* lwork, integer* iprint);
 void numdso_slave           (real* work, integer* lwork, integer* iprint);
 void dft_kohn_shamab_b_slave(real* work, integer* lwork, integer* iprint);
 void dft_lin_respab_b_slave (real* work, integer* lwork, integer* iprint);
 void dft_wake_slaves(DFTPropEvalMaster);
 typedef struct {
     void*        data;
-    int          count;
+    integer          count;
     MPI_Datatype type;
 } SyncData;
-void mpi_sync_data(const SyncData* data, int count);
+void mpi_sync_data(const SyncData* data, integer count);
 #else
 #define dft_wake_slaves(a)
 #endif
@@ -224,17 +229,18 @@ void* dal_malloc_(size_t sz, const char *func, unsigned line);
 
 integer fort_print(const char* format, ...);
 /* FORTRAN FUNCTION PROTOTYPES */
-void dzero_(real* arr, const integer* len);
-void dunit_(real* arr, const integer* len);
-void outmat_(const real* mat, const integer* rowlow, const integer* rowhi,
+void FSYM(dzero) (real* arr, const integer* len);
+void FSYM(dunit) (real* arr, const integer* len);
+void FSYM(outmat)(const real* mat, const integer* rowlow, const integer* rowhi,
 	     const integer* collow, const integer* colhi,
              const integer* rowdim, const integer* coldim);
-void getrho_(const real*dmat, const real* atv, real* rho, real* dmagao, 
+void FSYM(getrho)(const real*dmat, const real* atv, real* rho, real* dmagao, 
 	     const real* densthr);
-void dftgrd_(real* work, integer* lwork, const integer* d1, const integer* log1);
-void dftdns_(real* dmat, real* work,integer *lwork, const integer* iprint);
-void gtdmso_(real* udv, real* cmo, real* di, real* dv, real* work);
-void dftdnsab_(real* dmata,real* dmatb, real* work, integer* lwork, integer* iprint);
+void FSYM(dftgrd)(real* work, integer* lwork, const integer* d1, const integer* log1);
+void FSYM(dftdns)(real* dmat, real* work, integer *lwork, const integer* iprint);
+void FSYM(gtdmso)(real* udv, real* cmo, real* di, real* dv, real* work);
+void FSYM(dftdnsab)(real* dmata,real* dmatb, real* work,
+                   integer* lwork, integer* iprint);
 void udftmolgrdab_(real* gao, real* damta, real* dmatb, real* rha, real* rhb, 
                    real* vra, real* vrb, real* vza, real* vzb, real* vzg); 
 integer FSYM2(ishell_cnt)(void);
@@ -276,7 +282,7 @@ void FSYM(lrao2mo)(const real* cmo, const integer *ksymop,
 
 /* useful  constants for fortran interfacing */
 extern const integer ZEROI, ONEI, THREEI, FOURI;
-extern const real ZEROR, ONER, TWOR, FOURR;
+extern const real    ZEROR, ONER, TWOR,   FOURR;
 
 #if !defined __inline__
 /* inline some stuff whenever possible */
