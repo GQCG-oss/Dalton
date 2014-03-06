@@ -957,9 +957,6 @@ C           this also includes the case of MMPCM
      &                 '@',ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,
      &                 IOPRHF,(NISH(I),I=1,NSYM)
                END IF
-            ELSE IF (PEQM) THEN
-               WRITE (LUW4,'(A,I3,1P,2G20.12,D15.5,D12.2)')
-     &                '@',ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF
             ELSE
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(A,I3,1P,G22.12,D15.5,D12.2,I5)')

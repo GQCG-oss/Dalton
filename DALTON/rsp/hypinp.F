@@ -542,7 +542,7 @@ C
      &      ' QM/MM response calculation, type .QMMM'
 
          IF (PEQM) WRITE(LUPRI,'(/A/A)')
-     &      ' Polarizable Embedding response calculation, type .PEQM',
+     &      ' Polarizable embedding response calculation, type .PEQM',
      &      ' Environment is modeled using'//
      &         ' the polarizable embedding scheme (PE library)'
 
@@ -1008,7 +1008,7 @@ C
      &      ' QM/MM response calculation, type .QMMM'
 
          IF (PEQM) WRITE(LUPRI,'(/A/A)')
-     &      ' Polarizable Embedding response calculation, type .PEQM',
+     &      ' Polarizable embedding response calculation, type .PEQM',
      &      ' Environment is modeled using'//
      &         ' the polarizable embedding scheme (PE library)'
 

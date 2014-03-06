@@ -2293,9 +2293,10 @@ C
          END IF    
 
          IF (PEQM) THEN
-            WRITE(LUPRI,'(A/A)') ' PE-QM response calculation',
+            WRITE(LUPRI,'(A/A)')
+     &         ' Polarizable embedding response calculation',
      &         ' Environment is modeled using'//
-     &            ' the polarizable embedding scheme (PE library)'
+     &         ' the polarizable embedding scheme (PE library)'
          END IF
 
          IF (CHANNEL_CALC) THEN
@@ -4892,7 +4893,8 @@ C
          ENDIF
 
          IF (PEQM) THEN
-            WRITE(LUPRI,'(A)') ' PE-QM response calculation'
+            WRITE(LUPRI,'(A)') 
+     &                     ' Polarizable embedding response calculation'
             WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          END IF
