@@ -16,9 +16,7 @@ Type dyntype
      Logical :: TimeL
      Integer :: trajMax
      ! Number of trajectories
-     Integer :: NumTra 
-     ! Steered MD or not
-     Logical :: Steered
+     Integer :: NumTra
      ! Maximal time
      Real(realk) :: MaxTime
      ! Rotational temperature
@@ -35,24 +33,11 @@ Type dyntype
      Logical :: MaxSam
      ! Thermostat
      Logical :: Andersen
-     Logical :: NHChain
-     ! Heat bath 'masses' and frequency
-     Real(realk), pointer :: Q(:)
-     Real(realk) :: omega
+     ! Thermostat
      Logical :: TStat
-     ! Chain length for Nose-Hoover
-     Integer :: CLen 
-     ! Multistep order for Nose-Hoover
-     Integer :: MStep 
-     ! Initial conditions for Nose-Hoover chain
-     Logical :: Init
-     Real(realk), pointer :: eta(:)
-     Real(realk), pointer :: v_eta(:)
      ! Time step 
      Real(realk) :: TimeStep
      Real(realk) :: TotalMass
-     ! External force magnitude
-     Real(realk) :: Ext_force
      ! Distance between fragments
      Real(realk) :: FragDist
      ! Distance from centre of mass
@@ -91,8 +76,6 @@ Type dyntype
      ! File unit for DALTON.PHS
      Integer :: Phase
      Real(realk), pointer :: Initial_velocities(:)
-     ! Atoms attached in steered dynamics
-     Integer :: Att_atom(2)
      ! Verlet integration
      Logical :: Verlet
      ! Step update
@@ -101,8 +84,6 @@ Type dyntype
      ! Energy and time arrays
      Real(realk), pointer :: Energy_array(:)
      Real(realk), pointer :: Time_array(:)
-     ! Project gradient
-     Logical :: Proj_grad
 endtype dyntype
 
 contains

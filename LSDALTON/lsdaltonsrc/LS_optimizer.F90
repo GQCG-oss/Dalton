@@ -36,6 +36,8 @@ CONTAINS
     !
     INTEGER :: iOpt,iPre, fotLevelSave, fotLevel
     Real(realk) :: GradThr, ThrStep, ThGradMax, ThStepMax, trsave
+
+
     ! Special preoptimization step currently only possible for DEC calculations
     config%noDecEnergy = .TRUE.
     IF (config%optinfo%dynopt) THEN
@@ -166,9 +168,6 @@ CONTAINS
     Do i = 1, NAtoms
        config%optinfo%Coordinates(:,i) = config%Molecule%Atom(i)%Center(:)  
     Enddo
-    ! Do the force modification of energy if asked
-    If (config%optinfo%FMPES) call FM_energy(E(1),config%optinfo)
-    config%optinfo%energy = E(1)
     ! Fourth, finding the number of internals if needed
     If (config%optinfo%RedInt .OR. config%optinfo%DelInt .OR. &
      &  config%optinfo%InmdHess.OR. config%optinfo%InrdHess) then  
@@ -325,7 +324,6 @@ Else
 !
 !  Entering normal optimizer
 !
-    
     IF (config%optinfo%DelInt .OR. config%optinfo%RedInt) THEN
        NCRDHS = config%optinfo%NIntCoord
     ELSE
@@ -1165,9 +1163,6 @@ Endif ! Optimization
        optinfo%Coordinates = COONEW
        Call Update_coordinates(ls,config,optinfo,NAtoms)
        Call Get_Energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-       ! Do the force modification of energy if asked
-       If (optinfo%FMPES) call FM_energy(E(1),optinfo)
-       !
        IF (DECinfo%dodec) call Obtain_Gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,config%optinfo)
 
        optinfo%energy = E(1)
@@ -1633,11 +1628,6 @@ Do i = 2, optinfo%MaxIter+1
    ! Get energy
    Call Update_coordinates(ls,config,optinfo,NAtoms)
    Call Get_Energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-   ! Do the force modification of energy if asked
-   If (optinfo%FMPES) call FM_energy(E(1),optinfo)
-   ! Print Cartesian coordinates
-   call lsheader(lupri,'New Cartesian coordinates') 
-   call Print_Geometry(config%Molecule,lupri)
    ! Get and print new values of internal coordinates
    call ATOM_INI(Atom_array,config%Molecule,optinfo,NAtoms,.TRUE.,lupri)
    call ls_GETINT(NAtoms,optinfo%NIntCoord,Atom_array,optinfo%CoordInt,lupri,optinfo)
@@ -1687,7 +1677,6 @@ Type(ConfigItem), intent(inout) :: Config ! General information
 Real(realk), pointer :: Gradient(:,:)
 Real(realk) :: h,Eerr,E ! Energy
 Real(realk), pointer :: anaGrad(:,:)
-Real(realk) :: direction(3),R_a(3),R_b(3)
 logical    :: DEBUG_PAT
 ! Allocate gradient
 Call mem_alloc(Gradient,3,NAtoms)
@@ -1723,20 +1712,6 @@ Do i = 1,NAtoms
 Enddo
 ! Deallocate gradient
 Call mem_dealloc(Gradient)
-!
-If (optinfo%FMPES) then
-   ! Define the direction
-   R_a = optinfo%Coordinates(:,optinfo%Att_atom(1))
-   R_b = optinfo%Coordinates(:,optinfo%Att_atom(2))
-   direction = (R_b - R_a)/(sqrt(dot_product(R_b-R_a,R_b-R_a)))
-   ! Add external force
-   optinfo%GradMol(optinfo%Att_atom(1)*3-2:optinfo%Att_atom(1)*3) = &
-   optinfo%GradMol(optinfo%Att_atom(1)*3-2:optinfo%Att_atom(1)*3)+ &
-   &  direction*optinfo%Ext_force
-   optinfo%GradMol(optinfo%Att_atom(2)*3-2:optinfo%Att_atom(2)*3) = &
-   optinfo%GradMol(optinfo%Att_atom(2)*3-2:optinfo%Att_atom(2)*3) - &
-   &  direction*optinfo%Ext_force
-Endif
 !
 end subroutine Obtain_gradient
 !
