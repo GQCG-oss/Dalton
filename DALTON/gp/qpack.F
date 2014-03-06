@@ -117,6 +117,7 @@ C
       character*8 ident8
 C
       LEVELQ = LEVELQ + 1
+#ifdef PRINT_CALL_TREE
       do i=1, levelq
          write(2,'(A2)', advance='no') '-'
       end do
@@ -126,6 +127,7 @@ C
          ident8 = ident 
       end if
       write(2,'(A8)') ident8
+#endif
 
 Chj2  LQTREE = LQTREE + 1
       IF (LEVELQ .LE. MXQLVL) THEN
