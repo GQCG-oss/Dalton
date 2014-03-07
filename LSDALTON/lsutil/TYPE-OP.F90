@@ -53,71 +53,6 @@ integer :: comm
 setting%comm = comm
 end subroutine set_integral_comm
 
-!> \brief write lsitem to disk
-!> \author S. Reine and T. Kjaergaard
-!> \date 2010
-!> \param LS lsitem to be written
-SUBROUTINE write_lsitem_to_disk(LS)
-implicit none
-TYPE(LSITEM)    :: LS
-!
-LOGICAL         :: fileexist  
-INTEGER         :: lun,i
-call lsquit('write_lsitem_to_disk option disabeled',-1)
-!Open lsitem file
-!!$INQUIRE(file='lsitem',EXIST=fileexist)
-!!$IF(fileexist)THEN
-!!$   lun = -1
-!!$   CALL LSOPEN(LUN,'lsitem','old','UNFORMATTED')
-!!$   call LSclose(LUN,'DELETE')
-!!$ENDIF
-!!$lun = -1
-!!$CALL LSOPEN(lun,'lsitem','new','UNFORMATTED')
-!!$
-!!$!Write
-!!$CALL WRITE_DALTONINPUT_TO_DISK(lun,LS%INPUT)
-!!$write(lun) ls%setting%integraltransformGC
-!!$
-!!$!Close
-!!$call LSclose(LUN,'KEEP')
-
-END SUBROUTINE write_lsitem_to_disk
-
-!> \brief read lsitem from disk
-!> \author S. Reine and T. Kjaergaard
-!> \date 2010
-!> \param LS lsitem to be written
-SUBROUTINE read_lsitem_from_disk(LS)
-implicit none
-TYPE(LSITEM)    :: LS
-!
-LOGICAL         :: fileexist,integraltransformGC
-INTEGER         :: lun,i,nbast
-call lsquit('read_lsitem_from_disk option disabeled',-1)
-
-!!$INQUIRE(file='lsitem',EXIST=fileexist)
-!!$IF(fileexist)THEN
-!!$   LS%lupri=-1
-!!$   LS%luerr=-1
-!!$   lun = -1
-!!$   CALL LSOPEN(lun,'lsitem','old','UNFORMATTED')
-!!$   REWIND(lun)
-!!$   CALL READ_DALTONINPUT_FROM_DISK(lun,LS%INPUT)
-!!$   read(lun)integraltransformGC
-!!$   call LSclose(LUN,'KEEP')
-!!$   CALL typedef_init_setting(ls%setting)
-!!$   CALL typedef_set_default_setting(ls%setting,ls%input)
-!!$   ls%setting%integraltransformGC = integraltransformGC
-!!$   IF(.NOT.ls%input%basis%REGULAR%Gcont.AND.ls%input%BASIS%GCtransAlloc)THEN
-!!$      nbast = getNbasis(AORdefault,Contractedinttype,ls%input%MOLECULE,6)
-!!$      call write_GCtransformationmatrix(nbast,ls%setting,6)
-!!$   ENDIF
-!!$ELSE
-!!$   CALL LSQUIT('In call to read_lsitem_from_disk FILE: lsitem do not exit ',-1)
-!!$ENDIF
-
-END SUBROUTINE read_lsitem_from_disk
-
 !> \brief 
 !> \author
 !> \date
@@ -507,6 +442,7 @@ READ(LUN) DALTON%exchangeFactor
 END SUBROUTINE read_daltonitem_from_disk
 #endif
 
+
 !> \brief set the integralconfig to default values
 !> \author S. Reine and T. Kjaergaard
 !> \date 2010
@@ -596,6 +532,7 @@ DALTON%DEBUG4CENTER = .FALSE.
 DALTON%DEBUG4CENTER_ERI = .FALSE.
 DALTON%DEBUGPROP = .FALSE.
 DALTON%DEBUGICHOR = .FALSE.
+DALTON%DEBUGICHOROPTION = -1
 DALTON%DEBUGGEN1INT = .FALSE.
 DALTON%DEBUGCGTODIFF = .FALSE.
 DALTON%DEBUGEP = .FALSE.
@@ -1179,6 +1116,7 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGOVERLAP',DALTON%DEBUGOVERLAP
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUG4CENTER',DALTON%DEBUG4CENTER
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGPROP',DALTON%DEBUGPROP
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGICHOR',DALTON%DEBUGICHOR
+WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGICHOROPTION',DALTON%DEBUGICHOROPTION
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGGEN1INT',DALTON%DEBUGGEN1INT
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGCGTODIFF',DALTON%DEBUGCGTODIFF
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGEP',DALTON%DEBUGEP

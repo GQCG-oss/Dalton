@@ -1094,7 +1094,9 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.4CENTERERI');  INTEGRAL%DO4CENTERERI = .TRUE.
         CASE ('.AOPRINT');  READ(LUCMD,*) INTEGRAL%AOPRINT
         CASE ('.BASPRINT');  READ(LUCMD,*) INTEGRAL%BASPRINT
-        CASE ('.DEBUGICHOR');  INTEGRAL%DEBUGICHOR = .TRUE.
+        CASE ('.DEBUGICHOR')
+           INTEGRAL%DEBUGICHOR = .TRUE.
+           READ(LUCMD,*) INTEGRAL%DEBUGICHORoption
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
 #ifdef BUILD_GEN1INT_LSDALTON
@@ -2833,6 +2835,26 @@ ELSEIF(OMP_GET_NUM_THREADS().EQ. 1)THEN
 ENDIF
 !$OMP END MASTER
 !$OMP END PARALLEL
+#endif
+
+#ifdef VAR_MPI
+#ifdef VAR_INT64
+#ifdef VAR_MPI_32BIT_INT
+!int64,mpi & mpi32
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A)')'linked to a 32 bit integer MPI library.'
+#else
+!int64,mpi nompi32
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A)')'linked to a 64 bit integer MPI library.'
+#endif
+#else
+!int32 mpi
+WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors'
+#endif
+#else
+!no MPI
+WRITE(lupri,'(4X,A)')'This is a serial calculation (no MPI)'
 #endif
 
 config%av%diis_history_size = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size

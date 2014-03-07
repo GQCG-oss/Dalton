@@ -890,6 +890,7 @@ end subroutine linesearch_thresholds
       type(lshiftItem)             :: lshift
 !Levelshift by homo-lumo gap
        real(realk)                 :: hlgap, tstart, tend
+       xsave_lu=-113
        OnMaster=.TRUE.
    if (arh%set_arhterms) then
       ndens = fifoqueue%offset

@@ -90,8 +90,8 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in RESINP.'
+               WRITE (LUPRI,'(/4A/)') ' Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in RESINP.')
     1          CONTINUE
@@ -111,7 +111,7 @@ C
                GO TO 100
     5          CONTINUE
                   READ (LUCMD,*) MAXSIM
-                  IF (MAXSIM .EQ. MAXSMD)ICHANG = ICHANG - 1
+                  IF (MAXSIM .EQ. MAXSMD) ICHANG = ICHANG - 1
                GO TO 100
     6          CONTINUE
                   NEWRD  = .TRUE.
@@ -137,7 +137,7 @@ C
    15             CUT    = .TRUE.
                GO TO 100
    16             READ (LUCMD,*) MAXRED
-                  IF (MAXRED .EQ. MAXRDM)ICHANG = ICHANG - 1
+                  IF (MAXRED .EQ. MAXRDM) ICHANG = ICHANG - 1
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

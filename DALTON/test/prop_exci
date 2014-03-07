@@ -178,7 +178,7 @@ CRIT1=`$GREP "Electronic excitation energies" $log | wc -l`
 CRIT2=`$GREP "No mass\-velocity correction calculated" $log | wc -l`
 CRIT3=`$GREP "No Darwin correction calculated" $log | wc -l`
 CRIT4=`$GREP "Linear response properties" $log | wc -l`
-CRIT5=`$GREP "Number of excitation energies\: * 5 * 5 * 5 * 5 * 0 * 0 * 0 * 0" $log | wc -l`
+CRIT5=`$GREP "Number of excitation energies\: * 5 * 5 * 5 * 5" $log | wc -l`
 CRIT6=`$GREP "Conventional rotational strength" $log | wc -l`
 CRIT7=`$GREP "Dipole strength" $log | wc -l`
 CRIT8=`$GREP "Number of frequencies * \: * 3" $log | wc -l`
@@ -255,7 +255,7 @@ CRIT16=`$GREP "4 * 1 * (0| )\.34843.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*
 CRIT17=`$GREP "4 * 2 * (0| )\.59369.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000" $log | wc -l`
 CRIT18=`$GREP "4 * 3 * (0| )\.74256.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000" $log | wc -l`
 CRIT19=`$GREP "4 * 4 * (0| )\.83358.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000" $log | wc -l`
-CRIT20=`$GREP "4 * 5 * 1\.35069.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000" $log | wc -l`
+CRIT20=`$GREP "4 * 5 * 1\.350(69|70).* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000.* \-*0*\.000" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \

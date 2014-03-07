@@ -1001,6 +1001,25 @@ Subroutine Final_Analysis(NumAtoms,MaxSteps,NumTrajs,FUPrint,Phase,PrintLevel)
   Call mem_dealloc(AtmArr)
 !
 End Subroutine Final_Analysis
+!===============
+! Print temp
+!===============
+Subroutine Print_temp(num_steps,T_array,lupri)
+! Prints temperature statistics
+Implicit none
+Integer :: num_steps, i, lupri
+Real(realk), dimension(num_steps+1) :: T_array
+!
+Call Underline(lupri, 'Temperature variation', -1)
+Write(lupri,'(5X,A)') '+--------+-----------+'  
+Write(lupri,'(5X,A)') '|  Step  |    T, K   |'  
+Write(lupri,'(5X,A)') '+--------+-----------+'  
+Do i = 1, num_steps+1 
+     Write(lupri,'(5X,A,I7,A,F10.3,A)') '|', i-1,  ' |', T_array(i),' |'
+Enddo
+Write(lupri,'(5X,A)') '+--------+-----------+'  
+!
+End subroutine Print_temp
 !====================
 !   Read_PhaseFile
 !====================

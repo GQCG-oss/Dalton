@@ -2656,7 +2656,7 @@ C     Symmetry basis:
 C
 CHJ   IF (IPREAD .GE. -1) CALL SYMOUT
 CHJ april-09 bugfix: always call SYMOUT because now used for MULBS and AMFI!!!
-      CALL SYMOUT
+      IF (.NOT. SLAVE) CALL SYMOUT
 C
 C     Symmetrized magnetic moments
 C

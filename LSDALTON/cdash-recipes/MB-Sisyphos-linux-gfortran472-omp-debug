@@ -6,12 +6,13 @@ rm -rf $SCRATCH_DIR
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
 export OMP_NUM_THREADS=6
-#export MATH_ROOT=
+MATH_ROOT=/lib64/atlas
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 
-./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-linux-gfortran472-omp-debug" build
+#./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-linux-gfortran472-omp-debug" build
+./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage -D BUILDNAME="MB-Sisyphos-linux-gfortran472-omp-debug" build
 
 cd build
 ctest -D Nightly -L linsca

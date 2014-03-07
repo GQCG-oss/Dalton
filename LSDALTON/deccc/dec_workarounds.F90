@@ -13,7 +13,7 @@ module dec_workarounds_module
     subroutine subblock_op(drain,source,nel,scal1,scal2)
     import
     implicit none
-    integer, intent(in) :: nel
+    integer(kind=8), intent(in) :: nel
     real(realk), intent(in), optional :: scal1,scal2
     real(realk), intent(inout) :: drain(nel)
     real(realk), intent(in) :: source(nel)
@@ -28,12 +28,12 @@ module dec_workarounds_module
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
   subroutine assign_in_subblocks(drain,op,source,nel,scal1,scal2)
     implicit none
-    integer, intent(in) :: nel
+    integer(kind=8), intent(in) :: nel
     character, intent(in) :: op
     real(realk),intent(inout) :: drain(:)
     real(realk),intent(in)    :: source(:)
     real(realk), intent(in), optional :: scal1,scal2
-    integer :: block,i
+    integer(kind=8) :: block,i
     integer, parameter :: k = 1000000
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     procedure(subblock_op), pointer :: op_blocks
@@ -65,7 +65,7 @@ module dec_workarounds_module
 
   subroutine copy_subblock(drain,source,nel,scal1,scal2)
     implicit none
-    integer, intent(in) :: nel
+    integer(kind=8), intent(in) :: nel
     real(realk), intent(in), optional :: scal1,scal2
     real(realk), intent(inout) :: drain(nel)
     real(realk), intent(in) :: source(nel)
@@ -85,7 +85,7 @@ module dec_workarounds_module
   end subroutine copy_subblock
   subroutine add_subblock(drain,source,nel,scal1,scal2)
     implicit none
-    integer, intent(in) :: nel
+    integer(kind=8), intent(in) :: nel
     real(realk), intent(in), optional :: scal1,scal2
     real(realk), intent(inout) :: drain(nel)
     real(realk), intent(in) :: source(nel)
@@ -101,7 +101,7 @@ module dec_workarounds_module
   end subroutine add_subblock
   subroutine subtract_subblock(drain,source,nel,scal1,scal2)
     implicit none
-    integer, intent(in) :: nel
+    integer(kind=8), intent(in) :: nel
     real(realk), intent(in), optional :: scal1,scal2
     real(realk), intent(inout) :: drain(nel)
     real(realk), intent(in) :: source(nel)

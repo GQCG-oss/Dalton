@@ -191,64 +191,64 @@ ENDIF
 
 END SUBROUTINE II_DFT_KSM
 
-!> \brief main kohn-sham matrix driver
-!> \author T. Kjaergaard
-!> \date 2008
-!>
-!> Main kohn-sham matrix driver - calls the nummerical integrater with the 
-!> name of a worker routine (II_DFT_KSMGGA,II_DFT_KSMLDA,II_DFT_KSMGGAUNRES,
-!> II_DFT_KSMLDAUNRES) which does the work for each grid point
-!>
-SUBROUTINE II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,IPRINT,nbast,nMO,CMAT1,CMAT2,ABSVALOVERLAP,SameCmat)
-  IMPLICIT NONE
-!> contains info about the molecule,basis and dft grid parameters
-TYPE(LSSETTING),intent(inout)  :: SETTING
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the printlevel integer, determining how much output should be generated
-INTEGER,intent(in) :: IPRINT
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of MOcoef (nocc or nvirt or nbast)
-INTEGER,intent(in) :: NMO
-!> MO coef matrix 1
-REAL(REALK),intent(in) :: CMAT1(NBAST,NMO)
-!> MO coef matrix 2
-REAL(REALK),intent(in) :: CMAT2(NBAST,NMO)
-!> absolute valued Overlap matrix
-logical,intent(in) :: SameCmat
-!> absolute valued Overlap matrix
-REAL(REALK),intent(inout) :: ABSVALOVERLAP(NMO,NMO)
-!
-#ifdef MOD_UNRELEASED
-LOGICAL          :: USE_MPI
-REAL(REALK)      :: DFTHRI
-USE_MPI = .TRUE.
-IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_MPI
-!MPI Specific
-IF (setting%node.EQ.infpar%master) THEN
-   IF(USE_MPI)call ls_mpibcast(LSMPI_IIDFTABSVALOVERLAP,infpar%master,setting%comm)
-   IF(USE_MPI)call lsmpi_ABSVAL_masterToSlave(SETTING,LUPRI,IPRINT,nbast,nMO,&
-        & CMAT1,CMAT2,ABSVALOVERLAP,SameCmat,setting%comm)
-ENDIF
-#endif
-
-DFTHRI = 1.0E-16_realk
-
-call II_ABSVALINT(LUPRI,IPRINT,SETTING,CMAT1,CMAT2,NBAST,NMO,&
-     & ABSVALOVERLAP,USE_MPI,DFTHRI,SameCmat)
-
-#ifdef VAR_MPI
-!=================MPI Specific================================
-IF(USE_MPI)THEN
-   call lsmpi_barrier(setting%comm)    
-   CALL lsmpi_reduction(ABSVALOVERLAP,NMO,NMO,infpar%master,MPI_COMM_LSDALTON)
-ENDIF
-!=============================================================
-#endif
-#endif
-END SUBROUTINE II_DFT_ABSVAL_OVERLAP
+!!$!> \brief main kohn-sham matrix driver
+!!$!> \author T. Kjaergaard
+!!$!> \date 2008
+!!$!>
+!!$!> Main kohn-sham matrix driver - calls the nummerical integrater with the 
+!!$!> name of a worker routine (II_DFT_KSMGGA,II_DFT_KSMLDA,II_DFT_KSMGGAUNRES,
+!!$!> II_DFT_KSMLDAUNRES) which does the work for each grid point
+!!$!>
+!!$SUBROUTINE II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,IPRINT,nbast,nMO,CMAT1,CMAT2,ABSVALOVERLAP,SameCmat)
+!!$  IMPLICIT NONE
+!!$!> contains info about the molecule,basis and dft grid parameters
+!!$TYPE(LSSETTING),intent(inout)  :: SETTING
+!!$!> the logical unit number for the output file
+!!$INTEGER,intent(in) :: LUPRI
+!!$!> the printlevel integer, determining how much output should be generated
+!!$INTEGER,intent(in) :: IPRINT
+!!$!> Number of basis functions
+!!$INTEGER,intent(in) :: Nbast
+!!$!> Number of MOcoef (nocc or nvirt or nbast)
+!!$INTEGER,intent(in) :: NMO
+!!$!> MO coef matrix 1
+!!$REAL(REALK),intent(in) :: CMAT1(NBAST,NMO)
+!!$!> MO coef matrix 2
+!!$REAL(REALK),intent(in) :: CMAT2(NBAST,NMO)
+!!$!> absolute valued Overlap matrix
+!!$logical,intent(in) :: SameCmat
+!!$!> absolute valued Overlap matrix
+!!$REAL(REALK),intent(inout) :: ABSVALOVERLAP(NMO,NMO)
+!!$!
+!!$#ifdef MOD_UNRELEASED
+!!$LOGICAL          :: USE_MPI
+!!$REAL(REALK)      :: DFTHRI
+!!$USE_MPI = .TRUE.
+!!$IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
+!!$#ifdef VAR_MPI
+!!$!MPI Specific
+!!$IF (setting%node.EQ.infpar%master) THEN
+!!$   IF(USE_MPI)call ls_mpibcast(LSMPI_IIDFTABSVALOVERLAP,infpar%master,setting%comm)
+!!$   IF(USE_MPI)call lsmpi_ABSVAL_masterToSlave(SETTING,LUPRI,IPRINT,nbast,nMO,&
+!!$        & CMAT1,CMAT2,ABSVALOVERLAP,SameCmat,setting%comm)
+!!$ENDIF
+!!$#endif
+!!$
+!!$DFTHRI = 1.0E-16_realk
+!!$
+!!$call II_ABSVALINT(LUPRI,IPRINT,SETTING,CMAT1,CMAT2,NBAST,NMO,&
+!!$     & ABSVALOVERLAP,USE_MPI,DFTHRI,SameCmat)
+!!$
+!!$#ifdef VAR_MPI
+!!$!=================MPI Specific================================
+!!$IF(USE_MPI)THEN
+!!$   call lsmpi_barrier(setting%comm)    
+!!$   CALL lsmpi_reduction(ABSVALOVERLAP,NMO,NMO,infpar%master,MPI_COMM_LSDALTON)
+!!$ENDIF
+!!$!=============================================================
+!!$#endif
+!!$#endif
+!!$END SUBROUTINE II_DFT_ABSVAL_OVERLAP
 
 !> \brief main kohn-sham matrix driver
 !> \author T. Kjaergaard
@@ -1098,34 +1098,34 @@ CALL lsmpi_bufferDFTessentials1(LUPRI,IPRINT,NBAST,NDMAT,UNRES,comm)
 CALL lsmpi_bufferDFTessentials2(SETTING,LUPRI,IPRINT,NBAST,NDMAT,DMAT,DFTdata,comm)
 end subroutine lsmpi_XCgeneric_masterToSlave
 
-subroutine lsmpi_ABSVAL_masterToSlave(SETTING,LUPRI,IPRINT,nbast,nMO,&
-        & CMAT1,CMAT2,ABSVALOVERLAP,SameCmat,comm)
-use lsmpi_mod
-use infpar_module
-use typedef
-implicit none
-INTEGER :: LUPRI,IPRINT,Nbast,nMO
-integer(kind=ls_mpik) :: comm
-TYPE(LSSETTING)  :: SETTING
-REAL(REALK)      :: CMAT1(NBAST,NMO)
-REAL(REALK)      :: CMAT2(NBAST,NMO),ABSVALOVERLAP(NMO,NMO)
-logical          :: SameCmat
-
-call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
-CALL ls_mpi_buffer(LUPRI,infpar%master)
-CALL ls_mpi_buffer(IPRINT,infpar%master)
-CALL ls_mpi_buffer(NBAST,infpar%master)
-CALL ls_mpi_buffer(NMO,infpar%master)
-CALL ls_mpi_buffer(SameCmat,infpar%master)
-CALL ls_mpi_buffer(CMAT1,NBAST,NMO,infpar%master)
-IF(.NOT.SameCmat)THEN
-   CALL ls_mpi_buffer(CMAT2,NBAST,NMO,infpar%master)
-ENDIF
-CALL ls_mpi_buffer(ABSVALOVERLAP,NMO,NMO,infpar%master)
-!SETTING
-CALL mpicopy_setting(setting,comm)
-call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
-end subroutine lsmpi_ABSVAL_masterToSlave
+!!$subroutine lsmpi_ABSVAL_masterToSlave(SETTING,LUPRI,IPRINT,nbast,nMO,&
+!!$        & CMAT1,CMAT2,ABSVALOVERLAP,SameCmat,comm)
+!!$use lsmpi_mod
+!!$use infpar_module
+!!$use typedef
+!!$implicit none
+!!$INTEGER :: LUPRI,IPRINT,Nbast,nMO
+!!$integer(kind=ls_mpik) :: comm
+!!$TYPE(LSSETTING)  :: SETTING
+!!$REAL(REALK)      :: CMAT1(NBAST,NMO)
+!!$REAL(REALK)      :: CMAT2(NBAST,NMO),ABSVALOVERLAP(NMO,NMO)
+!!$logical          :: SameCmat
+!!$
+!!$call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
+!!$CALL ls_mpi_buffer(LUPRI,infpar%master)
+!!$CALL ls_mpi_buffer(IPRINT,infpar%master)
+!!$CALL ls_mpi_buffer(NBAST,infpar%master)
+!!$CALL ls_mpi_buffer(NMO,infpar%master)
+!!$CALL ls_mpi_buffer(SameCmat,infpar%master)
+!!$CALL ls_mpi_buffer(CMAT1,NBAST,NMO,infpar%master)
+!!$IF(.NOT.SameCmat)THEN
+!!$   CALL ls_mpi_buffer(CMAT2,NBAST,NMO,infpar%master)
+!!$ENDIF
+!!$CALL ls_mpi_buffer(ABSVALOVERLAP,NMO,NMO,infpar%master)
+!!$!SETTING
+!!$CALL mpicopy_setting(setting,comm)
+!!$call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
+!!$end subroutine lsmpi_ABSVAL_masterToSlave
 
 !===========================================================
 ! MPI II_DFT_KSM Slave
@@ -1157,48 +1157,48 @@ call free_dftdata(dftdata)
 
 end subroutine lsmpi_II_DFT_KSM_Slave
 !LSMPI_IIDFTABSVALOVERLAP
-subroutine lsmpi_II_DFT_ABSVALOVERLAP_Slave(comm)
-use lsmpi_mod
-use infpar_module
-use typedef
-use IIDFTKSM
-implicit none
-INTEGER :: LUPRI,IPRINT,Nbast,NDMAT,NMO
-integer(kind=ls_mpik) :: comm
-TYPE(LSSETTING)  :: SETTING
-logical :: SameCmat
-REAL(REALK),pointer :: CMAT1(:,:),CMAT2(:,:),ABSVALOVERLAP(:,:)
-call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
-CALL ls_mpi_buffer(LUPRI,infpar%master)
-CALL ls_mpi_buffer(IPRINT,infpar%master)
-CALL ls_mpi_buffer(NBAST,infpar%master)
-CALL ls_mpi_buffer(NMO,infpar%master)
-CALL ls_mpi_buffer(SameCmat,infpar%master)
-call mem_dft_alloc(CMAT1,NBAST,NMO)
-CALL ls_mpi_buffer(CMAT1,NBAST,NMO,infpar%master)
-IF(.NOT.SameCmat)THEN
-   call mem_dft_alloc(CMAT2,NBAST,NMO)
-   CALL ls_mpi_buffer(CMAT2,NBAST,NMO,infpar%master)
-ENDIF
-call mem_dft_alloc(ABSVALOVERLAP,NMO,NMO)
-CALL ls_mpi_buffer(ABSVALOVERLAP,NMO,NMO,infpar%master)
-CALL mpicopy_setting(setting,comm)
-call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
-
-IF(SameCmat)THEN
-   call II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,IPRINT,nbast,nMO,&
-        & CMAT1,CMAT1,ABSVALOVERLAP,SameCmat)
-ELSE
-   call II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,IPRINT,nbast,nMO,&
-        & CMAT1,CMAT2,ABSVALOVERLAP,SameCmat)
-ENDIF
-call mem_dft_dealloc(CMAT1)
-IF(.NOT.SameCmat)THEN
-   call mem_dft_dealloc(CMAT2)
-ENDIF
-call mem_dft_dealloc(ABSVALOVERLAP)
-call typedef_free_setting(SETTING)
-end subroutine lsmpi_II_DFT_ABSVALOVERLAP_Slave
+!!$subroutine lsmpi_II_DFT_ABSVALOVERLAP_Slave(comm)
+!!$use lsmpi_mod
+!!$use infpar_module
+!!$use typedef
+!!$use IIDFTKSM
+!!$implicit none
+!!$INTEGER :: LUPRI,IPRINT,Nbast,NDMAT,NMO
+!!$integer(kind=ls_mpik) :: comm
+!!$TYPE(LSSETTING)  :: SETTING
+!!$logical :: SameCmat
+!!$REAL(REALK),pointer :: CMAT1(:,:),CMAT2(:,:),ABSVALOVERLAP(:,:)
+!!$call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
+!!$CALL ls_mpi_buffer(LUPRI,infpar%master)
+!!$CALL ls_mpi_buffer(IPRINT,infpar%master)
+!!$CALL ls_mpi_buffer(NBAST,infpar%master)
+!!$CALL ls_mpi_buffer(NMO,infpar%master)
+!!$CALL ls_mpi_buffer(SameCmat,infpar%master)
+!!$call mem_dft_alloc(CMAT1,NBAST,NMO)
+!!$CALL ls_mpi_buffer(CMAT1,NBAST,NMO,infpar%master)
+!!$IF(.NOT.SameCmat)THEN
+!!$   call mem_dft_alloc(CMAT2,NBAST,NMO)
+!!$   CALL ls_mpi_buffer(CMAT2,NBAST,NMO,infpar%master)
+!!$ENDIF
+!!$call mem_dft_alloc(ABSVALOVERLAP,NMO,NMO)
+!!$CALL ls_mpi_buffer(ABSVALOVERLAP,NMO,NMO,infpar%master)
+!!$CALL mpicopy_setting(setting,comm)
+!!$call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
+!!$
+!!$IF(SameCmat)THEN
+!!$   call II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,IPRINT,nbast,nMO,&
+!!$        & CMAT1,CMAT1,ABSVALOVERLAP,SameCmat)
+!!$ELSE
+!!$   call II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,IPRINT,nbast,nMO,&
+!!$        & CMAT1,CMAT2,ABSVALOVERLAP,SameCmat)
+!!$ENDIF
+!!$call mem_dft_dealloc(CMAT1)
+!!$IF(.NOT.SameCmat)THEN
+!!$   call mem_dft_dealloc(CMAT2)
+!!$ENDIF
+!!$call mem_dft_dealloc(ABSVALOVERLAP)
+!!$call typedef_free_setting(SETTING)
+!!$end subroutine lsmpi_II_DFT_ABSVALOVERLAP_Slave
 
 subroutine lsmpi_II_DFT_KSME_Slave(comm)
 use lsmpi_mod

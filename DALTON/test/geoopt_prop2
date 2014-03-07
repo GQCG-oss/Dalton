@@ -99,8 +99,8 @@ ERROR[1]="MOLECULAR GEOMETRY NOT READ CORRECTLY"
 
 # Check 2nd order geometry optimization:
 CRIT1=`$GREP "2nd Order Geometry Optimization" $log | wc -l`
-CRIT2=`$GREP "Newton method\." $log | wc -l`
-CRIT3=`$GREP "performed in Cartesian coordinates\." $log | wc -l`
+CRIT2=`$GREP "Newton method" $log | wc -l`
+CRIT3=`$GREP "performed in Cartesian coordinates" $log | wc -l`
 CRIT4=`$GREP "Trust region method will be used to control step" $log | wc -l`
 TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4`
 CTRL[2]=4

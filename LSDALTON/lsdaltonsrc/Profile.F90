@@ -106,10 +106,10 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
   print*,'config%prof%IchorDEC',config%prof%IchorDEC
 #ifdef VAR_ICHOR
   IF(config%prof%IchorDEC)THEN
-     print*,'call di_decpackedJOLD'
-     call di_decpackedJOLD(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
      print*,'call di_decpackedJ'
      call di_decpackedJ(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
+     print*,'call di_decpackedJOLD'
+     call di_decpackedJOLD(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
      RETURN
   ENDIF
 #endif
