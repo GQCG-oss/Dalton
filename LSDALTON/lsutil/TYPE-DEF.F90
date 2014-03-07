@@ -187,6 +187,7 @@ LOGICAL       :: ADMM_MCWEENY
 LOGICAL       :: ADMM_2ERI
 LOGICAL       :: ADMMQ_ScaleXC2
 LOGICAL       :: ADMMQ_ScaleE
+LOGICAL       :: PRINT_EK3
 LOGICAL       :: ADMM_CONST_EL
 CHARACTER(80) :: ADMM_FUNC
 LOGICAL       :: SR_EXCHANGE
@@ -339,6 +340,7 @@ LOGICAL     :: ADMM_2ERI
 LOGICAL     :: ADMM_CONST_EL
 LOGICAL     :: ADMMQ_ScaleXC2
 LOGICAL     :: ADMMQ_ScaleE
+LOGICAL     :: PRINT_EK3
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
 REAL(REALK) :: CAMalpha

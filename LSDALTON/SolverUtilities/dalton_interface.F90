@@ -2141,8 +2141,9 @@ CONTAINS
       integer nbast, lupri,luerr,idmat
       logical :: Dsym,ADMMexchange
       TYPE(Matrix) :: K(ndmat),dXC(ndmat)
-      logical :: DEBUG_PATRICK
+      logical :: PRINT_EK3
       !
+      PRINT_EK3 = ls%setting%scheme%PRINT_EK3
       nbast = D(1)%nrow
       fac = 2E0_realk
       IF(matrix_type .EQ. mtype_unres_dense)fac = 1E0_realk
@@ -2182,8 +2183,7 @@ CONTAINS
             call mat_zero(K(idmat))
             call mat_zero(dXC(idmat))
 
-         DEBUG_PATRICK=.FALSE.
-         IF(DEBUG_PATRICK)THEN
+         IF(PRINT_EK3)THEN
             ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
             call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),ndmat,Dsym,K(idmat))
             EK3 = mat_dotproduct(K(idmat),D(idmat))
@@ -2191,7 +2191,7 @@ CONTAINS
          ENDIF
 
             call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
-         IF(DEBUG_PATRICK)THEN
+         IF(PRINT_EK3)THEN
             EK2 = mat_dotproduct(K(idmat),D(idmat))
             write(*,*)     "E(K3)= ",EK3
             write(lupri,*) "E(K3)= ",EK3
