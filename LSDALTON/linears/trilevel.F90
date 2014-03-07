@@ -145,10 +145,10 @@ end subroutine trilevel_diag_per_ang
       use opttype
       IMPLICIT NONE
       type(optItem),intent(in)   :: opt
-      TYPE(Matrix), INTENT(IN)   :: D 
-      TYPE(Matrix),intent(inout) :: F
+      TYPE(Matrix), INTENT(IN)   :: D(1) 
+      TYPE(Matrix),intent(inout) :: F(1)
       type(lssetting),intent(inout) :: setting
-      real(realk), INTENT(OUT) :: Etotal
+      real(realk), INTENT(INOUT) :: Etotal
       TYPE(Matrix),intent(in)  :: H1
       integer,intent(in) :: newlupri,newluerr
       real(realk)   :: edfty(1), edfty_a, edfty_b
@@ -161,16 +161,16 @@ end subroutine trilevel_diag_per_ang
       Dsym = .TRUE.!symmetric Density matrix
       ndmat = 1
       call II_get_Fock_mat(newlupri,newluerr,setting,D,Dsym,F,ndmat,.FALSE.)
-      Etotal = trilevel_fockenergy_f(opt%cfg_unres,F,D,H1)
+      Etotal = trilevel_fockenergy_f(opt%cfg_unres,F(1),D(1),H1)
 !     Exchange-correlation
       if (opt%calctype == opt%dftcalc) then
-         nbast = D%nrow
+         nbast = D(1)%nrow
          call II_get_xc_fock_mat(newlupri,newluerr,setting,nbast,D,F,Edfty,ndmat)
          Etotal = Etotal + Edfty(1)
       ENDIF
 
 !     Add one-electron part: F(D) = h + G(D)
-      call mat_daxpy(1E0_realk,H1,F)
+      call mat_daxpy(1E0_realk,H1,F(1))
 
    contains      
       double precision function trilevel_fockenergy_F(unres,F,D,H1)
@@ -223,7 +223,7 @@ SUBROUTINE trilevel_gcscfloop(opt,D,CMO,H1,F,S,ai,setting,molecule,basis,iatom,n
    type(lssetting),intent(inout) :: setting
    type(moleculeinfo),intent(in) :: molecule
    type(basisinfo),intent(in)    :: basis
-   TYPE(Matrix),intent(inout)   :: D, F, S, H1, CMO
+   TYPE(Matrix),intent(inout)   :: D(1), F(1), S, H1, CMO
    integer,intent(in) :: newlupri,newluerr
 !
    TYPE(Matrix)            :: grad
@@ -268,7 +268,7 @@ SUBROUTINE trilevel_gcscfloop(opt,D,CMO,H1,F,S,ai,setting,molecule,basis,iatom,n
       call trilevel_get_fock(opt, D, H1, F, E, &
            &newlupri,newluerr,setting)
 
-      call get_AO_gradient(F, D, S, grad)
+      call get_AO_gradient(F(1), D(1), S, grad)
 
       gradnrm = sqrt(mat_sqnorm2(grad))
 
@@ -278,11 +278,11 @@ SUBROUTINE trilevel_gcscfloop(opt,D,CMO,H1,F,S,ai,setting,molecule,basis,iatom,n
             EXIT
       ENDIF
 
-      CALL add_to_queue(av, F, D, S, E, grad, queue) 
+      CALL add_to_queue(av, F(1), D(1), S, E, grad, queue) 
 
-      call diis(av,queue,D,F)
+      call diis(av,queue,D(1),F(1))
 
-      CALL trilevel_get_density_blocked(D,CMO,F,S,basis,itype,nbast)
+      CALL trilevel_get_density_blocked(D(1),CMO,F(1),S,basis,itype,nbast)
    END DO
    !IF not converged then what!
    print *, "gcscf loop done"
@@ -910,7 +910,7 @@ INTEGER             :: I,LUPRI,LUERR,IPRINT
 TYPE(lsitem),intent(inout) :: ls
 type(trilevel_atominfo) :: ai
 TYPE(lsitem),pointer :: atomic_ls
-Type(Matrix)         :: F, H1, S , D, CMO
+Type(Matrix)         :: F(1), H1, S , D(1), CMO
 integer              :: nbast, len,iAO,itype,igrid
 type(moleculeinfo),target :: atomicmolecule
 TYPE(lssetting)           :: atomicSetting
@@ -955,10 +955,10 @@ do i=1, ai%ND
   & ls%input%BASIS%REGULAR%ATOMTYPE(itype)%Charge
  
    nbast = ls%input%molecule%atom(ai%NATOM(i))%nContOrbREG
-   CALL mat_init(F,nbast,nbast)
+   CALL mat_init(F(1),nbast,nbast)
    CALL mat_init(H1,nbast,nbast)
    CALL mat_init(S,nbast,nbast)
-   CALL mat_init(D,nbast,nbast)
+   CALL mat_init(D(1),nbast,nbast)
    CALL mat_init(CMO,nbast,nbast)
  
    !we change the setting to point to the atom of interest 
@@ -990,7 +990,7 @@ do i=1, ai%ND
    !build atomic h1
    CALL II_get_h1(lupri,luerr,atomicSetting,H1)
     !build Density matrix eq. 7 from article
-   CALL trilevel_get_density_blocked(D,CMO,H1,S,ls%input%basis,itype,nbast)
+   CALL trilevel_get_density_blocked(D(1),CMO,H1,S,ls%input%basis,itype,nbast)
    !use Density as start guess for a SCF convergence for this atom
    call trilevel_gcscfloop(opt,D,CMO,H1,F,S,ai,atomicSetting,ls%input%molecule,ls%input%basis,&
       &                    i,lupri,luerr)
@@ -1000,10 +1000,10 @@ do i=1, ai%ND
 
   CALL typedef_free_setting(atomicSetting)
   call free_moleculeinfo(atomicmolecule)
-  CALL mat_free(F)
+  CALL mat_free(F(1))
   CALL mat_free(H1)
   CALL mat_free(S)
-  CALL mat_free(D)
+  CALL mat_free(D(1))
   CALL mat_free(CMO)
 enddo
 !reverted back
@@ -1678,6 +1678,7 @@ type(LowAccuracyStartType)  :: LAStype
      write(*,*) ' Iteration 0 energy:', E(1)
      write(config%lupri,*) ' Iteration 0 energy:', E(1)
      call mem_alloc(eival,nbast)
+     print*,'F(1)%nrow',F(1)%nrow,F(1)%ncol,S%nrow,S%ncol,CMO%nrow,CMO%ncol,nbast
      call mat_diag_f(F(1),S,eival,Cmo)
      call mat_density_from_orbs(Cmo,Dval(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
      if (config%decomp%cfg_unres) then
