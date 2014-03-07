@@ -529,12 +529,16 @@ contains
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_start,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_end,MyMolecule%natoms)
+       IF(DECINFO%F12)THEN
+          call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
+          call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
+       ENDIF
        call mem_alloc(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%nocc)
        call mem_alloc(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%nunocc)
-       IF(DECinfo%F12)THEN
-          call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
-          call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-       ENDIF
+!       IF(DECinfo%F12)THEN
+!          call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
+!          call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+!       ENDIF
        call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc)
@@ -547,10 +551,12 @@ contains
           call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
           call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
           call mem_alloc(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-          call mem_alloc(MyMolecule%Fac,MyMolecule%nunocc,MyMolecule%nCabsMO)
+          !HACK NOT MyMolecule%nunocc,MyMolecule%nCabsMO
+          call mem_alloc(MyMolecule%Fac,MyMolecule%nunocc,MyMolecule%nCabsAO)
           !Warning MyMolecule%Frm is allocated with noccfull ?????
           call mem_alloc(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc)
-          call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsMO,MyMolecule%nbasis)
+          !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
+          call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis)
        ENDIF
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms)
@@ -562,16 +568,19 @@ contains
     call ls_mpibcast(MyMolecule%atom_size,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%atom_start,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%atom_end,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
-
+    IF(DECINFO%F12)THEN
+       call ls_mpibcast(MyMolecule%atom_cabssize,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%atom_cabsstart,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    ENDIF
 
     ! Real pointers
     ! -------------
     call ls_mpibcast(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
-    IF(DECinfo%F12)THEN
-       call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-    ENDIF
+!    IF(DECinfo%F12)THEN
+!       call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
+!       call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+!    ENDIF
     call ls_mpibcast(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -584,10 +593,12 @@ contains
        call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
        call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
        call ls_mpibcast(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%Fac,MyMolecule%nunocc,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
+       !HACK NOT MyMolecule%nunocc,MyMolecule%nCabsMO
+       call ls_mpibcast(MyMolecule%Fac,MyMolecule%nunocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
        !Warning MyMolecule%Frm is allocated with noccfull ?????
        call ls_mpibcast(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsMO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+       !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
+       call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     ENDIF
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
@@ -640,6 +651,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%nunoccFA,master)
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
+    CALL ls_mpi_buffer(MyFragment%nCabsAO,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
     CALL ls_mpi_buffer(MyFragment%nunoccLOC,master)
@@ -665,6 +677,12 @@ contains
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
     call ls_mpi_buffer(MyFragment%slavetime,master)
     call ls_mpi_buffer(MyFragment%RejectThr,2,master)
+    call ls_mpi_buffer(MyFragment%DmaxAE,master)
+    call ls_mpi_buffer(MyFragment%DmaxAOS,master)
+    call ls_mpi_buffer(MyFragment%DaveAE,master)
+    call ls_mpi_buffer(MyFragment%DaveAOS,master)
+    call ls_mpi_buffer(MyFragment%DsdvAE,master)
+    call ls_mpi_buffer(MyFragment%DsdvAOS,master)
 
 
     ! Integer pointers
@@ -699,6 +717,10 @@ contains
        call mem_alloc(MyFragment%atoms_idx,MyFragment%natoms)
        nullify(MyFragment%basis_idx)
        call mem_alloc(MyFragment%basis_idx,MyFragment%nbasis)
+       nullify(MyFragment%cabsbasis_idx)
+       IF(decinfo%F12)THEN
+          call mem_alloc(MyFragment%cabsbasis_idx,MyFragment%nCabsAO)
+       ENDIF
     end if
 
 
@@ -715,6 +737,9 @@ contains
     call ls_mpi_buffer(MyFragment%EOSatoms,MyFragment%nEOSatoms,master)
     call ls_mpi_buffer(MyFragment%atoms_idx,MyFragment%natoms,master)
     call ls_mpi_buffer(MyFragment%basis_idx,MyFragment%nbasis,master)
+    IF(decinfo%F12)THEN
+       call ls_mpi_buffer(MyFragment%cabsbasis_idx,MyFragment%nCabsAO,master)
+    ENDIF
     if(MyFragment%t1_stored) then ! only used for CC singles effects
        call ls_mpi_buffer(MyFragment%t1_occidx,MyFragment%t1dims(2),master)
        call ls_mpi_buffer(MyFragment%t1_virtidx,MyFragment%t1dims(1),master)

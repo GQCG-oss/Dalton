@@ -483,14 +483,20 @@ integer,intent(in) :: lupri,N
 real(realk) :: coord(3,N),charge(N)
 !
 Integer :: I
-
-call init_Moleculeinfo(Molecule,N,'ListMol               ')
+character(len=22) :: string22
+character(len=9) :: stringA9,stringB9
+character(len=4) :: string4
+string22='ListMol               '
+stringA9 = 'REGULAR  '
+stringB9 = 'NOT SET  '
+string4 = 'XXXX'
+call init_Moleculeinfo(Molecule,N,string22)
 molecule%nelectrons=0
 molecule%charge=0
 !the Points
 DO I=1,N
    molecule%ATOM(I)%Isotope = 0
-   molecule%ATOM(I)%Name='XXXX'
+   molecule%ATOM(I)%Name=string4
    molecule%ATOM(I)%Mass=0.d0   
    molecule%ATOM(I)%CovRad=0.d0   
    molecule%ATOM(I)%Frag=0.d0   
@@ -500,8 +506,8 @@ DO I=1,N
    molecule%ATOM(I)%Atomic_number=0
    molecule%ATOM(I)%Charge=charge(I)
    molecule%ATOM(I)%nbasis=1
-   molecule%ATOM(I)%basislabel(1)='REGULAR  '
-   molecule%ATOM(I)%basislabel(2)='NOT SET  '
+   molecule%ATOM(I)%basislabel(1)=stringA9
+   molecule%ATOM(I)%basislabel(2)=stringB9
    molecule%ATOM(I)%Basisindex(1)=1
    molecule%ATOM(I)%Basisindex(2)=0
    molecule%ATOM(I)%IDtype(1)=0

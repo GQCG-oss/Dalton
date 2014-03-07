@@ -1984,14 +1984,14 @@ DO IV = 1, NVCLEN
          SPHZZ = D0 
          DO J = 1, KCKTA
             SPHFAC = CSP(I,J)
-            IF (ABS(SPHFAC).GT.D0) THEN
+!            IF (ABS(SPHFAC).GT.D0) THEN
                SPHXX = SPHXX + SPHFAC*CAOXX(J)
                SPHXY = SPHXY + SPHFAC*CAOXY(J)
                SPHXZ = SPHXZ + SPHFAC*CAOXZ(J)
                SPHYY = SPHYY + SPHFAC*CAOYY(J)
                SPHYZ = SPHYZ + SPHFAC*CAOYZ(J)
                SPHZZ = SPHZZ + SPHFAC*CAOZZ(J)
-            END IF
+!            END IF
          END DO
          TEMPI = ISTART+I
          GAOXX(IV,TEMPI) = SPHXX

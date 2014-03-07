@@ -79,11 +79,11 @@ else
 fi
 
 # Optimization setup
-CRIT1=`$GREP "Default 1st order method will be used\: * BFGS update\." $log | wc -l`
-CRIT2=`$GREP "Optimization will be performed in redundant internal coordinates\." $log | wc -l`
-CRIT3=`$GREP "Model Hessian will be used as initial Hessian\." $log | wc -l`
-CRIT4=`$GREP "Trust region method will be used to control step \(default\)\." $log | wc -l`
-CRIT5=`$GREP "Baker.s convergence criteria will be used\." $log | wc -l`
+CRIT1=`$GREP "Default 1st order method will be used\: * BFGS update" $log | wc -l`
+CRIT2=`$GREP "Optimization will be performed in redundant internal coordinates" $log | wc -l`
+CRIT3=`$GREP "Model Hessian will be used as initial Hessian" $log | wc -l`
+CRIT4=`$GREP "Trust region method will be used to control step \(default\)" $log | wc -l`
+CRIT5=`$GREP "Baker.s convergence criteria will be used" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[1]=5
 ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
@@ -179,9 +179,9 @@ CTRL[13]=1
 ERROR[13]="FIRST ENERGY WITH THIRD BASIS SET NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "O *      (0| )\.0000000000 * (0| )\.0000000000   * \-0*\.04746." $log | wc -l`
-CRIT2=`$GREP "H * _1 * (0| )\.0000000000 *   1\.419655..[0-9][0-9] * 1.02228." $log | wc -l`
-CRIT3=`$GREP "H * _2 * (0| )\.0000000000 * \-1\.419655..[0-9][0-9] * 1.02228." $log | wc -l`
+CRIT1=`$GREP "O *      (0| )\.0000000000 * (0| )\.0000000000 * \-0*\.0474[56]" $log | wc -l`
+CRIT2=`$GREP "H * _1 * (0| )\.0000000000 *   1\.41965.* 1.02228" $log | wc -l`
+CRIT3=`$GREP "H * _2 * (0| )\.0000000000 * \-1\.41965.* 1.02228" $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[14]=12
 ERROR[14]="FINAL GEOMETRY NOT CORRECT"

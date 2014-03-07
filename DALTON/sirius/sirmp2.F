@@ -47,7 +47,7 @@ C
 !===========================================================================
 #endif
 C  /* Deck mp2inp */
-      SUBROUTINE MP2INP(WORD,INPERR,ALLOPT)
+      SUBROUTINE MP2INP(WORD1,INPERR,ALLOPT)
 C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007-Nov 2009, Hans Joergen Aa. Jensen
 C
@@ -74,7 +74,6 @@ CMAERKE 900918: MP2SAV not implemented, should it be?
 C
 C     ***** PROCESS INPUT FOR MP2INP *****
 C
-      WORD1 = WORD
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
@@ -105,7 +104,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN MP2INP ')
+         CALL QUIT('Illegal keyword for "*MP2 INPUT"')
 C
 C *** Option 1 >MP2 FROZEN<   Frozen MP2 orbitals
   101 READ(LUCMD,*) (NFRMP2(I),I=1,NSYM)
@@ -231,6 +230,7 @@ C
          END IF
       END IF
 
+      WORD1 = WORD
       RETURN
       END
 C  /* Deck mp2ctl */
@@ -1142,9 +1142,9 @@ C
          IIORBI = IIORB(ISYM)
          ICSYM  = ICMO(ISYM)
 C
-         CALL JACO(WRK(KDMAT+IIORBI),CMO(1+ICSYM),
-     &             NORBI,NORBI,NBASI,WRK(KWRK1),WRK(KWRK1+NORBI))
-C        CALL JACO(F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(WRK(KDMAT+IIORBI),CMO(1+ICSYM),
+     &                 NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          OCCSUM = D0
          DO 175 I=1,NORBI
@@ -1753,12 +1753,13 @@ C           zero active-secondary block
          END IF
 
 C        generate canonical orbitals
+C        hjaaj: THR_JACO=1.D-8 means max off-diag element 1.D-8
+C               => orb.en. error < 1.D-16*NORBT/DIF and
+C                  orbital error < 1.D-8*NORBT/DIF
+C               (which is usually sharper than convergence threshold for RHF)
 
-         KBIG  = 1
-         KJBIG = KBIG + NORBI
-         CALL JACO(FC(JFC),CMO(JCMO),NORBI,NORBI,NBASI,
-     *             SCRA(KBIG),SCRA(KJBIG))
-C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(FC(JFC),CMO(JCMO),NORBI,NORBI,NBASI,1.0D-8)
+C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          NOCCI = NRHFI + NASH(ISYM)
          DO I = 1,NORBI

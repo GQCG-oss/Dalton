@@ -137,7 +137,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
-     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING)
+     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption)
      !the return statement leads to memory leaks but I do not care about this
      !for now atleast
      RETURN

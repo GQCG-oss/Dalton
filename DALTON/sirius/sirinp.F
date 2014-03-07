@@ -227,6 +227,7 @@ C   INFDIM : MAXPHP,?
 C   INFTRA : THRP,USEDRC,IPRTRA
 C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
 C   INFMP2 : NFRMP2(*), SRMP2_SELFCONSISTENT
+C   INFPOP : IPOPTYP; depends on mxcent.h
 C   PCMLOG : PCM
 C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
@@ -236,6 +237,7 @@ C
 #include "maxash.h"
 #include "maxorb.h"
 #include "maxaqn.h"
+#include "mxcent.h"
 
 #include "ccom.h"
 #include "infinp.h"
@@ -249,6 +251,7 @@ C
 #include "inftra.h"
 #include "scbrhf.h"
 #include "infmp2.h"
+#include "infpop.h"
 #include "pcmlog.h"
 #include "siripc.h"
 #include "huckel.h"
@@ -493,6 +496,10 @@ C
       SRMP2_SRINTS = .FALSE.
       DCPT2        = .FALSE.
       DO_RSDHF     = .FALSE.
+C
+C********** Default values section POPINP *****
+C
+      IPOPTYP = -1
 C
 C
 C********** Default values section OPTINP *****
@@ -2071,7 +2078,7 @@ C
          WRITE (LUPRI,'(/,3A,/)') ' Keyword ',WORD,
      *                        ' not recognized in Sirius input.'
          CALL PRTAB(NTBMOD,TABMOD,'General Sirius input keywords',LUPRI)
-         CALL QUIT('ILLEGAL KEYWORD IN SIRIUS INPUT')
+         CALL QUIT('Illegal keyword in top level SIRIUS input')
       ELSE IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') THEN
          READ (LUCMD,'(A7)') WORD
          GO TO 910
@@ -2134,6 +2141,7 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
        GO TO 910
  3000  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
        GO TO 910
+!      *LUCITA
 !      this is to keep backwards compatibility - lucita input is now
 !      processed via the new input reader module.
  3200  lucita_input_provided = .true.    ! *LUCITA
@@ -2288,7 +2296,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN SIR_GENINP ')
+         CALL QUIT(' Non-valid keyword for *WAVE FUNCTION')
 C
 C *** Option 1 >CI    <  do a CI calculation (before MCSCF)
  101  CONTINUE
@@ -2693,7 +2701,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN HAMINP ')
+         CALL QUIT('Illegal keyword for "*HAMILTONIAN"')
 C
 C *** Option 1 >FIELD TERM<   Field dependent Hamiltonian term
   101 CONTINUE
@@ -2789,7 +2797,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD for *CONFIG ')
+         CALL QUIT('Illegal keyword for "*CONFIG"')
 C
 C *** Option 1 >CAS  S<  CAS calculation: Active orbitals
   101 CONTINUE
@@ -3023,7 +3031,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN SCFINP ')
+         CALL QUIT('Illegal keyword for "*SCF INPUT"')
 C
 C *** Option 1 >DOUBLY<  doubly occ. orb.s, for RHF and MP2 calc. or DFT
   101 READ(LUCMD,*) (NRHF(I),I=1,NSYM)
@@ -3318,7 +3326,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN OPTINP ')
+         CALL QUIT('Illegal keyword for "*OPTIMIZATION"')
 C
 C
 C *** Option 1 >ABSORP<  Orbital absorption
@@ -3699,7 +3707,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN CICINP ')
+         CALL QUIT('Illegal keyword for "*CI INPUT"')
 C
 C *** Option 1 >CINO  < Calculate CI natural orbitals.
   101 CONTINUE
@@ -3849,7 +3857,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN ORBINP ')
+         CALL QUIT('Illegal keyword for "*ORBITAL INPUT"')
 C
 C *** Option 1 >XXXXXX<
   101 CONTINUE
@@ -4158,7 +4166,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN CIVINP ')
+         CALL QUIT('Illegal keyword for "*CI VECTOR"')
 C
 C *** Option 1 >PLUS C< Choose plus combination of degenerate roots
   101 CONTINUE
@@ -4249,7 +4257,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN STPINP ')
+         CALL QUIT('Illegal keyword for "*STEP CONTROL"')
 C
 C *** Option 1 >DAMPIN <  Initial value of damping (BETA)
   101 READ(LUCMD,*) BETA
@@ -4355,7 +4363,6 @@ C External flags
       FLAG(72) = .TRUE.
       FLAG(73) = .TRUE.
       FLAG(74) = .TRUE.
-      IPOPTYP  = 1
 C
 C     ***** PROCESS INPUT FOR POPINP *****
 C
@@ -4390,7 +4397,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN POPINP ')
+         CALL QUIT('Illegal keyword for "*POPULATION ANALYSIS"')
 C
 C *** Option 1 >ALL   <  Do all options
   101 FLAG(71) = .FALSE.
@@ -4416,6 +4423,7 @@ C *** Option 4 >GROSSM<  Gross MO population analysis
 C
 C *** Option 5 >MULLIK<  Mulliken population analysis
   105 FLAG(73) = .FALSE.
+      IPOPTYP  = 1
       GO TO 100
 C
 C *** Option 6 >NETALL<  All net population analysis
@@ -4510,7 +4518,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN TRAINP ')
+         CALL QUIT('Illegal keyword for "*TRANSFORMATION INPUT"')
 C
 C *** Option 1 >RESIDE<  Desired length of work array in transf.
   101 READ(LUCMD,*) MWORK
@@ -4609,7 +4617,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN UPDINP ')
+         CALL QUIT('Illegal keyword for "*UPDATE"')
 C
 C *** Option 1 >FIXED <  Use fixed hessian
   101 FLAG(56) = .TRUE.
@@ -4685,7 +4693,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN SOLINP ')
+         CALL QUIT('Illegal keyword for "*SOLVENT"')
 C
 C *** Option 1 >CAVITY<  Cavity radius
   101 READ(LUCMD,*) RSOLAV
@@ -4824,7 +4832,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN PRIINP ')
+         CALL QUIT('Illegal keyword for "*PRINT "')
 C
 C *** Option 1 >      < 
 C
@@ -5010,7 +5018,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN AUXINP ')
+         CALL QUIT('Illegal keyword for "*AUXILIARY INPUT"')
 C
 C *** Option 1 >ONESUP<  use same units for SUPM. and ONEL. integrals
 C              (obsolete, removed March 2000 /Kenneth Ruud)
@@ -5883,7 +5891,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN NEVPT2INP ')
+         CALL QUIT('Illegal keyword for "*NEVPT2"')
 C
 C *** Option 1 >NEVPT2 FROZEN<   Frozen NEVPT2 orbitals
   101 CONTINUE

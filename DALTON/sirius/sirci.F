@@ -1920,7 +1920,7 @@ C Scratch:
 C  CVECS, is used for CI vectors from unit LUIT3 (section 1)
 C         and for the reduced CI matrix (section 2)
 C         dimension: NCONF and NREDCI*(NREDCI+1)/2, rsp.
-C  WRK, real scratch array for BIG and JBIG in JACO, dim: 2*NREDCI
+C  WRK, real scratch array
 C
 #include "implicit.h"
 #include "infvar.h"
@@ -1990,18 +1990,15 @@ C
       KFREE = 1
       LFREE = LWRK
       CALL MEMGET('REAL',KREDCI,LMA   ,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF  ,NREDCI,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF ,NREDCI,WRK,KFREE,LFREE)
       CALL DCOPY(LMA,REDCI,1,WRK(KREDCI),1)
       CALL DUNIT(EVEC,NREDCI)
-      CALL JACO(WRK(KREDCI),EVEC,NREDCI,NREDCI,NREDCI,
-     &          WRK(KBUF),WRK(KIBUF))
+      CALL JACO_THR(WRK(KREDCI),EVEC,NREDCI,NREDCI,NREDCI,0.0D0)
       II = KREDCI - 1
       DO 1100 I = 1,NREDCI
          II = II + I
          EVAL(I) = WRK(II)
  1100 CONTINUE
-      CALL MEMREL('CIRED.JACO',WRK,1,1,KFREE,LFREE)
+      CALL MEMREL('CIRED.JACO_THR',WRK,1,1,KFREE,LFREE)
       CALL ORDER (EVEC,EVAL,NREDCI,NREDCI)
 C
 C *** End of subroutine CIRED

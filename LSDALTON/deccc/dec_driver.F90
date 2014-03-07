@@ -72,7 +72,7 @@ contains
     ! Print DEC info
     call print_dec_info()
 
-    nOcc = MyMolecule%nocc
+    nOcc   = MyMolecule%nocc
     nUnocc = MyMolecule%nunocc
     nBasis = MyMolecule%nbasis
     nAtoms = MyMolecule%natoms
@@ -202,7 +202,7 @@ contains
     FragEnergies=0E0_realk
 
     ! Find out which atoms have one or more orbitals assigned
-    call which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
+    call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
 
     if(DECinfo%PairEstimate .and. count(dofrag)>1) then
        ! Use estimated pair fragments to determine which pair fragments to calculate at the FOT level
@@ -979,8 +979,8 @@ contains
           dt = t2wall - t1wall
 
           ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
-          Backup: if( ( (dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. &
-               & (.not. all(jobs%dofragopt)) ) then
+          Backup: if( (( (dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. &
+               & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_one_frag_job) ) then
              ! Note: If only fragment optimization jobs are requested this is not necessary
              ! because the fragment energies are anyway stored in add_fragment_to_file above.
 
@@ -1005,6 +1005,12 @@ contains
 #ifdef VAR_MPI
           call free_joblist(singlejob)
 #endif
+
+         if(DECinfo%only_one_frag_job)then
+           print *,"HACK: only one fragment job was requested. The fragment was&
+           & saved and the master is crashed to kill the job"
+           stop 0
+         endif
 
        end if RestartStuff
 

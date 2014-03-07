@@ -132,25 +132,27 @@ integer :: iBatchB,iBatchA
 real(realk) :: BcenterSpec(3),AcenterSpec(3),Pdistance12(3),CDAB(1)
 !
 integer :: iBatchIndexOfTypeB,iBatchIndexOfTypeA
-integer,pointer :: OrderdListA(:),OrderdListB(:)
-integer,pointer :: BatchIndexOfTypeA(:),BatchIndexOfTypeB(:)
+integer,allocatable :: OrderdListA(:),OrderdListB(:)
+integer,allocatable :: BatchIndexOfTypeA(:),BatchIndexOfTypeB(:)
 logical :: Psegmented,Spherical
 logical :: TriangularLHSAtomLoop, PermuteLHS,PQorder
-real(realk),pointer :: expP(:),Pcent(:),PpreExpFac(:)!,CDAB2(:)!,CDAB(:)
-REAL(realk),pointer :: TABFJW(:,:),reducedExponents(:),integralPrefactor(:)
-real(realk),pointer :: expA(:),ContractCoeffA(:,:),Acenter(:,:)
-real(realk),pointer :: expB(:),ContractCoeffB(:,:),Bcenter(:,:)
-integer,pointer :: StartOrbitalA(:),StartOrbitalB(:)
+real(realk),allocatable :: expP(:),Pcent(:),PpreExpFac(:)!,CDAB2(:)!,CDAB(:)
+REAL(realk),allocatable :: TABFJW(:,:),reducedExponents(:),integralPrefactor(:)
+real(realk),allocatable :: expA(:),ContractCoeffA(:,:),Acenter(:,:)
+real(realk),allocatable :: expB(:),ContractCoeffB(:,:),Bcenter(:,:)
+integer,allocatable :: StartOrbitalA(:),StartOrbitalB(:)
 integer :: TMParray1maxsize,TMParray2maxsize,IAngmomTypes,MaxTotalAngmomAB
 integer :: BasisContmaxsize
 !real(realk) :: SYMFAC,SYMFAC2
-real(realk),pointer :: TmpArray1(:)
-real(realk),pointer :: TmpArray2(:)
+real(realk),allocatable :: TmpArray1(:)
+real(realk),allocatable :: TmpArray2(:)
 INTPRINT=IchorDebugSpec
 call set_ichor_memvar(MaxMemAllocated,MemAllocated)
-call mem_ichor_alloc(OrderdListA,nTypesA)
+allocate(OrderdListA(nTypesA))
+call mem_ichor_alloc(OrderdListA)
 call GenerateOrderdListOfTypes(lupri,nTypesA,AngmomOfTypeA,OrderdListA)
-call mem_ichor_alloc(OrderdListB,nTypesB)
+allocate(OrderdListB(nTypesB))
+call mem_ichor_alloc(OrderdListB)
 call GenerateOrderdListOfTypes(lupri,nTypesB,AngmomOfTypeB,OrderdListB)
 
 !TODO 
@@ -159,13 +161,15 @@ call GenerateOrderdListOfTypes(lupri,nTypesB,AngmomOfTypeB,OrderdListB)
 ! GAMMATABULATION 
 !     is this needed for (SSSS) ? is it better to build it several times for 
 !     different Angmom combis ? 
-call mem_ichor_alloc(BatchIndexOfTypeA,nTypesA)
+allocate(BatchIndexOfTypeA(nTypesA))
+call mem_ichor_alloc(BatchIndexOfTypeA)
 call ConstructBatchIndexOfType(BatchIndexOfTypeA,nTypesA,nAtomsOfTypeA,nBatchA)
 IF(nBatchA.NE.OutputDim1)THEN
    CALL ICHORQUIT('Error BATCHGAB dim1 not consistent',-1)
 ENDIF
 
-call mem_ichor_alloc(BatchIndexOfTypeB,nTypesB)
+allocate(BatchIndexOfTypeB(nTypesB))
+call mem_ichor_alloc(BatchIndexOfTypeB)
 call ConstructBatchIndexOfType(BatchIndexOfTypeB,nTypesB,nAtomsOfTypeB,nBatchB)
 IF(nBatchB.NE.OutputDim2)THEN
    CALL ICHORQUIT('Error BATCHGAB dim2 not consistent',-1)
@@ -199,14 +203,19 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
   nOrbB = nContB*nOrbCompB
   nDimB = nOrbB*nAtomsB
 
-  call mem_ichor_alloc(expB,nPrimB)
-  call mem_ichor_alloc(ContractCoeffB,nPrimB,nContB)
-  call mem_ichor_alloc(Bcenter,3,nAtomsB)
-  call mem_ichor_alloc(StartOrbitalB,nAtomsB)
+  allocate(expB(nPrimB))
+  call mem_ichor_alloc(expB)
+  allocate(ContractCoeffB(nPrimB,nContB))
+  call mem_ichor_alloc(ContractCoeffB)
+  allocate(Bcenter(3,nAtomsB))
+  call mem_ichor_alloc(Bcenter)
+  allocate(StartOrbitalB(nAtomsB))
+  call mem_ichor_alloc(StartOrbitalB)
   call build_exp_ContractCoeff_center(nPrimB,nContB,nAtomsB,ntypesB,iTypeB,&
        & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,StartOrbitalOfTypeB,&
        & expB,ContractCoeffB,Bcenter,StartOrbitalB,MaxnAtomsB,MaxnprimB,MaxnContB,lupri)
   call mem_ichor_dealloc(startOrbitalB) !do not need it
+  deallocate(startOrbitalB)
   DO ItypeAnon=1,nTypesA !non ordered loop
    ItypeA = OrderdListA(ItypeAnon)  
    AngmomA = AngmomOfTypeA(ItypeA) 
@@ -225,14 +234,19 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
     iBatchIndexOfTypeA = BatchIndexOfTypeA(ItypeA)
     nOrbA = nContA*nOrbCompA
     nDimA = nContA*nOrbCompA*nAtomsA
-    call mem_ichor_alloc(expA,nPrimA)
-    call mem_ichor_alloc(ContractCoeffA,nPrimA,nContA)
-    call mem_ichor_alloc(Acenter,3,nAtomsA)
-    call mem_ichor_alloc(StartOrbitalA,nAtomsA)
+    allocate(expA(nPrimA))
+    call mem_ichor_alloc(expA)
+    allocate(ContractCoeffA(nPrimA,nContA))
+    call mem_ichor_alloc(ContractCoeffA)
+    allocate(Acenter(3,nAtomsA))
+    call mem_ichor_alloc(Acenter)
+    allocate(StartOrbitalA(nAtomsA))
+    call mem_ichor_alloc(StartOrbitalA)
     call build_exp_ContractCoeff_center(nPrimA,nContA,nAtomsA,ntypesA,iTypeA,&
          & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,StartOrbitalOfTypeA,&
-         & expA,ContractCoeffA,Acenter,StartOrbitalA,MaxnAtomsB,MaxnprimA,MaxnContA,lupri) 
+         & expA,ContractCoeffA,Acenter,StartOrbitalA,MaxnAtomsA,MaxnprimA,MaxnContA,lupri) 
     call mem_ichor_dealloc(startOrbitalA) !do not need it
+    deallocate(startOrbitalA)
     TotalAngmom = AngmomA + AngmomB + AngmomA + AngmomB 
     nPrimP = nPrimA*nPrimB
     nContP = nContA*nContB
@@ -241,28 +255,35 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
     ELSE
        Psegmented = .FALSE.
     ENDIF
-    call mem_ichor_alloc(expP,nPrimP)
+    allocate(expP(nPrimP))
+    call mem_ichor_alloc(expP)
     call build_expP(nPrimA,nPrimB,expA,expB,expP)
     IF(TotalAngmom.NE.oldmaxangmomABCD)THEN
        IF(oldmaxangmomABCD.NE.-25)THEN
           call mem_ichor_dealloc(TABFJW)
+          deallocate(TABFJW)
        ENDIF
        nTABFJW1 = AngmomA + AngmomB + AngmomA + AngmomB + 3 
        !only need + 3 after Branos change in BUILD_RJ000 
        nTABFJW2 = 1200
        !TABFJW(0:nTABFJW1,0:nTABFJW2)
-       call mem_ichor_alloc(TABFJW,nTABFJW1,nTABFJW2,.TRUE.,.TRUE.)
+       allocate(TABFJW(0:nTABFJW1,0:nTABFJW2))
+       call mem_ichor_alloc(TABFJW)
        CALL GAMMATABULATION(lupri,TotalAngmom,nTABFJW1,nTABFJW2,TABFJW)  
        oldmaxangmomABCD = TotalAngmom
     ENDIF
     !it may be easy to include primitive screening on the LHS here
-    call mem_ichor_alloc(reducedExponents,nPrimP*nPrimP)
-    call mem_ichor_alloc(integralPrefactor,nPrimP*nPrimP)
+    allocate(reducedExponents(nPrimP*nPrimP))
+    call mem_ichor_alloc(reducedExponents)
+    allocate(integralPrefactor(nPrimP*nPrimP))
+    call mem_ichor_alloc(integralPrefactor)
     PQorder = .FALSE.
     call build_reducedExponents_integralPrefactorQP(nPrimP,nPrimP,expP,expP,&
          & reducedExponents,integralPrefactor)
-    call mem_ichor_alloc(pcent,3*nPrimP)
-    call mem_ichor_alloc(PpreExpFac,nPrimP)
+    allocate(pcent(3*nPrimP))
+    call mem_ichor_alloc(pcent)
+    allocate(PpreExpFac(nPrimP))
+    call mem_ichor_alloc(PpreExpFac)
     !       call IchorTimer('START',TSTART,TEND,LUPRI)
     call IchorGabIntegral_OBS_general_size(TMParray1maxsize,&
         & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&
@@ -278,19 +299,30 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
      & OutputStorage,Psegmented,PQorder,Spherical,TriangularLHSAtomLoop,&
      & BasisContmaxsize)
     call mem_ichor_dealloc(pcent)
+    deallocate(pcent)
     call mem_ichor_dealloc(PpreExpFac)
+    deallocate(PpreExpFac)
     call mem_ichor_dealloc(reducedExponents)
+    deallocate(reducedExponents)
     call mem_ichor_dealloc(integralPrefactor)
+    deallocate(integralPrefactor)
     call mem_ichor_dealloc(expP)
+    deallocate(expP)
 
     call mem_ichor_dealloc(expA)
+    deallocate(expA)
     call mem_ichor_dealloc(ContractCoeffA)
+    deallocate(ContractCoeffA)
     call mem_ichor_dealloc(Acenter)
+    deallocate(Acenter)
    ENDIF
   ENDDO !typeA
   call mem_ichor_dealloc(expB)
+  deallocate(expB)
   call mem_ichor_dealloc(ContractCoeffB)
+  deallocate(ContractCoeffB)
   call mem_ichor_dealloc(Bcenter)
+  deallocate(Bcenter)
  ENDDO !typeB
 ENDDO 
 !symmetrize BATCHGAB!
@@ -300,13 +332,20 @@ ENDDO
 
 IF(SameLHSaos)THEN
    call AddUpperTriAngular(OutputStorage,OutputDim1,lupri)
+!   print*,'SameLHSaos GAB OutputStorage'
+!   call output(OutputStorage,1,OutputDim1,1,OutputDim1,OutputDim1,OutputDim1,1,6)
 ENDIF
 
 call mem_ichor_dealloc(TABFJW)
+deallocate(TABFJW)
 call mem_ichor_dealloc(BatchIndexOfTypeA)
+deallocate(BatchIndexOfTypeA)
 call mem_ichor_dealloc(BatchIndexOfTypeB)
+deallocate(BatchIndexOfTypeB)
 call mem_ichor_dealloc(OrderdListA)
+deallocate(OrderdListA)
 call mem_ichor_dealloc(OrderdListB)
+deallocate(OrderdListB)
 
 !WRITE(lupri,*)'The BatchGab'
 !call output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
@@ -345,7 +384,9 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
   integer,allocatable :: iPassA(:),iPassB(:)
   IF(TriangularLHSAtomLoop)THEN
      allocate(iPassA(nAtomsA*nAtomsB+1/2))
+     call mem_ichor_alloc(iPassA)
      allocate(iPassB(nAtomsA*nAtomsB+1/2))
+     call mem_ichor_alloc(iPassB)
      iPass = 0
      DO IatomB = 1,nAtomsB
         DO IatomA = IatomB,nAtomsA
@@ -384,6 +425,8 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
         IatomA = iPass - ((iPass-1)/nAtomsA)*nAtomsA
         IatomB = (iPass-1)/nAtomsA+1
      ENDIF
+!     print*,'IatomA',IatomA
+!     print*,'IatomB',IatomB
      iBatchB = iBatchIndexOfTypeB + IatomB
      BcenterSpec(1) = Bcenter(1,IatomB)
      BcenterSpec(2) = Bcenter(2,IatomB)
@@ -392,12 +435,14 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
      AcenterSpec(1) = Acenter(1,IatomA)
      AcenterSpec(2) = Acenter(2,IatomA)
      AcenterSpec(3) = Acenter(3,IatomA)
+!     print*,'iBatchA',iBatchA
+!     print*,'iBatchB',iBatchB
      CALL Build_qcent_Qdistance12_QpreExpFac(nPrimA,nPrimB,&
           & nContA,nContB,expA,expB,AcenterSpec,BcenterSpec,ContractCoeffA,&
           & ContractCoeffB,PSegmented,&
           & pcent,Pdistance12,PpreExpFac,INTPRINT)
      call IchorGabIntegral_OBS_general(nPrimA,nPrimB,nPrimP,&
-          & nPasses,MaxPasses,intprint,lupri,nContA,nContB,nContP,expP,&
+          & intprint,lupri,nContA,nContB,nContP,expP,&
           & ContractCoeffA,ContractCoeffB,&
           & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
           & expA,expB,Psegmented,reducedExponents,integralPrefactor,&
@@ -406,6 +451,7 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
           & BasisContmaxsize,BasisCont)
      OutputStorage(iBatchA,iBatchB) = CDAB(1)
+!     print*,'OutputStorage(iBatchA,iBatchB)',OutputStorage(iBatchA,iBatchB)
   ENDDO
 !!$OMP END DO NOWAIT
 
@@ -418,7 +464,9 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
 !!$OMP END CRITICAL
 !!$OMP END PARALLEL
   IF(TriangularLHSAtomLoop)THEN
+     call mem_ichor_dealloc(iPassA)
      deallocate(iPassA)
+     call mem_ichor_dealloc(iPassB)
      deallocate(iPassB)
   ENDIF
 end subroutine GabIntLoop

@@ -1417,9 +1417,9 @@ C
 cs    write session
 cs
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
-         WRITE(LUPRI,'(A)') ' Properties not ' //
-     &        'available for MP2 wave functions!'
-         WRITE(LUPRI,'(A)') ' You may consider using SOPPA instead.'
+         WRITE(LUPRI,'(A/A)') '@ Properties not ' //
+     &        'available for MP2 wave functions!',
+     &      '@ You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
          GOTO 789
       END IF
@@ -1438,19 +1438,20 @@ CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
          IF (PARCAL) CALL PARQUIT('ABASOP')
 CKeinSPASmehr
          IF (CCPPA) THEN
-            WRITE(LUPRI,'(A,A,/,18X,A,/,A,A)')
-     &          ' SOPPA(CCSD) :    ',
+            WRITE(LUPRI,'(A/A/A)')
+     &          '@ SOPPA(CCSD) :    '//
      &          'Second Order Polarization Propagator Approximation',
+     &          '@                  '//
      &          'with Coupled Cluster Singles and Doubles Amplitudes',
-     &          '    (Ref.: S.P.A. Sauer, ',
+     &          '@   (Ref.: S.P.A. Sauer, '//
      &          'J. Phys. B: At. Mol. Opt. Phys. 30, 3773-3780 (1997))'
             IF (DODRCT) THEN
                AOSOC = .TRUE.
-               WRITE(LUPRI,'(/A,/,A,A,/,5x,A)')
-     &              ' AO integral driven SOPPA(CCSD) :',
-     &              '    (Ref.: H. H. Falden, K. R. Falster-Hansen, ',
+               WRITE(LUPRI,'(/A/A/A)')
+     &              '@ AO integral driven SOPPA(CCSD) :',
+     &              '@    (Ref.: H. H. Falden, K. R. Falster-Hansen, ',
      &              'K. L. Bak, S. Rettrup and S. P. A. Sauer,',
-     &              'J. Phys. Chem. A 113, 11995-12012 (2009))'
+     &              '@     J. Phys. Chem. A 113, 11995-12012 (2009))'
             ENDIF
          ELSE
             IF (DODRCT) THEN
@@ -1664,22 +1665,22 @@ cLig <<
       IF ((POPULA .OR. POLAR .OR. DIPDER .OR. QPGRAD .OR. VCD) .AND.
      &    (TOTSYM .AND. WRDSRC .NE. '**PROPE')) THEN
          NWARN = NWARN + 1
-         WRITE(LUPRI,'(/A)') 'WARNING, incompatible input options:'
-         IF (POPULA) WRITE (LUPRI,'(2(5X,A))')
-     &      'Cioslowski population analysis incompatible with .TOTSYM.',
-     &      '  WARNING: Population analysis is not carried out.'
-         IF (POLAR) WRITE (LUPRI,'(2(5X,A))')
-     &      'Static polarizability incompatible with .TOTSYM.',
-     &      '  WARNING: No calculation of static polarizabilities.'
-         IF (DIPDER) WRITE (LUPRI,'(2(5X,A))')
-     &      'Dipole gradient incompatible with .TOTSYM.',
-     &      '  WARNING: Dipole gradient is not calculated.'
-         IF (QPGRAD) WRITE (LUPRI,'(2(5X,A))')
-     &      'Quadrupole gradient incompatible with .TOTSYM.',
-     &      '  WARNING: Quadupole gradient is not calculated.'
-         IF (VCD) WRITE (LUPRI,'(2(5X,A))')
-     &      'VCD incompatible with .TOTSYM.',
-     &      '  WARNING: VCD tensors are not calculated.'
+         WRITE(LUPRI,'(/A)') '@ WARNING, incompatible input options:'
+         IF (POPULA) WRITE (LUPRI,'(A)') 
+     &    '@ Cioslowski population analysis incompatible with .TOTSYM.',
+     &    '@   WARNING: Population analysis is not carried out.'
+         IF (POLAR) WRITE (LUPRI,'(A)') 
+     &    '@ Static polarizability incompatible with .TOTSYM.',
+     &    '@   WARNING: No calculation of static polarizabilities.'
+         IF (DIPDER) WRITE (LUPRI,'(A)') 
+     &    '@ Dipole gradient incompatible with .TOTSYM.',
+     &    '@   WARNING: Dipole gradient is not calculated.'
+         IF (QPGRAD) WRITE (LUPRI,'(A)') 
+     &    '@ Quadrupole gradient incompatible with .TOTSYM.',
+     &    '@   WARNING: Quadupole gradient is not calculated.'
+         IF (VCD) WRITE (LUPRI,'(A)') 
+     &    '@ VCD incompatible with .TOTSYM.',
+     &    '@   WARNING: VCD tensors are not calculated.'
          VCD    = .FALSE.
          POPULA = .FALSE.
          DIPDER = .FALSE.
@@ -1697,16 +1698,16 @@ cLig <<
       IF (SPNSPN .AND. NASHT .LE. 1 .AND. .NOT.(ABASOP.OR.DFTRUN)) THEN
          NWARN = NWARN + 1
          WRITE (LUPRI,'(/A/A)')
-     &      ' >>>>> WARNING - RHF calculations of spin-spin coupling'//
-     &      ' constants are likely to give',
-     &      ' >>>>> WARNING - qualitatively incorrect results !!!'
+     &      '@ >>>>> WARNING - RHF calculations of spin-spin coupling'
+     &    //' constants are likely to give', 
+     &      '@ >>>>> WARNING - qualitatively incorrect results !!!'
       END IF
 cLig >> added the control to right CTOCD input
       IF ((CTOCD).AND.(.NOT.(MAGSUS .OR. SHIELD))) THEN
          WRITE(LUPRI,'(/A/A)')
-     &      ' Inconsistent input - CTOCD-DZ method',
-     &      ' the .CTOCD option only works if the .MAGNET and/or'//
-     &      ' .SHIELD options are also used'
+     &      'ERROR: Inconsistent input - CTOCD-DZ method',
+     &      'ERROR: the .CTOCD option only works if the .MAGNET and/or'
+     &    //' .SHIELD options are also used'
          CALL QUIT('Inconsistent input in ABAINP')
       ENDIF
       IF ((VIB_G).AND.
@@ -1987,9 +1988,9 @@ C
 C     Properties not available for MP2, ABACUS run will be skipped
 C
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
-         WRITE(LUPRI,'(A/A)') ' Properties not ' //
+         WRITE(LUPRI,'(A/A)') '@ WARNING Properties not ' //
      &        'available for MP2 wave functions!',
-     &      ' You may consider using SOPPA instead.'
+     &      '@ WARNING You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
          GOTO 789
       END IF
@@ -2058,7 +2059,7 @@ C        ... FCKDDR cannot be used in this calculation
       END IF
 C
       IF ((VROA .OR. RAMAN) .AND. MAXREP .GT. 0) THEN
-         WRITE (LUPRI,'(2X,A,I5/A/A)')
+         WRITE (LUPRI,'(A,I5/A/A)')
      &   ' Number of symmetries:',MAXREP + 1,
      &   ' Vibrational Raman calculations can only be run without '//
      &   'symmetry.',' Calculation aborted.'

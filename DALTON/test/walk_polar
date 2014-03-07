@@ -231,14 +231,14 @@ CTRL[18]=3
 ERROR[18]="GEOMETRY OPTIMIZATION FAILED"
 
 # Dipole moment gradient:
-CRIT1=`$GREP "O * y * (\-0|\-)\.44820..[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * x * (\-0|\-)\.05948..[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * y * 0*\.44820..[0-9]" $log | wc -l`
-CRIT4=`$GREP "O * x * (\-0|\-)\.59855..[0-9]" $log | wc -l`
-CRIT5=`$GREP "H * x * 0*\.59855..[0-9]" $log | wc -l`
-CRIT6=`$GREP "H * y * (\-0|\-)\.15808..[0-9]" $log | wc -l`
-CRIT7=`$GREP "O * z * (\-0|\-)\.80918..[0-9]" $log | wc -l`
-CRIT8=`$GREP "H * z * 0*\.80918..[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * y * (\-0|\-)\.44820" $log | wc -l`
+CRIT2=`$GREP "H * x * (\-0|\-)\.05948" $log | wc -l`
+CRIT3=`$GREP "H * y * (0| )\.44820" $log | wc -l`
+CRIT4=`$GREP "O * x * (\-0|\-)\.59855" $log | wc -l`
+CRIT5=`$GREP "H * x * (0| )\.59855" $log | wc -l`
+CRIT6=`$GREP "H * y * (\-0|\-)\.15808" $log | wc -l`
+CRIT7=`$GREP "O * z * (\-0|\-)\.8091[89]" $log | wc -l`
+CRIT8=`$GREP "H * z * 0*\.8091[89]" $log | wc -l`
 TEST[19]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8`
 CTRL[19]=9
@@ -261,15 +261,15 @@ CTRL[21]=6
 ERROR[21]="STATIC POLARIZABILITIES NOT CORRECT"
 
 # Dynamic polarizabilities:
-CRIT1=`$GREP "Ex * 7\.4199.. * 0*\.000000( |E\+00) * 0*\.000000" $log | wc -l`
-CRIT2=`$GREP "Ey * 0*\.000000( |E\+00) * 5\.8490.. * 0*\.000000" $log | wc -l`
-CRIT3=`$GREP "Ez * 0*\.000000( |E\+00) * 0*\.000000( |E\+00) * 5\.5011.. $log | wc -l`
-CRIT4=`$GREP "Ex * 7\.4776.. * 0*\.000000( |E\+00) * 0*\.000000" $log | wc -l`
-CRIT5=`$GREP "Ey * 0*\.000000( |E\+00) * 5\.9081.. * 0*\.000000" $log | wc -l`
-CRIT6=`$GREP "Ez * 0*\.000000( |E\+00) * 0*\.000000( |E\+00) * 5\.5761.. $log | wc -l`
-CRIT7=`$GREP "Ex * 7\.5742.. * 0*\.000000( |E\+00) * 0*\.000000" $log | wc -l`
-CRIT8=`$GREP "Ey * 0*\.000000( |E\+00) * 6\.0089.. * 0*\.000000" $log | wc -l`
-CRIT9=`$GREP "Ez * 0*\.000000( |E\+00) * 0*\.000000( |E\+00) * 5\.7071.. $log | wc -l`
+CRIT1=`$GREP "Ex *  7\.4199.. * 0*\.000000 * 0*\.000000" $log | wc -l`
+CRIT2=`$GREP "Ey * 0*\.000000 *  5\.8490.. * 0*\.000000" $log | wc -l`
+CRIT3=`$GREP "Ez * 0*\.000000 * 0*\.000000 *  5\.5011.." $log | wc -l`
+CRIT4=`$GREP "Ex *  7\.4776.. * 0*\.000000 * 0*\.000000" $log | wc -l`
+CRIT5=`$GREP "Ey * 0*\.000000 *  5\.908... * 0*\.000000" $log | wc -l`
+CRIT6=`$GREP "Ez * 0*\.000000 * 0*\.000000 *  5\.5761.." $log | wc -l`
+CRIT7=`$GREP "Ex *  7\.5742.. * 0*\.000000 * 0*\.000000" $log | wc -l`
+CRIT8=`$GREP "Ey * 0*\.000000 *  6\.0089.. * 0*\.000000" $log | wc -l`
+CRIT9=`$GREP "Ez * 0*\.000000 * 0*\.000000 *  5\.7071.." $log | wc -l`
 TEST[22]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
 CTRL[22]=12
@@ -284,8 +284,8 @@ CTRL[23]=6
 ERROR[23]="ISOTOPIC MASSES NOT CORRECT"
 
 # Rotational constants:
-CRIT1=`$GREP "884513\..... * 442466\..... * 294931\....." $log | wc -l`
-CRIT2=`$GREP "29\.5041.. * 14\.7590.. * 9\.8378.. cm\-1" $log | wc -l`
+CRIT1=`$GREP "88451.\..... * 44246.\..... * 29493.\....." $log | wc -l`
+CRIT2=`$GREP "29\.504... * 14\.759... * 9\.837... cm\-1" $log | wc -l`
 TEST[24]=`expr $CRIT1  \+ $CRIT2`
 CTRL[24]=2
 ERROR[24]="ROTATIONAL CONSTANTS NOT CORRECT"
@@ -311,7 +311,7 @@ CRIT1=`$GREP "50\.00 * 3\.4600(D\+|E\+)04 * 6\.07 * 1\.0000 * 2\.1006..(D\+|E\+)
 CRIT2=`$GREP "273\.15 * 2\.4136(D\+|E\+)06 * 72\.06 * 1\.0001 * 1\.7394..(D\+|E\+)08" $log | wc -l`
 CRIT3=`$GREP "298\.15 * 3\.0043(D\+|E\+)06 * 82\.06 * 1\.0002 * 2\.4658..(D\+|E\+)08" $log | wc -l`
 CRIT4=`$GREP "1000\.00 * 6\.1895(D\+|E\+)07 * 498\.5. * 1\.0963 * 3\.3829..(D\+|E\+)10" $log | wc -l`
-CRIT5=`$GREP "2000\.00 * 3\.5013(D\+|E\+)08 * 1406\.7. * 1\.5548 * 7\.6582..(D\+|E\+)11" $log | wc -l`
+CRIT5=`$GREP "2000\.00 * 3\.5013(D\+|E\+)08 * 1406\.7. * 1\.5548 * 7\.658...(D\+|E\+)11" $log | wc -l`
 TEST[27]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
 CTRL[27]=5
 ERROR[27]="PARTITION FUNCTION NOT CORRECT"
@@ -333,12 +333,12 @@ CTRL[29]=2
 ERROR[29]="MO INTEGRALS NOT AVAILABLE"
 
 # Linear response:
-CRIT1=`$GREP "Value of linear response.*\: * 5\.84902" $log | wc -l`
-CRIT2=`$GREP "Value of linear response.*\: * 5\.90809" $log | wc -l`
-CRIT3=`$GREP "Value of linear response.*\: * 7\.41998" $log | wc -l`
-CRIT4=`$GREP "Value of linear response.*\: * 7\.47764" $log | wc -l`
-CRIT5=`$GREP "Value of linear response.*\: * 5\.50116" $log | wc -l`
-CRIT6=`$GREP "Value of linear response.*\: * 5\.57614" $log | wc -l`
+CRIT1=`$GREP "Value of linear response.*\: * 5\.8490" $log | wc -l`
+CRIT2=`$GREP "Value of linear response.*\: * 5\.9080" $log | wc -l`
+CRIT3=`$GREP "Value of linear response.*\: * 7\.4199" $log | wc -l`
+CRIT4=`$GREP "Value of linear response.*\: * 7\.4776" $log | wc -l`
+CRIT5=`$GREP "Value of linear response.*\: * 5\.5011" $log | wc -l`
+CRIT6=`$GREP "Value of linear response.*\: * 5\.5761" $log | wc -l`
 TEST[30]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ $CRIT6`
 CTRL[30]=6
 ERROR[30]="LINEAR RESPONSE NOT CORRECT"

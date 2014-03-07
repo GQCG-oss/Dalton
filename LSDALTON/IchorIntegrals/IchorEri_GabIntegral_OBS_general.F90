@@ -5,13 +5,15 @@ use IchorEriGabintegralOBSGeneralModSeg
 use IchorprecisionModule
 use IchorCommonModule
 use IchorMemory
+use AGC_CPU_OBS_BUILDRJ000MODGen
+use AGC_CPU_OBS_BUILDRJ000MODSeg1Prim
 public :: IchorGabIntegral_OBS_general,IchorGabIntegral_OBS_general_size  
   
 CONTAINS
   
   
   subroutine IchorGabIntegral_OBS_general(nPrimA,nPrimB,&
-       & nPrimP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,IntPrint,lupri,&
        & nContA,nContB,nContP,pexp,ACC,BCC,&
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
@@ -19,8 +21,8 @@ CONTAINS
        & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & BasisContmaxsize,BasisCont)
     implicit none
-    integer,intent(in) :: nPrimP,nPasses,nPrimA,nPrimB
-    integer,intent(in) :: MaxPasses,IntPrint,lupri
+    integer,intent(in) :: nPrimP,nPrimA,nPrimB
+    integer,intent(in) :: IntPrint,lupri
     integer,intent(in) :: nContA,nContB,nContP,nTABFJW1,nTABFJW2
     integer,intent(in) :: AngmomA,AngmomB
     real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB)
@@ -31,7 +33,7 @@ CONTAINS
     real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2)
     !    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(inout) :: LOCALINTS(nPasses)
+    real(realk),intent(inout) :: LOCALINTS(1)
     real(realk),intent(in) :: integralPrefactor(nPrimP*nPrimP)
     logical,intent(in) :: PQorder
     !integralPrefactor(nPrimP,nPrimP)
@@ -53,7 +55,7 @@ CONTAINS
     
    IF(Psegmented)THEN
     call IchorGabIntegral_OBS_Seg(nPrimA,nPrimB,&
-       & nPrimP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,IntPrint,lupri,&
        & nContA,nContB,nContP,pexp,ACC,BCC,&
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
@@ -62,7 +64,7 @@ CONTAINS
        & BasisContmaxsize,BasisCont)
    ELSE
     call IchorGabIntegral_OBS_Gen(nPrimA,nPrimB,&
-       & nPrimP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,IntPrint,lupri,&
        & nContA,nContB,nContP,pexp,ACC,BCC,&
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&

@@ -751,16 +751,23 @@ contains
     integer, intent(in) :: iunit
     type(Matrix), intent(inout) :: A
 #ifdef VAR_CSR
-    integer :: i, nnz
+    integer :: i, nnz,ncol,nrow
 
-    READ(iunit) nnz, A%nrow, A%ncol
-    if (nnz .ne. A%nnz) then
-       call mat_csr_zero(A)
-       call mat_csr_allocate(A, nnz)
-    endif
-    READ(iunit) (A%val(I),I=1,A%nnz)
-    READ(iunit) (A%col(I),I=1,A%nnz)
-    READ(iunit) (A%row(I),I=1,A%nrow+1)
+    READ(iunit) nnz, nrow, ncol
+    IF(Nrow.EQ.A%Nrow.AND.Ncol.EQ.A%Ncol)THEN
+       if (nnz .ne. A%nnz) then
+          call mat_csr_zero(A)
+          call mat_csr_allocate(A, nnz)
+       endif
+       READ(iunit) (A%val(I),I=1,A%nnz)
+       READ(iunit) (A%col(I),I=1,A%nnz)
+       READ(iunit) (A%row(I),I=1,A%nrow+1)
+    ELSE
+       print*,'Error in reading CSR matrix from disk. Dimension mismatch'
+       print*,'Dimensions of the CSR matrix on Disk  :',Nrow,Ncol
+       print*,'Allocated Dimensions of the CSR matrix:',A%Nrow,A%Ncol
+       CALL LSQUIT('Error in reading CSR matrix from disk. Dimension mismatch',-1)
+    ENDIF
 #endif
   end subroutine mat_csr_read_from_disk
 
