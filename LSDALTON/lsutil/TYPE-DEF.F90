@@ -28,6 +28,11 @@ END TYPE INTEGERP
 !* THE DALTON INPUT FILE
 !*
 !*****************************************
+! WARNING WARNING  WARNING WARNING 
+! when modifing this type def
+! remember to modify mpicopy_integralconfig (in lsmpi-operations.F90) 
+! accordingly
+! WARNING WARNING  WARNING WARNING 
 TYPE integralconfig
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 LOGICAL  :: CONTANG  !Specifies that the AO-shell ordering is contracted first then
@@ -209,6 +214,10 @@ INTEGER     :: molcharge
 LOGICAL     :: run_dec_gradient_test
 END TYPE integralconfig
 
+! WARNING WARNING  WARNING WARNING 
+! when modifing this type def
+! remember to modify mpicopy_schem (in lsmpi-operations.F90) accordingly
+! WARNING WARNING  WARNING WARNING 
 TYPE LSINTSCHEME
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 LOGICAL  :: NOBQBQ ! switches off the point charge--point charge repulsion contribution (NUCPOT)

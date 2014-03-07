@@ -1678,7 +1678,6 @@ type(LowAccuracyStartType)  :: LAStype
      write(*,*) ' Iteration 0 energy:', E(1)
      write(config%lupri,*) ' Iteration 0 energy:', E(1)
      call mem_alloc(eival,nbast)
-     print*,'F(1)%nrow',F(1)%nrow,F(1)%ncol,S%nrow,S%ncol,CMO%nrow,CMO%ncol,nbast
      call mat_diag_f(F(1),S,eival,Cmo)
      call mat_density_from_orbs(Cmo,Dval(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
      if (config%decomp%cfg_unres) then
