@@ -2,7 +2,7 @@ all: liblsdaltonsrc.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../rsp_properties -I../SolverUtilities -I../xcfun_host -I../IchorIntegrals
+INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../rsp_properties -I../SolverUtilities -I../xcfun_host -I../IchorIntegrals -I../responsesolver
 
 # Keep the file lists sorted for easier modification.
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!

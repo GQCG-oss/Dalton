@@ -311,6 +311,8 @@ contains
        end if
 
     end do
+    if(DECinfo%onlyoccpart) idx = idx - 1
+    
     if(idx /= fragment%nunoccAOS) &
          & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
 
@@ -324,8 +326,8 @@ contains
       if( all_atoms(i) )then
         do j=i+1,natoms
           if( all_atoms(j) )then
-            fragment%DmaxAOS = max(fragment%DmaxAOS,MyMolecule%DistanceTable(j,i))
-            fragment%DaveAOS = fragment%DaveAOS + MyMolecule%DistanceTable(j,i)
+            fragment%DmaxAOS = max(fragment%DmaxAOS,MyMolecule%DistanceTable(i,j))
+            fragment%DaveAOS = fragment%DaveAOS + MyMolecule%DistanceTable(i,j)
             cntr = cntr + 1
           endif
         enddo
@@ -336,12 +338,13 @@ contains
       if( all_atoms(i) )then
         do j=i+1,natoms
           if( all_atoms(j) )then
-            fragment%DsdvAOS = fragment%DsdvAOS + (MyMolecule%DistanceTable(j,i) - fragment%DaveAOS )**2
+            fragment%DsdvAOS = fragment%DsdvAOS + (MyMolecule%DistanceTable(i,j) - fragment%DaveAOS )**2
           endif
         enddo
       endif
     enddo
     if( cntr > 1 )fragment%RsdvAOS = ( fragment%RsdvAOS / float( cntr - 1 ) )**(0.5E0_realk)
+    print *,"somethings wrong here",fragment%DmaxAOS, fragment%DaveAOS, fragment%DsdvAOS,cntr
 
     call mem_dealloc( all_atoms )
 
