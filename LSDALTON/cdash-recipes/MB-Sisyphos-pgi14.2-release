@@ -3,7 +3,7 @@ SCRATCH_DIR=/tmp/sisyphos/DaltonPGIRelease
 rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 
-PATH=/opt/pgi/linux86-64/14.2/bin:$PATH
+export PATH=/opt/pgi/linux86-64/14.2/bin:$PATH
 export LM_LICENSE_FILE=/opt/pgi/linux86-64/14.1/license.file
 
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
