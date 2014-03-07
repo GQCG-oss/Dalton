@@ -132,13 +132,16 @@ CHJMAERKE: define IPR_DIIS separately?
 C
       MXERRV = MAXEVC
       IF (MXERRV .LE. 0) THEN
-         MXERRV = MIN(NWOPT,5)
+         MXERRV = MIN(NWOPT,8)
 C        ... fixes linear dependency problem for very small debug runs
 C            MXERRV=10 gave lin.dep. for 2 el. in 2 orbitals,
 C            MXERRV=2 gave quadratic convergence ! (940701-hjaaj)
 C        (130919-hjaaj: decreased default from 10 to 5, because
 C         with 10 the span of BMAT may be >1.D15, giving problems
 C         in the DIIS solver - an example has been seen !!!)
+C        (140307-jmho: increased default from 5 to 8, because
+C         with 5 it often resulted in 1-2 extra SCF iterations. At 8
+C         we should still avoid the problem mentioned above.)
          MXERRV = MAX(2,MXERRV)
       END IF
       IPR_DIIS = IPRRHF
