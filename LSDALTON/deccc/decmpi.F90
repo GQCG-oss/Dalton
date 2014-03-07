@@ -529,6 +529,10 @@ contains
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_start,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_end,MyMolecule%natoms)
+       IF(DECINFO%F12)THEN
+          call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
+          call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
+       ENDIF
        call mem_alloc(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%nocc)
        call mem_alloc(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%nunocc)
 !       IF(DECinfo%F12)THEN
@@ -564,7 +568,10 @@ contains
     call ls_mpibcast(MyMolecule%atom_size,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%atom_start,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%atom_end,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
-
+    IF(DECINFO%F12)THEN
+       call ls_mpibcast(MyMolecule%atom_cabssize,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%atom_cabsstart,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    ENDIF
 
     ! Real pointers
     ! -------------
@@ -644,6 +651,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%nunoccFA,master)
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
+    CALL ls_mpi_buffer(MyFragment%nCabsAO,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
     CALL ls_mpi_buffer(MyFragment%nunoccLOC,master)
@@ -709,6 +717,10 @@ contains
        call mem_alloc(MyFragment%atoms_idx,MyFragment%natoms)
        nullify(MyFragment%basis_idx)
        call mem_alloc(MyFragment%basis_idx,MyFragment%nbasis)
+       nullify(MyFragment%cabsbasis_idx)
+       IF(decinfo%F12)THEN
+          call mem_alloc(MyFragment%cabsbasis_idx,MyFragment%nCabsAO)
+       ENDIF
     end if
 
 
@@ -725,6 +737,9 @@ contains
     call ls_mpi_buffer(MyFragment%EOSatoms,MyFragment%nEOSatoms,master)
     call ls_mpi_buffer(MyFragment%atoms_idx,MyFragment%natoms,master)
     call ls_mpi_buffer(MyFragment%basis_idx,MyFragment%nbasis,master)
+    IF(decinfo%F12)THEN
+       call ls_mpi_buffer(MyFragment%cabsbasis_idx,MyFragment%nCabsAO,master)
+    ENDIF
     if(MyFragment%t1_stored) then ! only used for CC singles effects
        call ls_mpi_buffer(MyFragment%t1_occidx,MyFragment%t1dims(2),master)
        call ls_mpi_buffer(MyFragment%t1_virtidx,MyFragment%t1dims(1),master)

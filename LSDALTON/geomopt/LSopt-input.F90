@@ -180,7 +180,10 @@ Type(opt_setting) :: optinfo
      optinfo%OLDIBT = .FALSE.
      optinfo%Shanks = .FALSE.
      optinfo%Deriv_order = 20
-
+!    Force_modified PES
+     optinfo%FMPES = .FALSE.
+     optinfo%Ext_force = 0E0_realk
+     optinfo%Att_atom = 0
 ! 
 End subroutine Optimization_set_default_config 
 !=========================!
@@ -198,7 +201,7 @@ Integer :: NAtoms,i
 Character(Len = 70) :: Keyword
 Character(Len = 1) :: Prompt
 Integer :: FileStatus
-Character(Len=7), dimension(87) :: KwordTABLE = &
+Character(Len=7), dimension(88) :: KwordTABLE = &
           (/'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC', &
             '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY', &
             '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA', &
@@ -220,7 +223,7 @@ Character(Len=7), dimension(87) :: KwordTABLE = &
             '.NOHSWR', '.FREEZE', '.FRZITR', '.REDSPA', &
             '.CARTRS', '.FORBAC', '.SCANSI', '.SCANST', &
             '.NUMOPT', '.NUMESH', '.NOHOPE', '.ITERBT', &
-            '.DERORD', '.OLDIBT', '.SHANKS'/)
+            '.DERORD', '.OLDIBT', '.SHANKS', '.FMPES '/)
 ! Number of cartesian coordinates
 optinfo%IcartCoord = NAtoms*3
 !
@@ -586,6 +589,15 @@ Do
                      Read(lucmd,*) optinfo%Deriv_order
                   Case('.SHANKS')
                      optinfo%Shanks = .TRUE.
+                  ! Force-modified PES
+                  Case('.FMPES ')
+                      optinfo%FMPES = .TRUE.
+                      Do i = 1,2
+                         Read(lucmd,*) optinfo%Att_atom(i)
+                      Enddo
+                      Read(lucmd,*) optinfo%Ext_force
+                      Write(*,*) optinfo%Att_atom, optinfo%Ext_force
+
           End select
         Else
            Write(lupri,'(/,3A,/)') ' Keyword "',Keyword, &

@@ -684,6 +684,14 @@ contains
        call mem_dealloc(molecule%atom_end)
     end if
 
+    if(associated(molecule%atom_cabssize)) then
+       call mem_dealloc(molecule%atom_cabssize)
+    end if
+
+    if(associated(molecule%atom_cabsstart)) then
+       call mem_dealloc(molecule%atom_cabsstart)
+    end if
+
     if(associated(molecule%overlap)) then
        call mem_dealloc(molecule%overlap)
     end if
@@ -758,7 +766,34 @@ contains
             + molecule%atom_size(i+1)-1
     end do
 
-    return
+
+    IF(decinfo%F12)THEN
+     call mem_alloc(molecule%atom_cabssize,natoms)
+     molecule%atom_cabssize=0
+
+     r = mylsitem%input%basis%cabs%labelindex
+       
+     ! loop over atoms
+     do i=1,natoms
+      if(r == 0) then
+         icharge = int(mylsitem%input%molecule%atom(i)%charge)
+         itype = mylsitem%input%basis%cabs%chargeindex(icharge)
+      else
+         itype = mylsitem%input%molecule%atom(i)%idtype(r)
+      end if
+      molecule%atom_cabssize(i) = mylsitem%input%basis%cabs%atomtype(itype)%TotNOrb
+     end do
+
+     ! get first and last index of an atom in ao matrix
+     call mem_alloc(molecule%atom_cabsstart,natoms)
+     molecule%atom_cabsstart = 0
+     molecule%atom_cabsstart(1) = 1
+     basis=1
+     do i=1,natoms-1
+        basis = basis + molecule%atom_cabssize(i)
+        molecule%atom_cabsstart(i+1) = basis
+     end do
+    ENDIF
   end subroutine molecule_get_atomic_sizes
 
   !> \brief Set occupied and virtual MO orbitals in molecule type
