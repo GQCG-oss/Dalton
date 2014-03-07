@@ -8,7 +8,7 @@ install(
     )
 
 if(ENABLE_CHEMSHELL)
-    set(LIST_OF_EXECUTABLES          lsdalton.x lslib_tester.x)
+    set(LIST_OF_EXECUTABLES lsdalton.x)
 else()
     set(LIST_OF_EXECUTABLES dalton.x lsdalton.x lslib_tester.x)
 endif()

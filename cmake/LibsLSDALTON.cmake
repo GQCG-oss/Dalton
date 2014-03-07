@@ -262,21 +262,25 @@ add_executable(
     ${LINK_FLAGS}
     )
 
-add_executable(
-    lslib_tester.x
-    ${LSLIB_SOURCES}
-    ${LINK_FLAGS}
-    )
+if(NOT ENABLE_CHEMSHELL)
+    add_executable(
+        lslib_tester.x
+        ${LSLIB_SOURCES}
+        ${LINK_FLAGS}
+        )
 
-# we always want to compile lslib_tester.x along with lsdalton.x
-add_dependencies(lsdalton.x lslib_tester.x)
+    # we always want to compile lslib_tester.x along with lsdalton.x
+    add_dependencies(lsdalton.x lslib_tester.x)
+endif()
 
 if(MPI_FOUND)
     # Simen's magic fix for Mac/GNU/OpenMPI
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
         if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
             SET_TARGET_PROPERTIES(lsdalton.x     PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
-            SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+            if(NOT ENABLE_CHEMSHELL)
+                SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+            endif()
         endif()
     endif()
 endif()
@@ -341,7 +345,9 @@ target_link_libraries(
     lsdalton
     ) 
 
-target_link_libraries(
-    lslib_tester.x
-    lsdalton
-    ) 
+if(NOT ENABLE_CHEMSHELL)
+    target_link_libraries(
+        lslib_tester.x
+        lsdalton
+        )
+endif()
