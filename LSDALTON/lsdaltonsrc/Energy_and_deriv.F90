@@ -229,7 +229,7 @@ contains
        ! HF or DFT gradient
        Call II_get_molecular_gradient(Gradient,lupri,F,D,ls%setting,ls%input%do_dft,.TRUE.)
     Endif
-    
+    !
   End subroutine Get_Gradient
 
 

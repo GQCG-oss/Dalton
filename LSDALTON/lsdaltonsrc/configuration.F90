@@ -1251,6 +1251,8 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_CONST_EL    = .TRUE.
            INTEGRAL%ADMMQ_ScaleXC2   = .FALSE.
 	   INTEGRAL%ADMMQ_ScaleE     = .TRUE.
+        CASE ('.PRINT_EK3');
+	   INTEGRAL%PRINT_EK3        = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.

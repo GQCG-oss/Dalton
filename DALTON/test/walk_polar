@@ -309,9 +309,9 @@ ERROR[26]="IR INTENSITIES NOT CORRECT"
 # Molecular partition function:
 CRIT1=`$GREP "50\.00 * 3\.4600(D\+|E\+)04 * 6\.07 * 1\.0000 * 2\.1006..(D\+|E\+)05" $log | wc -l`
 CRIT2=`$GREP "273\.15 * 2\.4136(D\+|E\+)06 * 72\.06 * 1\.0001 * 1\.7394..(D\+|E\+)08" $log | wc -l`
-CRIT3=`$GREP "298\.15 * 3\.0043(D\+|E\+)06 * 82\.06 * 1\.0002 * 2\.4658..(D\+|E\+)08" $log | wc -l`
+CRIT3=`$GREP "298\.15 * 3\.0043(D\+|E\+)06 * 82\.06 * 1\.0002 * 2\.465(8|9)..(D\+|E\+)08" $log | wc -l`
 CRIT4=`$GREP "1000\.00 * 6\.1895(D\+|E\+)07 * 498\.5. * 1\.0963 * 3\.3829..(D\+|E\+)10" $log | wc -l`
-CRIT5=`$GREP "2000\.00 * 3\.5013(D\+|E\+)08 * 1406\.7. * 1\.5548 * 7\.658...(D\+|E\+)11" $log | wc -l`
+CRIT5=`$GREP "2000\.00 * 3\.5013(D\+|E\+)08 * 1406\.7. * 1\.5548 * 7\.6582..(D\+|E\+)11" $log | wc -l`
 TEST[27]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
 CTRL[27]=5
 ERROR[27]="PARTITION FUNCTION NOT CORRECT"
@@ -334,7 +334,7 @@ ERROR[29]="MO INTEGRALS NOT AVAILABLE"
 
 # Linear response:
 CRIT1=`$GREP "Value of linear response.*\: * 5\.8490" $log | wc -l`
-CRIT2=`$GREP "Value of linear response.*\: * 5\.9080" $log | wc -l`
+CRIT2=`$GREP "Value of linear response.*\: * 5\.908(0|1)" $log | wc -l`
 CRIT3=`$GREP "Value of linear response.*\: * 7\.4199" $log | wc -l`
 CRIT4=`$GREP "Value of linear response.*\: * 7\.4776" $log | wc -l`
 CRIT5=`$GREP "Value of linear response.*\: * 5\.5011" $log | wc -l`

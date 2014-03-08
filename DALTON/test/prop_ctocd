@@ -193,7 +193,7 @@ ERROR[8]="CTOCD-DZ DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Paramagnetic magnetizability tensor
 CRIT1=`$GREP "Bx * (0| )\.43821....... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * \-*0*\.000000000000 * (0| )\.11978....... * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 * (0| )\.1197(7|8)....... * \-*0*\.000000000000" $log | wc -l`
 CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 * (0| )\.23301......." $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=6
