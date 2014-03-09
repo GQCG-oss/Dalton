@@ -156,7 +156,7 @@ TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[4]=8
 
-CRIT1=`$GREP "Norm of gradient  * \: * 0*\.097518" $log | wc -l`
+CRIT1=`$GREP "Norm of gradient  * \: * 0*\.09751" $log | wc -l`
 TEST[4]=`expr	$CRIT1 `
 CTRL[4]=1
 ERROR[4]="INITIAL GRADIENT NOT CORRECT"

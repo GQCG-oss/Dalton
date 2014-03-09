@@ -136,9 +136,9 @@ CTRL[7]=45
 ERROR[7]="SYMMETRY COORDINATES NOT CORRECT"
 
 # First displacement
-CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-75\.97859652[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy *\: * \-76\.11149159[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "Final * HF energy\: * \-75\.978596525" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-75\.97859652" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy *\: * \-76\.111491(59|60)" $log | wc -l`
+CRIT3=`$GREP "Final * HF energy\: * \-75\.97859652" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="FIRST DISPLACEMENT NOT CORRECT"
@@ -154,9 +154,9 @@ ERROR[9]="SECOND DISPLACEMENT NOT CORRECT"
 # First gradient
 CRIT1=`$GREP "\-0*\.003101" $log | wc -l`
 CRIT2=`$GREP   "0*\.027382" $log | wc -l`
-CRIT3=`$GREP "H1 * _1 * \-*0*\.0000000000 * \-0*\.0021928.* 0*\.019362" $log | wc -l`
-CRIT4=`$GREP "H1 * _2 * \-*0*\.0000000000 *   0*\.0021928.* 0*\.019362" $log | wc -l`
-CRIT5=`$GREP "O  * \-*0*\.0000000000 * \-*0*\.0000000000 * \-0*\.038720" $log | wc -l`
+CRIT3=`$GREP "H1 * _1 * \-*0*\.0000000000 *  \-0*\.00219[23].*    0*\.019362" $log | wc -l`
+CRIT4=`$GREP "H1 * _2 * \-*0*\.0000000000 *    0*\.00219[23].*    0*\.019362" $log | wc -l`
+CRIT5=`$GREP "O  *      \-*0*\.0000000000 * \-*0*\.0000000000 * \-0*\.038720" $log | wc -l`
 CRIT6=`$GREP "H1 * y * \-0*\.004385" $log | wc -l`
 CRIT7=`$GREP "H1 * z *   0*\.038725" $log | wc -l`
 CRIT8=`$GREP "O  * z * \-0*\.038720" $log | wc -l`
