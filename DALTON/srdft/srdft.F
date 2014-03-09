@@ -474,7 +474,8 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 C
-      LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR
+      LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR, first_call
+      DATA      first_call /.true./
       DIMENSION EXCMAT(N2BASX,*),DMAT(N2BASX,*),WORK(LWORK)
 C
       CALL QENTER('SRDFT')
@@ -588,7 +589,10 @@ C     =============================
 #endif
 
 C JT 15-02-05 beg
-      write(lupri,*) 'calling srdft1jt ? ISJT =', ISJT
+      if (first_call .or. iprint .gt. 10) then
+         write(lupri,*) 'calling srdft1jt ? ISJT =', ISJT
+         first_call = .false.
+      end if
 
       IF(ISJT) THEN
         CALL SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,WORK(KX),WORK(KY),

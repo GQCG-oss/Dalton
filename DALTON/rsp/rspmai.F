@@ -852,11 +852,10 @@ C
 C
       IF (.NOT.SET) THEN
          SET = .TRUE.
-         IF (.NOT. DIRFCK) DIRFCK = DIRCAL
+         IF (.NOT. DIRFCK)             DIRFCK = DIRCAL
          IF (DOHFSRDFT .OR. DOMCSRDFT) DIRFCK = .TRUE.
          IF (NASHT .LE. 1 .OR. HSROHF) NOITRA = DIRFCK
-         IF (DOMCSRDFT .OR. DOMC) NOITRA = .FALSE.
-         IF (DOMC) DIRFCK = .FALSE.
+         IF (DOMCSRDFT .OR. DOMC)      NOITRA = .FALSE.
          MAXPHP = 100
          N1AVTOT = 0
          N2AVTOT = 0
@@ -1043,7 +1042,8 @@ C              .PROP2Average
          IF (DIRFCK) THEN
             WRITE(LUPRI,'(/A)')
      *      ' AO-direct Fock matrix calculations.'
-         ELSE IF (NOITRA) THEN
+         END IF
+         IF (NOITRA) THEN
             WRITE(LUPRI,'(/2A,L1)')
      *      ' MO integrals for RESPONS are already available.'
      *      ,'  NOITRA = ',NOITRA

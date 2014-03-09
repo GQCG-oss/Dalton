@@ -2215,7 +2215,7 @@ C 1-Oct 1987 Hans Agren
 #endif
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 36)
+      PARAMETER (NTABLE = 37)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      &          REWORD*20, TITLIN*80, SR_FUNCS*80
       LOGICAL ALLOPT
@@ -2254,7 +2254,7 @@ C
      *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',  ! 21:25
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',  ! 26:30
      *            '.SRHYBR','.COPFAC','.MULOFA','.DSFAC ','.PVALUE',  ! 31:35
-     *            '.STEX  '/
+     *            '.STEX  ','.HFXFAC'/
 C
 C
 C
@@ -2274,7 +2274,7 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,106,117,118,119,120,
      &                   121,122,123,124,125,126,127,128,129,130,
-     &                   131,132,133,134,135,136), II
+     &                   131,132,133,134,135,136,137), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION' .OR. WORD .EQ. '.ALLOPT') THEN
@@ -2339,9 +2339,9 @@ C
 C
 C *** Option 3 >MCSCF <  MCSCF calculation
   103 CONTINUE
-         DOMC = .TRUE.
+         DOMC    = .TRUE.
          FLAG(2) = .TRUE.
-         NUMRUN = NUMRUN + 1
+         NUMRUN  = NUMRUN + 1
       GO TO 100
 C
 C *** Option 4 >CC< We want to do a subsequent Coupled Cluster calculation
@@ -2632,6 +2632,12 @@ C     Multiplication factor for DS in the localspin model
       GO TO 100
   136 CONTINUE
       DOSTEX = .TRUE.
+      GO TO 100
+  137 CONTINUE  ! .HFXFAC
+      IF (HFXSET) WRITE(LUPRI,*)
+     &   'Default HFXFAC = ',HFXFAC,' is reset by .HFXFAC input.'
+      READ (LUCMD,*) HFXFAC
+      HFXSET = .TRUE.
       GO TO 100
 C
  8000 CONTINUE
