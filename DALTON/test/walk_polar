@@ -223,7 +223,7 @@ CRIT1=`$GREP "Total energy * \-76\.053423553[0-9] au \(Hartrees\)" $log | wc -l`
 #ERROR[17]="FOURTH ENERGY NOT CORRECT"
 
 # Geometry optimization converged:
-CRIT1=`$GREP "Norm of molecular gradient: * (0| )\.000083.[0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Norm of molecular gradient: * (0| )\.00008[23].[0-9][0-9][0-9]" $log | wc -l`
 CRIT2=`$GREP "Change in energy since start of walk:(\-0| \-)\.00196403.[0-9] au" $log | wc -l`
 CRIT3=`$GREP "Geometry optimization has converged." $log | wc -l`
 TEST[18]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
