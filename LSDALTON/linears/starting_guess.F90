@@ -300,7 +300,8 @@ end subroutine get_initial_dens
     else if (config%opt%cfg_start_guess=='LINCOMB') then
        write(config%lupri,*) 'Starting guess is linear combination of densities on disk'
        write(config%lupri,*)
-       call starting_guess_lincomb(D(1),config%opt)
+       call lsquit('starting_guess_lincomb removed',-1)
+!       call starting_guess_lincomb(D(1),config%opt)
     else
        write(*,*) 'Optimize first density for H1 operator'
        write(config%lupri,*) 'Optimize first density for H1 operator'
@@ -388,71 +389,71 @@ end subroutine get_initial_dens
     call mat_free(Cmo)
   end subroutine starting_guess_h1
 
-  !> \brief Obtain initial guess from the fitted density.
-  !> \author S. Reine
-  !> \date 2005
-  subroutine starting_guess_fit_density(decomp,D)
-    implicit none
-    !> Contains matrices from OAO decomposition of overlap matrix
-    type(decompItem),intent(in) :: decomp
-    !> Initial density matrix (output)
-    type(matrix)             :: D
-    type(matrix)             :: F
-    type(matrix)             :: cmo
-    integer                  :: ndim
-    real(realk)              :: Etotal
-    logical :: getd, getdv
-    real(realk), pointer :: orb(:), eival(:)
+!!$  !> \brief Obtain initial guess from the fitted density.
+!!$  !> \author S. Reine
+!!$  !> \date 2005
+!!$  subroutine starting_guess_fit_density(decomp,D)
+!!$    implicit none
+!!$    !> Contains matrices from OAO decomposition of overlap matrix
+!!$    type(decompItem),intent(in) :: decomp
+!!$    !> Initial density matrix (output)
+!!$    type(matrix)             :: D
+!!$    type(matrix)             :: F
+!!$    type(matrix)             :: cmo
+!!$    integer                  :: ndim
+!!$    real(realk)              :: Etotal
+!!$    logical :: getd, getdv
+!!$    real(realk), pointer :: orb(:), eival(:)
+!!$
+!!$    ndim=D%nrow
+!!$    call mat_init(F,ndim,ndim)
+!!$    call lsquit('CALL di_get_fock(D,F,Etotal) replaced with a quit statement in starting_guess_fit_density',-1)
+!!$    call mat_init(cmo,ndim,ndim)
+!!$    call mem_alloc(eival,ndim*2) ! allow for unrestricted
+!!$    call mat_diag_f(F,decomp%S,eival,cmo)
+!!$    call mem_dealloc(eival)
+!!$    call mat_density_from_orbs(cmo,D,decomp%nocc,decomp%nocca,decomp%noccb)
+!!$    call mat_free(cmo)
+!!$    call mat_free(F)
+!!$  end subroutine starting_guess_fit_density
 
-    ndim=D%nrow
-    call mat_init(F,ndim,ndim)
-    call lsquit('CALL di_get_fock(D,F,Etotal) replaced with a quit statement in starting_guess_fit_density',-1)
-    call mat_init(cmo,ndim,ndim)
-    call mem_alloc(eival,ndim*2) ! allow for unrestricted
-    call mat_diag_f(F,decomp%S,eival,cmo)
-    call mem_dealloc(eival)
-    call mat_density_from_orbs(cmo,D,decomp%nocc,decomp%nocca,decomp%noccb)
-    call mat_free(cmo)
-    call mat_free(F)
-  end subroutine starting_guess_fit_density
-
-  !> \brief Obtain initial guess from linear combination of saved densities.
-  !> \author S. Host
-  !> \date February 2010 
-  subroutine starting_guess_lincomb(D,opt)
-  implicit none
-      !> Initial density (output)
-      type(matrix), intent(inout) :: D
-      !> Contains general settings for SCF optimization
-      type(optItem), intent(in)   :: opt
-      type(matrix)                :: D1, D2
-      integer                     :: idum, ldum, D1lun, D2lun
-      logical                     :: D1_exists, D2_exists,OnMaster
-      OnMaster = .TRUE.
-      INQUIRE(file='D1',EXIST=D1_exists) 
-      INQUIRE(file='D2',EXIST=D2_exists)
-      if (.not. D1_exists) then
-         write(opt%lupri,*) 'File D1 must be present with .HESONLY'
-         call lsquit('File D1 must be present with .HESONLY',opt%lupri)
-      else if (.not. D2_exists) then
-         write(opt%lupri,*) 'File D2 must be present with .HESONLY'
-         call lsquit('File D2 must be present with .HESONLY',opt%lupri)
-      endif
-      call mat_init(D1,D%nrow,D%ncol)
-      call mat_init(D2,D%nrow,D%ncol)
-      D1lun = -1 ; D2lun = -1
-      CALL LSOPEN(D1lun,'D1','OLD','UNFORMATTED')
-      CALL LSOPEN(D2lun,'D2','OLD','UNFORMATTED')
-      call mat_read_from_disk(D1lun,D1,OnMaster)
-      call mat_read_from_disk(D2lun,D2,OnMaster)
-      call LSCLOSE(D1lun,'KEEP')
-      call LSCLOSE(D2lun,'KEEP')
-
-      call mat_add(opt%cfg_weight_param,D1,1.0E0_realk-opt%cfg_weight_param,D2,D)
-
-      call mat_free(D1)
-      call mat_free(D2)
-   end subroutine starting_guess_lincomb
+!!$  !> \brief Obtain initial guess from linear combination of saved densities.
+!!$  !> \author S. Host
+!!$  !> \date February 2010 
+!!$  subroutine starting_guess_lincomb(D,opt)
+!!$  implicit none
+!!$      !> Initial density (output)
+!!$      type(matrix), intent(inout) :: D
+!!$      !> Contains general settings for SCF optimization
+!!$      type(optItem), intent(in)   :: opt
+!!$      type(matrix)                :: D1, D2
+!!$      integer                     :: idum, ldum, D1lun, D2lun
+!!$      logical                     :: D1_exists, D2_exists,OnMaster
+!!$      OnMaster = .TRUE.
+!!$      INQUIRE(file='D1',EXIST=D1_exists) 
+!!$      INQUIRE(file='D2',EXIST=D2_exists)
+!!$      if (.not. D1_exists) then
+!!$         write(opt%lupri,*) 'File D1 must be present with .HESONLY'
+!!$         call lsquit('File D1 must be present with .HESONLY',opt%lupri)
+!!$      else if (.not. D2_exists) then
+!!$         write(opt%lupri,*) 'File D2 must be present with .HESONLY'
+!!$         call lsquit('File D2 must be present with .HESONLY',opt%lupri)
+!!$      endif
+!!$      call mat_init(D1,D%nrow,D%ncol)
+!!$      call mat_init(D2,D%nrow,D%ncol)
+!!$      D1lun = -1 ; D2lun = -1
+!!$      CALL LSOPEN(D1lun,'D1','OLD','UNFORMATTED')
+!!$      CALL LSOPEN(D2lun,'D2','OLD','UNFORMATTED')
+!!$      call mat_read_from_disk(D1lun,D1,OnMaster)
+!!$      call mat_read_from_disk(D2lun,D2,OnMaster)
+!!$      call LSCLOSE(D1lun,'KEEP')
+!!$      call LSCLOSE(D2lun,'KEEP')
+!!$
+!!$      call mat_add(opt%cfg_weight_param,D1,1.0E0_realk-opt%cfg_weight_param,D2,D)
+!!$
+!!$      call mat_free(D1)
+!!$      call mat_free(D2)
+!!$   end subroutine starting_guess_lincomb
 
 END MODULE initial_guess
 

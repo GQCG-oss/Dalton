@@ -549,7 +549,8 @@ DO
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
             CASE('.RH');         config%opt%CFG_density_method =  config%opt%CFG_F2D_ROOTHAAN
             CASE('.SAFE');       config%av%CFG_safe = .true.
-            CASE('.SCALVIR');    config%opt%cfg_scale_virt = .true.
+! obsolete keyword - noone knows what it does. Not in manual. Not in testcases
+!            CASE('.SCALVIR');    config%opt%cfg_scale_virt = .true.
             !SOEO keywords
             !To-do: Collect in some read-soeo-input
             CASE('.SOEO');       config%soeoinp%cfg_soeo = .true.
