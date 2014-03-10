@@ -809,6 +809,108 @@ CALL retrieve_Output(lupri,setting,output,setting%IntegralTransformGC)
 !call print_mol(setting%MOLECULE(3)%p,lupri)
 END SUBROUTINE II_get_ep_integrals3
 
+!> \brief Calculates the electrostatic-potential AO integrals between two AO-basis functions and a point charge
+!> \author S. Reine
+!> \date 2014
+!> \param Integral the EP type integrals
+!> \param nbasis the number of basis functions
+!> \param R the center of the point charge
+!> \param setting Integral evalualtion settings
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+SUBROUTINE II_get_ep_AOintegrals(Integral,nbasis,R,SETTING,LUPRI,LUERR)
+IMPLICIT NONE
+REAL(realk)         :: Integral(nbasis,nbasis,1)
+REAL(realk)         :: R(3,1) !vector R={x,y,z}
+TYPE(LSSETTING)     :: SETTING
+INTEGER             :: nbasis,LUPRI,LUERR
+!
+real(realk)         :: OLDTHRESH
+type(MOLECULE_PT)   :: temp,Point
+
+CALL ls_dzero(Integral,nbasis*nbasis)
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+call initIntegralOutputDims(setting%output,nbasis,nbasis,1,1,1)
+allocate(Point%p)
+call build_pointMolecule(Point%p,R,1,lupri)
+temp%p  => setting%MOLECULE(3)%p
+setting%MOLECULE(3)%p => Point%p
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclear,AOempty,&
+     &NucpotOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,Integral,setting%IntegralTransformGC)
+call free_Moleculeinfo(Point%p)
+setting%MOLECULE(3)%p => temp%p
+END SUBROUTINE II_get_ep_AOintegrals
+
+!> \brief Calculates the electric-field AO integrals between two AO-basis functions and the electrostatic field of a point charge
+!> \author S. Reine
+!> \date 2014
+!> \param Integral the EF AO integrals
+!> \param nbasis the number of basis functions
+!> \param R the center of the point charge
+!> \param setting Integral evalualtion settings
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+SUBROUTINE II_get_ef_AOintegrals(Integral,nbasis,R,SETTING,LUPRI,LUERR)
+IMPLICIT NONE
+REAL(realk)         :: Integral(nbasis,nbasis,3)
+REAL(realk)         :: R(3,1) !vector R={x,y,z}
+TYPE(LSSETTING)     :: SETTING
+INTEGER             :: nbasis,LUPRI,LUERR
+!
+real(realk)         :: OLDTHRESH
+type(MOLECULE_PT)   :: temp,Point
+
+CALL ls_dzero(Integral,nbasis*nbasis*3)
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+call initIntegralOutputDims(setting%output,nbasis,nbasis,1,1,3)
+allocate(Point%p)
+call build_pointMolecule(Point%p,R,1,lupri)
+temp%p  => setting%MOLECULE(3)%p
+setting%MOLECULE(3)%p => Point%p
+CALL ls_getIntegrals(AORdefault,AORdefault,AOelField,AOempty,&
+     &NucpotOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,Integral,setting%IntegralTransformGC)
+call free_Moleculeinfo(Point%p)
+setting%MOLECULE(3)%p => temp%p
+END SUBROUTINE II_get_ef_AOintegrals
+
+!> \brief Calculates the nuclear-attraction fock matrix derivative contributions
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param h the nuclear attraction fock matrix contribution
+SUBROUTINE II_get_ep_integrals_grad(LUPRI,LUERR,SETTING,Integral,R)
+IMPLICIT NONE
+TYPE(MATRIX)        :: Integral
+REAL(realk)         :: R(3,1) !vector R={x,y,z}
+TYPE(LSSETTING)     :: SETTING
+INTEGER             :: LUPRI,LUERR
+!
+Integer             :: nbast
+real(realk)         :: OLDTHRESH
+type(MOLECULE_PT)   :: temp,Point
+
+CALL mat_zero(Integral)
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+nbast = Integral%nrow
+call initIntegralOutputDims(setting%output,nbast,nbast,1,1,1)
+allocate(Point%p)
+call build_pointMolecule(Point%p,R,1,lupri)
+temp%p  => setting%MOLECULE(3)%p
+setting%MOLECULE(3)%p => Point%p
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclear,AOempty,&
+     &NucpotOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,Integral,setting%IntegralTransformGC)
+call free_Moleculeinfo(Point%p)
+setting%MOLECULE(3)%p => temp%p
+END SUBROUTINE II_get_ep_integrals_grad
+
 !> \brief Calculates the full molecular gradient
 !> \author T. Kjaergaard
 !> \date 2010-04-26

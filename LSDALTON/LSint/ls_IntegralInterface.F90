@@ -50,7 +50,8 @@ MODULE ls_Integral_Interface
        & build_empty_pcharge_ao, build_s_1prim1contseg_ao, &
        & build_s_2prim1contseg_ao, build_s_2prim2contseg_ao,&
        & build_s_2prim2contgen_ao, build_p_1prim1contseg_ao,&
-       & build_d_1prim1contseg_ao, build_ao, build_shellbatch_ao
+       & build_d_1prim1contseg_ao, build_ao, build_shellbatch_ao, &
+       & BUILD_EMPTY_ELFIELD_AO
   use lstiming, only: lstimer, print_timers
   use io, only: io_get_filename, io_get_csidentifier
   use screen_mod, only: determine_lst_in_screenlist, screen_associate,&
@@ -3668,6 +3669,10 @@ CASE (AOpCharge)
    emptyAO = .true.
    CALL BUILD_EMPTY_PCHARGE_AO(AObatch,Molecule,LUPRI)
    nDim = Molecule%nAtoms
+CASE (AOelField)
+   emptyAO = .true.
+   CALL BUILD_EMPTY_ELFIELD_AO(AObatch,Molecule,LUPRI)
+   nDim = 3
 CASE (AOS1p1cSeg)
    emptyAO = .true.
    CALL BUILD_S_1Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)

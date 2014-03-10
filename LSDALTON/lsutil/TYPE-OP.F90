@@ -154,6 +154,9 @@ ELSEIF (AOtype.EQ.AONuclear) THEN
 ELSEIF (AOtype.EQ.AOpCharge) THEN
   nc = MOLECULE%nAtoms
   np = MOLECULE%nAtoms
+ELSEIF (AOtype.EQ.AOelField) THEN
+  nc = MOLECULE%nAtoms
+  np = MOLECULE%nAtoms
 ELSEIF (AOtype.EQ.AOS1p1cSeg)THEN
   nc = 1
   np = 1

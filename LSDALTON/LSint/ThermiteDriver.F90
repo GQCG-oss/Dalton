@@ -6587,19 +6587,28 @@ INTEGER                 :: LUPRI,SUM,J,K,T,U,V,TUV,IOFF
 INTEGER                 :: nPrim,IPRINT,ntuv,L,I,offsetTUV,offset,offset2
 INTEGER                 :: zeroX,zeroY,zeroZ,Jmax,Jstart,nPrimP,nPassQ,iPass
 real(realk)             :: X0,Y0,Z0
-Integer                 :: der,ntuvFull,fullOP,ioffP
-Logical                 :: kinetic,facone
+Integer                 :: der,ntuvFull,fullOP,ioffP,addDer
+Logical                 :: kinetic,facone,efP,efQ
 
 kinetic = INPUT%operator .EQ. KineticOperator
+!efP     = PQ%P%p%type_elField
+!efQ     = PQ%Q%p%type_elField
 !
 NPrim=PQ%nPrimitives
 JMAX=PQ%endAngmom
 Jstart=PQ%startAngmom
 
+addDer = 0
 IF (kinetic) THEN
-  JMAX=PQ%endAngmom + 2
-  Jstart=PQ%startAngmom + 2
+   addDer = 2
+!ELSE IF (efP) THEN
+!   addDer = 1
+!ELSE IF (efQ) THEN
+!   addDer = 1
 ENDIF
+
+JMAX=PQ%endAngmom + addDer
+Jstart=PQ%startAngmom + addDer
 
 #ifdef VAR_LSDEBUGINT
 IF(nPrim*(JMAX+1).GT.allocIntmaxTUVdim)THEN

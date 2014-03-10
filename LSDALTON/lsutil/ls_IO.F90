@@ -412,6 +412,9 @@ DO IAO=1,4
   ELSEIF (AOstring(IAO).EQ.AOpCharge) THEN
     Filename(iFilename:iFilename) = 'p'
     iFilename = iFilename + 1
+  ELSEIF (AOstring(IAO).EQ.AOelField) THEN
+    Filename(iFilename:iFilename) = 'f'
+    iFilename = iFilename + 1
   ELSEIF (AOstring(IAO).EQ.AOS1p1cSeg) THEN
     Filename(iFilename:iFilename+1) = 't1'
     iFilename = iFilename + 2
