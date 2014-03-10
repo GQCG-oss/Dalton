@@ -549,7 +549,8 @@ DO
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
             CASE('.RH');         config%opt%CFG_density_method =  config%opt%CFG_F2D_ROOTHAAN
             CASE('.SAFE');       config%av%CFG_safe = .true.
-            CASE('.SCALVIR');    config%opt%cfg_scale_virt = .true.
+! obsolete keyword - noone knows what it does. Not in manual. Not in testcases
+!            CASE('.SCALVIR');    config%opt%cfg_scale_virt = .true.
             !SOEO keywords
             !To-do: Collect in some read-soeo-input
             CASE('.SOEO');       config%soeoinp%cfg_soeo = .true.
@@ -1251,6 +1252,8 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_CONST_EL    = .TRUE.
            INTEGRAL%ADMMQ_ScaleXC2   = .FALSE.
 	   INTEGRAL%ADMMQ_ScaleE     = .TRUE.
+        CASE ('.PRINT_EK3');
+	   INTEGRAL%PRINT_EK3        = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
@@ -2833,6 +2836,26 @@ ELSEIF(OMP_GET_NUM_THREADS().EQ. 1)THEN
 ENDIF
 !$OMP END MASTER
 !$OMP END PARALLEL
+#endif
+
+#ifdef VAR_MPI
+#ifdef VAR_INT64
+#ifdef VAR_MPI_32BIT_INT
+!int64,mpi & mpi32
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A)')'linked to a 32 bit integer MPI library.'
+#else
+!int64,mpi nompi32
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A)')'linked to a 64 bit integer MPI library.'
+#endif
+#else
+!int32 mpi
+WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors'
+#endif
+#else
+!no MPI
+WRITE(lupri,'(4X,A)')'This is a serial calculation (no MPI)'
 #endif
 
 config%av%diis_history_size = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size

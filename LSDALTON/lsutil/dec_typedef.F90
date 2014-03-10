@@ -354,6 +354,8 @@ module dec_typedef_module
      logical :: PairMP2
      !> Estimate pair interaction energies using simple estimates?
      logical :: PairEstimate
+     !> Carry out pair estimate, but anyway run all pairs.
+     logical :: PairEstimateIgnore
      ! --
 
 
@@ -517,15 +519,19 @@ module dec_typedef_module
      integer, pointer :: atom_start(:) => null()
      !> Index of the last basis function for an atom
      integer, pointer :: atom_end(:) => null()
+     !> Number of CABS basis functions on atoms
+     integer, pointer :: atom_cabssize(:) => null()
+     !> Index of the first CABS basis function for an atom
+     integer, pointer :: atom_cabsstart(:) => null()
 
      !> Occupied MO coefficients (mu,i)
      real(realk), pointer :: Co(:,:) => null()
      !> Virtual MO coefficients (mu,a)
      real(realk), pointer :: Cv(:,:) => null()
      !> CABS MO coefficients (mu,x)
-     real(realk), pointer :: Ccabs(:,:) => null()
+!     real(realk), pointer :: Ccabs(:,:) => null()
      !> RI MO coefficients 
-     real(realk), pointer :: Cri(:,:) => null() 
+!     real(realk), pointer :: Cri(:,:) => null() 
 
      !> Fock matrix (AO basis)
      real(realk), pointer :: fock(:,:) => null()
@@ -652,6 +658,7 @@ module dec_typedef_module
      !> Information about fragment size always set, this is the maximum distance
      !between any two atoms in the fragment
      real(realk) :: RmaxAE,RmaxAOS,RaveAE,RaveAOS,RsdvAE,RsdvAOS
+     real(realk) :: DmaxAE,DmaxAOS,DaveAE,DaveAOS,DsdvAE,DsdvAOS
 
      ! NOTE!!! occAOSorb and unoccAOSorb are ILL-DEFINED when fragmentadapted=.true. !!!!
 
@@ -664,10 +671,14 @@ module dec_typedef_module
      integer :: natoms=0
      !> Number of basis functions
      integer :: nbasis=0
+     !> Number of CABS basis functions
+     integer :: ncabsAO=0
      !> Atomic indices
      integer, pointer :: atoms_idx(:) => null()
      !> Corresponding basis function indices
      integer,pointer :: basis_idx(:) => null()
+     !> Corresponding CABS basis function indices
+     integer,pointer :: cabsbasis_idx(:) => null()
 
      !> Has the information inside the expensive box below been initialized or not?
      logical :: BasisInfoIsSet

@@ -217,7 +217,7 @@ CRIT1=`$GREP "Isotropic g\-tensor * \: * (0| )\.719934.." $log | wc -l`
 CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.974533.." $log | wc -l`
 CRIT3=`$GREP "Diamagnetic contribution \: * (0| )\.0000000" $log | wc -l`
 CRIT4=`$GREP "Electronic contribution * \: * (\-0|\-)\.254598.." $log | wc -l`
-CRIT5=`$GREP "1st anisotropy\: * (\-0|\-)\.017731.." $log | wc -l`
+CRIT5=`$GREP "1st anisotropy\: * (\-0|\-)\.01773(0|1).." $log | wc -l`
 CRIT6=`$GREP "2nd anisotropy\: * (0| )\.064731.." $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[10]=6
@@ -232,7 +232,7 @@ CTRL[11]=3
 ERROR[11]="MOLECULAR ROT G-FACTOR IN PRINCIPAL AXIS SYSTEM NOT CORRECT"
 
 # Shielding tensors (symmetry coordinates)
-CRIT1=`$GREP "O * y * 354\.8609" $log | wc -l`
+CRIT1=`$GREP "O * y * 354\.86(09|10)" $log | wc -l`
 CRIT2=`$GREP "H * y * 78\.1123" $log | wc -l`
 CRIT3=`$GREP "H * z * \-15\.3280" $log | wc -l`
 CRIT4=`$GREP "O * x * 297\.1807" $log | wc -l`
@@ -257,7 +257,7 @@ ERROR[13]="CHEMICAL SHIELDING FOR OXYGEN NOT CORRECT"
 
 # Total shielding tensor for O
 CRIT1=`$GREP "O * x *   297\.1807.... * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "O * y * (0| )\.00000000 *   354\.8609.... * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "O * y * (0| )\.00000000 *   354\.86(09|10).... * (0| )\.00000000" $log | wc -l`
 CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 *   303\.4487...." $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[14]=3

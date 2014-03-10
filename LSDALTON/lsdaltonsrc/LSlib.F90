@@ -1163,7 +1163,7 @@ ENDDO
 call mat_init(S,nbast,nbast)
 CALL II_get_overlap(lupri,luerr,setting,S)
 call mat_init(OverlapMat,nbast,nbast)
- call lsdalton_get_Overlap(Overlapmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_Overlap(Overlapmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(S,OverlapMat,'LSlib_debug: lsdalton_get_overlap',THR,lupri)
 call mat_free(S)
 call mat_free(OverlapMat)
@@ -1174,11 +1174,11 @@ call mat_init(DIPLEN(3),nbast,nbast)
 call II_get_prop(LUPRI,LUERR,SETTING,DIPLEN,3,'DIPLEN ')
 
 call mat_init(DIPLENMat,nbast,nbast)
- call lsdalton_get_XDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_XDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(DIPLEN(1),DIPLENmat,'LSlib_debug: lsdalton_get_XDIPLEN',THR,lupri)
- call lsdalton_get_YDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_YDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(DIPLEN(2),DIPLENmat,'LSlib_debug: lsdalton_get_YDIPLEN',THR,lupri)
- call lsdalton_get_ZDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_ZDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(DIPLEN(3),DIPLENmat,'LSlib_debug: lsdalton_get_ZDIPLEN',THR,lupri)
 
 call mat_free(DIPLENMat)
@@ -1479,14 +1479,36 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   LIBRARY%Charges(1,1:nUCharge) = UNIQUECHARGES(1:nUCharge)
   LIBRARY%pointcharges = .FALSE.
   LIBRARY%phantom = .FALSE.
+  LIBRARY%DunningsBasis = .TRUE.
   call mem_dealloc(UNIQUECHARGES)  
   call Build_BASIS(LUPRI,0,input%MOLECULE,input%BASIS%REGULAR,LIBRARY,&
        &'REGULAR  ',.FALSE.,.FALSE.,.FALSE.,.TRUE.)
   input%BASIS%AUXILIARY%natomtypes = 0
+  input%BASIS%AUXILIARY%nChargeindex = 0
+  input%BASIS%AUXILIARY%labelindex = 0
+  nullify(input%BASIS%AUXILIARY%Chargeindex)
+
   input%BASIS%CABS%natomtypes = 0
+  input%BASIS%CABS%nChargeindex = 0
+  input%BASIS%CABS%labelindex = 0
+  nullify(input%BASIS%CABS%Chargeindex)
+
   input%BASIS%JK%natomtypes = 0
+  input%BASIS%JK%nChargeindex = 0
+  input%BASIS%JK%labelindex = 0
+  nullify(input%BASIS%JK%Chargeindex)
+
   input%BASIS%GCtrans%natomtypes = 0
+  input%BASIS%GCtrans%nChargeindex = 0
+  input%BASIS%GCtrans%labelindex = 0
+  nullify(input%BASIS%GCtrans%Chargeindex)
+  input%BASIS%GCtransAlloc = .FALSE.
+
   input%BASIS%VALENCE%natomtypes = 0
+  input%BASIS%VALENCE%nChargeindex = 0
+  input%BASIS%VALENCE%labelindex = 0
+  nullify(input%BASIS%VALENCE%Chargeindex)
+
   CALL typedef_init_setting(setting)
   CALL typedef_set_default_setting(setting,input)
   setting%SCHEME%DoSpherical = .TRUE.

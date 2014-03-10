@@ -91,7 +91,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN STXINP ')
+         CALL QUIT('Illegal keyword  for "*STEX  "')
 C
 C *** Option 1 >XAS<   X-ray absorption spectroscopy
   101 CONTINUE

@@ -316,16 +316,16 @@ contains
 
 
     !set max distance in AOS space
-    fragment%RmaxAOS = 0.0E0_realk
-    fragment%RaveAOS = 0.0E0_realk
-    fragment%RsdvAOS = 0.0E0_realk
+    fragment%DmaxAOS = 0.0E0_realk
+    fragment%DaveAOS = 0.0E0_realk
+    fragment%DsdvAOS = 0.0E0_realk
     cntr = 0
     do i=1,natoms
       if( all_atoms(i) )then
         do j=i+1,natoms
           if( all_atoms(j) )then
-            fragment%RmaxAOS = max(fragment%RmaxAOS,MyMolecule%DistanceTable(j,i))
-            fragment%RaveAOS = fragment%RaveAOS + MyMolecule%DistanceTable(j,i)
+            fragment%DmaxAOS = max(fragment%DmaxAOS,MyMolecule%DistanceTable(j,i))
+            fragment%DaveAOS = fragment%DaveAOS + MyMolecule%DistanceTable(j,i)
             cntr = cntr + 1
           endif
         enddo
@@ -336,7 +336,7 @@ contains
       if( all_atoms(i) )then
         do j=i+1,natoms
           if( all_atoms(j) )then
-            fragment%RsdvAOS = fragment%RsdvAOS + (MyMolecule%DistanceTable(j,i) - fragment%RaveAOS )**2
+            fragment%DsdvAOS = fragment%DsdvAOS + (MyMolecule%DistanceTable(j,i) - fragment%DaveAOS )**2
           endif
         enddo
       endif
@@ -419,7 +419,7 @@ contains
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Unocc AOS   : ',Fragment%nunoccAOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Basis       : ',Fragment%nbasis
        write(DECinfo%output,'(a,2f10.3)')   ' FRAGINIT: Dist AOS/AE : ',&
-       &Fragment%RmaxAOS*bohr_to_angstrom,Fragment%RmaxAE*bohr_to_angstrom
+       &Fragment%DmaxAOS*bohr_to_angstrom,Fragment%DmaxAE*bohr_to_angstrom
        write(DECinfo%output,*)
     end if
 
@@ -438,6 +438,7 @@ contains
     integer :: nbasis, noccEOS, nunoccEOS, noccfull, nocvAOS, nvirtAOS, ncabsAO, ncabsMO
     integer :: noccAOS, nunoccAOS
     integer :: ix, iy
+    real(realk),pointer :: Fcp(:,:) 
 
     ! ============================================================
     !                        F12-Specific                        !
@@ -452,21 +453,15 @@ contains
     nocvAOS  = fragment%noccAOS + fragment%nunoccAOS
     nvirtAOS = fragment%nunoccAOS
     
-    if(DECinfo%f12debug) then
-       !CABS MO and RI AO (Fragment ncabsMO = Molecule ncabsMO) Needs to be changed
-       !ncabsAO = size(MyMolecule%Ccabs,1)
-       !ncabsMO = size(MyMolecule%Ccabs,2)
-       !print *, "associated(MyMolecule%Ccabs)", associated(MyMolecule%Ccabs)
-       !print *, "size(MyMolecule%Ccabs,2)", size(MyMolecule%Ccabs,2)
-    endif
+    !CURRENTLY THE full matrices are in the CABS AO BASIS and needs to be transformed 
+    !to the CABS-MO and RI-MO basis which happens in this routine
 
-    if(DECinfo%f12debug) then
-       print *, "associated(fragment%Ccabs)", associated(fragment%Ccabs)
-       print *, "size(fragment%Ccabs,2)", size(fragment%Ccabs,2)
-    endif
-
-    ncabsAO  = size(fragment%Ccabs,1)
+    ncabsAO = fragment%nCabsAO !size(fragment%Ccabs,1)
     ncabsMO = size(fragment%Ccabs,2)
+    
+    IF(fragment%nCabsAO.NE.size(fragment%Ccabs,1))THEN
+       call lsquit('Dimension mismatch in atomic_fragment_init_f12',-1)
+    ENDIF
 
     if(DECinfo%F12debug) then
        print *, "---------------------------------------"
@@ -483,7 +478,6 @@ contains
        print *, "ncabsMO", ncabsMO
        print *, "---------------------------------------"
     end if 
-    
     ! hJir
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
     do j=1,ncabsAO
@@ -492,14 +486,17 @@ contains
           fragment%hJir(i,:) = MyMolecule%hJir(ix,:)
        enddo
     enddo
+    call F12_RI_transform_realMat(fragment%hJir,noccEOS,ncabsAO,fragment%Cri,ncabsAO)
   
     ! Krs
     call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
     call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
+    call F12_RI_transform_realMat(fragment%Krs,ncabsAO, ncabsAO,fragment%Cri,ncabsAO)
 
     ! Frs
     call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
     call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
+    call F12_RI_transform_realMat(fragment%Frs,ncabsAO,ncabsAO,fragment%Cri,ncabsAO)
 
     ! Frm
     call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
@@ -507,18 +504,22 @@ contains
        iy = fragment%occAOSidx(i)
        fragment%Frm(:,i) = MyMolecule%Frm(:,iy)
     enddo
+    call F12_RI_transform_realMat(fragment%Frm,ncabsAO,noccAOS,fragment%Cri,ncabsAO)
 
     ! Fcp in the order of the index (occ to virt)
-    call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
+    ! HACK NOT fragment%Fcp, ncabsMO, nocvAOS)
+    call mem_alloc(Fcp, ncabsAO, nocvAOS)
     do i=1, fragment%noccAOS
        iy = fragment%occAOSidx(i)
-       fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy)
+       Fcp(:,i) = MyMolecule%Fcp(:,iy)
     enddo
-  
     do i=fragment%noccAOS+1, fragment%nunoccAOS+fragment%noccAOS
        iy = fragment%unoccAOSidx(i-fragment%noccAOS)
-       fragment%Fcp(:,i) = MyMolecule%Fcp(:,iy+MyMolecule%nocc)
+       Fcp(:,i) = MyMolecule%Fcp(:,iy+MyMolecule%nocc)
     enddo
+    call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
+    call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOS,fragment%Ccabs,ncabsAO,ncabsMO)
+    call mem_dealloc(Fcp)
 
     if(DECinfo%F12debug) then
        print *, "---------------------------------------"
@@ -2280,9 +2281,9 @@ contains
     end do
 
     ! assign atomic extent
-    fragment%RmaxAE = 0.0E0_realk
-    fragment%RaveAE = 0.0E0_realk
-    fragment%RsdvAE = 0.0E0_realk
+    fragment%DmaxAE = 0.0E0_realk
+    fragment%DaveAE = 0.0E0_realk
+    fragment%DsdvAE = 0.0E0_realk
     fragment%natoms = count(which_atoms)
     call mem_alloc(fragment%atoms_idx,Fragment%natoms)
     idx  = 0
@@ -2292,11 +2293,11 @@ contains
           idx=idx+1
           fragment%atoms_idx(idx)=i
 
-          !set RmaxAE
+          !set DmaxAE
           do j=i+1,MyMolecule%natoms
             if(which_atoms(j)) then
-              fragment%RmaxAE = max(fragment%RmaxAE,MyMolecule%DistanceTable(j,i))
-              fragment%RaveAE = fragment%RaveAE + MyMolecule%DistanceTable(j,i)
+              fragment%DmaxAE = max(fragment%DmaxAE,MyMolecule%DistanceTable(j,i))
+              fragment%DaveAE = fragment%DaveAE + MyMolecule%DistanceTable(j,i)
               cntr = cntr + 1
             endif
           enddo
@@ -2308,7 +2309,7 @@ contains
        if(which_atoms(i)) then
           do j=i+1,MyMolecule%natoms
             if(which_atoms(j)) then
-              fragment%RsdvAE = fragment%RsdvAE + ( MyMolecule%DistanceTable(j,i)- fragment%RaveAE)**2
+              fragment%DsdvAE = fragment%DsdvAE + ( MyMolecule%DistanceTable(j,i)- fragment%DaveAE)**2
             endif
           enddo
 
@@ -2341,6 +2342,25 @@ contains
        call lsquit('init_atomic_fragment_extent: Counter does not equal number &
             & of basis functions!',-1)
     end if
+
+    IF(decinfo%F12)THEN
+       ! count number of basis functions on selected atoms
+       fragment%nCabsAO = 0
+       do i=1,fragment%natoms
+          fragment%nCabsAO = fragment%nCabsAO &
+               & + MyMolecule%atom_cabssize(fragment%atoms_idx(i))
+       end do
+       ! Set basis function indices
+       call mem_alloc(fragment%cabsbasis_idx,fragment%nCabsAO)
+       idx=0
+       do i=1,fragment%natoms
+          do j=1,MyMolecule%atom_cabssize(fragment%atoms_idx(i))
+             idx=idx+1
+             ! Basis function index
+             fragment%cabsbasis_idx(idx) = MyMolecule%atom_cabsstart(fragment%atoms_idx(i)) + j-1
+          end do
+       end do
+    ENDIF
 
   end subroutine init_atomic_fragment_extent
 
@@ -4075,10 +4095,10 @@ contains
     type(joblist),intent(inout) :: jobs
     integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags, minocc,minunocc,minbasis
     integer:: maxbasis, nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
-    real(realk) :: avocc,avunocc,tcpu,twall,avbasis,avRmaxAOS, avRmaxAE, maxRmaxAOS, maxRmaxAE, minRmaxAOS, minRmaxAE
+    real(realk) :: avocc,avunocc,tcpu,twall,avbasis,avDmaxAOS, avDmaxAE, maxDmaxAOS, maxDmaxAE, minDmaxAOS, minDmaxAE
     logical,pointer :: occAOS(:,:),unoccAOS(:,:),fragbasis(:,:)
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
-    real(realk), pointer :: RmaxAOS(:), RmaxAE(:), RaveAOS(:),RaveAE(:), RsdvAE(:),RsdvAOS(:)
+    real(realk), pointer :: DmaxAOS(:), DmaxAE(:), DaveAOS(:),DaveAE(:), DsdvAE(:),DsdvAOS(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -4099,12 +4119,12 @@ contains
     minocc     = huge(minocc)
     minunocc   = huge(minunocc)
     minbasis   = huge(minbasis)
-    maxRmaxAOS = 0.0E0_realk
-    maxRmaxAE  = 0.0E0_realk
-    avRmaxAOS  = 0.0E0_realk
-    avRmaxAE   = 0.0E0_realk
-    minRmaxAOS = huge(minRmaxAOS)
-    minRmaxAE  = huge(minRmaxAE)
+    maxDmaxAOS = 0.0E0_realk
+    maxDmaxAE  = 0.0E0_realk
+    avDmaxAOS  = 0.0E0_realk
+    avDmaxAE   = 0.0E0_realk
+    minDmaxAOS = huge(minDmaxAOS)
+    minDmaxAE  = huge(minDmaxAE)
 
     call mem_alloc(occAOS,nocc,natoms)
     call mem_alloc(unoccAOS,nunocc,natoms)
@@ -4113,12 +4133,12 @@ contains
     call mem_alloc(occsize,natoms)
     call mem_alloc(unoccsize,natoms)
     call mem_alloc(basissize,natoms)
-    call mem_alloc(RmaxAOS,natoms)
-    call mem_alloc(RmaxAE,natoms)
-    call mem_alloc(RaveAOS,natoms)
-    call mem_alloc(RaveAE,natoms)
-    call mem_alloc(RsdvAOS,natoms)
-    call mem_alloc(RsdvAE,natoms)
+    call mem_alloc(DmaxAOS,natoms)
+    call mem_alloc(DmaxAE,natoms)
+    call mem_alloc(DaveAOS,natoms)
+    call mem_alloc(DaveAE,natoms)
+    call mem_alloc(DsdvAOS,natoms)
+    call mem_alloc(DsdvAE,natoms)
     occAOS    = .false.
     unoccAOS  = .false.
     fragbasis = .false.
@@ -4179,19 +4199,19 @@ contains
        minunocc = min(minunocc,unoccdim)
        minbasis = min(minbasis,basisdim)
        !Get max distances in Fragment
-       RmaxAE(atom)  = AtomicFragments(atom)%RmaxAE
-       RmaxAOS(atom) = AtomicFragments(atom)%RmaxAOS
-       RaveAE(atom)  = AtomicFragments(atom)%RaveAE
-       RaveAOS(atom) = AtomicFragments(atom)%RaveAOS
-       print *,atom,"STUFF: ", RaveAE(atom), RaveAOS(atom),RaveAE(atom) * bohr_to_angstrom,RaveAOS(atom) * bohr_to_angstrom
-       RsdvAE(atom)  = AtomicFragments(atom)%RsdvAE
-       RsdvAOS(atom) = AtomicFragments(atom)%RsdvAOS
-       maxRmaxAE     = max(maxRmaxAE,RmaxAE(atom))
-       maxRmaxAOS    = max(maxRmaxAOS,RmaxAOS(atom))
-       avRmaxAE      = avRmaxAE  + RmaxAE(atom)
-       avRmaxAOS     = avRmaxAOS + RmaxAOS(atom)
-       minRmaxAE     = min(minRmaxAE,RmaxAE(atom))
-       minRmaxAOS    = min(minRmaxAOS,RmaxAOS(atom))
+       DmaxAE(atom)  = AtomicFragments(atom)%DmaxAE
+       DmaxAOS(atom) = AtomicFragments(atom)%DmaxAOS
+       DaveAE(atom)  = AtomicFragments(atom)%DaveAE
+       DaveAOS(atom) = AtomicFragments(atom)%DaveAOS
+       print *,atom,"STUFF: ", DaveAE(atom), DaveAOS(atom),DaveAE(atom) * bohr_to_angstrom,DaveAOS(atom) * bohr_to_angstrom
+       DsdvAE(atom)  = AtomicFragments(atom)%DsdvAE
+       DsdvAOS(atom) = AtomicFragments(atom)%DsdvAOS
+       maxDmaxAE     = max(maxDmaxAE,DmaxAE(atom))
+       maxDmaxAOS    = max(maxDmaxAOS,DmaxAOS(atom))
+       avDmaxAE      = avDmaxAE  + DmaxAE(atom)
+       avDmaxAOS     = avDmaxAOS + DmaxAOS(atom)
+       minDmaxAE     = min(minDmaxAE,DmaxAE(atom))
+       minDmaxAOS    = min(minDmaxAOS,DmaxAOS(atom))
 
        ! Store dimensions
        occsize(atom)   = occdim
@@ -4209,8 +4229,8 @@ contains
     avOCC     = avOCC     / real(nsingle)
     avUNOCC   = avUNOCC   / real(nsingle)
     avbasis   = avbasis   / real(nsingle)
-    avRmaxAOS = avRmaxAOS / real(nsingle)
-    avRmaxAE  = avRmaxAE  / real(nsingle)
+    avDmaxAOS = avDmaxAOS / real(nsingle)
+    avDmaxAE  = avDmaxAE  / real(nsingle)
 
 
 
@@ -4239,12 +4259,12 @@ contains
                & occsize(myatom), &
                & unoccsize(myatom), &
                & basissize(myatom), &
-               & RmaxAOS(myatom)*bohr_to_angstrom, &
-               & RmaxAE(myatom)*bohr_to_angstrom, &
-               & RaveAOS(myatom)*bohr_to_angstrom, &
-               & RaveAE(myatom)*bohr_to_angstrom, &
-               & RsdvAOS(myatom)*bohr_to_angstrom, &
-               & RsdvAE(myatom)*bohr_to_angstrom
+               & DmaxAOS(myatom)*bohr_to_angstrom, &
+               & DmaxAE(myatom)*bohr_to_angstrom, &
+               & DaveAOS(myatom)*bohr_to_angstrom, &
+               & DaveAE(myatom)*bohr_to_angstrom, &
+               & DsdvAOS(myatom)*bohr_to_angstrom, &
+               & DsdvAE(myatom)*bohr_to_angstrom
 
        end if PrintFragInfo
 
@@ -4259,10 +4279,10 @@ contains
     &'FRAGANALYSIS: Max/Ave/Min basis   : ', maxbasis,avbasis,minbasis
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
     &'FRAGANALYSIS: Max/Ave/Min dist AE : ', &
-    &maxRmaxAE*bohr_to_angstrom,avRmaxAE*bohr_to_angstrom,minRmaxAE*bohr_to_angstrom
+    &maxDmaxAE*bohr_to_angstrom,avDmaxAE*bohr_to_angstrom,minDmaxAE*bohr_to_angstrom
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
     &'FRAGANALYSIS: Max/Ave/Min dist AOS: ',&
-    &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
+    &maxDmaxAOS*bohr_to_angstrom,avDmaxAOS*bohr_to_angstrom,minDmaxAOS*bohr_to_angstrom
     write(DECinfo%output,*)
 
 
@@ -4333,12 +4353,12 @@ contains
     call mem_dealloc( occsize   )
     call mem_dealloc( unoccsize )
     call mem_dealloc( basissize )
-    call mem_dealloc( RmaxAOS   )
-    call mem_dealloc( RmaxAE    )
-    call mem_dealloc( RaveAOS   )
-    call mem_dealloc( RaveAE    )
-    call mem_dealloc( RsdvAOS   )
-    call mem_dealloc( RsdvAE    )
+    call mem_dealloc( DmaxAOS   )
+    call mem_dealloc( DmaxAE    )
+    call mem_dealloc( DaveAOS   )
+    call mem_dealloc( DaveAE    )
+    call mem_dealloc( DsdvAOS   )
+    call mem_dealloc( DsdvAE    )
 
 
   end subroutine create_dec_joblist_driver
@@ -6295,6 +6315,18 @@ contains
     ! Print summary for pair analysis and estimated energies
     call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Epair_est,Eskip_est,&
          & FragEnergies,MyMolecule%DistanceTable)
+
+    if(DECinfo%PairEstimateIgnore) then
+       write(DECinfo%output,*) ' ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** ' 
+       do P=1,natoms
+          if(.not. dofrag(P)) cycle
+          do Q=1,natoms
+             if(.not. dofrag(Q)) cycle
+             MyMolecule%ccmodel(P,Q)=DECinfo%ccmodel
+          end do
+       end do
+    end if
+
 
   end subroutine define_pair_calculations
 

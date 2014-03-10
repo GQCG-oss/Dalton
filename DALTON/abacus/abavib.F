@@ -85,9 +85,9 @@ C
      &                    ' be welcome back'
                      CALL QUIT('Input error in *VIBANA')
                   END IF
-                  DO 305 ICOUNT = 1, NISOTP
+                  DO, ICOUNT = 1, NISOTP
                      READ (LUCMD,*) (ISOTP(ICOUNT,N), N = 1, NATM)
- 305              CONTINUE
+                  END DO
                GO TO 100
     4             CONTINUE
   400                DOINT = .TRUE.
@@ -4189,7 +4189,7 @@ C
    20 CONTINUE
       IF (FREAD) THEN
          READ (LUCMD,'(A1)') WE
-         BACKSPACE 5
+         BACKSPACE LUCMD
       ELSE
          WE = KWORD(ICARD)
       END IF
@@ -4580,4 +4580,4 @@ C
       CALL V3NOM (W)
       RETURN
       END
-C  /* Deck rpflin */
+!  -- end of abacus/abavib.F --

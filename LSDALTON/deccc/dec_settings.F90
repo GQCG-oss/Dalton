@@ -124,12 +124,13 @@ contains
     DECinfo%CorrDensScheme         = 1
 
     ! -- Pair fragments
-    DECinfo%pair_distance_threshold = 20.0E0_realk/bohr_to_angstrom
+    DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set             = .false.
     DECinfo%PairMinDist             = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr               =  0.0_realk
     DECinfo%PairMP2                 = .false.
     DECinfo%PairEstimate            = .true.
+    DECinfo%PairEstimateIgnore      = .false.
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory=0E0_realk
@@ -496,6 +497,7 @@ contains
        case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
        case('.PAIRMP2'); DECinfo%PairMP2=.true.
        case('.NOTPAIRESTIMATE'); DECinfo%PairEstimate=.false.
+       case('.IGNOREPAIRESTIMATE'); DECinfo%PairEstimateIgnore=.true.
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
@@ -598,6 +600,11 @@ contains
        if(DECinfo%full_molecular_cc) then
           call lsquit('Full calculation for MP2 gradient is implemented via the &
                & .SimulateFull keyword', DECinfo%output)
+       end if
+
+       if(DECinfo%onlyoccpart) then
+          call lsquit('DEC gradient cannot be evaluated when only occupied &
+               & partitioning scheme is used!',DECinfo%output)
        end if
 
     end if MP2gradientCalculation
