@@ -224,7 +224,7 @@ ERROR[3]="ENERGY NOT CORRECT"
 # ESR parameters
 CRIT1=`$GREP "TRIPLET OPERATOR\: \"FC Cl 01\" LAGRANGIAN\: * 1\.9643.. AVERAGE\: * (0| )\.000000 TOTAL\: * 1\.9643" $log | wc -l`
 CRIT2=`$GREP "TRIPLET OPERATOR\: \"FC O1 02\" LAGRANGIAN\: * 2\.1563.. AVERAGE\: * (0| )\.000000 TOTAL\: * 2\.1563" $log | wc -l`
-CRIT3=`$GREP "TRIPLET OPERATOR\: \"SD * 002 y\" LAGRANGIAN\: (\-0| \-)\.1878.. AVERAGE\: \-1\.4717.. TOTAL\: \-1\.6595" $log | wc -l`
+CRIT3=`$GREP "TRIPLET OPERATOR\: \"SD * 002 y\" LAGRANGIAN\: (\-0| \-)\.187(7|8).. AVERAGE\: \-1\.471(7|8).. TOTAL\: \-1\.6595" $log | wc -l`
 CRIT4=`$GREP "TRIPLET OPERATOR\: \"SD * 003 y\" LAGRANGIAN\: (\-0| \-)\.6396.. AVERAGE\: \-1\.1474.. TOTAL\: \-1\.7870" $log | wc -l`
 CRIT5=`$GREP "TRIPLET OPERATOR\: \"SD * 004 y\" LAGRANGIAN\: * (0| )\.0110.. AVERAGE\: (\-0| \-)\.0251.. TOTAL\: (\-0| \-)\.0140" $log | wc -l`
 CRIT6=`$GREP "TRIPLET OPERATOR\: \"SD * 005 x\" LAGRANGIAN\: * (0| )\.6311.. AVERAGE\: * 2\.9517.. TOTAL\: * 3\.5828" $log | wc -l`
