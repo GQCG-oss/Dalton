@@ -2832,10 +2832,12 @@ integer, external :: OMP_GET_NESTED
 IF(OMP_GET_NUM_THREADS().GT. 1)THEN
    WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',OMP_GET_NUM_THREADS(),' threads.'
 ELSEIF(OMP_GET_NUM_THREADS().EQ. 1)THEN
-   WRITE(lupri,'(4X,A)')'This is a Single core calculation.'
+   WRITE(lupri,'(4X,A)')'This is a Single core calculation. (no OpenMP)'
 ENDIF
 !$OMP END MASTER
 !$OMP END PARALLEL
+#else
+   WRITE(lupri,'(4X,A)')'This is a Single core calculation. (no OpenMP)'
 #endif
 
 #ifdef VAR_MPI

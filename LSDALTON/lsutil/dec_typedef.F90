@@ -548,6 +548,8 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+     !> Which atoms are phantom atoms (only basis functions)
+     Logical, pointer :: PhantomAtom(:) => null()
      
 
      !> Occ-Occ Fock matrix in MO basis
