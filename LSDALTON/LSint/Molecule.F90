@@ -370,6 +370,17 @@ FRAGMOL%nbastJK=0
 FRAGMOL%nprimbastJK=0
 FRAGMOL%nbastVAL=0
 FRAGMOL%nprimbastVAL=0
+
+FRAGMOL%nSubSystems = DALMOL%nSubSystems
+IF(FRAGMOL%nSubSystems.NE.0)THEN
+   call mem_alloc(FRAGMOL%SubSystemLabel,FRAGMOL%nSubSystems)
+   do I = 1, FRAGMOL%nSubSystems
+      FRAGMOL%SubSystemLabel(I) = DALMOL%SubSystemLabel(I)
+   enddo
+ELSE
+   NULLIFY(FRAGMOL%SubSystemLabel)
+ENDIF
+
 CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%REGULAR)
 IF(AUXBASIS)THEN
    CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%AUXILIARY)

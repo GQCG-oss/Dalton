@@ -48,7 +48,7 @@ TYPE(lvec_list_t),INTENT(INOUT) :: latt_config
 !
 integer            :: LUINFO
 logical            :: PRINTATOMCOORD,file_exist,Angstrom,Symmetry,dopbc
-logical            :: ATOMBASIS,BASIS,CABSBASIS,JKBASIS
+logical            :: ATOMBASIS,BASIS,CABSBASIS,JKBASIS,Subsystems
 CHARACTER(len=80)  :: BASISSET,AUXBASISSET,CABSBASISSET,JKBASISSET
 integer            :: MolecularCharge,Atomtypes,Totalnatoms,I,IPOS
 
@@ -58,15 +58,9 @@ ATOMBASIS=.FALSE.
 AUXBASIS=.FALSE.
 CABSBASIS=.FALSE.
 JKBASIS=.FALSE.
-do I=1,80
-   AUXBASISSET(I:I)=' '
-enddo
-do I=1,80
-   CABSBASISSET(I:I)=' '
-enddo
-do I=1,80
-   JKBASISSET(I:I)=' '
-enddo
+call StringInit80(AUXBASISSET)
+call StringInit80(CABSBASISSET)
+call StringInit80(JKBASISSET)
 
 INQUIRE(file='MOLECULE.INP',EXIST=file_exist) 
 IF(file_exist)THEN
@@ -123,7 +117,7 @@ CALL READ_COMMENTS(LUPRI,LUINFO,.FALSE.)
 
 CALL READ_LINE4(LUPRI,LUINFO,Atomtypes,DoSpherical,MolecularCharge&
      &,Angstrom,Symmetry,doprint,&
-     &latt_config%setup_pbclatt)
+     &latt_config%setup_pbclatt,Subsystems)
 
 Molecule%charge = MolecularCharge
 
@@ -141,7 +135,7 @@ DOPBC=.FALSE.
 
 CALL READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
      &ATOMBASIS,BASIS,AUXBASIS,CABSBASIS,JKBASIS,Angstrom,MOLECULE,&
-     &PRINTATOMCOORD,doprint,latt_config)
+     &PRINTATOMCOORD,doprint,latt_config,Subsystems)
 
 CALL DETERMINE_NELECTRONS(Molecule,Molecule%charge,Molecule%nelectrons)
 
@@ -152,6 +146,15 @@ CALL DETERMINE_NELECTRONS(Molecule,Molecule%charge,Molecule%nelectrons)
 CALL LSCLOSE(LUINFO,'KEEP')
 
 END SUBROUTINE READ_MOLFILE_AND_BUILD_MOLECULE
+
+subroutine StringInit80(AUXBASISSET)
+character(len=80),intent(inout) :: AUXBASISSET
+!
+integer :: I 
+do I=1,80
+   AUXBASISSET(I:I)=' '
+enddo
+end subroutine StringInit80
 
 !> \brief determine the total number of atoms
 !> \author T. Kjaergaard
@@ -549,12 +552,12 @@ END SUBROUTINE READ_COMMENTS
 !> \param symmetry if we should use symmetry - obsolete 
 !> \param doprint if we should print this to output files
 SUBROUTINE READ_LINE4(LUPRI,LUINFO,Atomtypes,DoSpherical,MolecularCharge&
-                                    &,Angstrom,Symmetry,doprint,setup_pbclatt)
+                     &,Angstrom,Symmetry,doprint,setup_pbclatt,SubSystems)
 ! Read in the fourth molecule.inp line using the new (and old) input scheme
 implicit none
 INTEGER          :: IPOS,IPOS2,Atomtypes,MolecularCharge,IPSO
 Real(realk)      :: Charge
-LOGICAL          :: DoSpherical,Angstrom,Symmetry,doprint
+LOGICAL          :: DoSpherical,Angstrom,Symmetry,doprint,SubSystems
 CHARACTER(len=2) :: SYMTXT,ID3
 CHARACTER(len=80):: LINE 
 CHARACTER(len=120):: LINE120 
@@ -634,6 +637,15 @@ call TestLength(LINE120,120,LINE,80)
       Angstrom = .TRUE.
     ELSE
       Angstrom = .FALSE.
+    ENDIF
+
+
+!     Subsystems?
+    IPOS = INDEX(LINE,'SubSystems') 
+    IF (IPOS .NE. 0) THEN
+      SubSystems = .TRUE.
+    ELSE
+      SubSystems = .FALSE.
     ENDIF
 
 !     
@@ -757,7 +769,7 @@ END SUBROUTINE READ_LINE4
 !>
 SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
      &ATOMBASIS,BASIS,AUXBASIS,CABSBASIS,JKBASIS,Angstrom,MOLECULE,PRINTATOMCOORD,doprint,&
-     &latt_config)
+     &latt_config,Subsystems)
   use ls_util
 implicit none
 TYPE(MOLECULEINFO) :: MOLECULE
@@ -767,25 +779,41 @@ INTEGER            :: Atomtypes,LUINFO,IPOS,atomnumber
 INTEGER            :: I,J,natoms
 CHARACTER(len=4)   :: StringFormat
 LOGICAL            :: ATOMBASIS,BASIS,Angstrom,dopbc,AUXBASIS,doprint
-LOGICAL            :: CABSBASIS,JKBASIS
+LOGICAL            :: CABSBASIS,JKBASIS,Subsystems
 real(realk)        :: AtomicCharge
 CHARACTER(len=80)  :: LINE,Atomicbasisset,Auxbasisset,Cabsbasisset,JKbasisset  
+CHARACTER(len=80)  :: SubsystemLabels(Atomtypes)
+CHARACTER(len=80)  :: SubsystemLabel
 CHARACTER(len=120) :: LINE120
 CHARACTER(len=1)   :: CHRXYZ(3)=(/'x','y','z'/)
 INTEGER            :: LUPRI,basissetnumber,basissetnumber1,basissetnumber2
 INTEGER            :: unique1,unique2,uniqueCharge,IPRINT
 LOGICAL            :: PRINTATOMCOORD,pointcharge,phantom,DunningsBasis
+LOGICAL            :: UniqueLabel
 INTEGER :: auxunique2,auxbasissetnumber2,cabsunique2,cabsbasissetnumber2
-INTEGER :: jkunique2,jkbasissetnumber2
+INTEGER :: jkunique2,jkbasissetnumber2,nSubsystemLabels,iSubsystemLabels
+
+call StringInit80(SubsystemLabel)
 atomnumber=0
 basissetnumber=0
 
 DunningsBasis = .TRUE.
-
+nSubsystemLabels = 0 
 DO I=1,Atomtypes
  CALL READ_LINE5(LUPRI,LUINFO,AtomicCharge,nAtoms,AtomicBasisset,ATOMBASIS,&
-      & BASIS,AUXBASIS,AUXBASISSET,CABSBASIS,CABSbasisset,JKBASIS,JKbasisset,pointcharge,phantom)
-
+      & BASIS,AUXBASIS,AUXBASISSET,CABSBASIS,CABSbasisset,JKBASIS,JKbasisset,&
+      & pointcharge,phantom,Subsystems,SubsystemLabel)
+ IF(Subsystems)THEN
+    Call DetermineUniqueLabel(UniqueLabel,SubsystemLabels,Atomtypes,SubsystemLabel,&
+         & nSubsystemLabels,iSubsystemLabels)
+    IF(UniqueLabel)THEN
+       nSubsystemLabels = nSubsystemLabels + 1 
+       iSubsystemLabels = nSubsystemLabels
+       SubsystemLabels(nSubsystemLabels) = SubsystemLabel
+    ENDIF
+ ELSE
+    iSubsystemLabels = -1
+ ENDIF
  IF(ATOMBASIS)THEN
     CALL DETERMINE_UNIQUE_BASIS(BASISSETLIBRARY,ATOMICBASISSET,&
                                              &unique1,basissetnumber)
@@ -961,6 +989,7 @@ DO I=1,Atomtypes
     Isotopes(MOLECULE%ATOM(Atomnumber)%Atomic_number, &
     MOLECULE%ATOM(AtomNumber)%Isotope,'MASS',LUPRI)
     MOLECULE%ATOM(AtomNumber)%molecularIndex = AtomNumber
+    MOLECULE%ATOM(AtomNumber)%SubSystemIndex = iSubsystemLabels
     !READ_ATOMCOORD 
 
     READ (LUINFO, '(a80)') LINE120
@@ -1108,6 +1137,17 @@ DO I=1,Atomtypes
   ENDDO
 ENDDO
 
+IF(Subsystems)THEN
+   MOLECULE%nSubSystems = nSubsystemLabels
+   call mem_alloc(MOLECULE%SubSystemLabel,nSubsystemLabels)
+   DO I=1,nSubsystemLabels
+      MOLECULE%SubSystemLabel(I) = SubsystemLabels(I)
+   ENDDO
+ELSE
+   MOLECULE%nSubSystems = 0
+   NULLIFY(MOLECULE%SubSystemLabel)
+ENDIF
+
 J=0
 DO I = 1,MOLECULE%natoms
    IF(MOLECULE%ATOM(I)%pointCharge)CYCLE
@@ -1143,6 +1183,25 @@ IF(ATOMBASIS)THEN
 ENDIF
 
 END SUBROUTINE READ_GEOMETRY
+
+subroutine DetermineUniqueLabel(UniqueLabel,SubsystemLabels,Atomtypes,SubsystemLabel,&
+     & nSubsystemLabels,iSubsystemLabels)
+  implicit none
+  integer,intent(in) :: Atomtypes,nSubsystemLabels
+  integer,intent(out):: iSubsystemLabels
+  logical,intent(out):: UniqueLabel
+  CHARACTER(len=80),intent(in)  :: SubsystemLabels(Atomtypes),SubsystemLabel
+  !
+  integer :: I
+  UniqueLabel = .TRUE.
+  iSubsystemLabels = -1
+  DO I = 1,nSubsystemLabels
+     IF(SubsystemLabels(I).EQ.SubsystemLabel)THEN
+        UniqueLabel=.FALSE.
+        iSubsystemLabels = I
+     ENDIF
+  ENDDO
+end subroutine DetermineUniqueLabel
 
 !> \brief determines if the basisset is unique and set the basissetlibrary accordingly
 !> \author T. Kjaergaard
@@ -1221,13 +1280,16 @@ END SUBROUTINE DETERMINE_UNIQUE_AND_SET_BASIS
 !> \param auxbasis is the auxilliary basis given in 1. line
 !> \param auxbasisset the auxilliary basisset for this atom
 SUBROUTINE READ_LINE5(LUPRI,LUINFO,AtomicCharge,nAtoms,AtomicBasisset,&
-     &ATOMBASIS,BASIS,AuxBASIS,Auxbasisset,CABSBASIS,CABSbasisset,JKBASIS,JKbasisset,pointcharge,phantom)
+     &ATOMBASIS,BASIS,AuxBASIS,Auxbasisset,CABSBASIS,CABSbasisset,&
+     &JKBASIS,JKbasisset,pointcharge,phantom,Subsystems,SubsystemLabel)
 implicit none
 real(realk)        :: AtomicCharge
 INTEGER            :: IPOS,IPOS2,IPOS3,nAtoms,LUINFO
 CHARACTER(len=80)  :: TEMPLINE,Atomicbasisset,Auxbasisset,CABSbasisset,JKbasisset
+CHARACTER(len=80)  :: SubsystemLabel
 CHARACTER(len=120)  :: LINE120
 LOGICAL            :: ATOMBASIS,BASIS,AUXBASIS,pointcharge,phantom,CABSBASIS,JKBASIS
+LOGICAL,intent(in) :: Subsystems
 CHARACTER(len=5)   :: StringFormat
 INTEGER            :: LUPRI,ios,I
 
@@ -1273,6 +1335,32 @@ IPOS = INDEX(TEMPLINE,'phantom')
 phantom = .FALSE.
 IF (IPOS .NE. 0) THEN
    phantom = .TRUE.
+ENDIF
+
+IF (SubSystems) THEN
+   IPOS = INDEX(TEMPLINE,'SubSystem')
+   IF (IPOS .NE. 0) THEN
+      IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
+      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 10)) THEN
+         WRITE (LUPRI,'(2X,A40)') 'Incorrect input for choice of subsystem label'
+         WRITE (LUPRI,'(2X,A40)') 'Format is "SubSystem=? ? ?"'
+         CALL LSQUIT('Incorrect input for choice of subsystem label',lupri)
+      ELSE
+         IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
+         IF (IPOS3 .LT. 10) THEN
+            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
+         ELSE
+            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
+         ENDIF
+         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) SubsystemLabel
+         print*,'StringFormat',StringFormat
+         print*,'SubsystemLabel',SubsystemLabel(1:80)
+      ENDIF
+   ELSE
+      WRITE (LUPRI,*) 'SubSystems selected, but no SubSystem Label specified for one atom type'
+      CALL LSQUIT( 'SubSystems selected, but no SubSystem Label &
+           &specified for one atom type',lupri)
+   ENDIF
 ENDIF
 
 !     Multiple basis sets used?

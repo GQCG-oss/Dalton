@@ -1551,6 +1551,24 @@ call LS_MPI_BUFFER(MOLECULE%label,22,Master)
 call LS_MPI_BUFFER(MOLECULE%nelectrons,Master)
 call LS_MPI_BUFFER(MOLECULE%charge,Master)
 
+
+call LS_MPI_BUFFER(MOLECULE%nSubSystems,Master)
+IF(Molecule%nSubSystems.NE.0)THEN
+   IF(SLAVE)THEN
+      call mem_alloc(Molecule%SubSystemLabel,Molecule%nSubSystems)
+   ENDIF
+   IF(len(Molecule%SubSystemLabel(1)).NE.80)THEN
+      CALL LSQUIT('Dim mismatch in mpicopy_molecule',-1)
+   ENDIF
+   do I = 1,Molecule%nSubSystems       
+      call LS_MPI_BUFFER(Molecule%SubSystemLabel(I),80,Master)
+   enddo
+ELSE
+   IF(SLAVE)THEN
+      NULLIFY(Molecule%SubSystemLabel)
+   ENDIF
+ENDIF
+
 end subroutine mpicopy_molecule
 
 !> \brief MPI Copies(Broadcasts) an atom from MOLECULE
@@ -1578,6 +1596,7 @@ call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Frag,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%CENTER,3,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Atomic_number,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%molecularIndex,Master)
+call LS_MPI_BUFFER(MOLECULE%ATOM(I)%SubsystemIndex,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Charge,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nbasis,Master)
 do K = 1,MOLECULE%ATOM(I)%nbasis
