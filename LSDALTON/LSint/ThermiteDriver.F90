@@ -2934,10 +2934,10 @@ ELSE
           CALL Explicit4centerDEC(OUTPUT%resultMat,output%ndim(1),&
                & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
                & Integral%integralsABCD,dimQ,dimP,Input,output,LUPRI,IPRINT)
-         ELSEIF (output%decpacked2)then
-            CALL Explicit4centerDEC2(OUTPUT%resultMat,output%ndim(1),&
-                 & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
-                 & Integral%integralsABCD,dimQ,dimP,Input,output,LUPRI,IPRINT)
+!         ELSEIF (output%decpacked2)then
+!            CALL Explicit4centerDEC2(OUTPUT%resultMat,output%ndim(1),&
+!                 & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
+!                 & Integral%integralsABCD,dimQ,dimP,Input,output,LUPRI,IPRINT)
          ELSEIF (output%decpackedK)then
             CALL Explicit4centerDECK(OUTPUT%resultMat,output%ndim(1),&
                  & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
