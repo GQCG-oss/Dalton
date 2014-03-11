@@ -7,22 +7,18 @@ install(
     ${INSTALL_DIRECTORY}
     )
 
-if(ENABLE_CHEMSHELL)
-    set(LIST_OF_EXECUTABLES lsdalton.x)
-else()
-    set(LIST_OF_EXECUTABLES dalton.x lsdalton.x lslib_tester.x)
+if(NOT ENABLE_CHEMSHELL)
+    foreach(_executable dalton.x lsdalton.x lslib_tester.x)
+        install(
+            TARGETS ${_executable}
+            DESTINATION ${INSTALL_DIRECTORY}
+            PERMISSIONS
+            OWNER_READ OWNER_WRITE OWNER_EXECUTE
+            GROUP_READ             GROUP_EXECUTE
+            WORLD_READ             WORLD_EXECUTE
+            )
+    endforeach()
 endif()
-
-foreach(_executable ${LIST_OF_EXECUTABLES})
-    install(
-        TARGETS ${_executable}
-        DESTINATION ${INSTALL_DIRECTORY}
-        PERMISSIONS
-        OWNER_READ OWNER_WRITE OWNER_EXECUTE
-        GROUP_READ             GROUP_EXECUTE
-        WORLD_READ             WORLD_EXECUTE
-        )
-endforeach()
 
 foreach(_script dalton lsdalton)
     install(
