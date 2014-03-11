@@ -366,9 +366,10 @@ C        CALL TRACTL(ITRLVL,CMO,WRK,LWRK)
 C
 C     *** Obtain FCAC and H2AC integral matrices
 C
+      write(lupri,*) 'emy before calling ciints', emy_ci
       CALL CIINTS(DISKH2,CMO,
      *            EMY_CI,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
-!     write(lupri,*) 'emy...ini',emy_ci
+      write(lupri,*) 'emy...ini',emy_ci
 C     CALL CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
 C
 !     set keyword for saving the final vector(s) in SIRSAV (called from CISAVE)
@@ -465,9 +466,9 @@ C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
       END IF ! CI_PROGRAM switch
 
       DO 810 I = 1,NCROOT
-!       write(lupri,*) 'EMY_CI, energy_root(i)',
-!    &                  EMY_CI, energy_root(i),
-!    &                  EMY_CI+ energy_root(i)
+        write(lupri,*) 'EMY_CI, energy_root(i)',
+     &                  EMY_CI, energy_root(i),
+     &                  EMY_CI+ energy_root(i)
         ECI(I) = EMY_CI + energy_root(i)
   810 CONTINUE
 
