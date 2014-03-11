@@ -22,6 +22,15 @@ macro(add_dalton_perl_test _name _labels)
     endif()
 endmacro()
 
+macro(add_dalton_runtest _name _labels)
+    add_test(
+        ${_name}
+        python ${CMAKE_SOURCE_DIR}/DALTON/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
 # all tests here should contain the label "dalton"
 
 # NEVER comment out tests, this will bite you in future in a terrible way
@@ -30,6 +39,8 @@ endmacro()
 
 # "long" cc2_r12 tests are placed apart on purpose to make it less likely that they
 # are run at the same time (then they can be significantly slower)
+
+add_dalton_runtest(runtest_rsp_polar "dalton;runtest")
 
 add_dalton_test(gen1int_fluorobenzene_cart  "dalton;gen1int;short;parallel")
 add_dalton_test(gen1int_fluorobenzene_spher "dalton;gen1int;short;parallel")
