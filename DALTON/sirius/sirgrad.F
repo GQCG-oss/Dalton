@@ -1,3 +1,4 @@
+!#define SIRGRAD_DEBUG
 !
 !...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -556,6 +557,7 @@ C
 #include "infdim.h"
 #include "infpri.h"
 #include "dfterg.h"
+#include "dftcom.h" ! Manu: for HFXFAC
 C
       LOGICAL NOFV
 C
@@ -563,6 +565,7 @@ C
 C
 #ifdef SIRGRAD_DEBUG
       P6FLAG(11) = .true. !Cdbg DEBUG
+      P6FLAG(18) = .true. !Cdbg DEBUG
 #endif
 C
 C
@@ -576,7 +579,22 @@ C
       ESRDFTY = D0
 C     ... make sure ESRDFTY is reset for CISRDFT following HFSRDFT
 C         (ESRDFTY is in common block and is calculated inside FCK2AO)
+!
+!! Manu march 2014: as HFXFAC is set to zero in conventional CI-srDFT
+!calculations, FCK2AO initially computed long-range coulomb integrals only. Consequently the inactive CI-srDFT energy did not
+!reduce to the regular inactive CI one for large mu values. Long-range exchange
+!integrals are now added to FCAO by setting HFXFAC to 1.0 
+      IF (DOCISRDFT) THEN
+      HFXFAC_save=HFXFAC
+      HFXFAC=D1
+      END IF
+!!      
       CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
+!!
+      IF (DOCISRDFT) THEN
+      HFXFAC=HFXFAC_save ! set HFXFAC to its initial value
+      END IF
+!!      
       IF(DODFT) THEN
          IF(NASHT.NE.0) CALL QUIT('Gradient not implemented for RO-DFT')
          EXCTRO = HALF*DDOT(N2BASX,DCAO,1,FCAO,1)
@@ -605,6 +623,14 @@ C
          IF (P6FLAG(11)) WRITE (LUPRI,'(A,F25.12)')
      &   ' Inactive one-electron energy :',EMCMY
          EMCMY = EMCMY + HALF*DDOT(N2BASX,DCAO,1,FCAO,1)+EDFTY
+!! Manu debug
+#ifdef SIRGRAD_DEBUG
+        write(lupri,*) 'printing H1AO ...'
+        CALL OUTPUT(WRK(KH1AO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        write(lupri,*) 'DCAO ...'
+        CALL OUTPUT(DCAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+#endif
+!!
       ELSE
          EMCMY = 0.0D0
       END IF
@@ -690,6 +716,9 @@ C
 C
       ISYMDM(1) = 1
       ISYMDM(2) = 1
+#ifdef SIRGRAD_DEBUG
+      write(lupri,*) 'from FCK2AO: HFXFAC =', HFXFAC
+#endif
       IF (HFXFAC .eq. 0.0D0) THEN
 C        ... only Coulomb term
          IFCTYP(1) = 11
