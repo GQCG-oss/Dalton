@@ -142,8 +142,8 @@ CTRL[8]=3
 ERROR[8]="SECOND ITERATION NOT CORRECT"
 
 # Third iteration
-CRIT1=`$GREP "Norm of gradient * \: * (0| )\.00053[0-9]" $log | wc -l`
-CRIT2=`$GREP "Norm of step * \: * (0| )\.00080[0-9]" $log | wc -l`
+CRIT1=`$GREP "Norm of gradient * \: * 0*\.00053" $log | wc -l`
+CRIT2=`$GREP "Norm of step * \: *     0*\.000(79|80)" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[9]=2
 ERROR[9]="THIRD ITERATION NOT CORRECT"

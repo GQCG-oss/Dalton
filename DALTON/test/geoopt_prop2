@@ -176,9 +176,9 @@ CTRL[10]=3
 ERROR[10]="SECOND ITERATION NOT CORRECT"
 
 # Final geometry:
-CRIT1=`$GREP -l "O *      0*\.0000000000 *  0*\.0000000000    * \-0*\.087918" $log | wc -l`
-CRIT2=`$GREP -l "H * _1 * 0*\.0000000000 *   1\.42252[45].... *   0*\.979710" $log | wc -l`
-CRIT3=`$GREP -l "H * _2 * 0*\.0000000000 * \-1\.42252[45].... *   0*\.979710" $log | wc -l`
+CRIT1=`$GREP -l "O *      0*\.0000000000 *  0*\.0000000000    * \-0*\.08791" $log | wc -l`
+CRIT2=`$GREP -l "H * _1 * 0*\.0000000000 *   1\.42252[45].... *   0*\.97971" $log | wc -l`
+CRIT3=`$GREP -l "H * _2 * 0*\.0000000000 * \-1\.42252[45].... *   0*\.97971" $log | wc -l`
 TEST[11]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=3
 ERROR[11]="FINAL GEOMETRY NOT CORRECT"
@@ -204,9 +204,9 @@ CRIT11=`$GREP "\@ gamma\(Y\;Y\,Y\,Y\) *  402\.53.." $log | wc -l`
 CRIT12=`$GREP "\@ gamma\(Y\;Y\,Z\,Z\) *  351\.60.." $log | wc -l`
 CRIT13=`$GREP "\@ gamma\(Y\;Z\,Z\,Y\) *  351\.60.." $log | wc -l`
 CRIT14=`$GREP "\@ gamma\(Y\;Z\,Y\,Z\) *  351\.60.." $log | wc -l`
-CRIT15=`$GREP "\@ gamma\(Z\;Z\,X\,X\) *  100\.94.." $log | wc -l`
-CRIT16=`$GREP "\@ gamma\(Z\;X\,X\,Z\) *  100\.94.." $log | wc -l`
-CRIT17=`$GREP "\@ gamma\(Z\;X\,Z\,X\) *  100\.94.." $log | wc -l`
+CRIT15=`$GREP "\@ gamma\(Z\;Z\,X\,X\) *  100\.9..." $log | wc -l`
+CRIT16=`$GREP "\@ gamma\(Z\;X\,X\,Z\) *  100\.9..." $log | wc -l`
+CRIT17=`$GREP "\@ gamma\(Z\;X\,Z\,X\) *  100\.9..." $log | wc -l`
 CRIT18=`$GREP "\@ gamma\(Z\;Z\,Y\,Y\) *  396\.57.." $log | wc -l`
 CRIT19=`$GREP "\@ gamma\(Z\;Y\,Y\,Z\) *  396\.57.." $log | wc -l`
 CRIT20=`$GREP "\@ gamma\(Z\;Y\,Z\,Y\) *  396\.57.." $log | wc -l`
