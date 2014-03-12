@@ -311,7 +311,8 @@ contains
        end if
 
     end do
-    if(DECinfo%onlyoccpart) idx = idx - 1
+   ! if(DECinfo%onlyoccpart) idx = idx - 1
+    print *,"checking",idx,fragment%nunoccAOS
     
     if(idx /= fragment%nunoccAOS) &
          & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
