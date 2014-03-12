@@ -1,0 +1,9 @@
+ATOMBASIS
+test GEN1INT using water molecule, spherical basis sets, without symmetry
+you may test f, g, h,i orbitals using cc-pVTZ, cc-pVQZ, cc-pV5Z, cc-pV6Z
+Atomtypes=2  Charge=0  Nosymmetry
+Charge=8.0  Atoms=1  Basis=cc-pV6Z
+O1         0.000000000           -0.224905893            0.000000000
+Charge=1.0  Atoms=2  Basis=cc-pV6Z
+H1         1.452350000            0.899623000            0.000000000
+H2        -1.452350000            0.899623000            0.000000000

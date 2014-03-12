@@ -1,0 +1,6 @@
+   geoopt_mp2froz
+   --------------
+   Molecule:         C6H6
+   Wave Function:    MP2 with frozen core / STO-3G
+   Test Purpose:     1st order geometry optimization using MP2 frozen
+                     core numerical gradients

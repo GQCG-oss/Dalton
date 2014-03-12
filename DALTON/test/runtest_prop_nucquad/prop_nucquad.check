@@ -1,0 +1,97 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# Molecular geometry
+CRIT1=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "3 * z * 1\.0000000000" $log | wc -l`
+CRIT4=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "5 * y * 2\.3736000000" $log | wc -l`
+CRIT6=`$GREP "6 * z * (\-0|\-)\.4431700000" $log | wc -l`
+CRIT7=`$GREP "7 * x * (0| )\.0000000000" $log | wc -l`
+CRIT8=`$GREP "8 * y * \-2\.3736000000" $log | wc -l`
+CRIT9=`$GREP "9 * z * (\-0|\-)\.4431700000" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[1]=9
+ERROR[1]="GEOMETRY NOT CORRECT"
+
+# Symmetry
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 3 * 2 * 3 * 1" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry\: * 35 * 18 * 28 * 13" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[2]=2
+ERROR[2]="SYMMETRY NOT CORRECT"
+
+# Energy
+CRIT1=`$GREP "Final MCSCF energy\: * \-609\.165589624(1|2)[0-9][0-9]" $log | wc -l`
+TEST[3]=`expr	$CRIT1`
+CTRL[3]=1
+ERROR[3]="ENERGY NOT CORRECT"
+
+# Cl quadrupole coupling
+CRIT1=`$GREP "Spin * \: * 1\.5 * Quadrupole moment\:\-\.08165000" $log | wc -l`
+CRIT2=`$GREP "Cl * 35 * Vx \= * (\-0|\-)\.2721.. * 5\.221... * 1\.865..." $log | wc -l`
+CRIT3=`$GREP "Cl * 35 * Vy \= * \-2\.394... * 45\.936.... * 16\.410..." $log | wc -l`
+CRIT4=`$GREP "Cl * 35 * Vz \= * 2\.666... * \-51\.15.... * \-18\.275..." $log | wc -l`
+CRIT5=`$GREP "Auxiliary value au * 1\/T * (0| )\.57413.(D|E)\-02" $log | wc -l`
+CRIT6=`$GREP "Spin * \: * 1\.5 * Quadrupole moment\:\-\.06435000" $log | wc -l`
+CRIT7=`$GREP "Cl * 37 * Vx \= * (\-0|\-)\.2721.. * 4\.115... * 1\.470..." $log | wc -l`
+CRIT8=`$GREP "Cl * 37 * Vy \= * \-2\.394... * 36\.203... * 12\.933..." $log | wc -l`
+CRIT9=`$GREP "Cl * 37 * Vz \= * 2\.666... * \-40\.318... * \-14\.403..." $log | wc -l`
+CRIT10=`$GREP "Asymmetry constant eta\: * (0| )\.7958.." $log | wc -l`
+CRIT11=`$GREP "Auxiliary value au * 1\/T * (0| )\.35661.(D|E)\-02" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11`
+CTRL[4]=12
+ERROR[4]="Cl QUADRUPOLE COUPLING NOT CORRECT"
+
+# O quadrupole coupling
+CRIT1=`$GREP "Spin * \: * 2\.5 * Quadrupole moment\:\-\.02558000" $log | wc -l`
+CRIT2=`$GREP "O1 *_1 17 * Vx \= * (\-0|\-)\.49479. * 2\.9738.. * 1\.0623.." $log | wc -l`
+CRIT3=`$GREP "O1 *_1 17 * Vy \= * \-1\.1858.. * 7\.127... * 2\.5461.." $log | wc -l`
+CRIT4=`$GREP "O1 *_1 17 * Vz \= * 1\.6806.. * \-10\.101... * \-3\.6085.." $log | wc -l`
+CRIT5=`$GREP "O1 *_2 17 * Vx \= * (\-0|\-)\.49479. * 2\.9738.. * 1\.0623.." $log | wc -l`
+CRIT6=`$GREP "O1 *_2 17 * Vy \= * \-1\.1858.. * 7\.127... * 2\.5461.." $log | wc -l`
+CRIT7=`$GREP "O1 *_2 17 * Vz \= * 1\.6806.. * \-10\.101... * \-3\.6085.." $log | wc -l`
+CRIT8=`$GREP "Asymmetry constant eta\: * (0| )\.41118." $log | wc -l`
+CRIT9=`$GREP "Auxiliary value au * 1\/T * (0| )\.46856.(D|E)\-04" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[5]=12
+ERROR[5]="O QUADRUPOLE COUPLING NOT CORRECT"
+
+CRIT1=`$GREP "MP2 move * 0*\.27995. electrons to unoccupied HF orbitals" $log | wc -l`
+TEST[6]=`expr	$CRIT1`
+CTRL[6]=1
+ERROR[6]="Open shell MP2 not correct"
+
+PASSED=1
+for i in 1 2 6 3 4 5
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+

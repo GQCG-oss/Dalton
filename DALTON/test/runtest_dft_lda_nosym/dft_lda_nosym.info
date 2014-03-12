@@ -1,0 +1,7 @@
+
+   dft_lda_nosym
+   -------------
+   Molecule:         HCN
+   Wave Function:    DFT LDA / aug-cc-pVDZ
+   Test Purpose:     Check DFT/LDA w/o symmetry
+

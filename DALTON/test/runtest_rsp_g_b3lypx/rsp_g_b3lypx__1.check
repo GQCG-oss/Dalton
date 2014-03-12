@@ -1,0 +1,42 @@
+log=$1
+GREP=egrep
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# ?
+CRIT1=`$GREP "Final DFT energy\: * \-39\.310213311195" $log | wc -l`
+TEST[1]=`expr $CRIT1`
+CTRL[1]=1
+ERROR[1]="ENERGY NOT CORRECT"
+
+# ?
+CRIT1=`$GREP "E3  CONTRIBUTION TO HYPVAL          0.00022386" $log | wc -l`
+CRIT2=`$GREP "B2C CONTRIBUTION TO HYPVAL          0.00019754" $log | wc -l`
+CRIT3=`$GREP "C2B CONTRIBUTION TO HYPVAL         -0.00005622" $log | wc -l`
+CRIT4=`$GREP "A2B CONTRIBUTION TO HYPVAL          0.00015683" $log | wc -l`
+CRIT5=`$GREP "A2C CONTRIBUTION TO HYPVAL          0.00007833" $log | wc -l`
+CRIT6=`$GREP "@ omega B.*0.00060033" $log | wc -l`
+TEST[2]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6`
+CTRL[2]=6
+ERROR[2]="G-TENSOR QUADRATIC RESPONSE NOT CORRECT"
+
+PASSED=1
+for i in 1 2
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi

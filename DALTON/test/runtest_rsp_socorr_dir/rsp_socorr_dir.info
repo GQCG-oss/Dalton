@@ -1,0 +1,6 @@
+   rsp_socorr_dir
+   ----------
+   Molecule:         HeH+
+   Wave Function:    SCF
+   Test Purpose:     Spin-orbit corrections to spin-spin coupling
+                     constants

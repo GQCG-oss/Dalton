@@ -1,0 +1,6 @@
+   pehf_border
+   -----------
+   Molecule:         FP chromophore and nearest sidechains
+   Wave Function:    Not relevant
+   Test Purpose:     Testing the quantum-classical border handling
+                     options of the PE library

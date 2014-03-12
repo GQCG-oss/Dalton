@@ -1,0 +1,5 @@
+   rsp_lrso2
+   ---------
+   Molecule:         LiH
+   Wave Function:    MCSCF (CAS) / 4-31G
+   Test Purpose:     Linear response with spin-orbit operator

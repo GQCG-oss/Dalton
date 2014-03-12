@@ -1,0 +1,6 @@
+   rsp_abslrs
+   -------
+   Molecule:         CH4
+   Wave Function:    HF
+   Test Purpose:     Response calculations (first order)with damping (absorption) 
+                     using the solver with symmetrized trial vectors)

@@ -1,0 +1,110 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# Basis set
+CRIT1=`$GREP "O * 1 * 8\.0000 * 44 * 27 * \[11s7p2d\|6s5p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 1\.0000 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 60 * 39" $log | wc -l`
+CRIT4=`$GREP "Cartesian basis used" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=4
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * (0| )\.1241444240" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * 1\.4315300000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (\-0|\-)\.9852655760" $log | wc -l`
+CRIT8=`$GREP "7 * x * (0| )\.0000000000" $log | wc -l`
+CRIT9=`$GREP "8 * y * \-1\.4315300000" $log | wc -l`
+CRIT10=`$GREP "9 * z * (\-0|\-)\.9852655760" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[2]=10
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Symmetry
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 3 * 2 * 3 * 1" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry\: * 19 * 7 * 11 * 2" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="SYMMETRY NOT CORRECT"
+
+# Energies
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-76\.06078421" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy *\: * \-76\.3109682" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="ENERGIES NOT CORRECT"
+
+# Properties setup
+CRIT1=`$GREP "Nuclear spin\-spin coupling constants" $log | wc -l`
+CRIT2=`$GREP "No mass\-velocity correction calculated" $log | wc -l`
+CRIT3=`$GREP "No Darwin correction calculated" $log | wc -l`
+CRIT4=`$GREP "Spin\-spin couplings printed for atoms with abundance greater than \:.*.040 %" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[5]=4
+ERROR[5]="CALCULATION OF SPIN-SPIN PROPERTIES NOT SET UP CORRECTLY"
+
+# H-O coupling
+CRIT1=`$GREP "Isotropic coupling * \: * \-78\.767[0-9] Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-19\.584[0-9] Hz" $log | wc -l`
+CRIT3=`$GREP "Asymmetry * \: * (0| )\.997[0-9]" $log | wc -l`
+CRIT4=`$GREP "S parameter * \: * \-22\.601[0-9] Hz" $log | wc -l`
+CRIT5=`$GREP "A parameter * \: * (\-0|\-)\.279[0-9] Hz" $log | wc -l`
+CRIT6=`$GREP "Isotropic DSO contribution\: * (\-0|\-)\.082[0-9] Hz" $log | wc -l`
+CRIT7=`$GREP "Isotropic PSO contribution\: * \-11\.506[0-9] Hz" $log | wc -l`
+CRIT8=`$GREP "Isotropic SD contribution \: * (\-0|\-)\.170[0-9] Hz" $log | wc -l`
+CRIT9=`$GREP "Isotropic FC contribution \: * \-67\.006[0-9] Hz" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[6]=18
+ERROR[6]="H-O SPIN-SPIN COUPLING NOT CORRECT"
+
+# H-H coupling
+CRIT1=`$GREP "Isotropic coupling * \: * \-11\.566[0-9] Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-37\.526[0-9] Hz" $log | wc -l`
+CRIT3=`$GREP "Asymmetry * \: * (\-0|\-)\.050[0-9]" $log | wc -l`
+CRIT4=`$GREP "S parameter * \: * 37\.542[0-9] Hz" $log | wc -l`
+CRIT5=`$GREP "A parameter * \: * 3\.063[0-9] Hz" $log | wc -l`
+CRIT6=`$GREP "Isotropic DSO contribution\: * \-7\.017[0-9] Hz" $log | wc -l`
+CRIT7=`$GREP "Isotropic PSO contribution\: * 8\.247[0-9] Hz" $log | wc -l`
+CRIT8=`$GREP "Isotropic SD contribution \: * 1\.101[0-9] Hz" $log | wc -l`
+CRIT9=`$GREP "Isotropic FC contribution \: * \-13\.897[0-9] Hz" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[7]=9
+ERROR[7]="H-H SPIN-SPIN COUPLING NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
