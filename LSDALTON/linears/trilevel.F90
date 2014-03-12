@@ -1482,12 +1482,13 @@ else
 endif
 
 call mat_diag_f(F(1),config%decomp%S,eival,Cmo)
-!Asymetrizing starting guess if .ASYM is in input
-! 21.04.2010 C. Nygaard
-!Only works if HOMO and LUMO are of different symmetry
-if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
-   call asymmetrize_starting_guess (Cmo, config%decomp)
-endif
+!Commentet out by Thomas Kjaergaard - no testcase - code not testet ...
+!!Asymetrizing starting guess if .ASYM is in input
+!! 21.04.2010 C. Nygaard
+!!Only works if HOMO and LUMO are of different symmetry
+!if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
+!   call asymmetrize_starting_guess (Cmo, config%decomp)
+!endif
 
 call mat_density_from_orbs(Cmo,D(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
 

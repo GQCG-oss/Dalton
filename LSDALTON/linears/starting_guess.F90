@@ -26,7 +26,7 @@ MODULE initial_guess
   use precision
   implicit none
   private
-  public :: starting_guess_entry, get_initial_dens, asymmetrize_starting_guess
+  public :: starting_guess_entry, get_initial_dens!, asymmetrize_starting_guess
 
 CONTAINS
 
@@ -318,47 +318,48 @@ end subroutine get_initial_dens
     ENDIF
 
   end subroutine starting_guess_entry
-  
-!> \brief Asymmetrizes the starting guess when by mixing HOMO and LUMO
-!> \author C. Nygaard
-!> \date March 2010
-!> \param Cmo The MO orbital coefficients 
-  subroutine asymmetrize_starting_guess (Cmo, decomp)
 
-  implicit none
-
-  !I/O:
-  type(decompItem), intent(in) :: decomp
-  type(matrix), intent(inout)  :: Cmo
-  !Other
-  type(matrix)                 :: homo, lumo
-  integer                      :: i, ndim
-  real(realk)                  :: elms(2)
-
-  ndim = Cmo%nrow
-
-  call mat_init (homo, ndim, 1)
-  call mat_init (lumo, ndim, 1)
-  
-  write (decomp%lupri, *) "Assymetrized starting guess for UHF chosen"
-  write (decomp%lupri, *) "mixing HOMO and LUMO"
-
-  call mat_section (Cmo, 1, ndim, decomp%nocc, decomp%nocc, homo)
-  call mat_section (Cmo, 1, ndim, decomp%nocc+1, decomp%nocc+1, lumo)
-
-  call mat_mix_homolumo (homo, lumo)
-
-  do i=1,ndim
-    call mat_get_ab_elms (homo, i, 1, elms)
-    call mat_create_ab_elms (i, decomp%nocc, elms, Cmo)
-    call mat_get_ab_elms (lumo, i, 1, elms)
-    call mat_create_ab_elms (i, decomp%nocc+1, elms, Cmo)
-  enddo
-
-  call mat_free (homo)
-  call mat_free (lumo)
-
-  end subroutine asymmetrize_starting_guess
+! commentet out by Thomas Kjaergaard - no test case - not tested ....  
+!!$!> \brief Asymmetrizes the starting guess when by mixing HOMO and LUMO
+!!$!> \author C. Nygaard
+!!$!> \date March 2010
+!!$!> \param Cmo The MO orbital coefficients 
+!!$  subroutine asymmetrize_starting_guess (Cmo, decomp)
+!!$
+!!$  implicit none
+!!$
+!!$  !I/O:
+!!$  type(decompItem), intent(in) :: decomp
+!!$  type(matrix), intent(inout)  :: Cmo
+!!$  !Other
+!!$  type(matrix)                 :: homo, lumo
+!!$  integer                      :: i, ndim
+!!$  real(realk)                  :: elms(2)
+!!$
+!!$  ndim = Cmo%nrow
+!!$
+!!$  call mat_init (homo, ndim, 1)
+!!$  call mat_init (lumo, ndim, 1)
+!!$  
+!!$  write (decomp%lupri, *) "Assymetrized starting guess for UHF chosen"
+!!$  write (decomp%lupri, *) "mixing HOMO and LUMO"
+!!$
+!!$  call mat_section (Cmo, 1, ndim, decomp%nocc, decomp%nocc, homo)
+!!$  call mat_section (Cmo, 1, ndim, decomp%nocc+1, decomp%nocc+1, lumo)
+!!$
+!!$  call mat_mix_homolumo (homo, lumo)
+!!$
+!!$  do i=1,ndim
+!!$    call mat_get_ab_elms (homo, i, 1, elms)
+!!$    call mat_create_ab_elms (i, decomp%nocc, elms, Cmo)
+!!$    call mat_get_ab_elms (lumo, i, 1, elms)
+!!$    call mat_create_ab_elms (i, decomp%nocc+1, elms, Cmo)
+!!$  enddo
+!!$
+!!$  call mat_free (homo)
+!!$  call mat_free (lumo)
+!!$
+!!$  end subroutine asymmetrize_starting_guess
 
 
 !> \brief Obtain initial guess by diagonalizing one-el. Hamiltonian
@@ -380,9 +381,9 @@ end subroutine get_initial_dens
     call mat_init(Cmo,config%decomp%S%nrow,config%decomp%S%nrow)
     call mat_diag_f(H1,config%decomp%S,eival,Cmo)
 
-    if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
-      call asymmetrize_starting_guess (Cmo, config%decomp)
-    endif
+!    if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
+!      call asymmetrize_starting_guess (Cmo, config%decomp)
+!    endif
 
     call mat_density_from_orbs(Cmo,D,config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
     call mem_dealloc(eival)
