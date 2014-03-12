@@ -10,6 +10,8 @@ Common
 DALTON
 ------
 
+- Default DIIS space increased from 5 to 8, often resulting in 1-2 fewer SCF iterations.
+
 
 LSDALTON
 --------
