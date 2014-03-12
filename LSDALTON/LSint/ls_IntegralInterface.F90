@@ -47,10 +47,7 @@ MODULE ls_Integral_Interface
        & jmatclassicalmat, gradclassicalgrad, electronnuclearclassic
   use MBIEintegraldriver, only: mbie_integral_driver
   use BUILDAOBATCH, only: build_empty_ao, build_empty_nuclear_ao,&
-       & build_empty_pcharge_ao, build_s_1prim1contseg_ao, &
-       & build_s_2prim1contseg_ao, build_s_2prim2contseg_ao,&
-       & build_s_2prim2contgen_ao, build_p_1prim1contseg_ao,&
-       & build_d_1prim1contseg_ao, build_ao, build_shellbatch_ao, &
+       & build_empty_pcharge_ao, build_ao, build_shellbatch_ao, &
        & BUILD_EMPTY_ELFIELD_AO
   use lstiming, only: lstimer, print_timers
   use io, only: io_get_filename, io_get_csidentifier
@@ -3673,30 +3670,6 @@ CASE (AOelField)
    emptyAO = .true.
    CALL BUILD_EMPTY_ELFIELD_AO(AObatch,Molecule,LUPRI)
    nDim = 3
-CASE (AOS1p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_S_1Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOS2p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_S_2Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOS2p2cSeg)
-   emptyAO = .true.
-   CALL BUILD_S_2Prim2ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOS2p2cGen)
-   emptyAO = .true.
-   CALL BUILD_S_2Prim2ContGen_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOP1p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_P_1Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOD1p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_D_1Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
 CASE DEFAULT
    print*,'case: ',AO
    WRITE(lupri,*) 'case: ',AO
