@@ -320,8 +320,17 @@ contains
     ! Now all atomic fragment energies have been calculated and the
     ! fragment information has been stored in AtomicFragments.
 
-
-
+    IF(DECinfo%InteractionEnergy)THEN
+       !turn of recalculation of Atomic fragment calculations
+       if(DECinfo%RepeatAF) then
+          !the energies was calculated with a wrong wave function and
+          !should be recalculated but they are not needed for 
+          !interaction energies so we set the energy to zero to avoid 
+          !confusion. 
+          FragEnergies = 0.0E0_realk
+       endif
+       DECinfo%RepeatAF = .FALSE.
+    ENDIF
     ! ************************************************************************
     ! *             Construct job list for remaining fragments               *
     ! ************************************************************************
@@ -456,13 +465,17 @@ contains
        call print_MPI_fragment_statistics(jobs,mastertime,'PAIR FRAGMENTS')
     end if
 #endif
-
-
-    ! Total correlation energy 
-    do j=1,ndecenergies
-       call add_dec_energies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
-    end do
-
+    IF(DECinfo%InteractionEnergy)THEN
+       ! Interaction correlation energy 
+       do j=1,ndecenergies
+          call add_dec_Interactionenergies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
+       end do
+    ELSE
+       ! Total correlation energy 
+       do j=1,ndecenergies
+          call add_dec_energies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
+       end do
+    ENDIF
     ! Print all fragment energies
     call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
          & mymolecule%DistanceTable,energies)
@@ -544,45 +557,111 @@ contains
   end subroutine main_fragment_driver
 
 
-  !> \brief Print info about DEC calculation.
-  !> \author Kasper Kristensen
-  !> \date November 2010
-  subroutine print_dec_info()
-    implicit none
+!> \brief Print info about DEC calculation.
+!> \author Kasper Kristensen
+!> \date November 2010
+subroutine print_dec_info()
+  implicit none
+  integer :: LU
+  character(len=5) :: LogicString(2)
+  LogicString(1) = ' TRUE'
+  LogicString(2) = 'FALSE'
 
-    write(DECinfo%output,'(/,a)') ' ================================================ '
-    write(DECinfo%output,'(a)')   '                  DEC-CC driver                   '
-    write(DECinfo%output,'(a,/)') ' ================================================ '
+  LU = DECinfo%output
+  write(LU,'(/,a)') ' ================================================ '
+  write(LU,'(a)')   '                  DEC-CC driver                   '
+  write(LU,'(a,/)') ' ================================================ '
+  
+  IF(.NOT.DECinfo%full_molecular_cc)THEN
+   ! print dec input parameters
+   write(LU,'(/,a)') '--------------------------'
+   write(LU,'(a)')   '   DEC input parameters   '
+   write(LU,'(a,/)') '--------------------------'
+   write(LU,'(a,g15.2)') 'FOT (Fragment Optimization Threshold)     = ',DECinfo%FOT
+   write(LU,'(a,g15.3)') 'Pair distance cutoff threshold (Angstrom) = ',&
+        & DECinfo%pair_distance_threshold
+   write(LU,'(a,A5)')    'Use Pair Estimates to screen pairs        =           ',&
+        & LogicString(Log2It(DECinfo%PairEstimate))
+   write(LU,'(a,g15.3)') 'Simple orbital thr.                       = ',&
+        & DECinfo%simple_orbital_threshold
+   write(LU,'(a,i5)')    'Expansion step size                       =           ',&
+        & DECinfo%FragmentExpansionSize
+   write(LU,'(a,i5)')    'Print level                               =           ',DECinfo%PL
+   write(LU,'(a,A5)')    'Fragment-adapted orbitals                 =           ',&
+        & LogicString(Log2It(DECinfo%FragAdapt))
+   write(LU,'(a,A5)')    'Calculate Interaction Energies            =           ',&
+        & LogicString(Log2It(DECinfo%InteractionEnergy))
+   write(LU,'(a,A5)')    'Fit Molecular Orbitals                    =           ',&
+        & LogicString(Log2It(DECinfo%FitOrbitals))
+   !Oribtal Assignment 
+   write(LU,'(A)') ' '
+   if(DECinfo%BoughtonPulay) then
+      write(LU,'(A)') 'DEC orbitals will be generated using Boughton-Pulay criteria'
+      if(DECinfo%Distance) then
+       write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based Distance criteria'
+      else 
+         IF(DECinfo%Mulliken)then
+          write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Mulliken population analysis'
+         ELSE
+          write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis'
+         ENDIF
+      endif
+   else 
+      write(LU,'(A)') 'DEC orbitals will be generated using  simple Lowdin charge analysis'
+      if(DECinfo%Distance) then
+       write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based Distance criteria'
+      else 
+       write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis'
+      endif
+   endif
 
-    ! print dec input parameters
-    write(DECinfo%output,'(/,a)') '--------------------------'
-    write(DECinfo%output,'(a)')   '   DEC input parameters   '
-    write(DECinfo%output,'(a,/)') '--------------------------'
-    write(DECinfo%output,'(a,g15.2)')  'FOT                           = ',DECinfo%FOT
-    write(DECinfo%output,'(a,g15.3)')  'Pair distance thr (Angstrom)  = ',&
-         & DECinfo%pair_distance_threshold
-    write(DECinfo%output,'(a,g15.3)')  'Simple orbital thr.           = ',DECinfo%simple_orbital_threshold
-    write(DECinfo%output,'(a,i4)')     'Expansion step size           = ',DECinfo%FragmentExpansionSize
-    write(DECinfo%output,'(a,i4)')     'Print level                   = ',DECinfo%PL
-    write(DECinfo%output,'(a,l1)')     'Fragment-adapted orbitals     = ',DECinfo%FragAdapt
-
-    ! print cc parameters
-    write(DECinfo%output,'(/,a)') '--------------------------'
-    write(DECinfo%output,'(a)')   '  Coupled-cluster input   '
-    write(DECinfo%output,'(a,/)') '--------------------------'
-    write(DECinfo%output,'(a,a)')      'Wave function          = ',DECinfo%cc_models(DECinfo%ccModel)
-    write(DECinfo%output,'(a,i4)')     'MaxIter                = ',DECinfo%ccMaxIter
-    write(DECinfo%output,'(a,g15.3)')  'Convergence thr        = ',DECinfo%ccConvergenceThreshold
-    write(DECinfo%output,'(a,l1)')     'Use CROP               = ',DECinfo%use_crop
-    write(DECinfo%output,'(a,i4)')     'CROP subspace          = ',DECinfo%ccMaxDIIS
-    write(DECinfo%output,'(a,l1)')     'Preconditioner         = ',DECinfo%use_preconditioner
-    write(DECinfo%output,'(a,l1)')     'Precond. B             = ',DECinfo%use_preconditioner_in_b
-    write(DECinfo%output,'(a,l1)')     'Debug mode             = ',DECinfo%cc_driver_debug
-    write(DECinfo%output,'(a,l1)')     'CC Solver distribute   = ',DECinfo%solver_par
-
+   !Fragment Optimization 
+   IF(DECinfo%ccModel.NE.MODEL_MP2)THEN
+      write(LU,'(A)') ' '
+      ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
+      write(LU,'(A,A)')'The wave function Model used for Atomic Fragment expansion scheme = ',DECinfo%cc_models(DECinfo%fragopt_exp_model)
+      IF(DECinfo%fragopt_exp_model.NE.DECinfo%ccModel)THEN
+         write(LU,'(A)')'This wave function model can be changed using the .FRAGEXPMODEL keyword'
+         write(LU,'(A)')'.FRAGEXPMODEL'
+         write(LU,'(A1,A)')'.',DECinfo%cc_models(DECinfo%ccModel)
+      ENDIF
+      write(LU,'(A,A)')'Wave function Model used for Atomic Fragment reduction scheme = ',DECinfo%cc_models(DECinfo%fragopt_red_model)
+      IF(DECinfo%fragopt_red_model.NE.DECinfo%ccModel)THEN
+         write(LU,'(A)')'This wave function model can be changed using the .FRAGREDMODEL keyword'
+         write(LU,'(A)')'.FRAGREDMODEL'
+         write(LU,'(A1,A)')'.',DECinfo%cc_models(DECinfo%ccModel)
+      ENDIF
+   ENDIF
+  ENDIF
+  ! print cc parameters
+  write(LU,'(/,a)') '--------------------------'
+  write(LU,'(a)')   '  Coupled-cluster input   '
+  write(LU,'(a,/)') '--------------------------'
+  write(LU,'(a,A)')      'Wave function                =           ',DECinfo%cc_models(DECinfo%ccModel)
+  write(LU,'(a,i5)')     'Maximum number of iterations =           ',DECinfo%ccMaxIter
+  write(LU,'(a,g15.3)')  'Convergence threshold        = ',DECinfo%ccConvergenceThreshold
+  write(LU,'(a,A5)')     'Use CROP                     =           ',LogicString(Log2It(DECinfo%use_crop))
+  write(LU,'(a,i5)')     'CROP subspace                =           ',DECinfo%ccMaxDIIS
+  write(LU,'(a,A5)')     'Use Preconditioner           =           ',LogicString(Log2It(DECinfo%use_preconditioner))
+  write(LU,'(a,A5)')     'Precond. B                   =           ',LogicString(Log2It(DECinfo%use_preconditioner_in_b))
+  write(LU,'(a,A5)')     'Debug mode                   =           ',LogicString(Log2It(DECinfo%cc_driver_debug))
+  write(LU,'(a,A5)')     'CC Solver distributes Memory =           ',LogicString(Log2It(DECinfo%solver_par))
+  write(LU,'(a,F16.2)')  'Memory Usage Allowed(GB)     =',DECinfo%memory
+  write(LU,'(a,F16.2)')  'Backup Time Interval(s)      =',DECinfo%TimeBackup
+  write(LU,'(a,A5)')     'Use F12 correction           =           ',LogicString(Log2It(DECinfo%F12))
+  write(LU,'(A)')' '
   end subroutine print_dec_info
 
-
+  function Log2It(LogicInput)
+    implicit none
+    logical,intent(in) :: LogicInput
+    integer :: Log2It
+    IF(LogicInput)THEN
+       Log2It=1
+    ELSE
+       Log2It=2
+    ENDIF
+  end function Log2It
 
 
   !> \brief Driver for doing all fragment jobs and updating
@@ -1103,8 +1182,20 @@ contains
              MyMolecule%ccmodel(j,i) = MODEL_MP2
           end do
        end do
+       IF(DECinfo%InteractionEnergy)THEN
+        !We are only intrested in certain fragments. 
+        !So we only do estimates on those we are 
+        !intrested in. 
+        do i=1,natoms
+         do j=1,natoms
+          IF(MyMolecule%SubSystemIndex(i).EQ.MyMolecule%SubSystemIndex(j))THEN
+           MyMolecule%ccmodel(i,j) = MODEL_NONE
+          ENDIF
+         end do
+        end do
+       ENDIF
 
-
+!
        ! Init estimated atomic fragments by including orbitals assigned to neighbour atoms
        ! within 2 Angstrom.
        init_radius = 2.0_realk/bohr_to_angstrom    

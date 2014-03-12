@@ -6172,8 +6172,10 @@ contains
     ! 2. Add up the smallest contributions until they add up to the FOT. Skip those pairs.
     ! 3. Add up the "second-smallest" contributions until they add up to the FOT.
     !    Calculate these pairs at the MP2 level.
+    ! 4. In case that we are calculating Interaction Energies we skip all pairs which 
+    !    have same SubSystem index on P and Q. 
     !
-    ! 4. Thus, at the end we get this where the (absolute)
+    ! 5. Thus, at the end we get this where the (absolute)
     !    pair energies are arranged in decreasing order:
     !
     !
@@ -6193,10 +6195,8 @@ contains
     ! Init stuff
     MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model as initialization model
 
-
     ! Loop over all atoms P
     Ploop: do P=1,natoms
-
        ! If no orbitals assigned to P, no pairs for this atom
        if(.not. dofrag(P)) then
           Qloop1: do Q=1,natoms
@@ -6262,6 +6262,19 @@ contains
 
        ! Sanity precaution: Atomic fragment energies should always use input CC model
        MyMolecule%ccmodel(P,P) = DECinfo%ccmodel
+
+       ! Step 4 above: In case that we are calculating Interaction Energies we skip
+       !               all pairs which have same SubSystem index on P and Q. 
+       ! ********************************************
+       IF(DecInfo%InteractionEnergy)THEN
+          Qloop4: do Q=1,natoms
+             if(MyMolecule%SubSystemIndex(Q).EQ.MyMolecule%SubSystemIndex(P)) then
+                ! SubSystem index is the same on both P and Q --> (P,Qidx) can be skipped!
+                MyMolecule%ccmodel(P,Q)=MODEL_NONE
+                print*,'MyMolecule%ccmodel(',P,',',Q,')=MODEL_NONE'
+             end if
+          end do Qloop4
+       ENDIF
 
     end do Ploop
 

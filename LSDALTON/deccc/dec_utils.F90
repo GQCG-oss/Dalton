@@ -629,6 +629,28 @@ contains
     return
   end subroutine adjust_square_matrix_mo
 
+  !> \brief Get SubSystem indexes 
+  subroutine GetSubSystemIndex(SubSystemIndex,nAtoms,mylsitem,int_output)
+    implicit none
+    type(lsitem), intent(inout) :: mylsitem
+    integer, intent(in) :: nAtoms,int_output
+    integer, intent(inout) :: SubSystemIndex(nAtoms)
+    ! local variables
+    integer :: i
+    IF(DECinfo%InteractionEnergy)THEN
+       IF(mylsitem%input%molecule%nSubSystems.NE.2)THEN
+          print*,'The .INTERACTIONENEGY requires 2 subsystem labels you have ',&
+               & mylsitem%input%molecule%nSubSystems
+          call lsquit('The .INTERACTIONENEGY requires 2 subsystem labels',-1)
+       ENDIF
+       do i=1,nAtoms
+          SubSystemIndex(i)=mylsitem%input%molecule%ATOM(I)%SubSystemIndex
+       end do
+    ELSE
+       SubSystemIndex=1
+    ENDIF
+  end subroutine GetSubSystemIndex
+
   !> \brief Get a table with interatomic distances
   subroutine GetDistances(DistanceTable,nAtoms,mylsitem,int_output)
 
@@ -661,7 +683,6 @@ contains
     end do
 
     call mem_dealloc(geometry)
-    return
   end subroutine GetDistances
 
   !> \brief distance between two points r1=(x1,y1,z1) and r2=(x2,y2,z2)
@@ -3883,6 +3904,38 @@ contains
 
   end subroutine add_dec_energies
 
+  !> Add DEC interaction energies: E = sum_{P>Q} dE_PQ for P and Q on
+  !> different SubSystems
+  !> taking into account that not all atoms have orbitals assigned.
+  !> \author Thomas Kjaergaard
+  !> \date March 2014
+  subroutine add_dec_interactionenergies(natoms,FragEnergies,orbitals_assigned,interactionE)
+
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Fragment energies (E_P on diagonal, dE_PQ on off-diagonal)
+    real(realk),dimension(natoms,natoms),intent(in) :: FragEnergies
+    !> Which atoms have orbitals assigned?
+    logical,dimension(natoms) :: orbitals_assigned
+    !> Total energy E = sum_P E_P  +  sum_{P>Q} dE_PQ 
+    real(realk),intent(inout) :: interactionE
+    !
+    integer :: P,Q
+
+    interactionE = 0.0_realk
+    do P=1,natoms
+       if(orbitals_assigned(P)) then
+          do Q=1,P-1
+             if(orbitals_assigned(Q)) then
+                interactionE = interactionE + FragEnergies(P,Q)
+             end if
+          end do
+       end if
+    end do
+
+  end subroutine add_dec_interactionenergies
+
 
 
   !> Add estimated DEC energies for pairs which are skipped from the calculation
@@ -4190,6 +4243,9 @@ contains
     write(lupri,'(13X,a)') '**********************************************************'
     write(lupri,*)
     if(DECinfo%first_order) then
+       IF(DECinfo%InteractionEnergy)THEN
+          call lsquit('InteractionEnergy and first_order not implemented',-1)
+       ENDIF
        write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
        write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
@@ -4210,27 +4266,37 @@ contains
           write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
        end if
     else
-       write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
-       write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
-       ! skip error print for full calculation (0 by definition)
-       if(.not. DECinfo%full_molecular_cc .and. (.not. DECinfo%onlyoccpart) ) then  
-          write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
-       end if
-       if(DECinfo%ccmodel==MODEL_MP2) then
-          if (DECinfo%F12) then
+       IF(DECinfo%InteractionEnergy)THEN
+          write(lupri,'(15X,a,f20.10)') 'E: Interaction Correlation energy  :', Ecorr
+          ! skip error print for full calculation (0 by definition)
+          if(.not. DECinfo%full_molecular_cc .and. (.not. DECinfo%onlyoccpart) ) then  
+             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :            ', Eerr
+          end if
+       ELSE
+          write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
+          write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
+          ! skip error print for full calculation (0 by definition)
+          if(.not. DECinfo%full_molecular_cc .and. (.not. DECinfo%onlyoccpart) ) then  
+             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
+          end if
+       ENDIF
+       IF(.NOT.DECinfo%InteractionEnergy)THEN
+          if(DECinfo%ccmodel==MODEL_MP2) then
+             if (DECinfo%F12) then
+                write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+             else          
+                write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+             endif
+          elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
              write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
-          else          
-             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
-          endif
-       elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==MODEL_CC2) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==MODEL_CCSD) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
-       end if
+          elseif(DECinfo%ccmodel==MODEL_CC2) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
+          elseif(DECinfo%ccmodel==MODEL_CCSD) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
+          elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
+          end if
+       ENDIF
     end if
     write(lupri,*)
     write(lupri,*)
@@ -4255,12 +4321,21 @@ contains
     real(realk),intent(inout) :: DistanceTable(natoms,natoms)
     !> Total DEC energies (sum of frag energies)
     real(realk),intent(in) :: energies(ndecenergies)
-
-
+    !local variables 
+    character(len=30) :: CorrEnergyString
+    integer :: iCorrLen
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*) '============================================================================='
 
+    IF(DECinfo%InteractionEnergy)THEN
+       CorrEnergyString = 'interaction correlation energy'
+       iCorrLen = 30
+    ELSE
+       CorrEnergyString = 'correlation energy            '
+       iCorrLen = 18
+    ENDIF
+    
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCMP2),dofrag,&
@@ -4282,16 +4357,15 @@ contains
        end if
 
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') 'MP2 occupied   correlation energy : ', &
-            & energies(FRAGMODEL_OCCMP2)
+       write(DECinfo%output,'(1X,A,A,A,g20.10)') &
+            & 'MP2 occupied   ',CorrEnergyString(1:iCorrLen),' : ',energies(FRAGMODEL_OCCMP2)
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') 'MP2 virtual    correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'MP2 virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTMP2)
-          write(DECinfo%output,'(1X,a,g20.10)') 'MP2 Lagrangian correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_LAGMP2)
        end if
        write(DECinfo%output,*)
-
     case(MODEL_CC2)
        call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCC2),dofrag,&
             & 'CC2 occupied single energies','AF_CC2_OCC')
@@ -4308,10 +4382,10 @@ contains
        end if
 
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') 'CC2 occupied   correlation energy : ', &
+       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CC2 occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
             & energies(FRAGMODEL_OCCCC2)
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') 'CC2 virtual    correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CC2 virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTCC2)
        end if
        write(DECinfo%output,*)
@@ -4352,10 +4426,10 @@ contains
           end if
 
           write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,a,g20.10)') 'CCSD occupied   correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_OCCCCSD)
           if(.not.DECinfo%onlyoccpart) then
-             write(DECinfo%output,'(1X,a,g20.10)') 'CCSD virtual    correlation energy : ', &
+             write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                   & energies(FRAGMODEL_VIRTCCSD)
           end if
           write(DECinfo%output,*)
@@ -4375,10 +4449,10 @@ contains
           end if
 
           write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,a,g20.10)') 'CCD occupied   correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCD occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_OCCCCSD)
           if(.not.DECinfo%onlyoccpart) then
-             write(DECinfo%output,'(1X,a,g20.10)') 'CCD virtual    correlation energy : ', &
+             write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCD virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                   & energies(FRAGMODEL_VIRTCCSD)
           end if
           write(DECinfo%output,*)
@@ -4401,10 +4475,10 @@ contains
        end if
 
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') 'CCSD occupied correlation energy : ', &
+       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD occupied ',CorrEnergyString(1:iCorrLen),' : ', &
             & energies(FRAGMODEL_OCCCCSD)
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') 'CCSD virtual  correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD virtual  ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTCCSD)
        end if
        write(DECinfo%output,*)
@@ -4452,19 +4526,30 @@ contains
        end if
 
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy : ', energies(FRAGMODEL_OCCpT)
-       write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order energy   : ', energies(FRAGMODEL_OCCpT4)
-       write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order energy   : ', energies(FRAGMODEL_OCCpT5)
-       if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  correlation energy : ', energies(FRAGMODEL_VIRTpT)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order energy   : ', energies(FRAGMODEL_VIRTpT4)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order energy   : ', energies(FRAGMODEL_VIRTpT5)
-       end if
+       IF(DECinfo%InteractionEnergy)THEN
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied Interaction correlation energy : ', energies(FRAGMODEL_OCCpT)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order Interaction energy   : ', energies(FRAGMODEL_OCCpT4)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order Interaction energy   : ', energies(FRAGMODEL_OCCpT5)
+          if(.not.DECinfo%onlyoccpart) then
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  Interaction correlation energy : ', energies(FRAGMODEL_VIRTpT)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order Interaction energy   : ', energies(FRAGMODEL_VIRTpT4)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order Interaction energy   : ', energies(FRAGMODEL_VIRTpT5)
+          end if
+       ELSE
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy : ', energies(FRAGMODEL_OCCpT)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order energy   : ', energies(FRAGMODEL_OCCpT4)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order energy   : ', energies(FRAGMODEL_OCCpT5)
+          if(.not.DECinfo%onlyoccpart) then
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  correlation energy : ', energies(FRAGMODEL_VIRTpT)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order energy   : ', energies(FRAGMODEL_VIRTpT4)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order energy   : ', energies(FRAGMODEL_VIRTpT5)
+          end if
+       ENDIF
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) occupied correlation energy : ', &
+       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'Total CCSD(T) occupied ',CorrEnergyString(1:iCorrLen),' : ', &
             & energies(FRAGMODEL_OCCCCSD)+energies(FRAGMODEL_OCCpT)
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) virtual  correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'Total CCSD(T) virtual  ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTCCSD)+energies(FRAGMODEL_VIRTpT)
        end if
        write(DECinfo%output,*)
@@ -4517,19 +4602,37 @@ contains
     character(*),intent(in) :: greplabel
     integer :: i
 
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '================================================================='
-    write(DECinfo%output,*) trim(headline)
-    write(DECinfo%output,*) '================================================================='
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) 'Fragment       Energy'
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle
-       write(DECinfo%output,'(I6,3X,g20.10,2a)') i,FragEnergies(i,i), "    ",greplabel
-    end do
-
+    IF(DECinfo%RepeatAF)THEN 
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) '================================================================='
+       write(DECinfo%output,*) trim(headline)
+       write(DECinfo%output,*) '================================================================='
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) 'Fragment       Energy'
+       do i=1,natoms
+          if(.not. dofrag(i)) cycle
+          write(DECinfo%output,'(I6,3X,g20.10,2a)') i,FragEnergies(i,i), "    ",greplabel
+       end do
+    ELSE
+       IF(.NOT.DECinfo%InteractionEnergy)THEN !default
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,*) '================================================================='
+          write(DECinfo%output,*) trim(headline)
+          write(DECinfo%output,*) '================================================================='
+          write(DECinfo%output,*)
+          write(DECinfo%output,*) 'Fragment       Energy'
+          do i=1,natoms
+             if(.not. dofrag(i)) cycle
+             write(DECinfo%output,'(I6,3X,g20.10,2a)') i,FragEnergies(i,i), "    ",greplabel
+          end do
+!         ELSE
+          !DECinfo%InteractionEnergy sets the RepeatAF to FALSE 
+          !so the FragEnergies might be the MP2 energy used for the fragment optimization
+          !to avoid confusion we do not print the energy
+       ENDIF
+    ENDIF
 
   end subroutine print_atomic_fragment_energies
 

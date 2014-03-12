@@ -11,6 +11,9 @@ MODULE DEC_settings_mod
   use precision
   use dec_typedef_module
   use ls_util
+#ifdef VAR_MPI
+  use infpar_module
+#endif
 
 contains
 
@@ -147,6 +150,7 @@ contains
     DECinfo%F12                     = .false.
     DECinfo%F12debug                = .false.
     DECinfo%PureHydrogenDebug       = .false.
+    DECinfo%InteractionEnergy       = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -222,7 +226,7 @@ contains
     !> do we do F12 calc (is a CABS basis required?)
     logical,intent(inout) :: doF12
     logical,save :: already_called = .false.
-    integer :: fotlevel
+    integer :: fotlevel,nworkers
 
     ! Sanity check that this routine is only called once for either **DEC OR **CC
     if(already_called) then
@@ -232,6 +236,14 @@ contains
        ! First call to this routine
        already_called=.true.
     end if
+
+#ifdef VAR_MPI
+    ! Number of workers = Number of nodes minus master itself
+    nworkers = infpar%nodtot -1
+    if(nworkers<1) then
+       call lsquit('DEC calculations using MPI require at least two MPI processes!',-1)
+    end if
+#endif
 
     ! Just to be sure, we set the default values before
     ! applying input values.
@@ -477,7 +489,8 @@ contains
           !endif mod_unreleased
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
-
+       case('.INTERACTIONENERGY')     
+          DECinfo%InteractionEnergy       = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -874,11 +887,17 @@ contains
     case('.CCD');     modelnumber = MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
     case('.CCSD(T)'); modelnumber = MODEL_CCSDpT
     case('.RPA');     modelnumber = MODEL_RPA
-
     case default
        print *, 'Model not found: ', myword
+       write(DECinfo%output)'Model not found: ', myword
+       write(DECinfo%output)'Models supported are:'
+       write(DECinfo%output)'.MP2'
+       write(DECinfo%output)'.CC2'
+       write(DECinfo%output)'.CCSD'
+       write(DECinfo%output)'.CCD'
+       write(DECinfo%output)'.CCSD(T)'
+       write(DECinfo%output)'.RPA'
        call lsquit('Requested model not found!',-1)
-
     end SELECT
 
   end subroutine find_model_number_from_input

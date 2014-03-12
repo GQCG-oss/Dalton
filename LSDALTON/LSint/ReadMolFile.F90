@@ -1353,8 +1353,6 @@ IF (SubSystems) THEN
             WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
          ENDIF
          READ (TEMPLINE((IPOS + IPOS2):),StringFormat) SubsystemLabel
-         print*,'StringFormat',StringFormat
-         print*,'SubsystemLabel',SubsystemLabel(1:80)
       ENDIF
    ELSE
       WRITE (LUPRI,*) 'SubSystems selected, but no SubSystem Label specified for one atom type'

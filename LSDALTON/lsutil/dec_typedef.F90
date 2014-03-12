@@ -231,6 +231,9 @@ module dec_typedef_module
      !> Debug keyword to specify pure hydrogen atoms
      logical :: PUREHYDROGENdebug
 
+     !> Calculate the Interaction Energy (Ref to article)
+     logical :: InteractionEnergy
+
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split
@@ -568,6 +571,7 @@ module dec_typedef_module
      !> Cabs-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fcp(:,:) => null()
 
+     integer,pointer :: SubSystemIndex(:) => null()
 
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()

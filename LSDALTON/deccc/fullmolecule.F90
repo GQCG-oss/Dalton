@@ -193,9 +193,12 @@ contains
     call calculate_fullmolecule_memory(molecule,memory_use)
     DECinfo%fullmolecule_memory = memory_use
 
+    !> SubSystem index
+    call mem_alloc(molecule%SubSystemIndex,molecule%natoms)
+    call GetSubSystemIndex(molecule%SubSystemIndex,molecule%natoms,mylsitem,DECinfo%output) 
+
     !> Interatomic distances in atomic units
     call mem_alloc(molecule%DistanceTable,molecule%natoms,molecule%natoms)
-    molecule%DistanceTable=0.0E0_realk
     call GetDistances(molecule%DistanceTable,molecule%natoms,mylsitem,DECinfo%output) 
 
     !> Which model to use for different pair calculations?
@@ -729,6 +732,10 @@ contains
 
     if(associated(molecule%PhantomAtom)) then
        call mem_dealloc(molecule%PhantomAtom)
+    end if
+
+    if(associated(molecule%SubSystemIndex)) then
+       call mem_dealloc(molecule%SubSystemIndex)
     end if
 
     if(associated(molecule%DistanceTable)) then

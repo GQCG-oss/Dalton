@@ -1665,8 +1665,24 @@ contains
           Ecorr = Ecorr + e1(atomI,atomJ)
        end do
     end do
-
-
+    
+    IF(DECinfo%InteractionEnergy)THEN
+       ! Total Interaction Energy
+       !mylsitem%input%molecule%ATOM(I)%SubSystemIndex
+       Ecorr =0.0_realk
+       do atomI=1,natoms          
+          do atomJ=1,natoms
+             IF(MyMolecule%SubSystemIndex(atomI).NE.MyMolecule%SubSystemIndex(atomJ))THEN
+                energy_matrix(atomI,atomJ) = e1(atomI,atomJ) &
+                     & + e2(atomI,atomJ) + e3(atomI,atomJ) + e4(atomI,atomJ)
+                ! Calculate correlation energy using occ scheme
+                ! (of course we get the same for the other schemes).
+                Ecorr = Ecorr + e1(atomI,atomJ)
+             ENDIF
+          end do
+       end do
+    ENDIF
+    
     ! Only consider pairs IJ where J>I; thus, move contributions
     do atomI=1,natoms
        do atomJ=atomI+1,natoms
