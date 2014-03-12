@@ -87,7 +87,8 @@ contains
 
     ! Get list of which atoms have orbitals assigned
     call mem_alloc(dofrag,natoms)
-    call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
+    call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,&
+         & natoms,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
     ! Internal control of first order property keywords
     ! (Necessary because these must be false during fragment optimization.)

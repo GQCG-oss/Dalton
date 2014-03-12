@@ -4034,7 +4034,7 @@ contains
     !> Job list of fragments listed according to size (all pointers in the type are initialized here)
     type(joblist),intent(inout) :: jobs
     integer,dimension(natoms) :: af_list
-    integer :: njobs,i
+    integer :: njobs,i,j
 
     ! Get list of atomic fragment ordered according to their (very roughly) estimated sizes
     call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
@@ -4047,20 +4047,22 @@ contains
 
     ! Set members of job list
     ! ***********************
-
-    do i=1,njobs
-
-       ! Atoms according to list based on estimated sizes
-       jobs%atom1(i) = af_list(i)
-       jobs%atom2(i) = af_list(i)  ! atomic fragment, so atom1=atom2
-
-       ! Job size is not known because fragment size is not known - simply set it to 1 for all atoms.
-       jobs%jobsize(i) = 1
-
-       ! Do fragment optimization!
-       jobs%dofragopt(i) = .true.
+    i=0    
+    do j=1,nAtoms
+       if(dofrag(af_list(j)))then
+          i=i+1
+          ! Atoms according to list based on estimated sizes
+          jobs%atom1(i) = af_list(j)
+          jobs%atom2(i) = af_list(j)  ! atomic fragment, so atom1=atom2
+          
+          ! Job size is not known because fragment size is not known - simply set it to 1 for all atoms.
+          jobs%jobsize(i) = 1
+          
+          ! Do fragment optimization!
+          jobs%dofragopt(i) = .true.
+       endif
     end do
-
+    if(i.NE.njobs)call lsquit('dim mismatch in create_dec_joblist_fragopt',-1)
     ! All other members of job list were set appropriately by the call to init_joblist.
 
   end subroutine create_dec_joblist_fragopt

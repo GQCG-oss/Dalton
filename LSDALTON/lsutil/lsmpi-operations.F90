@@ -1263,6 +1263,12 @@ call LS_MPI_BUFFER(dalton%ADMM_JKBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_DFBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_MCWEENY,Master)
 call LS_MPI_BUFFER(dalton%ADMM_2ERI,Master)
+call LS_MPI_BUFFER(dalton%ADMM_CONST_EL,Master)
+call LS_MPI_BUFFER(dalton%ADMM_FUNC,len(dalton%ADMM_FUNC),Master)
+call LS_MPI_BUFFER(dalton%ADMMQ_ScaleXC2,Master)
+call LS_MPI_BUFFER(dalton%ADMMQ_ScaleE,Master)
+call LS_MPI_BUFFER(dalton%PRINT_EK3,Master)
+
 call LS_MPI_BUFFER(dalton%SR_EXCHANGE,Master)
 
 !Coulomb attenuated method CAM parameters
@@ -1408,6 +1414,7 @@ call LS_MPI_BUFFER(scheme%ADMM_2ERI,Master)
 call LS_MPI_BUFFER(scheme%ADMM_CONST_EL,Master)
 call LS_MPI_BUFFER(scheme%ADMMQ_ScaleXC2,Master)
 call LS_MPI_BUFFER(scheme%ADMMQ_ScaleE,Master)
+call LS_MPI_BUFFER(scheme%PRINT_EK3,Master)
 
 call LS_MPI_BUFFER(scheme%CAM,Master)
 call LS_MPI_BUFFER(scheme%CAMalpha,Master)

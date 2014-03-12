@@ -89,24 +89,9 @@ ELSEIF (AOtype.EQ.AONuclear) THEN
 ELSEIF (AOtype.EQ.AOpCharge) THEN
   nc = MOLECULE%nAtoms
   np = MOLECULE%nAtoms
-ELSEIF (AOtype.EQ.AOS1p1cSeg)THEN
-  nc = 1
-  np = 1
-ELSEIF (AOtype.EQ.AOS2p1cSeg)THEN
-  nc = 1
-  np = 2
-ELSEIF (AOtype.EQ.AOS2p2cSeg)THEN
-  nc = 2
-  np = 2
-ELSEIF (AOtype.EQ.AOS2p2cGen)THEN
-  nc = 2
-  np = 2
-ELSEIF (AOtype.EQ.AOP1p1cSeg)THEN
-  nc = 3
-  np = 3
-ELSEIF (AOtype.EQ.AOD1p1cSeg)THEN
-  nc = 5
-  np = 5
+ELSEIF (AOtype.EQ.AOelField) THEN
+  nc = MOLECULE%nAtoms
+  np = MOLECULE%nAtoms
 ELSE
   WRITE(LUPRI,'(1X,A,I3)') 'Error in getNbasis. Not valid AOtype =', AOtype
   CALL LSQUIT('AOtype not valid in getNbasis',lupri)
@@ -172,6 +157,7 @@ DALTON%ADMM_CONST_EL = .FALSE.
 DALTON%ADMM_FUNC = 'BX'
 DALTON%ADMMQ_ScaleXC2= .FALSE.
 DALTON%ADMMQ_ScaleE  = .FALSE.
+DALTON%PRINT_EK3     = .FALSE.
 DALTON%NOFAMILY = .FALSE.
 DALTON%Hermiteecoeff = .TRUE.
 DALTON%JENGINE = .TRUE.
@@ -867,6 +853,7 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_CONST_EL',DALTON%ADMM_CONST_EL
 WRITE(LUPRI,'(2X,A35,7X,A30)')'ADMM_FUNC',DALTON%ADMM_FUNC
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMQ_ScaleXC2',DALTON%ADMMQ_ScaleXC2
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMQ_ScaleE',DALTON%ADMMQ_ScaleE
+WRITE(LUPRI,'(2X,A35,7X,L1)')'PRINT_EK3',DALTON%PRINT_EK3
 WRITE(LUPRI,'(2X,A35,7X,L1)')'SR_EXCHANGE',DALTON%SR_EXCHANGE
 WRITE(LUPRI,'(2X,A35,7X,L1)')'CAM',DALTON%CAM
 WRITE(LUPRI,'(2X,A35,F16.8)') 'CAMalpha',DALTON%CAMalpha
@@ -2658,6 +2645,7 @@ scheme%ADMM_2ERI             = dalton_inp%ADMM_2ERI
 scheme%ADMM_CONST_EL         = dalton_inp%ADMM_CONST_EL
 scheme%ADMMQ_ScaleXC2        = dalton_inp%ADMMQ_ScaleXC2
 scheme%ADMMQ_ScaleE          = dalton_inp%ADMMQ_ScaleE
+scheme%PRINT_EK3             = dalton_inp%PRINT_EK3
 scheme%THRESHOLD             = dalton_inp%THRESHOLD
 scheme%CS_THRESHOLD          = dalton_inp%CS_THRESHOLD
 scheme%OE_THRESHOLD          = dalton_inp%OE_THRESHOLD
@@ -2787,6 +2775,7 @@ WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_2ERI             ', scheme%ADMM_2ERI
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_CONST_EL         ', scheme%ADMM_CONST_EL
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMMQ_ScaleXC2        ', scheme%ADMMQ_ScaleXC2
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMMQ_ScaleE          ', scheme%ADMMQ_ScaleE
+WRITE(IUNIT,'(3X,A22,L7)') 'PRINT_EK3             ', scheme%PRINT_EK3
 WRITE(IUNIT,'(3X,A22,G14.2)') 'THRESHOLD             ', scheme%THRESHOLD
 WRITE(IUNIT,'(3X,A22,G14.2)') 'CS_THRESHOLD          ', scheme%CS_THRESHOLD
 WRITE(IUNIT,'(3X,A22,G14.2)') 'OE_THRESHOLD          ', scheme%OE_THRESHOLD

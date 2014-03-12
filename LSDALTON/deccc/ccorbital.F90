@@ -2277,8 +2277,8 @@ contains
   !> \brief Determine which atoms have one or more orbitals assigned.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine which_atoms_have_orbitals_assigned(ncore,nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
-
+  subroutine which_atoms_have_orbitals_assigned(ncore,nocc,nunocc,natoms,&
+       & OccOrbitals,UnoccOrbitals,dofrag,PhantomAtom)
     implicit none
     !> Number of core orbitals in full molecule
     integer,intent(in) :: ncore
@@ -2294,6 +2294,9 @@ contains
     type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> dofrag(P) is true/false if atom P has one or more/zero orbitals assigned.
     logical,intent(inout) :: dofrag(natoms)
+    !> Which atoms are Phantom Atoms
+    logical, intent(in) :: PhantomAtom(natoms)
+    !local 
     integer, dimension(natoms) :: nocc_per_atom, nunocc_per_atom
     integer :: i
 
@@ -2311,14 +2314,31 @@ contains
     do i=1,natoms
        if(DECinfo%onlyoccpart) then
           ! Only consider occupied orbitals
-          if( (nocc_per_atom(i)==0) ) dofrag(i)=.false.
+          if( (nocc_per_atom(i)==0) ) then
+             dofrag(i)=.false.
+          else
+             if(PhantomAtom(i))then
+                print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nunocc_per_atom(i)',nunocc_per_atom(i)
+                print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
+                dofrag(i)=.false.
+                print*,'Setting dofrag to false'
+             endif
+          endif
        else
           ! Consider occupied as well as unoccupied orbitals
-          if( (nocc_per_atom(i)==0) .and. (nunocc_per_atom(i)==0) ) dofrag(i)=.false.
+          if( (nocc_per_atom(i)==0) .and. (nunocc_per_atom(i)==0) )then
+             dofrag(i)=.false.
+          else
+             if(PhantomAtom(i))then
+                print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nunocc_per_atom(i)',nunocc_per_atom(i)
+                print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
+                dofrag(i)=.false.
+                print*,'Setting dofrag to false'
+             endif
+          endif
        end if
     end do
 
   end subroutine which_atoms_have_orbitals_assigned
-
 
 end module orbital_operations

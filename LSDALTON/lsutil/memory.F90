@@ -164,28 +164,6 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_tp_allocated_ATOMTYPEITEM, max_mem_tp_used_ATOMTYPEITEM       !Count 'ATOMTYPEITEM' memory, integral code
    integer(KIND=long),save :: mem_tp_allocated_ATOMITEM, max_mem_tp_used_ATOMITEM       !Count 'ATOMITEM' memory, integral code
    integer(KIND=long),save :: mem_tp_allocated_LSMATRIX, max_mem_tp_used_LSMATRIX       !Count 'LSMATRIX' memory, integral code
-! used for checkpoint
-   integer(KIND=long),save :: mem_check_allocated_global,mem_check_allocated_type_matrix
-   integer(KIND=long),save :: mem_check_allocated_type_matrix_MPIFULL
-   integer(KIND=long),save :: mem_check_allocated_real,mem_check_allocated_integer
-   integer(KIND=long),save :: mem_check_allocated_mpi
-   integer(KIND=long),save :: mem_check_allocated_complex
-   integer(KIND=long),save :: mem_check_allocated_character,mem_check_allocated_logical
-   integer(KIND=long),save :: mem_check_allocated_AOBATCH,mem_check_allocated_ODBATCH
-   integer(KIND=long),save :: mem_check_allocated_DECORBITAL
-   integer(KIND=long),save :: mem_check_allocated_DECFRAG
-   integer(KIND=long),save :: mem_check_allocated_BATCHTOORB
-   integer(KIND=long),save :: mem_check_allocated_DecAObatchinfo
-   integer(KIND=long),save :: mem_check_allocated_MYPOINTER
-   integer(KIND=long),save :: mem_check_allocated_ARRAY2
-   integer(KIND=long),save :: mem_check_allocated_ARRAY4
-   integer(KIND=long),save :: mem_check_allocated_ARRAY
-   integer(KIND=long),save :: mem_check_allocated_MP2DENS
-   integer(KIND=long),save :: mem_check_allocated_TRACEBACK
-   integer(KIND=long),save :: mem_check_allocated_MP2GRAD
-   integer(KIND=long),save :: mem_check_allocated_LSAOTENSOR,mem_check_allocated_SLSAOTENSOR
-   integer(KIND=long),save :: mem_check_allocated_GLOBALLSAOTENSOR,mem_check_allocated_ATOMTYPEITEM
-   integer(KIND=long),save :: mem_check_allocated_ATOMITEM,mem_check_allocated_LSMATRIX
 !Memory distributed on types:
    integer(KIND=long),save :: mem_tp_allocated_linkshell, max_mem_tp_used_linkshell         !Count memory, type linkshell
    integer(KIND=long),save :: mem_tp_allocated_integralitem, max_mem_tp_used_integralitem   !Count memory, type integralitem
@@ -309,30 +287,11 @@ MODULE memory_handling
 !$OMP mem_tp_allocated_overlapT, max_mem_tp_used_overlapT,&  
 !$OMP mem_tp_allocated_ODitem, max_mem_tp_used_ODitem,&
 !$OMP mem_tp_allocated_FMM, max_mem_tp_used_FMM,&
-!$OMP mem_tp_allocated_lstensor, max_mem_tp_used_lstensor,&
-!$OMP mem_check_allocated_global,mem_check_allocated_type_matrix,&
-!$OMP mem_check_allocated_type_matrix_MPIFULL,&
-!$OMP mem_check_allocated_real,mem_check_allocated_integer,&
-!$OMP mem_check_allocated_complex,&
-!$OMP mem_check_allocated_character,mem_check_allocated_logical,&
-!$OMP mem_check_allocated_AOBATCH,mem_check_allocated_ODBATCH,&
-!$OMP mem_check_allocated_DECORBITAL,mem_check_allocated_DECFRAG,&
-!$OMP mem_check_allocated_BATCHTOORB,&
-!$OMP mem_check_allocated_DECAOBATCHINFO,&
-!$OMP mem_check_allocated_MYPOINTER,&
-!$OMP mem_check_allocated_ARRAY,&
-!$OMP mem_check_allocated_ARRAY2,&
-!$OMP mem_check_allocated_ARRAY4,&
-!$OMP mem_check_allocated_MP2DENS,&
-!$OMP mem_check_allocated_TRACEBACK,&
-!$OMP mem_check_allocated_MP2GRAD,&
-!$OMP mem_check_allocated_LSAOTENSOR,mem_check_allocated_SLSAOTENSOR,&
-!$OMP mem_check_allocated_GLOBALLSAOTENSOR,mem_check_allocated_ATOMTYPEITEM,&
 #ifdef MOD_UNRELEASED
 !$OMP mem_tp_allocated_lvec_data, max_mem_tp_used_lvec_data,&
 !$OMP mem_tp_allocated_lattice_cell, max_mem_tp_used_lattice_cell,&
 #endif
-!$OMP mem_check_allocated_ATOMITEM,mem_check_allocated_LSMATRIX)
+!$OMP mem_tp_allocated_lstensor, max_mem_tp_used_lstensor)
 
 !Interfaces for allocating/deallocating pointers
 INTERFACE mem_alloc

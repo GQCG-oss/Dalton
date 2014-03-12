@@ -624,7 +624,11 @@ TYPE(MOLECULEINFO) :: MOLECULE
    WRITE (LUPRI,'(2X,A,I3)')' Total number of coordinates:',3*MOLECULE%natoms
    WRITE (LUPRI,'(2X,A)')' Written in atomic units    '
    DO I=1,MOLECULE%nAtoms
-      WRITE (LUPRI,'(/I4,3X,A,5X,A,3X,F15.10)')&
+      WRITE (LUPRI,'(A)')' '
+      IF(MOLECULE%ATOM(I)%phantom)THEN
+         WRITE (LUPRI,'(2X,A)')' Phantom Atom (Only Basis Functions)'
+      ENDIF
+      WRITE (LUPRI,'(I4,3X,A,5X,A,3X,F15.10)')&
            &  (3*I-2), MOLECULE%ATOM(I)%Name,CHRXYZ(1),&
            & MOLECULE%ATOM(I)%CENTER(1)
       WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')&
