@@ -619,13 +619,15 @@ subroutine print_dec_info()
    IF(DECinfo%ccModel.NE.MODEL_MP2)THEN
       write(LU,'(A)') ' '
       ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
-      write(LU,'(A,A)')'The wave function Model used for Atomic Fragment expansion scheme = ',DECinfo%cc_models(DECinfo%fragopt_exp_model)
+      write(LU,'(A,A)')'The wave function Model used for Atomic Fragment expansion scheme = ',&
+           & DECinfo%cc_models(DECinfo%fragopt_exp_model)
       IF(DECinfo%fragopt_exp_model.NE.DECinfo%ccModel)THEN
          write(LU,'(A)')'This wave function model can be changed using the .FRAGEXPMODEL keyword'
          write(LU,'(A)')'.FRAGEXPMODEL'
          write(LU,'(A1,A)')'.',DECinfo%cc_models(DECinfo%ccModel)
       ENDIF
-      write(LU,'(A,A)')'Wave function Model used for Atomic Fragment reduction scheme = ',DECinfo%cc_models(DECinfo%fragopt_red_model)
+      write(LU,'(A,A)')'Wave function Model used for Atomic Fragment reduction scheme = ',&
+           & DECinfo%cc_models(DECinfo%fragopt_red_model)
       IF(DECinfo%fragopt_red_model.NE.DECinfo%ccModel)THEN
          write(LU,'(A)')'This wave function model can be changed using the .FRAGREDMODEL keyword'
          write(LU,'(A)')'.FRAGREDMODEL'
