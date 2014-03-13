@@ -104,6 +104,7 @@ contains
        call dd_debug_homolumo(decomp,debug%diag_hlgap)
     endif
 
+    if (arh%debug_hessian) call lsquit('debug_get_hessian Code removed. TK',-1)
 !!$    if (arh%debug_hessian) then
 !!$       if (decomp%cfg_unres) call lsquit('Debug routine not tested for unrestricted',decomp%lupri)
 !!$       hesdim = ndim*(ndim+1)/2 - ndim
