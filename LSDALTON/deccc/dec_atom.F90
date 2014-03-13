@@ -311,11 +311,13 @@ contains
        end if
 
     end do
-   ! if(DECinfo%onlyoccpart) idx = idx - 1
-    print *,"checking",idx,fragment%nunoccAOS
+    !print *,"checking",idx,fragment%nunoccAOS,fragment%EOSatoms,pairfrag
     
-    if(idx /= fragment%nunoccAOS) &
-         & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
+    if(idx /= fragment%nunoccAOS) then
+      print *,unocc_list
+      print *,unoccEOS
+      call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
+    endif
 
 
     !set max distance in AOS space
@@ -334,7 +336,7 @@ contains
         enddo
       endif
     enddo
-    if( cntr > 0 )fragment%RaveAOS = fragment%RaveAOS / float( cntr )
+    if( cntr > 0 )fragment%DaveAOS = fragment%DaveAOS / float( cntr )
     do i=1,natoms
       if( all_atoms(i) )then
         do j=i+1,natoms
@@ -344,8 +346,7 @@ contains
         enddo
       endif
     enddo
-    if( cntr > 1 )fragment%RsdvAOS = ( fragment%RsdvAOS / float( cntr - 1 ) )**(0.5E0_realk)
-    print *,"somethings wrong here",fragment%DmaxAOS, fragment%DaveAOS, fragment%DsdvAOS,cntr
+    if( cntr > 1 )fragment%DsdvAOS = ( fragment%DsdvAOS / float( cntr - 1 ) )**(0.5E0_realk)
 
     call mem_dealloc( all_atoms )
 
@@ -2308,7 +2309,7 @@ contains
 
        end if
     end do
-    if( cntr > 0 )fragment%RaveAE = fragment%RaveAE / float( cntr )
+    if( cntr > 0 )fragment%DaveAE = fragment%DaveAE / float( cntr )
     do i=1,MyMolecule%natoms
        if(which_atoms(i)) then
           do j=i+1,MyMolecule%natoms
@@ -2319,7 +2320,7 @@ contains
 
        end if
     end do
-    if( cntr > 1 )fragment%RsdvAE = ( fragment%RsdvAE / float( cntr - 1 ) )**(0.5E0_realk)
+    if( cntr > 1 )fragment%DsdvAE = ( fragment%DsdvAE / float( cntr - 1 ) )**(0.5E0_realk)
     call mem_dealloc(which_atoms)
 
     ! count number of basis functions on selected atoms
@@ -4209,7 +4210,6 @@ contains
        DmaxAOS(atom) = AtomicFragments(atom)%DmaxAOS
        DaveAE(atom)  = AtomicFragments(atom)%DaveAE
        DaveAOS(atom) = AtomicFragments(atom)%DaveAOS
-       print *,atom,"STUFF: ", DaveAE(atom), DaveAOS(atom),DaveAE(atom) * bohr_to_angstrom,DaveAOS(atom) * bohr_to_angstrom
        DsdvAE(atom)  = AtomicFragments(atom)%DsdvAE
        DsdvAOS(atom) = AtomicFragments(atom)%DsdvAOS
        maxDmaxAE     = max(maxDmaxAE,DmaxAE(atom))
