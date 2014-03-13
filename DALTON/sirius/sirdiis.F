@@ -308,6 +308,11 @@ C
       ! rcpmat is used on branch qmcmm, please do not remove
       DIMENSION RCPMAT(*)
 
+#if defined (PCM_MODULE)
+      real(8), allocatable :: density_ao(:), density_ao_symm(:)
+      real(8), allocatable :: fock_pcm_ao(:), fock_pcm_ao_symm(:)
+#endif
+
 C
 C Used from common blocks:
 C  INFINP : FLAG(*)
@@ -388,7 +393,12 @@ CAMT  If requested calculate the DFT-D energy correction
 
 C
       IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
+#if defined (PCM_MODULE)
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM .OR.
+     &    pcmmod_is_pcm_calculation) THEN
+#else              
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM) THEN
+#endif
 C     this also includes the case of MMPCM   
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
@@ -917,34 +927,66 @@ C
 
 #if defined (PCM_MODULE)
          if (pcmmod_is_pcm_calculation) then
+! Allocate scratch space for the PCM Fock matrix contribution in AO basis.
+           allocate(fock_pcm_ao(nnbasx))
+           fock_pcm_ao = 0.0d0
+! Allocate scratch space for the density matrix to be passed to the PCM
+! subroutines
+           allocate(density_ao_symm(nnbasx))
+           density_ao_symm = 0.0d0
 ! Allocate the PCM Fock matrix contribution in AO basis. 
 ! It is of dimension NNBASX and we take the memory from the WRK array. 
 ! We zero it out afterwards.
-           call memget('REAL', kfcsol, nnbasx, wrk, kfree, lfree)
-           call dzero(wrk(kfcsol), nnbasx)
+!           call memget('REAL', kfcsol, nnbasx, wrk, kfree, lfree)
+!           call dzero(wrk(kfcsol), nnbasx)
 ! DAOSAV(:, 1) = DCAO (density matrix for closed shells)
 ! DAOSAV(:, 2) = DVAO (density matrix for open shells)
 ! PCM doesn't care about closed/open shells, so we decide at this
 ! higher level which one of them to pass, based on the wavefunction asked.          
            if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+             density_ao_symm(:) = daosav(:, 1)
 ! We pass just DCAO, i.e. density_matrix = DCAO
-             call pcm_energy_driver(daosav(:, 1), esolt, wrk(kfree), 
-     &                              lfree)
-             call pcm_oper_ao_driver(wrk(kfcsol), 'TotASC'//char(0), 
-     &                               wrk(kfree), lfree)
            else
 ! We sum DCAO and DVAO, i.e. density_matrix = DCAO + DVAO
-             call pcm_energy_driver((daosav(:, 1) + daosav(:, 2)), 
-     &                              esolt, wrk(kfree), lfree)
-             call pcm_oper_ao_driver(wrk(kfcsol), 'TotASC'//char(0), 
-     &                               wrk(kfree), lfree)
+             density_ao_symm(:) = daosav(:, 1) + daosav(:, 2)
            end if
+! Call the energy driver with the symmetry-unpacked density matrix 
+           if (nsym > 1) then
+             allocate(density_ao(nnbasx))
+             density_ao = 0.0d0
+! Symmetry un-pack density_ao_symm to density_ao             
+             call pksym1(density_ao, density_ao_symm, nbas, nsym, -1)
+             call pcm_energy_driver(density_ao, esolt, wrk(kfree), 
+     &                               lfree)
+           else
+             call pcm_energy_driver(density_ao_symm, esolt, wrk(kfree), 
+     &                              lfree)
+           end if
+! Call the Fock driver           
+           call pcm_oper_ao_driver(fock_pcm_ao, 'TotASC'//char(0), 
+     &                             wrk(kfree), lfree)
 ! Copy the PCM Fock matrix contribution on top of the AO basis Fock matrix
-           call daxpy(nnbast,-1.0d0,wrk(kfcsol),1,faosav(1,indevc,1),1)
+           if (nsym > 1) then
+             allocate(fock_pcm_ao_symm(nnbasx))
+             fock_pcm_ao_symm = 0.0d0
+! Symmetry-pack fock_pcm_ao to fock_pcm_ao_symm 
+             call pksym1(fock_pcm_ao, fock_pcm_ao_symm, nbas, nsym, +1)
+             call daxpy(nnbast, -1.0d0, fock_pcm_ao_symm, 1, 
+     &                                  faosav(1, indevc, 1), 1)
+           else
+             call daxpy(nnbast, -1.0d0, fock_pcm_ao, 1, 
+     &                                  faosav(1, indevc, 1), 1)
+           end if
 ! We can print it here, if needed.
 !lf            write(lupri,*) 'extpcm fock matrix'
 !lf            call outpak(wrk(kfcsol), nbast, 1, lupri)
-           call memrel('DIIS_CTL.extpcm',wrk,kfrsav,kfcsol,kfree,lfree)
+! Clean-up
+           deallocate(fock_pcm_ao)
+           deallocate(density_ao_symm)
+           if (nsym > 1) then
+             deallocate(fock_pcm_ao_symm)
+             deallocate(density_ao)
+           end if
          end if
 #endif
 

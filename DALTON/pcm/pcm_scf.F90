@@ -48,6 +48,7 @@ module pcm_scf
    real(c_double), allocatable :: tess_cent(:, :)
    real(c_double)              :: pcm_energy
    integer(c_int)              :: nr_points
+   integer(c_int)              :: nr_points_irr
 ! A (maybe clumsy) way of passing LUPRI without using common blocks   
    integer                     :: global_print_unit
 ! A counter for the number of SCF iterations
@@ -64,7 +65,7 @@ module pcm_scf
       call set_up_pcm
       call print_pcm
 
-      call get_cavity_size(nr_points)
+      call get_cavity_size(nr_points, nr_points_irr)
 
       allocate(tess_cent(3, nr_points))
       tess_cent = 0.0d0
@@ -219,7 +220,7 @@ module pcm_scf
       allocate(asc(nr_points))
       asc = 0.0d0
       call get_surface_function(nr_points, asc, charge_name)
-      call get_electronic_mep(nr_points, tess_cent, asc, oper, work(kfree), lfree, .true.)
+      call get_electronic_mep(nr_points, nr_points_irr, tess_cent, asc, oper, work(kfree), lfree, .true.)
       deallocate(asc)
 
       scf_iteration_counter = scf_iteration_counter + 1
@@ -267,7 +268,7 @@ module pcm_scf
          potName = 'TotMEP'//char(0) 
          chgName = 'TotASC'//char(0)
 ! Calculate the (total) Molecular Electrostatic Potential
-         call get_mep(nr_points, tess_cent, mep, density_matrix, work(kfree), lfree)
+         call get_mep(nr_points, nr_points_irr, tess_cent, mep, density_matrix, work(kfree), lfree)
 ! Set a cavity surface function with the MEP
          call set_surface_function(nr_points, mep, potName)
 ! Compute polarization charges and set the proper surface function
@@ -299,14 +300,14 @@ module pcm_scf
       
          potName1 = 'NucMEP'//char(0)
          chgName1 = 'NucASC'//char(0)
-         call get_nuclear_mep(nr_points, tess_cent, nuc_pot)
+         call get_nuclear_mep(nr_points, nr_points_irr, tess_cent, nuc_pot)
          call set_surface_function(nr_points, nuc_pot, potName1)
          call compute_asc(potName1, chgName1, irrep)
          call get_surface_function(nr_points, nuc_pol_chg, chgName1)
 
          potName2 = 'EleMEP'//char(0)
          chgName2 = 'EleASC'//char(0)
-         call get_electronic_mep(nr_points, tess_cent, ele_pot, density_matrix, work(kfree), lfree, .false.)
+         call get_electronic_mep(nr_points, nr_points_irr, tess_cent, ele_pot, density_matrix, work(kfree), lfree, .false.)
          call set_surface_function(nr_points, ele_pot, potName2)
          call compute_asc(potName2, chgName2, irrep)
          call get_surface_function(nr_points, ele_pol_chg, chgName2)

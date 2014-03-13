@@ -9,9 +9,10 @@
 
       contains
 
-         subroutine get_mep(nr_points, centers, mep, density, work, lwork)
+         subroutine get_mep(nr_points, nr_points_irr, centers, mep, density, work, lwork)
 
          integer, intent(in)  :: nr_points
+         integer, intent(in)  :: nr_points_irr
          real(8), intent(in)  :: centers(3, nr_points)
          real(8), intent(out) :: mep(nr_points)
          real(8)              :: density(*)
@@ -20,26 +21,32 @@
 
 ! For some reason that I don't understand, the potential vector is zeroed out 
 ! somewhere in j1int_pcm. So the mep must be calculated in this order.
-         call get_electronic_mep(nr_points, centers, mep, density, work, lwork, .false.)
-         call get_nuclear_mep(nr_points, centers, mep)
+         call get_electronic_mep(nr_points, nr_points_irr, centers, mep, density, work, lwork, .false.)
+         call get_nuclear_mep(nr_points, nr_points_irr, centers, mep)
 
          end subroutine get_mep
              
-         subroutine get_nuclear_mep(nr_points, centers, mep)
+         subroutine get_nuclear_mep(nr_points, nr_points_irr, centers, mep)
 
          use pcm_utils, only: getacord
                                                           
 #include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"      
 #include "nuclei.h"
            
          integer, intent(in)  :: nr_points                           
+         integer, intent(in)  :: nr_points_irr                   
          real(8), intent(in)  :: centers(3, nr_points)               
          real(8), intent(out) :: mep(nr_points)
 
          real(8)              :: coora(3, nucdep), charges(nucdep)
          real(8)              :: dist, temp                          
          integer              :: i, j, k, ipoint
+         real(8)              :: renorm
 
+         renorm = dble(maxrep + 1)
 ! Get coordinates and charges of all centers, not only the ones
 ! that are symmetry independent      
          call getacord(coora)
@@ -52,18 +59,23 @@
          enddo
 
          do i = 1, nucdep
-            do ipoint = 1, nr_points
-               dist = (coora(1, i) - centers(1, ipoint))**2 +               &
-                      (coora(2, i) - centers(2, ipoint))**2 +               &
+            do ipoint = 1, nr_points_irr
+               dist = (coora(1, i) - centers(1, ipoint))**2 +      &
+                      (coora(2, i) - centers(2, ipoint))**2 +      &
                       (coora(3, i) - centers(3, ipoint))**2
                dist = sqrt(dist)
                mep(ipoint) = mep(ipoint) + (charges(i) / dist)
             end do
          end do
+
+         do ipoint = 1, nr_points_irr
+            temp = mep(ipoint) * renorm
+            mep(ipoint) = temp 
+         end do
          
          end subroutine get_nuclear_mep
          
-         subroutine get_electronic_mep(nr_points, centers, vector, matrix, work, lwork, get_matrix)
+         subroutine get_electronic_mep(nr_points, nr_points_irr, centers, vector, matrix, work, lwork, get_matrix)
 !      
 ! Driver routine for the calculation of the electronic part of the molecular 
 ! electrostatic potential on a certain grid of points {r_i}:
@@ -88,11 +100,13 @@
 !            charges vector as input, Fock matrix contribution as output.
 !            get_matrix logical is absent or is present and FALSE:
 !            density matrix as input, potentials vector as output.                        
-!                                                                     
+!                           
          use pcmmod_cfg                                     
-         integer, intent(in)  :: nr_points                                    
-         real(8), intent(in)  :: centers(3, nr_points)                          
-         real(8), intent(out) :: vector(nr_points)                         
+         
+         integer, intent(in)  :: nr_points 
+         integer, intent(in)  :: nr_points_irr                   
+         real(8), intent(in)  :: centers(3, nr_points)
+         real(8), intent(out) :: vector(nr_points) 
          real(8)              :: matrix(*)                           
          real(8)              :: work(*)                              
          integer              :: lwork                               
@@ -112,24 +126,23 @@
 ! We should quit here if the user asked a run with symmetry
 ! Decide which integration routines to use
          if (pcmmod_old_integration) then
-            call j1int_pcm(vector, nr_points, centers, (.not.do_matrix), matrix, 1, .false., 'NPETES ', 1, work, lwork)  
+            call j1int_pcm(vector, nr_points, nr_points_irr, centers, &
+        (.not.do_matrix), matrix, 1, .false., 'NPETES ', 1, work, lwork)
          else
             call vectorized_integration_pcm(nr_points, centers, vector, matrix, work, lwork, do_matrix)
          end if
 
-!        if (do_matrix) then
-!           print *, "Called with get_matrix"
-!        else
-!        print *, "Start printing MEP"
-!        do ipoint = 1, nr_points
-!          print *, "Electronic MEP @point", ipoint, vector(ipoint)
-!       end do
-!        print *, "End printing MEP"
-!     end if
+!         if (do_matrix) then
+!            write(lupri,*) "Called with get_matrix"
+!         else
+!            do ipoint = 1, nr_points
+!              write(lupri, *) "v_ele(", ipoint,") = ", vector(ipoint)
+!            end do
+!         end if
 
          end subroutine get_electronic_mep
       
-         subroutine j1int_pcm(expval, nts, centers, exp1vl, denmat, nosim, tofile, intlab, ksymp, work, lwork)
+         subroutine j1int_pcm(expval, nr_points, nr_points_irr, centers, exp1vl, denmat, nosim, tofile, intlab, ksymp, work, lwork)
 !
 ! This subroutines is used both for the calculation of the electronic
 ! MEP and the PCM Fock matrix contribution.
@@ -139,7 +152,7 @@
 ! else
 !             vector of ASC and Fock matrix contribution as output 
 ! end if
-!     
+!   
 #include "dummy.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -149,24 +162,29 @@
 #include "maxaqn.h"
 #include "symmet.h"
 #include "infpar.h"
-#include "inftap.h"
-     
-         character(7) :: intlab                                                 
+
+! Passed variables
+         integer(4)   :: nr_points, nr_points_irr, nosim, ksymp, lwork
+         real(8)      :: centers(3, nr_points), expval(nr_points, nosim)
+         real(8)      :: denmat(*)
+         real(8)      :: work(*)
+         logical      :: exp1vl, tofile
+         character(7) :: intlab                                     
+
+! Local variables                 
          character(8) :: labint(9*mxcent)
-         integer(4)   :: nts
          integer      :: isum
-         integer      :: nosim, ksymp, lwork, i, j, iaddr, iosim, iprpcm
+         integer      :: i, j, iaddr, iosim, iprpcm
          integer      :: iadr, iprtyp, isymd, its, jmat, kden, klast
          integer      :: kmat, kpatom, ktmp, l, lwrk, matdim, nbastold
          integer      :: ncomp, nnbasxold, ntesp, ntsirr
-         real(8)      :: intrep(9*mxcent), intadr(9*mxcent), expval(nts, nosim)
-         real(8)      :: denmat(*), work(lwork), centers(3, nts)
+         real(8)      :: intrep(9*mxcent), intadr(9*mxcent)
          real(8)      :: xdiporg, ydiporg, zdiporg
-         logical      :: tofile, trimat, vcheck, exp1vl
+         logical      :: trimat, vcheck
 
          nbastold  = nbast               
          nnbasxold = nnbasx
-         nbast  = isum(maxrep+1,naos,1)
+         nbast  = isum(maxrep + 1, naos, 1)
          nnbasx = nbast * (nbast + 1)/2
          n2basx = nbast*nbast
          if (intlab .eq. 'PCMBSOL') then
@@ -180,6 +198,7 @@
             ncomp  = 1
             trimat = .true.
          end if
+
 !
 ! We use as a quick way of transfering tessera coordinates to hermit:
 ! the dipole origin. Need to be restored.
@@ -214,7 +233,7 @@
             lwrk = lwork - klast
          end if
          
-         do  its = 1, nts
+         do  its = 1, nr_points_irr
             diporg(1) = centers(1,its)
             diporg(2) = centers(2,its)
             diporg(3) = centers(3,its)
@@ -249,8 +268,8 @@
                   jmat = jmat + matdim
                end do
             else if (exp1vl) then
-               do i = 1, ncomp
-                  expval(its+(i-1)*ntsirr,1) = -work(ktmp+i-1)
+               do i = 1, ncomp 
+                 expval(its+(i-1)*nr_points_irr,1) = -work(ktmp+i-1)
                end do
             else if (.not. tofile) then
                do iosim = 1, nosim
@@ -258,7 +277,8 @@
                   call daxpy(matdim,-expval(its,iosim),work(iadr),1,denmat(matdim*(iosim - 1) + 1),1)
                end do
             end if
-         enddo 
+         enddo
+
          diporg(1) = xdiporg
          diporg(2) = ydiporg
          diporg(3) = zdiporg

@@ -499,13 +499,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/lucita/transform.F
     DALTON/lucita/utils.F
     DALTON/lucita/vecmat.F
-    #    DALTON/pcm/electrostatic_potential.F90
-    DALTON/pcm/pcm_scf.F90
-    DALTON/pcm/pcm_integrals.F90
-    DALTON/pcm/pcm_linear_response.F90
-    DALTON/pcm/pcmmod_cfg.F90
-    DALTON/pcm/pcm_write.F90
-    DALTON/pcm/pcm_utils.F90
     DALTON/pdpack/arhpack.F
     DALTON/pdpack/eispack.F
     DALTON/pdpack/jacobi.F
@@ -767,6 +760,13 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/gp/memory_parallel.F90
     DALTON/abacus/rma_windows.F90
     DALTON/cc/dyn_index.F90
+    #    DALTON/pcm/electrostatic_potential.F90
+    DALTON/pcm/pcm_scf.F90
+    DALTON/pcm/pcm_integrals.F90
+    DALTON/pcm/pcm_linear_response.F90
+    DALTON/pcm/pcmmod_cfg.F90
+    DALTON/pcm/pcm_write.F90
+    DALTON/pcm/pcm_utils.F90
     )
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F

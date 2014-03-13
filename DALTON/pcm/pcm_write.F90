@@ -175,6 +175,7 @@ module pcm_write
       else
         write(global_print_unit, '(1000A)') message
       end if
+      flush(global_print_unit)
 
    end subroutine host_writer
    
