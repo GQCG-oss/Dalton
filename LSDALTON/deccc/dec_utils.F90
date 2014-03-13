@@ -637,7 +637,7 @@ contains
     integer, intent(inout) :: SubSystemIndex(nAtoms)
     ! local variables
     integer :: i
-    IF(DECinfo%InteractionEnergy)THEN
+    IF(DECinfo%InteractionEnergy.OR.DECinfo%PrintInteractionEnergy)THEN
        IF(mylsitem%input%molecule%nSubSystems.NE.2)THEN
           print*,'The .INTERACTIONENEGY requires 2 subsystem labels you have ',&
                & mylsitem%input%molecule%nSubSystems
@@ -3909,8 +3909,7 @@ contains
   !> taking into account that not all atoms have orbitals assigned.
   !> \author Thomas Kjaergaard
   !> \date March 2014
-  subroutine add_dec_interactionenergies(natoms,FragEnergies,orbitals_assigned,interactionE)
-
+  subroutine add_dec_interactionenergies(natoms,FragEnergies,orbitals_assigned,interactionE,SubSystemIndex)
     implicit none
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
@@ -3920,6 +3919,8 @@ contains
     logical,dimension(natoms) :: orbitals_assigned
     !> Total energy E = sum_P E_P  +  sum_{P>Q} dE_PQ 
     real(realk),intent(inout) :: interactionE
+    !> Subsystem Index
+    integer,dimension(natoms) :: SubSystemIndex
     !
     integer :: P,Q
 
@@ -3928,7 +3929,9 @@ contains
        if(orbitals_assigned(P)) then
           do Q=1,P-1
              if(orbitals_assigned(Q)) then
-                interactionE = interactionE + FragEnergies(P,Q)
+                IF(SubSystemIndex(P).NE.SubSystemIndex(Q))THEN
+                   interactionE = interactionE + FragEnergies(P,Q)
+                ENDIF
              end if
           end do
        end if
@@ -4213,6 +4216,19 @@ contains
 
   end subroutine print_total_energy_summary
 
+  !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
+  subroutine print_Interaction_energy(Ecorr,Eerr)
+    implicit none
+    !> Interaction Correlation energy
+    real(realk),intent(in) :: Ecorr
+    !> Estimated intrinsic DEC energy error
+    real(realk),intent(in) :: Eerr
+    integer :: lupri
+    lupri=6
+    call print_Interaction_energy_lupri(Ecorr,Eerr,lupri)
+    lupri=DECinfo%output
+    call print_Interaction_energy_lupri(Ecorr,Eerr,lupri)
+  end subroutine print_Interaction_energy
 
   !> \brief Print short energy summary (both HF and correlation) to specific logical unit number.
   !> (Necessary to place here because it is used both for DEC and for full calculation).
@@ -4303,6 +4319,29 @@ contains
 
 
   end subroutine print_total_energy_summary_lupri
+
+  !> \brief Print short interaction energy to specific logical unit number.
+  !> \author Thomas Kjaergaard
+  !> \date Marts 2014
+  subroutine print_interaction_energy_lupri(Ecorr,Eerr,lupri)
+    implicit none
+    !> Interaction Correlation energy
+    real(realk),intent(in) :: Ecorr
+    !> Estimated intrinsic DEC energy error
+    real(realk),intent(in) :: Eerr
+    !> Logical unit number to print to
+    integer,intent(in) :: lupri
+    write(lupri,*)
+    if(DECinfo%first_order) then
+       IF(DECinfo%PrintInteractionEnergy)THEN
+          call lsquit('InteractionEnergy and first_order not implemented',-1)
+       ENDIF
+    else
+       write(lupri,'(15X,a,f20.10)') 'I: Interaction Correlation energy  :', Ecorr
+       write(lupri,'(15X,a,f20.10)') 'I: Estimated Interaction DEC error :', Eerr
+    end if
+    write(lupri,*)
+  end subroutine print_interaction_energy_lupri
 
 
   !> \brief Print all fragment energies for given CC model.

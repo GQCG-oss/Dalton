@@ -6271,7 +6271,6 @@ contains
              if(MyMolecule%SubSystemIndex(Q).EQ.MyMolecule%SubSystemIndex(P)) then
                 ! SubSystem index is the same on both P and Q --> (P,Qidx) can be skipped!
                 MyMolecule%ccmodel(P,Q)=MODEL_NONE
-                print*,'MyMolecule%ccmodel(',P,',',Q,')=MODEL_NONE'
              end if
           end do Qloop4
        ENDIF

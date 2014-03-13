@@ -233,6 +233,8 @@ module dec_typedef_module
 
      !> Calculate the Interaction Energy (Ref to article)
      logical :: InteractionEnergy
+     !> Print the Interaction Energy (Ref to article)
+     logical :: PrintInteractionEnergy
 
      !> MPI settings
      !> ************

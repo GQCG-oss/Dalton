@@ -162,6 +162,9 @@ contains
     type(decfrag),pointer :: AtomicFragments(:)
     integer :: i,j,k,dims(2),nbasis,counter
     real(realk) :: energies(ndecenergies)
+    real(realk) :: Interactionenergies(ndecenergies)
+    real(realk) :: InteractionEcorr
+    real(realk) :: InteractionEerr
     logical :: dens_save ! Internal control of MP2 density keyword
     logical :: FO_save  ! Internal control of first order property keyword
     logical :: grad_save  ! Internal control of MP2 gradient keyword
@@ -321,15 +324,13 @@ contains
     ! fragment information has been stored in AtomicFragments.
 
     IF(DECinfo%InteractionEnergy)THEN
-       !turn of recalculation of Atomic fragment calculations
-       if(DECinfo%RepeatAF) then
+       if(DECinfo%ccmodel.NE.DECinfo%fragopt_red_model) then
           !the energies was calculated with a wrong wave function and
           !should be recalculated but they are not needed for 
           !interaction energies so we set the energy to zero to avoid 
           !confusion. 
           FragEnergies = 0.0E0_realk
        endif
-       DECinfo%RepeatAF = .FALSE.
     ENDIF
     ! ************************************************************************
     ! *             Construct job list for remaining fragments               *
@@ -468,47 +469,33 @@ contains
     IF(DECinfo%InteractionEnergy)THEN
        ! Interaction correlation energy 
        do j=1,ndecenergies
-          call add_dec_Interactionenergies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
+          call add_dec_Interactionenergies(natoms,FragEnergies(:,:,j),dofrag,&
+               & energies(j),mymolecule%SubSystemIndex)
        end do
     ELSE
        ! Total correlation energy 
        do j=1,ndecenergies
           call add_dec_energies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
        end do
+       IF(DECinfo%PrintInteractionEnergy)THEN
+          do j=1,ndecenergies
+             call add_dec_Interactionenergies(natoms,FragEnergies(:,:,j),dofrag,&
+                  & Interactionenergies(j),mymolecule%SubSystemIndex)
+          end do
+       ENDIF
     ENDIF
     ! Print all fragment energies
     call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
          & mymolecule%DistanceTable,energies)
-
-    ! MODIFY FOR NEW MODEL
-    ! MODIFY FOR NEW CORRECTION: Add correction to output energy
-    ! Set output energy: We choose occupied partitioning scheme energy as general output
-    select case(DECinfo%ccmodel)
-    case(MODEL_MP2)
-       ! MP2, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCMP2)
-#ifdef MOD_UNRELEASED
-       if(DECinfo%F12) then
-          Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
-       endif
-#endif 
-    case(MODEL_RPA)
-       ! RPA, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCRPA)
-    case(MODEL_CC2)
-       ! CC2, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCCC2)
-    case(MODEL_CCSD)
-       ! CCSD, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCCCSD)
-    case(MODEL_CCSDpT)
-       ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
-       Ecorr = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
-    case default
-       write(DECinfo%output,*) 'main_fragment_driver: Needs implementation for model ', DECinfo%ccmodel
-       call lsquit('main_fragment_driver: Needs implementation for model!',-1)
-    end select
-
+    !Obtain The Correlation Energy from the list energies
+    InteractionEcorr = 0.0E0_realk
+    call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,energies,Ecorr)
+    IF(DECinfo%InteractionEnergy)THEN
+       InteractionEcorr = Ecorr
+    ENDIF
+    IF(DECinfo%PrintInteractionEnergy)THEN
+       call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,interactionenergies,InteractionEcorr)
+    ENDIF
     ! If singles polarization was considered, we need to
     ! ensure that the fullmolecule structure contains the standard
     ! (NOT T1 transformed) Fock matrix at output
@@ -551,12 +538,48 @@ contains
 
     ! Print short summary
     call print_total_energy_summary(EHF,Ecorr,Eerr)
-
+    IF(DECinfo%PrintInteractionEnergy)THEN
+       call get_estimated_energy_error(natoms,Interactionenergies,InteractionEerr)
+       call print_Interaction_energy(InteractionEcorr,InteractionEerr)   
+    ENDIF
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output)
 
   end subroutine main_fragment_driver
 
-
+  subroutine ObtainModelEnergyFromEnergies(ccmodel,energies,Ecorr)
+    implicit none
+    integer,intent(in)        ::  ccmodel
+    real(realk),intent(in)    ::  energies(ndecenergies)
+    real(realk),intent(inout) ::  Ecorr
+    ! MODIFY FOR NEW MODEL
+    ! MODIFY FOR NEW CORRECTION: Add correction to output energy
+    ! Set output energy: We choose occupied partitioning scheme energy as general output
+    select case(DECinfo%ccmodel)
+    case(MODEL_MP2)
+       ! MP2, use occ energy
+       Ecorr = energies(FRAGMODEL_OCCMP2)
+#ifdef MOD_UNRELEASED
+       if(DECinfo%F12) then
+          Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
+       endif
+#endif 
+    case(MODEL_RPA)
+       ! RPA, use occ energy
+       Ecorr = energies(FRAGMODEL_OCCRPA)
+    case(MODEL_CC2)
+       ! CC2, use occ energy
+       Ecorr = energies(FRAGMODEL_OCCCC2)
+    case(MODEL_CCSD)
+       ! CCSD, use occ energy
+       Ecorr = energies(FRAGMODEL_OCCCCSD)
+    case(MODEL_CCSDpT)
+       ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
+       Ecorr = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
+    case default
+       write(DECinfo%output,*) 'main_fragment_driver: Needs implementation for model ', DECinfo%ccmodel
+       call lsquit('main_fragment_driver: Needs implementation for model!',-1)
+    end select
+  end subroutine ObtainModelEnergyFromEnergies
 !> \brief Print info about DEC calculation.
 !> \author Kasper Kristensen
 !> \date November 2010

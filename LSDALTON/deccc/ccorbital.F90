@@ -2223,7 +2223,12 @@ contains
     else
        DECinfo%RepeatAF=.false.
     end if
-
+    IF(DECinfo%InteractionEnergy)THEN
+       IF(DECinfo%ccmodel.NE.DECinfo%fragopt_red_model)THEN
+          !turn of recalculation of Atomic fragment calculations
+          DECinfo%RepeatAF = .FALSE.
+       ENDIF
+    ENDIF
 
   end subroutine dec_orbital_sanity_check
 

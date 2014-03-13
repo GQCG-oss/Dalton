@@ -151,6 +151,7 @@ contains
     DECinfo%F12debug                = .false.
     DECinfo%PureHydrogenDebug       = .false.
     DECinfo%InteractionEnergy       = .false.
+    DECinfo%PrintInteractionEnergy  = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -490,7 +491,11 @@ contains
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
        case('.INTERACTIONENERGY')     
+          !Calculate the Interaction energy (add ref to article) 
           DECinfo%InteractionEnergy       = .true.
+       case('.PRINTINTERACTIONENERGY')     
+          !Print the Interaction energy (see .INTERACTIONENERGY) 
+          DECinfo%PrintInteractionEnergy  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
