@@ -793,8 +793,6 @@ end subroutine ls_dcopy
 
       cputime = tcpu1 - TCPU0
       walltime = twall1 - twall0
-      cputime = 0.0E0
-      walltime = 0.0E0
 
 !#if defined (SYS_AIX)
 !!     SGI IRIX  etc. code
