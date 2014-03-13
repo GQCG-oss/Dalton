@@ -785,11 +785,11 @@ end subroutine ls_dcopy
          first = .false.
          call cpu_time(TCPU0)
          call date_and_time(values=dateandtime0)
-         !call get_walltime(dateandtime0,twall0)
+         call get_walltime(dateandtime0,twall0)
       end if
       call cpu_time(tcpu1)
       call date_and_time(values=dateandtime1)
-      !call get_walltime(dateandtime1,twall1)
+      call get_walltime(dateandtime1,twall1)
 
       cputime = tcpu1 - TCPU0
       walltime = twall1 - twall0
