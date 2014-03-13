@@ -3901,7 +3901,6 @@ contains
        end if
     end do
 
-
   end subroutine add_dec_energies
 
   !> Add DEC interaction energies: E = sum_{P>Q} dE_PQ for P and Q on
@@ -3909,8 +3908,10 @@ contains
   !> taking into account that not all atoms have orbitals assigned.
   !> \author Thomas Kjaergaard
   !> \date March 2014
-  subroutine add_dec_interactionenergies(natoms,FragEnergies,orbitals_assigned,interactionE,SubSystemIndex)
+  subroutine add_dec_interactionenergies(natoms,FragEnergies,orbitals_assigned,interactionE,SubSystemIndex,option)
     implicit none
+    !> Transposition option
+    integer,intent(in),optional :: option
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
     !> Fragment energies (E_P on diagonal, dE_PQ on off-diagonal)
@@ -3923,20 +3924,44 @@ contains
     integer,dimension(natoms) :: SubSystemIndex
     !
     integer :: P,Q
+    logical :: Trans
+    IF(present(option))THEN
+       IF(option.EQ.2)THEN
+          Trans = .TRUE.
+       ELSE
+          Trans = .FALSE.
+       ENDIF
+    ELSE
+       Trans = .FALSE.
+    ENDIF
 
-    interactionE = 0.0_realk
-    do P=1,natoms
-       if(orbitals_assigned(P)) then
-          do Q=1,P-1
-             if(orbitals_assigned(Q)) then
-                IF(SubSystemIndex(P).NE.SubSystemIndex(Q))THEN
-                   interactionE = interactionE + FragEnergies(P,Q)
-                ENDIF
-             end if
-          end do
-       end if
-    end do
-
+    IF(Trans)THEN
+       interactionE = 0.0_realk
+       do P=1,natoms
+          if(orbitals_assigned(P)) then
+             do Q=P+1,natoms
+                if(orbitals_assigned(Q)) then
+                   IF(SubSystemIndex(P).NE.SubSystemIndex(Q))THEN
+                      interactionE = interactionE + FragEnergies(P,Q)
+                   ENDIF
+                end if
+             end do
+          end if
+       end do
+    ELSE !default
+       interactionE = 0.0_realk
+       do P=1,natoms
+          if(orbitals_assigned(P)) then
+             do Q=1,P-1
+                if(orbitals_assigned(Q)) then
+                   IF(SubSystemIndex(P).NE.SubSystemIndex(Q))THEN
+                      interactionE = interactionE + FragEnergies(P,Q)
+                   ENDIF
+                end if
+             end do
+          end if
+       end do
+    ENDIF
   end subroutine add_dec_interactionenergies
 
 

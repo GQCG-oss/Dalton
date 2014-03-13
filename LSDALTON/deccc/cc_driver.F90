@@ -176,7 +176,7 @@ contains
     type(decorbital), pointer :: unoccorbitals(:)
     logical, pointer :: orbitals_assigned(:)
     type(array2) :: ccsd_mat_tot,ccsd_mat_tmp
-
+    real(realk) :: interactionE
 
 
 #ifdef MOD_UNRELEASED
@@ -222,7 +222,14 @@ contains
     call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2,t1,VOVO,occorbitals,&
          & ccsd_mat_tot%val,ccsd_mat_tmp%val)
     call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
-
+    IF(DECinfo%InteractionEnergy)THEN
+       call lsquit('InteractionEnergy not implemented in full ccsd',-1)
+    ENDIF
+    IF(DECinfo%PrintInteractionEnergy)THEN
+       call add_dec_interactionenergies(natoms,ccsd_mat_tot%val,orbitals_assigned,&
+            & interactionE,MyMolecule%SubSystemIndex,2)
+       write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy : ',interactionE
+    ENDIF
 
     ! Delete orbitals 
     do i=1,nocc_tot
@@ -286,6 +293,7 @@ contains
     type(decorbital), pointer :: unocc_orbitals(:)
     logical, pointer :: orbitals_assigned(:)
     logical :: local
+    real(realk) :: InteractionECCSD,InteractionECCSDPT4,InteractionECCSDPT5
 
     local=.true.
 #ifdef VAR_MPI
@@ -380,7 +388,20 @@ contains
     call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
                            & ccsd_mat_tot%val,ccsd_mat_tmp%val)
 
+    write(DECinfo%output,*) 'before tot',ccsd_mat_tot%val
+    write(DECinfo%output,*) 'before tmp',ccsd_mat_tmp%val
     call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
+    IF(DECinfo%InteractionEnergy)THEN
+       call lsquit('InteractionEnergy not implemented in full ccsd_pt',-1)
+    ENDIF
+    IF(DECinfo%PrintInteractionEnergy)THEN
+       write(DECinfo%output,*) 'add_dec_interactionenergies',ccsd_mat_tot%val
+       write(DECinfo%output,*) 'add_dec_interactionenergies(4,1)',ccsd_mat_tot%val(4,1)
+       write(DECinfo%output,*) 'add_dec_interactionenergies(1,4)',ccsd_mat_tot%val(1,4)
+       
+       call add_dec_interactionenergies(natoms,ccsd_mat_tot%val,orbitals_assigned,&
+            & interactionECCSD,MyMolecule%SubSystemIndex,2)
+    ENDIF
 
     ! release ccsd stuff
     call array2_free(ccsd_mat_tot)
@@ -404,6 +425,24 @@ contains
     call print_e4_full(natoms,e4_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
 
     call print_e5_full(natoms,e5_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
+    IF(DECinfo%PrintInteractionEnergy)THEN
+       call add_dec_interactionenergies(natoms,e4_mat_tot%val,orbitals_assigned,&
+            & InteractionECCSDPT4,MyMolecule%SubSystemIndex)
+       write(DECinfo%output,'(A)') ' '
+       write(DECinfo%output,'(A)') ' '
+       write(DECinfo%output,'(A)') 'Interaction Energies '
+       write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
+            & interactionECCSD
+       write(DECinfo%output,'(1X,a,g20.10)') '(fourth order) CCSD(T) Interaction correlation energy:',&
+            & InteractionECCSDPT4
+       call add_dec_interactionenergies(natoms,e5_mat_tot%val,orbitals_assigned,&
+            & InteractionECCSDPT5,MyMolecule%SubSystemIndex)
+       write(DECinfo%output,'(1X,a,g20.10)') '(fifth order) CCSD(T) Interaction correlation energy :',&
+            & InteractionECCSDPT5
+       write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) Interaction correlation energy         :',&
+            & InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionECCSD
+       write(DECinfo%output,'(A)') ' '
+    ENDIF
 
     ! release stuff
     call array2_free(e4_mat_tot)
