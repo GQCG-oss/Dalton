@@ -730,6 +730,7 @@ call TestLength(LINE120,120,LINE,80)
     ELSE
       Angstrom = .FALSE.
     ENDIF
+    Subsystems=.FALSE.
 
     !johannesfor reading lattice vectors in pbc
    ! IPOS = INDEX(LINE,'PBC')
