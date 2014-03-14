@@ -179,11 +179,11 @@ CTRL[13]=1
 ERROR[13]="FIRST ENERGY WITH THIRD BASIS SET NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "O *      (0| )\.0000000000 * (0| )\.0000000000 * \-0*\.0474[56]" $log | wc -l`
-CRIT2=`$GREP "H * _1 * (0| )\.0000000000 *   1\.41965.* 1.02228" $log | wc -l`
-CRIT3=`$GREP "H * _2 * (0| )\.0000000000 * \-1\.41965.* 1.02228" $log | wc -l`
+CRIT1=`$GREP -l "O *      (0| )\.0000000000 * (0| )\.0000000000 * \-0*\.0474[56]" $log | wc -l`
+CRIT2=`$GREP -l "H * _1 * (0| )\.0000000000 *   1\.4196[45].* 1.02228" $log | wc -l`
+CRIT3=`$GREP -l "H * _2 * (0| )\.0000000000 * \-1\.4196[45].* 1.02228" $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[14]=12
+CTRL[14]=3
 ERROR[14]="FINAL GEOMETRY NOT CORRECT"
 
 # Convergence

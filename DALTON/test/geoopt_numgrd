@@ -166,8 +166,8 @@ CTRL[10]=8
 ERROR[10]="FIRST GRADIENT NOT CORRECT"
 
 # First step
-CRIT1=`$GREP "H1 * _1 * 0*\.0000000000 * \-1\.483134.* 1\.052924" $log | wc -l`
-CRIT2=`$GREP "H1 * _2 * 0*\.0000000000 *   1\.483134.* 1\.052924" $log | wc -l`
+CRIT1=`$GREP "H1 * _1 * 0*\.0000000000 * \-1\.48313.* 1\.052924" $log | wc -l`
+CRIT2=`$GREP "H1 * _2 * 0*\.0000000000 *   1\.48313.* 1\.052924" $log | wc -l`
 CRIT3=`$GREP "O * 0*\.0000000000 * 0*\.0000000000 * \-0*\.0842(89|90)" $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=3
@@ -190,11 +190,11 @@ CTRL[13]=3
 ERROR[13]="THIRD ITERATION NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "H1 * _1 * 0*\.0000000000 * \-1\.502035.* 1\.029063" $log | wc -l`
-CRIT2=`$GREP "H1 * _2 * 0*\.0000000000 *   1\.502035.* 1\.029063" $log | wc -l`
-CRIT3=`$GREP "O * 0*\.0000000000 * 0*\.0000000000 * \-0*\.036567" $log | wc -l`
+CRIT1=`$GREP -l "H1 * _1 * 0*\.0000000000 * \-1\.502035.* 1\.02906[23]" $log | wc -l`
+CRIT2=`$GREP -l "H1 * _2 * 0*\.0000000000 *   1\.502035.* 1\.02906[23]" $log | wc -l`
+CRIT3=`$GREP -l "O * 0*\.0000000000 * 0*\.0000000000 * \-0*\.036567" $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[14]=9
+CTRL[14]=3
 ERROR[14]="FINAL GEOMETRY NOT CORRECT"
 
 # Final energy

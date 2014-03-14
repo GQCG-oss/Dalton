@@ -180,7 +180,7 @@ ERROR[1]="TWO-PHOTON TRANSITION TENSOR NOT CORRECT"
 # Test of two-photon absorption
 #
 CRIT1=`$GREP " * 1 * 1 * 4\.25 * Linear   * 0*\....E\-08 * 0*\.285E\-01 * 0*\.114E\+00 * 0*\.151E\-02 * 1\.50" $log | wc -l`
-CRIT2=`$GREP " * 1 * 1 * 4\.25 * Circular * 0*\.3..E\-08 * 0*\.285E\-01 * 0*\.171E\+00 * 0*\.226E\-02 * 1\.50" $log | wc -l`
+CRIT2=`$GREP " * 1 * 1 * 4\.25 * Circular * 0*\....E\-08 * 0*\.285E\-01 * 0*\.171E\+00 * 0*\.226E\-02 * 1\.50" $log | wc -l`
 CRIT3=`$GREP " * 1 * 2 * 8\.40 * Linear   * 0*\.412E\+01 * 0*\.444E\+01 * 0*\.260E\+02 * 0*\.134E\+01 * 0*\.71" $log | wc -l`
 CRIT4=`$GREP " * 1 * 2 * 8\.40 * Circular * 0*\.412E\+01 * 0*\.444E\+01 * 0*\.184E\+02 * 0*\.950E\+00 * 0*\.71" $log | wc -l`
 CRIT5=`$GREP " * 1 * 3 * 8\.76 * Linear   * 0*\.31.E\-06 * 0*\.253E\+00 * 0*\.101E\+01 * 0*\.570E\-01 * 1\.50" $log | wc -l`
