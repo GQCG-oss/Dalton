@@ -181,12 +181,13 @@ contains
     ! (T) contribution to fragment energies for occupied (:,:,1), and virtual (:,:,2) schemes 
     !> (:,:,3): Occupied E[4] contribution;  (:,:,4): Virtual E[4] contribution
     !> (:,:,5): Occupied E[5] contribution;  (:,:,6): Virtual E[5] contribution
-    logical :: calcAF
+    logical :: calcAF,ForcePrintTime
     integer(kind=ls_mpik) :: master,IERR,comm,sender
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
 #endif
     master=0
+    ForcePrintTime = .TRUE.
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -265,8 +266,7 @@ contains
     DECinfo%MP2density  = .false.
     DECinfo%first_order = .false.
     DECinfo%gradient    = .false.
-
-    call LSTIMER('DEC INIT',tcpu,twall,DECinfo%output)
+    call LSTIMER('DEC INIT',tcpu,twall,DECinfo%output,ForcePrintTime)
 
 
     ! FRAGMENT OPTIMIZATION AND (POSSIBLY) ESTIMATED FRAGMENTS
@@ -294,12 +294,14 @@ contains
 #endif
     end if
 
+    IF(esti)THEN
+       call LSTIMER('DEC Atomic Frags and Estimates',tcpu,twall,DECinfo%output,ForcePrintTime)
+    ELSE
+       call LSTIMER('DEC Atomic Fragment Calculation',tcpu,twall,DECinfo%output,ForcePrintTime)
+    ENDIF
 
     ! Done with estimates
     esti=.false.
-
-    call LSTIMER('DEC ATOMFRAG',tcpu,twall,DECinfo%output)
-
     ! Save fragment energies and set model for atomic fragments appropriately
     do i=1,natoms
        if( dofrag(i) ) then
@@ -454,7 +456,11 @@ contains
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
     mastertime = twall2-twall1
-    call LSTIMER('DEC ALLFRAG',tcpu,twall,DECinfo%output)
+    IF(DECinfo%RepeatAF)THEN
+       call LSTIMER('DEC Atomic and Pair Fragcalc',tcpu,twall,DECinfo%output,ForcePrintTime)
+    ELSE
+       call LSTIMER('DEC PAIR Fragment calc',tcpu,twall,DECinfo%output,ForcePrintTime)
+    ENDIF
 
 #ifdef VAR_MPI
     ! Set all MPI groups equal to the world group
@@ -542,7 +548,7 @@ contains
        call get_estimated_energy_error(natoms,Interactionenergies,InteractionEerr)
        call print_Interaction_energy(InteractionEcorr,InteractionEerr)   
     ENDIF
-    call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output)
+    call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 
   end subroutine main_fragment_driver
 
