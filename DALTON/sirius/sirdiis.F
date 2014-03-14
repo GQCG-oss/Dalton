@@ -1032,7 +1032,11 @@ C
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
+#if defined (PCM_MODULE)
+            IF (EMBEDDING .or. pcmmod_is_pcm_calculation) then
+#else                
             IF (EMBEDDING) THEN
+#endif                    
 C           this also includes the case of MMPCM
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(A,I3,1P,2G20.12,D15.5,D12.2)')

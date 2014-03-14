@@ -29,19 +29,21 @@
          subroutine get_nuclear_mep(nr_points, nr_points_irr, centers, mep)
 
          use pcm_utils, only: getacord
+         use pcmmod_cfg, only: pcmmod_separate
                                                           
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"      
 #include "nuclei.h"
-           
+
          integer, intent(in)  :: nr_points                           
          integer, intent(in)  :: nr_points_irr                   
          real(8), intent(in)  :: centers(3, nr_points)               
          real(8), intent(out) :: mep(nr_points)
 
          real(8)              :: coora(3, nucdep), charges(nucdep)
+         real(8), allocatable :: scratch(:)
          real(8)              :: dist, temp                          
          integer              :: i, j, k, ipoint
          real(8)              :: renorm
@@ -58,20 +60,51 @@
             enddo
          enddo
 
-         do i = 1, nucdep
-            do ipoint = 1, nr_points_irr
-               dist = (coora(1, i) - centers(1, ipoint))**2 +      &
-                      (coora(2, i) - centers(2, ipoint))**2 +      &
-                      (coora(3, i) - centers(3, ipoint))**2
-               dist = sqrt(dist)
-               mep(ipoint) = mep(ipoint) + (charges(i) / dist)
-            end do
-         end do
-
-         do ipoint = 1, nr_points_irr
-            temp = mep(ipoint) * renorm
-            mep(ipoint) = temp 
-         end do
+! In order to renormalize for the number of symmetry operations we have
+! to branch based on the type of algorithms chosen: .SEPARATE or
+! .TOTAL MEP/ASC 
+! In the second case, in fact, the nuclear potential is accumulated on
+! top of the electronic and the renormalization will then affect also
+! the electronic part (which we do not want)
+         if (pcmmod_separate) then
+           do i = 1, nucdep                                            
+              do ipoint = 1, nr_points_irr
+                 dist = (coora(1, i) - centers(1, ipoint))**2 +      &
+                        (coora(2, i) - centers(2, ipoint))**2 +      &
+                        (coora(3, i) - centers(3, ipoint))**2
+                 dist = sqrt(dist)
+                 mep(ipoint) = mep(ipoint) + (charges(i) / dist)
+              end do
+           end do
+                                                                       
+           do ipoint = 1, nr_points_irr
+              temp = mep(ipoint) * renorm
+              mep(ipoint) = temp 
+!             write(lupri, *) "v_nuc(",ipoint,") = ", mep(ipoint)
+           end do
+         else 
+           allocate(scratch(nr_points_irr))
+           scratch = 0.0d0
+           do i = 1, nucdep                                            
+              do ipoint = 1, nr_points_irr
+                 dist = (coora(1, i) - centers(1, ipoint))**2 +      &
+                        (coora(2, i) - centers(2, ipoint))**2 +      &
+                        (coora(3, i) - centers(3, ipoint))**2
+                 dist = sqrt(dist)
+                 scratch(ipoint) = scratch(ipoint) + (charges(i) / dist)
+              end do
+           end do
+                                                                       
+           do ipoint = 1, nr_points_irr
+              temp = scratch(ipoint) * renorm
+              scratch(ipoint) = temp 
+!              write(lupri, *) "v_nuc(",ipoint,") = ", scratch(ipoint)
+           end do
+           do ipoint = 1, nr_points_irr
+             mep(ipoint) = mep(ipoint) + scratch(ipoint)
+           end do
+           deallocate(scratch)
+         end if
          
          end subroutine get_nuclear_mep
          
@@ -132,13 +165,13 @@
             call vectorized_integration_pcm(nr_points, centers, vector, matrix, work, lwork, do_matrix)
          end if
 
-!         if (do_matrix) then
-!            write(lupri,*) "Called with get_matrix"
-!         else
-!            do ipoint = 1, nr_points
-!              write(lupri, *) "v_ele(", ipoint,") = ", vector(ipoint)
-!            end do
-!         end if
+!        if (do_matrix) then
+!           write(lupri,*) "Called with get_matrix"
+!        else
+!           do ipoint = 1, nr_points
+!             write(lupri, *) "v_ele(", ipoint,") = ", vector(ipoint)
+!           end do
+!        end if
 
          end subroutine get_electronic_mep
       
