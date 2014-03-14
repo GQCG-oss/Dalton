@@ -1326,14 +1326,22 @@ ELSE !OLD INPUT STYLE
    ENDIF
 ENDIF
 
-IPOS = INDEX(TEMPLINE,'pointcharge')
 pointcharge = .FALSE.
+IPOS = INDEX(TEMPLINE,'pointcharge')
+IF (IPOS .NE. 0) THEN
+   pointcharge = .TRUE.
+ENDIF
+IPOS = INDEX(TEMPLINE,'Pointcharge')
 IF (IPOS .NE. 0) THEN
    pointcharge = .TRUE.
 ENDIF
 
-IPOS = INDEX(TEMPLINE,'phantom')
 phantom = .FALSE.
+IPOS = INDEX(TEMPLINE,'phantom')
+IF (IPOS .NE. 0) THEN
+   phantom = .TRUE.
+ENDIF
+IPOS = INDEX(TEMPLINE,'Phantom')
 IF (IPOS .NE. 0) THEN
    phantom = .TRUE.
 ENDIF
