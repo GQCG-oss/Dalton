@@ -134,7 +134,7 @@ contains
     DECinfo%PairMP2                 = .false.
     DECinfo%PairEstimate            = .true.
     DECinfo%PairEstimateIgnore      = .false.
-    DECinfo%EstimateINITradius      = 2.0E0_realk
+    DECinfo%EstimateINITradius      = 2.0E0_realk/bohr_to_angstrom
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory     = 0E0_realk
@@ -519,6 +519,7 @@ contains
        case('.IGNOREPAIRESTIMATE'); DECinfo%PairEstimateIgnore=.true.
        case('.ESTIMATEINITRADIUS')
           read(input,*) DECinfo%EstimateINITradius
+          DECinfo%EstimateINITradius = DECinfo%EstimateINITradius/bohr_to_angstrom
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom

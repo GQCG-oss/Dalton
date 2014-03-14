@@ -1229,7 +1229,7 @@ subroutine print_dec_info()
 !
        ! Init estimated atomic fragments by including orbitals assigned to neighbour atoms
        ! within 2 Angstrom.
-       init_radius = DECinfo%EstimateINITradius/bohr_to_angstrom    
+       init_radius = DECinfo%EstimateINITradius
        DoBasis = .false.
        call mem_alloc(EstAtomicFragments,natoms)
        call init_estimated_atomic_fragments(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
