@@ -361,6 +361,8 @@ module dec_typedef_module
      logical :: PairEstimate
      !> Carry out pair estimate, but anyway run all pairs.
      logical :: PairEstimateIgnore
+     !> initiation radius of the estimated fragments
+     real(realk) :: EstimateINITradius
      ! --
 
 
