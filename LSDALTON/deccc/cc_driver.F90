@@ -388,17 +388,11 @@ contains
     call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
                            & ccsd_mat_tot%val,ccsd_mat_tmp%val)
 
-    write(DECinfo%output,*) 'before tot',ccsd_mat_tot%val
-    write(DECinfo%output,*) 'before tmp',ccsd_mat_tmp%val
     call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
     IF(DECinfo%InteractionEnergy)THEN
        call lsquit('InteractionEnergy not implemented in full ccsd_pt',-1)
     ENDIF
     IF(DECinfo%PrintInteractionEnergy)THEN
-       write(DECinfo%output,*) 'add_dec_interactionenergies',ccsd_mat_tot%val
-       write(DECinfo%output,*) 'add_dec_interactionenergies(4,1)',ccsd_mat_tot%val(4,1)
-       write(DECinfo%output,*) 'add_dec_interactionenergies(1,4)',ccsd_mat_tot%val(1,4)
-       
        call add_dec_interactionenergies(natoms,ccsd_mat_tot%val,orbitals_assigned,&
             & interactionECCSD,MyMolecule%SubSystemIndex,2)
     ENDIF
