@@ -1463,8 +1463,8 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         config%solver%DEBUG_DIAG_REDSPACE = .true.
      CASE('.DEBUG_DIAG_HESSIAN')
         config%opt%DEBUG_DIAG_HESSIAN = .true.
-     CASE('.DEBUG_HESSIAN')
-        config%solver%DEBUG_HESSIAN = .true.
+!     CASE('.DEBUG_HESSIAN')
+!        config%solver%DEBUG_HESSIAN = .true.
      CASE('.DEBUG_HESSIAN_EXACT')
         config%solver%DEBUG_HESSIAN_EXACT = .true. ; config%solver%DEBUG_HESSIAN = .true.
      CASE('.DEBUG_IDEMPOTENCY')

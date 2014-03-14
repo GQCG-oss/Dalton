@@ -19,25 +19,21 @@ integer(KIND=long),save :: mem_tp_allocated_grid, max_mem_tp_used_grid
 !Interfaces for allocating/deallocating pointers
 INTERFACE mem_grid_alloc
   MODULE PROCEDURE real_grid_allocate_1dim, real_grid_allocate_2dim, &
-     &             real_grid_allocate_3dim, real_grid_allocate_4dim, &
-     &             real_grid_allocate_5dim, int_grid_allocate_1dim,  &
+     &             real_grid_allocate_3dim, int_grid_allocate_1dim,  &
      &             int_grid_allocate_2dim,  int_grid_allocate_3dim, &
 #ifndef VAR_INT64
      &             intlong_grid_allocate_1dim, & !in case of 64bit this is the same as int_allocate_1dim
 #endif
-     &             char_grid_allocate_1dim, &
      &             logic_grid_allocate_1dim, logic_grid_allocate_2dim
 END INTERFACE
 !
 INTERFACE mem_grid_dealloc
   MODULE PROCEDURE real_grid_deallocate_1dim, real_grid_deallocate_2dim, &
-     &             real_grid_deallocate_3dim, real_grid_deallocate_4dim, &
-     &             real_grid_deallocate_5dim, int_grid_deallocate_1dim, &
+     &             real_grid_deallocate_3dim, int_grid_deallocate_1dim, &
      &             int_grid_deallocate_2dim, int_grid_deallocate_3dim,  &
 #ifndef VAR_INT64
      &             intlong_grid_deallocate_1dim, & !in case of 64bit this is the same as int_allocate_1dim
 #endif
-     &             char_grid_deallocate_1dim, &
      &             logic_grid_deallocate_1dim, logic_grid_deallocate_2dim
 END INTERFACE
 
@@ -148,26 +144,6 @@ nsize = size(A)*mem_realsize
 call mem_allocated_mem_grid(nsize)
 END SUBROUTINE real_grid_allocate_3dim
 
-SUBROUTINE real_grid_allocate_4dim(A,n1,n2,n3,n4)
-implicit none
-integer,intent(in)  :: n1,n2,n3,n4
-REAL(REALK),pointer :: A(:,:,:,:)
-integer (kind=long) :: nsize
-call mem_alloc(A,n1,n2,n3,n4)
-nsize = size(A)*mem_realsize
-call mem_allocated_mem_grid(nsize)
-END SUBROUTINE real_grid_allocate_4dim
-
-SUBROUTINE real_grid_allocate_5dim(A,n1,n2,n3,n4,n5)
-implicit none
-integer,intent(in)  :: n1,n2,n3,n4,n5
-REAL(REALK),pointer :: A(:,:,:,:,:)
-integer (kind=long) :: nsize
-call mem_alloc(A,n1,n2,n3,n4,n5)
-nsize = size(A)*mem_realsize
-call mem_allocated_mem_real(nsize)
-END SUBROUTINE real_grid_allocate_5dim
-
 !----- DEALLOCATE REAL POINTERS -----!
 
 SUBROUTINE real_grid_deallocate_1dim(A)
@@ -196,24 +172,6 @@ nsize = size(A)*mem_realsize
 call mem_deallocated_mem_grid(nsize)
 call mem_dealloc(A)
 END SUBROUTINE real_grid_deallocate_3dim
-
-SUBROUTINE real_grid_deallocate_4dim(A)
-implicit none
-REAL(REALK),pointer :: A(:,:,:,:)
-integer (kind=long) :: nsize
-nsize = size(A)*mem_realsize
-call mem_deallocated_mem_grid(nsize)
-call mem_dealloc(A)
-END SUBROUTINE real_grid_deallocate_4dim
-
-SUBROUTINE real_grid_deallocate_5dim(A)
-implicit none
-REAL(REALK),pointer :: A(:,:,:,:,:)
-integer (kind=long) :: nsize
-nsize = size(A)*mem_realsize
-call mem_deallocated_mem_grid(nsize)
-call mem_dealloc(A)
-END SUBROUTINE real_grid_deallocate_5dim
 
 !----- ALLOCATE INTEGER POINTERS -----!
 
@@ -298,30 +256,6 @@ nsize = size(I)*mem_intsize
 call mem_deallocated_mem_grid(nsize)
 call mem_dealloc(I)
 END SUBROUTINE int_grid_deallocate_3dim
-
-!----- ALLOCATE CHARACTER POINTERS -----!
-
-SUBROUTINE char_grid_allocate_1dim(C,n)
-implicit none
-integer,intent(in)         :: n
-CHARACTER(LEN=*),pointer :: C(:)
-integer (kind=long) :: nsize
-call mem_alloc(C,n)
-nsize = mem_complexsize*size(C)
-call mem_allocated_mem_grid(nsize)
-END SUBROUTINE char_grid_allocate_1dim
-
-!----- DEALLOCATE CHARACTER POINTERS -----!
-
-SUBROUTINE char_grid_deallocate_1dim(C)
-implicit none
-CHARACTER(LEN=*),pointer :: C(:)
-integer :: IERR
-integer (kind=long) :: nsize
-nsize = mem_complexsize*size(C)
-call mem_deallocated_mem_grid(nsize)
-call mem_dealloc(C)
-END SUBROUTINE char_grid_deallocate_1dim
 
 !----- ALLOCATE LOGICAL POINTERS -----!
 

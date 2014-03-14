@@ -230,37 +230,4 @@ contains
 
    end subroutine update_trustradius
 
-
-subroutine arhupdate_trustradius_david(CFG,r,ls)
-implicit none
-type(RedSpaceItem)      :: CFG
-real(realk), intent(in) :: r
-type(lsitem), intent(in)   :: ls
-
- CFG%use_max_element=.false.
- CFG%step_accepted = .true.
-
- if (r.lt.0d0 .and. CFG%r_denom < 0.0d0) then
-    CFG%Stepsize = CFG%Stepsize/2.0d0
-    CFG%step_accepted = .false.
-    CFG%arh%step_accepted = CFG%step_accepted
-    write (ls%lupri,*) 'Reject and contract *0.7'
-    return
- endif
-
- if(r.gt.0.75d0) then
-         CFG%Stepsize = min(CFG%Stepsize*1.2d0,CFG%max_stepsize)
-         write(ls%lupri,*) 'Expand *1.5', r
- end if
-
- if(r.gt.0.25d0 .and. r.lt.0.75d0)  write(ls%lupri,*) 'Keep stepsize', r
- if (r.ge.0.0d0 .and. r.lt.0.25d0) then
-    CFG%Stepsize = CFG%Stepsize*0.7d0
-    write(ls%lupri,*) 'Contract *0.7', r
- endif
-
- CFG%arh%step_accepted = CFG%step_accepted
-
-end subroutine arhupdate_trustradius_david
-
  end module trustradius_mod

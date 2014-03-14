@@ -17,69 +17,74 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decccsd_mo.info <<'%EOF%'
-   DEC-CCSD energy using fragment calculations without long-range t1
+cat > decccsd_Bind.info <<'%EOF%'
+   DEC-CCSD interaction energy using fragment calculations without long-range t1
    -----------------------------------------------------------------
    Molecule:         3 BH molecules with stretched bonds
-   Wave Function:    MO-CCSD / STO-3G
-   Test Purpose:     Test DEC energy for MO-CCSD (Pablo Baudin)
+   Wave Function:    CCSD / STO-3G
+   Test Purpose:     Test Interaction energy within DEC framework
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decccsd_mo.mol <<'%EOF%'
+cat > decccsd_Bind.mol <<'%EOF%'
 BASIS                                                   
 STO-3G
-                                                        
-                                                        
+Two Subsystems - One with 2 BH molecule and one with 1 BH
+
 Atomtypes=4 Nosymmetry Angstrom SubSystems
-Charge=5.0 Atoms=2 SubSystem=A
+Charge=5.0 Atoms=2 SubSystem=BH12
 B          0.000000      0.0000000    0.0000000
 B          3.000000      0.0000000    1.4500000
-Charge=5.0 Atoms=1 SubSystem=B
+Charge=5.0 Atoms=1 SubSystem=BH3
 B          6.000000      0.0000000    0.0000000
-Charge=1.0 Atoms=2 SubSystem=A
+Charge=1.0 Atoms=2 SubSystem=BH12
 H          0.000000      1.4500000    0.0000000
 H          3.000000      0.0000000    0.0000000
-Charge=1.0 Atoms=1 SubSystem=B
+Charge=1.0 Atoms=1 SubSystem=BH3
 H          6.000000      0.0000000    1.4500000
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decccsd_mo.dal <<'%EOF%'
+cat > decccsd_Bind.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .ARH
 .START
 TRILEVEL
-.CONVTHR
-1.0d-5
-**INFO
-.DEBUG_MPI_MEM
+.LCM
+**LOCALIZE ORBITALS
+.No Level2 Localization
+.PFM
+2 2
 **DEC
+.BOUGHTONPULAY
+.FRAGEXPMODEL
+.MP2
+.FRAGREDMODEL
+.MP2
 .CCSD
-.MOCCSD
-.MPIsplit
-0
+.INTERACTIONENERGY
 .FOT
-4
+8
 .MEMORY
 2.0
-.PRINTINTERACTIONENERGY
 *END OF INPUT  
 %EOF%
 #######################################################################
 
-
-
-#######################################################################
+ 
 
 #######################################################################
-echo $CHECK_SHELL >decccsd_mo.check
-cat >>decccsd_mo.check <<'%EOF%'
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >decccsd_Bind.check
+cat >>decccsd_Bind.check <<'%EOF%'
 
 log=$1
 
@@ -90,22 +95,22 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-74\.1900454" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-74\.19004" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=2
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# CCSD ENERGY
-CRIT1=`$GREP "Correlation energy  : * \-0\.199" $log | wc -l`
+# CCSD INTERACTION ENERGY
+CRIT1=`$GREP "Interaction Correlation energy  : * \-0\.000443" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="CCSD correlation energy is not correct"
+ERROR[2]="DEC CCSD Interaction correlation energy is not correct"
 
-# CCSD INTERACTION ENERGY
-CRIT1=`$GREP "Interaction Correlation energy  : * \-0\.000422" $log | wc -l`
+# CCSD INTERACTION ENERGY CHECK
+CRIT1=`$GREP "Estimated DEC error : *  0\.000020" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
-ERROR[3]="CCSD interaction correlation energy is not correct"
+ERROR[3]="DEC CCSD concistency check not correct"
 
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
@@ -138,6 +143,7 @@ else
 fi
 
 %EOF%
+
 
 
 
