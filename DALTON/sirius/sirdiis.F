@@ -125,7 +125,7 @@ C
 
       ! QM/NP/MM embedding
       IF (QMNPMM) THEN
-         call quit('not implemented in this version')
+         call quit('QMNPMM not implemented in this version')
       ELSE
          KRELMAT = 1
       END IF
@@ -483,7 +483,7 @@ C       In iterations we want 0.001 times GRDNRM because we do
 C       keep vectors until GRDNRM fallen a factor 100
       DAMP   = D0
       EMCLOW = D0
-      GNRMSV = D0
+      GRDNRM_old = -1.0D0
       ITNOCC = 0
       NEWOCC = 0
       LNEWOCC = AUTOCC
@@ -1022,7 +1022,8 @@ C
  4010 FORMAT(' DIIS aborted because energy increased in this iteration.'
      &      /' Program aborted because this means automatic symmetry'
      &      /' designation of occupied orbitals is not possible!'
-     &      /' Please send this output to dalton users mailing list !!!'
+     &      /' Please post this output as a bug report to the'//
+     &       ' dalton forum.'
      &      /' You may try again with explicit specfication of .DOUBLY')
  4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
      &      /' Backstep to orbitals from previous iteration.')
@@ -1114,7 +1115,7 @@ C        Test if convergence is stopping because of numerical problems
 C        (EMCDIF test should make sure we are in local region)
 C
 ckr         IF (ITNOCC .GT. 3 .AND. ABS(EMCDIF) .LT. THDDEF .AND.
-ckr     &       GRDNRM .GT. CNVFAC*GNRMSV .AND. .NOT. NEWTHR) THEN
+ckr     &       GRDNRM .GT. CNVFAC*GRDNRM_OLD .AND. .NOT. NEWTHR) THEN
 ckr            ICONV = 0
 ckr            WRITE (LUPRI,4140)
 ckr            IF (LUW4 .NE. LUPRI) WRITE (LUW4,4140)
@@ -1219,8 +1220,8 @@ C        Do not try that with open-shell - it does not work./pawsa
      &        GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
-     &         EMCDIF_test*(GRDNRM-GNRMSV) .LT. -1.0D-10) .AND. BCKSTP)
-     &       THEN
+     &         EMCDIF_test*(GRDNRM-GRDNRM_OLD) .LT. -1.0D-10 )
+     &        .AND. BCKSTP)  THEN
 C              .. test EMCDIF*grddif against -1.0D-10 instead of 0.0D0
 C                 to avoid round-off problems here /hjaaj Sep 2005
 
@@ -1233,7 +1234,7 @@ C                 to avoid round-off problems here /hjaaj Sep 2005
              WRITE(LUPRI,'(1P/A,2(/A,G11.3),/A,I3,A)')
      &       '!!! Info: DIIS restarted because it was stalled ...',
      &       ' - energy changed by  ',EMCDIF,
-     &       ' - gradient changed by',GRDNRM - GNRMSV,
+     &       ' - gradient changed by',GRDNRM - GRDNRM_OLD,
      &       ' - or strange C vector coeff. for current index (=',
      &       INDEVC,') :'
              WRITE (LUPRI,'(10F12.6)') (CVEC(I),I=1,NEVC)
@@ -1275,7 +1276,7 @@ c            and slow down  the level shifting annealing...
          ELSE
              SHFTLVL =  SHFTLVL*SHFTFAC
 c            make sure we get right HOMO-LUMO gap in the end.
-             IF ( GRDNRM .LE. 12.0D0*THDIIS ) SHFTLVL = 0.D0
+             IF ( GRDNRM .LE. 100.00*THDIIS ) SHFTLVL = 0.D0
          END IF
   300    CONTINUE
 C hjaaj 22-Jun-2005-B
@@ -1283,7 +1284,7 @@ C        Level shift is only working for closed shell calculations ...
 C          (open shell problems reported by users ...)
          IF (NASHT .GT. 0) SHFTLVL = 0.0D0
 C hjaaj 22-Jun-2005-E
-         GNRMSV = GRDNRM
+         GRDNRM_OLD = GRDNRM
 C
 C        Iteration accepted; save current CMO for restart
          WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
@@ -1383,7 +1384,12 @@ C        Diagonalize (level-shifted) FC (saved in DCAO)
 C
          CALL ICOPY(8,NISH,1,NISH_SAVE,1)
          JOPRHF = IOPRHF
-         IF ( THDIIS .GE. 0.05D0*GRDNRM ) THEN
+         IF (GRDNRM_old > 0.0D0) THEN
+            GRDNRM_factor = MAX(12.0D0, GRDNRM_old/GRDNRM)
+         ELSE
+            GRDNRM_factor = 12.0D0
+         END IF
+         IF ( GRDNRM .LE. MAX(1.D-5, THDIIS*GRDNRM_factor) ) THEN
             THR_FCKEIG = 0.8D0*THDIIS
             CALL ICOPY(8,NORB,1,NCAN,1) ! we need all orbitals canonical for CC
          ELSE
@@ -2092,7 +2098,7 @@ C     EDFTY = EDFTY +EXCTRO-DP5*DDOT(N2BASX,DCAO,1,FCAO,1)
       RETURN
       END
 C  /* Deck fckeig */
-      SUBROUTINE FCKEIG(CMO,FC,SHFTLVL,THR_FCKEIG,NCAN,IPR_DIIS,
+      SUBROUTINE FCKEIG(CMO,FC,SHFTLVL,THR_FCKEIG,NCAN,IPRINT_in,
      &                  SCRA,LSCRA)
 C
 C Written 20-May-1993 by Hans Jorgen Aa. Jensen
@@ -2143,6 +2149,7 @@ C
       CALL QENTER('FCKEIG')
       call gettim(t1,w1)
 C
+      IPR_FCKEIG = IPRINT_in
       LSAVE4 = P4FLAG(9)
       LSAVE6 = P6FLAG(6)
       P4FLAG(9) = .FALSE.
@@ -2160,11 +2167,11 @@ C
       DO, ISYM = 1,NSYM
          K = K + NOCC(ISYM)*(NORB(ISYM)-NOCC(ISYM))
       END DO
-      FAC_THR_JACO = MAX(1,4*K)
-      ! factor 4 because gradient ia = 2 F_ia = 4 FC_ia
+      FAC_THR_JACO = 16*K
+      ! factor 16 because gradient ia = 2 F_ia = 4 FC_ia
       FAC_THR_JACO = 1.0D0 / SQRT(FAC_THR_JACO)
-      ! factor to ensure gradient is less than THR_JACO if
-      ! all occ-vir elements are less than THR_JACO*FAC_THR_JACO /hjaaj
+      ! factor to ensure gradient is less than THR_FCKEIG if all
+      ! occ-vir elements are less than THR_FCKEIG/FAC_THR_JACO /hjaaj
 
       DO 200 ISYM = 1,NSYM
          NCANI = NCAN(ISYM)
@@ -2239,8 +2246,8 @@ C
          CALL JACO_THR(FC(IFSYM+1),CMO(ICSYM),NORBI,NMAX,NBASI,THR_JACO)
 C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_CONV)
 C
-         IF (IPR_DIIS .GT. 20) THEN
-            write (lupri,*) 'debug: FC after JACO_THR',NMAX,NORBI
+         IF (IPR_FCKEIG .GT. 20) THEN
+            write (lupri,*) 'FCKEIG debug: FC after JACO_THR',NMAX,NORBI
             call outpak(FC(IFSYM+1),NORBI,-1,LUPRI)
          END IF
          DO, I=1,NORBI
@@ -2282,7 +2289,7 @@ C
 C
 C         CALL HEADER('Reordered orbitals',-1)
 C         CALL PRORB(CMO,.FALSE.,LUPRI)
-         IF (IPR_DIIS .GE. 4) WRITE (LUPRI,'(/A,I2/,(5F15.5))')
+         IF (IPR_FCKEIG .GE. 4) WRITE (LUPRI,'(/A,I2/,(5F15.5))')
      &      ' DIIS Fock eigenvalues in symmetry',ISYM,
      &      (FC(IORBI+I), I = 1,NORBI)
 
@@ -2333,9 +2340,11 @@ C
 C
 C *** end of subroutine FCKEIG
 C
-      call gettim(t2,w2)
-      write(lupri,'(A,1P,3D10.2)')
-     &   ' Time used in FCKEIG, thr_jaco: ',t2-t1,w2-w1,thr_jaco
+      IF (IPR_FCKEIG > 0) THEN
+         call gettim(t2,w2)
+         write(lupri,'(A,1P,3D10.2)')
+     &      ' Time used in FCKEIG, thr_jaco: ',t2-t1,w2-w1,thr_jaco
+      END IF
       CALL QEXIT('FCKEIG')
       RETURN
 C
