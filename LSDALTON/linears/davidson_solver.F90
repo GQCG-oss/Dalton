@@ -744,20 +744,17 @@ call mem_dealloc(VL)
 call mem_dealloc(VR)
  !scale vector such that first element is 1
  if (dabs(mu_Vec(1)).le. 1E-15_realk) then
-    write(CFG%lupri,*)
-    write(*,*)
-    write(CFG%lupri,*) ' ***** WARNING ***** '
-    write(*,*) ' ***** WARNING ***** '
-    write(CFG%lupri,*) '  A trial vector contains zero gradient component' 
-    write(*,*) '  A trial vector contains zero gradient component' 
     if (CFG%arh_davidson) then
+      write(CFG%lupri,*)
+      write(*,*)
+      write(CFG%lupri,*) ' ***** WARNING ***** '
+      write(*,*) ' ***** WARNING ***** '
+      write(CFG%lupri,*) '  A trial vector contains zero gradient component' 
+      write(*,*) '  A trial vector contains zero gradient component' 
       write(*,*) '  Start calculation using keyword .ARH instead of .ARH DAVID /.ARH(LS) DAVID' 
       write(CFG%lupri,*) '  Start calculation using keyword .ARH instead of .ARH DAVID /.ARH(LS) DAVID' 
-    else 
-      write(*,*) ' Try to break molecular symmetry slightly '
-      write(CFG%lupri,*) ' Try to break molecular symmetry slightly '
+      call lsquit('Singularities due to trial vector containg zero gradient component',CFG%lupri)
     end if
-    call lsquit('Singularities due to trial vector containg zero gradient component',CFG%lupri)
  end if 
  mu_Vec = mu_Vec/mu_Vec(1)
 

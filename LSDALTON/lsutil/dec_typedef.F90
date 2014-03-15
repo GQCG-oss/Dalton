@@ -231,6 +231,11 @@ module dec_typedef_module
      !> Debug keyword to specify pure hydrogen atoms
      logical :: PUREHYDROGENdebug
 
+     !> Calculate the Interaction Energy (Ref to article)
+     logical :: InteractionEnergy
+     !> Print the Interaction Energy (Ref to article)
+     logical :: PrintInteractionEnergy
+
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split
@@ -356,6 +361,8 @@ module dec_typedef_module
      logical :: PairEstimate
      !> Carry out pair estimate, but anyway run all pairs.
      logical :: PairEstimateIgnore
+     !> initiation radius of the estimated fragments
+     real(realk) :: EstimateINITradius
      ! --
 
 
@@ -548,6 +555,8 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+     !> Which atoms are phantom atoms (only basis functions)
+     Logical, pointer :: PhantomAtom(:) => null()
      
 
      !> Occ-Occ Fock matrix in MO basis
@@ -566,6 +575,7 @@ module dec_typedef_module
      !> Cabs-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fcp(:,:) => null()
 
+     integer,pointer :: SubSystemIndex(:) => null()
 
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()

@@ -4394,7 +4394,7 @@ C
             ELSE
               WRITE(LUPRI,'(/A)')' RSPMC : MP2 correlation coefficients'
             ENDIF
-            CALL OUTPUT(PV,1,LPVMAT,1,1,LPVMAT,1,-1,LUPRI)
+            CALL OUTPUT(PV,1,1,1,LPVMAT,1,LPVMAT,-1,LUPRI)
          END IF
 C
          IF (TRPFLG) CALL TRPKAP(PV(1),PV(LPVMAT+1),XINDX(KIADR1),WRK)
@@ -4407,7 +4407,7 @@ C
                WRITE(LUPRI,'(/A)')
      &      ' RSPMC : MP2 singlet and triplet correlation coefficients'
             ENDIF
-            CALL OUTPUT(PV,1,LPVMAT,1,2,LPVMAT,2,-1,LUPRI)
+            CALL OUTPUT(PV,1,2,1,LPVMAT,2,LPVMAT,-1,LUPRI)
          END IF
 C
          CALL READT (LUSIFC,NACTT*NACTT,UDV)
@@ -4418,7 +4418,7 @@ C
             ELSE
                WRITE(LUPRI,'(/A)')' RSPMC : MP2 second order density'
             END IF
-            CALL OUTPUT(UDV,1,NACTT*NACTT,1,1,NACTT*NACTT,1,-1,LUPRI)
+            CALL OUTPUT(UDV,1,NACTT,1,NACTT,NACTT,NACTT,-1,LUPRI)
          END IF
 C
 C        UDV contains the MP2 one-density. Remove the diagonal

@@ -411,24 +411,9 @@ DO IAO=1,4
   ELSEIF (AOstring(IAO).EQ.AOpCharge) THEN
     Filename(iFilename:iFilename) = 'p'
     iFilename = iFilename + 1
-  ELSEIF (AOstring(IAO).EQ.AOS1p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't1'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOS2p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't2'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOS2p2cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't3'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOS2p2cGen) THEN
-    Filename(iFilename:iFilename+1) = 't4'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOP1p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't5'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOD1p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't6'
-    iFilename = iFilename + 2
+  ELSEIF (AOstring(IAO).EQ.AOelField) THEN
+    Filename(iFilename:iFilename) = 'f'
+    iFilename = iFilename + 1
   ELSE
     WRITE(LUPRI,'(1X,A,I1,2A)') 'Error! Wrong AOstring(',IAO,')=',AOstring(IAO),' in io_get_filename.'
     CALL lsQUIT('Error in io_get_filename Wrong AOstring',lupri)

@@ -489,6 +489,7 @@ AO%BATCH(1)%itype = 1
 AO%BATCH(1)%redtype = 1
 AO%BATCH(1)%type_Empty = .TRUE.
 AO%BATCH(1)%type_Nucleus = .FALSE.
+AO%BATCH(1)%type_elField = .FALSE.
 AO%BATCH(1)%type_pCharge = .FALSE.
 AO%BATCH(1)%spherical=.false.
 AO%BATCH(1)%atom=1
@@ -612,6 +613,7 @@ DO J=1,MOLECULE%natoms
    AO%BATCH(I)%itype = I
    AO%BATCH(I)%redtype = 1
    AO%BATCH(I)%type_Nucleus = .TRUE.
+   AO%BATCH(I)%type_elField = .FALSE.
    AO%BATCH(I)%type_pCharge = .FALSE.
    AO%BATCH(I)%TYPE_Empty = .FALSE.
    AO%BATCH(I)%spherical=.false.
@@ -643,6 +645,130 @@ AO%maxJ = 0
 !CALL DETERMINE_AOBATCH_MEM(AO)
 
 END SUBROUTINE BUILD_EMPTY_NUCLEAR_AO
+
+!> \brief builds an empty electric-field AOitem
+!> \author S. Reine
+!> \date 2014
+!>
+!> build an empty electric-field  AOitem, used for electric-field integrals
+!>
+SUBROUTINE BUILD_EMPTY_ELFIELD_AO(AO,MOLECULE,LUPRI)
+use molecule_type
+implicit none
+!> contains all info about the molecule (atoms, charge,...)
+TYPE(MOLECULEINFO)        :: MOLECULE
+!> the AOitem to be build
+TYPE(AOITEM)              :: AO
+!> the logical unit number for the output file
+INTEGER                   :: LUPRI
+!
+INTEGER                   :: aobatches,I,ncharges,J,NEWCHARGE,nAtoms,K
+REAL(REALK),pointer       :: CHARGES(:)
+
+J=0
+DO I=1,MOLECULE%natoms
+   IF(MOLECULE%ATOM(I)%phantom)CYCLE !no actul charge
+   J = J +1
+ENDDO
+nAtoms = J
+
+AO%natoms = 1                            
+CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)       
+CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)     
+AO%ATOMICnORB(1)=0                       
+AO%ATOMICnBATCH(1)=1                     
+AO%nbast = 1
+
+AO%empty=.TRUE.
+aobatches=nAtoms    !MOLECULE%natoms
+AO%nbatches=aobatches
+!AO%nCC=1
+AO%nExp=1
+
+CALL MEM_ALLOC(AO%BATCH,aobatches)
+CALL MEM_ALLOC(AO%Exponents,1)
+CALL lsmat_dense_init(AO%Exponents(1),1,1)
+call mem_alloc(CHARGES,MOLECULE%natoms)
+ncharges=0
+I=0
+DO K=1,MOLECULE%natoms
+   IF(MOLECULE%ATOM(K)%phantom)CYCLE !no actul charge
+   I=I+1
+   NEWCHARGE=0
+   DO J=1,ncharges
+      IF(ABS(MOLECULE%ATOM(K)%Charge-charges(J) ).LE. 1E-10_realk ) NEWCHARGE=J
+   ENDDO
+   IF(NEWCHARGE .EQ. 0)THEN
+      ncharges=ncharges+1
+      CHARGES(ncharges)=MOLECULE%ATOM(K)%Charge
+   ENDIF
+ENDDO
+
+AO%nCC=nCharges
+
+CALL MEM_ALLOC(AO%CC,nCharges)
+CALL MEM_ALLOC(AO%angmom,nCharges)
+
+DO I=1,nCharges
+   CALL lsmat_dense_init(AO%CC(I),1,1)
+   AO%CC(I)%elms(1)=-CHARGES(I)
+   AO%angmom(I) = 0
+ENDDO
+
+I=0
+DO K=1,MOLECULE%natoms
+   IF(MOLECULE%ATOM(K)%phantom)CYCLE !no actul charge
+   I = I + 1
+   DO J=1,ncharges
+      IF(ABS(MOLECULE%ATOM(K)%Charge-charges(J)).LE. 1E-10_realk) NEWCHARGE=J
+   ENDDO
+   AO%BATCH(I)%pCC(1)%p => AO%CC(NEWCHARGE)   
+   AO%BATCH(I)%CCindex(1) = NEWCHARGE   
+ENDDO
+
+call mem_dealloc(CHARGES)
+
+AO%Exponents(1)%elms(1)=0E0_realk
+
+I=0
+DO J=1,MOLECULE%natoms
+   IF(MOLECULE%ATOM(J)%phantom)CYCLE !no actul charge
+   I=I+1
+   AO%BATCH(I)%itype = I
+   AO%BATCH(I)%redtype = 1
+   AO%BATCH(I)%type_Nucleus = .FALSE.
+   AO%BATCH(I)%type_elField = .TRUE.
+   AO%BATCH(I)%type_pCharge = .FALSE.
+   AO%BATCH(I)%TYPE_Empty = .FALSE.
+   AO%BATCH(I)%spherical=.false.
+   AO%BATCH(I)%atom=J
+   AO%BATCH(I)%molecularIndex=MOLECULE%ATOM(J)%molecularIndex
+   AO%BATCH(I)%batch=1
+   AO%BATCH(I)%CENTER(1)=MOLECULE%ATOM(J)%CENTER(1)
+   AO%BATCH(I)%CENTER(2)=MOLECULE%ATOM(J)%CENTER(2)
+   AO%BATCH(I)%CENTER(3)=MOLECULE%ATOM(J)%CENTER(3)
+   AO%BATCH(I)%nPrimitives=1
+   AO%BATCH(I)%maxContracted=1
+   AO%BATCH(I)%maxAngmom=0
+   AO%BATCH(I)%pExponents => AO%Exponents(1)
+   AO%BATCH(I)%nAngmom=1
+   AO%BATCH(I)%extent=0E0_realk
+   AO%BATCH(I)%ANGMOM(1)=0
+   AO%BATCH(I)%nContracted(1)=1
+   AO%BATCH(I)%startOrbital(1)=1
+   AO%BATCH(I)%startprimOrbital(1)=I
+   AO%BATCH(I)%nOrbComp(1)=1
+   AO%BATCH(I)%nPrimOrbComp(1)=1
+   AO%BATCH(I)%nOrbitals(1)=1
+ENDDO
+AO%ntype = natoms!MOLECULE%natoms
+AO%nredtype = 1
+AO%maxJ = 0
+!WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
+!CALL PRINT_AO(LUPRI,AO)
+!CALL DETERMINE_AOBATCH_MEM(AO)
+
+END SUBROUTINE BUILD_EMPTY_ELFIELD_AO
 
 !> \brief builds an empty nuclear AOitem
 !> \author T. Kjaergaard
@@ -723,6 +849,7 @@ DO I=1,MOLECULE%natoms
    AO%BATCH(I)%itype = I
    AO%BATCH(I)%redtype = 1
    AO%BATCH(I)%type_Nucleus = .TRUE.
+   AO%BATCH(I)%type_elField = .FALSE.
    AO%BATCH(I)%type_pCharge = .TRUE.
    AO%BATCH(I)%TYPE_Empty = .FALSE.
    AO%BATCH(I)%spherical=.false.
@@ -1377,6 +1504,7 @@ IF(UNCONTRACTED)THEN
       AO%BATCH(nbatches)%molecularIndex = MOLECULE%ATOM(iATOM)%molecularIndex
       AO%BATCH(nbatches)%type_Empty  = .FALSE. 
       AO%BATCH(nbatches)%type_Nucleus  = .FALSE.
+      AO%BATCH(nbatches)%type_elField = .FALSE.
       AO%BATCH(nbatches)%type_pCharge = .FALSE.
       AO%BATCH(nbatches)%spherical= SCHEME%DoSpherical
       AO%BATCH(nbatches)%Angmom(1)= B - 1
@@ -1402,6 +1530,7 @@ ELSE !DEFAULT
    AO%BATCH(nbatches)%molecularIndex = MOLECULE%ATOM(iATOM)%molecularIndex
    AO%BATCH(nbatches)%type_Empty  = .FALSE. 
    AO%BATCH(nbatches)%type_Nucleus  = .FALSE.
+   AO%BATCH(nbatches)%type_elField = .FALSE.
    AO%BATCH(nbatches)%type_pCharge  = .FALSE.
    AO%BATCH(nbatches)%spherical= SCHEME%DoSpherical
    AO%BATCH(nbatches)%Angmom(1)= B - 1
@@ -2157,6 +2286,7 @@ DO I=1,AOmodel%nbatches
    AO%BATCH(bat)%itype = AOmodel%BATCH(I)%itype
    AO%BATCH(bat)%type_empty = AOmodel%BATCH(I)%type_empty
    AO%BATCH(bat)%type_nucleus = AOmodel%BATCH(I)%type_nucleus
+   AO%BATCH(bat)%type_elField = AOmodel%BATCH(I)%type_elField
    AO%BATCH(bat)%type_pCharge = AOmodel%BATCH(I)%type_pCharge
    AO%BATCH(bat)%spherical = AOmodel%BATCH(I)%spherical
    AO%BATCH(bat)%CENTER(1) = MOLECULE%ATOM(iATOM)%CENTER(1)
@@ -2714,811 +2844,6 @@ ELSE
    ENDDO
 ENDIF
 END SUBROUTINE ATOMIC_ORBITALS
-
-!Build an AOITEM which contains
-!1 Contracted S function from 1 primitive
-!The AO is Segmented contracted
-SUBROUTINE BUILD_S_1Prim1ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
-  IMPLICIT NONE
-  !> the AOitem to be build
-  TYPE(AOITEM)              :: AO
-  !> contains all info about the integralscheme requested (thresholds,use cartesian,..)
-  TYPE(LSINTSCHEME)         :: SCHEME
-  !> contains all info about the molecule (atoms, charge,...)
-  TYPE(MOLECULEINFO)        :: MOLECULE
-  !> the logical unit number for the output file
-  INTEGER                   :: LUPRI
-  !
-  integer :: nPrim,nCont
-  IF(MOLECULE%nATOMS.GT.1)THEN
-     call lsquit('Error in use of test sub: BUILD_S_1Prim1ContSeg_AO',-1)
-  ENDIF
-  AO%natoms = 1                       
-  CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)
-  CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
-  AO%ATOMICnORB(1)=1                  
-  AO%ATOMICnBATCH(1)=1                
-  AO%nbast = 1                
-  AO%empty=.FALSE.
-  AO%nbatches=1
-  AO%nCC=1
-  AO%nExp=1
-  CALL MEM_ALLOC(AO%BATCH,1)   
-  CALL MEM_ALLOC(AO%CC,1)
-  CALL MEM_ALLOC(AO%angmom,1)
-  CALL MEM_ALLOC(AO%Exponents,1)
-  ! Contraction Coefficient
-  nPrim=1
-  nCont=1
-  CALL lsmat_dense_init(AO%CC(1),nPrim,nCont)
-  CALL lsmat_dense_init(AO%Exponents(1),nPrim,1)
-
-  AO%CC(1)%elms(1)=1
-  AO%Exponents(1)%elms(1)=1.10101000E0_realk
-  ! The AO 
-  AO%BATCH(1)%itype = 1
-  AO%BATCH(1)%redtype = 1
-  AO%BATCH(1)%type_Empty = .FALSE.
-  AO%BATCH(1)%type_Nucleus = .FALSE.
-  AO%BATCH(1)%type_pCharge = .FALSE.
-  AO%BATCH(1)%spherical=.false.
-  AO%BATCH(1)%atom=1
-  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
-  AO%BATCH(1)%batch=1
-  ! Center
-  AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(2)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(3)=MOLECULE%ATOM(1)%CENTER(1)
-  print*,'AO%BATCH(1)%CENTER',AO%BATCH(1)%CENTER
-  AO%BATCH(1)%nPrimitives=nPrim
-  AO%BATCH(1)%maxContracted=nCont
-  AO%BATCH(1)%maxAngmom=0
-  AO%BATCH(1)%pExponents => AO%Exponents(1)
-  AO%BATCH(1)%nAngmom=1
-  AO%BATCH(1)%ANGMOM(1)=0
-  AO%BATCH(1)%extent = getExtent(AO%Exponents(1)%elms,AO%CC(1)%elms,&
-       & nPrim,nCont,AO%BATCH(1)%ANGMOM(1),SCHEME%OD_SCREEN,SCHEME%THRESHOLD*SCHEME%OD_THRESHOLD)
-  AO%BATCH(1)%nContracted(1)=nCOnt
-  AO%BATCH(1)%startOrbital(1)=1
-  AO%BATCH(1)%startprimOrbital(1)=1
-  AO%BATCH(1)%nOrbComp(1)=1
-  AO%BATCH(1)%nPrimOrbComp(1)=1
-  AO%BATCH(1)%nOrbitals(1)=1
-  AO%BATCH(1)%pCC(1)%p => AO%CC(1)
-  AO%BATCH(1)%CCindex(1) = 0
-  AO%ntype = 1
-  AO%nredtype = 1
-  AO%maxJ = 0
-  WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
-  CALL PRINT_AO(LUPRI,AO)
-END SUBROUTINE BUILD_S_1PRIM1CONTSEG_AO
-
-!Build an AOITEM which contains
-!1 Contracted S function from 2 primitive
-!The AO is Segmented contracted
-SUBROUTINE BUILD_S_2Prim1ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
-  IMPLICIT NONE
-  !> the AOitem to be build
-  TYPE(AOITEM)              :: AO
-  !> contains all info about the integralscheme requested (thresholds,use cartesian,..)
-  TYPE(LSINTSCHEME)         :: SCHEME
-  !> contains all info about the molecule (atoms, charge,...)
-  TYPE(MOLECULEINFO)        :: MOLECULE
-  !> the logical unit number for the output file
-  INTEGER                   :: LUPRI
-  !
-  integer :: nPrim,nCont
-
-  IF(MOLECULE%nATOMS.GT.1)THEN
-     call lsquit('Error in use of test sub: BUILD_S_2Prim1ContSeg_AO',-1)
-  ENDIF
-  AO%natoms = 1
-  CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)  
-  CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
-  AO%ATOMICnORB(1)=1                  
-  AO%ATOMICnBATCH(1)=1                
-  AO%nbast = 1                
-  AO%empty=.FALSE.
-  AO%nbatches=1
-  AO%nCC=1
-  AO%nExp=1
-  CALL MEM_ALLOC(AO%BATCH,1)   
-  CALL MEM_ALLOC(AO%CC,1)
-  CALL MEM_ALLOC(AO%angmom,1)
-  CALL MEM_ALLOC(AO%Exponents,1)
-  ! Contraction Coefficient
-  nPrim=2
-  nCont=1
-  CALL lsmat_dense_init(AO%CC(1),nPrim,nCont)
-  CALL lsmat_dense_init(AO%Exponents(1),nPrim,1)
-
-  AO%CC(1)%elms(1)=0.8E0_realk
-  AO%CC(1)%elms(2)=0.2E0_realk
-  AO%Exponents(1)%elms(1)=1.80101000E0_realk
-  AO%Exponents(1)%elms(2)=0.88101000E0_realk
-  ! The AO 
-  AO%BATCH(1)%itype = 1
-  AO%BATCH(1)%redtype = 1
-  AO%BATCH(1)%type_Empty = .FALSE.
-  AO%BATCH(1)%type_Nucleus = .FALSE.
-  AO%BATCH(1)%type_pCharge = .FALSE.
-  AO%BATCH(1)%spherical=.false.
-  AO%BATCH(1)%atom=1
-  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
-  AO%BATCH(1)%batch=1
-  ! Center
-  AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(2)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(3)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%nPrimitives=nPrim
-  AO%BATCH(1)%maxContracted=nCont
-  AO%BATCH(1)%maxAngmom=0
-  AO%BATCH(1)%pExponents => AO%Exponents(1)
-  AO%BATCH(1)%nAngmom=1
-  AO%BATCH(1)%ANGMOM(1)=0
-  AO%BATCH(1)%extent = getExtent(AO%Exponents(1)%elms,AO%CC(1)%elms,&
-       & nPrim,nCont,AO%BATCH(1)%ANGMOM(1),SCHEME%OD_SCREEN,SCHEME%THRESHOLD*SCHEME%OD_THRESHOLD)
-  AO%BATCH(1)%nContracted(1)=nCOnt
-  AO%BATCH(1)%startOrbital(1)=1
-  AO%BATCH(1)%startprimOrbital(1)=1
-  AO%BATCH(1)%nOrbComp(1)=1
-  AO%BATCH(1)%nPrimOrbComp(1)=1
-  AO%BATCH(1)%nOrbitals(1)=1
-  AO%BATCH(1)%pCC(1)%p => AO%CC(1)
-  AO%BATCH(1)%CCindex(1) = 0
-  AO%ntype = 1
-  AO%nredtype = 1
-  AO%maxJ = 0
-  WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
-  CALL PRINT_AO(LUPRI,AO)
-END SUBROUTINE BUILD_S_2PRIM1CONTSEG_AO
-
-!Build an AOITEM which contains
-!2 Contracted S function from 2 primitive
-!The AO is Segmented contracted
-SUBROUTINE BUILD_S_2Prim2ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
-  IMPLICIT NONE
-  !> the AOitem to be build
-  TYPE(AOITEM)              :: AO
-  !> contains all info about the integralscheme requested (thresholds,use cartesian,..)
-  TYPE(LSINTSCHEME)         :: SCHEME
-  !> contains all info about the molecule (atoms, charge,...)
-  TYPE(MOLECULEINFO)        :: MOLECULE
-  !> the logical unit number for the output file
-  INTEGER                   :: LUPRI
-  !
-  integer :: nPrim,nCont
-
-  IF(MOLECULE%nATOMS.GT.1)THEN
-     call lsquit('Error in use of test sub: BUILD_S_2Prim1ContSeg_AO',-1)
-  ENDIF
-  AO%natoms = 1                       
-  CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)  
-  CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
-  AO%ATOMICnORB(1)=2                  
-  AO%ATOMICnBATCH(1)=1                
-  AO%nbast = 2          
-  AO%empty=.FALSE.
-  AO%nbatches=1
-  AO%nCC=1
-  AO%nExp=1
-  CALL MEM_ALLOC(AO%BATCH,1)   
-  CALL MEM_ALLOC(AO%CC,1)
-  CALL MEM_ALLOC(AO%angmom,1)
-  CALL MEM_ALLOC(AO%Exponents,1)
-  ! Contraction Coefficient
-  nPrim=2
-  nCont=2
-  CALL lsmat_dense_init(AO%CC(1),nPrim,nCont)
-  CALL lsmat_dense_init(AO%Exponents(1),nPrim,1)
-
-  AO%CC(1)%elms(1)=1.0E0_realk
-  AO%CC(1)%elms(2)=0.0E0_realk
-  AO%CC(1)%elms(3)=0.0E0_realk
-  AO%CC(1)%elms(4)=1.0E0_realk
-  AO%Exponents(1)%elms(1)=1.90101000E0_realk
-  AO%Exponents(1)%elms(2)=0.99101000E0_realk
-  ! The AO 
-  AO%BATCH(1)%itype = 1
-  AO%BATCH(1)%redtype = 1
-  AO%BATCH(1)%type_Empty = .FALSE.
-  AO%BATCH(1)%type_Nucleus = .FALSE.
-  AO%BATCH(1)%type_pCharge = .FALSE.
-  AO%BATCH(1)%spherical=.false.
-  AO%BATCH(1)%atom=1
-  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
-  AO%BATCH(1)%batch=1
-  ! Center
-  AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(2)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(3)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%nPrimitives=nPrim
-  AO%BATCH(1)%maxContracted=nCont
-  AO%BATCH(1)%maxAngmom=0
-  AO%BATCH(1)%pExponents => AO%Exponents(1)
-  AO%BATCH(1)%nAngmom=1
-  AO%BATCH(1)%ANGMOM(1)=0
-  AO%BATCH(1)%extent = getExtent(AO%Exponents(1)%elms,AO%CC(1)%elms,&
-       & nPrim,nCont,AO%BATCH(1)%ANGMOM(1),SCHEME%OD_SCREEN,SCHEME%THRESHOLD*SCHEME%OD_THRESHOLD)
-  AO%BATCH(1)%nContracted(1)=nCOnt
-  AO%BATCH(1)%startOrbital(1)=1
-  AO%BATCH(1)%startprimOrbital(1)=1
-  AO%BATCH(1)%nOrbComp(1)=1
-  AO%BATCH(1)%nPrimOrbComp(1)=1
-  AO%BATCH(1)%nOrbitals(1)=2
-  AO%BATCH(1)%pCC(1)%p => AO%CC(1)
-  AO%BATCH(1)%CCindex(1) = 0
-  AO%ntype = 1
-  AO%nredtype = 1
-  AO%maxJ = 0
-  WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
-  CALL PRINT_AO(LUPRI,AO)
-END SUBROUTINE BUILD_S_2PRIM2CONTSEG_AO
-
-!Build an AOITEM which contains
-!2 Contracted S function from 2 primitive
-!The AO is General Contracted
-SUBROUTINE BUILD_S_2Prim2ContGen_AO(AO,SCHEME,MOLECULE,LUPRI)
-  IMPLICIT NONE
-  !> the AOitem to be build
-  TYPE(AOITEM)              :: AO
-  !> contains all info about the integralscheme requested (thresholds,use cartesian,..)
-  TYPE(LSINTSCHEME)         :: SCHEME
-  !> contains all info about the molecule (atoms, charge,...)
-  TYPE(MOLECULEINFO)        :: MOLECULE
-  !> the logical unit number for the output file
-  INTEGER                   :: LUPRI
-  !
-  integer :: nPrim,nCont
-  
-  IF(MOLECULE%nATOMS.GT.1)THEN
-     call lsquit('Error in use of test sub: BUILD_S_2Prim1ContSeg_AO',-1)
-  ENDIF
-  AO%natoms = 1
-  CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)  
-  CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
-  AO%ATOMICnORB(1)=2              
-  AO%ATOMICnBATCH(1)=1                
-  AO%nbast = 2          
-  AO%empty=.FALSE.
-  AO%nbatches=1
-  AO%nCC=1
-  AO%nExp=1
-  CALL MEM_ALLOC(AO%BATCH,1)   
-  CALL MEM_ALLOC(AO%CC,1)
-  CALL MEM_ALLOC(AO%angmom,1)
-  CALL MEM_ALLOC(AO%Exponents,1)
-  ! Contraction Coefficient
-  nPrim=2
-  nCont=2
-  CALL lsmat_dense_init(AO%CC(1),nPrim,nCont)
-  CALL lsmat_dense_init(AO%Exponents(1),nPrim,1)
-
-  AO%CC(1)%elms(1)=0.8E0_realk
-  AO%CC(1)%elms(2)=0.2E0_realk
-  AO%CC(1)%elms(3)=0.2E0_realk
-  AO%CC(1)%elms(4)=8.0E0_realk
-  AO%Exponents(1)%elms(1)=1.70101000E0_realk
-  AO%Exponents(1)%elms(2)=0.77101000E0_realk
-  ! The AO 
-  AO%BATCH(1)%itype = 1
-  AO%BATCH(1)%redtype = 1
-  AO%BATCH(1)%type_Empty = .FALSE.
-  AO%BATCH(1)%type_Nucleus = .FALSE.
-  AO%BATCH(1)%type_pCharge = .FALSE.
-  AO%BATCH(1)%spherical=.false.
-  AO%BATCH(1)%atom=1
-  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
-  AO%BATCH(1)%batch=1
-  ! Center
-  AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(2)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(3)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%nPrimitives=nPrim
-  AO%BATCH(1)%maxContracted=nCont
-  AO%BATCH(1)%maxAngmom=0
-  AO%BATCH(1)%pExponents => AO%Exponents(1)
-  AO%BATCH(1)%nAngmom=1
-  AO%BATCH(1)%ANGMOM(1)=0
-  AO%BATCH(1)%extent = getExtent(AO%Exponents(1)%elms,AO%CC(1)%elms,&
-       & nPrim,nCont,AO%BATCH(1)%ANGMOM(1),SCHEME%OD_SCREEN,SCHEME%THRESHOLD*SCHEME%OD_THRESHOLD)
-  AO%BATCH(1)%nContracted(1)=nCOnt
-  AO%BATCH(1)%startOrbital(1)=1
-  AO%BATCH(1)%startprimOrbital(1)=1
-  AO%BATCH(1)%nOrbComp(1)=1
-  AO%BATCH(1)%nPrimOrbComp(1)=1
-  AO%BATCH(1)%nOrbitals(1)=2
-  AO%BATCH(1)%pCC(1)%p => AO%CC(1)
-  AO%BATCH(1)%CCindex(1) = 0
-  AO%ntype = 1
-  AO%nredtype = 1
-  AO%maxJ = 0
-  WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
-  CALL PRINT_AO(LUPRI,AO)
-END SUBROUTINE BUILD_S_2PRIM2CONTGEN_AO
-
-!Build an AOITEM which contains
-!1 Contracted P function from 1 primitive
-!The AO is Segmented contracted
-SUBROUTINE BUILD_P_1Prim1ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
-  IMPLICIT NONE
-  !> the AOitem to be build
-  TYPE(AOITEM)              :: AO
-  !> contains all info about the integralscheme requested (thresholds,use cartesian,..)
-  TYPE(LSINTSCHEME)         :: SCHEME
-  !> contains all info about the molecule (atoms, charge,...)
-  TYPE(MOLECULEINFO)        :: MOLECULE
-  !> the logical unit number for the output file
-  INTEGER                   :: LUPRI
-  !
-  integer :: nPrim,nCont
-
-  IF(MOLECULE%nATOMS.GT.1)THEN
-     call lsquit('Error in use of test sub: BUILD_S_1Prim1ContSeg_AO',-1)
-  ENDIF
-  AO%natoms = 1
-  CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)  
-  CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
-  AO%ATOMICnORB(1)=3              
-  AO%ATOMICnBATCH(1)=1                
-  AO%nbast = 3          
-  AO%empty=.FALSE.
-  AO%nbatches=1
-  AO%nCC=1
-  AO%nExp=1
-  CALL MEM_ALLOC(AO%BATCH,1)   
-  CALL MEM_ALLOC(AO%CC,1)
-  CALL MEM_ALLOC(AO%angmom,1)
-  CALL MEM_ALLOC(AO%Exponents,1)
-  ! Contraction Coefficient
-  nPrim=1
-  nCont=1
-  CALL lsmat_dense_init(AO%CC(1),nPrim,nCont)
-  CALL lsmat_dense_init(AO%Exponents(1),nPrim,1)
-
-  AO%CC(1)%elms(1)=1
-  AO%Exponents(1)%elms(1)=1.30101000E0_realk
-  ! The AO 
-  AO%BATCH(1)%itype = 1
-  AO%BATCH(1)%redtype = 1
-  AO%BATCH(1)%type_Empty = .FALSE.
-  AO%BATCH(1)%type_Nucleus = .FALSE.
-  AO%BATCH(1)%type_pCharge = .FALSE.
-  AO%BATCH(1)%spherical=.true.
-  AO%BATCH(1)%atom=1
-  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
-  AO%BATCH(1)%batch=1
-  ! Center
-  AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(2)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(3)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%nPrimitives=nPrim
-  AO%BATCH(1)%maxContracted=nCont
-  AO%BATCH(1)%maxAngmom=1
-  AO%BATCH(1)%pExponents => AO%Exponents(1)
-  AO%BATCH(1)%nAngmom=1
-  AO%BATCH(1)%ANGMOM(1)=1
-  AO%BATCH(1)%extent = getExtent(AO%Exponents(1)%elms,AO%CC(1)%elms,&
-       & nPrim,nCont,AO%BATCH(1)%ANGMOM(1),SCHEME%OD_SCREEN,SCHEME%THRESHOLD*SCHEME%OD_THRESHOLD)
-  AO%BATCH(1)%nContracted(1)=nCOnt
-  AO%BATCH(1)%startOrbital(1)=1
-  AO%BATCH(1)%startprimOrbital(1)=1
-  AO%BATCH(1)%nOrbComp(1)=3
-  AO%BATCH(1)%nPrimOrbComp(1)=3
-  AO%BATCH(1)%nOrbitals(1)=3
-  AO%BATCH(1)%pCC(1)%p => AO%CC(1)
-  AO%BATCH(1)%CCindex(1) = 0
-  AO%ntype = 1
-  AO%nredtype = 1
-  AO%maxJ = 1
-  WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
-  CALL PRINT_AO(LUPRI,AO)
-END SUBROUTINE BUILD_P_1PRIM1CONTSEG_AO
-
-!Build an AOITEM which contains
-!1 Contracted P function from 2 primitive
-!The AO is Segmented contracted
-SUBROUTINE BUILD_P_2Prim1ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
-  IMPLICIT NONE
-  !> the AOitem to be build
-  TYPE(AOITEM)              :: AO
-  !> contains all info about the integralscheme requested (thresholds,use cartesian,..)
-  TYPE(LSINTSCHEME)         :: SCHEME
-  !> contains all info about the molecule (atoms, charge,...)
-  TYPE(MOLECULEINFO)        :: MOLECULE
-  !> the logical unit number for the output file
-  INTEGER                   :: LUPRI
-  !
-  integer :: nPrim,nCont
-
-  IF(MOLECULE%nATOMS.GT.1)THEN
-     call lsquit('Error in use of test sub: BUILD_S_2Prim1ContSeg_AO',-1)
-  ENDIF
-  AO%natoms = 1
-  CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)  
-  CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
-  AO%ATOMICnORB(1)=3                  
-  AO%ATOMICnBATCH(1)=1                
-  AO%nbast = 3            
-  AO%empty=.FALSE.
-  AO%nbatches=1
-  AO%nCC=1
-  AO%nExp=1
-  CALL MEM_ALLOC(AO%BATCH,1)   
-  CALL MEM_ALLOC(AO%CC,1)
-  CALL MEM_ALLOC(AO%angmom,1)
-  CALL MEM_ALLOC(AO%Exponents,1)
-  ! Contraction Coefficient
-  nPrim=2
-  nCont=1
-  CALL lsmat_dense_init(AO%CC(1),nPrim,nCont)
-  CALL lsmat_dense_init(AO%Exponents(1),nPrim,1)
-
-  AO%CC(1)%elms(1)=0.8E0_realk
-  AO%CC(1)%elms(2)=0.2E0_realk
-  AO%Exponents(1)%elms(1)=1.80101000E0_realk
-  AO%Exponents(1)%elms(2)=0.88101000E0_realk
-  ! The AO 
-  AO%BATCH(1)%itype = 1
-  AO%BATCH(1)%redtype = 1
-  AO%BATCH(1)%type_Empty = .FALSE.
-  AO%BATCH(1)%type_Nucleus = .FALSE.
-  AO%BATCH(1)%type_pCharge = .FALSE.
-  AO%BATCH(1)%spherical=.false.
-  AO%BATCH(1)%atom=1
-  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
-  AO%BATCH(1)%batch=1
-  ! Center
-  AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(2)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(3)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%nPrimitives=nPrim
-  AO%BATCH(1)%maxContracted=nCont
-  AO%BATCH(1)%maxAngmom=1
-  AO%BATCH(1)%pExponents => AO%Exponents(1)
-  AO%BATCH(1)%nAngmom=1
-  AO%BATCH(1)%ANGMOM(1)=1
-  AO%BATCH(1)%extent = getExtent(AO%Exponents(1)%elms,AO%CC(1)%elms,&
-       & nPrim,nCont,AO%BATCH(1)%ANGMOM(1),SCHEME%OD_SCREEN,SCHEME%THRESHOLD*SCHEME%OD_THRESHOLD)
-  AO%BATCH(1)%nContracted(1)=nCOnt
-  AO%BATCH(1)%startOrbital(1)=1
-  AO%BATCH(1)%startprimOrbital(1)=1
-  AO%BATCH(1)%nOrbComp(1)=3
-  AO%BATCH(1)%nPrimOrbComp(1)=3
-  AO%BATCH(1)%nOrbitals(1)=3
-  AO%BATCH(1)%pCC(1)%p => AO%CC(1)
-  AO%BATCH(1)%CCindex(1) = 0
-  AO%ntype = 1
-  AO%nredtype = 1
-  AO%maxJ = 1
-  WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
-  CALL PRINT_AO(LUPRI,AO)
-END SUBROUTINE BUILD_P_2PRIM1CONTSEG_AO
-
-!Build an AOITEM which contains
-!2 Contracted S function from 2 primitive
-!The AO is Segmented contracted
-SUBROUTINE BUILD_P_2Prim2ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
-  IMPLICIT NONE
-  !> the AOitem to be build
-  TYPE(AOITEM)              :: AO
-  !> contains all info about the integralscheme requested (thresholds,use cartesian,..)
-  TYPE(LSINTSCHEME)         :: SCHEME
-  !> contains all info about the molecule (atoms, charge,...)
-  TYPE(MOLECULEINFO)        :: MOLECULE
-  !> the logical unit number for the output file
-  INTEGER                   :: LUPRI
-  !
-  integer :: nPrim,nCont
-
-  IF(MOLECULE%nATOMS.GT.1)THEN
-     call lsquit('Error in use of test sub: BUILD_P_2Prim1ContSeg_AO',-1)
-  ENDIF
-  AO%natoms = 1                       
-  CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)  
-  CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
-  AO%ATOMICnORB(1)=6                  
-  AO%ATOMICnBATCH(1)=1                
-  AO%nbast = 6
-  AO%empty=.FALSE.
-  AO%nbatches=1
-  AO%nCC=1
-  AO%nExp=1
-  CALL MEM_ALLOC(AO%BATCH,1)   
-  CALL MEM_ALLOC(AO%CC,1)
-  CALL MEM_ALLOC(AO%angmom,1)
-  CALL MEM_ALLOC(AO%Exponents,1)
-  ! Contraction Coefficient
-  nPrim=2
-  nCont=2
-  CALL lsmat_dense_init(AO%CC(1),nPrim,nCont)
-  CALL lsmat_dense_init(AO%Exponents(1),nPrim,1)
-
-  AO%CC(1)%elms(1)=1.0E0_realk
-  AO%CC(1)%elms(2)=0.0E0_realk
-  AO%CC(1)%elms(3)=0.0E0_realk
-  AO%CC(1)%elms(4)=1.0E0_realk
-  AO%Exponents(1)%elms(1)=1.90101000E0_realk
-  AO%Exponents(1)%elms(2)=0.99101000E0_realk
-  ! The AO 
-  AO%BATCH(1)%itype = 1
-  AO%BATCH(1)%redtype = 1
-  AO%BATCH(1)%type_Empty = .FALSE.
-  AO%BATCH(1)%type_Nucleus = .FALSE.
-  AO%BATCH(1)%type_pCharge = .FALSE.
-  AO%BATCH(1)%spherical=.false.
-  AO%BATCH(1)%atom=1
-  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
-  AO%BATCH(1)%batch=1
-  ! Center
-  AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(2)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(3)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%nPrimitives=nPrim
-  AO%BATCH(1)%maxContracted=nCont
-  AO%BATCH(1)%maxAngmom=1
-  AO%BATCH(1)%pExponents => AO%Exponents(1)
-  AO%BATCH(1)%nAngmom=1
-  AO%BATCH(1)%ANGMOM(1)=1
-  AO%BATCH(1)%extent = getExtent(AO%Exponents(1)%elms,AO%CC(1)%elms,&
-       & nPrim,nCont,AO%BATCH(1)%ANGMOM(1),SCHEME%OD_SCREEN,SCHEME%THRESHOLD*SCHEME%OD_THRESHOLD)
-  AO%BATCH(1)%nContracted(1)=nCOnt
-  AO%BATCH(1)%startOrbital(1)=1
-  AO%BATCH(1)%startprimOrbital(1)=1
-  AO%BATCH(1)%nOrbComp(1)=3
-  AO%BATCH(1)%nPrimOrbComp(1)=3
-  AO%BATCH(1)%nOrbitals(1)=6
-  AO%BATCH(1)%pCC(1)%p => AO%CC(1)
-  AO%BATCH(1)%CCindex(1) = 0
-  AO%ntype = 1
-  AO%nredtype = 1
-  AO%maxJ = 1
-  WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
-  CALL PRINT_AO(LUPRI,AO)
-END SUBROUTINE BUILD_P_2PRIM2CONTSEG_AO
-
-!Build an AOITEM which contains
-!P Contracted S function from 2 primitive
-!The AO is General Contracted
-SUBROUTINE BUILD_P_2Prim2ContGen_AO(AO,SCHEME,MOLECULE,LUPRI)
-  IMPLICIT NONE
-  !> the AOitem to be build
-  TYPE(AOITEM)              :: AO
-  !> contains all info about the integralscheme requested (thresholds,use cartesian,..)
-  TYPE(LSINTSCHEME)         :: SCHEME
-  !> contains all info about the molecule (atoms, charge,...)
-  TYPE(MOLECULEINFO)        :: MOLECULE
-  !> the logical unit number for the output file
-  INTEGER                   :: LUPRI
-  !
-  integer :: nPrim,nCont
-  
-  IF(MOLECULE%nATOMS.GT.1)THEN
-     call lsquit('Error in use of test sub: BUILD_S_2Prim1ContSeg_AO',-1)
-  ENDIF
-  AO%natoms = 1
-  CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)  
-  CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
-  AO%ATOMICnORB(1)=6
-  AO%ATOMICnBATCH(1)=1                
-  AO%nbast = 6
-  AO%empty=.FALSE.
-  AO%nbatches=1
-  AO%nCC=1
-  AO%nExp=1
-  CALL MEM_ALLOC(AO%BATCH,1)   
-  CALL MEM_ALLOC(AO%CC,1)
-  CALL MEM_ALLOC(AO%angmom,1)
-  CALL MEM_ALLOC(AO%Exponents,1)
-  ! Contraction Coefficient
-  nPrim=2
-  nCont=2
-  CALL lsmat_dense_init(AO%CC(1),nPrim,nCont)
-  CALL lsmat_dense_init(AO%Exponents(1),nPrim,1)
-
-  AO%CC(1)%elms(1)=0.8E0_realk
-  AO%CC(1)%elms(2)=0.2E0_realk
-  AO%CC(1)%elms(3)=0.2E0_realk
-  AO%CC(1)%elms(4)=8.0E0_realk
-  AO%Exponents(1)%elms(1)=1.70101000E0_realk
-  AO%Exponents(1)%elms(2)=0.77101000E0_realk
-  ! The AO 
-  AO%BATCH(1)%itype = 1
-  AO%BATCH(1)%redtype = 1
-  AO%BATCH(1)%type_Empty = .FALSE.
-  AO%BATCH(1)%type_Nucleus = .FALSE.
-  AO%BATCH(1)%type_pCharge = .FALSE.
-  AO%BATCH(1)%spherical=.false.
-  AO%BATCH(1)%atom=1
-  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
-  AO%BATCH(1)%batch=1
-  ! Center
-  AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(2)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(3)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%nPrimitives=nPrim
-  AO%BATCH(1)%maxContracted=nCont
-  AO%BATCH(1)%maxAngmom=1
-  AO%BATCH(1)%pExponents => AO%Exponents(1)
-  AO%BATCH(1)%nAngmom=1
-  AO%BATCH(1)%ANGMOM(1)=1
-  AO%BATCH(1)%extent = getExtent(AO%Exponents(1)%elms,AO%CC(1)%elms,&
-       & nPrim,nCont,AO%BATCH(1)%ANGMOM(1),SCHEME%OD_SCREEN,SCHEME%THRESHOLD*SCHEME%OD_THRESHOLD)
-  AO%BATCH(1)%nContracted(1)=nCOnt
-  AO%BATCH(1)%startOrbital(1)=1
-  AO%BATCH(1)%startprimOrbital(1)=1
-  AO%BATCH(1)%nOrbComp(1)=3
-  AO%BATCH(1)%nPrimOrbComp(1)=3
-  AO%BATCH(1)%nOrbitals(1)=6
-  AO%BATCH(1)%pCC(1)%p => AO%CC(1)
-  AO%BATCH(1)%CCindex(1) = 0
-  AO%ntype = 1
-  AO%nredtype = 1
-  AO%maxJ = 1
-  WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
-  CALL PRINT_AO(LUPRI,AO)
-END SUBROUTINE BUILD_P_2PRIM2CONTGEN_AO
-
-!Build an AOITEM which contains
-!1 Contracted D function from 1 primitive
-!The AO is Segmented contracted
-SUBROUTINE BUILD_D_1Prim1ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
-  IMPLICIT NONE
-  !> the AOitem to be build
-  TYPE(AOITEM)              :: AO
-  !> contains all info about the integralscheme requested (thresholds,use cartesian,..)
-  TYPE(LSINTSCHEME)         :: SCHEME
-  !> contains all info about the molecule (atoms, charge,...)
-  TYPE(MOLECULEINFO)        :: MOLECULE
-  !> the logical unit number for the output file
-  INTEGER                   :: LUPRI
-  !
-  integer :: nPrim,nCont
-
-  IF(MOLECULE%nATOMS.GT.1)THEN
-     call lsquit('Error in use of test sub: BUILD_D_1Prim1ContSeg_AO',-1)
-  ENDIF
-  AO%natoms = 1
-  CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)  
-  CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
-  AO%ATOMICnORB(1)=5           
-  AO%ATOMICnBATCH(1)=1                
-  AO%nbast = 5    
-  AO%empty=.FALSE.
-  AO%nbatches=1
-  AO%nCC=1
-  AO%nExp=1
-  CALL MEM_ALLOC(AO%BATCH,1)   
-  CALL MEM_ALLOC(AO%CC,1)
-  CALL MEM_ALLOC(AO%angmom,1)
-  CALL MEM_ALLOC(AO%Exponents,1)
-  ! Contraction Coefficient
-  nPrim=1
-  nCont=1
-  CALL lsmat_dense_init(AO%CC(1),nPrim,nCont)
-  CALL lsmat_dense_init(AO%Exponents(1),nPrim,1)
-
-  AO%CC(1)%elms(1)=1
-  AO%Exponents(1)%elms(1)=1.30101000E0_realk
-  ! The AO 
-  AO%BATCH(1)%itype = 1
-  AO%BATCH(1)%redtype = 1
-  AO%BATCH(1)%type_Empty = .FALSE.
-  AO%BATCH(1)%type_Nucleus = .FALSE.
-  AO%BATCH(1)%type_pCharge = .FALSE.
-  AO%BATCH(1)%spherical=.true.
-  AO%BATCH(1)%atom=1
-  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
-  AO%BATCH(1)%batch=1
-  ! Center
-  AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(2)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(3)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%nPrimitives=nPrim
-  AO%BATCH(1)%maxContracted=nCont
-  AO%BATCH(1)%maxAngmom=2
-  AO%BATCH(1)%pExponents => AO%Exponents(1)
-  AO%BATCH(1)%nAngmom=1
-  AO%BATCH(1)%ANGMOM(1)=2
-  AO%BATCH(1)%extent = getExtent(AO%Exponents(1)%elms,AO%CC(1)%elms,&
-       & nPrim,nCont,AO%BATCH(1)%ANGMOM(1),SCHEME%OD_SCREEN,SCHEME%THRESHOLD*SCHEME%OD_THRESHOLD)
-  AO%BATCH(1)%nContracted(1)=nCOnt
-  AO%BATCH(1)%startOrbital(1)=1
-  AO%BATCH(1)%startprimOrbital(1)=1
-  AO%BATCH(1)%nOrbComp(1)=5
-  AO%BATCH(1)%nPrimOrbComp(1)=5
-  AO%BATCH(1)%nOrbitals(1)=5
-  AO%BATCH(1)%pCC(1)%p => AO%CC(1)
-  AO%BATCH(1)%CCindex(1) = 0
-  AO%ntype = 1
-  AO%nredtype = 1
-  AO%maxJ = 2
-  call set_maxJ(AO,lupri)
-  WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL D_1PRIM1CONTSEG_AO AO BATCH'
-  CALL PRINT_AO(LUPRI,AO)
-END SUBROUTINE BUILD_D_1PRIM1CONTSEG_AO
-
-!Build an AOITEM which contains
-!P Contracted S function from 2 primitive
-!The AO is General Contracted
-SUBROUTINE BUILD_D_2Prim2ContGen_AO(AO,SCHEME,MOLECULE,LUPRI)
-  IMPLICIT NONE
-  !> the AOitem to be build
-  TYPE(AOITEM)              :: AO
-  !> contains all info about the integralscheme requested (thresholds,use cartesian,..)
-  TYPE(LSINTSCHEME)         :: SCHEME
-  !> contains all info about the molecule (atoms, charge,...)
-  TYPE(MOLECULEINFO)        :: MOLECULE
-  !> the logical unit number for the output file
-  INTEGER                   :: LUPRI
-  !
-  integer :: nPrim,nCont
-  
-  IF(MOLECULE%nATOMS.GT.1)THEN
-     call lsquit('Error in use of test sub: BUILD_S_2Prim1ContSeg_AO',-1)
-  ENDIF
-  AO%natoms = 1
-  CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)  
-  CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
-  AO%ATOMICnORB(1)=10
-  AO%ATOMICnBATCH(1)=1                
-  AO%nbast = 10
-  AO%empty=.FALSE.
-  AO%nbatches=1
-  AO%nCC=1
-  AO%nExp=1
-  CALL MEM_ALLOC(AO%BATCH,1)   
-  CALL MEM_ALLOC(AO%CC,1)
-  CALL MEM_ALLOC(AO%angmom,1)
-  CALL MEM_ALLOC(AO%Exponents,1)
-  ! Contraction Coefficient
-  nPrim=2
-  nCont=2
-  CALL lsmat_dense_init(AO%CC(1),nPrim,nCont)
-  CALL lsmat_dense_init(AO%Exponents(1),nPrim,1)
-
-  AO%CC(1)%elms(1)=0.8E0_realk
-  AO%CC(1)%elms(2)=0.2E0_realk
-  AO%CC(1)%elms(3)=0.2E0_realk
-  AO%CC(1)%elms(4)=8.0E0_realk
-  AO%Exponents(1)%elms(1)=1.70101000E0_realk
-  AO%Exponents(1)%elms(2)=0.77101000E0_realk
-  ! The AO 
-  AO%BATCH(1)%itype = 1
-  AO%BATCH(1)%redtype = 1
-  AO%BATCH(1)%type_Empty = .FALSE.
-  AO%BATCH(1)%type_Nucleus = .FALSE.
-  AO%BATCH(1)%type_pCharge = .FALSE.
-  AO%BATCH(1)%spherical=.false.
-  AO%BATCH(1)%atom=1
-  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
-  AO%BATCH(1)%batch=1
-  ! Center
-  AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(2)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%CENTER(3)=MOLECULE%ATOM(1)%CENTER(1)
-  AO%BATCH(1)%nPrimitives=nPrim
-  AO%BATCH(1)%maxContracted=nCont
-  AO%BATCH(1)%maxAngmom=2
-  AO%BATCH(1)%pExponents => AO%Exponents(1)
-  AO%BATCH(1)%nAngmom=1
-  AO%BATCH(1)%ANGMOM(1)=2
-  AO%BATCH(1)%extent = getExtent(AO%Exponents(1)%elms,AO%CC(1)%elms,&
-       & nPrim,nCont,AO%BATCH(1)%ANGMOM(1),SCHEME%OD_SCREEN,SCHEME%THRESHOLD*SCHEME%OD_THRESHOLD)
-  AO%BATCH(1)%nContracted(1)=nCOnt
-  AO%BATCH(1)%startOrbital(1)=1
-  AO%BATCH(1)%startprimOrbital(1)=1
-  AO%BATCH(1)%nOrbComp(1)=5
-  AO%BATCH(1)%nPrimOrbComp(1)=5
-  AO%BATCH(1)%nOrbitals(1)=10
-  AO%BATCH(1)%pCC(1)%p => AO%CC(1)
-  AO%BATCH(1)%CCindex(1) = 0
-  AO%ntype = 1
-  AO%nredtype = 1
-  AO%maxJ = 2
-  WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
-  CALL PRINT_AO(LUPRI,AO)
-END SUBROUTINE BUILD_D_2PRIM2CONTGEN_AO
 
 END MODULE BUILDAOBATCH
 

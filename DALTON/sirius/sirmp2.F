@@ -1143,7 +1143,7 @@ C
          ICSYM  = ICMO(ISYM)
 C
          CALL JACO_THR(WRK(KDMAT+IIORBI),CMO(1+ICSYM),
-     &                 NORBI,NORBI,NBASI,0.0D0)
+     &                 NORBI,NORBI,NBASI,1.D-12)
 C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          OCCSUM = D0

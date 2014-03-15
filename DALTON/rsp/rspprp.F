@@ -86,7 +86,7 @@ C
       IF ( .NOT.FNDLAB('RESTART ',LURSP1) ) THEN
          WRITE (LUPRI,'(/2A,I4)')
      *   ' PPRST: Restart not possible, RESTART label not found on',
-     *   ' LURSP1 =',LURSP1
+     *   ' RSPRST.E2C.  LURSP1 =',LURSP1
          CALL QUIT('PPRST: Restart impossible, RESTART label not found')
       END IF
       READ (LURSP1)JSYMOP, KZDIM,(IBTYP(I),I=1,KZDIM)
@@ -264,9 +264,9 @@ C    *                 EIVAL,EIVEC,BCVEC,BOVEC,UDV,EVECS,XINDX,
 C    *                 WRK,LWRK)
 C
             IF (JZDIM.LE.0) THEN
-                IF (IPRRSP.GE.10) WRITE (LUPRI,'(//A,I5,A/A/)')
-     *             ' ***',KZDIM,' OLD TRIAL VECTORS FOUND',
-     *             ' CALLING RSPNEX TO GET NEXT TRIAL VECTOR.'
+                IF (IPRRSP.GE.10) WRITE (LUPRI,'(//A,I5,A,I3,A/)')
+     &             ' ***',KZDIM,' old trial vectors read in from'//
+     &             ' RSPRST.E2C in',NLOAD,' loads.'
             ELSE
                GO TO 200
 C        ^--------------
