@@ -78,6 +78,7 @@ endif()
     add_lslib_test(LSlib/LSlib_cam_dfJ_aK                         "linsca;lslib")
 
     add_lsdalton_test(linsca/linsca_energy                           "linsca;quick")
+    add_lsdalton_test(linsca/linsca_energy_Si                        "linsca")
     add_restart_test(linsca/linsca_energy_restart                    "linsca;quick;restart")
     add_lsdalton_test(linsca/linsca_VanLenthe                        "linsca")
     add_lsdalton_test(linsca/linsca_emsl                             "linsca")
