@@ -606,21 +606,28 @@ subroutine print_dec_info()
    write(LU,'(/,a)') '--------------------------'
    write(LU,'(a)')   '   DEC input parameters   '
    write(LU,'(a,/)') '--------------------------'
-   write(LU,'(a,g15.2)') 'FOT (Fragment Optimization Threshold)     = ',DECinfo%FOT
-   write(LU,'(a,g15.3)') 'Pair distance cutoff threshold (Angstrom) = ',&
-        & DECinfo%pair_distance_threshold
-   write(LU,'(a,A5)')    'Use Pair Estimates to screen pairs        =           ',&
+   write(LU,'(a,g15.2)') 'FOT (Fragment Optimization Threshold)               = ',DECinfo%FOT
+   write(LU,'(a,A5)')    'Use Pair Estimates to screen pairs                  =           ',&
+   
         & LogicString(Log2It(DECinfo%PairEstimate))
-   write(LU,'(a,g15.3)') 'Simple orbital thr.                       = ',&
+
+   if(DECinfo%PairEstimate) then
+        write(LU,'(a,g15.3)') 'Pair distance cutoff threshold (Angstrom)           = ',&
+          & DECinfo%pair_distance_threshold*bohr_to_angstrom
+        write(LU,'(a,e15.3)') 'Use Pair Estimate initialisation radius (Angstrom)  = ',&
+          & DECinfo%estimateINITradius*bohr_to_angstrom
+   endif
+
+   write(LU,'(a,g15.3)') 'Simple orbital thr.                                 = ',&
         & DECinfo%simple_orbital_threshold
-   write(LU,'(a,i5)')    'Expansion step size                       =           ',&
+   write(LU,'(a,i5)')    'Expansion step size                                 =           ',&
         & DECinfo%FragmentExpansionSize
-   write(LU,'(a,i5)')    'Print level                               =           ',DECinfo%PL
-   write(LU,'(a,A5)')    'Fragment-adapted orbitals                 =           ',&
+   write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL
+   write(LU,'(a,A5)')    'Fragment-adapted orbitals                           =           ',&
         & LogicString(Log2It(DECinfo%FragAdapt))
-   write(LU,'(a,A5)')    'Calculate Interaction Energies            =           ',&
+   write(LU,'(a,A5)')    'Calculate Interaction Energies                      =           ',&
         & LogicString(Log2It(DECinfo%InteractionEnergy))
-   write(LU,'(a,A5)')    'Fit Molecular Orbitals                    =           ',&
+   write(LU,'(a,A5)')    'Fit Molecular Orbitals                              =           ',&
         & LogicString(Log2It(DECinfo%FitOrbitals))
    !Oribtal Assignment 
    write(LU,'(A)') ' '
