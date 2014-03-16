@@ -1145,7 +1145,7 @@ module dec_typedef_module
   !> if you modify this structure, also modify bufferadd_PNOSpaceInfo_struct in decmpi.F90
   type PNOSpaceInfo
 
-    integer              :: pno
+    integer              :: rpd                    ! corresponding dimension of the (restricted) pair space [i(<=)j], read reduced pair dimension
     
     integer              :: n                      ! number of occ orbitals in the corresponding space
     integer, pointer     :: iaos(:) => null()      ! orbital index in the aos space

@@ -656,6 +656,8 @@ module cc_debug_routines_module
               !    &vovo=omega2(iter)%val,bo=yocc%val,bv=yvirt%val)
               !  endif
               !endif
+     
+              t2(1)%val = m2%val
 
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
@@ -667,6 +669,8 @@ module cc_debug_routines_module
                 &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
               endif
 
+              stop 0
+         
               !transform to pseudo diagonal basis for the solver
               !if(.not.DECinfo%CCSDpreventcanonical)then
               !  if(DECinfo%use_singles)then
@@ -1132,29 +1136,6 @@ module cc_debug_routines_module
 
    end subroutine ccsolver_debug
 
-
-   subroutine free_PNOSpaceInfo(SPINFO)
-     implicit none
-     type(PNOSpaceInfo), intent(inout) :: SPINFO
-    
-     if(.not.SPINFO%allocd)then
-       call lsquit("ERROR(free_PNOSpaceInfo): structure not allocated, cannot free",-1)
-     endif
-
-     if(associated(SPINFO%iaos)) call mem_dealloc(SPINFO%iaos)
-     if(associated(SPINFO%d   )) call mem_dealloc(SPINFO%d   )
-     if(associated(SPINFO%s1  )) call mem_dealloc(SPINFO%s1  )
-     if(associated(SPINFO%s2  )) call mem_dealloc(SPINFO%s2  )
-     SPINFO%n    = 0
-     SPINFO%ns1  = 0
-     SPINFO%ns2  = 0
-     SPINFO%pno  = 0
-     SPINFO%red1 = 0
-     SPINFO%red2 = 0
-
-     SPINFO%allocd = .false.
-     
-   end subroutine  free_PNOSpaceInfo
 
 
 

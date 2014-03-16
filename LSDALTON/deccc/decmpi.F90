@@ -873,7 +873,7 @@ contains
          endif
 
          do i = 1, MyFragment%nspaces
-           call ls_mpi_buffer(MyFragment%CLocPNO(i),master)
+           call buffercopy_PNOSpaceInfo_struct(MyFragment%CLocPNO(i),master)
          enddo
        endif
 
@@ -905,15 +905,14 @@ contains
 
   End subroutine mpicopy_fragment
 
-  subroutine bufferadd_PNOSpaceInfo_struct(inf,s_ass,master)
+  subroutine buffercopy_PNOSpaceInfo_struct(inf,master)
     implicit none
     type(PNOSpaceInfo),intent(inout) :: inf
-    logical, intent(in) :: s_ass
     integer(kind=ls_mpik),intent(in) :: master
     call ls_mpi_buffer(inf%n,master)
     call ls_mpi_buffer(inf%ns1,master)
     call ls_mpi_buffer(inf%ns2,master)
-    call ls_mpi_buffer(inf%pno,master)
+    call ls_mpi_buffer(inf%rpd,master)
     call ls_mpi_buffer(inf%red1,master)
     call ls_mpi_buffer(inf%red2,master)
     call ls_mpi_buffer(inf%allocd,master)
@@ -923,28 +922,28 @@ contains
 
       !allocate the arrays correctly
       if( .not. AddToBuffer )then
-        call mem_alloc(inf%iaos,n)
+        call mem_alloc(inf%iaos,inf%n)
         if (inf%s_associated) then
-          call mem_alloc(inf%s1,ns1,red1)
-          call mem_alloc(inf%s2,red2,ns2)
-          call mem_alloc(inf%d,red1,red2)
+          call mem_alloc(inf%s1,inf%ns1,inf%red1)
+          call mem_alloc(inf%s2,inf%red2,inf%ns2)
+          call mem_alloc(inf%d,inf%red1,inf%red2)
         else
-          call mem_alloc(inf%d,ns1,ns2)
+          call mem_alloc(inf%d,inf%ns1,inf%ns2)
         endif
       endif
     
-      call ls_mpi_buffer(inf%iaos,n,master)
+      call ls_mpi_buffer(inf%iaos,inf%n,master)
       if (inf%s_associated) then
-        call ls_mpi_buffer(inf%s1,ns1,red1,master)
-        call ls_mpi_buffer(inf%s2,red2,ns2,master)
-        call ls_mpi_buffer(inf%d,red1,red2,master)
+        call ls_mpi_buffer(inf%s1,inf%ns1,inf%red1,master)
+        call ls_mpi_buffer(inf%s2,inf%red2,inf%ns2,master)
+        call ls_mpi_buffer(inf%d,inf%red1,inf%red2,master)
       else
-        call ls_mpi_buffer(inf%d,ns1,ns2,master)
+        call ls_mpi_buffer(inf%d,inf%ns1,inf%ns2,master)
       endif
 
     endif
    
-  end subroutine bufferadd_PNOSpaceInfo_struct
+  end subroutine buffercopy_PNOSpaceInfo_struct
 
   subroutine share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
     implicit none
