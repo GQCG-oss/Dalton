@@ -163,7 +163,7 @@ ERROR[2]="CONVERGENCE PROBLEM"
 CRIT1=`$GREP "Monopoles * (\-|\-0)\.004099......" $log | wc -l`
 CRIT2=`$GREP "Dipoles * (\-|\-0)\.000603......" $log | wc -l`
 CRIT3=`$GREP "Quadrupoles * ( |0)\.002062......" $log | wc -l`
-CRIT4=`$GREP "Electronic * ( |0)\.107235......" $log | wc -l`
+CRIT4=`$GREP "Electronic * ( |0)\.10723[45]......" $log | wc -l`
 CRIT5=`$GREP "Nuclear * (\-|\-0)\.115487......" $log | wc -l`
 CRIT6=`$GREP "Multipole * (\-|\-0)\.004264......" $log | wc -l`
 CRIT7=`$GREP "Total PE energy: * (\-|\-0)\.015157......" $log | wc -l`
@@ -198,9 +198,9 @@ ERROR[5]="DIPOLE MOMENT NOT CORRECT"
 #
 # frequency independent polarizability
 #
-CRIT1=`$GREP "Ex *  6\.4283.. * (\-|\-0)\.1580... * 3\.844....E\-02" $log | wc -l`
-CRIT2=`$GREP "Ey * (\-|\-0)\.1580... * 9\.4956.. * (\-|\-0)\.2177..." $log | wc -l`
-CRIT3=`$GREP "Ez * 3\.844....E\-02 * (\-|\-0)\.2177... * 2\.5700.." $log | wc -l`
+CRIT1=`$GREP "Ex *  6\.4283.. * \-0*\.1580... * 3\.84.....E\-02" $log | wc -l`
+CRIT2=`$GREP "Ey * \-0*\.1580... * 9\.4956.. * \-0*\.2177..." $log | wc -l`
+CRIT3=`$GREP "Ez * 3\.84.....E\-02 * \-0*\.2177... * 2\.5700.." $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[6]=3
 ERROR[6]="FREQUENCY INDEPENDENT POLARIZABILITY NOT CORRECT"
@@ -210,7 +210,7 @@ ERROR[6]="FREQUENCY INDEPENDENT POLARIZABILITY NOT CORRECT"
 #
 CRIT1=`$GREP "Ex * 6\.4535.. * \-0*\.1585... *   3\.86.....E\-02" $log | wc -l`
 CRIT2=`$GREP "Ey * \-0*\.1585... *   9\.5309.. * \-0*\.2186..." $log | wc -l`
-CRIT3=`$GREP "Ez * 3\.86.....E\-02 * \-0*\.2186... * 2\.5788.." $log | wc -l`
+CRIT3=`$GREP "Ez * 3\.86.....E\-02 * \-0*\.218[56]... * 2\.5788.." $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[7]=3
 ERROR[7]="FREQUENCY DEPENDENT POLARIZABILITY NOT CORRECT"
