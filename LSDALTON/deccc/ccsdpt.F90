@@ -198,6 +198,9 @@ contains
 
 #ifdef VAR_MPI
 
+    ! here, synchronize all procs
+    call lsmpi_barrier(infpar%lg_comm)
+
     ! the parallel version of the ijk-loop
     call ijk_loop_par(nocc,nvirt,jaik,abij,cbai,trip_tmp,trip_ampl,ccsd_doubles,ccsd_doubles_portions,&
                     & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt,nodtotal)
@@ -3981,13 +3984,6 @@ contains
          & JAIB%dims(3),JAIB%dims(4),order,0.0E0_realk,ABIJ%val)
     
     call array4_free(JAIB)
-
-#ifdef VAR_MPI
-
-    ! here, synchronize all procs
-    call lsmpi_barrier(infpar%lg_comm)
-
-#endif
 
     call LSTIMER('CCSD(T) INT',tcpu,twall,DECinfo%output)
 
