@@ -630,7 +630,7 @@ contains
 #ifdef VAR_MPI
     if(loc) then
       select case(at)
-      case('LDAR','REAR','REPD','TDAR','TDPD')
+      case('LDAR','REAR','REPD','TDAR','TDPD','RTAR')
         arr=array_init_standard(dims,nmodes,pdm=NO_PDM_ACCESS)
         arr%atype='LDAR'
       !case('TDAR','TDPD')
