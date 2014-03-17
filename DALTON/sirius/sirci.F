@@ -376,7 +376,7 @@ C
       keywrd = 'CISAVE' 
       if(DOCISRDFT)then
 !       thrcit = 5.0d-4
-        maxitc = 50
+!       maxitc = 50
       end if
 
 !     thrcit = 1.0d-11
