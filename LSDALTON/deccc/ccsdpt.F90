@@ -351,6 +351,10 @@ contains
     njobs = int((nocc**2 + nocc)/2)
     b_size = int(njobs/nodtotal)
 
+    print *,'nodtotal = ',infpar%lg_nodtot
+    print *,'proc no. = ',infpar%lg_mynum,'njobs = ',njobs
+    print *,'proc no. = ',infpar%lg_mynum,'b_size = ',b_size
+
     ! ij_array stores all jobs for composite ij indices in descending order
     call mem_alloc(ij_array,njobs)
     ! init list (one more than b_size since mod(njobs,nodtotal) is not necessearily zero
@@ -360,6 +364,8 @@ contains
     call create_ij_array_ccsdpt(njobs,nocc,ij_array)
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
+
+    print *,'proc no. ',infpar%lg_mynum,'jobs = ',jobs
 
     ! release ij_array
     call mem_dealloc(ij_array)
@@ -387,7 +393,11 @@ contains
                ij = jobs(ij_count)
     
                ! no more jobs to be done? otherwise leave the loop
-               if (ij .lt. 0) exit
+               if (ij_count .eq. b_size + 1) then
+
+                  if (ij .lt. 0) exit
+
+               end if
     
                ! calculate i and j from composite ij value
                call calc_i_and_j(ij,nocc,i,j)
