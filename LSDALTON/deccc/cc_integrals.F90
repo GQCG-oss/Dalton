@@ -859,9 +859,6 @@ contains
                & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem)
         if (.not.mo_ccsd) return
 
-        !local_moccsd = .true.
-        !if(decinfo%PL>5) local_moccsd = .false.
-
         if (print_debug) then
           if (local_moccsd) then 
             write(DECinfo%output,*) 'MO-CCSD: local scheme'
