@@ -351,9 +351,13 @@ contains
     njobs = int((nocc**2 + nocc)/2)
     b_size = int(njobs/nodtotal)
 
+#ifdef VAR_MPI
+
     print *,'nodtotal = ',infpar%lg_nodtot
     print *,'proc no. = ',infpar%lg_mynum,'njobs = ',njobs
     print *,'proc no. = ',infpar%lg_mynum,'b_size = ',b_size
+
+#endif
 
     ! ij_array stores all jobs for composite ij indices in descending order
     call mem_alloc(ij_array,njobs)
@@ -365,7 +369,11 @@ contains
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
+#ifdef VAR_MPI
+
     print *,'proc no. ',infpar%lg_mynum,'jobs = ',jobs
+
+#endif
 
     ! release ij_array
     call mem_dealloc(ij_array)
