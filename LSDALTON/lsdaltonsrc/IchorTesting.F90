@@ -505,6 +505,8 @@ ELSEIF(icharge.LT.1000)THEN
 ENDIF
 atomicmolecule%label = label
 call mem_alloc(atomicmolecule%ATOM,nAtoms)
+nullify(atomicmolecule%SubsystemLabel)
+atomicmolecule%nSubsystems = 0
 atomicmolecule%nAtoms = nAtoms
 atomicmolecule%nAtomsNPC = nAtoms
 atomicmolecule%nelectrons = ICHARGE*nAtoms
@@ -553,6 +555,7 @@ do I=1,nAtoms
    atomicmolecule%ATOM(I)%nContOrbVAL =0 
    atomicmolecule%ATOM(I)%nPrimOrbVAL =0 
    atomicmolecule%ATOM(I)%molecularIndex =0 
+   atomicmolecule%ATOM(I)%SubSystemIndex =0 
 ENDDO
 
 #endif
