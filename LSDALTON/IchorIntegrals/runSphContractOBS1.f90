@@ -19,7 +19,7 @@ PROGRAM TUV
   !buildtuvindex
   sphericalGTO = .TRUE.
   LUMOD3=3
-  open(unit = LUMOD3, file="AutoGenCoderunSphContractOBS1_new.f90",status="unknown")
+  open(unit = LUMOD3, file="AutoGenCoderunSphContractOBS1_new.F90",status="unknown")
   WRITE(LUMOD3,'(A)')'MODULE AGC_OBS_Sphcontract1Mod'
   WRITE(LUMOD3,'(A)')'!Automatic Generated Code (AGC) by runSphContractOBS1.f90 in tools directory'
   WRITE(LUMOD3,'(A)')'use IchorPrecisionModule  '
@@ -33,6 +33,8 @@ PROGRAM TUV
 DO GPUrun = 1,2
     CPU = .TRUE.
     IF(GPUrun.EQ.2)CPU = .FALSE.
+    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#ifdef VAR_OPENACC'
+    
     DoOpenMP = .FALSE.
     DoOpenACC = .FALSE.
     IF(CPU)DoOpenMP = .TRUE.
@@ -263,6 +265,7 @@ DO GPUrun = 1,2
         ENDIF !SphericalTrans
      enddo
   enddo
+    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#endif'
   enddo
 
   WRITE(LUMOD3,'(A)')'END MODULE AGC_OBS_Sphcontract1Mod'

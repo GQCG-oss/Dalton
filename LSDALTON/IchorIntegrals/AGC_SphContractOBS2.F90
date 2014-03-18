@@ -240,6 +240,7 @@ subroutine SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(nlmP,nContPasses,IN,OUT)
 end subroutine SphericalContractOBS2_CPU_maxAngQ4_maxAngC2 
   
   
+#ifdef VAR_OPENACC  
 subroutine SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(nlmP,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: nlmP,nContPasses
@@ -471,4 +472,5 @@ subroutine SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(nlmP,nContPasses,IN,OUT)
 end subroutine SphericalContractOBS2_GPU_maxAngQ4_maxAngC2 
   
   
+#endif
 END MODULE AGC_OBS_Sphcontract2Mod

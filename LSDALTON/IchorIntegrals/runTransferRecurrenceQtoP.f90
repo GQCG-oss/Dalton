@@ -95,14 +95,16 @@ subroutine PASSsub
           WRITE(LUFILE1,'(A)')' use IchorPrecisionModule'
           WRITE(LUFILE1,'(A)')'  '
           WRITE(LUFILE1,'(A)')' CONTAINS'
-          MaxAngmomQP = 8
+          MaxAngmomQP = 8-1 !PDDD highest possible 
 
           DO JMAX=2,MaxAngmomQP
+             IF((ifile.EQ.3.OR.ifile.EQ.4).AND.JMAX.GT.MaxAngmomQP-1)CYCLE !PDPD higest possible
              DO JP = 1, JMAX
                 JQ = JMAX-JP
-                IF(JP.GT.JQ)CYCLE
+                IF(JP.GE.JQ)CYCLE
                 IF(JP.EQ.0)CYCLE
                 IF(JQ.GT.4)CYCLE
+                IF((ifile.EQ.3.OR.ifile.EQ.4).AND.JQ.GT.4-1)CYCLE !PDPD higest possible
                 IF(JP.GT.4)CYCLE
                 IF(JMAX.LT.5)THEN
 !                   LUFILE = LUSPECIAL
@@ -420,15 +422,15 @@ subroutine PASSsub
                       IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(shared) COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ) '
 !                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
                       IF(SegP)THEN
-                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOPPRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,Aux2)'
+                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,Aux2)'
                          WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPasses'
                       ENDIF
                       IF(SegQ)THEN
-                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOPPRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimP,nPasses,Aux2)'
+                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimP,nPasses,Aux2)'
                          WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimP*nPasses'
                       ENDIF
                       IF(Seg)THEN
-                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOPPRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2)'
+                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2)'
                          WRITE(LUFILE,'(A)') '  DO iP = 1,nPasses'
                       ENDIF
                       WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
