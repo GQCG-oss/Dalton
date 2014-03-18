@@ -99,6 +99,10 @@ if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
 
+if(ENABLE_PELIB)
+    include(LibsPElib)
+endif()
+
 # configure INSTALL_WRKMEM and INSTALL_MMWORK
 include(ConfigWORKMEM)
 
