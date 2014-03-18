@@ -1177,6 +1177,11 @@ contains
      
 #ifdef VAR_MPI
     call mem_dealloc(tasks)
+    ! The slaves tell to the master that they have done their jobs.
+    ! The master receives the message in the residual routine.
+    if (.not.master.and.ccmodel==MODEL_CCSD) then
+      call lsmpi_reduction(1.0E0_realk,infpar%master,infpar%lg_comm)
+    end if
 #endif
 
     call LSTIMER('get_t1_free_gmo',tcpu,twall,DECinfo%output)
