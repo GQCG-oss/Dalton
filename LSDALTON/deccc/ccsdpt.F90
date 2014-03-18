@@ -2216,10 +2216,10 @@ contains
 
     ! do v^4o^3 contraction
 
-!$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
+!!$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
     call dgemm('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
                    & 0.0E0_realk,trip,nv)
-!$acc end host_data
+!!$acc end host_data
 
   end subroutine trip_amplitudes_virt
 
@@ -2258,10 +2258,10 @@ contains
 
     ! do v^3o^4 contraction
 
-!$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
+!!$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
     call dgemm('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
                    & 1.0E0_realk,trip,nv)
-!$acc end host_data
+!!$acc end host_data
 
   end subroutine trip_amplitudes_occ
 
@@ -2288,39 +2288,39 @@ contains
 
     e_orb_occ = eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3)
 
-#ifdef VAR_OPENACC
-!$acc parallel present(trip,eigenvirt,eigenocc)
-!$acc loop gang
-#else
+!#ifdef VAR_OPENACC
+!!$acc parallel present(trip,eigenvirt,eigenocc)
+!!$acc loop gang
+!#else
 !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,b,c,e_orb),SHARED(nv,trip,eigenvirt,e_orb_occ)
-#endif
+!#endif
  arun_0: do a=1,nv
-#ifdef VAR_OPENACC
-!$acc loop worker
-#endif
+!#ifdef VAR_OPENACC
+!!$acc loop worker
+!#endif
     brun_0: do b=1,nv
-#ifdef VAR_OPENACC
-!$acc loop vector
-#endif
+!#ifdef VAR_OPENACC
+!!$acc loop vector
+!#endif
        crun_0: do c=1,nv
 
                   trip(c,b,a) = trip(c,b,a) / (e_orb_occ - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
 
                end do crun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
+!#ifdef VAR_OPENACC
+!!$acc end loop
+!#endif
             end do brun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
+!#ifdef VAR_OPENACC
+!!$acc end loop
+!#endif
          end do arun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-!$acc end parallel
-#else
+!#ifdef VAR_OPENACC
+!!$acc end loop
+!!$acc end parallel
+!#else
 !$OMP END PARALLEL DO
-#endif
+!#endif
 
   end subroutine trip_denom
 
