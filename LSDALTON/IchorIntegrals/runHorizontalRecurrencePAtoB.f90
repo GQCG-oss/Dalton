@@ -155,7 +155,7 @@ DO GPUrun = 1,2
              ENDIF
           ENDIF
           IF(DoOpenACC)THEN
-             WRITE(*,'(A)')'!$ACC PARALLEL LOOP&'
+             WRITE(*,'(A)')'!$ACC PARALLEL LOOP &'
              WRITE(*,'(A)')'!$ACC PRIVATE(iP,&'
              IF(JB.NE.0)THEN
                 DO JTMP=1,JB-1
