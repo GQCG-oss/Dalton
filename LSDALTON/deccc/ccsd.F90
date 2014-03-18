@@ -5621,12 +5621,17 @@ contains
 
     omega2%elm1 = 0.0E0_realk
 
-    if (print_debug) call print_norm(pgmo_diag,'debug: norm pgmo_diag  :           ')
+    
+
 #ifdef VAR_MPI
     call get_mo_ccsd_joblist(MOinfo, joblist)
 
     ! all communication for MPI prior to the loop
     StartUpSlaves: if (master.and.nnod>1) then
+
+      ! Check that the slaves have finished to write in pdm arrays
+      if (iter==1) call lsmpi_reduction(dummy,infpar%master,infpar%lg_comm)
+
       call ls_mpibcast(MOCCSDDATA,infpar%master,infpar%lg_comm)
       call mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
