@@ -28,14 +28,16 @@ subroutine PASSsub
   Character(len=8)  :: SegLabel
   character(len=3) :: ARCSTRING
   integer :: iseg,ifile,iseglabel
-  logical :: Gen,SegQ,Segp,Seg,Seg1Prim,LOOPUNROLL,DoOpenMP
+  logical :: Gen,SegQ,Segp,Seg,Seg1Prim,LOOPUNROLL,DoOpenMP,DoOpenACC
   logical :: Collapse,CPU
   integer,pointer :: IfacX(:,:),TUVindexX(:,:)
-  DO GPUrun = 1,1!2
+  DO GPUrun = 1,2
     CPU = .TRUE.
     IF(GPUrun.EQ.2)CPU = .FALSE.
     DoOpenMP = .FALSE.
+    DoOpenACC = .FALSE.
     IF(CPU)DoOpenMP = .TRUE.
+    IF(.NOT.CPU)DoOpenACC = .TRUE.
     COLLAPSE=.TRUE.
     IF(CPU)THEN
        ARCSTRING = 'CPU'
@@ -391,6 +393,7 @@ subroutine PASSsub
                 IF(COLLAPSE)THEN
                    IF(SegP.OR.SegQ.OR.Seg)THEN
                       IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ) SHARED(nPrimQ,nPasses,nPrimP,Aux2)'
+                      IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2)'
 !                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
                       IF(SegP)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPasses'
                       IF(SegQ)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimP*nPasses'
@@ -435,6 +438,32 @@ subroutine PASSsub
                    WRITE(LUFILE,'(A)')'!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&'
            WRITE(LUFILE,'(A,A,A,A,A)')'!$OMP       ',FromExpLabel,'exp,',ToExpLabel,'exp,&'
                    WRITE(LUFILE,'(A)')'!$OMP        IatomApass,IatomBpass,Aux2,Aux)'
+                ENDIF
+                IF(DoOpenACC)THEN
+                   WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP &'
+                   WRITE(LUFILE,'(A)')'!$ACC PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&'
+                   IF(Seg)THEN
+                      WRITE(LUFILE,'(A)')'!$ACC         iP,iPrimQ,iPrimP,iPrimQP,iPassP,&'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'!$ACC         iP,iPrimQ,iPrimP,iPassP,&'
+                   ENDIF
+                   WRITE(LUFILE,'(A,A,A,A,A,A,A)')'!$ACC         exp',FromExpLabel,'X,exp',FromExpLabel,'Y,exp',FromExpLabel,'Z,&'
+                   IF(.NOT.seg1Prim)THEN
+                      WRITE(LUFILE,'(A,A,A,A,A,A,A)')'!$ACC         iPrim',FromExpLabel,',iPrim',ToExpLabel,',&'
+                   ENDIF
+                   WRITE(LUFILE,'(A)')'!$ACC         Tmp0,&'
+                   DO JTMQ=1,JQ-1
+                      if(JTMQ.LT.10)THEN
+                         WRITE(LUFILE,'(A,I1,A)')'!$ACC         Tmp',JTMQ,',&'
+                      else
+                         WRITE(LUFILE,'(A,I2,A)')'!$ACC         Tmp',JTMQ,',&'
+                      endif
+                   ENDDO                   
+                   WRITE(LUFILE,'(A)')'!$ACC         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &'
+                   WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&'
+                   WRITE(LUFILE,'(A)')'!$ACC        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&'
+           WRITE(LUFILE,'(A,A,A,A,A)')'!$ACC       ',FromExpLabel,'exp,',ToExpLabel,'exp,&'
+                   WRITE(LUFILE,'(A)')'!$ACC        IatomApass,IatomBpass,Aux2,Aux)'
                 ENDIF
 
                 !START LOOP

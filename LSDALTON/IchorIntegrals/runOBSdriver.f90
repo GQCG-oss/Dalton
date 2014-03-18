@@ -15,62 +15,69 @@ PROGRAM TUV
   integer :: ip1,jp1,kp1,p1,ip2,jp2,kp2,p2,ijkcartP,AngmomA,AngmomB
   integer :: AngmomC,AngmomD,AngmomP,AngmomQ,nTUVQ,AngmomPQ
   integer :: nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec
-  integer :: nTUVA,nTUVB,nTUVC,nTUVD
+  integer :: nTUVA,nTUVB,nTUVC,nTUVD,GPUrun
   integer :: nlmA,nlmB,nlmC,nlmD,angmomID,iseg,ILUMOD,I,nUniquenTUVs
   real(realk),pointer :: uniqeparam(:)
   character(len=15),pointer :: uniqeparamNAME(:)
   character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
   character(len=4) :: SPEC
   character(len=3) :: ARCSTRING
-  logical :: BUILD(0:2,0:2,0:2,0:2),Gen,Seg,SegP,segQ,Seg1Prim,UNIQUE
+  logical :: BUILD(0:2,0:2,0:2,0:2),Gen,Seg,SegP,segQ,Seg1Prim,UNIQUE,CPU
   integer,pointer :: UniquenTUVs(:)
   !TODO
   !remove mem_alloc
   !remove LOCALINTS = TMParray2
   !add PrimitiveContractionSeg to Transfer or Vertical 
   !
+DO GPUrun=1,2
+   CPU = .TRUE.
+   IF(GPUrun.EQ.2)CPU = .FALSE.
+   IF(CPU)THEN
+      ARCSTRING = 'CPU'
+   ELSE
+      ARCSTRING = 'GPU'
+   ENDIF
   LUMOD2=2
-  open(unit = LUMOD2, file="MAIN_OBS_DRIVER.f90",status="unknown")
-  WRITE(LUMOD2,'(A)')'MODULE IchorEriCoulombintegralOBSGeneralMod'
+  open(unit = LUMOD2, file='MAIN_'//ARCSTRING//'_OBS_DRIVER.f90',status="unknown")
+  WRITE(LUMOD2,'(A)')'MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralMod'
   WRITE(LUMOD2,'(A)')'!Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory'
 
   LUMOD3=3
-  open(unit = LUMOD3, file="MAIN_OBS_DRIVERGen.f90",status="unknown")
-  WRITE(LUMOD3,'(A)')'MODULE IchorEriCoulombintegralOBSGeneralModGen'
+  open(unit = LUMOD3, file='MAIN_'//ARCSTRING//'_OBS_DRIVERGen.f90',status="unknown")
+  WRITE(LUMOD3,'(A)')'MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModGen'
   WRITE(LUMOD3,'(A)')'!Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory'
   WRITE(LUMOD3,'(A)')'!Contains routines for General Contracted Basisset '
 
   LUMOD4=4
-  open(unit = LUMOD4, file="MAIN_OBS_DRIVERSegQ.f90",status="unknown")
-  WRITE(LUMOD4,'(A)')'MODULE IchorEriCoulombintegralOBSGeneralModSegQ'
+  open(unit = LUMOD4, file='MAIN_'//ARCSTRING//'_OBS_DRIVERSegQ.f90',status="unknown")
+  WRITE(LUMOD4,'(A)')'MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegQ'
   WRITE(LUMOD4,'(A)')'!Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory'
   WRITE(LUMOD4,'(A)')'!Contains routines for a General Contracted LHS Segmented contracted RHS and Basisset '
 
   LUMOD5=5
-  open(unit = LUMOD5, file="MAIN_OBS_DRIVERSegP.f90",status="unknown")
-  WRITE(LUMOD5,'(A)')'MODULE IchorEriCoulombintegralOBSGeneralModSegP'
+  open(unit = LUMOD5, file='MAIN_'//ARCSTRING//'_OBS_DRIVERSegP.f90',status="unknown")
+  WRITE(LUMOD5,'(A)')'MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegP'
   WRITE(LUMOD5,'(A)')'!Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory'
   WRITE(LUMOD5,'(A)')'!Contains routines for Segmented contracted LHS and a General Contracted RHS Basisset '
 
   LUMOD6=6
-  open(unit = LUMOD6, file="MAIN_OBS_DRIVERSeg.f90",status="unknown")
-  WRITE(LUMOD6,'(A)')'MODULE IchorEriCoulombintegralOBSGeneralModSeg'
+  open(unit = LUMOD6, file='MAIN_'//ARCSTRING//'_OBS_DRIVERSeg.f90',status="unknown")
+  WRITE(LUMOD6,'(A)')'MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg'
   WRITE(LUMOD6,'(A)')'!Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory'
   WRITE(LUMOD6,'(A)')'!Contains routines for Segmented contracted Basisset '
 
   LUMOD7=7
-  open(unit = LUMOD7, file="MAIN_OBS_DRIVERSeg1Prim.f90",status="unknown")
-  WRITE(LUMOD7,'(A)')'MODULE IchorEriCoulombintegralOBSGeneralModSeg1Prim'
+  open(unit = LUMOD7, file='MAIN_'//ARCSTRING//'_OBS_DRIVERSeg1Prim.f90',status="unknown")
+  WRITE(LUMOD7,'(A)')'MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1Prim'
   WRITE(LUMOD7,'(A)')'!Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory'
   WRITE(LUMOD7,'(A)')'!Contains routines for Segmented contracted Basisset containing a single primitive'
 
-  WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegralOBSGeneralModGen'
-  WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegralOBSGeneralModSegQ'
-  WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegralOBSGeneralModSegP'
-  WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegralOBSGeneralModSeg'
-  WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegralOBSGeneralModSeg1Prim'
+  WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModGen'
+  WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegQ'
+  WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegP'
+  WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg'
+  WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1Prim'
 
-  ARCSTRING = 'CPU'
   DO ILUMOD=2,7
      WRITE(ILUMOD,'(A)')'use IchorprecisionModule'
      WRITE(ILUMOD,'(A)')'use IchorCommonModule'
@@ -158,12 +165,12 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'  '
      WRITE(ILUMOD,'(A)')'private   '
   ENDDO
-  WRITE(LUMOD2,'(A)')'public :: IchorCoulombIntegral_OBS_general,IchorCoulombIntegral_OBS_general_size  '
-  WRITE(LUMOD3,'(A)')'public :: IchorCoulombIntegral_OBS_Gen,IchorCoulombIntegral_OBS_general_sizeGen  '
-  WRITE(LUMOD4,'(A)')'public :: IchorCoulombIntegral_OBS_SegQ,IchorCoulombIntegral_OBS_general_sizeSegQ  '
-  WRITE(LUMOD5,'(A)')'public :: IchorCoulombIntegral_OBS_SegP,IchorCoulombIntegral_OBS_general_sizeSegP  '
-  WRITE(LUMOD6,'(A)')'public :: IchorCoulombIntegral_OBS_Seg,IchorCoulombIntegral_OBS_general_sizeSeg  '
-  WRITE(LUMOD7,'(A)')'public :: IchorCoulombIntegral_OBS_Seg1Prim,IchorCoulombIntegral_OBS_general_sizeSeg1Prim  '
+  WRITE(LUMOD2,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_general,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_size  '
+  WRITE(LUMOD3,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeGen  '
+  WRITE(LUMOD4,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegQ  '
+  WRITE(LUMOD5,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegP  '
+  WRITE(LUMOD6,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg  '
+  WRITE(LUMOD7,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg1Prim  '
 
   DO ILUMOD=2,7
      WRITE(ILUMOD,'(A)')'  '
@@ -171,7 +178,7 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'  '
      WRITE(ILUMOD,'(A)')'  '
   ENDDO
-  WRITE(LUMOD2,'(A)')'  subroutine IchorCoulombIntegral_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
@@ -277,7 +284,7 @@ PROGRAM TUV
 
 
   WRITE(LUMOD2,'(A)')'   IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN'
-  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
@@ -289,7 +296,7 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
   WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)' 
   WRITE(LUMOD2,'(A)')'   ELSEIF(Psegmented.AND.Qsegmented)THEN'
-  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
@@ -301,7 +308,7 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
   WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)' 
   WRITE(LUMOD2,'(A)')'   ELSEIF(Psegmented)THEN'
-  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
@@ -313,7 +320,7 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
   WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)' 
   WRITE(LUMOD2,'(A)')'   ELSEIF(Qsegmented)THEN'
-  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
@@ -325,7 +332,7 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
   WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)' 
   WRITE(LUMOD2,'(A)')'   ELSE'
-  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
@@ -337,7 +344,7 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
   WRITE(LUMOD2,'(A)')'       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)' 
   WRITE(LUMOD2,'(A)')'   ENDIF'
-  WRITE(LUMOD2,'(A)')'  end subroutine IchorCoulombIntegral_OBS_general'
+  WRITE(LUMOD2,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general'
   WRITE(LUMOD2,'(A)')'  '
 
   DO ISEG = 1,5
@@ -355,19 +362,19 @@ PROGRAM TUV
      ENDIF
 
      IF(Gen)THEN
-        WRITE(LUMOD3,'(A)')'  subroutine IchorCoulombIntegral_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(LUMOD3,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
         ILUMOD = 3
      ELSEIF(SegQ)THEN
-        WRITE(LUMOD4,'(A)')'  subroutine IchorCoulombIntegral_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(LUMOD4,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
         ILUMOD = 4
      ELSEIF(SegP)THEN
-        WRITE(LUMOD5,'(A)')'  subroutine IchorCoulombIntegral_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(LUMOD5,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
         ILUMOD = 5
      ELSEIF(Seg)THEN
-        WRITE(LUMOD6,'(A)')'  subroutine IchorCoulombIntegral_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(LUMOD6,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
         ILUMOD = 6
      ELSEIF(Seg1Prim)THEN
-        WRITE(LUMOD7,'(A)')'  subroutine IchorCoulombIntegral_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(LUMOD7,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&'
         ILUMOD = 7
      ENDIF
      WRITE(ILUMOD,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
@@ -608,33 +615,33 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
 
      IF(Gen)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_OBS_Gen'',-1)'
+        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen'',-1)'
      ELSEIF(SegQ)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_OBS_SegQ'',-1)'
+        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ'',-1)'
      ELSEIF(SegP)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_OBS_SegP'',-1)'
+        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP'',-1)'
      ELSEIF(Seg)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_OBS_Seg'',-1)'
+        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg'',-1)'
      ELSEIF(Seg1Prim)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_OBS_Seg1Prim'',-1)'
+        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim'',-1)'
      ENDIF
      WRITE(ILUMOD,'(A)')'    END SELECT'
      IF(Gen)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_OBS_Gen'
+        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen'
      ELSEIF(SegQ)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_OBS_SegQ'
+        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ'
      ELSEIF(SegP)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_OBS_SegP'
+        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP'
      ELSEIF(Seg)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_OBS_Seg'
+        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg'
      ELSEIF(Seg1Prim)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_OBS_Seg1Prim'
+        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim'
      ENDIF
      WRITE(ILUMOD,'(A)')'  '
   ENDDO
 
   WRITE(LUMOD2,'(A)')'  '
-  WRITE(LUMOD2,'(A)')'  subroutine IchorCoulombIntegral_OBS_general_size(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_size(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
   WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,&'
@@ -647,37 +654,37 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD'
   WRITE(LUMOD2,'(A)')'    logical,intent(in) :: Psegmented,Qsegmented'
   WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN'
-  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
   WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented.AND.Qsegmented)THEN'
-  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_OBS_general_sizeSeg(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
   WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented)THEN'
-  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_OBS_general_sizeSegP(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegP(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
   WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Qsegmented)THEN'
-  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_OBS_general_sizeSegQ(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegQ(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
   WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSE'
-  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_OBS_general_sizeGen(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeGen(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&'
   WRITE(LUMOD2,'(A)')'         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ENDIF'
-  WRITE(LUMOD2,'(A)')'  end subroutine IchorCoulombIntegral_OBS_general_size'
+  WRITE(LUMOD2,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_size'
   WRITE(LUMOD2,'(A)')'  '
 
 
@@ -697,19 +704,19 @@ PROGRAM TUV
 
      WRITE(ISEG+2,'(A)')'  '
      IF(Gen)THEN
-        WRITE(LUMOD3,'(A)')'  subroutine IchorCoulombIntegral_OBS_general_sizeGen(TMParray1maxsize,&'
+        WRITE(LUMOD3,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeGen(TMParray1maxsize,&'
         ILUMOD = LUMOD3
      ELSEIF(SegQ)THEN
-        WRITE(LUMOD4,'(A)')'  subroutine IchorCoulombIntegral_OBS_general_sizeSegQ(TMParray1maxsize,&'
+        WRITE(LUMOD4,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegQ(TMParray1maxsize,&'
         ILUMOD = LUMOD4
      ELSEIF(SegP)THEN
-        WRITE(LUMOD5,'(A)')'  subroutine IchorCoulombIntegral_OBS_general_sizeSegP(TMParray1maxsize,&'
+        WRITE(LUMOD5,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegP(TMParray1maxsize,&'
         ILUMOD = LUMOD5
      ELSEIF(Seg)THEN
-        WRITE(LUMOD6,'(A)')'  subroutine IchorCoulombIntegral_OBS_general_sizeSeg(TMParray1maxsize,&'
+        WRITE(LUMOD6,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg(TMParray1maxsize,&'
         ILUMOD = LUMOD6
      ELSEIF(Seg1Prim)THEN
-        WRITE(LUMOD7,'(A)')'  subroutine IchorCoulombIntegral_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
+        WRITE(LUMOD7,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
         ILUMOD = LUMOD7
      ENDIF
      WRITE(ILUMOD,'(A)')'         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&'
@@ -786,30 +793,31 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'    END SELECT'
 
      IF(Gen)THEN
-        WRITE(LUMOD3,'(A)')'  end subroutine IchorCoulombIntegral_OBS_general_sizeGen'
+        WRITE(LUMOD3,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeGen'
         ILUMOD = LUMOD3
      ELSEIF(SegQ)THEN
-        WRITE(LUMOD4,'(A)')'  end subroutine IchorCoulombIntegral_OBS_general_sizeSegQ'
+        WRITE(LUMOD4,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegQ'
         ILUMOD = LUMOD4
      ELSEIF(SegP)THEN
-        WRITE(LUMOD5,'(A)')'  end subroutine IchorCoulombIntegral_OBS_general_sizeSegP'
+        WRITE(LUMOD5,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegP'
         ILUMOD = LUMOD5
      ELSEIF(Seg)THEN
-        WRITE(LUMOD6,'(A)')'  end subroutine IchorCoulombIntegral_OBS_general_sizeSeg'
+        WRITE(LUMOD6,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg'
         ILUMOD = LUMOD6
      ELSEIF(Seg1Prim)THEN
-        WRITE(LUMOD7,'(A)')'  end subroutine IchorCoulombIntegral_OBS_general_sizeSeg1Prim'
+        WRITE(LUMOD7,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg1Prim'
         ILUMOD = LUMOD7
      ENDIF
   ENDDO
 !====================================QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ
 
-  WRITE(LUMOD5,'(A)')''
-  WRITE(LUMOD5,'(A)')'  subroutine PrimitiveContractionSegP1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-  WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)'
-  WRITE(LUMOD5,'(A)')'    implicit none'
-  WRITE(LUMOD5,'(A)')'    !Warning Primitive screening modifies this!!! '
-  WRITE(LUMOD5,'(A)')'    !Due to P being segmented the P contraction have already been done and we need to '
+  IF(CPU)THEN
+     WRITE(LUMOD5,'(A)')''
+     WRITE(LUMOD5,'(A)')'  subroutine PrimitiveContractionCPUSegP1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
+     WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)'
+     WRITE(LUMOD5,'(A)')'    implicit none'
+     WRITE(LUMOD5,'(A)')'    !Warning Primitive screening modifies this!!! '
+     WRITE(LUMOD5,'(A)')'    !Due to P being segmented the P contraction have already been done and we need to '
   WRITE(LUMOD5,'(A)')'    !go from nPrimQ to nContQ' 
   WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContQ'
   WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimC,nContC,nPrimD,nContD'
@@ -857,10 +865,10 @@ PROGRAM TUV
   WRITE(LUMOD5,'(A)')'     enddo'
   WRITE(LUMOD5,'(A)')'    enddo'
   WRITE(LUMOD5,'(A)')'!$OMP END PARALLEL DO'
-  WRITE(LUMOD5,'(A)')'  end subroutine PrimitiveContractionSegP1'
+  WRITE(LUMOD5,'(A)')'  end subroutine PrimitiveContractionCPUSegP1'
   WRITE(LUMOD5,'(A)')''
 
-  WRITE(LUMOD4,'(A)')'  subroutine PrimitiveContractionSegQ1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
+  WRITE(LUMOD4,'(A)')'  subroutine PrimitiveContractionCPUSegQ1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
   WRITE(LUMOD4,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)'
   WRITE(LUMOD4,'(A)')'    implicit none'
   WRITE(LUMOD4,'(A)')'    !Warning Primitive screening modifies this!!! '
@@ -896,11 +904,11 @@ PROGRAM TUV
   WRITE(LUMOD4,'(A)')'     enddo'
   WRITE(LUMOD4,'(A)')'    enddo'
   WRITE(LUMOD4,'(A)')'!$OMP END PARALLEL DO'
-  WRITE(LUMOD4,'(A)')'  end subroutine PrimitiveContractionSegQ1'
+  WRITE(LUMOD4,'(A)')'  end subroutine PrimitiveContractionCPUSegQ1'
   WRITE(LUMOD4,'(A)')''
 
   WRITE(LUMOD3,'(A)')''
-  WRITE(LUMOD3,'(A)')'  subroutine PrimitiveContractionGen1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
+  WRITE(LUMOD3,'(A)')'  subroutine PrimitiveContractionCPUGen1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
   WRITE(LUMOD3,'(A)')'       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&'
   WRITE(LUMOD3,'(A)')'       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)'
   WRITE(LUMOD3,'(A)')'    implicit none'
@@ -976,7 +984,7 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'    enddo'
   WRITE(LUMOD3,'(A)')'!!$OMP END SINGLE'
   WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
-  WRITE(LUMOD3,'(A)')'  end subroutine PrimitiveContractionGen1'
+  WRITE(LUMOD3,'(A)')'  end subroutine PrimitiveContractionCPUGen1'
 
 !!$         WRITE(LUMOD3,'(A)')'      do iContA=1,nContA'
 !!$         WRITE(LUMOD3,'(A)')'        do iContC=1,nContC'
@@ -1034,7 +1042,7 @@ PROGRAM TUV
 !GENERAL 
          WRITE(LUMOD3,'(A)')''
          call initString(1)
-         call AddToString('  subroutine PrimitiveContractionGen')
+         call AddToString('  subroutine PrimitiveContractionCPUGen')
          call AddToString(nTUVP*nTUVQ)
          call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
          call writeString(LUMOD3)
@@ -1184,13 +1192,13 @@ PROGRAM TUV
 !!$         WRITE(LUMOD3,'(A)')'     enddo'
 !!$         WRITE(LUMOD3,'(A)')'    enddo'
          call initString(1)
-         call AddToString('  end subroutine PrimitiveContractionGen')
+         call AddToString('  end subroutine PrimitiveContractionCPUGen')
          call AddToString(nTUVP*nTUVQ)
          call writeString(LUMOD3)
 ! PSEGMENTED
          WRITE(LUMOD5,'(A)')''
          call initString(1)
-         call AddToString('  subroutine PrimitiveContractionSegP')
+         call AddToString('  subroutine PrimitiveContractionCPUSegP')
          call AddToString(nTUVP*nTUVQ)
          call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
          call writeString(LUMOD5)
@@ -1236,13 +1244,13 @@ PROGRAM TUV
          WRITE(LUMOD5,'(A)')'    enddo'
          WRITE(LUMOD5,'(A)')'!$OMP END PARALLEL DO'
          call initString(1)
-         call AddToString('  end subroutine PrimitiveContractionSegP')
+         call AddToString('  end subroutine PrimitiveContractionCPUSegP')
          call AddToString(nTUVP*nTUVQ)
          call writeString(LUMOD5)
 ! QSEGMENTED
          WRITE(LUMOD4,'(A)')''
          call initString(1)
-         call AddToString('  subroutine PrimitiveContractionSegQ')
+         call AddToString('  subroutine PrimitiveContractionCPUSegQ')
          call AddToString(nTUVP*nTUVQ)
          call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
          call writeString(LUMOD4)
@@ -1289,7 +1297,7 @@ PROGRAM TUV
          WRITE(LUMOD4,'(A)')'    enddo'
          WRITE(LUMOD4,'(A)')'!$OMP END PARALLEL DO'
          call initString(1)
-         call AddToString('  end subroutine PrimitiveContractionSegQ')
+         call AddToString('  end subroutine PrimitiveContractionCPUSegQ')
          call AddToString(nTUVP*nTUVQ)
          call writeString(LUMOD4)
          WRITE(LUMOD4,'(A)')''
@@ -1299,9 +1307,7 @@ PROGRAM TUV
    ENDDO
   ENDDO
   deallocate(UniquenTUVs)
-
-
-
+ENDIF!CPU
 !!$WRITE(LUMOD3,'(A)')'  subroutine build_Rpa(nPrimP,Pcent,Acent,Rpa)'
 !!$WRITE(LUMOD3,'(A)')'    implicit none'
 !!$WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimP'
@@ -1437,12 +1443,12 @@ PROGRAM TUV
 !  WRITE(LUMOD3,'(A)')'  '
 !  WRITE(LUMOD3,'(A)')'END MODULE IchorEriCoulombintegralOBSGeneralMod'
 
-  WRITE(LUMOD2,'(A)')'END MODULE IchorEriCoulombintegralOBSGeneralMod'
-  WRITE(LUMOD3,'(A)')'END MODULE IchorEriCoulombintegralOBSGeneralModGen'
-  WRITE(LUMOD4,'(A)')'END MODULE IchorEriCoulombintegralOBSGeneralModSegQ'
-  WRITE(LUMOD5,'(A)')'END MODULE IchorEriCoulombintegralOBSGeneralModSegP'
-  WRITE(LUMOD6,'(A)')'END MODULE IchorEriCoulombintegralOBSGeneralModSeg'
-  WRITE(LUMOD7,'(A)')'END MODULE IchorEriCoulombintegralOBSGeneralModSeg1Prim'
+  WRITE(LUMOD2,'(A)')'END MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralMod'
+  WRITE(LUMOD3,'(A)')'END MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModGen'
+  WRITE(LUMOD4,'(A)')'END MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegQ'
+  WRITE(LUMOD5,'(A)')'END MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegP'
+  WRITE(LUMOD6,'(A)')'END MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg'
+  WRITE(LUMOD7,'(A)')'END MODULE IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1Prim'
 
   close(unit = LUMOD2)
   close(unit = LUMOD3)
@@ -1450,6 +1456,8 @@ PROGRAM TUV
   close(unit = LUMOD5)
   close(unit = LUMOD6)
   close(unit = LUMOD7)
+
+enddo
 
 contains
   subroutine subroutineMain(LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
@@ -1804,6 +1812,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(SegQ)call DebugMemoryTest(STRINGOUT,'nContP*nPasses',nTUVP*nTUVQ,LUMOD3)
           call initString(9)
           call AddToString('call PrimitiveContraction')
+          call AddToString(ARCSTRING)
           call AddToString(BASISSPEC(1:iBasisSpec))
           call AddToString(nTUVQ*nTUVP)
           call AddToString('(')
@@ -1832,6 +1841,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
 
        call initString(9)
        call AddToString('call PrimitiveContraction')
+       call AddToString(ARCSTRING)
        call AddToString(BASISSPEC(1:iBasisSpec))
        call AddToString(nTUVQ*nTUVP)
        call AddToString('(')
@@ -1911,7 +1921,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           call DebugMemoryTest(STRINGOUT,'nPasses',nTUVAspec*nTUVBspec*nTUVQ,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call HorizontalRR_LHS_P')
+       call AddToString('call HorizontalRR_'//ARCSTRING//'_LHS_P')
        call AddToString(AngmomP)
        call AddToString('A')
        call AddToString(AngmomA)
@@ -1928,7 +1938,10 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           call AddToString('(1,nPasses,')
        ENDIF
        call AddToString(nTUVQ)
-       call AddToString(',Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,')
+       call AddToString(',&')
+       call writeString(LUMOD3)
+       call initString(12)
+       call AddToString('& Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,')
        call AddToString(STRINGIN)
 !!$       IF(Gen)THEN
 !!$          call AddToString('(1:nContQP*nPasses*')
@@ -2010,7 +2023,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           call DebugMemoryTest(STRINGOUT,'nPasses',nlmA*nlmB*nTUVQ,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call SphericalContractOBS1_maxAngP')
+       call AddToString('call SphericalContractOBS1_'//ARCSTRING//'_maxAngP')
        call AddToString(AngmomP)
        call AddToString('_maxAngA')
        call AddToString(AngmomA)
@@ -2119,7 +2132,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           call DebugMemoryTest(STRINGOUT,'nPasses',nlmA*nlmB*nTUVCspec*nTUVDspec,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call HorizontalRR_RHS_Q')
+       call AddToString('call HorizontalRR_'//ARCSTRING//'_RHS_Q')
        call AddToString(AngmomQ)
        call AddToString('C')
        call AddToString(AngmomC)
@@ -2203,7 +2216,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           call DebugMemoryTest(STRINGOUT,'nPasses',nlmA*nlmB*nlmC*nlmD,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call SphericalContractOBS2_maxAngQ')
+       call AddToString('call SphericalContractOBS2_'//ARCSTRING//'_maxAngQ')
        call AddToString(AngmomQ)
        call AddToString('_maxAngC')
        call AddToString(AngmomC)
