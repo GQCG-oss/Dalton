@@ -88,13 +88,19 @@ subroutine PASSsub
           WRITE(LUFILE,'(A)')'  '
           WRITE(LUFILE,'(A)')' CONTAINS'
           MaxAngmomQP = 8
-
+          IF((ifile.EQ.2))MaxAngmomQP = 6 !BtoC (PDDP)
+          IF((ifile.EQ.4))MaxAngmomQP = 6 !BtoD (PDPD)
+          IF((ifile.EQ.3))MaxAngmomQP = 7 !AtoD (DDPD)
           DO JMAX=2,MaxAngmomQP
              DO JP = 1, JMAX
                 JQ = JMAX-JP
                 IF(JQ.GT.JP)CYCLE
                 IF(JQ.EQ.0)CYCLE
                 IF(JQ.GT.4)CYCLE
+                IF((ifile.EQ.2).AND.JP.GT.3)CYCLE
+                IF((ifile.EQ.4).AND.JP.GT.3)CYCLE
+                IF((ifile.EQ.2.OR.ifile.EQ.4).AND.JQ.GT.3)CYCLE
+                IF((ifile.EQ.3).AND.JQ.GT.3)CYCLE
                 IF(JP.GT.4)CYCLE
                 IF(JMAX.LT.5)THEN
                    LOOPUNROLL = .TRUE.

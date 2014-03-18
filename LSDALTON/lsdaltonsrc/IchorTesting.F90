@@ -285,8 +285,8 @@ do Ipass = IpassStart,IpassEnd
 !         IF(iBasis4+(iBasis3-1)*nBasis+(iBasis2-1)*nBasis*nBasis+&
 !              & (iBasis1-1)*nBasis*nBasis*nBasis.LT.14) CYCLE
 
-         print*,'iBasis:',iBasis4Q+(iBasis3Q-1)*nBasisD+(iBasis2Q-1)*nBasisD*nBasisC+&
-              & (iBasis1Q-1)*nBasisD*nBasisC*nBasisB,'of',nBasisA*nBasisB*nBasisC*nbasisD
+!         print*,'iBasis:',iBasis4Q+(iBasis3Q-1)*nBasisD+(iBasis2Q-1)*nBasisD*nBasisC+&
+!              & (iBasis1Q-1)*nBasisD*nBasisC*nBasisB,'of',nBasisA*nBasisB*nBasisC*nbasisD
        ibasiselm(1) = iBasis1
        ibasiselm(2) = iBasis2
        ibasiselm(3) = iBasis3

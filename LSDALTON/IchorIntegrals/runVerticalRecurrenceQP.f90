@@ -112,7 +112,13 @@ CONTAINS
              ENDIF
 
              WRITE(LUFILE,'(5A)')'MODULE AGC_',ARCSTRING,'_OBS_VERTICALRECURRENCEMOD',centerString,SegLabel(1:iSegLabel)
-             MaxAngmomQP = 8
+             MaxAngmomQP = 8 !currently only D functions
+             IF((SegQ.OR.SegP).OR.Seg)THEN
+                MaxAngmomQP = 4 
+                !Highest possible is (DD|SS) otherwise
+                !a General Vertical Recurrence is required followed by
+                !a ElectronTransfer
+             ENDIF
              WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
              WRITE(LUFILE,'(A)')'  '
              WRITE(LUFILE,'(A)')' CONTAINS'
@@ -653,7 +659,17 @@ CONTAINS
              !         VerticalRecurrence GENERAL
              !============================================================================================================
 
-             DO JMAX=2,MaxAngmomQP
+             DO JMAX=2,MaxAngmomQP                                  !Gen   !Seg
+                IF(center.EQ.1.AND.JMAX.GT.MaxAngmomQP)CYCLE        !DDDD  DDSS
+                IF(Gen.OR.Seg1Prim)THEN
+                   IF(center.EQ.3.AND.JMAX.GT.MaxAngmomQP-1)CYCLE  !PDDD
+                   IF(center.EQ.2.AND.JMAX.GT.MaxAngmomQP-2)CYCLE   !PDPD
+                   IF(center.EQ.4.AND.JMAX.GT.MaxAngmomQP-3)CYCLE   !PPPD
+                ELSE
+                   IF(center.EQ.3.AND.JMAX.GT.MaxAngmomQP)CYCLE    !SSDD
+                   IF(center.EQ.2.AND.JMAX.GT.MaxAngmomQP-1)CYCLE   !PDSS 
+                   IF(center.EQ.4.AND.JMAX.GT.MaxAngmomQP-1)CYCLE   !SSPD                   
+                ENDIF
                 nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
                 nTUVPLUS = (JMAX+2)*(JMAX+3)*(JMAX+4)/6   
                 allocate(TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
@@ -1268,6 +1284,10 @@ CONTAINS
           IF(center.EQ.1)THEN
              IF(Gen.OR.Seg1Prim)THEN
                 DO JMAX=2,MaxAngmomQP
+                   IF(center.EQ.1.AND.JMAX.GT.MaxAngmomQP)CYCLE    !DDDD
+                   IF(center.EQ.3.AND.JMAX.GT.MaxAngmomQP-1)CYCLE  !PDDD
+                   IF(center.EQ.2.AND.JMAX.GT.MaxAngmomQP-2)CYCLE  !PDPD
+                   IF(center.EQ.4.AND.JMAX.GT.MaxAngmomQP-3)CYCLE  !PPPD
                    nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
                    nTUVPLUS = (JMAX+2)*(JMAX+3)*(JMAX+4)/6   
                    allocate(TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))

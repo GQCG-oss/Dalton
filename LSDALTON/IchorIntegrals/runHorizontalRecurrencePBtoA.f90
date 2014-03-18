@@ -22,7 +22,7 @@ CONTAINS
     integer,pointer :: TwoTermTUVLIST(:)
     character(len=3) :: ARCSTRING
     logical :: CPU,DoOpenMP,DoOpenACC
-    integer :: GPUrun
+    integer :: GPUrun,MaxAngmomSingle
     WRITE(*,'(A)')'MODULE AGC_OBS_HorizontalRecurrenceLHSModBtoA'
     WRITE(*,'(A)')' use IchorPrecisionModule'
     WRITE(*,'(A)')'  '
@@ -39,7 +39,9 @@ DO GPUrun = 1,2
     ELSE
        ARCSTRING = 'GPU'
     ENDIF
+    IF(GPUrun.EQ.2)WRITE(*,'(A)')'#ifdef VAR_OPENACC'
     MaxAngmomP = 6
+    MaxAngmomSingle = 2 !D functions currently
 
 
     DO JMAX=0,MaxAngmomP
@@ -74,9 +76,9 @@ DO GPUrun = 1,2
        NTUVMAX = (JP+1)*(JP+2)*(JP+3)/6
        DO AngmomA = 0,JP
           AngmomB = JP - AngmomA
-          IF(AngmomB.LT.AngmomA)CYCLE
-          IF(AngmomA.GT.3)CYCLE
-          IF(AngmomB.GT.3)CYCLE
+          IF(AngmomB.LE.AngmomA)CYCLE
+          IF(AngmomA.GT.MaxAngmomSingle)CYCLE
+          IF(AngmomB.GT.MaxAngmomSingle)CYCLE
           IF(AngmomA.EQ.0.AND.AngmomB.EQ.0)CYCLE
           NTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6
           NTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6
@@ -247,6 +249,7 @@ DO GPUrun = 1,2
        deallocate(VINDEX)
        deallocate(JINDEX)
     enddo
+    IF(GPUrun.EQ.2)WRITE(*,'(A)')'#endif'
  enddo
  WRITE(*,'(A)')'end module'
 END subroutine PASSsub

@@ -21,14 +21,16 @@ CONTAINS
     integer :: nTUVLIST,nTUVLISTactual
     integer,pointer :: TwoTermTUVLIST(:)
     character(len=3) :: ARCSTRING
-    integer :: GPUrun
+    integer :: GPUrun,MaxAngmomSingle
     logical :: DoOpenMP,DoOpenACC,CPU
 
     WRITE(*,'(A)')'MODULE AGC_OBS_HorizontalRecurrenceRHSModDtoC'
     WRITE(*,'(A)')' use IchorPrecisionModule'
     WRITE(*,'(A)')'  '
     WRITE(*,'(A)')' CONTAINS'
-    MaxAngmomP = 6
+    MaxAngmomP = 4-1 !currently D
+    !higest possible is (XXPD)
+    MaxAngmomSingle = 2 ! currently D
 
 DO GPUrun = 1,2
     CPU = .TRUE.
@@ -42,6 +44,7 @@ DO GPUrun = 1,2
     ELSE
        ARCSTRING = 'GPU'
     ENDIF
+    IF(GPUrun.EQ.2)WRITE(*,'(A)')'#ifdef VAR_OPENACC'
     DO JMAX=0,MaxAngmomP
 
        nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
@@ -74,9 +77,9 @@ DO GPUrun = 1,2
        NTUVMAX = (JP+1)*(JP+2)*(JP+3)/6
        DO AngmomA = 0,JP
           AngmomB = JP - AngmomA
-          IF(AngmomB.LT.AngmomA)CYCLE
-          IF(AngmomA.GT.3)CYCLE
-          IF(AngmomB.GT.3)CYCLE
+          IF(AngmomB.LE.AngmomA)CYCLE
+          IF(AngmomA.GT.MaxAngmomSingle)CYCLE
+          IF(AngmomB.GT.MaxAngmomSingle)CYCLE
 
           NTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6
           NTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6
@@ -262,6 +265,7 @@ DO GPUrun = 1,2
        deallocate(VINDEX)
        deallocate(JINDEX)
     enddo
+    IF(GPUrun.EQ.2)WRITE(*,'(A)')'#endif'
     enddo
     WRITE(*,'(A)')'end module'
   END subroutine PASSsub
