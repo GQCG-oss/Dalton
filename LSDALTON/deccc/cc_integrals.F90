@@ -856,7 +856,7 @@ contains
 
       case(MODEL_CCSD)
         call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nb,no,nv, &
-               & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem)
+               & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem,.false.)
         if (.not.mo_ccsd) return
 
         if (print_debug) then
@@ -1193,7 +1193,7 @@ contains
   !> Author:  Pablo Baudin
   !> Date:    December 2013
   subroutine get_MO_and_AO_batches_size(mo_ccsd,local,ntot,nb,no,nv, &
-             & dimMO,Nbatch,MaxAlpha,MaxGamma,MyLsItem)
+             & dimMO,Nbatch,MaxAlpha,MaxGamma,MyLsItem,mpi_split)
     
     implicit none
   
@@ -1206,6 +1206,7 @@ contains
     !> AO batches stuff:
     integer, intent (inout) :: MaxAlpha, MaxGamma
     type(lsitem), intent(inout) :: MyLsItem
+    logical, intent(in) :: mpi_split
     
     real(realk) :: MemNeed, MemFree
     integer(kind=long) :: min_mem
@@ -1267,22 +1268,26 @@ contains
       dimMO = dimMO - 1
     end if
 
-    ! Check that every nodes will have a job in residual calc.
-    ! But the dimension of the batch must stay above MinMOBatch.
-    magic  = 1
-    Nbatch = ((ntot-1)/dimMO+1)
-    Nbatch = Nbatch*(Nbatch+1)/2
-
-    do while (Nbatch<magic*nnod.and.(dimMO>MinMOBatch).and.nnod>1)
-      dimMO = dimMO-1
+    ! mpi_split should be true when we want to estimate the workload associated
+    ! to a DEC fragment and eventually split the slots. In this case, the next
+    ! step must be skiped.
+    if (.not.mpi_split) then
+      ! Check that every nodes will have a job in residual calc.
+      ! But the dimension of the batch must stay above MinMOBatch.
+      magic  = 1
       Nbatch = ((ntot-1)/dimMO+1)
       Nbatch = Nbatch*(Nbatch+1)/2
-      if (dimMO<MinMOBatch) then
-        dimMO = MinMOBatch
-        exit
-      end if
-    end do
-
+       
+      do while (Nbatch<magic*nnod.and.(dimMO>MinMOBatch).and.nnod>1)
+        dimMO = dimMO-1
+        Nbatch = ((ntot-1)/dimMO+1)
+        Nbatch = Nbatch*(Nbatch+1)/2
+        if (dimMO<MinMOBatch) then
+          dimMO = MinMOBatch
+          exit
+        end if
+      end do
+    end if
     ! sanity check:
     call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
     if ((MemFree-MemNeed)<=0.0E0_realk) then
@@ -1328,28 +1333,33 @@ contains
       MaxAlpha = MaxAlpha - 1
     end if
 
-    ! Check that every nodes has a job:
-    magic = 2 
-    ng    = ((nb-1)/MaxGamma+1)
-    na    = ((nb-1)/MaxAlpha+1)
-
-    ! Number of Alpha batches must be at least magic*nnod
-    if (na*ng<magic*nnod.and.(MaxAlpha>MinAObatch).and.nnod>1)then
-      MaxAlpha = (nb/(magic*nnod))
-      if (MaxAlpha<MinAObatch) MaxAlpha = MinAObatch
+    ! mpi_split should be true when we want to estimate the workload associated
+    ! to a DEC fragment and eventually split the slots. In this case, the next
+    ! step must be skiped.
+    if (.not.mpi_split) then
+      ! Check that every nodes has a job:
+      magic = 2 
+      ng    = ((nb-1)/MaxGamma+1)
+      na    = ((nb-1)/MaxAlpha+1)
+       
+      ! Number of Alpha batches must be at least magic*nnod
+      if (na*ng<magic*nnod.and.(MaxAlpha>MinAObatch).and.nnod>1)then
+        MaxAlpha = (nb/(magic*nnod))
+        if (MaxAlpha<MinAObatch) MaxAlpha = MinAObatch
+      end if
+       
+      na    = ((nb-1)/MaxAlpha+1)
+      if (na*ng<magic*nnod.and.(MaxAlpha==MinAObatch).and.nnod>1)then
+        do while(na*ng<magic*nnod)
+          MaxGamma = MaxGamma - 1
+          if (MaxGamma<MinAObatch) then
+            MaxGamma = MinAObatch
+            exit
+          end if
+          ng    = ((nb-1)/MaxGamma+1)
+        end do
+      endif
     end if
-
-    na    = ((nb-1)/MaxAlpha+1)
-    if (na*ng<magic*nnod.and.(MaxAlpha==MinAObatch).and.nnod>1)then
-      do while(na*ng<magic*nnod)
-        MaxGamma = MaxGamma - 1
-        if (MaxGamma<MinAObatch) then
-          MaxGamma = MinAObatch
-          exit
-        end if
-        ng    = ((nb-1)/MaxGamma+1)
-      end do
-    endif
 
     ! sanity check:
     call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
