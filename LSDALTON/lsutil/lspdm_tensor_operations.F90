@@ -3786,11 +3786,7 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    if (arr%atype=='RTAR') then
-      dest=infpar%lg_mynum
-    else
-      dest=get_residence_of_tile(globtilenr,arr)
-    end if
+    dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
     call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
@@ -4180,11 +4176,7 @@ module lspdm_tensor_operations_module
     integer(kind=MPI_ADDRESS_KIND) ::offset
     ls = .false.
     if(present(lock_set))ls=lock_set
-    if (arr%atype=='RTAR') then
-      source=infpar%lg_mynum
-    else
-      source=get_residence_of_tile(globtilenr,arr)
-    end if
+    source=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
     call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))

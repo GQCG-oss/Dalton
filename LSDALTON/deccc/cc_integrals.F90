@@ -859,6 +859,9 @@ contains
                & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem)
         if (.not.mo_ccsd) return
 
+        !local_moccsd = .true.
+        !if(decinfo%PL>5) local_moccsd = .false.
+
         if (print_debug) then
           if (local_moccsd) then 
             write(DECinfo%output,*) 'MO-CCSD: local scheme'
@@ -1249,12 +1252,12 @@ contains
     end if
 
     ! Check that every nodes will have a job in residual calc.
-    ! But the dimension of the batch must stay above 10 MOs.
+    ! But the dimension of the batch must stay above MinMOBatch.
     magic  = 1
     Nbatch = ((ntot-1)/dimMO+1)
     Nbatch = Nbatch*(Nbatch+1)/2
 
-    do while (Nbatch<magic*nnod.and.nnod>1)
+    do while (Nbatch<magic*nnod.and.(dimMO>MinMOBatch).and.nnod>1)
       dimMO = dimMO-1
       Nbatch = ((ntot-1)/dimMO+1)
       Nbatch = Nbatch*(Nbatch+1)/2
@@ -1911,7 +1914,7 @@ contains
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
-        call dcopy(ncopy,pack_gmo%elm2(:,tile),1,tmp,1)
+        call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
       end if
 
       do s=1,ntot
@@ -1944,7 +1947,7 @@ contains
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
-        call dcopy(ncopy,pack_gmo%elm2(:,tile),1,tmp,1)
+        call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
       end if
 
       ! get first batch pqrs:
