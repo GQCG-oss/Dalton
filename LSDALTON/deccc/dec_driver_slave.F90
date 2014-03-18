@@ -581,6 +581,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   integer :: MaxActualDimGamma,nbatchesGamma
   integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
   integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+  logical :: mpi_split
 
   ! Initialize stuff (just dummy arguments here)
   nullify(orb2batchAlpha)
@@ -597,7 +598,8 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   if(MyFragment%ccmodel==MODEL_MP2) then ! MP2
      call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.)
   else  ! CC2 or CCSD
-     call wrapper_get_ccsd_batch_sizes(MyFragment,bat)
+     mpi_split = .true.
+     call wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split)
   end if
 
 

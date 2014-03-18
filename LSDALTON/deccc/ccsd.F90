@@ -1128,7 +1128,7 @@ contains
         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
         call get_currently_available_memory(MemFree)
         call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local)
+           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.)
       endif
 
 #ifdef VAR_MPI
@@ -4212,8 +4212,7 @@ contains
   !
   !> Author:  Pablo Baudin 
   !> Date:    March 2014
-  subroutine wrapper_get_ccsd_batch_sizes(MyFragment,bat)
-
+  subroutine wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split)
 
     implicit none
 
@@ -4226,7 +4225,7 @@ contains
     integer :: scheme, nbas, nocc, nvir, MinAObatch, iter
     integer :: dimMO, nMObatch, ntot
     integer(kind=8) :: dummy
-    logical :: mo_ccsd, local_moccsd
+    logical :: mo_ccsd, local_moccsd, mpi_split
 
     ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
     ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
@@ -4245,7 +4244,8 @@ contains
     ! after the first statement (if not enought memory).
     if (mo_ccsd) then
       call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nbas,nocc,nvir, &
-           & dimMO,nMObatch,bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,MyFragment%MyLsItem)
+           & dimMO,nMObatch,bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma, &
+           & MyFragment%MyLsItem,mpi_split)
     end if
 
     if (.not.mo_ccsd) then 
@@ -4254,7 +4254,7 @@ contains
       call get_currently_available_memory(MemFree)
       call get_max_batch_sizes(scheme,MyFragment%nbasis,nvir,nocc,bat%MaxAllowedDimAlpha, &
            & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree, &
-           & .true.,dummy,(.not.DECinfo%solver_par))
+           & .true.,dummy,(.not.DECinfo%solver_par),mpi_split)
     end if
 
   end subroutine wrapper_get_ccsd_batch_sizes
@@ -4263,7 +4263,7 @@ contains
   !> \author Patrick Ettenhuber
   !> \date January 2012
   recursive subroutine get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,&
-  &minbsize,manual,iter,MemFree,first,e2a,local)
+  &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split)
     implicit none
     integer, intent(inout) :: scheme
     integer, intent(in)    :: nb,nv,no
@@ -4273,7 +4273,7 @@ contains
     real(realk)            :: mem_used,frac_of_total_mem,m
     logical,intent(in)     :: manual,first
     integer(kind=8), intent(inout) :: e2a
-    logical, intent(in)    :: local
+    logical, intent(in)    :: local, mpi_split
     integer :: nnod,magic
 
     frac_of_total_mem=0.80E0_realk
@@ -4350,7 +4350,8 @@ contains
       ! KK and PE hacks -> only for debugging
       ! extended to mimic the behaviour of the mem estimation routine when memory is filled up
       if((DECinfo%ccsdGbatch==0).and.(DECinfo%ccsdAbatch==0)) then
-        call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree,.false.,e2a,local)
+        call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree, &
+             & .false.,e2a,local,mpi_split)
       else
         nba = DECinfo%ccsdAbatch - iter * 0
         nbg = DECinfo%ccsdGbatch - iter * 0
@@ -4404,23 +4405,28 @@ contains
     endif
     mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
 
-    !if much more slaves than jobs are available, split the jobs to get at least
-    !one for all the slaves
-    !print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
-    if(.not.manual)then
-      if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
-        nba=(nb/(magic*nnod))
-        if(nba<minbsize)nba=minbsize
+    ! mpi_split should be true when we want to estimate the workload associated
+    ! to a DEC fragment and eventually split the slots. In this case, the next
+    ! step must be skiped.
+    if (.not.mpi_split) then
+      !if much more slaves than jobs are available, split the jobs to get at least
+      !one for all the slaves
+      !print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
+      if(.not.manual)then
+        if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
+          nba=(nb/(magic*nnod))
+          if(nba<minbsize)nba=minbsize
+        endif
+       
+        if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
+          do while((nb/nba)*(nb/nbg)<magic*nnod)
+            nbg=nbg-1
+            if(nbg<1)exit
+          enddo
+          if(nbg<minbsize)nbg=minbsize
+        endif
       endif
-
-      if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
-        do while((nb/nba)*(nb/nbg)<magic*nnod)
-          nbg=nbg-1
-          if(nbg<1)exit
-        enddo
-        if(nbg<minbsize)nbg=minbsize
-      endif
-    endif
+    end if
 
     if(scheme==2)then
       mem_used = get_min_mem_req(no,nv,nb,nba,nbg,2,scheme,.false.)
@@ -5614,7 +5620,8 @@ contains
     Nbat = MOinfo%nbatch
 
     omega2%elm1 = 0.0E0_realk
- 
+
+    if (print_debug) call print_norm(pgmo_diag,'debug: norm pgmo_diag  :           ')
 #ifdef VAR_MPI
     call get_mo_ccsd_joblist(MOinfo, joblist)
 
