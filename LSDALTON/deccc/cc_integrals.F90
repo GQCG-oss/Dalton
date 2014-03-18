@@ -44,7 +44,7 @@ module ccintegrals
      module procedure getL_diff
   end interface
  
-  private :: get_MO_and_AO_batches_size, get_mem_t1_free_gmo, get_mem_MO_CCSD_residual, &
+  private :: get_mem_t1_free_gmo, get_mem_MO_CCSD_residual, &
              & get_AO_batches_size_rpa, get_mem_gmo_RPA, gao_to_gmo, gao_to_govov, &
              & get_MO_batches_info, pack_and_add_gmo
 
@@ -1223,13 +1223,32 @@ contains
     ! Get MO batch size depending on MO-ccsd residual routine.
     call get_currently_available_memory(MemFree)
     if (nnod>1) then
-      ! try first for scheme with highest requirements --> fastest
-      local = .true.
-      call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
 
-      ! if not enough mem then switch to full PDM scheme:
-      if (MeMNeed>0.8E0_realk*MemFree) then
+      ! SELECT SCHEME (storage of MO int.): 
+      !
+      ! 0-4 are reserved to standard CCSD (Patrick's code)
+      ! 
+      ! 5: Local scheme: more memory required but no one 
+      !    sided communication.
+      !
+      ! 6: PDM scheme: batches are distributed in PDM using
+      !    one sided communication.
+
+      if (DECinfo%force_scheme.and.DECinfo%en_mem==5) then
+        print *,"!!FORCING MO-CCSD SCHEME!!"
+        local = .true.
+      else if (DECinfo%force_scheme.and.DECinfo%en_mem==6) then
+        print *,"!!FORCING MO-CCSD SCHEME!!"
         local = .false.
+      else
+        ! try first for scheme with highest requirements --> fastest
+        local = .true.
+        call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
+
+        ! if not enough mem then switch to full PDM scheme:
+        if (MeMNeed>0.8E0_realk*MemFree) then
+          local = .false.
+        end if
       end if
     end if
 
