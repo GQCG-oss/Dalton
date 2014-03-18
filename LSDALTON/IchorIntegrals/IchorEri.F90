@@ -15,8 +15,10 @@ MODULE IchorErimodule
   use IchorprecisionModule
   use IchorCommonModule
   use IchorBatchToolsModule
-  use IchorEriCoulombintegralOBSGeneralMod, only: IchorCoulombIntegral_OBS_general, &
-       & IchorCoulombIntegral_OBS_general_size
+  use IchorEriCoulombintegralCPUOBSGeneralMod, only: IchorCoulombIntegral_CPU_OBS_general, &
+       & IchorCoulombIntegral_CPU_OBS_general_size
+  use IchorEriCoulombintegralGPUOBSGeneralMod, only: IchorCoulombIntegral_GPU_OBS_general, &
+       & IchorCoulombIntegral_GPU_OBS_general_size
   use IchorCoulombIntegral_seg_seg_SSSS_mod, only: IchorCoulombIntegral_seg_seg_SSSS
   use IchorMemory
   use IchorGammaTabulationModule
@@ -566,7 +568,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       NOTDoSSSS = .NOT.(TotalAngmom.EQ.0.AND.(Psegmented.AND.Qsegmented))
       IF(NOTDoSSSS)THEN
          !Determine Sizes of TmpArrays and MaxPasses
-         call IchorCoulombIntegral_OBS_general_size(TMParray1maxsize,&
+         call IchorCoulombIntegral_CPU_OBS_general_size(TMParray1maxsize,&
               & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
               & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
               & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
@@ -1059,7 +1061,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      !LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,MaxPasses)
      !IatomAPass,iatomBPass changes and 
 !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
-     call IchorCoulombIntegral_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+     call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
              & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
              & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
              & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&

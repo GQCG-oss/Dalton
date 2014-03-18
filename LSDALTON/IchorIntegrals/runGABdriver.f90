@@ -57,7 +57,7 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000MODSeg1Prim'
   ENDDO
   !Since we need primitivecontractiongenXXX
-  WRITE(LUMOD3,'(A)')'use IchorEriCoulombintegralOBSGeneralModGen'
+  WRITE(LUMOD3,'(A)')'use IchorEriCoulombintegralCPUOBSGeneralModGen'
 
   WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODAGen'
   WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBGen'
@@ -1040,7 +1040,7 @@ contains
           call DebugMemoryTest(STRINGOUT,'1',nTUVAspec*nTUVBspec*nTUVP,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call HorizontalRR_LHS_P')
+       call AddToString('call HorizontalRR_'//ARCSTRING//'_LHS_P')
        call AddToString(AngmomP)
        call AddToString('A')
        call AddToString(AngmomA)
@@ -1095,7 +1095,7 @@ contains
           call DebugMemoryTest(STRINGOUT,'1',nlmA*nlmB*nTUVP,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call SphericalContractOBS1_maxAngP')
+       call AddToString('call SphericalContractOBS1_'//ARCSTRING//'_maxAngP')
        call AddToString(AngmomP)
        call AddToString('_maxAngA')
        call AddToString(AngmomA)
@@ -1156,7 +1156,7 @@ contains
           call DebugMemoryTest(STRINGOUT,'1',nlmA*nlmB*nTUVAspec*nTUVBspec,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call HorizontalRR_RHS_Q')
+       call AddToString('call HorizontalRR_'//ARCSTRING//'_RHS_Q')
        call AddToString(AngmomP)
        call AddToString('C')
        call AddToString(AngmomA)
@@ -1211,7 +1211,7 @@ contains
           call DebugMemoryTest(STRINGOUT,'1',nlmA*nlmB*nlmA*nlmB,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call SphericalContractOBS2_maxAngQ')
+       call AddToString('call SphericalContractOBS2_'//ARCSTRING//'_maxAngQ')
        call AddToString(AngmomP)
        call AddToString('_maxAngC')
        call AddToString(AngmomA)
