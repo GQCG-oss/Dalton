@@ -931,7 +931,7 @@ subroutine HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(    2:    4,1,nTUVQ*nContQP*nPasses)
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
-!$ACC PARALLEL LOOP&
+!$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         iTUVA) &
 !$ACC PRESENT(nTUVQ,nContQP,nPasses,&
@@ -954,7 +954,7 @@ subroutine HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
   real(realk) :: Xab,Yab,Zab
-!$ACC PARALLEL LOOP&
+!$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
 !$ACC PRESENT(nTUVQ,nContQP,nPasses,&
@@ -990,7 +990,7 @@ subroutine HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(    5:   10,1,nTUVQ*nContQP*nPasses)
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
-!$ACC PARALLEL LOOP&
+!$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         iTUVA) &
 !$ACC PRESENT(nTUVQ,nContQP,nPasses,&
@@ -1013,7 +1013,7 @@ subroutine HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
   real(realk) :: Xab,Yab,Zab
-!$ACC PARALLEL LOOP&
+!$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
 !$ACC PRESENT(nTUVQ,nContQP,nPasses,&
@@ -1058,7 +1058,7 @@ subroutine HorizontalRR_GPU_LHS_P3A3B0AtoB(nContQP,nPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(   11:   20,1,nTUVQ*nContQP*nPasses)
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
-!$ACC PARALLEL LOOP&
+!$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         iTUVA) &
 !$ACC PRESENT(nTUVQ,nContQP,nPasses,&
@@ -1083,7 +1083,7 @@ subroutine HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
   real(realk) :: Xab,Yab,Zab
   real(realk) :: Tmp1(  5: 20,  2:  4)
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-!$ACC PARALLEL LOOP&
+!$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         Tmp1,&
 !$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
@@ -1196,7 +1196,7 @@ subroutine HorizontalRR_GPU_LHS_P4A3B1AtoB(nContQP,nPasses,nTUVQ,&
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
   real(realk) :: Xab,Yab,Zab
-!$ACC PARALLEL LOOP&
+!$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
 !$ACC PRESENT(nTUVQ,nContQP,nPasses,&
@@ -1256,7 +1256,7 @@ subroutine HorizontalRR_GPU_LHS_P5A3B2AtoB(nContQP,nPasses,nTUVQ,&
   real(realk) :: Xab,Yab,Zab
   real(realk) :: Tmp1( 11: 35,  2:  4)
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-!$ACC PARALLEL LOOP&
+!$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         Tmp1,&
 !$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
@@ -1423,7 +1423,7 @@ subroutine HorizontalRR_GPU_LHS_P6A3B3AtoB(nContQP,nPasses,nTUVQ,&
   real(realk) :: Tmp1( 11: 56,  2:  4)
   real(realk) :: Tmp2( 11: 35,  5: 10)
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-!$ACC PARALLEL LOOP&
+!$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         Tmp1,&
 !$ACC         Tmp2,&
