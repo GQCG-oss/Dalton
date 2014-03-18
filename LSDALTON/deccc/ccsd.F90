@@ -67,7 +67,8 @@ module ccsd_module
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
          & get_max_batch_sizes, ccsd_energy_full_occ, print_ccsd_full_occ, &
-         & get_cnd_terms_mo, mo_work_dist, check_job, get_mo_ccsd_residual
+         & get_cnd_terms_mo, mo_work_dist, check_job, get_mo_ccsd_residual, &
+         & wrapper_get_ccsd_batch_sizes
     private
 
   interface Get_AOt1Fock
@@ -4206,6 +4207,58 @@ contains
 
 
 
+  !> Purpose: wrapper for batch size determination routines
+  !           in CCSD and MO-CCSD algorithms.
+  !
+  !> Author:  Pablo Baudin 
+  !> Date:    March 2014
+  subroutine wrapper_get_ccsd_batch_sizes(MyFragment,bat)
+
+
+    implicit none
+
+    !> Atomic fragment
+    type(decfrag), intent(inout) :: MyFragment
+
+    type(mp2_batch_construction), intent(inout) :: bat
+
+    real(realk) :: MemFree
+    integer :: scheme, nbas, nocc, nvir, MinAObatch, iter
+    integer :: dimMO, nMObatch, ntot
+    integer(kind=8) :: dummy
+    logical :: mo_ccsd, local_moccsd
+
+    ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
+    ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
+    nocc = MyFragment%noccAOS
+    nvir = MyFragment%nunoccAOS 
+
+    ! For MO-CCSD part
+    ntot = nocc + nvir
+    nbas = MyFragment%nbasis
+    mo_ccsd = .false.
+    if (DECinfo%MOCCSD) mo_ccsd = .true.
+    scheme = -1
+    if (DECinfo%force_scheme) scheme=DECinfo%en_mem
+
+    ! The two if statments are necessary as mo_ccsd might become false
+    ! after the first statement (if not enought memory).
+    if (mo_ccsd) then
+      call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nbas,nocc,nvir, &
+           & dimMO,nMObatch,bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,MyFragment%MyLsItem)
+    end if
+
+    if (.not.mo_ccsd) then 
+      iter=1
+      call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
+      call get_currently_available_memory(MemFree)
+      call get_max_batch_sizes(scheme,MyFragment%nbasis,nvir,nocc,bat%MaxAllowedDimAlpha, &
+           & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree, &
+           & .true.,dummy,(.not.DECinfo%solver_par))
+    end if
+
+  end subroutine wrapper_get_ccsd_batch_sizes
+
   !> \brief calculate batch sizes automatically-->dirty but better than nothing
   !> \author Patrick Ettenhuber
   !> \date January 2012
@@ -5489,7 +5542,7 @@ contains
     V = nvir
     N = ntot
     X = MOinfo%DimInd1(1)
-    print_debug = (DECinfo%PL>5.or.DECinfo%cc_driver_debug.and.master)
+    print_debug = (DECinfo%PL>3.or.DECinfo%cc_driver_debug.and.master)
 
     ! Allocate working memory:
     dimMO = MOinfo%DimInd1(1)

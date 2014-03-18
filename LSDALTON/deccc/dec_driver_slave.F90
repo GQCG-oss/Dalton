@@ -581,9 +581,6 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   integer :: MaxActualDimGamma,nbatchesGamma
   integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
   integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
-  integer :: scheme,nocc,nunocc,MinAObatch,iter
-  real(realk) :: MemFree
-  integer(kind=8) :: dummy
 
   ! Initialize stuff (just dummy arguments here)
   nullify(orb2batchAlpha)
@@ -595,20 +592,12 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   nullify(batchsizeGamma)
   nullify(batchindexGamma)
 
-  ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
-  ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
-  nocc=MyFragment%noccAOS
-  nunocc=MyFragment%nunoccAOS
 
   ! Determine optimal batchsizes with available memory
   if(MyFragment%ccmodel==MODEL_MP2) then ! MP2
      call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.)
   else  ! CC2 or CCSD
-     iter=1
-     call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
-     call get_currently_available_memory(MemFree)
-     call get_max_batch_sizes(scheme,MyFragment%nbasis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
-          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,dummy,(.not.DECinfo%solver_par))
+     call wrapper_get_ccsd_batch_sizes(MyFragment,bat)
   end if
 
 
