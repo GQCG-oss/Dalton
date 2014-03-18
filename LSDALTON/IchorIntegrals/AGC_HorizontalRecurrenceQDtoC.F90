@@ -4,7 +4,7 @@ MODULE AGC_OBS_HorizontalRecurrenceRHSModDtoC
  CONTAINS
 
 !Transfer angmom from D to C
-subroutine HorizontalRR_RHS_Q1C0D1DtoC(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContPQ,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
@@ -24,10 +24,10 @@ subroutine HorizontalRR_RHS_Q1C0D1DtoC(nContPQ,nPasses,nlmP,&
     ENDDO
    ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_RHS_Q1C0D1DtoC
+end subroutine HorizontalRR_CPU_RHS_Q1C0D1DtoC
 
 !Transfer angmom from D to C
-subroutine HorizontalRR_RHS_Q2C0D2DtoC(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContPQ,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
@@ -47,10 +47,10 @@ subroutine HorizontalRR_RHS_Q2C0D2DtoC(nContPQ,nPasses,nlmP,&
     ENDDO
    ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_RHS_Q2C0D2DtoC
+end subroutine HorizontalRR_CPU_RHS_Q2C0D2DtoC
 
 !Transfer angmom from D to C
-subroutine HorizontalRR_RHS_Q2C1D1DtoC(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q2C1D1DtoC(nContPQ,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
@@ -81,10 +81,10 @@ subroutine HorizontalRR_RHS_Q2C1D1DtoC(nContPQ,nPasses,nlmP,&
     ENDDO
    ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_RHS_Q2C1D1DtoC
+end subroutine HorizontalRR_CPU_RHS_Q2C1D1DtoC
 
 !Transfer angmom from D to C
-subroutine HorizontalRR_RHS_Q3C0D3DtoC(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q3C0D3DtoC(nContPQ,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
@@ -104,10 +104,10 @@ subroutine HorizontalRR_RHS_Q3C0D3DtoC(nContPQ,nPasses,nlmP,&
     ENDDO
    ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_RHS_Q3C0D3DtoC
+end subroutine HorizontalRR_CPU_RHS_Q3C0D3DtoC
 
 !Transfer angmom from D to C
-subroutine HorizontalRR_RHS_Q3C1D2DtoC(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContPQ,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
@@ -147,10 +147,10 @@ subroutine HorizontalRR_RHS_Q3C1D2DtoC(nContPQ,nPasses,nlmP,&
     ENDDO
    ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_RHS_Q3C1D2DtoC
+end subroutine HorizontalRR_CPU_RHS_Q3C1D2DtoC
 
 !Transfer angmom from D to C
-subroutine HorizontalRR_RHS_Q4C1D3DtoC(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q4C1D3DtoC(nContPQ,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
@@ -202,10 +202,10 @@ subroutine HorizontalRR_RHS_Q4C1D3DtoC(nContPQ,nPasses,nlmP,&
     ENDDO
    ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_RHS_Q4C1D3DtoC
+end subroutine HorizontalRR_CPU_RHS_Q4C1D3DtoC
 
 !Transfer angmom from D to C
-subroutine HorizontalRR_RHS_Q4C2D2DtoC(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q4C2D2DtoC(nContPQ,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
@@ -314,10 +314,10 @@ subroutine HorizontalRR_RHS_Q4C2D2DtoC(nContPQ,nPasses,nlmP,&
     ENDDO
    ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_RHS_Q4C2D2DtoC
+end subroutine HorizontalRR_CPU_RHS_Q4C2D2DtoC
 
 !Transfer angmom from D to C
-subroutine HorizontalRR_RHS_Q5C2D3DtoC(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q5C2D3DtoC(nContPQ,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
@@ -477,10 +477,10 @@ subroutine HorizontalRR_RHS_Q5C2D3DtoC(nContPQ,nPasses,nlmP,&
     ENDDO
    ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_RHS_Q5C2D3DtoC
+end subroutine HorizontalRR_CPU_RHS_Q5C2D3DtoC
 
 !Transfer angmom from D to C
-subroutine HorizontalRR_RHS_Q6C3D3DtoC(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q6C3D3DtoC(nContPQ,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
@@ -896,5 +896,891 @@ subroutine HorizontalRR_RHS_Q6C3D3DtoC(nContPQ,nPasses,nlmP,&
     ENDDO
    ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_RHS_Q6C3D3DtoC
+end subroutine HorizontalRR_CPU_RHS_Q6C3D3DtoC
+
+!Transfer angmom from D to C
+subroutine HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContPQ,nPasses,nlmP,&
+         & Qdistance12,ThetaP2,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  real(realk),intent(in) :: Qdistance12(3)
+  real(realk),intent(in) :: ThetaP2(nlmP,    4,nContPQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,1,    2:    4,nContPQ*nPasses)
+  !Local variables
+  integer :: iP,ilmP,iTUVD
+!$ACC PARALLEL LOOP &
+!$ACC PRIVATE(iP,iTUVD,ilmP) &
+!$ACC PRESENT(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)
+  DO iP = 1,nContPQ*nPasses
+    DO iTUVD=  2,  4
+     DO ilmP = 1,nlmP
+        ThetaP(ilmP,1,iTUVD,IP) = ThetaP2(ilmP,iTUVD,IP)
+     ENDDO
+    ENDDO
+   ENDDO
+end subroutine HorizontalRR_GPU_RHS_Q1C0D1DtoC
+
+!Transfer angmom from D to C
+subroutine HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContPQ,nPasses,nlmP,&
+         & Qdistance12,ThetaP2,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  real(realk),intent(in) :: Qdistance12(3)
+  real(realk),intent(in) :: ThetaP2(nlmP,   10,nContPQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,1,    5:   10,nContPQ*nPasses)
+  !Local variables
+  integer :: iP,ilmP,iTUVD
+!$ACC PARALLEL LOOP &
+!$ACC PRIVATE(iP,iTUVD,ilmP) &
+!$ACC PRESENT(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)
+  DO iP = 1,nContPQ*nPasses
+    DO iTUVD=  5, 10
+     DO ilmP = 1,nlmP
+        ThetaP(ilmP,1,iTUVD,IP) = ThetaP2(ilmP,iTUVD,IP)
+     ENDDO
+    ENDDO
+   ENDDO
+end subroutine HorizontalRR_GPU_RHS_Q2C0D2DtoC
+
+!Transfer angmom from D to C
+subroutine HorizontalRR_GPU_RHS_Q2C1D1DtoC(nContPQ,nPasses,nlmP,&
+         & Qdistance12,ThetaP2,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  real(realk),intent(in) :: Qdistance12(3)
+  real(realk),intent(in) :: ThetaP2(nlmP,   10,nContPQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,    2:    4,    2:    4,nContPQ*nPasses)
+  !Local variables
+  integer :: iP,iC,iPassQ,ilmP,iTUVD
+  real(realk) :: Xcd,Ycd,Zcd
+!$ACC PARALLEL LOOP &
+!$ACC PRIVATE(iP,&
+!$ACC         iTUVD,ilmP,Xcd,Ycd,Zcd) &
+!$ACC PRESENT(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+  DO iP = 1,nContPQ*nPasses
+   Xcd = -Qdistance12(1)
+   Ycd = -Qdistance12(2)
+   Zcd = -Qdistance12(3)
+    DO ilmP = 1,nlmP
+     ThetaP(ilmP, 2, 2,IP) = ThetaP2(ilmP, 5,IP) + Xcd*ThetaP2(ilmP, 2, IP) 
+     ThetaP(ilmP, 2, 3,IP) = ThetaP2(ilmP, 6,IP) + Xcd*ThetaP2(ilmP, 3, IP) 
+     ThetaP(ilmP, 2, 4,IP) = ThetaP2(ilmP, 7,IP) + Xcd*ThetaP2(ilmP, 4, IP) 
+     ThetaP(ilmP, 3, 2,IP) = ThetaP2(ilmP, 6,IP) + Ycd*ThetaP2(ilmP, 2, IP) 
+     ThetaP(ilmP, 3, 3,IP) = ThetaP2(ilmP, 8,IP) + Ycd*ThetaP2(ilmP, 3, IP) 
+     ThetaP(ilmP, 3, 4,IP) = ThetaP2(ilmP, 9,IP) + Ycd*ThetaP2(ilmP, 4, IP) 
+     ThetaP(ilmP, 4, 2,IP) = ThetaP2(ilmP, 7,IP) + Zcd*ThetaP2(ilmP, 2, IP) 
+     ThetaP(ilmP, 4, 3,IP) = ThetaP2(ilmP, 9,IP) + Zcd*ThetaP2(ilmP, 3, IP) 
+     ThetaP(ilmP, 4, 4,IP) = ThetaP2(ilmP,10,IP) + Zcd*ThetaP2(ilmP, 4, IP) 
+    ENDDO
+   ENDDO
+end subroutine HorizontalRR_GPU_RHS_Q2C1D1DtoC
+
+!Transfer angmom from D to C
+subroutine HorizontalRR_GPU_RHS_Q3C0D3DtoC(nContPQ,nPasses,nlmP,&
+         & Qdistance12,ThetaP2,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  real(realk),intent(in) :: Qdistance12(3)
+  real(realk),intent(in) :: ThetaP2(nlmP,   20,nContPQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,1,   11:   20,nContPQ*nPasses)
+  !Local variables
+  integer :: iP,ilmP,iTUVD
+!$ACC PARALLEL LOOP &
+!$ACC PRIVATE(iP,iTUVD,ilmP) &
+!$ACC PRESENT(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)
+  DO iP = 1,nContPQ*nPasses
+    DO iTUVD= 11, 20
+     DO ilmP = 1,nlmP
+        ThetaP(ilmP,1,iTUVD,IP) = ThetaP2(ilmP,iTUVD,IP)
+     ENDDO
+    ENDDO
+   ENDDO
+end subroutine HorizontalRR_GPU_RHS_Q3C0D3DtoC
+
+!Transfer angmom from D to C
+subroutine HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContPQ,nPasses,nlmP,&
+         & Qdistance12,ThetaP2,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  real(realk),intent(in) :: Qdistance12(3)
+  real(realk),intent(in) :: ThetaP2(nlmP,   20,nContPQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,    2:    4,    5:   10,nContPQ*nPasses)
+  !Local variables
+  integer :: iP,iC,iPassQ,ilmP,iTUVD
+  real(realk) :: Xcd,Ycd,Zcd
+!$ACC PARALLEL LOOP &
+!$ACC PRIVATE(iP,&
+!$ACC         iTUVD,ilmP,Xcd,Ycd,Zcd) &
+!$ACC PRESENT(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+  DO iP = 1,nContPQ*nPasses
+   Xcd = -Qdistance12(1)
+   Ycd = -Qdistance12(2)
+   Zcd = -Qdistance12(3)
+    DO ilmP = 1,nlmP
+     ThetaP(ilmP, 2, 5,IP) = ThetaP2(ilmP,11,IP) + Xcd*ThetaP2(ilmP, 5, IP) 
+     ThetaP(ilmP, 2, 6,IP) = ThetaP2(ilmP,12,IP) + Xcd*ThetaP2(ilmP, 6, IP) 
+     ThetaP(ilmP, 2, 7,IP) = ThetaP2(ilmP,13,IP) + Xcd*ThetaP2(ilmP, 7, IP) 
+     ThetaP(ilmP, 2, 8,IP) = ThetaP2(ilmP,14,IP) + Xcd*ThetaP2(ilmP, 8, IP) 
+     ThetaP(ilmP, 2, 9,IP) = ThetaP2(ilmP,15,IP) + Xcd*ThetaP2(ilmP, 9, IP) 
+     ThetaP(ilmP, 2,10,IP) = ThetaP2(ilmP,16,IP) + Xcd*ThetaP2(ilmP,10, IP) 
+     ThetaP(ilmP, 3, 5,IP) = ThetaP2(ilmP,12,IP) + Ycd*ThetaP2(ilmP, 5, IP) 
+     ThetaP(ilmP, 3, 6,IP) = ThetaP2(ilmP,14,IP) + Ycd*ThetaP2(ilmP, 6, IP) 
+     ThetaP(ilmP, 3, 7,IP) = ThetaP2(ilmP,15,IP) + Ycd*ThetaP2(ilmP, 7, IP) 
+     ThetaP(ilmP, 3, 8,IP) = ThetaP2(ilmP,17,IP) + Ycd*ThetaP2(ilmP, 8, IP) 
+     ThetaP(ilmP, 3, 9,IP) = ThetaP2(ilmP,18,IP) + Ycd*ThetaP2(ilmP, 9, IP) 
+     ThetaP(ilmP, 3,10,IP) = ThetaP2(ilmP,19,IP) + Ycd*ThetaP2(ilmP,10, IP) 
+     ThetaP(ilmP, 4, 5,IP) = ThetaP2(ilmP,13,IP) + Zcd*ThetaP2(ilmP, 5, IP) 
+     ThetaP(ilmP, 4, 6,IP) = ThetaP2(ilmP,15,IP) + Zcd*ThetaP2(ilmP, 6, IP) 
+     ThetaP(ilmP, 4, 7,IP) = ThetaP2(ilmP,16,IP) + Zcd*ThetaP2(ilmP, 7, IP) 
+     ThetaP(ilmP, 4, 8,IP) = ThetaP2(ilmP,18,IP) + Zcd*ThetaP2(ilmP, 8, IP) 
+     ThetaP(ilmP, 4, 9,IP) = ThetaP2(ilmP,19,IP) + Zcd*ThetaP2(ilmP, 9, IP) 
+     ThetaP(ilmP, 4,10,IP) = ThetaP2(ilmP,20,IP) + Zcd*ThetaP2(ilmP,10, IP) 
+    ENDDO
+   ENDDO
+end subroutine HorizontalRR_GPU_RHS_Q3C1D2DtoC
+
+!Transfer angmom from D to C
+subroutine HorizontalRR_GPU_RHS_Q4C1D3DtoC(nContPQ,nPasses,nlmP,&
+         & Qdistance12,ThetaP2,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  real(realk),intent(in) :: Qdistance12(3)
+  real(realk),intent(in) :: ThetaP2(nlmP,   35,nContPQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,    2:    4,   11:   20,nContPQ*nPasses)
+  !Local variables
+  integer :: iP,iC,iPassQ,ilmP,iTUVD
+  real(realk) :: Xcd,Ycd,Zcd
+!$ACC PARALLEL LOOP &
+!$ACC PRIVATE(iP,&
+!$ACC         iTUVD,ilmP,Xcd,Ycd,Zcd) &
+!$ACC PRESENT(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+  DO iP = 1,nContPQ*nPasses
+   Xcd = -Qdistance12(1)
+   Ycd = -Qdistance12(2)
+   Zcd = -Qdistance12(3)
+    DO ilmP = 1,nlmP
+     ThetaP(ilmP, 2,11,IP) = ThetaP2(ilmP,21,IP) + Xcd*ThetaP2(ilmP,11, IP) 
+     ThetaP(ilmP, 2,12,IP) = ThetaP2(ilmP,22,IP) + Xcd*ThetaP2(ilmP,12, IP) 
+     ThetaP(ilmP, 2,13,IP) = ThetaP2(ilmP,23,IP) + Xcd*ThetaP2(ilmP,13, IP) 
+     ThetaP(ilmP, 2,14,IP) = ThetaP2(ilmP,24,IP) + Xcd*ThetaP2(ilmP,14, IP) 
+     ThetaP(ilmP, 2,15,IP) = ThetaP2(ilmP,25,IP) + Xcd*ThetaP2(ilmP,15, IP) 
+     ThetaP(ilmP, 2,16,IP) = ThetaP2(ilmP,26,IP) + Xcd*ThetaP2(ilmP,16, IP) 
+     ThetaP(ilmP, 2,17,IP) = ThetaP2(ilmP,27,IP) + Xcd*ThetaP2(ilmP,17, IP) 
+     ThetaP(ilmP, 2,18,IP) = ThetaP2(ilmP,28,IP) + Xcd*ThetaP2(ilmP,18, IP) 
+     ThetaP(ilmP, 2,19,IP) = ThetaP2(ilmP,29,IP) + Xcd*ThetaP2(ilmP,19, IP) 
+     ThetaP(ilmP, 2,20,IP) = ThetaP2(ilmP,30,IP) + Xcd*ThetaP2(ilmP,20, IP) 
+     ThetaP(ilmP, 3,11,IP) = ThetaP2(ilmP,22,IP) + Ycd*ThetaP2(ilmP,11, IP) 
+     ThetaP(ilmP, 3,12,IP) = ThetaP2(ilmP,24,IP) + Ycd*ThetaP2(ilmP,12, IP) 
+     ThetaP(ilmP, 3,13,IP) = ThetaP2(ilmP,25,IP) + Ycd*ThetaP2(ilmP,13, IP) 
+     ThetaP(ilmP, 3,14,IP) = ThetaP2(ilmP,27,IP) + Ycd*ThetaP2(ilmP,14, IP) 
+     ThetaP(ilmP, 3,15,IP) = ThetaP2(ilmP,28,IP) + Ycd*ThetaP2(ilmP,15, IP) 
+     ThetaP(ilmP, 3,16,IP) = ThetaP2(ilmP,29,IP) + Ycd*ThetaP2(ilmP,16, IP) 
+     ThetaP(ilmP, 3,17,IP) = ThetaP2(ilmP,31,IP) + Ycd*ThetaP2(ilmP,17, IP) 
+     ThetaP(ilmP, 3,18,IP) = ThetaP2(ilmP,32,IP) + Ycd*ThetaP2(ilmP,18, IP) 
+     ThetaP(ilmP, 3,19,IP) = ThetaP2(ilmP,33,IP) + Ycd*ThetaP2(ilmP,19, IP) 
+     ThetaP(ilmP, 3,20,IP) = ThetaP2(ilmP,34,IP) + Ycd*ThetaP2(ilmP,20, IP) 
+     ThetaP(ilmP, 4,11,IP) = ThetaP2(ilmP,23,IP) + Zcd*ThetaP2(ilmP,11, IP) 
+     ThetaP(ilmP, 4,12,IP) = ThetaP2(ilmP,25,IP) + Zcd*ThetaP2(ilmP,12, IP) 
+     ThetaP(ilmP, 4,13,IP) = ThetaP2(ilmP,26,IP) + Zcd*ThetaP2(ilmP,13, IP) 
+     ThetaP(ilmP, 4,14,IP) = ThetaP2(ilmP,28,IP) + Zcd*ThetaP2(ilmP,14, IP) 
+     ThetaP(ilmP, 4,15,IP) = ThetaP2(ilmP,29,IP) + Zcd*ThetaP2(ilmP,15, IP) 
+     ThetaP(ilmP, 4,16,IP) = ThetaP2(ilmP,30,IP) + Zcd*ThetaP2(ilmP,16, IP) 
+     ThetaP(ilmP, 4,17,IP) = ThetaP2(ilmP,32,IP) + Zcd*ThetaP2(ilmP,17, IP) 
+     ThetaP(ilmP, 4,18,IP) = ThetaP2(ilmP,33,IP) + Zcd*ThetaP2(ilmP,18, IP) 
+     ThetaP(ilmP, 4,19,IP) = ThetaP2(ilmP,34,IP) + Zcd*ThetaP2(ilmP,19, IP) 
+     ThetaP(ilmP, 4,20,IP) = ThetaP2(ilmP,35,IP) + Zcd*ThetaP2(ilmP,20, IP) 
+    ENDDO
+   ENDDO
+end subroutine HorizontalRR_GPU_RHS_Q4C1D3DtoC
+
+!Transfer angmom from D to C
+subroutine HorizontalRR_GPU_RHS_Q4C2D2DtoC(nContPQ,nPasses,nlmP,&
+         & Qdistance12,ThetaP2,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  real(realk),intent(in) :: Qdistance12(3)
+  real(realk),intent(in) :: ThetaP2(nlmP,   35,nContPQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,    5:   10,    5:   10,nContPQ*nPasses)
+  !Local variables
+  integer :: iP,iC,iPassQ,ilmP,iTUVD
+  real(realk) :: Xcd,Ycd,Zcd
+  real(realk) :: Tmp1(  2:  4,  5: 20)
+!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
+!$ACC PARALLEL LOOP &
+!$ACC PRIVATE(iP,&
+!$ACC         Tmp1,&
+!$ACC         iTUVD,ilmP,Xcd,Ycd,Zcd) &
+!$ACC PRESENT(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+  DO iP = 1,nContPQ*nPasses
+   Xcd = -Qdistance12(1)
+   Ycd = -Qdistance12(2)
+   Zcd = -Qdistance12(3)
+    DO ilmP = 1,nlmP
+     Tmp1( 2, 5) = ThetaP2(ilmP,11,IP) + Xcd*ThetaP2(ilmP, 5, IP) 
+     Tmp1( 2, 6) = ThetaP2(ilmP,12,IP) + Xcd*ThetaP2(ilmP, 6, IP) 
+     Tmp1( 2, 7) = ThetaP2(ilmP,13,IP) + Xcd*ThetaP2(ilmP, 7, IP) 
+     Tmp1( 2, 8) = ThetaP2(ilmP,14,IP) + Xcd*ThetaP2(ilmP, 8, IP) 
+     Tmp1( 2, 9) = ThetaP2(ilmP,15,IP) + Xcd*ThetaP2(ilmP, 9, IP) 
+     Tmp1( 2,10) = ThetaP2(ilmP,16,IP) + Xcd*ThetaP2(ilmP,10, IP) 
+     Tmp1( 2,11) = ThetaP2(ilmP,21,IP) + Xcd*ThetaP2(ilmP,11, IP) 
+     Tmp1( 2,12) = ThetaP2(ilmP,22,IP) + Xcd*ThetaP2(ilmP,12, IP) 
+     Tmp1( 2,13) = ThetaP2(ilmP,23,IP) + Xcd*ThetaP2(ilmP,13, IP) 
+     Tmp1( 2,14) = ThetaP2(ilmP,24,IP) + Xcd*ThetaP2(ilmP,14, IP) 
+     Tmp1( 2,15) = ThetaP2(ilmP,25,IP) + Xcd*ThetaP2(ilmP,15, IP) 
+     Tmp1( 2,16) = ThetaP2(ilmP,26,IP) + Xcd*ThetaP2(ilmP,16, IP) 
+     Tmp1( 2,17) = ThetaP2(ilmP,27,IP) + Xcd*ThetaP2(ilmP,17, IP) 
+     Tmp1( 2,18) = ThetaP2(ilmP,28,IP) + Xcd*ThetaP2(ilmP,18, IP) 
+     Tmp1( 2,19) = ThetaP2(ilmP,29,IP) + Xcd*ThetaP2(ilmP,19, IP) 
+     Tmp1( 2,20) = ThetaP2(ilmP,30,IP) + Xcd*ThetaP2(ilmP,20, IP) 
+     Tmp1( 3, 5) = ThetaP2(ilmP,12,IP) + Ycd*ThetaP2(ilmP, 5, IP) 
+     Tmp1( 3, 6) = ThetaP2(ilmP,14,IP) + Ycd*ThetaP2(ilmP, 6, IP) 
+     Tmp1( 3, 7) = ThetaP2(ilmP,15,IP) + Ycd*ThetaP2(ilmP, 7, IP) 
+     Tmp1( 3, 8) = ThetaP2(ilmP,17,IP) + Ycd*ThetaP2(ilmP, 8, IP) 
+     Tmp1( 3, 9) = ThetaP2(ilmP,18,IP) + Ycd*ThetaP2(ilmP, 9, IP) 
+     Tmp1( 3,10) = ThetaP2(ilmP,19,IP) + Ycd*ThetaP2(ilmP,10, IP) 
+     Tmp1( 3,11) = ThetaP2(ilmP,22,IP) + Ycd*ThetaP2(ilmP,11, IP) 
+     Tmp1( 3,12) = ThetaP2(ilmP,24,IP) + Ycd*ThetaP2(ilmP,12, IP) 
+     Tmp1( 3,13) = ThetaP2(ilmP,25,IP) + Ycd*ThetaP2(ilmP,13, IP) 
+     Tmp1( 3,14) = ThetaP2(ilmP,27,IP) + Ycd*ThetaP2(ilmP,14, IP) 
+     Tmp1( 3,15) = ThetaP2(ilmP,28,IP) + Ycd*ThetaP2(ilmP,15, IP) 
+     Tmp1( 3,16) = ThetaP2(ilmP,29,IP) + Ycd*ThetaP2(ilmP,16, IP) 
+     Tmp1( 3,17) = ThetaP2(ilmP,31,IP) + Ycd*ThetaP2(ilmP,17, IP) 
+     Tmp1( 3,18) = ThetaP2(ilmP,32,IP) + Ycd*ThetaP2(ilmP,18, IP) 
+     Tmp1( 3,19) = ThetaP2(ilmP,33,IP) + Ycd*ThetaP2(ilmP,19, IP) 
+     Tmp1( 3,20) = ThetaP2(ilmP,34,IP) + Ycd*ThetaP2(ilmP,20, IP) 
+     Tmp1( 4, 5) = ThetaP2(ilmP,13,IP) + Zcd*ThetaP2(ilmP, 5, IP) 
+     Tmp1( 4, 6) = ThetaP2(ilmP,15,IP) + Zcd*ThetaP2(ilmP, 6, IP) 
+     Tmp1( 4, 7) = ThetaP2(ilmP,16,IP) + Zcd*ThetaP2(ilmP, 7, IP) 
+     Tmp1( 4, 8) = ThetaP2(ilmP,18,IP) + Zcd*ThetaP2(ilmP, 8, IP) 
+     Tmp1( 4, 9) = ThetaP2(ilmP,19,IP) + Zcd*ThetaP2(ilmP, 9, IP) 
+     Tmp1( 4,10) = ThetaP2(ilmP,20,IP) + Zcd*ThetaP2(ilmP,10, IP) 
+     Tmp1( 4,11) = ThetaP2(ilmP,23,IP) + Zcd*ThetaP2(ilmP,11, IP) 
+     Tmp1( 4,12) = ThetaP2(ilmP,25,IP) + Zcd*ThetaP2(ilmP,12, IP) 
+     Tmp1( 4,13) = ThetaP2(ilmP,26,IP) + Zcd*ThetaP2(ilmP,13, IP) 
+     Tmp1( 4,14) = ThetaP2(ilmP,28,IP) + Zcd*ThetaP2(ilmP,14, IP) 
+     Tmp1( 4,15) = ThetaP2(ilmP,29,IP) + Zcd*ThetaP2(ilmP,15, IP) 
+     Tmp1( 4,16) = ThetaP2(ilmP,30,IP) + Zcd*ThetaP2(ilmP,16, IP) 
+     Tmp1( 4,17) = ThetaP2(ilmP,32,IP) + Zcd*ThetaP2(ilmP,17, IP) 
+     Tmp1( 4,18) = ThetaP2(ilmP,33,IP) + Zcd*ThetaP2(ilmP,18, IP) 
+     Tmp1( 4,19) = ThetaP2(ilmP,34,IP) + Zcd*ThetaP2(ilmP,19, IP) 
+     Tmp1( 4,20) = ThetaP2(ilmP,35,IP) + Zcd*ThetaP2(ilmP,20, IP) 
+     ThetaP(ilmP, 5, 5,IP) = Tmp1( 2,11) + Xcd*Tmp1( 2, 5) 
+     ThetaP(ilmP, 5, 6,IP) = Tmp1( 2,12) + Xcd*Tmp1( 2, 6) 
+     ThetaP(ilmP, 5, 7,IP) = Tmp1( 2,13) + Xcd*Tmp1( 2, 7) 
+     ThetaP(ilmP, 5, 8,IP) = Tmp1( 2,14) + Xcd*Tmp1( 2, 8) 
+     ThetaP(ilmP, 5, 9,IP) = Tmp1( 2,15) + Xcd*Tmp1( 2, 9) 
+     ThetaP(ilmP, 5,10,IP) = Tmp1( 2,16) + Xcd*Tmp1( 2,10) 
+     ThetaP(ilmP, 6, 5,IP) = Tmp1( 3,11) + Xcd*Tmp1( 3, 5) 
+     ThetaP(ilmP, 6, 6,IP) = Tmp1( 3,12) + Xcd*Tmp1( 3, 6) 
+     ThetaP(ilmP, 6, 7,IP) = Tmp1( 3,13) + Xcd*Tmp1( 3, 7) 
+     ThetaP(ilmP, 6, 8,IP) = Tmp1( 3,14) + Xcd*Tmp1( 3, 8) 
+     ThetaP(ilmP, 6, 9,IP) = Tmp1( 3,15) + Xcd*Tmp1( 3, 9) 
+     ThetaP(ilmP, 6,10,IP) = Tmp1( 3,16) + Xcd*Tmp1( 3,10) 
+     ThetaP(ilmP, 7, 5,IP) = Tmp1( 4,11) + Xcd*Tmp1( 4, 5) 
+     ThetaP(ilmP, 7, 6,IP) = Tmp1( 4,12) + Xcd*Tmp1( 4, 6) 
+     ThetaP(ilmP, 7, 7,IP) = Tmp1( 4,13) + Xcd*Tmp1( 4, 7) 
+     ThetaP(ilmP, 7, 8,IP) = Tmp1( 4,14) + Xcd*Tmp1( 4, 8) 
+     ThetaP(ilmP, 7, 9,IP) = Tmp1( 4,15) + Xcd*Tmp1( 4, 9) 
+     ThetaP(ilmP, 7,10,IP) = Tmp1( 4,16) + Xcd*Tmp1( 4,10) 
+     ThetaP(ilmP, 8, 5,IP) = Tmp1( 3,12) + Ycd*Tmp1( 3, 5) 
+     ThetaP(ilmP, 8, 6,IP) = Tmp1( 3,14) + Ycd*Tmp1( 3, 6) 
+     ThetaP(ilmP, 8, 7,IP) = Tmp1( 3,15) + Ycd*Tmp1( 3, 7) 
+     ThetaP(ilmP, 8, 8,IP) = Tmp1( 3,17) + Ycd*Tmp1( 3, 8) 
+     ThetaP(ilmP, 8, 9,IP) = Tmp1( 3,18) + Ycd*Tmp1( 3, 9) 
+     ThetaP(ilmP, 8,10,IP) = Tmp1( 3,19) + Ycd*Tmp1( 3,10) 
+     ThetaP(ilmP, 9, 5,IP) = Tmp1( 4,12) + Ycd*Tmp1( 4, 5) 
+     ThetaP(ilmP, 9, 6,IP) = Tmp1( 4,14) + Ycd*Tmp1( 4, 6) 
+     ThetaP(ilmP, 9, 7,IP) = Tmp1( 4,15) + Ycd*Tmp1( 4, 7) 
+     ThetaP(ilmP, 9, 8,IP) = Tmp1( 4,17) + Ycd*Tmp1( 4, 8) 
+     ThetaP(ilmP, 9, 9,IP) = Tmp1( 4,18) + Ycd*Tmp1( 4, 9) 
+     ThetaP(ilmP, 9,10,IP) = Tmp1( 4,19) + Ycd*Tmp1( 4,10) 
+     ThetaP(ilmP,10, 5,IP) = Tmp1( 4,13) + Zcd*Tmp1( 4, 5) 
+     ThetaP(ilmP,10, 6,IP) = Tmp1( 4,15) + Zcd*Tmp1( 4, 6) 
+     ThetaP(ilmP,10, 7,IP) = Tmp1( 4,16) + Zcd*Tmp1( 4, 7) 
+     ThetaP(ilmP,10, 8,IP) = Tmp1( 4,18) + Zcd*Tmp1( 4, 8) 
+     ThetaP(ilmP,10, 9,IP) = Tmp1( 4,19) + Zcd*Tmp1( 4, 9) 
+     ThetaP(ilmP,10,10,IP) = Tmp1( 4,20) + Zcd*Tmp1( 4,10) 
+    ENDDO
+   ENDDO
+end subroutine HorizontalRR_GPU_RHS_Q4C2D2DtoC
+
+!Transfer angmom from D to C
+subroutine HorizontalRR_GPU_RHS_Q5C2D3DtoC(nContPQ,nPasses,nlmP,&
+         & Qdistance12,ThetaP2,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  real(realk),intent(in) :: Qdistance12(3)
+  real(realk),intent(in) :: ThetaP2(nlmP,   56,nContPQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,    5:   10,   11:   20,nContPQ*nPasses)
+  !Local variables
+  integer :: iP,iC,iPassQ,ilmP,iTUVD
+  real(realk) :: Xcd,Ycd,Zcd
+  real(realk) :: Tmp1(  2:  4, 11: 35)
+!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
+!$ACC PARALLEL LOOP &
+!$ACC PRIVATE(iP,&
+!$ACC         Tmp1,&
+!$ACC         iTUVD,ilmP,Xcd,Ycd,Zcd) &
+!$ACC PRESENT(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+  DO iP = 1,nContPQ*nPasses
+   Xcd = -Qdistance12(1)
+   Ycd = -Qdistance12(2)
+   Zcd = -Qdistance12(3)
+    DO ilmP = 1,nlmP
+     Tmp1( 2,11) = ThetaP2(ilmP,21,IP) + Xcd*ThetaP2(ilmP,11, IP) 
+     Tmp1( 2,12) = ThetaP2(ilmP,22,IP) + Xcd*ThetaP2(ilmP,12, IP) 
+     Tmp1( 2,13) = ThetaP2(ilmP,23,IP) + Xcd*ThetaP2(ilmP,13, IP) 
+     Tmp1( 2,14) = ThetaP2(ilmP,24,IP) + Xcd*ThetaP2(ilmP,14, IP) 
+     Tmp1( 2,15) = ThetaP2(ilmP,25,IP) + Xcd*ThetaP2(ilmP,15, IP) 
+     Tmp1( 2,16) = ThetaP2(ilmP,26,IP) + Xcd*ThetaP2(ilmP,16, IP) 
+     Tmp1( 2,17) = ThetaP2(ilmP,27,IP) + Xcd*ThetaP2(ilmP,17, IP) 
+     Tmp1( 2,18) = ThetaP2(ilmP,28,IP) + Xcd*ThetaP2(ilmP,18, IP) 
+     Tmp1( 2,19) = ThetaP2(ilmP,29,IP) + Xcd*ThetaP2(ilmP,19, IP) 
+     Tmp1( 2,20) = ThetaP2(ilmP,30,IP) + Xcd*ThetaP2(ilmP,20, IP) 
+     Tmp1( 2,21) = ThetaP2(ilmP,36,IP) + Xcd*ThetaP2(ilmP,21, IP) 
+     Tmp1( 2,22) = ThetaP2(ilmP,37,IP) + Xcd*ThetaP2(ilmP,22, IP) 
+     Tmp1( 2,23) = ThetaP2(ilmP,38,IP) + Xcd*ThetaP2(ilmP,23, IP) 
+     Tmp1( 2,24) = ThetaP2(ilmP,39,IP) + Xcd*ThetaP2(ilmP,24, IP) 
+     Tmp1( 2,25) = ThetaP2(ilmP,40,IP) + Xcd*ThetaP2(ilmP,25, IP) 
+     Tmp1( 2,26) = ThetaP2(ilmP,41,IP) + Xcd*ThetaP2(ilmP,26, IP) 
+     Tmp1( 2,27) = ThetaP2(ilmP,42,IP) + Xcd*ThetaP2(ilmP,27, IP) 
+     Tmp1( 2,28) = ThetaP2(ilmP,43,IP) + Xcd*ThetaP2(ilmP,28, IP) 
+     Tmp1( 2,29) = ThetaP2(ilmP,44,IP) + Xcd*ThetaP2(ilmP,29, IP) 
+     Tmp1( 2,30) = ThetaP2(ilmP,45,IP) + Xcd*ThetaP2(ilmP,30, IP) 
+     Tmp1( 2,31) = ThetaP2(ilmP,46,IP) + Xcd*ThetaP2(ilmP,31, IP) 
+     Tmp1( 2,32) = ThetaP2(ilmP,47,IP) + Xcd*ThetaP2(ilmP,32, IP) 
+     Tmp1( 2,33) = ThetaP2(ilmP,48,IP) + Xcd*ThetaP2(ilmP,33, IP) 
+     Tmp1( 2,34) = ThetaP2(ilmP,49,IP) + Xcd*ThetaP2(ilmP,34, IP) 
+     Tmp1( 2,35) = ThetaP2(ilmP,50,IP) + Xcd*ThetaP2(ilmP,35, IP) 
+     Tmp1( 3,11) = ThetaP2(ilmP,22,IP) + Ycd*ThetaP2(ilmP,11, IP) 
+     Tmp1( 3,12) = ThetaP2(ilmP,24,IP) + Ycd*ThetaP2(ilmP,12, IP) 
+     Tmp1( 3,13) = ThetaP2(ilmP,25,IP) + Ycd*ThetaP2(ilmP,13, IP) 
+     Tmp1( 3,14) = ThetaP2(ilmP,27,IP) + Ycd*ThetaP2(ilmP,14, IP) 
+     Tmp1( 3,15) = ThetaP2(ilmP,28,IP) + Ycd*ThetaP2(ilmP,15, IP) 
+     Tmp1( 3,16) = ThetaP2(ilmP,29,IP) + Ycd*ThetaP2(ilmP,16, IP) 
+     Tmp1( 3,17) = ThetaP2(ilmP,31,IP) + Ycd*ThetaP2(ilmP,17, IP) 
+     Tmp1( 3,18) = ThetaP2(ilmP,32,IP) + Ycd*ThetaP2(ilmP,18, IP) 
+     Tmp1( 3,19) = ThetaP2(ilmP,33,IP) + Ycd*ThetaP2(ilmP,19, IP) 
+     Tmp1( 3,20) = ThetaP2(ilmP,34,IP) + Ycd*ThetaP2(ilmP,20, IP) 
+     Tmp1( 3,21) = ThetaP2(ilmP,37,IP) + Ycd*ThetaP2(ilmP,21, IP) 
+     Tmp1( 3,22) = ThetaP2(ilmP,39,IP) + Ycd*ThetaP2(ilmP,22, IP) 
+     Tmp1( 3,23) = ThetaP2(ilmP,40,IP) + Ycd*ThetaP2(ilmP,23, IP) 
+     Tmp1( 3,24) = ThetaP2(ilmP,42,IP) + Ycd*ThetaP2(ilmP,24, IP) 
+     Tmp1( 3,25) = ThetaP2(ilmP,43,IP) + Ycd*ThetaP2(ilmP,25, IP) 
+     Tmp1( 3,26) = ThetaP2(ilmP,44,IP) + Ycd*ThetaP2(ilmP,26, IP) 
+     Tmp1( 3,27) = ThetaP2(ilmP,46,IP) + Ycd*ThetaP2(ilmP,27, IP) 
+     Tmp1( 3,28) = ThetaP2(ilmP,47,IP) + Ycd*ThetaP2(ilmP,28, IP) 
+     Tmp1( 3,29) = ThetaP2(ilmP,48,IP) + Ycd*ThetaP2(ilmP,29, IP) 
+     Tmp1( 3,30) = ThetaP2(ilmP,49,IP) + Ycd*ThetaP2(ilmP,30, IP) 
+     Tmp1( 3,31) = ThetaP2(ilmP,51,IP) + Ycd*ThetaP2(ilmP,31, IP) 
+     Tmp1( 3,32) = ThetaP2(ilmP,52,IP) + Ycd*ThetaP2(ilmP,32, IP) 
+     Tmp1( 3,33) = ThetaP2(ilmP,53,IP) + Ycd*ThetaP2(ilmP,33, IP) 
+     Tmp1( 3,34) = ThetaP2(ilmP,54,IP) + Ycd*ThetaP2(ilmP,34, IP) 
+     Tmp1( 3,35) = ThetaP2(ilmP,55,IP) + Ycd*ThetaP2(ilmP,35, IP) 
+     Tmp1( 4,11) = ThetaP2(ilmP,23,IP) + Zcd*ThetaP2(ilmP,11, IP) 
+     Tmp1( 4,12) = ThetaP2(ilmP,25,IP) + Zcd*ThetaP2(ilmP,12, IP) 
+     Tmp1( 4,13) = ThetaP2(ilmP,26,IP) + Zcd*ThetaP2(ilmP,13, IP) 
+     Tmp1( 4,14) = ThetaP2(ilmP,28,IP) + Zcd*ThetaP2(ilmP,14, IP) 
+     Tmp1( 4,15) = ThetaP2(ilmP,29,IP) + Zcd*ThetaP2(ilmP,15, IP) 
+     Tmp1( 4,16) = ThetaP2(ilmP,30,IP) + Zcd*ThetaP2(ilmP,16, IP) 
+     Tmp1( 4,17) = ThetaP2(ilmP,32,IP) + Zcd*ThetaP2(ilmP,17, IP) 
+     Tmp1( 4,18) = ThetaP2(ilmP,33,IP) + Zcd*ThetaP2(ilmP,18, IP) 
+     Tmp1( 4,19) = ThetaP2(ilmP,34,IP) + Zcd*ThetaP2(ilmP,19, IP) 
+     Tmp1( 4,20) = ThetaP2(ilmP,35,IP) + Zcd*ThetaP2(ilmP,20, IP) 
+     Tmp1( 4,21) = ThetaP2(ilmP,38,IP) + Zcd*ThetaP2(ilmP,21, IP) 
+     Tmp1( 4,22) = ThetaP2(ilmP,40,IP) + Zcd*ThetaP2(ilmP,22, IP) 
+     Tmp1( 4,23) = ThetaP2(ilmP,41,IP) + Zcd*ThetaP2(ilmP,23, IP) 
+     Tmp1( 4,24) = ThetaP2(ilmP,43,IP) + Zcd*ThetaP2(ilmP,24, IP) 
+     Tmp1( 4,25) = ThetaP2(ilmP,44,IP) + Zcd*ThetaP2(ilmP,25, IP) 
+     Tmp1( 4,26) = ThetaP2(ilmP,45,IP) + Zcd*ThetaP2(ilmP,26, IP) 
+     Tmp1( 4,27) = ThetaP2(ilmP,47,IP) + Zcd*ThetaP2(ilmP,27, IP) 
+     Tmp1( 4,28) = ThetaP2(ilmP,48,IP) + Zcd*ThetaP2(ilmP,28, IP) 
+     Tmp1( 4,29) = ThetaP2(ilmP,49,IP) + Zcd*ThetaP2(ilmP,29, IP) 
+     Tmp1( 4,30) = ThetaP2(ilmP,50,IP) + Zcd*ThetaP2(ilmP,30, IP) 
+     Tmp1( 4,31) = ThetaP2(ilmP,52,IP) + Zcd*ThetaP2(ilmP,31, IP) 
+     Tmp1( 4,32) = ThetaP2(ilmP,53,IP) + Zcd*ThetaP2(ilmP,32, IP) 
+     Tmp1( 4,33) = ThetaP2(ilmP,54,IP) + Zcd*ThetaP2(ilmP,33, IP) 
+     Tmp1( 4,34) = ThetaP2(ilmP,55,IP) + Zcd*ThetaP2(ilmP,34, IP) 
+     Tmp1( 4,35) = ThetaP2(ilmP,56,IP) + Zcd*ThetaP2(ilmP,35, IP) 
+     ThetaP(ilmP, 5,11,IP) = Tmp1( 2,21) + Xcd*Tmp1( 2,11) 
+     ThetaP(ilmP, 5,12,IP) = Tmp1( 2,22) + Xcd*Tmp1( 2,12) 
+     ThetaP(ilmP, 5,13,IP) = Tmp1( 2,23) + Xcd*Tmp1( 2,13) 
+     ThetaP(ilmP, 5,14,IP) = Tmp1( 2,24) + Xcd*Tmp1( 2,14) 
+     ThetaP(ilmP, 5,15,IP) = Tmp1( 2,25) + Xcd*Tmp1( 2,15) 
+     ThetaP(ilmP, 5,16,IP) = Tmp1( 2,26) + Xcd*Tmp1( 2,16) 
+     ThetaP(ilmP, 5,17,IP) = Tmp1( 2,27) + Xcd*Tmp1( 2,17) 
+     ThetaP(ilmP, 5,18,IP) = Tmp1( 2,28) + Xcd*Tmp1( 2,18) 
+     ThetaP(ilmP, 5,19,IP) = Tmp1( 2,29) + Xcd*Tmp1( 2,19) 
+     ThetaP(ilmP, 5,20,IP) = Tmp1( 2,30) + Xcd*Tmp1( 2,20) 
+     ThetaP(ilmP, 6,11,IP) = Tmp1( 3,21) + Xcd*Tmp1( 3,11) 
+     ThetaP(ilmP, 6,12,IP) = Tmp1( 3,22) + Xcd*Tmp1( 3,12) 
+     ThetaP(ilmP, 6,13,IP) = Tmp1( 3,23) + Xcd*Tmp1( 3,13) 
+     ThetaP(ilmP, 6,14,IP) = Tmp1( 3,24) + Xcd*Tmp1( 3,14) 
+     ThetaP(ilmP, 6,15,IP) = Tmp1( 3,25) + Xcd*Tmp1( 3,15) 
+     ThetaP(ilmP, 6,16,IP) = Tmp1( 3,26) + Xcd*Tmp1( 3,16) 
+     ThetaP(ilmP, 6,17,IP) = Tmp1( 3,27) + Xcd*Tmp1( 3,17) 
+     ThetaP(ilmP, 6,18,IP) = Tmp1( 3,28) + Xcd*Tmp1( 3,18) 
+     ThetaP(ilmP, 6,19,IP) = Tmp1( 3,29) + Xcd*Tmp1( 3,19) 
+     ThetaP(ilmP, 6,20,IP) = Tmp1( 3,30) + Xcd*Tmp1( 3,20) 
+     ThetaP(ilmP, 7,11,IP) = Tmp1( 4,21) + Xcd*Tmp1( 4,11) 
+     ThetaP(ilmP, 7,12,IP) = Tmp1( 4,22) + Xcd*Tmp1( 4,12) 
+     ThetaP(ilmP, 7,13,IP) = Tmp1( 4,23) + Xcd*Tmp1( 4,13) 
+     ThetaP(ilmP, 7,14,IP) = Tmp1( 4,24) + Xcd*Tmp1( 4,14) 
+     ThetaP(ilmP, 7,15,IP) = Tmp1( 4,25) + Xcd*Tmp1( 4,15) 
+     ThetaP(ilmP, 7,16,IP) = Tmp1( 4,26) + Xcd*Tmp1( 4,16) 
+     ThetaP(ilmP, 7,17,IP) = Tmp1( 4,27) + Xcd*Tmp1( 4,17) 
+     ThetaP(ilmP, 7,18,IP) = Tmp1( 4,28) + Xcd*Tmp1( 4,18) 
+     ThetaP(ilmP, 7,19,IP) = Tmp1( 4,29) + Xcd*Tmp1( 4,19) 
+     ThetaP(ilmP, 7,20,IP) = Tmp1( 4,30) + Xcd*Tmp1( 4,20) 
+     ThetaP(ilmP, 8,11,IP) = Tmp1( 3,22) + Ycd*Tmp1( 3,11) 
+     ThetaP(ilmP, 8,12,IP) = Tmp1( 3,24) + Ycd*Tmp1( 3,12) 
+     ThetaP(ilmP, 8,13,IP) = Tmp1( 3,25) + Ycd*Tmp1( 3,13) 
+     ThetaP(ilmP, 8,14,IP) = Tmp1( 3,27) + Ycd*Tmp1( 3,14) 
+     ThetaP(ilmP, 8,15,IP) = Tmp1( 3,28) + Ycd*Tmp1( 3,15) 
+     ThetaP(ilmP, 8,16,IP) = Tmp1( 3,29) + Ycd*Tmp1( 3,16) 
+     ThetaP(ilmP, 8,17,IP) = Tmp1( 3,31) + Ycd*Tmp1( 3,17) 
+     ThetaP(ilmP, 8,18,IP) = Tmp1( 3,32) + Ycd*Tmp1( 3,18) 
+     ThetaP(ilmP, 8,19,IP) = Tmp1( 3,33) + Ycd*Tmp1( 3,19) 
+     ThetaP(ilmP, 8,20,IP) = Tmp1( 3,34) + Ycd*Tmp1( 3,20) 
+     ThetaP(ilmP, 9,11,IP) = Tmp1( 4,22) + Ycd*Tmp1( 4,11) 
+     ThetaP(ilmP, 9,12,IP) = Tmp1( 4,24) + Ycd*Tmp1( 4,12) 
+     ThetaP(ilmP, 9,13,IP) = Tmp1( 4,25) + Ycd*Tmp1( 4,13) 
+     ThetaP(ilmP, 9,14,IP) = Tmp1( 4,27) + Ycd*Tmp1( 4,14) 
+     ThetaP(ilmP, 9,15,IP) = Tmp1( 4,28) + Ycd*Tmp1( 4,15) 
+     ThetaP(ilmP, 9,16,IP) = Tmp1( 4,29) + Ycd*Tmp1( 4,16) 
+     ThetaP(ilmP, 9,17,IP) = Tmp1( 4,31) + Ycd*Tmp1( 4,17) 
+     ThetaP(ilmP, 9,18,IP) = Tmp1( 4,32) + Ycd*Tmp1( 4,18) 
+     ThetaP(ilmP, 9,19,IP) = Tmp1( 4,33) + Ycd*Tmp1( 4,19) 
+     ThetaP(ilmP, 9,20,IP) = Tmp1( 4,34) + Ycd*Tmp1( 4,20) 
+     ThetaP(ilmP,10,11,IP) = Tmp1( 4,23) + Zcd*Tmp1( 4,11) 
+     ThetaP(ilmP,10,12,IP) = Tmp1( 4,25) + Zcd*Tmp1( 4,12) 
+     ThetaP(ilmP,10,13,IP) = Tmp1( 4,26) + Zcd*Tmp1( 4,13) 
+     ThetaP(ilmP,10,14,IP) = Tmp1( 4,28) + Zcd*Tmp1( 4,14) 
+     ThetaP(ilmP,10,15,IP) = Tmp1( 4,29) + Zcd*Tmp1( 4,15) 
+     ThetaP(ilmP,10,16,IP) = Tmp1( 4,30) + Zcd*Tmp1( 4,16) 
+     ThetaP(ilmP,10,17,IP) = Tmp1( 4,32) + Zcd*Tmp1( 4,17) 
+     ThetaP(ilmP,10,18,IP) = Tmp1( 4,33) + Zcd*Tmp1( 4,18) 
+     ThetaP(ilmP,10,19,IP) = Tmp1( 4,34) + Zcd*Tmp1( 4,19) 
+     ThetaP(ilmP,10,20,IP) = Tmp1( 4,35) + Zcd*Tmp1( 4,20) 
+    ENDDO
+   ENDDO
+end subroutine HorizontalRR_GPU_RHS_Q5C2D3DtoC
+
+!Transfer angmom from D to C
+subroutine HorizontalRR_GPU_RHS_Q6C3D3DtoC(nContPQ,nPasses,nlmP,&
+         & Qdistance12,ThetaP2,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  real(realk),intent(in) :: Qdistance12(3)
+  real(realk),intent(in) :: ThetaP2(nlmP,   84,nContPQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,   11:   20,   11:   20,nContPQ*nPasses)
+  !Local variables
+  integer :: iP,iC,iPassQ,ilmP,iTUVD
+  real(realk) :: Xcd,Ycd,Zcd
+  real(realk) :: Tmp1(  2:  4, 11: 56)
+!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
+  real(realk) :: Tmp2(  5: 10, 11: 35)
+!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
+!$ACC PARALLEL LOOP &
+!$ACC PRIVATE(iP,&
+!$ACC         Tmp1,&
+!$ACC         Tmp2,&
+!$ACC         iTUVD,ilmP,Xcd,Ycd,Zcd) &
+!$ACC PRESENT(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+  DO iP = 1,nContPQ*nPasses
+   Xcd = -Qdistance12(1)
+   Ycd = -Qdistance12(2)
+   Zcd = -Qdistance12(3)
+    DO ilmP = 1,nlmP
+     Tmp1( 2,11) = ThetaP2(ilmP,21,IP) + Xcd*ThetaP2(ilmP,11, IP) 
+     Tmp1( 2,12) = ThetaP2(ilmP,22,IP) + Xcd*ThetaP2(ilmP,12, IP) 
+     Tmp1( 2,13) = ThetaP2(ilmP,23,IP) + Xcd*ThetaP2(ilmP,13, IP) 
+     Tmp1( 2,14) = ThetaP2(ilmP,24,IP) + Xcd*ThetaP2(ilmP,14, IP) 
+     Tmp1( 2,15) = ThetaP2(ilmP,25,IP) + Xcd*ThetaP2(ilmP,15, IP) 
+     Tmp1( 2,16) = ThetaP2(ilmP,26,IP) + Xcd*ThetaP2(ilmP,16, IP) 
+     Tmp1( 2,17) = ThetaP2(ilmP,27,IP) + Xcd*ThetaP2(ilmP,17, IP) 
+     Tmp1( 2,18) = ThetaP2(ilmP,28,IP) + Xcd*ThetaP2(ilmP,18, IP) 
+     Tmp1( 2,19) = ThetaP2(ilmP,29,IP) + Xcd*ThetaP2(ilmP,19, IP) 
+     Tmp1( 2,20) = ThetaP2(ilmP,30,IP) + Xcd*ThetaP2(ilmP,20, IP) 
+     Tmp1( 2,21) = ThetaP2(ilmP,36,IP) + Xcd*ThetaP2(ilmP,21, IP) 
+     Tmp1( 2,22) = ThetaP2(ilmP,37,IP) + Xcd*ThetaP2(ilmP,22, IP) 
+     Tmp1( 2,23) = ThetaP2(ilmP,38,IP) + Xcd*ThetaP2(ilmP,23, IP) 
+     Tmp1( 2,24) = ThetaP2(ilmP,39,IP) + Xcd*ThetaP2(ilmP,24, IP) 
+     Tmp1( 2,25) = ThetaP2(ilmP,40,IP) + Xcd*ThetaP2(ilmP,25, IP) 
+     Tmp1( 2,26) = ThetaP2(ilmP,41,IP) + Xcd*ThetaP2(ilmP,26, IP) 
+     Tmp1( 2,27) = ThetaP2(ilmP,42,IP) + Xcd*ThetaP2(ilmP,27, IP) 
+     Tmp1( 2,28) = ThetaP2(ilmP,43,IP) + Xcd*ThetaP2(ilmP,28, IP) 
+     Tmp1( 2,29) = ThetaP2(ilmP,44,IP) + Xcd*ThetaP2(ilmP,29, IP) 
+     Tmp1( 2,30) = ThetaP2(ilmP,45,IP) + Xcd*ThetaP2(ilmP,30, IP) 
+     Tmp1( 2,31) = ThetaP2(ilmP,46,IP) + Xcd*ThetaP2(ilmP,31, IP) 
+     Tmp1( 2,32) = ThetaP2(ilmP,47,IP) + Xcd*ThetaP2(ilmP,32, IP) 
+     Tmp1( 2,33) = ThetaP2(ilmP,48,IP) + Xcd*ThetaP2(ilmP,33, IP) 
+     Tmp1( 2,34) = ThetaP2(ilmP,49,IP) + Xcd*ThetaP2(ilmP,34, IP) 
+     Tmp1( 2,35) = ThetaP2(ilmP,50,IP) + Xcd*ThetaP2(ilmP,35, IP) 
+     Tmp1( 2,36) = ThetaP2(ilmP,57,IP) + Xcd*ThetaP2(ilmP,36, IP) 
+     Tmp1( 2,37) = ThetaP2(ilmP,58,IP) + Xcd*ThetaP2(ilmP,37, IP) 
+     Tmp1( 2,38) = ThetaP2(ilmP,59,IP) + Xcd*ThetaP2(ilmP,38, IP) 
+     Tmp1( 2,39) = ThetaP2(ilmP,60,IP) + Xcd*ThetaP2(ilmP,39, IP) 
+     Tmp1( 2,40) = ThetaP2(ilmP,61,IP) + Xcd*ThetaP2(ilmP,40, IP) 
+     Tmp1( 2,41) = ThetaP2(ilmP,62,IP) + Xcd*ThetaP2(ilmP,41, IP) 
+     Tmp1( 2,42) = ThetaP2(ilmP,63,IP) + Xcd*ThetaP2(ilmP,42, IP) 
+     Tmp1( 2,43) = ThetaP2(ilmP,64,IP) + Xcd*ThetaP2(ilmP,43, IP) 
+     Tmp1( 2,44) = ThetaP2(ilmP,65,IP) + Xcd*ThetaP2(ilmP,44, IP) 
+     Tmp1( 2,45) = ThetaP2(ilmP,66,IP) + Xcd*ThetaP2(ilmP,45, IP) 
+     Tmp1( 2,46) = ThetaP2(ilmP,67,IP) + Xcd*ThetaP2(ilmP,46, IP) 
+     Tmp1( 2,47) = ThetaP2(ilmP,68,IP) + Xcd*ThetaP2(ilmP,47, IP) 
+     Tmp1( 2,48) = ThetaP2(ilmP,69,IP) + Xcd*ThetaP2(ilmP,48, IP) 
+     Tmp1( 2,49) = ThetaP2(ilmP,70,IP) + Xcd*ThetaP2(ilmP,49, IP) 
+     Tmp1( 2,50) = ThetaP2(ilmP,71,IP) + Xcd*ThetaP2(ilmP,50, IP) 
+     Tmp1( 2,51) = ThetaP2(ilmP,72,IP) + Xcd*ThetaP2(ilmP,51, IP) 
+     Tmp1( 2,52) = ThetaP2(ilmP,73,IP) + Xcd*ThetaP2(ilmP,52, IP) 
+     Tmp1( 2,53) = ThetaP2(ilmP,74,IP) + Xcd*ThetaP2(ilmP,53, IP) 
+     Tmp1( 2,54) = ThetaP2(ilmP,75,IP) + Xcd*ThetaP2(ilmP,54, IP) 
+     Tmp1( 2,55) = ThetaP2(ilmP,76,IP) + Xcd*ThetaP2(ilmP,55, IP) 
+     Tmp1( 2,56) = ThetaP2(ilmP,77,IP) + Xcd*ThetaP2(ilmP,56, IP) 
+     Tmp1( 3,11) = ThetaP2(ilmP,22,IP) + Ycd*ThetaP2(ilmP,11, IP) 
+     Tmp1( 3,12) = ThetaP2(ilmP,24,IP) + Ycd*ThetaP2(ilmP,12, IP) 
+     Tmp1( 3,13) = ThetaP2(ilmP,25,IP) + Ycd*ThetaP2(ilmP,13, IP) 
+     Tmp1( 3,14) = ThetaP2(ilmP,27,IP) + Ycd*ThetaP2(ilmP,14, IP) 
+     Tmp1( 3,15) = ThetaP2(ilmP,28,IP) + Ycd*ThetaP2(ilmP,15, IP) 
+     Tmp1( 3,16) = ThetaP2(ilmP,29,IP) + Ycd*ThetaP2(ilmP,16, IP) 
+     Tmp1( 3,17) = ThetaP2(ilmP,31,IP) + Ycd*ThetaP2(ilmP,17, IP) 
+     Tmp1( 3,18) = ThetaP2(ilmP,32,IP) + Ycd*ThetaP2(ilmP,18, IP) 
+     Tmp1( 3,19) = ThetaP2(ilmP,33,IP) + Ycd*ThetaP2(ilmP,19, IP) 
+     Tmp1( 3,20) = ThetaP2(ilmP,34,IP) + Ycd*ThetaP2(ilmP,20, IP) 
+     Tmp1( 3,21) = ThetaP2(ilmP,37,IP) + Ycd*ThetaP2(ilmP,21, IP) 
+     Tmp1( 3,22) = ThetaP2(ilmP,39,IP) + Ycd*ThetaP2(ilmP,22, IP) 
+     Tmp1( 3,23) = ThetaP2(ilmP,40,IP) + Ycd*ThetaP2(ilmP,23, IP) 
+     Tmp1( 3,24) = ThetaP2(ilmP,42,IP) + Ycd*ThetaP2(ilmP,24, IP) 
+     Tmp1( 3,25) = ThetaP2(ilmP,43,IP) + Ycd*ThetaP2(ilmP,25, IP) 
+     Tmp1( 3,26) = ThetaP2(ilmP,44,IP) + Ycd*ThetaP2(ilmP,26, IP) 
+     Tmp1( 3,27) = ThetaP2(ilmP,46,IP) + Ycd*ThetaP2(ilmP,27, IP) 
+     Tmp1( 3,28) = ThetaP2(ilmP,47,IP) + Ycd*ThetaP2(ilmP,28, IP) 
+     Tmp1( 3,29) = ThetaP2(ilmP,48,IP) + Ycd*ThetaP2(ilmP,29, IP) 
+     Tmp1( 3,30) = ThetaP2(ilmP,49,IP) + Ycd*ThetaP2(ilmP,30, IP) 
+     Tmp1( 3,31) = ThetaP2(ilmP,51,IP) + Ycd*ThetaP2(ilmP,31, IP) 
+     Tmp1( 3,32) = ThetaP2(ilmP,52,IP) + Ycd*ThetaP2(ilmP,32, IP) 
+     Tmp1( 3,33) = ThetaP2(ilmP,53,IP) + Ycd*ThetaP2(ilmP,33, IP) 
+     Tmp1( 3,34) = ThetaP2(ilmP,54,IP) + Ycd*ThetaP2(ilmP,34, IP) 
+     Tmp1( 3,35) = ThetaP2(ilmP,55,IP) + Ycd*ThetaP2(ilmP,35, IP) 
+     Tmp1( 3,36) = ThetaP2(ilmP,58,IP) + Ycd*ThetaP2(ilmP,36, IP) 
+     Tmp1( 3,37) = ThetaP2(ilmP,60,IP) + Ycd*ThetaP2(ilmP,37, IP) 
+     Tmp1( 3,38) = ThetaP2(ilmP,61,IP) + Ycd*ThetaP2(ilmP,38, IP) 
+     Tmp1( 3,39) = ThetaP2(ilmP,63,IP) + Ycd*ThetaP2(ilmP,39, IP) 
+     Tmp1( 3,40) = ThetaP2(ilmP,64,IP) + Ycd*ThetaP2(ilmP,40, IP) 
+     Tmp1( 3,41) = ThetaP2(ilmP,65,IP) + Ycd*ThetaP2(ilmP,41, IP) 
+     Tmp1( 3,42) = ThetaP2(ilmP,67,IP) + Ycd*ThetaP2(ilmP,42, IP) 
+     Tmp1( 3,43) = ThetaP2(ilmP,68,IP) + Ycd*ThetaP2(ilmP,43, IP) 
+     Tmp1( 3,44) = ThetaP2(ilmP,69,IP) + Ycd*ThetaP2(ilmP,44, IP) 
+     Tmp1( 3,45) = ThetaP2(ilmP,70,IP) + Ycd*ThetaP2(ilmP,45, IP) 
+     Tmp1( 3,46) = ThetaP2(ilmP,72,IP) + Ycd*ThetaP2(ilmP,46, IP) 
+     Tmp1( 3,47) = ThetaP2(ilmP,73,IP) + Ycd*ThetaP2(ilmP,47, IP) 
+     Tmp1( 3,48) = ThetaP2(ilmP,74,IP) + Ycd*ThetaP2(ilmP,48, IP) 
+     Tmp1( 3,49) = ThetaP2(ilmP,75,IP) + Ycd*ThetaP2(ilmP,49, IP) 
+     Tmp1( 3,50) = ThetaP2(ilmP,76,IP) + Ycd*ThetaP2(ilmP,50, IP) 
+     Tmp1( 3,51) = ThetaP2(ilmP,78,IP) + Ycd*ThetaP2(ilmP,51, IP) 
+     Tmp1( 3,52) = ThetaP2(ilmP,79,IP) + Ycd*ThetaP2(ilmP,52, IP) 
+     Tmp1( 3,53) = ThetaP2(ilmP,80,IP) + Ycd*ThetaP2(ilmP,53, IP) 
+     Tmp1( 3,54) = ThetaP2(ilmP,81,IP) + Ycd*ThetaP2(ilmP,54, IP) 
+     Tmp1( 3,55) = ThetaP2(ilmP,82,IP) + Ycd*ThetaP2(ilmP,55, IP) 
+     Tmp1( 3,56) = ThetaP2(ilmP,83,IP) + Ycd*ThetaP2(ilmP,56, IP) 
+     Tmp1( 4,11) = ThetaP2(ilmP,23,IP) + Zcd*ThetaP2(ilmP,11, IP) 
+     Tmp1( 4,12) = ThetaP2(ilmP,25,IP) + Zcd*ThetaP2(ilmP,12, IP) 
+     Tmp1( 4,13) = ThetaP2(ilmP,26,IP) + Zcd*ThetaP2(ilmP,13, IP) 
+     Tmp1( 4,14) = ThetaP2(ilmP,28,IP) + Zcd*ThetaP2(ilmP,14, IP) 
+     Tmp1( 4,15) = ThetaP2(ilmP,29,IP) + Zcd*ThetaP2(ilmP,15, IP) 
+     Tmp1( 4,16) = ThetaP2(ilmP,30,IP) + Zcd*ThetaP2(ilmP,16, IP) 
+     Tmp1( 4,17) = ThetaP2(ilmP,32,IP) + Zcd*ThetaP2(ilmP,17, IP) 
+     Tmp1( 4,18) = ThetaP2(ilmP,33,IP) + Zcd*ThetaP2(ilmP,18, IP) 
+     Tmp1( 4,19) = ThetaP2(ilmP,34,IP) + Zcd*ThetaP2(ilmP,19, IP) 
+     Tmp1( 4,20) = ThetaP2(ilmP,35,IP) + Zcd*ThetaP2(ilmP,20, IP) 
+     Tmp1( 4,21) = ThetaP2(ilmP,38,IP) + Zcd*ThetaP2(ilmP,21, IP) 
+     Tmp1( 4,22) = ThetaP2(ilmP,40,IP) + Zcd*ThetaP2(ilmP,22, IP) 
+     Tmp1( 4,23) = ThetaP2(ilmP,41,IP) + Zcd*ThetaP2(ilmP,23, IP) 
+     Tmp1( 4,24) = ThetaP2(ilmP,43,IP) + Zcd*ThetaP2(ilmP,24, IP) 
+     Tmp1( 4,25) = ThetaP2(ilmP,44,IP) + Zcd*ThetaP2(ilmP,25, IP) 
+     Tmp1( 4,26) = ThetaP2(ilmP,45,IP) + Zcd*ThetaP2(ilmP,26, IP) 
+     Tmp1( 4,27) = ThetaP2(ilmP,47,IP) + Zcd*ThetaP2(ilmP,27, IP) 
+     Tmp1( 4,28) = ThetaP2(ilmP,48,IP) + Zcd*ThetaP2(ilmP,28, IP) 
+     Tmp1( 4,29) = ThetaP2(ilmP,49,IP) + Zcd*ThetaP2(ilmP,29, IP) 
+     Tmp1( 4,30) = ThetaP2(ilmP,50,IP) + Zcd*ThetaP2(ilmP,30, IP) 
+     Tmp1( 4,31) = ThetaP2(ilmP,52,IP) + Zcd*ThetaP2(ilmP,31, IP) 
+     Tmp1( 4,32) = ThetaP2(ilmP,53,IP) + Zcd*ThetaP2(ilmP,32, IP) 
+     Tmp1( 4,33) = ThetaP2(ilmP,54,IP) + Zcd*ThetaP2(ilmP,33, IP) 
+     Tmp1( 4,34) = ThetaP2(ilmP,55,IP) + Zcd*ThetaP2(ilmP,34, IP) 
+     Tmp1( 4,35) = ThetaP2(ilmP,56,IP) + Zcd*ThetaP2(ilmP,35, IP) 
+     Tmp1( 4,36) = ThetaP2(ilmP,59,IP) + Zcd*ThetaP2(ilmP,36, IP) 
+     Tmp1( 4,37) = ThetaP2(ilmP,61,IP) + Zcd*ThetaP2(ilmP,37, IP) 
+     Tmp1( 4,38) = ThetaP2(ilmP,62,IP) + Zcd*ThetaP2(ilmP,38, IP) 
+     Tmp1( 4,39) = ThetaP2(ilmP,64,IP) + Zcd*ThetaP2(ilmP,39, IP) 
+     Tmp1( 4,40) = ThetaP2(ilmP,65,IP) + Zcd*ThetaP2(ilmP,40, IP) 
+     Tmp1( 4,41) = ThetaP2(ilmP,66,IP) + Zcd*ThetaP2(ilmP,41, IP) 
+     Tmp1( 4,42) = ThetaP2(ilmP,68,IP) + Zcd*ThetaP2(ilmP,42, IP) 
+     Tmp1( 4,43) = ThetaP2(ilmP,69,IP) + Zcd*ThetaP2(ilmP,43, IP) 
+     Tmp1( 4,44) = ThetaP2(ilmP,70,IP) + Zcd*ThetaP2(ilmP,44, IP) 
+     Tmp1( 4,45) = ThetaP2(ilmP,71,IP) + Zcd*ThetaP2(ilmP,45, IP) 
+     Tmp1( 4,46) = ThetaP2(ilmP,73,IP) + Zcd*ThetaP2(ilmP,46, IP) 
+     Tmp1( 4,47) = ThetaP2(ilmP,74,IP) + Zcd*ThetaP2(ilmP,47, IP) 
+     Tmp1( 4,48) = ThetaP2(ilmP,75,IP) + Zcd*ThetaP2(ilmP,48, IP) 
+     Tmp1( 4,49) = ThetaP2(ilmP,76,IP) + Zcd*ThetaP2(ilmP,49, IP) 
+     Tmp1( 4,50) = ThetaP2(ilmP,77,IP) + Zcd*ThetaP2(ilmP,50, IP) 
+     Tmp1( 4,51) = ThetaP2(ilmP,79,IP) + Zcd*ThetaP2(ilmP,51, IP) 
+     Tmp1( 4,52) = ThetaP2(ilmP,80,IP) + Zcd*ThetaP2(ilmP,52, IP) 
+     Tmp1( 4,53) = ThetaP2(ilmP,81,IP) + Zcd*ThetaP2(ilmP,53, IP) 
+     Tmp1( 4,54) = ThetaP2(ilmP,82,IP) + Zcd*ThetaP2(ilmP,54, IP) 
+     Tmp1( 4,55) = ThetaP2(ilmP,83,IP) + Zcd*ThetaP2(ilmP,55, IP) 
+     Tmp1( 4,56) = ThetaP2(ilmP,84,IP) + Zcd*ThetaP2(ilmP,56, IP) 
+     Tmp2( 5,11) = Tmp1( 2,21) + Xcd*Tmp1( 2,11) 
+     Tmp2( 5,12) = Tmp1( 2,22) + Xcd*Tmp1( 2,12) 
+     Tmp2( 5,13) = Tmp1( 2,23) + Xcd*Tmp1( 2,13) 
+     Tmp2( 5,14) = Tmp1( 2,24) + Xcd*Tmp1( 2,14) 
+     Tmp2( 5,15) = Tmp1( 2,25) + Xcd*Tmp1( 2,15) 
+     Tmp2( 5,16) = Tmp1( 2,26) + Xcd*Tmp1( 2,16) 
+     Tmp2( 5,17) = Tmp1( 2,27) + Xcd*Tmp1( 2,17) 
+     Tmp2( 5,18) = Tmp1( 2,28) + Xcd*Tmp1( 2,18) 
+     Tmp2( 5,19) = Tmp1( 2,29) + Xcd*Tmp1( 2,19) 
+     Tmp2( 5,20) = Tmp1( 2,30) + Xcd*Tmp1( 2,20) 
+     Tmp2( 5,21) = Tmp1( 2,36) + Xcd*Tmp1( 2,21) 
+     Tmp2( 5,22) = Tmp1( 2,37) + Xcd*Tmp1( 2,22) 
+     Tmp2( 5,23) = Tmp1( 2,38) + Xcd*Tmp1( 2,23) 
+     Tmp2( 5,24) = Tmp1( 2,39) + Xcd*Tmp1( 2,24) 
+     Tmp2( 5,25) = Tmp1( 2,40) + Xcd*Tmp1( 2,25) 
+     Tmp2( 5,26) = Tmp1( 2,41) + Xcd*Tmp1( 2,26) 
+     Tmp2( 5,27) = Tmp1( 2,42) + Xcd*Tmp1( 2,27) 
+     Tmp2( 5,28) = Tmp1( 2,43) + Xcd*Tmp1( 2,28) 
+     Tmp2( 5,29) = Tmp1( 2,44) + Xcd*Tmp1( 2,29) 
+     Tmp2( 5,30) = Tmp1( 2,45) + Xcd*Tmp1( 2,30) 
+     Tmp2( 5,31) = Tmp1( 2,46) + Xcd*Tmp1( 2,31) 
+     Tmp2( 5,32) = Tmp1( 2,47) + Xcd*Tmp1( 2,32) 
+     Tmp2( 5,33) = Tmp1( 2,48) + Xcd*Tmp1( 2,33) 
+     Tmp2( 5,34) = Tmp1( 2,49) + Xcd*Tmp1( 2,34) 
+     Tmp2( 5,35) = Tmp1( 2,50) + Xcd*Tmp1( 2,35) 
+     Tmp2( 6,11) = Tmp1( 3,21) + Xcd*Tmp1( 3,11) 
+     Tmp2( 6,12) = Tmp1( 3,22) + Xcd*Tmp1( 3,12) 
+     Tmp2( 6,13) = Tmp1( 3,23) + Xcd*Tmp1( 3,13) 
+     Tmp2( 6,14) = Tmp1( 3,24) + Xcd*Tmp1( 3,14) 
+     Tmp2( 6,15) = Tmp1( 3,25) + Xcd*Tmp1( 3,15) 
+     Tmp2( 6,16) = Tmp1( 3,26) + Xcd*Tmp1( 3,16) 
+     Tmp2( 6,17) = Tmp1( 3,27) + Xcd*Tmp1( 3,17) 
+     Tmp2( 6,18) = Tmp1( 3,28) + Xcd*Tmp1( 3,18) 
+     Tmp2( 6,19) = Tmp1( 3,29) + Xcd*Tmp1( 3,19) 
+     Tmp2( 6,20) = Tmp1( 3,30) + Xcd*Tmp1( 3,20) 
+     Tmp2( 6,21) = Tmp1( 3,36) + Xcd*Tmp1( 3,21) 
+     Tmp2( 6,22) = Tmp1( 3,37) + Xcd*Tmp1( 3,22) 
+     Tmp2( 6,23) = Tmp1( 3,38) + Xcd*Tmp1( 3,23) 
+     Tmp2( 6,24) = Tmp1( 3,39) + Xcd*Tmp1( 3,24) 
+     Tmp2( 6,25) = Tmp1( 3,40) + Xcd*Tmp1( 3,25) 
+     Tmp2( 6,26) = Tmp1( 3,41) + Xcd*Tmp1( 3,26) 
+     Tmp2( 6,27) = Tmp1( 3,42) + Xcd*Tmp1( 3,27) 
+     Tmp2( 6,28) = Tmp1( 3,43) + Xcd*Tmp1( 3,28) 
+     Tmp2( 6,29) = Tmp1( 3,44) + Xcd*Tmp1( 3,29) 
+     Tmp2( 6,30) = Tmp1( 3,45) + Xcd*Tmp1( 3,30) 
+     Tmp2( 6,31) = Tmp1( 3,46) + Xcd*Tmp1( 3,31) 
+     Tmp2( 6,32) = Tmp1( 3,47) + Xcd*Tmp1( 3,32) 
+     Tmp2( 6,33) = Tmp1( 3,48) + Xcd*Tmp1( 3,33) 
+     Tmp2( 6,34) = Tmp1( 3,49) + Xcd*Tmp1( 3,34) 
+     Tmp2( 6,35) = Tmp1( 3,50) + Xcd*Tmp1( 3,35) 
+     Tmp2( 7,11) = Tmp1( 4,21) + Xcd*Tmp1( 4,11) 
+     Tmp2( 7,12) = Tmp1( 4,22) + Xcd*Tmp1( 4,12) 
+     Tmp2( 7,13) = Tmp1( 4,23) + Xcd*Tmp1( 4,13) 
+     Tmp2( 7,14) = Tmp1( 4,24) + Xcd*Tmp1( 4,14) 
+     Tmp2( 7,15) = Tmp1( 4,25) + Xcd*Tmp1( 4,15) 
+     Tmp2( 7,16) = Tmp1( 4,26) + Xcd*Tmp1( 4,16) 
+     Tmp2( 7,17) = Tmp1( 4,27) + Xcd*Tmp1( 4,17) 
+     Tmp2( 7,18) = Tmp1( 4,28) + Xcd*Tmp1( 4,18) 
+     Tmp2( 7,19) = Tmp1( 4,29) + Xcd*Tmp1( 4,19) 
+     Tmp2( 7,20) = Tmp1( 4,30) + Xcd*Tmp1( 4,20) 
+     Tmp2( 7,21) = Tmp1( 4,36) + Xcd*Tmp1( 4,21) 
+     Tmp2( 7,22) = Tmp1( 4,37) + Xcd*Tmp1( 4,22) 
+     Tmp2( 7,23) = Tmp1( 4,38) + Xcd*Tmp1( 4,23) 
+     Tmp2( 7,24) = Tmp1( 4,39) + Xcd*Tmp1( 4,24) 
+     Tmp2( 7,25) = Tmp1( 4,40) + Xcd*Tmp1( 4,25) 
+     Tmp2( 7,26) = Tmp1( 4,41) + Xcd*Tmp1( 4,26) 
+     Tmp2( 7,27) = Tmp1( 4,42) + Xcd*Tmp1( 4,27) 
+     Tmp2( 7,28) = Tmp1( 4,43) + Xcd*Tmp1( 4,28) 
+     Tmp2( 7,29) = Tmp1( 4,44) + Xcd*Tmp1( 4,29) 
+     Tmp2( 7,30) = Tmp1( 4,45) + Xcd*Tmp1( 4,30) 
+     Tmp2( 7,31) = Tmp1( 4,46) + Xcd*Tmp1( 4,31) 
+     Tmp2( 7,32) = Tmp1( 4,47) + Xcd*Tmp1( 4,32) 
+     Tmp2( 7,33) = Tmp1( 4,48) + Xcd*Tmp1( 4,33) 
+     Tmp2( 7,34) = Tmp1( 4,49) + Xcd*Tmp1( 4,34) 
+     Tmp2( 7,35) = Tmp1( 4,50) + Xcd*Tmp1( 4,35) 
+     Tmp2( 8,11) = Tmp1( 3,22) + Ycd*Tmp1( 3,11) 
+     Tmp2( 8,12) = Tmp1( 3,24) + Ycd*Tmp1( 3,12) 
+     Tmp2( 8,13) = Tmp1( 3,25) + Ycd*Tmp1( 3,13) 
+     Tmp2( 8,14) = Tmp1( 3,27) + Ycd*Tmp1( 3,14) 
+     Tmp2( 8,15) = Tmp1( 3,28) + Ycd*Tmp1( 3,15) 
+     Tmp2( 8,16) = Tmp1( 3,29) + Ycd*Tmp1( 3,16) 
+     Tmp2( 8,17) = Tmp1( 3,31) + Ycd*Tmp1( 3,17) 
+     Tmp2( 8,18) = Tmp1( 3,32) + Ycd*Tmp1( 3,18) 
+     Tmp2( 8,19) = Tmp1( 3,33) + Ycd*Tmp1( 3,19) 
+     Tmp2( 8,20) = Tmp1( 3,34) + Ycd*Tmp1( 3,20) 
+     Tmp2( 8,21) = Tmp1( 3,37) + Ycd*Tmp1( 3,21) 
+     Tmp2( 8,22) = Tmp1( 3,39) + Ycd*Tmp1( 3,22) 
+     Tmp2( 8,23) = Tmp1( 3,40) + Ycd*Tmp1( 3,23) 
+     Tmp2( 8,24) = Tmp1( 3,42) + Ycd*Tmp1( 3,24) 
+     Tmp2( 8,25) = Tmp1( 3,43) + Ycd*Tmp1( 3,25) 
+     Tmp2( 8,26) = Tmp1( 3,44) + Ycd*Tmp1( 3,26) 
+     Tmp2( 8,27) = Tmp1( 3,46) + Ycd*Tmp1( 3,27) 
+     Tmp2( 8,28) = Tmp1( 3,47) + Ycd*Tmp1( 3,28) 
+     Tmp2( 8,29) = Tmp1( 3,48) + Ycd*Tmp1( 3,29) 
+     Tmp2( 8,30) = Tmp1( 3,49) + Ycd*Tmp1( 3,30) 
+     Tmp2( 8,31) = Tmp1( 3,51) + Ycd*Tmp1( 3,31) 
+     Tmp2( 8,32) = Tmp1( 3,52) + Ycd*Tmp1( 3,32) 
+     Tmp2( 8,33) = Tmp1( 3,53) + Ycd*Tmp1( 3,33) 
+     Tmp2( 8,34) = Tmp1( 3,54) + Ycd*Tmp1( 3,34) 
+     Tmp2( 8,35) = Tmp1( 3,55) + Ycd*Tmp1( 3,35) 
+     Tmp2( 9,11) = Tmp1( 4,22) + Ycd*Tmp1( 4,11) 
+     Tmp2( 9,12) = Tmp1( 4,24) + Ycd*Tmp1( 4,12) 
+     Tmp2( 9,13) = Tmp1( 4,25) + Ycd*Tmp1( 4,13) 
+     Tmp2( 9,14) = Tmp1( 4,27) + Ycd*Tmp1( 4,14) 
+     Tmp2( 9,15) = Tmp1( 4,28) + Ycd*Tmp1( 4,15) 
+     Tmp2( 9,16) = Tmp1( 4,29) + Ycd*Tmp1( 4,16) 
+     Tmp2( 9,17) = Tmp1( 4,31) + Ycd*Tmp1( 4,17) 
+     Tmp2( 9,18) = Tmp1( 4,32) + Ycd*Tmp1( 4,18) 
+     Tmp2( 9,19) = Tmp1( 4,33) + Ycd*Tmp1( 4,19) 
+     Tmp2( 9,20) = Tmp1( 4,34) + Ycd*Tmp1( 4,20) 
+     Tmp2( 9,21) = Tmp1( 4,37) + Ycd*Tmp1( 4,21) 
+     Tmp2( 9,22) = Tmp1( 4,39) + Ycd*Tmp1( 4,22) 
+     Tmp2( 9,23) = Tmp1( 4,40) + Ycd*Tmp1( 4,23) 
+     Tmp2( 9,24) = Tmp1( 4,42) + Ycd*Tmp1( 4,24) 
+     Tmp2( 9,25) = Tmp1( 4,43) + Ycd*Tmp1( 4,25) 
+     Tmp2( 9,26) = Tmp1( 4,44) + Ycd*Tmp1( 4,26) 
+     Tmp2( 9,27) = Tmp1( 4,46) + Ycd*Tmp1( 4,27) 
+     Tmp2( 9,28) = Tmp1( 4,47) + Ycd*Tmp1( 4,28) 
+     Tmp2( 9,29) = Tmp1( 4,48) + Ycd*Tmp1( 4,29) 
+     Tmp2( 9,30) = Tmp1( 4,49) + Ycd*Tmp1( 4,30) 
+     Tmp2( 9,31) = Tmp1( 4,51) + Ycd*Tmp1( 4,31) 
+     Tmp2( 9,32) = Tmp1( 4,52) + Ycd*Tmp1( 4,32) 
+     Tmp2( 9,33) = Tmp1( 4,53) + Ycd*Tmp1( 4,33) 
+     Tmp2( 9,34) = Tmp1( 4,54) + Ycd*Tmp1( 4,34) 
+     Tmp2( 9,35) = Tmp1( 4,55) + Ycd*Tmp1( 4,35) 
+     Tmp2(10,11) = Tmp1( 4,23) + Zcd*Tmp1( 4,11) 
+     Tmp2(10,12) = Tmp1( 4,25) + Zcd*Tmp1( 4,12) 
+     Tmp2(10,13) = Tmp1( 4,26) + Zcd*Tmp1( 4,13) 
+     Tmp2(10,14) = Tmp1( 4,28) + Zcd*Tmp1( 4,14) 
+     Tmp2(10,15) = Tmp1( 4,29) + Zcd*Tmp1( 4,15) 
+     Tmp2(10,16) = Tmp1( 4,30) + Zcd*Tmp1( 4,16) 
+     Tmp2(10,17) = Tmp1( 4,32) + Zcd*Tmp1( 4,17) 
+     Tmp2(10,18) = Tmp1( 4,33) + Zcd*Tmp1( 4,18) 
+     Tmp2(10,19) = Tmp1( 4,34) + Zcd*Tmp1( 4,19) 
+     Tmp2(10,20) = Tmp1( 4,35) + Zcd*Tmp1( 4,20) 
+     Tmp2(10,21) = Tmp1( 4,38) + Zcd*Tmp1( 4,21) 
+     Tmp2(10,22) = Tmp1( 4,40) + Zcd*Tmp1( 4,22) 
+     Tmp2(10,23) = Tmp1( 4,41) + Zcd*Tmp1( 4,23) 
+     Tmp2(10,24) = Tmp1( 4,43) + Zcd*Tmp1( 4,24) 
+     Tmp2(10,25) = Tmp1( 4,44) + Zcd*Tmp1( 4,25) 
+     Tmp2(10,26) = Tmp1( 4,45) + Zcd*Tmp1( 4,26) 
+     Tmp2(10,27) = Tmp1( 4,47) + Zcd*Tmp1( 4,27) 
+     Tmp2(10,28) = Tmp1( 4,48) + Zcd*Tmp1( 4,28) 
+     Tmp2(10,29) = Tmp1( 4,49) + Zcd*Tmp1( 4,29) 
+     Tmp2(10,30) = Tmp1( 4,50) + Zcd*Tmp1( 4,30) 
+     Tmp2(10,31) = Tmp1( 4,52) + Zcd*Tmp1( 4,31) 
+     Tmp2(10,32) = Tmp1( 4,53) + Zcd*Tmp1( 4,32) 
+     Tmp2(10,33) = Tmp1( 4,54) + Zcd*Tmp1( 4,33) 
+     Tmp2(10,34) = Tmp1( 4,55) + Zcd*Tmp1( 4,34) 
+     Tmp2(10,35) = Tmp1( 4,56) + Zcd*Tmp1( 4,35) 
+     ThetaP(ilmP,11,11,IP) = Tmp2( 5,21) + Xcd*Tmp2( 5,11) 
+     ThetaP(ilmP,11,12,IP) = Tmp2( 5,22) + Xcd*Tmp2( 5,12) 
+     ThetaP(ilmP,11,13,IP) = Tmp2( 5,23) + Xcd*Tmp2( 5,13) 
+     ThetaP(ilmP,11,14,IP) = Tmp2( 5,24) + Xcd*Tmp2( 5,14) 
+     ThetaP(ilmP,11,15,IP) = Tmp2( 5,25) + Xcd*Tmp2( 5,15) 
+     ThetaP(ilmP,11,16,IP) = Tmp2( 5,26) + Xcd*Tmp2( 5,16) 
+     ThetaP(ilmP,11,17,IP) = Tmp2( 5,27) + Xcd*Tmp2( 5,17) 
+     ThetaP(ilmP,11,18,IP) = Tmp2( 5,28) + Xcd*Tmp2( 5,18) 
+     ThetaP(ilmP,11,19,IP) = Tmp2( 5,29) + Xcd*Tmp2( 5,19) 
+     ThetaP(ilmP,11,20,IP) = Tmp2( 5,30) + Xcd*Tmp2( 5,20) 
+     ThetaP(ilmP,12,11,IP) = Tmp2( 6,21) + Xcd*Tmp2( 6,11) 
+     ThetaP(ilmP,12,12,IP) = Tmp2( 6,22) + Xcd*Tmp2( 6,12) 
+     ThetaP(ilmP,12,13,IP) = Tmp2( 6,23) + Xcd*Tmp2( 6,13) 
+     ThetaP(ilmP,12,14,IP) = Tmp2( 6,24) + Xcd*Tmp2( 6,14) 
+     ThetaP(ilmP,12,15,IP) = Tmp2( 6,25) + Xcd*Tmp2( 6,15) 
+     ThetaP(ilmP,12,16,IP) = Tmp2( 6,26) + Xcd*Tmp2( 6,16) 
+     ThetaP(ilmP,12,17,IP) = Tmp2( 6,27) + Xcd*Tmp2( 6,17) 
+     ThetaP(ilmP,12,18,IP) = Tmp2( 6,28) + Xcd*Tmp2( 6,18) 
+     ThetaP(ilmP,12,19,IP) = Tmp2( 6,29) + Xcd*Tmp2( 6,19) 
+     ThetaP(ilmP,12,20,IP) = Tmp2( 6,30) + Xcd*Tmp2( 6,20) 
+     ThetaP(ilmP,13,11,IP) = Tmp2( 7,21) + Xcd*Tmp2( 7,11) 
+     ThetaP(ilmP,13,12,IP) = Tmp2( 7,22) + Xcd*Tmp2( 7,12) 
+     ThetaP(ilmP,13,13,IP) = Tmp2( 7,23) + Xcd*Tmp2( 7,13) 
+     ThetaP(ilmP,13,14,IP) = Tmp2( 7,24) + Xcd*Tmp2( 7,14) 
+     ThetaP(ilmP,13,15,IP) = Tmp2( 7,25) + Xcd*Tmp2( 7,15) 
+     ThetaP(ilmP,13,16,IP) = Tmp2( 7,26) + Xcd*Tmp2( 7,16) 
+     ThetaP(ilmP,13,17,IP) = Tmp2( 7,27) + Xcd*Tmp2( 7,17) 
+     ThetaP(ilmP,13,18,IP) = Tmp2( 7,28) + Xcd*Tmp2( 7,18) 
+     ThetaP(ilmP,13,19,IP) = Tmp2( 7,29) + Xcd*Tmp2( 7,19) 
+     ThetaP(ilmP,13,20,IP) = Tmp2( 7,30) + Xcd*Tmp2( 7,20) 
+     ThetaP(ilmP,14,11,IP) = Tmp2( 8,21) + Xcd*Tmp2( 8,11) 
+     ThetaP(ilmP,14,12,IP) = Tmp2( 8,22) + Xcd*Tmp2( 8,12) 
+     ThetaP(ilmP,14,13,IP) = Tmp2( 8,23) + Xcd*Tmp2( 8,13) 
+     ThetaP(ilmP,14,14,IP) = Tmp2( 8,24) + Xcd*Tmp2( 8,14) 
+     ThetaP(ilmP,14,15,IP) = Tmp2( 8,25) + Xcd*Tmp2( 8,15) 
+     ThetaP(ilmP,14,16,IP) = Tmp2( 8,26) + Xcd*Tmp2( 8,16) 
+     ThetaP(ilmP,14,17,IP) = Tmp2( 8,27) + Xcd*Tmp2( 8,17) 
+     ThetaP(ilmP,14,18,IP) = Tmp2( 8,28) + Xcd*Tmp2( 8,18) 
+     ThetaP(ilmP,14,19,IP) = Tmp2( 8,29) + Xcd*Tmp2( 8,19) 
+     ThetaP(ilmP,14,20,IP) = Tmp2( 8,30) + Xcd*Tmp2( 8,20) 
+     ThetaP(ilmP,15,11,IP) = Tmp2( 9,21) + Xcd*Tmp2( 9,11) 
+     ThetaP(ilmP,15,12,IP) = Tmp2( 9,22) + Xcd*Tmp2( 9,12) 
+     ThetaP(ilmP,15,13,IP) = Tmp2( 9,23) + Xcd*Tmp2( 9,13) 
+     ThetaP(ilmP,15,14,IP) = Tmp2( 9,24) + Xcd*Tmp2( 9,14) 
+     ThetaP(ilmP,15,15,IP) = Tmp2( 9,25) + Xcd*Tmp2( 9,15) 
+     ThetaP(ilmP,15,16,IP) = Tmp2( 9,26) + Xcd*Tmp2( 9,16) 
+     ThetaP(ilmP,15,17,IP) = Tmp2( 9,27) + Xcd*Tmp2( 9,17) 
+     ThetaP(ilmP,15,18,IP) = Tmp2( 9,28) + Xcd*Tmp2( 9,18) 
+     ThetaP(ilmP,15,19,IP) = Tmp2( 9,29) + Xcd*Tmp2( 9,19) 
+     ThetaP(ilmP,15,20,IP) = Tmp2( 9,30) + Xcd*Tmp2( 9,20) 
+     ThetaP(ilmP,16,11,IP) = Tmp2(10,21) + Xcd*Tmp2(10,11) 
+     ThetaP(ilmP,16,12,IP) = Tmp2(10,22) + Xcd*Tmp2(10,12) 
+     ThetaP(ilmP,16,13,IP) = Tmp2(10,23) + Xcd*Tmp2(10,13) 
+     ThetaP(ilmP,16,14,IP) = Tmp2(10,24) + Xcd*Tmp2(10,14) 
+     ThetaP(ilmP,16,15,IP) = Tmp2(10,25) + Xcd*Tmp2(10,15) 
+     ThetaP(ilmP,16,16,IP) = Tmp2(10,26) + Xcd*Tmp2(10,16) 
+     ThetaP(ilmP,16,17,IP) = Tmp2(10,27) + Xcd*Tmp2(10,17) 
+     ThetaP(ilmP,16,18,IP) = Tmp2(10,28) + Xcd*Tmp2(10,18) 
+     ThetaP(ilmP,16,19,IP) = Tmp2(10,29) + Xcd*Tmp2(10,19) 
+     ThetaP(ilmP,16,20,IP) = Tmp2(10,30) + Xcd*Tmp2(10,20) 
+     ThetaP(ilmP,17,11,IP) = Tmp2( 8,22) + Ycd*Tmp2( 8,11) 
+     ThetaP(ilmP,17,12,IP) = Tmp2( 8,24) + Ycd*Tmp2( 8,12) 
+     ThetaP(ilmP,17,13,IP) = Tmp2( 8,25) + Ycd*Tmp2( 8,13) 
+     ThetaP(ilmP,17,14,IP) = Tmp2( 8,27) + Ycd*Tmp2( 8,14) 
+     ThetaP(ilmP,17,15,IP) = Tmp2( 8,28) + Ycd*Tmp2( 8,15) 
+     ThetaP(ilmP,17,16,IP) = Tmp2( 8,29) + Ycd*Tmp2( 8,16) 
+     ThetaP(ilmP,17,17,IP) = Tmp2( 8,31) + Ycd*Tmp2( 8,17) 
+     ThetaP(ilmP,17,18,IP) = Tmp2( 8,32) + Ycd*Tmp2( 8,18) 
+     ThetaP(ilmP,17,19,IP) = Tmp2( 8,33) + Ycd*Tmp2( 8,19) 
+     ThetaP(ilmP,17,20,IP) = Tmp2( 8,34) + Ycd*Tmp2( 8,20) 
+     ThetaP(ilmP,18,11,IP) = Tmp2( 9,22) + Ycd*Tmp2( 9,11) 
+     ThetaP(ilmP,18,12,IP) = Tmp2( 9,24) + Ycd*Tmp2( 9,12) 
+     ThetaP(ilmP,18,13,IP) = Tmp2( 9,25) + Ycd*Tmp2( 9,13) 
+     ThetaP(ilmP,18,14,IP) = Tmp2( 9,27) + Ycd*Tmp2( 9,14) 
+     ThetaP(ilmP,18,15,IP) = Tmp2( 9,28) + Ycd*Tmp2( 9,15) 
+     ThetaP(ilmP,18,16,IP) = Tmp2( 9,29) + Ycd*Tmp2( 9,16) 
+     ThetaP(ilmP,18,17,IP) = Tmp2( 9,31) + Ycd*Tmp2( 9,17) 
+     ThetaP(ilmP,18,18,IP) = Tmp2( 9,32) + Ycd*Tmp2( 9,18) 
+     ThetaP(ilmP,18,19,IP) = Tmp2( 9,33) + Ycd*Tmp2( 9,19) 
+     ThetaP(ilmP,18,20,IP) = Tmp2( 9,34) + Ycd*Tmp2( 9,20) 
+     ThetaP(ilmP,19,11,IP) = Tmp2(10,22) + Ycd*Tmp2(10,11) 
+     ThetaP(ilmP,19,12,IP) = Tmp2(10,24) + Ycd*Tmp2(10,12) 
+     ThetaP(ilmP,19,13,IP) = Tmp2(10,25) + Ycd*Tmp2(10,13) 
+     ThetaP(ilmP,19,14,IP) = Tmp2(10,27) + Ycd*Tmp2(10,14) 
+     ThetaP(ilmP,19,15,IP) = Tmp2(10,28) + Ycd*Tmp2(10,15) 
+     ThetaP(ilmP,19,16,IP) = Tmp2(10,29) + Ycd*Tmp2(10,16) 
+     ThetaP(ilmP,19,17,IP) = Tmp2(10,31) + Ycd*Tmp2(10,17) 
+     ThetaP(ilmP,19,18,IP) = Tmp2(10,32) + Ycd*Tmp2(10,18) 
+     ThetaP(ilmP,19,19,IP) = Tmp2(10,33) + Ycd*Tmp2(10,19) 
+     ThetaP(ilmP,19,20,IP) = Tmp2(10,34) + Ycd*Tmp2(10,20) 
+     ThetaP(ilmP,20,11,IP) = Tmp2(10,23) + Zcd*Tmp2(10,11) 
+     ThetaP(ilmP,20,12,IP) = Tmp2(10,25) + Zcd*Tmp2(10,12) 
+     ThetaP(ilmP,20,13,IP) = Tmp2(10,26) + Zcd*Tmp2(10,13) 
+     ThetaP(ilmP,20,14,IP) = Tmp2(10,28) + Zcd*Tmp2(10,14) 
+     ThetaP(ilmP,20,15,IP) = Tmp2(10,29) + Zcd*Tmp2(10,15) 
+     ThetaP(ilmP,20,16,IP) = Tmp2(10,30) + Zcd*Tmp2(10,16) 
+     ThetaP(ilmP,20,17,IP) = Tmp2(10,32) + Zcd*Tmp2(10,17) 
+     ThetaP(ilmP,20,18,IP) = Tmp2(10,33) + Zcd*Tmp2(10,18) 
+     ThetaP(ilmP,20,19,IP) = Tmp2(10,34) + Zcd*Tmp2(10,19) 
+     ThetaP(ilmP,20,20,IP) = Tmp2(10,35) + Zcd*Tmp2(10,20) 
+    ENDDO
+   ENDDO
+end subroutine HorizontalRR_GPU_RHS_Q6C3D3DtoC
 end module

@@ -3,7 +3,7 @@ MODULE AGC_OBS_HorizontalRecurrenceLHSModAtoB
   
  CONTAINS
 
-subroutine HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
@@ -24,9 +24,9 @@ subroutine HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
      ENDDO
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_LHS_P1A1B0AtoB
+end subroutine HorizontalRR_CPU_LHS_P1A1B0AtoB
 
-subroutine HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
@@ -62,9 +62,9 @@ subroutine HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
      ThetaP( 4, 4      ,IP) = AuxCont(10,      IP) + Zab*AuxCont( 4,      IP) 
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_LHS_P2A1B1AtoB
+end subroutine HorizontalRR_CPU_LHS_P2A1B1AtoB
 
-subroutine HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
@@ -85,9 +85,9 @@ subroutine HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
      ENDDO
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_LHS_P2A2B0AtoB
+end subroutine HorizontalRR_CPU_LHS_P2A2B0AtoB
 
-subroutine HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
@@ -132,9 +132,9 @@ subroutine HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
      ThetaP(10, 4      ,IP) = AuxCont(20,      IP) + Zab*AuxCont(10,      IP) 
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_LHS_P3A2B1AtoB
+end subroutine HorizontalRR_CPU_LHS_P3A2B1AtoB
 
-subroutine HorizontalRR_LHS_P3A3B0AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P3A3B0AtoB(nContQP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
@@ -155,9 +155,9 @@ subroutine HorizontalRR_LHS_P3A3B0AtoB(nContQP,nPasses,nTUVQ,&
      ENDDO
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_LHS_P3A3B0AtoB
+end subroutine HorizontalRR_CPU_LHS_P3A3B0AtoB
 
-subroutine HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
@@ -271,9 +271,9 @@ subroutine HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
      ThetaP(10,10      ,IP) = Tmp1(20, 4) + Zab*Tmp1(10, 4) 
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_LHS_P4A2B2AtoB
+end subroutine HorizontalRR_CPU_LHS_P4A2B2AtoB
 
-subroutine HorizontalRR_LHS_P4A3B1AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P4A3B1AtoB(nContQP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
@@ -330,9 +330,9 @@ subroutine HorizontalRR_LHS_P4A3B1AtoB(nContQP,nPasses,nTUVQ,&
      ThetaP(20, 4      ,IP) = AuxCont(35,      IP) + Zab*AuxCont(20,      IP) 
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_LHS_P4A3B1AtoB
+end subroutine HorizontalRR_CPU_LHS_P4A3B1AtoB
 
-subroutine HorizontalRR_LHS_P5A3B2AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P5A3B2AtoB(nContQP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
@@ -497,9 +497,9 @@ subroutine HorizontalRR_LHS_P5A3B2AtoB(nContQP,nPasses,nTUVQ,&
      ThetaP(20,10      ,IP) = Tmp1(35, 4) + Zab*Tmp1(20, 4) 
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_LHS_P5A3B2AtoB
+end subroutine HorizontalRR_CPU_LHS_P5A3B2AtoB
 
-subroutine HorizontalRR_LHS_P6A3B3AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P6A3B3AtoB(nContQP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
   integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
@@ -919,5 +919,914 @@ subroutine HorizontalRR_LHS_P6A3B3AtoB(nContQP,nPasses,nTUVQ,&
      ThetaP(20,20      ,IP) = Tmp2(35,10) + Zab*Tmp2(20,10) 
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine HorizontalRR_LHS_P6A3B3AtoB
+end subroutine HorizontalRR_CPU_LHS_P6A3B3AtoB
+
+subroutine HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
+         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
+  real(realk),intent(in) :: AuxCont(    4,nTUVQ*nContQP*nPasses)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(inout) :: ThetaP(    2:    4,1,nTUVQ*nContQP*nPasses)
+  !Local variables
+  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
+!$ACC PARALLEL LOOP&
+!$ACC PRIVATE(iP,&
+!$ACC         iTUVA) &
+!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC         AuxCont,ThetaP)
+  DO iP = 1,nTUVQ*nContQP*nPasses
+     DO iTUVA=  2,  4
+        ThetaP(iTUVA,1,IP) = AuxCont(iTUVA,IP)
+     ENDDO
+  ENDDO
+end subroutine HorizontalRR_GPU_LHS_P1A1B0AtoB
+
+subroutine HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
+         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
+  real(realk),intent(in) :: AuxCont(   10,nTUVQ*nContQP*nPasses)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(inout) :: ThetaP(    2:    4,    2:    4,nTUVQ*nContQP*nPasses)
+  !Local variables
+  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
+  real(realk) :: Xab,Yab,Zab
+!$ACC PARALLEL LOOP&
+!$ACC PRIVATE(iP,&
+!$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
+!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)
+  DO iP = 1,nTUVQ*nContQP*nPasses
+!    iTUVQ = mod(IP-1,nTUVQ)+1
+!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
+    iPassP = (IP-1)/(nTUVQ*nContQP) + 1
+    iAtomA = iAtomApass(iPassP)
+    iAtomB = iAtomBpass(iPassP)
+    Xab = Pdistance12(1,iAtomA,iAtomB)
+    Yab = Pdistance12(2,iAtomA,iAtomB)
+    Zab = Pdistance12(3,iAtomA,iAtomB)
+     ThetaP( 2, 2      ,IP) = AuxCont( 5,      IP) + Xab*AuxCont( 2,      IP) 
+     ThetaP( 3, 2      ,IP) = AuxCont( 6,      IP) + Xab*AuxCont( 3,      IP) 
+     ThetaP( 4, 2      ,IP) = AuxCont( 7,      IP) + Xab*AuxCont( 4,      IP) 
+     ThetaP( 2, 3      ,IP) = AuxCont( 6,      IP) + Yab*AuxCont( 2,      IP) 
+     ThetaP( 3, 3      ,IP) = AuxCont( 8,      IP) + Yab*AuxCont( 3,      IP) 
+     ThetaP( 4, 3      ,IP) = AuxCont( 9,      IP) + Yab*AuxCont( 4,      IP) 
+     ThetaP( 2, 4      ,IP) = AuxCont( 7,      IP) + Zab*AuxCont( 2,      IP) 
+     ThetaP( 3, 4      ,IP) = AuxCont( 9,      IP) + Zab*AuxCont( 3,      IP) 
+     ThetaP( 4, 4      ,IP) = AuxCont(10,      IP) + Zab*AuxCont( 4,      IP) 
+  ENDDO
+end subroutine HorizontalRR_GPU_LHS_P2A1B1AtoB
+
+subroutine HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
+         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
+  real(realk),intent(in) :: AuxCont(   10,nTUVQ*nContQP*nPasses)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(inout) :: ThetaP(    5:   10,1,nTUVQ*nContQP*nPasses)
+  !Local variables
+  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
+!$ACC PARALLEL LOOP&
+!$ACC PRIVATE(iP,&
+!$ACC         iTUVA) &
+!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC         AuxCont,ThetaP)
+  DO iP = 1,nTUVQ*nContQP*nPasses
+     DO iTUVA=  5, 10
+        ThetaP(iTUVA,1,IP) = AuxCont(iTUVA,IP)
+     ENDDO
+  ENDDO
+end subroutine HorizontalRR_GPU_LHS_P2A2B0AtoB
+
+subroutine HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
+         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
+  real(realk),intent(in) :: AuxCont(   20,nTUVQ*nContQP*nPasses)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(inout) :: ThetaP(    5:   10,    2:    4,nTUVQ*nContQP*nPasses)
+  !Local variables
+  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
+  real(realk) :: Xab,Yab,Zab
+!$ACC PARALLEL LOOP&
+!$ACC PRIVATE(iP,&
+!$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
+!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)
+  DO iP = 1,nTUVQ*nContQP*nPasses
+!    iTUVQ = mod(IP-1,nTUVQ)+1
+!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
+    iPassP = (IP-1)/(nTUVQ*nContQP) + 1
+    iAtomA = iAtomApass(iPassP)
+    iAtomB = iAtomBpass(iPassP)
+    Xab = Pdistance12(1,iAtomA,iAtomB)
+    Yab = Pdistance12(2,iAtomA,iAtomB)
+    Zab = Pdistance12(3,iAtomA,iAtomB)
+     ThetaP( 5, 2      ,IP) = AuxCont(11,      IP) + Xab*AuxCont( 5,      IP) 
+     ThetaP( 6, 2      ,IP) = AuxCont(12,      IP) + Xab*AuxCont( 6,      IP) 
+     ThetaP( 7, 2      ,IP) = AuxCont(13,      IP) + Xab*AuxCont( 7,      IP) 
+     ThetaP( 8, 2      ,IP) = AuxCont(14,      IP) + Xab*AuxCont( 8,      IP) 
+     ThetaP( 9, 2      ,IP) = AuxCont(15,      IP) + Xab*AuxCont( 9,      IP) 
+     ThetaP(10, 2      ,IP) = AuxCont(16,      IP) + Xab*AuxCont(10,      IP) 
+     ThetaP( 5, 3      ,IP) = AuxCont(12,      IP) + Yab*AuxCont( 5,      IP) 
+     ThetaP( 6, 3      ,IP) = AuxCont(14,      IP) + Yab*AuxCont( 6,      IP) 
+     ThetaP( 7, 3      ,IP) = AuxCont(15,      IP) + Yab*AuxCont( 7,      IP) 
+     ThetaP( 8, 3      ,IP) = AuxCont(17,      IP) + Yab*AuxCont( 8,      IP) 
+     ThetaP( 9, 3      ,IP) = AuxCont(18,      IP) + Yab*AuxCont( 9,      IP) 
+     ThetaP(10, 3      ,IP) = AuxCont(19,      IP) + Yab*AuxCont(10,      IP) 
+     ThetaP( 5, 4      ,IP) = AuxCont(13,      IP) + Zab*AuxCont( 5,      IP) 
+     ThetaP( 6, 4      ,IP) = AuxCont(15,      IP) + Zab*AuxCont( 6,      IP) 
+     ThetaP( 7, 4      ,IP) = AuxCont(16,      IP) + Zab*AuxCont( 7,      IP) 
+     ThetaP( 8, 4      ,IP) = AuxCont(18,      IP) + Zab*AuxCont( 8,      IP) 
+     ThetaP( 9, 4      ,IP) = AuxCont(19,      IP) + Zab*AuxCont( 9,      IP) 
+     ThetaP(10, 4      ,IP) = AuxCont(20,      IP) + Zab*AuxCont(10,      IP) 
+  ENDDO
+end subroutine HorizontalRR_GPU_LHS_P3A2B1AtoB
+
+subroutine HorizontalRR_GPU_LHS_P3A3B0AtoB(nContQP,nPasses,nTUVQ,&
+         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
+  real(realk),intent(in) :: AuxCont(   20,nTUVQ*nContQP*nPasses)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(inout) :: ThetaP(   11:   20,1,nTUVQ*nContQP*nPasses)
+  !Local variables
+  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
+!$ACC PARALLEL LOOP&
+!$ACC PRIVATE(iP,&
+!$ACC         iTUVA) &
+!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC         AuxCont,ThetaP)
+  DO iP = 1,nTUVQ*nContQP*nPasses
+     DO iTUVA= 11, 20
+        ThetaP(iTUVA,1,IP) = AuxCont(iTUVA,IP)
+     ENDDO
+  ENDDO
+end subroutine HorizontalRR_GPU_LHS_P3A3B0AtoB
+
+subroutine HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
+         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
+  real(realk),intent(in) :: AuxCont(   35,nTUVQ*nContQP*nPasses)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(inout) :: ThetaP(    5:   10,    5:   10,nTUVQ*nContQP*nPasses)
+  !Local variables
+  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
+  real(realk) :: Xab,Yab,Zab
+  real(realk) :: Tmp1(  5: 20,  2:  4)
+!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
+!$ACC PARALLEL LOOP&
+!$ACC PRIVATE(iP,&
+!$ACC         Tmp1,&
+!$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
+!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)
+  DO iP = 1,nTUVQ*nContQP*nPasses
+!    iTUVQ = mod(IP-1,nTUVQ)+1
+!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
+    iPassP = (IP-1)/(nTUVQ*nContQP) + 1
+    iAtomA = iAtomApass(iPassP)
+    iAtomB = iAtomBpass(iPassP)
+    Xab = Pdistance12(1,iAtomA,iAtomB)
+    Yab = Pdistance12(2,iAtomA,iAtomB)
+    Zab = Pdistance12(3,iAtomA,iAtomB)
+     Tmp1( 5, 2) = AuxCont(11,      IP) + Xab*AuxCont( 5,      IP) 
+     Tmp1( 6, 2) = AuxCont(12,      IP) + Xab*AuxCont( 6,      IP) 
+     Tmp1( 7, 2) = AuxCont(13,      IP) + Xab*AuxCont( 7,      IP) 
+     Tmp1( 8, 2) = AuxCont(14,      IP) + Xab*AuxCont( 8,      IP) 
+     Tmp1( 9, 2) = AuxCont(15,      IP) + Xab*AuxCont( 9,      IP) 
+     Tmp1(10, 2) = AuxCont(16,      IP) + Xab*AuxCont(10,      IP) 
+     Tmp1(11, 2) = AuxCont(21,      IP) + Xab*AuxCont(11,      IP) 
+     Tmp1(12, 2) = AuxCont(22,      IP) + Xab*AuxCont(12,      IP) 
+     Tmp1(13, 2) = AuxCont(23,      IP) + Xab*AuxCont(13,      IP) 
+     Tmp1(14, 2) = AuxCont(24,      IP) + Xab*AuxCont(14,      IP) 
+     Tmp1(15, 2) = AuxCont(25,      IP) + Xab*AuxCont(15,      IP) 
+     Tmp1(16, 2) = AuxCont(26,      IP) + Xab*AuxCont(16,      IP) 
+     Tmp1(17, 2) = AuxCont(27,      IP) + Xab*AuxCont(17,      IP) 
+     Tmp1(18, 2) = AuxCont(28,      IP) + Xab*AuxCont(18,      IP) 
+     Tmp1(19, 2) = AuxCont(29,      IP) + Xab*AuxCont(19,      IP) 
+     Tmp1(20, 2) = AuxCont(30,      IP) + Xab*AuxCont(20,      IP) 
+     Tmp1( 5, 3) = AuxCont(12,      IP) + Yab*AuxCont( 5,      IP) 
+     Tmp1( 6, 3) = AuxCont(14,      IP) + Yab*AuxCont( 6,      IP) 
+     Tmp1( 7, 3) = AuxCont(15,      IP) + Yab*AuxCont( 7,      IP) 
+     Tmp1( 8, 3) = AuxCont(17,      IP) + Yab*AuxCont( 8,      IP) 
+     Tmp1( 9, 3) = AuxCont(18,      IP) + Yab*AuxCont( 9,      IP) 
+     Tmp1(10, 3) = AuxCont(19,      IP) + Yab*AuxCont(10,      IP) 
+     Tmp1(11, 3) = AuxCont(22,      IP) + Yab*AuxCont(11,      IP) 
+     Tmp1(12, 3) = AuxCont(24,      IP) + Yab*AuxCont(12,      IP) 
+     Tmp1(13, 3) = AuxCont(25,      IP) + Yab*AuxCont(13,      IP) 
+     Tmp1(14, 3) = AuxCont(27,      IP) + Yab*AuxCont(14,      IP) 
+     Tmp1(15, 3) = AuxCont(28,      IP) + Yab*AuxCont(15,      IP) 
+     Tmp1(16, 3) = AuxCont(29,      IP) + Yab*AuxCont(16,      IP) 
+     Tmp1(17, 3) = AuxCont(31,      IP) + Yab*AuxCont(17,      IP) 
+     Tmp1(18, 3) = AuxCont(32,      IP) + Yab*AuxCont(18,      IP) 
+     Tmp1(19, 3) = AuxCont(33,      IP) + Yab*AuxCont(19,      IP) 
+     Tmp1(20, 3) = AuxCont(34,      IP) + Yab*AuxCont(20,      IP) 
+     Tmp1( 5, 4) = AuxCont(13,      IP) + Zab*AuxCont( 5,      IP) 
+     Tmp1( 6, 4) = AuxCont(15,      IP) + Zab*AuxCont( 6,      IP) 
+     Tmp1( 7, 4) = AuxCont(16,      IP) + Zab*AuxCont( 7,      IP) 
+     Tmp1( 8, 4) = AuxCont(18,      IP) + Zab*AuxCont( 8,      IP) 
+     Tmp1( 9, 4) = AuxCont(19,      IP) + Zab*AuxCont( 9,      IP) 
+     Tmp1(10, 4) = AuxCont(20,      IP) + Zab*AuxCont(10,      IP) 
+     Tmp1(11, 4) = AuxCont(23,      IP) + Zab*AuxCont(11,      IP) 
+     Tmp1(12, 4) = AuxCont(25,      IP) + Zab*AuxCont(12,      IP) 
+     Tmp1(13, 4) = AuxCont(26,      IP) + Zab*AuxCont(13,      IP) 
+     Tmp1(14, 4) = AuxCont(28,      IP) + Zab*AuxCont(14,      IP) 
+     Tmp1(15, 4) = AuxCont(29,      IP) + Zab*AuxCont(15,      IP) 
+     Tmp1(16, 4) = AuxCont(30,      IP) + Zab*AuxCont(16,      IP) 
+     Tmp1(17, 4) = AuxCont(32,      IP) + Zab*AuxCont(17,      IP) 
+     Tmp1(18, 4) = AuxCont(33,      IP) + Zab*AuxCont(18,      IP) 
+     Tmp1(19, 4) = AuxCont(34,      IP) + Zab*AuxCont(19,      IP) 
+     Tmp1(20, 4) = AuxCont(35,      IP) + Zab*AuxCont(20,      IP) 
+     ThetaP( 5, 5      ,IP) = Tmp1(11, 2) + Xab*Tmp1( 5, 2) 
+     ThetaP( 6, 5      ,IP) = Tmp1(12, 2) + Xab*Tmp1( 6, 2) 
+     ThetaP( 7, 5      ,IP) = Tmp1(13, 2) + Xab*Tmp1( 7, 2) 
+     ThetaP( 8, 5      ,IP) = Tmp1(14, 2) + Xab*Tmp1( 8, 2) 
+     ThetaP( 9, 5      ,IP) = Tmp1(15, 2) + Xab*Tmp1( 9, 2) 
+     ThetaP(10, 5      ,IP) = Tmp1(16, 2) + Xab*Tmp1(10, 2) 
+     ThetaP( 5, 6      ,IP) = Tmp1(11, 3) + Xab*Tmp1( 5, 3) 
+     ThetaP( 6, 6      ,IP) = Tmp1(12, 3) + Xab*Tmp1( 6, 3) 
+     ThetaP( 7, 6      ,IP) = Tmp1(13, 3) + Xab*Tmp1( 7, 3) 
+     ThetaP( 8, 6      ,IP) = Tmp1(14, 3) + Xab*Tmp1( 8, 3) 
+     ThetaP( 9, 6      ,IP) = Tmp1(15, 3) + Xab*Tmp1( 9, 3) 
+     ThetaP(10, 6      ,IP) = Tmp1(16, 3) + Xab*Tmp1(10, 3) 
+     ThetaP( 5, 7      ,IP) = Tmp1(11, 4) + Xab*Tmp1( 5, 4) 
+     ThetaP( 6, 7      ,IP) = Tmp1(12, 4) + Xab*Tmp1( 6, 4) 
+     ThetaP( 7, 7      ,IP) = Tmp1(13, 4) + Xab*Tmp1( 7, 4) 
+     ThetaP( 8, 7      ,IP) = Tmp1(14, 4) + Xab*Tmp1( 8, 4) 
+     ThetaP( 9, 7      ,IP) = Tmp1(15, 4) + Xab*Tmp1( 9, 4) 
+     ThetaP(10, 7      ,IP) = Tmp1(16, 4) + Xab*Tmp1(10, 4) 
+     ThetaP( 5, 8      ,IP) = Tmp1(12, 3) + Yab*Tmp1( 5, 3) 
+     ThetaP( 6, 8      ,IP) = Tmp1(14, 3) + Yab*Tmp1( 6, 3) 
+     ThetaP( 7, 8      ,IP) = Tmp1(15, 3) + Yab*Tmp1( 7, 3) 
+     ThetaP( 8, 8      ,IP) = Tmp1(17, 3) + Yab*Tmp1( 8, 3) 
+     ThetaP( 9, 8      ,IP) = Tmp1(18, 3) + Yab*Tmp1( 9, 3) 
+     ThetaP(10, 8      ,IP) = Tmp1(19, 3) + Yab*Tmp1(10, 3) 
+     ThetaP( 5, 9      ,IP) = Tmp1(12, 4) + Yab*Tmp1( 5, 4) 
+     ThetaP( 6, 9      ,IP) = Tmp1(14, 4) + Yab*Tmp1( 6, 4) 
+     ThetaP( 7, 9      ,IP) = Tmp1(15, 4) + Yab*Tmp1( 7, 4) 
+     ThetaP( 8, 9      ,IP) = Tmp1(17, 4) + Yab*Tmp1( 8, 4) 
+     ThetaP( 9, 9      ,IP) = Tmp1(18, 4) + Yab*Tmp1( 9, 4) 
+     ThetaP(10, 9      ,IP) = Tmp1(19, 4) + Yab*Tmp1(10, 4) 
+     ThetaP( 5,10      ,IP) = Tmp1(13, 4) + Zab*Tmp1( 5, 4) 
+     ThetaP( 6,10      ,IP) = Tmp1(15, 4) + Zab*Tmp1( 6, 4) 
+     ThetaP( 7,10      ,IP) = Tmp1(16, 4) + Zab*Tmp1( 7, 4) 
+     ThetaP( 8,10      ,IP) = Tmp1(18, 4) + Zab*Tmp1( 8, 4) 
+     ThetaP( 9,10      ,IP) = Tmp1(19, 4) + Zab*Tmp1( 9, 4) 
+     ThetaP(10,10      ,IP) = Tmp1(20, 4) + Zab*Tmp1(10, 4) 
+  ENDDO
+end subroutine HorizontalRR_GPU_LHS_P4A2B2AtoB
+
+subroutine HorizontalRR_GPU_LHS_P4A3B1AtoB(nContQP,nPasses,nTUVQ,&
+         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
+  real(realk),intent(in) :: AuxCont(   35,nTUVQ*nContQP*nPasses)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(inout) :: ThetaP(   11:   20,    2:    4,nTUVQ*nContQP*nPasses)
+  !Local variables
+  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
+  real(realk) :: Xab,Yab,Zab
+!$ACC PARALLEL LOOP&
+!$ACC PRIVATE(iP,&
+!$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
+!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)
+  DO iP = 1,nTUVQ*nContQP*nPasses
+!    iTUVQ = mod(IP-1,nTUVQ)+1
+!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
+    iPassP = (IP-1)/(nTUVQ*nContQP) + 1
+    iAtomA = iAtomApass(iPassP)
+    iAtomB = iAtomBpass(iPassP)
+    Xab = Pdistance12(1,iAtomA,iAtomB)
+    Yab = Pdistance12(2,iAtomA,iAtomB)
+    Zab = Pdistance12(3,iAtomA,iAtomB)
+     ThetaP(11, 2      ,IP) = AuxCont(21,      IP) + Xab*AuxCont(11,      IP) 
+     ThetaP(12, 2      ,IP) = AuxCont(22,      IP) + Xab*AuxCont(12,      IP) 
+     ThetaP(13, 2      ,IP) = AuxCont(23,      IP) + Xab*AuxCont(13,      IP) 
+     ThetaP(14, 2      ,IP) = AuxCont(24,      IP) + Xab*AuxCont(14,      IP) 
+     ThetaP(15, 2      ,IP) = AuxCont(25,      IP) + Xab*AuxCont(15,      IP) 
+     ThetaP(16, 2      ,IP) = AuxCont(26,      IP) + Xab*AuxCont(16,      IP) 
+     ThetaP(17, 2      ,IP) = AuxCont(27,      IP) + Xab*AuxCont(17,      IP) 
+     ThetaP(18, 2      ,IP) = AuxCont(28,      IP) + Xab*AuxCont(18,      IP) 
+     ThetaP(19, 2      ,IP) = AuxCont(29,      IP) + Xab*AuxCont(19,      IP) 
+     ThetaP(20, 2      ,IP) = AuxCont(30,      IP) + Xab*AuxCont(20,      IP) 
+     ThetaP(11, 3      ,IP) = AuxCont(22,      IP) + Yab*AuxCont(11,      IP) 
+     ThetaP(12, 3      ,IP) = AuxCont(24,      IP) + Yab*AuxCont(12,      IP) 
+     ThetaP(13, 3      ,IP) = AuxCont(25,      IP) + Yab*AuxCont(13,      IP) 
+     ThetaP(14, 3      ,IP) = AuxCont(27,      IP) + Yab*AuxCont(14,      IP) 
+     ThetaP(15, 3      ,IP) = AuxCont(28,      IP) + Yab*AuxCont(15,      IP) 
+     ThetaP(16, 3      ,IP) = AuxCont(29,      IP) + Yab*AuxCont(16,      IP) 
+     ThetaP(17, 3      ,IP) = AuxCont(31,      IP) + Yab*AuxCont(17,      IP) 
+     ThetaP(18, 3      ,IP) = AuxCont(32,      IP) + Yab*AuxCont(18,      IP) 
+     ThetaP(19, 3      ,IP) = AuxCont(33,      IP) + Yab*AuxCont(19,      IP) 
+     ThetaP(20, 3      ,IP) = AuxCont(34,      IP) + Yab*AuxCont(20,      IP) 
+     ThetaP(11, 4      ,IP) = AuxCont(23,      IP) + Zab*AuxCont(11,      IP) 
+     ThetaP(12, 4      ,IP) = AuxCont(25,      IP) + Zab*AuxCont(12,      IP) 
+     ThetaP(13, 4      ,IP) = AuxCont(26,      IP) + Zab*AuxCont(13,      IP) 
+     ThetaP(14, 4      ,IP) = AuxCont(28,      IP) + Zab*AuxCont(14,      IP) 
+     ThetaP(15, 4      ,IP) = AuxCont(29,      IP) + Zab*AuxCont(15,      IP) 
+     ThetaP(16, 4      ,IP) = AuxCont(30,      IP) + Zab*AuxCont(16,      IP) 
+     ThetaP(17, 4      ,IP) = AuxCont(32,      IP) + Zab*AuxCont(17,      IP) 
+     ThetaP(18, 4      ,IP) = AuxCont(33,      IP) + Zab*AuxCont(18,      IP) 
+     ThetaP(19, 4      ,IP) = AuxCont(34,      IP) + Zab*AuxCont(19,      IP) 
+     ThetaP(20, 4      ,IP) = AuxCont(35,      IP) + Zab*AuxCont(20,      IP) 
+  ENDDO
+end subroutine HorizontalRR_GPU_LHS_P4A3B1AtoB
+
+subroutine HorizontalRR_GPU_LHS_P5A3B2AtoB(nContQP,nPasses,nTUVQ,&
+         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
+  real(realk),intent(in) :: AuxCont(   56,nTUVQ*nContQP*nPasses)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(inout) :: ThetaP(   11:   20,    5:   10,nTUVQ*nContQP*nPasses)
+  !Local variables
+  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
+  real(realk) :: Xab,Yab,Zab
+  real(realk) :: Tmp1( 11: 35,  2:  4)
+!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
+!$ACC PARALLEL LOOP&
+!$ACC PRIVATE(iP,&
+!$ACC         Tmp1,&
+!$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
+!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)
+  DO iP = 1,nTUVQ*nContQP*nPasses
+!    iTUVQ = mod(IP-1,nTUVQ)+1
+!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
+    iPassP = (IP-1)/(nTUVQ*nContQP) + 1
+    iAtomA = iAtomApass(iPassP)
+    iAtomB = iAtomBpass(iPassP)
+    Xab = Pdistance12(1,iAtomA,iAtomB)
+    Yab = Pdistance12(2,iAtomA,iAtomB)
+    Zab = Pdistance12(3,iAtomA,iAtomB)
+     Tmp1(11, 2) = AuxCont(21,      IP) + Xab*AuxCont(11,      IP) 
+     Tmp1(12, 2) = AuxCont(22,      IP) + Xab*AuxCont(12,      IP) 
+     Tmp1(13, 2) = AuxCont(23,      IP) + Xab*AuxCont(13,      IP) 
+     Tmp1(14, 2) = AuxCont(24,      IP) + Xab*AuxCont(14,      IP) 
+     Tmp1(15, 2) = AuxCont(25,      IP) + Xab*AuxCont(15,      IP) 
+     Tmp1(16, 2) = AuxCont(26,      IP) + Xab*AuxCont(16,      IP) 
+     Tmp1(17, 2) = AuxCont(27,      IP) + Xab*AuxCont(17,      IP) 
+     Tmp1(18, 2) = AuxCont(28,      IP) + Xab*AuxCont(18,      IP) 
+     Tmp1(19, 2) = AuxCont(29,      IP) + Xab*AuxCont(19,      IP) 
+     Tmp1(20, 2) = AuxCont(30,      IP) + Xab*AuxCont(20,      IP) 
+     Tmp1(21, 2) = AuxCont(36,      IP) + Xab*AuxCont(21,      IP) 
+     Tmp1(22, 2) = AuxCont(37,      IP) + Xab*AuxCont(22,      IP) 
+     Tmp1(23, 2) = AuxCont(38,      IP) + Xab*AuxCont(23,      IP) 
+     Tmp1(24, 2) = AuxCont(39,      IP) + Xab*AuxCont(24,      IP) 
+     Tmp1(25, 2) = AuxCont(40,      IP) + Xab*AuxCont(25,      IP) 
+     Tmp1(26, 2) = AuxCont(41,      IP) + Xab*AuxCont(26,      IP) 
+     Tmp1(27, 2) = AuxCont(42,      IP) + Xab*AuxCont(27,      IP) 
+     Tmp1(28, 2) = AuxCont(43,      IP) + Xab*AuxCont(28,      IP) 
+     Tmp1(29, 2) = AuxCont(44,      IP) + Xab*AuxCont(29,      IP) 
+     Tmp1(30, 2) = AuxCont(45,      IP) + Xab*AuxCont(30,      IP) 
+     Tmp1(31, 2) = AuxCont(46,      IP) + Xab*AuxCont(31,      IP) 
+     Tmp1(32, 2) = AuxCont(47,      IP) + Xab*AuxCont(32,      IP) 
+     Tmp1(33, 2) = AuxCont(48,      IP) + Xab*AuxCont(33,      IP) 
+     Tmp1(34, 2) = AuxCont(49,      IP) + Xab*AuxCont(34,      IP) 
+     Tmp1(35, 2) = AuxCont(50,      IP) + Xab*AuxCont(35,      IP) 
+     Tmp1(11, 3) = AuxCont(22,      IP) + Yab*AuxCont(11,      IP) 
+     Tmp1(12, 3) = AuxCont(24,      IP) + Yab*AuxCont(12,      IP) 
+     Tmp1(13, 3) = AuxCont(25,      IP) + Yab*AuxCont(13,      IP) 
+     Tmp1(14, 3) = AuxCont(27,      IP) + Yab*AuxCont(14,      IP) 
+     Tmp1(15, 3) = AuxCont(28,      IP) + Yab*AuxCont(15,      IP) 
+     Tmp1(16, 3) = AuxCont(29,      IP) + Yab*AuxCont(16,      IP) 
+     Tmp1(17, 3) = AuxCont(31,      IP) + Yab*AuxCont(17,      IP) 
+     Tmp1(18, 3) = AuxCont(32,      IP) + Yab*AuxCont(18,      IP) 
+     Tmp1(19, 3) = AuxCont(33,      IP) + Yab*AuxCont(19,      IP) 
+     Tmp1(20, 3) = AuxCont(34,      IP) + Yab*AuxCont(20,      IP) 
+     Tmp1(21, 3) = AuxCont(37,      IP) + Yab*AuxCont(21,      IP) 
+     Tmp1(22, 3) = AuxCont(39,      IP) + Yab*AuxCont(22,      IP) 
+     Tmp1(23, 3) = AuxCont(40,      IP) + Yab*AuxCont(23,      IP) 
+     Tmp1(24, 3) = AuxCont(42,      IP) + Yab*AuxCont(24,      IP) 
+     Tmp1(25, 3) = AuxCont(43,      IP) + Yab*AuxCont(25,      IP) 
+     Tmp1(26, 3) = AuxCont(44,      IP) + Yab*AuxCont(26,      IP) 
+     Tmp1(27, 3) = AuxCont(46,      IP) + Yab*AuxCont(27,      IP) 
+     Tmp1(28, 3) = AuxCont(47,      IP) + Yab*AuxCont(28,      IP) 
+     Tmp1(29, 3) = AuxCont(48,      IP) + Yab*AuxCont(29,      IP) 
+     Tmp1(30, 3) = AuxCont(49,      IP) + Yab*AuxCont(30,      IP) 
+     Tmp1(31, 3) = AuxCont(51,      IP) + Yab*AuxCont(31,      IP) 
+     Tmp1(32, 3) = AuxCont(52,      IP) + Yab*AuxCont(32,      IP) 
+     Tmp1(33, 3) = AuxCont(53,      IP) + Yab*AuxCont(33,      IP) 
+     Tmp1(34, 3) = AuxCont(54,      IP) + Yab*AuxCont(34,      IP) 
+     Tmp1(35, 3) = AuxCont(55,      IP) + Yab*AuxCont(35,      IP) 
+     Tmp1(11, 4) = AuxCont(23,      IP) + Zab*AuxCont(11,      IP) 
+     Tmp1(12, 4) = AuxCont(25,      IP) + Zab*AuxCont(12,      IP) 
+     Tmp1(13, 4) = AuxCont(26,      IP) + Zab*AuxCont(13,      IP) 
+     Tmp1(14, 4) = AuxCont(28,      IP) + Zab*AuxCont(14,      IP) 
+     Tmp1(15, 4) = AuxCont(29,      IP) + Zab*AuxCont(15,      IP) 
+     Tmp1(16, 4) = AuxCont(30,      IP) + Zab*AuxCont(16,      IP) 
+     Tmp1(17, 4) = AuxCont(32,      IP) + Zab*AuxCont(17,      IP) 
+     Tmp1(18, 4) = AuxCont(33,      IP) + Zab*AuxCont(18,      IP) 
+     Tmp1(19, 4) = AuxCont(34,      IP) + Zab*AuxCont(19,      IP) 
+     Tmp1(20, 4) = AuxCont(35,      IP) + Zab*AuxCont(20,      IP) 
+     Tmp1(21, 4) = AuxCont(38,      IP) + Zab*AuxCont(21,      IP) 
+     Tmp1(22, 4) = AuxCont(40,      IP) + Zab*AuxCont(22,      IP) 
+     Tmp1(23, 4) = AuxCont(41,      IP) + Zab*AuxCont(23,      IP) 
+     Tmp1(24, 4) = AuxCont(43,      IP) + Zab*AuxCont(24,      IP) 
+     Tmp1(25, 4) = AuxCont(44,      IP) + Zab*AuxCont(25,      IP) 
+     Tmp1(26, 4) = AuxCont(45,      IP) + Zab*AuxCont(26,      IP) 
+     Tmp1(27, 4) = AuxCont(47,      IP) + Zab*AuxCont(27,      IP) 
+     Tmp1(28, 4) = AuxCont(48,      IP) + Zab*AuxCont(28,      IP) 
+     Tmp1(29, 4) = AuxCont(49,      IP) + Zab*AuxCont(29,      IP) 
+     Tmp1(30, 4) = AuxCont(50,      IP) + Zab*AuxCont(30,      IP) 
+     Tmp1(31, 4) = AuxCont(52,      IP) + Zab*AuxCont(31,      IP) 
+     Tmp1(32, 4) = AuxCont(53,      IP) + Zab*AuxCont(32,      IP) 
+     Tmp1(33, 4) = AuxCont(54,      IP) + Zab*AuxCont(33,      IP) 
+     Tmp1(34, 4) = AuxCont(55,      IP) + Zab*AuxCont(34,      IP) 
+     Tmp1(35, 4) = AuxCont(56,      IP) + Zab*AuxCont(35,      IP) 
+     ThetaP(11, 5      ,IP) = Tmp1(21, 2) + Xab*Tmp1(11, 2) 
+     ThetaP(12, 5      ,IP) = Tmp1(22, 2) + Xab*Tmp1(12, 2) 
+     ThetaP(13, 5      ,IP) = Tmp1(23, 2) + Xab*Tmp1(13, 2) 
+     ThetaP(14, 5      ,IP) = Tmp1(24, 2) + Xab*Tmp1(14, 2) 
+     ThetaP(15, 5      ,IP) = Tmp1(25, 2) + Xab*Tmp1(15, 2) 
+     ThetaP(16, 5      ,IP) = Tmp1(26, 2) + Xab*Tmp1(16, 2) 
+     ThetaP(17, 5      ,IP) = Tmp1(27, 2) + Xab*Tmp1(17, 2) 
+     ThetaP(18, 5      ,IP) = Tmp1(28, 2) + Xab*Tmp1(18, 2) 
+     ThetaP(19, 5      ,IP) = Tmp1(29, 2) + Xab*Tmp1(19, 2) 
+     ThetaP(20, 5      ,IP) = Tmp1(30, 2) + Xab*Tmp1(20, 2) 
+     ThetaP(11, 6      ,IP) = Tmp1(21, 3) + Xab*Tmp1(11, 3) 
+     ThetaP(12, 6      ,IP) = Tmp1(22, 3) + Xab*Tmp1(12, 3) 
+     ThetaP(13, 6      ,IP) = Tmp1(23, 3) + Xab*Tmp1(13, 3) 
+     ThetaP(14, 6      ,IP) = Tmp1(24, 3) + Xab*Tmp1(14, 3) 
+     ThetaP(15, 6      ,IP) = Tmp1(25, 3) + Xab*Tmp1(15, 3) 
+     ThetaP(16, 6      ,IP) = Tmp1(26, 3) + Xab*Tmp1(16, 3) 
+     ThetaP(17, 6      ,IP) = Tmp1(27, 3) + Xab*Tmp1(17, 3) 
+     ThetaP(18, 6      ,IP) = Tmp1(28, 3) + Xab*Tmp1(18, 3) 
+     ThetaP(19, 6      ,IP) = Tmp1(29, 3) + Xab*Tmp1(19, 3) 
+     ThetaP(20, 6      ,IP) = Tmp1(30, 3) + Xab*Tmp1(20, 3) 
+     ThetaP(11, 7      ,IP) = Tmp1(21, 4) + Xab*Tmp1(11, 4) 
+     ThetaP(12, 7      ,IP) = Tmp1(22, 4) + Xab*Tmp1(12, 4) 
+     ThetaP(13, 7      ,IP) = Tmp1(23, 4) + Xab*Tmp1(13, 4) 
+     ThetaP(14, 7      ,IP) = Tmp1(24, 4) + Xab*Tmp1(14, 4) 
+     ThetaP(15, 7      ,IP) = Tmp1(25, 4) + Xab*Tmp1(15, 4) 
+     ThetaP(16, 7      ,IP) = Tmp1(26, 4) + Xab*Tmp1(16, 4) 
+     ThetaP(17, 7      ,IP) = Tmp1(27, 4) + Xab*Tmp1(17, 4) 
+     ThetaP(18, 7      ,IP) = Tmp1(28, 4) + Xab*Tmp1(18, 4) 
+     ThetaP(19, 7      ,IP) = Tmp1(29, 4) + Xab*Tmp1(19, 4) 
+     ThetaP(20, 7      ,IP) = Tmp1(30, 4) + Xab*Tmp1(20, 4) 
+     ThetaP(11, 8      ,IP) = Tmp1(22, 3) + Yab*Tmp1(11, 3) 
+     ThetaP(12, 8      ,IP) = Tmp1(24, 3) + Yab*Tmp1(12, 3) 
+     ThetaP(13, 8      ,IP) = Tmp1(25, 3) + Yab*Tmp1(13, 3) 
+     ThetaP(14, 8      ,IP) = Tmp1(27, 3) + Yab*Tmp1(14, 3) 
+     ThetaP(15, 8      ,IP) = Tmp1(28, 3) + Yab*Tmp1(15, 3) 
+     ThetaP(16, 8      ,IP) = Tmp1(29, 3) + Yab*Tmp1(16, 3) 
+     ThetaP(17, 8      ,IP) = Tmp1(31, 3) + Yab*Tmp1(17, 3) 
+     ThetaP(18, 8      ,IP) = Tmp1(32, 3) + Yab*Tmp1(18, 3) 
+     ThetaP(19, 8      ,IP) = Tmp1(33, 3) + Yab*Tmp1(19, 3) 
+     ThetaP(20, 8      ,IP) = Tmp1(34, 3) + Yab*Tmp1(20, 3) 
+     ThetaP(11, 9      ,IP) = Tmp1(22, 4) + Yab*Tmp1(11, 4) 
+     ThetaP(12, 9      ,IP) = Tmp1(24, 4) + Yab*Tmp1(12, 4) 
+     ThetaP(13, 9      ,IP) = Tmp1(25, 4) + Yab*Tmp1(13, 4) 
+     ThetaP(14, 9      ,IP) = Tmp1(27, 4) + Yab*Tmp1(14, 4) 
+     ThetaP(15, 9      ,IP) = Tmp1(28, 4) + Yab*Tmp1(15, 4) 
+     ThetaP(16, 9      ,IP) = Tmp1(29, 4) + Yab*Tmp1(16, 4) 
+     ThetaP(17, 9      ,IP) = Tmp1(31, 4) + Yab*Tmp1(17, 4) 
+     ThetaP(18, 9      ,IP) = Tmp1(32, 4) + Yab*Tmp1(18, 4) 
+     ThetaP(19, 9      ,IP) = Tmp1(33, 4) + Yab*Tmp1(19, 4) 
+     ThetaP(20, 9      ,IP) = Tmp1(34, 4) + Yab*Tmp1(20, 4) 
+     ThetaP(11,10      ,IP) = Tmp1(23, 4) + Zab*Tmp1(11, 4) 
+     ThetaP(12,10      ,IP) = Tmp1(25, 4) + Zab*Tmp1(12, 4) 
+     ThetaP(13,10      ,IP) = Tmp1(26, 4) + Zab*Tmp1(13, 4) 
+     ThetaP(14,10      ,IP) = Tmp1(28, 4) + Zab*Tmp1(14, 4) 
+     ThetaP(15,10      ,IP) = Tmp1(29, 4) + Zab*Tmp1(15, 4) 
+     ThetaP(16,10      ,IP) = Tmp1(30, 4) + Zab*Tmp1(16, 4) 
+     ThetaP(17,10      ,IP) = Tmp1(32, 4) + Zab*Tmp1(17, 4) 
+     ThetaP(18,10      ,IP) = Tmp1(33, 4) + Zab*Tmp1(18, 4) 
+     ThetaP(19,10      ,IP) = Tmp1(34, 4) + Zab*Tmp1(19, 4) 
+     ThetaP(20,10      ,IP) = Tmp1(35, 4) + Zab*Tmp1(20, 4) 
+  ENDDO
+end subroutine HorizontalRR_GPU_LHS_P5A3B2AtoB
+
+subroutine HorizontalRR_GPU_LHS_P6A3B3AtoB(nContQP,nPasses,nTUVQ,&
+         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
+  implicit none
+  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
+  real(realk),intent(in) :: AuxCont(   84,nTUVQ*nContQP*nPasses)
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(inout) :: ThetaP(   11:   20,   11:   20,nTUVQ*nContQP*nPasses)
+  !Local variables
+  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
+  real(realk) :: Xab,Yab,Zab
+  real(realk) :: Tmp1( 11: 56,  2:  4)
+  real(realk) :: Tmp2( 11: 35,  5: 10)
+!  real(realk) :: Tmp(nTUVA,nTUVB) ordering
+!$ACC PARALLEL LOOP&
+!$ACC PRIVATE(iP,&
+!$ACC         Tmp1,&
+!$ACC         Tmp2,&
+!$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
+!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)
+  DO iP = 1,nTUVQ*nContQP*nPasses
+!    iTUVQ = mod(IP-1,nTUVQ)+1
+!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
+    iPassP = (IP-1)/(nTUVQ*nContQP) + 1
+    iAtomA = iAtomApass(iPassP)
+    iAtomB = iAtomBpass(iPassP)
+    Xab = Pdistance12(1,iAtomA,iAtomB)
+    Yab = Pdistance12(2,iAtomA,iAtomB)
+    Zab = Pdistance12(3,iAtomA,iAtomB)
+     Tmp1(11, 2) = AuxCont(21,      IP) + Xab*AuxCont(11,      IP) 
+     Tmp1(12, 2) = AuxCont(22,      IP) + Xab*AuxCont(12,      IP) 
+     Tmp1(13, 2) = AuxCont(23,      IP) + Xab*AuxCont(13,      IP) 
+     Tmp1(14, 2) = AuxCont(24,      IP) + Xab*AuxCont(14,      IP) 
+     Tmp1(15, 2) = AuxCont(25,      IP) + Xab*AuxCont(15,      IP) 
+     Tmp1(16, 2) = AuxCont(26,      IP) + Xab*AuxCont(16,      IP) 
+     Tmp1(17, 2) = AuxCont(27,      IP) + Xab*AuxCont(17,      IP) 
+     Tmp1(18, 2) = AuxCont(28,      IP) + Xab*AuxCont(18,      IP) 
+     Tmp1(19, 2) = AuxCont(29,      IP) + Xab*AuxCont(19,      IP) 
+     Tmp1(20, 2) = AuxCont(30,      IP) + Xab*AuxCont(20,      IP) 
+     Tmp1(21, 2) = AuxCont(36,      IP) + Xab*AuxCont(21,      IP) 
+     Tmp1(22, 2) = AuxCont(37,      IP) + Xab*AuxCont(22,      IP) 
+     Tmp1(23, 2) = AuxCont(38,      IP) + Xab*AuxCont(23,      IP) 
+     Tmp1(24, 2) = AuxCont(39,      IP) + Xab*AuxCont(24,      IP) 
+     Tmp1(25, 2) = AuxCont(40,      IP) + Xab*AuxCont(25,      IP) 
+     Tmp1(26, 2) = AuxCont(41,      IP) + Xab*AuxCont(26,      IP) 
+     Tmp1(27, 2) = AuxCont(42,      IP) + Xab*AuxCont(27,      IP) 
+     Tmp1(28, 2) = AuxCont(43,      IP) + Xab*AuxCont(28,      IP) 
+     Tmp1(29, 2) = AuxCont(44,      IP) + Xab*AuxCont(29,      IP) 
+     Tmp1(30, 2) = AuxCont(45,      IP) + Xab*AuxCont(30,      IP) 
+     Tmp1(31, 2) = AuxCont(46,      IP) + Xab*AuxCont(31,      IP) 
+     Tmp1(32, 2) = AuxCont(47,      IP) + Xab*AuxCont(32,      IP) 
+     Tmp1(33, 2) = AuxCont(48,      IP) + Xab*AuxCont(33,      IP) 
+     Tmp1(34, 2) = AuxCont(49,      IP) + Xab*AuxCont(34,      IP) 
+     Tmp1(35, 2) = AuxCont(50,      IP) + Xab*AuxCont(35,      IP) 
+     Tmp1(36, 2) = AuxCont(57,      IP) + Xab*AuxCont(36,      IP) 
+     Tmp1(37, 2) = AuxCont(58,      IP) + Xab*AuxCont(37,      IP) 
+     Tmp1(38, 2) = AuxCont(59,      IP) + Xab*AuxCont(38,      IP) 
+     Tmp1(39, 2) = AuxCont(60,      IP) + Xab*AuxCont(39,      IP) 
+     Tmp1(40, 2) = AuxCont(61,      IP) + Xab*AuxCont(40,      IP) 
+     Tmp1(41, 2) = AuxCont(62,      IP) + Xab*AuxCont(41,      IP) 
+     Tmp1(42, 2) = AuxCont(63,      IP) + Xab*AuxCont(42,      IP) 
+     Tmp1(43, 2) = AuxCont(64,      IP) + Xab*AuxCont(43,      IP) 
+     Tmp1(44, 2) = AuxCont(65,      IP) + Xab*AuxCont(44,      IP) 
+     Tmp1(45, 2) = AuxCont(66,      IP) + Xab*AuxCont(45,      IP) 
+     Tmp1(46, 2) = AuxCont(67,      IP) + Xab*AuxCont(46,      IP) 
+     Tmp1(47, 2) = AuxCont(68,      IP) + Xab*AuxCont(47,      IP) 
+     Tmp1(48, 2) = AuxCont(69,      IP) + Xab*AuxCont(48,      IP) 
+     Tmp1(49, 2) = AuxCont(70,      IP) + Xab*AuxCont(49,      IP) 
+     Tmp1(50, 2) = AuxCont(71,      IP) + Xab*AuxCont(50,      IP) 
+     Tmp1(51, 2) = AuxCont(72,      IP) + Xab*AuxCont(51,      IP) 
+     Tmp1(52, 2) = AuxCont(73,      IP) + Xab*AuxCont(52,      IP) 
+     Tmp1(53, 2) = AuxCont(74,      IP) + Xab*AuxCont(53,      IP) 
+     Tmp1(54, 2) = AuxCont(75,      IP) + Xab*AuxCont(54,      IP) 
+     Tmp1(55, 2) = AuxCont(76,      IP) + Xab*AuxCont(55,      IP) 
+     Tmp1(56, 2) = AuxCont(77,      IP) + Xab*AuxCont(56,      IP) 
+     Tmp1(11, 3) = AuxCont(22,      IP) + Yab*AuxCont(11,      IP) 
+     Tmp1(12, 3) = AuxCont(24,      IP) + Yab*AuxCont(12,      IP) 
+     Tmp1(13, 3) = AuxCont(25,      IP) + Yab*AuxCont(13,      IP) 
+     Tmp1(14, 3) = AuxCont(27,      IP) + Yab*AuxCont(14,      IP) 
+     Tmp1(15, 3) = AuxCont(28,      IP) + Yab*AuxCont(15,      IP) 
+     Tmp1(16, 3) = AuxCont(29,      IP) + Yab*AuxCont(16,      IP) 
+     Tmp1(17, 3) = AuxCont(31,      IP) + Yab*AuxCont(17,      IP) 
+     Tmp1(18, 3) = AuxCont(32,      IP) + Yab*AuxCont(18,      IP) 
+     Tmp1(19, 3) = AuxCont(33,      IP) + Yab*AuxCont(19,      IP) 
+     Tmp1(20, 3) = AuxCont(34,      IP) + Yab*AuxCont(20,      IP) 
+     Tmp1(21, 3) = AuxCont(37,      IP) + Yab*AuxCont(21,      IP) 
+     Tmp1(22, 3) = AuxCont(39,      IP) + Yab*AuxCont(22,      IP) 
+     Tmp1(23, 3) = AuxCont(40,      IP) + Yab*AuxCont(23,      IP) 
+     Tmp1(24, 3) = AuxCont(42,      IP) + Yab*AuxCont(24,      IP) 
+     Tmp1(25, 3) = AuxCont(43,      IP) + Yab*AuxCont(25,      IP) 
+     Tmp1(26, 3) = AuxCont(44,      IP) + Yab*AuxCont(26,      IP) 
+     Tmp1(27, 3) = AuxCont(46,      IP) + Yab*AuxCont(27,      IP) 
+     Tmp1(28, 3) = AuxCont(47,      IP) + Yab*AuxCont(28,      IP) 
+     Tmp1(29, 3) = AuxCont(48,      IP) + Yab*AuxCont(29,      IP) 
+     Tmp1(30, 3) = AuxCont(49,      IP) + Yab*AuxCont(30,      IP) 
+     Tmp1(31, 3) = AuxCont(51,      IP) + Yab*AuxCont(31,      IP) 
+     Tmp1(32, 3) = AuxCont(52,      IP) + Yab*AuxCont(32,      IP) 
+     Tmp1(33, 3) = AuxCont(53,      IP) + Yab*AuxCont(33,      IP) 
+     Tmp1(34, 3) = AuxCont(54,      IP) + Yab*AuxCont(34,      IP) 
+     Tmp1(35, 3) = AuxCont(55,      IP) + Yab*AuxCont(35,      IP) 
+     Tmp1(36, 3) = AuxCont(58,      IP) + Yab*AuxCont(36,      IP) 
+     Tmp1(37, 3) = AuxCont(60,      IP) + Yab*AuxCont(37,      IP) 
+     Tmp1(38, 3) = AuxCont(61,      IP) + Yab*AuxCont(38,      IP) 
+     Tmp1(39, 3) = AuxCont(63,      IP) + Yab*AuxCont(39,      IP) 
+     Tmp1(40, 3) = AuxCont(64,      IP) + Yab*AuxCont(40,      IP) 
+     Tmp1(41, 3) = AuxCont(65,      IP) + Yab*AuxCont(41,      IP) 
+     Tmp1(42, 3) = AuxCont(67,      IP) + Yab*AuxCont(42,      IP) 
+     Tmp1(43, 3) = AuxCont(68,      IP) + Yab*AuxCont(43,      IP) 
+     Tmp1(44, 3) = AuxCont(69,      IP) + Yab*AuxCont(44,      IP) 
+     Tmp1(45, 3) = AuxCont(70,      IP) + Yab*AuxCont(45,      IP) 
+     Tmp1(46, 3) = AuxCont(72,      IP) + Yab*AuxCont(46,      IP) 
+     Tmp1(47, 3) = AuxCont(73,      IP) + Yab*AuxCont(47,      IP) 
+     Tmp1(48, 3) = AuxCont(74,      IP) + Yab*AuxCont(48,      IP) 
+     Tmp1(49, 3) = AuxCont(75,      IP) + Yab*AuxCont(49,      IP) 
+     Tmp1(50, 3) = AuxCont(76,      IP) + Yab*AuxCont(50,      IP) 
+     Tmp1(51, 3) = AuxCont(78,      IP) + Yab*AuxCont(51,      IP) 
+     Tmp1(52, 3) = AuxCont(79,      IP) + Yab*AuxCont(52,      IP) 
+     Tmp1(53, 3) = AuxCont(80,      IP) + Yab*AuxCont(53,      IP) 
+     Tmp1(54, 3) = AuxCont(81,      IP) + Yab*AuxCont(54,      IP) 
+     Tmp1(55, 3) = AuxCont(82,      IP) + Yab*AuxCont(55,      IP) 
+     Tmp1(56, 3) = AuxCont(83,      IP) + Yab*AuxCont(56,      IP) 
+     Tmp1(11, 4) = AuxCont(23,      IP) + Zab*AuxCont(11,      IP) 
+     Tmp1(12, 4) = AuxCont(25,      IP) + Zab*AuxCont(12,      IP) 
+     Tmp1(13, 4) = AuxCont(26,      IP) + Zab*AuxCont(13,      IP) 
+     Tmp1(14, 4) = AuxCont(28,      IP) + Zab*AuxCont(14,      IP) 
+     Tmp1(15, 4) = AuxCont(29,      IP) + Zab*AuxCont(15,      IP) 
+     Tmp1(16, 4) = AuxCont(30,      IP) + Zab*AuxCont(16,      IP) 
+     Tmp1(17, 4) = AuxCont(32,      IP) + Zab*AuxCont(17,      IP) 
+     Tmp1(18, 4) = AuxCont(33,      IP) + Zab*AuxCont(18,      IP) 
+     Tmp1(19, 4) = AuxCont(34,      IP) + Zab*AuxCont(19,      IP) 
+     Tmp1(20, 4) = AuxCont(35,      IP) + Zab*AuxCont(20,      IP) 
+     Tmp1(21, 4) = AuxCont(38,      IP) + Zab*AuxCont(21,      IP) 
+     Tmp1(22, 4) = AuxCont(40,      IP) + Zab*AuxCont(22,      IP) 
+     Tmp1(23, 4) = AuxCont(41,      IP) + Zab*AuxCont(23,      IP) 
+     Tmp1(24, 4) = AuxCont(43,      IP) + Zab*AuxCont(24,      IP) 
+     Tmp1(25, 4) = AuxCont(44,      IP) + Zab*AuxCont(25,      IP) 
+     Tmp1(26, 4) = AuxCont(45,      IP) + Zab*AuxCont(26,      IP) 
+     Tmp1(27, 4) = AuxCont(47,      IP) + Zab*AuxCont(27,      IP) 
+     Tmp1(28, 4) = AuxCont(48,      IP) + Zab*AuxCont(28,      IP) 
+     Tmp1(29, 4) = AuxCont(49,      IP) + Zab*AuxCont(29,      IP) 
+     Tmp1(30, 4) = AuxCont(50,      IP) + Zab*AuxCont(30,      IP) 
+     Tmp1(31, 4) = AuxCont(52,      IP) + Zab*AuxCont(31,      IP) 
+     Tmp1(32, 4) = AuxCont(53,      IP) + Zab*AuxCont(32,      IP) 
+     Tmp1(33, 4) = AuxCont(54,      IP) + Zab*AuxCont(33,      IP) 
+     Tmp1(34, 4) = AuxCont(55,      IP) + Zab*AuxCont(34,      IP) 
+     Tmp1(35, 4) = AuxCont(56,      IP) + Zab*AuxCont(35,      IP) 
+     Tmp1(36, 4) = AuxCont(59,      IP) + Zab*AuxCont(36,      IP) 
+     Tmp1(37, 4) = AuxCont(61,      IP) + Zab*AuxCont(37,      IP) 
+     Tmp1(38, 4) = AuxCont(62,      IP) + Zab*AuxCont(38,      IP) 
+     Tmp1(39, 4) = AuxCont(64,      IP) + Zab*AuxCont(39,      IP) 
+     Tmp1(40, 4) = AuxCont(65,      IP) + Zab*AuxCont(40,      IP) 
+     Tmp1(41, 4) = AuxCont(66,      IP) + Zab*AuxCont(41,      IP) 
+     Tmp1(42, 4) = AuxCont(68,      IP) + Zab*AuxCont(42,      IP) 
+     Tmp1(43, 4) = AuxCont(69,      IP) + Zab*AuxCont(43,      IP) 
+     Tmp1(44, 4) = AuxCont(70,      IP) + Zab*AuxCont(44,      IP) 
+     Tmp1(45, 4) = AuxCont(71,      IP) + Zab*AuxCont(45,      IP) 
+     Tmp1(46, 4) = AuxCont(73,      IP) + Zab*AuxCont(46,      IP) 
+     Tmp1(47, 4) = AuxCont(74,      IP) + Zab*AuxCont(47,      IP) 
+     Tmp1(48, 4) = AuxCont(75,      IP) + Zab*AuxCont(48,      IP) 
+     Tmp1(49, 4) = AuxCont(76,      IP) + Zab*AuxCont(49,      IP) 
+     Tmp1(50, 4) = AuxCont(77,      IP) + Zab*AuxCont(50,      IP) 
+     Tmp1(51, 4) = AuxCont(79,      IP) + Zab*AuxCont(51,      IP) 
+     Tmp1(52, 4) = AuxCont(80,      IP) + Zab*AuxCont(52,      IP) 
+     Tmp1(53, 4) = AuxCont(81,      IP) + Zab*AuxCont(53,      IP) 
+     Tmp1(54, 4) = AuxCont(82,      IP) + Zab*AuxCont(54,      IP) 
+     Tmp1(55, 4) = AuxCont(83,      IP) + Zab*AuxCont(55,      IP) 
+     Tmp1(56, 4) = AuxCont(84,      IP) + Zab*AuxCont(56,      IP) 
+     Tmp2(11, 5) = Tmp1(21, 2) + Xab*Tmp1(11, 2) 
+     Tmp2(12, 5) = Tmp1(22, 2) + Xab*Tmp1(12, 2) 
+     Tmp2(13, 5) = Tmp1(23, 2) + Xab*Tmp1(13, 2) 
+     Tmp2(14, 5) = Tmp1(24, 2) + Xab*Tmp1(14, 2) 
+     Tmp2(15, 5) = Tmp1(25, 2) + Xab*Tmp1(15, 2) 
+     Tmp2(16, 5) = Tmp1(26, 2) + Xab*Tmp1(16, 2) 
+     Tmp2(17, 5) = Tmp1(27, 2) + Xab*Tmp1(17, 2) 
+     Tmp2(18, 5) = Tmp1(28, 2) + Xab*Tmp1(18, 2) 
+     Tmp2(19, 5) = Tmp1(29, 2) + Xab*Tmp1(19, 2) 
+     Tmp2(20, 5) = Tmp1(30, 2) + Xab*Tmp1(20, 2) 
+     Tmp2(21, 5) = Tmp1(36, 2) + Xab*Tmp1(21, 2) 
+     Tmp2(22, 5) = Tmp1(37, 2) + Xab*Tmp1(22, 2) 
+     Tmp2(23, 5) = Tmp1(38, 2) + Xab*Tmp1(23, 2) 
+     Tmp2(24, 5) = Tmp1(39, 2) + Xab*Tmp1(24, 2) 
+     Tmp2(25, 5) = Tmp1(40, 2) + Xab*Tmp1(25, 2) 
+     Tmp2(26, 5) = Tmp1(41, 2) + Xab*Tmp1(26, 2) 
+     Tmp2(27, 5) = Tmp1(42, 2) + Xab*Tmp1(27, 2) 
+     Tmp2(28, 5) = Tmp1(43, 2) + Xab*Tmp1(28, 2) 
+     Tmp2(29, 5) = Tmp1(44, 2) + Xab*Tmp1(29, 2) 
+     Tmp2(30, 5) = Tmp1(45, 2) + Xab*Tmp1(30, 2) 
+     Tmp2(31, 5) = Tmp1(46, 2) + Xab*Tmp1(31, 2) 
+     Tmp2(32, 5) = Tmp1(47, 2) + Xab*Tmp1(32, 2) 
+     Tmp2(33, 5) = Tmp1(48, 2) + Xab*Tmp1(33, 2) 
+     Tmp2(34, 5) = Tmp1(49, 2) + Xab*Tmp1(34, 2) 
+     Tmp2(35, 5) = Tmp1(50, 2) + Xab*Tmp1(35, 2) 
+     Tmp2(11, 6) = Tmp1(21, 3) + Xab*Tmp1(11, 3) 
+     Tmp2(12, 6) = Tmp1(22, 3) + Xab*Tmp1(12, 3) 
+     Tmp2(13, 6) = Tmp1(23, 3) + Xab*Tmp1(13, 3) 
+     Tmp2(14, 6) = Tmp1(24, 3) + Xab*Tmp1(14, 3) 
+     Tmp2(15, 6) = Tmp1(25, 3) + Xab*Tmp1(15, 3) 
+     Tmp2(16, 6) = Tmp1(26, 3) + Xab*Tmp1(16, 3) 
+     Tmp2(17, 6) = Tmp1(27, 3) + Xab*Tmp1(17, 3) 
+     Tmp2(18, 6) = Tmp1(28, 3) + Xab*Tmp1(18, 3) 
+     Tmp2(19, 6) = Tmp1(29, 3) + Xab*Tmp1(19, 3) 
+     Tmp2(20, 6) = Tmp1(30, 3) + Xab*Tmp1(20, 3) 
+     Tmp2(21, 6) = Tmp1(36, 3) + Xab*Tmp1(21, 3) 
+     Tmp2(22, 6) = Tmp1(37, 3) + Xab*Tmp1(22, 3) 
+     Tmp2(23, 6) = Tmp1(38, 3) + Xab*Tmp1(23, 3) 
+     Tmp2(24, 6) = Tmp1(39, 3) + Xab*Tmp1(24, 3) 
+     Tmp2(25, 6) = Tmp1(40, 3) + Xab*Tmp1(25, 3) 
+     Tmp2(26, 6) = Tmp1(41, 3) + Xab*Tmp1(26, 3) 
+     Tmp2(27, 6) = Tmp1(42, 3) + Xab*Tmp1(27, 3) 
+     Tmp2(28, 6) = Tmp1(43, 3) + Xab*Tmp1(28, 3) 
+     Tmp2(29, 6) = Tmp1(44, 3) + Xab*Tmp1(29, 3) 
+     Tmp2(30, 6) = Tmp1(45, 3) + Xab*Tmp1(30, 3) 
+     Tmp2(31, 6) = Tmp1(46, 3) + Xab*Tmp1(31, 3) 
+     Tmp2(32, 6) = Tmp1(47, 3) + Xab*Tmp1(32, 3) 
+     Tmp2(33, 6) = Tmp1(48, 3) + Xab*Tmp1(33, 3) 
+     Tmp2(34, 6) = Tmp1(49, 3) + Xab*Tmp1(34, 3) 
+     Tmp2(35, 6) = Tmp1(50, 3) + Xab*Tmp1(35, 3) 
+     Tmp2(11, 7) = Tmp1(21, 4) + Xab*Tmp1(11, 4) 
+     Tmp2(12, 7) = Tmp1(22, 4) + Xab*Tmp1(12, 4) 
+     Tmp2(13, 7) = Tmp1(23, 4) + Xab*Tmp1(13, 4) 
+     Tmp2(14, 7) = Tmp1(24, 4) + Xab*Tmp1(14, 4) 
+     Tmp2(15, 7) = Tmp1(25, 4) + Xab*Tmp1(15, 4) 
+     Tmp2(16, 7) = Tmp1(26, 4) + Xab*Tmp1(16, 4) 
+     Tmp2(17, 7) = Tmp1(27, 4) + Xab*Tmp1(17, 4) 
+     Tmp2(18, 7) = Tmp1(28, 4) + Xab*Tmp1(18, 4) 
+     Tmp2(19, 7) = Tmp1(29, 4) + Xab*Tmp1(19, 4) 
+     Tmp2(20, 7) = Tmp1(30, 4) + Xab*Tmp1(20, 4) 
+     Tmp2(21, 7) = Tmp1(36, 4) + Xab*Tmp1(21, 4) 
+     Tmp2(22, 7) = Tmp1(37, 4) + Xab*Tmp1(22, 4) 
+     Tmp2(23, 7) = Tmp1(38, 4) + Xab*Tmp1(23, 4) 
+     Tmp2(24, 7) = Tmp1(39, 4) + Xab*Tmp1(24, 4) 
+     Tmp2(25, 7) = Tmp1(40, 4) + Xab*Tmp1(25, 4) 
+     Tmp2(26, 7) = Tmp1(41, 4) + Xab*Tmp1(26, 4) 
+     Tmp2(27, 7) = Tmp1(42, 4) + Xab*Tmp1(27, 4) 
+     Tmp2(28, 7) = Tmp1(43, 4) + Xab*Tmp1(28, 4) 
+     Tmp2(29, 7) = Tmp1(44, 4) + Xab*Tmp1(29, 4) 
+     Tmp2(30, 7) = Tmp1(45, 4) + Xab*Tmp1(30, 4) 
+     Tmp2(31, 7) = Tmp1(46, 4) + Xab*Tmp1(31, 4) 
+     Tmp2(32, 7) = Tmp1(47, 4) + Xab*Tmp1(32, 4) 
+     Tmp2(33, 7) = Tmp1(48, 4) + Xab*Tmp1(33, 4) 
+     Tmp2(34, 7) = Tmp1(49, 4) + Xab*Tmp1(34, 4) 
+     Tmp2(35, 7) = Tmp1(50, 4) + Xab*Tmp1(35, 4) 
+     Tmp2(11, 8) = Tmp1(22, 3) + Yab*Tmp1(11, 3) 
+     Tmp2(12, 8) = Tmp1(24, 3) + Yab*Tmp1(12, 3) 
+     Tmp2(13, 8) = Tmp1(25, 3) + Yab*Tmp1(13, 3) 
+     Tmp2(14, 8) = Tmp1(27, 3) + Yab*Tmp1(14, 3) 
+     Tmp2(15, 8) = Tmp1(28, 3) + Yab*Tmp1(15, 3) 
+     Tmp2(16, 8) = Tmp1(29, 3) + Yab*Tmp1(16, 3) 
+     Tmp2(17, 8) = Tmp1(31, 3) + Yab*Tmp1(17, 3) 
+     Tmp2(18, 8) = Tmp1(32, 3) + Yab*Tmp1(18, 3) 
+     Tmp2(19, 8) = Tmp1(33, 3) + Yab*Tmp1(19, 3) 
+     Tmp2(20, 8) = Tmp1(34, 3) + Yab*Tmp1(20, 3) 
+     Tmp2(21, 8) = Tmp1(37, 3) + Yab*Tmp1(21, 3) 
+     Tmp2(22, 8) = Tmp1(39, 3) + Yab*Tmp1(22, 3) 
+     Tmp2(23, 8) = Tmp1(40, 3) + Yab*Tmp1(23, 3) 
+     Tmp2(24, 8) = Tmp1(42, 3) + Yab*Tmp1(24, 3) 
+     Tmp2(25, 8) = Tmp1(43, 3) + Yab*Tmp1(25, 3) 
+     Tmp2(26, 8) = Tmp1(44, 3) + Yab*Tmp1(26, 3) 
+     Tmp2(27, 8) = Tmp1(46, 3) + Yab*Tmp1(27, 3) 
+     Tmp2(28, 8) = Tmp1(47, 3) + Yab*Tmp1(28, 3) 
+     Tmp2(29, 8) = Tmp1(48, 3) + Yab*Tmp1(29, 3) 
+     Tmp2(30, 8) = Tmp1(49, 3) + Yab*Tmp1(30, 3) 
+     Tmp2(31, 8) = Tmp1(51, 3) + Yab*Tmp1(31, 3) 
+     Tmp2(32, 8) = Tmp1(52, 3) + Yab*Tmp1(32, 3) 
+     Tmp2(33, 8) = Tmp1(53, 3) + Yab*Tmp1(33, 3) 
+     Tmp2(34, 8) = Tmp1(54, 3) + Yab*Tmp1(34, 3) 
+     Tmp2(35, 8) = Tmp1(55, 3) + Yab*Tmp1(35, 3) 
+     Tmp2(11, 9) = Tmp1(22, 4) + Yab*Tmp1(11, 4) 
+     Tmp2(12, 9) = Tmp1(24, 4) + Yab*Tmp1(12, 4) 
+     Tmp2(13, 9) = Tmp1(25, 4) + Yab*Tmp1(13, 4) 
+     Tmp2(14, 9) = Tmp1(27, 4) + Yab*Tmp1(14, 4) 
+     Tmp2(15, 9) = Tmp1(28, 4) + Yab*Tmp1(15, 4) 
+     Tmp2(16, 9) = Tmp1(29, 4) + Yab*Tmp1(16, 4) 
+     Tmp2(17, 9) = Tmp1(31, 4) + Yab*Tmp1(17, 4) 
+     Tmp2(18, 9) = Tmp1(32, 4) + Yab*Tmp1(18, 4) 
+     Tmp2(19, 9) = Tmp1(33, 4) + Yab*Tmp1(19, 4) 
+     Tmp2(20, 9) = Tmp1(34, 4) + Yab*Tmp1(20, 4) 
+     Tmp2(21, 9) = Tmp1(37, 4) + Yab*Tmp1(21, 4) 
+     Tmp2(22, 9) = Tmp1(39, 4) + Yab*Tmp1(22, 4) 
+     Tmp2(23, 9) = Tmp1(40, 4) + Yab*Tmp1(23, 4) 
+     Tmp2(24, 9) = Tmp1(42, 4) + Yab*Tmp1(24, 4) 
+     Tmp2(25, 9) = Tmp1(43, 4) + Yab*Tmp1(25, 4) 
+     Tmp2(26, 9) = Tmp1(44, 4) + Yab*Tmp1(26, 4) 
+     Tmp2(27, 9) = Tmp1(46, 4) + Yab*Tmp1(27, 4) 
+     Tmp2(28, 9) = Tmp1(47, 4) + Yab*Tmp1(28, 4) 
+     Tmp2(29, 9) = Tmp1(48, 4) + Yab*Tmp1(29, 4) 
+     Tmp2(30, 9) = Tmp1(49, 4) + Yab*Tmp1(30, 4) 
+     Tmp2(31, 9) = Tmp1(51, 4) + Yab*Tmp1(31, 4) 
+     Tmp2(32, 9) = Tmp1(52, 4) + Yab*Tmp1(32, 4) 
+     Tmp2(33, 9) = Tmp1(53, 4) + Yab*Tmp1(33, 4) 
+     Tmp2(34, 9) = Tmp1(54, 4) + Yab*Tmp1(34, 4) 
+     Tmp2(35, 9) = Tmp1(55, 4) + Yab*Tmp1(35, 4) 
+     Tmp2(11,10) = Tmp1(23, 4) + Zab*Tmp1(11, 4) 
+     Tmp2(12,10) = Tmp1(25, 4) + Zab*Tmp1(12, 4) 
+     Tmp2(13,10) = Tmp1(26, 4) + Zab*Tmp1(13, 4) 
+     Tmp2(14,10) = Tmp1(28, 4) + Zab*Tmp1(14, 4) 
+     Tmp2(15,10) = Tmp1(29, 4) + Zab*Tmp1(15, 4) 
+     Tmp2(16,10) = Tmp1(30, 4) + Zab*Tmp1(16, 4) 
+     Tmp2(17,10) = Tmp1(32, 4) + Zab*Tmp1(17, 4) 
+     Tmp2(18,10) = Tmp1(33, 4) + Zab*Tmp1(18, 4) 
+     Tmp2(19,10) = Tmp1(34, 4) + Zab*Tmp1(19, 4) 
+     Tmp2(20,10) = Tmp1(35, 4) + Zab*Tmp1(20, 4) 
+     Tmp2(21,10) = Tmp1(38, 4) + Zab*Tmp1(21, 4) 
+     Tmp2(22,10) = Tmp1(40, 4) + Zab*Tmp1(22, 4) 
+     Tmp2(23,10) = Tmp1(41, 4) + Zab*Tmp1(23, 4) 
+     Tmp2(24,10) = Tmp1(43, 4) + Zab*Tmp1(24, 4) 
+     Tmp2(25,10) = Tmp1(44, 4) + Zab*Tmp1(25, 4) 
+     Tmp2(26,10) = Tmp1(45, 4) + Zab*Tmp1(26, 4) 
+     Tmp2(27,10) = Tmp1(47, 4) + Zab*Tmp1(27, 4) 
+     Tmp2(28,10) = Tmp1(48, 4) + Zab*Tmp1(28, 4) 
+     Tmp2(29,10) = Tmp1(49, 4) + Zab*Tmp1(29, 4) 
+     Tmp2(30,10) = Tmp1(50, 4) + Zab*Tmp1(30, 4) 
+     Tmp2(31,10) = Tmp1(52, 4) + Zab*Tmp1(31, 4) 
+     Tmp2(32,10) = Tmp1(53, 4) + Zab*Tmp1(32, 4) 
+     Tmp2(33,10) = Tmp1(54, 4) + Zab*Tmp1(33, 4) 
+     Tmp2(34,10) = Tmp1(55, 4) + Zab*Tmp1(34, 4) 
+     Tmp2(35,10) = Tmp1(56, 4) + Zab*Tmp1(35, 4) 
+     ThetaP(11,11      ,IP) = Tmp2(21, 5) + Xab*Tmp2(11, 5) 
+     ThetaP(12,11      ,IP) = Tmp2(22, 5) + Xab*Tmp2(12, 5) 
+     ThetaP(13,11      ,IP) = Tmp2(23, 5) + Xab*Tmp2(13, 5) 
+     ThetaP(14,11      ,IP) = Tmp2(24, 5) + Xab*Tmp2(14, 5) 
+     ThetaP(15,11      ,IP) = Tmp2(25, 5) + Xab*Tmp2(15, 5) 
+     ThetaP(16,11      ,IP) = Tmp2(26, 5) + Xab*Tmp2(16, 5) 
+     ThetaP(17,11      ,IP) = Tmp2(27, 5) + Xab*Tmp2(17, 5) 
+     ThetaP(18,11      ,IP) = Tmp2(28, 5) + Xab*Tmp2(18, 5) 
+     ThetaP(19,11      ,IP) = Tmp2(29, 5) + Xab*Tmp2(19, 5) 
+     ThetaP(20,11      ,IP) = Tmp2(30, 5) + Xab*Tmp2(20, 5) 
+     ThetaP(11,12      ,IP) = Tmp2(21, 6) + Xab*Tmp2(11, 6) 
+     ThetaP(12,12      ,IP) = Tmp2(22, 6) + Xab*Tmp2(12, 6) 
+     ThetaP(13,12      ,IP) = Tmp2(23, 6) + Xab*Tmp2(13, 6) 
+     ThetaP(14,12      ,IP) = Tmp2(24, 6) + Xab*Tmp2(14, 6) 
+     ThetaP(15,12      ,IP) = Tmp2(25, 6) + Xab*Tmp2(15, 6) 
+     ThetaP(16,12      ,IP) = Tmp2(26, 6) + Xab*Tmp2(16, 6) 
+     ThetaP(17,12      ,IP) = Tmp2(27, 6) + Xab*Tmp2(17, 6) 
+     ThetaP(18,12      ,IP) = Tmp2(28, 6) + Xab*Tmp2(18, 6) 
+     ThetaP(19,12      ,IP) = Tmp2(29, 6) + Xab*Tmp2(19, 6) 
+     ThetaP(20,12      ,IP) = Tmp2(30, 6) + Xab*Tmp2(20, 6) 
+     ThetaP(11,13      ,IP) = Tmp2(21, 7) + Xab*Tmp2(11, 7) 
+     ThetaP(12,13      ,IP) = Tmp2(22, 7) + Xab*Tmp2(12, 7) 
+     ThetaP(13,13      ,IP) = Tmp2(23, 7) + Xab*Tmp2(13, 7) 
+     ThetaP(14,13      ,IP) = Tmp2(24, 7) + Xab*Tmp2(14, 7) 
+     ThetaP(15,13      ,IP) = Tmp2(25, 7) + Xab*Tmp2(15, 7) 
+     ThetaP(16,13      ,IP) = Tmp2(26, 7) + Xab*Tmp2(16, 7) 
+     ThetaP(17,13      ,IP) = Tmp2(27, 7) + Xab*Tmp2(17, 7) 
+     ThetaP(18,13      ,IP) = Tmp2(28, 7) + Xab*Tmp2(18, 7) 
+     ThetaP(19,13      ,IP) = Tmp2(29, 7) + Xab*Tmp2(19, 7) 
+     ThetaP(20,13      ,IP) = Tmp2(30, 7) + Xab*Tmp2(20, 7) 
+     ThetaP(11,14      ,IP) = Tmp2(21, 8) + Xab*Tmp2(11, 8) 
+     ThetaP(12,14      ,IP) = Tmp2(22, 8) + Xab*Tmp2(12, 8) 
+     ThetaP(13,14      ,IP) = Tmp2(23, 8) + Xab*Tmp2(13, 8) 
+     ThetaP(14,14      ,IP) = Tmp2(24, 8) + Xab*Tmp2(14, 8) 
+     ThetaP(15,14      ,IP) = Tmp2(25, 8) + Xab*Tmp2(15, 8) 
+     ThetaP(16,14      ,IP) = Tmp2(26, 8) + Xab*Tmp2(16, 8) 
+     ThetaP(17,14      ,IP) = Tmp2(27, 8) + Xab*Tmp2(17, 8) 
+     ThetaP(18,14      ,IP) = Tmp2(28, 8) + Xab*Tmp2(18, 8) 
+     ThetaP(19,14      ,IP) = Tmp2(29, 8) + Xab*Tmp2(19, 8) 
+     ThetaP(20,14      ,IP) = Tmp2(30, 8) + Xab*Tmp2(20, 8) 
+     ThetaP(11,15      ,IP) = Tmp2(21, 9) + Xab*Tmp2(11, 9) 
+     ThetaP(12,15      ,IP) = Tmp2(22, 9) + Xab*Tmp2(12, 9) 
+     ThetaP(13,15      ,IP) = Tmp2(23, 9) + Xab*Tmp2(13, 9) 
+     ThetaP(14,15      ,IP) = Tmp2(24, 9) + Xab*Tmp2(14, 9) 
+     ThetaP(15,15      ,IP) = Tmp2(25, 9) + Xab*Tmp2(15, 9) 
+     ThetaP(16,15      ,IP) = Tmp2(26, 9) + Xab*Tmp2(16, 9) 
+     ThetaP(17,15      ,IP) = Tmp2(27, 9) + Xab*Tmp2(17, 9) 
+     ThetaP(18,15      ,IP) = Tmp2(28, 9) + Xab*Tmp2(18, 9) 
+     ThetaP(19,15      ,IP) = Tmp2(29, 9) + Xab*Tmp2(19, 9) 
+     ThetaP(20,15      ,IP) = Tmp2(30, 9) + Xab*Tmp2(20, 9) 
+     ThetaP(11,16      ,IP) = Tmp2(21,10) + Xab*Tmp2(11,10) 
+     ThetaP(12,16      ,IP) = Tmp2(22,10) + Xab*Tmp2(12,10) 
+     ThetaP(13,16      ,IP) = Tmp2(23,10) + Xab*Tmp2(13,10) 
+     ThetaP(14,16      ,IP) = Tmp2(24,10) + Xab*Tmp2(14,10) 
+     ThetaP(15,16      ,IP) = Tmp2(25,10) + Xab*Tmp2(15,10) 
+     ThetaP(16,16      ,IP) = Tmp2(26,10) + Xab*Tmp2(16,10) 
+     ThetaP(17,16      ,IP) = Tmp2(27,10) + Xab*Tmp2(17,10) 
+     ThetaP(18,16      ,IP) = Tmp2(28,10) + Xab*Tmp2(18,10) 
+     ThetaP(19,16      ,IP) = Tmp2(29,10) + Xab*Tmp2(19,10) 
+     ThetaP(20,16      ,IP) = Tmp2(30,10) + Xab*Tmp2(20,10) 
+     ThetaP(11,17      ,IP) = Tmp2(22, 8) + Yab*Tmp2(11, 8) 
+     ThetaP(12,17      ,IP) = Tmp2(24, 8) + Yab*Tmp2(12, 8) 
+     ThetaP(13,17      ,IP) = Tmp2(25, 8) + Yab*Tmp2(13, 8) 
+     ThetaP(14,17      ,IP) = Tmp2(27, 8) + Yab*Tmp2(14, 8) 
+     ThetaP(15,17      ,IP) = Tmp2(28, 8) + Yab*Tmp2(15, 8) 
+     ThetaP(16,17      ,IP) = Tmp2(29, 8) + Yab*Tmp2(16, 8) 
+     ThetaP(17,17      ,IP) = Tmp2(31, 8) + Yab*Tmp2(17, 8) 
+     ThetaP(18,17      ,IP) = Tmp2(32, 8) + Yab*Tmp2(18, 8) 
+     ThetaP(19,17      ,IP) = Tmp2(33, 8) + Yab*Tmp2(19, 8) 
+     ThetaP(20,17      ,IP) = Tmp2(34, 8) + Yab*Tmp2(20, 8) 
+     ThetaP(11,18      ,IP) = Tmp2(22, 9) + Yab*Tmp2(11, 9) 
+     ThetaP(12,18      ,IP) = Tmp2(24, 9) + Yab*Tmp2(12, 9) 
+     ThetaP(13,18      ,IP) = Tmp2(25, 9) + Yab*Tmp2(13, 9) 
+     ThetaP(14,18      ,IP) = Tmp2(27, 9) + Yab*Tmp2(14, 9) 
+     ThetaP(15,18      ,IP) = Tmp2(28, 9) + Yab*Tmp2(15, 9) 
+     ThetaP(16,18      ,IP) = Tmp2(29, 9) + Yab*Tmp2(16, 9) 
+     ThetaP(17,18      ,IP) = Tmp2(31, 9) + Yab*Tmp2(17, 9) 
+     ThetaP(18,18      ,IP) = Tmp2(32, 9) + Yab*Tmp2(18, 9) 
+     ThetaP(19,18      ,IP) = Tmp2(33, 9) + Yab*Tmp2(19, 9) 
+     ThetaP(20,18      ,IP) = Tmp2(34, 9) + Yab*Tmp2(20, 9) 
+     ThetaP(11,19      ,IP) = Tmp2(22,10) + Yab*Tmp2(11,10) 
+     ThetaP(12,19      ,IP) = Tmp2(24,10) + Yab*Tmp2(12,10) 
+     ThetaP(13,19      ,IP) = Tmp2(25,10) + Yab*Tmp2(13,10) 
+     ThetaP(14,19      ,IP) = Tmp2(27,10) + Yab*Tmp2(14,10) 
+     ThetaP(15,19      ,IP) = Tmp2(28,10) + Yab*Tmp2(15,10) 
+     ThetaP(16,19      ,IP) = Tmp2(29,10) + Yab*Tmp2(16,10) 
+     ThetaP(17,19      ,IP) = Tmp2(31,10) + Yab*Tmp2(17,10) 
+     ThetaP(18,19      ,IP) = Tmp2(32,10) + Yab*Tmp2(18,10) 
+     ThetaP(19,19      ,IP) = Tmp2(33,10) + Yab*Tmp2(19,10) 
+     ThetaP(20,19      ,IP) = Tmp2(34,10) + Yab*Tmp2(20,10) 
+     ThetaP(11,20      ,IP) = Tmp2(23,10) + Zab*Tmp2(11,10) 
+     ThetaP(12,20      ,IP) = Tmp2(25,10) + Zab*Tmp2(12,10) 
+     ThetaP(13,20      ,IP) = Tmp2(26,10) + Zab*Tmp2(13,10) 
+     ThetaP(14,20      ,IP) = Tmp2(28,10) + Zab*Tmp2(14,10) 
+     ThetaP(15,20      ,IP) = Tmp2(29,10) + Zab*Tmp2(15,10) 
+     ThetaP(16,20      ,IP) = Tmp2(30,10) + Zab*Tmp2(16,10) 
+     ThetaP(17,20      ,IP) = Tmp2(32,10) + Zab*Tmp2(17,10) 
+     ThetaP(18,20      ,IP) = Tmp2(33,10) + Zab*Tmp2(18,10) 
+     ThetaP(19,20      ,IP) = Tmp2(34,10) + Zab*Tmp2(19,10) 
+     ThetaP(20,20      ,IP) = Tmp2(35,10) + Zab*Tmp2(20,10) 
+  ENDDO
+end subroutine HorizontalRR_GPU_LHS_P6A3B3AtoB
 end module
