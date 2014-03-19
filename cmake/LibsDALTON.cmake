@@ -21,6 +21,7 @@ if(ENABLE_GEN1INT)
 endif()
 
 if(ENABLE_PELIB)
+    include(LibsPElib)
     add_dependencies(dalton pelib)
 endif()
 
