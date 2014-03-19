@@ -1765,7 +1765,7 @@ contains
     call mem_alloc(PQbatchInfo%dimInd1,   Njob)
     call mem_alloc(PQbatchInfo%dimInd2,   Njob)
     call mem_alloc(PQbatchInfo%dimTot,    Njob)
-    call mem_alloc(PQbatchInfo%tileInd,   Njob)
+    call mem_alloc(PQbatchInfo%tileInd, Njob,2)
 
     ! Initialization
     PQ_batch = 1
@@ -1796,11 +1796,13 @@ contains
         ! DimTot contains the total dimension 
         if (P_sta==Q_sta) then
           idb = idb + 1
-          PQbatchInfo%tileInd(PQ_batch) = idb
+          PQbatchInfo%tileInd(PQ_batch,1) = idb
+          PQbatchInfo%tileInd(PQ_batch,2) = 0
           PQbatchInfo%dimTot(PQ_batch) = dimP*dimQ
         else 
           iub = iub + 1
-          PQbatchInfo%tileInd(PQ_batch) = iub
+          PQbatchInfo%tileInd(PQ_batch,1) = iub
+          PQbatchInfo%tileInd(PQ_batch,2) = 1
           PQbatchInfo%dimTot(PQ_batch) = 2*dimP*dimQ
         end if
 
