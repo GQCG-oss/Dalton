@@ -66,6 +66,7 @@ doprint = .FALSE.
 allocate(UNITTESTBASIS(4))
 BASISLABEL='REGULAR  '
 spherical = .TRUE.!.FALSE.
+IPRINT = 0
    
 IF(config%prof%IchorProfInputBasis)THEN
    do A = 1,4       
@@ -113,7 +114,6 @@ IF(config%prof%IchorProfDoThermite)THEN
    ENDIF
 ENDIF
 
-iprint=0
 IF(config%prof%IchorProfDoIchor)THEN
    WRITE(lupri,*)'Performing Ichor Profiling'
    call mem_alloc(integralsIchor,dim1,dim2,dim3,dim4)
@@ -140,8 +140,10 @@ IF(config%prof%IchorProfDoIchor)THEN
       print*,'Norm the same screen'
    ELSE
       print*,'normIchorScreen',normIchorScreen
-      print*,'normII   ',normII
-      print*,'ABS(normIchor-normII)',ABS(normIchorScreen-normII)
+      IF(config%prof%IchorProfDoThermite)THEN
+         print*,'normII   ',normII
+         print*,'ABS(normIchor-normII)',ABS(normIchorScreen-normII)
+      ENDIF
    ENDIF
    IF(.NOT.COMPARE)THEN
       call mem_dealloc(integralsIchor)
