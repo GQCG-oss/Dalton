@@ -285,8 +285,8 @@ do Ipass = IpassStart,IpassEnd
 !         IF(iBasis4+(iBasis3-1)*nBasis+(iBasis2-1)*nBasis*nBasis+&
 !              & (iBasis1-1)*nBasis*nBasis*nBasis.LT.14) CYCLE
 
-         print*,'iBasis:',iBasis4Q+(iBasis3Q-1)*nBasisD+(iBasis2Q-1)*nBasisD*nBasisC+&
-              & (iBasis1Q-1)*nBasisD*nBasisC*nBasisB,'of',nBasisA*nBasisB*nBasisC*nbasisD
+!         print*,'iBasis:',iBasis4Q+(iBasis3Q-1)*nBasisD+(iBasis2Q-1)*nBasisD*nBasisC+&
+!              & (iBasis1Q-1)*nBasisD*nBasisC*nBasisB,'of',nBasisA*nBasisB*nBasisC*nbasisD
        ibasiselm(1) = iBasis1
        ibasiselm(2) = iBasis2
        ibasiselm(3) = iBasis3
@@ -505,6 +505,8 @@ ELSEIF(icharge.LT.1000)THEN
 ENDIF
 atomicmolecule%label = label
 call mem_alloc(atomicmolecule%ATOM,nAtoms)
+nullify(atomicmolecule%SubsystemLabel)
+atomicmolecule%nSubsystems = 0
 atomicmolecule%nAtoms = nAtoms
 atomicmolecule%nAtomsNPC = nAtoms
 atomicmolecule%nelectrons = ICHARGE*nAtoms
@@ -553,6 +555,7 @@ do I=1,nAtoms
    atomicmolecule%ATOM(I)%nContOrbVAL =0 
    atomicmolecule%ATOM(I)%nPrimOrbVAL =0 
    atomicmolecule%ATOM(I)%molecularIndex =0 
+   atomicmolecule%ATOM(I)%SubSystemIndex =0 
 ENDDO
 
 #endif

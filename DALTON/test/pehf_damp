@@ -182,7 +182,7 @@ CRIT1=`$GREP "Monopoles * (\-|\-0)\.015707......" $log | wc -l`
 CRIT2=`$GREP "Dipoles * ( |0)\.004251......" $log | wc -l`
 CRIT3=`$GREP "Quadrupoles * (\-|\-0)\.004995......" $log | wc -l`
 CRIT4=`$GREP "Octopoles * (\-|\-0)\.002314......" $log | wc -l`
-CRIT5=`$GREP "Electronic * (\-|\-0)\.074497......" $log | wc -l`
+CRIT5=`$GREP "Electronic * (\-|\-0)\.07449(6|7)......" $log | wc -l`
 CRIT6=`$GREP "Nuclear * ( |0)\.072657......" $log | wc -l`
 CRIT7=`$GREP "Multipole * ( |0)\.000323......" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.020281......" $log | wc -l`
@@ -194,8 +194,8 @@ ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Induced dipole moments in environment
 #
-CRIT1=`$GREP "  1 * ( |0)\.140114.. * ( |0)\.193038.. * ( |0)\.00004[12].." $log | wc -l`
-CRIT2=`$GREP "  6 * (\-|\-0)\.289498.. * ( |0)\.050488.. * ( |0)\.00009[45].." $log | wc -l`
+CRIT1=`$GREP "  1 * ( |0)\.140114.. * ( |0)\.193037.. * ( |0)\.00004[12].." $log | wc -l`
+CRIT2=`$GREP "  6 * (\-|\-0)\.28949[78].. * ( |0)\.050489.. * ( |0)\.00009[45].." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[3]=2
 ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
@@ -248,7 +248,7 @@ CRIT1=`$GREP "Monopoles * (\-|\-0)\.015707......" $log | wc -l`
 CRIT2=`$GREP "Dipoles * ( |0)\.004251......" $log | wc -l`
 CRIT3=`$GREP "Quadrupoles * (\-|\-0)\.004995......" $log | wc -l`
 CRIT4=`$GREP "Octopoles * (\-|\-0)\.002314......" $log | wc -l`
-CRIT5=`$GREP "Electronic * (\-|\-0)\.074497......" $log | wc -l`
+CRIT5=`$GREP "Electronic * (\-|\-0)\.07449(6|7)......" $log | wc -l`
 CRIT6=`$GREP "Nuclear * ( |0)\.072657......" $log | wc -l`
 CRIT7=`$GREP "Multipole * ( |0)\.000323......" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.020281......" $log | wc -l`
@@ -260,8 +260,8 @@ ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Induced dipole moments in environment
 #
-CRIT1=`$GREP "  1 * ( |0)\.140114.. * ( |0)\.193038.. * ( |0)\.00004[12].." $log | wc -l`
-CRIT2=`$GREP "  6 * (\-|\-0)\.289498.. * ( |0)\.050488.. * ( |0)\.00009[45].." $log | wc -l`
+CRIT1=`$GREP "  1 * ( |0)\.140114.. * ( |0)\.193037.. * ( |0)\.00004[12].." $log | wc -l`
+CRIT2=`$GREP "  6 * (\-|\-0)\.28949[78].. * ( |0)\.050489.. * ( |0)\.00009[45].." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[3]=2
 ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"

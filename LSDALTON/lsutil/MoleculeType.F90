@@ -40,10 +40,10 @@ INTEGER           :: nPrimOrbJK !# primitives orbitals
 INTEGER           :: nContOrbVAL !# contracted orbitals for valence basis
 INTEGER           :: nPrimOrbVAL !# primitives orbitals for valence basis
 INTEGER           :: molecularIndex !# consecutive atomic index (for full the molecule)
+INTEGER           :: SubSystemIndex !(index in Moleculeinfo%SubsystemLabel
 END TYPE ATOMITEM
 
 TYPE MOLECULEINFO
-Character(len=22)    :: label
 TYPE(ATOMITEM), pointer  :: ATOM(:) !length = nAtomtypes
 INTEGER              :: nAtoms
 INTEGER              :: nAtomsNPC !nAtoms NOT including pointcharges
@@ -61,6 +61,9 @@ INTEGER              :: nprimbastCABS
 INTEGER              :: nprimbastJK
 INTEGER              :: nprimbastVAL
 logical              :: pointMolecule
+INTEGER              :: nSubSystems
+Character(len=22)    :: label
+Character(len=80),pointer :: SubsystemLabel(:)
 END TYPE MOLECULEINFO
 
 TYPE MOLECULE_PT

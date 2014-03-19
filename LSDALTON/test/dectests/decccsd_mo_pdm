@@ -17,36 +17,38 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decccsd_mo.info <<'%EOF%'
+cat > decccsd_mo_pdm.info <<'%EOF%'
    DEC-CCSD energy using fragment calculations without long-range t1
    -----------------------------------------------------------------
    Molecule:         3 BH molecules with stretched bonds
    Wave Function:    MO-CCSD / STO-3G
-   Test Purpose:     Test DEC energy for MO-CCSD (Pablo Baudin)
+   Test Purpose:     Test DEC energy for MO-CCSD/PDM scheme (Pablo Baudin)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decccsd_mo.mol <<'%EOF%'
+cat > decccsd_mo_pdm.mol <<'%EOF%'
 BASIS                                                   
 STO-3G
                                                         
                                                         
-Atomtypes=2 Nosymmetry Angstrom
-Charge=5.0 Atoms=3
+Atomtypes=4 Nosymmetry Angstrom SubSystems
+Charge=5.0 Atoms=2 SubSystem=A
 B          0.000000      0.0000000    0.0000000
 B          3.000000      0.0000000    1.4500000
+Charge=5.0 Atoms=1 SubSystem=B
 B          6.000000      0.0000000    0.0000000
-Charge=1.0 Atoms=3
+Charge=1.0 Atoms=2 SubSystem=A
 H          0.000000      1.4500000    0.0000000
 H          3.000000      0.0000000    0.0000000
+Charge=1.0 Atoms=1 SubSystem=B
 H          6.000000      0.0000000    1.4500000
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decccsd_mo.dal <<'%EOF%'
+cat > decccsd_mo_pdm.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -60,12 +62,15 @@ TRILEVEL
 **DEC
 .CCSD
 .MOCCSD
+.CCSDFORCE_SCHEME
+ 6
 .MPIsplit
 0
 .FOT
 4
 .MEMORY
 2.0
+.PRINTINTERACTIONENERGY
 *END OF INPUT  
 %EOF%
 #######################################################################
@@ -75,8 +80,8 @@ TRILEVEL
 #######################################################################
 
 #######################################################################
-echo $CHECK_SHELL >decccsd_mo.check
-cat >>decccsd_mo.check <<'%EOF%'
+echo $CHECK_SHELL >decccsd_mo_pdm.check
+cat >>decccsd_mo_pdm.check <<'%EOF%'
 
 log=$1
 
@@ -98,20 +103,26 @@ TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy is not correct"
 
+# CCSD INTERACTION ENERGY
+CRIT1=`$GREP "Interaction Correlation energy  : * \-0\.000422" $log | wc -l`
+TEST[3]=`expr   $CRIT1`
+CTRL[3]=1
+ERROR[3]="CCSD interaction correlation energy is not correct"
+
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
-TEST[3]=`expr  $CRIT1`                                                    
-CTRL[3]=1                                                                 
-ERROR[3]="Memory leak -"
+TEST[4]=`expr  $CRIT1`                                                    
+CTRL[4]=1                                                                 
+ERROR[4]="Memory leak -"
 
 # Memory test for array4                                                  
 CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
-TEST[4]=`expr  $CRIT1`                                                    
-CTRL[4]=1                                                                 
-ERROR[4]="Memory leak for array4 -" 
+TEST[5]=`expr  $CRIT1`                                                    
+CTRL[5]=1                                                                 
+ERROR[5]="Memory leak for array4 -" 
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

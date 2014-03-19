@@ -200,7 +200,7 @@ ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 # dipole moment of acrolein
 #
 CRIT1=`$GREP "x * ( |0)\.52015..." $log | wc -l`
-CRIT2=`$GREP "y * (\-|\-0)\.93248..." $log | wc -l`
+CRIT2=`$GREP "y * (\-|\-0)\.9324(7|8)..." $log | wc -l`
 CRIT3=`$GREP "z * (\-|\-0)\.00004..." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[3]=3

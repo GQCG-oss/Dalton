@@ -198,8 +198,8 @@ ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Induced dipole moments in environment
 #
- CRIT1=`$GREP "  1 * ( |0)\.004763.. * ( |0)\.010191.. * ( |0)\.000004.." $log | wc -l`
- CRIT2=`$GREP "  2 * ( |0)\.012893.. * ( |0)\.006943.. * ( |0)\.000007.." $log | wc -l`
+ CRIT1=`$GREP "  1 * ( |0)\.004763.. * ( |0)\.01019[01].. * ( |0)\.000004.." $log | wc -l`
+ CRIT2=`$GREP "  2 * ( |0)\.012893.. * ( |0)\.006943.. * ( |0)\.00000[67].." $log | wc -l`
  CRIT3=`$GREP "  3 * ( |0)\.001437.. * ( |0)\.000409.. * ( |0)\.000000.." $log | wc -l`
  CRIT4=`$GREP "  4 * ( |0)\.034346.. * ( |0)\.024048.. * ( |0)\.000026.." $log | wc -l`
  CRIT5=`$GREP "  5 * ( |0)\.002182.. * (\-|\-0)\.000242.. * (\-|\-0)\.000001.." $log | wc -l`
@@ -216,7 +216,7 @@ ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 # dipole moment of acrolein
 #
 CRIT1=`$GREP "x * ( |0)\.52015..." $log | wc -l`
-CRIT2=`$GREP "y * (\-|\-0)\.93248..." $log | wc -l`
+CRIT2=`$GREP "y * (\-|\-0)\.9324(7|8)..." $log | wc -l`
 CRIT3=`$GREP "z * (\-|\-0)\.00004..." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[4]=3

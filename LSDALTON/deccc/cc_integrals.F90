@@ -44,7 +44,7 @@ module ccintegrals
      module procedure getL_diff
   end interface
  
-  private :: get_MO_and_AO_batches_size, get_mem_t1_free_gmo, get_mem_MO_CCSD_residual, &
+  private :: get_mem_t1_free_gmo, get_mem_MO_CCSD_residual, &
              & get_AO_batches_size_rpa, get_mem_gmo_RPA, gao_to_gmo, gao_to_govov, &
              & get_MO_batches_info, pack_and_add_gmo
 
@@ -856,7 +856,7 @@ contains
 
       case(MODEL_CCSD)
         call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nb,no,nv, &
-               & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem)
+               & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem,.false.)
         if (.not.mo_ccsd) return
 
         if (print_debug) then
@@ -1177,6 +1177,11 @@ contains
      
 #ifdef VAR_MPI
     call mem_dealloc(tasks)
+    ! The slaves tell to the master that they have done their jobs.
+    ! The master receives the message in the residual routine.
+    if (.not.master.and.ccmodel==MODEL_CCSD) then
+      call lsmpi_reduction(1.0E0_realk,infpar%master,infpar%lg_comm)
+    end if
 #endif
 
     call LSTIMER('get_t1_free_gmo',tcpu,twall,DECinfo%output)
@@ -1193,7 +1198,7 @@ contains
   !> Author:  Pablo Baudin
   !> Date:    December 2013
   subroutine get_MO_and_AO_batches_size(mo_ccsd,local,ntot,nb,no,nv, &
-             & dimMO,Nbatch,MaxAlpha,MaxGamma,MyLsItem)
+             & dimMO,Nbatch,MaxAlpha,MaxGamma,MyLsItem,mpi_split)
     
     implicit none
   
@@ -1206,13 +1211,15 @@ contains
     !> AO batches stuff:
     integer, intent (inout) :: MaxAlpha, MaxGamma
     type(lsitem), intent(inout) :: MyLsItem
+    logical, intent(in) :: mpi_split
     
     real(realk) :: MemNeed, MemFree
     integer(kind=long) :: min_mem
-    integer :: MinAOBatch, na, ng, nnod, magic
+    integer :: MinAOBatch, MinMOBatch, na, ng, nnod, magic
 
-    dimMO = 1
-    local = .false. 
+    MinMOBatch = min(15,ntot)
+    dimMO = MinMOBatch
+    local = .false.
     nnod  = 1
 #ifdef VAR_MPI
     nnod  = infpar%lg_nodtot
@@ -1221,51 +1228,71 @@ contains
     !===========================================================
     ! Get MO batch size depending on MO-ccsd residual routine.
     call get_currently_available_memory(MemFree)
-    if (nnod>1) then 
-      ! try first for scheme with highest requirements --> fastest
-      local = .true. 
-      dimMO = 10
-      if (ntot<dimMO) dimMO = ntot
-      call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
+    if (nnod>1) then
 
-      ! if not enough mem then switch to full PDM scheme:
-      if (MeMNeed>0.8E0_realk*MemFree) then
+      ! SELECT SCHEME (storage of MO int.): 
+      !
+      ! 0-4 are reserved to standard CCSD (Patrick's code)
+      ! 
+      ! 5: Local scheme: more memory required but no one 
+      !    sided communication.
+      !
+      ! 6: PDM scheme: batches are distributed in PDM using
+      !    one sided communication.
+
+      if (DECinfo%force_scheme.and.DECinfo%en_mem==5) then
+        print *,"!!FORCING MO-CCSD SCHEME!!"
+        local = .true.
+      else if (DECinfo%force_scheme.and.DECinfo%en_mem==6) then
+        print *,"!!FORCING MO-CCSD SCHEME!!"
         local = .false.
-        dimMO = 1
+      else
+        ! try first for scheme with highest requirements --> fastest
+        local = .true.
+        call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
+
+        ! if not enough mem then switch to full PDM scheme:
+        if (MeMNeed>0.8E0_realk*MemFree) then
+          local = .false.
+        end if
       end if
     end if
 
-    call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
+    call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
 
-    do while ((MemNeed<0.8E0_realk*MemFree).and.(dimMO<=ntot)) 
+    do while ((MemNeed<0.8E0_realk*MemFree).and.(dimMO<=ntot))
       dimMO = dimMO + 1
-      call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
+      call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
     end do
 
     if (dimMO>=ntot) then
       dimMO = ntot
-    else if (dimMO<=1) then
-      dimMO = 1
-    else 
+    else if (dimMO<=MinMOBatch) then
+      dimMO = MinMOBatch
+    else
       dimMO = dimMO - 1
     end if
 
-    ! Check that every nodes will have a job in residual calc.
-    ! But the dimension of the batch must stay above 10 MOs.
-    magic  = 1
-    Nbatch = ((ntot-1)/dimMO+1)
-    Nbatch = Nbatch*(Nbatch+1)/2
-
-    do while (Nbatch<magic*nnod.and.dimMO>10.and.nnod>1)
-      dimMO = dimMO-1
+    ! mpi_split should be true when we want to estimate the workload associated
+    ! to a DEC fragment and eventually split the slots. In this case, the next
+    ! step must be skiped.
+    if (.not.mpi_split) then
+      ! Check that every nodes will have a job in residual calc.
+      ! But the dimension of the batch must stay above MinMOBatch.
+      magic  = 1
       Nbatch = ((ntot-1)/dimMO+1)
       Nbatch = Nbatch*(Nbatch+1)/2
-      if (dimMO<10) then 
-        MaxAlpha = dimMO
-        exit
-      end if
-    end do
-
+       
+      do while (Nbatch<magic*nnod.and.(dimMO>MinMOBatch).and.nnod>1)
+        dimMO = dimMO-1
+        Nbatch = ((ntot-1)/dimMO+1)
+        Nbatch = Nbatch*(Nbatch+1)/2
+        if (dimMO<MinMOBatch) then
+          dimMO = MinMOBatch
+          exit
+        end if
+      end do
+    end if
     ! sanity check:
     call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
     if ((MemFree-MemNeed)<=0.0E0_realk) then
@@ -1311,28 +1338,33 @@ contains
       MaxAlpha = MaxAlpha - 1
     end if
 
-    ! Check that every nodes has a job:
-    magic = 2 
-    ng    = ((nb-1)/MaxGamma+1)
-    na    = ((nb-1)/MaxAlpha+1)
-
-    ! Number of Alpha batches must be at least magic*nnod
-    if (na*ng<magic*nnod.and.(MaxAlpha>MinAObatch).and.nnod>1)then
-      MaxAlpha = (nb/(magic*nnod))
-      if (MaxAlpha<MinAObatch) MaxAlpha = MinAObatch
+    ! mpi_split should be true when we want to estimate the workload associated
+    ! to a DEC fragment and eventually split the slots. In this case, the next
+    ! step must be skiped.
+    if (.not.mpi_split) then
+      ! Check that every nodes has a job:
+      magic = 2 
+      ng    = ((nb-1)/MaxGamma+1)
+      na    = ((nb-1)/MaxAlpha+1)
+       
+      ! Number of Alpha batches must be at least magic*nnod
+      if (na*ng<magic*nnod.and.(MaxAlpha>MinAObatch).and.nnod>1)then
+        MaxAlpha = (nb/(magic*nnod))
+        if (MaxAlpha<MinAObatch) MaxAlpha = MinAObatch
+      end if
+       
+      na    = ((nb-1)/MaxAlpha+1)
+      if (na*ng<magic*nnod.and.(MaxAlpha==MinAObatch).and.nnod>1)then
+        do while(na*ng<magic*nnod)
+          MaxGamma = MaxGamma - 1
+          if (MaxGamma<MinAObatch) then
+            MaxGamma = MinAObatch
+            exit
+          end if
+          ng    = ((nb-1)/MaxGamma+1)
+        end do
+      endif
     end if
-
-    na    = ((nb-1)/MaxAlpha+1)
-    if (na*ng<magic*nnod.and.(MaxAlpha==MinAObatch).and.nnod>1)then
-      do while(na*ng<magic*nnod)
-        MaxGamma = MaxGamma - 1
-        if (MaxGamma<MinAObatch) then
-          MaxGamma = MinAObatch
-          exit
-        end if
-        ng    = ((nb-1)/MaxGamma+1)
-      end do
-    endif
 
     ! sanity check:
     call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
@@ -1575,11 +1607,11 @@ contains
     implicit none
  
     !> dimension parameters: 
-    integer :: ntot, dimMO, Nbat
+    integer, intent(in) :: ntot, dimMO, Nbat
     !> logical for the type of arrays:
-    logical :: mpi, local_moccsd
+    logical, intent(in) :: mpi, local_moccsd
     !> gmo arrays:
-    type(array) :: pgmo_diag, pgmo_up
+    type(array), intent(inout) :: pgmo_diag, pgmo_up
 
     character(4) :: at
     integer :: pgmo_dims
@@ -1836,8 +1868,10 @@ contains
       end do
   
       ! add to pdm array:
-      if (nnod>1) then
+      if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_accumulate_tile(pack_gmo,tile,tmp(1:ipack-1),ipack-1)
+      else if (nnod>1.and.pack_gmo%itype==TILED) then
+        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
       else
         call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
       end if
@@ -1857,8 +1891,10 @@ contains
       end do
 
       ! add to pdm array:
-      if (nnod>1) then
+      if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_accumulate_tile(pack_gmo,tile,tmp(1:ipack-1),ipack-1)
+      else if (nnod>1.and.pack_gmo%itype==TILED) then
+        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
       else
         call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
       end if
@@ -1904,8 +1940,10 @@ contains
       ! get batch from pdm:
       ncopy = ntot*(ntot+1)*dimP*(dimP+1)/4
 
-      if (nnod>1) then
+      if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_get_tile(pack_gmo,tile,tmp,ncopy)
+      else if (nnod>1.and.pack_gmo%itype==TILED) then
+        call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
         call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
       end if
@@ -1934,8 +1972,11 @@ contains
   
       ! get batch from pdm:
       ncopy = dimP*dimQ*ntot*(ntot+1)/2
-      if (nnod>1) then
+
+      if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_get_tile(pack_gmo,tile,tmp,ncopy)
+      else if (nnod>1.and.pack_gmo%itype==TILED) then
+        call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
         call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
       end if

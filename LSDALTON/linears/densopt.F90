@@ -69,7 +69,10 @@ CONTAINS
       endif
 
       !** If virtual part of F should be scaled
-      if (config%opt%cfg_scale_virt) call diag_scale_virt_fock(config%decomp%S,H1,F,D,config%decomp%nocc)
+      if (config%opt%cfg_scale_virt)then
+         call lsquit('diag_scale_virt_fock removed',-1)
+         ! call diag_scale_virt_fock(config%decomp%S,H1,F,D,config%decomp%nocc)
+      endif
 !
 !** Level-shift ??
 !

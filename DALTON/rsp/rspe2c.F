@@ -1221,8 +1221,8 @@ C
          IF ( IPRRSP.GT. 4 ) THEN
             WRITE (LUPRI,'(/A,2(/A,I5),/A,(T10,10I4))')
      *      ' >>> Restart in LRST >>>',
-     *      ' OPERATOR SYMMETRY          :',JSYMOP,
-     *      ' DIMENSION OF REDUCED SPACE :',KZDIM,
+     *      ' OPERATOR SYMMETRY               :',JSYMOP,
+     *      ' HALF-DIMENSION OF REDUCED SPACE :',KZDIM,
      *      ' IBTYP :',(IBTYP(I),I=1,KZDIM)
          END IF
          IF (JSYMOP.NE.KSYMOP) THEN
@@ -1247,7 +1247,15 @@ C
 #endif
             JZDIM = I
   50     CONTINUE
-  51     KZDIM = JZDIM
+  51     CONTINUE
+         IF (JZDIM .LT. KZDIM) THEN
+            WRITE (LUPRI,'(/A/A,I5,A,I5/A)')
+     *      ' >>> Restart in LRST >>>',
+     *      ' Half-dimnsion of reduced space reduced from',KZDIM,
+     *      ' to',JZDIM,
+     *      ' because that was the number of sigma vectors on LURSP5'
+         END IF
+         KZDIM = JZDIM
 C
 C
 C READ IN OLD TRIAL VECTORS AND SET UP REDUCED MATRICES

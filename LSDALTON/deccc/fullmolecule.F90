@@ -76,6 +76,9 @@ contains
 
     call molecule_get_carmom(molecule,mylsitem)
 
+    call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
+    call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
+
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
        !> Sanity check 
        if(.NOT. present(D)) then
@@ -136,6 +139,9 @@ contains
      
     call molecule_get_carmom(molecule,mylsitem)
        
+    call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
+    call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
+
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
        IF(DECinfo%full_molecular_cc)THEN
           call dec_get_CABS_orbitals(molecule,mylsitem)
@@ -187,9 +193,12 @@ contains
     call calculate_fullmolecule_memory(molecule,memory_use)
     DECinfo%fullmolecule_memory = memory_use
 
+    !> SubSystem index
+    call mem_alloc(molecule%SubSystemIndex,molecule%natoms)
+    call GetSubSystemIndex(molecule%SubSystemIndex,molecule%natoms,mylsitem,DECinfo%output) 
+
     !> Interatomic distances in atomic units
     call mem_alloc(molecule%DistanceTable,molecule%natoms,molecule%natoms)
-    molecule%DistanceTable=0.0E0_realk
     call GetDistances(molecule%DistanceTable,molecule%natoms,mylsitem,DECinfo%output) 
 
     !> Which model to use for different pair calculations?
@@ -199,7 +208,7 @@ contains
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
-    write(DECinfo%output,'(/,a)') '-- Full moleculecular info --'
+    write(DECinfo%output,'(/,a)') '-- Full molecular info --'
     write(DECinfo%output,'(/,a,i6)') 'FULL: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
     write(DECinfo%output,'(/,a,i6)') 'FULL: Number of electrons        : ',molecule%nelectrons
     write(DECinfo%output,'(a,i6)')   'FULL: Number of atoms            : ',molecule%natoms
@@ -319,6 +328,7 @@ contains
     electrons = 0
     natoms = mylsitem%input%molecule%natoms
     do i=1,natoms
+       IF(mylsitem%input%molecule%Atom(i)%Phantom)CYCLE
        electrons = electrons + mylsitem%input%molecule%Atom(i)%Charge
     end do
     charge = nint(mylsitem%input%molecule%charge)
@@ -326,6 +336,18 @@ contains
 
     return
   end function get_num_electrons
+
+  subroutine getPhantomAtoms(mylsitem,PhantomAtom,nAtoms)
+    implicit none
+    integer,intent(in) :: nAtoms
+    logical,intent(inout) :: PhantomAtom(nAtoms)
+    type(lsitem), intent(inout) :: mylsitem
+    !
+    integer :: i
+    do i=1,natoms
+       PhantomAtom(i) = mylsitem%input%molecule%Atom(i)%Phantom
+    end do
+  end subroutine getPhantomAtoms
 
   !> \brief Get number of regular basis functions
   !> \param mylsitem Integral program input
@@ -684,6 +706,14 @@ contains
        call mem_dealloc(molecule%atom_end)
     end if
 
+    if(associated(molecule%atom_cabssize)) then
+       call mem_dealloc(molecule%atom_cabssize)
+    end if
+
+    if(associated(molecule%atom_cabsstart)) then
+       call mem_dealloc(molecule%atom_cabsstart)
+    end if
+
     if(associated(molecule%overlap)) then
        call mem_dealloc(molecule%overlap)
     end if
@@ -698,6 +728,14 @@ contains
 
     if(associated(molecule%AtomCenters)) then
        call mem_dealloc(molecule%AtomCenters)
+    end if
+
+    if(associated(molecule%PhantomAtom)) then
+       call mem_dealloc(molecule%PhantomAtom)
+    end if
+
+    if(associated(molecule%SubSystemIndex)) then
+       call mem_dealloc(molecule%SubSystemIndex)
     end if
 
     if(associated(molecule%DistanceTable)) then
@@ -758,7 +796,34 @@ contains
             + molecule%atom_size(i+1)-1
     end do
 
-    return
+
+    IF(decinfo%F12)THEN
+     call mem_alloc(molecule%atom_cabssize,natoms)
+     molecule%atom_cabssize=0
+
+     r = mylsitem%input%basis%cabs%labelindex
+       
+     ! loop over atoms
+     do i=1,natoms
+      if(r == 0) then
+         icharge = int(mylsitem%input%molecule%atom(i)%charge)
+         itype = mylsitem%input%basis%cabs%chargeindex(icharge)
+      else
+         itype = mylsitem%input%molecule%atom(i)%idtype(r)
+      end if
+      molecule%atom_cabssize(i) = mylsitem%input%basis%cabs%atomtype(itype)%TotNOrb
+     end do
+
+     ! get first and last index of an atom in ao matrix
+     call mem_alloc(molecule%atom_cabsstart,natoms)
+     molecule%atom_cabsstart = 0
+     molecule%atom_cabsstart(1) = 1
+     basis=1
+     do i=1,natoms-1
+        basis = basis + molecule%atom_cabssize(i)
+        molecule%atom_cabsstart(i+1) = basis
+     end do
+    ENDIF
   end subroutine molecule_get_atomic_sizes
 
   !> \brief Set occupied and virtual MO orbitals in molecule type

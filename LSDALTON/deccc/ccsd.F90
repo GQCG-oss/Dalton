@@ -67,7 +67,8 @@ module ccsd_module
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
          & get_max_batch_sizes, ccsd_energy_full_occ, print_ccsd_full_occ, &
-         & get_cnd_terms_mo, mo_work_dist, check_job, get_mo_ccsd_residual
+         & get_cnd_terms_mo, mo_work_dist, check_job, get_mo_ccsd_residual, &
+         & wrapper_get_ccsd_batch_sizes
     private
 
   interface Get_AOt1Fock
@@ -1127,7 +1128,7 @@ contains
         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
         call get_currently_available_memory(MemFree)
         call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local)
+           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.)
       endif
 
 #ifdef VAR_MPI
@@ -4206,11 +4207,63 @@ contains
 
 
 
+  !> Purpose: wrapper for batch size determination routines
+  !           in CCSD and MO-CCSD algorithms.
+  !
+  !> Author:  Pablo Baudin 
+  !> Date:    March 2014
+  subroutine wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split)
+
+    implicit none
+
+    !> Atomic fragment
+    type(decfrag), intent(inout) :: MyFragment
+
+    type(mp2_batch_construction), intent(inout) :: bat
+
+    real(realk) :: MemFree
+    integer :: scheme, nbas, nocc, nvir, MinAObatch, iter
+    integer :: dimMO, nMObatch, ntot
+    integer(kind=8) :: dummy
+    logical :: mo_ccsd, local_moccsd, mpi_split
+
+    ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
+    ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
+    nocc = MyFragment%noccAOS
+    nvir = MyFragment%nunoccAOS 
+
+    ! For MO-CCSD part
+    ntot = nocc + nvir
+    nbas = MyFragment%nbasis
+    mo_ccsd = .false.
+    if (DECinfo%MOCCSD) mo_ccsd = .true.
+    scheme = -1
+    if (DECinfo%force_scheme) scheme=DECinfo%en_mem
+
+    ! The two if statments are necessary as mo_ccsd might become false
+    ! after the first statement (if not enought memory).
+    if (mo_ccsd) then
+      call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nbas,nocc,nvir, &
+           & dimMO,nMObatch,bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma, &
+           & MyFragment%MyLsItem,mpi_split)
+    end if
+
+    if (.not.mo_ccsd) then 
+      iter=1
+      call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
+      call get_currently_available_memory(MemFree)
+      call get_max_batch_sizes(scheme,MyFragment%nbasis,nvir,nocc,bat%MaxAllowedDimAlpha, &
+           & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree, &
+           & .true.,dummy,(.not.DECinfo%solver_par),mpi_split)
+    end if
+
+  end subroutine wrapper_get_ccsd_batch_sizes
+
   !> \brief calculate batch sizes automatically-->dirty but better than nothing
   !> \author Patrick Ettenhuber
   !> \date January 2012
   recursive subroutine get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,&
-  &minbsize,manual,iter,MemFree,first,e2a,local)
+  &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split)
     implicit none
     integer, intent(inout) :: scheme
     integer, intent(in)    :: nb,nv,no
@@ -4220,7 +4273,7 @@ contains
     real(realk)            :: mem_used,frac_of_total_mem,m
     logical,intent(in)     :: manual,first
     integer(kind=8), intent(inout) :: e2a
-    logical, intent(in)    :: local
+    logical, intent(in)    :: local, mpi_split
     integer :: nnod,magic
 
     frac_of_total_mem=0.80E0_realk
@@ -4297,7 +4350,8 @@ contains
       ! KK and PE hacks -> only for debugging
       ! extended to mimic the behaviour of the mem estimation routine when memory is filled up
       if((DECinfo%ccsdGbatch==0).and.(DECinfo%ccsdAbatch==0)) then
-        call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree,.false.,e2a,local)
+        call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree, &
+             & .false.,e2a,local,mpi_split)
       else
         nba = DECinfo%ccsdAbatch - iter * 0
         nbg = DECinfo%ccsdGbatch - iter * 0
@@ -4351,23 +4405,28 @@ contains
     endif
     mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
 
-    !if much more slaves than jobs are available, split the jobs to get at least
-    !one for all the slaves
-    !print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
-    if(.not.manual)then
-      if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
-        nba=(nb/(magic*nnod))
-        if(nba<minbsize)nba=minbsize
+    ! mpi_split should be true when we want to estimate the workload associated
+    ! to a DEC fragment and eventually split the slots. In this case, the next
+    ! step must be skiped.
+    if (.not.mpi_split) then
+      !if much more slaves than jobs are available, split the jobs to get at least
+      !one for all the slaves
+      !print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
+      if(.not.manual)then
+        if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
+          nba=(nb/(magic*nnod))
+          if(nba<minbsize)nba=minbsize
+        endif
+       
+        if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
+          do while((nb/nba)*(nb/nbg)<magic*nnod)
+            nbg=nbg-1
+            if(nbg<1)exit
+          enddo
+          if(nbg<minbsize)nbg=minbsize
+        endif
       endif
-
-      if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
-        do while((nb/nba)*(nb/nbg)<magic*nnod)
-          nbg=nbg-1
-          if(nbg<1)exit
-        enddo
-        if(nbg<minbsize)nbg=minbsize
-      endif
-    endif
+    end if
 
     if(scheme==2)then
       mem_used = get_min_mem_req(no,nv,nb,nba,nbg,2,scheme,.false.)
@@ -5489,7 +5548,7 @@ contains
     V = nvir
     N = ntot
     X = MOinfo%DimInd1(1)
-    print_debug = (DECinfo%PL>5.or.DECinfo%cc_driver_debug.and.master)
+    print_debug = (DECinfo%PL>3.or.DECinfo%cc_driver_debug.and.master)
 
     ! Allocate working memory:
     dimMO = MOinfo%DimInd1(1)
@@ -5561,12 +5620,18 @@ contains
     Nbat = MOinfo%nbatch
 
     omega2%elm1 = 0.0E0_realk
- 
+
+    
+
 #ifdef VAR_MPI
     call get_mo_ccsd_joblist(MOinfo, joblist)
 
     ! all communication for MPI prior to the loop
     StartUpSlaves: if (master.and.nnod>1) then
+
+      ! Check that the slaves have finished to write in pdm arrays
+      if (iter==1) call lsmpi_reduction(dummy,infpar%master,infpar%lg_comm)
+
       call ls_mpibcast(MOCCSDDATA,infpar%master,infpar%lg_comm)
       call mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &

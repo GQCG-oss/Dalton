@@ -169,7 +169,7 @@ CRIT4=`$GREP "49 * ( |0)\.000000 * ( |0)\.000000 * ( |0)\.333333" pehf_cube.embe
 # line 11
 CRIT5=`$GREP "( |0)\.12792E\-04 * ( |0)\.81417E\-05 * ( |0)\.32685E\-05 * (\-|\-0)\.18202E\-05 * (\-|\-0)\.71156E\-05 * (\-|\-0)\.12607E\-04" pehf_cube.embedding_field_3.cube | wc -l`
 # line 100
-CRIT6=`$GREP "(\-|\-0)\.60268E\-04 * (\-|\-0)\.67217E\-04 * (\-|\-0)\.74229E\-04 * (\-|\-0)\.81270E\-04 * (\-|\-0)\.88306E\-04 * (\-|\-0)\.95301E\-04" pehf_cube.embedding_field_3.cube | wc -l`
+CRIT6=`$GREP "(\-|\-0)\.60268E\-04 * (\-|\-0)\.67217E\-04 * (\-|\-0)\.74229E\-04 * (\-|\-0)\.81270E\-04 * (\-|\-0)\.88306E\-04 * (\-|\-0)\.9530[12]E\-04" pehf_cube.embedding_field_3.cube | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[4]=6
 ERROR[4]="EMBEDDING FIELD Z COMPONENT CUBE FILE NOT CORRECT"

@@ -4,7 +4,7 @@ use IchorPrecisionModule
   
  CONTAINS
   
-subroutine SphericalContractOBS1_maxAngP2_maxAngA2(ijkQcart,nContPasses,IN,OUT)
+subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA2(ijkQcart,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: ijkQcart,nContPasses
   real(realk),intent(in)    :: IN(  6,ijkQcart*nContPasses)
@@ -27,10 +27,10 @@ subroutine SphericalContractOBS1_maxAngP2_maxAngA2(ijkQcart,nContPasses,IN,OUT)
     OUT(  5,iP) = OUT(  5,iP) + IN(  4,iP)*SPHMAT4_5      
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine SphericalContractOBS1_maxAngP2_maxAngA2 
+end subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA2 
   
   
-subroutine SphericalContractOBS1_maxAngP2_maxAngA0(ijkQcart,nContPasses,IN,OUT)
+subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA0(ijkQcart,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: ijkQcart,nContPasses
   real(realk),intent(in)    :: IN(  6,ijkQcart*nContPasses)
@@ -53,10 +53,10 @@ subroutine SphericalContractOBS1_maxAngP2_maxAngA0(ijkQcart,nContPasses,IN,OUT)
     OUT(  5,iP) = OUT(  5,iP) + IN(  4,iP)*SPHMAT4_5      
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine SphericalContractOBS1_maxAngP2_maxAngA0 
+end subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA0 
   
   
-subroutine SphericalContractOBS1_maxAngP3_maxAngA2(ijkQcart,nContPasses,IN,OUT)
+subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA2(ijkQcart,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: ijkQcart,nContPasses
   real(realk),intent(in)    :: IN( 18,ijkQcart*nContPasses)
@@ -95,10 +95,10 @@ subroutine SphericalContractOBS1_maxAngP3_maxAngA2(ijkQcart,nContPasses,IN,OUT)
     OUT( 15,iP) = OUT( 15,iP) + IN( 16,iP)*SPHMAT4_5      
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine SphericalContractOBS1_maxAngP3_maxAngA2 
+end subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA2 
   
   
-subroutine SphericalContractOBS1_maxAngP3_maxAngA1(ijkQcart,nContPasses,IN,OUT)
+subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA1(ijkQcart,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: ijkQcart,nContPasses
   real(realk),intent(in)    :: IN( 18,ijkQcart*nContPasses)
@@ -137,10 +137,10 @@ subroutine SphericalContractOBS1_maxAngP3_maxAngA1(ijkQcart,nContPasses,IN,OUT)
     OUT( 15,iP) = OUT( 15,iP) + IN( 12,iP)*SPHMAT10_13    
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine SphericalContractOBS1_maxAngP3_maxAngA1 
+end subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA1 
   
   
-subroutine SphericalContractOBS1_maxAngP4_maxAngA2(ijkQcart,nContPasses,IN,OUT)
+subroutine SphericalContractOBS1_CPU_maxAngP4_maxAngA2(ijkQcart,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: ijkQcart,nContPasses
   real(realk),intent(in)    :: IN( 36,ijkQcart*nContPasses)
@@ -227,7 +227,230 @@ subroutine SphericalContractOBS1_maxAngP4_maxAngA2(ijkQcart,nContPasses,IN,OUT)
     OUT( 25,iP) = OUT( 25,iP) + IN( 22,iP)*SPHMAT1_25     
   ENDDO
 !$OMP END PARALLEL DO
-end subroutine SphericalContractOBS1_maxAngP4_maxAngA2 
+end subroutine SphericalContractOBS1_CPU_maxAngP4_maxAngA2 
   
   
+#ifdef VAR_OPENACC
+subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA2(ijkQcart,nContPasses,IN,OUT)
+  implicit none
+  integer,intent(in)        :: ijkQcart,nContPasses
+  real(realk),intent(in)    :: IN(  6,ijkQcart*nContPasses)
+  real(realk),intent(inout) :: OUT(  5,ijkQcart*nContPasses)
+  integer :: iP
+  real(realk),parameter :: SPHMAT1_3      =   -2.8867513459481292E-01_realk
+  real(realk),parameter :: SPHMAT1_5      =    5.0000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT2_1      =    1.0000000000000000E+00_realk
+  real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,ijkQcart,IN,OUT)
+  DO iP=1,ijkQcart*nContPasses
+    OUT(  1,iP) = IN(  2,iP)
+    OUT(  2,iP) = IN(  5,iP)
+    OUT(  3,iP) = IN(  1,iP)*SPHMAT1_3      
+    OUT(  3,iP) = OUT(  3,iP) + IN(  4,iP)*SPHMAT1_3      
+    OUT(  3,iP) = OUT(  3,iP) + IN(  6,iP)*SPHMAT6_3      
+    OUT(  4,iP) = IN(  3,iP)
+    OUT(  5,iP) = IN(  1,iP)*SPHMAT1_5      
+    OUT(  5,iP) = OUT(  5,iP) + IN(  4,iP)*SPHMAT4_5      
+  ENDDO
+end subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA2 
+  
+  
+subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA0(ijkQcart,nContPasses,IN,OUT)
+  implicit none
+  integer,intent(in)        :: ijkQcart,nContPasses
+  real(realk),intent(in)    :: IN(  6,ijkQcart*nContPasses)
+  real(realk),intent(inout) :: OUT(  5,ijkQcart*nContPasses)
+  integer :: iP
+  real(realk),parameter :: SPHMAT1_3      =   -2.8867513459481292E-01_realk
+  real(realk),parameter :: SPHMAT1_5      =    5.0000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT2_1      =    1.0000000000000000E+00_realk
+  real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,ijkQcart,IN,OUT)
+  DO iP=1,ijkQcart*nContPasses
+    OUT(  1,iP) = IN(  2,iP)
+    OUT(  2,iP) = IN(  5,iP)
+    OUT(  3,iP) = IN(  1,iP)*SPHMAT1_3      
+    OUT(  3,iP) = OUT(  3,iP) + IN(  4,iP)*SPHMAT1_3      
+    OUT(  3,iP) = OUT(  3,iP) + IN(  6,iP)*SPHMAT6_3      
+    OUT(  4,iP) = IN(  3,iP)
+    OUT(  5,iP) = IN(  1,iP)*SPHMAT1_5      
+    OUT(  5,iP) = OUT(  5,iP) + IN(  4,iP)*SPHMAT4_5      
+  ENDDO
+end subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA0 
+  
+  
+subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA2(ijkQcart,nContPasses,IN,OUT)
+  implicit none
+  integer,intent(in)        :: ijkQcart,nContPasses
+  real(realk),intent(in)    :: IN( 18,ijkQcart*nContPasses)
+  real(realk),intent(inout) :: OUT( 15,ijkQcart*nContPasses)
+  integer :: iP
+  real(realk),parameter :: SPHMAT1_3      =   -2.8867513459481292E-01_realk
+  real(realk),parameter :: SPHMAT1_5      =    5.0000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT2_1      =    1.0000000000000000E+00_realk
+  real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,ijkQcart,IN,OUT)
+  DO iP=1,ijkQcart*nContPasses
+    OUT(  1,iP) = IN(  2,iP)
+    OUT(  2,iP) = IN(  5,iP)
+    OUT(  3,iP) = IN(  1,iP)*SPHMAT1_3      
+    OUT(  3,iP) = OUT(  3,iP) + IN(  4,iP)*SPHMAT1_3      
+    OUT(  3,iP) = OUT(  3,iP) + IN(  6,iP)*SPHMAT6_3      
+    OUT(  4,iP) = IN(  3,iP)
+    OUT(  5,iP) = IN(  1,iP)*SPHMAT1_5      
+    OUT(  5,iP) = OUT(  5,iP) + IN(  4,iP)*SPHMAT4_5      
+    OUT(  6,iP) = IN(  8,iP)
+    OUT(  7,iP) = IN( 11,iP)
+    OUT(  8,iP) = IN(  7,iP)*SPHMAT1_3      
+    OUT(  8,iP) = OUT(  8,iP) + IN( 10,iP)*SPHMAT1_3      
+    OUT(  8,iP) = OUT(  8,iP) + IN( 12,iP)*SPHMAT6_3      
+    OUT(  9,iP) = IN(  9,iP)
+    OUT( 10,iP) = IN(  7,iP)*SPHMAT1_5      
+    OUT( 10,iP) = OUT( 10,iP) + IN( 10,iP)*SPHMAT4_5      
+    OUT( 11,iP) = IN( 14,iP)
+    OUT( 12,iP) = IN( 17,iP)
+    OUT( 13,iP) = IN( 13,iP)*SPHMAT1_3      
+    OUT( 13,iP) = OUT( 13,iP) + IN( 16,iP)*SPHMAT1_3      
+    OUT( 13,iP) = OUT( 13,iP) + IN( 18,iP)*SPHMAT6_3      
+    OUT( 14,iP) = IN( 15,iP)
+    OUT( 15,iP) = IN( 13,iP)*SPHMAT1_5      
+    OUT( 15,iP) = OUT( 15,iP) + IN( 16,iP)*SPHMAT4_5      
+  ENDDO
+end subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA2 
+  
+  
+subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA1(ijkQcart,nContPasses,IN,OUT)
+  implicit none
+  integer,intent(in)        :: ijkQcart,nContPasses
+  real(realk),intent(in)    :: IN( 18,ijkQcart*nContPasses)
+  real(realk),intent(inout) :: OUT( 15,ijkQcart*nContPasses)
+  integer :: iP
+  real(realk),parameter :: SPHMAT1_7      =   -2.8867513459481292E-01_realk
+  real(realk),parameter :: SPHMAT1_13     =    5.0000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT4_1      =    1.0000000000000000E+00_realk
+  real(realk),parameter :: SPHMAT10_13    =   -5.0000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT16_7     =    5.7735026918962584E-01_realk
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,ijkQcart,IN,OUT)
+  DO iP=1,ijkQcart*nContPasses
+    OUT(  1,iP) = IN(  4,iP)
+    OUT(  2,iP) = IN(  5,iP)
+    OUT(  3,iP) = IN(  6,iP)
+    OUT(  4,iP) = IN( 13,iP)
+    OUT(  5,iP) = IN( 14,iP)
+    OUT(  6,iP) = IN( 15,iP)
+    OUT(  7,iP) = IN(  1,iP)*SPHMAT1_7      
+    OUT(  7,iP) = OUT(  7,iP) + IN( 10,iP)*SPHMAT1_7      
+    OUT(  7,iP) = OUT(  7,iP) + IN( 16,iP)*SPHMAT16_7     
+    OUT(  8,iP) = IN(  2,iP)*SPHMAT1_7      
+    OUT(  8,iP) = OUT(  8,iP) + IN( 11,iP)*SPHMAT1_7      
+    OUT(  8,iP) = OUT(  8,iP) + IN( 17,iP)*SPHMAT16_7     
+    OUT(  9,iP) = IN(  3,iP)*SPHMAT1_7      
+    OUT(  9,iP) = OUT(  9,iP) + IN( 12,iP)*SPHMAT1_7      
+    OUT(  9,iP) = OUT(  9,iP) + IN( 18,iP)*SPHMAT16_7     
+    OUT( 10,iP) = IN(  7,iP)
+    OUT( 11,iP) = IN(  8,iP)
+    OUT( 12,iP) = IN(  9,iP)
+    OUT( 13,iP) = IN(  1,iP)*SPHMAT1_13     
+    OUT( 13,iP) = OUT( 13,iP) + IN( 10,iP)*SPHMAT10_13    
+    OUT( 14,iP) = IN(  2,iP)*SPHMAT1_13     
+    OUT( 14,iP) = OUT( 14,iP) + IN( 11,iP)*SPHMAT10_13    
+    OUT( 15,iP) = IN(  3,iP)*SPHMAT1_13     
+    OUT( 15,iP) = OUT( 15,iP) + IN( 12,iP)*SPHMAT10_13    
+  ENDDO
+end subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA1 
+  
+  
+subroutine SphericalContractOBS1_GPU_maxAngP4_maxAngA2(ijkQcart,nContPasses,IN,OUT)
+  implicit none
+  integer,intent(in)        :: ijkQcart,nContPasses
+  real(realk),intent(in)    :: IN( 36,ijkQcart*nContPasses)
+  real(realk),intent(inout) :: OUT( 25,ijkQcart*nContPasses)
+  integer :: iP
+  real(realk),parameter :: SPHMAT1_13     =    8.3333333333333356E-02_realk
+  real(realk),parameter :: SPHMAT1_15     =   -1.4433756729740646E-01_realk
+  real(realk),parameter :: SPHMAT1_25     =    2.5000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT2_11     =   -2.8867513459481292E-01_realk
+  real(realk),parameter :: SPHMAT2_21     =    5.0000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT4_15     =    1.4433756729740646E-01_realk
+  real(realk),parameter :: SPHMAT4_25     =   -2.5000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT6_13     =   -1.6666666666666671E-01_realk
+  real(realk),parameter :: SPHMAT6_23     =    2.8867513459481292E-01_realk
+  real(realk),parameter :: SPHMAT8_1      =    1.0000000000000000E+00_realk
+  real(realk),parameter :: SPHMAT10_5     =   -5.0000000000000000E-01_realk
+  real(realk),parameter :: SPHMAT12_3     =    5.7735026918962584E-01_realk
+  real(realk),parameter :: SPHMAT36_13    =    3.3333333333333343E-01_realk
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,ijkQcart,IN,OUT)
+  DO iP=1,ijkQcart*nContPasses
+    OUT(  1,iP) = IN(  8,iP)
+    OUT(  2,iP) = IN( 11,iP)
+    OUT(  3,iP) = IN(  7,iP)*SPHMAT2_11     
+    OUT(  3,iP) = OUT(  3,iP) + IN( 10,iP)*SPHMAT2_11     
+    OUT(  3,iP) = OUT(  3,iP) + IN( 12,iP)*SPHMAT12_3     
+    OUT(  4,iP) = IN(  9,iP)
+    OUT(  5,iP) = IN(  7,iP)*SPHMAT2_21     
+    OUT(  5,iP) = OUT(  5,iP) + IN( 10,iP)*SPHMAT10_5     
+    OUT(  6,iP) = IN( 26,iP)
+    OUT(  7,iP) = IN( 29,iP)
+    OUT(  8,iP) = IN( 25,iP)*SPHMAT2_11     
+    OUT(  8,iP) = OUT(  8,iP) + IN( 28,iP)*SPHMAT2_11     
+    OUT(  8,iP) = OUT(  8,iP) + IN( 30,iP)*SPHMAT12_3     
+    OUT(  9,iP) = IN( 27,iP)
+    OUT( 10,iP) = IN( 25,iP)*SPHMAT2_21     
+    OUT( 10,iP) = OUT( 10,iP) + IN( 28,iP)*SPHMAT10_5     
+    OUT( 11,iP) = IN(  2,iP)*SPHMAT2_11     
+    OUT( 11,iP) = OUT( 11,iP) + IN( 20,iP)*SPHMAT2_11     
+    OUT( 11,iP) = OUT( 11,iP) + IN( 32,iP)*SPHMAT12_3     
+    OUT( 12,iP) = IN(  5,iP)*SPHMAT2_11     
+    OUT( 12,iP) = OUT( 12,iP) + IN( 23,iP)*SPHMAT2_11     
+    OUT( 12,iP) = OUT( 12,iP) + IN( 35,iP)*SPHMAT12_3     
+    OUT( 13,iP) = IN(  1,iP)*SPHMAT1_13     
+    OUT( 13,iP) = OUT( 13,iP) + IN(  4,iP)*SPHMAT1_13     
+    OUT( 13,iP) = OUT( 13,iP) + IN(  6,iP)*SPHMAT6_13     
+    OUT( 13,iP) = OUT( 13,iP) + IN( 19,iP)*SPHMAT1_13     
+    OUT( 13,iP) = OUT( 13,iP) + IN( 22,iP)*SPHMAT1_13     
+    OUT( 13,iP) = OUT( 13,iP) + IN( 24,iP)*SPHMAT6_13     
+    OUT( 13,iP) = OUT( 13,iP) + IN( 31,iP)*SPHMAT6_13     
+    OUT( 13,iP) = OUT( 13,iP) + IN( 34,iP)*SPHMAT6_13     
+    OUT( 13,iP) = OUT( 13,iP) + IN( 36,iP)*SPHMAT36_13    
+    OUT( 14,iP) = IN(  3,iP)*SPHMAT2_11     
+    OUT( 14,iP) = OUT( 14,iP) + IN( 21,iP)*SPHMAT2_11     
+    OUT( 14,iP) = OUT( 14,iP) + IN( 33,iP)*SPHMAT12_3     
+    OUT( 15,iP) = IN(  1,iP)*SPHMAT1_15     
+    OUT( 15,iP) = OUT( 15,iP) + IN(  4,iP)*SPHMAT4_15     
+    OUT( 15,iP) = OUT( 15,iP) + IN( 19,iP)*SPHMAT1_15     
+    OUT( 15,iP) = OUT( 15,iP) + IN( 22,iP)*SPHMAT4_15     
+    OUT( 15,iP) = OUT( 15,iP) + IN( 31,iP)*SPHMAT6_23     
+    OUT( 15,iP) = OUT( 15,iP) + IN( 34,iP)*SPHMAT2_11     
+    OUT( 16,iP) = IN( 14,iP)
+    OUT( 17,iP) = IN( 17,iP)
+    OUT( 18,iP) = IN( 13,iP)*SPHMAT2_11     
+    OUT( 18,iP) = OUT( 18,iP) + IN( 16,iP)*SPHMAT2_11     
+    OUT( 18,iP) = OUT( 18,iP) + IN( 18,iP)*SPHMAT12_3     
+    OUT( 19,iP) = IN( 15,iP)
+    OUT( 20,iP) = IN( 13,iP)*SPHMAT2_21     
+    OUT( 20,iP) = OUT( 20,iP) + IN( 16,iP)*SPHMAT10_5     
+    OUT( 21,iP) = IN(  2,iP)*SPHMAT2_21     
+    OUT( 21,iP) = OUT( 21,iP) + IN( 20,iP)*SPHMAT10_5     
+    OUT( 22,iP) = IN(  5,iP)*SPHMAT2_21     
+    OUT( 22,iP) = OUT( 22,iP) + IN( 23,iP)*SPHMAT10_5     
+    OUT( 23,iP) = IN(  1,iP)*SPHMAT1_15     
+    OUT( 23,iP) = OUT( 23,iP) + IN(  4,iP)*SPHMAT1_15     
+    OUT( 23,iP) = OUT( 23,iP) + IN(  6,iP)*SPHMAT6_23     
+    OUT( 23,iP) = OUT( 23,iP) + IN( 19,iP)*SPHMAT4_15     
+    OUT( 23,iP) = OUT( 23,iP) + IN( 22,iP)*SPHMAT4_15     
+    OUT( 23,iP) = OUT( 23,iP) + IN( 24,iP)*SPHMAT2_11     
+    OUT( 24,iP) = IN(  3,iP)*SPHMAT2_21     
+    OUT( 24,iP) = OUT( 24,iP) + IN( 21,iP)*SPHMAT10_5     
+    OUT( 25,iP) = IN(  1,iP)*SPHMAT1_25     
+    OUT( 25,iP) = OUT( 25,iP) + IN(  4,iP)*SPHMAT4_25     
+    OUT( 25,iP) = OUT( 25,iP) + IN( 19,iP)*SPHMAT4_25     
+    OUT( 25,iP) = OUT( 25,iP) + IN( 22,iP)*SPHMAT1_25     
+  ENDDO
+end subroutine SphericalContractOBS1_GPU_maxAngP4_maxAngA2 
+  
+  
+#endif
 END MODULE AGC_OBS_Sphcontract1Mod

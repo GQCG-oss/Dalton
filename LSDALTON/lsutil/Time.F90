@@ -937,7 +937,7 @@ implicit none
 logical,optional  :: FORCEPRINT
 INTEGER           :: LUPRI,length
 CHARACTER*(*)     :: TEXT
-CHARACTER(len=30) :: PRINTTEXT
+CHARACTER(len=32) :: PRINTTEXT
 REAL(REALK)       :: TIME1,TIME2,DELTAWALL,CPUTIME,WALLTIME,DELTACPU
 !
 INTEGER :: IUNIT,maxlength,I
@@ -955,7 +955,10 @@ ENDIF
 
 length = LEN(TEXT)
 maxlength = LEN(PRINTTEXT)
-IF(length .GT. maxlength) CALL LSQUIT('TEXTLENGTH PROVIDED TO LSTIMER IS LIMITED TO 30',lupri)
+IF(length .GT. maxlength)THEN
+   print*,'length=',LEN(TEXT),'Text:',TEXT
+   CALL LSQUIT('TEXTLENGTH PROVIDED TO LSTIMER IS LIMITED TO 30',lupri)
+ENDIF
 do I=1,maxlength
    PRINTTEXT(I:I)=' '
 enddo

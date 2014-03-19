@@ -2470,12 +2470,12 @@ C
    25 FORMAT(/1X,A8,' has not been called in this calculation.')
    30 FORMAT(/1X,A8,10X,4F15.2)
       END
-C  /* Deck wr_sifc */
+C  /* Deck wr_sirifc */
       SUBROUTINE WR_SIRIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
-     *                  GORB,ERLM,ORBHES,XINDX)
+     &                     GORB,ERLM,ORBHES,XINDX)
 C
-C MOTECC: this routine writes interface file for post-programs.
-C         The structure of the file is described here.
+C MOTECC: this routine writes the interface file SIRIFC for post-programs.
+C         The structure of the SIRIFC file is described here.
 C
 C Written 14-Feb-1985 Hans Joergen Aa. Jensen
 C Revisions:

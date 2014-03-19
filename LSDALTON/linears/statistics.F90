@@ -36,7 +36,7 @@ MODULE scf_stats
 
       NULLIFY(stat_tab,stat_gradnorm,stat_energy)
       ALLOCATE(stat_tab(0:maxit+1,11),stat_gradnorm(0:maxit+1,2),stat_energy(0:maxit+1))
-
+      stat_energy = 0.0E0_realk
       do j = 1,11
         do i = 0,maxit+1
           stat_tab(i,j) = 0.0E0_realk

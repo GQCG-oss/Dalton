@@ -17,7 +17,7 @@ MODULE IchorGabmodule
   use IchorGammaTabulationModule
   use IchorParametersModule
 !debugging
-  use IchorEriCoulombintegralOBSGeneralMod, only: IchorCoulombIntegral_OBS_general
+  use IchorEriCoulombintegralCPUOBSGeneralMod, only: IchorCoulombIntegral_CPU_OBS_general
 
 public :: IchorGab
 private

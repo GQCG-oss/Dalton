@@ -1,4 +1,4 @@
-MODULE IchorEriCoulombintegralOBSGeneralModGen
+MODULE IchorEriCoulombintegralCPUOBSGeneralModGen
 !Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory
 !Contains routines for General Contracted Basisset 
 use IchorprecisionModule
@@ -26,12 +26,12 @@ use AGC_OBS_Sphcontract1Mod
 use AGC_OBS_Sphcontract2Mod
   
 private   
-public :: IchorCoulombIntegral_OBS_Gen,IchorCoulombIntegral_OBS_general_sizeGen  
+public :: IchorCoulombIntegral_CPU_OBS_Gen,IchorCoulombIntegral_CPU_OBS_general_sizeGen  
   
 CONTAINS
   
   
-  subroutine IchorCoulombIntegral_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
+  subroutine IchorCoulombIntegral_CPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
@@ -115,7 +115,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen1(TMParray2,LOCALINTS,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen1(TMParray2,LOCALINTS,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -139,7 +139,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -147,7 +147,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & LOCALINTS,lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
@@ -185,7 +186,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -193,7 +194,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -201,7 +203,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*12),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*12),&
             & LOCALINTS(1:nContQP*nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
@@ -237,7 +239,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -245,7 +247,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -253,7 +256,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
             & LOCALINTS(1:nContQP*nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
@@ -281,7 +284,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -289,7 +292,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & LOCALINTS,lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
@@ -327,7 +331,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -335,7 +339,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -343,7 +348,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*36),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*36),&
             & LOCALINTS(1:nContQP*nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
@@ -379,7 +384,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -387,7 +392,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -395,7 +401,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*90),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*90),&
             & LOCALINTS(1:nContQP*nPasses*81),lupri)
         !no Spherical Transformation RHS needed
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
@@ -423,7 +429,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -431,14 +437,15 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*5.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*6),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*6),&
             & LOCALINTS(1:nContQP*nPasses*5))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -475,7 +482,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -483,21 +490,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*20.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*24),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*24),&
             & TMParray1(1:nContQP*nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*20),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*20),&
             & LOCALINTS(1:nContQP*nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
@@ -533,7 +541,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -541,21 +549,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
             & TMParray1(1:nContQP*nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
             & LOCALINTS(1:nContQP*nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
@@ -591,7 +600,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -599,28 +608,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
             & TMParray1(1:nContQP*nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
             & TMParray2(1:nContQP*nPasses*30),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*30),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*30),&
             & LOCALINTS(1:nContQP*nPasses*25))
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -655,7 +665,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -663,28 +673,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*120),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*120),&
             & TMParray1(1:nContQP*nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
             & TMParray2(1:nContQP*nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
             & LOCALINTS(1:nContQP*nPasses*75))
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -719,7 +730,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -727,28 +738,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*175.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(35,nContQP*nPasses,TMParray2(1:nContQP*nPasses*210),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(35,nContQP*nPasses,TMParray2(1:nContQP*nPasses*210),&
             & TMParray1(1:nContQP*nPasses*175))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*175),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*175),&
             & TMParray2(1:nContQP*nPasses*180),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*125.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
             & LOCALINTS(1:nContQP*nPasses*125))
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -775,7 +787,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -783,14 +795,15 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
             & LOCALINTS(1:nContQP*nPasses*15))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -827,7 +840,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -835,21 +848,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*72),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*72),&
             & TMParray1(1:nContQP*nPasses*60))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*60),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*60),&
             & LOCALINTS(1:nContQP*nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
@@ -885,7 +899,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -893,21 +907,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
             & TMParray1(1:nContQP*nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*135.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
             & LOCALINTS(1:nContQP*nPasses*135),lupri)
         !no Spherical Transformation RHS needed
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
@@ -943,7 +958,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -951,28 +966,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
             & TMParray1(1:nContQP*nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
             & TMParray2(1:nContQP*nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
             & LOCALINTS(1:nContQP*nPasses*75))
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1007,7 +1023,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1015,28 +1031,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*300.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
             & TMParray1(1:nContQP*nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*270.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*300),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*300),&
             & TMParray2(1:nContQP*nPasses*270),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*270),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*270),&
             & LOCALINTS(1:nContQP*nPasses*225))
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1071,7 +1088,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen700(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen700(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1079,28 +1096,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*525.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(35,nContQP*nPasses,TMParray2(1:nContQP*nPasses*630),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(35,nContQP*nPasses,TMParray2(1:nContQP*nPasses*630),&
             & TMParray1(1:nContQP*nPasses*525))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*540.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*525),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*525),&
             & TMParray2(1:nContQP*nPasses*540),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*375.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*540),&
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*540),&
             & LOCALINTS(1:nContQP*nPasses*375))
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1127,7 +1145,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen35(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen35(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1135,14 +1153,15 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*36),&
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*36),&
             & LOCALINTS(1:nContQP*nPasses*25))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -1179,7 +1198,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1187,21 +1206,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*144),&
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*144),&
             & TMParray1(1:nContQP*nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
             & LOCALINTS(1:nContQP*nPasses*75),lupri)
         !no Spherical Transformation RHS needed
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
@@ -1237,7 +1257,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1245,21 +1265,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*250.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
             & TMParray1(1:nContQP*nPasses*250))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*250),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*250),&
             & LOCALINTS(1:nContQP*nPasses*225),lupri)
         !no Spherical Transformation RHS needed
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
@@ -1295,7 +1316,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1303,28 +1324,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*250.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
             & TMParray1(1:nContQP*nPasses*250))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*250),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*250),&
             & TMParray2(1:nContQP*nPasses*150),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*125.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(25,nContQP*nPasses,TMParray2(1:nContQP*nPasses*150),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(25,nContQP*nPasses,TMParray2(1:nContQP*nPasses*150),&
             & LOCALINTS(1:nContQP*nPasses*125))
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1359,7 +1381,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen700(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen700(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1367,28 +1389,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*500.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*720),&
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*720),&
             & TMParray1(1:nContQP*nPasses*500))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*450.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*500),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*500),&
             & TMParray2(1:nContQP*nPasses*450),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*375.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(25,nContQP*nPasses,TMParray2(1:nContQP*nPasses*450),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(25,nContQP*nPasses,TMParray2(1:nContQP*nPasses*450),&
             & LOCALINTS(1:nContQP*nPasses*375))
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1423,7 +1446,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen1225(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen1225(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1431,28 +1454,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*875.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(35,nContQP*nPasses,TMParray2(1:nContQP*nPasses*1260),&
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(35,nContQP*nPasses,TMParray2(1:nContQP*nPasses*1260),&
             & TMParray1(1:nContQP*nPasses*875))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*900.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*875),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*875),&
             & TMParray2(1:nContQP*nPasses*900),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*625.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(25,nContQP*nPasses,TMParray2(1:nContQP*nPasses*900),&
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(25,nContQP*nPasses,TMParray2(1:nContQP*nPasses*900),&
             & LOCALINTS(1:nContQP*nPasses*625))
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1471,7 +1495,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -1481,7 +1505,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,1,Qdistance12,TMParray1(1:nContQP*nPasses*4),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQP,nPasses,1,Qdistance12,TMParray1(1:nContQP*nPasses*4),&
             & LOCALINTS(1:nContQP*nPasses*3),lupri)
         !no Spherical Transformation RHS needed
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
@@ -1509,7 +1533,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -1519,14 +1543,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*10),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*10),&
             & TMParray1(1:nContQP*nPasses*6),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*5.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*6),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*6),&
             & LOCALINTS(1:nContQP*nPasses*5))
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1545,7 +1569,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -1555,7 +1579,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,1,Qdistance12,TMParray1(1:nContQP*nPasses*4),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQP,nPasses,1,Qdistance12,TMParray1(1:nContQP*nPasses*4),&
             & LOCALINTS(1:nContQP*nPasses*3),lupri)
         !no Spherical Transformation RHS needed
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
@@ -1583,7 +1607,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -1593,7 +1617,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*10),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*10),&
             & LOCALINTS(1:nContQP*nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
@@ -1621,7 +1645,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -1631,14 +1655,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*20),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*20),&
             & TMParray1(1:nContQP*nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
             & LOCALINTS(1:nContQP*nPasses*15))
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1665,7 +1689,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -1675,14 +1699,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*10),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*10),&
             & TMParray1(1:nContQP*nPasses*6),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*5.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*6),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*6),&
             & LOCALINTS(1:nContQP*nPasses*5))
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1709,7 +1733,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -1719,14 +1743,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*20),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*20),&
             & TMParray1(1:nContQP*nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
             & LOCALINTS(1:nContQP*nPasses*15))
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1753,7 +1777,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen35(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen35(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -1763,14 +1787,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*35),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQP,nPasses,1,Qdistance12,TMParray2(1:nContQP*nPasses*35),&
             & TMParray1(1:nContQP*nPasses*36),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*36),&
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*36),&
             & LOCALINTS(1:nContQP*nPasses*25))
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1789,7 +1813,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1797,7 +1821,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nContQP,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQP,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & LOCALINTS,lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
@@ -1835,7 +1860,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1843,7 +1868,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1851,7 +1877,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*12),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*12),&
             & LOCALINTS(1:nContQP*nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
@@ -1887,7 +1913,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1895,7 +1921,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1903,14 +1930,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
             & TMParray1(1:nContQP*nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
             & LOCALINTS(1:nContQP*nPasses*15))
     CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1945,7 +1972,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -1953,7 +1980,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1961,7 +1989,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*12),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*12),&
             & LOCALINTS(1:nContQP*nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
@@ -1997,7 +2025,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2005,7 +2033,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2013,7 +2042,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
             & LOCALINTS(1:nContQP*nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
@@ -2049,7 +2078,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2057,7 +2086,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2065,14 +2095,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*60),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*60),&
             & TMParray1(1:nContQP*nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
             & LOCALINTS(1:nContQP*nPasses*45))
     CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -2107,7 +2137,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2115,7 +2145,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2123,14 +2154,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
             & TMParray1(1:nContQP*nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
             & LOCALINTS(1:nContQP*nPasses*15))
     CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -2165,7 +2196,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2173,7 +2204,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2181,14 +2213,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*60),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*60),&
             & TMParray1(1:nContQP*nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
             & LOCALINTS(1:nContQP*nPasses*45))
     CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2223,7 +2255,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2231,7 +2263,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(nContQP,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQP,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2239,14 +2272,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*105),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*105),&
             & TMParray1(1:nContQP*nPasses*108),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*108),&
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*108),&
             & LOCALINTS(1:nContQP*nPasses*75))
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -2273,7 +2306,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2281,14 +2314,15 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nContQP,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQP,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*5.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*6),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*6),&
             & LOCALINTS(1:nContQP*nPasses*5))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -2325,7 +2359,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2333,21 +2367,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*20.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*24),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*24),&
             & TMParray1(1:nContQP*nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*20),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*20),&
             & LOCALINTS(1:nContQP*nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
@@ -2383,7 +2418,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2391,28 +2426,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
             & TMParray1(1:nContQP*nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
             & TMParray2(1:nContQP*nPasses*30),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*30),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*30),&
             & LOCALINTS(1:nContQP*nPasses*25))
     CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -2447,7 +2483,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2455,21 +2491,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*20.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*24),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*24),&
             & TMParray1(1:nContQP*nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*20),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*20),&
             & LOCALINTS(1:nContQP*nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
@@ -2505,7 +2542,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2513,21 +2550,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
             & TMParray1(1:nContQP*nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
             & LOCALINTS(1:nContQP*nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
@@ -2563,7 +2601,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2571,28 +2609,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*120),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*120),&
             & TMParray1(1:nContQP*nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
             & TMParray2(1:nContQP*nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
             & LOCALINTS(1:nContQP*nPasses*75))
     CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -2627,7 +2666,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2635,28 +2674,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
             & TMParray1(1:nContQP*nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
             & TMParray2(1:nContQP*nPasses*30),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*30),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*30),&
             & LOCALINTS(1:nContQP*nPasses*25))
     CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -2691,7 +2731,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2699,28 +2739,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*120),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*120),&
             & TMParray1(1:nContQP*nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
             & TMParray2(1:nContQP*nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
             & LOCALINTS(1:nContQP*nPasses*75))
     CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2755,7 +2796,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2763,28 +2804,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(nContQP,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQP,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*175.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(35,nContQP*nPasses,TMParray2(1:nContQP*nPasses*210),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(35,nContQP*nPasses,TMParray2(1:nContQP*nPasses*210),&
             & TMParray1(1:nContQP*nPasses*175))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*180.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*175),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*175),&
             & TMParray2(1:nContQP*nPasses*180),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*125.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
             & LOCALINTS(1:nContQP*nPasses*125))
     CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -2819,7 +2861,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2827,7 +2869,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2835,7 +2878,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*12),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*12),&
             & LOCALINTS(1:nContQP*nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
@@ -2871,7 +2914,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2879,7 +2922,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2887,14 +2931,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
             & TMParray1(1:nContQP*nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
             & LOCALINTS(1:nContQP*nPasses*15))
     CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2929,7 +2973,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2937,7 +2981,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2945,14 +2990,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*60),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*60),&
             & TMParray1(1:nContQP*nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
             & LOCALINTS(1:nContQP*nPasses*45))
     CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -2987,7 +3032,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -2995,7 +3040,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -3003,14 +3049,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*30),&
             & TMParray1(1:nContQP*nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
             & LOCALINTS(1:nContQP*nPasses*15))
     CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -3045,7 +3091,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3053,7 +3099,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -3061,14 +3108,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*60),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*60),&
             & TMParray1(1:nContQP*nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
             & LOCALINTS(1:nContQP*nPasses*45))
     CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -3103,7 +3150,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3111,7 +3158,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(nContQP,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -3119,14 +3167,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*105),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQP,nPasses,3,Qdistance12,TMParray2(1:nContQP*nPasses*105),&
             & TMParray1(1:nContQP*nPasses*108),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*108),&
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(3,nContQP*nPasses,TMParray1(1:nContQP*nPasses*108),&
             & LOCALINTS(1:nContQP*nPasses*75))
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -3161,7 +3209,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3169,7 +3217,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -3177,7 +3226,7 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*36),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*36),&
             & LOCALINTS(1:nContQP*nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
@@ -3213,7 +3262,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3221,7 +3270,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -3229,14 +3279,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*90),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*90),&
             & TMParray1(1:nContQP*nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(9,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(9,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
             & LOCALINTS(1:nContQP*nPasses*45))
     CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -3271,7 +3321,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3279,7 +3329,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -3287,14 +3338,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*180),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*180),&
             & TMParray1(1:nContQP*nPasses*162),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*135.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(9,nContQP*nPasses,TMParray1(1:nContQP*nPasses*162),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(9,nContQP*nPasses,TMParray1(1:nContQP*nPasses*162),&
             & LOCALINTS(1:nContQP*nPasses*135))
     CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -3329,7 +3380,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3337,7 +3388,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -3345,14 +3397,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*90),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*90),&
             & TMParray1(1:nContQP*nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(9,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(9,nContQP*nPasses,TMParray1(1:nContQP*nPasses*54),&
             & LOCALINTS(1:nContQP*nPasses*45))
     CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -3387,7 +3439,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3395,7 +3447,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -3403,14 +3456,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*180),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*180),&
             & TMParray1(1:nContQP*nPasses*162),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*135.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(9,nContQP*nPasses,TMParray1(1:nContQP*nPasses*162),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(9,nContQP*nPasses,TMParray1(1:nContQP*nPasses*162),&
             & LOCALINTS(1:nContQP*nPasses*135))
     CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -3445,7 +3498,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3453,7 +3506,8 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(nContQP,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -3461,14 +3515,14 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*315),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQP,nPasses,9,Qdistance12,TMParray2(1:nContQP*nPasses*315),&
             & TMParray1(1:nContQP*nPasses*324),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(9,nContQP*nPasses,TMParray1(1:nContQP*nPasses*324),&
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(9,nContQP*nPasses,TMParray1(1:nContQP*nPasses*324),&
             & LOCALINTS(1:nContQP*nPasses*225))
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -3495,7 +3549,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3503,14 +3557,15 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nContQP,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQP,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(1,nContQP*nPasses,TMParray1(1:nContQP*nPasses*18),&
             & LOCALINTS(1:nContQP*nPasses*15))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -3547,7 +3602,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3555,21 +3610,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*72),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*72),&
             & TMParray1(1:nContQP*nPasses*60))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*60),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*60),&
             & LOCALINTS(1:nContQP*nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
@@ -3605,7 +3661,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3613,28 +3669,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
             & TMParray1(1:nContQP*nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
             & TMParray2(1:nContQP*nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
             & LOCALINTS(1:nContQP*nPasses*75))
     CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -3669,7 +3726,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3677,21 +3734,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*72),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*72),&
             & TMParray1(1:nContQP*nPasses*60))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*60),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*60),&
             & LOCALINTS(1:nContQP*nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
@@ -3727,7 +3785,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3735,21 +3793,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
             & TMParray1(1:nContQP*nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*135.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
             & LOCALINTS(1:nContQP*nPasses*135),lupri)
         !no Spherical Transformation RHS needed
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
@@ -3785,7 +3844,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3793,28 +3852,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*300.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
             & TMParray1(1:nContQP*nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*270.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*300),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*300),&
             & TMParray2(1:nContQP*nPasses*270),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*270),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*270),&
             & LOCALINTS(1:nContQP*nPasses*225))
     CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -3849,7 +3909,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3857,28 +3917,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
             & TMParray1(1:nContQP*nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
             & TMParray2(1:nContQP*nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
             & LOCALINTS(1:nContQP*nPasses*75))
     CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -3913,7 +3974,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3921,28 +3982,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*300.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
             & TMParray1(1:nContQP*nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*270.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*300),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*300),&
             & TMParray2(1:nContQP*nPasses*270),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*270),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*270),&
             & LOCALINTS(1:nContQP*nPasses*225))
     CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -3977,7 +4039,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen700(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen700(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -3985,28 +4047,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(nContQP,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQP,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*525.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(35,nContQP*nPasses,TMParray2(1:nContQP*nPasses*630),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(35,nContQP*nPasses,TMParray2(1:nContQP*nPasses*630),&
             & TMParray1(1:nContQP*nPasses*525))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*540.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*525),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*525),&
             & TMParray2(1:nContQP*nPasses*540),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*375.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*540),&
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*540),&
             & LOCALINTS(1:nContQP*nPasses*375))
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -4041,7 +4104,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -4049,21 +4112,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*20.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*24),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*24),&
             & TMParray1(1:nContQP*nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*20),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*20),&
             & LOCALINTS(1:nContQP*nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
@@ -4099,7 +4163,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -4107,28 +4171,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*50.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*60),&
             & TMParray1(1:nContQP*nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*30.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*50),&
             & TMParray2(1:nContQP*nPasses*30),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*30),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*30),&
             & LOCALINTS(1:nContQP*nPasses*25))
     CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -4163,7 +4228,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -4171,28 +4236,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*120),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*120),&
             & TMParray1(1:nContQP*nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
             & TMParray2(1:nContQP*nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(5,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
             & LOCALINTS(1:nContQP*nPasses*75))
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -4227,7 +4293,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -4235,21 +4301,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*72),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*72),&
             & TMParray1(1:nContQP*nPasses*60))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*60),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*60),&
             & LOCALINTS(1:nContQP*nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
@@ -4285,7 +4352,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -4293,28 +4360,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*180),&
             & TMParray1(1:nContQP*nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*90.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*150),&
             & TMParray2(1:nContQP*nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*90),&
             & LOCALINTS(1:nContQP*nPasses*75))
     CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -4349,7 +4417,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -4357,28 +4425,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*300.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
             & TMParray1(1:nContQP*nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*270.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*300),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray1(1:nContQP*nPasses*300),&
             & TMParray2(1:nContQP*nPasses*270),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*270),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nContQP*nPasses,TMParray2(1:nContQP*nPasses*270),&
             & LOCALINTS(1:nContQP*nPasses*225))
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -4413,7 +4482,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -4421,21 +4490,22 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*100.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*144),&
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(4,nContQP*nPasses,TMParray2(1:nContQP*nPasses*144),&
             & TMParray1(1:nContQP*nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*100),&
             & LOCALINTS(1:nContQP*nPasses*75),lupri)
         !no Spherical Transformation RHS needed
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
@@ -4471,7 +4541,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -4479,28 +4549,29 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*250.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray2(1:nContQP*nPasses*360),&
             & TMParray1(1:nContQP*nPasses*250))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*250),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*250),&
             & TMParray2(1:nContQP*nPasses*150),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*125.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(25,nContQP*nPasses,TMParray2(1:nContQP*nPasses*150),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(25,nContQP*nPasses,TMParray2(1:nContQP*nPasses*150),&
             & LOCALINTS(1:nContQP*nPasses*125))
     CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -4535,7 +4606,7 @@ CONTAINS
           call ichorquit('nContQ*nContP*nPasses too small',-1)
         ENDIF
 #endif
-         call PrimitiveContractionGen700(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
+         call PrimitiveContractionCPUGen700(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
               & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
               & nContC,nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
 #ifdef VAR_DEBUGICHOR
@@ -4543,36 +4614,37 @@ CONTAINS
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(nContQP,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*500.GT.TMParray1maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*720),&
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(20,nContQP*nPasses,TMParray2(1:nContQP*nPasses*720),&
             & TMParray1(1:nContQP*nPasses*500))
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*450.GT.TMParray2maxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*500),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQP,nPasses,25,Qdistance12,TMParray1(1:nContQP*nPasses*500),&
             & TMParray2(1:nContQP*nPasses*450),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContQP*nPasses*375.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nContQP*nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(25,nContQP*nPasses,TMParray2(1:nContQP*nPasses*450),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(25,nContQP*nPasses,TMParray2(1:nContQP*nPasses*450),&
             & LOCALINTS(1:nContQP*nPasses*375))
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_Gen',-1)
+        CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_CPU_OBS_Gen',-1)
     END SELECT
-  end subroutine IchorCoulombIntegral_OBS_Gen
+  end subroutine IchorCoulombIntegral_CPU_OBS_Gen
   
   
-  subroutine IchorCoulombIntegral_OBS_general_sizeGen(TMParray1maxsize,&
+  subroutine IchorCoulombIntegral_CPU_OBS_general_sizeGen(TMParray1maxsize,&
          & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
          & AngmomA,AngmomB,AngmomC,AngmomD,nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
@@ -5374,9 +5446,9 @@ CONTAINS
     CASE DEFAULT
         CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_general_size',-1)
     END SELECT
-  end subroutine IchorCoulombIntegral_OBS_general_sizeGen
+  end subroutine IchorCoulombIntegral_CPU_OBS_general_sizeGen
 
-  subroutine PrimitiveContractionGen1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+  subroutine PrimitiveContractionCPUGen1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -5452,9 +5524,9 @@ CONTAINS
     enddo
 !!$OMP END SINGLE
 !$OMP END PARALLEL DO
-  end subroutine PrimitiveContractionGen1
+  end subroutine PrimitiveContractionCPUGen1
 
-   subroutine PrimitiveContractionGen4(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen4(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -5541,9 +5613,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen4
+   end subroutine PrimitiveContractionCPUGen4
 
-   subroutine PrimitiveContractionGen10(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen10(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -5630,9 +5702,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen10
+   end subroutine PrimitiveContractionCPUGen10
 
-   subroutine PrimitiveContractionGen20(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen20(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -5719,9 +5791,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen20
+   end subroutine PrimitiveContractionCPUGen20
 
-   subroutine PrimitiveContractionGen35(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen35(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -5808,9 +5880,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen35
+   end subroutine PrimitiveContractionCPUGen35
 
-   subroutine PrimitiveContractionGen16(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen16(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -5897,9 +5969,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen16
+   end subroutine PrimitiveContractionCPUGen16
 
-   subroutine PrimitiveContractionGen40(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen40(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -5986,9 +6058,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen40
+   end subroutine PrimitiveContractionCPUGen40
 
-   subroutine PrimitiveContractionGen80(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen80(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -6075,9 +6147,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen80
+   end subroutine PrimitiveContractionCPUGen80
 
-   subroutine PrimitiveContractionGen140(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen140(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -6164,9 +6236,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen140
+   end subroutine PrimitiveContractionCPUGen140
 
-   subroutine PrimitiveContractionGen100(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen100(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -6253,9 +6325,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen100
+   end subroutine PrimitiveContractionCPUGen100
 
-   subroutine PrimitiveContractionGen200(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen200(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -6342,9 +6414,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen200
+   end subroutine PrimitiveContractionCPUGen200
 
-   subroutine PrimitiveContractionGen350(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen350(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -6431,9 +6503,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen350
+   end subroutine PrimitiveContractionCPUGen350
 
-   subroutine PrimitiveContractionGen400(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen400(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -6520,9 +6592,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen400
+   end subroutine PrimitiveContractionCPUGen400
 
-   subroutine PrimitiveContractionGen700(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen700(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -6609,9 +6681,9 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen700
+   end subroutine PrimitiveContractionCPUGen700
 
-   subroutine PrimitiveContractionGen1225(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+   subroutine PrimitiveContractionCPUGen1225(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
        & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
     implicit none
@@ -6698,5 +6770,5 @@ CONTAINS
      enddo
     enddo
 !$OMP END PARALLEL DO
-   end subroutine PrimitiveContractionGen1225
-END MODULE IchorEriCoulombintegralOBSGeneralModGen
+   end subroutine PrimitiveContractionCPUGen1225
+END MODULE IchorEriCoulombintegralCPUOBSGeneralModGen

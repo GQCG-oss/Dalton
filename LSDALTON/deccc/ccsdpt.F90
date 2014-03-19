@@ -198,6 +198,9 @@ contains
 
 #ifdef VAR_MPI
 
+    ! here, synchronize all procs
+    call lsmpi_barrier(infpar%lg_comm)
+
     ! the parallel version of the ijk-loop
     call ijk_loop_par(nocc,nvirt,jaik,abij,cbai,trip_tmp,trip_ampl,ccsd_doubles,ccsd_doubles_portions,&
                     & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt,nodtotal)
@@ -348,6 +351,14 @@ contains
     njobs = int((nocc**2 + nocc)/2)
     b_size = int(njobs/nodtotal)
 
+#ifdef VAR_MPI
+
+    print *,'nodtotal = ',infpar%lg_nodtot
+    print *,'proc no. = ',infpar%lg_mynum,'njobs = ',njobs
+    print *,'proc no. = ',infpar%lg_mynum,'b_size = ',b_size
+
+#endif
+
     ! ij_array stores all jobs for composite ij indices in descending order
     call mem_alloc(ij_array,njobs)
     ! init list (one more than b_size since mod(njobs,nodtotal) is not necessearily zero
@@ -357,6 +368,12 @@ contains
     call create_ij_array_ccsdpt(njobs,nocc,ij_array)
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
+
+#ifdef VAR_MPI
+
+    print *,'proc no. ',infpar%lg_mynum,'jobs = ',jobs
+
+#endif
 
     ! release ij_array
     call mem_dealloc(ij_array)
@@ -384,7 +401,11 @@ contains
                ij = jobs(ij_count)
     
                ! no more jobs to be done? otherwise leave the loop
-               if (ij .lt. 0) exit
+               if (ij_count .eq. b_size + 1) then
+
+                  if (ij .lt. 0) exit
+
+               end if
     
                ! calculate i and j from composite ij value
                call calc_i_and_j(ij,nocc,i,j)
@@ -2195,10 +2216,10 @@ contains
 
     ! do v^4o^3 contraction
 
-!$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
+!!$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
     call dgemm('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
                    & 0.0E0_realk,trip,nv)
-!$acc end host_data
+!!$acc end host_data
 
   end subroutine trip_amplitudes_virt
 
@@ -2237,10 +2258,10 @@ contains
 
     ! do v^3o^4 contraction
 
-!$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
+!!$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
     call dgemm('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
                    & 1.0E0_realk,trip,nv)
-!$acc end host_data
+!!$acc end host_data
 
   end subroutine trip_amplitudes_occ
 
@@ -2267,39 +2288,39 @@ contains
 
     e_orb_occ = eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3)
 
-#ifdef VAR_OPENACC
-!$acc parallel present(trip,eigenvirt,eigenocc)
-!$acc loop gang
-#else
+!#ifdef VAR_OPENACC
+!!$acc parallel present(trip,eigenvirt,eigenocc)
+!!$acc loop gang
+!#else
 !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,b,c,e_orb),SHARED(nv,trip,eigenvirt,e_orb_occ)
-#endif
+!#endif
  arun_0: do a=1,nv
-#ifdef VAR_OPENACC
-!$acc loop worker
-#endif
+!#ifdef VAR_OPENACC
+!!$acc loop worker
+!#endif
     brun_0: do b=1,nv
-#ifdef VAR_OPENACC
-!$acc loop vector
-#endif
+!#ifdef VAR_OPENACC
+!!$acc loop vector
+!#endif
        crun_0: do c=1,nv
 
                   trip(c,b,a) = trip(c,b,a) / (e_orb_occ - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
 
                end do crun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
+!#ifdef VAR_OPENACC
+!!$acc end loop
+!#endif
             end do brun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
+!#ifdef VAR_OPENACC
+!!$acc end loop
+!#endif
          end do arun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-!$acc end parallel
-#else
+!#ifdef VAR_OPENACC
+!!$acc end loop
+!!$acc end parallel
+!#else
 !$OMP END PARALLEL DO
-#endif
+!#endif
 
   end subroutine trip_denom
 
@@ -3981,13 +4002,6 @@ contains
          & JAIB%dims(3),JAIB%dims(4),order,0.0E0_realk,ABIJ%val)
     
     call array4_free(JAIB)
-
-#ifdef VAR_MPI
-
-    ! here, synchronize all procs
-    call lsmpi_barrier(infpar%lg_comm)
-
-#endif
 
     call LSTIMER('CCSD(T) INT',tcpu,twall,DECinfo%output)
 

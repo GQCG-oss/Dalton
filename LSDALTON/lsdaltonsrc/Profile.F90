@@ -49,15 +49,15 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
     natoms = ls%input%MOLECULE%nAtoms
   WRITE(lupri,*)'============================================='
   WRITE(lupri,*)' '
-  WRITE(lupri,*)'Profile Subroutine:'
+  WRITE(lupri,*)' Profile Subroutine:'
 #ifdef VAR_OMP
-  write(lupri,*)'Number of threads: ', OMP_GET_MAX_THREADS()
+  write(lupri,*)' Number of threads: ', OMP_GET_MAX_THREADS()
 #else
-  write(lupri,*)'Number of threads:  1'
+  write(lupri,*)' Number of threads:  1'
 #endif
   WRITE(lupri,*)' '
+  WRITE(lupri,*)' Ichor Integrals:',config%prof%Ichor
   WRITE(lupri,*)'============================================='
-  WRITE(lupri,*)'config%prof%Ichor',config%prof%Ichor
   IF(config%prof%Ichor)THEN
      call profile_Ichor(LUPRI,LUPRI,ls%SETTING,config)
      RETURN
@@ -103,8 +103,8 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      CALL mat_free(H1)
      CALL mat_free(S)
   endif
-  print*,'config%prof%IchorDEC',config%prof%IchorDEC
 #ifdef VAR_ICHOR
+  print*,'config%prof%IchorDEC',config%prof%IchorDEC
   IF(config%prof%IchorDEC)THEN
      print*,'call di_decpackedJ'
      call di_decpackedJ(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
@@ -119,11 +119,16 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
   I=1
    IF(I.EQ. 1)THEN
       write(lupri,*)'__________________________________________________________________'
-
-!      write(lupri,*)'Starting Profile Using: ', OMP_GET_MAX_THREADS(),' threads'
+      write(lupri,*)' '
+#ifdef VAR_OMP
+      write(lupri,*)'Starting Profile Using: ', OMP_GET_MAX_THREADS(),' threads'
+#else
+      write(lupri,*)'Starting Profile Using: 1 threads'
+#endif
       write(lupri,*)'__________________________________________________________________'
    ELSE
       write(lupri,*)'__________________________________________________________________'
+      write(lupri,*)' '
       write(lupri,*)'Starting Profile Using: 1 thread'
       write(lupri,*)'__________________________________________________________________'
       ls%setting%scheme%noOMP = .TRUE.
