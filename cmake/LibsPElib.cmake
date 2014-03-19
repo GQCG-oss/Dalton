@@ -26,8 +26,8 @@ add_external(pelib)
 if(ENABLE_GEN1INT)
     add_dependencies(pelib gen1int_interface)
 endif()
-set(EXTERNAL_LIBS
+set(DALTON_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libpelib.a
-    ${EXTERNAL_LIBS}
+    ${DALTON_LIBS}
     )
 
