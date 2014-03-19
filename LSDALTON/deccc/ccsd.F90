@@ -4212,14 +4212,16 @@ contains
   !
   !> Author:  Pablo Baudin 
   !> Date:    March 2014
-  subroutine wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split)
+  subroutine wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split,ntasks)
 
     implicit none
 
     !> Atomic fragment
     type(decfrag), intent(inout) :: MyFragment
-
+    !> AO batch information
     type(mp2_batch_construction), intent(inout) :: bat
+    !> return number of tasks (only for MO-CCSD)
+    integer, intent(inout) :: ntasks
 
     real(realk) :: MemFree
     integer :: scheme, nbas, nocc, nvir, MinAObatch, iter
@@ -4233,11 +4235,10 @@ contains
     nvir = MyFragment%nunoccAOS 
 
     ! For MO-CCSD part
-    ntot = nocc + nvir
-    nbas = MyFragment%nbasis
+    ntot    = nocc + nvir
+    nbas    = MyFragment%nbasis
     mo_ccsd = .false.
     if (DECinfo%MOCCSD) mo_ccsd = .true.
-    scheme = -1
     if (DECinfo%force_scheme) scheme=DECinfo%en_mem
 
     ! The two if statments are necessary as mo_ccsd might become false
@@ -4246,6 +4247,7 @@ contains
       call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nbas,nocc,nvir, &
            & dimMO,nMObatch,bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma, &
            & MyFragment%MyLsItem,mpi_split)
+      ntasks = nMObatch*(nMObatch+1)/2
     end if
 
     if (.not.mo_ccsd) then 

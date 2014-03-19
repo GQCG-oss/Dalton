@@ -593,13 +593,17 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   nullify(batchsizeGamma)
   nullify(batchindexGamma)
 
+  ntasks = 0
 
   ! Determine optimal batchsizes with available memory
   if(MyFragment%ccmodel==MODEL_MP2) then ! MP2
      call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.)
   else  ! CC2 or CCSD
      mpi_split = .true.
-     call wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split)
+     call wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split,ntasks)
+     ! In case of MO-based algorithm the number of tasks depends on the
+     ! number of MO batches and is directly returned by the routine.
+     if (ntasks>0) return
   end if
 
 
