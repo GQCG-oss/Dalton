@@ -198,9 +198,6 @@ contains
 
 #ifdef VAR_MPI
 
-    ! here, synchronize all procs
-    call lsmpi_barrier(infpar%lg_comm)
-
     ! the parallel version of the ijk-loop
     call ijk_loop_par(nocc,nvirt,jaik,abij,cbai,trip_tmp,trip_ampl,ccsd_doubles,ccsd_doubles_portions,&
                     & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt,nodtotal)
@@ -225,6 +222,9 @@ contains
     call array_free(ccsd_doubles_portions)
 
 #ifdef VAR_MPI
+
+    ! here, synchronize all procs
+    call lsmpi_barrier(infpar%lg_comm)
 
     ! reduce singles and doubles arrays into that residing on the master
     reducing_to_master: if (nodtotal .gt. 1) then
@@ -351,14 +351,6 @@ contains
     njobs = int((nocc**2 + nocc)/2)
     b_size = int(njobs/nodtotal)
 
-#ifdef VAR_MPI
-
-    print *,'nodtotal = ',infpar%lg_nodtot
-    print *,'proc no. = ',infpar%lg_mynum,'njobs = ',njobs
-    print *,'proc no. = ',infpar%lg_mynum,'b_size = ',b_size
-
-#endif
-
     ! ij_array stores all jobs for composite ij indices in descending order
     call mem_alloc(ij_array,njobs)
     ! init list (one more than b_size since mod(njobs,nodtotal) is not necessearily zero
@@ -368,12 +360,6 @@ contains
     call create_ij_array_ccsdpt(njobs,nocc,ij_array)
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
-
-#ifdef VAR_MPI
-
-    print *,'proc no. ',infpar%lg_mynum,'jobs = ',jobs
-
-#endif
 
     ! release ij_array
     call mem_dealloc(ij_array)
