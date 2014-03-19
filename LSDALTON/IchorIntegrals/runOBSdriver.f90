@@ -830,6 +830,7 @@ DO GPUrun=1,2
   WRITE(LUMOD5,'(A)')'!!$OMP PRIVATE(iPassP,iContC,iContD,iPrimD,iPrimC,tmp) &'
   WRITE(LUMOD5,'(A)')'!!$OMP SHARED(nPasses,nContC,nContD,nPrimD,nPrimC,DCC,CCC,&'
   WRITE(LUMOD5,'(A)')'!!$OMP        AUXarrayCont,AUXarray2,BasisCont3)'
+  WRITE(LUMOD5,'(A)')'!$OMP SINGLE'
   WRITE(LUMOD5,'(A)')'    do iPassP = 1,nPasses'
   WRITE(LUMOD5,'(A)')'     do iContC=1,nContC'
   WRITE(LUMOD5,'(A)')'      do iPrimD=1,nPrimD'
@@ -848,6 +849,8 @@ DO GPUrun=1,2
   WRITE(LUMOD5,'(A)')'      enddo'
   WRITE(LUMOD5,'(A)')'     enddo'
   WRITE(LUMOD5,'(A)')'    enddo'
+  WRITE(LUMOD5,'(A)')'!$OMP END SINGLE'
+  WRITE(LUMOD5,'(A)')'!$OMP BARRIER'
   WRITE(LUMOD5,'(A)')'!!$OMP END PARALLEL DO'
   WRITE(LUMOD5,'(A)')'  end subroutine PrimitiveContraction'//ARCSTRING//'SegP1'
   WRITE(LUMOD5,'(A)')''
@@ -870,6 +873,7 @@ DO GPUrun=1,2
   WRITE(LUMOD4,'(A)')'!!$OMP PRIVATE(iPassP,iContA,iContB,iPrimB,iPrimA,tmp) &'
   WRITE(LUMOD4,'(A)')'!!$OMP SHARED(nPasses,nContA,nContB,nPrimB,nPrimA,ACC,BCC,&'
   WRITE(LUMOD4,'(A)')'!!$OMP        AUXarrayCont,AUXarray2,BasisCont3)'
+  WRITE(LUMOD4,'(A)')'!$OMP SINGLE'
   WRITE(LUMOD4,'(A)')'    do iPassP = 1,nPasses'
   WRITE(LUMOD4,'(A)')'     do iContA=1,nContA'
   WRITE(LUMOD4,'(A)')'      do iPrimB=1,nPrimB'
@@ -888,6 +892,8 @@ DO GPUrun=1,2
   WRITE(LUMOD4,'(A)')'      enddo'
   WRITE(LUMOD4,'(A)')'     enddo'
   WRITE(LUMOD4,'(A)')'    enddo'
+  WRITE(LUMOD4,'(A)')'!$OMP END SINGLE'
+  WRITE(LUMOD4,'(A)')'!$OMP BARRIER'
   WRITE(LUMOD4,'(A)')'!!$OMP END PARALLEL DO'
   WRITE(LUMOD4,'(A)')'  end subroutine PrimitiveContraction'//ARCSTRING//'SegQ1'
   WRITE(LUMOD4,'(A)')''
@@ -918,6 +924,7 @@ DO GPUrun=1,2
   WRITE(LUMOD3,'(A)')'!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2,&'
   WRITE(LUMOD3,'(A)')'!!$OMP        BasisCont1,BasisCont2,BasisCont3)'
   WRITE(LUMOD3,'(A)')'!!$OMP SINGLE'
+  WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
   WRITE(LUMOD3,'(A)')'    do iPassP = 1,nPasses'
   WRITE(LUMOD3,'(A)')'     do iContC=1,nContC'
   WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iPrimD,iPrimC,TMP,iContC,iPassP)'
@@ -970,6 +977,8 @@ DO GPUrun=1,2
   WRITE(LUMOD3,'(A)')'    enddo'
   WRITE(LUMOD3,'(A)')'!!$OMP END SINGLE'
   WRITE(LUMOD3,'(A)')'!!$OMP END PARALLEL DO'
+  WRITE(LUMOD3,'(A)')'!$OMP END SINGLE'
+  WRITE(LUMOD3,'(A)')'!$OMP BARRIER'
   WRITE(LUMOD3,'(A)')'  end subroutine PrimitiveContraction'//ARCSTRING//'Gen1'
 
 !!$         WRITE(LUMOD3,'(A)')'      do iContA=1,nContA'
@@ -1068,6 +1077,7 @@ DO GPUrun=1,2
          WRITE(LUMOD3,'(A)')'!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &'
          WRITE(LUMOD3,'(A)')'!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
          WRITE(LUMOD3,'(A)')'!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)'
+         WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
          WRITE(LUMOD3,'(A)')'    do iPassP = 1,nPasses'
 !         WRITE(LUMOD3,'(A)')'     iContQP = 0'
          WRITE(LUMOD3,'(A)')'     do iContC=1,nContC'
@@ -1145,6 +1155,8 @@ DO GPUrun=1,2
          WRITE(LUMOD3,'(A)')'     enddo'
          WRITE(LUMOD3,'(A)')'    enddo'
          WRITE(LUMOD3,'(A)')'!!$OMP END PARALLEL DO'
+  WRITE(LUMOD3,'(A)')'!$OMP END SINGLE'
+  WRITE(LUMOD3,'(A)')'!$OMP BARRIER'
          call initString(1)
          call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'Gen')
          call AddToString(nTUVP*nTUVQ)
@@ -1174,6 +1186,7 @@ DO GPUrun=1,2
          WRITE(LUMOD5,'(A)')'!!$OMP         BasisCont3,TMP) &'
          WRITE(LUMOD5,'(A)')'!!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&'
          WRITE(LUMOD5,'(A)')'!!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)'
+         WRITE(LUMOD5,'(A)')'!$OMP SINGLE'
          WRITE(LUMOD5,'(A)')'    do iPassP = 1,nPasses'
          WRITE(LUMOD5,'(A)')'     do iContC=1,nContC'
          WRITE(LUMOD5,'(A)')'      do iPrimD=1,nPrimD'
@@ -1197,6 +1210,8 @@ DO GPUrun=1,2
          WRITE(LUMOD5,'(A)')'     enddo'
          WRITE(LUMOD5,'(A)')'    enddo'
          WRITE(LUMOD5,'(A)')'!!$OMP END PARALLEL DO'
+         WRITE(LUMOD5,'(A)')'!$OMP END SINGLE'
+         WRITE(LUMOD5,'(A)')'!$OMP BARRIER'
          call initString(1)
          call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'SegP')
          call AddToString(nTUVP*nTUVQ)
@@ -1227,6 +1242,7 @@ DO GPUrun=1,2
          WRITE(LUMOD4,'(A)')'!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&'
          WRITE(LUMOD4,'(A)')'!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)'
 !         WRITE(LUMOD4,'(A)')'!$OMP SINGLE'
+         WRITE(LUMOD4,'(A)')'!$OMP SINGLE'
          WRITE(LUMOD4,'(A)')'    do iPassP = 1,nPasses'
          WRITE(LUMOD4,'(A)')'     do iContA=1,nContA'
          WRITE(LUMOD4,'(A)')'      do iPrimB=1,nPrimB'
@@ -1250,6 +1266,8 @@ DO GPUrun=1,2
          WRITE(LUMOD4,'(A)')'     enddo'
          WRITE(LUMOD4,'(A)')'    enddo'
          WRITE(LUMOD4,'(A)')'!!$OMP END PARALLEL DO'
+         WRITE(LUMOD4,'(A)')'!$OMP END SINGLE'
+         WRITE(LUMOD4,'(A)')'!$OMP BARRIER'
          call initString(1)
          call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'SegQ')
          call AddToString(nTUVP*nTUVQ)

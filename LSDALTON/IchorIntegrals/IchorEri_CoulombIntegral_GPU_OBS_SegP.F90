@@ -5146,6 +5146,7 @@ CONTAINS
 !!$OMP PRIVATE(iPassP,iContC,iContD,iPrimD,iPrimC,tmp) &
 !!$OMP SHARED(nPasses,nContC,nContD,nPrimD,nPrimC,DCC,CCC,&
 !!$OMP        AUXarrayCont,AUXarray2,BasisCont3)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5164,6 +5165,8 @@ CONTAINS
       enddo
      enddo
     enddo
+!$OMP END SINGLE
+!$OMP BARRIER
 !!$OMP END PARALLEL DO
   end subroutine PrimitiveContractionGPUSegP1
 
@@ -5186,6 +5189,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5209,6 +5213,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP4
 
    subroutine PrimitiveContractionGPUSegP10(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5229,6 +5235,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5252,6 +5259,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP10
 
    subroutine PrimitiveContractionGPUSegP20(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5272,6 +5281,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5295,6 +5305,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP20
 
    subroutine PrimitiveContractionGPUSegP35(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5315,6 +5327,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5338,6 +5351,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP35
 
    subroutine PrimitiveContractionGPUSegP16(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5358,6 +5373,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5381,6 +5397,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP16
 
    subroutine PrimitiveContractionGPUSegP40(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5401,6 +5419,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5424,6 +5443,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP40
 
    subroutine PrimitiveContractionGPUSegP80(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5444,6 +5465,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5467,6 +5489,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP80
 
    subroutine PrimitiveContractionGPUSegP140(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5487,6 +5511,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5510,6 +5535,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP140
 
    subroutine PrimitiveContractionGPUSegP100(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5530,6 +5557,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5553,6 +5581,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP100
 
    subroutine PrimitiveContractionGPUSegP200(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5573,6 +5603,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5596,6 +5627,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP200
 
    subroutine PrimitiveContractionGPUSegP350(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5616,6 +5649,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5639,6 +5673,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP350
 
    subroutine PrimitiveContractionGPUSegP400(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5659,6 +5695,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5682,6 +5719,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP400
 
    subroutine PrimitiveContractionGPUSegP700(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5702,6 +5741,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5725,6 +5765,8 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP700
 
    subroutine PrimitiveContractionGPUSegP1225(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
@@ -5745,6 +5787,7 @@ CONTAINS
 !!$OMP         BasisCont3,TMP) &
 !!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&
 !!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContC=1,nContC
       do iPrimD=1,nPrimD
@@ -5768,5 +5811,7 @@ CONTAINS
      enddo
     enddo
 !!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionGPUSegP1225
 END MODULE IchorEriCoulombintegralGPUOBSGeneralModSegP

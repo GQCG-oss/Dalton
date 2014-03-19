@@ -419,8 +419,8 @@ subroutine PASSsub
                 !init AUX
                 IF(COLLAPSE)THEN
                    IF(SegP.OR.SegQ.OR.Seg)THEN
-                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(shared) COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ) '
-!                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
+!                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(shared) COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ) '
+                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
                       IF(SegP)THEN
                          IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,Aux2)'
                          WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPasses'
@@ -439,8 +439,8 @@ subroutine PASSsub
                       WRITE(LUFILE,'(A)')   '    ENDDO'
                       WRITE(LUFILE,'(A)')   '   ENDDO'
                       WRITE(LUFILE,'(A)')   '  ENDDO'
-!                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END DO'
-                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
                    ELSE
                       !no need to init
                    ENDIF
@@ -448,8 +448,8 @@ subroutine PASSsub
 
                 !OPENMP
                 IF(Doopenmp)THEN
-!                   WRITE(LUFILE,'(A)')'!$OMP DO &'
-                   WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+                   WRITE(LUFILE,'(A)')'!$OMP DO &'
+!                   WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
                    WRITE(LUFILE,'(A)')'!$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&'
                    IF(Seg)THEN
                       WRITE(LUFILE,'(A)')'!$OMP         iP,iPrimQ,iPrimP,iPrimQP,iPassP,&'
@@ -468,10 +468,11 @@ subroutine PASSsub
                          WRITE(LUFILE,'(A,I2,A)')'!$OMP         Tmp',JTMP,',&'
                       endif
                    ENDDO
-                   WRITE(LUFILE,'(A)')'!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &'
-                   WRITE(LUFILE,'(A)')'!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&'
-                   WRITE(LUFILE,'(A,A,A,A,A)')'!$OMP        ',ToExpLabel,'exp,',FromExpLabel,'exp,&'
-                   WRITE(LUFILE,'(A)')'!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)'
+                   WRITE(LUFILE,'(A)')'!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) '
+!                   WRITE(LUFILE,'(A)')'!$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &'
+!                   WRITE(LUFILE,'(A)')'!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&'
+!                   WRITE(LUFILE,'(A,A,A,A,A)')'!$OMP        ',ToExpLabel,'exp,',FromExpLabel,'exp,&'
+!                   WRITE(LUFILE,'(A)')'!$OMP        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)'
                 ENDIF
                 !OpenACC
                 IF(DoopenACC)THEN
@@ -735,8 +736,8 @@ subroutine PASSsub
                    ENDIF
                    WRITE(LUFILE,'(A)')'  ENDDO'
                 ENDIF
-!                IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END DO'
-                IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+                IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!                IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
 
                 call initString(1)          
                 call AddToString('end subroutine TransferRecurrence'//ARCSTRING//'P')

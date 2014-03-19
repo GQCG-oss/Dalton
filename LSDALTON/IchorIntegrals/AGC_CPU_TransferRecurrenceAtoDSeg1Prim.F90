@@ -22,16 +22,12 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
 !$OMP         expBX,expBY,expBZ,&
 !$OMP         Tmp0,&
-!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
-!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
-!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
-!$OMP       Bexp,Cexp,&
-!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -89,7 +85,7 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
       ENDDO
      ENDDO
   ENDDO !iP = 1,nPasses
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine TransferRecurrenceCPUP1Q1AtoDSeg1Prim
  subroutine TransferRecurrenceCPUP2Q1AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
@@ -111,16 +107,12 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
 !$OMP         expBX,expBY,expBZ,&
 !$OMP         Tmp0,&
-!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
-!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
-!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
-!$OMP       Bexp,Cexp,&
-!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -205,7 +197,7 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
       ENDDO
      ENDDO
   ENDDO !iP = 1,nPasses
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine TransferRecurrenceCPUP2Q1AtoDSeg1Prim
  subroutine TransferRecurrenceCPUP2Q2AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
@@ -228,17 +220,13 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
 !$OMP         expBX,expBY,expBZ,&
 !$OMP         Tmp0,&
 !$OMP         Tmp1,&
-!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
-!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
-!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
-!$OMP       Bexp,Cexp,&
-!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -483,7 +471,7 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
       ENDDO
      ENDDO
   ENDDO !iP = 1,nPasses
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine TransferRecurrenceCPUP2Q2AtoDSeg1Prim
  subroutine TransferRecurrenceCPUP3Q1AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
@@ -505,16 +493,12 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
 !$OMP         expBX,expBY,expBZ,&
 !$OMP         Tmp0,&
-!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
-!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
-!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
-!$OMP       Bexp,Cexp,&
-!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -647,7 +631,7 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
       ENDDO
      ENDDO
   ENDDO !iP = 1,nPasses
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine TransferRecurrenceCPUP3Q1AtoDSeg1Prim
  subroutine TransferRecurrenceCPUP3Q2AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
@@ -691,17 +675,13 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
   !CARTDIR = 3
   integer,parameter, dimension(20) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4 /)
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
 !$OMP         expBX,expBY,expBZ,&
 !$OMP         Tmp0,&
 !$OMP         Tmp1,&
-!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
-!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
-!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
-!$OMP       Bexp,Cexp,&
-!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -892,7 +872,7 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
       ENDDO
      ENDDO
   ENDDO !iP = 1,nPasses
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine TransferRecurrenceCPUP3Q2AtoDSeg1Prim
  subroutine TransferRecurrenceCPUP4Q1AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
@@ -935,16 +915,12 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
   !CARTDIR = 3
   integer,parameter, dimension(20) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4 /)
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
 !$OMP         expBX,expBY,expBZ,&
 !$OMP         Tmp0,&
-!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
-!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
-!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
-!$OMP       Bexp,Cexp,&
-!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -1011,7 +987,7 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
       ENDDO
      ENDDO
   ENDDO !iP = 1,nPasses
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine TransferRecurrenceCPUP4Q1AtoDSeg1Prim
  subroutine TransferRecurrenceCPUP3Q3AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
@@ -1062,18 +1038,14 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
   integer,parameter, dimension(35) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5 /)
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
 !$OMP         expBX,expBY,expBZ,&
 !$OMP         Tmp0,&
 !$OMP         Tmp1,&
 !$OMP         Tmp2,&
-!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
-!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
-!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
-!$OMP       Bexp,Cexp,&
-!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -1481,7 +1453,7 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
       ENDDO
      ENDDO
   ENDDO !iP = 1,nPasses
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine TransferRecurrenceCPUP3Q3AtoDSeg1Prim
  subroutine TransferRecurrenceCPUP4Q2AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
@@ -1531,17 +1503,13 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
   integer,parameter, dimension(35) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5 /)
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
 !$OMP         expBX,expBY,expBZ,&
 !$OMP         Tmp0,&
 !$OMP         Tmp1,&
-!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
-!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
-!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
-!$OMP       Bexp,Cexp,&
-!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -1732,7 +1700,7 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
       ENDDO
      ENDDO
   ENDDO !iP = 1,nPasses
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine TransferRecurrenceCPUP4Q2AtoDSeg1Prim
  subroutine TransferRecurrenceCPUP4Q3AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
@@ -1792,18 +1760,14 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5,1,1,2,1,2,3,&
           & 1,2,3,4,1,2,3,4,5,1,2,3,4,5,6 /)
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
 !$OMP         expBX,expBY,expBZ,&
 !$OMP         Tmp0,&
 !$OMP         Tmp1,&
 !$OMP         Tmp2,&
-!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &
-!$OMP SHARED(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
-!$OMP        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
-!$OMP       Bexp,Cexp,&
-!$OMP        IatomApass,IatomBpass,Aux2,Aux)
+!$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -2211,6 +2175,6 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim
       ENDDO
      ENDDO
   ENDDO !iP = 1,nPasses
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine TransferRecurrenceCPUP4Q3AtoDSeg1Prim
 end module
