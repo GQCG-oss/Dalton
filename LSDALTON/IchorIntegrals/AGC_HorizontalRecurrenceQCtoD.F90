@@ -14,9 +14,8 @@ subroutine HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContPQ,nPasses,nlmP,&
   !Local variables
   integer :: iP,ilmP,iTUVC
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iP,iTUVC,ilmP) &
-!$OMP SHARED(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)
+!$OMP DO &
+!$OMP PRIVATE(iP,iTUVC,ilmP) 
   DO iP = 1,nContPQ*nPasses
     DO iTUVC=  2,  4
      DO ilmP = 1,nlmP
@@ -24,7 +23,7 @@ subroutine HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContPQ,nPasses,nlmP,&
      ENDDO
     ENDDO
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_RHS_Q1C1D0CtoD
 
 !Transfer angmom from C to D
@@ -39,10 +38,9 @@ subroutine HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContPQ,nPasses,nlmP,&
   integer :: iP,iC,iPassQ,ilmP,iTUVC
   real(realk) :: Xcd,Ycd,Zcd
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iP,&
-!$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) &
-!$OMP SHARED(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+!$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) 
   DO iP = 1,nContPQ*nPasses
    Xcd = Qdistance12(1)
    Ycd = Qdistance12(2)
@@ -59,7 +57,7 @@ subroutine HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContPQ,nPasses,nlmP,&
      ThetaP(ilmP, 4, 4,IP) = ThetaP2(ilmP,10,IP) + Zcd*ThetaP2(ilmP, 4,IP) 
     ENDDO
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_RHS_Q2C1D1CtoD
 
 !Transfer angmom from C to D
@@ -73,9 +71,8 @@ subroutine HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContPQ,nPasses,nlmP,&
   !Local variables
   integer :: iP,ilmP,iTUVC
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iP,iTUVC,ilmP) &
-!$OMP SHARED(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)
+!$OMP DO &
+!$OMP PRIVATE(iP,iTUVC,ilmP) 
   DO iP = 1,nContPQ*nPasses
     DO iTUVC=  5, 10
      DO ilmP = 1,nlmP
@@ -83,7 +80,7 @@ subroutine HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContPQ,nPasses,nlmP,&
      ENDDO
     ENDDO
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_RHS_Q2C2D0CtoD
 
 !Transfer angmom from C to D
@@ -98,10 +95,9 @@ subroutine HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContPQ,nPasses,nlmP,&
   integer :: iP,iC,iPassQ,ilmP,iTUVC
   real(realk) :: Xcd,Ycd,Zcd
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iP,&
-!$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) &
-!$OMP SHARED(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+!$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) 
   DO iP = 1,nContPQ*nPasses
    Xcd = Qdistance12(1)
    Ycd = Qdistance12(2)
@@ -127,7 +123,7 @@ subroutine HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContPQ,nPasses,nlmP,&
      ThetaP(ilmP,10, 4,IP) = ThetaP2(ilmP,20,IP) + Zcd*ThetaP2(ilmP,10,IP) 
     ENDDO
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_RHS_Q3C2D1CtoD
 
 !Transfer angmom from C to D
@@ -143,11 +139,10 @@ subroutine HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContPQ,nPasses,nlmP,&
   real(realk) :: Xcd,Ycd,Zcd
   real(realk) :: Tmp1(  5: 20,  2:  4)
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iP,&
 !$OMP         Tmp1,&
-!$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) &
-!$OMP SHARED(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+!$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) 
   DO iP = 1,nContPQ*nPasses
    Xcd = Qdistance12(1)
    Ycd = Qdistance12(2)
@@ -239,7 +234,7 @@ subroutine HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContPQ,nPasses,nlmP,&
      ThetaP(ilmP,10,10,IP) = Tmp1(20, 4) + Zcd*Tmp1(10, 4) 
     ENDDO
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_RHS_Q4C2D2CtoD
 #ifdef VAR_OPENACC
 

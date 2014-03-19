@@ -4212,14 +4212,16 @@ contains
   !
   !> Author:  Pablo Baudin 
   !> Date:    March 2014
-  subroutine wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split)
+  subroutine wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split,ntasks)
 
     implicit none
 
     !> Atomic fragment
     type(decfrag), intent(inout) :: MyFragment
-
+    !> AO batch information
     type(mp2_batch_construction), intent(inout) :: bat
+    !> return number of tasks (only for MO-CCSD)
+    integer, intent(inout) :: ntasks
 
     real(realk) :: MemFree
     integer :: scheme, nbas, nocc, nvir, MinAObatch, iter
@@ -4233,11 +4235,10 @@ contains
     nvir = MyFragment%nunoccAOS 
 
     ! For MO-CCSD part
-    ntot = nocc + nvir
-    nbas = MyFragment%nbasis
+    ntot    = nocc + nvir
+    nbas    = MyFragment%nbasis
     mo_ccsd = .false.
     if (DECinfo%MOCCSD) mo_ccsd = .true.
-    scheme = -1
     if (DECinfo%force_scheme) scheme=DECinfo%en_mem
 
     ! The two if statments are necessary as mo_ccsd might become false
@@ -4246,6 +4247,7 @@ contains
       call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nbas,nocc,nvir, &
            & dimMO,nMObatch,bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma, &
            & MyFragment%MyLsItem,mpi_split)
+      ntasks = nMObatch*(nMObatch+1)/2
     end if
 
     if (.not.mo_ccsd) then 
@@ -5429,9 +5431,9 @@ contains
   
 
   !> Purpose: Calculate CCSD residual using T1-transformed equations.
-  !           This algorithm is MO-based and read MO-integral in memory
-  !           or in PDM if MPI. The MO-integral are assumed to be packed
-  !           in batches using the routine get_packed_gmo.
+  !           This algorithm is MO-based and read MO-integral in memory,
+  !           (PDM if MPI). The MO-integral are assumed to be packed
+  !           in batches using the routine get_t1_free_gmo.
   !
   !> Author:  Pablo Baudin
   !> Date:    November 2013
@@ -5500,9 +5502,8 @@ contains
 
     !> debug:
     logical :: print_debug, local_moccsd
-    real(realk), external :: ddot
-    real(realk) :: tcpu, twall, tcpu1, twall1, dummy
-    integer :: pos1, pos2, ncopy, idb, iub
+    real(realk) :: tcpu, twall, tcpu1, twall1
+    integer :: idb, iub
 
 
     ! Initialize stuff
@@ -5620,26 +5621,30 @@ contains
     Nbat = MOinfo%nbatch
 
     omega2%elm1 = 0.0E0_realk
+ 
 
-    
-
+    !===========================================================================
+    !                          MPI COMMUNICATIONS
+    !
+    ! ~ Distribution of workloads to the nodes
+    ! ~ Wake up slaves and communicate data
+    ! ~ Reduce MO batches on appropriate nodes if local_moccsd
 #ifdef VAR_MPI
-    call get_mo_ccsd_joblist(MOinfo, joblist)
+    call get_mo_ccsd_joblist(MOinfo, joblist, pgmo_diag, pgmo_up)
 
-    ! all communication for MPI prior to the loop
+    ! Wake up slaves and communicate important data
     StartUpSlaves: if (master.and.nnod>1) then
-
-      ! Check that the slaves have finished to write in pdm arrays
-      if (iter==1) call lsmpi_reduction(dummy,infpar%master,infpar%lg_comm)
-
       call ls_mpibcast(MOCCSDDATA,infpar%master,infpar%lg_comm)
       call mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
              & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock)
     end if StartUpSlaves
 
+    ! If RTAR type of array is used then we reduce the partial MO batches
+    ! to the MPI process that will treat it (depending on joblist)
+    ! (For TDAR type of array the batches are already complete due to one-sided
+    ! communication in get_t1_free_gmo)
     if (iter==1.and.local_moccsd) then 
-      ! reduce the batches on the corresponding nodes:
       do PQ_batch=1,Nbat 
         tile_master = joblist(PQ_batch) - 1
         
@@ -5647,18 +5652,19 @@ contains
         Q_sta = MOinfo%StartInd2(PQ_batch)
 
         if (P_sta==Q_sta) then
-          idb = MOinfo%tileInd(PQ_batch)
+          idb = MOinfo%tileInd(PQ_batch,1)
           call lsmpi_reduction(pgmo_diag%ti(idb)%t,pgmo_diag%ti(idb)%e,tile_master,infpar%lg_comm)
         else
-          iub = MOinfo%tileInd(PQ_batch)
+          iub = MOinfo%tileInd(PQ_batch,1)
           call lsmpi_reduction(pgmo_up%ti(iub)%t,pgmo_up%ti(iub)%e,tile_master,infpar%lg_comm)
         end if
       end do
     end if
 #endif
 
-
     call LSTIMER('MO-CCSD INIT',tcpu1,twall1,DECinfo%output)
+
+
 
     !===========================================================================!
     !                        START LOOP OVER MO BATCHES                         !
@@ -5676,24 +5682,29 @@ contains
       Q_sta = MOinfo%StartInd2(PQ_batch)
       dimQ  = MOinfo%dimInd2(PQ_batch)
 
+      ! Get batch of MO integral
       if (P_sta==Q_sta) then
-        idb = MOinfo%tileInd(PQ_batch)
+        idb = MOinfo%tileInd(PQ_batch,1)
         call unpack_gmo(gmo,pgmo_diag,idb,ntot,dimP,dimQ,.true.,tmp0)
       else
-        iub = MOinfo%tileInd(PQ_batch)
+        iub = MOinfo%tileInd(PQ_batch,1)
         call unpack_gmo(gmo,pgmo_up,iub,ntot,dimP,dimQ,.false.,tmp0)
       end if
 
+      ! Get intermediate for the calculation of residual
       call wrapper_get_intermediates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
                          & xvir,yocc,t2%elm1,u2,goooo,B2prep,omega2%elm1,G_Pi,H_aQ, &
                          & govov%elm1,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
     end do BatchPQ
  
-
     call LSTIMER('MO-CCSD main loop',tcpu1,twall1,DECinfo%output)
 
+
+
     !===========================================================================
+    !           REDUCE DATA AND GET FINAL CONTRIBUTION TO RESIDUAL
+    !
     ! Calculate norm of A2:
     if (print_debug.and.nnod==1) call print_norm(omega2,'debug: residual A2 norm:           ')
 
@@ -5756,14 +5767,15 @@ contains
       return
     endif
 
-
     ! Calculate norm of A2 + B2 + C2 + D2 residual:
     if (print_debug) then 
       call print_norm(omega2,'debug: residual D2 norm:            ')
       call LSTIMER('MO-CCSD A2, B2, C2, D2',tcpu1,twall1,DECinfo%output)
     end if
 
-    ! Get MO fock Matrices:
+
+    !===========================================================================
+    !                          GET MO-FOCK MATRICES
     call get_MO_fock_matrices(nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
                   & goooo,govoo,gvooo,gvoov,gvvoo,ppfock%elm1,pqfock%elm1, & 
                   & qpfock%elm1,qqfock%elm1,deltafock%elm1,MyLsItem)
@@ -5776,10 +5788,9 @@ contains
       call LSTIMER('MO-CCSD Fock mat',tcpu1,twall1,DECinfo%output)
     end if
 
-
  
     !===========================================================================
-    ! GET FINAL SINGLES CCSD RESIDUAL:
+    !                       GET SINGLES CCSD RESIDUAL
     !
     ! Get A1 term:
     ! Omega_ai = xvir_aP * G_Pi 
@@ -5815,8 +5826,9 @@ contains
       call LSTIMER('MO-CCSD singles',tcpu1,twall1,DECinfo%output)
     end if
 
+
     !===========================================================================
-    ! GET FINAL DOUBLES RESIDUAL:
+    !                   GET DOUBLES CCSD RESIDUAL AND FINALIZE
     !
     ! Get E2 term and introduce permutational symmetry
     call get_E2_and_permute(ntot,nocc,nvir,ppfock%elm1,qqfock%elm1,tmp0,t2%elm1,G_Pi,H_aQ,omega2%elm1)

@@ -41,7 +41,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim1C(nPassP,nPrimP,nPrimQ,&
   !ThetaAux(n,1,0,0) = Xqc*ThetaAux(n,0,0,0) + (-alpha/q*Xpq)*ThetaAux(n+1,0,0,0)
   !i = 0 last 2 term vanish
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
 !$OMP         RWVAL,GVAL,&
@@ -51,11 +51,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim1C(nPassP,nPrimP,nPrimQ,&
 !$OMP         invexpQ,&
 !$OMP         PREF,&
 !$OMP         TMP1,TMP2,&
-!$OMP         iP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Ccenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPassP)
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -106,7 +102,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim1C(nPassP,nPrimP,nPrimQ,&
      AUXarray(3,iP) = Yqc*TMP1 + alphaYpq*TMP2
      AUXarray(4,iP) = Zqc*TMP1 + alphaZpq*TMP2
   ENDDO !iP = 1,nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine VerticalRecurrenceCPUSeg1Prim1C
 
 subroutine VerticalRecurrenceCPUSeg1Prim2C(nPassP,nPrimP,nPrimQ,&
@@ -135,7 +131,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim2C(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Xqc,Yqc,Zqc,alphaQ,&
@@ -146,11 +142,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim2C(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray1,&
 !$OMP         TMParray2,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Ccenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPassP)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -188,7 +180,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim2C(nPassP,nPrimP,nPrimQ,&
      AuxArray(9,iP) = Yqc*TMPAuxArray(4) + alphaYpq*TmpArray2(4,2)
      AuxArray(10,iP) = Zqc*TMPAuxArray(4) + alphaZpq*TmpArray2(4,2) + TwoTerms(1)
   ENDDO !iP = 1,nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine VerticalRecurrenceCPUSeg1Prim3C(nPassP,nPrimP,nPrimQ,&
@@ -218,7 +210,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim3C(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Xqc,Yqc,Zqc,alphaQ,&
@@ -230,11 +222,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim3C(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray2,&
 !$OMP         TMParray3,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Ccenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPassP)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -296,7 +284,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim3C(nPassP,nPrimP,nPrimQ,&
      AuxArray(19,iP) = Yqc*TMPAuxArray(10) + alphaYpq*TmpArray3(10,2)
      AuxArray(20,iP) = Zqc*TMPAuxArray(10) + alphaZpq*TmpArray3(10,2) + 2*TwoTerms(3)
   ENDDO !iP = 1,nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine VerticalRecurrenceCPUSeg1Prim4C(nPassP,nPrimP,nPrimQ,&
@@ -327,7 +315,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim4C(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Xqc,Yqc,Zqc,alphaQ,&
@@ -340,11 +328,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim4C(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray3,&
 !$OMP         TMParray4,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Ccenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPassP)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -448,7 +432,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim4C(nPassP,nPrimP,nPrimQ,&
      AuxArray(34,iP) = Yqc*TMPAuxArray(20) + alphaYpq*TmpArray4(20,2)
      AuxArray(35,iP) = Zqc*TMPAuxArray(20) + alphaZpq*TmpArray4(20,2) + 3*TwoTerms(3)
   ENDDO !iP = 1,nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine VerticalRecurrenceCPUSeg1Prim5C(nPassP,nPrimP,nPrimQ,&
@@ -480,7 +464,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim5C(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Xqc,Yqc,Zqc,alphaQ,&
@@ -494,11 +478,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim5C(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray4,&
 !$OMP         TMParray5,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Ccenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPassP)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -671,7 +651,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim5C(nPassP,nPrimP,nPrimQ,&
      AuxArray(55,iP) = Yqc*TMPAuxArray(35) + alphaYpq*TmpArray5(35,2)
      AuxArray(56,iP) = Zqc*TMPAuxArray(35) + alphaZpq*TmpArray5(35,2) + 4*TwoTerms(6)
   ENDDO !iP = 1,nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine VerticalRecurrenceCPUSeg1Prim6C(nPassP,nPrimP,nPrimQ,&
@@ -704,7 +684,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim6C(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Xqc,Yqc,Zqc,alphaQ,&
@@ -719,11 +699,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim6C(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray5,&
 !$OMP         TMParray6,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Ccenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPassP)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -1002,7 +978,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim6C(nPassP,nPrimP,nPrimQ,&
      AuxArray(83,iP) = Yqc*TMPAuxArray(56) + alphaYpq*TmpArray6(56,2)
      AuxArray(84,iP) = Zqc*TMPAuxArray(56) + alphaZpq*TmpArray6(56,2) + 5*TwoTerms(9)
   ENDDO !iP = 1,nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine VerticalRecurrenceCPUSeg1Prim7C(nPassP,nPrimP,nPrimQ,&
@@ -1036,7 +1012,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim7C(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Xqc,Yqc,Zqc,alphaQ,&
@@ -1052,11 +1028,7 @@ subroutine VerticalRecurrenceCPUSeg1Prim7C(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray6,&
 !$OMP         TMParray7,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Ccenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPassP)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -1490,6 +1462,6 @@ subroutine VerticalRecurrenceCPUSeg1Prim7C(nPassP,nPrimP,nPrimQ,&
      AuxArray(119,iP) = Yqc*TMPAuxArray(84) + alphaYpq*TmpArray7(84,2)
      AuxArray(120,iP) = Zqc*TMPAuxArray(84) + alphaZpq*TmpArray7(84,2) + 6*TwoTerms(13)
   ENDDO !iP = 1,nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 end module

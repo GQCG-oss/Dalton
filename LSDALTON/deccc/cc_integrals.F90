@@ -749,9 +749,9 @@ contains
     integer :: ntot ! total number of MO
     real(realk), pointer :: Cov(:,:), CP(:,:), CQ(:,:)
     real(realk), pointer :: gmo(:), tmp1(:), tmp2(:)
-    integer(kind=long)   :: gmosize, min_mem, tmp_size
+    integer(kind=long)   :: gmosize, tmp_size
     integer :: Nbatch, PQ_batch, dimP, dimQ, idb, iub
-    integer :: P_sta, P_end, Q_sta, Q_end, dimPack, ipack
+    integer :: P_sta, P_end, Q_sta, Q_end
     type(MObatchInfo), intent(out) :: MOinfo
     logical :: local_moccsd
      
@@ -764,7 +764,7 @@ contains
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
     Character :: INTSPEC(5)
-    logical :: FoundInMem, fullRHS, doscreen
+    logical :: fullRHS, doscreen
     integer :: MaxAllowedDimAlpha, MaxActualDimAlpha, nbatchesAlpha
     integer :: MaxAllowedDimGamma, MaxActualDimGamma, nbatchesGamma
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), &
@@ -773,9 +773,7 @@ contains
                       & batchsizeGamma(:), batchindexGamma(:)
 
     !> CHECKING and MEASURING variables
-    real(realk) :: MemFree, MemNeed, tcpu, twall, time_start, timewall_start 
-    integer(kind=long) :: els2add
-    integer :: scheme
+    real(realk) :: tcpu, twall, time_start, timewall_start 
     logical :: print_debug
        
     ! MPI variables:
@@ -810,7 +808,6 @@ contains
     local       = .true.
     myrank      = int(0,kind=ls_mpik)
     nnod        = 1
-    scheme      = 4
 #ifdef VAR_MPI
     myrank      = infpar%lg_mynum
     nnod        = infpar%lg_nodtot
@@ -868,7 +865,7 @@ contains
             write(DECinfo%output,*) 'MO-CCSD: non-MPI scheme'
           end if
           write(DECinfo%output,'(a,I4,a,I4)') ' BATCH: Number of MO batches      = ', &
-               & Nbatch, ' with maximum size', dimP
+               & Nbatch*(Nbatch+1)/2, ' with maximum size', dimP
         end if
 
         ! Initialize gmo arrays:
@@ -901,11 +898,9 @@ contains
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(dimP,infpar%master)
     call ls_mpi_buffer(Nbatch,infpar%master)
-    call ls_mpi_buffer(scheme,infpar%master)
     call ls_mpi_buffer(local_moccsd,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
-    call ls_mpi_buffer(els2add,infpar%master)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 #endif
 
@@ -1048,7 +1043,7 @@ contains
       myload = 0
       tasks  = 0
       call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
-         &batchdimGamma,myload,nnod,myrank,scheme,no,nv,nb,batch2orbAlpha,&
+         &batchdimGamma,myload,nnod,myrank,4,no,nv,nb,batch2orbAlpha,&
          &batch2orbGamma)
 #endif
     myload = 0
@@ -1177,10 +1172,10 @@ contains
      
 #ifdef VAR_MPI
     call mem_dealloc(tasks)
-    ! The slaves tell to the master that they have done their jobs.
-    ! The master receives the message in the residual routine.
-    if (.not.master.and.ccmodel==MODEL_CCSD) then
-      call lsmpi_reduction(1.0E0_realk,infpar%master,infpar%lg_comm)
+    ! Problem specific to one sided comm. and maybe bcast,
+    ! We must use a barrier after one sided communication epoc:
+    if (.not.local_moccsd.and.ccmodel==MODEL_CCSD) then
+      call lsmpi_barrier(infpar%lg_comm)
     end if
 #endif
 
@@ -1770,7 +1765,7 @@ contains
     call mem_alloc(PQbatchInfo%dimInd1,   Njob)
     call mem_alloc(PQbatchInfo%dimInd2,   Njob)
     call mem_alloc(PQbatchInfo%dimTot,    Njob)
-    call mem_alloc(PQbatchInfo%tileInd,   Njob)
+    call mem_alloc(PQbatchInfo%tileInd, Njob,2)
 
     ! Initialization
     PQ_batch = 1
@@ -1801,11 +1796,13 @@ contains
         ! DimTot contains the total dimension 
         if (P_sta==Q_sta) then
           idb = idb + 1
-          PQbatchInfo%tileInd(PQ_batch) = idb
+          PQbatchInfo%tileInd(PQ_batch,1) = idb
+          PQbatchInfo%tileInd(PQ_batch,2) = 0
           PQbatchInfo%dimTot(PQ_batch) = dimP*dimQ
         else 
           iub = iub + 1
-          PQbatchInfo%tileInd(PQ_batch) = iub
+          PQbatchInfo%tileInd(PQ_batch,1) = iub
+          PQbatchInfo%tileInd(PQ_batch,2) = 1
           PQbatchInfo%dimTot(PQ_batch) = 2*dimP*dimQ
         end if
 
