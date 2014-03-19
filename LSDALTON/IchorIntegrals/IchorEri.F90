@@ -645,8 +645,8 @@ DO IAngmomTypes = 0,MaxTotalAngmom
          call mem_ichor_alloc(PpreExpFac)
 !         allocate(Pcent(3*nPrimP))
 !         call mem_ichor_alloc(Pcent)
-         WRITE(lupri,*)'CALC TYPE:',ItypeA,ItypeB,ItypeC,ItypeD
-         WRITE(lupri,*)'CALC  Ang:',AngmomA,AngmomB,AngmomC,AngmomD
+!         WRITE(lupri,*)'CALC TYPE:',ItypeA,ItypeB,ItypeC,ItypeD
+!         WRITE(lupri,*)'CALC  Ang:',AngmomA,AngmomB,AngmomC,AngmomD
          call IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
               & iBatchIndexOfTypeA,expA,ContractCoeffA,AngmomA,Acenter,nBatchA,nOrbA,&
               & nAtomsB,nPrimB,nContB,nOrbCompB,startOrbitalB,&
@@ -1059,10 +1059,13 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
         enddo
 !!$OMP END DO
      ENDIF
+!!$OMP SINGLE
      !output: Qcent,Qdistance12,QpreExpFac
      CALL Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
           & expC,expD,CcenterSpec,DcenterSpec,ContractCoeffC,ContractCoeffD,&
           & Qsegmented,Qcent,Qdistance12,QpreExpFac,INTPRINT)
+!!$OMP END SINGLE
+!!$OMP BARRIER
      !Unique for each iPassQ (iAtomC,iAtomD) iteration: qcent,qdistance12,qpreexpfac, Qiprim1(nPrimQ), output:
      !LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,MaxPasses)
      !IatomAPass,iatomBPass changes and 
@@ -1129,6 +1132,12 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      IF(PermuteLHSTypes)THEN
       IF(PermuteRHS)THEN
 !!$OMP DO 
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) &
+!$OMP PRIVATE(iOrbD,iOrbC,IatomB,IorbQ,I4,I3,startB) &
+!$OMP SHARED(startOrbitalB,nOrbD,nOrbC,nAtomsB,startD,&
+!$OMP        startC,nAtomsA,nOrbA,nOrbB,startOrbitalA,&
+!$OMP        OutputDim1,OutputDim2,OutputDim3,OutputDim4,&
+!$OMP        OutputStorage,LocalIntPass2,nOrbQ)
        DO iOrbD = 1,nOrbD
         DO iOrbC = 1,nOrbC
          DO IatomB = 1,nAtomsB
@@ -1142,9 +1151,16 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
          ENDDO
         ENDDO
        ENDDO
+!$OMP END PARALLEL DO
 !!$OMP END DO 
       ELSE  !PermuteLHSTypes NOT PermuteRHS
 !!$OMP DO 
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) &
+!$OMP PRIVATE(iOrbD,iOrbC,IatomB,IorbQ,I4,I3,startB) &
+!$OMP SHARED(startOrbitalB,nOrbD,nOrbC,nAtomsB,startD,&
+!$OMP        startC,nAtomsA,nOrbA,nOrbB,startOrbitalA,&
+!$OMP        OutputDim1,OutputDim2,OutputDim3,OutputDim4,&
+!$OMP        OutputStorage,LocalIntPass2,nOrbQ)
        DO iOrbD = 1,nOrbD
         DO iOrbC = 1,nOrbC
          DO IatomB = 1,nAtomsB
@@ -1158,11 +1174,18 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
          ENDDO
         ENDDO
        ENDDO
+!$OMP END PARALLEL DO
 !!$OMP END DO 
       ENDIF
      ELSE !NOT PermuteLHSTypes
       IF(PermuteRHS)THEN
 !!$OMP DO 
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) &
+!$OMP PRIVATE(iOrbD,iOrbC,IatomB,IorbQ,I4,I3,startB) &
+!$OMP SHARED(startOrbitalB,nOrbD,nOrbC,nAtomsB,startD,&
+!$OMP        startC,nAtomsA,nOrbA,nOrbB,startOrbitalA,&
+!$OMP        OutputDim1,OutputDim2,OutputDim3,OutputDim4,&
+!$OMP        OutputStorage,LocalIntPass2,nOrbQ)
        DO iOrbD = 1,nOrbD
         DO iOrbC = 1,nOrbC
          DO IatomB = 1,nAtomsB
@@ -1176,9 +1199,16 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
          ENDDO
         ENDDO
        ENDDO
+!$OMP END PARALLEL DO
 !!$OMP END DO 
       ELSE !NOT PermuteLHSTypes NOT PermuteRHS 
 !!$OMP DO 
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) &
+!$OMP PRIVATE(iOrbD,iOrbC,IatomB,IorbQ,I4,I3,startB) &
+!$OMP SHARED(startOrbitalB,nOrbD,nOrbC,nAtomsB,startD,&
+!$OMP        startC,nAtomsA,nOrbA,nOrbB,startOrbitalA,&
+!$OMP        OutputDim1,OutputDim2,OutputDim3,OutputDim4,&
+!$OMP        OutputStorage,LocalIntPass2,nOrbQ)
        DO iOrbD = 1,nOrbD
         DO iOrbC = 1,nOrbC
          DO IatomB = 1,nAtomsB
@@ -1192,6 +1222,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
          ENDDO
         ENDDO
        ENDDO
+!$OMP END PARALLEL DO
 !!$OMP END DO 
       ENDIF
      ENDIF
@@ -1975,6 +2006,13 @@ real(realk),intent(inout)::LP2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB
 integer :: iContQ,iContA,iContB,iContC,iContD,iContP,offsetA,iAngA,iAngB
 integer :: iAngC,iAngD,I3,I4,offsetB,iPass,iAtomA,iAtomB
 !!$OMP DO PRIVATE(iContQ,iContA,iContB,iContC,iContD,iContP,offsetA,iAngA,iAngB,iAngC,iAngD,I3,I4,offsetB,iPass,iAtomA,iAtomB)
+
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) &
+!$OMP PRIVATE(iContQ,iContA,iContB,iContC,iContD,iContP,offsetA,iAngA,iAngB,&
+!$OMP         iAngC,iAngD,I3,I4,offsetB,iPass,iAtomA,iAtomB) &
+!$OMP SHARED(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,&
+!$OMP        nContA,nContB,nContC,nContD,MaxPasses,nPasses,&
+!$OMP        IatomAPass,IatomBPass,LP1,LP2)
   DO IPass = 1,nPasses
    DO iContD = 1,nContD
     DO iContC = 1,nContC
@@ -2003,6 +2041,7 @@ integer :: iAngC,iAngD,I3,I4,offsetB,iPass,iAtomA,iAtomB
     ENDDO
    ENDDO
   ENDDO
+!$OMP END PARALLEL DO
 !!$OMP END DO
 end subroutine DistributeToLocalIntPass
 
@@ -2021,6 +2060,12 @@ integer :: iContC,iContD,i4,i3,offsetA,offsetB,iAngB,iAngA
  !!!   DO IatomA = 1,IatomB-1
 !!$OMP DO COLLAPSE(3) PRIVATE(iPass,iContP,iContQ,iAngD,iAngC,iAtomA,iAtomB,&
 !!$OMP & iContA,iContB,iContC,iContD,i4,i3,offsetA,offsetB,iAngB,iAngA)
+
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) &
+!$OMP PRIVATE(iPass,iContP,iContQ,iAngD,iAngC,iAtomA,iAtomB,iContA,iContB,iContC,&
+!$OMP         iContD,i4,i3,offsetA,offsetB,iAngB,iAngA) &
+!$OMP SHARED(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,&
+!$OMP        nContA,nContB,nContC,nContD,MaxPasses,nPasses,IatomAPass,IatomBPass,LP1,LP2)
   DO IPass = 1,nPasses
    DO iContP = 1,nContA*nContA
     DO iContQ = 1,nContC*nContD
@@ -2058,6 +2103,7 @@ integer :: iContC,iContD,i4,i3,offsetA,offsetB,iAngB,iAngA
     ENDDO
    ENDDO
   ENDDO
+!$OMP END PARALLEL DO
 !!$OMP END DO
 end subroutine TriDistributeToLocalIntPass
 
@@ -2073,6 +2119,11 @@ subroutine TriDistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrb
  !!!  DO IatomB = 1,nAtomsB
  !!!   DO IatomA = 1,IatomB-1
 !!$OMP DO COLLAPSE(2) PRIVATE(iPass,iAngQ,iAtomA,iAtomB,i4,i3,offsetA,offsetB,iAngB,iAngA)
+
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(2) &
+!$OMP PRIVATE(iPass,iAngQ,iAtomA,iAtomB,i4,i3,offsetA,offsetB,iAngB,iAngA) &
+!$OMP SHARED(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,MaxPasses,nPasses,&
+!$OMP        IatomAPass,IatomBPass,LP1,LP2)
   DO IPass = 1,nPasses
    DO iAngQ = 1,nOrbCompD*nOrbCompC
     IatomB = IatomBPass(IPass)
@@ -2085,6 +2136,7 @@ subroutine TriDistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrb
     ENDDO
    ENDDO
   ENDDO
+!$OMP END PARALLEL DO
 !!$OMP END DO
 end subroutine TriDistributeToLocalIntPassSeg
 
@@ -2101,6 +2153,11 @@ subroutine TriDistributeToLocalIntPass0000(LP1,&
  !!!  DO IatomB = 1,nAtomsB
  !!!   DO IatomA = 1,IatomB-1
 !!$OMP DO PRIVATE(iPass,iContP,iContQ,iAtomA,iAtomB,iContA,iContB,iContC,iContD,i4,i3,offsetA,offsetB)
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) &
+!$OMP PRIVATE(iPass,iContP,iContQ,iAtomA,iAtomB,iContA,iContB, &
+!$OMP         iContC,iContD,i4,i3,offsetA,offsetB) &
+!$OMP SHARED(nAtomsA,nAtomsB,nContA,nContB,nContC,nContD,MaxPasses,nPasses,&
+!$OMP        IatomAPass,IatomBPass,LP1,LP2)
   DO IPass = 1,nPasses
    DO iContB = 1,nContA
     DO iContA = 1,nContA
@@ -2113,6 +2170,7 @@ subroutine TriDistributeToLocalIntPass0000(LP1,&
     ENDDO
    ENDDO
   ENDDO
+!$OMP END PARALLEL DO
 !!$OMP END DO
 end subroutine TriDistributeToLocalIntPass0000
 
@@ -2126,6 +2184,10 @@ subroutine DistributeToLocalIntPass0000(LP1,&
   !local variables
   integer :: iContA,iContB,iContQ,ipass,iAtomA,iAtomB
 !!$OMP DO PRIVATE(iContA,iContB,iContQ,ipass,iAtomA,iAtomB)
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) &
+!$OMP PRIVATE(iContA,iContB,iContQ,ipass,iAtomA,iAtomB) &
+!$OMP SHARED(nAtomsA,nAtomsB,nContA,nContB,nContC,nContD,&
+!$OMP        MaxPasses,nPasses,IatomAPass,IatomBPass,LP1,LP2)
   DO IPass = 1,nPasses
    DO iContB = 1,nContB
     DO iContA = 1,nContA
@@ -2137,6 +2199,7 @@ subroutine DistributeToLocalIntPass0000(LP1,&
     ENDDO
    ENDDO
   ENDDO
+!$OMP END PARALLEL DO
 !!$OMP END DO
 end subroutine DistributeToLocalIntPass0000
 
@@ -2150,6 +2213,10 @@ subroutine DistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCom
   !local variables
   integer :: iAngA,iAngB,iAngQ,ipass,iAtomA,iAtomB
 !!$OMP DO COLLAPSE(2) PRIVATE(iAngA,iAngB,iAngQ,ipass,iAtomA,iAtomB)
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) &
+!$OMP PRIVATE(iAngA,iAngB,iAngQ,ipass,iAtomA,iAtomB) &
+!$OMP SHARED(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,MaxPasses,&
+!$OMP        nPasses,IatomAPass,IatomBPass,LP1,LP2)
   DO IPass = 1,nPasses
    DO iAngQ = 1,nOrbCompD*nOrbCompC
     DO iAngB = 1,nOrbCompB
@@ -2161,6 +2228,7 @@ subroutine DistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCom
     ENDDO
    ENDDO
   ENDDO
+!$OMP END PARALLEL DO
 !!$OMP END DO
 end subroutine DistributeToLocalIntPassSeg
 

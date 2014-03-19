@@ -5447,4 +5447,1329 @@ CONTAINS
         CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_general_size',-1)
     END SELECT
   end subroutine IchorCoulombIntegral_GPU_OBS_general_sizeGen
+
+  subroutine PrimitiveContractionGPUGen1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
+    !Scaling p**4*c*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nPassQ
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2,&
+!!$OMP        BasisCont1,BasisCont2,BasisCont3)
+!!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iPrimD,iPrimC,TMP,iContC,iPassP)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         TMP = 0.0E0_realk
+         do iPrimC=1,nPrimC
+          TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+         enddo
+         BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iPrimD,TMP,iContD,iContC,iPassP)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         TMP = 0.0E0_realk
+         do iPrimD=1,nPrimD
+          TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+         enddo
+         BasisCont2(iPrimA,iPrimB) = TMP
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO PRIVATE(iPrimB,iPrimA,TMP,iContA,iContD,iContC,iPassP)
+        do iPrimB=1,nPrimB
+         TMP = 0.0E0_realk
+         do iPrimA=1,nPrimA
+          TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
+         enddo
+         BasisCont3(iPrimB) = TMP
+        enddo
+!!$OMP END DO
+!!$OMP DO PRIVATE(iPrimB,TMP,iContA,iContB,iContD,iContC,iPassP)
+        do iContB=1,nContB
+         TMP = 0.0E0_realk
+         do iPrimB=1,nPrimB
+          TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
+         enddo
+         AUXarrayCont(iContC,iContD,iContA,iContB,iPassP) = TMP
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END SINGLE
+!!$OMP END PARALLEL DO
+  end subroutine PrimitiveContractionGPUGen1
+
+   subroutine PrimitiveContractionGPUGen4(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(    4,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(    4,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(    4,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(    4,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(    4,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,    4
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,    4
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,    4
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,    4
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen4
+
+   subroutine PrimitiveContractionGPUGen10(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(   10,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   10,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(   10,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(   10,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(   10,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,   10
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,   10
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,   10
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,   10
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen10
+
+   subroutine PrimitiveContractionGPUGen20(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(   20,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   20,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(   20,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(   20,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(   20,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,   20
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,   20
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,   20
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,   20
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen20
+
+   subroutine PrimitiveContractionGPUGen35(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(   35,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   35,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(   35,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(   35,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(   35,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,   35
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,   35
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,   35
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,   35
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen35
+
+   subroutine PrimitiveContractionGPUGen16(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(   16,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   16,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(   16,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(   16,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(   16,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,   16
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,   16
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,   16
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,   16
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen16
+
+   subroutine PrimitiveContractionGPUGen40(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(   40,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   40,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(   40,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(   40,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(   40,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,   40
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,   40
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,   40
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,   40
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen40
+
+   subroutine PrimitiveContractionGPUGen80(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(   80,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   80,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(   80,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(   80,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(   80,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,   80
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,   80
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,   80
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,   80
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen80
+
+   subroutine PrimitiveContractionGPUGen140(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(  140,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  140,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(  140,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(  140,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(  140,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,  140
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,  140
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,  140
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,  140
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen140
+
+   subroutine PrimitiveContractionGPUGen100(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(  100,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  100,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(  100,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(  100,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(  100,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,  100
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,  100
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,  100
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,  100
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen100
+
+   subroutine PrimitiveContractionGPUGen200(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(  200,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  200,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(  200,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(  200,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(  200,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,  200
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,  200
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,  200
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,  200
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen200
+
+   subroutine PrimitiveContractionGPUGen350(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(  350,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  350,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(  350,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(  350,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(  350,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,  350
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,  350
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,  350
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,  350
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen350
+
+   subroutine PrimitiveContractionGPUGen400(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(  400,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  400,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(  400,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(  400,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(  400,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,  400
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,  400
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,  400
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,  400
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen400
+
+   subroutine PrimitiveContractionGPUGen700(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2(  700,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  700,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1(  700,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(  700,nPrimA,nPrimB)
+    real(realk) :: BasisCont3(  700,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1,  700
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1,  700
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1,  700
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1,  700
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen700
+
+   subroutine PrimitiveContractionGPUGen1225(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
+       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
+    real(realk),intent(in) :: AUXarray2( 1225,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont( 1225,nContC,nContD,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iTUV,iContQP,iPrimQP
+    real(realk) :: TMP
+    real(realk) :: BasisCont1( 1225,nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2( 1225,nPrimA,nPrimB)
+    real(realk) :: BasisCont3( 1225,nPrimB)
+    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
+!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
+!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
+    do iPassP = 1,nPasses
+     do iContC=1,nContC
+!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
+      do iPrimB=1,nPrimB
+       do iPrimA=1,nPrimA
+        do iPrimD=1,nPrimD
+         do iTUV=1, 1225
+          TMP = 0.0E0_realk
+!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
+          enddo
+          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+      enddo
+!!$OMP END DO
+      do iContD=1,nContD
+!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+       do iPrimB=1,nPrimB
+        do iPrimA=1,nPrimA
+         do iTUV=1, 1225
+          TMP = 0.0E0_realk
+!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+       enddo
+!!$OMP END DO
+       do iContA=1,nContA
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+        do iPrimB=1,nPrimB
+         do iTUV=1, 1225
+          TMP = 0.0E0_realk
+!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimA=1,nPrimA
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+          enddo
+          BasisCont3(iTUV,iPrimB) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
+        do iContB=1,nContB
+         do iTUV=1, 1225
+          TMP = 0.0E0_realk
+!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+          do iPrimB=1,nPrimB
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+          enddo
+          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+         enddo
+        enddo
+!!$OMP END DO
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+   end subroutine PrimitiveContractionGPUGen1225
 END MODULE IchorEriCoulombintegralGPUOBSGeneralModGen

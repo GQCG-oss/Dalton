@@ -811,13 +811,12 @@ DO GPUrun=1,2
   ENDDO
 !====================================QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ
 
-  IF(CPU)THEN
-     WRITE(LUMOD5,'(A)')''
-     WRITE(LUMOD5,'(A)')'  subroutine PrimitiveContractionCPUSegP1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
-     WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)'
-     WRITE(LUMOD5,'(A)')'    implicit none'
-     WRITE(LUMOD5,'(A)')'    !Warning Primitive screening modifies this!!! '
-     WRITE(LUMOD5,'(A)')'    !Due to P being segmented the P contraction have already been done and we need to '
+  WRITE(LUMOD5,'(A)')''
+  WRITE(LUMOD5,'(A)')'  subroutine PrimitiveContraction'//ARCSTRING//'SegP1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
+   WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)'
+   WRITE(LUMOD5,'(A)')'    implicit none'
+   WRITE(LUMOD5,'(A)')'    !Warning Primitive screening modifies this!!! '
+   WRITE(LUMOD5,'(A)')'    !Due to P being segmented the P contraction have already been done and we need to '
   WRITE(LUMOD5,'(A)')'    !go from nPrimQ to nContQ' 
   WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContQ'
   WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimC,nContC,nPrimD,nContD'
@@ -827,25 +826,10 @@ DO GPUrun=1,2
   WRITE(LUMOD5,'(A)')'    !'
   WRITE(LUMOD5,'(A)')'    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
   WRITE(LUMOD5,'(A)')'    real(realk) :: tmp,BasisCont3(nPrimD)'
-!!$  WRITE(LUMOD5,'(A)')'    do iPassP = 1,nPasses'
-!!$  WRITE(LUMOD5,'(A)')'     iContQ = 0'
-!!$  WRITE(LUMOD5,'(A)')'     do iContD=1,nContD'
-!!$  WRITE(LUMOD5,'(A)')'      do iContC=1,nContC'
-!!$  WRITE(LUMOD5,'(A)')'       iContQ = iContQ + 1'
-!!$  WRITE(LUMOD5,'(A)')'       tmp = 0.0E0_realk'
-!!$  WRITE(LUMOD5,'(A)')'       do iPrimD=1,nPrimD'
-!!$  WRITE(LUMOD5,'(A)')'        DCCTMP = DCC(iPrimD,iContD)'
-!!$  WRITE(LUMOD5,'(A)')'        do iPrimC=1,nPrimC'
-!!$  WRITE(LUMOD5,'(A)')'         tmp = tmp + CCC(iPrimC,iContC)*DCCTMP*AUXarray2(iPrimC,iPrimD,iPassP)'
-!!$  WRITE(LUMOD5,'(A)')'        enddo'
-!!$  WRITE(LUMOD5,'(A)')'       enddo'
-!!$  WRITE(LUMOD5,'(A)')'       AUXarrayCont(iContQ,iPassP) = tmp'
-!!$  WRITE(LUMOD5,'(A)')'      enddo'
-!!$  WRITE(LUMOD5,'(A)')'     enddo'
-!!$  WRITE(LUMOD5,'(A)')'    enddo'
-  WRITE(LUMOD5,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
-  WRITE(LUMOD5,'(A)')'!$OMP PRIVATE(iPassP,iContC,iContD,iPrimD,iPrimC,tmp,BasisCont3) &'
-  WRITE(LUMOD5,'(A)')'!$OMP SHARED(nPasses,nContC,nContD,nPrimD,nPrimC,DCC,CCC,AUXarrayCont,AUXarray2)'
+  WRITE(LUMOD5,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
+  WRITE(LUMOD5,'(A)')'!!$OMP PRIVATE(iPassP,iContC,iContD,iPrimD,iPrimC,tmp) &'
+  WRITE(LUMOD5,'(A)')'!!$OMP SHARED(nPasses,nContC,nContD,nPrimD,nPrimC,DCC,CCC,&'
+  WRITE(LUMOD5,'(A)')'!!$OMP        AUXarrayCont,AUXarray2,BasisCont3)'
   WRITE(LUMOD5,'(A)')'    do iPassP = 1,nPasses'
   WRITE(LUMOD5,'(A)')'     do iContC=1,nContC'
   WRITE(LUMOD5,'(A)')'      do iPrimD=1,nPrimD'
@@ -864,11 +848,11 @@ DO GPUrun=1,2
   WRITE(LUMOD5,'(A)')'      enddo'
   WRITE(LUMOD5,'(A)')'     enddo'
   WRITE(LUMOD5,'(A)')'    enddo'
-  WRITE(LUMOD5,'(A)')'!$OMP END PARALLEL DO'
-  WRITE(LUMOD5,'(A)')'  end subroutine PrimitiveContractionCPUSegP1'
+  WRITE(LUMOD5,'(A)')'!!$OMP END PARALLEL DO'
+  WRITE(LUMOD5,'(A)')'  end subroutine PrimitiveContraction'//ARCSTRING//'SegP1'
   WRITE(LUMOD5,'(A)')''
 
-  WRITE(LUMOD4,'(A)')'  subroutine PrimitiveContractionCPUSegQ1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
+  WRITE(LUMOD4,'(A)')'  subroutine PrimitiveContraction'//ARCSTRING//'SegQ1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
   WRITE(LUMOD4,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)'
   WRITE(LUMOD4,'(A)')'    implicit none'
   WRITE(LUMOD4,'(A)')'    !Warning Primitive screening modifies this!!! '
@@ -882,9 +866,10 @@ DO GPUrun=1,2
   WRITE(LUMOD4,'(A)')'    !'
   WRITE(LUMOD4,'(A)')'    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
   WRITE(LUMOD4,'(A)')'    real(realk) :: tmp,BasisCont3(nPrimB)'
-  WRITE(LUMOD4,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
-  WRITE(LUMOD4,'(A)')'!$OMP PRIVATE(iPassP,iContA,iContB,iPrimB,iPrimA,tmp,BasisCont3) &'
-  WRITE(LUMOD4,'(A)')'!$OMP SHARED(nPasses,nContA,nContB,nPrimB,nPrimA,ACC,BCC,AUXarrayCont,AUXarray2)'
+  WRITE(LUMOD4,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
+  WRITE(LUMOD4,'(A)')'!!$OMP PRIVATE(iPassP,iContA,iContB,iPrimB,iPrimA,tmp) &'
+  WRITE(LUMOD4,'(A)')'!!$OMP SHARED(nPasses,nContA,nContB,nPrimB,nPrimA,ACC,BCC,&'
+  WRITE(LUMOD4,'(A)')'!!$OMP        AUXarrayCont,AUXarray2,BasisCont3)'
   WRITE(LUMOD4,'(A)')'    do iPassP = 1,nPasses'
   WRITE(LUMOD4,'(A)')'     do iContA=1,nContA'
   WRITE(LUMOD4,'(A)')'      do iPrimB=1,nPrimB'
@@ -903,12 +888,12 @@ DO GPUrun=1,2
   WRITE(LUMOD4,'(A)')'      enddo'
   WRITE(LUMOD4,'(A)')'     enddo'
   WRITE(LUMOD4,'(A)')'    enddo'
-  WRITE(LUMOD4,'(A)')'!$OMP END PARALLEL DO'
-  WRITE(LUMOD4,'(A)')'  end subroutine PrimitiveContractionCPUSegQ1'
+  WRITE(LUMOD4,'(A)')'!!$OMP END PARALLEL DO'
+  WRITE(LUMOD4,'(A)')'  end subroutine PrimitiveContraction'//ARCSTRING//'SegQ1'
   WRITE(LUMOD4,'(A)')''
 
   WRITE(LUMOD3,'(A)')''
-  WRITE(LUMOD3,'(A)')'  subroutine PrimitiveContractionCPUGen1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
+  WRITE(LUMOD3,'(A)')'  subroutine PrimitiveContraction'//ARCSTRING//'Gen1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&'
   WRITE(LUMOD3,'(A)')'       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&'
   WRITE(LUMOD3,'(A)')'       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)'
   WRITE(LUMOD3,'(A)')'    implicit none'
@@ -926,11 +911,12 @@ DO GPUrun=1,2
   WRITE(LUMOD3,'(A)')'    real(realk) :: BasisCont2(nPrimA,nPrimB)'
   WRITE(LUMOD3,'(A)')'    real(realk) :: BasisCont3(nPrimB)'
   WRITE(LUMOD3,'(A)')'    !Scaling p**4*c*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nPassQ'
-  WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
-  WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&'
-  WRITE(LUMOD3,'(A)')'!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &'
-  WRITE(LUMOD3,'(A)')'!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
-  WRITE(LUMOD3,'(A)')'!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)'
+  WRITE(LUMOD3,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
+  WRITE(LUMOD3,'(A)')'!!$OMP PRIVATE(iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&'
+  WRITE(LUMOD3,'(A)')'!!$OMP         TMP) &'
+  WRITE(LUMOD3,'(A)')'!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
+  WRITE(LUMOD3,'(A)')'!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2,&'
+  WRITE(LUMOD3,'(A)')'!!$OMP        BasisCont1,BasisCont2,BasisCont3)'
   WRITE(LUMOD3,'(A)')'!!$OMP SINGLE'
   WRITE(LUMOD3,'(A)')'    do iPassP = 1,nPasses'
   WRITE(LUMOD3,'(A)')'     do iContC=1,nContC'
@@ -983,8 +969,8 @@ DO GPUrun=1,2
   WRITE(LUMOD3,'(A)')'     enddo'
   WRITE(LUMOD3,'(A)')'    enddo'
   WRITE(LUMOD3,'(A)')'!!$OMP END SINGLE'
-  WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
-  WRITE(LUMOD3,'(A)')'  end subroutine PrimitiveContractionCPUGen1'
+  WRITE(LUMOD3,'(A)')'!!$OMP END PARALLEL DO'
+  WRITE(LUMOD3,'(A)')'  end subroutine PrimitiveContraction'//ARCSTRING//'Gen1'
 
 !!$         WRITE(LUMOD3,'(A)')'      do iContA=1,nContA'
 !!$         WRITE(LUMOD3,'(A)')'        do iContC=1,nContC'
@@ -1042,7 +1028,7 @@ DO GPUrun=1,2
 !GENERAL 
          WRITE(LUMOD3,'(A)')''
          call initString(1)
-         call AddToString('  subroutine PrimitiveContractionCPUGen')
+         call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'Gen')
          call AddToString(nTUVP*nTUVQ)
          call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
          call writeString(LUMOD3)
@@ -1077,11 +1063,11 @@ DO GPUrun=1,2
 !         WRITE(LUMOD3,'(A)')'    !this would be a simple sum for segmentet! or maybe the sum can be moved into the previous electron transfer reccurence'
 !         WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
 
-         WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
-         WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&'
-         WRITE(LUMOD3,'(A)')'!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &'
-         WRITE(LUMOD3,'(A)')'!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
-         WRITE(LUMOD3,'(A)')'!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)'
+         WRITE(LUMOD3,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
+         WRITE(LUMOD3,'(A)')'!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&'
+         WRITE(LUMOD3,'(A)')'!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &'
+         WRITE(LUMOD3,'(A)')'!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
+         WRITE(LUMOD3,'(A)')'!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)'
          WRITE(LUMOD3,'(A)')'    do iPassP = 1,nPasses'
 !         WRITE(LUMOD3,'(A)')'     iContQP = 0'
          WRITE(LUMOD3,'(A)')'     do iContC=1,nContC'
@@ -1158,47 +1144,15 @@ DO GPUrun=1,2
          WRITE(LUMOD3,'(A)')'      enddo'
          WRITE(LUMOD3,'(A)')'     enddo'
          WRITE(LUMOD3,'(A)')'    enddo'
-         WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
-
-!!$         WRITE(LUMOD3,'(A)')'      do iContA=1,nContA'
-!!$         WRITE(LUMOD3,'(A)')'        do iContC=1,nContC'
-!!$         WRITE(LUMOD3,'(A)')'         iContQP = iContQP + 1'
-!!$      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-!!$         WRITE(LUMOD3,'(A)')'          TMPArray(iTUV) = 0.0E0_realk'
-!!$         WRITE(LUMOD3,'(A)')'         enddo'
-!!$         WRITE(LUMOD3,'(A)')'         iPrimQP = 0'
-!!$         WRITE(LUMOD3,'(A)')'         do iPrimB=1,nPrimB'
-!!$         WRITE(LUMOD3,'(A)')'          B = BCC(iPrimB,iContB)'
-!!$         WRITE(LUMOD3,'(A)')'          do iPrimA=1,nPrimA'
-!!$         WRITE(LUMOD3,'(A)')'           ABTMP = ACC(iPrimA,iContA)*B'
-!!$         WRITE(LUMOD3,'(A)')'           do iPrimD=1,nPrimD'
-!!$         WRITE(LUMOD3,'(A)')'            ABDTMP = DCC(iPrimD,iContD)*ABTMP'
-!!$         WRITE(LUMOD3,'(A)')'            do iPrimC=1,nPrimC'
-!!$         WRITE(LUMOD3,'(A)')'             ABCDTMP = CCC(iPrimC,iContC)*ABDTMP'
-!!$         WRITE(LUMOD3,'(A)')'             iPrimQP = iPrimQP + 1'
-!!$      WRITE(LUMOD3,'(A,I5)')'             do iTUV=1,',nTUVP*nTUVQ
-!!$         WRITE(LUMOD3,'(A)')'               TMPArray(iTUV) = TMPArray(iTUV) + ABCDTMP*AUXarray2(iTUV,iPrimQP,iPassP)'
-!!$         WRITE(LUMOD3,'(A)')'             enddo'
-!!$         WRITE(LUMOD3,'(A)')'            enddo'
-!!$         WRITE(LUMOD3,'(A)')'           enddo'
-!!$         WRITE(LUMOD3,'(A)')'          enddo'
-!!$         WRITE(LUMOD3,'(A)')'         enddo'
-!!$      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-!!$         WRITE(LUMOD3,'(A)')'          AUXarrayCont(iTUV,iContQP,iPassP) = TMPArray(iTUV)'
-!!$         WRITE(LUMOD3,'(A)')'         enddo'
-!!$         WRITE(LUMOD3,'(A)')'        enddo'
-!!$         WRITE(LUMOD3,'(A)')'       enddo'
-!!$         WRITE(LUMOD3,'(A)')'      enddo'
-!!$         WRITE(LUMOD3,'(A)')'     enddo'
-!!$         WRITE(LUMOD3,'(A)')'    enddo'
+         WRITE(LUMOD3,'(A)')'!!$OMP END PARALLEL DO'
          call initString(1)
-         call AddToString('  end subroutine PrimitiveContractionCPUGen')
+         call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'Gen')
          call AddToString(nTUVP*nTUVQ)
          call writeString(LUMOD3)
 ! PSEGMENTED
          WRITE(LUMOD5,'(A)')''
          call initString(1)
-         call AddToString('  subroutine PrimitiveContractionCPUSegP')
+         call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'SegP')
          call AddToString(nTUVP*nTUVQ)
          call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
          call writeString(LUMOD5)
@@ -1215,11 +1169,11 @@ DO GPUrun=1,2
          WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: TMP'
          WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimD)'
 !         WRITE(LUMOD5,'(A)')'!$OMP SINGLE'
-         WRITE(LUMOD5,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
-         WRITE(LUMOD5,'(A)')'!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iPrimC,iPrimD,&'
-         WRITE(LUMOD5,'(A)')'!$OMP         BasisCont3,TMP) &'
-         WRITE(LUMOD5,'(A)')'!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&'
-         WRITE(LUMOD5,'(A)')'!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)'
+         WRITE(LUMOD5,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
+         WRITE(LUMOD5,'(A)')'!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iPrimC,iPrimD,&'
+         WRITE(LUMOD5,'(A)')'!!$OMP         BasisCont3,TMP) &'
+         WRITE(LUMOD5,'(A)')'!!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&'
+         WRITE(LUMOD5,'(A)')'!!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)'
          WRITE(LUMOD5,'(A)')'    do iPassP = 1,nPasses'
          WRITE(LUMOD5,'(A)')'     do iContC=1,nContC'
          WRITE(LUMOD5,'(A)')'      do iPrimD=1,nPrimD'
@@ -1242,15 +1196,15 @@ DO GPUrun=1,2
          WRITE(LUMOD5,'(A)')'      enddo'
          WRITE(LUMOD5,'(A)')'     enddo'
          WRITE(LUMOD5,'(A)')'    enddo'
-         WRITE(LUMOD5,'(A)')'!$OMP END PARALLEL DO'
+         WRITE(LUMOD5,'(A)')'!!$OMP END PARALLEL DO'
          call initString(1)
-         call AddToString('  end subroutine PrimitiveContractionCPUSegP')
+         call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'SegP')
          call AddToString(nTUVP*nTUVQ)
          call writeString(LUMOD5)
 ! QSEGMENTED
          WRITE(LUMOD4,'(A)')''
          call initString(1)
-         call AddToString('  subroutine PrimitiveContractionCPUSegQ')
+         call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'SegQ')
          call AddToString(nTUVP*nTUVQ)
          call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
          call writeString(LUMOD4)
@@ -1267,11 +1221,11 @@ DO GPUrun=1,2
          WRITE(LUMOD4,'(A)')'    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP'
     WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: TMP'
     WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimB)'
-         WRITE(LUMOD4,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
-         WRITE(LUMOD4,'(A)')'!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&'
-         WRITE(LUMOD4,'(A)')'!$OMP         BasisCont3,TMP) &'
-         WRITE(LUMOD4,'(A)')'!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&'
-         WRITE(LUMOD4,'(A)')'!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)'
+         WRITE(LUMOD4,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
+         WRITE(LUMOD4,'(A)')'!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&'
+         WRITE(LUMOD4,'(A)')'!!$OMP         BasisCont3,TMP) &'
+         WRITE(LUMOD4,'(A)')'!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&'
+         WRITE(LUMOD4,'(A)')'!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)'
 !         WRITE(LUMOD4,'(A)')'!$OMP SINGLE'
          WRITE(LUMOD4,'(A)')'    do iPassP = 1,nPasses'
          WRITE(LUMOD4,'(A)')'     do iContA=1,nContA'
@@ -1295,9 +1249,9 @@ DO GPUrun=1,2
          WRITE(LUMOD4,'(A)')'      enddo'
          WRITE(LUMOD4,'(A)')'     enddo'
          WRITE(LUMOD4,'(A)')'    enddo'
-         WRITE(LUMOD4,'(A)')'!$OMP END PARALLEL DO'
+         WRITE(LUMOD4,'(A)')'!!$OMP END PARALLEL DO'
          call initString(1)
-         call AddToString('  end subroutine PrimitiveContractionCPUSegQ')
+         call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'SegQ')
          call AddToString(nTUVP*nTUVQ)
          call writeString(LUMOD4)
          WRITE(LUMOD4,'(A)')''
@@ -1307,7 +1261,7 @@ DO GPUrun=1,2
    ENDDO
   ENDDO
   deallocate(UniquenTUVs)
-ENDIF!CPU
+
 !!$WRITE(LUMOD3,'(A)')'  subroutine build_Rpa(nPrimP,Pcent,Acent,Rpa)'
 !!$WRITE(LUMOD3,'(A)')'    implicit none'
 !!$WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimP'
