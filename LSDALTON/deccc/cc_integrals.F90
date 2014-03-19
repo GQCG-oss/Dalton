@@ -865,7 +865,7 @@ contains
             write(DECinfo%output,*) 'MO-CCSD: non-MPI scheme'
           end if
           write(DECinfo%output,'(a,I4,a,I4)') ' BATCH: Number of MO batches      = ', &
-               & Nbatch, ' with maximum size', dimP
+               & Nbatch*(Nbatch+1)/2, ' with maximum size', dimP
         end if
 
         ! Initialize gmo arrays:
