@@ -1089,28 +1089,35 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    January 2014
-  subroutine get_mo_ccsd_joblist(MOinfo, joblist)
+  subroutine get_mo_ccsd_joblist(MOinfo, joblist, pgmo_diag, pgmo_up)
 
     implicit none
 
     type(MObatchInfo), intent(in) :: MOinfo
+    type(array), intent(in) :: pgmo_diag, pgmo_up
     integer, intent(inout) :: joblist(:)
 
-    integer, pointer :: workloads(:), easytrace(:), work_in_node(:)
+    integer, pointer :: workloads(:), easytrace(:,:), work_in_node(:)
+    integer :: swapar(3)
     integer :: nnod, njob, swap, i, j, next_nod, ijob
 
     nnod = infpar%lg_nodtot
     njob = MOinfo%Nbatch
 
     call mem_alloc(workloads,njob)
-    call mem_alloc(easytrace,njob)
+    call mem_alloc(easytrace,njob,3)
     call mem_alloc(work_in_node,nnod)
  
     workloads=MOinfo%dimTot
  
-    ! Associate a number to each job:
+    ! Associate a integer three-vector to each job:
+    ! the first number is the tile index
+    ! the second number is 0 for pgmo_diag array
+    ! and 1 for pgmo_up array.
+    ! and the third number is the global job index
     do i = 1, njob
-      easytrace(i) = i
+      easytrace(i,1:2) = MOinfo%tileInd(i,:)
+      easytrace(i,3) = i
     end do
 
     ! Sort the jobs according to their size, and keep track of indices
@@ -1122,39 +1129,56 @@ contains
           workloads(j)=workloads(i)
           workloads(i)=swap
 
-          swap=easytrace(j)
-          easytrace(j)=easytrace(i)
-          easytrace(i)=swap
+          swapar=easytrace(j,:)
+          easytrace(j,:)=easytrace(i,:)
+          easytrace(i,:)=swapar
         endif
       enddo
     enddo
 
     ! Associate a rank node to each job:
     work_in_node = 0
-    next_nod = 1
-    do ijob=1,njob
-
-      joblist(ijob) = next_nod
+    ! for the nnod first jobs, each node treat the batch that stand on its memory.
+    do ijob=1,min(nnod,njob)
+      if (easytrace(ijob,2)==0) then 
+        ! tile in pgmo_diag array
+        next_nod = get_residence_of_tile(easytrace(ijob,1),pgmo_diag) + 1
+      else 
+        ! tile in pgmo_up array
+        next_nod = get_residence_of_tile(easytrace(ijob,1),pgmo_up) + 1
+      end if
+      ! Update joblist and workload
+      joblist(ijob) = next_nod 
       work_in_node(next_nod) = work_in_node(next_nod) + workloads(ijob)
-
-      ! get node with smallest work:
-      next_nod = 1
-      do i=2, nnod
-        if (work_in_node(i)<work_in_node(next_nod)) next_nod = i
-      end do
     end do
 
+    ! If more jobs then attribute node depending on workload:
+    if (nnod<njob) then
+      do ijob=nnod+1,njob
+
+        ! get node with smallest work:
+        next_nod = 1
+        do i=2, nnod
+          if (work_in_node(i)<work_in_node(next_nod)) next_nod = i
+        end do
+
+        ! Update joblist and workload
+        joblist(ijob) = next_nod
+        work_in_node(next_nod) = work_in_node(next_nod) + workloads(ijob)
+      end do
+    end if
+ 
     ! go back to initial order:
     do i=1,njob
       do j=i+1,njob
-        if( easytrace(j) < easytrace(i) )then
+        if( easytrace(j,3) < easytrace(i,3) )then
           swap=joblist(j)
           joblist(j)=joblist(i)
           joblist(i)=swap
 
-          swap=easytrace(j)
-          easytrace(j)=easytrace(i)
-          easytrace(i)=swap
+          swapar=easytrace(j,:)
+          easytrace(j,:)=easytrace(i,:)
+          easytrace(i,:)=swapar
         endif
       enddo
     enddo
@@ -1958,14 +1982,14 @@ contains
       call mem_alloc(MOinfo%StartInd1,MOinfo%nbatch)
       call mem_alloc(MOinfo%StartInd2,MOinfo%nbatch)
       call mem_alloc(MOinfo%dimTot,MOinfo%nbatch)
-      call mem_alloc(MOinfo%tileInd,MOinfo%nbatch)
+      call mem_alloc(MOinfo%tileInd,MOinfo%nbatch,2)
     end if
     call ls_mpi_buffer(MOinfo%dimInd1,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%dimInd2,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%StartInd1,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%StartInd2,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%dimTot,MOinfo%nbatch,infpar%master)
-    call ls_mpi_buffer(MOinfo%tileInd,MOinfo%nbatch,infpar%master)
+    call ls_mpi_buffer(MOinfo%tileInd,MOinfo%nbatch,2,infpar%master)
 
     if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
     call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)

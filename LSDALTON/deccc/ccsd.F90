@@ -5628,7 +5628,7 @@ contains
     ! ~ Wake up slaves and communicate data
     ! ~ Reduce MO batches on appropriate nodes if local_moccsd
 #ifdef VAR_MPI
-    call get_mo_ccsd_joblist(MOinfo, joblist)
+    call get_mo_ccsd_joblist(MOinfo, joblist, pgmo_diag, pgmo_up)
 
     ! Wake up slaves and communicate important data
     StartUpSlaves: if (master.and.nnod>1) then
@@ -5650,10 +5650,10 @@ contains
         Q_sta = MOinfo%StartInd2(PQ_batch)
 
         if (P_sta==Q_sta) then
-          idb = MOinfo%tileInd(PQ_batch)
+          idb = MOinfo%tileInd(PQ_batch,1)
           call lsmpi_reduction(pgmo_diag%ti(idb)%t,pgmo_diag%ti(idb)%e,tile_master,infpar%lg_comm)
         else
-          iub = MOinfo%tileInd(PQ_batch)
+          iub = MOinfo%tileInd(PQ_batch,1)
           call lsmpi_reduction(pgmo_up%ti(iub)%t,pgmo_up%ti(iub)%e,tile_master,infpar%lg_comm)
         end if
       end do
@@ -5682,10 +5682,10 @@ contains
 
       ! Get batch of MO integral
       if (P_sta==Q_sta) then
-        idb = MOinfo%tileInd(PQ_batch)
+        idb = MOinfo%tileInd(PQ_batch,1)
         call unpack_gmo(gmo,pgmo_diag,idb,ntot,dimP,dimQ,.true.,tmp0)
       else
-        iub = MOinfo%tileInd(PQ_batch)
+        iub = MOinfo%tileInd(PQ_batch,1)
         call unpack_gmo(gmo,pgmo_up,iub,ntot,dimP,dimQ,.false.,tmp0)
       end if
 

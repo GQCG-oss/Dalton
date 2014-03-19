@@ -1110,7 +1110,7 @@ module dec_typedef_module
     !> Total dimension of the batch
     integer, pointer :: dimTot(:)
     !> Tile index for pdm arrays
-    integer, pointer :: tileInd(:)
+    integer, pointer :: tileInd(:,:)
 
   end type MObatchInfo
 
