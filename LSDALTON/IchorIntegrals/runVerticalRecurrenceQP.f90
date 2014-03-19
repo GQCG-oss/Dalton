@@ -282,8 +282,8 @@ CONTAINS
                    ENDIF
                    WRITE(LUFILE,'(A)')'  enddo'
                 ENDIF
-                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
-!                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
                 WRITE(LUFILE,'(3A)')'end subroutine VerticalRecurrence'//ARCSTRING,SegLabel(1:iSegLabel),'0'
              endif
              !========================================================================================================
@@ -651,8 +651,8 @@ CONTAINS
                 ENDIF
                 WRITE(LUFILE,'(A)')'  enddo'
              ENDIF
-             IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
-!             IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!             IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+             IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
              WRITE(LUFILE,'(4A)')'end subroutine VerticalRecurrence'//ARCSTRING,SegLabel(1:iSegLabel),'1',centerString
 
              !============================================================================================================
@@ -1204,8 +1204,8 @@ CONTAINS
                    ENDIF
                    WRITE(LUFILE,'(A)')'  ENDDO'
                 ENDIF
-                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
-!                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
                 WRITE(LUFILE,'(A)')' end subroutine'
 
 
@@ -1371,8 +1371,8 @@ CONTAINS
                    WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
                    IF(DoOpenMP)THEN
                       !OPENMP
-!                      WRITE(LUFILE,'(A)')  '!$OMP DO &'
-                      WRITE(LUFILE,'(A)')  '!$OMP PARALLEL DO DEFAULT(none) &'
+                      WRITE(LUFILE,'(A)')  '!$OMP DO &'
+!                      WRITE(LUFILE,'(A)')  '!$OMP PARALLEL DO DEFAULT(none) &'
                       WRITE(LUFILE,'(A)')  '!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
                       IF(COLLAPSE)THEN
                        IF(Seg1Prim)THEN
@@ -1384,9 +1384,10 @@ CONTAINS
                        WRITE(LUFILE,'(A)') '!$OMP         iPrimQ,iPrimP,iPassP,&'
                       ENDIF
                       WRITE(LUFILE,'(A)')  '!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
-                      WRITE(LUFILE,'(A)')  '!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &'
-                      WRITE(LUFILE,'(A)')  '!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&'
-                      WRITE(LUFILE,'(A)')  '!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)'
+                      WRITE(LUFILE,'(A)')  '!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) '
+!                      WRITE(LUFILE,'(A)')  '!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &'
+!                      WRITE(LUFILE,'(A)')  '!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&'
+!                      WRITE(LUFILE,'(A)')  '!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)'
                    ENDIF
                    IF(DoOpenACC)THEN
                       WRITE(LUFILE,'(A)')  '!$ACC parallel loop &'
@@ -1519,8 +1520,8 @@ CONTAINS
                       ENDIF
                    ENDIF
                    WRITE(LUFILE,'(A)')'  ENDDO'
-!                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
-                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
                    WRITE(LUFILE,'(A)')' end subroutine'
                    deallocate(TUVINDEX)
                    deallocate(TINDEX)
@@ -1597,6 +1598,7 @@ CONTAINS
     integer,intent(in) :: LUFILE,JMAX,Center                
     logical,intent(in) :: OpenMP,OpenACC
     integer :: JTMP,iSHARED
+    logical :: INCLUDESHARED
     character(len=1) :: centerString
     character(len=5) :: DIR
     character(len=7) :: SHARED
@@ -1607,7 +1609,8 @@ CONTAINS
        DIR = '!$OMP'
        SHARED = 'SHARED'
        iSHARED = 6
-       WRITE(LUFILE,'(2A)')DIR,' PARALLEL DO DEFAULT(none) &'
+!       WRITE(LUFILE,'(2A)')DIR,' PARALLEL DO DEFAULT(none) &'
+       WRITE(LUFILE,'(2A)')DIR,' DO &'
     ENDIF
     IF(OpenACC)THEN
        DIR = '!$ACC' 
@@ -1615,6 +1618,7 @@ CONTAINS
        iSHARED = 7
        WRITE(LUFILE,'(2A)')DIR,' PARALLEL LOOP &'
     ENDIF
+    INCLUDESHARED = OpenACC
 
     WRITE(LUFILE,'(2A)')DIR,' PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
     IF(JMAX.EQ.0.OR.JMAX.EQ.1)THEN !RJ000 calc
@@ -1661,38 +1665,57 @@ CONTAINS
        ENDDO
        WRITE(LUFILE,'(2A)')DIR,'         TwoTerms,&'
     ENDIF
-    IF(COLLAPSE)THEN
-       IF(Seg1Prim)THEN
-          WRITE(LUFILE,'(2A)')DIR,'         iP,iPassP) &'
-       ELSEIF(Seg)THEN
-          WRITE(LUFILE,'(2A)')DIR,'         iP,iPrimQ,iPrimP,iPrimQP,iPassP) &'
-       ELSE !Gen
-          WRITE(LUFILE,'(2A)')DIR,'         iP,iPrimQ,iPrimP,iPassP) &'
-       ENDIF
-    ELSE
-       IF(.Not.Seg1Prim)THEN
-          WRITE(LUFILE,'(2A)')DIR,'         iPrimQ,iPrimP,iPassP) &'
+    IF(INCLUDESHARED)THEN
+       IF(COLLAPSE)THEN
+          IF(Seg1Prim)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPassP) &'
+          ELSEIF(Seg)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPrimQ,iPrimP,iPrimQP,iPassP) &'
+          ELSE !Gen
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPrimQ,iPrimP,iPassP) &'
+          ENDIF
        ELSE
-          WRITE(LUFILE,'(2A)')DIR,'         iPassP) &'
-       ENDIF
-    ENDIF
-    IF(JMAX.LT.2)THEN
-       WRITE(LUFILE,'(4A)')DIR,' ',SHARED(1:iSHARED),'(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&'
-    ELSE
-       WRITE(LUFILE,'(4A)')DIR,' ',SHARED(1:iSHARED),'(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&'
-    ENDIF
-    WRITE(LUFILE,'(2A)')DIR,'        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&'
-    IF(center.GT.2)THEN
-       IF(JMAX.GT.0)THEN
-          WRITE(LUFILE,'(4A)')DIR,'        Qexp,',centerstring,'center, &'
+          IF(.Not.Seg1Prim)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iPrimQ,iPrimP,iPassP) &'
+          ELSE
+             WRITE(LUFILE,'(2A)')DIR,'         iPassP) &'
+          ENDIF
        ENDIF
     ELSE
-       IF(JMAX.GT.0)THEN
-          WRITE(LUFILE,'(4A)')DIR,'        Pexp,',centerstring,'center, &'
+       IF(COLLAPSE)THEN
+          IF(Seg1Prim)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPassP)'
+          ELSEIF(Seg)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPrimQ,iPrimP,iPrimQP,iPassP)'
+          ELSE !Gen
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPrimQ,iPrimP,iPassP)'
+          ENDIF
+       ELSE
+          IF(.Not.Seg1Prim)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iPrimQ,iPrimP,iPassP)'
+          ELSE
+             WRITE(LUFILE,'(2A)')DIR,'         iPassP)'
+          ENDIF
        ENDIF
     ENDIF
-    WRITE(LUFILE,'(2A)')      DIR,'        nPrimP,nPrimQ,nPassP)'
-
+    IF(INCLUDESHARED)THEN
+       IF(JMAX.LT.2)THEN
+          WRITE(LUFILE,'(4A)')DIR,' ',SHARED(1:iSHARED),'(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&'
+       ELSE
+          WRITE(LUFILE,'(4A)')DIR,' ',SHARED(1:iSHARED),'(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&'
+       ENDIF
+       WRITE(LUFILE,'(2A)')DIR,'        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&'
+       IF(center.GT.2)THEN
+          IF(JMAX.GT.0)THEN
+             WRITE(LUFILE,'(4A)')DIR,'        Qexp,',centerstring,'center, &'
+          ENDIF
+       ELSE
+          IF(JMAX.GT.0)THEN
+             WRITE(LUFILE,'(4A)')DIR,'        Pexp,',centerstring,'center, &'
+          ENDIF
+       ENDIF
+       WRITE(LUFILE,'(2A)')      DIR,'        nPrimP,nPrimQ,nPassP)'
+    ENDIF
 !!This is a CPU code so if OpenMP it uses OpenMP. However, I would like 
 !!to test OpenACC so in case of no OpenMP and OpenACC it uses OpenACC)
 !#ifdef VAR_OMP

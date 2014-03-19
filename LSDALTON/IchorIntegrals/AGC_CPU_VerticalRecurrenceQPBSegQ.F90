@@ -50,7 +50,7 @@ subroutine VerticalRecurrenceCPUSegQ1B(nPassP,nPrimP,nPrimQ,&
     AUXarray(4,iP)=0.0E0_realk
   ENDDO
 !$OMP END DO
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
 !$OMP         RWVAL,GVAL,&
@@ -60,11 +60,7 @@ subroutine VerticalRecurrenceCPUSegQ1B(nPassP,nPrimP,nPrimQ,&
 !$OMP         invexpP,&
 !$OMP         PREF,&
 !$OMP         TMP1,TMP2,&
-!$OMP         iP,iPrimQ,iPrimP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Pexp,Bcenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPrimQ,iPrimP,iPassP)
   DO iP = 1,nPrimP*nPassP
    DO iPrimQ=1, nPrimQ
     iPrimP = iP - ((iP-1)/nPrimP)*nPrimP
@@ -121,7 +117,7 @@ subroutine VerticalRecurrenceCPUSegQ1B(nPassP,nPrimP,nPrimQ,&
      AUXarray(4,iP) = AUXarray(4,iP) + Zpb*TMP1 + alphaZpq*TMP2
    ENDDO !iPrimP=1, nPrimP
   ENDDO !iP = 1,nPrimQ*nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine VerticalRecurrenceCPUSegQ1B
 
 subroutine VerticalRecurrenceCPUSegQ2B(nPassP,nPrimP,nPrimQ,&
@@ -158,7 +154,7 @@ subroutine VerticalRecurrenceCPUSegQ2B(nPassP,nPrimP,nPrimQ,&
     ENDDO
   ENDDO
 !$OMP END DO
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Bx,By,Bz,Xpb,Ypb,Zpb,alphaP,&
@@ -169,11 +165,7 @@ subroutine VerticalRecurrenceCPUSegQ2B(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray1,&
 !$OMP         TMParray2,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPrimQ,iPrimP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Pexp,Bcenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPrimQ,iPrimP,iPassP)
   DO iP = 1,nPrimP*nPassP
    DO iPrimQ=1, nPrimQ
     iPrimP = iP - ((iP-1)/nPrimP)*nPrimP
@@ -220,7 +212,7 @@ subroutine VerticalRecurrenceCPUSegQ2B(nPassP,nPrimP,nPrimQ,&
      AuxArray(10,iP) = AuxArray(10,iP) + Zpb*TMPAuxArray(4) + alphaZpq*TmpArray2(4,2) + TwoTerms(1)
    ENDDO !iPrimP=1, nPrimP
   ENDDO !iP = 1,nPrimQ*nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine VerticalRecurrenceCPUSegQ3B(nPassP,nPrimP,nPrimQ,&
@@ -258,7 +250,7 @@ subroutine VerticalRecurrenceCPUSegQ3B(nPassP,nPrimP,nPrimQ,&
     ENDDO
   ENDDO
 !$OMP END DO
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Bx,By,Bz,Xpb,Ypb,Zpb,alphaP,&
@@ -270,11 +262,7 @@ subroutine VerticalRecurrenceCPUSegQ3B(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray2,&
 !$OMP         TMParray3,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPrimQ,iPrimP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Pexp,Bcenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPrimQ,iPrimP,iPassP)
   DO iP = 1,nPrimP*nPassP
    DO iPrimQ=1, nPrimQ
     iPrimP = iP - ((iP-1)/nPrimP)*nPrimP
@@ -345,6 +333,6 @@ subroutine VerticalRecurrenceCPUSegQ3B(nPassP,nPrimP,nPrimQ,&
      AuxArray(20,iP) = AuxArray(20,iP) + Zpb*TMPAuxArray(10) + alphaZpq*TmpArray3(10,2) + 2*TwoTerms(3)
    ENDDO !iPrimP=1, nPrimP
   ENDDO !iP = 1,nPrimQ*nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 end module

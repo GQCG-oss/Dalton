@@ -42,7 +42,7 @@ subroutine VerticalRecurrenceCPUGen1D(nPassP,nPrimP,nPrimQ,&
   !ThetaAux(n,1,0,0) = Xqd*ThetaAux(n,0,0,0) + (-alpha/q*Xpq)*ThetaAux(n+1,0,0,0)
   !i = 0 last 2 term vanish
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
 !$OMP         RWVAL,GVAL,&
@@ -52,11 +52,7 @@ subroutine VerticalRecurrenceCPUGen1D(nPassP,nPrimP,nPrimQ,&
 !$OMP         invexpQ,&
 !$OMP         PREF,&
 !$OMP         TMP1,TMP2,&
-!$OMP         iP,iPrimQ,iPrimP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Dcenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPrimQ,iPrimP,iPassP)
   DO iP = 1,nPrimQ*nPrimP*nPassP
    iPrimQ = mod(IP-1,nPrimQ)+1
    iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1
@@ -109,7 +105,7 @@ subroutine VerticalRecurrenceCPUGen1D(nPassP,nPrimP,nPrimQ,&
      AUXarray(3,iP) = Yqd*TMP1 + alphaYpq*TMP2
      AUXarray(4,iP) = Zqd*TMP1 + alphaZpq*TMP2
   ENDDO !iP = 1,nPrimQ*nPrimP*nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine VerticalRecurrenceCPUGen1D
 
 subroutine VerticalRecurrenceCPUGen2D(nPassP,nPrimP,nPrimQ,&
@@ -138,7 +134,7 @@ subroutine VerticalRecurrenceCPUGen2D(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqd*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Xqd,Yqd,Zqd,alphaQ,&
@@ -148,11 +144,7 @@ subroutine VerticalRecurrenceCPUGen2D(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray1,&
 !$OMP         TMParray2,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPrimQ,iPrimP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Dcenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPrimQ,iPrimP,iPassP)
   DO iP = 1,nPrimQ*nPrimP*nPassP
    iPrimQ = mod(IP-1,nPrimQ)+1
    iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1
@@ -192,7 +184,7 @@ subroutine VerticalRecurrenceCPUGen2D(nPassP,nPrimP,nPrimQ,&
      AuxArray(9,iP) = Yqd*AuxArray(4,iP) + alphaYpq*TmpArray2(4,2)
      AuxArray(10,iP) = Zqd*AuxArray(4,iP) + alphaZpq*TmpArray2(4,2) + TwoTerms(1)
   ENDDO !iP = 1,nPrimQ*nPrimP*nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine VerticalRecurrenceCPUGen3D(nPassP,nPrimP,nPrimQ,&
@@ -222,7 +214,7 @@ subroutine VerticalRecurrenceCPUGen3D(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqd*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Xqd,Yqd,Zqd,alphaQ,&
@@ -233,11 +225,7 @@ subroutine VerticalRecurrenceCPUGen3D(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray2,&
 !$OMP         TMParray3,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPrimQ,iPrimP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Dcenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPrimQ,iPrimP,iPassP)
   DO iP = 1,nPrimQ*nPrimP*nPassP
    iPrimQ = mod(IP-1,nPrimQ)+1
    iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1
@@ -301,7 +289,7 @@ subroutine VerticalRecurrenceCPUGen3D(nPassP,nPrimP,nPrimQ,&
      AuxArray(19,iP) = Yqd*AuxArray(10,iP) + alphaYpq*TmpArray3(10,2)
      AuxArray(20,iP) = Zqd*AuxArray(10,iP) + alphaZpq*TmpArray3(10,2) + 2*TwoTerms(3)
   ENDDO !iP = 1,nPrimQ*nPrimP*nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine VerticalRecurrenceCPUGen4D(nPassP,nPrimP,nPrimQ,&
@@ -332,7 +320,7 @@ subroutine VerticalRecurrenceCPUGen4D(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqd*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Xqd,Yqd,Zqd,alphaQ,&
@@ -344,11 +332,7 @@ subroutine VerticalRecurrenceCPUGen4D(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray3,&
 !$OMP         TMParray4,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPrimQ,iPrimP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Dcenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPrimQ,iPrimP,iPassP)
   DO iP = 1,nPrimQ*nPrimP*nPassP
    iPrimQ = mod(IP-1,nPrimQ)+1
    iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1
@@ -454,7 +438,7 @@ subroutine VerticalRecurrenceCPUGen4D(nPassP,nPrimP,nPrimQ,&
      AuxArray(34,iP) = Yqd*AuxArray(20,iP) + alphaYpq*TmpArray4(20,2)
      AuxArray(35,iP) = Zqd*AuxArray(20,iP) + alphaZpq*TmpArray4(20,2) + 3*TwoTerms(3)
   ENDDO !iP = 1,nPrimQ*nPrimP*nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine VerticalRecurrenceCPUGen5D(nPassP,nPrimP,nPrimQ,&
@@ -486,7 +470,7 @@ subroutine VerticalRecurrenceCPUGen5D(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqd*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         mPx,mPy,mPz,&
 !$OMP         Xqd,Yqd,Zqd,alphaQ,&
@@ -499,11 +483,7 @@ subroutine VerticalRecurrenceCPUGen5D(nPassP,nPrimP,nPrimQ,&
 !$OMP         TMParray4,&
 !$OMP         TMParray5,&
 !$OMP         TwoTerms,&
-!$OMP         iP,iPrimQ,iPrimP,iPassP) &
-!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
-!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$OMP        Qexp,Dcenter, &
-!$OMP        nPrimP,nPrimQ,nPassP)
+!$OMP         iP,iPrimQ,iPrimP,iPassP)
   DO iP = 1,nPrimQ*nPrimP*nPassP
    iPrimQ = mod(IP-1,nPrimQ)+1
    iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1
@@ -678,6 +658,6 @@ subroutine VerticalRecurrenceCPUGen5D(nPassP,nPrimP,nPrimQ,&
      AuxArray(55,iP) = Yqd*AuxArray(35,iP) + alphaYpq*TmpArray5(35,2)
      AuxArray(56,iP) = Zqd*AuxArray(35,iP) + alphaZpq*TmpArray5(35,2) + 4*TwoTerms(6)
   ENDDO !iP = 1,nPrimQ*nPrimP*nPassP
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 end module

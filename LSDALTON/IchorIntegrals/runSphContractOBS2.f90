@@ -204,7 +204,8 @@ DO GPUrun = 1,2
               !              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(in)    :: IN(',ijkcartP,',ijkQcart,nPasses)'
               !              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(',ijkP,',ijkQcart,nPasses)'
 
-              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) PRIVATE(iPass,ijkP) SHARED(nlmP,nContPasses,IN,OUT)'
+!              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) PRIVATE(iPass,ijkP) SHARED(nlmP,nContPasses,IN,OUT)'
+              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP DO PRIVATE(iPass,ijkP)'
               IF(DoOpenACC)WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iPass,ijkP) PRESENT(nlmP,nContPasses,IN,OUT)'
               WRITE(LUMOD3,'(A)')'  DO iPass=1,nContPasses'
               WRITE(LUMOD3,'(A)')'   DO ijkP=1,nlmP'
@@ -246,7 +247,8 @@ DO GPUrun = 1,2
               enddo
               WRITE(LUMOD3,'(A)')'   ENDDO'
               WRITE(LUMOD3,'(A)')'  ENDDO'
-              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
+!              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
+              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP END DO'
               IF(l12.LT.10)THEN
                  WRITE(LUMOD3,'(A,I1,A,I1,A)')'end subroutine SphericalContractOBS2_'//ARCSTRING//'_maxAngQ',l1+l2,'_maxAngC',l1,' '
               ELSE

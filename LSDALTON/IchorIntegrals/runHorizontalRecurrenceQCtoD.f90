@@ -145,7 +145,8 @@ DO GPUrun = 1,2
           ENDDO
           WRITE(*,'(A)')'!  real(realk) :: Tmp(nTUVA,nTUVB) ordering'
           IF(DoOpenMP)THEN
-             WRITE(*,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+!             WRITE(*,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+             WRITE(*,'(A)')'!$OMP DO &'
              IF(JB.NE.0)THEN
                 WRITE(*,'(A)')'!$OMP PRIVATE(iP,&'
                 DO JTMP=1,JB-1
@@ -155,11 +156,11 @@ DO GPUrun = 1,2
                       WRITE(*,'(A,I2,A)')'!$OMP         Tmp',JTMP,',&'
                    endif
                 ENDDO
-                WRITE(*,'(A)')'!$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) &'
-                WRITE(*,'(A)')'!$OMP SHARED(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)'
+                WRITE(*,'(A)')'!$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) '
+!                WRITE(*,'(A)')'!$OMP SHARED(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)'
              ELSE
-                WRITE(*,'(A)')'!$OMP PRIVATE(iP,iTUVC,ilmP) &'
-                WRITE(*,'(A)')'!$OMP SHARED(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)'
+                WRITE(*,'(A)')'!$OMP PRIVATE(iP,iTUVC,ilmP) '
+!                WRITE(*,'(A)')'!$OMP SHARED(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)'
              ENDIF
           ENDIF
           IF(DoOpenACC)THEN
@@ -245,7 +246,8 @@ DO GPUrun = 1,2
              WRITE(*,'(A)')'    ENDDO'
           ENDIF
           WRITE(*,'(A)')'  ENDDO'
-          IF(DoOpenMP)WRITE(*,'(A)')'!$OMP END PARALLEL DO'
+!          IF(DoOpenMP)WRITE(*,'(A)')'!$OMP END PARALLEL DO'
+          IF(DoOpenMP)WRITE(*,'(A)')'!$OMP END DO'
           IF(JP.LT.10)THEN
              WRITE(*,'(A,I1,A,I1,A,I1,A)')'end subroutine HorizontalRR_'//ARCSTRING//'_RHS_Q',JP,'C',AngmomA,'D',AngmomB,'CtoD'
           ELSE

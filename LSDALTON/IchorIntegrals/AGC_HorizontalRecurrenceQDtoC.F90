@@ -13,9 +13,8 @@ subroutine HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContPQ,nPasses,nlmP,&
   real(realk),intent(inout) :: ThetaP(nlmP,1,    2:    4,nContPQ*nPasses)
   !Local variables
   integer :: iP,ilmP,iTUVD
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iP,iTUVD,ilmP) &
-!$OMP SHARED(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)
+!$OMP DO&
+!$OMP PRIVATE(iP,iTUVD,ilmP) 
   DO iP = 1,nContPQ*nPasses
     DO iTUVD=  2,  4
      DO ilmP = 1,nlmP
@@ -23,7 +22,7 @@ subroutine HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContPQ,nPasses,nlmP,&
      ENDDO
     ENDDO
    ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_RHS_Q1C0D1DtoC
 
 !Transfer angmom from D to C
@@ -36,9 +35,8 @@ subroutine HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContPQ,nPasses,nlmP,&
   real(realk),intent(inout) :: ThetaP(nlmP,1,    5:   10,nContPQ*nPasses)
   !Local variables
   integer :: iP,ilmP,iTUVD
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iP,iTUVD,ilmP) &
-!$OMP SHARED(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)
+!$OMP DO&
+!$OMP PRIVATE(iP,iTUVD,ilmP) 
   DO iP = 1,nContPQ*nPasses
     DO iTUVD=  5, 10
      DO ilmP = 1,nlmP
@@ -46,7 +44,7 @@ subroutine HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContPQ,nPasses,nlmP,&
      ENDDO
     ENDDO
    ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_RHS_Q2C0D2DtoC
 
 !Transfer angmom from D to C
@@ -60,10 +58,9 @@ subroutine HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContPQ,nPasses,nlmP,&
   !Local variables
   integer :: iP,iC,iPassQ,ilmP,iTUVD
   real(realk) :: Xcd,Ycd,Zcd
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO&
 !$OMP PRIVATE(iP,&
-!$OMP         iTUVD,ilmP,Xcd,Ycd,Zcd) &
-!$OMP SHARED(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+!$OMP         iTUVD,ilmP,Xcd,Ycd,Zcd) 
   DO iP = 1,nContPQ*nPasses
    Xcd = -Qdistance12(1)
    Ycd = -Qdistance12(2)
@@ -89,7 +86,7 @@ subroutine HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContPQ,nPasses,nlmP,&
      ThetaP(ilmP, 4,10,IP) = ThetaP2(ilmP,20,IP) + Zcd*ThetaP2(ilmP,10, IP) 
     ENDDO
    ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_RHS_Q3C1D2DtoC
 #ifdef VAR_OPENACC
 
