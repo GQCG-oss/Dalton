@@ -689,16 +689,14 @@ CONTAINS
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPrimA,nPrimB)
     real(realk),intent(inout) :: AUXarrayCont(nContA,nContB)
+    real(realk),intent(inout) :: BasisCont(nPrimB,nPrimB)
     !
     integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     real(realk) :: TMP,TMPACC,TMPBCC
-    real(realk) :: BasisCont(nPrimB,nPrimB)
     !Scaling p**4*c: nPrimA*nPrimB*nPrimC*nPrimD*nContC
-    !$OMP PARALLEL DO DEFAULT(none) &
-    !$OMP PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&
-    !$OMP         BasisCont,TMPACC,TMPBCC) &
-    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) 
      do iContC=1,nContA
+!$OMP DO COLLAPSE(2) &
+!$OMP PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,TMPACC) 
       do iPrimB=1,nPrimB
        do iPrimD=1,nPrimB
         TMP = 0.0E0_realk
@@ -711,6 +709,9 @@ CONTAINS
         BasisCont(iPrimD,iPrimB) = TMP
        enddo
       enddo
+!$OMP ENDDO 
+!$OMP DO &
+!$OMP PRIVATE(iPrimD,iPrimB,iContD,TMP,TMPBCC) 
       do iContD=1,nContB
        TMP = 0.0E0_realk
        do iPrimB=1,nPrimB
@@ -721,8 +722,8 @@ CONTAINS
        enddo
        AUXarrayCont(iContC,iContD) = TMP
       enddo
+!$OMP END DO
      enddo
-    !$OMP END PARALLEL DO
   end subroutine GabPrimitiveContractionGen1
 
   subroutine GabPrimitiveContractionGen16(AUXarray2,AUXarrayCont,nPrimP,&
@@ -740,11 +741,9 @@ CONTAINS
     real(realk) :: TMP
     real(realk) :: BasisCont(   16,nPrimB,nPrimB)
     real(realk) :: ACCTMP,BCCTMP
-    !$OMP PARALLEL DO DEFAULT(none) &
-    !$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&
-    !$OMP         BasisCont,ACCTMP,BCCTMP) &
-    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) 
      do iContC=1,nContA
+!$OMP DO &
+!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,ACCTMP) 
       do iPrimB=1,nPrimB
        do iPrimD=1,nPrimB
         do iTUV=1,   16
@@ -759,6 +758,9 @@ CONTAINS
         enddo
        enddo
       enddo
+!$OMP END DO
+!$OMP DO &
+!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,TMP,BCCTMP) 
       do iContD=1,nContB
        do iTUV=1,   16
         TMP = 0.0E0_realk
@@ -771,8 +773,8 @@ CONTAINS
         AUXarrayCont(iTUV,iContC,iContD) = TMP
        enddo
       enddo
+!$OMP END DO
      enddo
-    !$OMP END PARALLEL DO
   end subroutine GabPrimitiveContractionGen16
 
   subroutine GabPrimitiveContractionGen100(AUXarray2,AUXarrayCont,nPrimP,&
@@ -790,11 +792,9 @@ CONTAINS
     real(realk) :: TMP
     real(realk) :: BasisCont(  100,nPrimB,nPrimB)
     real(realk) :: ACCTMP,BCCTMP
-    !$OMP PARALLEL DO DEFAULT(none) &
-    !$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&
-    !$OMP         BasisCont,ACCTMP,BCCTMP) &
-    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) 
      do iContC=1,nContA
+!$OMP DO &
+!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,ACCTMP) 
       do iPrimB=1,nPrimB
        do iPrimD=1,nPrimB
         do iTUV=1,  100
@@ -809,6 +809,9 @@ CONTAINS
         enddo
        enddo
       enddo
+!$OMP END DO
+!$OMP DO &
+!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,TMP,BCCTMP) 
       do iContD=1,nContB
        do iTUV=1,  100
         TMP = 0.0E0_realk
@@ -821,8 +824,8 @@ CONTAINS
         AUXarrayCont(iTUV,iContC,iContD) = TMP
        enddo
       enddo
+!$OMP END DO
      enddo
-    !$OMP END PARALLEL DO
   end subroutine GabPrimitiveContractionGen100
 
   subroutine GabPrimitiveContractionGen400(AUXarray2,AUXarrayCont,nPrimP,&
@@ -840,11 +843,9 @@ CONTAINS
     real(realk) :: TMP
     real(realk) :: BasisCont(  400,nPrimB,nPrimB)
     real(realk) :: ACCTMP,BCCTMP
-    !$OMP PARALLEL DO DEFAULT(none) &
-    !$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&
-    !$OMP         BasisCont,ACCTMP,BCCTMP) &
-    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) 
      do iContC=1,nContA
+!$OMP DO &
+!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,ACCTMP) 
       do iPrimB=1,nPrimB
        do iPrimD=1,nPrimB
         do iTUV=1,  400
@@ -859,6 +860,9 @@ CONTAINS
         enddo
        enddo
       enddo
+!$OMP END DO
+!$OMP DO &
+!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,TMP,BCCTMP) 
       do iContD=1,nContB
        do iTUV=1,  400
         TMP = 0.0E0_realk
@@ -871,8 +875,8 @@ CONTAINS
         AUXarrayCont(iTUV,iContC,iContD) = TMP
        enddo
       enddo
+!$OMP END DO
      enddo
-    !$OMP END PARALLEL DO
   end subroutine GabPrimitiveContractionGen400
 
   subroutine GabPrimitiveContractionGen1225(AUXarray2,AUXarrayCont,nPrimP,&
@@ -890,11 +894,9 @@ CONTAINS
     real(realk) :: TMP
     real(realk) :: BasisCont( 1225,nPrimB,nPrimB)
     real(realk) :: ACCTMP,BCCTMP
-    !$OMP PARALLEL DO DEFAULT(none) &
-    !$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&
-    !$OMP         BasisCont,ACCTMP,BCCTMP) &
-    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) 
      do iContC=1,nContA
+!$OMP DO &
+!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,ACCTMP) 
       do iPrimB=1,nPrimB
        do iPrimD=1,nPrimB
         do iTUV=1, 1225
@@ -909,6 +911,9 @@ CONTAINS
         enddo
        enddo
       enddo
+!$OMP END DO
+!$OMP DO &
+!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,TMP,BCCTMP) 
       do iContD=1,nContB
        do iTUV=1, 1225
         TMP = 0.0E0_realk
@@ -921,8 +926,8 @@ CONTAINS
         AUXarrayCont(iTUV,iContC,iContD) = TMP
        enddo
       enddo
+!$OMP END DO
      enddo
-    !$OMP END PARALLEL DO
   end subroutine GabPrimitiveContractionGen1225
 
   subroutine ExtractGabElmP1Gen(AUXarray,Output,nContP)
