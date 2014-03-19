@@ -455,8 +455,11 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
 !$OMP END SINGLE
   ENDDO
 !$OMP END PARALLEL
+  call mem_ichor_dealloc(TmpArray1)
   deallocate(TmpArray1)
+  call mem_ichor_dealloc(TmpArray2)
   deallocate(TmpArray2)
+  call mem_ichor_dealloc(BasisCont)
   deallocate(BasisCont)
   IF(TriangularLHSAtomLoop)THEN
      call mem_ichor_dealloc(iPassA)
