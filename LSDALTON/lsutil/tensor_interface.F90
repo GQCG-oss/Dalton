@@ -1620,7 +1620,7 @@ contains
     implicit none
     real(realk),intent(in) :: fort(:)
     integer(kind=8),intent(in) ::  nelms
-    character(ARR_MSG_LEN),intent(in) :: msg
+    character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
     if(.not.present(square))call print_norm_fort_customprint(fort,nelms,msg)
     if(present(square))call print_norm_fort_customprint(fort,nelms,msg,square)
@@ -1629,7 +1629,7 @@ contains
     implicit none
     real(realk),intent(in) :: fort(:,:)
     integer(kind=8),intent(in) ::  nelms
-    character(ARR_MSG_LEN),intent(in) :: msg
+    character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
     if(.not.present(square))call print_norm_fort_customprint(fort,nelms,msg)
     if(present(square))call print_norm_fort_customprint(fort,nelms,msg,square)
@@ -1638,7 +1638,7 @@ contains
     implicit none
     real(realk),intent(in) :: fort(:,:,:)
     integer(kind=8),intent(in) ::  nelms
-    character(ARR_MSG_LEN),intent(in) :: msg
+    character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
     if(.not.present(square))call print_norm_fort_customprint(fort,nelms,msg)
     if(present(square))call print_norm_fort_customprint(fort,nelms,msg,square)
@@ -1647,7 +1647,7 @@ contains
     implicit none
     real(realk),intent(in) :: fort(:,:,:,:)
     integer(kind=8),intent(in) ::  nelms
-    character(ARR_MSG_LEN),intent(in) :: msg
+    character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
     if(.not.present(square))call print_norm_fort_customprint(fort,nelms,msg)
     if(present(square))call print_norm_fort_customprint(fort,nelms,msg,square)
@@ -1667,7 +1667,7 @@ contains
   subroutine array2_print_norm_customprint(arrtwo,msg,square)
     implicit none
     type(array2),intent(in) :: arrtwo
-    character(ARR_MSG_LEN), intent(in) :: msg
+    character*(*), intent(in) :: msg
     integer(kind=8) :: nelms
     logical,intent(in),optional :: square
     nelms = int(arrtwo%dims(1)*arrtwo%dims(2),kind=8)
@@ -1688,7 +1688,7 @@ contains
   subroutine array4_print_norm_customprint(arrf,msg,square)
     implicit none
     type(array4),intent(in) :: arrf
-    character(ARR_MSG_LEN),intent(in):: msg
+    character*(*),intent(in):: msg
     logical,intent(in),optional :: square
     integer(kind=8) :: nelms
     nelms = int(arrf%dims(1)*arrf%dims(2)*arrf%dims(3)*arrf%dims(4),kind=8)
@@ -1731,7 +1731,7 @@ contains
     implicit none
     real(realk),intent(in) :: fort(*)
     integer(kind=8),intent(in) ::  nelms
-    character(ARR_MSG_LEN),intent(in) :: string
+    character*(*),intent(in) :: string
     logical,intent(in),optional :: returnsquared
     integer(kind=8) :: i
     real(realk) :: norm
