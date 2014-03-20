@@ -1157,6 +1157,8 @@ module dec_typedef_module
     real(realk), pointer :: s2(:,:) => null()      ! the right unit matrix reduced to the kernel dimensions (red2,ns2)
 
     logical              :: allocd                 ! logical to show the allocation status
+    logical              :: is_FA_space            ! save whether this refers to FA space, only important for trafo mats, not for overlap
+    logical              :: PS                     ! save wheter it is a triangular pair space
   end type PNOSpaceInfo
 
 end module dec_typedef_module
