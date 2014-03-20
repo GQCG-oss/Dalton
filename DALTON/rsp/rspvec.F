@@ -1672,9 +1672,8 @@ C
 C
       PARAMETER (BLANK = '        ')
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D4D3 = 4.0D0/3.0D0,
-     &            IMXEXC=20, D30 = 30.0D0)
+     &            D30 = 30.0D0)
       PARAMETER ( DP5 = 0.5D0 , D3 = 3.0D0)
-      DIMENSION RESSOM(3,3,IMXEXC,8), RESFRE(IMXEXC,8)
 C
 #include "iratdef.h"
 C
@@ -1682,6 +1681,7 @@ C
 #include "infrsp.h"
 #include "infsmo.h"
 #include "indqr.h"
+      REAL*8, ALLOCATABLE  ::  RESSOM(:,:,:,:), RESFRE(:,:)
 #include "inforb.h"
 #include "maxorb.h"
 #include "priunit.h"
@@ -1719,8 +1719,9 @@ C temporary storages for the result in order to print out nicely after the
 C calculation.
 C
       IF (TWOPHO) THEN
-         CALL DZERO(RESSOM,3*3*IMXEXC*8)
-         CALL DZERO(RESFRE,IMXEXC*8)
+         ALLOCATE ( RESSOM(3,3,MXEXQR,8), RESFRE(MXEXQR,8) )
+         CALL DZERO(RESSOM,3*3*MXEXQR*8)
+         CALL DZERO(RESFRE,MXEXQR*8)
       END IF
       DO 300 MSYMC = 1,NSYM
          MSYMCX = MULD2H(IREFSY,MSYMC)
@@ -2090,17 +2091,12 @@ C
                                 PHOSEC(IDIP,IHSO,IC)=SMOM
                                END IF
                            IF (TWOPHO) THEN
-                              IF (IC.LE.IMXEXC) THEN
-                                 IA=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
-                                 IB=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
-                                 RESFRE(IC,MSYMC)=
+                              IA=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
+                              IB=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
+                              RESFRE(IC,MSYMC)=
      &                                EXCITA(MSYMC,IC,ISPINC+1)
-                                 RESSOM(IA,IB,IC,MSYMC)=SMOM
-                                 RESSOM(IB,IA,IC,MSYMC)=SMOM
-                              ELSE
-                                 WRITE(LUPRI,'(/A)') 
-     &             'WARNING!! not enough space in RESSOM result matrix'
-                              END IF
+                              RESSOM(IA,IB,IC,MSYMC)=SMOM
+                              RESSOM(IB,IA,IC,MSYMC)=SMOM
                            END IF
                            CALL FLSHFO(LUPRI)
 
@@ -2311,16 +2307,11 @@ C
      &'---------------------------------------------------------------'
          DO ISYMC=1,NSYM
          DO IC = 1,NSMCNV(ISYMC)
-            IF (IC.LE.IMXEXC) THEN
-               WRITE(LUPRI,'(A4,2I4,F8.2,6F8.1)') ' ',ISYMC,IC,
+            WRITE(LUPRI,'(A4,2I4,F8.2,6F8.1)') ' ',ISYMC,IC,
      &              RESFRE(IC,ISYMC)*XTEV,
      &              (RESSOM(I,I,IC,ISYMC),I=1,3),
      &              RESSOM(1,2,IC,ISYMC),RESSOM(1,3,IC,ISYMC),
      &              RESSOM(2,3,IC,ISYMC)
-            ELSE
-               WRITE(LUPRI,'(/A)') 
-     &            'WARNING!! NOT ENOUGH WORK MEMORY TO IN RESULT MATRIX'
-            END IF
          END DO
          END DO
          WRITE(LUPRI,'(A68)')
@@ -2352,8 +2343,7 @@ C
      &'-----------------------------------------------------------',
      &'----------------------'
          DO ISYMC=1,NSYM
-         DO IC = 1,NSMCNV(ISYMC)
-            IF (IC.LE.IMXEXC) THEN
+            DO IC = 1,NSMCNV(ISYMC)
                DF=0.0D0
                DG=0.0D0
                DO I=1,3
@@ -2415,18 +2405,16 @@ C
                   WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
                END IF
-*********************************************************************
-            ELSE
-               WRITE(LUPRI,'(/A)') 
-     &            'WARNING!! NOT ENOUGH WORK MEMORY TO IN RESULT MATRIX'
-            END IF
-         END DO
+            END DO
          END DO
          WRITE(LUPRI,'(A62,A)')
      &'-----------------------------------------------------------',
      &'----------------------'
       END IF
 C
+      IF (TWOPHO) THEN
+         DEALLOCATE (RESSOM, RESFRE)
+      END IF
 C
       CALL QEXIT('QRSMO')
       RETURN
