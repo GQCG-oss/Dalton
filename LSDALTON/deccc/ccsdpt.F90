@@ -71,6 +71,8 @@ contains
     type(array) :: cbai ! integrals (AI|BC) in the order (C,B,A,I)
 #ifdef VAR_MPI
     integer :: nodtotal
+    real(realk) :: jaik_norm, abij_norm, cbai_norm
+    real(realk) :: ccsdpt_doubles_norm, ccsdpt_doubles_2_norm, ccsdpt_singles_norm
 #endif
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
@@ -137,6 +139,18 @@ contains
 
     call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
 
+#ifdef VAR_MPI
+
+    print *,'proc no. ',infpar%lg_mynum,'after get_CCSDpT_integrals'
+    call array4_print_norm_nrm(jaik,jaik_norm)
+    call array4_print_norm_nrm(abij,abij_norm)
+    call array_print_norm_nrm(cbai,cbai_norm)
+    print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
+    print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
+    print *,'proc no. ',infpar%lg_mynum,'cbai_norm = ',cbai_norm
+
+#endif
+
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
     call array2_free(C_can_virt)
@@ -146,6 +160,18 @@ contains
     ! ***************************************************
 
     call ccsdpt_local_can_trans(ccsd_doubles,nocc,nvirt,Uocc,Uvirt)
+
+#ifdef VAR_MPI
+
+    print *,'proc no. ',infpar%lg_mynum,'after ccsdpt_local_can_trans'
+    call array4_print_norm_nrm(jaik,jaik_norm)
+    call array4_print_norm_nrm(abij,abij_norm)
+    call array_print_norm_nrm(cbai,cbai_norm)
+    print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
+    print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
+    print *,'proc no. ',infpar%lg_mynum,'cbai_norm = ',cbai_norm
+
+#endif
 
     ! Now we transpose the unitary transformation matrices as we will need these in the transformation
     ! of the ^{ccsd}T^{ab}_{ij}, ^{*}T^{a}_{i}, and ^{*}T^{ab}_{ij} amplitudes from canonical to local basis
@@ -202,6 +228,24 @@ contains
     call ijk_loop_par(nocc,nvirt,jaik,abij,cbai,trip_tmp,trip_ampl,ccsd_doubles,ccsd_doubles_portions,&
                     & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt,nodtotal)
 
+#ifdef VAR_MPI
+
+    print *,'proc no. ',infpar%lg_mynum,'after ijk_loop_par'
+    call array4_print_norm_nrm(jaik,jaik_norm)
+    call array4_print_norm_nrm(abij,abij_norm)
+    call array_print_norm_nrm(cbai,cbai_norm)
+    call array4_print_norm_nrm(ccsdpt_doubles,ccsdpt_doubles_norm)
+    call array4_print_norm_nrm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
+    call array2_print_norm_nrm(ccsdpt_singles,ccsdpt_singles_norm)
+    print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
+    print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
+    print *,'proc no. ',infpar%lg_mynum,'cbai_norm = ',cbai_norm
+    print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_norm = ',ccsdpt_doubles_norm
+    print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_2_norm = ',ccsdpt_doubles_2_norm
+    print *,'proc no. ',infpar%lg_mynum,'ccsdpt_singles_norm = ',ccsdpt_singles_norm
+
+#endif
+
 #else
 
     ! the serial version of the ijk-loop
@@ -223,6 +267,9 @@ contains
 
 #ifdef VAR_MPI
 
+    ! here, synchronize all procs
+    call lsmpi_barrier(infpar%lg_comm)
+
     ! reduce singles and doubles arrays into that residing on the master
     reducing_to_master: if (nodtotal .gt. 1) then
 
@@ -231,6 +278,18 @@ contains
        call lsmpi_local_reduction(ccsdpt_doubles_2%val,nvirt,nocc,nvirt,nocc,infpar%master)
 
     end if reducing_to_master
+
+    if (infpar%lg_mynum .eq. infpar%master) then
+
+       print *,'proc no. ',infpar%lg_mynum,'after lsmpi_local_reduction'
+       call array4_print_norm_nrm(ccsdpt_doubles,ccsdpt_doubles_norm)
+       call array4_print_norm_nrm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
+       call array2_print_norm_nrm(ccsdpt_singles,ccsdpt_singles_norm)
+       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_norm = ',ccsdpt_doubles_norm
+       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_2_norm = ',ccsdpt_doubles_2_norm
+       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_singles_norm = ',ccsdpt_singles_norm
+
+    end if
 
     ! release stuff located on slaves
     releasing_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .ne. infpar%master)) then
@@ -384,7 +443,11 @@ contains
                ij = jobs(ij_count)
     
                ! no more jobs to be done? otherwise leave the loop
-               if (ij .lt. 0) exit
+               if (ij_count .eq. b_size + 1) then
+
+                  if (ij .lt. 0) exit
+
+               end if
     
                ! calculate i and j from composite ij value
                call calc_i_and_j(ij,nocc,i,j)
@@ -2195,10 +2258,10 @@ contains
 
     ! do v^4o^3 contraction
 
-!$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
+!!$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
     call dgemm('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
                    & 0.0E0_realk,trip,nv)
-!$acc end host_data
+!!$acc end host_data
 
   end subroutine trip_amplitudes_virt
 
@@ -2237,10 +2300,10 @@ contains
 
     ! do v^3o^4 contraction
 
-!$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
+!!$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
     call dgemm('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
                    & 1.0E0_realk,trip,nv)
-!$acc end host_data
+!!$acc end host_data
 
   end subroutine trip_amplitudes_occ
 
@@ -2267,39 +2330,39 @@ contains
 
     e_orb_occ = eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3)
 
-#ifdef VAR_OPENACC
-!$acc parallel present(trip,eigenvirt,eigenocc)
-!$acc loop gang
-#else
+!#ifdef VAR_OPENACC
+!!$acc parallel present(trip,eigenvirt,eigenocc)
+!!$acc loop gang
+!#else
 !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,b,c,e_orb),SHARED(nv,trip,eigenvirt,e_orb_occ)
-#endif
+!#endif
  arun_0: do a=1,nv
-#ifdef VAR_OPENACC
-!$acc loop worker
-#endif
+!#ifdef VAR_OPENACC
+!!$acc loop worker
+!#endif
     brun_0: do b=1,nv
-#ifdef VAR_OPENACC
-!$acc loop vector
-#endif
+!#ifdef VAR_OPENACC
+!!$acc loop vector
+!#endif
        crun_0: do c=1,nv
 
                   trip(c,b,a) = trip(c,b,a) / (e_orb_occ - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
 
                end do crun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
+!#ifdef VAR_OPENACC
+!!$acc end loop
+!#endif
             end do brun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
+!#ifdef VAR_OPENACC
+!!$acc end loop
+!#endif
          end do arun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-!$acc end parallel
-#else
+!#ifdef VAR_OPENACC
+!!$acc end loop
+!!$acc end parallel
+!#else
 !$OMP END PARALLEL DO
-#endif
+!#endif
 
   end subroutine trip_denom
 
@@ -3981,13 +4044,6 @@ contains
          & JAIB%dims(3),JAIB%dims(4),order,0.0E0_realk,ABIJ%val)
     
     call array4_free(JAIB)
-
-#ifdef VAR_MPI
-
-    ! here, synchronize all procs
-    call lsmpi_barrier(infpar%lg_comm)
-
-#endif
 
     call LSTIMER('CCSD(T) INT',tcpu,twall,DECinfo%output)
 

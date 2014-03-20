@@ -19,7 +19,7 @@ fi
 #######################################################################
 cat > geoopt_prop3_ex.info <<'%EOF%'
    geoopt_prop3_ex
-   ------------
+   ---------------
    Molecule:         O3
    Wave Function:    MCSCF (CAS) / aug-cc-pVDZ / excited state
    Test Purpose:     Geometry optimization using .OPTIMIZE module

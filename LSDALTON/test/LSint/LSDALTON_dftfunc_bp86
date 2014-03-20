@@ -51,11 +51,12 @@ cat > LSDALTON_dftfunc_bp86.dal <<'%EOF%'
  BP86
 *DFT INPUT
 .GRID TYPE
- BECKEORIG LMG
+ BECKE GC2
 .RADINT
 1.0D-11
 .ANGINT
 31
+.NOPRUN
 *END OF INPUT
 %EOF%
 
@@ -71,7 +72,7 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
-CRIT1=`$GREP "Final DFT energy:  * \-76\.417860" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy:  * \-76\.417865" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT -"

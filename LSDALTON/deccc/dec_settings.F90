@@ -11,6 +11,9 @@ MODULE DEC_settings_mod
   use precision
   use dec_typedef_module
   use ls_util
+#ifdef VAR_MPI
+  use infpar_module
+#endif
 
 contains
 
@@ -126,15 +129,17 @@ contains
     DECinfo%CorrDensScheme         = 1
 
     ! -- Pair fragments
-    DECinfo%pair_distance_threshold = 20.0E0_realk/bohr_to_angstrom
+    DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set             = .false.
     DECinfo%PairMinDist             = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr               =  0.0_realk
     DECinfo%PairMP2                 = .false.
     DECinfo%PairEstimate            = .true.
+    DECinfo%PairEstimateIgnore      = .false.
+    DECinfo%EstimateINITradius      = 2.0E0_realk/bohr_to_angstrom
 
     ! Memory use for full molecule structure
-    DECinfo%fullmolecule_memory=0E0_realk
+    DECinfo%fullmolecule_memory     = 0E0_realk
 
 
     ! -- CC solver options
@@ -148,6 +153,8 @@ contains
     DECinfo%F12                     = .false.
     DECinfo%F12debug                = .false.
     DECinfo%PureHydrogenDebug       = .false.
+    DECinfo%InteractionEnergy       = .false.
+    DECinfo%PrintInteractionEnergy  = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -223,7 +230,7 @@ contains
     !> do we do F12 calc (is a CABS basis required?)
     logical,intent(inout) :: doF12
     logical,save :: already_called = .false.
-    integer :: fotlevel
+    integer :: fotlevel,nworkers
 
     ! Sanity check that this routine is only called once for either **DEC OR **CC
     if(already_called) then
@@ -233,6 +240,14 @@ contains
        ! First call to this routine
        already_called=.true.
     end if
+
+#ifdef VAR_MPI
+    ! Number of workers = Number of nodes minus master itself
+    nworkers = infpar%nodtot -1
+    if(nworkers<1) then
+       call lsquit('DEC calculations using MPI require at least two MPI processes!',-1)
+    end if
+#endif
 
     ! Just to be sure, we set the default values before
     ! applying input values.
@@ -480,7 +495,12 @@ contains
           !endif mod_unreleased
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
-
+       case('.INTERACTIONENERGY')     
+          !Calculate the Interaction energy (add ref to article) 
+          DECinfo%InteractionEnergy       = .true.
+       case('.PRINTINTERACTIONENERGY')     
+          !Print the Interaction energy (see .INTERACTIONENERGY) 
+          DECinfo%PrintInteractionEnergy  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -500,6 +520,10 @@ contains
        case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
        case('.PAIRMP2'); DECinfo%PairMP2=.true.
        case('.NOTPAIRESTIMATE'); DECinfo%PairEstimate=.false.
+       case('.IGNOREPAIRESTIMATE'); DECinfo%PairEstimateIgnore=.true.
+       case('.ESTIMATEINITRADIUS')
+          read(input,*) DECinfo%EstimateINITradius
+          DECinfo%EstimateINITradius = DECinfo%EstimateINITradius/bohr_to_angstrom
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
@@ -602,6 +626,11 @@ contains
        if(DECinfo%full_molecular_cc) then
           call lsquit('Full calculation for MP2 gradient is implemented via the &
                & .SimulateFull keyword', DECinfo%output)
+       end if
+
+       if(DECinfo%onlyoccpart) then
+          call lsquit('DEC gradient cannot be evaluated when only occupied &
+               & partitioning scheme is used!',DECinfo%output)
        end if
 
     end if MP2gradientCalculation
@@ -871,11 +900,17 @@ contains
     case('.CCD');     modelnumber = MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
     case('.CCSD(T)'); modelnumber = MODEL_CCSDpT
     case('.RPA');     modelnumber = MODEL_RPA
-
     case default
        print *, 'Model not found: ', myword
+       write(DECinfo%output)'Model not found: ', myword
+       write(DECinfo%output)'Models supported are:'
+       write(DECinfo%output)'.MP2'
+       write(DECinfo%output)'.CC2'
+       write(DECinfo%output)'.CCSD'
+       write(DECinfo%output)'.CCD'
+       write(DECinfo%output)'.CCSD(T)'
+       write(DECinfo%output)'.RPA'
        call lsquit('Requested model not found!',-1)
-
     end SELECT
 
   end subroutine find_model_number_from_input

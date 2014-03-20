@@ -1,21 +1,26 @@
-Poul Jørgensen (born March 2, 1944 in Silkeborg, Denmark) is professor of chemistry, 
+Poul Jørgensen (born March 2, 1944 in Silkeborg, Denmark) is professor of chemistry at the
 Department of Chemistry, Aarhus University (AU), Denmark and director of the 
-qLEAP Center for Theoretical Chemistry at AU, which was established in April 2012.
+qLEAP Center (insert reference to qleap page) for Theoretical Chemistry at AU, which was established in April 2012.
 
 He is a member of the International Academy of Quantum Molecular Science (http://www.iaqms.org/index.php)
 since 2005.
 
 He is one of the main authors of the DALTON program (www.daltonprogram.org).
 
-Awards
+
+
+Awards (make in bullet points, see e.g. Rod Bartlett’s wikipage)
 
 Appointed "Knight of the Order of the Dannebrog" by the Queen of Denmark 
-in 20?? for his meritorious civil service, in particular for his outstanding 
-contributions to the sciences.
+in 2010 for his outstanding contributions to science.
 
-Awards for extraordinary scientific accomplishment by the International Conference of Computation Methods in Science and Engineering (ICCMSE). Crete, October 2006.
-Honoured by Thomson Scientific and the Danish Library Association as the most cited author in chemistry in Denmark, during the period 1990–2004. Copenhagen, May 2005.
+Awards for extraordinary scientific accomplishment by the International Conference of Computation Methods in Science and Engineering (ICCMSE) (2006).
+
+Honoured by Thomson Scientific and the Danish Library Association as the most cited author in chemistry in Denmark during the period 1990–2004. 
+
 Rigmor and Carl Holst-Knudsens Videnskabspris, Aarhus University. Aarhus, May 1986
+
+
 
 Publications, books and bibliometric indicators
 
@@ -26,20 +31,14 @@ Geometrical Derivatives of Energy Surfaces and Molecular Properties (Edited by P
 Problems in Quantum Chemistry (Poul Jørgensen and Jens Oddershede, Addison Wesley, Reading, Massachusetts, 1982).
 Second Quantization Based Methods in Quantum Chemistry (Poul Jørgensen and Jack Simons, Academic Press, New York, 1981).
 
-Adding up to more than 19,000 citations and a h-index of 68 (according to ISI Web of knowledge database)
+This adds up to more than 19,000 citations and a h-index of 68 (according to ISI Web of knowledge database)
 
-Summer Schools
-He has organized the Summer School “Quantum Chemistry and Molecular Properties” biannually since 1990, a two-week summer school (together with Trygve Helgaker, Oslo and Jeppe Olsen, Aarhus). Given about 16 lectures at each school.
+He has organized the Summer School “Quantum Chemistry and Molecular Properties” biannually since 1990, a two-week summer school (together with Trygve Helgaker, Oslo and Jeppe Olsen, Aarhus). He has been lecturer at five other summer schools.
 
-He has been lecturer at five other summer schools.
-
-Both the textbooks and the summer schools have had a considerable influence on the coming generations of quantum chemists.
 
 Education
 1975 Advanced doctoral degree in chemistry, Aarhus University
 1969 Cand. Scient. in chemistry, Aarhus University
-
-Poul Jørgensen and Jens Oddershede were the first students of Jan Linderberg (appointed professor of Quantum Chemistry at Aarhus University in 1966)
 
 Academic career
 2010 Advanced Research Professor of Chemistry, Aarhus University
@@ -48,8 +47,6 @@ Academic career
 1974 PostDoc with Professor V. McKoy
 1974 PostDoc with Professor Jack Simons in Utah 
 1972 PostDoc with Professor Yngve Öhrn in Florida
-
-In Denmark becoming professor is not a matter of individual promotion but relies on the availability of a vacant professorship. The promotion was therefore long overdue.
 
 Visiting Professorships
 2005 University of Otago, Dunedin, New Zealand, 2 months
@@ -64,112 +61,12 @@ Project management
 
 
 Important contributions
+(maybe add some references to the relevant papers and/or relevant wikipages)
 
 His science is characterized by a long series of seminal contributions to 
 the field of electronic structure in at least 10 different fields of quantum chemistry. 
-Poul Jørgensen has a tradition for writing long self-contained articles which, in many cases, become central sources for the subfields of electronic structure theory. 
-
-Second-Order Polarization Propagator Approach (SOPPA)
-Poul developed ab initio based polarization propagator methods. The methods used to calculate number conserving excitation phenomena as excitation energies and molecular response properties.
-
-Optimization theory for multi-configurational self-consistent field wave functions
-Poul developed and improved the widely used multi-configurational self-consistent (MCSCF) methods using an exponential ansatz for the form of the MCSCF wave function. He also derived a second-order MCSCF method. 
-The exponential ansatz also made it possible to formulate a MCSCF-based time-dependent Hartree-Fock method. Poul and his co-workers used the Newton–Raphson update techniques to demonstrate how to obtain guaranteed convergence in ground state MCSCF calculations.
-
-Lagrangian technique for molecular property calculations including Ab initio analytic gradients and Hessians for SCF and MCSCF wave functions.
-
-Analytic derivative techniques were developed in many different research groups in the 
-early to mid eighties. Poul and Jack Simons made significant contributions to this development.
-
-Poul arranged a workshop on “Geometrical derivatives of energy surfaces and molecular properties” at Sandbjerg in August 1985, the proceedings of which has become a standard reference in analytical derivative techniques.
-
-Time-independent and time-dependent linear and non-linear response function theory
-Together with Jeppe Olsen, Poul wrote what has become the standard reference in response theory. Using the time-dependent Ehrenfest equation, Poul and Jeppe Olsen derived the form of the response
-functions for both an exact and an approximate (MCSCF) reference function. Here again,
-the exponential ansatz for the wave function was crucial for the development.
-Most of the later theoretical developments of response methods are based on the work of 
-Olsen and Jørgensen from 1985.
-
-Coupled cluster theory; model hierarchies and molecular property evaluation
-Poul Jørgensen and Henrik Koch’s work on coupled cluster-based response 
-function is probably the single development in the Aarhus group that has caught the most 
-attention from the outside electronic structure community. Poul and his co-workers 
-derived a series of perturbative approximation to the full coupled cluster response theory (CC2 and CC3). The perturbative approximations are useful in that they allow a hierarchical study of 
-the importance of including electron correlation in the calculation of excitation energies 
-and of other response properties up to and including third order. 
-
-Calculation of magnetic molecular properties using gauge invariant methods 
-Calculation of magnetic properties of molecules by approximate methods faces the difficulty of unphysical 
-gauge-origin dependence. London orbitals, aka gauge-including atomic orbitals, represent a standard way of circumventing the problem. Poul  and Trygve Helgaker have shown how to include the effect of London orbitals as extra terms in the electronic Hamiltonian, using second-quantization, thus making the calculation of magnetic properties in a gauge-invariant fashion a straightforward task using response methods as well. 
-This methodological development has spurred a long series of response calculations of 
-magnetic properties by authors such as Kenneth Ruud and co-workers.
-
-Showing and explaining the divergence of Møller–Plesset perturbation theory
-Poul proved that energy calculations using the widely applied Møller–Plesset perturbation theory (MBPT) diverged in higher orders for “well- behaved, normal closed shell systems” such as Ne and HF. Later calculations on other systems have substantiated the initial results and proved that this is a rather general feature of MBPT. 
-The conclusion of these finding are that there is problem with MBPT and only the lowest order of MBPT, for which the calculations seem to behave nicely and reasonably, should be used! 
-
-Benchmarking the accuracy of electronic structure models 
-
-Poul and co-workers performed a systematic, high-level ab initio investigation were they determined the normal distribution of errors in computed quantities. Using hierarchical electronic structure methods—such as the perturbative approximations to the coupled cluster response method—and hierarchical basis sets, they were able to estimate error bars on calculated electronic structure properties. 
-This work has made the theoretical results more reliable, and it has become common place to perform such systematical error estimates when introducing a new method. 
-
-Basis set extrapolation for accurate calculations of energies 
-The high computational cost of Coupled-Cluster calculations renders it impossible to perform such calculations with sufficiently large basis sets. Poul and co-workers presented a basis-set extrapolation scheme to alleviate this problem of truncation in the one-electron space to a finite basis. 
-
-Linear-scaling Coupled-Cluster algorithms
-To describe large molecular systems with coupled cluster methods, the computational scaling with the system size of existing methods represents a roadblock to progress. Poul and co-workers have introduced the Divide-Expand-Consolidate scheme and have thereby made substantial strides in obtaining coupled cluster methods that scale linearly with system size and where the calculations are embarrassingly parallel, such that calculations for small and large molecular systems require the same computational wall time, retaining error control of the calculation. 
-
-Optimization theory for Hartree–Fock and Kohn Sham theory, including linear-scaling algorithms
-Poul and co-workers have introduced the Augmented Roothaan-Hall method for optimizing Hartree-Fock and Kohn-Sham density matrices. A novel method that does not suffer from the flaws of the conventionally used two-step Roothaan-Hall (RH) with direct inversion in iterative subspace (DIIS) acceleration scheme, improving the reliability of the optimization while reducing its cost. The key to its success is the replacement of the two separate steps of a each RH/DIIS iteration by a single concerted step that fully exploits the Hessian information available from the previous iterations. It is a trust-region based method and therefore by design converges to an energy minimum. The algorithm is based on matrix multiplications and becomes linearly scaling for sufficiently sparse systems.
-
-Localization of Hartree-Fock and Kohn Sham orbitals
-Poul and co-workers have introduced methods which for the first time was able to localize both occupied and virtual Hartree-Fock molecular orbitals. A substantial feat as the task was deemed impossible and the rest of the community had forsaken the cause and had settled on using projected atomic orbitals for the virtual orbital space. 
-
-
-Summary 
-
-The focus of Poul’s science has been on method developments using ab initio methods. 
-This is his primary interest; this is where he has made his major contributions to the field of 
-quantum chemistry in general, and electronic structure theory in particular. 
-Applications of his methods have often been left in the hands of his many co-workers. Applications have held his interest but primarily as a tool to show that his latest method is the best!
-
-It is characteristic of Poul’s science that he does not stick to the same method for very 
-long. In his earlier career, he was promoting perturbative propagator methods. However, 
-when he became interested in MCSCF and MCSCF-based response methods he lost interest in the perturbative propagator methods at the same time. Currently, he is a staunch advocate of coupled cluster-based response methods, and MCSCF-based response methods are out!
-
-It is of course quite natural and reasonable to be of the opinion that your latest theoretical 
-development is the best. However, this attitude also may have the effect that you do not 
-allow yourself the benefit of discovering that different methods works in different situations 
-and that the truth is not always one-dimensional.
-
-However, Poul is the kind of person that focuses his strengths in one direction, and he has a tendency to have a black-and-white outlook at the world. He has had his disagreements with his colleagues in the scientific community and he has never followed “main streams”. Perhaps for these reasons he has not gotten the full international recognition that his scientific contributions warrant. Surely, he is well-known in our circles and he is also invited to very many conferences and events in quantum chemistry. However, he is not a “science entrepreneur”; he does not sell the same method for years and he does not even try to please those in power and of influence.
-
-
-Poul quotes: 
-Poul uses a number of sentences in his daily life. Some more than others
- 
-“you have to be very careful” 
-“infinitely complicated” 
-
-Hobbies:
-Poul has always been—and still is—very actively engaged in sports; in his early years it was track and field that had his interest and in later years it has been orienteering and biking.
-
-In the summer of 1967 he decided to make his hobby his living, which meant leaving chemistry and going to Copenhagen University to study sports science. To the joy of the theoretical chemistry community Poul soon discovered that sports are more fun from a practical than from an academic point of view, and during the fall of 1967 he returned to active service at the Theoretical Chemistry Division at the Chemistry Department in Aarhus
-
-Poul has been supervisor for:
-
-About 35 PhD students, among others:
-Jeppe Olsen – currently professor at Aarhus University
-Henrik Koch – currently professor at NTNU, Trondheim, Norway
-Ove Christiansen – currently professor at Aarhus University
-Sonia Coriani – currently senior researcher at University of Trieste, Italy
-Filip Pawlowski – currently researcher at Kazimierz Wielki University in Bydgoszcz, Poland
-
-About 25 Post Docs, among others:
-Trygve Helgaker – currently professor at University of Oslo, Norway
-Christof Hättig – currently professor at University of Bochum, Germany
-Hans Jørgen Aa. Jensen – currently associate professor at University of Southern Denmark
-Berta Fernandez – currently professor at University of Santiago de Compostela, Spain
+Poul Jørgensen has a tradition for writing long self-contained articles which, in many cases, become central sources for the subfields of electronic structure theory. Major contributions include
+Second-Order Polarization Propagator Approach (SOPPA), multi-configurational self-consistent (MCSCF) methods, Lagrangian technique for molecular property calculations, analytic derivative techniques, time-independent and time-dependent linear and non-linear response function theory, coupled cluster theory, calculation of magnetic molecular properties using gauge invariant methods, showing and explaining the divergence of Møller–Plesset perturbation theory, benchmarking the accuracy of electronic structure models, basis set extrapolation for accurate calculations of energies, linear-scaling Coupled-Cluster algorithms, optimization algorithms for Hartree–Fock and Kohn Sham theory, localization of Hartree-Fock and Kohn Sham orbitals.
 
 
 REFERENCES:

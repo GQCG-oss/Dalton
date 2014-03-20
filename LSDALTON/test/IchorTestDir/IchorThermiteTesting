@@ -48,6 +48,7 @@ cat > IchorThermiteTesting.dal <<'%EOF%'
 .NOGCBASIS
 **INTEGRALS
 .DEBUGICHOR
+0
 **WAVE FUNCTIONS
 .HF
 *END OF INPUT

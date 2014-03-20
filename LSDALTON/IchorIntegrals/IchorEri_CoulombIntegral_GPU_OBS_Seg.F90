@@ -1,27 +1,27 @@
-MODULE IchorEriCoulombintegralOBSGeneralModSeg1Prim
+MODULE IchorEriCoulombintegralGPUOBSGeneralModSeg
 !Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory
-!Contains routines for Segmented contracted Basisset containing a single primitive
+!Contains routines for Segmented contracted Basisset 
 use IchorprecisionModule
 use IchorCommonModule
 use IchorMemory
-use AGC_CPU_OBS_BUILDRJ000ModGen
-use AGC_CPU_OBS_BUILDRJ000ModSeg1Prim
-use AGC_CPU_OBS_VERTICALRECURRENCEMODASeg1Prim
-use AGC_CPU_OBS_VERTICALRECURRENCEMODBSeg1Prim
-use AGC_CPU_OBS_VERTICALRECURRENCEMODDSeg1Prim
-use AGC_CPU_OBS_VERTICALRECURRENCEMODCSeg1Prim
-use AGC_CPU_OBS_VERTICALRECURRENCEMODAGen
-use AGC_CPU_OBS_VERTICALRECURRENCEMODBGen
-use AGC_CPU_OBS_VERTICALRECURRENCEMODCGen
-use AGC_CPU_OBS_VERTICALRECURRENCEMODDGen
-use AGC_CPU_OBS_TRMODAtoCSeg1Prim
-use AGC_CPU_OBS_TRMODAtoDSeg1Prim
-use AGC_CPU_OBS_TRMODBtoCSeg1Prim
-use AGC_CPU_OBS_TRMODBtoDSeg1Prim
-use AGC_CPU_OBS_TRMODCtoASeg1Prim
-use AGC_CPU_OBS_TRMODDtoASeg1Prim
-use AGC_CPU_OBS_TRMODCtoBSeg1Prim
-use AGC_CPU_OBS_TRMODDtoBSeg1Prim
+use AGC_GPU_OBS_BUILDRJ000ModGen
+use AGC_GPU_OBS_BUILDRJ000ModSeg1Prim
+use AGC_GPU_OBS_VERTICALRECURRENCEMODASeg
+use AGC_GPU_OBS_VERTICALRECURRENCEMODBSeg
+use AGC_GPU_OBS_VERTICALRECURRENCEMODDSeg
+use AGC_GPU_OBS_VERTICALRECURRENCEMODCSeg
+use AGC_GPU_OBS_VERTICALRECURRENCEMODAGen
+use AGC_GPU_OBS_VERTICALRECURRENCEMODBGen
+use AGC_GPU_OBS_VERTICALRECURRENCEMODCGen
+use AGC_GPU_OBS_VERTICALRECURRENCEMODDGen
+use AGC_GPU_OBS_TRMODAtoCSeg
+use AGC_GPU_OBS_TRMODAtoDSeg
+use AGC_GPU_OBS_TRMODBtoCSeg
+use AGC_GPU_OBS_TRMODBtoDSeg
+use AGC_GPU_OBS_TRMODCtoASeg
+use AGC_GPU_OBS_TRMODDtoASeg
+use AGC_GPU_OBS_TRMODCtoBSeg
+use AGC_GPU_OBS_TRMODDtoBSeg
 use AGC_OBS_HorizontalRecurrenceLHSModAtoB
 use AGC_OBS_HorizontalRecurrenceLHSModBtoA
 use AGC_OBS_HorizontalRecurrenceRHSModCtoD
@@ -30,12 +30,12 @@ use AGC_OBS_Sphcontract1Mod
 use AGC_OBS_Sphcontract2Mod
   
 private   
-public :: IchorCoulombIntegral_OBS_Seg1Prim,IchorCoulombIntegral_OBS_general_sizeSeg1Prim  
+public :: IchorCoulombIntegral_GPU_OBS_Seg,IchorCoulombIntegral_GPU_OBS_general_sizeSeg  
   
 CONTAINS
   
   
-  subroutine IchorCoulombIntegral_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&
+  subroutine IchorCoulombIntegral_GPU_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
@@ -108,7 +108,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim0(nPasses,nPrimP,nPrimQ,&
+        call VerticalRecurrenceGPUSeg0(nPasses,nPrimP,nPrimQ,&
                & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
                & PpreExpFac,QpreExpFac,LOCALINTS)
@@ -124,7 +124,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray2)
@@ -135,7 +135,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(1,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(1,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & LOCALINTS,lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
@@ -146,7 +147,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -154,7 +155,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -163,7 +164,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q1AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -173,7 +174,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -181,7 +183,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*12),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*12),&
             & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
@@ -190,7 +192,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -198,7 +200,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -207,7 +209,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q2CtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q2CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -217,7 +219,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -225,7 +228,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
             & LOCALINTS(1:nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
@@ -234,7 +237,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -242,7 +245,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -253,7 +256,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(1,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(1,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & LOCALINTS,lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
@@ -264,7 +268,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -272,7 +276,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -281,7 +285,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q1AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -291,7 +295,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -299,7 +304,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*36),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*36),&
             & LOCALINTS(1:nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
@@ -308,7 +313,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -316,7 +321,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -325,7 +330,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -335,7 +340,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -343,7 +349,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*90),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*90),&
             & LOCALINTS(1:nPasses*81),lupri)
         !no Spherical Transformation RHS needed
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
@@ -352,7 +358,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -360,7 +366,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -371,14 +377,15 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(1,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(1,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*5.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(1,nPasses,TMParray2(1:nPasses*6),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(1,nPasses,TMParray2(1:nPasses*6),&
             & LOCALINTS(1:nPasses*5))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -388,7 +395,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -396,7 +403,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -405,7 +412,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q1AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -415,21 +422,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nPasses,TMParray1(1:nPasses*24),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(4,nPasses,TMParray1(1:nPasses*24),&
             & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*20),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*20),&
             & LOCALINTS(1:nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
@@ -438,7 +446,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -446,7 +454,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -455,7 +463,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -465,21 +473,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray1(1:nPasses*60),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(10,nPasses,TMParray1(1:nPasses*60),&
             & TMParray2(1:nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
             & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
@@ -488,7 +497,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -496,7 +505,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -505,7 +514,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -515,28 +524,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray1(1:nPasses*60),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(10,nPasses,TMParray1(1:nPasses*60),&
             & TMParray2(1:nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
             & TMParray1(1:nPasses*30),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nPasses,TMParray1(1:nPasses*30),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(5,nPasses,TMParray1(1:nPasses*30),&
             & LOCALINTS(1:nPasses*25))
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -544,7 +554,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -552,7 +562,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -561,7 +571,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q3CtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q3CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -571,28 +581,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nPasses,TMParray1(1:nPasses*120),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(20,nPasses,TMParray1(1:nPasses*120),&
             & TMParray2(1:nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*100),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*100),&
             & TMParray1(1:nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nPasses,TMParray1(1:nPasses*90),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(5,nPasses,TMParray1(1:nPasses*90),&
             & LOCALINTS(1:nPasses*75))
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -600,7 +611,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -608,7 +619,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -617,7 +628,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q4CtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -627,28 +638,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(1,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(1,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*175.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(35,nPasses,TMParray1(1:nPasses*210),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(35,nPasses,TMParray1(1:nPasses*210),&
             & TMParray2(1:nPasses*175))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*175),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*175),&
             & TMParray1(1:nPasses*180),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*125.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nPasses,TMParray1(1:nPasses*180),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(5,nPasses,TMParray1(1:nPasses*180),&
             & LOCALINTS(1:nPasses*125))
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -656,7 +668,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -664,7 +676,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -675,14 +687,15 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(1,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(1,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(1,nPasses,TMParray2(1:nPasses*18),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(1,nPasses,TMParray2(1:nPasses*18),&
             & LOCALINTS(1:nPasses*15))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -692,7 +705,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -700,7 +713,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -709,7 +722,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q1AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -719,21 +732,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nPasses,TMParray1(1:nPasses*72),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(4,nPasses,TMParray1(1:nPasses*72),&
             & TMParray2(1:nPasses*60))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*60),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*60),&
             & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
@@ -742,7 +756,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -750,7 +764,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -759,7 +773,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -769,21 +783,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray1(1:nPasses*180),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(10,nPasses,TMParray1(1:nPasses*180),&
             & TMParray2(1:nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*135.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
             & LOCALINTS(1:nPasses*135),lupri)
         !no Spherical Transformation RHS needed
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
@@ -792,7 +807,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -800,7 +815,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -809,7 +824,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -819,28 +834,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray1(1:nPasses*180),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(10,nPasses,TMParray1(1:nPasses*180),&
             & TMParray2(1:nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
             & TMParray1(1:nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nPasses,TMParray1(1:nPasses*90),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(15,nPasses,TMParray1(1:nPasses*90),&
             & LOCALINTS(1:nPasses*75))
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -848,7 +864,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -856,7 +872,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -865,7 +881,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q3AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q3AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -875,28 +891,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*300.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nPasses,TMParray1(1:nPasses*360),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(20,nPasses,TMParray1(1:nPasses*360),&
             & TMParray2(1:nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*270.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*300),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*300),&
             & TMParray1(1:nPasses*270),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nPasses,TMParray1(1:nPasses*270),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(15,nPasses,TMParray1(1:nPasses*270),&
             & LOCALINTS(1:nPasses*225))
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -904,7 +921,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim7(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -912,7 +929,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -921,7 +938,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q4CtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -931,28 +948,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(1,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(1,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*525.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(35,nPasses,TMParray1(1:nPasses*630),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(35,nPasses,TMParray1(1:nPasses*630),&
             & TMParray2(1:nPasses*525))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*540.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*525),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*525),&
             & TMParray1(1:nPasses*540),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*375.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nPasses,TMParray1(1:nPasses*540),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(15,nPasses,TMParray1(1:nPasses*540),&
             & LOCALINTS(1:nPasses*375))
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -960,7 +978,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -968,7 +986,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -979,14 +997,15 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(1,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(1,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(1,nPasses,TMParray2(1:nPasses*36),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(1,nPasses,TMParray2(1:nPasses*36),&
             & LOCALINTS(1:nPasses*25))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -996,7 +1015,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1004,7 +1023,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1013,7 +1032,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP4Q1AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP4Q1AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1023,21 +1042,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nPasses,TMParray1(1:nPasses*144),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(4,nPasses,TMParray1(1:nPasses*144),&
             & TMParray2(1:nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*100),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*100),&
             & LOCALINTS(1:nPasses*75),lupri)
         !no Spherical Transformation RHS needed
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
@@ -1046,7 +1066,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1054,7 +1074,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1063,7 +1083,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP4Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP4Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1073,21 +1093,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*250.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray1(1:nPasses*360),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(10,nPasses,TMParray1(1:nPasses*360),&
             & TMParray2(1:nPasses*250))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*250),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*250),&
             & LOCALINTS(1:nPasses*225),lupri)
         !no Spherical Transformation RHS needed
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
@@ -1096,7 +1117,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1104,7 +1125,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1113,7 +1134,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP4Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP4Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1123,28 +1144,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*250.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray1(1:nPasses*360),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(10,nPasses,TMParray1(1:nPasses*360),&
             & TMParray2(1:nPasses*250))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*250),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*250),&
             & TMParray1(1:nPasses*150),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*125.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(25,nPasses,TMParray1(1:nPasses*150),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(25,nPasses,TMParray1(1:nPasses*150),&
             & LOCALINTS(1:nPasses*125))
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1152,7 +1174,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim7(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1160,7 +1182,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1169,7 +1191,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP4Q3AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP4Q3AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1179,28 +1201,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*500.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nPasses,TMParray1(1:nPasses*720),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(20,nPasses,TMParray1(1:nPasses*720),&
             & TMParray2(1:nPasses*500))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*450.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*500),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*500),&
             & TMParray1(1:nPasses*450),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*375.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(25,nPasses,TMParray1(1:nPasses*450),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(25,nPasses,TMParray1(1:nPasses*450),&
             & LOCALINTS(1:nPasses*375))
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1208,7 +1231,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim8(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen8(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1216,7 +1239,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1225,7 +1248,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP4Q4AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP4Q4AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1235,28 +1258,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(1,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(1,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*875.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(35,nPasses,TMParray1(1:nPasses*1260),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(35,nPasses,TMParray1(1:nPasses*1260),&
             & TMParray2(1:nPasses*875))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*900.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*875),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*875),&
             & TMParray1(1:nPasses*900),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*625.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(25,nPasses,TMParray1(1:nPasses*900),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(25,nPasses,TMParray1(1:nPasses*900),&
             & LOCALINTS(1:nPasses*625))
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1264,7 +1288,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray2)
@@ -1277,7 +1301,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*4),&
+        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*4),&
             & LOCALINTS(1:nPasses*3),lupri)
         !no Spherical Transformation RHS needed
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
@@ -1286,7 +1310,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1294,7 +1318,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim2D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg2D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1307,14 +1331,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*10),&
+        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*10),&
             & TMParray2(1:nPasses*6),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*5.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(1,nPasses,TMParray2(1:nPasses*6),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(1,nPasses,TMParray2(1:nPasses*6),&
             & LOCALINTS(1:nPasses*5))
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1322,7 +1346,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim1C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg1C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray2)
@@ -1335,7 +1359,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*4),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,1,Qdistance12,TMParray2(1:nPasses*4),&
             & LOCALINTS(1:nPasses*3),lupri)
         !no Spherical Transformation RHS needed
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
@@ -1344,7 +1368,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1352,7 +1376,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1365,7 +1389,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*10),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*10),&
             & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
@@ -1374,7 +1398,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1382,7 +1406,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1395,14 +1419,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*20),&
+        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*20),&
             & TMParray2(1:nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(1,nPasses,TMParray2(1:nPasses*18),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(1,nPasses,TMParray2(1:nPasses*18),&
             & LOCALINTS(1:nPasses*15))
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1410,7 +1434,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1418,7 +1442,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1431,14 +1455,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*10),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*10),&
             & TMParray2(1:nPasses*6),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*5.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(1,nPasses,TMParray2(1:nPasses*6),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(1,nPasses,TMParray2(1:nPasses*6),&
             & LOCALINTS(1:nPasses*5))
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1446,7 +1470,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1454,7 +1478,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1467,14 +1491,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*20),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*20),&
             & TMParray2(1:nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(1,nPasses,TMParray2(1:nPasses*18),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(1,nPasses,TMParray2(1:nPasses*18),&
             & LOCALINTS(1:nPasses*15))
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1482,7 +1506,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1490,7 +1514,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1503,14 +1527,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*35),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,1,Qdistance12,TMParray1(1:nPasses*35),&
             & TMParray2(1:nPasses*36),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(1,nPasses,TMParray2(1:nPasses*36),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(1,nPasses,TMParray2(1:nPasses*36),&
             & LOCALINTS(1:nPasses*25))
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1518,7 +1542,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray2)
@@ -1529,7 +1553,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(1,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A0B1BtoA(1,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & LOCALINTS,lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
@@ -1540,7 +1565,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1548,7 +1573,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1557,7 +1582,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q1BtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q1BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1567,7 +1592,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A0B1BtoA(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1575,7 +1601,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*12),&
+        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*12),&
             & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
@@ -1584,7 +1610,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1592,7 +1618,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1601,7 +1627,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q2DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q2DtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1611,7 +1637,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A0B1BtoA(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1619,14 +1646,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
+        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
             & TMParray2(1:nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nPasses,TMParray2(1:nPasses*18),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(3,nPasses,TMParray2(1:nPasses*18),&
             & LOCALINTS(1:nPasses*15))
     CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1634,7 +1661,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1642,7 +1669,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1651,7 +1678,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q1BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q1BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1661,7 +1688,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A0B1BtoA(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1669,7 +1697,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*12),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*12),&
             & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
@@ -1678,7 +1706,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1686,7 +1714,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1695,7 +1723,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q2CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q2CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1705,7 +1733,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A0B1BtoA(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1713,7 +1742,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
             & LOCALINTS(1:nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
@@ -1722,7 +1751,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1730,7 +1759,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1739,7 +1768,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q3DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q3DtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1749,7 +1778,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A0B1BtoA(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1757,14 +1787,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*60),&
+        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*60),&
             & TMParray2(1:nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nPasses,TMParray2(1:nPasses*54),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(3,nPasses,TMParray2(1:nPasses*54),&
             & LOCALINTS(1:nPasses*45))
     CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1772,7 +1802,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1780,7 +1810,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1789,7 +1819,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q2CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q2CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1799,7 +1829,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A0B1BtoA(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1807,14 +1838,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
             & TMParray2(1:nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nPasses,TMParray2(1:nPasses*18),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(3,nPasses,TMParray2(1:nPasses*18),&
             & LOCALINTS(1:nPasses*15))
     CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -1822,7 +1853,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1830,7 +1861,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1839,7 +1870,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q3CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q3CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1849,7 +1880,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A0B1BtoA(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1857,14 +1889,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*60),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*60),&
             & TMParray2(1:nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nPasses,TMParray2(1:nPasses*54),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(3,nPasses,TMParray2(1:nPasses*54),&
             & LOCALINTS(1:nPasses*45))
     CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -1872,7 +1904,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1880,7 +1912,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1889,7 +1921,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q4CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q4CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1899,7 +1931,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A0B1BtoA(1,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A0B1BtoA(1,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -1907,14 +1940,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*105),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*105),&
             & TMParray2(1:nPasses*108),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nPasses,TMParray2(1:nPasses*108),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(3,nPasses,TMParray2(1:nPasses*108),&
             & LOCALINTS(1:nPasses*75))
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -1922,7 +1955,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1930,7 +1963,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1941,14 +1974,15 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(1,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_GPU_LHS_P2A0B2BtoA(1,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*5.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(1,nPasses,TMParray2(1:nPasses*6),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(1,nPasses,TMParray2(1:nPasses*6),&
             & LOCALINTS(1:nPasses*5))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -1958,7 +1992,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -1966,7 +2000,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -1975,7 +2009,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q1BtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q1BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -1985,21 +2019,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A0B2BtoA(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nPasses,TMParray1(1:nPasses*24),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(4,nPasses,TMParray1(1:nPasses*24),&
             & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*20),&
+        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*20),&
             & LOCALINTS(1:nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
@@ -2008,7 +2043,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2016,7 +2051,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2025,7 +2060,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q2BtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q2BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2035,28 +2070,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A0B2BtoA(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray1(1:nPasses*60),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(10,nPasses,TMParray1(1:nPasses*60),&
             & TMParray2(1:nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
+        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
             & TMParray1(1:nPasses*30),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nPasses,TMParray1(1:nPasses*30),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(5,nPasses,TMParray1(1:nPasses*30),&
             & LOCALINTS(1:nPasses*25))
     CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -2064,7 +2100,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2072,7 +2108,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2081,7 +2117,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q1BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q1BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2091,21 +2127,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A0B2BtoA(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(4,nPasses,TMParray1(1:nPasses*24),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(4,nPasses,TMParray1(1:nPasses*24),&
             & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*20),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*20),&
             & LOCALINTS(1:nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
@@ -2114,7 +2151,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2122,7 +2159,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2131,7 +2168,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q2BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q2BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2141,21 +2178,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A0B2BtoA(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray1(1:nPasses*60),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(10,nPasses,TMParray1(1:nPasses*60),&
             & TMParray2(1:nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
             & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
@@ -2164,7 +2202,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2172,7 +2210,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2181,7 +2219,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q3DtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q3DtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2191,28 +2229,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A0B2BtoA(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nPasses,TMParray1(1:nPasses*120),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(20,nPasses,TMParray1(1:nPasses*120),&
             & TMParray2(1:nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*100),&
+        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*100),&
             & TMParray1(1:nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nPasses,TMParray1(1:nPasses*90),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(5,nPasses,TMParray1(1:nPasses*90),&
             & LOCALINTS(1:nPasses*75))
     CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -2220,7 +2259,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2228,7 +2267,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2237,7 +2276,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q2BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q2BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2247,28 +2286,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A0B2BtoA(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(10,nPasses,TMParray1(1:nPasses*60),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(10,nPasses,TMParray1(1:nPasses*60),&
             & TMParray2(1:nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
             & TMParray1(1:nPasses*30),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(5,nPasses,TMParray1(1:nPasses*30),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(5,nPasses,TMParray1(1:nPasses*30),&
             & LOCALINTS(1:nPasses*25))
     CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -2276,7 +2316,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2284,7 +2324,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2293,7 +2333,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q3CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q3CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2303,28 +2343,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A0B2BtoA(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(20,nPasses,TMParray1(1:nPasses*120),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(20,nPasses,TMParray1(1:nPasses*120),&
             & TMParray2(1:nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*100),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*100),&
             & TMParray1(1:nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(5,nPasses,TMParray1(1:nPasses*90),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(5,nPasses,TMParray1(1:nPasses*90),&
             & LOCALINTS(1:nPasses*75))
     CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2332,7 +2373,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2340,7 +2381,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2349,7 +2390,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q4CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q4CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2359,28 +2400,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A0B2BtoA(1,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A0B2BtoA(1,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*175.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA0(35,nPasses,TMParray1(1:nPasses*210),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(35,nPasses,TMParray1(1:nPasses*210),&
             & TMParray2(1:nPasses*175))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*180.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*175),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*175),&
             & TMParray1(1:nPasses*180),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*125.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(5,nPasses,TMParray1(1:nPasses*180),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(5,nPasses,TMParray1(1:nPasses*180),&
             & LOCALINTS(1:nPasses*125))
     CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -2388,7 +2430,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2396,7 +2438,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2405,7 +2447,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q1AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q1AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2415,7 +2457,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2423,7 +2466,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*12),&
+        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*12),&
             & LOCALINTS(1:nPasses*9),lupri)
         !no Spherical Transformation RHS needed
     CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
@@ -2432,7 +2475,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2440,7 +2483,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2449,7 +2492,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q2DtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q2DtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2459,7 +2502,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2467,14 +2511,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
+        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
             & TMParray2(1:nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(3,nPasses,TMParray2(1:nPasses*18),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(3,nPasses,TMParray2(1:nPasses*18),&
             & LOCALINTS(1:nPasses*15))
     CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2482,7 +2526,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2490,7 +2534,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2499,7 +2543,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q3DtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q3DtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2509,7 +2553,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2517,14 +2562,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*60),&
+        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*60),&
             & TMParray2(1:nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(3,nPasses,TMParray2(1:nPasses*54),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(3,nPasses,TMParray2(1:nPasses*54),&
             & LOCALINTS(1:nPasses*45))
     CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -2532,7 +2577,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2540,7 +2585,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2549,7 +2594,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q2CtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q2CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2559,7 +2604,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2567,14 +2613,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*30),&
             & TMParray2(1:nPasses*18),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(3,nPasses,TMParray2(1:nPasses*18),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(3,nPasses,TMParray2(1:nPasses*18),&
             & LOCALINTS(1:nPasses*15))
     CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -2582,7 +2628,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2590,7 +2636,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2599,7 +2645,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q3CtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q3CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2609,7 +2655,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2617,14 +2664,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*60),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*60),&
             & TMParray2(1:nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(3,nPasses,TMParray2(1:nPasses*54),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(3,nPasses,TMParray2(1:nPasses*54),&
             & LOCALINTS(1:nPasses*45))
     CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2632,7 +2679,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2640,7 +2687,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2649,7 +2696,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP1Q4CtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP1Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2659,7 +2706,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P1A1B0AtoB(1,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(1,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2667,14 +2715,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*105),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray1(1:nPasses*105),&
             & TMParray2(1:nPasses*108),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(3,nPasses,TMParray2(1:nPasses*108),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(3,nPasses,TMParray2(1:nPasses*108),&
             & LOCALINTS(1:nPasses*75))
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -2682,7 +2730,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2690,7 +2738,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2699,7 +2747,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q1AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q1AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2709,7 +2757,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2717,7 +2766,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*36),&
+        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*36),&
             & LOCALINTS(1:nPasses*27),lupri)
         !no Spherical Transformation RHS needed
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
@@ -2726,7 +2775,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2734,7 +2783,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2743,7 +2792,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q2AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q2AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2753,7 +2802,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2761,14 +2811,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*90),&
+        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*90),&
             & TMParray2(1:nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(9,nPasses,TMParray2(1:nPasses*54),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(9,nPasses,TMParray2(1:nPasses*54),&
             & LOCALINTS(1:nPasses*45))
     CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2776,7 +2826,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2784,7 +2834,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2793,7 +2843,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q3DtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q3DtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2803,7 +2853,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2811,14 +2862,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*180),&
+        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*180),&
             & TMParray2(1:nPasses*162),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*135.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(9,nPasses,TMParray2(1:nPasses*162),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(9,nPasses,TMParray2(1:nPasses*162),&
             & LOCALINTS(1:nPasses*135))
     CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -2826,7 +2877,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2834,7 +2885,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2843,7 +2894,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q2AtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q2AtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2853,7 +2904,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2861,14 +2913,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*90),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*90),&
             & TMParray2(1:nPasses*54),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(9,nPasses,TMParray2(1:nPasses*54),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(9,nPasses,TMParray2(1:nPasses*54),&
             & LOCALINTS(1:nPasses*45))
     CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -2876,7 +2928,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2884,7 +2936,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2893,7 +2945,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q3CtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q3CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2903,7 +2955,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2911,14 +2964,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*180),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*180),&
             & TMParray2(1:nPasses*162),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*135.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(9,nPasses,TMParray2(1:nPasses*162),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(9,nPasses,TMParray2(1:nPasses*162),&
             & LOCALINTS(1:nPasses*135))
     CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -2926,7 +2979,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2934,7 +2987,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2943,7 +2996,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q4CtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -2953,7 +3006,8 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A1B1AtoB(1,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(1,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -2961,14 +3015,14 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*315),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,9,Qdistance12,TMParray1(1:nPasses*315),&
             & TMParray2(1:nPasses*324),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(9,nPasses,TMParray2(1:nPasses*324),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(9,nPasses,TMParray2(1:nPasses*324),&
             & LOCALINTS(1:nPasses*225))
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -2976,7 +3030,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -2984,7 +3038,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUSeg3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -2995,14 +3049,15 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(1,nPasses,1,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
+        call HorizontalRR_GPU_LHS_P3A1B2BtoA(1,nPasses,1,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(1,nPasses,TMParray2(1:nPasses*18),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(1,nPasses,TMParray2(1:nPasses*18),&
             & LOCALINTS(1:nPasses*15))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -3012,7 +3067,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3020,7 +3075,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3029,7 +3084,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q1BtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q1BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3039,21 +3094,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A1B2BtoA(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nPasses,TMParray1(1:nPasses*72),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(4,nPasses,TMParray1(1:nPasses*72),&
             & TMParray2(1:nPasses*60))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*60),&
+        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*60),&
             & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
@@ -3062,7 +3118,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3070,7 +3126,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3079,7 +3135,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q2BtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q2BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3089,28 +3145,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A1B2BtoA(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray1(1:nPasses*180),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(10,nPasses,TMParray1(1:nPasses*180),&
             & TMParray2(1:nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
+        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
             & TMParray1(1:nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nPasses,TMParray1(1:nPasses*90),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(15,nPasses,TMParray1(1:nPasses*90),&
             & LOCALINTS(1:nPasses*75))
     CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -3118,7 +3175,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3126,7 +3183,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3135,7 +3192,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q1BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q1BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3145,21 +3202,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A1B2BtoA(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(4,nPasses,TMParray1(1:nPasses*72),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(4,nPasses,TMParray1(1:nPasses*72),&
             & TMParray2(1:nPasses*60))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*60),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*60),&
             & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
@@ -3168,7 +3226,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3176,7 +3234,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3185,7 +3243,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q2BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q2BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3195,21 +3253,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A1B2BtoA(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray1(1:nPasses*180),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(10,nPasses,TMParray1(1:nPasses*180),&
             & TMParray2(1:nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*135.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
             & LOCALINTS(1:nPasses*135),lupri)
         !no Spherical Transformation RHS needed
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
@@ -3218,7 +3277,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3226,7 +3285,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3235,7 +3294,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q3BtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q3BtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3245,28 +3304,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A1B2BtoA(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*300.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nPasses,TMParray1(1:nPasses*360),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(20,nPasses,TMParray1(1:nPasses*360),&
             & TMParray2(1:nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*270.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*300),&
+        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*300),&
             & TMParray1(1:nPasses*270),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nPasses,TMParray1(1:nPasses*270),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(15,nPasses,TMParray1(1:nPasses*270),&
             & LOCALINTS(1:nPasses*225))
     CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -3274,7 +3334,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3282,7 +3342,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3291,7 +3351,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q2BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q2BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3301,28 +3361,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A1B2BtoA(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(10,nPasses,TMParray1(1:nPasses*180),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(10,nPasses,TMParray1(1:nPasses*180),&
             & TMParray2(1:nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
             & TMParray1(1:nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC2(15,nPasses,TMParray1(1:nPasses*90),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(15,nPasses,TMParray1(1:nPasses*90),&
             & LOCALINTS(1:nPasses*75))
     CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -3330,7 +3391,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3338,7 +3399,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3347,7 +3408,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q3BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q3BtoCSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3357,28 +3418,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A1B2BtoA(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*300.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(20,nPasses,TMParray1(1:nPasses*360),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(20,nPasses,TMParray1(1:nPasses*360),&
             & TMParray2(1:nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*270.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*300),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*300),&
             & TMParray1(1:nPasses*270),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC2(15,nPasses,TMParray1(1:nPasses*270),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(15,nPasses,TMParray1(1:nPasses*270),&
             & LOCALINTS(1:nPasses*225))
     CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -3386,7 +3448,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim7(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3394,7 +3456,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3403,7 +3465,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q4CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q4CtoBSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3413,28 +3475,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A1B2BtoA(1,nPasses,35,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A1B2BtoA(1,nPasses,35,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*525.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA1(35,nPasses,TMParray1(1:nPasses*630),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(35,nPasses,TMParray1(1:nPasses*630),&
             & TMParray2(1:nPasses*525))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*540.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*525),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*525),&
             & TMParray1(1:nPasses*540),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*375.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ4_maxAngC2(15,nPasses,TMParray1(1:nPasses*540),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(15,nPasses,TMParray1(1:nPasses*540),&
             & LOCALINTS(1:nPasses*375))
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -3442,7 +3505,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3450,7 +3513,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3459,7 +3522,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q1AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q1AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3469,21 +3532,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*20.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(4,nPasses,TMParray1(1:nPasses*24),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(4,nPasses,TMParray1(1:nPasses*24),&
             & TMParray2(1:nPasses*20))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*15.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*20),&
+        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*20),&
             & LOCALINTS(1:nPasses*15),lupri)
         !no Spherical Transformation RHS needed
     CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
@@ -3492,7 +3556,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3500,7 +3564,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3509,7 +3573,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q2AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q2AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3519,28 +3583,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*50.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(10,nPasses,TMParray1(1:nPasses*60),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(10,nPasses,TMParray1(1:nPasses*60),&
             & TMParray2(1:nPasses*50))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*30.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
+        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*50),&
             & TMParray1(1:nPasses*30),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*25.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(5,nPasses,TMParray1(1:nPasses*30),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(5,nPasses,TMParray1(1:nPasses*30),&
             & LOCALINTS(1:nPasses*25))
     CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -3548,7 +3613,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3556,7 +3621,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3565,7 +3630,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP2Q3DtoASeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP2Q3DtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3575,28 +3640,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P2A2B0AtoB(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP2_maxAngA2(20,nPasses,TMParray1(1:nPasses*120),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(20,nPasses,TMParray1(1:nPasses*120),&
             & TMParray2(1:nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*100),&
+        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1:nPasses*100),&
             & TMParray1(1:nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(5,nPasses,TMParray1(1:nPasses*90),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(5,nPasses,TMParray1(1:nPasses*90),&
             & LOCALINTS(1:nPasses*75))
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -3604,7 +3670,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3612,7 +3678,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3621,7 +3687,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q1AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q1AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3631,21 +3697,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*60.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(4,nPasses,TMParray1(1:nPasses*72),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(4,nPasses,TMParray1(1:nPasses*72),&
             & TMParray2(1:nPasses*60))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*45.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*60),&
+        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*60),&
             & LOCALINTS(1:nPasses*45),lupri)
         !no Spherical Transformation RHS needed
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
@@ -3654,7 +3721,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3662,7 +3729,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3671,7 +3738,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q2AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q2AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3681,28 +3748,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(10,nPasses,TMParray1(1:nPasses*180),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(10,nPasses,TMParray1(1:nPasses*180),&
             & TMParray2(1:nPasses*150))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*90.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
+        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*150),&
             & TMParray1(1:nPasses*90),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(15,nPasses,TMParray1(1:nPasses*90),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(15,nPasses,TMParray1(1:nPasses*90),&
             & LOCALINTS(1:nPasses*75))
     CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -3710,7 +3778,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3718,7 +3786,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3727,7 +3795,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP3Q3AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP3Q3AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3737,28 +3805,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P3A2B1AtoB(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*300.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP3_maxAngA2(20,nPasses,TMParray1(1:nPasses*360),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(20,nPasses,TMParray1(1:nPasses*360),&
             & TMParray2(1:nPasses*300))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*270.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*300),&
+        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1:nPasses*300),&
             & TMParray1(1:nPasses*270),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*225.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(15,nPasses,TMParray1(1:nPasses*270),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(15,nPasses,TMParray1(1:nPasses*270),&
             & LOCALINTS(1:nPasses*225))
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
@@ -3766,7 +3835,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3774,7 +3843,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3783,7 +3852,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP4Q1AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP4Q1AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3793,21 +3862,22 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(1,nPasses,4,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(1,nPasses,4,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*100.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(4,nPasses,TMParray1(1:nPasses*144),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(4,nPasses,TMParray1(1:nPasses*144),&
             & TMParray2(1:nPasses*100))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*75.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q1C0D1DtoC(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*100),&
+        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*100),&
             & LOCALINTS(1:nPasses*75),lupri)
         !no Spherical Transformation RHS needed
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
@@ -3816,7 +3886,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3824,7 +3894,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3833,7 +3903,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP4Q2AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP4Q2AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3843,28 +3913,29 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(1,nPasses,10,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(1,nPasses,10,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*250.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(10,nPasses,TMParray1(1:nPasses*360),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(10,nPasses,TMParray1(1:nPasses*360),&
             & TMParray2(1:nPasses*250))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*150.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q2C0D2DtoC(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*250),&
+        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*250),&
             & TMParray1(1:nPasses*150),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*125.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ2_maxAngC0(25,nPasses,TMParray1(1:nPasses*150),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(25,nPasses,TMParray1(1:nPasses*150),&
             & LOCALINTS(1:nPasses*125))
     CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
@@ -3872,7 +3943,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call BuildRJ000CPUSeg1Prim7(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call BuildRJ000GPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2)
 #ifdef VAR_DEBUGICHOR
@@ -3880,7 +3951,7 @@ CONTAINS
           call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
         ENDIF
 #endif
-        call VerticalRecurrenceCPUSeg1Prim7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call VerticalRecurrenceGPUGen7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1)
@@ -3889,7 +3960,7 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call TransferRecurrenceCPUP4Q3AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
+        call TransferRecurrenceGPUP4Q3AtoDSeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2)
@@ -3899,35 +3970,36 @@ CONTAINS
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_LHS_P4A2B2AtoB(1,nPasses,20,Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(1,nPasses,20,&
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*500.GT.TMParray2maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_maxAngP4_maxAngA2(20,nPasses,TMParray1(1:nPasses*720),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(20,nPasses,TMParray1(1:nPasses*720),&
             & TMParray2(1:nPasses*500))
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*450.GT.TMParray1maxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_RHS_Q3C1D2DtoC(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*500),&
+        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(1,nPasses,25,Qdistance12,TMParray2(1:nPasses*500),&
             & TMParray1(1:nPasses*450),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nPasses*375.GT.LOCALINTSmaxsize)THEN
           call ichorquit('nPasses too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_maxAngQ3_maxAngC1(25,nPasses,TMParray1(1:nPasses*450),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(25,nPasses,TMParray1(1:nPasses*450),&
             & LOCALINTS(1:nPasses*375))
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_Seg1Prim',-1)
+        CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_GPU_OBS_Seg',-1)
     END SELECT
-  end subroutine IchorCoulombIntegral_OBS_Seg1Prim
+  end subroutine IchorCoulombIntegral_GPU_OBS_Seg
   
-  subroutine IchorCoulombIntegral_OBS_general_sizeSeg1Prim(TMParray1maxsize,&
+  subroutine IchorCoulombIntegral_GPU_OBS_general_sizeSeg(TMParray1maxsize,&
          & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
          & AngmomA,AngmomB,AngmomC,AngmomD,nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
@@ -3951,28 +4023,28 @@ CONTAINS
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,4)
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3)
+       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10)
        TMParray2maxSize = MAX(TMParray2maxSize,6)
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,4)
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3)
+       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10)
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4)
+       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20)
        TMParray2maxSize = MAX(TMParray2maxSize,18)
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3)
+       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10)
        TMParray2maxSize = MAX(TMParray2maxSize,6)
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4)
+       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20)
        TMParray2maxSize = MAX(TMParray2maxSize,18)
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5)
+       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35)
        TMParray2maxSize = MAX(TMParray2maxSize,36)
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
@@ -4023,7 +4095,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,105)
        TMParray2maxSize = MAX(TMParray2maxSize,108)
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3)
+       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10)
        TMParray2maxSize = MAX(TMParray2maxSize,6)
     CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
@@ -4127,7 +4199,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,105)
        TMParray2maxSize = MAX(TMParray2maxSize,108)
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3)
+       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10)
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
@@ -4175,7 +4247,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,315)
        TMParray2maxSize = MAX(TMParray2maxSize,324)
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4)
+       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20)
        TMParray2maxSize = MAX(TMParray2maxSize,18)
     CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
@@ -4232,7 +4304,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,525)
        TMParray1maxSize = MAX(TMParray1maxSize,540)
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3)
+       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10)
        TMParray2maxSize = MAX(TMParray2maxSize,6)
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
@@ -4289,7 +4361,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,175)
        TMParray1maxSize = MAX(TMParray1maxSize,180)
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4)
+       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20)
        TMParray2maxSize = MAX(TMParray2maxSize,18)
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
@@ -4346,7 +4418,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,525)
        TMParray1maxSize = MAX(TMParray1maxSize,540)
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5)
+       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35)
        TMParray2maxSize = MAX(TMParray2maxSize,36)
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
@@ -4405,6 +4477,6 @@ CONTAINS
     CASE DEFAULT
         CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_general_size',-1)
     END SELECT
-  end subroutine IchorCoulombIntegral_OBS_general_sizeSeg1Prim
+  end subroutine IchorCoulombIntegral_GPU_OBS_general_sizeSeg
   
-END MODULE IchorEriCoulombintegralOBSGeneralModSeg1Prim
+END MODULE IchorEriCoulombintegralGPUOBSGeneralModSeg

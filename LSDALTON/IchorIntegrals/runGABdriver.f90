@@ -57,7 +57,7 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000MODSeg1Prim'
   ENDDO
   !Since we need primitivecontractiongenXXX
-  WRITE(LUMOD3,'(A)')'use IchorEriCoulombintegralOBSGeneralModGen'
+  WRITE(LUMOD3,'(A)')'use IchorEriCoulombintegralCPUOBSGeneralModGen'
 
   WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODAGen'
   WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODBGen'
@@ -440,16 +440,16 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
   WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPrimA,nPrimB)'
   WRITE(LUMOD3,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB)'
+  WRITE(LUMOD3,'(A)')'    real(realk),intent(inout) :: BasisCont(nPrimB,nPrimB)'
   WRITE(LUMOD3,'(A)')'    !'
   WRITE(LUMOD3,'(A)')'    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
   WRITE(LUMOD3,'(A)')'    real(realk) :: TMP,TMPACC,TMPBCC'
-  WRITE(LUMOD3,'(A)')'    real(realk) :: BasisCont(nPrimB,nPrimB)'
   WRITE(LUMOD3,'(A)')'    !Scaling p**4*c: nPrimA*nPrimB*nPrimC*nPrimD*nContC'
-  WRITE(LUMOD3,'(A)')'    !$OMP PARALLEL DO DEFAULT(none) &'
-  WRITE(LUMOD3,'(A)')'    !$OMP PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&'
-  WRITE(LUMOD3,'(A)')'    !$OMP         BasisCont,TMPACC,TMPBCC) &'
-  WRITE(LUMOD3,'(A)')'    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) '
+!  WRITE(LUMOD3,'(A)')'    !$OMP PARALLEL DO DEFAULT(none) &'
+!  WRITE(LUMOD3,'(A)')'    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) '
   WRITE(LUMOD3,'(A)')'     do iContC=1,nContA'
+  WRITE(LUMOD3,'(A)')'!$OMP DO COLLAPSE(2) &'
+  WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,TMPACC) '
   WRITE(LUMOD3,'(A)')'      do iPrimB=1,nPrimB'
   WRITE(LUMOD3,'(A)')'       do iPrimD=1,nPrimB'
   WRITE(LUMOD3,'(A)')'        TMP = 0.0E0_realk'
@@ -462,6 +462,9 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'        BasisCont(iPrimD,iPrimB) = TMP'
   WRITE(LUMOD3,'(A)')'       enddo'
   WRITE(LUMOD3,'(A)')'      enddo'
+  WRITE(LUMOD3,'(A)')'!$OMP ENDDO '
+  WRITE(LUMOD3,'(A)')'!$OMP DO &'
+  WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iPrimD,iPrimB,iContD,TMP,TMPBCC) '
   WRITE(LUMOD3,'(A)')'      do iContD=1,nContB'
   WRITE(LUMOD3,'(A)')'       TMP = 0.0E0_realk'
   WRITE(LUMOD3,'(A)')'       do iPrimB=1,nPrimB'
@@ -472,8 +475,9 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'       enddo'
   WRITE(LUMOD3,'(A)')'       AUXarrayCont(iContC,iContD) = TMP'
   WRITE(LUMOD3,'(A)')'      enddo'
+  WRITE(LUMOD3,'(A)')'!$OMP END DO'
   WRITE(LUMOD3,'(A)')'     enddo'
-  WRITE(LUMOD3,'(A)')'    !$OMP END PARALLEL DO'
+!  WRITE(LUMOD3,'(A)')'    !$OMP END PARALLEL DO'
   WRITE(LUMOD3,'(A)')'  end subroutine GabPrimitiveContractionGen1'
 
 
@@ -522,12 +526,9 @@ PROGRAM TUV
          WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMP'
          WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont(',nTUVP*nTUVP,',nPrimB,nPrimB)'
          WRITE(LUMOD3,'(A)')'    real(realk) :: ACCTMP,BCCTMP'
-         WRITE(LUMOD3,'(A)')'    !$OMP PARALLEL DO DEFAULT(none) &'
-         WRITE(LUMOD3,'(A)')'    !$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,iContD,TMP,&'
-         WRITE(LUMOD3,'(A)')'    !$OMP         BasisCont,ACCTMP,BCCTMP) &'
-         WRITE(LUMOD3,'(A)')'    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) '
-!         WRITE(LUMOD3,'(A)')'    !$OMP SINGLE'
          WRITE(LUMOD3,'(A)')'     do iContC=1,nContA'
+         WRITE(LUMOD3,'(A)')'!$OMP DO &'
+         WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,ACCTMP) '
          WRITE(LUMOD3,'(A)')'      do iPrimB=1,nPrimB'
          WRITE(LUMOD3,'(A)')'       do iPrimD=1,nPrimB'
       WRITE(LUMOD3,'(A,I5)')'        do iTUV=1,',nTUVP*nTUVP
@@ -542,6 +543,9 @@ PROGRAM TUV
          WRITE(LUMOD3,'(A)')'        enddo'
          WRITE(LUMOD3,'(A)')'       enddo'
          WRITE(LUMOD3,'(A)')'      enddo'
+         WRITE(LUMOD3,'(A)')'!$OMP END DO'
+         WRITE(LUMOD3,'(A)')'!$OMP DO &'
+         WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,TMP,BCCTMP) '
          WRITE(LUMOD3,'(A)')'      do iContD=1,nContB'
       WRITE(LUMOD3,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVP
          WRITE(LUMOD3,'(A)')'        TMP = 0.0E0_realk'
@@ -554,8 +558,8 @@ PROGRAM TUV
          WRITE(LUMOD3,'(A)')'        AUXarrayCont(iTUV,iContC,iContD) = TMP'
          WRITE(LUMOD3,'(A)')'       enddo'
          WRITE(LUMOD3,'(A)')'      enddo'
+         WRITE(LUMOD3,'(A)')'!$OMP END DO'
          WRITE(LUMOD3,'(A)')'     enddo'
-         WRITE(LUMOD3,'(A)')'    !$OMP END PARALLEL DO'
          IF(nTUVP*nTUVP.LT.10)THEN
             WRITE(LUMOD3,'(A,I1)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP
          ELSEIF(nTUVP*nTUVP.LT.100)THEN
@@ -1040,7 +1044,7 @@ contains
           call DebugMemoryTest(STRINGOUT,'1',nTUVAspec*nTUVBspec*nTUVP,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call HorizontalRR_LHS_P')
+       call AddToString('call HorizontalRR_'//ARCSTRING//'_LHS_P')
        call AddToString(AngmomP)
        call AddToString('A')
        call AddToString(AngmomA)
@@ -1095,7 +1099,7 @@ contains
           call DebugMemoryTest(STRINGOUT,'1',nlmA*nlmB*nTUVP,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call SphericalContractOBS1_maxAngP')
+       call AddToString('call SphericalContractOBS1_'//ARCSTRING//'_maxAngP')
        call AddToString(AngmomP)
        call AddToString('_maxAngA')
        call AddToString(AngmomA)
@@ -1156,7 +1160,7 @@ contains
           call DebugMemoryTest(STRINGOUT,'1',nlmA*nlmB*nTUVAspec*nTUVBspec,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call HorizontalRR_RHS_Q')
+       call AddToString('call HorizontalRR_'//ARCSTRING//'_RHS_Q')
        call AddToString(AngmomP)
        call AddToString('C')
        call AddToString(AngmomA)
@@ -1211,7 +1215,7 @@ contains
           call DebugMemoryTest(STRINGOUT,'1',nlmA*nlmB*nlmA*nlmB,LUMOD3)
        ENDIF
        call initString(8)
-       call AddToString('call SphericalContractOBS2_maxAngQ')
+       call AddToString('call SphericalContractOBS2_'//ARCSTRING//'_maxAngQ')
        call AddToString(AngmomP)
        call AddToString('_maxAngC')
        call AddToString(AngmomA)

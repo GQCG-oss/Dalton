@@ -606,7 +606,7 @@ contains
           print *,'norm2D(Bijij_term8): ', norm2D(Bijij_term8)
           print *,'norm2D(Bijij_term9): ', norm2D(Bijij_term9)      
           print *,'-----------------------------------------'
-          print *,'        Get all F12 Fock integrals       '
+          print *,'full_canonical_mp2_f12: Get all F12 Fock integrals'
           print *,'-----------------------------------------'
           print *, "norm2D(hJir)", norm1D(hJir%elms)
           print *, "norm2D(Krr)", norm1D(Krr%elms)

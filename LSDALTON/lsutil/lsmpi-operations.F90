@@ -1164,6 +1164,7 @@ call LS_MPI_BUFFER(dalton%DEBUG4CENTER,Master)
 call LS_MPI_BUFFER(dalton%DEBUG4CENTER_ERI,Master)
 call LS_MPI_BUFFER(dalton%DEBUGPROP,Master)
 call LS_MPI_BUFFER(dalton%DEBUGICHOR,Master)
+call LS_MPI_BUFFER(dalton%DEBUGICHOROPTION,Master)
 call LS_MPI_BUFFER(dalton%DEBUGGEN1INT,Master)
 call LS_MPI_BUFFER(dalton%DEBUGCGTODIFF,Master)
 call LS_MPI_BUFFER(dalton%DEBUGEP,Master)
@@ -1262,7 +1263,14 @@ call LS_MPI_BUFFER(dalton%ADMM_JKBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_DFBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_MCWEENY,Master)
 call LS_MPI_BUFFER(dalton%ADMM_2ERI,Master)
+call LS_MPI_BUFFER(dalton%ADMM_CONST_EL,Master)
+call LS_MPI_BUFFER(dalton%ADMM_FUNC,len(dalton%ADMM_FUNC),Master)
+call LS_MPI_BUFFER(dalton%ADMMQ_ScaleXC2,Master)
+call LS_MPI_BUFFER(dalton%ADMMQ_ScaleE,Master)
+call LS_MPI_BUFFER(dalton%PRINT_EK3,Master)
+
 call LS_MPI_BUFFER(dalton%SR_EXCHANGE,Master)
+
 !Coulomb attenuated method CAM parameters
 call LS_MPI_BUFFER(dalton%CAM,Master)
 call LS_MPI_BUFFER(dalton%CAMalpha,Master)
@@ -1396,6 +1404,18 @@ call LS_MPI_BUFFER(scheme%LR_EXCHANGE_DF,Master)
 call LS_MPI_BUFFER(scheme%LR_EXCHANGE_PARI,Master)
 call LS_MPI_BUFFER(scheme%LR_EXCHANGE,Master)
 call LS_MPI_BUFFER(scheme%SR_EXCHANGE,Master)
+
+call LS_MPI_BUFFER(scheme%ADMM_EXCHANGE,Master)
+call LS_MPI_BUFFER(scheme%ADMM_GCBASIS,Master)
+call LS_MPI_BUFFER(scheme%ADMM_DFBASIS,Master)
+call LS_MPI_BUFFER(scheme%ADMM_JKBASIS,Master)
+call LS_MPI_BUFFER(scheme%ADMM_MCWEENY,Master)
+call LS_MPI_BUFFER(scheme%ADMM_2ERI,Master)
+call LS_MPI_BUFFER(scheme%ADMM_CONST_EL,Master)
+call LS_MPI_BUFFER(scheme%ADMMQ_ScaleXC2,Master)
+call LS_MPI_BUFFER(scheme%ADMMQ_ScaleE,Master)
+call LS_MPI_BUFFER(scheme%PRINT_EK3,Master)
+
 call LS_MPI_BUFFER(scheme%CAM,Master)
 call LS_MPI_BUFFER(scheme%CAMalpha,Master)
 call LS_MPI_BUFFER(scheme%CAMbeta,Master)
@@ -1531,6 +1551,24 @@ call LS_MPI_BUFFER(MOLECULE%label,22,Master)
 call LS_MPI_BUFFER(MOLECULE%nelectrons,Master)
 call LS_MPI_BUFFER(MOLECULE%charge,Master)
 
+
+call LS_MPI_BUFFER(MOLECULE%nSubSystems,Master)
+IF(Molecule%nSubSystems.NE.0)THEN
+   IF(SLAVE)THEN
+      call mem_alloc(Molecule%SubSystemLabel,Molecule%nSubSystems)
+   ENDIF
+   IF(len(Molecule%SubSystemLabel(1)).NE.80)THEN
+      CALL LSQUIT('Dim mismatch in mpicopy_molecule',-1)
+   ENDIF
+   do I = 1,Molecule%nSubSystems       
+      call LS_MPI_BUFFER(Molecule%SubSystemLabel(I),80,Master)
+   enddo
+ELSE
+   IF(SLAVE)THEN
+      NULLIFY(Molecule%SubSystemLabel)
+   ENDIF
+ENDIF
+
 end subroutine mpicopy_molecule
 
 !> \brief MPI Copies(Broadcasts) an atom from MOLECULE
@@ -1558,6 +1596,7 @@ call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Frag,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%CENTER,3,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Atomic_number,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%molecularIndex,Master)
+call LS_MPI_BUFFER(MOLECULE%ATOM(I)%SubsystemIndex,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Charge,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nbasis,Master)
 do K = 1,MOLECULE%ATOM(I)%nbasis

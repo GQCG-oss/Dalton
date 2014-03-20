@@ -206,8 +206,8 @@ WRITE (0,'(/A/1X,A)') '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
 
 CALL Ichor_GETTIM(CTOT,WTOT)
-CALL Ichor_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
-CALL Ichor_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
+CALL Ichor_TIMTXT('>>>> Total CPU  time used in LSDALTON:',CTOT,LUPRIN)
+CALL Ichor_TIMTXT('>>>> Total wall time used in LSDALTON:',WTOT,LUPRIN)
 CALL FLUSH(LUPRIN)
 #ifdef VAR_IFORT
 #ifndef VAR_INT64
@@ -367,27 +367,27 @@ subroutine build_expQ_inverseexpQ(nPrimC,nPrimD,expC,expD,expQ,inversexpQ)
   ENDDO
 end subroutine build_expQ_inverseexpQ
 
-subroutine build_reducedExponents_integralPrefactorPQ(nPrimP,nPrimQ,expQ,expP,&
-     & reducedExponents,integralPrefactor)
-  implicit none      
-  integer,intent(in) :: nPrimP,nPrimQ
-  real(realk),intent(in) :: expQ(nPrimQ),expP(nPrimP)
-  real(realk),intent(inout) :: reducedExponents(nPrimP,nPrimQ)
-  real(realk),intent(inout) :: integralPrefactor(nPrimP,nPrimQ)
-  !local variables 
-  integer :: iPrimQ,iPrimP
-  real(realk) :: p,q,p_q
-  Real(realk), parameter :: PIFAC = 34.986836655249725E0_realk !Two*PI**TwoHalf
-  DO iPrimQ = 1, nPrimQ
-     q  = expQ(iPrimQ)
-     DO iPrimP=1, nPrimP
-        p  = expP(iPrimP)
-        p_q = p + q
-        reducedExponents(iPrimP,iPrimQ) = p*q/p_q
-        integralPrefactor(iPrimP,iPrimQ) = PIFAC/(p*q*SQRT(p_q))
-     ENDDO
-  ENDDO
-end subroutine build_reducedExponents_integralPrefactorPQ
+!!$subroutine build_reducedExponents_integralPrefactorPQ(nPrimP,nPrimQ,expQ,expP,&
+!!$     & reducedExponents,integralPrefactor)
+!!$  implicit none      
+!!$  integer,intent(in) :: nPrimP,nPrimQ
+!!$  real(realk),intent(in) :: expQ(nPrimQ),expP(nPrimP)
+!!$  real(realk),intent(inout) :: reducedExponents(nPrimP,nPrimQ)
+!!$  real(realk),intent(inout) :: integralPrefactor(nPrimP,nPrimQ)
+!!$  !local variables 
+!!$  integer :: iPrimQ,iPrimP
+!!$  real(realk) :: p,q,p_q
+!!$  Real(realk), parameter :: PIFAC = 34.986836655249725E0_realk !Two*PI**TwoHalf
+!!$  DO iPrimQ = 1, nPrimQ
+!!$     q  = expQ(iPrimQ)
+!!$     DO iPrimP=1, nPrimP
+!!$        p  = expP(iPrimP)
+!!$        p_q = p + q
+!!$        reducedExponents(iPrimP,iPrimQ) = p*q/p_q
+!!$        integralPrefactor(iPrimP,iPrimQ) = PIFAC/(p*q*SQRT(p_q))
+!!$     ENDDO
+!!$  ENDDO
+!!$end subroutine build_reducedExponents_integralPrefactorPQ
     
 subroutine build_reducedExponents_integralPrefactorQP(nPrimP,nPrimQ,expQ,expP,&
      & reducedExponents,integralPrefactor)
@@ -426,7 +426,7 @@ subroutine PrintTypeExpInfo(nPrimP,nPrimQ,reducedExponents,integralPrefactor,lup
      WRITE(lupri,'(3X,ES18.9)')integralPrefactor(iPrimP)
   enddo
 END subroutine PRINTTYPEEXPINFO
-
+!!$
 subroutine PrintTypeInfo(AngmomA,AngmomB,AngmomC,AngmomD,nPrimA,nPrimB,nPrimC,nPrimD,&
      & nContA,nContB,nContC,nContD,expA,ContractCoeffA,expB,ContractCoeffB,&
      & expC,ContractCoeffC,expD,ContractCoeffD,&

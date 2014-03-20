@@ -2128,16 +2128,17 @@ module lspdm_tensor_operations_module
       tl_mod = mod(tl ,cons_els)
 
       !do i=0,infpar%lg_nodtot-1
+      !call lsmpi_barrier(infpar%lg_comm)
       !if(i==infpar%lg_mynum)then
       !  print *,i,"YAYYAYYAYYYAAAAAAYYYYYY:"
       !  print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
-      !  print *,tl,part1,part2,tl_max,tl_mod
-      !  print *,fx
-      !  print *,idxt
-      !  print *,arr%tdim
-      !  print *,arr%dims
-      !  print *,fordims
-      !  print *,u_o
+      !  print *,"tl",tl,"p1",part1,"p2",part2,"tlmax",tl_max,"tlmod",tl_mod
+      !  print *,"fx     :",fx
+      !  print *,"idxt   :",idxt
+      !  print *,"a tdim :",arr%tdim
+      !  print *,"a dims :",arr%dims
+      !  print *,"fordims:",fordims
+      !  print *,"u_o    :",u_o
       !  !stop 0 
       !endif
       !call lsmpi_barrier(infpar%lg_comm)
@@ -2249,7 +2250,7 @@ module lspdm_tensor_operations_module
                 cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
                          &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
 
-                call pgav(p_fort3(tl_max+1:tl_max+part1,for3,for4),modp1,&
+                call pgav(p_fort3(tl_max+1:tl_max+modp1,for3,for4),modp1,&
                 &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
               enddo
             enddo
@@ -2272,7 +2273,7 @@ module lspdm_tensor_operations_module
                   cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
                            &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
              
-                  call pgav(p_fort3(tl_max+modp1+1:tl_max+tl_mod,for3,for4),modp2,&
+                  call pgav(p_fort3(tl_max+modp1+1:tl_max+modp2,for3,for4),modp2,&
                   &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
                 enddo
               enddo
@@ -3785,11 +3786,7 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    if (arr%atype=='RTAR') then
-      dest=infpar%lg_mynum
-    else
-      dest=get_residence_of_tile(globtilenr,arr)
-    end if
+    dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
     call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
@@ -4179,11 +4176,7 @@ module lspdm_tensor_operations_module
     integer(kind=MPI_ADDRESS_KIND) ::offset
     ls = .false.
     if(present(lock_set))ls=lock_set
-    if (arr%atype=='RTAR') then
-      source=infpar%lg_mynum
-    else
-      source=get_residence_of_tile(globtilenr,arr)
-    end if
+    source=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
     call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))

@@ -226,29 +226,28 @@ C
 C     ************************************
 C     DCAO matrix
 C
+C     multiply with DC(i,i) = 2.0 factor in DGEMM to get final result
+C     (if transition density matrix, then DCAO must be
+C      multiplied with the <L | R> overlap outside this routine)
+C
       IF (GETDC) THEN
          CALL DZERO(DCAO,N2BASX)
+C
       IF (NISHT .GT. 0 .AND. JWOPSY .EQ. 1) THEN
-         DO 4000 ISYM = 1,NSYM
+         DO, ISYM = 1,NSYM
             NISHI = NISH(ISYM)
-         IF (NISHI .GT. 0) THEN
-            NBASI = NBAS(ISYM)
-            JCMO  = ICMO(ISYM) + 1
-            CALL DGEMM('N','T',NBASI,NBASI,NISHI,1.D0,
-     &                 CMO(JCMO),NBASI,
-     &                 CMO(JCMO),NBASI,0.D0,
-     &                 DCAO(IBAS(ISYM)+1,IBAS(ISYM)+1),NBAST)
-         END IF
- 4000    CONTINUE
-C
-C **     multiply with DC(i,i) = 2.0 factor to get final result
-C        (if transition density matrix, then DCAO must be
-C         multiplied with the <L | R> overlap outside this routine)
-C
-         CALL DSCAL(N2BASX,D2,DCAO,1)
-      END IF
+            IF (NISHI .GT. 0) THEN
+               NBASI = NBAS(ISYM)
+               JCMO  = ICMO(ISYM) + 1
+               CALL DGEMM('N','T',NBASI,NBASI,NISHI,D2,
+     &                    CMO(JCMO),NBASI,
+     &                    CMO(JCMO),NBASI,0.D0,
+     &                    DCAO(IBAS(ISYM)+1,IBAS(ISYM)+1),NBAST)
+            END IF
+         END DO
       END IF
 C
+      END IF
 C
 C
       IF (P6FLAG(18)) THEN

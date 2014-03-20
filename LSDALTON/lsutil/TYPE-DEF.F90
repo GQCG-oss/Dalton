@@ -28,6 +28,11 @@ END TYPE INTEGERP
 !* THE DALTON INPUT FILE
 !*
 !*****************************************
+! WARNING WARNING  WARNING WARNING 
+! when modifing this type def
+! remember to modify mpicopy_integralconfig (in lsmpi-operations.F90) 
+! accordingly
+! WARNING WARNING  WARNING WARNING 
 TYPE integralconfig
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 LOGICAL  :: CONTANG  !Specifies that the AO-shell ordering is contracted first then
@@ -85,6 +90,7 @@ LOGICAL  :: DEBUG4CENTER
 LOGICAL  :: DEBUG4CENTER_ERI
 LOGICAL  :: DEBUGPROP
 LOGICAL  :: DEBUGICHOR
+INTEGER  :: DEBUGICHOROPTION
 LOGICAL  :: DEBUGGEN1INT
 LOGICAL  :: DEBUGCGTODIFF
 LOGICAL  :: DEBUGEP
@@ -187,6 +193,7 @@ LOGICAL       :: ADMM_MCWEENY
 LOGICAL       :: ADMM_2ERI
 LOGICAL       :: ADMMQ_ScaleXC2
 LOGICAL       :: ADMMQ_ScaleE
+LOGICAL       :: PRINT_EK3
 LOGICAL       :: ADMM_CONST_EL
 CHARACTER(80) :: ADMM_FUNC
 LOGICAL       :: SR_EXCHANGE
@@ -207,6 +214,10 @@ INTEGER     :: molcharge
 LOGICAL     :: run_dec_gradient_test
 END TYPE integralconfig
 
+! WARNING WARNING  WARNING WARNING 
+! when modifing this type def
+! remember to modify mpicopy_schem (in lsmpi-operations.F90) accordingly
+! WARNING WARNING  WARNING WARNING 
 TYPE LSINTSCHEME
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 LOGICAL  :: NOBQBQ ! switches off the point charge--point charge repulsion contribution (NUCPOT)
@@ -339,6 +350,7 @@ LOGICAL     :: ADMM_2ERI
 LOGICAL     :: ADMM_CONST_EL
 LOGICAL     :: ADMMQ_ScaleXC2
 LOGICAL     :: ADMMQ_ScaleE
+LOGICAL     :: PRINT_EK3
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
 REAL(REALK) :: CAMalpha

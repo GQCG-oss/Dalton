@@ -154,10 +154,10 @@
         stop "programming error in my_DSYGV input. workarray inquiry"
      endif
 !#ifdef VAR_LSDEBUG
-     ! sometimes the optimal batch sizes do not always work, especially when
-     ! compiled with ifort --debug and --check so I introduced this, PE
-     !print *,"WARNING(my_sygv): using minimal lwrk instead of optimal, debug"
-     !lwrk = 3*N-1
+!     ! sometimes the optimal batch sizes do not always work, especially when
+!     ! compiled with ifort --debug and --check so I introduced this, PE
+!     print *,"WARNING(my_sygv): using minimal lwrk instead of optimal in debug build"
+!     lwrk = 3*N-1
 !#else
      lwrk = NINT(wrk(1))
 !#endif

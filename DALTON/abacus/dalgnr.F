@@ -45,7 +45,7 @@ C
       IF (.NOT. INPPRC) RETURN
 C
 C     /INFINP/ values are restored
-C     
+C
       ISPIN  = ISPINB
       ISTATE = ISTATB
       LSYM   = LSYMB
@@ -144,9 +144,9 @@ C
          EFIELD(I) = EFILDB(I)
          LFIELD(I) = LFILDB(I)
       END DO
-C     
+C
 C     /INFPRI/ values are restored
-C     
+C
       DO I = 1, NPFLAG
          P4FLAG(I) = P4FLGB(I)
          P6FLAG(I) = P6FLGB(I)
@@ -280,7 +280,7 @@ C
          EFILDB(I) = EFIELD(I)
          LFILDB(I) = LFIELD(I)
  150  CONTINUE
-C     
+C
 C        /INFPRI/ values are saved
 C
       DO I = 1, NPFLAG
@@ -414,7 +414,7 @@ C
       IF (QM3 .AND. .NOT.ONLYOV) CALL QM3_RDPOT()
 C
 C     ***************************************************************
-C     Reading in the interaction parameters for the NP and MM 
+C     Reading in the interaction parameters for the NP and MM
 C     subsystems needed by QM/NP/MM embedding scheme
 C     ***************************************************************
 C
@@ -516,7 +516,7 @@ C     Several files left open, have to be closed manually
 C
 C     With the present version of the code, AOSUPINT cannot be used either
 C     in RESPONSE or ABACUS, and for this reason we delete the file here
-C     
+C
       IF (LUSUPM.LE.0) CALL GPOPEN(LUSUPM,
      &   FNSUPM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       CALL GPCLOSE(LUSUPM,'DELETE')
@@ -579,7 +579,7 @@ C
 
       CALL CC_DRV(WORK(1),LMWORK)
 
-      ITRNMR = ISAVITR 
+      ITRNMR = ISAVITR
 
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC')
 
@@ -868,7 +868,7 @@ c#endif
                IF (NEWWLK) THEN
                   CALL WLKINI
                   IF (WALKIN) THEN
-C     
+C
 C     We made some changes to walk default. Need to process these
 C
                      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ',
@@ -890,7 +890,7 @@ C
                   NEWWLK = .FALSE.
                   CALL WLKINI
                   IF (WALKIN) THEN
-C     
+C
 C     We made some changes to walk default. Need to process these
 C
                      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ',
@@ -916,7 +916,7 @@ C     We may have more DOSYM under **START than under **PROPE
                ELSE
                   CALL EXEABA(WORK(0),LMWORK,WRKDLM)
                END IF
-               IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3) 
+               IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3)
      &              .OR. (IWKTYP .EQ. 6))) THEN
                   IF (MOD(ITERNR+2,10) .EQ. 0) THEN
                      IPRUSR = 0
@@ -939,8 +939,8 @@ C
             RDMLIN = .TRUE.
          IF ((.NOT. GEOCNV).AND.(ITERNR .LE. ITERMX)) THEN
             RDINPC = .FALSE.
-            CALL GPINQ('RSPVEC','EXIST',EX) 
-            IF (EX) THEN 
+            CALL GPINQ('RSPVEC','EXIST',EX)
+            IF (EX) THEN
                LU = -9982
                CALL GPOPEN(LU,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
      &                     .FALSE.)
@@ -1010,7 +1010,7 @@ C
             CALL EXEABA(WORK(0),LMWORK,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
-C     
+C
             CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
      &                  IDUMMY,.FALSE.)
             REWIND (LUCMD)
@@ -1034,7 +1034,7 @@ C
             ELSE
                GOTO 133
             END IF
- 134        CONTINUE 
+ 134        CONTINUE
 
 #ifdef BUILD_OPENRSP
 C added by Bin Gao, April 2, 2009
@@ -1217,6 +1217,7 @@ C
          END IF
       END IF
  87   CONTINUE
+
 C
 C     We finally punch information for Gamess-US graphic packages
 C
@@ -1229,6 +1230,9 @@ C
       CALL MOLPLT(WORK(KKIND),WORK(KKOL),TITMOL,WORK(KLAST),LLEFT)
       CALL PLTORB(WORK(KKIND),LMWORK)
 C
+!     release memory used in PElib
+      IF (PEQM) CALL PE_IFC_FINALIZE()
+
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
       WTOT = WEND - WSTR
@@ -1388,7 +1392,7 @@ C     IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                             ELSE calculate g(R12) listed above
 C
       CHIVAL = -1.0D0
-      CHI1ST = .FALSE. 
+      CHI1ST = .FALSE.
 C
 C     SRINTS: calculate 1/R12 - g(R12)
 C
@@ -1456,12 +1460,12 @@ C         if reading input from a terminal
             GO TO 900
          END IF
   910 CONTINUE
-         WRITE (LUPRI,'(A,I10,A)') 
+         WRITE (LUPRI,'(A,I10,A)')
      &   'End of file on DALTON.INP, no **DALTON input found in',
      &   J,' lines.'
          CALL QUIT('End of file on DALTON.INP, no **DALTON input found')
   920 CONTINUE
-         WRITE (LUPRI,'(A,I10,A)') 
+         WRITE (LUPRI,'(A,I10,A)')
      &   'Error reading line',J+1,' of DALTON.INP'//
      &   ' before finding any **DALTON input.'
          CALL QUIT('Error reading DALTON.INP, no **DALTON input found')
@@ -1611,7 +1615,7 @@ C        '.DOUGLA'
  132     CONTINUE
             DKTRAN = .TRUE.
          GOTO 100
-!        .PEQM
+!        '.PEQM  '
  133     CONTINUE
 #if defined (BUILD_PELIB)
             PEQM = .TRUE.
@@ -1634,13 +1638,12 @@ C
       WRITE (LUPRI,'(3X,A,I5)')  'Overall default print level:',IPRUSR
       IF (IPRSTAT .EQ. -10) IPRSTAT = IPRUSR + 1
       WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.STAT:',IPRSTAT
-!     WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.STAT',IPRSTAT
       WRITE (LUSTAT,'(A,I5)')    ' Print level for DALTON.STAT',IPRSTAT
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
       IF (THR_REDFAC .GT. 0.0D0) THEN
          WRITE (LUPRI,'(A,1P,D10.2)')
-     &   '@ INFO: All thresholds are multiplied by',THR_REDFAC
+     &   '@   INFO: All thresholds are multiplied by',THR_REDFAC
          IF (THR_REDFAC .LT. 1.D-10) THEN
             WRITE (LUPRI,'(A)') ' FATAL INPUT ERROR: Illegal value'
             CALL QUIT('Illegal input value for .THRRED')
@@ -1671,12 +1674,12 @@ C     ... default print level for statistics /hjaaj apr 2000
 #endif
       IF (OPTWLK) THEN
          IF (NMWALK) THEN
-            WRITE (LUPRI,'(4X,A/6X,A,I5)') 
-     &      'Numerical derivatives will be calculated',
-     &        'Number of different geometries:', ITERMX
+            WRITE (LUPRI,'(A/A,I5)')
+     &      '@   Numerical derivatives will be calculated.',
+     &      '      Number of different geometries:', ITERMX
          ELSE
-            WRITE (LUPRI,'(4X,A/6X,A,I5/6X,A,I5)')
-     &      'Geometry walk module activated.',
+            WRITE (LUPRI,'(A/6X,A,I5/6X,A,I5)')
+     &        '@   Geometry optimization',
      &        'Starting at iteration:', ITERNR,
      &        'Maximum number of steps:', ITERMX
          END IF
@@ -1694,14 +1697,14 @@ C     ... default print level for statistics /hjaaj apr 2000
      &     'Use instead the .WALK module together with .TOTSYM'
          CALL QUIT('.TOTSYM and .OPTIMIZE is incompatible options')
       END IF
-      IF (TOTSYM) WRITE (LUPRI,'(4X,A)') 
+      IF (TOTSYM) WRITE (LUPRI,'(4X,A)')
      &   'Only totally symmetric part of molecular Hessian calculated'
       IF (DIRCAL) WRITE(LUPRI,'(4X,A)')
      &   'AO-direct calculation (in sections where implemented)'
-      IF (DKTRAN) WRITE (LUPRI,'(4X,A)') 
+      IF (DKTRAN) WRITE (LUPRI,'(4X,A)')
      &   'The second order Douglas-Kroll-Hess transformation is applied'
       IF (RNHERM) WRITE (LUPRI,'(4X,A)')
-     &     'HERMIT 1- and 2-electron integral sections will be executed'
+     &   'HERMIT 1- and 2-electron integral sections will be executed'
       IF (RUNERI) THEN
          WRITE (LUPRI,'(4X,A)')
      &     '2-elctron integrals are calculated using ERI '//
@@ -1731,7 +1734,9 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (RNABAC) WRITE (LUPRI,'(4X,A)')
      &     'Static molecular property section will be executed'//
      &          ' (ABACUS module)'
-      IF (WESTA) WRITE (LUPRI,'(4X,A)') 
+      IF (NMWALK) WRITE (LUPRI,'(4X,A)')
+     &   'Numerical derivatives will be calculated'
+      IF (WESTA) WRITE (LUPRI,'(4X,A)')
      &  'Information for WESTA will be calculated and written to files.'
       IF (PEQM) WRITE(LUPRI,'(4X,A)')
      &   'Environment is modeled using polarizable embedding scheme'//
@@ -1773,7 +1778,7 @@ C
          CALL QUIT('Program stopped in DALTON_GNRLINP, illegal prompt.')
       END IF
 C     "*PARALL" input
- 2    CONTINUE 
+ 2    CONTINUE
 #if defined (VAR_MPI) || defined (VAR_PVM)
         CALL PRLINP(WORD)
 #else
@@ -1801,9 +1806,9 @@ C     "*NMDDRV" input
 C
 C     We have to wait with the input processing of "*NMDDRV"
 C     until we know more about the molecule
-C       
+C
   205   READ (LUCMD,'(A7)') WORD
-        IF (WORD(1:1) .NE. '*') GOTO 205        
+        IF (WORD(1:1) .NE. '*') GOTO 205
       GO TO 200
 C
 C     "*MOLBAS" input
@@ -1833,7 +1838,7 @@ C     "*QMMM  " input
 !     "*PEQM  " input
    10 CONTINUE
 #if defined (BUILD_PELIB)
-        CALL PE_IFC_DALINP_READER(WORD)
+        CALL PE_IFC_INPUT_READER(WORD)
 #else
         CALL QUIT('ERROR for *PEQM: PE library not enabled.')
 #endif
@@ -1849,7 +1854,7 @@ C     "*QMNPMM" input
    12 CONTINUE
         call quit('not available in this version')
 !       CALL QMNPINP(WORD)
-      GO TO 200    
+      GO TO 200
 C     "*END OF" or "**something"
     1 CONTINUE
 C
@@ -1893,11 +1898,11 @@ C         if reading input from a terminal
  8000 CALL FLSHFO(LUPRI)
 C
 C     *** Doing just a survey of the wavefunctions we use. ***
-C     
+C
 c      INPERR = 0
-c      NUMRUN = 0 
+c      NUMRUN = 0
 c      IRDMO  = 8
-c      IREST  = 0 
+c      IREST  = 0
 c      NSYM   = 1
 c      REWIND (LUCMD,IOSTAT=IOS)
 c 8100 READ (LUCMD,'(A7)') WORD
@@ -1913,7 +1918,7 @@ C
 C  /* Deck pariot */
       SUBROUTINE PARIOT
 C
-C     Master routine for checking whether we will do parallell I/O by 
+C     Master routine for checking whether we will do parallell I/O by
 C     parallelizing over nuclear geometries
 C
 #include "implicit.h"
@@ -1966,7 +1971,7 @@ C
          DO 43 I = 1, 60
             IF (WRKDIR(I:I) .EQ. ' ') GO TO 44
             LENWRK = LENWRK + 1
- 43      CONTINUE 
+ 43      CONTINUE
  44      CONTINUE
          IF (WRKDIR(LENWRK:LENWRK) .NE. '/') THEN
             LENWRK = LENWRK + 1
@@ -1976,7 +1981,7 @@ C
      &               'FORMATTED',IDUMMY,.FALSE.)
          WRITE (LUNMCL,'(I5)') I0
          CALL GPCLOSE(LUNMCL,'KEEP')
-#endif         
+#endif
          DO ILINE = 1, KMLINE
             MLINE(ILINE) = '                                        '//
      &           '                                        '
@@ -2012,7 +2017,7 @@ C
          REWIND (LUCMD)
       END IF
 C
-C     We should have sent everything we need know. Return to the 
+C     We should have sent everything we need know. Return to the
 C     main program.
 C
       RETURN
@@ -2049,7 +2054,7 @@ C
          DO 43 I = 1, 60
             IF (WRKDIR(I:I) .EQ. ' ') GO TO 44
             LENWRK = LENWRK + 1
- 43      CONTINUE 
+ 43      CONTINUE
  44      CONTINUE
          IF (WRKDIR(LENWRK:LENWRK) .NE. '/') THEN
             LENWRK = LENWRK + 1

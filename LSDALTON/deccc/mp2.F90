@@ -1582,36 +1582,23 @@ end if
 ! then we of course skip the addition of different components of the array.
  MPIcollect: if(wakeslave) then
 
-    !PE: CHANGE IN ARGUMENT PASSING IN ACCORDANCE WITH REST OF MPI ROUTINES
     ! Add up contibutions to output arrays using MPI reduce
-    !arrsize = goccEOS%dims(1)*goccEOS%dims(2)*goccEOS%dims(3)*goccEOS%dims(4)
-    !call lsmpi_local_reduction(goccEOS%val(:,:,:,:),arrsize,0)
     call lsmpi_local_reduction(goccEOS%val(:,:,:,:),goccEOS%dims(1),&
           &goccEOS%dims(2),goccEOS%dims(3),goccEOS%dims(4),masterrank)
 
-    !arrsize = toccEOS%dims(1)*toccEOS%dims(2)*toccEOS%dims(3)*toccEOS%dims(4)
-    !call lsmpi_local_reduction(toccEOS%val(:,:,:,:),arrsize,0)
     call lsmpi_local_reduction(toccEOS%val(:,:,:,:),toccEOS%dims(1),&
           &toccEOS%dims(2),toccEOS%dims(3),toccEOS%dims(4),masterrank)
 
-    !arrsize = gvirtEOS%dims(1)*gvirtEOS%dims(2)*gvirtEOS%dims(3)*gvirtEOS%dims(4)
-    !call lsmpi_local_reduction(gvirtEOS%val(:,:,:,:),arrsize,0)
     call lsmpi_local_reduction(gvirtEOS%val(:,:,:,:),gvirtEOS%dims(1),&
           &gvirtEOS%dims(2),gvirtEOS%dims(3),gvirtEOS%dims(4),masterrank)
 
-    !arrsize = tvirtEOS%dims(1)*tvirtEOS%dims(2)*tvirtEOS%dims(3)*tvirtEOS%dims(4)
-    !call lsmpi_local_reduction(tvirtEOS%val(:,:,:,:),arrsize,0)
     call lsmpi_local_reduction(tvirtEOS%val(:,:,:,:),tvirtEOS%dims(1),&
           &tvirtEOS%dims(2),tvirtEOS%dims(3),tvirtEOS%dims(4),masterrank)
 
     if(first_order_integrals) then
-       !arrsize = djik%dims(1)*djik%dims(2)*djik%dims(3)*djik%dims(4)
-       !call lsmpi_local_reduction(djik%val(:,:,:,:),arrsize,0)
        call lsmpi_local_reduction(djik%val(:,:,:,:),djik%dims(1),&
              &djik%dims(2),djik%dims(3),djik%dims(4),masterrank)
 
-       !arrsize = blad%dims(1)*blad%dims(2)*blad%dims(3)*blad%dims(4)
-       !call lsmpi_local_reduction(blad%val(:,:,:,:),arrsize,0)
        call lsmpi_local_reduction(blad%val(:,:,:,:),blad%dims(1),&
              &blad%dims(2),blad%dims(3),blad%dims(4),masterrank)
    end if

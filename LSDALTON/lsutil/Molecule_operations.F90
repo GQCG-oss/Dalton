@@ -82,6 +82,12 @@ WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Auxiliary basisfunctions :',MOLECULE%npr
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive CABS basisfunctions      :',MOLECULE%nprimbastCABS
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive JK-fit basisfunctions    :',MOLECULE%nprimbastJK
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Valence basisfunctions   :',MOLECULE%nprimbastVAL
+IF(MOLECULE%nSubSystems.NE.0)THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'number of Subsystem Labels         :',MOLECULE%nSubSystems
+   DO I=1,MOLECULE%nSubSystems
+      WRITE(LUPRI,'(2X,A,I3,A,A80)')'Label(',I,'):',MOLECULE%SubsystemLabel(I)
+   ENDDO
+ENDIF
 WRITE(LUPRI,*) '--------------------------------------------------------------------'
 WRITE(LUPRI,*) '                     '
 
@@ -105,152 +111,6 @@ ENDDO
 WRITE(LUPRI,*) '                     '
 
 END SUBROUTINE PRINT_MOL
-
-!> \brief write the atom structure to disk
-!> \author T. Kjaergaard
-!> \date  2010-02-24
-!> \param iatom Contains the atom structure to be written
-!> \param lun logic unit number of file to write to
-SUBROUTINE write_atom_to_disk(lun,IATOM)
-implicit none
-TYPE(ATOMITEM),intent(in)  :: IATOM
-INTEGER,intent(in)             :: lun
-
-write(lun)IATOM%Isotope
-write(lun)IATOM%Name
-write(lun)IATOM%CENTER(1)
-write(lun)IATOM%CENTER(2)
-write(lun)IATOM%CENTER(3)
-write(lun)IATOM%Charge     
-write(lun)IATOM%nbasis
-write(lun)IATOM%basislabel(1)
-write(lun)IATOM%basislabel(2)
-write(lun)IATOM%Basisindex(1)
-write(lun)IATOM%Basisindex(2)
-write(lun)IATOM%IDtype(1) 
-write(lun)IATOM%IDtype(2) 
-write(lun)IATOM%phantom
-write(lun)IATOM%PointCharge
-write(lun)IATOM%molecularIndex
-write(lun)IATOM%nContOrbREG
-write(lun)IATOM%nPrimOrbREG
-write(lun)IATOM%nContOrbAUX
-write(lun)IATOM%nPrimOrbAUX 
-write(lun)IATOM%nContOrbCABS
-write(lun)IATOM%nPrimOrbCABS
-write(lun)IATOM%nContOrbJK
-write(lun)IATOM%nPrimOrbJK
-write(lun)IATOM%nContOrbVAL
-write(lun)IATOM%nPrimOrbVAL
-
-END SUBROUTINE write_atom_to_disk
-
-!> \brief read the atom structure to disk
-!> \author T. Kjaergaard
-!> \date  2010-02-24
-!> \param iatom Contains the atom structure to be written
-!> \param lun logic unit number of file to read from
-SUBROUTINE read_atom_from_disk(lun,IATOM)
-implicit none
-TYPE(ATOMITEM),intent(inout)  :: IATOM
-INTEGER,intent(in)             :: lun
-
-read(lun)IATOM%Isotope
-read(lun)IATOM%Name
-read(lun)IATOM%CENTER(1)
-read(lun)IATOM%CENTER(2)
-read(lun)IATOM%CENTER(3)
-read(lun)IATOM%Charge     
-read(lun)IATOM%nbasis
-read(lun)IATOM%basislabel(1)
-read(lun)IATOM%basislabel(2)
-read(lun)IATOM%Basisindex(1)
-read(lun)IATOM%Basisindex(2)
-read(lun)IATOM%IDtype(1) 
-read(lun)IATOM%IDtype(2) 
-read(lun)IATOM%phantom
-read(lun)IATOM%Pointcharge
-read(lun)IATOM%molecularIndex
-read(lun)IATOM%nContOrbREG
-read(lun)IATOM%nPrimOrbREG
-read(lun)IATOM%nContOrbAUX
-read(lun)IATOM%nPrimOrbAUX 
-read(lun)IATOM%nContOrbCABS
-read(lun)IATOM%nPrimOrbCABS
-read(lun)IATOM%nContOrbJK
-read(lun)IATOM%nPrimOrbJK
-read(lun)IATOM%nContOrbVAL
-read(lun)IATOM%nPrimOrbVAL
-
-END SUBROUTINE read_atom_from_disk
-
-!> \brief write the molecule structure to disk
-!> \author T. Kjaergaard
-!> \date  2010-02-24
-!> \param Molecule Contains the information about the original molecule
-!> \param lun logic unit number of file to write to
-SUBROUTINE write_moleculeinfo_to_disk(lun,MOLECULE)
-implicit none
-TYPE(MOLECULEINFO),intent(in)  :: MOLECULE
-INTEGER,intent(in)             :: lun
-!
-INTEGER                        :: I
-
-write(lun)MOLECULE%nAtoms
-write(lun)MOLECULE%nAtomsNPC
-write(lun)MOLECULE%label
-DO I=1,MOLECULE%nAtoms
-   call write_atom_to_disk(lun,MOLECULE%ATOM(I))
-ENDDO
-write(lun)MOLECULE%nelectrons
-write(lun)MOLECULE%charge
-write(lun)MOLECULE%nbastREG
-write(lun)MOLECULE%nbastAUX
-write(lun)MOLECULE%nbastCABS
-write(lun)MOLECULE%nbastJK
-write(lun)MOLECULE%nbastVAL
-write(lun)MOLECULE%nprimbastREG
-write(lun)MOLECULE%nprimbastAUX
-write(lun)MOLECULE%nprimbastCABS
-write(lun)MOLECULE%nprimbastJK
-write(lun)MOLECULE%nprimbastVAL
-write(lun)MOLECULE%pointmolecule
-END SUBROUTINE write_moleculeinfo_to_disk
-
-!> \brief read the molecule structure from disk
-!> \author T. Kjaergaard
-!> \date  2010-02-24
-!> \param Molecule Contains the information about the original molecule
-!> \param lun logic unit number of file to write to
-SUBROUTINE read_moleculeinfo_from_disk(lun,MOLECULE)
-implicit none
-TYPE(MOLECULEINFO),intent(inout)  :: MOLECULE
-INTEGER,intent(in)                :: lun
-!
-INTEGER                           :: I
-
-read(lun)MOLECULE%nAtoms
-read(lun)MOLECULE%nAtomsNPC
-read(lun)MOLECULE%label
-call mem_alloc(MOLECULE%ATOM,MOLECULE%nAtoms)
-DO I=1,MOLECULE%nAtoms
-   call read_atom_from_disk(lun,MOLECULE%ATOM(I))
-ENDDO
-read(lun)MOLECULE%nelectrons
-read(lun)MOLECULE%charge
-read(lun)MOLECULE%nbastREG
-read(lun)MOLECULE%nbastAUX
-read(lun)MOLECULE%nbastCABS
-read(lun)MOLECULE%nbastJK
-read(lun)MOLECULE%nbastVAL
-read(lun)MOLECULE%nprimbastREG
-read(lun)MOLECULE%nprimbastAUX
-read(lun)MOLECULE%nprimbastCABS
-read(lun)MOLECULE%nprimbastJK
-read(lun)MOLECULE%nprimbastVAL
-read(lun)MOLECULE%pointmolecule
-
-END SUBROUTINE read_moleculeinfo_from_disk
 
 !> \brief Initializes the molecular info
 !> \author S. Host
@@ -281,6 +141,8 @@ MOLECULE%nprimbastCABS = 0
 MOLECULE%nprimbastJK = 0
 MOLECULE%nprimbastVAL = 0
 MOLECULE%pointmolecule = .false.
+MOLECULE%nSubSystems = 0
+NULLIFY(MOLECULE%SubsystemLabel)
 END SUBROUTINE init_Moleculeinfo
 
 !> \brief Frees the molecular info
@@ -294,10 +156,19 @@ TYPE(MOLECULEINFO) :: MOLECULE
 if (MOLECULE%nAtoms.GT. 0) then
   if (.not.ASSOCIATED(MOLECULE%ATOM)) then
     print*,'memory previously released!!'
+    print*,'MOLECULE%nAtoms',MOLECULE%nAtoms
     call lsquit('Error in Molecule_free - memory previously released',-1)
   endif
   call mem_dealloc(MOLECULE%ATOM)
 endif
+IF(Molecule%nSubSystems.NE.0)THEN
+   if (.not.ASSOCIATED(Molecule%SubSystemLabel)) then
+      print*,'memory previously released!!'
+      print*,'Molecule%nSubSystems',Molecule%nSubSystems
+      call lsquit('Error in Molecule_free -SubSystemLabel memory previously released',-1)
+   endif   
+   call mem_dealloc(Molecule%SubSystemLabel)
+ENDIF
 
 END SUBROUTINE free_Moleculeinfo
 
@@ -335,6 +206,8 @@ call copy_atom(MOLECULE,Iatom,atomicmolecule,1,lupri)
 atomicmolecule%nelectrons=INT(atomicmolecule%ATOM(1)%Charge)
 atomicmolecule%charge=0
 atomicmolecule%pointmolecule = .false.
+atomicmolecule%nSubSystems = 0
+NULLIFY(atomicmolecule%SubsystemLabel)
 
 END SUBROUTINE build_atomicmolecule
 
@@ -367,6 +240,8 @@ molecule%nPrimbastVAL = 0
 molecule%nelectrons=0
 molecule%charge=0
 molecule%pointmolecule = .false.
+molecule%nSubSystems = 0
+NULLIFY(molecule%SubsystemLabel)
 
 molecule%ATOM(1)%Isotope = 0
 molecule%ATOM(1)%Name='Empt'
@@ -388,6 +263,7 @@ molecule%ATOM(1)%IDtype(2)=0
 molecule%ATOM(1)%phantom=.FALSE.
 molecule%ATOM(1)%Pointcharge=.FALSE.
 molecule%ATOM(1)%molecularIndex=0
+molecule%ATOM(1)%SubSystemIndex=-1
 molecule%ATOM(1)%nContOrbREG=0
 molecule%ATOM(1)%nPrimOrbREG=0
 molecule%ATOM(1)%nContOrbAUX=0
@@ -433,6 +309,9 @@ pointmolecule%nPrimbastVAL = 0
 pointmolecule%nelectrons=0
 pointmolecule%charge=0
 pointmolecule%pointmolecule = .true.
+pointmolecule%nSubSystems = 0
+NULLIFY(pointmolecule%SubsystemLabel)
+
 !the Points
 DO I=1,N
    pointmolecule%ATOM(I)%Isotope = 0
@@ -455,6 +334,7 @@ DO I=1,N
    pointmolecule%ATOM(I)%phantom=.FALSE.
    pointmolecule%ATOM(I)%Pointcharge=.FALSE.
    pointmolecule%ATOM(I)%molecularIndex=1
+   pointmolecule%ATOM(I)%SubSystemIndex=-1
    pointmolecule%ATOM(I)%nContOrbREG=0
    pointmolecule%ATOM(I)%nPrimOrbREG=0
    pointmolecule%ATOM(I)%nContOrbAUX=0
@@ -483,14 +363,20 @@ integer,intent(in) :: lupri,N
 real(realk) :: coord(3,N),charge(N)
 !
 Integer :: I
-
-call init_Moleculeinfo(Molecule,N,'ListMol               ')
+character(len=22) :: string22
+character(len=9) :: stringA9,stringB9
+character(len=4) :: string4
+string22='ListMol               '
+stringA9 = 'REGULAR  '
+stringB9 = 'NOT SET  '
+string4 = 'XXXX'
+call init_Moleculeinfo(Molecule,N,string22)
 molecule%nelectrons=0
 molecule%charge=0
 !the Points
 DO I=1,N
    molecule%ATOM(I)%Isotope = 0
-   molecule%ATOM(I)%Name='XXXX'
+   molecule%ATOM(I)%Name=string4
    molecule%ATOM(I)%Mass=0.d0   
    molecule%ATOM(I)%CovRad=0.d0   
    molecule%ATOM(I)%Frag=0.d0   
@@ -500,8 +386,8 @@ DO I=1,N
    molecule%ATOM(I)%Atomic_number=0
    molecule%ATOM(I)%Charge=charge(I)
    molecule%ATOM(I)%nbasis=1
-   molecule%ATOM(I)%basislabel(1)='REGULAR  '
-   molecule%ATOM(I)%basislabel(2)='NOT SET  '
+   molecule%ATOM(I)%basislabel(1)=stringA9
+   molecule%ATOM(I)%basislabel(2)=stringB9
    molecule%ATOM(I)%Basisindex(1)=1
    molecule%ATOM(I)%Basisindex(2)=0
    molecule%ATOM(I)%IDtype(1)=0
@@ -509,6 +395,7 @@ DO I=1,N
    molecule%ATOM(I)%phantom=.FALSE.
    molecule%ATOM(I)%Pointcharge=.FALSE.
    molecule%ATOM(I)%molecularIndex=I
+   molecule%ATOM(I)%SubSystemIndex=-1
    molecule%ATOM(I)%nContOrbREG=0
    molecule%ATOM(I)%nPrimOrbREG=0
    molecule%ATOM(I)%nContOrbAUX=0
@@ -557,8 +444,16 @@ do I = 1, newMOLECULE%nAtoms
 enddo
 newMOLECULE%nelectrons = oldMOLECULE%nelectrons
 newMOLECULE%charge = oldMOLECULE%charge
-newMolecule%pointmolecule = newMolecule%pointmolecule
-
+newMolecule%pointmolecule = oldMolecule%pointmolecule
+newMolecule%nSubSystems = oldMolecule%nSubSystems
+IF(newMolecule%nSubSystems.NE.0)THEN
+   call mem_alloc(newMolecule%SubSystemLabel,newMolecule%nSubSystems)
+   do I = 1, newMolecule%nSubSystems
+      newMolecule%SubSystemLabel(I) = oldMolecule%SubSystemLabel(I)
+   enddo
+ELSE
+   NULLIFY(newMolecule%SubSystemLabel)
+ENDIF
 end subroutine copy_molecule
 
 !> \brief Copies an atom from MOLECULE to FRAGMENT
@@ -605,6 +500,7 @@ enddo
 FRAGMENT%ATOM(J)%phantom=MOLECULE%ATOM(I)%phantom
 FRAGMENT%ATOM(J)%PointCharge=MOLECULE%ATOM(I)%PointCharge
 FRAGMENT%ATOM(J)%molecularIndex=MOLECULE%ATOM(I)%molecularIndex
+FRAGMENT%ATOM(J)%SubSystemIndex=MOLECULE%ATOM(I)%SubSystemIndex
 FRAGMENT%ATOM(J)%nContOrbREG=MOLECULE%ATOM(I)%nContOrbREG
 FRAGMENT%ATOM(J)%nPrimOrbREG=MOLECULE%ATOM(I)%nPrimOrbREG
 FRAGMENT%ATOM(J)%nContOrbAUX=MOLECULE%ATOM(I)%nContOrbAUX
