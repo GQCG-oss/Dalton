@@ -141,6 +141,7 @@ module pno_ccsd_module
     !initialize the pno_residual according to the allocated pno_cv
     call init_pno_residual(pno_cv,pno_o2,nspaces)
 
+
     
     !call II_get_AbsoluteValueOcc_overlap(DECinfo%output,DECinfo%output,setting,nb,no,out)
 
@@ -1512,8 +1513,10 @@ module pno_ccsd_module
     real(realk), pointer :: tmp1(:),tmp2(:)
     real(realk), pointer :: w1(:,:,:,:)
     integer :: nn, pnv, pno, a, b, i, j, rpd
+    print *,"ALLOCATING STUFF",no,nv
     call mem_alloc(tmp1,no**2*nv**2)
     call mem_alloc(tmp2,no**2*nv**2)
+    print *,"DONE ALLOCING"
 
     do nn=1,n
 
@@ -1523,7 +1526,9 @@ module pno_ccsd_module
 
       if(cv(nn)%allocd)then
 
+        print *,"initing pno amps",nn,",with",pnv,rpd
         pno_t2(nn) = array_init([pnv,rpd,pnv,rpd],4)
+        print *,"done with that"
 
         call ass_D1to4(tmp1,w1,[nv,rpd,nv,rpd])
 
@@ -1644,10 +1649,11 @@ module pno_ccsd_module
       call solve_eigenvalue_problem_unitoverlap(nv,f%VirtMat,virteival,U)
       call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1),ext_thr=DECinfo%EOSPNOthr)
       call mem_alloc(cv(1)%iaos,f%noccEOS)
-      cv(1)%n          = f%noccEOS
-      cv(counter)%rpd  = f%noccEOS
-      cv(1)%iaos       = f%idxo
-      counter = 1
+      cv(1)%n     = f%noccEOS
+      cv(1)%rpd   = f%noccEOS
+      cv(1)%iaos  = f%idxo
+      counter     = 1
+      print *,"MAIN SPACE HAS", f%noccEOS
 
       calc_parameters = calc_parameters + cv(1)%ns2**2*cv(1)%n**2
       det_parameters  = det_parameters  + cv(1)%ns2**2*cv(1)%n**2
@@ -1667,22 +1673,27 @@ module pno_ccsd_module
           if(j<i.or.(i==1.and.j==1)) cycle doj
 
           !check if both indices occur in occ EOS, if yes -> skip
-          doit= ( find_pos(i,j)/= -1 )
+          doit = ( find_pos(i,j)/= -1 )
 
           !calculate the pair density matrix, diagonalize it, truncate the
           !respective transformation matrix and save it in c
           if(doit)then
+
             counter = find_pos(i,j)
             call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
             call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
             call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
+
             if(cv(counter)%allocd)then
               if(i==j)then
+
                 cv(counter)%n    = 1
                 cv(counter)%rpd  = 1
                 call mem_alloc(cv(counter)%iaos,cv(counter)%n)
                 cv(counter)%iaos = [i]
+
                 det_parameters   = det_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
+
               else
 
                 cv(counter)%n    = 2
@@ -1694,11 +1705,14 @@ module pno_ccsd_module
 
                 call mem_alloc(cv(counter)%iaos,cv(counter)%n)
                 cv(counter)%iaos = [i,j]
+
                 det_parameters   = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
 
               endif
-              calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
+
+              calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
               pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
+
             endif
           endif
         enddo doj
@@ -1718,25 +1732,35 @@ module pno_ccsd_module
           call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
 
           if(cv(counter)%allocd)then
+
             if(i==j)then
+
               cv(counter)%n    = 1
               cv(counter)%rpd  = 1
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i]
+
               det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2
+
             else
+
               cv(counter)%n = 2
               if(DECinfo%PNOtriangular)then
                 cv(counter)%rpd  = 1
               else
                 cv(counter)%rpd  = 2
               endif
+
               call mem_alloc(cv(counter)%iaos,cv(counter)%n)
               cv(counter)%iaos = [i,j]
+
               det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
+
             endif
+
             calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
             pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
+
           endif
 
         enddo dojful
@@ -2228,6 +2252,7 @@ module pno_ccsd_module
     integer :: diff1,diff2, id(2),kcount
     !reduce the no
     logical :: k_lt_i(no),add_contrib
+    real(realk) :: pref
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     nv  =  pno_cv(ns)%ns1
@@ -2248,11 +2273,11 @@ module pno_ccsd_module
 
       call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
 
-      !print *,""
-      !print *,""
-      !print *,""
-      !print *,""
-      !print *,"ENTERING LOOP",ns,ns2,cyc,pno,pno_cv(ns2)%n
+      print *,""
+      print *,""
+      print *,""
+      print *,""
+      print *,"ENTERING LOOP",ns,ns2,cyc,pno,pno_cv(ns2)%n
 
       if( cyc )then
 
@@ -2260,7 +2285,11 @@ module pno_ccsd_module
 
       endif
 
-      call get_overlap_idx(ns,ns2,pno_cv,oidx1,nidx1,ndidx1=diff1,ndidx2=diff2)
+      if(DECinfo%PNOtriangular)then
+        call get_overlap_idx(ns,ns2,pno_cv,oidx1,nidx1,ndidx1=diff1,ndidx2=diff2)
+      else
+        call get_overlap_idx(ns,ns2,pno_cv,oidx1,nidx1)
+      endif
 
       d1   => pno_cv(ns2)%d
       t21  => pno_t2(ns2)%elm1
@@ -2279,11 +2308,13 @@ module pno_ccsd_module
       !inside OneIdxSpaceLoop2 because I only use 3 working matrices, p10
       !might easily move the following part outside the loop and add stuff
       !up during the loops
-      call ass_D1to4( w1,    p1, [nv,rpd1,rpd,nv] )
       call ass_D1to4( goovv, p2, [no, no,nv,  nv] )
       if(pno == 2 .and. DECinfo%PNOtriangular)then
+        !associate pointers such as to write k last in this case, does not
+        !change anything for the pno1==2 case but helps a lot otherwise
+        call ass_D1to4( w1,    p1, [nv,rpd,nv,rpd1] )
         !store also the part for Pij
-        call ass_D1to4( w1(nv*rpd1*rpd*nv+1:2*nv*rpd1*rpd*nv), p3, [nv,rpd1,rpd,nv] )
+        call ass_D1to4( w1(nv*rpd1*rpd*nv+1:2*nv*rpd1*rpd*nv), p3, [nv,rpd,nv,rpd1] )
     
         do pair1 = 1, paircontribs
 
@@ -2307,10 +2338,9 @@ module pno_ccsd_module
             endif
             k_lt_i(pair1) = (idx1(k) < i)
 
-            !print *,"FOUND",k,idx1(k),i,j,k_lt_i
             do a=1,nv
               do b=1,nv
-                p4(b,1,1,a) = p2(idx1(k),j,a,b)
+                p4(b,1,a,1) = p2(idx1(k),j,a,b)
               enddo
             enddo
 
@@ -2323,7 +2353,7 @@ module pno_ccsd_module
             do a=1,nv
             do k=1,pno1
               do b=1,nv
-                p4(b,k,1,a) = p2(idx1(k),j,a,b)
+                p4(b,1,a,k) = p2(idx1(k),j,a,b)
               enddo
             enddo
             enddo
@@ -2337,6 +2367,7 @@ module pno_ccsd_module
         enddo
 
       else
+        call ass_D1to4( w1,    p1, [nv,rpd1,rpd,nv] )
         if( pno1 == 2 .and. DECinfo%PNOtriangular )then
 #ifdef VAR_LSDEBUG
           if(diff2 /= 1.or.nidx1/=1) then
@@ -2352,13 +2383,11 @@ module pno_ccsd_module
           enddo
           enddo
         else
-          !print *,"c             k              j              a!"
           do a=1,nv
           do j=1,pno
             do k=1,pno1
             do b=1,nv
               p1(b,k,j,a) = p2(idx1(k),idx(j),a,b)
-              !print *,b,k,"/",idx1(k),"      ",j,"/",idx(j),a
             enddo
             enddo
           enddo
@@ -2452,7 +2481,7 @@ module pno_ccsd_module
  
         do pair1 = 1, paircontribs
           call ass_D1to4( t21, p2, [pnv1,rpd1,pnv1, rpd1] )
-          call ass_D1to4( w1,  p1, [pnv1,rpd1,pnv1, rpd1] )
+          call ass_D1to4( w1,  p1, [pnv1,1   ,pnv1, rpd1] )
 
           if(pair1==1)then
             h4 => w4(1:pnv1*rpd1*rpd*pnv)
@@ -2463,56 +2492,75 @@ module pno_ccsd_module
           j = idx(paircontrib(2,pair1))
 
           if( pno1 == 2 )then
+
             i = idx(paircontrib(1,pair1))
-            k = oidx1(nidx1+diff1+1,3)
             if(ns==ns2)then
-              call array_reorder_2d(p10,p2,pnv1,pnv1,paircontrib(:,3-pair1),nul,p1)
+              k = j
             else
-              if(k_lt_i(pair1))call array_reorder_2d(p10,p2,pnv1,pnv1,[1,2],nul,p1)
-              if(.not.k_lt_i(pair1)) call array_reorder_2d(p10,p2,pnv1,pnv1,[2,1],nul,p1)
+              k = oidx1(nidx1+diff1+1,3)
             endif
+
+            if(k<i)call array_reorder_2d(p10,p2,pnv1,pnv1,[1,2],nul,w1)
+            if(k>i)call array_reorder_2d(p10,p2,pnv1,pnv1,[2,1],nul,w1)
+            if(k==i)call lsquit("ERROR(PNO C-term)this should never happen",-1)
           else
             if(nidx1/=1)call lsquit("ERROR(here)this should never occur",-1)
-            if(pno1>1)call lsquit("THIS NEEDS TO BE CHECKED",-1)
+            !if(pno1>1)call lsquit("THIS NEEDS TO BE CHECKED",-1)
             i = oidx1(1,2)
             do k=1,pno1
-              p1(:,1,:,k) = p2(:,k,:,i)
+              print *,k,"YEAH BABY",idx1(k),idx(paircontrib(1,pair1))
+              !if(idx1(k)<=idx(paircontrib(1,pair1)))then
+                p1(:,1,:,k) = p2(:,k,:,i)
+              !else
+              !  do a=1, pnv1
+              !    do b=1, pnv1
+              !      p1(b,1,a,k) = p2(a,k,b,i)
+              !    enddo
+              !  enddo
+              !endif
+              call print_tensor_unfolding_with_labels(p1(:,1,:,k),&
+              &[pnv1],'a',1,[pnv1],'b',1,'amplitudes k')
             enddo
             i = oidx1(1,3)
             k = idx1(1)
           endif
 
-          call do_overlap_trafo(ns,ns2,1,pno_S, pnv,pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
+
+          !call do_overlap_trafo(ns,ns2,1,pno_S, pnv,pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
+
+          do kcount = 1,rpd1
+            call do_overlap_trafo(ns,ns2,1,pno_S, pnv,pnv1, pnv1,w1(1+(kcount-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
+
+            if(pno1/=2) k = idx1(kcount)
+            call print_tensor_unfolding_with_labels(h1,&
+            &[pnv,rpd],'bi',2,[pnv1,1],'ck',2,'pair mat 1')
+            call print_tensor_unfolding_with_labels(h4(1+(kcount-1)*pnv1*pnv:),&
+            &[pnv1,1],'ck',2,[rpd,pnv],'ja',2,'pair mat 2')
 
 
-          !do kcount = 1,rpd1
-
-          !  if(pno1/=2) k = idx1(kcount)
-            !call print_tensor_unfolding_with_labels(h1,&
-            !&[pnv,rpd],'bi',2,[pnv1,rpd1],'ck',2,'pair mat 1')
-            !call print_tensor_unfolding_with_labels(h4,&
-            !&[pnv1,rpd1],'ck',2,[rpd,pnv],'ja',2,'pair mat 2')
+            !call dgemm('n','n', pnv, pnv, rpd1*pnv1, m10, h1,pnv, h4, pnv1*rpd1, nul, h2, pnv)
+            call dgemm('n','n', pnv, pnv, pnv1, m10, h1, pnv, h4(1+(kcount-1)*pnv1*pnv), pnv1, nul, h2, pnv)
 
 
-            call dgemm('n','n', pnv, pnv, rpd1*pnv1, m10, h1,pnv, h4, pnv1*rpd1, nul, h2, pnv)
 
-            !call print_tensor_unfolding_with_labels(h2,&
-            !&[pnv,rpd],'bi',2,[rpd,pnv],'ja',2,'pair result')
+            call print_tensor_unfolding_with_labels(h2,&
+            &[pnv],'b',1,[pnv],'a',1,'pair result after adding')
 
             add_contrib = ((pno1 == 2 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns2 ) &
                       &.or.(pno1 /= 2 .and. i/=j)
-          
+            
 
             if(add_contrib) then
               call array_reorder_2d(p10,h2,pnv,pnv,paircontrib(:,3-pair1),p10,o)
-               !print *,ns,"adding",ns2," pair",i,j,k,k_lt_i(pair1),idx,";",idx1
-               !call print_tensor_unfolding_with_labels(o,&
-               !&[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
+              print *,ns,"adding",ns2," pair",i,j,k,k_lt_i(pair1),idx,";",idx1
+              call print_tensor_unfolding_with_labels(o,&
+              &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
             else
-              !print *,ns,ns2,"CONTRIB NOT ADDED",i,j,k,k_lt_i(pair1),idx,";",idx1
+              print *,ns,ns2,"CONTRIB NOT ADDED",i,j,k,k_lt_i(pair1),idx,";",idx1
             endif
 
-          !enddo
+          enddo
+
 
         enddo
 
@@ -2522,8 +2570,10 @@ module pno_ccsd_module
         call ass_D1to4( t21, p2, [pnv1,rpd1,pnv1, rpd1] )
         call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,rpd1] )
         if( pno1 == 2 .and. DECinfo%PNOtriangular )then
-          if(.not.k_lt_i(1))call array_reorder_2d(p10,p2,pnv1,pnv1,[2,1],nul,p1)
-          if(k_lt_i(1))call array_reorder_2d(p10,p2,pnv1,pnv1,[1,2],nul,p1)
+          k = oidx1(nidx1+diff1+1,3)
+          i = oidx1(1,3)
+          if(k<i)call array_reorder_2d(p10,p2,pnv1,pnv1,[1,2],nul,p1)
+          if(k>i)call array_reorder_2d(p10,p2,pnv1,pnv1,[2,1],nul,p1)
         else
           do k=1,pno1
           do b=1,pnv1
@@ -2543,16 +2593,16 @@ module pno_ccsd_module
         call do_overlap_trafo(ns,ns2,1,pno_S, pnv,nidx1*pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
 
 
-        !call print_tensor_unfolding_with_labels(h1,&
-        !&[pnv,nidx1],'bi',2,[pnv1,rpd1],'ck',2,'rect mat 1')
-        !call print_tensor_unfolding_with_labels(w4,&
-        !&[pnv1,rpd1],'ck',2,[rpd,pnv],'ja',2,'rect mat 2')
+        call print_tensor_unfolding_with_labels(h1,&
+        &[pnv,nidx1],'bi',2,[pnv1,rpd1],'ck',2,'rect mat 1')
+        call print_tensor_unfolding_with_labels(w4,&
+        &[pnv1,rpd1],'ck',2,[rpd,pnv],'ja',2,'rect mat 2')
 
         
         call dgemm('n','n', pnv*nidx1,rpd*pnv, rpd1*pnv1, m10, h1,pnv*nidx1, w4, pnv1*rpd1, nul, h2, pnv*nidx1)
 
-        !call print_tensor_unfolding_with_labels(h2,&
-        !&[pnv,nidx1],'bi',2,[rpd,pnv],'ja',2,'rect result')
+        call print_tensor_unfolding_with_labels(h2,&
+        &[pnv,nidx1],'bi',2,[rpd,pnv],'ja',2,'rect result')
 
         call ass_D1to4( h2, p2, [pnv,nidx1,rpd,pnv ] )
         call ass_D1to4( o,  p1, [pnv,rpd, pnv, rpd ] )
@@ -2568,9 +2618,9 @@ module pno_ccsd_module
           enddo
         enddo
         enddo
-        !print *,ns,"adding",ns2," as symmetrized"
-        !call print_tensor_unfolding_with_labels(o,&
-        !&[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
+        print *,ns,"adding",ns2," as symmetrized",pno,pno1,rpd,rpd1
+        call print_tensor_unfolding_with_labels(o,&
+        &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
       endif
 
 
@@ -2817,33 +2867,33 @@ module pno_ccsd_module
     enddo OneIdxSpaceLoop1
 
     !contribution done, check the individual elements
-    !call ass_D1to4(o,check_ref,[pnv,rpd,pnv,rpd])
-    !if(pno == 2 .and. DECinfo%PNOtriangular )then
-    !  j=2
-    !  i=1
-    !  do b = 1, pnv
-    !    do a = 1, pnv
-    !      if( abs(check_ref(a,1,b,1) - reference(a,idx(i),b,idx(j))) > 1.0E-12 )then
-    !        print *,"wrong element in PNO space",ns,"el",a,b
-    !        print *,"element",check_ref(a,1,b,1),reference(a,idx(i),b,idx(j)),reference(a,idx(j),b,idx(i))
-    !        stop 0
-    !      endif
-    !    enddo
-    !  enddo
-    !else
-    !  do j = 1, pno
-    !    do b = 1, pnv
-    !      do i = 1, pno
-    !        do a = 1, pnv
-    !          if( abs(check_ref(a,i,b,j) - reference(a,idx(i),b,idx(j))) > 1.0E-12 )then
-    !            print *,"wrong element in rectangular space",a,i,b,j
-    !            stop 0
-    !          endif
-    !        enddo
-    !      enddo
-    !    enddo
-    !  enddo
-    !endif
+    call ass_D1to4(o,check_ref,[pnv,rpd,pnv,rpd])
+    if(pno == 2 .and. DECinfo%PNOtriangular )then
+      j=2
+      i=1
+      do b = 1, pnv
+        do a = 1, pnv
+          if( abs(check_ref(a,1,b,1) - reference(a,idx(i),b,idx(j))) > 1.0E-12 )then
+            print *,"wrong element in PNO space",ns,"el",a,b
+            print *,"element",check_ref(a,1,b,1),reference(a,idx(i),b,idx(j)),reference(a,idx(j),b,idx(i))
+            stop 0
+          endif
+        enddo
+      enddo
+    else
+      do j = 1, pno
+        do b = 1, pnv
+          do i = 1, pno
+            do a = 1, pnv
+              if( abs(check_ref(a,i,b,j) - reference(a,idx(i),b,idx(j))) > 1.0E-12 )then
+                print *,"wrong element in rectangular space",a,i,b,j
+                stop 0
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
+    endif
 
   end subroutine get_common_idx_summation_for_current_aibj
 
@@ -2932,7 +2982,15 @@ module pno_ccsd_module
          write (*,'(I4)',advance='no') id1(i)
       enddo
       write (*,'(") ")',advance='no') 
-      print *,(mat(a+(b-1)*cd1),b=1,cd2)
+      do b = 1, cd2
+        write (*,'(g18.5)',advance='no') mat(a+(b-1)*cd1)
+        if(b<cd2)write (*,'(",",X)',advance='no')
+      enddo
+      if(a<cd1)then
+        write (*,'(";")')
+      else
+        write (*,*)
+      endif
     enddo
 
 
