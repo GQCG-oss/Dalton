@@ -137,30 +137,20 @@ module pcm_scf
       
       end subroutine collect_atoms
 
-      subroutine set_point_group(pg) bind(c, name='set_point_group')
+      subroutine set_point_group(nr_gen, gen1, gen2, gen3) bind(c, name='set_point_group')
 
-#include "pgroup.h"
+#include "mxcent.h"                     
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
 
-      integer(c_int), intent(inout) :: pg
+      integer(c_int), intent(inout) :: nr_gen 
+      integer(c_int), intent(inout) :: gen1, gen2, gen3
 
-      select case (group)
-        case('C1 ')
-                pg = 0
-        case('Cs ')
-                pg = 1
-        case('C2 ')
-                pg = 2
-        case('Ci ')
-                pg = 3
-        case('C2h')
-                pg = 4
-        case('D2 ')
-                pg = 5
-        case('C2v')
-                pg = 6
-        case('D2h')
-                pg = 7
-      end select
+      nr_gen = pcm_igen(1) 
+      gen1   = pcm_igen(2) 
+      gen2   = pcm_igen(3)
+      gen3   = pcm_igen(4)
 
       end subroutine set_point_group
 
