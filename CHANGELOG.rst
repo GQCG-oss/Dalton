@@ -1,5 +1,29 @@
 
 
+This is the next patch, document new changes here
+=================================================
+
+Common
+------
+
+
+DALTON
+------
+
+- Default DIIS space increased from 5 to 8, often resulting in 1-2 fewer SCF iterations.
+- Removed the maximum of 20 excitations in summary output for second and third order transition moments.
+
+
+LSDALTON
+--------
+
+
+
+===========================
+DO NOT EDIT BELOW THIS LINE
+===========================
+
+
 2013.2 (2014-03-05)
 ===================
 
@@ -31,13 +55,13 @@ LSDALTON
 --------
 
 - Print sensible error message when running out of memory.
-- Added funcitonality to search through several basis-set libraries.
+- Added functionality to search through several basis-set libraries.
 - Increased max length of WRKDIR from 60 to 200.
-- Fixed a bug related to improber shutdown of MPI calculation. In the case
-  of wrong LSDALTON.INP for instance the calculation will issue a error 
-  statement and afterward hang forever in a MPI call. 
+- Fixed a bug related to improper shutdown of MPI calculation. In the case
+  of wrong LSDALTON.INP for instance the calculation will issue a error
+  statement and afterward hang forever in a MPI call.
 - Fixed an OpenMP bug in the calculation of how much memory there should be used during
-  an exchange-correlation calculation - resulting in huge memory usage for large molecular system.   
+  an exchange-correlation calculation - resulting in huge memory usage for large molecular system.
 
 
 2013.1 (2013-12-19)
@@ -59,13 +83,13 @@ LSDALTON
 --------
 
 - Fixed a bug in Jengine, related to screening for nonsymmetric density matrices.
-  This may affect CCSD and some response calculation. 
-- Modified the input section of the manual concerning 
+  This may affect CCSD and some response calculation.
+- Modified the input section of the manual concerning
   Casida-Salahub asymptotic correction CS00 (thanks to Raul Crespo).
 - Changed defaults for Casida-Salahub asymptotic correction CS00 (thanks to Raul Crespo).
 - Fixed errors in the MCD B terms output files (.dat files) now one file is generated
   for each B term and each A term (thanks to Raul Crespo).
-- Modified the input section of the manual concerning MCD B terms. Added desciption of MCDEXSTATES.
-- Fixed a bug for lsdalton geometry optimization and dynamics related to 
+- Modified the input section of the manual concerning MCD B terms. Added description of MCDEXSTATES.
+- Fixed a bug for LSDALTON geometry optimization and dynamics related to
   screening. The initial Cauchy-Schwartz screening matrices were incorrectly
   used in each subsequent geometry step

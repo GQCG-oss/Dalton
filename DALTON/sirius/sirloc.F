@@ -94,7 +94,7 @@ C molecular coefficients and dipole moment integrals
       JRDMO = 9
       CALL READMO(WORK(KCMO),JRDMO,WORK(KEND),LFREE)
 C     CALL AROUND('Canonical molecular orbitals')
-C     CALL PRINTORB(NB1,NBA,WORK(KCMO))
+C     CALL LOC_PRINTORB(NB1,NBA,WORK(KCMO))
 
       CALL RDPROP('XDIPLEN ',WORK(KDIPX),ANTIS)
       CALL RDPROP('YDIPLEN ',WORK(KDIPY),ANTIS)
@@ -128,7 +128,7 @@ C        CALL DCOPY(NB1,WORK(KSHIP),1,WORK(KSHIC),1)
 C     END DO
 C
 C     CALL AROUND('Localized orbitals')
-C     CALL PRINTORB(NB1,NBA,WORK(KCMO))
+C     CALL LOC_PRINTORB(NB1,NBA,WORK(KCMO))
 C
 C *** IF R12EIN COMBINED WITH LOCAL MOS 
  
@@ -165,7 +165,7 @@ C         KSHIP = KCMO + NBA*(NOC+I-1)
 C         KSHIC = KVEC + NB1*(I-1)
 C         CALL DCOPY(NB1,WORK(KSHIP),1,WORK(KSHIC),1)
 C      END DO
-C         CALL DIAPAO(WORK(KFCMO),WORK(KFPAO),WORK(KVEC),
+C         CALL LOC_DIAPAO(WORK(KFCMO),WORK(KFPAO),WORK(KVEC),
 C     *                                           NTFMO,NB1T,NB1,NOC)
 C      DO I = 1, NB1
 C         KSHIP = KCMO + NBA*(NOC+I-1)
@@ -183,7 +183,7 @@ C        CALL OUTPAK(WORK(KFCAO),NBAST,1,LUPRI)
 C        CALL WRLOCMO(WORK(KCMO),WORK(KFCAO),NOC,NCO,NBA,NB1)
 c
 c     CALL AROUND('Molecular orbitals and Canonical PAOs')
-c     CALL PRINTORB(NB1+NOC,NBA,WORK(KCMO))
+c     CALL LOC_PRINTORB(NB1+NOC,NBA,WORK(KCMO))
 c
 CWMK  END IF
  
@@ -191,8 +191,9 @@ CWMK  END IF
       RETURN
       END
 
-C  /* Deck diapao  */
-      SUBROUTINE DIAPAO(FCMO,FPAO,VEC,NTFMO,NB1T,NB1,NOC)
+#ifdef CURRENTLY_NOT_USED
+C  /* Deck LOC_diapao  */
+      SUBROUTINE LOC_DIAPAO(FCMO,FPAO,VEC,NTFMO,NB1T,NB1,NOC)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
 #include "implicit.h"
 #include "priunit.h"
@@ -224,6 +225,7 @@ C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
       END DO
 
       END
+#endif   /* CURRENTLY_NOT_USED */
 
 C  /* Deck numloc  */
       SUBROUTINE NUMLOC(NOC,NBA,NB1,NB2)
@@ -619,8 +621,8 @@ C
       CLOSE(99)
       RETURN
       END
-C  /* Deck printorb  */
-      SUBROUTINE PRINTORB(NENDI,NBASI,ARRA)
+C  /* Deck LOC_printorb  */
+      SUBROUTINE LOC_PRINTORB(NENDI,NBASI,ARRA)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
 #include "implicit.h"
 #include "priunit.h"

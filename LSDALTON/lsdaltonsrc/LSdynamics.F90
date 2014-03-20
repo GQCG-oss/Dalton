@@ -13,7 +13,8 @@ use TimeRev_propagation, only: propagation
 use Fock_MD, only: FMD_run
 use dyn_util, only: DoublelinesInt, Underline, print_vector, calc_kinetic_cart,&
      & calc_kinetic, calc_angmom, calc_angmom_cart, write_phasespace, &
-     & mass_weight_vector, project_gradient, SinglelinesInt, final_analysis
+     & mass_weight_vector, project_gradient, SinglelinesInt, final_analysis, &
+     & print_temp
 use configurationType, only: configitem
 use matrix_module, only: matrix
 use typedefType, only: lsitem
@@ -21,7 +22,8 @@ use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
 use files, only: lsopen,lsclose
 use lstiming, only: lstimer
 use lsdalton_rsp_mod, only: lsdalton_response
-use temperature, only: maxwell_sampling, andersen_thermostat
+use temperature, only: maxwell_sampling, andersen_thermostat, NHC_Hamiltonian, &
+     & L_c
 use energy_and_deriv, only: get_energy, get_gradient
 use memory_handling, only: mem_alloc,mem_dealloc
 private
@@ -85,7 +87,11 @@ Do
   ! Take step
   Call LSTimer('*START',CPUTime,WallTime,lupri)
   !
-  Call Verlet_step(F,D,S,H1,CMO,ls,config,luerr,lupri,NAtoms,traj,config%dynamics)
+  If (config%dynamics%NHChain) then ! Canonical ensemble with Nose-Hoover
+     Call NH_chain(F,D,S,H1,CMO,ls,config,luerr,lupri,NAtoms,traj,config%dynamics)
+  else ! Microcanonical ensemble
+     Call Verlet_step(F,D,S,H1,CMO,ls,config,luerr,lupri,NAtoms,traj,config%dynamics)
+  Endif
   ! Get properties
   Call lsdalton_response(ls,config,F(1),D(1),S)
   ! Thermostatting if requested
@@ -111,6 +117,13 @@ Call Final_Analysis(NAtoms,traj%StepNum,config%Dynamics%NumTra,&
          &lupri,config%dynamics%Phase,config%dynamics%PrintLevel)
 Call Deallocate_traj(traj,config%dynamics%TimRev,config%Dynamics%FockMD)
 call mem_dealloc(Config%dynamics%Initial_velocities)
+! Dellocate NHC thermostat variables
+If (config%dynamics%NHChain) then
+   call mem_dealloc(traj%eta)
+   call mem_dealloc(traj%v_eta)
+   call mem_dealloc(traj%T_array)
+   call mem_dealloc(config%dynamics%Q)
+Endif
 !
 End subroutine LS_dyn_run
 !======================!
@@ -129,6 +142,7 @@ Type(trajtype),intent(inout) :: Traj
 Real(realk) :: CM(3) ! Centre of mass
 Real(realk), parameter :: fs2au = 41.3413733365613E0_realk
 Integer :: nbast
+Real(realk), parameter :: kB = 3.166815E0_realk*10E-6 ! [Hartree/(K)]
 ! Allocating memory
 If (dyn%TimRev) then
    ! Density propagation
@@ -142,7 +156,12 @@ Else
       Call Allocate_traj(NAtoms,Traj)
    Endif
 Endif
-      
+! Allocate NHC thermostat variables and temperature array
+If (dyn%NHChain) then
+   call mem_alloc(traj%eta,dyn%CLen)
+   call mem_alloc(traj%v_eta,dyn%CLen)
+   call mem_alloc(traj%T_array,dyn%trajMax+1)
+Endif      
    
 ! Extract atom labels
 Do i = 1,NAtoms
@@ -189,6 +208,27 @@ If (dyn%MaxSam) then
 Endif
 ! Velocities
 Traj%Velocities = dyn%Initial_Velocities
+! NH chain thermostat velocities, coordinates and masses
+If (dyn%NHChain) then
+   call mem_alloc(dyn%Q,dyn%CLen)
+   dyn%Q(1) = NAtoms*3*kB*dyn%Temp/dyn%omega**2
+   Do i = 2, dyn%CLen
+      dyn%Q(i) = kB*dyn%Temp/dyn%omega**2
+   Enddo
+   If (dyn%Init) then ! Initial conditions are read
+      Do i = 1, dyn%CLen
+         traj%eta(i) = dyn%eta(i)
+         traj%v_eta(i) = dyn%v_eta(i)
+      Enddo 
+      Call mem_dealloc(dyn%eta)
+      Call mem_dealloc(dyn%v_eta)
+   Else ! They are generated
+      Do i = 1, dyn%CLen
+         Traj%v_eta(i) = sqrt(kB*dyn%Temp/dyn%Q(i))
+         Traj%eta(i) = 0.0E0_realk
+      Enddo
+   Endif
+Endif
 ! Remove mass-weighting if needed
 If (dyn%MWVel) then
    Call Mass_weight_vector(nAtoms,Traj%Velocities,Traj%Mass,'REMOVE')
@@ -269,6 +309,18 @@ If (.NOT. dyn%Mass_Weight) then   ! Cartesian
 Else   ! Mass-weighted
   Call Print_Vector(lupri, NAtoms, traj%Labels, Cartesian_Coordinates)
 Endif
+! Print NHC thermostat variables
+If (dyn%NHChain) then
+  Call LSHeader(lupri, 'Current Nose-Hoover chain thermostat coordinates (au):')
+  Do i = 1, dyn%CLen
+     Write(lupri,'(F15.10)') traj%eta(i)
+  Enddo
+  Call LSHeader(lupri, 'Current Nose-Hoover chain thermostat velocities (au):')
+  Do i = 1, dyn%CLen
+     Write(lupri,'(F15.10)') traj%v_eta(i)
+  Enddo
+Endif
+! 
   If (dyn%PrintLevel >= 1) Then
     Call LSHeader(lupri, 'Current forces (au)')
     Call Print_Vector(lupri, NAtoms, traj%Labels, -traj%Gradient)
@@ -284,27 +336,44 @@ Endif
 !
 ! Determine kinetic energy, total energy and angular momentum
 !
-
 If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
   Call Calc_Kinetic_Cart(NAtoms*3,NAtoms,traj%Mass,traj%Velocities,traj%CurrKinetic)
 Else  ! Mass-weighted
   Call Calc_Kinetic(NAtoms*3,NAtoms,traj%Velocities,traj%CurrKinetic)
 Endif
+If (dyn%NHchain) then
+  Call NHC_Hamiltonian(NAtoms,dyn%CLen,traj%CurrPotential+traj%CurrKinetic,&
+       &traj%CurrEnergy,dyn%Q,traj%eta,traj%v_eta,dyn%Temp)
+Endif
 ! Setting initial energy if first step
 If (traj%StepNum .EQ. 0) then
-   traj%InitialEnergy = traj%CurrPotential + traj%CurrKinetic
+   If (.NOT. dyn%NHchain) then
+      traj%InitialEnergy = traj%CurrPotential + traj%CurrKinetic
+   Else 
+      traj%InitialEnergy = traj%CurrEnergy
+   Endif
 Endif
   !
-traj%CurrEnergy = traj%CurrPotential + traj%CurrKinetic
+If (.NOT. dyn%NHchain) then
+   traj%CurrEnergy = traj%CurrPotential + traj%CurrKinetic
+Endif
+!
 Call LSHeader(lupri, 'Energy conservation (au)')
 Write(lupri,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
                             '   Potential energy: ',traj%CurrPotential, &
                             '   Kinetic energy: ', traj%CurrKinetic
 Write(lupri,'(31X,A,F14.8)') 'Energy conserv.: ',&
 &traj%CurrEnergy-traj%InitialEnergy
+If (dyn%NHchain) then
+   Write(lupri,'(A)') 'Note: For Nose-Hoover chain thermostat total energy is a &
+&conserved quantity and not T+V!'
+Endif
 ! Estimating temperature
-  Temperature = 2*traj%CurrKinetic/(3*NAtoms*Boltzmann) 
-  Print *, 'Temperature=',Temperature
+Temperature = 2*traj%CurrKinetic/(3*NAtoms*Boltzmann) 
+Print *, 'Temperature=',Temperature
+Write(lupri,'(31X,A,F14.8)') 'Temperature: ',&
+&Temperature
+If (dyn%NHChain) traj%T_array(traj%StepNum+1) = Temperature
 !
 If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
   Call Calc_AngMom_Cart(NAtoms*3,NAtoms,traj%Mass,traj%Coordinates,&
@@ -370,13 +439,20 @@ Real(realk) :: CPUTime,WallTime
 Real(realk), parameter :: fs2au = 41.3413733365613E0_realk
 Real(realk), pointer :: MW_Gradient(:)
 real(realk) :: Eerr,Etmp(1)
-! If mass-weighted coordinates are used
-If (dyn%Mass_Weight) then
+! If mass-weighted coordinates are used or projection requested
+If (dyn%Mass_Weight .OR. dyn%Proj_grad) then
    Call mem_alloc(MW_Gradient,3*NAtoms)
    MW_Gradient = Traj%Gradient
    Call Mass_weight_vector(nAtoms,MW_Gradient,Traj%Mass,'REMOVE')
+   If (.NOT. dyn%Mass_Weight) Call Mass_weight_vector(nAtoms,traj%Coordinates,Traj%Mass,'WEIGHT')
    ! Project gradient
    Call Project_Gradient(NAtoms,traj%Coordinates,traj%Mass,MW_gradient,dyn%PrintLevel,lupri)
+   ! Remove mass-weighting if projection in Cartesian
+   If (.NOT. dyn%Mass_Weight) then
+      Traj%Gradient = MW_Gradient
+      Call Mass_weight_vector(nAtoms,traj%Gradient,Traj%Mass,'WEIGHT')
+      Call Mass_weight_vector(nAtoms,traj%Coordinates,Traj%Mass,'REMOVE')
+   Endif
 Endif
 !
 ! Taking first Verlet half-step
@@ -425,13 +501,19 @@ Call LSTimer('Energy calc.',CPUTime,WallTime,lupri)
 Call LSTimer('*START',CPUTime,WallTime,lupri)
 Call Calc_gradient(lupri,NAtoms,S,F(1),D(1),ls,config,CMO,traj)
 Call LSTimer('Forces calc.',CPUTime,WallTime,lupri)
-! Mass-weight if needed
-If (dyn%Mass_Weight) then
-    MW_Gradient = Traj%Gradient
-    Call Mass_weight_vector(nAtoms,MW_Gradient,Traj%Mass,'REMOVE')
-    Call Mass_weight_vector(nAtoms,Traj%Coordinates,Traj%Mass,'WEIGHT')
+! Mass-weight if needed and project if requested
+If (dyn%Mass_Weight .OR. dyn%Proj_grad) then
+   MW_Gradient = Traj%Gradient
+   Call Mass_weight_vector(nAtoms,MW_Gradient,Traj%Mass,'REMOVE')
+   Call Mass_weight_vector(nAtoms,Traj%Coordinates,Traj%Mass,'WEIGHT')
    ! Project gradient
    Call Project_Gradient(NAtoms,traj%Coordinates,traj%Mass,MW_gradient,dyn%PrintLevel,lupri)
+   ! Remove mass-weighting if projection in Cartesian
+   If (.NOT. dyn%Mass_Weight) then
+      Traj%Gradient = MW_Gradient 
+      Call Mass_weight_vector(nAtoms,traj%Gradient,Traj%Mass,'WEIGHT')
+      Call Mass_weight_vector(nAtoms,traj%Coordinates,Traj%Mass,'REMOVE')
+   Endif
 Endif
 !
 ! New accelerations
@@ -458,13 +540,62 @@ Endif
 ! End of Verlet step
 !
 !
-If (dyn%Mass_Weight) then
+If (dyn%Mass_Weight)  then
    Call Mass_weight_vector(nAtoms,MW_Gradient,Traj%Mass,'WEIGHT')
    Traj%Gradient = MW_Gradient
-   Call mem_dealloc(MW_Gradient)
 Endif
+! Deallocate mass-weighted gradient
+If (dyn%Mass_Weight .OR. dyn%Proj_grad) Call mem_dealloc(MW_Gradient)
 !
 End subroutine Verlet_Step
+!================!
+! NH_chain       !
+!================!
+! Takes a time step for Nose-Hoover chain thermostat.
+! Uses Liouville operators and Trotter expansion.
+! According to Frenkel and Smit 'Understanding Molecular Simulation".
+Subroutine NH_chain(F,D,S,H1,CMO,ls,config,luerr,lupri,NAtoms,traj,dyn)
+Implicit none
+Integer :: lupri,luerr,NAtoms,i,j
+Type(lsitem), intent(inout) :: ls
+Type(ConfigItem), intent(inout) :: Config
+Type(Dyntype), intent(inout) :: dyn
+Type(trajtype), intent(inout) :: Traj
+Type(Matrix), intent(inout) :: F(1),D(1)
+Type(Matrix), intent(inout) :: S,H1
+Type(Matrix), intent(inout) :: CMO       ! Orbitals
+Real(realk) :: CPUTime,WallTime
+Real(realk), parameter :: fs2au = 41.3413733365613E0_realk
+! If integration in mass-weighted coordinates ...
+If (dyn%Mass_Weight) then
+   ! Remove mass-weighting since thermostat is in Cartesian
+   Call Mass_weight_vector(nAtoms,traj%velocities,Traj%Mass,'REMOVE')
+Endif
+!
+  Call SinglelinesInt(lupri, 'Trajectory Step Number ', traj%StepNum, 34)
+  Write(lupri,'(A,F10.5)') ' Current time       : ', traj%TrajTime
+! First we apply Lc...
+Call L_c(traj%eta,traj%v_eta,dyn%TimeStep*fs2au,dyn%Temp,dyn%CLen,&
+& dyn%MStep,traj%velocities,dyn%Q,traj%mass,NAtoms)
+! Apply mass-weighting if needed: integrator is in both MW and Cart.
+If (dyn%Mass_Weight) then
+   Call Mass_weight_vector(nAtoms,traj%velocities,Traj%Mass,'WEIGHT')
+Endif
+! Then take a normal Verlet step
+Call Verlet_step(F,D,S,H1,CMO,ls,config,luerr,lupri,NAtoms,traj,dyn)
+! Remove mass-weighting if needed as thermostat is still in Cartesian...
+If (dyn%Mass_Weight) then
+   Call Mass_weight_vector(nAtoms,traj%velocities,Traj%Mass,'REMOVE')
+Endif
+! Finally apply Lc again
+Call L_c(traj%eta,traj%v_eta,dyn%TimeStep*fs2au,dyn%Temp,dyn%CLen,&
+& dyn%MStep,traj%velocities,dyn%Q,traj%mass,NAtoms)
+! Mass-weight final velocities if needed
+If (dyn%Mass_Weight) then
+   Call Mass_weight_vector(nAtoms,traj%velocities,Traj%Mass,'WEIGHT')
+Endif
+!
+End subroutine NH_chain
 !===============!
 ! Finalize_Step !
 !===============!
@@ -510,6 +641,17 @@ If (dyn%PrintLevel >= 3) Then
       Call Print_Vector(lupri, NAtoms, traj%Labels, Cartesian_Velocities)
    Endif
 Endif
+! Print NHC thermostat variables
+If (dyn%NHChain) then
+  Call LSHeader(lupri, 'New Nose-Hoover chain thermostat coordinates (au):')
+  Do i = 1, dyn%CLen
+     Write(lupri,'(F15.10)') traj%eta(i)
+  Enddo
+  Call LSHeader(lupri, 'New Nose-Hoover chain thermostat velocities (au):')
+  Do i = 1, dyn%CLen
+     Write(lupri,'(F15.10)') traj%v_eta(i)
+  Enddo
+Endif
 !
 !
 traj%StepNum = traj%StepNum + 1
@@ -539,6 +681,7 @@ Integer :: lupri,NAtoms,i
 Type(lsitem), intent(in) :: ls 
 Type(dyntype), intent(inout) :: dyn
 Type(trajtype), intent(inout) :: traj
+Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6 ! [Hartree/(K)]
 !
 Call DoublelinesInt(lupri, 'Final information for trajectory ', 1, 44)
 Write(lupri,'(A,F10.5)') ' Final time       : ', traj%TrajTime
@@ -584,6 +727,12 @@ Endif
         Sqrt(Sum((traj%CurrAngMom-traj%InitialAngMom)&
         &*(traj%CurrAngMom-traj%InitialAngMom)))
   Write(lupri,'(//)')
+! Save final temperature
+If (dyn%NHChain) then
+   traj%T_array(traj%StepNum+1) = 2*traj%CurrKinetic/(3*NAtoms*Boltzmann) 
+   ! Temperature fluctuation in case of Nose-Hoover chain thermostat
+   call print_temp(dyn%trajMax,traj%T_array,lupri)
+Endif
 !
 ! Writing the phase space information to DALTON.PHS
 !
@@ -610,6 +759,7 @@ Type(lsitem) :: ls
 Type(ConfigItem), intent(inout) :: Config ! General information
 Real(realk), pointer :: Gradient(:,:)
 Real(realk) :: Eerr
+Real(realk) :: direction(3),R_a(3),R_b(3)
 ! Allocate gradient
 Call mem_alloc(Gradient,3,NAtoms)
 ! Calculate gradient
@@ -620,6 +770,20 @@ Do i = 1,NAtoms
 Enddo
 ! Deallocate gradient
 Call mem_dealloc(Gradient)
+! Add external force for steered molecular dynamics
+If (config%dynamics%Steered) then
+   ! Define the direction
+   R_a = traj%Coordinates(config%dynamics%Att_atom(1)*3-2:config%dynamics%Att_atom(1)*3)
+   R_b = traj%Coordinates(config%dynamics%Att_atom(2)*3-2:config%dynamics%Att_atom(2)*3)
+   direction = (R_b - R_a)/(sqrt(dot_product(R_b-R_a,R_b-R_a)))
+   ! Add external force
+   traj%Gradient(config%dynamics%Att_atom(1)*3-2:config%dynamics%Att_atom(1)*3) = &
+   traj%Gradient(config%dynamics%Att_atom(1)*3-2:config%dynamics%Att_atom(1)*3) &
+   & + direction*config%dynamics%Ext_force
+   traj%Gradient(config%dynamics%Att_atom(2)*3-2:config%dynamics%Att_atom(2)*3) = &
+   traj%Gradient(config%dynamics%Att_atom(2)*3-2:config%dynamics%Att_atom(2)*3) &
+   & - direction*config%dynamics%Ext_force
+Endif
 !
 end subroutine Calc_gradient
 !

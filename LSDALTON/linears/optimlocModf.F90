@@ -41,9 +41,11 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   real(realk), pointer      :: tmp(:)
   type(orbspread_data)         :: inp
   integer :: m_core
+  real(realk) :: TIMSTR,TIMEND
   type(matrix) :: SC,CSC,S
-
-
+  logical :: ForcePrint
+  ForcePrint =  .TRUE.
+  CALL LSTIMER('START ',TIMSTR,TIMEND,ls%lupri)
 
   nvirt=CMO%ncol - nocc
   nbas =CMO%nrow
@@ -180,6 +182,7 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   call mat_free(SC)
   call mat_free(CSC)
 
+  CALL LSTIMER('Orbital Localization',TIMSTR,TIMEND,ls%lupri,ForcePrint)
 
 end subroutine optimloc
 
