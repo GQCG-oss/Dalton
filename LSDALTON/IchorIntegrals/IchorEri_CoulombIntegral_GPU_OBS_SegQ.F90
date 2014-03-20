@@ -5127,4 +5127,718 @@ CONTAINS
         CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_general_size',-1)
     END SELECT
   end subroutine IchorCoulombIntegral_GPU_OBS_general_sizeSegQ
+  subroutine PrimitiveContractionGPUSegQ1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    !Due to Q being segmented the Q contraction have already been done and we need to 
+    !go from nPrimP to nContP
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    real(realk) :: tmp,BasisCont3(nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iPassP,iContA,iContB,iPrimB,iPrimA,tmp) &
+!!$OMP SHARED(nPasses,nContA,nContB,nPrimB,nPrimA,ACC,BCC,&
+!!$OMP        AUXarrayCont,AUXarray2,BasisCont3)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       tmp = 0.0E0_realk
+       do iPrimA=1,nPrimA
+        tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP)
+       enddo
+       BasisCont3(iPrimB) = tmp
+      enddo
+      do iContB=1,nContB
+       tmp = 0.0E0_realk
+       do iPrimB=1,nPrimB
+        tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
+       enddo
+       AUXarrayCont(iContA,iContB,iPassP) = tmp
+      enddo
+     enddo
+    enddo
+!$OMP END SINGLE
+!$OMP BARRIER
+!!$OMP END PARALLEL DO
+  end subroutine PrimitiveContractionGPUSegQ1
+
+
+   subroutine PrimitiveContractionGPUSegQ4(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(    4,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(    4,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(    4,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,    4
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,    4
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ4
+
+
+   subroutine PrimitiveContractionGPUSegQ10(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(   10,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   10,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(   10,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,   10
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,   10
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ10
+
+
+   subroutine PrimitiveContractionGPUSegQ20(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(   20,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   20,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(   20,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,   20
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,   20
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ20
+
+
+   subroutine PrimitiveContractionGPUSegQ35(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(   35,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   35,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(   35,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,   35
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,   35
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ35
+
+
+   subroutine PrimitiveContractionGPUSegQ16(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(   16,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   16,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(   16,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,   16
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,   16
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ16
+
+
+   subroutine PrimitiveContractionGPUSegQ40(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(   40,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   40,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(   40,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,   40
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,   40
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ40
+
+
+   subroutine PrimitiveContractionGPUSegQ80(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(   80,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(   80,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(   80,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,   80
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,   80
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ80
+
+
+   subroutine PrimitiveContractionGPUSegQ140(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(  140,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  140,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(  140,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,  140
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,  140
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ140
+
+
+   subroutine PrimitiveContractionGPUSegQ100(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(  100,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  100,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(  100,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,  100
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,  100
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ100
+
+
+   subroutine PrimitiveContractionGPUSegQ200(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(  200,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  200,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(  200,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,  200
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,  200
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ200
+
+
+   subroutine PrimitiveContractionGPUSegQ350(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(  350,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  350,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(  350,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,  350
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,  350
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ350
+
+
+   subroutine PrimitiveContractionGPUSegQ400(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(  400,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  400,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(  400,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,  400
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,  400
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ400
+
+
+   subroutine PrimitiveContractionGPUSegQ700(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2(  700,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont(  700,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3(  700,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1,  700
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1,  700
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ700
+
+
+   subroutine PrimitiveContractionGPUSegQ1225(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
+       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)
+    implicit none
+    !Warning Primitive screening modifies this!!! 
+    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
+    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: AUXarray2( 1225,nPrimA,nPrimB,nPasses)
+    real(realk),intent(inout) :: AUXarrayCont( 1225,nContA,nContB,nPasses)
+    !
+    integer :: iPassP,iContA,iContB,iPrimA,iPrimB
+    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
+    real(realk) :: TMP
+    real(realk) :: BasisCont3( 1225,nPrimB)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
+    do iPassP = 1,nPasses
+     do iContA=1,nContA
+      do iPrimB=1,nPrimB
+       do iTUV=1, 1225
+        TMP = 0.0E0_realk
+        do iPrimA=1,nPrimA
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+        enddo
+        BasisCont3(iTUV,iPrimB) = tmp
+       enddo
+      enddo
+      do iContB=1,nContB
+       do iTUV=1, 1225
+        TMP = 0.0E0_realk
+        do iPrimB=1,nPrimB
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+        enddo
+        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+       enddo
+      enddo
+     enddo
+    enddo
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+   end subroutine PrimitiveContractionGPUSegQ1225
+
 END MODULE IchorEriCoulombintegralGPUOBSGeneralModSegQ

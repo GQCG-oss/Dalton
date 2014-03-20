@@ -5141,9 +5141,11 @@ CONTAINS
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     real(realk) :: tmp,BasisCont3(nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iPassP,iContA,iContB,iPrimB,iPrimA,tmp,BasisCont3) &
-!$OMP SHARED(nPasses,nContA,nContB,nPrimB,nPrimA,ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iPassP,iContA,iContB,iPrimB,iPrimA,tmp) &
+!!$OMP SHARED(nPasses,nContA,nContB,nPrimB,nPrimA,ACC,BCC,&
+!!$OMP        AUXarrayCont,AUXarray2,BasisCont3)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5162,7 +5164,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
+!!$OMP END PARALLEL DO
   end subroutine PrimitiveContractionCPUSegQ1
 
 
@@ -5180,11 +5184,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(    4,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5207,7 +5212,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ4
 
 
@@ -5225,11 +5232,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(   10,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5252,7 +5260,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ10
 
 
@@ -5270,11 +5280,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(   20,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5297,7 +5308,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ20
 
 
@@ -5315,11 +5328,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(   35,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5342,7 +5356,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ35
 
 
@@ -5360,11 +5376,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(   16,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5387,7 +5404,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ16
 
 
@@ -5405,11 +5424,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(   40,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5432,7 +5452,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ40
 
 
@@ -5450,11 +5472,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(   80,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5477,7 +5500,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ80
 
 
@@ -5495,11 +5520,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(  140,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5522,7 +5548,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ140
 
 
@@ -5540,11 +5568,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(  100,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5567,7 +5596,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ100
 
 
@@ -5585,11 +5616,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(  200,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5612,7 +5644,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ200
 
 
@@ -5630,11 +5664,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(  350,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5657,7 +5692,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ350
 
 
@@ -5675,11 +5712,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(  400,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5702,7 +5740,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ400
 
 
@@ -5720,11 +5760,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3(  700,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5747,7 +5788,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ700
 
 
@@ -5765,11 +5808,12 @@ CONTAINS
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
     real(realk) :: BasisCont3( 1225,nPrimB)
-!$OMP PARALLEL DO DEFAULT(none) &
-!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!$OMP         BasisCont3,TMP) &
-!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!!$OMP PARALLEL DO DEFAULT(none) &
+!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
+!!$OMP         BasisCont3,TMP) &
+!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
+!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+!$OMP SINGLE
     do iPassP = 1,nPasses
      do iContA=1,nContA
       do iPrimB=1,nPrimB
@@ -5792,7 +5836,9 @@ CONTAINS
       enddo
      enddo
     enddo
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
+!$OMP END SINGLE
+!$OMP BARRIER
    end subroutine PrimitiveContractionCPUSegQ1225
 
 END MODULE IchorEriCoulombintegralCPUOBSGeneralModSegQ

@@ -3151,8 +3151,12 @@ CONTAINS
       integer :: AOAlphaStart,AOAlphaEnd,iA,iG,iB,iD,ABATCH,GBATCH
       character :: INTSPEC(5)
       type(DecAObatchinfo),pointer :: AObatchinfo(:)
-      logical :: SameMOL
+      logical :: SameMOL,ForcePrint
       real(realk) :: t1,t2
+      IF(ls%setting%IntegralTransformGC)THEN
+         call lsquit('di_decpackedJ requires .NOGCBASIS',-1)
+      ENDIF
+      ForcePrint = .TRUE.
       call mem_alloc(Dfull,D%nrow,D%ncol)
       call mat_to_full(D,1E0_realk,DFULL)
       iprint = 0
@@ -3164,7 +3168,7 @@ CONTAINS
       SameMOL = .TRUE.
       call LSTIMER('START',t1,t2,LUPRI)
       call SCREEN_ICHORERI_DRIVER(lupri,luerr,ls%setting,INTSPEC,SameMOL)
-      call LSTIMER('SCREENDECJ',t1,t2,LUPRI)
+      call LSTIMER('SCREENDECJ',t1,t2,LUPRI,ForcePrint)
 
       !step 1 Orbital to Batch information
       iAO = 1 !the center that the batching should occur on. 
@@ -3238,7 +3242,8 @@ CONTAINS
           ENDDO
         ENDDO BatchAlpha
       ENDDO BatchGamma
-      call LSTIMER('DECJ   ',t1,t2,LUPRI)
+
+      call LSTIMER('DECJ   ',t1,t2,LUPRI,ForcePrint)
       call mem_dealloc(AObatchinfo)
       call mat_init(Jdec,nbast,nbast)
       call mat_set_from_full(JdecFULL,1.0E0_realk,Jdec)
@@ -3257,6 +3262,7 @@ CONTAINS
       IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
          write(lupri,*)'QQQ SUCCESFUL DECPACK J TEST'
       ELSE
+         ! WARNING THIS COULD BE DUE TO FAMILY BASISSET 
          WRITE(lupri,*)'the Jref'
          call mat_print(J,1,nbast,1,nbast,lupri)
          WRITE(lupri,*)'the Jdec'
@@ -3283,11 +3289,15 @@ CONTAINS
       real(realk),pointer :: Dfull(:,:),JdecFull(:,:)
       integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx,nthreads,idx,nbatchesXY
       integer :: X,Y,dimX,dimY,batch_iX,batch_iY,i,k,MinAObatch,MaxAllowedDim,MaxActualDim,ib,id,ix,iy
-      logical :: doscreen,fullrhs,NOFAMILY
+      logical :: doscreen,fullrhs,NOFAMILY,ForcePrint
       TYPE(DECscreenITEM)    :: DecScreen
       integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
       type(batchtoorb), pointer :: batch2orb(:)
       character :: INTSPEC(5)
+      IF(ls%setting%IntegralTransformGC)THEN
+         call lsquit('di_decpackedJOLD requires .NOGCBASIS',-1)
+      ENDIF
+      ForcePrint = .TRUE.
       doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
 
       NOFAMILY = ls%setting%SCHEME%NOFAMILY
@@ -3394,7 +3404,7 @@ CONTAINS
             nullify(integrals)
          ENDDO BatchX
       ENDDO BatchY
-      call LSTIMER('DECJOLD',t1,t2,LUPRI)
+      call LSTIMER('DECJOLD',t1,t2,LUPRI,ForcePrint)
       call mat_init(Jdec,nbast,nbast)
       call mat_set_from_full(JdecFULL,CoulombFactor,Jdec)
       call mem_dealloc(JdecFULL)

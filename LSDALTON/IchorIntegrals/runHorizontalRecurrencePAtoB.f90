@@ -134,7 +134,8 @@ DO GPUrun = 1,2
              WRITE(*,'(A)')'!  real(realk) :: Tmp(nTUVA,nTUVB) ordering'
           ENDIF
           IF(DoOpenMP)THEN
-             WRITE(*,'(A)')'!$OMP PARALLEL DO DEFAULT(none)&'
+!             WRITE(*,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+             WRITE(*,'(A)')'!$OMP DO &'
              WRITE(*,'(A)')'!$OMP PRIVATE(iP,&'
              IF(JB.NE.0)THEN
                 DO JTMP=1,JB-1
@@ -144,16 +145,16 @@ DO GPUrun = 1,2
                       WRITE(*,'(A,I2,A)')'!$OMP         Tmp',JTMP,',&'
                    endif
                 ENDDO
-                WRITE(*,'(A)')'!$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &'
+                WRITE(*,'(A)')'!$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) '
              ELSE
-                WRITE(*,'(A)')'!$OMP         iTUVA) &'
+                WRITE(*,'(A)')'!$OMP         iTUVA) '
              ENDIF
-             WRITE(*,'(A)')'!$OMP SHARED(nTUVQ,nContQP,nPasses,&'
-             IF(JB.NE.0)THEN
-                WRITE(*,'(A)')'!$OMP         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
-             ELSE
-                WRITE(*,'(A)')'!$OMP         AuxCont,ThetaP)'
-             ENDIF
+!             WRITE(*,'(A)')'!$OMP SHARED(nTUVQ,nContQP,nPasses,&'
+!             IF(JB.NE.0)THEN
+!                WRITE(*,'(A)')'!$OMP         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
+!             ELSE
+!                WRITE(*,'(A)')'!$OMP         AuxCont,ThetaP)'
+!             ENDIF
           ENDIF
           IF(DoOpenACC)THEN
              WRITE(*,'(A)')'!$ACC PARALLEL LOOP &'
@@ -244,7 +245,8 @@ DO GPUrun = 1,2
           deallocate(CREATED)
 !          WRITE(*,'(A)')'   ENDDO'
           WRITE(*,'(A)')'  ENDDO'
-          IF(DoOpenMP)WRITE(*,'(A)')'!$OMP END PARALLEL DO'
+!          IF(DoOpenMP)WRITE(*,'(A)')'!$OMP END PARALLEL DO'
+          IF(DoOpenMP)WRITE(*,'(A)')'!$OMP END DO'
           IF(JP.LT.10)THEN
              WRITE(*,'(A,I1,A,I1,A,I1,A)')'end subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB'
           ELSE

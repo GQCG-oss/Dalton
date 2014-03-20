@@ -71,6 +71,8 @@ contains
     type(array) :: cbai ! integrals (AI|BC) in the order (C,B,A,I)
 #ifdef VAR_MPI
     integer :: nodtotal
+    real(realk) :: jaik_norm, abij_norm, cbai_norm
+    real(realk) :: ccsdpt_doubles_norm, ccsdpt_doubles_2_norm, ccsdpt_singles_norm
 #endif
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
@@ -137,6 +139,18 @@ contains
 
     call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
 
+#ifdef VAR_MPI
+
+    print *,'proc no. ',infpar%lg_mynum,'after get_CCSDpT_integrals'
+    call array4_print_norm_nrm(jaik,jaik_norm)
+    call array4_print_norm_nrm(abij,abij_norm)
+    call array_print_norm_nrm(cbai,cbai_norm)
+    print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
+    print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
+    print *,'proc no. ',infpar%lg_mynum,'cbai_norm = ',cbai_norm
+
+#endif
+
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
     call array2_free(C_can_virt)
@@ -146,6 +160,18 @@ contains
     ! ***************************************************
 
     call ccsdpt_local_can_trans(ccsd_doubles,nocc,nvirt,Uocc,Uvirt)
+
+#ifdef VAR_MPI
+
+    print *,'proc no. ',infpar%lg_mynum,'after ccsdpt_local_can_trans'
+    call array4_print_norm_nrm(jaik,jaik_norm)
+    call array4_print_norm_nrm(abij,abij_norm)
+    call array_print_norm_nrm(cbai,cbai_norm)
+    print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
+    print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
+    print *,'proc no. ',infpar%lg_mynum,'cbai_norm = ',cbai_norm
+
+#endif
 
     ! Now we transpose the unitary transformation matrices as we will need these in the transformation
     ! of the ^{ccsd}T^{ab}_{ij}, ^{*}T^{a}_{i}, and ^{*}T^{ab}_{ij} amplitudes from canonical to local basis
@@ -202,6 +228,24 @@ contains
     call ijk_loop_par(nocc,nvirt,jaik,abij,cbai,trip_tmp,trip_ampl,ccsd_doubles,ccsd_doubles_portions,&
                     & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt,nodtotal)
 
+#ifdef VAR_MPI
+
+    print *,'proc no. ',infpar%lg_mynum,'after ijk_loop_par'
+    call array4_print_norm_nrm(jaik,jaik_norm)
+    call array4_print_norm_nrm(abij,abij_norm)
+    call array_print_norm_nrm(cbai,cbai_norm)
+    call array4_print_norm_nrm(ccsdpt_doubles,ccsdpt_doubles_norm)
+    call array4_print_norm_nrm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
+    call array2_print_norm_nrm(ccsdpt_singles,ccsdpt_singles_norm)
+    print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
+    print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
+    print *,'proc no. ',infpar%lg_mynum,'cbai_norm = ',cbai_norm
+    print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_norm = ',ccsdpt_doubles_norm
+    print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_2_norm = ',ccsdpt_doubles_2_norm
+    print *,'proc no. ',infpar%lg_mynum,'ccsdpt_singles_norm = ',ccsdpt_singles_norm
+
+#endif
+
 #else
 
     ! the serial version of the ijk-loop
@@ -234,6 +278,18 @@ contains
        call lsmpi_local_reduction(ccsdpt_doubles_2%val,nvirt,nocc,nvirt,nocc,infpar%master)
 
     end if reducing_to_master
+
+    if (infpar%lg_mynum .eq. infpar%master) then
+
+       print *,'proc no. ',infpar%lg_mynum,'after lsmpi_local_reduction'
+       call array4_print_norm_nrm(ccsdpt_doubles,ccsdpt_doubles_norm)
+       call array4_print_norm_nrm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
+       call array2_print_norm_nrm(ccsdpt_singles,ccsdpt_singles_norm)
+       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_norm = ',ccsdpt_doubles_norm
+       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_2_norm = ',ccsdpt_doubles_2_norm
+       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_singles_norm = ',ccsdpt_singles_norm
+
+    end if
 
     ! release stuff located on slaves
     releasing_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .ne. infpar%master)) then

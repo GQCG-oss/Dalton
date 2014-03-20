@@ -13,17 +13,15 @@ subroutine HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(    2:    4,1,nTUVQ*nContQP*nPasses)
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iP,&
-!$OMP         iTUVA) &
-!$OMP SHARED(nTUVQ,nContQP,nPasses,&
-!$OMP         AuxCont,ThetaP)
+!$OMP         iTUVA) 
   DO iP = 1,nTUVQ*nContQP*nPasses
      DO iTUVA=  2,  4
         ThetaP(iTUVA,1,IP) = AuxCont(iTUVA,IP)
      ENDDO
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_LHS_P1A1B0AtoB
 
 subroutine HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
@@ -37,11 +35,9 @@ subroutine HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
   real(realk) :: Xab,Yab,Zab
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iP,&
-!$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
-!$OMP SHARED(nTUVQ,nContQP,nPasses,&
-!$OMP         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)
+!$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) 
   DO iP = 1,nTUVQ*nContQP*nPasses
 !    iTUVQ = mod(IP-1,nTUVQ)+1
 !    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
@@ -61,7 +57,7 @@ subroutine HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
      ThetaP( 3, 4      ,IP) = AuxCont( 9,      IP) + Zab*AuxCont( 3,      IP) 
      ThetaP( 4, 4      ,IP) = AuxCont(10,      IP) + Zab*AuxCont( 4,      IP) 
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_LHS_P2A1B1AtoB
 
 subroutine HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
@@ -74,17 +70,15 @@ subroutine HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
   real(realk),intent(inout) :: ThetaP(    5:   10,1,nTUVQ*nContQP*nPasses)
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iP,&
-!$OMP         iTUVA) &
-!$OMP SHARED(nTUVQ,nContQP,nPasses,&
-!$OMP         AuxCont,ThetaP)
+!$OMP         iTUVA) 
   DO iP = 1,nTUVQ*nContQP*nPasses
      DO iTUVA=  5, 10
         ThetaP(iTUVA,1,IP) = AuxCont(iTUVA,IP)
      ENDDO
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_LHS_P2A2B0AtoB
 
 subroutine HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
@@ -98,11 +92,9 @@ subroutine HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
   real(realk) :: Xab,Yab,Zab
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iP,&
-!$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
-!$OMP SHARED(nTUVQ,nContQP,nPasses,&
-!$OMP         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)
+!$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) 
   DO iP = 1,nTUVQ*nContQP*nPasses
 !    iTUVQ = mod(IP-1,nTUVQ)+1
 !    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
@@ -131,7 +123,7 @@ subroutine HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
      ThetaP( 9, 4      ,IP) = AuxCont(19,      IP) + Zab*AuxCont( 9,      IP) 
      ThetaP(10, 4      ,IP) = AuxCont(20,      IP) + Zab*AuxCont(10,      IP) 
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_LHS_P3A2B1AtoB
 
 subroutine HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
@@ -147,12 +139,10 @@ subroutine HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
   real(realk) :: Xab,Yab,Zab
   real(realk) :: Tmp1(  5: 20,  2:  4)
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
-!$OMP PARALLEL DO DEFAULT(none)&
+!$OMP DO &
 !$OMP PRIVATE(iP,&
 !$OMP         Tmp1,&
-!$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
-!$OMP SHARED(nTUVQ,nContQP,nPasses,&
-!$OMP         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)
+!$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) 
   DO iP = 1,nTUVQ*nContQP*nPasses
 !    iTUVQ = mod(IP-1,nTUVQ)+1
 !    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
@@ -247,7 +237,7 @@ subroutine HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
      ThetaP( 9,10      ,IP) = Tmp1(19, 4) + Zab*Tmp1( 9, 4) 
      ThetaP(10,10      ,IP) = Tmp1(20, 4) + Zab*Tmp1(10, 4) 
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
 end subroutine HorizontalRR_CPU_LHS_P4A2B2AtoB
 #ifdef VAR_OPENACC
 

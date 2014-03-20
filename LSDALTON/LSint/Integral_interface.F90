@@ -2836,7 +2836,7 @@ TYPE(MATRIX),target   :: GAB
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR
 !
-Integer             :: nbast
+Integer             :: nbast1,nbast2
 !call lsquit('II_get_2int_ScreenMat not implemented ',-LUPRI)
 IF(setting%IntegralTransformGC)THEN
    !I do not think it makes sense to transform afterwards 
@@ -2844,9 +2844,10 @@ IF(setting%IntegralTransformGC)THEN
    call lsquit('II_get_2int_ScreenMat and IntegralTransformGC do not work',-1)
 ENDIF
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
-nbast = GAB%nrow
+nbast1 = GAB%nrow
+nbast2 = GAB%ncol
 call mat_zero(GAB)
-call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+call initIntegralOutputDims(setting%Output,nbast1,nbast2,1,1,1)
 setting%Output%RealGabMatrix = .TRUE.
 CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
      &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
