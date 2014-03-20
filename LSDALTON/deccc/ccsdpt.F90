@@ -214,7 +214,7 @@ contains
 #ifdef VAR_MPI
 
     ! the parallel version of the ijk-loop
-    call ijk_loop_par(nocc,nvirt,jaik,abij,cbai,ccsd_doubles,&
+    call ijk_loop_par(nocc,nvirt,jaik,abij,cbai,ccsd_doubles%val,&
                     & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt,nodtotal)
 
 #ifdef VAR_MPI
@@ -238,7 +238,7 @@ contains
 #else
 
     ! the serial version of the ijk-loop
-    call ijk_loop_ser(nocc,nvirt,jaik,abij,cbai,ccsd_doubles,&
+    call ijk_loop_ser(nocc,nvirt,jaik,abij,cbai,ccsd_doubles%val,&
                     & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
 
 #endif
@@ -349,7 +349,7 @@ contains
     type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     type(array)                 :: vvvo_pdm ! v^3 tiles from cbai, 1 == i, 2 == j, 3 == k
     !> ccsd doubles amplitudes
-    type(array4), intent(inout) :: ccsd_doubles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
     ! o*v^2 portions of ccsd_doubles
     real(realk), pointer, dimension(:,:,:) :: ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k
     !> triples amplitudes and 3d work array
@@ -434,7 +434,7 @@ contains
                   call array_get_tile(vvvo,j,vvvo_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
     
                   ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
-                  call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
                           & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
     
                   ! store j index
@@ -446,7 +446,7 @@ contains
                   call array_get_tile(vvvo,i,vvvo_pdm%elm1(1:nvirt**3),nvirt**3)
     
                   ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
-                  call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                           & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
     
                   ! store i index
@@ -459,11 +459,11 @@ contains
                   call array_get_tile(vvvo,j,vvvo_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
     
                   ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
-                  call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                           & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
     
                   ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
-                  call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
                           & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
     
                   ! store i and j indices
@@ -478,7 +478,7 @@ contains
                      call array_get_tile(vvvo,k,vvvo_pdm%elm1(2*nvirt**3+1:3*nvirt**3),nvirt**3)
      
                      ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
-                     call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,k),nvirt,nvirt,&
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
      
                      ! select type of tuple
@@ -497,8 +497,8 @@ contains
      
                      case(1)
 
-                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
-                                                & ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions_i,&
+                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
+                                                & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
                                                 & ccsd_doubles_portions_k,&
                                                 & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,3),&
                                                 & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
@@ -517,8 +517,8 @@ contains
      
                      case(2)
 
-                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
-                                                & ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions_i,&
+                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
+                                                & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
                                                 & ccsd_doubles_portions_j,&
                                                 & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,2),&
                                                 & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
@@ -537,9 +537,9 @@ contains
      
                      case(3)
 
-                        call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,i,k),&
-                                                & ccsd_doubles%val(:,:,j,i),ccsd_doubles%val(:,:,j,k),&
-                                                & ccsd_doubles%val(:,:,k,i),ccsd_doubles%val(:,:,k,j),&
+                        call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
+                                                & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
+                                                & ccsd_doubles(:,:,k,i),ccsd_doubles(:,:,k,j),&
                                                 & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
                                                 & ccsd_doubles_portions_k,vvvo_pdm%elm4(:,:,:,1),&
                                                 & vvvo_pdm%elm4(:,:,:,2),vvvo_pdm%elm4(:,:,:,3),&
@@ -597,7 +597,7 @@ contains
     type(array4), intent(inout) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
     type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     !> ccsd doubles amplitudes
-    type(array4), intent(inout) :: ccsd_doubles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
     ! o*v^2 portions of ccsd_doubles
     real(realk), pointer, dimension(:,:,:) :: ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k
     !> triples amplitudes and 3d work array
@@ -629,19 +629,19 @@ contains
  irun_ser: do i=1,nocc
 
           ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
-          call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+          call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                   & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 
     jrun_ser: do j=1,i
 
              ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
-             call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+             call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 
        krun_ser: do k=1,j
 
                     ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
-                    call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,k),nvirt,nvirt,&
+                    call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
     
                     ! select type of tuple
@@ -660,8 +660,8 @@ contains
     
                     case(1)
 
-                       call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles%val(:,:,i,k),&
-                                               & ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions_i,&
+                       call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
+                                               & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
                                                & ccsd_doubles_portions_k,&
                                                & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,k),&
                                                & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
@@ -680,8 +680,8 @@ contains
     
                     case(2)
 
-                       call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,j,i),&
-                                               & ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions_i,&
+                       call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
+                                               & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
                                                & ccsd_doubles_portions_j,&
                                                & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,j),&
                                                & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
@@ -700,9 +700,9 @@ contains
     
                     case(3)
 
-                       call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles%val(:,:,i,k),&
-                                               & ccsd_doubles%val(:,:,j,i),ccsd_doubles%val(:,:,j,k),&
-                                               & ccsd_doubles%val(:,:,k,i),ccsd_doubles%val(:,:,k,j),&
+                       call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
+                                               & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
+                                               & ccsd_doubles(:,:,k,i),ccsd_doubles(:,:,k,j),&
                                                & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
                                                & ccsd_doubles_portions_k,vvvo%elm4(:,:,:,i),&
                                                & vvvo%elm4(:,:,:,j),vvvo%elm4(:,:,:,k),&
