@@ -58,7 +58,7 @@ module pno_ccsd_module
      integer, pointer :: idx(:),idx1(:),idx2(:), p_idx(:,:), p_nidx(:), oidx1(:,:),oidx2(:,:)
      integer, pointer :: s_idx(:,:,:), s_nidx(:)
      integer :: pno,pno1,pno2,pnv,pnv1,pnv2, k, l, nidx1, nidx2, spacemax
-     logical :: skiptrafo,skiptrafo2,save_gvvvv_is,cyc,use_triangular
+     logical :: skiptrafo,skiptrafo2,save_gvvvv_is,cyc,use_triangular,PS
      real(realk), pointer :: iFock(:,:), Dens(:,:)
      integer(kind=8) :: maxsize, myload
      integer :: pair,paircontribs,paircontrib(2,2),rpd
@@ -444,7 +444,6 @@ module pno_ccsd_module
 
      !DEBUG: C2 term
      !**************
-     ref = 0.0E0_realk
      call array_reorder_4d( p10, goovv, no, no, nv, nv, [4,1,2,3], nul, w1 ) ! kjac -> ckja
      call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,3,4,1], nul, w2 ) ! aldj -> ldja
      call array_reorder_4d( p10, govov, no, nv, no, nv, [4,1,3,2], nul, w3 ) ! kdlc -> ckld
@@ -504,11 +503,11 @@ module pno_ccsd_module
      w2(1:o2v2) = w3(1:o2v2)
      call array_reorder_4d( p10, w3, nv, no, nv, no, [3,4,1,2], p10, w2)
 
-     !ref = ref + w2(1:o2v2)
+     ref = ref + w2(1:o2v2)
 
      call print_norm(w2,o2v2,nnorm,.true.)
      call print_norm(ref,o2v2,norm,.true.)
-     !write (*,*)' DEBUG E21/TOT:',sqrt(nnorm),sqrt(norm)
+     write (*,*)' DEBUG E21/TOT:',sqrt(nnorm),sqrt(norm)
 
      !part 2
      call ass_D2to1(oof,h1,[no,no])
@@ -611,6 +610,7 @@ module pno_ccsd_module
         pnv =  pno_cv(ns)%ns2
         pno =  pno_cv(ns)%n
         rpd =  pno_cv(ns)%rpd
+        PS  =  pno_cv(ns)%PS
 
         o   => pno_o2(ns)%elm1
 
@@ -622,18 +622,19 @@ module pno_ccsd_module
 
         !A2.1
         !Get the integral contribution, sort it first like the integrals then transform it
-        !call extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,pno_cv(ns)%n)
+        call extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,&
+           &pno_cv(ns)%n,PS)
 
         !A2.2
-        !call add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,pno_cv(ns)%n)
+        call add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,pno_cv(ns)%n,PS)
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  E2 Term part1, B2 !! 
         !!!!!!!!!!!!!!!!!!!!!!!!!
 
-        !call get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o,&
-        !&w1,w2,w3,w4,w5,goooo,govov,vvf,nspaces)
+        call get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o,&
+        &w1,w2,w3,w4,w5,goooo,govov,vvf,nspaces)
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1235,19 +1236,26 @@ module pno_ccsd_module
   !> \date december 2013
   ! 
   ! TODO: make this routine independent of the internal mem_allocations
-  subroutine do_overlap_trafo(ns1,ns2,pos_of_overlap,S,m,n,k,A,C,ptr,ptr2)
+  subroutine do_overlap_trafo(ns1,ns2,pos_of_overlap,S,m,n,k,A,C,ptr,ptr2,pC)
      implicit none
      integer, intent(in) :: pos_of_overlap,m,n,k,ns1,ns2
      type(PNOSpaceInfo),intent(inout) :: S(:)
      real(realk),intent(in),target :: A(:)
      real(realk),intent(inout),target :: C(:)
      real(realk),pointer,optional :: ptr(:),ptr2(:)
+     real(realk),optional :: pC
      real(realk),pointer :: S1(:,:)
      real(realk),pointer :: tmp1(:),tmp2(:), U(:,:), VT(:,:)
      integer :: ldS1,ldU,ldVT
      logical :: skiptrafo
      character :: tr1,tr2
+     real(realk), parameter :: nul = 0.0E0_realk
+     real(realk), parameter :: p10 = 1.0E0_realk
+     real(realk) :: preC
 
+
+     preC = 0.0E0_realk
+     if(present(pC))preC = pC
 
      call get_overlap_ptr(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1,U=U,ldU=ldU,VT=VT,ldVT=ldVT)
 
@@ -1260,13 +1268,13 @@ module pno_ccsd_module
            call mem_alloc(tmp1,ldS1 * n)
            call mem_alloc(tmp2,ldVT * n)
            if(tr2=='t')then
-              call dgemm('t','n',ldS1, n,ldU,  1.0E0_realk, U,ldU,A,k,0.0E0_realk,tmp1,ldS1)
-              call dgemm('t','n',ldVT,n,ldS1,1.0E0_realk, S1,ldS1,tmp1,ldS1,0.0E0_realk,tmp2,ldVT)
-              call dgemm('t','n',m,n,ldVT,  1.0E0_realk, VT,ldVT,tmp2,ldVT,0.0E0_realk,C,m)
+              call dgemm('t','n', ldS1, n, ldU, p10, U, ldU, A, k, nul, tmp1, ldS1 )
+              call dgemm('t','n', ldVT, n, ldS1,p10, S1,ldS1,tmp1,ldS1,nul,tmp2,ldVT)
+              call dgemm('t','n',m,n,ldVT,p10, VT,ldVT,tmp2,ldVT,preC,C,m)
            else if(tr2=='n')then
-              call dgemm('n','n',ldVT, n,k,  1.0E0_realk, VT,ldVT,A,k,0.0E0_realk,tmp2,ldVT)
-              call dgemm('n','n',ldS1,n,ldVT,1.0E0_realk, S1,ldS1,tmp2,ldVT,0.0E0_realk,tmp1,ldS1)
-              call dgemm('n','n',m,n,ldS1,  1.0E0_realk, U,ldU,tmp1,ldS1,0.0E0_realk,C,m)
+              call dgemm('n','n',ldVT, n,k, p10, VT,ldVT,A,k,nul,tmp2,ldVT)
+              call dgemm('n','n',ldS1,n,ldVT,p10, S1,ldS1,tmp2,ldVT,nul,tmp1,ldS1)
+              call dgemm('n','n',m,n,ldS1, p10, U,ldU,tmp1,ldS1,preC,C,m)
            else
               call lsquit("ERROR(do_overlap_trafo):this should never happen, check get_overlap_ptr",-1)
            endif
@@ -1277,13 +1285,13 @@ module pno_ccsd_module
            call mem_alloc(tmp1,ldS1 * m)
            call mem_alloc(tmp2,ldVT * m)
            if(tr1=='t')then
-              call dgemm('n','t',m,ldVT,k, 1.0E0_realk, A,m,VT,ldVT,0.0E0_realk,tmp2,m)
-              call dgemm('n','t',m,ldS1,ldVT,1.0E0_realk, tmp2,m,S1,ldS1,0.0E0_realk,tmp1,m)
-              call dgemm('n','t',m, n,ldS1,  1.0E0_realk, tmp1,m,U,ldU,0.0E0_realk,C,m)
+              call dgemm('n','t',m,ldVT,k, p10, A,m,VT,ldVT,nul,tmp2,m)
+              call dgemm('n','t',m,ldS1,ldVT,p10, tmp2,m,S1,ldS1,nul,tmp1,m)
+              call dgemm('n','t',m, n,ldS1,p10, tmp1,m,U,ldU,preC,C,m)
            else if(tr1=='n')then
-              call dgemm('n','n',m, ldS1,k,  1.0E0_realk, A,m,U,ldU,0.0E0_realk,tmp1,m)
-              call dgemm('n','n',m,ldVT,ldS1,1.0E0_realk, tmp1,m,S1,ldS1,0.0E0_realk,tmp2,m)
-              call dgemm('n','n',m,n,ldVT,  1.0E0_realk, tmp2,m,VT,ldVT,0.0E0_realk,C,m)
+              call dgemm('n','n',m, ldS1,k, p10, A,m,U,ldU,nul,tmp1,m)
+              call dgemm('n','n',m,ldVT,ldS1,p10, tmp1,m,S1,ldS1,nul,tmp2,m)
+              call dgemm('n','n',m,n,ldVT, p10, tmp2,m,VT,ldVT,preC,C,m)
            else
               call lsquit("ERROR(do_overlap_trafo):this should never happen, check get_overlap_ptr",-1)
            endif
@@ -1877,7 +1885,6 @@ module pno_ccsd_module
 
         else
 
-           print *,"i=",i, size(NU%d),size(U(1:n,i:n))
            NU%d = U(1:n,i:n)
 
         endif
@@ -1889,7 +1896,7 @@ module pno_ccsd_module
 
   end subroutine truncate_trafo_mat_from_EV
 
-  subroutine extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,n)
+  subroutine extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,n,PS)
      implicit none
      integer,intent(in) :: rpd,pno,no,pnv,nv,n
      integer,intent(in) :: idx(n)
@@ -1897,12 +1904,13 @@ module pno_ccsd_module
      real(realk),intent(inout) :: o(pnv*pnv*pno*pno)
      real(realk),intent(inout) :: w1(nv,rpd,nv,rpd)
      real(realk),pointer,intent(inout) :: w2(:)
+     logical, intent(in) :: PS
      real(realk),pointer :: check(:,:,:,:)
      integer :: i,j,a,b
      real(realk), parameter :: nul = 0.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
 
-     if(n==2.and.DECinfo%PNOtriangular)then
+     if( PS )then
         do b=1,nv
            do a=1,nv
               w1(a,1,b,1) = gvovo(a,idx(1),b,idx(2))
@@ -1920,7 +1928,7 @@ module pno_ccsd_module
         enddo
      endif
 
-     if(n==2.and.DECinfo%PNOtriangular)then
+     if( PS )then
         !transform integral contribution, no symmetry here
         call dgemm( 't', 'n', pnv, nv,  nv, p10, d,  nv, w1, nv, nul, w2, pnv )
         call dgemm( 'n', 'n', pnv, pnv, nv, p10, w2, pnv, d, nv, nul, o, pnv )
@@ -1934,14 +1942,15 @@ module pno_ccsd_module
   end subroutine extract_from_gvovo_transform_add
 
 
-  subroutine add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,n)
+  subroutine add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,n,PS)
      implicit none
      integer,intent(in) :: pno,no,pnv,nv,n
      real(realk), intent(in)    :: gvvvv(nv**4), t(pnv**2*pno**2), d(nv,pnv)
      real(realk), intent(out)   :: w1(:),w2(:),w3(:)
      real(realk), intent(inout) :: o(pnv**2*pno**2)
-     real(realk), parameter :: nul = 0.0E0_realk
-     real(realk), parameter :: p10 = 1.0E0_realk
+     logical, intent(in)        :: PS
+     real(realk), parameter     :: nul = 0.0E0_realk
+     real(realk), parameter     :: p10 = 1.0E0_realk
      !A2.2
      !transform to basis of space gvvvv(acbd) => gvvvv(\bar{a}\bar{c}\bar{b}\bar{d})
      call dgemm( 't', 'n', nv**3,     pnv, nv, p10, gvvvv, nv, d, nv, nul, w1, nv**3     )
@@ -1952,7 +1961,7 @@ module pno_ccsd_module
      !reorder corresponding integrals (w1) to gvvvv(\bar{a}\bar{b}\bar{c}\bar{d})and 
      call array_reorder_4d( p10, w2, pnv, pnv, pnv, pnv, [1,3,2,4], nul, w1 )
 
-     if(n==2.and.DECinfo%PNOtriangular)then
+     if( PS )then
         call dgemv('n',pnv**2,pnv**2,p10,w1,pnv**2,t,1,p10,o,1)
      else
         !amplitudes to t((\bar{c}\bar{d} i j)
@@ -1976,7 +1985,7 @@ module pno_ccsd_module
      character :: tr11,tr12,tr21,tr22
      real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:),h1(:), h2(:), r1(:,:),r2(:,:),d(:,:),d1(:,:)
      real(realk),pointer :: o(:),t(:),S1(:,:), t21(:)
-     logical :: skiptrafo, cyc
+     logical :: skiptrafo, cyc, PS, PS1
      integer :: space, a,i,b,j, nv,pno,pnv, ns2
      integer :: pno1,pnv1,Sidx1,ldS1, rpd1,rpd
      integer :: pair,paircontrib(2,2)
@@ -1996,6 +2005,7 @@ module pno_ccsd_module
      pnv =  pno_cv(ns)%ns2
      pno =  pno_cv(ns)%n
      rpd =  pno_cv(ns)%rpd
+     PS  =  pno_cv(ns)%PS
      t   => pno_t2(ns)%elm1
      o   => o2_space
 
@@ -2031,6 +2041,7 @@ module pno_ccsd_module
         pnv1 =  pno_cv(ns2)%ns2
         pno1 =  pno_cv(ns2)%n
         rpd1 =  pno_cv(ns2)%rpd
+        PS1  =  pno_cv(ns2)%PS
 
 
 
@@ -2041,7 +2052,7 @@ module pno_ccsd_module
         call ass_D1to4( w1,    p1, [rpd1,nv,rpd1,nv] )
         call ass_D1to4( govov, p2, [no,   nv,no, nv] )
 
-        if( pno1 == 2 .and. DECinfo%PNOtriangular )then
+        if( PS1 )then
 
            do pair = 1, paircontribs
 
@@ -2066,12 +2077,8 @@ module pno_ccsd_module
 
 
            do j=1,rpd1
-              do b=1,nv
-                 do i=1,rpd1
-                    do a=1,nv
-                       p1(i,a,j,b) = p2(idx1(i),a,idx1(j),b)
-                    enddo
-                 enddo
+              do i=1,rpd1
+                 p1(i,:,j,:) = p2(idx1(i),:,idx1(j),:)
               enddo
            enddo
            p1 => null()
@@ -2107,7 +2114,7 @@ module pno_ccsd_module
 
 
         !CODE FOR PAIR SPACES WITH RESTRICTIONS
-        if( pno1 == 2 .and. DECinfo%PNOtriangular )then
+        if( PS1 )then
 
            !loop over pair contributions kl and lk
            do pair = 1, paircontribs
@@ -2119,7 +2126,7 @@ module pno_ccsd_module
               call dgemm( 'n', 'n', nv, pnv, nv, p10, w1, nv, d, nv, nul, w3, nv )
               call dgemm( 't', 'n', pnv, pnv, nv, p10, d, nv, w3, nv, nul, w4, pnv )
 
-              if( pno == 2 )then
+              if( PS )then
                  p1(1,1,1,1) = p2(idx1(paircontrib(1,pair)),idx(1),idx1(paircontrib(2,pair)),idx(2))
               else
                  do j = 1,pno
@@ -2144,13 +2151,9 @@ module pno_ccsd_module
 
            !CODE FOR RECTANGULAR SPACE IN \sum_kl
         else
-           do b=1,nv
-              do j=1,pno1
-                 do a=1,nv
-                    do i=1,pno1
-                       p3(i,a,j,b) = p4(idx1(i),a,idx1(j),b)
-                    enddo
-                 enddo
+           do j=1,pno1
+              do i=1,pno1
+                 p3(i,:,j,:) = p4(idx1(i),:,idx1(j),:)
               enddo
            enddo
 
@@ -2161,7 +2164,7 @@ module pno_ccsd_module
            call dgemm( 't', 'n', pnv, rpd1**2*pnv, nv, p10, d, nv, w1, nv, nul, w4, pnv )
 
            !prepare 4 occupied integral goooo for B2 term
-           if(pno == 2 .and. DECinfo%PNOtriangular)then
+           if( PS )then
               do j=1,pno1
                  do i=1,pno1
                     p1(1,1,i,j) = p2(idx1(i),idx(1),idx1(j),idx(2))
@@ -2190,39 +2193,37 @@ module pno_ccsd_module
 
         endif
 
-        ! transform back, or in the case of ns==ns2 just order correctly
+        ! transform back, or in the case of ns==ns2 just order correctly and add
+        ! the contributions directly to the residual
         if(ns==ns2)then
-           call array_reorder_4d( p10, w2, rpd, rpd, pnv, pnv, [3,1,4,2], nul, w1 )
+           call array_reorder_4d( p10, w2, rpd, rpd, pnv, pnv, [3,1,4,2], p10, o )
         else
            call do_overlap_trafo(ns,ns2,2,pno_S,rpd**2*pnv1, pnv, pnv1,w2,w1)
            call array_reorder_4d( p10, w1, rpd, rpd, pnv1, pnv, [3,1,4,2], nul, w3 )
-           call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd**2*pnv, pnv1,w3,w1)
+           call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd**2*pnv, pnv1,w3,o,pC=p10)
         endif
 
-        ! add up the correcly ordered contributions
 
-        o = o + w1(1:rpd**2*pnv**2)
 
      enddo FullSpaceLoop
 
 
      !Add the E21 contribution
      !CODE FOR PAIR SPACES WITH RESTRICTIONS
-     if( pno == 2 .and. DECinfo%PNOtriangular )then
+     if( PS )then
 
         !contrib 1
-        call dgemm('n','t',pnv,pnv,pnv,p10,t,pnv,w5,pnv,nul,w2,pnv)
-
+        call dgemm('n','t',pnv,pnv,pnv,p10,t,pnv,w5,pnv,p10,o,pnv)
         !contrib 2
-        call dgemm('n','n',pnv,pnv,pnv,p10,w5,pnv,t,pnv,p10,w2,pnv)
-
-        o = o + w2(1:pnv*rpd*pnv*rpd)
+        call dgemm('n','n',pnv,pnv,pnv,p10,w5,pnv,t,pnv,p10,o,pnv)
 
      else
+
         call array_reorder_4d( p10, t, pnv, rpd, pnv, rpd, [3,4,1,2], nul, w1)
         call dgemm('n','n',pnv,rpd*pnv*rpd,pnv,p10,w5,pnv,w1,pnv,nul,w2,pnv)
         o = o + w2(1:pnv*rpd*pnv*rpd)
         call array_reorder_4d( p10, w2, pnv, rpd, pnv, rpd, [3,4,1,2], p10, o )
+
      endif
 
 
