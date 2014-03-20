@@ -5251,6 +5251,7 @@ C
 C
       RETURN
       END
+C /*  deck ccsd_symsq */
       SUBROUTINE CCSD_SYMSQ(DISTAB,ISYMAB,SCR)
 C
 C     Henrik Koch and Alfredo Sanchez.       1-July-1994

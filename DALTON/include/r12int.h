@@ -50,16 +50,48 @@ C
       !   to get the number of bytes needed to transfer the common block.
       !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
 C
+C
+C
+C
+C
+C
+C
       CHARACTER*10    FNVAJKL
       COMMON /R12FNS/ FNVAJKL
+C
+C
+C
+C
+C
       REAL*8          VCLTHR, SVDTHR, R12LEV
       COMMON /COMVCL/ VCLTHR, SVDTHR, R12LEV
+C
+C
+C
+C
+C
       INTEGER MBAS1(8), MBAS2(8), MBAS1T, MBAS2T, LU21INT, IOFFU21,
-     &        NORB1(8), NORB2(8), MBSMAX, NPLSH_R12
+     &        NORB1(8), NORB2(8), MBSMAX, NPLSH_R12, CMMMULLAST
       LOGICAL LAUXBS, NOAUXB
       COMMON /CMMMUL/ MBAS1, MBAS2, NORB1, NORB2, MBAS1T, MBAS2T,
      &        MBSMAX, NPLSH_R12,
      &        LAUXBS, NOAUXB
+      COMMON /CMMMUL/ CMMMULLAST 
+      !   Very important !!!
+      !   Always keep this variable as the last variable in the common block. 
+      !   If you add more variables to the block add them before <name>last.
+      !   This variable is used to synchronize slaves for parallel
+      !   calculations. Other than acting as a target to calculate the size of a common
+      !   block, they have no use.
+      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
+      !   to get the number of bytes needed to transfer the common block.
+      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+C
+C
+C
+C
+C
+C
       CHARACTER*8 LABEL
       COMMON /CMMOLL/ LABEL
       REAL*8  BRASCL,KETSCL

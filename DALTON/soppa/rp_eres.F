@@ -28,7 +28,7 @@ C NNEWTR: Numver of new trial vectors
 C FOCKD: The Fock Matrix
 C LFOCKD: Number of entries in the Fock Matrix
 C ISYMTR:
-C WORK: This is the name of the temporary work-vector (notice that the first element is 1 in the memory allocation)
+C WORK: temporary work-vector 
 C LWORK: Total needed length of the work-vector.
 
 #include "implicit.h"
@@ -59,11 +59,11 @@ C
 #include "iprtyp.h"
 #include "infpar.h"
 #include "parrpa.h" !This initializes most parameters for ERIDI1 and connects with the parallel calculation.
-c         integer :: numprocs, ierr
-c      call mpi_comm_size(mpi_comm_world, numprocs, ierr) !This call to comm_size makes loop 220 crash with a write statement!!!!! What the actual fuck???
 #endif
 
-
+C TODO Beyer
+      write(*,*) "Entered RP_ERES"
+C TODO ... Beyer
 C
 C------------------
 C     Add to trace.
@@ -263,8 +263,11 @@ C------------------------------------------------
 C              If direct calculate the integrals.
 C------------------------------------------------
 C
-C TODO delete/move/remove/rewrite these lines
 #ifdef VAR_MPI
+C TODO Beyer
+
+
+C TODO ... Beyer
 C qwer
 C asdfasdf
       if (.true.) then
@@ -276,8 +279,9 @@ C asdfasdf
 
       endif
 #endif
-      
 C ... F.Beyer
+C
+C
                IF (DIRECT) THEN
 C
                   KEND2  = KENDSV
@@ -416,6 +420,17 @@ C
 
 
   888    continue
+
+C TODO Beyer
+      write(*,*) "Look AFTER! From seq its the Fock matrix"
+      do i=1, 15
+         write(*,*) work(kfock+i-1)
+      enddo
+
+
+C TODO ... Beyer
+
+
 c BEYER: hele KFOCK matricen skal vaere samlet her! 
 C
 C====================================================
@@ -530,48 +545,37 @@ C
 #ifdef VAR_MPI
 C  /* Deck RPA_E_LIN_TRANSFORM */
       SUBROUTINE PAR_RP_ERES(WORK, LWORK, MYID)
-C AS OF DEC 2013 THIS IS NOT A FUNCTIONING ROUTINE!!!!
+C AS OF MARCH 2014 THIS IS NOT A FUNCTIONING ROUTINE!!!!
+C
 C Parallel subroutine for RP_ERES.F
-C Calculates the AO-FOCK matrix in parallel by distributing the two-electron integrals over several processes and assembling the partial Fock matrices from every process before returning.
+C Calculates the AO-FOCK matrix in parallel by distributing the two-electron integrals 
+C over several processes and assembling the partial Fock matrices from every process before returning.
 C
-C WORK is the array where master and every slave assembles the fock matrix incrementally
-C fock is the final assembled matrix 
-C Every slave calculates it own batch of intgrals depending on the last index in the two-electron integral.
-C Every iteration is added as a direct sum for the final matrix and all Fock matrices are sent back to the 
-C master for assembly after completing all iterations.
-C 
-C The CCRDAO routine is called by the master and the result is sent to every slave.
-C TODO:  There are calls to reduce later on and this collective operation will stall because not all processes participate in the parallel calculation.
-C TODO: implement a dynamic load balancing with a pool of jobs and maybe a mutex solution to handle job allocation
-C TODO: Implement a synchronization routine that uses iterative non-blocking sends to avoid the barrier/broadcast call when synching arrays and common block variables.
+C WORK is the array where master and every slave assembles the fock matrix incrementally. This is the 'output' of the subroutine.
 C
-C AS OF FEB 2013 THIS IS NOT A FUNCTIONING ROUTINE!!!!
-C
-C IMPORTANT! This routine is called from rp_eres. rp_eres takes the variable ISYMTR as an input parameter. To move ISYMTR to the common block /parrpa/ I have copied it to isympar (which is in the common block) right before calling PAR_RP_ERES. That is why ISYMTR is set equal to ISYMPAR at the beginning of this routine. If you do not update ISYMTR before calling PAR_RP_ERES the routine will not calculate two-electron integrals for the correct symmetries.
-
-
-
-
+C Every slave calculates its own batch of intgrals depending on the last index in the two-electron integral.
 
       use mpi 
+      use dyn_iadrpk
+
 #ifdef VAR_IFORT
-!      subroutine sleepqq is in IFPORT module. Sleeping time is in milliseconds
       use IFPORT, ONLY: SLEEPQQ
 #endif
-c aaincludes xxincludes
-C common blocks from RP_ERES
-C TODO comment on what common blocks are necessary where. That way if certain subroutine calls are removed, one can remove the common  block as well.
+! Parameter-only include files
 #include "implicit.h"
-#include "priunit.h" ! ## only lupri used
-#include "maxorb.h" ! parameters only 
-#include "maxash.h" ! only parameters ## should you keep at all???
-#include "mxcent.h" ! only parameters
-!#include "aovec.h" !eridi2 ! Only paramters #Only needed for initial rp_eres
-#include "iratdef.h" !Only parameters 
-#include "iprtyp.h" !Only parameters
-#include "infpar.h"
-
-#include "eribuf.h"!eridi2  !depends on MXCENT.h
+#include "priunit.h" 
+#include "maxorb.h" 
+#include "maxash.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "iprtyp.h" 
+#include "maxaqn.h" 
+#include "chrnos.h" 
+! These include files depend on previous include files
+#include "infpar.h" !TODO no need to common block update
+#include "eribuf.h" 
+! Experimental. I wont transfer this yet... I think it's already shared with the slaves... TODO check it out!!! TODO 
+#include "inftap.h"
 #include "ccorb.h"
 #include "infind.h"
 #include "blocks.h"
@@ -579,44 +583,35 @@ C TODO comment on what common blocks are necessary where. That way if certain su
 #include "ccsdsym.h"
 #include "ccsdio.h"
 #include "distcl.h"
-#include "cbieri.h" !eridi2
+#include "cbieri.h" 
 #include "soppinf.h"
 #include "parrpa.h"
-
-#include "maxaqn.h" !eridi2 !Parameters only
-#include "chrnos.h" !eridi2 !Only DATA/parameters
-
-#include "aobtch.h"!eridi2
-#include "odclss.h"!eridi2
-#include "ccom.h" !eridi2 !
-#include "ericom.h" !eridi2
-#include "eridst.h" !eridi2
-#include "erithr.h"   !eridi2
-#include "erimem.h"  !eridi2
-#include "odbtch.h"!eridi2
-#include "nuclei.h"!eridi2
-#include "inftap.h"!eridi2
-
+#include "aobtch.h"
+#include "odclss.h"
+#include "ccom.h" 
+#include "ericom.h" 
+#include "eridst.h" 
+#include "erithr.h"   
+#include "erimem.h"  
+#include "odbtch.h"
+#include "nuclei.h"
 #include "symmet.h"
 #include "r12int.h"
 #include "hertop.h"
-
 C Common blocks from  PICKAO
 #include "cbirea.h"
 c#include "shells.h" ! this conflicts with ccorb.h
 #include "erisel.h"
+#include "symsq.h"
 
-
-
-C***********************************************************************
 C     Intent of Dummy arguments
       integer, intent(in) :: myid, lwork
-      dimension work(lwork) !intent(inout) 
+      dimension work(lwork) 
 
 C     Variables for updating the slaves' /common/ blocks.
-      logical  :: transfercommonblocks=.true.  !Implicitly saved. Do NOT initialize in main block of code.
-      integer*8:: firstmem, lastmem !address memory. VERY large integer...
-      integer  :: bytesize 
+      logical  :: updatecommonblocks = .true.  !Implicitly saved. Do NOT initialize in main block of code.
+      integer*8:: firstmem, lastmem 
+      integer  :: bytesize, allocstatus
 
 C     Variables for the spinning barrier
       logical :: reset, release, flag, exitspinningbarrier 
@@ -625,40 +620,168 @@ C     MPI related and load balancing variables
       integer :: numprocs, sharedwork, rest, firstindex, lastindex
       integer :: isymtr, request 
       integer, dimension(MPI_STATUS_SIZE) :: mpistatus
-
+      
 C     Miscellaneous
       DIMENSION INDEXA(MXCORB)
-      DIMENSION FOCKD(LFOCK) ! This is the return value from this subroutine.
+      DIMENSION FOCKD(LFOCK) 
       logical :: debugging = .false.
+      real :: starttime, stoptime
 
-C*************************************************************************
+C**********************************************************************
 
 
+      write(*,*) myid, "entered par_rp_eres"
       isymtr = isympar !Inherit the symmetry from a common block.
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
 
+
 C**********************************************************
 C     Update all necessary common blocks
-C     Be aware that the mpi_real8 data type is due to the value of REAL in
-C     implicit.h. If this value changes, so should this.
+C     This large sequence of bcasts will only execute
+C     once per RPA calculation.
+C
+C     The <name> of the common block can be read from the <name>LAST
+C     variable in the getbytespan call.
 C**********************************************************
-C TODO add saved counter that makes sure this common block update is not performed every time PAR_RP_ERES is called!!!
 
+      commonblocktransfers: if (updatecommonblocks) then
+      call cpu_time(starttime)
 
-      ! THESE ARE THE WORKING BROADCASTS, PLEASE TO NOT DELETE THEM
-      call mpi_bcast(NTOT, lparrp, mpi_integer, 0, mpi_comm_world, ierr)
-      call mpi_bcast(work(1), kendsv, mpi_real8, 0,mpi_comm_world, ierr)
+      call getbytespan(lbuf, eribufLAST, bytesize)
+      call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
 
+      call getbytespan(luaorc, eritapLAST, bytesize)
+      call mpi_bcast(luaorc, bytesize, mpi_byte,0, mpi_comm_world, ierr)
 
-      ! Transfering /COMMON/ blocks from master to slaves
-      ! The <name> of the common block can be read from the <name>LAST
-      ! variable in the getbytespan call.
+      call getbytespan(nsym, ccorbLAST, bytesize)
+      call mpi_bcast(nsym, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(irow, infindLAST, bytesize)
+      call mpi_bcast(irow, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(centsh, blocksLAST, bytesize)
+      call mpi_bcast(centsh, bytesize, mpi_byte,0, mpi_comm_world, ierr)
+
       call getbytespan(skip, ccsdgninpLAST, bytesize)
       call mpi_bcast(skip, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
 
+      call getbytespan(ccs, ccmodelsLAST, bytesize)
+      call mpi_bcast(ccs, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
 
-      call getbytespan(, LAST, bytesize)
-      call mpi_bcast(, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+      call getbytespan(etmp, etmpLAST, bytesize)
+      call mpi_bcast(etmp, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(nckijmax, ccsdmaxLAST, bytesize)
+      call mpi_bcast(nckijmax, bytesize, mpi_byte,0,mpi_comm_world,ierr)
+
+      call getbytespan(nt1amx, ccsdsymLAST, bytesize)
+      call mpi_bcast(nt1amx, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(it2del, ccsdioLAST, bytesize)
+      call mpi_bcast(it2del, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(mxcall, distclLAST, bytesize)
+      call mpi_bcast(mxcall, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(runeri, cbieriLAST, bytesize)
+      call mpi_bcast(runeri, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(sotime, soppinfLAST, bytesize)
+      call mpi_bcast(sotime, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(nexci2, soppexcLAST, bytesize)
+      call mpi_bcast(nexci2, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(soorwc, rwinfLAST, bytesize)
+      call mpi_bcast(soorwc, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(ntot, parrpaLAST, bytesize)
+      call mpi_bcast(ntot, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(expbt, aobtchLAST, bytesize)
+      call mpi_bcast(expbt, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(nitcl, odclssLAST, bytesize)
+      call mpi_bcast(nitcl, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(thrs, ccomLAST, bytesize)
+      call mpi_bcast(thrs, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(gtotyp, ccomcLAST, bytesize)
+      call mpi_bcast(gtotyp, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(scrmab, ericomLAST, bytesize)
+      call mpi_bcast(scrmab, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(ndistr, eridstLAST, bytesize)
+      call mpi_bcast(ndistr, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(thrsh, erithrLAST, bytesize)
+      call mpi_bcast(thrsh, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(memadd, erimemLAST, bytesize)
+      call mpi_bcast(memadd, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(nodbch, odbtchLAST, bytesize)
+      call mpi_bcast(nodbch, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(charge, nucleiLAST, bytesize)
+      call mpi_bcast(charge, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(namn, nuclecLAST, bytesize)
+      call mpi_bcast(namn, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(maxrep, symmtiLAST, bytesize)
+      call mpi_bcast(maxrep, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(fmult, symmtrLAST, bytesize)
+      call mpi_bcast(fmult, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(gamac, comr12LAST, bytesize)
+      call mpi_bcast(gamac, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call mpi_bcast(fnvajkl, 10, mpi_character, 0, mpi_comm_world,ierr)
+
+      call mpi_bcast(vclthr, 24, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(mbas1, cmmmulLAST, bytesize)
+      call mpi_bcast(mbas1, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(jtop, hertopLAST, bytesize)
+      call mpi_bcast(jtop, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+      call getbytespan(zcmval, cbireaLAST, bytesize)
+      call mpi_bcast(zcmval, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(mulnam, cbirea_cLAST, bytesize)
+      call mpi_bcast(mulnam, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(nmulbs, cmmbasLAST, bytesize)
+      call mpi_bcast(nmulbs, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call getbytespan(i2bst, symsqLAST, bytesize)
+      call mpi_bcast(i2bst, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call mpi_bcast(work, kendsv, mpi_real8, 0, mpi_comm_world, ierr)! real8 datatype is given by implicit.h
+
+      call mpi_bcast(iadrpk_dim, 1, mpi_integer, 0,mpi_comm_world,ierr) 
+      if (.not. allocated(iadrpk) ) then
+         call get_iadrpk(lupri,nsym,muld2h,nbas,
+     &                   nbast,i2bst,iaodis,iaodpk)
+      endif
+
+      call cpu_time(stoptime)
+      if (myid.eq.0) then
+         if (iprint.gt.0) then !TODO fix this iprint level to something appropriate!
+            write(lupri,*) "Time to copy common blocks in par_rp_eres"
+     &                     ,(stoptime-startime)
+         endif
+      endif
+
+      updatecommonblocks = .false. !The implicit initialization assures this large transfer only ever happens once.
+      endif commonblocktransfers
+
+
 
 C **********************************************************
 C     LOAD BALANCING
@@ -680,7 +803,6 @@ C **********************************************************
 
 C     Normal static load balancing
       staticbalance: if (myid.eq.0) then
-         write(*,*) "Normal Balance chosen"
          firstindex = 1
          lastindex = sharedwork
       elseif ((myid.le.rest).and.(myid.ne.0)) then 
@@ -695,7 +817,6 @@ C     Normal static load balancing
 
 200   continue 
       lowbalance: if (myid.eq.0) then
-         write(*,*) "sparse Balance chosen"
          firstindex = 1
          lastindex = firstindex 
       elseif (myid.le.rest) then
@@ -705,68 +826,52 @@ C     Normal static load balancing
          firstindex = myid*sharedwork + rest + 1
          lastindex =  firstindex
       endif lowbalance
-      goto 666 !end of sparse balance
+      goto 666 !end of low-task  balance
 
 
 
 
 C **********************************************************
 C   SPINNING BARRIER 
-C
-C   TODO is it a better idea to create a communicator for the spinning slaves that includes the master?
-C   is it faster to do it that way rather than with a irecv?
-C   TODO It seems that MKL can schedule broadcast-stalled slaves for threaded applications, so maybe stall them
-C   with a broadcast instead of a spinning barrier.
-
-C   !!! This spinning barrier will only work if INTEL is used.
-C   The sleepqq command is not available otherwise !!!
-
 C   Spinning barrier in case there are too many processes compared
 C   to number of tasks.  The processes will sleep, enabling the 
 C   remaining processes to use them for threaded MKL applications.
+C   TODO It's very likely that a slave stalled by a bcast will be 
+C   available for the MKL library. Thus if INTEL is not availabe, a bcast
+C   solution might be applicable as well.
 C **********************************************************
-210   continue ! If there are more processes than tasks, this load balance is used.
+210   continue 
       if (myid.lt.rest) then      
-         write(*,*) "spinning balance in action"
+         if (iprint.gt.3) then
+            write(lupri,*)"Spinning load balance used in PAR_RP_ERES. ",
+     &                    "The number of employed processes might be ",
+     &                    "in excess of what is appropriate for this ", 
+     &                    "calculation."
+         endif
          firstindex = myid + 1 
          lastindex = myid + 1
       endif 
 
       exitspinningbarrier = .false. 
       call dzero(work(kfock), lfock) 
-
       spinningbarrier: if (myid.ge.ntot) then
          call mpi_irecv(exitspinningbarrier, 1, MPI_LOGICAL, 0, myid,
      &   mpi_comm_world, request, ierr) 
 
 130      continue 
 #ifdef VAR_IFORT
-         call sleepqq(100)  !sleep 100 milliseconds
+         call sleepqq(100)  
 #endif
          call mpi_test(request, flag, mpistatus, ierr)
          if (.not.exitspinningbarrier) then
-            goto 130
+            goto 130 ! Cycle...
          else
-             goto 800 !Skip to the assembly of the Fock matrix 
+             goto 800 ! Skip to the assembly of the Fock matrix 
          endif
       endif spinningbarrier
 
 
-C     ------------------------------------------------
-C     REDIRECTION POINT FOR ALL LOAD BALANCING SCHEMES
-C     ------------------------------------------------
-666   continue 
-
-      if (debugging) then 
-         write(*, '(a, i3, a, i2, a, i2, a, i3)' )
-     &   "Slave with ID:", myid, " has first index: "
-     &   ,firstindex, " and last index: ", lastindex," out of: ",ntot,
-     &   " total jobs."
-         write(lupri, '(a, i3, a, i2, a, i2, a, i3)' )
-     &   "Slave with ID:", myid, " has first index: "
-     &   ,firstindex, " and last index: ", lastindex," out of: ",ntot,
-     &   " total jobs."
-      endif
+666   continue  !redirection point for the static load balancing schemes
 
 C *******************************************
 C            Primary parallel loop. 
@@ -784,8 +889,7 @@ C *******************************************
                     CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
      &                          IPRINT)
                   ELSE
-C
-                     write(*,*) "about to call eridi2", myid
+
                      CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
      &                           WORK(KODCL1),WORK(KODCL2),
      &                           WORK(KODBC1),WORK(KODBC2),
@@ -794,71 +898,64 @@ C
      &                           WORK(KRDPP1),WORK(KRDPP2),
      &                           WORK(KCCFB1),WORK(KINDXB), 
      &                           WORK(KEND2),LWORK2,IPRINT)
-C
+
                   ENDIF
-C
-                  write(*,*) "done calling eridi2", myid
+
                   LRECNR = ((NBUFX(0) - 1)/IRAT) + 1 
-C
                   KRECNR  = KEND2
                   KEND2   = KRECNR + LRECNR
                   LWORK2  = LWORK  - KEND2
-C
+
                   CALL SO_MEMMAX ('RP_ERES.2B',LWORK2)
                   IF (LWORK2 .LT. 0) 
      &               CALL STOPIT('RP_ERES.2B',' ',KEND2,LWORK)
-C
-C
+
+
 C------------------------------------------------------------------------
 C              Loop over number of distributions in disk.
 C------------------------------------------------------------------------
-C
+
                idel2loop: DO 310 IDEL2 = 1,NUMDIS
-C
+
                   IDEL  = INDEXA(IDEL2)
                   ISYMD = ISAO(IDEL)
-C
                   ISYDIS = MULD2H(ISYMD,ISYMOP)
-C
                   IT2DEL(IDEL) = ICDEL1
                   ICDEL1       = ICDEL1 + NT2BCD(ISYDIS)
-C
+
 C---------------------------------------------
 C                 Work space allocation no. 3.
 C---------------------------------------------
-C
+
                   LXINT  = NDISAO(ISYDIS)
-C
                   KXINT   = KEND2
                   KEND3   = KXINT  + LXINT
                   LWORK3  = LWORK  - KEND3
-C
+
                   CALL SO_MEMMAX ('RP_ERES.3',LWORK3)
                   IF (LWORK3 .LT. 0) 
      &               CALL STOPIT('RP_ERES.3',' ',KEND3,LWORK)
-C
+
 C--------------------------------------------
 C                 Read in batch of integrals.
 C--------------------------------------------
-C
+
                   CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND3),LWORK3,
      &                        WORK(KRECNR),DIRECT)
-C
+
 C---------------------------------------------
 C                 Work space allocation no. 4.
 C---------------------------------------------
-C
+
                   LDSRHF = NDSRHF(ISYMD)
-C
                   KDSRHF  = KEND3
                   KEND4   = KDSRHF + LDSRHF
                   LWORK4  = LWORK  - KEND4
-C
+
                   CALL SO_MEMMAX ('RP_ERES.4',LWORK4)
                   IF (LWORK4 .LT. 0) 
      &               CALL STOPIT('RP_ERES.4',' ',KEND4,LWORK)
-C
-C
+
 C----------------------------------------------
 C                 Calculate the AO-Fock matrix.
 C----------------------------------------------
@@ -868,16 +965,15 @@ C
      &                               WORK(KFOCK),WORK(KEND4),
      &                               LWORK4,IDEL,ISYMD,ISYMTR)
                   ELSE
-
                      CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
      &                              WORK(KFOCK),WORK(KEND4),
      &                              LWORK4,IDEL,ISYMD,.FALSE.,
-     &                              'CrashIfNecessary',ISYMTR)
+     &                              'CrashPlease',ISYMTR)
                   END IF
   310          enddo idel2loop
   300       enddo doilll
 
-C
+
 C     The master sends a release signal to all 
 C     processes participating in the spinning barrier.
       if (numprocs.gt.ntot) then
@@ -889,21 +985,22 @@ C     processes participating in the spinning barrier.
             enddo
          endif
       endif
-C     ------------------------------------------------
-C     FLAG 800 IS THE REDIRECTION POINT FOR SLAVES FROM THE SPINNING BARRIER 
-C     ------------------------------------------------
+
+
+
+C     label 800 is the redirection point for slaves from the spinning barrier 
 800   continue 
 
 
-C     Assemble the Fock Matrix before exiting
-      if  (myid.eq.0) then
-         call mpi_reduce(MPI_IN_PLACE, fockd(1), lfock 
-     & , MPI_REAL, MPI_SUM,0, MPI_COMM_WORLD, ierr)
-      else
-         call mpi_reduce(work(kfock), fockd(1), lfock
-     &      , MPI_REAL, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
-      endif
 
+C     Assemble the Fock Matrix in the master's work array
+      if  (myid.eq.0) then
+         call mpi_reduce(MPI_IN_PLACE, work(kfock), lfock 
+     & , MPI_REAL8, MPI_SUM,0, MPI_COMM_WORLD, ierr)
+      else
+         call mpi_reduce(work(kfock), fockd, lfock
+     &      , MPI_REAL8, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+      endif
 
       RETURN
       END SUBROUTINE
@@ -917,51 +1014,66 @@ C     Assemble the Fock Matrix before exiting
 #ifdef VAR_MPI
 C /* deck getbytespan */
       subroutine getbytespan(firstvar, lastvar, bytespan)
-C This subroutine calculates the size of a commonblock in bytes.
+C Frederik Beyer, March 2014.
+C
+C This subroutine calculates the size of a common block in bytes.
 C Point the firstvar to the first variable in the common block  
 C and point lastvar to the last variable in the common block.
-C lastvar should have a name like <commonblockname>LAST
+C Lastvar should have a name like <commonblockname>LAST
 C ie. CCSDGNINPLAST (see include/ccsdinp.h for an example)
 C
 C These <name>LAST variables are only there to facilitate easy common block
 C transfers. They are never explicitly needed in a calculation. 
 C They should always be of type int.
 C
-C getbytespan calculates the total amount of bytes including the first
-C but excluding the last variable. 
-C
+C Getbytespan calculates the total amount of bytes needed for an MPI_BCAST 
+C to transfer the whole block in one go, including the first but excluding 
+C the last variable.
 
           use mpi
 #include "implicit.h"
 #include "priunit.h"
+#include "ccsdinp.h"
 
       integer, intent(out) :: bytespan
       intent(in)           :: firstvar, lastvar
-      integer*8            :: firstmem
-      integer*8            :: lastmem
-      integer, parameter   :: maxcommontransfer = 1000000
-      integer              :: ierr
+      integer*8            :: firstmem, lastmem
+      integer              :: totaltransfer = 0, temp
+      integer, parameter   :: maxcommontransfer = 5000000 !maximum transfer is currently 5MB in a single bcast
 
       call mpi_get_address(firstvar, firstmem, ierr) 
       call mpi_get_address(lastvar, lastmem, ierr) 
       bytespan = lastmem - firstmem 
 
+      temp = totaltransfer
+      totaltransfer = bytespan + temp
 
       if (bytespan.lt.1) then
+
+          if(debug) then
+             write(lupri,*)
+     &       "Non-sensical bytespan in subroutine getbytespan"
+          endif
           call quit('subroutine getbytespan calculated a non-sensical ',
-     &              'size for common block transfer.')
+     &    'size for common block transfer.')
+
       elseif (bytespan.gt.maxcommontransfer) then
-          write(*,*) "Size is: " , (bytespan - maxcommontransfer),
-     &               "bytes too large."
-          call quit('subroutine getbytespan found a common block ',
-     &             'transfer that exceeds the allotted maximum number ',
-     &             'of bytes. Increase the allowed size or check that ',
-     &             'the block is transferred as intended.')
-      else
-          return
+
+          if(debug.and.(myid.eq.0)) then
+              write(lupri, '(a, i8, a, i8, a)')
+     &       "NOTE! Common block of size ", bytespan, 
+     &       "was transferred. This is: ",(bytespan-maxcommontransfer), 
+     &       "Bytes in excess of the current maximum. This is not "
+     &       "critical but might indicate a slow parallel calculation."
+          endif
+
       endif
 
-
+      if (debug) then
+          write(lupri, '(a, i8)') 
+     &    "Running amount of Bytes transferred via getbytespan: ",
+     &    totaltransfer
+      endif
 
       return
       end subroutine 

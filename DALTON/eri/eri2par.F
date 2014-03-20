@@ -1001,6 +1001,7 @@ C
 #ifdef VAR_IFORT
 !     subroutine sleep is in IFPORT module
       use IFPORT, ONLY: SLEEP
+#endif
 #ifdef MOD_CGTO_DIFF_ERI
       use eri_basis_loops
 #endif
@@ -1036,7 +1037,7 @@ c
 !     - only intel ifort has a sleepqq counting in milliseconds (that I know of),
 !       the more common sleep(n) sleeps in at least one second, which is too long.
 !       (One could use an interface to the C routine usleep.)
-      CALL SLEEPQQ(TEN_4)
+!      CALL SLEEPQQ(TEN_4)
 #endif
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
@@ -1168,8 +1169,8 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
-         ELSE IF (IPRTYP.EQ.RPA_E_LINTRANS) THEN
-            CALL RPA_E_LIN_TRANSFORM(work, mwork, mytid )
+         ELSE IF (IPRTYP.EQ.PARA_RP_ERES) THEN
+            CALL PAR_RP_ERES(work, mwork, mytid )
          ELSE IF (IPRTYP.EQ.SLAVESLEEP) THEN
             CALL SLEEPSLAVES2()
 #ifdef MOD_CGTO_DIFF_ERI

@@ -1,7 +1,7 @@
 !     -*- mode: fortran -*-
 !     see abacus/herrdn.F for description.
       LOGICAL SHARE, SEGM, SPHR
-      real(8) ::      cent
+      real*8  :: cent
       integer ::                        NHKT        ,   KHKT        ,   &
      &                KCKT        ,     ISTBAO        , NUCO        ,   &
      &                JSTRT        ,    NSTRT        ,  MST        ,    &

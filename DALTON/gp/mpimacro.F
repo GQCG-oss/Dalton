@@ -293,7 +293,9 @@ C
 C /* deck sleepslaves*/
       subroutine sleepslaves(time)
 C This routine makes all slaves in mpi_comm_world enter a spinning sleep cycle.
-C This routine is a wrapper function for sleepslavess2 to make the code easier to read.
+C This routine is a helper function for sleepslavess2 to make the code easier to read.
+C This routine only affects the calling process (normally the master) the slaves are
+C sent to sleepslaves2.
 C
 C The first broadcast reaches the slaves waiting for a broadcast in eri/eri2par.F.
 C The slaves will sleep for <time> milliseconds and will then check if the master 
@@ -318,15 +320,34 @@ C F.Beyer Mar. 2014
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
+#include "slesla.h"
       INCLUDE 'mpif.h'
 
       integer, intent(in) :: time
+      integer :: numprocs
+      logical :: debug=.false.
 
-      if (myid.eq.0)  then
-         call mpi_bcast(86, 1, mpi_integer, mpi_comm_world, ierr)   !Starts the parallel calculation
-         call mpi_bcast(0, 1, mpi_integer, mpi_comm_world, ierr)    !Sets the print level for the slaves.
-         call mpi_bcast(time, 1, mpi_integer, mpi_comm_world, ierr) !sets the cycletime for the slaves.
+      !logical :: awake=.true. ! Implicit save statement
+      !COMMON /DOSLEEP/ awake
+
+      ! Make sure there are available processes to sleep
+      call mpi_comm_size(mpi_comm_world, numprocs, ierr) 
+      if (numprocs.lt.2) then
+         awake=.false.
       endif
+
+      if (awake) then
+         if (myid.eq.0)  then
+            call mpi_bcast(86, 1, mpi_integer, mpi_comm_world, ierr)   !Starts the parallel calculation
+            call mpi_bcast(0, 1, mpi_integer, mpi_comm_world, ierr)    !Sets the print level for the slaves.
+            call mpi_bcast(time, 1, mpi_integer, mpi_comm_world, ierr) !sets the cycletime for the slaves.
+         endif
+      else
+         if (debug) write(*,*) "Sleep was rejected"
+         continue
+      endif
+      
+      awake = .false. !Set this flag so the master will not inadverdently send unneccessary broadcasts. 
 #endif
       return
       end subroutine
@@ -351,18 +372,19 @@ C     As of Mar. 2014, sleep only works for Intel compilers
 #include "maxorb.h"
 #include "infpar.h"
       INCLUDE 'mpif.h'
+ 
 
       logical :: breakout, flag, releasesignal
       integer :: request, cycletime 
+      logical :: debug=.false.
 
-
+      ! Dont sleep if process is the master. This should never happen!
       if (mynum.eq.0) then 
          return 
       else
          call mpi_bcast(cycletime, 1, mpi_integer, mpi_comm_world, ierr)!receive the cycletime from the master    
          call mpi_irecv(breakout, 1, MPI_LOGICAL, 0, mynum, 
      &   mpi_comm_world, request, ierr)
-
          breakout = .false.
 C        Enter the sleep-cycle
 100      call mpi_test(request, flag, mpistatus, ierr) 
@@ -390,17 +412,26 @@ C TODO add documentation, intent, error handling and wrapper function
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
+#include "slesla.h"
 
+      !logical :: awake=.true. !Implicit save statement
+      !COMMON /DOSLEEP/ wake
+      
 #ifdef VAR_MPI
       include "mpif.h"
 
       integer :: request, numprocs
 
-      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
-      do i=1, (numprocs-1)
-         call mpi_isend(.true., 1, MPI_LOGICAL, i, i, 
-     &                  mpi_comm_world, request, ierr)
-      enddo
+      if (.not.awake) then
+         call mpi_comm_size(mpi_comm_world, numprocs, ierr)
+
+         do i=1, (numprocs-1)
+            call mpi_isend(.true., 1, MPI_LOGICAL, i, i, 
+     &      mpi_comm_world, request, ierr)
+         enddo
+         awake = .true.
+      endif
 #endif
+
       return
       end subroutine

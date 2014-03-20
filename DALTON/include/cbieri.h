@@ -29,7 +29,7 @@ C     IANGMO takes up space for 4 ints. That is not included in this counter
      &                OFFCNT, DIASRT, OLDCR1, CANIND, WRTSCR, NOWRIT,
      &                EXTPRI, INTPRI, DODIST, INTSKP, DISTST, WRTINT,
      &                FCKINT, PROFIL, NOLOCS, GRDZER, OLDDER, EXPERI,
-     &                DOERIP, ERITWO, CCRUN,  COMPRS, GENCON_ERI, NCLERI
+     &                DOERIP, ERITWO, CCRUN, COMPRS, GENCON_ERI, NCLERI,
      &                DGABAB, NDMAT,  IPROD1, IPROD2, IAOBCH, IPRNT1,
      &                IPRNT2, IPRERI, LBFINP, MAXDST, IANGMO, NSPMAX, 
      &                MAXDSD, MXBCH,  MXBCH0, IFITDM

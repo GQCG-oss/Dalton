@@ -522,6 +522,7 @@ C  /* Deck odcdrv */
 #include "aobtch.h"
 #include "iratdef.h"
 #include "infpar.h"
+#include "soppinf.h"
 C
       MAXDER = 0
       IF (GDER) MAXDER = 1
@@ -606,6 +607,10 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('ODCDRV','HERPRP',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
 C
+C TODO beyer!!! Right how this check will be true even when the slaves are not participating in the parallel calculation of the Fock matrix.
+C               Find a way to regulate this if necessary! (add another parameter?)
+      if (aorpa.or.aohrp.or.aosop.or.dcrpa.or.aosoc) goto 101
+C
       IF (SLAVE) THEN
          MXCLS2 = NODCL1*(NODCL2 + 1)/2
 C
@@ -634,6 +639,7 @@ C
      &                   CCFBT,INDXBT,WORK(KCOUNT),WORK(KCSQ),
      &                   WORK(KLAST),LWRK,IPRINT)
       ELSE
+ 101  continue  !This is RPA/SOPPA related; slaves participating in parallel calculations need access to this code. See par_rp_eres
          CALL ODCDR1(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
      &               IODPP1,IODPP2,RODPP1,RODPP2,
