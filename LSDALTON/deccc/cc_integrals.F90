@@ -1871,7 +1871,7 @@ contains
   
       ! accumulate tile
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
-        call array_accumulate_tile(pack_gmo,tile,tmp(1:ipack-1),ipack-1)
+        call array_accumulate_tile(pack_gmo,tile,tmp(1:ipack-1),ipack-1,125000000)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
       else
@@ -1894,7 +1894,7 @@ contains
 
       ! accumulate tile
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
-        call array_accumulate_tile(pack_gmo,tile,tmp(1:ipack-1),ipack-1)
+        call array_accumulate_tile(pack_gmo,tile,tmp(1:ipack-1),ipack-1,125000000)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
       else
@@ -1943,7 +1943,7 @@ contains
       ncopy = ntot*(ntot+1)*dimP*(dimP+1)/4
 
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
-        call array_get_tile(pack_gmo,tile,tmp,ncopy)
+        call array_get_tile(pack_gmo,tile,tmp,ncopy,125000000)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
@@ -1976,7 +1976,7 @@ contains
       ncopy = dimP*dimQ*ntot*(ntot+1)/2
 
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
-        call array_get_tile(pack_gmo,tile,tmp,ncopy)
+        call array_get_tile(pack_gmo,tile,tmp,ncopy,125000000)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
