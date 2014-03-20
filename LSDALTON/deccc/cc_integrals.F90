@@ -1209,10 +1209,9 @@ contains
     logical, intent(in) :: mpi_split
     
     real(realk) :: MemNeed, MemFree
-    integer(kind=long) :: min_mem, max_tile_sze, tile_sze
+    integer(kind=long) :: min_mem
     integer :: MinAOBatch, MinMOBatch, na, ng, nnod, magic
 
-    max_tile_sze = 125000000 ! (1GB)
     MinMOBatch = min(15,ntot)
     dimMO = MinMOBatch
     local = .false.
@@ -1259,8 +1258,6 @@ contains
     do while ((MemNeed<0.8E0_realk*MemFree).and.(dimMO<=ntot))
       dimMO = dimMO + 1
       call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
-      tile_sze = dimMO*dimMO*ntot*(ntot+1)/2
-      if ((nnod>1).and.(.not.local).and.(tile_sze>=max_tile_sze)) exit 
     end do
 
     if (dimMO>=ntot) then
