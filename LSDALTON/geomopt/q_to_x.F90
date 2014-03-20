@@ -25,14 +25,16 @@ Real(realk), parameter :: Conv_thresh = 1.0D-12
 Real(realk) CSTEP(MXCOOR)  ! Cartesian step
 Real(realk), pointer :: Ini_coord(:,:), Cart_step(:),q0(:),q(:),Int_step(:),Total_ds(:)
 Real(realk), pointer :: Bs_inv(:,:),Vectors(:,:),Bs(:,:),B_mat(:,:),Del_step(:), Left_ds(:)
+Real(realk), pointer :: linear(:)
 Real(realk) :: Int_step_norm
-Logical :: Converged, Finished
+Logical :: Converged, Finished, LinStep
 Integer :: N_Cart,N_Int,lupri,i,Counter,Cycles,nCent
 ! Initialize
 step_len = D1
 CSTEP = D0
 Converged = .FALSE.
 Finished = .FALSE.
+LinStep = .FALSE.
 Counter = 1
 Cycles = 0
 nCent = N_Cart/3
@@ -44,6 +46,7 @@ call mem_alloc(Left_ds,N_Cart-6)
 call mem_alloc(q0,N_Int)
 call mem_alloc(q,N_Int)
 call mem_alloc(Cart_step,N_Cart)
+call mem_alloc(linear,N_Cart)
 call mem_alloc(Bs_inv,N_Cart,N_Cart-6)
 call mem_alloc(Bs,N_Cart-6,N_Cart)
 Call mem_alloc(Vectors,N_Int,N_Cart-6)
@@ -62,6 +65,9 @@ Call DGEMV('T',N_Int,N_Cart-6,1.0E0_realk,Vectors,N_Int,&
 ! Save step in delocalized internals
 Total_ds = Del_step
 Left_ds = Total_ds
+! Get a linear estimate for the Cartesian step
+Call DGEMV('N',N_cart,N_Cart-6,1.0E0_realk,Bs_inv,N_Cart,Del_step,1,&
+& 0.0E0_realk,linear,1)
 ! Print delocalized step
 If (optinfo%IPrint .GE. 12) then
   call lsheader(lupri,'Step in delocalized internals:')
@@ -69,7 +75,11 @@ If (optinfo%IPrint .GE. 12) then
 Endif
 !
 Do while (Finished .EQV. .False.)
-  If (Counter .GE. 10) call lsquit('Unable to transform the step!',lupri)
+  If (Counter .GE. 10) then !call lsquit('Unable to transform the step!',lupri)
+     Finished = .TRUE.
+     LinStep = .TRUE.
+  Endif
+  If (.NOT. Linstep) then
   If (optinfo%New_stepping) then   ! High-order step
      Call Poly_stepping(Bs_inv,Vectors,Cart_step,Del_step,N_Cart,N_Int,N_Cart-6,Conv_thresh,&
     & Converged,step_len,lupri,optinfo) 
@@ -115,9 +125,15 @@ Do while (Finished .EQV. .False.)
         !
      Endif ! Finished
   Endif ! Converged
+  Endif ! Linstep
 Enddo
+! If the transformation diverged - revert to linear
+If (LinStep) then
+     call lsheader(lupri,'BT failed, reverting to linear transform')
+     CSTEP(1:N_Cart) = linear
+Endif
 ! Print summary
-If (optinfo%IPrint .GE. 5) then
+If ((optinfo%IPrint .GE. 5) .AND. (.NOT. LinStep)) then
   call lsheader(lupri,'Back transformation converged in:')
   WRITE(LUPRI,'(I10)') Counter+Cycles
   call lsheader(lupri,'runs.')
@@ -175,6 +191,7 @@ Endif
 !
 Call mem_dealloc(Ini_coord)
 Call mem_dealloc(Cart_step)
+Call mem_dealloc(linear)
 Call mem_dealloc(Int_step)
 Call mem_dealloc(Del_step)
 Call mem_dealloc(Total_ds)

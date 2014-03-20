@@ -30,6 +30,28 @@ F90_OBJS = \
         AGC_CPU_VerticalRecurrenceQPBSeg1Prim.o \
         AGC_CPU_VerticalRecurrenceQPCSeg1Prim.o \
         AGC_CPU_VerticalRecurrenceQPDSeg1Prim.o \
+        AGC_GPU_BuildRJ000Gen.o\
+        AGC_GPU_BuildRJ000Seg1Prim.o\
+        AGC_GPU_VerticalRecurrenceQPAGen.o \
+        AGC_GPU_VerticalRecurrenceQPBGen.o \
+        AGC_GPU_VerticalRecurrenceQPCGen.o \
+        AGC_GPU_VerticalRecurrenceQPDGen.o \
+        AGC_GPU_VerticalRecurrenceQPASegQ.o \
+        AGC_GPU_VerticalRecurrenceQPBSegQ.o \
+        AGC_GPU_VerticalRecurrenceQPCSegQ.o \
+        AGC_GPU_VerticalRecurrenceQPDSegQ.o \
+        AGC_GPU_VerticalRecurrenceQPASegP.o \
+        AGC_GPU_VerticalRecurrenceQPBSegP.o \
+        AGC_GPU_VerticalRecurrenceQPCSegP.o \
+        AGC_GPU_VerticalRecurrenceQPDSegP.o \
+        AGC_GPU_VerticalRecurrenceQPASeg.o \
+        AGC_GPU_VerticalRecurrenceQPBSeg.o \
+        AGC_GPU_VerticalRecurrenceQPCSeg.o \
+        AGC_GPU_VerticalRecurrenceQPDSeg.o \
+        AGC_GPU_VerticalRecurrenceQPASeg1Prim.o \
+        AGC_GPU_VerticalRecurrenceQPBSeg1Prim.o \
+        AGC_GPU_VerticalRecurrenceQPCSeg1Prim.o \
+        AGC_GPU_VerticalRecurrenceQPDSeg1Prim.o \
         AGC_CPU_TransferRecurrenceAtoCGen.o \
         AGC_CPU_TransferRecurrenceAtoDGen.o \
         AGC_CPU_TransferRecurrenceDtoAGen.o \
@@ -70,6 +92,46 @@ F90_OBJS = \
         AGC_CPU_TransferRecurrenceBtoDSeg1Prim.o \
         AGC_CPU_TransferRecurrenceDtoBSeg1Prim.o \
         AGC_CPU_TransferRecurrenceCtoBSeg1Prim.o \
+        AGC_GPU_TransferRecurrenceAtoCGen.o \
+        AGC_GPU_TransferRecurrenceAtoDGen.o \
+        AGC_GPU_TransferRecurrenceDtoAGen.o \
+        AGC_GPU_TransferRecurrenceCtoAGen.o \
+        AGC_GPU_TransferRecurrenceBtoCGen.o \
+        AGC_GPU_TransferRecurrenceBtoDGen.o \
+        AGC_GPU_TransferRecurrenceDtoBGen.o \
+        AGC_GPU_TransferRecurrenceCtoBGen.o \
+        AGC_GPU_TransferRecurrenceAtoCSegQ.o \
+        AGC_GPU_TransferRecurrenceAtoDSegQ.o \
+        AGC_GPU_TransferRecurrenceDtoASegQ.o \
+        AGC_GPU_TransferRecurrenceCtoASegQ.o \
+        AGC_GPU_TransferRecurrenceBtoCSegQ.o \
+        AGC_GPU_TransferRecurrenceBtoDSegQ.o \
+        AGC_GPU_TransferRecurrenceDtoBSegQ.o \
+        AGC_GPU_TransferRecurrenceCtoBSegQ.o \
+        AGC_GPU_TransferRecurrenceAtoCSegP.o \
+        AGC_GPU_TransferRecurrenceAtoDSegP.o \
+        AGC_GPU_TransferRecurrenceDtoASegP.o \
+        AGC_GPU_TransferRecurrenceCtoASegP.o \
+        AGC_GPU_TransferRecurrenceBtoCSegP.o \
+        AGC_GPU_TransferRecurrenceBtoDSegP.o \
+        AGC_GPU_TransferRecurrenceDtoBSegP.o \
+        AGC_GPU_TransferRecurrenceCtoBSegP.o \
+        AGC_GPU_TransferRecurrenceAtoCSeg.o \
+        AGC_GPU_TransferRecurrenceAtoDSeg.o \
+        AGC_GPU_TransferRecurrenceDtoASeg.o \
+        AGC_GPU_TransferRecurrenceCtoASeg.o \
+        AGC_GPU_TransferRecurrenceBtoCSeg.o \
+        AGC_GPU_TransferRecurrenceBtoDSeg.o \
+        AGC_GPU_TransferRecurrenceDtoBSeg.o \
+        AGC_GPU_TransferRecurrenceCtoBSeg.o \
+        AGC_GPU_TransferRecurrenceAtoCSeg1Prim.o \
+        AGC_GPU_TransferRecurrenceAtoDSeg1Prim.o \
+        AGC_GPU_TransferRecurrenceDtoASeg1Prim.o \
+        AGC_GPU_TransferRecurrenceCtoASeg1Prim.o \
+        AGC_GPU_TransferRecurrenceBtoCSeg1Prim.o \
+        AGC_GPU_TransferRecurrenceBtoDSeg1Prim.o \
+        AGC_GPU_TransferRecurrenceDtoBSeg1Prim.o \
+        AGC_GPU_TransferRecurrenceCtoBSeg1Prim.o \
         AGC_HorizontalRecurrencePAtoB.o \
         AGC_HorizontalRecurrencePBtoA.o \
         AGC_HorizontalRecurrenceQCtoD.o \
@@ -83,12 +145,18 @@ F90_OBJS = \
 	IchorSaveGab.o \
         IchorGammaTabulation.o \
         IchorEri_CoulombIntegral_McM_seg_seg_SSSS.o \
-        IchorEri_CoulombIntegral_OBS_Gen.o \
-        IchorEri_CoulombIntegral_OBS_SegQ.o \
-        IchorEri_CoulombIntegral_OBS_SegP.o \
-        IchorEri_CoulombIntegral_OBS_Seg.o \
-        IchorEri_CoulombIntegral_OBS_Seg1Prim.o \
-        IchorEri_CoulombIntegral_OBS_general.o \
+        IchorEri_CoulombIntegral_CPU_OBS_Gen.o \
+        IchorEri_CoulombIntegral_CPU_OBS_SegQ.o \
+        IchorEri_CoulombIntegral_CPU_OBS_SegP.o \
+        IchorEri_CoulombIntegral_CPU_OBS_Seg.o \
+        IchorEri_CoulombIntegral_CPU_OBS_Seg1Prim.o \
+        IchorEri_CoulombIntegral_CPU_OBS_general.o \
+        IchorEri_CoulombIntegral_GPU_OBS_Gen.o \
+        IchorEri_CoulombIntegral_GPU_OBS_SegQ.o \
+        IchorEri_CoulombIntegral_GPU_OBS_SegP.o \
+        IchorEri_CoulombIntegral_GPU_OBS_Seg.o \
+        IchorEri_CoulombIntegral_GPU_OBS_Seg1Prim.o \
+        IchorEri_CoulombIntegral_GPU_OBS_general.o \
 	IchorEri_GabIntegral_OBS_Gen.o \
 	IchorEri_GabIntegral_OBS_Seg.o \
 	IchorEri_GabIntegral_OBS_general.o \

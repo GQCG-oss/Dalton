@@ -462,29 +462,30 @@ C
          ONEPRP = .TRUE.
       END IF
 C
-      CALL TITLER('Output from HERMIT input processing','*',118)
-C
 C     **** Find Hermit input *****
 C
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
-  900 READ (LUCMD,'(A7)',ERR=910,END=920) WORD
-      CALL UPCASE(WORD)
-      IF ((WORD .EQ. '**HERMI') .OR. (WORD .EQ. '*HERMIT') .OR.
-     &    (WORD .EQ. '**INTEG')) THEN
+  900 READ (LUCMD,'(A7)',ERR=910,END=920) WORD1
+      CALL UPCASE(WORD1)
+      IF ((WORD1 .EQ. '**HERMI') .OR. (WORD1 .EQ. '*HERMIT') .OR.
+     &    (WORD1 .EQ. '**INTEG')) THEN
          GO TO 930
       ELSE
          GO TO 900
       END IF
   910 CONTINUE
          NWARN = NWARN + 1
-         WRITE (LUPRI,*) 'WARNING HERINP: error reading Dalton input'
+         WRITE (LUPRI,'(//A)')
+     &   'WARNING **INTEGRALS input: error reading Dalton input file'
   920 CONTINUE
-         WORD = '**END O'
+         WORD  = '**END O'
+         WORD1 = '**END O'
          GOTO 300
   930 CONTINUE
-      WORD1 = WORD
+C
+      CALL TITLER('Output from HERMIT input processing','*',118)
 C
 C     ***** Process input for COMMON  /CBIHER/  *****
 C
@@ -518,10 +519,10 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                GO TO 100
             END IF
-            WRITE (LUPRI,'(/,3A,/)')
-     *         ' Keyword ',WORD,' not recognized in HERINP.'
+            WRITE (LUPRI,'(/4A/)')
+     &         'ERROR: Keyword ',WORD,' not recognized under ',WORD1
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-            CALL QUIT('Illegal keyword in HERINP.')
+            CALL QUIT('Illegal keyword under '//WORD1)
   101    CONTINUE
             READ (LUCMD,*) IPRDEF
             GO TO 100
@@ -605,11 +606,11 @@ C
   120    CONTINUE
             READ (LUCMD, *) NPATOM
             IF (NPATOM .GT. MXCENT) THEN
-               WRITE (LUPRI,'(/A,/A,I3,/A,I3)')
-     &             ' Too many atoms selected.',
-     &             ' Number of atoms selected:    ',NPATOM,
-     &             ' Number of atoms allowed:     ',MXCENT
-               CALL QUIT('Error in HERINP')
+               WRITE (LUPRI,'(//2A/A,I8/A,I6)')
+     &             'ERROR: Too many atoms selected under ',WORD,
+     &             'ERROR: Number of atoms selected:',NPATOM,
+     &             'ERROR: Number of atoms allowed: ',MXCENT
+               CALL QUIT('Error in '//WORD1)
             END IF
             READ (LUCMD, *) (IPATOM(I),I=1,NPATOM)
             ALLATM = .FALSE.
@@ -894,9 +895,9 @@ C&&& Nuclear model
             ELSEIF(INUC.EQ.2) THEN
               GAUNUC = .TRUE.
             ELSE
-              WRITE(LUPRI,'(A,I5)')
-     &         '*** ERROR *** Unknown nuclear model:',INUC
-              CALL QUIT('*** ERROR *** HERINP: Unknown nuclear model')
+              WRITE(LUPRI,'(//3A,I5)')
+     &         '*** ERROR ',WORD1,' *** Unknown nuclear model:',INUC
+              CALL QUIT('*** ERROR '//WORD1//': Unknown nuclear model')
             ENDIF
             GO TO 100
 !      .SORT Integrals
@@ -1000,8 +1001,7 @@ C&&& Nuclear model
             ONEPRP = .TRUE.
             GO TO 100
   201    CONTINUE
-C Modified by Bin Gao, December 14, 2009
-C adds XYZ-ALL
+C Modified by Bin Gao, December 14, 2009: adds XYZ-ALL
             READ (LUCMD,'(A7)') FIELD3
             IF (.NOT. ((FIELD3 .EQ. 'XX-FGRD')
      &          .OR.   (FIELD3 .EQ. 'XY-FGRD')
@@ -1010,8 +1010,8 @@ C adds XYZ-ALL
      &          .OR.   (FIELD3 .EQ. 'YZ-FGRD')
      &          .OR.   (FIELD3 .EQ. 'ZZ-FGRD')
      &          .OR.   (FIELD3 .EQ. 'XYZ-ALL'))) THEN
-               WRITE (LUPRI,'(/,3A,/)') ' Field direction "',FIELD1,
-     &               '" illegal'
+               WRITE (LUPRI,'(/4A/)') 'ERROR: Field direction "',FIELD3,
+     &               '" illegal for input ',WORD
                CALL QUIT('Illegal field direction for QDBINT integrals')
             END IF
             QDBINT = .TRUE.
@@ -1303,7 +1303,7 @@ cs            ENDIF
       ELSE
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal prompt in HERINP.')
+         CALL QUIT('Illegal prompt in '//WORD1)
       END IF
   299 CONTINUE
 
@@ -1323,7 +1323,7 @@ cLig <>
          WRITE (LUPRI,'(/A)')
      *    ' FATAL ERROR in input: .SPIN-ORBIT and .SOTEST cannot '/
      *    /'both be specified.'
-          CALL QUIT('Error in HERMIT input.')
+          CALL QUIT('Error in **INTEGRALS input.')
       END IF
       IF (HAMILT) THEN
           IF (NOTWO) THEN
@@ -1703,12 +1703,12 @@ C
          END DO
          WRITE (LUPRI,'(/3A/)') ' Input module ',WORD,' nonexistent.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input modules',LUPRI)
-         CALL QUIT('Illegal input directive in HERINP.')
+         CALL QUIT('Illegal input directive in '//WORD1)
       ELSE
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,
      &      '" illegal or out of order.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input modules',LUPRI)
-         CALL QUIT('Program stopped in HERINP, error in prompt.')
+         CALL QUIT('Error in prompt in '//WORD1//', input section.')
       END IF
 
 !     DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',  ! TABDIR(1:4)

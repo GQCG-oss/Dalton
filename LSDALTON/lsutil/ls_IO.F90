@@ -11,8 +11,7 @@ use memory_handling
 use mat3d_mod, only: read_mat3d_from_disk, mat3d
 use molecule_type
 use molecule_typetype
-use LSTENSOR_OPERATIONSMOD, only: write_lstensor_to_disk, LSTENSOR, &
-     & read_lstensor_from_disk
+use LSTENSOR_OPERATIONSMOD, only: LSTENSOR
 use mat3d_mod, only: write_mat3d_to_disk, mat3d
 CONTAINS
 !> \brief initialise the IOitem
@@ -412,24 +411,9 @@ DO IAO=1,4
   ELSEIF (AOstring(IAO).EQ.AOpCharge) THEN
     Filename(iFilename:iFilename) = 'p'
     iFilename = iFilename + 1
-  ELSEIF (AOstring(IAO).EQ.AOS1p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't1'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOS2p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't2'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOS2p2cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't3'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOS2p2cGen) THEN
-    Filename(iFilename:iFilename+1) = 't4'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOP1p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't5'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOD1p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't6'
-    iFilename = iFilename + 2
+  ELSEIF (AOstring(IAO).EQ.AOelField) THEN
+    Filename(iFilename:iFilename) = 'f'
+    iFilename = iFilename + 1
   ELSE
     WRITE(LUPRI,'(1X,A,I1,2A)') 'Error! Wrong AOstring(',IAO,')=',AOstring(IAO),' in io_get_filename.'
     CALL lsQUIT('Error in io_get_filename Wrong AOstring',lupri)
@@ -562,24 +546,24 @@ DO i5=1,n5
 ENDDO
 END SUBROUTINE io_write_tensor
 
-!> \brief write lstensor to disk
-!> \author S. Reine and T. Kjaergaard
-!> \date 2010
-!> \param tensor the lstensor to be written to disk  
-!> \param Filename the filename
-!> \param IO the IOITEM
-!> \param LUPRI the logical unit number for the output file
-!> \param LUERR the logical unit number for the error file
-SUBROUTINE io_write_lstensor(tensor,Filename,IO,LUPRI,LUERR)
-implicit none
-Character(80) :: Filename
-Integer       :: LUPRI,LUERR
-type(lstensor) :: tensor
-TYPE(IOITEM)  :: IO
-CALL io_open(Filename,IO,LUPRI,LUERR)
-CALL write_lstensor_to_disk(tensor,io_iunit(IO,Filename),lupri)
-CALL io_close(Filename,IO,LUPRI,LUERR)
-END SUBROUTINE io_write_lstensor
+!!$!> \brief write lstensor to disk
+!!$!> \author S. Reine and T. Kjaergaard
+!!$!> \date 2010
+!!$!> \param tensor the lstensor to be written to disk  
+!!$!> \param Filename the filename
+!!$!> \param IO the IOITEM
+!!$!> \param LUPRI the logical unit number for the output file
+!!$!> \param LUERR the logical unit number for the error file
+!!$SUBROUTINE io_write_lstensor(tensor,Filename,IO,LUPRI,LUERR)
+!!$implicit none
+!!$Character(80) :: Filename
+!!$Integer       :: LUPRI,LUERR
+!!$type(lstensor) :: tensor
+!!$TYPE(IOITEM)  :: IO
+!!$CALL io_open(Filename,IO,LUPRI,LUERR)
+!!$CALL write_lstensor_to_disk(tensor,io_iunit(IO,Filename),lupri)
+!!$CALL io_close(Filename,IO,LUPRI,LUERR)
+!!$END SUBROUTINE io_write_lstensor
 
 !> \brief read mat to disk
 !> \author S. Reine and T. Kjaergaard
@@ -658,26 +642,26 @@ DO i5=1,n5
 ENDDO
 END SUBROUTINE io_read_tensor
 
-!> \brief read lstensor from disk
-!> \author S. Reine and T. Kjaergaard
-!> \date 2010
-!> \param tensor the lstensor to be written to disk  
-!> \param Filename the filename
-!> \param IO the IOITEM
-!> \param LUPRI the logical unit number for the output file
-!> \param LUERR the logical unit number for the error file
-SUBROUTINE io_read_lstensor(tensor,Filename,IO,LUPRI,LUERR)
-implicit none
-Character(80) :: Filename
-Integer       :: LUPRI,LUERR
-type(lstensor) :: tensor
-TYPE(IOITEM)  :: IO
-!$OMP CRITICAL
-CALL io_open(Filename,IO,LUPRI,LUERR)
-CALL read_lstensor_from_disk(tensor,io_iunit(IO,Filename),lupri)
-CALL io_close(Filename,IO,LUPRI,LUERR)
-!$OMP END CRITICAL
-END SUBROUTINE io_read_lstensor
+!!$!> \brief read lstensor from disk
+!!$!> \author S. Reine and T. Kjaergaard
+!!$!> \date 2010
+!!$!> \param tensor the lstensor to be written to disk  
+!!$!> \param Filename the filename
+!!$!> \param IO the IOITEM
+!!$!> \param LUPRI the logical unit number for the output file
+!!$!> \param LUERR the logical unit number for the error file
+!!$SUBROUTINE io_read_lstensor(tensor,Filename,IO,LUPRI,LUERR)
+!!$implicit none
+!!$Character(80) :: Filename
+!!$Integer       :: LUPRI,LUERR
+!!$type(lstensor) :: tensor
+!!$TYPE(IOITEM)  :: IO
+!!$!$OMP CRITICAL
+!!$CALL io_open(Filename,IO,LUPRI,LUERR)
+!!$CALL read_lstensor_from_disk(tensor,io_iunit(IO,Filename),lupri)
+!!$CALL io_close(Filename,IO,LUPRI,LUERR)
+!!$!$OMP END CRITICAL
+!!$END SUBROUTINE io_read_lstensor
 
 !Type(IOitem)         :: IO
 !IUNIT = -1

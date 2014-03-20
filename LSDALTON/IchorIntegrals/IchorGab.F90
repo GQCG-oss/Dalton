@@ -17,7 +17,7 @@ MODULE IchorGabmodule
   use IchorGammaTabulationModule
   use IchorParametersModule
 !debugging
-  use IchorEriCoulombintegralOBSGeneralMod, only: IchorCoulombIntegral_OBS_general
+  use IchorEriCoulombintegralCPUOBSGeneralMod, only: IchorCoulombIntegral_CPU_OBS_general
 
 public :: IchorGab
 private
@@ -399,24 +399,25 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
   ELSE
      nPass = nAtomsA*nAtomsB
   ENDIF
-!!$OMP PARALLEL DEFAULT(none) PRIVATE(iPass,IatomB,BcenterSpec,iBatchA,IatomA,&
-!!$OMP nPasses,MaxPasses,AcenterSpec,pcent,Pdistance12,PpreExpFac,TmpArray1,TmpArray2,&
-!!$OMP iBatchB,CDAB,BasisCont) SHARED(Bcenter,expB,ContractCoeffA,ContractCoeffB,expP,TABFJW,&
-!!$OMP reducedExponents,integralPrefactor,iPassA,iPassB,OutputStorage,Acenter,&
-!!$OMP expA) FIRSTPRIVATE(nPass,nAtomsB,nAtomsA,TriangularLHSAtomLoop,&
-!!$OMP nPrimA,nPrimB,nContA,nContB,nPrimP,PSegmented,INTPRINT,lupri,nContP,nTABFJW1,&
-!!$OMP nTABFJW2,AngmomA,AngmomB,PQorder,Spherical,TMParray1maxsize,TMParray2maxsize,&
-!!$OMP iBatchIndexOfTypeB,iBatchIndexOfTypeA,BasisContmaxsize)
-!  call mem_ichor_alloc(TmpArray1,TMParray1maxsize)
-!  call mem_ichor_alloc(TmpArray2,TMParray2maxsize) 
-!!$OMP CRITICAL
   allocate(TmpArray1(TMParray1maxsize))
   allocate(TmpArray2(TMParray2maxsize))
   allocate(BasisCont(BasisContmaxsize))
-!!$OMP END CRITICAL
+  call mem_ichor_alloc(TmpArray1) 
+  call mem_ichor_alloc(TmpArray2) 
+  call mem_ichor_alloc(BasisCont) 
   MaxPasses = 1
   nPasses = 1
-!!$OMP DO SCHEDULE(DYNAMIC,1)
+!$OMP PARALLEL DEFAULT(none) &
+!$OMP PRIVATE(iPass,iAtomA,iAtomB,iBatchB,BcenterSpec,iBatchA,AcenterSpec) &
+!$OMP SHARED(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,nAtomsA,&
+!$OMP        nAtomsB,nContB,nContP,nTABFJW1,nTABFJW2,AngmomA,AngmomB,&
+!$OMP        TMParray1maxsize,TMParray2maxsize,iBatchIndexOfTypeA,&
+!$OMP        iBatchIndexOfTypeB,OutputDim1,OutputDim2,BasisContmaxsize,&
+!$OMP        expB,ContractCoeffB,Bcenter,expA,ContractCoeffA,Acenter,&
+!$OMP        expP,TABFJW,reducedExponents,integralPrefactor,nPass,&
+!$OMP        pcent,PpreExpFac,OutputStorage,iPassA,iPassB,CDAB,&
+!$OMP        Psegmented,PQorder,Spherical,TriangularLHSAtomLoop,&
+!$OMP        Pdistance12,nPasses,MaxPasses,TmpArray1,TmpArray2,BasisCont)
   DO IPass = 1,nPass
      IF(TriangularLHSAtomLoop)THEN
         IatomA = iPassA(iPass)
@@ -425,8 +426,6 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
         IatomA = iPass - ((iPass-1)/nAtomsA)*nAtomsA
         IatomB = (iPass-1)/nAtomsA+1
      ENDIF
-!     print*,'IatomA',IatomA
-!     print*,'IatomB',IatomB
      iBatchB = iBatchIndexOfTypeB + IatomB
      BcenterSpec(1) = Bcenter(1,IatomB)
      BcenterSpec(2) = Bcenter(2,IatomB)
@@ -435,12 +434,13 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
      AcenterSpec(1) = Acenter(1,IatomA)
      AcenterSpec(2) = Acenter(2,IatomA)
      AcenterSpec(3) = Acenter(3,IatomA)
-!     print*,'iBatchA',iBatchA
-!     print*,'iBatchB',iBatchB
+!$OMP SINGLE
      CALL Build_qcent_Qdistance12_QpreExpFac(nPrimA,nPrimB,&
           & nContA,nContB,expA,expB,AcenterSpec,BcenterSpec,ContractCoeffA,&
           & ContractCoeffB,PSegmented,&
           & pcent,Pdistance12,PpreExpFac,INTPRINT)
+!$OMP END SINGLE
+!$OMP BARRIER
      call IchorGabIntegral_OBS_general(nPrimA,nPrimB,nPrimP,&
           & intprint,lupri,nContA,nContB,nContP,expP,&
           & ContractCoeffA,ContractCoeffB,&
@@ -450,19 +450,17 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
           & AcenterSpec,BcenterSpec,Spherical,&
           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
           & BasisContmaxsize,BasisCont)
+!$OMP SINGLE
      OutputStorage(iBatchA,iBatchB) = CDAB(1)
-!     print*,'OutputStorage(iBatchA,iBatchB)',OutputStorage(iBatchA,iBatchB)
+!$OMP END SINGLE
   ENDDO
-!!$OMP END DO NOWAIT
-
-!  call mem_ichor_dealloc(TmpArray1)
-!  call mem_ichor_dealloc(TmpArray2)
-!!$OMP CRITICAL
+!$OMP END PARALLEL
+  call mem_ichor_dealloc(TmpArray1)
   deallocate(TmpArray1)
+  call mem_ichor_dealloc(TmpArray2)
   deallocate(TmpArray2)
+  call mem_ichor_dealloc(BasisCont)
   deallocate(BasisCont)
-!!$OMP END CRITICAL
-!!$OMP END PARALLEL
   IF(TriangularLHSAtomLoop)THEN
      call mem_ichor_dealloc(iPassA)
      deallocate(iPassA)
