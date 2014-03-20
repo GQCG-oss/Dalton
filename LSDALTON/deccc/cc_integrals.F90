@@ -1209,9 +1209,10 @@ contains
     logical, intent(in) :: mpi_split
     
     real(realk) :: MemNeed, MemFree
-    integer(kind=long) :: min_mem
+    integer(kind=long) :: min_mem, max_tile_sze, tile_sze
     integer :: MinAOBatch, MinMOBatch, na, ng, nnod, magic
 
+    max_tile_sze = 125000000 ! (1GB)
     MinMOBatch = min(15,ntot)
     dimMO = MinMOBatch
     local = .false.
@@ -1236,10 +1237,10 @@ contains
       !    one sided communication.
 
       if (DECinfo%force_scheme.and.DECinfo%en_mem==5) then
-        print *,"!!FORCING MO-CCSD SCHEME!!"
+        print *,"!!FORCING MO-CCSD LOCAL SCHEME!!"
         local = .true.
       else if (DECinfo%force_scheme.and.DECinfo%en_mem==6) then
-        print *,"!!FORCING MO-CCSD SCHEME!!"
+        print *,"!!FORCING MO-CCSD PDM SCHEME!!"
         local = .false.
       else
         ! try first for scheme with highest requirements --> fastest
@@ -1258,6 +1259,8 @@ contains
     do while ((MemNeed<0.8E0_realk*MemFree).and.(dimMO<=ntot))
       dimMO = dimMO + 1
       call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
+      tile_sze = dimMO*dimMO*ntot*(ntot+1)/2
+      if ((nnod>1).and.(.not.local).and.(tile_sze>=max_tile_sze)) exit 
     end do
 
     if (dimMO>=ntot) then
@@ -1297,6 +1300,8 @@ contains
       write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
       write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
       return
+    else 
+      print '(a,F12.5,a)', ' Required memory :',MemNeed,' GB'
     end if
     Nbatch = (ntot-1)/dimMO + 1
 
@@ -1864,7 +1869,7 @@ contains
         end do
       end do
   
-      ! add to pdm array:
+      ! accumulate tile
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_accumulate_tile(pack_gmo,tile,tmp(1:ipack-1),ipack-1)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
@@ -1887,7 +1892,7 @@ contains
         end do
       end do
 
-      ! add to pdm array:
+      ! accumulate tile
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_accumulate_tile(pack_gmo,tile,tmp(1:ipack-1),ipack-1)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
