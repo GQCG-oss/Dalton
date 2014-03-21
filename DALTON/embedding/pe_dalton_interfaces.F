@@ -72,15 +72,14 @@
         end if
       end function pe_ifc_noneq_sol
 
-      subroutine pe_ifc_noneq(denmats, fckmats, nmats, work, nwrk)
+      subroutine pe_ifc_noneq(denmats, fckmats, nmats)
         use polarizable_embedding, only: pe_master
 #include "inforb.h"
-        integer, intent(in) :: nmats, nwrk
+        integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
-        real*8, dimension(nwrk), intent(inout) :: work
         call pe_master(runtype='noneq', denmats=denmats,
-     &                 fckmats=fckmats, nmats=nmats, dalwrk=work)
+     &                 fckmats=fckmats, nmats=nmats)
       end subroutine pe_ifc_noneq
 
       function pe_ifc_mep()
@@ -103,16 +102,14 @@
         end if
       end function pe_ifc_mep_noqm
 
-      subroutine pe_ifc_mepcalc(denmats, nmats, work, nwrk)
+      subroutine pe_ifc_mepcalc(denmats, nmats)
         use polarizable_embedding, only: pe_master
         use pe_variables, only: mep_qmcube
 #include "inforb.h"
-        integer, intent(in) :: nmats, nwrk
+        integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
-        real*8, dimension(nwrk), intent(inout) :: work
         if (mep_qmcube) then
-            call pe_master(runtype='mep', denmats=denmats,
-     &                     nmats=nmats, dalwrk=work)
+            call pe_master(runtype='mep', denmats=denmats, nmats=nmats)
         end if
       end subroutine pe_ifc_mepcalc
 
@@ -121,14 +118,12 @@
         call pe_master(runtype='mep')
       end subroutine pe_ifc_mepcalc_noqm
 
-      subroutine pe_ifc_london(fckmats, nmats, work, nwrk)
+      subroutine pe_ifc_london(fckmats, nmats)
         use polarizable_embedding, only: pe_master
 #include "inforb.h"
-        integer, intent(in) :: nmats, nwrk
+        integer, intent(in) :: nmats
         real*8, dimension(3*nmats*n2basx), intent(out) :: fckmats
-        real*8, dimension(nwrk), intent(inout) :: work
-        call pe_master('london', fckmats=fckmats, nmats=nmats,
-     &                 dalwrk=work)
+        call pe_master('london', fckmats=fckmats, nmats=nmats)
       end subroutine pe_ifc_london
 
 #if defined(VAR_MPI)
@@ -156,9 +151,6 @@
 !   INFORB: NNASHX, NNBASX, NNORBX, etc.
 !   INFTAP: LUIT2
 !
-
-      use polarizable_embedding, only: pe_master
-
       implicit none
 
 #include "priunit.h"
@@ -284,7 +276,7 @@
 
       allocate(fckao(nnbasx))
       call pe_master(runtype='fock', denmats=fdtao, fckmats=fckao,
-     &               nmats=1, energies=energy, dalwrk=wrk)
+     &               nmats=1, energies=energy)
       deallocate(fdtao)
 
       call uthu(fckao, fckmo, cmo, wrk, nbast, norbt)
@@ -407,7 +399,7 @@
         !--------------------------------------
         allocate(fxcaos(ncsim*nnbasx))
         call pe_master(runtype='response', denmats=fdtvaos,
-     &                 fckmats=fxcaos, nmats=ncsim, dalwrk=wrk(1:nwrk))
+     &                 fckmats=fxcaos, nmats=ncsim)
         deallocate(fdtvaos)
 
         do i = 1, ncsim
@@ -526,7 +518,7 @@
 
         allocate(fxoaos(nosim*nnbasx))
         call pe_master(runtype='response', denmats=bodtaos,
-     &                 fckmats=fxoaos, nmats=nosim, dalwrk=wrk(1:nwrk))
+     &                 fckmats=fxoaos, nmats=nosim)
         deallocate(bodtaos)
 
 
@@ -737,7 +729,7 @@
          allocate(fxcaos(ncsim*nnbasx))
          fxcaos = 0.0d0
          call pe_master(runtype='response', denmats=fdtvaos,
-     &                 fckmats=fxcaos, nmats=ncsim, dalwrk=wrk(1:nwrk))
+     &                 fckmats=fxcaos, nmats=ncsim)
          deallocate(fdtvaos)
 
          do i = 1, ncsim
@@ -1322,9 +1314,8 @@ C
             !-----------------------------------------------------------
             allocate(fcaos(10*nnbasx))
             fcaos = 0.0d0
-            call pe_master(runtype='response',
-     &                     denmats=dcaos, fckmats=fcaos,
-     &                     nmats=10, dalwrk=tmpwrk)
+            call pe_master(runtype='response', denmats=dcaos,
+     &                     fckmats=fcaos, nmats=10)
             deallocate(dcaos)
 
 !           write(lupri,*)'fxo(1k,2k)'
@@ -1854,9 +1845,8 @@ C
 
          allocate(fcaos(15*nnbasx))
          fcaos = 0.0d0
-         call pe_master(runtype='response',
-     &                  denmats=dcaos, fckmats=fcaos,
-     &                  nmats=15, dalwrk=wrk(1:nwrk))
+         call pe_master(runtype='response', denmats=dcaos,
+     &                  fckmats=fcaos, nmats=15)
          deallocate(dcaos)
 
          allocate(fcmo(nnorbx))

@@ -188,14 +188,14 @@ ERROR[1]="INCORRECT POTENTIAL"
 #
 # Energy tests
 #
-CRIT1=`$GREP "Monopoles * (\-|\-0)\.0153897....." $log | wc -l`
-CRIT2=`$GREP "Dipoles * ( |0)\.0041806....." $log | wc -l`
-CRIT3=`$GREP "Quadrupoles * (\-|\-0)\.0049045....." $log | wc -l`
-CRIT4=`$GREP "Octopoles * (\-|\-0)\.0022915....." $log | wc -l`
-CRIT5=`$GREP "Electronic * (\-|\-0)\.0394407....." $log | wc -l`
-CRIT6=`$GREP "Nuclear * ( |0)\.0386239....." $log | wc -l`
-CRIT7=`$GREP "Multipole * ( |0)\.0001230....." $log | wc -l`
-CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.0190990....." $log | wc -l`
+CRIT1=`$GREP "Monopoles * \-0*\.0153897....." $log | wc -l`
+CRIT2=`$GREP "Dipoles * 0*\.0041806....." $log | wc -l`
+CRIT3=`$GREP "Quadrupoles * \-0*\.0049045....." $log | wc -l`
+CRIT4=`$GREP "Octopoles * \-0*\.0022915....." $log | wc -l`
+CRIT5=`$GREP "Electronic * \-0*\.039440[67]....." $log | wc -l`
+CRIT6=`$GREP "Nuclear * 0*\.038623[89]....." $log | wc -l`
+CRIT7=`$GREP "Multipole * 0*\.0001230....." $log | wc -l`
+CRIT8=`$GREP "Total PE energy: * \-0*\.0190990....." $log | wc -l`
 CRIT9=`$GREP "Final HF energy: * \-188\.3173217....." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
 CTRL[2]=9

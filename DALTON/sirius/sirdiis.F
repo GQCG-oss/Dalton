@@ -1570,12 +1570,10 @@ C
         IF (PE_IFC_NONEQ_SOL() == 1) THEN
             CALL MEMGET('REAL', KFPEAO, NNBASX, WRK, KFREE, LFREE)
             IF (NASHT == 0 .OR. HSROHF) THEN
-                CALL PE_IFC_NONEQ(DAOSAV(:,1), WRK(KFPEAO), 1,
-     &                            WRK(KFREE), LFREE-KFREE+1)
+                CALL PE_IFC_NONEQ(DAOSAV(:,1), WRK(KFPEAO), 1)
             ELSE
                 CALL PE_IFC_NONEQ((DAOSAV(:,1)+DAOSAV(:,2)),
-     &                            WRK(KFPEAO), 1, WRK(KFREE),
-     &                            LFREE-KFREE+1)
+     &                            WRK(KFPEAO), 1)
             END IF
             CALL MEMGET('REAL', KFPEMO, NNORBX, WRK, KFREE, LFREE)
             WRK(KFPEMO:KFPEMO+NNORBX-1) = 0.0D0
@@ -1592,11 +1590,9 @@ C
             CALL QUIT('ERROR: .PEMEP requires also .MEP in *PEQM.')
         END IF
         IF (NASHT == 0 .OR. HSROHF) THEN
-            CALL PE_IFC_MEPCALC(DAOSAV(:,1), 1,
-     &                          WRK(KFREE), LFREE-KFREE+1)
+            CALL PE_IFC_MEPCALC(DAOSAV(:,1), 1)
         ELSE
-            CALL PE_IFC_MEPCALC((DAOSAV(:,1)+DAOSAV(:,2)), 1,
-     &                          WRK(KFREE), LFREE-KFREE+1)
+            CALL PE_IFC_MEPCALC((DAOSAV(:,1)+DAOSAV(:,2)), 1)
         END IF
       END IF
 #if defined (BUILD_PELIB)

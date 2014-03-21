@@ -154,10 +154,10 @@ fi
 #
 CRIT1=`$GREP "Optimization control: MCSCF converged" $log | wc -l`
 CRIT2=`$GREP "Monopoles * ( \-|\-0)\.016986" $log | wc -l`
-CRIT3=`$GREP "Dipoles * ( |0)\.005971" $log | wc -l`
+CRIT3=`$GREP "Dipoles * 0*\.005971" $log | wc -l`
 CRIT4=`$GREP "Quadrupoles * ( \-|\-0)\.009142" $log | wc -l`
 CRIT5=`$GREP "Electronic * ( \-|\-0)\.069879" $log | wc -l`
-CRIT6=`$GREP "Nuclear * ( |0)\.065533" $log | wc -l`
+CRIT6=`$GREP "Nuclear * 0*\.065533" $log | wc -l`
 CRIT7=`$GREP "Multipole * ( \-|\-0)\.0056076" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * ( \-|\-0)\.030111" $log | wc -l`
 CRIT9=`$GREP "Final MCSCF energy: * \-113\.919807" $log | wc -l`
@@ -168,9 +168,9 @@ ERROR[1]="GENERAL PEQM or PEQM ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Test of PEQM dipole moment
 #
-CRIT1=`$GREP "x * ( |0)\.147419" $log | wc -l`
+CRIT1=`$GREP "x * 0*\.147419" $log | wc -l`
 CRIT2=`$GREP "y * \-1\.280423" $log | wc -l`
-CRIT3=`$GREP "z * ( |0)\.037581" $log | wc -l`
+CRIT3=`$GREP "z * 0*\.037581" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[2]=3
 ERROR[2]="PEQM DIPOLE MOMENT NOT CORRECT"
@@ -178,8 +178,8 @@ ERROR[2]="PEQM DIPOLE MOMENT NOT CORRECT"
 #
 # Test of PEQM excitation energies
 #
-CRIT1=`$GREP "1        1  *  ( |0)\.15593" $log | wc -l`
-CRIT2=`$GREP "1        2  *  ( |0)\.35375" $log | wc -l`
+CRIT1=`$GREP "1        1  *  0*\.15593" $log | wc -l`
+CRIT2=`$GREP "1        2  *  0*\.35375" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[3]=2
 ERROR[3]="PEQM EXCITATION ENERGIES NOT CORRECT"
