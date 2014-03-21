@@ -45,8 +45,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use matrix_operations, only: set_matrix_default,max_no_of_matrices, no_of_matrices, &
        & no_of_matmuls, mat_init, mat_free, mat_assign,mat_scal, &
        & mat_mul, mat_no_of_matmuls, mat_write_to_disk, mat_read_from_disk, mat_diag_f,&
-       & mat_TrAB, mat_print, MatrixmemBuf_init, MatrixmemBuf_free, &
-       & MatrixmemBuf_print
+       & mat_TrAB, mat_print
   use configuration, only: config_shutdown, config_free,scf_purify
   use files, only: lsopen,lsclose
   use lsdalton_fock_module, only: lsint_fock_data
@@ -616,7 +615,7 @@ END SUBROUTINE LSDALTON_DRIVER
 
 SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use precision
-  use matrix_operations, only: MatrixmemBuf_init, set_matrix_default
+  use matrix_operations, only: set_matrix_default
   use init_lsdalton_mod, only: open_lsdalton_files
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
@@ -643,7 +642,6 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call set_matrix_default !initialize global matrix counters
   call init_rsp_util      !initialize response util module
   call lstmem_init
-  call MatrixmemBuf_init()
 #ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
 #endif
@@ -665,7 +663,6 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use memory_handling, only: stats_mem
   use files, only: lsclose
   use lstiming, only: lstimer, init_timers, print_timers
-  use matrix_operations, only: MatrixmemBuf_free
   use lstensorMem, only: lstmem_free
   use lspdm_tensor_operations_module,only:free_persistent_array
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
@@ -689,7 +686,6 @@ implicit none
 
   call lstmem_free
 
-  call MatrixmemBuf_free()
 #ifdef VAR_ICHOR
   call FreeIchorSaveGabModule()
 #endif

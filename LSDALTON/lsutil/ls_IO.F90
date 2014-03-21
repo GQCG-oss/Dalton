@@ -240,7 +240,7 @@ ENDIF
 IF(fileopen2)THEN
    CALL LSOPEN(IUNIT,FILENAME,'UNKNOWN','UNFORMATTED')
 ELSE
-   call matrixmembuf_Open(iunit,filename)
+   call lsquit('io_open: membuf',-1)
 ENDIF
 IO%isOpen(iFile) = .TRUE.
 IO%IUNIT(iFile)  = IUNIT
@@ -296,7 +296,7 @@ IF(fileclose2)THEN
    ENDIF
    CALL LSCLOSE(IUNIT,'KEEP')
 ELSE
-   call matrixmembuf_Close(iunit,.FALSE.)
+   call lsquit('membuf io_close',-1)
 ENDIF
 IO%isOpen(iFile) = .FALSE.
 IO%IUNIT(iFile)  = -1
@@ -479,17 +479,15 @@ END SUBROUTINE io_get_filename
 !> \param IO the IOITEM
 !> \param LUPRI the logical unit number for the output file
 !> \param LUERR the logical unit number for the error file
-SUBROUTINE io_write_mat(Mat,Filename,IO,OnMaster,LUPRI,LUERR)
+SUBROUTINE io_write_mat(Mat,Filename,IO,LUPRI,LUERR)
 implicit none
 Character(80) :: Filename
 Integer       :: LUPRI,LUERR,n1,n2,n3,n4,n5
 TYPE(matrix)  :: Mat
 TYPE(IOITEM)  :: IO
-logical       :: OnMaster
-CALL io_open(Filename,IO,LUPRI,LUERR,OnMaster)
-IF(.NOT.OnMaster)call matrixmembuf_Overwrite(io_iunit(IO,Filename),filename)
-CALL mat_write_to_disk(io_iunit(IO,Filename),Mat,OnMaster)
-CALL io_close(Filename,IO,LUPRI,LUERR,OnMaster)
+CALL io_open(Filename,IO,LUPRI,LUERR)
+CALL mat_write_to_disk(io_iunit(IO,Filename),Mat)
+CALL io_close(Filename,IO,LUPRI,LUERR)
 END SUBROUTINE io_write_mat
 
 !> \brief write tensor to disk
@@ -573,16 +571,15 @@ END SUBROUTINE io_write_tensor
 !> \param IO the IOITEM
 !> \param LUPRI the logical unit number for the output file
 !> \param LUERR the logical unit number for the error file
-SUBROUTINE io_read_mat(Mat,Filename,IO,OnMaster,LUPRI,LUERR)
+SUBROUTINE io_read_mat(Mat,Filename,IO,LUPRI,LUERR)
 implicit none
 Character(80) :: Filename
 Integer       :: LUPRI,LUERR,n1,n2,n3,n4,n5
 TYPE(matrix)  :: Mat
 TYPE(IOITEM)  :: IO
-logical       :: OnMaster
-CALL io_open(Filename,IO,LUPRI,LUERR,OnMaster)
-CALL mat_read_from_disk(io_iunit(IO,Filename),Mat,OnMaster)
-CALL io_close(Filename,IO,LUPRI,LUERR,OnMaster)
+CALL io_open(Filename,IO,LUPRI,LUERR)
+CALL mat_read_from_disk(io_iunit(IO,Filename),Mat)
+CALL io_close(Filename,IO,LUPRI,LUERR)
 END SUBROUTINE io_read_mat
 
 !> \brief read 5 dim array to disk
