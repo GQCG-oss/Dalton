@@ -12,7 +12,9 @@ DALTON
 
 - Default DIIS space increased from 5 to 8, often resulting in 1-2 fewer SCF iterations.
 - Removed the maximum of 20 excitations in summary output for second and third order transition moments.
-
+- aug-cc-pVTZ-lresc basis set added to $BASDIR
+- A Warning is issued when orbitals are deleted due to linear dependencies(before SCF),
+  AngPso (a 0th order LRESC diamagentic corr) is not calculated in this case. 
 
 LSDALTON
 --------
