@@ -214,7 +214,7 @@ contains
 #ifdef VAR_MPI
 
     ! the parallel version of the ijk-loop
-    call ijk_loop_par(nocc,nvirt,jaik,abij,cbai,ccsd_doubles%val,&
+    call ijk_loop_par(nocc,nvirt,jaik%val,abij%val,cbai,ccsd_doubles%val,&
                     & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt,nodtotal)
 
 #ifdef VAR_MPI
@@ -238,7 +238,7 @@ contains
 #else
 
     ! the serial version of the ijk-loop
-    call ijk_loop_ser(nocc,nvirt,jaik,abij,cbai,ccsd_doubles%val,&
+    call ijk_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
                     & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
 
 #endif
@@ -344,10 +344,10 @@ contains
     !> nocc,nvirt
     integer, intent(in)      :: nocc,nvirt
     !> 2-el integrals
-    type(array4), intent(inout) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
-    type(array4), intent(inout) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
+    real(realk), dimension(nocc,nvirt,nocc,nocc) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
+    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
     type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
-    type(array)                 :: vvvo_pdm ! v^3 tiles from cbai, 1 == i, 2 == j, 3 == k
+    real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
     !> ccsd doubles amplitudes
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
     ! o*v^2 portions of ccsd_doubles
@@ -366,6 +366,12 @@ contains
     !> loop integers
     integer :: i,j,k,idx,tuple_type
 
+    ! init pdm work arrays for vvvo integrals
+    ! init ccsd_doubles_help_arrays
+    call mem_alloc(vvvo_pdm_i,nvirt**3)
+    call mem_alloc(vvvo_pdm_j,nvirt**3)
+    call mem_alloc(vvvo_pdm_k,nvirt**3)
+
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
     call mem_alloc(ccsd_doubles_portions_j,nocc,nvirt,nvirt)
@@ -375,9 +381,6 @@ contains
     call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
     ! init 3d wrk array
     call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
-
-    ! init pdm work array for vvvo integrals
-    vvvo_pdm = array_init([nvirt,nvirt,nvirt,3],4)
 
     ! create job distribution list
     ! first, determine common batch size from number of tasks and nodes
@@ -431,7 +434,7 @@ contains
                if (i .eq. i_old) then
     
                   ! get the j'th v^3 tile only
-                  call array_get_tile(vvvo,j,vvvo_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
     
                   ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
                   call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
@@ -443,7 +446,7 @@ contains
                else if (j .eq. j_old) then
     
                   ! get the i'th v^3 tile only
-                  call array_get_tile(vvvo,i,vvvo_pdm%elm1(1:nvirt**3),nvirt**3)
+                  call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
     
                   ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
                   call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
@@ -455,8 +458,8 @@ contains
                else
     
                   ! get the i'th and j'th v^3 tile
-                  call array_get_tile(vvvo,i,vvvo_pdm%elm1(1:nvirt**3),nvirt**3)
-                  call array_get_tile(vvvo,j,vvvo_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+                  call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
     
                   ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
                   call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
@@ -475,7 +478,7 @@ contains
         krun_par: do k=1,j
  
                      ! get the k'th tile
-                     call array_get_tile(vvvo,k,vvvo_pdm%elm1(2*nvirt**3+1:3*nvirt**3),nvirt**3)
+                     call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
      
                      ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
@@ -500,8 +503,8 @@ contains
                         call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
                                                 & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
                                                 & ccsd_doubles_portions_k,&
-                                                & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,3),&
-                                                & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
+                                                & vvvo_pdm_i,vvvo_pdm_k,&
+                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                 & trip_tmp,trip_ampl)
      
                         ! generate triples amplitudes from trip arrays
@@ -510,9 +513,9 @@ contains
      
                         ! now do the contractions
      
-                        call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo%val(:,:,i,i),vvoo%val(:,:,i,k),vvoo%val(:,:,k,i),&
-                                             & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
-                                             & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,3),&
+                        call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
+                                             & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
+                                             & vvvo_pdm_i,vvvo_pdm_k,&
                                              & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
      
                      case(2)
@@ -520,8 +523,8 @@ contains
                         call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
                                                 & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
                                                 & ccsd_doubles_portions_j,&
-                                                & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,2),&
-                                                & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
+                                                & vvvo_pdm_i,vvvo_pdm_j,&
+                                                & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                                 & trip_tmp,trip_ampl)
 
                         ! generate triples amplitudes from trip arrays
@@ -530,9 +533,9 @@ contains
      
                         ! now do the contractions
      
-                        call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,j,i),vvoo%val(:,:,j,j),&
-                                             & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
-                                             & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,2),&
+                        call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
+                                             & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
+                                             & vvvo_pdm_i,vvvo_pdm_j,&
                                              & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
      
                      case(3)
@@ -541,10 +544,10 @@ contains
                                                 & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
                                                 & ccsd_doubles(:,:,k,i),ccsd_doubles(:,:,k,j),&
                                                 & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
-                                                & ccsd_doubles_portions_k,vvvo_pdm%elm4(:,:,:,1),&
-                                                & vvvo_pdm%elm4(:,:,:,2),vvvo_pdm%elm4(:,:,:,3),&
-                                                & ovoo%val(:,:,i,j),ovoo%val(:,:,i,k),ovoo%val(:,:,j,i),&
-                                                & ovoo%val(:,:,j,k),ovoo%val(:,:,k,i),ovoo%val(:,:,k,j),&
+                                                & ccsd_doubles_portions_k,vvvo_pdm_i,&
+                                                & vvvo_pdm_j,vvvo_pdm_k,&
+                                                & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
+                                                & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                                 & trip_tmp,trip_ampl)
 
                         ! generate triples amplitudes from trip arrays
@@ -553,11 +556,11 @@ contains
      
                         ! now do the contractions
 
-                        call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,i,k),&
-                                             & vvoo%val(:,:,j,i),vvoo%val(:,:,j,k),vvoo%val(:,:,k,i),&
-                                             & vvoo%val(:,:,k,j),ovoo%val(:,:,i,j),ovoo%val(:,:,i,k),&
-                                             & ovoo%val(:,:,j,i),ovoo%val(:,:,j,k),ovoo%val(:,:,k,i),ovoo%val(:,:,k,j),&
-                                             & vvvo_pdm%elm4(:,:,:,1),vvvo_pdm%elm4(:,:,:,2),vvvo_pdm%elm4(:,:,:,3),&
+                        call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,i,k),&
+                                             & vvoo(:,:,j,i),vvoo(:,:,j,k),vvoo(:,:,k,i),&
+                                             & vvoo(:,:,k,j),ovoo(:,:,i,j),ovoo(:,:,i,k),&
+                                             & ovoo(:,:,j,i),ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
+                                             & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
                                              & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
      
                      end select TypeOfTuple_par
@@ -571,8 +574,10 @@ contains
     call mem_dealloc(ccsd_doubles_portions_j)
     call mem_dealloc(ccsd_doubles_portions_k)
 
-    ! release pdm work array and job list
-    call array_free(vvvo_pdm)
+    ! release pdm work arrays and job list
+    call mem_dealloc(vvvo_pdm_i)
+    call mem_dealloc(vvvo_pdm_j)
+    call mem_dealloc(vvvo_pdm_k)
     call mem_dealloc(jobs)
 
     ! release triples ampl structures
@@ -593,9 +598,9 @@ contains
     !> nocc,nvirt
     integer, intent(in)      :: nocc,nvirt
     !> 2-el integrals
-    type(array4), intent(inout) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
-    type(array4), intent(inout) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
-    type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    real(realk), dimension(nocc,nvirt,nocc,nocc) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
+    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
+    real(realk), dimension(nvirt,nvirt,nvirt,nocc) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     !> ccsd doubles amplitudes
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
     ! o*v^2 portions of ccsd_doubles
@@ -663,8 +668,8 @@ contains
                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
                                                & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
                                                & ccsd_doubles_portions_k,&
-                                               & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,k),&
-                                               & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
+                                               & vvvo(:,:,:,i),vvvo(:,:,:,k),&
+                                               & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                & trip_tmp,trip_ampl)
  
                        ! generate triples amplitudes from trip arrays
@@ -673,9 +678,9 @@ contains
     
                        ! now do the contractions
     
-                       call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo%val(:,:,i,i),vvoo%val(:,:,i,k),vvoo%val(:,:,k,i),&
-                                            & ovoo%val(:,:,i,i),ovoo%val(:,:,i,k),ovoo%val(:,:,k,i),&
-                                            & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,k),&
+                       call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
+                                            & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
+                                            & vvvo(:,:,:,i),vvvo(:,:,:,k),&
                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
     
                     case(2)
@@ -683,8 +688,8 @@ contains
                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
                                                & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
                                                & ccsd_doubles_portions_j,&
-                                               & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,j),&
-                                               & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
+                                               & vvvo(:,:,:,i),vvvo(:,:,:,j),&
+                                               & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                                & trip_tmp,trip_ampl)
 
                        ! generate triples amplitudes from trip arrays
@@ -693,9 +698,9 @@ contains
     
                        ! now do the contractions
 
-                       call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,j,i),vvoo%val(:,:,j,j),&
-                                            & ovoo%val(:,:,i,j),ovoo%val(:,:,j,i),ovoo%val(:,:,j,j),&
-                                            & vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,j),&
+                       call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
+                                            & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
+                                            & vvvo(:,:,:,i),vvvo(:,:,:,j),&
                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
     
                     case(3)
@@ -704,10 +709,10 @@ contains
                                                & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
                                                & ccsd_doubles(:,:,k,i),ccsd_doubles(:,:,k,j),&
                                                & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
-                                               & ccsd_doubles_portions_k,vvvo%elm4(:,:,:,i),&
-                                               & vvvo%elm4(:,:,:,j),vvvo%elm4(:,:,:,k),&
-                                               & ovoo%val(:,:,i,j),ovoo%val(:,:,i,k),ovoo%val(:,:,j,i),&
-                                               & ovoo%val(:,:,j,k),ovoo%val(:,:,k,i),ovoo%val(:,:,k,j),&
+                                               & ccsd_doubles_portions_k,vvvo(:,:,:,i),&
+                                               & vvvo(:,:,:,j),vvvo(:,:,:,k),&
+                                               & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
+                                               & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                                & trip_tmp,trip_ampl)
 
                        ! generate triples amplitudes from trip arrays
@@ -716,10 +721,10 @@ contains
     
                        ! now do the contractions
 
-                       call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo%val(:,:,i,j),vvoo%val(:,:,i,k),vvoo%val(:,:,j,i),&
-                                            & vvoo%val(:,:,j,k),vvoo%val(:,:,k,i),vvoo%val(:,:,k,j),ovoo%val(:,:,i,j),&
-                                            & ovoo%val(:,:,i,k),ovoo%val(:,:,j,i),ovoo%val(:,:,j,k),ovoo%val(:,:,k,i),&
-                                            & ovoo%val(:,:,k,j),vvvo%elm4(:,:,:,i),vvvo%elm4(:,:,:,j),vvvo%elm4(:,:,:,k),&
+                       call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
+                                            & vvoo(:,:,j,k),vvoo(:,:,k,i),vvoo(:,:,k,j),ovoo(:,:,i,j),&
+                                            & ovoo(:,:,i,k),ovoo(:,:,j,i),ovoo(:,:,j,k),ovoo(:,:,k,i),&
+                                            & ovoo(:,:,k,j),vvvo(:,:,:,i),vvvo(:,:,:,j),vvvo(:,:,:,k),&
                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
 
                     end select TypeOfTuple_ser
