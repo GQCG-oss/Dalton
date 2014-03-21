@@ -1451,7 +1451,7 @@ contains
     !> use local scheme?
     logical :: local
     !> memory needed:
-    real(realk), intent(inout) :: MemOut
+    real(realk), intent(out) :: MemOut
     !> intermediate memory:
     integer :: MemNeed, nnod, nTileMax, nMOB
 
@@ -1866,13 +1866,16 @@ contains
         end do
       end do
   
+      ncopy = ipack - 1
       ! accumulate tile
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
-        call array_accumulate_tile(pack_gmo,tile,tmp(1:ipack-1),ipack-1)
+        call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
-        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
+        pack_gmo%ti(tile)%t(1:ncopy) = pack_gmo%ti(tile)%t(1:ncopy) + tmp(1:ncopy)
+        !call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
       else
-        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
+        pack_gmo%elm2(1:ncopy,tile) = pack_gmo%elm2(1:ncopy,tile) + tmp(1:ncopy)
+        !call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
       end if
 
     ! 2nd case: current batch corresponds to an upper diagonal block,
@@ -1888,14 +1891,17 @@ contains
           ipack = ipack + ncopy
         end do
       end do
-
+  
+      ncopy = ipack - 1
       ! accumulate tile
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
-        call array_accumulate_tile(pack_gmo,tile,tmp(1:ipack-1),ipack-1)
+        call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
-        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
+        pack_gmo%ti(tile)%t(1:ncopy) = pack_gmo%ti(tile)%t(1:ncopy) + tmp(1:ncopy)
+        !call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
       else
-        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
+        pack_gmo%elm2(1:ncopy,tile) = pack_gmo%elm2(1:ncopy,tile) + tmp(1:ncopy)
+        !call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
       end if
 
     end if
@@ -1942,9 +1948,11 @@ contains
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_get_tile(pack_gmo,tile,tmp,ncopy)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
-        call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
+        tmp(1:ncopy) = pack_gmo%ti(tile)%t(1:ncopy)
+        !call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
-        call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
+        tmp(1:ncopy) = pack_gmo%elm2(1:ncopy,tile)
+        !call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
       end if
 
       do s=1,ntot
@@ -1975,9 +1983,11 @@ contains
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_get_tile(pack_gmo,tile,tmp,ncopy)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
-        call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
+        tmp(1:ncopy) = pack_gmo%ti(tile)%t(1:ncopy)
+        !call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
-        call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
+        tmp(1:ncopy) = pack_gmo%elm2(1:ncopy,tile)
+        !call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
       end if
 
       ! get first batch pqrs:
