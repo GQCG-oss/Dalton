@@ -6969,6 +6969,7 @@ C
          WRITE (LUPRI,*) 'Incorrect input for atomic charge in'
          WRITE (LUPRI,*) TMPLN
          WRITE (LUPRI,*) 'Format is "Charge=?"'
+         CALL QENTER('LINE5R')
          CALL QUIT('Incorrect input for atomic charge')
       ELSE
          READ (BKPLIN((IPOS+IPOS2):),*) Q
@@ -6979,6 +6980,7 @@ C
                WRITE (LUPRI,*) 'Incorrect input for # of atoms in'
                WRITE (LUPRI,*) TMPLN
                WRITE (LUPRI,*) 'Format is "Atoms=?"'
+               CALL QENTER('LINE5R')
                CALL QUIT('Incorrect input for # of atoms')
             ELSE
                READ (BKPLIN((IPOS+IPOS2):),*) NONT
@@ -6996,6 +6998,7 @@ C
      &                 'basis sets in'
                   WRITE (LUPRI,*) TMPLN
                   WRITE (LUPRI,*) 'Format is "Sets=?"'
+                  CALL QENTER('LINE5R')
                   CALL QUIT('Incorrect input for # of '//
      &                 'basis sets')
                ELSE
@@ -7006,6 +7009,7 @@ C
             WRITE(LUPRI,*)
      &         'ERROR, multiple basis set, but no .R12AUX specified.'
             WRITE(LUPRI,*) TMPLN
+            CALL QENTER('LINE5R')
             CALL QUIT('Error when reading .mol file')
          END IF
 C
@@ -7020,6 +7024,7 @@ C
      &                 'integral blocks in'
                   WRITE (LUPRI,*) TMPLN
                   WRITE (LUPRI,*) 'Format is "Blocks=? ? ?"'
+                  CALL QENTER('LINE5R')
                   CALL QUIT('Incorrect input for # of '//
      &                 'integral blocks')
                ELSE
@@ -7040,8 +7045,7 @@ C
      &                 'of atomic basis set in'
                   WRITE (LUPRI,*) TMPLN
                   WRITE (LUPRI,*) 'Format is "Basis=? ? ?"'
-                  WRITE (LUPRI,*) 'Input line was:'
-                  WRITE (LUPRI,*) BKPLIN
+                  CALL QENTER('LINE5R')
                   CALL QUIT('Incorrect input for choice of '//
      &                 'atomic basis set')
                ELSE
@@ -7049,10 +7053,10 @@ C
                   IF (IPOS3 .LE. 1) IPOS3 = LEN( BKPLIN((IPOS+IPOS2):) )
                   IF (IPOS3 .LE. 1) THEN
                      WRITE (LUPRI,*) 'Incorrect input for choice '//
-     &                 'of atomic basis set'
+     &                 'of atomic basis set in'
+                     WRITE (LUPRI,*) TMPLN
                      WRITE (LUPRI,*) 'Format is "Basis=? ? ?"'
-                     WRITE (LUPRI,*) 'Input line was:'
-                     WRITE (LUPRI,*) BKPLIN
+                     CALL QENTER('LINE5R')
                      CALL QUIT('Incorrect input for choice of '//
      &                 'atomic basis set')
                   END IF
@@ -7110,6 +7114,13 @@ C
       RETURN
       END
 C
+#ifdef INCLUDE_NOT_USED_ROUTINES
+! This routine has been replaced by LINE5_UPD on March 21, 2014.
+! It is not deleted completely because it will be useful if we sometime in the future
+! want to update other parts of line 5 than the numober of atom types (NONT).
+! The routine was replaced because LINE5W destroys basis set info for e.g. ano basis sets
+! (e.g. 'ano-1 2 1' will be replaced by just 'ano-1' in LINE5W because BASNAM does not contain the " 2 1".)
+! /hjaaj
       SUBROUTINE LINE5W(LINE,Q,NONT,MBSI,BASIS,ATOMBA,LMULBS,
      &                  BASNAM,IQM,JCO,KANG,RADIUS_PCM,ALPHA_PCM)
 C
@@ -7175,5 +7186,77 @@ c
 C
       RETURN
       END
+#endif
 
+      SUBROUTINE LINE5_UPD(LINE,NONT)
+C
+C     Update number of atom types in atom-specific input line in new format
+C     hjaaj March 2014
+C
+#include "implicit.h"
+      CHARACTER LINE*(*)
+      CHARACTER BKP_LINE*(200)
+
+      BKP_LINE = LINE
+      CALL UPCASE(BKP_LINE)
+
+C     Check for errors
+
+      IPOS = INDEX(BKP_LINE,'CHA')
+      IPOS2 = INDEX(BKP_LINE(IPOS:),'=')
+      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
+         WRITE (LUPRI,*) 'Invalid LINE in parameter list to LINE5_UPD:'
+         WRITE (LUPRI,*) LINE
+         WRITE (LUPRI,*) 'A valid line should contain "Charge=?"'
+         CALL QUIT('Invalid LINE in parameter list to LINE5_UPD')
+      END IF
+
+      IPOS = INDEX(BKP_LINE,'ATO')
+      IF (IPOS .NE. 0) THEN
+         IPOS2 = INDEX(BKP_LINE(IPOS:),'=')
+         IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
+            WRITE (LUPRI,*) 'Incorrect input for # of atoms in'
+            WRITE (LUPRI,*) LINE
+            WRITE (LUPRI,*) 'Format is "Atoms=?"'
+            CALL QENTER('LINE5_UPD')
+            CALL QUIT('Incorrect input for # of atoms')
+         END IF
+      END IF
+
+      IPOS  = IPOS + IPOS2 ! points now to character just after "Atoms="
+      IPOS2 = INDEX(BKP_LINE((IPOS):),' ')
+      IF (IPOS2 .EQ. 1) THEN
+         WRITE (LUPRI,*) 'Incorrect input for # of atoms in'
+         WRITE (LUPRI,*) LINE
+         WRITE (LUPRI,*) 'Format is "Atoms=?"'
+         CALL QENTER('LINE5_UPD')
+         CALL QUIT('Incorrect input for # of atoms')
+      END IF
+
+C     line LINE seems to be OK, now we update number of atoms
+
+      IPOS2 = IPOS + IPOS2
+      BKP_LINE = LINE(IPOS2:)
+
+      IF (NONT .LE. 0) THEN
+         CALL QENTER('LINE5_UPD')
+         CALL QUIT('ERROR: non-positive NONT in LINE5_UPD')
+      ELSE IF (NONT .LT. 10) THEN
+         WRITE (LINE(IPOS:),'(I1,A)') NONT,' '
+         IPOS = IPOS + 2
+      ELSE IF (NONT .LT. 100) THEN
+         WRITE (LINE(IPOS:),'(I2,A)') NONT,' '
+         IPOS = IPOS + 3
+      ELSE IF (NONT .LT. 1000) THEN
+         WRITE (LINE(IPOS:),'(I3,A)') NONT,' '
+         IPOS = IPOS + 4
+      ELSE
+         WRITE (LUPRI,*) 'FATAL ERROR, NONT > 999 :',NONT
+         CALL QENTER('LINE5_UPD')
+         CALL QUIT('ERROR, NONT > 999')
+      END IF
+      LINE(IPOS:) = BKP_LINE
+C
+      RETURN
+      END
 C --- end of herrdn.F ---
