@@ -4093,6 +4093,16 @@ C
       CALL UPCASE(REWORD)
       IF (INDEX(REWORD,'BOYLOC') .GT. 0) THEN
          BOYORB = .TRUE.
+      ELSE IF (INDEX(REWORD,'SELECT') .GT. 0) THEN
+         BOYSEL = .TRUE.
+         CALL IZERO(NBOYS,8)
+         CALL IZERO(BOYSORB,MXBOYS*8)
+         READ(LUCMD,*)(NBOYS(I),I=1,NSYM)
+         DO I=1,NSYM
+            IF (NBOYS(I).GT.0) THEN
+               READ(LUCMD,*)(BOYSORB(J,I),J=1,NBOYS(I))
+            END IF
+         END DO
       ELSE IF (INDEX(REWORD,'PIPLOC') .GT. 0) THEN
          PIPORB = .TRUE.
          CALL QUIT('Pipek-Mezey localization not yet implemented')
@@ -4110,7 +4120,7 @@ C
 C ---
 C
  9000 CONTINUE
-      IF (BOYORB .OR. PIPORB) THEN
+      IF (BOYORB .OR. PIPORB .OR. BOYSEL) THEN
          IF (SUPSYM) THEN
             WRITE(LUPRI,'(/A)')
      &      'WARNING: .SUPSYM ignored because incompatible with .LOCALI'
@@ -5342,6 +5352,9 @@ C     formulation of NEVPT.
             ELSE IF (CORHOL) THEN
                WRITE(IWUNIT,1051)
      *         'Type: Frozen single core hole calculation using RAS'
+               WRITE(IWUNIT,'(T16,A,I4,A,I2,A)')
+     &         '      (The core hole orbital, no.',JCHORB,
+     &         ', in symmetry',JCHSYM,' has been moved to RAS1)'
             ELSE
                WRITE(IWUNIT,1051)
      *         'Type: restricted active space calculation (RAS)'
