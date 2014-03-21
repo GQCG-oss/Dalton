@@ -25,7 +25,6 @@ module lspdm_tensor_operations_module
   !**********
   interface array_get_tile
     module procedure array_gettile_combidx4,&
-                    &array_gettile_combidx4_parts,&
                     &array_gettile_combidx8,&
                     &array_gettile_modeidx
   end interface array_get_tile
@@ -39,7 +38,6 @@ module lspdm_tensor_operations_module
 
   interface array_accumulate_tile
     module procedure array_accumulate_tile_combidx4,&
-                    &array_accumulate_tile_combidx4_parts,&
                     &array_accumulate_tile_combidx8,&
                     &array_accumulate_tile_modeidx
   end interface array_accumulate_tile 
@@ -3785,6 +3783,9 @@ module lspdm_tensor_operations_module
     logical :: ls
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
+
     ls = .false.
     if(present(lock_set))ls=lock_set
 
@@ -3799,33 +3800,6 @@ module lspdm_tensor_operations_module
     nmsg_acc = nmsg_acc + 1
 #endif
   end subroutine array_accumulate_tile_combidx4
-  subroutine array_accumulate_tile_combidx4_parts(arr,globtilenr,fort,nelms,maxsze,lock_set)
-    implicit none
-    type(array),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=4),intent(in) :: nelms
-    !> input the fortan array which should be transferred to the tile
-    real(realk),intent(inout) :: fort(*)
-    integer, intent(in) :: maxsze
-    logical, optional, intent(in) :: lock_set
-    integer(kind=ls_mpik) :: dest
-    logical :: ls
-    real(realk) :: sta,sto
-#ifdef VAR_MPI
-    ls = .false.
-    if(present(lock_set))ls=lock_set
-
-    dest=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
-    if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
-    if(.not.ls)CALL lsmpi_win_unlock(dest, arr%wi(globtilenr))
-    sto = MPI_WTIME()
-    time_pdm_acc = time_pdm_acc + sto - sta
-    bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
-    nmsg_acc = nmsg_acc + 1
-#endif
-  end subroutine array_accumulate_tile_combidx4_parts
   subroutine array_acct8(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
@@ -3848,13 +3822,16 @@ module lspdm_tensor_operations_module
     logical :: ls
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
+
     ls = .false.
     if(present(lock_set))ls=lock_set
 
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
+    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_acc = time_pdm_acc + sto - sta
@@ -4041,6 +4018,8 @@ module lspdm_tensor_operations_module
     nmsg_acc = nmsg_acc + 1
 #endif
   end subroutine array_accumulate_tile_combidx_nobuff
+
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!                   PUT TILES
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -4079,12 +4058,14 @@ module lspdm_tensor_operations_module
     integer(kind=ls_mpik) :: dest
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
     ls = .false.
     if(present(lock_set))ls=lock_set
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr))
+    call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_put = time_pdm_put + sto - sta
@@ -4113,12 +4094,14 @@ module lspdm_tensor_operations_module
     integer(kind=ls_mpik) :: dest
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
     ls = .false.
     if(present(lock_set))ls=lock_set
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr))
+    call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_put = time_pdm_put + sto - sta
@@ -4167,13 +4150,14 @@ module lspdm_tensor_operations_module
     real(realk) :: sta,sto
     logical :: ls
 #ifdef VAR_MPI
-    integer(kind=MPI_ADDRESS_KIND) ::offset
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
     ls = .false.
     if(present(lock_set))ls=lock_set
     source=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
-    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
+    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr),maxsze)
     if(.not.ls)call lsmpi_win_unlock(source,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_get = time_pdm_get + sto - sta
@@ -4191,32 +4175,6 @@ module lspdm_tensor_operations_module
     if(present(lock_set))call array_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set)
     if(.not.present(lock_set))call array_gettile_combidx4(arr,globtilenr,fort,nelms)
   end subroutine array_gett4
-  subroutine array_gettile_combidx4_parts(arr,globtilenr,fort,nelms,maxsze,lock_set)
-    implicit none
-    type(array),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=4),intent(in) :: nelms
-    real(realk),intent(inout) :: fort(*)
-    integer, intent(in)  :: maxsze
-    logical, optional, intent(in) :: lock_set
-    integer(kind=ls_mpik) :: source
-    real(realk) :: sta,sto
-    logical :: ls
-#ifdef VAR_MPI
-    integer(kind=MPI_ADDRESS_KIND) ::offset
-    ls = .false.
-    if(present(lock_set))ls=lock_set
-    source=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
-    if(.not.ls)call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
-    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr),maxsze)
-    if(.not.ls)call lsmpi_win_unlock(source,arr%wi(globtilenr))
-    sto = MPI_WTIME()
-    time_pdm_get = time_pdm_get + sto - sta
-    bytes_transferred_get = bytes_transferred_get + nelms * 8_long
-    nmsg_get = nmsg_get + 1
-#endif
-  end subroutine array_gettile_combidx4_parts
   subroutine array_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
@@ -4228,13 +4186,14 @@ module lspdm_tensor_operations_module
     real(realk) :: sta,sto
     logical :: ls
 #ifdef VAR_MPI
-    integer(kind=MPI_ADDRESS_KIND) ::offset
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
     ls = .false.
     if(present(lock_set))ls=lock_set
     source=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
-    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
+    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr),maxsze)
     if(.not.ls)call lsmpi_win_unlock(source,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_get = time_pdm_get + sto - sta
