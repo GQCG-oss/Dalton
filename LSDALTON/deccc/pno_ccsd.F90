@@ -444,6 +444,7 @@ module pno_ccsd_module
 
      !DEBUG: C2 term
      !**************
+     ref = 0.0E0_realk
      call array_reorder_4d( p10, goovv, no, no, nv, nv, [4,1,2,3], nul, w1 ) ! kjac -> ckja
      call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,3,4,1], nul, w2 ) ! aldj -> ldja
      call array_reorder_4d( p10, govov, no, nv, no, nv, [4,1,3,2], nul, w3 ) ! kdlc -> ckld
@@ -460,9 +461,9 @@ module pno_ccsd_module
      !  &[nv,no],'bi',2,[no,nv],'ja',2,'FULL ERG GEMM')
      !USE THE SYMMETRIZED CONTRIBUTION, i.e. P_{ij}^{ab} (1+0.5P_{ij}) * w3
      call array_reorder_4d( p10, w3, nv, no, no, nv, [4,2,1,3], nul, w2 ) ! bija -> aibj
-     !call array_reorder_4d( p05, w3, nv, no, no, nv, [4,3,1,2], p10, w2 ) ! bjia -> aibj
+     call array_reorder_4d( p05, w3, nv, no, no, nv, [4,3,1,2], p10, w2 ) ! bjia -> aibj
      call array_reorder_4d( p10, w3, nv, no, no, nv, [1,3,4,2], p10, w2 ) ! ajib -> aibj
-     !call array_reorder_4d( p05, w3, nv, no, no, nv, [1,2,4,3], p10, w2 ) ! aijb -> aibj
+     call array_reorder_4d( p05, w3, nv, no, no, nv, [1,2,4,3], p10, w2 ) ! aijb -> aibj
 
      ref = ref + w2(1:o2v2)
 
@@ -503,7 +504,7 @@ module pno_ccsd_module
      w2(1:o2v2) = w3(1:o2v2)
      call array_reorder_4d( p10, w3, nv, no, nv, no, [3,4,1,2], p10, w2)
 
-     ref = ref + w2(1:o2v2)
+     !ref = ref + w2(1:o2v2)
 
      call print_norm(w2,o2v2,nnorm,.true.)
      call print_norm(ref,o2v2,norm,.true.)
@@ -622,19 +623,19 @@ module pno_ccsd_module
 
         !A2.1
         !Get the integral contribution, sort it first like the integrals then transform it
-        call extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,&
-           &pno_cv(ns)%n,PS)
+        !call extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,&
+        !   &pno_cv(ns)%n,PS)
 
         !A2.2
-        call add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,pno_cv(ns)%n,PS)
+        !call add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,pno_cv(ns)%n,PS)
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  E2 Term part1, B2 !! 
         !!!!!!!!!!!!!!!!!!!!!!!!!
 
-        call get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o,&
-        &w1,w2,w3,w4,w5,goooo,govov,vvf,nspaces)
+        !call get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o,&
+        !&w1,w2,w3,w4,w5,goooo,govov,vvf,nspaces)
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2268,6 +2269,7 @@ module pno_ccsd_module
      real(realk), intent(in) :: reference(yep,no,yep,no)
      real(realk), pointer :: check_ref(:,:,:,:), phelp(:,:,:,:)
      integer :: diff1,diff2, id(2),kcount
+     integer :: bpc,epc
      !reduce the no
      logical :: add_contrib,FAspace,FAspace1,PS,PS1
      real(realk) :: pref
@@ -2335,7 +2337,51 @@ module pno_ccsd_module
            !store also the part for Pij
            call ass_D1to4( w1(nv*rpd1*rpd*nv+1:2*nv*rpd1*rpd*nv), p3, [nv,rpd,nv,rpd1] )
 
+           !FIND OUT WHICH CONTRIBUTION TO ADD AND SKIP THE OTHER, FROM THE
+           !BEGINNING bpc and epc are set such that no looping occurs, both are
+           !then replaced in the loops according to the memreqs, there should be
+           !no case where no loop is required, so the choice of begin pair
+           !contribuion (bpc) and end pair contribution (epc) should be valid in
+           !the end
+           bpc = 3
+           epc = 2
            do pair1 = 1, paircontribs
+
+              j = idx(paircontrib(2,pair1))
+
+              if( PS1 )then
+
+                 i = idx(paircontrib(1,pair1))
+
+                 if(ns==ns2)then
+                    k = j
+                 else
+                    k = oidx1(nidx1+diff1+1,3)
+                 endif
+
+#ifdef VAR_LSDEBUG
+                 if(k==i)call lsquit("ERROR(PNO C-term)this should never happen",-1)
+#endif
+
+              else
+
+#ifdef VAR_LSDEBUG
+                 if(nidx1/=1)call lsquit("ERROR(here)this should never occur",-1)
+#endif
+                 i = oidx1(1,3)
+                 k = idx1(1)
+
+              endif
+              add_contrib = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns2 ) &
+                    &.or.(.not. PS1 .and. i/=j)
+
+              if(add_contrib     .and.pair1==1)bpc = 1
+              if(.not.add_contrib.and.pair1==1)bpc = 2
+              if(add_contrib     .and.pair1==2)epc = 2
+              if(.not.add_contrib.and.pair1==2)epc = 1
+           enddo
+
+           do pair1 = bpc, epc
 
               i = idx(paircontrib(1,pair1))
               j = idx(paircontrib(2,pair1))
@@ -2365,6 +2411,7 @@ module pno_ccsd_module
                  ! transform c to \bar(c} of (ki)  and a to \bar{a} of (ij)
                  call dgemm('t','n', pnv1, nv, nv,  p10, d1, nv, p4, nv, nul, w2, pnv1)
                  call dgemm('n','n', pnv1, pnv,nv, p10, w2, pnv1, d, nv, nul, h4, pnv1)
+
               else
 
                  do k=1,pno1
@@ -2491,10 +2538,8 @@ module pno_ccsd_module
         !bick ckja = bija, do the permutation and addition of the contribution
 
         if( PS ) then
-           !PNO == 2 and PNOtriangular implies rpd = 1
 
-
-           do pair1 = 1, paircontribs
+           do pair1 = bpc, epc
 
               call ass_D1to4( t21, p2, [pnv1,rpd1,pnv1, rpd1] )
               call ass_D1to4( w1,  p1, [pnv1,1   ,pnv1, rpd1] )
@@ -2538,13 +2583,9 @@ module pno_ccsd_module
               endif
 
 
-              !call do_overlap_trafo(ns,ns2,1,pno_S, pnv,pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
-
               do kcount = 1,rpd1
 
                  call do_overlap_trafo(ns,ns2,1,pno_S, pnv,pnv1, pnv1,w1(1+(kcount-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
-
-                 if( .not. PS1 ) k = idx1(kcount)
 
                  !call print_tensor_unfolding_with_labels(h1,&
                  !   &[pnv,rpd],'bi',2,[pnv1,1],'ck',2,'pair mat 1')
@@ -2552,26 +2593,25 @@ module pno_ccsd_module
                  !   &[pnv1,1],'ck',2,[rpd,pnv],'ja',2,'pair mat 2')
 
 
-                 !call dgemm('n','n', pnv, pnv, rpd1*pnv1, m10, h1,pnv, h4, pnv1*rpd1, nul, h2, pnv)
                  call dgemm('n','n', pnv, pnv, pnv1, m10, h1, pnv, h4(1+(kcount-1)*pnv1*pnv), pnv1, nul, h2, pnv)
-
 
 
                  !call print_tensor_unfolding_with_labels(h2,&
                  !   &[pnv],'b',1,[pnv],'a',1,'pair result after adding')
 
-                 add_contrib = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns2 ) &
-                    &.or.(.not. PS1 .and. i/=j)
+                 !Find out if one of the contributions needs to be added
+                 !add_contrib = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns2 ) &
+                 !   &.or.(.not. PS1 .and. i/=j)
 
 
-                 if(add_contrib) then
                     call array_reorder_2d(p10,h2,pnv,pnv,paircontrib(:,3-pair1),p10,o)
-                    !print *,ns,"adding",ns2," pair",i,j,k,idx,";",idx1
+                    call array_reorder_2d(p05,h2,pnv,pnv,paircontrib(:,pair1),p10,o)
+                 !   print *,ns,"adding P10",ns2," pair",i,j,k,idx,";",idx1
                     !call print_tensor_unfolding_with_labels(o,&
                     !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
-                 else
-                    !print *,ns,ns2,"CONTRIB NOT ADDED",i,j,k,idx,";",idx1
-                 endif
+                 !else
+                 !   print *,ns,ns2,"P10 CONTRIB NOT ADDED",i,j,k,idx,";",idx1
+                 !endif
 
               enddo
 
@@ -2624,9 +2664,9 @@ module pno_ccsd_module
                  do i=1,nidx1
                     do b=1,pnv
                        p1(a,oidx1(i,1),b,j) = p1(a,oidx1(i,1),b,j) + p2(b,i,j,a)
-                       !p1(a,j,b,oidx1(i,1)) = p1(a,j,b,oidx1(i,1)) + p05 * p2(b,i,j,a)
+                       p1(a,j,b,oidx1(i,1)) = p1(a,j,b,oidx1(i,1)) + p05 * p2(b,i,j,a)
                        p1(b,j,a,oidx1(i,1)) = p1(b,j,a,oidx1(i,1)) + p2(b,i,j,a)
-                       !p1(b,oidx1(i,1),a,j) = p1(b,oidx1(i,1),a,j) + p05 * p2(b,i,j,a)
+                       p1(b,oidx1(i,1),a,j) = p1(b,oidx1(i,1),a,j) + p05 * p2(b,i,j,a)
                     enddo
                  enddo
               enddo
@@ -2879,7 +2919,7 @@ module pno_ccsd_module
 
      enddo OneIdxSpaceLoop1
 
-     !!contribution done, check the individual elements
+     !contribution done, check the individual elements
      !call ass_D1to4(o,check_ref,[pnv,rpd,pnv,rpd])
      !if( PS )then
      !   j=2
