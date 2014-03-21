@@ -79,7 +79,7 @@ START REFOUT
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON (Release Dalton2013 patch 0)
+    This is output from DALTON 2013.2
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -124,7 +124,7 @@ START REFOUT
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2013.0 (2013), see http://daltonprogram.org
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -133,7 +133,7 @@ START REFOUT
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
@@ -179,7 +179,7 @@ START REFOUT
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
-  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
@@ -203,44 +203,50 @@ START REFOUT
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Sep 20 09:38:31 2013
-     Host name              : compute-1-3.local                       
+     Date and time (Linux)  : Wed Mar 19 11:03:22 2014
+     Host name              : fe8                                     
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/dalton/build-RB-mpi1.4.4-procs4-gnu4.6.2-release/perl-pid.11712__2013_9_20__9.38
-   2) /home/arnfinn/dalton/build-RB-mpi1.4.4-procs4-gnu4.6.2-release/basis
+   1) /people/disk2/magnus/Programs/dalton/build_test/perl-pid.109734__2014_3_19__11.3
+   2) /people/disk2/magnus/Programs/dalton/build_test/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | arnfinn
- Host                     | compute-1-3.local
- System                   | Linux-2.6.18-238.el5
+ Who compiled             | magnus
+ Host                     | fe8
+ System                   | Linux-2.6.32-279.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /global/apps/openmpi/1.4.4-gnu/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 4.6.2
- C compiler               | /global/apps/openmpi/1.4.4-gnu/bin/mpicc
- C compiler version       | gcc (GCC) 4.6.2
- C++ compiler             | /global/apps/openmpi/1.4.4-gnu/bin/mpicxx
+ Fortran compiler         | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | if90
+ Fortran compiler version | ifort (IFORT) 13.1.3 20130607
+ C compiler               | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icc
+ C compiler version       | icc (ICC) 13.1.3 20130607
+ C++ compiler             | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icxx
  C++ compiler version     | unknown
- BLAS                     | -Wl,--start-group;/global/apps/intel/mkl/lib/intel
-                          | 64/libmkl_core.so;/global/apps/intel/mkl/lib/intel
-                          | 64/libmkl_gf_lp64.so;/global/apps/intel/mkl/lib/in
-                          | tel64/libmkl_sequential.so;/usr/lib64/libpthread.s
-                          | o;/usr/lib64/libm.so;-fopenmp;-Wl,--end-group
- LAPACK                   | -Wl,--start-group;/global/apps/intel/mkl/lib/intel
-                          | 64/libmkl_lapack95_lp64.a;/global/apps/intel/mkl/l
-                          | ib/intel64/libmkl_gf_lp64.so;-fopenmp;-Wl,--end-gr
-                          | oup
+ BLAS                     | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_intel_lp64.so;/people/disk2/magn
+                          | us/intel/mkl/lib/intel64/libmkl_sequential.so;/peo
+                          | ple/disk2/magnus/intel/mkl/lib/intel64/libmkl_core
+                          | .so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-o
+                          | penmp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_lapack95_lp64.a;/people/disk2/ma
+                          | gnus/intel/mkl/lib/intel64/libmkl_intel_lp64.so;-o
+                          | penmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | fcecae41c6e1063a09a499dd9e7f51b9ee868d86
- Configuration time       | 2013-09-20 09:06:39.448412
+ Last Git revision        | aae290d2ff98d1169efa00ddeaf47e5a4dcb5191
+ Configuration time       | 2014-03-18 18:19:02.081107
+
+ * Sequential calculation using 1 CPU
 
 
    Content of the .dal input file
@@ -361,7 +367,7 @@ H     0.943102     0.000000    -0.544500
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/arnfinn/dalton/build-RB-mpi1.4.4-procs4-gnu4.6.2-release/basis/STO-3G"
+     "/people/disk2/magnus/Programs/dalton/build_test/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -369,7 +375,7 @@ H     0.943102     0.000000    -0.544500
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/arnfinn/dalton/build-RB-mpi1.4.4-procs4-gnu4.6.2-release/basis/STO-3G"
+     "/people/disk2/magnus/Programs/dalton/build_test/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -377,7 +383,7 @@ H     0.943102     0.000000    -0.544500
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/arnfinn/dalton/build-RB-mpi1.4.4-procs4-gnu4.6.2-release/basis/STO-3G"
+     "/people/disk2/magnus/Programs/dalton/build_test/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -651,10 +657,10 @@ Point group: C2v
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
 
  ..... DONE GENERATION CAVITY .....
-
+ 
   ..... DONE GENERATING -Q-  MATRIX .....
- >>>> Total CPU  time used in HERMIT:   0.10 seconds
- >>>> Total wall time used in HERMIT:   0.35 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.08 seconds
 
 
                         .----------------------------------.
@@ -689,8 +695,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Sep 20 09:38:32 2013
-     Host name              : compute-1-3.local                       
+     Date and time (Linux)  : Wed Mar 19 11:03:22 2014
+     Host name              : fe8                                     
 
  Title lines from ".mol" input file:
                                                                              
@@ -757,7 +763,7 @@ Point group: C2v
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    5
+ C1-DIIS algorithm; max error vectors =    8
 
  Automatic occupation of symmetries with  16 electrons.
 
@@ -769,45 +775,45 @@ Point group: C2v
 @      MULPOP C       1.00; O      -0.74; H   _1 -0.13; H   _2 -0.13; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :    -13.683589314663  16.0000010604    1.06e-06
-@  2  -111.069683994     -4.739886745406e-02   3.47e+00   6.61e-01     5   2   1   0
+@  2  -111.069683994     -4.739886745405e-02   3.47e+00   6.61e-01     5   2   1   0
       Virial theorem: -V/T =      2.003390
 @      MULPOP C      -1.90; O       1.43; H   _1  0.24; H   _2  0.24; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :    -13.972447269642  16.0000009048    9.05e-07
-@  3  -111.918604622     -1.827882238131e-02   1.17e+00  -8.49e-01     5   2   1   0
+@  3  -111.918604622     -1.827882238130e-02   1.17e+00  -8.49e-01     5   2   1   0
       Virial theorem: -V/T =      1.999485
 @      MULPOP C       0.53; O      -0.74; H   _1  0.10; H   _2  0.10; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :    -13.813173332331  16.0000009343    9.34e-07
-@  4  -112.031958945     -1.071362942117e-03   1.49e-01  -1.13e-01     5   2   1   0
+@  4  -112.031958945     -1.071362942113e-03   1.49e-01  -1.13e-01     5   2   1   0
       Virial theorem: -V/T =      2.007778
 @      MULPOP C      -0.07; O      -0.09; H   _1  0.08; H   _2  0.08; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :    -13.837346289814  16.0000009364    9.36e-07
-@  5  -112.033866467     -2.150639307168e-03   2.04e-02  -1.91e-03     5   2   1   0
+@  5  -112.033866467     -2.150639307171e-03   2.04e-02  -1.91e-03     5   2   1   0
       Virial theorem: -V/T =      2.006504
 @      MULPOP C      -0.05; O      -0.16; H   _1  0.11; H   _2  0.11; 
  -----------------------------------------------------------------------------
       K-S energy, electrons, error :    -13.834172658732  16.0000009352    9.35e-07
-@  6  -112.033907917     -2.019985333266e-03   2.67e-03  -4.15e-05     5   2   1   0
+@  6  -112.033907917     -2.019985333273e-03   2.67e-03  -4.15e-05     5   2   1   0
       Virial theorem: -V/T =      2.006688
 @      MULPOP C      -0.04; O      -0.16; H   _1  0.10; H   _2  0.10; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -13.834464847252  16.0000009352    9.35e-07
-@  7  -112.033908472     -2.037092760638e-03   4.41e-04  -5.55e-07     5   2   1   0
+      K-S energy, electrons, error :    -13.834464067940  16.0000009352    9.35e-07
+@  7  -112.033908471     -2.037037363181e-03   4.48e-04  -5.54e-07     5   2   1   0
       Virial theorem: -V/T =      2.006674
 @      MULPOP C      -0.04; O      -0.16; H   _1  0.10; H   _2  0.10; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -13.834502482907  16.0000009351    9.35e-07
-@  8  -112.033908486     -2.039563541146e-03   2.16e-05  -1.45e-08     5   2   1   0
+      K-S energy, electrons, error :    -13.834501702028  16.0000009351    9.35e-07
+@  8  -112.033908486     -2.039508866876e-03   3.16e-05  -1.50e-08     5   2   1   0
       Virial theorem: -V/T =      2.006672
 @      MULPOP C      -0.04; O      -0.16; H   _1  0.10; H   _2  0.10; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -13.834504479260  16.0000009351    9.35e-07
-@  9  -112.033908486     -2.039693823985e-03   1.55e-07  -3.26e-11     5   2   1   0
+      K-S energy, electrons, error :    -13.834504390062  16.0000009351    9.35e-07
+@  9  -112.033908486     -2.039687643105e-03   1.13e-06  -7.14e-11     5   2   1   0
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:   -112.033908486406    1.55e-07
+@     Converged SCF energy, gradient:   -112.033908486406    1.13e-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -821,21 +827,21 @@ Point group: C2v
 
  Sym       Kohn-Sham orbital energies
 
-  1    -18.36962387    -9.66197394    -0.90481808    -0.50692421    -0.27783866
-         0.36676359     0.53279079
+  1    -18.36962419    -9.66197370    -0.90481816    -0.50692414    -0.27783877
+         0.36676367     0.53279078
 
-  2     -0.38754503    -0.09325517     0.46802251
+  2     -0.38754498    -0.09325530     0.46802258
 
-  3     -0.27474215     0.02488548
+  3     -0.27474220     0.02488546
 
-    E(LUMO) :     0.02488548 au (symmetry 3)
-  - E(HOMO) :    -0.09325517 au (symmetry 2)
+    E(LUMO) :     0.02488546 au (symmetry 3)
+  - E(HOMO) :    -0.09325530 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.11814065 au
+    gap     :     0.11814076 au
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       2.534       2.599
+ >>>> CPU and wall time for SCF :       1.670       1.702
 
 
                        .-----------------------------------.
@@ -852,13 +858,13 @@ Point group: C2v
 
 @    Final DFT energy:           -112.033908486406                 
 @    Nuclear repulsion:            31.163673729192
-@    Electronic energy:          -143.195542521774
+@    Electronic energy:          -143.195542527955
 
-@    Final gradient norm:           0.000000155480
+@    Final gradient norm:           0.000001128393
 
  
-     Date and time (Linux)  : Fri Sep 20 09:38:34 2013
-     Host name              : compute-1-3.local                       
+     Date and time (Linux)  : Wed Mar 19 11:03:24 2014
+     Host name              : fe8                                     
 
  (Only coefficients >0.0100 are printed.)
 
@@ -891,12 +897,12 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      2.54 seconds
- >>>> Total wall time used in SIRIUS :      2.64 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.67 seconds
+ >>>> Total wall time used in SIRIUS :      1.72 seconds
 
  
-     Date and time (Linux)  : Fri Sep 20 09:38:34 2013
-     Host name              : compute-1-3.local                       
+     Date and time (Linux)  : Wed Mar 19 11:03:24 2014
+     Host name              : fe8                                     
 
 
                      .---------------------------------------.
@@ -952,11 +958,11 @@ Point group: C2v
 
       2 Excitation energies are calculated for symmetry no.    4
 
- Integral transformation: Total CPU and WALL times (sec)       0.002       0.319
+ Integral transformation: Total CPU and WALL times (sec)       0.001       0.005
 
 
-   SCF energy         :     -112.033908486406247
- -- inactive part     :     -143.195542521774428
+   SCF energy         :     -112.033908486406318
+ -- inactive part     :     -143.195542527955382
  -- nuclear repulsion :       31.163673729192165
 
 
@@ -979,7 +985,7 @@ Point group: C2v
  Orbital variables.         KZWOPT:      13
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :      13
- Electrons in DFTMOMO:   16.00000093514756
+ Electrons in DFTMOMO:   16.00000093514763
 
 
 
@@ -999,8 +1005,8 @@ Point group: C2v
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Transition operator type:    ZDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  0.60223593     *ENERGY(eV):   11.976358    
-@ STATE NO:    2 *TRANSITION MOMENT:  0.64913515     *ENERGY(eV):   16.960758    
+@ STATE NO:    1 *TRANSITION MOMENT:  0.60223618     *ENERGY(eV):   11.976360    
+@ STATE NO:    2 *TRANSITION MOMENT:  0.64913499     *ENERGY(eV):   16.960763    
 
 
   ******************************************************************************
@@ -1012,15 +1018,15 @@ Point group: C2v
  @ Excited state no:    1 in symmetry  1
  ---------------------------------------
 
-@ Excitation energy :  0.44012308    au
-@                      11.976358     eV
-@                      96595.849     cm-1
-                       1155.5430     kJ / mol
+@ Excitation energy :  0.44012313    au
+@                      11.976360     eV
+@                      96595.861     cm-1
+                       1155.5431     kJ / mol
 
 @ Total energy :      -111.59379     au
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  0.10641827      (Transition moment :  0.60223593     )
+@ Oscillator strength (LENGTH)   :  0.10641837      (Transition moment :  0.60223618     )
 
 
                             PBHT MO Overlap Diagnostic
@@ -1044,15 +1050,15 @@ Point group: C2v
  @ Excited state no:    2 in symmetry  1
  ---------------------------------------
 
-@ Excitation energy :  0.62329642    au
-@                      16.960758     eV
-@                      136797.75     cm-1
-                       1636.4645     kJ / mol
+@ Excitation energy :  0.62329660    au
+@                      16.960763     eV
+@                      136797.79     cm-1
+                       1636.4650     kJ / mol
 
 @ Total energy :      -111.41061     au
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  0.17509495      (Transition moment :  0.64913515     )
+@ Oscillator strength (LENGTH)   :  0.17509492      (Transition moment :  0.64913499     )
 
 
                             PBHT MO Overlap Diagnostic
@@ -1074,7 +1080,7 @@ Point group: C2v
 @ Overlap diagnostic LAMBDA =    0.5452
 
 
- Time used in polarization propagator calculation is      2.52 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      1.95 CPU seconds for symmetry 1
 
 
  >>>>>>>>>> Linear response calculation
@@ -1090,7 +1096,7 @@ Point group: C2v
  Orbital variables.         KZWOPT:       9
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       9
- Electrons in DFTMOMO:   16.00000093514756
+ Electrons in DFTMOMO:   16.00000093514763
 
 
 
@@ -1110,8 +1116,8 @@ Point group: C2v
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Transition operator type:    XDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT: -0.58812794     *ENERGY(eV):   13.279050    
-@ STATE NO:    2 *TRANSITION MOMENT:  0.11341229     *ENERGY(eV):   17.902099    
+@ STATE NO:    1 *TRANSITION MOMENT: -0.58812808     *ENERGY(eV):   13.279055    
+@ STATE NO:    2 *TRANSITION MOMENT:  0.11341246     *ENERGY(eV):   17.902102    
 
 
   ******************************************************************************
@@ -1123,15 +1129,15 @@ Point group: C2v
  @ Excited state no:    1 in symmetry  2
  ---------------------------------------
 
-@ Excitation energy :  0.48799611    au
-@                      13.279050     eV
-@                      107102.76     cm-1
-                       1281.2336     kJ / mol
+@ Excitation energy :  0.48799633    au
+@                      13.279055     eV
+@                      107102.81     cm-1
+                       1281.2342     kJ / mol
 
 @ Total energy :      -111.54591     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  0.11253010      (Transition moment : -0.58812794     )
+@ Oscillator strength (LENGTH)   :  0.11253021      (Transition moment : -0.58812808     )
 
 
                             PBHT MO Overlap Diagnostic
@@ -1154,15 +1160,15 @@ Point group: C2v
  @ Excited state no:    2 in symmetry  2
  ---------------------------------------
 
-@ Excitation energy :  0.65789007    au
-@                      17.902099     eV
-@                      144390.18     cm-1
-                       1727.2901     kJ / mol
+@ Excitation energy :  0.65789017    au
+@                      17.902102     eV
+@                      144390.20     cm-1
+                       1727.2904     kJ / mol
 
 @ Total energy :      -111.37602     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  5.64134088e-03  (Transition moment :  0.11341229     )
+@ Oscillator strength (LENGTH)   :  5.64135822e-03  (Transition moment :  0.11341246     )
 
 
                             PBHT MO Overlap Diagnostic
@@ -1181,7 +1187,7 @@ Point group: C2v
 @ Overlap diagnostic LAMBDA =    0.5021
 
 
- Time used in polarization propagator calculation is      1.66 CPU seconds for symmetry 2
+ Time used in polarization propagator calculation is      1.28 CPU seconds for symmetry 2
 
 
  >>>>>>>>>> Linear response calculation
@@ -1197,7 +1203,7 @@ Point group: C2v
  Orbital variables.         KZWOPT:       7
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       7
- Electrons in DFTMOMO:   16.00000093514756
+ Electrons in DFTMOMO:   16.00000093514763
 
 
 
@@ -1217,8 +1223,8 @@ Point group: C2v
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Transition operator type:    YDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  0.18087511     *ENERGY(eV):   9.3145390    
-@ STATE NO:    2 *TRANSITION MOMENT: -0.61568756     *ENERGY(eV):   16.017152    
+@ STATE NO:    1 *TRANSITION MOMENT:  0.18087491     *ENERGY(eV):   9.3145413    
+@ STATE NO:    2 *TRANSITION MOMENT: -0.61568797     *ENERGY(eV):   16.017150    
 
 
   ******************************************************************************
@@ -1230,15 +1236,15 @@ Point group: C2v
  @ Excited state no:    1 in symmetry  3
  ---------------------------------------
 
-@ Excitation energy :  0.34230302    au
-@                      9.3145390     eV
-@                      75126.828     cm-1
-                       898.71644     kJ / mol
+@ Excitation energy :  0.34230310    au
+@                      9.3145413     eV
+@                      75126.847     cm-1
+                       898.71666     kJ / mol
 
 @ Total energy :      -111.69161     au
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  7.46581300e-03  (Transition moment :  0.18087511     )
+@ Oscillator strength (LENGTH)   :  7.46579755e-03  (Transition moment :  0.18087491     )
 
 
                             PBHT MO Overlap Diagnostic
@@ -1260,15 +1266,15 @@ Point group: C2v
  @ Excited state no:    2 in symmetry  3
  ---------------------------------------
 
-@ Excitation energy :  0.58861951    au
-@                      16.017152     eV
-@                      129187.05     cm-1
-                       1545.4203     kJ / mol
+@ Excitation energy :  0.58861946    au
+@                      16.017150     eV
+@                      129187.04     cm-1
+                       1545.4202     kJ / mol
 
 @ Total energy :      -111.44529     au
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  0.14875246      (Transition moment : -0.61568756     )
+@ Oscillator strength (LENGTH)   :  0.14875265      (Transition moment : -0.61568797     )
 
 
                             PBHT MO Overlap Diagnostic
@@ -1282,13 +1288,13 @@ Point group: C2v
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      4   12 -0.640179 -0.032459  0.669264  0.352450  0.369324  0.247175
-     11    6 -0.295411  0.012700  0.411125  0.167306  0.094933  0.039029
+      4   12 -0.640180 -0.032459  0.669264  0.352450  0.369324  0.247175
+     11    6 -0.295411  0.012701  0.411125  0.167307  0.094933  0.039029
 
 @ Overlap diagnostic LAMBDA =    0.6166
 
 
- Time used in polarization propagator calculation is      1.63 CPU seconds for symmetry 3
+ Time used in polarization propagator calculation is      1.31 CPU seconds for symmetry 3
 
 
  >>>>>>>>>> Linear response calculation
@@ -1304,7 +1310,7 @@ Point group: C2v
  Orbital variables.         KZWOPT:       3
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       3
- Electrons in DFTMOMO:   16.00000093514756
+ Electrons in DFTMOMO:   16.00000093514763
 
 
 
@@ -1334,10 +1340,10 @@ RSPORT:    1 out of    2 new trial vectors linear dependent
  @ Excited state no:    1 in symmetry  4
  ---------------------------------------
 
-@ Excitation energy :  0.13701193    au
-@                      3.7282844     eV
-@                      30070.644     cm-1
-                       359.72478     kJ / mol
+@ Excitation energy :  0.13701204    au
+@                      3.7282874     eV
+@                      30070.668     cm-1
+                       359.72507     kJ / mol
 
 @ Total energy :      -111.89690     au
 
@@ -1361,10 +1367,10 @@ RSPORT:    1 out of    2 new trial vectors linear dependent
  @ Excited state no:    2 in symmetry  4
  ---------------------------------------
 
-@ Excitation energy :  0.42490166    au
-@                      11.562162     eV
-@                      93255.134     cm-1
-                       1115.5791     kJ / mol
+@ Excitation energy :  0.42490159    au
+@                      11.562160     eV
+@                      93255.118     cm-1
+                       1115.5789     kJ / mol
 
 @ Total energy :      -111.60901     au
 
@@ -1385,21 +1391,20 @@ RSPORT:    1 out of    2 new trial vectors linear dependent
 @ Overlap diagnostic LAMBDA =    0.5178
 
 
- Time used in polarization propagator calculation is      0.99 CPU seconds for symmetry 4
+ Time used in polarization propagator calculation is      0.70 CPU seconds for symmetry 4
 
- >>>> Total CPU  time used in RESPONSE:   6.81 seconds
- >>>> Total wall time used in RESPONSE:   7.26 seconds
+ >>>> Total CPU  time used in RESPONSE:   5.25 seconds
+ >>>> Total wall time used in RESPONSE:   5.35 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   9.46 seconds
- >>>> Total wall time used in DALTON:  10.49 seconds
+ >>>> Total CPU  time used in DALTON:   6.97 seconds
+ >>>> Total wall time used in DALTON:   7.19 seconds
 
  
-     Date and time (Linux)  : Fri Sep 20 09:38:42 2013
-     Host name              : compute-1-3.local                       
+     Date and time (Linux)  : Wed Mar 19 11:03:29 2014
+     Host name              : fe8                                     
 END REFOUT
-

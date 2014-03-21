@@ -77,7 +77,7 @@ START REFOUT
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON (Release Dalton2013 patch 0)
+    This is output from DALTON 2013.2
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -122,7 +122,7 @@ START REFOUT
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2013.0 (2013), see http://daltonprogram.org
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -131,7 +131,7 @@ START REFOUT
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
@@ -177,7 +177,7 @@ START REFOUT
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
-  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
@@ -201,44 +201,50 @@ START REFOUT
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Sep 20 09:11:41 2013
-     Host name              : compute-1-3.local                       
+     Date and time (Linux)  : Wed Mar 19 10:24:54 2014
+     Host name              : fe8                                     
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/dalton/build-RB-mpi1.4.4-procs4-gnu4.6.2-release/perl-pid.10237__2013_9_20__9.11
-   2) /home/arnfinn/dalton/build-RB-mpi1.4.4-procs4-gnu4.6.2-release/basis
+   1) /people/disk2/magnus/Programs/dalton/build_test/perl-pid.86863__2014_3_19__10.24
+   2) /people/disk2/magnus/Programs/dalton/build_test/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | arnfinn
- Host                     | compute-1-3.local
- System                   | Linux-2.6.18-238.el5
+ Who compiled             | magnus
+ Host                     | fe8
+ System                   | Linux-2.6.32-279.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /global/apps/openmpi/1.4.4-gnu/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 4.6.2
- C compiler               | /global/apps/openmpi/1.4.4-gnu/bin/mpicc
- C compiler version       | gcc (GCC) 4.6.2
- C++ compiler             | /global/apps/openmpi/1.4.4-gnu/bin/mpicxx
+ Fortran compiler         | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | if90
+ Fortran compiler version | ifort (IFORT) 13.1.3 20130607
+ C compiler               | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icc
+ C compiler version       | icc (ICC) 13.1.3 20130607
+ C++ compiler             | /people/disk2/magnus/Programs/openmpi-intel/bin/mp
+                          | icxx
  C++ compiler version     | unknown
- BLAS                     | -Wl,--start-group;/global/apps/intel/mkl/lib/intel
-                          | 64/libmkl_core.so;/global/apps/intel/mkl/lib/intel
-                          | 64/libmkl_gf_lp64.so;/global/apps/intel/mkl/lib/in
-                          | tel64/libmkl_sequential.so;/usr/lib64/libpthread.s
-                          | o;/usr/lib64/libm.so;-fopenmp;-Wl,--end-group
- LAPACK                   | -Wl,--start-group;/global/apps/intel/mkl/lib/intel
-                          | 64/libmkl_lapack95_lp64.a;/global/apps/intel/mkl/l
-                          | ib/intel64/libmkl_gf_lp64.so;-fopenmp;-Wl,--end-gr
-                          | oup
+ BLAS                     | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_intel_lp64.so;/people/disk2/magn
+                          | us/intel/mkl/lib/intel64/libmkl_sequential.so;/peo
+                          | ple/disk2/magnus/intel/mkl/lib/intel64/libmkl_core
+                          | .so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-o
+                          | penmp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_lapack95_lp64.a;/people/disk2/ma
+                          | gnus/intel/mkl/lib/intel64/libmkl_intel_lp64.so;-o
+                          | penmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | fcecae41c6e1063a09a499dd9e7f51b9ee868d86
- Configuration time       | 2013-09-20 09:06:39.448412
+ Last Git revision        | aae290d2ff98d1169efa00ddeaf47e5a4dcb5191
+ Configuration time       | 2014-03-18 18:19:02.081107
+
+ * Sequential calculation using 1 CPU
 
 
    Content of the .dal input file
@@ -358,7 +364,7 @@ H    -0.943102     0.000000    -0.544500
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/arnfinn/dalton/build-RB-mpi1.4.4-procs4-gnu4.6.2-release/basis/STO-3G"
+     "/people/disk2/magnus/Programs/dalton/build_test/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -366,7 +372,7 @@ H    -0.943102     0.000000    -0.544500
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/arnfinn/dalton/build-RB-mpi1.4.4-procs4-gnu4.6.2-release/basis/STO-3G"
+     "/people/disk2/magnus/Programs/dalton/build_test/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -374,7 +380,7 @@ H    -0.943102     0.000000    -0.544500
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/arnfinn/dalton/build-RB-mpi1.4.4-procs4-gnu4.6.2-release/basis/STO-3G"
+     "/people/disk2/magnus/Programs/dalton/build_test/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -549,11 +555,10 @@ Point group: C1
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
 
  ..... DONE GENERATION CAVITY .....
-
+ 
   ..... DONE GENERATING -Q-  MATRIX .....
- >>>  Time used in Q-MAT      is   0.40 seconds
- >>>> Total CPU  time used in HERMIT:   0.46 seconds
- >>>> Total wall time used in HERMIT:   0.82 seconds
+ >>>> Total CPU  time used in HERMIT:   0.11 seconds
+ >>>> Total wall time used in HERMIT:   0.15 seconds
 
 
                         .----------------------------------.
@@ -587,8 +592,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Sep 20 09:11:42 2013
-     Host name              : compute-1-3.local                       
+     Date and time (Linux)  : Wed Mar 19 10:24:54 2014
+     Host name              : fe8                                     
 
  Title lines from ".mol" input file:
      Opt 2.2 paracyclophane chormoph.                                        
@@ -654,21 +659,21 @@ Point group: C1
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
- C1-DIIS algorithm; max error vectors =    5
+ C1-DIIS algorithm; max error vectors =    8
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00e-12 )
-@  1  -112.142757101     -2.184941165324e-02    1.57297e+00   -1.12e+02
+@  1  -112.142757101     -2.184941165323e-02    1.57297e+00   -1.12e+02
       Virial theorem: -V/T =      2.002200
 @      MULPOP C       1.10; O      -0.84; H      -0.13; H      -0.13; 
  -----------------------------------------------------------------------------
-@  2  -112.306432509     -4.221971510923e-04    8.59832e-01   -1.64e-01
+@  2  -112.306432509     -4.221971511207e-04    8.59832e-01   -1.64e-01
       Virial theorem: -V/T =      2.010790
 @      MULPOP C      -0.41; O       0.18; H       0.12; H       0.12; 
  -----------------------------------------------------------------------------
-@  3  -112.355348559     -3.080924397253e-03    4.78592e-02   -4.89e-02
+@  3  -112.355348559     -3.080924397278e-03    4.78592e-02   -4.89e-02
       Virial theorem: -V/T =      2.008440
 @      MULPOP C       0.08; O      -0.21; H       0.07; H       0.07; 
  -----------------------------------------------------------------------------
@@ -676,26 +681,22 @@ Point group: C1
       Virial theorem: -V/T =      2.008333
 @      MULPOP C       0.07; O      -0.21; H       0.07; H       0.07; 
  -----------------------------------------------------------------------------
-@  5  -112.355580051     -2.869260094162e-03    3.15920e-03   -1.29e-05
+@  5  -112.355580051     -2.869260094158e-03    3.15920e-03   -1.29e-05
       Virial theorem: -V/T =      2.008320
 @      MULPOP C       0.07; O      -0.21; H       0.07; H       0.07; 
  -----------------------------------------------------------------------------
-@  6  -112.355581951     -2.857409074863e-03    6.54862e-04   -1.90e-06
+@  6  -112.355581951     -2.857409074860e-03    6.54862e-04   -1.90e-06
       Virial theorem: -V/T =      2.008327
 @      MULPOP C       0.07; O      -0.21; H       0.07; H       0.07; 
  -----------------------------------------------------------------------------
-@  7  -112.355582030     -2.856090612099e-03    9.29660e-05   -7.96e-08
+@  7  -112.355582031     -2.856183353202e-03    7.06045e-05   -8.02e-08
       Virial theorem: -V/T =      2.008329
 @      MULPOP C       0.07; O      -0.21; H       0.07; H       0.07; 
  -----------------------------------------------------------------------------
-@  8  -112.355582031     -2.856047009573e-03    1.24090e-05   -1.18e-09
-      Virial theorem: -V/T =      2.008329
-@      MULPOP C       0.07; O      -0.21; H       0.07; H       0.07; 
- -----------------------------------------------------------------------------
-@  9  -112.355582031     -2.856043771885e-03    2.83147e-06   -1.60e-11
+@  8  -112.355582031     -2.856043623225e-03    4.54100e-06   -6.03e-10
 
-@ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:   -112.355582031493    2.83e-06
+@ *** DIIS converged in   8 iterations !
+@     Converged SCF energy, gradient:   -112.355582031491    4.54e-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -709,18 +710,18 @@ Point group: C1
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.29958340   -11.12079260    -1.33320852    -0.80284554    -0.63846104
-        -0.54122308    -0.43900861    -0.35348943     0.28384990     0.63726315
-         0.77009294     0.90607766
+  1    -20.29958353   -11.12079213    -1.33320845    -0.80284544    -0.63846097
+        -0.54122299    -0.43900852    -0.35348957     0.28385000     0.63726330
+         0.77009303     0.90607780
 
-    E(LUMO) :     0.28384990 au (symmetry 1)
-  - E(HOMO) :    -0.35348943 au (symmetry 1)
+    E(LUMO) :     0.28385000 au (symmetry 1)
+  - E(HOMO) :    -0.35348957 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.63733934 au
+    gap     :     0.63733957 au
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       3.909       3.982
+ >>>> CPU and wall time for SCF :       2.589       2.620
 
 
                        .-----------------------------------.
@@ -735,15 +736,15 @@ Point group: C1
      SOLVATION MODEL: polarizable continuum model (PCM),
           dielectric constant =   78.390000
 
-@    Final HF energy:            -112.355582031493                 
+@    Final HF energy:            -112.355582031491                 
 @    Nuclear repulsion:            31.163673729192
-@    Electronic energy:          -143.516399716913
+@    Electronic energy:          -143.516399717060
 
-@    Final gradient norm:           0.000002831467
+@    Final gradient norm:           0.000004541002
 
  
-     Date and time (Linux)  : Fri Sep 20 09:11:46 2013
-     Host name              : compute-1-3.local                       
+     Date and time (Linux)  : Wed Mar 19 10:24:56 2014
+     Host name              : fe8                                     
 
  (Only coefficients >0.0100 are printed.)
 
@@ -751,41 +752,41 @@ Point group: C1
  ------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
-   1 C   :1s    -0.0005  -0.9926   0.1223  -0.1873   0.0000   0.0268  -0.0000
-   2 C   :1s     0.0072  -0.0332  -0.2782   0.5808  -0.0000  -0.0860   0.0000
-   3 C   :2px   -0.0000  -0.0000  -0.0000   0.0000   0.5352  -0.0000  -0.0000
-   4 C   :2py   -0.0000  -0.0000  -0.0000  -0.0000  -0.0000  -0.0000  -0.6051
+   1 C   :1s    -0.0005  -0.9926   0.1223  -0.1873  -0.0000   0.0268   0.0000
+   2 C   :1s     0.0072  -0.0332  -0.2782   0.5808   0.0000  -0.0860   0.0000
+   3 C   :2px    0.0000   0.0000  -0.0000  -0.0000   0.5352  -0.0000   0.0000
+   4 C   :2py   -0.0000   0.0000  -0.0000  -0.0000   0.0000  -0.0000  -0.6051
    5 C   :2pz    0.0062  -0.0008  -0.1567  -0.2136  -0.0000  -0.4552   0.0000
-   6 O   :1s    -0.9943  -0.0002   0.2195   0.1022  -0.0000  -0.0895   0.0000
-   7 O   :1s    -0.0259   0.0058  -0.7701  -0.4468   0.0000   0.4791  -0.0000
-   8 O   :2px   -0.0000  -0.0000   0.0000  -0.0000   0.4297  -0.0000  -0.0000
-   9 O   :2py    0.0000   0.0000  -0.0000   0.0000   0.0000  -0.0000  -0.6805
-  10 O   :2pz    0.0056  -0.0018   0.1657  -0.1775   0.0000   0.6779  -0.0000
-  11 H   :1s    -0.0003   0.0066  -0.0324   0.2612   0.2994   0.1639   0.0000
+   6 O   :1s    -0.9943  -0.0002   0.2195   0.1022   0.0000  -0.0895   0.0000
+   7 O   :1s    -0.0259   0.0058  -0.7701  -0.4468  -0.0000   0.4791  -0.0000
+   8 O   :2px    0.0000   0.0000  -0.0000  -0.0000   0.4297   0.0000   0.0000
+   9 O   :2py    0.0000  -0.0000   0.0000  -0.0000   0.0000  -0.0000  -0.6805
+  10 O   :2pz    0.0056  -0.0018   0.1657  -0.1775  -0.0000   0.6779  -0.0000
+  11 H   :1s    -0.0003   0.0066  -0.0324   0.2612   0.2994   0.1639  -0.0000
   12 H   :1s    -0.0003   0.0066  -0.0324   0.2612  -0.2994   0.1639  -0.0000
 
     Orbital         8        9       10
-   1 C   :1s     0.0000  -0.0000   0.2009
-   2 C   :1s    -0.0000   0.0000  -1.2706
-   3 C   :2px    0.1836   0.0000  -0.0000
+   1 C   :1s    -0.0000   0.0000  -0.2009
+   2 C   :1s     0.0000  -0.0000   1.2706
+   3 C   :2px    0.1836  -0.0000  -0.0000
    4 C   :2py    0.0000  -0.8238  -0.0000
-   5 C   :2pz    0.0000  -0.0000   0.5035
-   6 O   :1s    -0.0000  -0.0000  -0.0197
-   7 O   :1s     0.0000   0.0000   0.1040
+   5 C   :2pz   -0.0000   0.0000  -0.5035
+   6 O   :1s    -0.0000   0.0000   0.0197
+   7 O   :1s     0.0000  -0.0000  -0.1040
    8 O   :2px   -0.8807  -0.0000   0.0000
    9 O   :2py   -0.0000   0.7628   0.0000
-  10 O   :2pz   -0.0000   0.0000  -0.1752
-  11 H   :1s     0.3445  -0.0000   0.9049
-  12 H   :1s    -0.3445  -0.0000   0.9049
+  10 O   :2pz    0.0000  -0.0000   0.1752
+  11 H   :1s     0.3445   0.0000  -0.9049
+  12 H   :1s    -0.3445  -0.0000  -0.9049
 
 
 
- >>>> Total CPU  time used in SIRIUS :      3.91 seconds
- >>>> Total wall time used in SIRIUS :      4.12 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.59 seconds
+ >>>> Total wall time used in SIRIUS :      2.64 seconds
 
  
-     Date and time (Linux)  : Fri Sep 20 09:11:46 2013
-     Host name              : compute-1-3.local                       
+     Date and time (Linux)  : Wed Mar 19 10:24:56 2014
+     Host name              : fe8                                     
 
 
                      .---------------------------------------.
@@ -832,11 +833,11 @@ Point group: C1
           YDIPLOC 
           ZDIPLOC 
 
- Integral transformation: Total CPU and WALL times (sec)       0.002       0.340
+ Integral transformation: Total CPU and WALL times (sec)       0.002       0.005
 
 
-   SCF energy         :     -112.355582031492816
- -- inactive part     :     -143.516399716913099
+   SCF energy         :     -112.355582031490584
+ -- inactive part     :     -143.516399717059528
  -- nuclear repulsion :       31.163673729192165
 
 
@@ -865,7 +866,7 @@ Point group: C1
  RSPLR -- operator label : XDIPLEN 
  RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
- FREQ 2    0.0000000000000000     
+ FREQ 2   0.000000000000000e+000
 
 
 
@@ -888,7 +889,7 @@ Point group: C1
  RSPLR -- operator label : YDIPLEN 
  RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
- FREQ 2    0.0000000000000000     
+ FREQ 2   0.000000000000000e+000
 
 
 
@@ -911,7 +912,7 @@ Point group: C1
  RSPLR -- operator label : ZDIPLEN 
  RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
- FREQ 2    0.0000000000000000     
+ FREQ 2   0.000000000000000e+000
 
 
 
@@ -934,7 +935,7 @@ Point group: C1
  RSPLR -- operator label : XDIPLOC 
  RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
- FREQ 2    0.0000000000000000     
+ FREQ 2   0.000000000000000e+000
 
 
 
@@ -957,7 +958,7 @@ Point group: C1
  RSPLR -- operator label : YDIPLOC 
  RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
- FREQ 2    0.0000000000000000     
+ FREQ 2   0.000000000000000e+000
 
 
 
@@ -980,7 +981,7 @@ Point group: C1
  RSPLR -- operator label : ZDIPLOC 
  RSPLR -- operator spin  :   0
  RSPLR -- frequencies :   0.000000
- FREQ 2    0.0000000000000000     
+ FREQ 2   0.000000000000000e+000
 
 
 
@@ -1010,44 +1011,43 @@ Point group: C1
 
 @ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@ -<< XDIPLEN  ; XDIPLEN  >> =  6.647897759295e+00
-@ -<< XDIPLEN  ; YDIPLEN  >> = -7.952747429643e-16
-@ -<< XDIPLEN  ; ZDIPLEN  >> = -2.035989744792e-14
-@ -<< XDIPLEN  ; XDIPLOC  >> =  9.496474093919e+00
-@ -<< XDIPLEN  ; YDIPLOC  >> = -1.930901850158e-15
-@ -<< XDIPLEN  ; ZDIPLOC  >> = -2.744525936766e-14
-@ -<< YDIPLEN  ; YDIPLEN  >> =  2.548961158488e+00
-@ -<< YDIPLEN  ; ZDIPLEN  >> =  2.083036470965e-15
-@ -<< YDIPLEN  ; XDIPLOC  >> = -1.352945335231e-15
-@ -<< YDIPLEN  ; YDIPLOC  >> =  4.077311905854e+00
-@ -<< YDIPLEN  ; ZDIPLOC  >> =  2.605571482681e-15
-@ -<< ZDIPLEN  ; ZDIPLEN  >> =  1.153680764072e+01
-@ -<< ZDIPLEN  ; XDIPLOC  >> = -2.879854220130e-14
-@ -<< ZDIPLEN  ; YDIPLOC  >> =  2.759726443103e-15
-@ -<< ZDIPLEN  ; ZDIPLOC  >> =  1.548310730478e+01
-@ -<< XDIPLOC  ; XDIPLOC  >> =  1.357528580252e+01
-@ -<< XDIPLOC  ; YDIPLOC  >> = -3.139797883932e-15
-@ -<< XDIPLOC  ; ZDIPLOC  >> = -4.048573793708e-14
-@ -<< YDIPLOC  ; YDIPLOC  >> =  6.522098918700e+00
-@ -<< YDIPLOC  ; ZDIPLOC  >> =  3.651474043322e-15
-@ -<< ZDIPLOC  ; ZDIPLOC  >> =  2.078619960234e+01
+@ -<< XDIPLEN  ; XDIPLEN  >> =  6.647892649573e+00
+@ -<< XDIPLEN  ; YDIPLEN  >> = -5.766105258717e-15
+@ -<< XDIPLEN  ; ZDIPLEN  >> = -6.773729693843e-15
+@ -<< XDIPLEN  ; XDIPLOC  >> =  9.496466841892e+00
+@ -<< XDIPLEN  ; YDIPLOC  >> = -9.495094274546e-15
+@ -<< XDIPLEN  ; ZDIPLOC  >> = -7.643201780170e-15
+@ -<< YDIPLEN  ; YDIPLEN  >> =  2.548961559364e+00
+@ -<< YDIPLEN  ; ZDIPLEN  >> = -9.212331975150e-15
+@ -<< YDIPLEN  ; XDIPLOC  >> = -8.737685716098e-15
+@ -<< YDIPLEN  ; YDIPLOC  >> =  4.077312548642e+00
+@ -<< YDIPLEN  ; ZDIPLOC  >> = -1.252048368106e-14
+@ -<< ZDIPLEN  ; ZDIPLEN  >> =  1.153680748147e+01
+@ -<< ZDIPLEN  ; XDIPLOC  >> = -7.609663658128e-15
+@ -<< ZDIPLEN  ; YDIPLOC  >> = -1.394520211817e-14
+@ -<< ZDIPLEN  ; ZDIPLOC  >> =  1.548310704161e+01
+@ -<< XDIPLOC  ; XDIPLOC  >> =  1.357527550491e+01
+@ -<< XDIPLOC  ; YDIPLOC  >> = -1.387682802865e-14
+@ -<< XDIPLOC  ; ZDIPLOC  >> = -9.831626841740e-15
+@ -<< YDIPLOC  ; YDIPLOC  >> =  6.522099949416e+00
+@ -<< YDIPLOC  ; ZDIPLOC  >> = -1.909007066580e-14
+@ -<< ZDIPLOC  ; ZDIPLOC  >> =  2.078619918238e+01
 
 
- Time used in linear response calculation is      6.91 CPU seconds for symmetry 1
+ Time used in linear response calculation is      5.13 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:   7.30 seconds
- >>>> Total wall time used in RESPONSE:   7.83 seconds
+ >>>> Total CPU  time used in RESPONSE:   5.42 seconds
+ >>>> Total wall time used in RESPONSE:   5.58 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  11.68 seconds
- >>>> Total wall time used in DALTON:  12.96 seconds
+ >>>> Total CPU  time used in DALTON:   8.14 seconds
+ >>>> Total wall time used in DALTON:   8.45 seconds
 
  
-     Date and time (Linux)  : Fri Sep 20 09:11:54 2013
-     Host name              : compute-1-3.local                       
+     Date and time (Linux)  : Wed Mar 19 10:25:02 2014
+     Host name              : fe8                                     
 END REFOUT
-

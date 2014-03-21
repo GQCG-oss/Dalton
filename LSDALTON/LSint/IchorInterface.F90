@@ -24,7 +24,8 @@ MODULE IchorErimoduleHost
 public:: MAIN_ICHORERI_DRIVER, SCREEN_ICHORERI_DRIVER, &
      & determine_MinimumAllowedAObatchSize, &
      & determine_Ichor_nbatchesofAOS, determine_Ichor_batchesofAOS,&
-     & determine_Ichor_nAObatches, FREE_SCREEN_ICHORERI
+     & determine_Ichor_nAObatches, FREE_SCREEN_ICHORERI,&
+     & screen_ichoreri_retrieve_gabdim,screen_ichoreri_retrieve_gab
 private
 CONTAINS
 SUBROUTINE determine_MinimumAllowedAObatchSize(setting,iAO,AOSPEC,MinimumAllowedAObatchSize)
@@ -592,12 +593,12 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & integrals,lupri)
+!print*,'MaxMemAllocated,MemAllocated',MaxMemAllocated,MemAllocated
 call mem_dealloc(InputStorage)
 !=====================================================================
 
 
 !=====================================================================
-
 !free space
 !A
 call mem_dealloc(nAtomsOfTypeA)
@@ -952,6 +953,47 @@ call lsquit('IchorEri requires -DVAR_ICHOR',-1)
 #endif
 
 END SUBROUTINE SCREEN_ICHORERI_DRIVER
+
+SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GABDIM(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS)
+implicit none
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: LUPRI,IPRINT
+logical,intent(IN) :: LHS
+integer,intent(inout) :: nBatchA,nBatchB
+! local variables
+integer :: IchorGabID1,IchorGabID2
+#ifdef VAR_ICHOR
+CALL GET_IchorGabID(IchorGabID1,IchorGabID2)
+IF(LHS)THEN
+   call RetrieveGabDIMFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID1)
+ELSE
+   call RetrieveGabDIMFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID2)   
+ENDIF
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
+END SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GABDIM
+
+SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GAB(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS,BATCHGAB)
+implicit none
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: LUPRI,IPRINT
+logical,intent(IN) :: LHS
+integer,intent(IN) :: nBatchA,nBatchB
+real(realk),intent(inout) :: BATCHGAB(nBatchA*nBatchB)
+! local variables
+integer :: IchorGabID1,IchorGabID2
+#ifdef VAR_ICHOR
+CALL GET_IchorGabID(IchorGabID1,IchorGabID2)
+IF(LHS)THEN
+   call RetrieveGabFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID1,BATCHGAB)
+ELSE
+   call RetrieveGabFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID2,BATCHGAB)
+ENDIF
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
+END SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GAB
 
 SUBROUTINE FREE_SCREEN_ICHORERI()
 implicit none
