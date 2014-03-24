@@ -59,7 +59,13 @@ include(ConfigCompilerFlags)
 include(CheckFortranStandardCompatibility)
 include(ConfigExternal)
 include(ConfigOMP)
+
+# math detection
+set(BLAS_LANG "Fortran")
+set(LAPACK_LANG "Fortran")
+set(MKL_COMPILER_BINDINGS ${CMAKE_Fortran_COMPILER_ID})
 include(ConfigMath)
+
 include(ConfigExplicitLibs)
 include(ConfigMPI)
 include(ConfigSafeGuards)
