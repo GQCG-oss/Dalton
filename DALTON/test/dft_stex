@@ -182,7 +182,7 @@ CTRL[1]=3
 ERROR[1]="SPIN MULTIPLICITY, SYMMETRY AND/OR TOTAL CHARGE NOT CORRECT"
 
 # ?
-CRIT1=`$GREP "Final DFT energy\: * \-491\.62797422[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy\: * \-491\.6279742(2|3)[0-9][0-9][0-9][0-9]" $log | wc -l`
 TEST[2]=`expr	$CRIT1`
 CTRL[2]=1
 ERROR[2]="FINAL DFT ENERGY NOT CORRECT"
