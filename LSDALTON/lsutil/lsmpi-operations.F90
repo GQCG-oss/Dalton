@@ -9,7 +9,8 @@ module lsmpi_op
   use basis_typetype, only: BASISSETINFO
   use basis_type, only: lsmpi_alloc_basissetinfo
   use lstiming, only: lstimer
-  use memory_handling, only: mem_alloc,mem_dealloc
+  use memory_handling, only: mem_alloc,mem_dealloc, mem_shortintsize,&
+       & mem_realsize, mem_intsize, mem_allocated_mem_lstensor
   use integralparameters
   use Matrix_Operations, only: mat_mpicopy, mtype_scalapack, matrix_type
   use matrix_operations_scalapack, only: pdm_matrixsync
@@ -696,7 +697,7 @@ integer(kind=ls_mpik) :: master
 !
 logical    :: isAssociated
 INTEGER    :: I,J,K,L,offset,n1,n2,n3,n4
-integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
 integer :: AllocInt4,AllocRealk4,AllocIntS4
 real(realk) :: ts,te
 
@@ -763,6 +764,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call Mem_alloc(TENSOR%maxgab,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%maxgab,KIND=long)*mem_shortintsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%maxgab,TENSOR%nbatches(1),TENSOR%nbatches(2),Master)
 ELSE
@@ -774,6 +777,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%maxprimgab,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%maxprimgab,KIND=long)*mem_shortintsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%maxprimgab,TENSOR%nbatches(1),TENSOR%nbatches(2),Master)
 ELSE
@@ -785,6 +790,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%MBIE,TENSOR%nMBIE,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%MBIE,KIND=long)*mem_realsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%MBIE,TENSOR%nMBIE,TENSOR%nbatches(1),&
         & TENSOR%nbatches(2),Master)
@@ -806,6 +813,8 @@ IF(isAssociated)THEN
    call LS_MPI_BUFFER(n2,Master)
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%nAOBATCH,n1,n2)
+      nsize = size(TENSOR%nAOBATCH,KIND=long)*mem_intsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%nAOBATCH,n1,n2,Master)
 ELSE
@@ -835,6 +844,8 @@ IF(isAssociated)THEN
          IF(n2.NE.1)call lsquit('error in mpicopy_lstensor A.',-1)
          IF(n3.NE.1)call lsquit('error in mpicopy_lstensor B.',-1)
          call mem_alloc(TENSOR%INDEX,n1,n2,n3,n4)
+         nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+         call mem_allocated_mem_lstensor(nsize)
          DO L=1,n1
             DO I=1,n4
                TENSOR%INDEX(I,1,1,L) = I
@@ -859,6 +870,8 @@ IF(isAssociated)THEN
       call LS_MPI_BUFFER(n4,Master)
       IF(SLAVE)THEN
          call mem_alloc(TENSOR%INDEX,n1,n2,n3,n4)
+         nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+         call mem_allocated_mem_lstensor(nsize)
       ENDIF
       call LS_MPI_BUFFER(TENSOR%INDEX,n1,n2,n3,n4,Master)
    ENDIF
