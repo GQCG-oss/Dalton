@@ -1684,11 +1684,11 @@ integer (kind=long) :: nsize
    nullify(A)
    ALLOCATE(A(n),STAT = IERR)
 !$OMP END CRITICAL
+   nsize = size(A,KIND=long)*mem_realsize
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_1dim',IERR,n
      CALL memory_error_quit('Error in real_allocate_1dim',nsize)
    ENDIF
-   nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_1dim
 
@@ -1700,11 +1700,11 @@ integer :: IERR
 integer (kind=long) :: nsize
    nullify(A)
    ALLOCATE(A(n),STAT = IERR)
+   nsize = size(A,KIND=long)*4
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_1dim_sp',IERR,n
      CALL memory_error_quit('Error in real_allocate_1dim_sp',nsize)
    ENDIF
-   nsize = size(A,KIND=long)*4
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_1dim_sp
 
@@ -1715,15 +1715,25 @@ integer(kind=long),intent(in)  :: n
 REAL(REALK),pointer :: A(:)
 integer :: IERR
 integer (kind=long) :: nsize
+real(realk) :: MemAvail
+logical :: memfound
+
    nullify(A)
    ALLOCATE(A(n),STAT = IERR)
+
+   nsize = size(A,KIND=long)*mem_realsize
+
    IF (IERR.NE. 0) THEN
-     write(*,'("ERROR(real_allocate_1dim_int64),status=",I6," n=",I15," GBallocd=",f19.10)')&
-     &IERR,n,1.0E-9_realk*mem_allocated_global
+     MemAvail = 0.0E0_realk
+     call get_available_memory(6,MemAvail,memfound)
+     write(*,'("ERROR(real_allocate_1dim_int64),&
+     & status=",I6," n=",I15," GBallocd=",f19.10," Sys free:",f19.10)')&
+     & IERR,n,1.0E-9_realk*mem_allocated_global,MemAvail
      CALL memory_error_quit('Error in real_allocate_1dim_int64',nsize)
    ENDIF
-   nsize = size(A,KIND=long)*mem_realsize
+
    call mem_allocated_mem_real(nsize)
+
 END SUBROUTINE real_allocate_1dim_int64
 
 SUBROUTINE real_allocate_2dim(A,n1,n2)
@@ -1734,11 +1744,11 @@ integer :: IERR
 integer (kind=long) :: nsize
    nullify(A)
    ALLOCATE(A(n1,n2),STAT = IERR)
+   nsize = size(A,KIND=long)*mem_realsize
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_2dim',IERR,n1,n2
      call memory_error_quit('Error in real_allocate_2dim',nsize)
    ENDIF
-   nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_2dim
 
@@ -1750,11 +1760,11 @@ integer :: IERR
 integer (kind=long) :: nsize
    nullify(A)
    ALLOCATE(A(n1,n2),STAT = IERR)
+   nsize = size(A,KIND=long)*4
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_2dim_sp',IERR,n1,n2
      call memory_error_quit('Error in real_allocate_2dim_sp',nsize)
    ENDIF
-   nsize = size(A,KIND=long)*4
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_2dim_sp
 

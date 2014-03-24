@@ -1906,8 +1906,8 @@ contains
           call mem_alloc(gvvoo,o2v2,comm=infpar%lg_comm)
           call mem_alloc(gvoov,o2v2,comm=infpar%lg_comm)
 #else
-          call mem_alloc(gvvoo,o2v2)
-          call mem_alloc(gvoov,o2v2)
+          call mem_alloc(gvvoo,o2v2,simple=.true.)
+          call mem_alloc(gvoov,o2v2,simple=.true.)
 #endif
        endif
     endif
