@@ -109,7 +109,7 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Initail energy
-CRIT1=`$GREP "Final * HF energy\: * \-339\.117876469" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-339\.11787646(8|9)" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="INITIAL ENERGY NOT CORRECT"
