@@ -5622,6 +5622,7 @@ contains
 
     omega2%elm1 = 0.0E0_realk
  
+    call LSTIMER('MO-CCSD init calc.',tcpu1,twall1,DECinfo%output)
 
     !===========================================================================
     !                          MPI COMMUNICATIONS
@@ -5639,6 +5640,8 @@ contains
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
              & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock)
     end if StartUpSlaves
+
+    call LSTIMER('MO-CCSD MPI-comm.',tcpu1,twall1,DECinfo%output)
 
     ! If RTAR type of array is used then we reduce the partial MO batches
     ! to the MPI process that will treat it (depending on joblist)
@@ -5733,6 +5736,8 @@ contains
 
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
+
+    call LSTIMER('MO-CCSD A2 B2 + comm',tcpu1,twall1,DECinfo%output)
 
     ! Get C2 and D2 terms
     call wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo, &

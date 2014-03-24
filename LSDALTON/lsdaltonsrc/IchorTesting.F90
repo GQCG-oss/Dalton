@@ -468,7 +468,8 @@ do Ipass = IpassStart,IpassEnd
 !                   print*,'ABS(IIBATCHGAB(Iatom,Jatom)-BATCHGAB(Iatom,Jatom))',ABS(IIBATCHGAB(Iatom,Jatom)-BATCHGAB(Iatom,Jatom))
                    FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
 
-                   WRITE(lupri,*)'ABS(IIBATCHGAB(Iatom,Jatom)-BATCHGAB(Iatom,Jatom))',ABS(IIBATCHGAB(Iatom,Jatom)-BATCHGAB(Iatom,Jatom))
+                   WRITE(lupri,*)'ABS(IIBATCHGAB(Iatom,Jatom)-BATCHGAB(Iatom,Jatom))',&
+                        & ABS(IIBATCHGAB(Iatom,Jatom)-BATCHGAB(Iatom,Jatom))
                    WRITE(lupri,*)'Thermite Matrix OUTPUT'
                    call mat_print(GAB,1,dim1,1,dim2,lupri)
                    WRITE(lupri,*)'The Ichor BatchGab'

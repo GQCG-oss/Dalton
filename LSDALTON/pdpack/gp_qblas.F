@@ -632,20 +632,20 @@ c
       return
       end
 #else
-      subroutine dummy_pdpack()
+      subroutine dummy_pdpack1()
       implicit none
-
-      end subroutine 
+      RETURN
+      end 
 #endif
 #else
-      subroutine dummy_pdpack()
+      subroutine dummy_pdpack2()
       implicit none
-
-      end subroutine 
+      RETURN
+      end 
 #endif
 #else
-      subroutine dummy_pdpack()
+      subroutine dummy_pdpack3()
       implicit none
-
-      end subroutine 
+      RETURN
+      end 
 #endif
