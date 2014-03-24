@@ -47,10 +47,7 @@ MODULE ls_Integral_Interface
        & jmatclassicalmat, gradclassicalgrad, electronnuclearclassic
   use MBIEintegraldriver, only: mbie_integral_driver
   use BUILDAOBATCH, only: build_empty_ao, build_empty_nuclear_ao,&
-       & build_empty_pcharge_ao, build_s_1prim1contseg_ao, &
-       & build_s_2prim1contseg_ao, build_s_2prim2contseg_ao,&
-       & build_s_2prim2contgen_ao, build_p_1prim1contseg_ao,&
-       & build_d_1prim1contseg_ao, build_ao, build_shellbatch_ao, &
+       & build_empty_pcharge_ao, build_ao, build_shellbatch_ao, &
        & BUILD_EMPTY_ELFIELD_AO
   use lstiming, only: lstimer, print_timers
   use io, only: io_get_filename, io_get_csidentifier
@@ -3482,7 +3479,7 @@ LOGICAL              :: LHSGAB !THIS ONLY HAS AN EFFECT WHEN USING FRAGMENTS
 !
 Integer                    :: IAO,JAO,indAO
 integer                    :: AOstring(4)
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASIS_PT)             :: AObasis(4)
 Logical                    :: uniqueAO,emptyAO,intnrm,sameFrag(4,4)
 Integer                    :: ndim(4),indexUnique(4),AObatchdim,batchindex(4),batchsize(4)
 IF (setting%nAO.NE. 4) CALL LSQUIT('Error in SetInputAO. nAO .NE. 4',lupri)
@@ -3502,7 +3499,9 @@ AOstring(4) = AO4
 DO iAO=1,setting%nAO
   FRAGMENTS(iAO)%p => SETTING%FRAGMENT(iAO)%p
 ENDDO
-
+DO iAO=1,setting%nAO
+   AObasis(iAO)%p => Setting%BASIS(iAO)%p
+ENDDO
 INT_INPUT%sameLHSaos = (AO1.EQ.AO2) .AND. (.NOT. AO1.EQ.AOEmpty).AND.samefrag(1,2)
 INT_INPUT%sameRHSaos = (AO3.EQ.AO4) .AND. (.NOT. AO3.EQ.AOEmpty).AND.samefrag(3,4)
 INT_INPUT%sameODs    = (AO1.EQ.AO3) .AND. (AO2.EQ.AO4).AND.samefrag(1,3).AND.samefrag(2,4)
@@ -3511,6 +3510,8 @@ IF(INT_INPUT%CS_int)THEN
    IF(LHSGAB)THEN
       FRAGMENTS(3)%p => FRAGMENTS(1)%p
       FRAGMENTS(4)%p => FRAGMENTS(2)%p
+      AObasis(3)%p => Setting%BASIS(1)%p
+      AObasis(4)%p => Setting%BASIS(2)%p
       AOstring(3) = AO1
       AOstring(4) = AO2
       sameFrag(3,4) = sameFrag(1,2)
@@ -3527,6 +3528,8 @@ IF(INT_INPUT%CS_int)THEN
    ELSE
       FRAGMENTS(1)%p => FRAGMENTS(3)%p
       FRAGMENTS(2)%p => FRAGMENTS(4)%p
+      AObasis(1)%p => Setting%BASIS(3)%p
+      AObasis(2)%p => Setting%BASIS(4)%p
       AOstring(1) = AO3
       AOstring(2) = AO4
       sameFrag(1,2) = sameFrag(3,4)
@@ -3593,8 +3596,8 @@ DO IAO=1,4
     nAObuilds = nAObuilds+1
     indAO   = nAObuilds
     indexUnique(IAO) = indAO
-    CALL SetAObatch(AObuild(indAO),batchindex(iAO),batchsize(iAO),ndim(indAO),AOstring(iAO),intType,SETTING%Scheme,&
-     &              FRAGMENTS(iAO)%p,Setting%BASIS(iAO)%p,LUPRI,LUERR)
+    CALL SetAObatch(AObuild(indAO),batchindex(iAO),batchsize(iAO),ndim(indAO),AOstring(iAO),intType,&
+     &              SETTING%Scheme,FRAGMENTS(iAO)%p,AObasis(iAO)%p,LUPRI,LUERR)
     IF (AOstring(IAO).EQ.AOpCharge) THEN
       INT_INPUT%sameLHSaos = .FALSE.
       INT_INPUT%sameRHSaos = .FALSE.
@@ -3673,30 +3676,6 @@ CASE (AOelField)
    emptyAO = .true.
    CALL BUILD_EMPTY_ELFIELD_AO(AObatch,Molecule,LUPRI)
    nDim = 3
-CASE (AOS1p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_S_1Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOS2p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_S_2Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOS2p2cSeg)
-   emptyAO = .true.
-   CALL BUILD_S_2Prim2ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOS2p2cGen)
-   emptyAO = .true.
-   CALL BUILD_S_2Prim2ContGen_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOP1p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_P_1Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOD1p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_D_1Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
 CASE DEFAULT
    print*,'case: ',AO
    WRITE(lupri,*) 'case: ',AO

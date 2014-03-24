@@ -3783,14 +3783,13 @@ module lspdm_tensor_operations_module
     logical :: ls
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
+
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    if (arr%atype=='RTAR') then
-      dest=infpar%lg_mynum
-    else
-      dest=get_residence_of_tile(globtilenr,arr)
-    end if
+    dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
     call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
@@ -3823,13 +3822,16 @@ module lspdm_tensor_operations_module
     logical :: ls
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
+
     ls = .false.
     if(present(lock_set))ls=lock_set
 
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
+    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_acc = time_pdm_acc + sto - sta
@@ -4016,6 +4018,8 @@ module lspdm_tensor_operations_module
     nmsg_acc = nmsg_acc + 1
 #endif
   end subroutine array_accumulate_tile_combidx_nobuff
+
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!                   PUT TILES
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -4054,12 +4058,14 @@ module lspdm_tensor_operations_module
     integer(kind=ls_mpik) :: dest
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
     ls = .false.
     if(present(lock_set))ls=lock_set
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr))
+    call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_put = time_pdm_put + sto - sta
@@ -4088,12 +4094,14 @@ module lspdm_tensor_operations_module
     integer(kind=ls_mpik) :: dest
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
     ls = .false.
     if(present(lock_set))ls=lock_set
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr))
+    call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_put = time_pdm_put + sto - sta
@@ -4142,13 +4150,14 @@ module lspdm_tensor_operations_module
     real(realk) :: sta,sto
     logical :: ls
 #ifdef VAR_MPI
-    integer(kind=MPI_ADDRESS_KIND) ::offset
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
     ls = .false.
     if(present(lock_set))ls=lock_set
     source=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
-    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
+    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr),maxsze)
     if(.not.ls)call lsmpi_win_unlock(source,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_get = time_pdm_get + sto - sta
@@ -4177,17 +4186,14 @@ module lspdm_tensor_operations_module
     real(realk) :: sta,sto
     logical :: ls
 #ifdef VAR_MPI
-    integer(kind=MPI_ADDRESS_KIND) ::offset
+    integer :: maxsze
+    maxsze = MAX_SIZE_ONE_SIDED
     ls = .false.
     if(present(lock_set))ls=lock_set
-    if (arr%atype=='RTAR') then
-      source=infpar%lg_mynum
-    else
-      source=get_residence_of_tile(globtilenr,arr)
-    end if
+    source=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
-    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
+    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr),maxsze)
     if(.not.ls)call lsmpi_win_unlock(source,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_get = time_pdm_get + sto - sta

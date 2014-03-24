@@ -1217,6 +1217,7 @@ C
          END IF
       END IF
  87   CONTINUE
+
 C
 C     We finally punch information for Gamess-US graphic packages
 C
@@ -1229,6 +1230,9 @@ C
       CALL MOLPLT(WORK(KKIND),WORK(KKOL),TITMOL,WORK(KLAST),LLEFT)
       CALL PLTORB(WORK(KKIND),LMWORK)
 C
+!     release memory used in PElib
+      IF (PEQM) CALL PE_IFC_FINALIZE()
+
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
       WTOT = WEND - WSTR
@@ -1834,7 +1838,7 @@ C     "*QMMM  " input
 !     "*PEQM  " input
    10 CONTINUE
 #if defined (BUILD_PELIB)
-        CALL PE_IFC_DALINP_READER(WORD)
+        CALL PE_IFC_INPUT_READER(WORD)
 #else
         CALL QUIT('ERROR for *PEQM: PE library not enabled.')
 #endif

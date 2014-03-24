@@ -85,8 +85,7 @@ MODULE IntegralInterfaceMOD
        & II_get_geoderivCoulomb,II_get_GaussianGeminalFourCenter,&
        & II_get_magderiv_4center_eri,II_get_magderivF,&
        & II_get_magderivK,II_get_magderivJ, II_get_Econt,II_get_exchangeEcont,&
-       & II_get_CoulombEcont,II_get_test4center_eri,&
-       & II_get_ABres_4CenterEri,II_get_Fock_mat_full,&
+       & II_get_CoulombEcont,II_get_ABres_4CenterEri,II_get_Fock_mat_full,&
        & II_get_coulomb_mat_full, II_get_coulomb_mat_mixed_full,&
        & II_get_jengine_mat_full, II_get_exchange_mat_full,&
        & ii_get_exchange_mat_mixed_full, II_get_exchange_mat1_full,&
@@ -2837,7 +2836,7 @@ TYPE(MATRIX),target   :: GAB
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR
 !
-Integer             :: nbast
+Integer             :: nbast1,nbast2
 !call lsquit('II_get_2int_ScreenMat not implemented ',-LUPRI)
 IF(setting%IntegralTransformGC)THEN
    !I do not think it makes sense to transform afterwards 
@@ -2845,9 +2844,10 @@ IF(setting%IntegralTransformGC)THEN
    call lsquit('II_get_2int_ScreenMat and IntegralTransformGC do not work',-1)
 ENDIF
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
-nbast = GAB%nrow
+nbast1 = GAB%nrow
+nbast2 = GAB%ncol
 call mat_zero(GAB)
-call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+call initIntegralOutputDims(setting%Output,nbast1,nbast2,1,1,1)
 setting%Output%RealGabMatrix = .TRUE.
 CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
      &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
@@ -4634,59 +4634,6 @@ setting%scheme%dascreen_thrlog = Dascreen_thrlog
 
 END SUBROUTINE II_get_CoulombEcont
 
-SUBROUTINE II_get_test4center_eri(LUPRI,LUERR,SETTING)
-IMPLICIT NONE
-TYPE(LSSETTING)       :: SETTING
-INTEGER               :: LUPRI,LUERR
-!
-REAL(REALK)           :: outputintegral(5,5,5,5,1),R(3,4),maxInt
-type(MOLECULE_PT)     :: temp(4),Point(4)
-integer :: I,A,B,C,D
-
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-R(1,1) = 0.0E0_realk 
-R(2,1) = 0.0E0_realk 
-R(3,1) = 0.0E0_realk 
-R(1,2) = 1.0E0_realk 
-R(2,2) = 0.0E0_realk 
-R(3,2) = 0.0E0_realk 
-R(1,3) = 1.0E0_realk 
-R(2,3) = 0.0E0_realk 
-R(3,3) = 3.0E0_realk 
-R(1,4) = 0.0E0_realk 
-R(2,4) = 0.0E0_realk 
-R(3,4) = 3.0E0_realk 
-setting%sameMol=.FALSE.
-
-DO I=1,4
-   allocate(Point(I)%p)
-   call build_pointMolecule(Point(I)%p,R(:,I),1,lupri)
-   temp(I)%p  => setting%MOLECULE(I)%p
-   setting%MOLECULE(I)%p => Point(I)%p
-ENDDO
-call initIntegralOutputDims(setting%output,5,5,5,5,1)
-CALL ls_getIntegrals(AOD1p1cSeg,AOD1p1cSeg,AOD1p1cSeg,AOD1p1cSeg,&
-     &CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-IF(setting%IntegralTransformGC)THEN
-   call lsquit('Error in II_get_test4center_eri - IntegralTransformGC not implemented',lupri)
-ELSE
-   CALL retrieve_Output(lupri,setting,outputintegral,setting%IntegralTransformGC)
-ENDIF
-maxInt = 0.0E0_realk
-DO D=1,5
-   DO C=1,5
-      DO B=1,5
-         DO A=1,5
-            maxInt = MAX(maxInt,ABS(outputintegral(A,B,C,D,1)))
-            WRITE(lupri,'(A,I3,A,I3,A,I3,A,I3,A,F18.9)')'Int(',A,',',B,',',C,',',D,')=',outputintegral(A,B,C,D,1)
-         ENDDO
-      ENDDO
-   ENDDO
-ENDDO
-WRITE(lupri,*)'maxInt=',maxInt
-
-END SUBROUTINE II_get_test4center_eri
-
 !> \brief Calculates the (ab|cd) with fixed a and b batchindexes so that the output would be a 4dim tensor with dim (dimAbatch,dimBbatch,fulldimC,fulldimD)
 !> \author T. Kjaergaard
 !> \date 2010-03-17
@@ -5630,19 +5577,18 @@ real(realk),intent(IN)        :: constrain_factor
 !
 TYPE(MATRIX) :: S23,S22,S22inv
 Character(80) :: Filename = 'ADMM_T23'
-Logical :: onMaster,McWeeny,ERI2C
+Logical :: McWeeny,ERI2C
 real(realk) :: lambda
 Logical     :: const_electrons
 Logical     :: scale_finalE
 
-onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
 !these options are for the ERI metric
 !with McWeeny ADMM1 is assumed, without ADMM2
 McWeeny = setting%scheme%ADMM_MCWEENY
 ERI2C = setting%scheme%ADMM_2ERI
 
 IF (io_file_exist(Filename,setting%IO)) THEN
-  call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+  call io_read_mat(T23,Filename,setting%IO,LUPRI,LUERR)
 ELSE
   CALL mat_init(S22,n2,n2)
   CALL mat_init(S22inv,n2,n2)
@@ -5666,7 +5612,7 @@ ELSE
   CALL mat_free(S23)
   CALL mat_free(S22)
   call io_add_filename(setting%IO,Filename,LUPRI)
-  call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+  call io_write_mat(T23,Filename,setting%IO,LUPRI,LUERR)
 ENDIF
 ! IF constraining the total charge
 ! Lagrangian multiplier for conservation of the total nb. of electrons

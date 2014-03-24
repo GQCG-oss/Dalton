@@ -77,6 +77,7 @@ MODULE memory_handling
    public mem_allocated_lattice_cell
    public mem_allocated_mem_lattice_cell
    public mem_deallocated_mem_lattice_cell
+   public mem_add_external_memory
 #endif
    public longintbuffersize
    logical,save :: PrintSCFmemory
@@ -4772,6 +4773,23 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
 
 
 !----- MEMORY HANDLING -----!
+
+  !subroutine that adds the memory used in external libraries. 
+  subroutine mem_add_external_memory(nsize)
+     implicit none
+     integer (kind=long), intent(in) :: nsize
+     max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global+nsize)
+     if (mem_allocated_global  + nsize < 0) then
+        write(*,*) 'Allocated Memory                               =', mem_allocated_global
+        write(*,*) 'Added Memory                                   =', nsize
+        write(*,*) 'Total memory negative! mem_add_external_memory =', mem_allocated_global + nsize
+        IF(mem_allocated_global.GT.0.AND.nsize.GT.0)THEN
+           call memory_error_quit('Error in mem_add_external_memory - probably integer overflow!',nsize)
+        else
+           call memory_error_quit('Error in mem_add_external_memory!',nsize)
+        endif
+     endif
+  end subroutine mem_add_external_memory
 
   subroutine mem_allocated_mem_real(nsize)
      implicit none

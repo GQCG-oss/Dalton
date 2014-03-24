@@ -71,7 +71,7 @@ C
 C
       CALL QENTER('SIRCAN')
       IF (IPRCAN .GT. 0)
-     *   WRITE (LUW4,'(//A/)') ' <<<<< Output from SIRCAN >>>>>'
+     &   WRITE (LUW4,'(//A/)') ' <<<<< Output from SIRCAN'
       REDOCI = FLAG(45)
       ONLYNO = FLAG(46)
       ONLYFD = FLAG(48)
@@ -180,7 +180,7 @@ C     CALL SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,WRK,LFREE)
 C
 C
 C Step 5: Redo CI calculation for natural orbitals.
-C         >>> This is a test option <<<
+C         >>> NOTE: This is a test (debug) option
 C
       IF (REDOCI .AND. NCONF .GT. 1) THEN
          IF (FLAG(47)) THEN
@@ -291,7 +291,7 @@ C
       IF (IPRCNO .GE. 2) CALL GETTIM (T0,W0)
       IF (IPRCNO .GE. 1) THEN
          WRITE (LUPRI,'(/2A/)')
-     &      '   <<< OUTPUT FROM SIRCNO >>>    Keyword = ',KEYCNO
+     &      '   <<< OUTPUT FROM SIRCNO     Keyword = ',KEYCNO
       END IF
       IF (KEYCNO .EQ. 'ONLYNO' .OR. KEYCNO .EQ. 'NATORB') THEN
          IF (IPRCNO .GE. 5) WRITE (LUPRI,'(A/)')
@@ -836,8 +836,8 @@ C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
       IF (IPRINT .GE. 4) THEN
-         WRITE (LUPRI,'(//A//A,I2)')
-     *      ' <<< output from getno >>>',
+         WRITE (LUPRI,'(//A,I2)')
+     *      ' <<< output from getno    '//
      *      ' Symmetry of state vector :',ICSYM
       END IF
       IF (SUPSYM .AND. ORDER_in .AND. NOAVER) THEN

@@ -449,9 +449,9 @@ DO
                 call lsquit('.NOECONTINCREM must be placed some pointer after .ARH DAVID',-1)
                ENDIF
                config%opt%cfg_saveF0andD0 = .false.
-#ifdef MOD_UNRELEASED
-            CASE('.ASYM');       config%opt%cfg_asym = .true.
-#endif
+!#ifdef MOD_UNRELEASED
+!            CASE('.ASYM');       config%opt%cfg_asym = .true.
+!#endif
             CASE('.CHOLESKY');   config%decomp%lowdin_diagonalize = .false.; config%decomp%cholesky_decomp   = .true.
             CASE('.CONFSHIFT');  config%diag%cfg_no_conf_shift = .false.
             CASE('.CONTFAC');    READ(LUCMD,*) config%solver%cfg_arh_contract
@@ -468,7 +468,8 @@ DO
                                  config%av%CFG_lshift = diag_lshift_dorth
             CASE('.PURESCF');    config%opt%purescf = .true.
             CASE('.DUMPMAT');    config%opt%dumpmatrices = .true.
-            CASE('.EDIIS');      config%av%CFG_averaging = config%av%CFG_AVG_EDIIS
+!removed keyword - no testcase - and naturally it does not seem to work. TK
+!            CASE('.EDIIS');      config%av%CFG_averaging = config%av%CFG_AVG_EDIIS
             CASE('.EXPAND');     READ(LUCMD,*) config%solver%cfg_arh_expand_crit
             CASE('.EXPFAC');     READ(LUCMD,*) config%solver%cfg_arh_expand 
             CASE('.FIXSHIFT');   READ(LUCMD,*) shift 
@@ -524,10 +525,10 @@ DO
             CASE('.NEWDAMP');    config%solver%cfg_arh_newdamp = .true.
             CASE('.NVEC');       READ(LUCMD,*) NVEC; config%av%cfg_settings%max_history_size = NVEC
                                  config%av%diis_history_size = NVEC
-                                 config%av%ediis_history_size = NVEC
+!                                 config%av%ediis_history_size = NVEC
             CASE('.NVECDII');    READ(LUCMD,*) NVEC
                                  config%av%diis_history_size = NVEC
-                                 config%av%ediis_history_size = NVEC
+!                                 config%av%ediis_history_size = NVEC
             CASE('.NOPREC');     config%solver%cfg_NOPREC = .true.
                                  config%decomp%cfg_NOPREC = .true.
             CASE('.INCREM');     config%opt%cfg_incremental = .true.
@@ -541,7 +542,7 @@ DO
             !CASE('.PURIFY');     config%opt%cfg_density_method = config%opt%cfg_f2d_purification - NO LONGER SUPPORTED! /Stinne 16-08-2010
             !                     read(LUCMD,*) config%opt%cfg_purification_method
             CASE('.PRINTFINALCMO'); config%opt%print_final_cmo=.true.
-            CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
+!            CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
             CASE('.RESTART');    config%diag%CFG_restart =  .TRUE.
             CASE('.CRASHCALC');    config%opt%crashcalc =  .TRUE.
             CASE('.PURIFYRESTARTDENSITY'); config%diag%CFG_purifyrestart =  .TRUE.
@@ -1462,8 +1463,8 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         config%solver%DEBUG_DIAG_REDSPACE = .true.
      CASE('.DEBUG_DIAG_HESSIAN')
         config%opt%DEBUG_DIAG_HESSIAN = .true.
-     CASE('.DEBUG_HESSIAN')
-        config%solver%DEBUG_HESSIAN = .true.
+!     CASE('.DEBUG_HESSIAN')
+!        config%solver%DEBUG_HESSIAN = .true.
      CASE('.DEBUG_HESSIAN_EXACT')
         config%solver%DEBUG_HESSIAN_EXACT = .true. ; config%solver%DEBUG_HESSIAN = .true.
      CASE('.DEBUG_IDEMPOTENCY')
