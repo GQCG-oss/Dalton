@@ -7176,13 +7176,15 @@ C
       END IF
 C
       IF (PCM.AND.(RADIUS_PCM * ALPHA_PCM .GT. 0.1)) THEN
-         WRITE (LINE(ISTART:),'(A7,F6.2)') 'Radius=',RADIUS_PCM
-         WRITE (LINE(ISTART:),'(A7,F6.2)') 'Alpha=',ALPHA_PCM
-         ISTART = ISTART + 30
+         WRITE (LINE(ISTART:),'(A8,F6.2,A8,F6.2,A1)')
+     &   ' Radius=',RADIUS_PCM,' Alpha=',ALPHA_PCM,' '
+         ISTART = ISTART + 29
       END IF
 c
       IF (ATOMBA) THEN
          WRITE (LINE(ISTART:),'(A6,A25)') 'Basis=',BASNAM(1:25)
+         ! hjaaj March 2014: note that this will be wrong for e.g. ano basis sets
+         ! as of e.g. 'ano-1 2 1' only 'ano-1' is in BASNAM
          ISTART = ISTART + 31
       END IF
 C
