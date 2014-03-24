@@ -5577,19 +5577,18 @@ real(realk),intent(IN)        :: constrain_factor
 !
 TYPE(MATRIX) :: S23,S22,S22inv
 Character(80) :: Filename = 'ADMM_T23'
-Logical :: onMaster,McWeeny,ERI2C
+Logical :: McWeeny,ERI2C
 real(realk) :: lambda
 Logical     :: const_electrons
 Logical     :: scale_finalE
 
-onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
 !these options are for the ERI metric
 !with McWeeny ADMM1 is assumed, without ADMM2
 McWeeny = setting%scheme%ADMM_MCWEENY
 ERI2C = setting%scheme%ADMM_2ERI
 
 IF (io_file_exist(Filename,setting%IO)) THEN
-  call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+  call io_read_mat(T23,Filename,setting%IO,LUPRI,LUERR)
 ELSE
   CALL mat_init(S22,n2,n2)
   CALL mat_init(S22inv,n2,n2)
@@ -5613,7 +5612,7 @@ ELSE
   CALL mat_free(S23)
   CALL mat_free(S22)
   call io_add_filename(setting%IO,Filename,LUPRI)
-  call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+  call io_write_mat(T23,Filename,setting%IO,LUPRI,LUERR)
 ENDIF
 ! IF constraining the total charge
 ! Lagrangian multiplier for conservation of the total nb. of electrons
