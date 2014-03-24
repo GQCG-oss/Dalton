@@ -285,7 +285,6 @@ def produce_files(installdir,lsutildir,args):
            for acc_case in range(6):
              sub_acc = write_subroutine_header_acc(acc_reord[idx][0],idxarr,perm,now,modes,acc_case)
              write_subroutine_body_acc(acc_reord[idx][0],idxarr,perm,modes,args,acc_case)
-             acc_reord[idx][0].write("#endif\n")
              acc_reord[idx][0].write("  end subroutine "+sub_acc+"\n\n")
 
        if(idx+minr!=4 and hack_only_4d_for_utils):
@@ -679,8 +678,7 @@ def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
     offsetstr2 = offsetstr + "  "
 
     #WRITING OPENACC DIRECTIVES:
-    oaccparallel_init = "!$acc parallel present(array_in,array_out) async(async_id) if(async)\n"
-    oaccparallel_init += "!$acc parallel present(array_in,array_out) if(.not. async)\n"
+    oaccparallel_init = "!$acc parallel present(array_in,array_out) async(async_id)\n"
     if(modes == 4):
       oaccloop_gang = "!$acc loop gang collapse(2)\n"
       oaccloop_worker = "!$acc loop worker\n"
@@ -756,6 +754,7 @@ def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
     
     oaccloop_end = "!$acc end loop\n"
     oaccparallel_end = "!$acc end parallel\n"
+
     for j in  range(modes-1,-1,-1):
       f.write(offsetstr2+"enddo\n")
       if (modes == 4 and j == 1):
@@ -887,8 +886,7 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr+= "    real(realk),intent(in) :: array_in("+reordstr2+")\n"
   subheaderstr+= "    !> reordered array\n"
   subheaderstr+= "    real(realk),intent(inout) :: array_out("+reordstr3+")\n"
-  subheaderstr+= "    integer :: async_id\n"
-  subheaderstr+= "    logical :: async\n"
+  subheaderstr+= "    integer(acc_handle_kind) :: async_id\n"
   subheaderstr+= "    integer :: "
   for i in range(modes):
     subheaderstr+= abc[i]+",d"+abc[i]+","
@@ -898,18 +896,11 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   for i in range(modes):
     subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
   subheaderstr += "\n" 
-  subheaderstr+= "    if(async_id .eq. -1) then\n"
-  subheaderstr+= "       async = .false.\n"
-  subheaderstr+= "    else\n"
-  subheaderstr+= "       async = .true.\n"
-  subheaderstr+= "    end if\n"
+  subheaderstr += "    if (async_id .eq. -1) async_id = acc_async_sync\n"
   subheaderstr += "\n"
 
   f.write(subheaderstr)
-  f.write("#ifdef VAR_OPENACC\n")
-  f.write("\n")
   return sname
-
 
 
 def write_simple_module_header(f,idim,idx,now,args,kindof):
@@ -934,6 +925,9 @@ def write_simple_module_header(f,idim,idx,now,args,kindof):
      sys.exit()
 
    f.write("  use precision\n")
+   if(kindof=="acc"):
+     f.write("  use openacc\n")
+   f.write("\n")
    f.write("  contains\n")
 
 def write_simple_module_end_and_close(f,idim,idx,now,args,kindof):
