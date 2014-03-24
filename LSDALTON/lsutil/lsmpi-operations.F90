@@ -15,8 +15,8 @@ module lsmpi_op
   use matrix_operations_scalapack, only: pdm_matrixsync
   use molecule_typetype, only: MOLECULEINFO
   use LSTENSOR_OPERATIONSMOD, only: lstensor_NULLIFY, lstensor,&
-       & add_mem_to_global,slsaotensor_nullify,lsaotensor_nullify,&
-       & lsaotensor,slsaotensor, LSTENSOR_mem_est
+       & slsaotensor_nullify,lsaotensor_nullify,&
+       & lsaotensor,slsaotensor
   use LSTENSORmem, only: mem_LSTpointer_alloc, init_lstensorMem, &
        & retrieve_lstMemVal, free_lstensorMem, set_lstmemrealkbufferpointer
   use f12_module, only: GaussianGeminal
@@ -896,10 +896,6 @@ ENDIF
 !   Call Determine_slstensor_memory(tensor,nmemsize)
 !   call add_mem_to_global(nmemsize)
 !ENDIF
-IF(SLAVE)THEN
-   call LSTENSOR_mem_est(TENSOR,nmemsize)
-   call add_mem_to_global(nmemsize)
-ENDIF
 end SUBROUTINE mpicopy_lstensor
 
 subroutine mpicopy_slsaotensor(LSAO,Slave,Master)

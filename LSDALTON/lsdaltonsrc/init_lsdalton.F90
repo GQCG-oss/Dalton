@@ -20,6 +20,7 @@ module init_lsdalton_mod
   use IIDFTD, only: DFT_D_LSDAL_IFC
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
+  use memory_handling, only: Print_Memory_info
   private
   public :: open_lsdalton_files,init_lsdalton_and_get_lsitem, &
        & get_lsitem_from_input
@@ -69,6 +70,7 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
 
   ! Read input and change default configurations, if requested
   call config_read_input(config,lupri,luerr)
+  CALL Print_Memory_info(lupri,'at (almost) the Beginning of LSDALTON')
   ls%input%dalton = config%integral
 
   doDFT = config%opt%calctype.EQ.config%opt%dftcalc
@@ -98,7 +100,9 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
 
  ! Grand-canonical (GC) basis?
  if (config%decomp%cfg_gcbasis) then
+    CALL Print_Memory_info(lupri,'before the GCBASIS calc')
     call trilevel_basis(config%opt,ls)
+    CALL Print_Memory_info(lupri,'after the GCBASIS calc')
     CALL LSTIMER('*ATOM ',TIMSTR,TIMEND,lupri)
  endif
   
