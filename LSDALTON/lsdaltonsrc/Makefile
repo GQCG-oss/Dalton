@@ -49,7 +49,7 @@ clean :
 
 
 Makefile.depend depend: $(FORTFILES)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../linears -M../geomopt -M../deccc -M../SolverUtilities -M../xcfun_host -M../IchorIntegrals -- $(FORTFILES) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../linears -M../geomopt -M../deccc -M../SolverUtilities -M../xcfun_host -M../IchorIntegrals -M../responsesolver -- $(FORTFILES) > Makefile.depend
 
 
 include Makefile.depend
