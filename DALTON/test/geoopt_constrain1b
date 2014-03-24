@@ -118,14 +118,14 @@ CTRL[3]=25
 ERROR[3]="GEOMETRY NOT READ CORRECTLY"
 
 # Initial energy
-CRIT1=`$GREP "Final * HF energy\: * \-78\.2565905[67]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-78\.2565905[567]" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="INITIAL ENERGY NOT CORRECT"
 
 # Initial gradient
 CRIT1=`$GREP "C * z *  0*\.24289" $log | wc -l`
-CRIT2=`$GREP "C * y *\-*0*\.00000" $log | wc -l`
+CRIT2=`$GREP "C * y * \-0*\.00000" $log | wc -l`
 CRIT3=`$GREP "H * z *  0*\.00954" $log | wc -l`
 CRIT4=`$GREP "H * y *  0*\.00346" $log | wc -l`
 CRIT5=`$GREP "H * z *  0*\.01908" $log | wc -l`

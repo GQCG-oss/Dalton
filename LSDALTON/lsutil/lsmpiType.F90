@@ -9,7 +9,9 @@ module lsmpi_type
   use Integralparameters
   use memory_handling, only: mem_alloc,mem_dealloc, max_mem_used_global,&
        & longintbuffersize, print_maxmem, stats_mem, copy_from_mem_stats,&
-       & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats
+       & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats, &
+       & MemModParamPrintMemory, Print_Memory_info, &
+       & MemModParamPrintMemorylupri
 #ifdef VAR_MPI
   use infpar_module
 #ifdef USE_MPI_MOD_F90
@@ -152,19 +154,20 @@ module lsmpi_type
 
   interface lsmpi_put
     module procedure lsmpi_put_realk,&
-                 &   lsmpi_put_realkV,lsmpi_put_realkV_wrapper8
+                 &   lsmpi_put_realkV,lsmpi_put_realkV_wrapper8,lsmpi_put_realkV_parts,&
+                 &   lsmpi_put_realkV_parts_wrapper8
   end interface lsmpi_put
 
   interface lsmpi_get
     module procedure lsmpi_get_realk,&
                  &   lsmpi_get_realkV,lsmpi_get_realkV_wrapper8,lsmpi_get_realkV_parts,&
-                 &   lsmpi_get_int4,lsmpi_get_int8
+                 &   lsmpi_get_realkV_parts_wrapper8,lsmpi_get_int4,lsmpi_get_int8
   end interface lsmpi_get
 
   interface lsmpi_acc
     module procedure lsmpi_acc_realk,&
                  &   lsmpi_acc_realkV,lsmpi_acc_realkV_wrapper8,lsmpi_acc_realkV_parts, &
-                 &   lsmpi_acc_int4,lsmpi_acc_int8
+                 &   lsmpi_acc_realkV_parts_wrapper8,lsmpi_acc_int4,lsmpi_acc_int8
   end interface lsmpi_acc
 
   interface lsmpi_get_acc
@@ -197,6 +200,8 @@ module lsmpi_type
   !describable by a 32bit integer and dividable by 8
   !integer,parameter     :: SPLIT_MPI_MSG = 2147483640
   integer,parameter     :: SPLIT_MPI_MSG = 1000000000
+  !split mpi one sided communication into 1GB msg
+  integer,parameter     :: MAX_SIZE_ONE_SIDED = 125000000
 
   !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
@@ -224,7 +229,7 @@ module lsmpi_type
 #else
   integer,parameter :: int_to_short = 4 !no int64
 #endif
-
+  integer,parameter :: MaxIncreaseSize = 50000000 !0.4 GB
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !Checking and measuring variables!
@@ -3126,13 +3131,28 @@ contains
             IF(nInteger8.EQ.0) nInteger8 = incremInteger
             IF(nShort.EQ.0) nShort = incremShort
             IF(nCha.EQ.0) nCha = incremCha
+            IF(MemModParamPrintMemory)THEN
+               print*,'MemModParamPrintMemory   mynum',mynum
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,&
+                    & 'InitBuffer: Before allocation in AddtoBuffer')
+               Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',nDP
+               Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',nInteger4
+               Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',nInteger8
+               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',nShort
+               Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
+               Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
+            ENDIF
             call mem_alloc(lsmpibufferDP,nDP)
             call mem_alloc(lsmpibufferInt4,nInteger4)
             call mem_alloc(lsmpibufferInt8,nInteger8)
             call mem_alloc(lsmpibufferSho,nShort)
             call mem_alloc(lsmpibufferLog,nLog)
             call mem_alloc(lsmpibufferCha,nCha)
-            iDP   = 0
+             IF(MemModParamPrintMemory)THEN
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,&
+                    &'InitBuffer: After allocation in AddtoBuffer')
+            ENDIF
+           iDP   = 0
             iInt4 = 0
             iInt8 = 0
             iSho  = 0
@@ -3150,12 +3170,25 @@ contains
             nShort = ndim(4)
             nLog = ndim(5)
             nCha = ndim(6)
+            IF(MemModParamPrintMemory)THEN
+               print*,'MemModParamPrintMemory   mynum',mynum
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,'InitBuffer: Before allocation in ReadFromBuffer')
+               Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',nDP
+               Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',nInteger4
+               Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',nInteger8
+               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',nShort
+               Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
+               Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
+            ENDIF
             if(ndp.gt.0) call mem_alloc(lsmpibufferDP,nDP)
             if(ninteger4.gt.0) call mem_alloc(lsmpibufferInt4,nInteger4)
             if(ninteger8.gt.0) call mem_alloc(lsmpibufferInt8,nInteger8)
             if(nshort .gt. 0) call mem_alloc(lsmpibufferSho,nShort)
             if(nlog.gt.0) call mem_alloc(lsmpibufferLog,nLog)
             if(ncha .gt. 0) call mem_alloc(lsmpibufferCha,nCha)
+            IF(MemModParamPrintMemory)THEN
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,'InitBuffer: After allocation in ReadFromBuffer')
+            ENDIF
             if(job.eq.lsmpibroadcast) then  ! BCAST
                IF(ndim(1).GT.0)THEN
                   call ls_mpibcast(lsmpibufferDP,nDP,master,COMM)
@@ -3211,12 +3244,25 @@ contains
          IF(nInteger8.EQ.0) nInteger8 = incremInteger+1
          IF(nShort.EQ.0) nShort = incremShort+int_to_short
          IF(nCha.EQ.0) nCha = incremCha+1
+         IF(MemModParamPrintMemory)THEN
+            print*,'MemModParamPrintMemory   mynum',mynum
+            CALL Print_Memory_info(MemModParamPrintMemorylupri,'InitBuffer: Before allocation in LSMPIREDUCTION')
+            Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',nDP
+            Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',nInteger4
+            Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',nInteger8
+            Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',nShort
+            Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
+            Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
+         ENDIF
          call mem_alloc(lsmpibufferDP,nDP)
          call mem_alloc(lsmpibufferInt4,nInteger4)
          call mem_alloc(lsmpibufferInt8,nInteger8)
          call mem_alloc(lsmpibufferSho,nShort)
          call mem_alloc(lsmpibufferLog,nLog)
          call mem_alloc(lsmpibufferCha,nCha)
+         IF(MemModParamPrintMemory)THEN
+            CALL Print_Memory_info(MemModParamPrintMemorylupri,'InitBuffer: After allocation in ReadFromBuffer')
+         ENDIF
          iDP = 0
          iInt4 = 0
          iInt8 = 0
@@ -3384,12 +3430,26 @@ contains
             !call ls_mpibcast(lsmpibufferCha,iCha,master,COMM)
          ENDIF
          IF(mynum.NE.master)THEN
+            IF(MemModParamPrintMemory)THEN
+               print*,'MemModParamPrintMemory   mynum',mynum
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,'FinalBuffer: Before deallocation')
+               Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',size(lsmpibufferDP)
+               Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',size(lsmpibufferInt4)
+               Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',size(lsmpibufferInt8)
+               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',size(lsmpibufferSho)
+               Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',size(lsmpibufferLog)
+               Write(MemModParamPrintMemorylupri,*)'# Character elements     ',size(lsmpibufferCha)
+            ENDIF
             call mem_dealloc(lsmpibufferDP)
             call mem_dealloc(lsmpibufferInt4)
             call mem_dealloc(lsmpibufferInt8)
             call mem_dealloc(lsmpibufferSho)
             call mem_dealloc(lsmpibufferLog)
             call mem_dealloc(lsmpibufferCha)
+            IF(MemModParamPrintMemory)THEN
+               print*,'MemModParamPrintMemory   mynum',mynum
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,'FinalBuffer: After deallocation')
+            ENDIF
          ELSE
             AddToBuffer = .FALSE.
          ENDIF
@@ -3409,12 +3469,26 @@ contains
          iSho = 0
          iLog = 0
          iCha = 0
+         IF(MemModParamPrintMemory)THEN
+            print*,'MemModParamPrintMemory   mynum',mynum
+            CALL Print_Memory_info(MemModParamPrintMemorylupri,'FinalBuffer: Before deallocation LSMPIREDUCTIONmaster')
+            Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',size(lsmpibufferDP)
+            Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',size(lsmpibufferInt4)
+            Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',size(lsmpibufferInt8)
+            Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',size(lsmpibufferSho)
+            Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',size(lsmpibufferLog)
+            Write(MemModParamPrintMemorylupri,*)'# Character elements     ',size(lsmpibufferCha)
+         ENDIF
          call mem_dealloc(lsmpibufferDP)
          call mem_dealloc(lsmpibufferInt4)
          call mem_dealloc(lsmpibufferInt8)
          call mem_dealloc(lsmpibufferSho)
          call mem_dealloc(lsmpibufferLog)
          call mem_dealloc(lsmpibufferCha)
+         IF(MemModParamPrintMemory)THEN
+            print*,'MemModParamPrintMemory   mynum',mynum
+            CALL Print_Memory_info(MemModParamPrintMemorylupri,'FinalBuffer: After deallocation LSMPIREDUCTIONmaster')
+         ENDIF
       ELSE
          call lsquit('Job specifier invalid in ls_mpiFinalizeBuffer',-1)
       ENDIF
@@ -3482,7 +3556,7 @@ contains
          tmpbuffer(i) = lsmpibufferInt4(i)
       ENDDO
       call mem_dealloc(lsmpibufferInt4)
-      nInteger4 = nInteger4 + MAX(incremInteger,add,nInteger4)
+      nInteger4 = nInteger4 + MIN(MAX(incremInteger,add,nInteger4),MaxIncreaseSize)
       call mem_alloc(lsmpibufferInt4,nInteger4)
       DO i=1,n
          lsmpibufferInt4(i) = tmpbuffer(i)
@@ -3503,7 +3577,7 @@ contains
          tmpbuffer(i) = lsmpibufferInt8(i)
       ENDDO
       call mem_dealloc(lsmpibufferInt8)
-      nInteger8 = nInteger8 + MAX(incremInteger,add,nInteger8)
+      nInteger8 = nInteger8 + MIN(MAX(incremInteger,add,nInteger8),MaxIncreaseSize)
       call mem_alloc(lsmpibufferInt8,nInteger8)
       DO i=1,n
          lsmpibufferInt8(i) = tmpbuffer(i)
@@ -3525,7 +3599,7 @@ contains
          tmpbuffer(i) = lsmpibufferSho(i)
       ENDDO
       call mem_dealloc(lsmpibufferSho)
-      nShort = nShort + MAX(incremShort,add*int_to_short,nShort)
+      nShort = nShort + MIN(MAX(incremShort,add*int_to_short,nShort),MaxIncreaseSize)
       call mem_alloc(lsmpibufferSho,nShort)
       DO i=1,n
          lsmpibufferSho(i) = tmpbuffer(i)
@@ -3547,7 +3621,7 @@ contains
          tmpbuffer(i) = lsmpibufferLog(i)
       ENDDO
       call mem_dealloc(lsmpibufferLog)
-      nLog = nLog + MAX(incremLog,add,nLog)
+      nLog = nLog + MIN(MAX(incremLog,add,nLog),MaxIncreaseSize)
       call mem_alloc(lsmpibufferLog,nLog)
       DO i=1,n
          lsmpibufferLog(i) = tmpbuffer(i)
@@ -3569,7 +3643,7 @@ contains
          tmpbuffer(i) = lsmpibufferCha(i)
       ENDDO
       call mem_dealloc(lsmpibufferCha)
-      nCha = nCha + MAX(incremCha,add,nCha)
+      nCha = nCha + MIN(MAX(incremCha,add,nCha),MaxIncreaseSize)
       call mem_alloc(lsmpibufferCha,nCha)
       DO i=1,n
          lsmpibufferCha(i) = tmpbuffer(i)
@@ -3591,7 +3665,7 @@ contains
          tmpbuffer(i) = lsmpibufferDP(i)
       ENDDO
       call mem_dealloc(lsmpibufferDP)
-      nDP = n + MAX(incremDP,add,n)
+      nDP = n + MIN(MAX(incremDP,add,n),MaxIncreaseSize)
       call mem_alloc(lsmpibufferDP,nDP)
       DO i=1,n
          lsmpibufferDP(i) = tmpbuffer(i)
@@ -5660,6 +5734,9 @@ contains
 #endif
   end subroutine lsmpi_win_unlock
 
+  !=========================================================!
+  !                   MPI PUT ROUTINES                      !
+  !=========================================================!
   subroutine lsmpi_put_realk(buf,pos,dest,win)
     implicit none
     real(realk),intent(in) :: buf
@@ -5729,8 +5806,61 @@ contains
     endif
 #endif
   end subroutine lsmpi_put_realkV
+  subroutine lsmpi_put_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer, intent(in) :: batchsze
+#ifdef VAR_MPI
+    integer :: newpos
+    integer(kind=4) :: n4,k,i
+    integer(kind=8) :: n,j
+    if(ls_mpik==4)then
+      k=SPLIT_MPI_MSG
+      do i=1,nelms,k
+        n4=k
+        if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
+        call lsmpi_put_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze)
+      enddo
+    else
+      do j=1,nelms,batchsze
+        n=batchsze
+        if(((nelms-j)<batchsze).and.&
+          &(mod(nelms-j+1,batchsze)/=0))n=mod(nelms,batchsze)
+        newpos = pos+j-1
+        call lsmpi_put_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
+      enddo
+    endif
+#endif
+  end subroutine lsmpi_put_realkV_parts_wrapper8
+  subroutine lsmpi_put_realkV_parts(buf,nelms,pos,dest,win,batchsze)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=4),intent(in) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer, intent(in) :: batchsze
+#ifdef VAR_MPI
+    integer :: newpos
+    integer(kind=8) :: n,i
+    do i=1,nelms,batchsze
+      n=batchsze
+      if(((nelms-i)<batchsze).and.&
+        &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
+      newpos = pos+i-1
+      call lsmpi_put_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
+    enddo
+#endif
+  end subroutine lsmpi_put_realkV_parts
 
 
+  !=========================================================!
+  !                   MPI GET ROUTINES                      !
+  !=========================================================!
   subroutine lsmpi_get_int8(buf,pos,dest,win)
     implicit none
     integer(kind=8),intent(in) :: buf
@@ -5818,26 +5948,6 @@ contains
     endif
 #endif
   end subroutine lsmpi_get_realkV_wrapper8
-  subroutine lsmpi_get_realkV_parts(buf,nelms,pos,dest,win,batchsze)
-    implicit none
-    real(realk),intent(in) :: buf(*)
-    integer, intent(in) :: pos
-    integer,intent(in) :: nelms
-    integer(kind=ls_mpik),intent(in) :: dest
-    integer(kind=ls_mpik),intent(in) :: win
-    integer, intent(in) :: batchsze
-#ifdef VAR_MPI
-    integer :: newpos
-    integer(kind=8) :: n,i
-    do i=1,nelms,batchsze
-      n=batchsze
-      if(((nelms-i)<batchsze).and.&
-        &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
-      newpos = pos+i-1
-      call lsmpi_get_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
-    enddo
-#endif
-  end subroutine lsmpi_get_realkV_parts
   subroutine lsmpi_get_realkV(buf,nelms,pos,dest,win)
     implicit none
     real(realk),intent(in) :: buf(*)
@@ -5858,7 +5968,61 @@ contains
     endif
 #endif
   end subroutine lsmpi_get_realkV
+  subroutine lsmpi_get_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer, intent(in) :: batchsze
+#ifdef VAR_MPI
+    integer :: newpos
+    integer(kind=4) :: n4,k,i
+    integer(kind=8) :: n,j
+    if(ls_mpik==4)then
+      k=SPLIT_MPI_MSG
+      do i=1,nelms,k
+        n4=k
+        if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
+        call lsmpi_get_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze)
+      enddo
+    else
+      do j=1,nelms,batchsze
+        n=batchsze
+        if(((nelms-j)<batchsze).and.&
+          &(mod(nelms-j+1,batchsze)/=0))n=mod(nelms,batchsze)
+        newpos = pos+j-1
+        call lsmpi_get_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
+      enddo
+    endif
+#endif
+  end subroutine lsmpi_get_realkV_parts_wrapper8
+  subroutine lsmpi_get_realkV_parts(buf,nelms,pos,dest,win,batchsze)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=4),intent(in) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer, intent(in) :: batchsze
+#ifdef VAR_MPI
+    integer :: newpos
+    integer(kind=8) :: n,i
+    do i=1,nelms,batchsze
+      n=batchsze
+      if(((nelms-i)<batchsze).and.&
+        &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
+      newpos = pos+i-1
+      call lsmpi_get_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
+    enddo
+#endif
+  end subroutine lsmpi_get_realkV_parts
 
+
+  !=========================================================!
+  !                   MPI GET ACC ROUTINES                  !
+  !=========================================================!
   subroutine lsmpi_get_acc_int888(ibuf,obuf,dest,pos,win)
     implicit none
     integer(kind=8),intent(inout)    :: ibuf
@@ -5902,6 +6066,10 @@ contains
 #endif
   end subroutine lsmpi_get_acc_int444
 
+
+  !=========================================================!
+  !                   MPI ACC ROUTINES                      !
+  !=========================================================!
   subroutine lsmpi_acc_int8(buf,pos,dest,win)
     implicit none
     integer(kind=8),intent(in) :: buf
@@ -6009,11 +6177,41 @@ contains
     endif
 #endif
   end subroutine lsmpi_acc_realkV
+  subroutine lsmpi_acc_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer, intent(in) :: batchsze
+#ifdef VAR_MPI
+    integer :: newpos
+    integer(kind=4) :: n4,k,i
+    integer(kind=8) :: n,j
+    if(ls_mpik==4)then
+      k=SPLIT_MPI_MSG
+      do i=1,nelms,k
+        n4=k
+        if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
+        call lsmpi_acc_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze)
+      enddo
+    else
+      do j=1,nelms,batchsze
+        n=batchsze
+        if(((nelms-j)<batchsze).and.&
+          &(mod(nelms-j+1,batchsze)/=0))n=mod(nelms,batchsze)
+        newpos = pos+j-1
+        call lsmpi_acc_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
+      enddo
+    endif
+#endif
+  end subroutine lsmpi_acc_realkV_parts_wrapper8
   subroutine lsmpi_acc_realkV_parts(buf,nelms,pos,dest,win,batchsze)
     implicit none
     real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
-    integer,intent(in) :: nelms
+    integer(kind=4),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
@@ -6030,6 +6228,7 @@ contains
 #endif
   end subroutine lsmpi_acc_realkV_parts
   
+
   subroutine lsmpi_localallgatherv_realk8(sendbuf,recbuf,reccounts,disps)
     implicit none
     real(realk), intent(in) :: sendbuf(:)

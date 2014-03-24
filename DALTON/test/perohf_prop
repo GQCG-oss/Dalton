@@ -167,12 +167,12 @@ ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Induced dipole moments in environment
 #
- CRIT1=`$GREP "  1 * 0*\.01015... * 0*\.20477... * \-0*\.01183..." $log | wc -l`
- CRIT2=`$GREP "  2 * 0*\.05684... * 0*\.06753... * \-0*\.01669..." $log | wc -l`
- CRIT3=`$GREP "  3 * 0*\.01151... * 0*\.05669... * 0*\.04021..." $log | wc -l`
- CRIT4=`$GREP "  4 * 0*\.17140... * 0*\.04844... * \-0*\.01443..." $log | wc -l`
- CRIT5=`$GREP "  5 * 0*\.02820... * 0*\.16195... * \-0*\.00352..." $log | wc -l`
- CRIT6=`$GREP "  6 * 0*\.04501... * \-0*\.00075... * 0*\.01257..." $log | wc -l`
+CRIT1=`$GREP "  1 * 0*\.01015... * 0*\.20477... * \-0*\.01183..." $log | wc -l`
+CRIT2=`$GREP "  2 * 0*\.05684... * 0*\.06753... * \-0*\.01669..." $log | wc -l`
+CRIT3=`$GREP "  3 * 0*\.01151... * 0*\.05669... * 0*\.04021..." $log | wc -l`
+CRIT4=`$GREP "  4 * 0*\.17140... * 0*\.04844... * \-0*\.01443..." $log | wc -l`
+CRIT5=`$GREP "  5 * 0*\.02820... * 0*\.16195... * \-0*\.00352..." $log | wc -l`
+CRIT6=`$GREP "  6 * 0*\.04501... * \-0*\.00075... * 0*\.01257..." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[3]=6
 ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"

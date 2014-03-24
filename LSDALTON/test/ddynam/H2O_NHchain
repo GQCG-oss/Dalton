@@ -17,59 +17,68 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > LSresponse_DFT_excit.info <<'%EOF%'
-   LSresponse_DFT_excit
-   -------------------
-   Molecule:         HOBr
-   Wave Function:    DFT-B3LYP / 3-21G
-   Test Purpose:     Test excitation energies in LSDalton.
+cat > H2O_NHchain.info <<'%EOF%'
+   H2O_NHchain
+   -------------
+   Molecule:         H2O
+   Wave Function:    PBE / STO-3G
+
+   Test Purpose:     Test direct dynamics of H2O with
+   Fock-matrix dynamics
                      
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > LSresponse_DFT_excit.mol <<'%EOF%'
+cat > H2O_NHchain.mol <<'%EOF%'
 BASIS
-3-21G
+STO-3G
+H20 trajectory
 
--------------------------------------------
-Atomtypes=3 Angstrom Nosymmetry
-Charge=35.0 Atoms=1
-Br     -0.02242158860000      0.00000000000000     -0.38229962460000
+Atomtypes=2
 Charge=8.0 Atoms=1
-O     -0.01773770330000      0.00000000000000      1.46339055550000
-Charge=1.0 Atoms=1
-H      0.92665722890000      0.00000000000000      1.67336241620000
+O  2.611850679414D-03   1.390169353183D-01   0.000000000000D+00
+Charge=1.0 Atoms=2
+H   1.267233393399D+00  -1.086700743158D+00   0.000000000000D+00
+H  -1.308685358905D+00  -1.119598894475D+00   0.000000000000D+00
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > LSresponse_DFT_excit.dal <<'%EOF%'
+cat > H2O_NHchain.dal <<'%EOF%'
+**DYNAMI
+.NUMTRA
+1
+.VERLET
+.PRINT
+6
+.TIMESTEP
+1.D0
+.MAX ITER
+5
+.PROJGR
+.VELOCI
+3
+ -0.00012895  -0.00029393   0.00028437
+ -0.00001556  -0.00022084   0.00004574
+ -0.00014834   0.00052977  -0.00017706
+.PROJGR
+.NHCHAI
+.TEMP
+300
+.BATHFR
+0.001
 **WAVE FUNCTIONS
 .DFT
-B3LYP
+ PBE
+*DFT INPUT
+.DISPER
 *DENSOPT
-.RH
-.DIIS
-.CONVTHR
-3.0d-6
-.DISK
-.DISKSOLVER
-.NORESTART
-**RESPONS
-.NEXCIT
-6
-*SOLVER
-.AOPREC
-.AOSTART
-.QUIET
-.NSTART
-6
-.CONVTHR
-1.0d-4
-*END OF INPUT  
+.MAXIT
+300
+*END OF INPUT
 %EOF%
 #######################################################################
 
@@ -80,8 +89,8 @@ B3LYP
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > LSresponse_DFT_excit.check
-cat >> LSresponse_DFT_excit.check <<'%EOF%'
+echo $CHECK_SHELL > H2O_NHchain.check
+cat >> H2O_NHchain.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -91,25 +100,22 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-2636\.9616" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-75\.2219469" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
 
-# Memory test
-CRIT2=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
-TEST[2]=`expr  $CRIT2`
+# Temperature
+CRIT1=`$GREP "Temperature\:    99\.0486" $log | wc -l`
+TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="Memory leak -"
+ERROR[2]="Temperature -"
 
-# excitation energies 
-CRIT1=`$GREP " 1 * 0\.12525" $log | wc -l`
-CRIT2=`$GREP " 2 * 0\.1704[8-9]" $log | wc -l`
-CRIT3=`$GREP " 3 * 0\.2331[1-2]" $log | wc -l`
-
-TEST[3]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 `
-CTRL[3]=3
-ERROR[3]="Error in excitation energies"
+# Memory test
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[3]=`expr  $CRIT1`
+CTRL[3]=1
+ERROR[3]="Memory leak -"
 
 PASSED=1
 for i in 1 2 3

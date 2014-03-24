@@ -1,16 +1,17 @@
 !> @file
-!> Contains the main Ichor integral drivers
+!> Contains the main LSDALTON to Ichor integral Interfaces 
 !> Ichor is the "Integral Code Hand Optimized for Rapid evaluation" 
 !> Ichor is the ethereal golden fluid that is the blood of the greek gods
+!> The Ichor code is in the IchorIntegrals directory. 
 
-!> \brief Main Ichor drivers for the calculation of integrals 
-!> based on the McMurchie-Davidson(McM)/Obara Saika(OS)/Head-Gordon-Pople(HGP)/Rys 
+!> \brief Main Ichor Interface for the calculation of integrals 
+!> based on the Obara Saika(OS)/Head-Gordon-Pople(HGP)
 !> \author T. Kjaergaard
 !> \date 2013 
 MODULE IchorErimoduleHost
   use precision
   use TYPEDEFTYPE,only: lssetting,BASISSETINFO,MOLECULEINFO
-  use memory_handling, only: mem_alloc,mem_dealloc
+  use memory_handling, only: mem_alloc,mem_dealloc, mem_add_external_memory
   use dec_typedef_module, only: DecAObatchinfo
 #ifdef VAR_ICHOR
   use IchorGabmodule
@@ -24,7 +25,8 @@ MODULE IchorErimoduleHost
 public:: MAIN_ICHORERI_DRIVER, SCREEN_ICHORERI_DRIVER, &
      & determine_MinimumAllowedAObatchSize, &
      & determine_Ichor_nbatchesofAOS, determine_Ichor_batchesofAOS,&
-     & determine_Ichor_nAObatches, FREE_SCREEN_ICHORERI
+     & determine_Ichor_nAObatches, FREE_SCREEN_ICHORERI,&
+     & screen_ichoreri_retrieve_gabdim,screen_ichoreri_retrieve_gab
 private
 CONTAINS
 SUBROUTINE determine_MinimumAllowedAObatchSize(setting,iAO,AOSPEC,MinimumAllowedAObatchSize)
@@ -592,12 +594,13 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & integrals,lupri)
+
+call Mem_Add_external_memory(MaxMemAllocated)
 call mem_dealloc(InputStorage)
 !=====================================================================
 
 
 !=====================================================================
-
 !free space
 !A
 call mem_dealloc(nAtomsOfTypeA)
@@ -795,6 +798,8 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
         & MaxFileStorage,MaxMemAllocated,MemAllocated,&
         & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
         & BATCHGAB,lupri)
+   call Mem_Add_external_memory(MaxMemAllocated)
+
    CALL GenerateIdentifier(INTSPEC,GabIdentifier)
    call AddGabToIchorSaveGabModule(nBatchA,nBatchB,GabIdentifier,BATCHGAB)
    call mem_dealloc(BATCHGAB)   
@@ -911,6 +916,8 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
            & MaxFileStorage,MaxMemAllocated,MemAllocated,&
            & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
            & BATCHGCD,lupri)
+      call mem_Add_external_memory(MaxMemAllocated)
+
       CALL GenerateIdentifier(INTSPEC,GabIdentifier)
       IF(GabIdentifier.EQ.IchorGabID1)THEN
          GabIdentifier = GabIdentifier + 53210
@@ -952,6 +959,47 @@ call lsquit('IchorEri requires -DVAR_ICHOR',-1)
 #endif
 
 END SUBROUTINE SCREEN_ICHORERI_DRIVER
+
+SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GABDIM(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS)
+implicit none
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: LUPRI,IPRINT
+logical,intent(IN) :: LHS
+integer,intent(inout) :: nBatchA,nBatchB
+! local variables
+integer :: IchorGabID1,IchorGabID2
+#ifdef VAR_ICHOR
+CALL GET_IchorGabID(IchorGabID1,IchorGabID2)
+IF(LHS)THEN
+   call RetrieveGabDIMFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID1)
+ELSE
+   call RetrieveGabDIMFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID2)   
+ENDIF
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
+END SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GABDIM
+
+SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GAB(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS,BATCHGAB)
+implicit none
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: LUPRI,IPRINT
+logical,intent(IN) :: LHS
+integer,intent(IN) :: nBatchA,nBatchB
+real(realk),intent(inout) :: BATCHGAB(nBatchA*nBatchB)
+! local variables
+integer :: IchorGabID1,IchorGabID2
+#ifdef VAR_ICHOR
+CALL GET_IchorGabID(IchorGabID1,IchorGabID2)
+IF(LHS)THEN
+   call RetrieveGabFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID1,BATCHGAB)
+ELSE
+   call RetrieveGabFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID2,BATCHGAB)
+ENDIF
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
+END SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GAB
 
 SUBROUTINE FREE_SCREEN_ICHORERI()
 implicit none

@@ -12,6 +12,7 @@ MODULE IchorMemory
    public REMOVE_OMP_MEM
 !GLOBAL VARIABLES
    integer(KIND=long),save :: mem_allocated_ichor, max_mem_used_ichor  !Count all memory
+   integer(KIND=long),save :: maxMemLimit_ichor !maximum allowed memory usage
    !Count 'real' memory, integral code
    integer(KIND=long),save :: mem_allocated_real, max_mem_used_real
    !Count 'integer' memory, integral code
@@ -43,11 +44,16 @@ INTERFACE mem_ichor_dealloc
 END INTERFACE
 !
 CONTAINS
-subroutine set_ichor_memvar(MaxMemAllocated,MemAllocated)
+subroutine set_ichor_memvar(MaxMemAllocated,MemAllocated,MaxMem)
 implicit none
-integer(KIND=long),intent(in) :: MaxMemAllocated,MemAllocated
-mem_allocated_ichor = MemAllocated
+integer(KIND=long),intent(in) :: MaxMemAllocated,MemAllocated,MaxMem
 max_mem_used_ichor = MaxMemAllocated
+mem_allocated_ichor = MemAllocated
+IF(MaxMem.EQ.0)THEN
+   maxMemLimit_ichor = HUGE(MaxMem)
+ELSE
+   maxMemLimit_ichor = MaxMem
+ENDIF
 mem_allocated_real = 0
 max_mem_used_real = 0
 mem_allocated_integer = 0
@@ -316,6 +322,11 @@ subroutine mem_allocated_ichor_mem_real(nsize)
      call IchorQuit('Error in mem_allocated_ichor_mem_real - probably integer overflow!',-1)
   endif
   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_real - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
 end subroutine mem_allocated_ichor_mem_real
 
 subroutine mem_deallocated_ichor_mem_real(nsize)
@@ -342,6 +353,11 @@ subroutine mem_allocated_ichor_mem_real2(nsize)
   max_mem_used_real = MAX(max_mem_used_real,mem_allocated_real)
   mem_allocated_ichor = mem_allocated_ichor  + nsize
   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_real2 - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
 end subroutine mem_allocated_ichor_mem_real2
 
 subroutine mem_deallocated_ichor_mem_real2(nsize)
@@ -359,6 +375,11 @@ subroutine mem_allocated_ichor_mem_integer(nsize)
   !Count also the total memory:
   mem_allocated_ichor = mem_allocated_ichor  + nsize
   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_integer - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
 end subroutine mem_allocated_ichor_mem_integer
 
 subroutine mem_deallocated_ichor_mem_integer(nsize)
@@ -383,6 +404,11 @@ subroutine mem_allocated_ichor_mem_logical(nsize)
   !Count also the total memory:
   mem_allocated_ichor = mem_allocated_ichor  + nsize
   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_logical - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
 end subroutine mem_allocated_ichor_mem_logical
 
 subroutine mem_deallocated_ichor_mem_logical(nsize)
