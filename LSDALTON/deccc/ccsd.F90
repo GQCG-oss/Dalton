@@ -2790,7 +2790,7 @@ contains
        lead = tl
        !use w3 as buffer which is allocated largest possible
        w2size  = tlov
-       w3size  = min(o2v2,tlov + els2add)
+       w3size  = max(o2v2,tlov + els2add)
      else
        call lsquit("ERROR(get_cnd_terms_mo):no valid scheme",-1)
      endif
@@ -4432,7 +4432,7 @@ contains
 
     if(scheme==2)then
       mem_used = get_min_mem_req(no,nv,nb,nba,nbg,2,scheme,.false.)
-      e2a = int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk/8E0_realk),kind=8)
+      e2a = int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8)
     endif
   end subroutine get_max_batch_sizes
 

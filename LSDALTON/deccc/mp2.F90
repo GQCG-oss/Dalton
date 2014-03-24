@@ -640,10 +640,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
         call lsquit('MP2: Something wrong for big array allocation!',-1)
       end if
 
-      !ZERO ARRAY JUST TO BE SURE, IS THAT REALLY A GOOD IDEA????
-      !$OMP WORKSHARE
-      arr=0.0E0_realk
-      !$OMP END WORKSHARE
 #endif
 
 
@@ -720,22 +716,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
           AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-          ! Pointers for step 1
-          ! -------------------
-
-          ! tmp1 starts pointing to element 1 in arr and has size bat%size1(1)
-          start=1
-          call mypointer_init(maxdim,arr,start,bat%size1(1),tmp1)
-
-          ! tmp2 starts pointing to element tmp1%end+1 in arr and has size bat%size1(2)
-          start=tmp1%end+1
-          call mypointer_init(maxdim,arr,start,bat%size1(2),tmp2)
-
-          ! tmp2 starts pointing to element tmp2%end+1 in arr and has size bat%size1(3)
-          start=tmp2%end+1
-          call mypointer_init(maxdim,arr,start,bat%size1(3),tmp3)
-#endif
 
 
 
@@ -743,6 +723,13 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 #ifdef VAR_MPI
           ! MPI: Only do (alpha,gamma) contribution if this is a task for this particular rank
           if(decmpitasks((alphaB-1)*nbatchesGamma+gammaB) /= infpar%lg_mynum) cycle
+#endif
+
+
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+          call mypointer_init(maxdim,arr,start,bat%size1(1),tmp1)
+          call mypointer_init(maxdim,arr,start,bat%size1(2),tmp2)
+          call mypointer_init(maxdim,arr,start,bat%size1(3),tmp3)
 #endif
 
 
@@ -850,11 +837,10 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              ! Reorder: tmp2(B,J,alphaB,gammaB) --> tmp1(J,B,alphaB,gammaB)
              dim1=dim2
              do counter=1,dimGamma*dimAlpha
-                idx=1+i8*(counter-1)*nvirt*nocc
-                siz = nvirt*nocc
+                idx   =  1 + i8*(counter-1)*nvirt*nocc
+                siz   =  nvirt*nocc
                 mini2 => tmp2%p(idx:idx+siz-1)
-
-                idx=1+i8*(counter-1)*nvirt*nocc
+                idx   = 1 + i8*(counter-1)*nvirt*nocc
                 mini1 => tmp1%p(idx:idx+siz-1)
                 call mat_transpose(nvirt,nocc,1.0E0_realk,mini2,0.0E0_realk,mini1)
              end do
@@ -913,14 +899,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
           call mem_dealloc(tmp1%p)
           call mem_dealloc(tmp2%p)
-
-          ! Pointers for step 2
-          ! -------------------
-
-          ! tmp4 starts pointing to element 1 in arr and has size bat%size2(4)
-          start=1
           call mypointer_init(maxdim,arr,start,bat%size2(4),tmp4)
-          start = tmp4%end +1
 #endif
           ! Reorder: tmp3(B,J,alphaB,I) --> tmp4(alphaB,B,J,I)
           dim4=i8*dimAlpha*nvirt*nocc*nocctot
@@ -935,20 +914,10 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
           call mem_dealloc(tmp3%p)
-
-
           do j=1,nthreads
-             ! tmp array b1 inside OMP loop
              call mypointer_init(maxdim,arr,start,bat%size2(1),b1(j))
-             start = b1(j)%end + 1
-
-             ! tmp array b2 inside OMP loop
              call mypointer_init(maxdim,arr,start,bat%size2(2),b2(j))
-             start = b2(j)%end + 1
-
-             ! tmp array b3 inside OMP loop
              call mypointer_init(maxdim,arr,start,bat%size2(3),b3(j))
-             start = b3(j)%end + 1
           end do
 #endif
 
