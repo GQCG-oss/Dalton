@@ -12,6 +12,7 @@ C
      &           KBTR1E, KBTR1D, KBTJ1E, KBTJ1D,
      &           KEND2,  LWORK2, KENDSV, LWORKSV,
      &           ISYMPAR, parrpalast
+      logical    forceupdate
 C
 C
       common /parrpa/
@@ -21,7 +22,8 @@ C
      & LTR1E , LTR1D , LRES1E, LRES1D, LFOCK , LDENS , 
      & LBTR1E, LBTR1D, LBTJ1E, LBTJ1D, KTR1E , KTR1D ,
      & KRES1E, KRES1D, KFOCK , KDENS , KBTR1E, KBTR1D, 
-     & KBTJ1E, KBTJ1D, KEND2 , LWORK2, KENDSV, ISYMPAR
+     & KBTJ1E, KBTJ1D, KEND2 , LWORK2, KENDSV, ISYMPAR,
+     & forceupdate
 C
 C
 C
