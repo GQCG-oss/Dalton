@@ -328,7 +328,7 @@
     real(realk), intent(in)::    array_in(i8*d1*d2*d3*d4),pre1,pre2
     real(realk), intent(inout):: array_out(i8*d1*d2*d3*d4)
     integer, dimension(4), intent(in) :: order
-    integer(kind=acc_hand_kind), optional :: async_id
+    integer(kind=acc_handle_kind), optional :: async_id
 
     integer, dimension(4) :: new_order,order1,order2,dims
     integer :: a,b,c,d,maxdim
@@ -339,13 +339,13 @@
     integer :: di3(3), di2(2)
     real(realk) :: tcpu1,twall1,tcpu2,twall2
     integer(kind=long) :: vec_size64
-    integer(kind=acc_hand_kind) :: async_idx
+    integer(kind=acc_handle_kind) :: async_idx
 
     ! test for async_id - if not present, set async_idx to -1 (blocking)
     if (present(async_id)) then
        async_idx = async_id
     else
-       async_idx = int(-1,kind=acc_hand_kind)
+       async_idx = int(-1,kind=acc_handle_kind)
     end if 
 
     vec_size64 = int(d1*d2*d3*d4,kind=8)
