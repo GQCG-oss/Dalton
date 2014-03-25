@@ -15,7 +15,7 @@
       https://github.com/rbast/runtest
 """
 
-RUNTEST_VERSION = 'v0.1.0'
+RUNTEST_VERSION = 'v0.1.1'
 
 import re
 import os
@@ -57,10 +57,18 @@ class TestRun:
 
     #--------------------------------------------------------------------------
     def __init__(self, _file, argv):
+
         self.input_dir = input_dir = os.path.dirname(os.path.realpath(_file))
-        self.binary_dir, self.work_dir, self.verbose = self._parse_args(input_dir, argv)
+
+        options = self._parse_args(input_dir, argv)
+        self.binary_dir = options.binary_dir
+        self.work_dir   = options.work_dir
+        self.verbose    = options.verbose
+        self.skip_run   = options.skip_run
+
         if self.work_dir != self.input_dir:
             self._safe_copy(self.input_dir, self.work_dir)
+
         os.chdir(self.work_dir) # FIXME possibly problematic
 
     #--------------------------------------------------------------------------
@@ -75,6 +83,9 @@ class TestRun:
             - AcceptedError
             - SubprocessError
         """
+        if self.skip_run:
+            return
+
         if sys.platform != "win32":
             command = shlex.split(command)
 
@@ -124,6 +135,11 @@ class TestRun:
                           action='store_true',
                           default=False,
                           help='give more verbose output upon test failure [default: %default]')
+        parser.add_option('--skip-run',
+                          '-s',
+                          action='store_true',
+                          default=False,
+                          help='skip actual calculation(s) [default: %default]')
         (options, args) = parser.parse_args(args=argv[1:])
 
         if sys.platform == "win32":
@@ -131,7 +147,7 @@ class TestRun:
             options.binary_dir = string.replace(options.binary_dir, '/', '\\')
             options.work_dir = string.replace(options.work_dir, '/', '\\')
 
-        return (options.binary_dir, options.work_dir, options.verbose)
+        return options
 
 
 #------------------------------------------------------------------------------
