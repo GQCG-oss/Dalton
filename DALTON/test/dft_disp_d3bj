@@ -70,7 +70,7 @@ cat > dft_disp_d3bj.dal <<'%EOF%'
 BECKE
 *SCF INPUT
 .THRESH
- 1.0D-06
+ 1.0D-08
 **END OF INPUT
 %EOF%
 #######################################################################

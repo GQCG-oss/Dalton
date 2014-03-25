@@ -128,6 +128,7 @@ implicit none
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
+  config%PrintMemory = .false.
   config%doESGopt = .false.
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
@@ -1420,7 +1421,7 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
   LOGICAL,intent(inout)                :: READWORD
   character(len=80),intent(inout)  :: WORD
   character(len=2)   :: PROMPT
-  integer :: i
+  integer :: i,PrintMemoryLowerLimit
 
   INFOLOOP: DO   
      IF(READWORD) THEN
@@ -1438,6 +1439,19 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         EXIT INFOLOOP
      ENDIF
      SELECT CASE(WORD)
+     CASE('.PRINTMEMORY');  
+        config%PrintMemory = .TRUE.
+        call Set_MemModParamPrintMemory(config%PrintMemory,config%lupri)
+     CASE('.PRINTMEMORYLOWERLIMIT'); 
+        !Do not print stack everytime the Maximum Allocated memory is increased
+        !only print if Maximum Allocated memory is greater then PrintMemoryLowerLimit
+        !Give input in byte
+        IF(config%PrintMemory)THEN
+           READ(LUCMD,*) PrintMemoryLowerLimit
+           call Set_PrintMemoryLowerLimit(PrintMemoryLowerLimit)
+        ELSE
+           call lsquit('Error .PRINTMEMORYLOWERLIMIT requires .PRINTMEMORY',-1)
+        ENDIF
      CASE('.DEBUG_SCF_MEM')
         call Set_PrintSCFmemory(.TRUE.)
      CASE('.DEBUG_MPI_MEM')
