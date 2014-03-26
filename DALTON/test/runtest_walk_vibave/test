@@ -9,9 +9,68 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string = 'TEST STRING',
-      tolerance = 1.0e-7)
+f.add(string = 'Final HF energy',
+      tolerance = 1.0e-10)
 
-test.run(['walk_vibave.dal'], ['tmp.mol'], {'out': f})
+#f.add(from_string = 'Molecular gradient (au)',
+#      num_lines    = 6,
+#      ignore_below = 1.0e-4,
+#      tolerance = 1.0e-6)
+
+
+#f.add(from_string = 'Molecular Hessian (au)',
+#      num_lines    = 20,
+#      ignore_below = 1.0e-4,
+#      tolerance = 1.0e-5)
+
+f.add(from_string = 'Static polarizabilities (ang',
+      num_lines = 8,
+      ignore_below = 1.0e-3,
+      tolerance = 2.0e-5)
+
+f.add(string = 'Isotropic magnetizability',
+      tolerance = 1.0e-10)
+
+f.add(from_string = 'Magnetizabilities                    au',
+      num_lines = 8,
+      tolerance = 1.0e-3)
+
+f.add(from_string = 'Molecular rotational g-tensor\n',
+      num_lines = 8,
+      tolerance = 1.0e-4)
+
+f.add(from_string = 'Chemical shielding tensors at effective geometry',
+      num_lines = 24,
+      ignore_below = 1.0e-6,
+      tolerance = 1.0e-5)
+
+f.add(string = 'Norm of projected gradient',
+      tolerance = 1.0e-5)
+
+f.add(string = 'Energy at effective geometry:',
+      tolerance = 1.0e-8)
+
+f.add(from_string = 'Shielding tensors in symmetry',
+      num_lines = 20,
+      ignore_below = 6.0,
+      tolerance = 1.0e-5)
+
+f.add(from_string = 'Shielding tensors in symmetry',
+      num_lines = 20,
+      ignore_below = 1.0e-1,
+      tolerance = 1.0e-4)
+
+
+
+#f.add(string = 'Diamagnetic contribution:',
+#      ignore_below = 1.0,
+#      tolerance = 1.0e-5)
+#f.add(string = 'Paramagnetic:',
+#      tolerance = 1.0e-3)
+
+
+
+
+test.run(['walk_vibave.dal'], ['nh3_sto-3g.mol'], {'out': f})
 
 sys.exit(test.return_code)
