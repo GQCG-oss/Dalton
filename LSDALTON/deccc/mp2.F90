@@ -726,13 +726,23 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 #endif
 
 
+
+          dim1 = i8*nbasis*nbasis*dimAlpha*dimGamma   ! dimension for integral array
+
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-          call mypointer_init(maxdim,arr,start,bat%size1(1),tmp1)
-          call mypointer_init(maxdim,arr,start,bat%size1(2),tmp2)
-          call mypointer_init(maxdim,arr,start,bat%size1(3),tmp3)
+          call mem_alloc(tmp1%p,max(bat%size1(1),dim1))
+          tmp1%start = 1
+          tmp1%N     = max(bat%size1(1),dim1)
+          tmp1%end   = tmp1%N
+          call mem_alloc(tmp2%p,bat%size1(2))
+          tmp2%start = 1
+          tmp2%N     = bat%size1(2)
+          tmp2%end   = tmp2%N 
+          call mem_alloc(tmp3%p,bat%size1(3))
+          tmp3%start = 1
+          tmp3%N     = bat%size1(3)
+          tmp3%end   = tmp3%N
 #endif
-
-
           ! *********************************************************************
           ! *                      STEP 1 IN INTEGRAL LOOP                      *
           ! *********************************************************************
@@ -743,7 +753,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
           ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
           ! ************************************************************************************
-          dim1 = i8*nbasis*nbasis*dimAlpha*dimGamma   ! dimension for integral array
           ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
           IF(doscreen) MyFragment%mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
           IF(doscreen) MyFragment%mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
@@ -753,6 +762,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              & MyFragment%mylsitem%setting, tmp1%p(1:dim1),batchindexAlpha(alphaB),batchindexGamma(gammaB),&
              & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,FullRHS,&
              & INTSPEC)
+
 
           call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
@@ -872,7 +882,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           end if FirstOrder1
 
 
-
           ! Integrals used for MP2 energy
           ! *****************************
 
@@ -899,7 +908,10 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
           call mem_dealloc(tmp1%p)
           call mem_dealloc(tmp2%p)
-          call mypointer_init(maxdim,arr,start,bat%size2(4),tmp4)
+          call mem_alloc(tmp4%p,bat%size2(4))
+          tmp4%start = 1
+          tmp4%N     = bat%size2(4)
+          tmp4%end   = tmp4%N
 #endif
           ! Reorder: tmp3(B,J,alphaB,I) --> tmp4(alphaB,B,J,I)
           dim4=i8*dimAlpha*nvirt*nocc*nocctot
@@ -915,9 +927,18 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
           call mem_dealloc(tmp3%p)
           do j=1,nthreads
-             call mypointer_init(maxdim,arr,start,bat%size2(1),b1(j))
-             call mypointer_init(maxdim,arr,start,bat%size2(2),b2(j))
-             call mypointer_init(maxdim,arr,start,bat%size2(3),b3(j))
+             call mem_alloc(b1(j)%p,bat%size2(1))
+             b1(j)%start = 1
+             b1(j)%N     = bat%size2(1)
+             b1(j)%end   = b1(j)%N
+             call mem_alloc(b2(j)%p,bat%size2(2))
+             b2(j)%start = 1
+             b2(j)%N     = bat%size2(2)
+             b2(j)%end   = b2(j)%N
+             call mem_alloc(b3(j)%p,bat%size2(3))
+             b3(j)%start = 1
+             b3(j)%N     = bat%size2(3)
+             b3(j)%end   = b3(j)%N
           end do
 #endif
 
@@ -1330,10 +1351,21 @@ call mem_dealloc(decmpitasks)
 
  ! Assign temporary arrays with dimensions for step 3
  ! --------------------------------------------------
+#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
  start = 1
  call mypointer_init(maxdim,arr,start,bat%size3(1),tmp1)
  start = tmp1%end+1
  call mypointer_init(maxdim,arr,start,bat%size3(2),tmp2)
+#else
+ call mem_alloc(tmp1%p,bat%size3(1))
+ tmp1%start = 1
+ tmp1%N     = bat%size3(1)
+ tmp1%end   = tmp1%N 
+ call mem_alloc(tmp2%p,bat%size3(2))
+ tmp2%start = 1
+ tmp2%N     = bat%size3(1)
+ tmp2%end   = tmp1%N
+#endif
 
 
 
