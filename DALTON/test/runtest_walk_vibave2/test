@@ -21,18 +21,21 @@ f.add(from_string = 'Molecular properties transformed to the following Eckart fr
       tolerance = 1.0e-8)
 
 # Molecular gradients
+#ADJUST
 f.add(from_string = 'Molecular gradient (au)',
       num_lines    = 5,
       ignore_below = 1.0e-9,
       tolerance = 1.0e-6)
 
 # Molecular hessians (Low numbers, so difficult to test)
+#ADJUST
 f.add(from_string = 'Molecular Hessian (au)',
       num_lines    = 12,
       ignore_below = 1.0e-5,
       tolerance = 1.0e-4)
 
 # Chemical shielding for fluor and hydrogen
+#ADJUST
 f.add(from_string = 'Chemical shielding for ',
       num_lines = 10,
       ignore_below = 1.0e-4,
@@ -54,6 +57,7 @@ f.add(string = 'Norm of projected gradient',
 
 # Second derivatives
 # (many small numbers, difficult to test with high enough precision)
+#ADJUST
 f.add(from_string = 'All displacements are now done',
       to_string = 'Vibrationally averaged molecular properties', 
       ignore_below = 1.0e-1,
@@ -61,6 +65,7 @@ f.add(from_string = 'All displacements are now done',
 
 # Vibrationally averaged molecular properties
 # (many small numbers, difficult to test with high enough precision)
+#ADJUST
 f.add(from_string = 'Vibrationally averaged molecular properties', 
       to_string = 'Numerical differentiation complete.',
       ignore_below = 1.0e-8,

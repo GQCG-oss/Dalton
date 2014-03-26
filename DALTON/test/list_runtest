@@ -1,5 +1,7 @@
 FINISHED:
 rsp_polar
+walk_polar
+walk_solvmag
 walk_vibave
 walk_vibave2
 
@@ -409,6 +411,4 @@ vibave_spinspin
 walk_gradex
 walk_image
 walk_modeflw
-walk_polar
 walk_polar2
-walk_solvmag

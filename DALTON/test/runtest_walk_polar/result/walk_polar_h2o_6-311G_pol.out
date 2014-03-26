@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON (Release Dalton2013 patch 0)
+    This is output from DALTON 2013.2
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -49,7 +49,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2013.0 (2013), see http://daltonprogram.org
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -58,7 +58,7 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
@@ -104,7 +104,7 @@
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
-  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
@@ -128,47 +128,46 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Oct 21 15:29:41 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:09 2014
+     Host name              : c29-3.local                             
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/release_dalton/DALTON/test/2013-10-21T15_29-testjob-pid-56685
-   2) /home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis
+   1) /home/arnfinn/dalton/DALTON/test/runtest_walk_polar
+   2) /home/arnfinn/dalton/build-master/basis
 
 
 Compilation information
 -----------------------
 
  Who compiled             | arnfinn
- Host                     | stallo-2.local
+ Host                     | c30-6.local
  System                   | Linux-2.6.32-358.6.2.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
-                          | intel64/ifort
- C compiler               | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
-                          | intel64/icc
+ MPI                      | ON
+ Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
+ Fortran compiler version | ifort (IFORT) 13.0.1 20121010
+ C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
  C compiler version       | icc (ICC) 13.0.1 20121010
- C++ compiler             | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
-                          | intel64/icpc
- C++ compiler version     | icpc (ICC) 13.0.1 20121010
- BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
-                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
-                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
-                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
-                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
-                          | mp;-Wl,--end-group
- LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
-                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
-                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
-                          | nmp;-Wl,--end-group
+ C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_i
+                          | ntel_lp64.so;/global/apps/intel/2013.1/mkl/lib/int
+                          | el64/libmkl_sequential.so;/global/apps/intel/2013.
+                          | 1/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpth
+                          | read.so;/usr/lib64/libm.so
+ LAPACK                   | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_l
+                          | apack95_lp64.a;/global/apps/intel/2013.1/mkl/lib/i
+                          | ntel64/libmkl_intel_lp64.so
  Static linking           | OFF
- Last Git revision        | 9e5bb7f558e1ee66d0614a37cb4fb8c71086ba4e
- Configuration time       | 2013-10-15 12:56:50.249803
+ Last Git revision        | b0e4325bcfb85390cb72038da88207bdf2835688
+ Git branch               | master
+ Configuration time       | 2014-03-25 10:12:27.117227
+
+ * Sequential calculation using 1 CPU
 
 
    Content of the .dal input file
@@ -218,16 +217,16 @@ H    -1.45235 0.899623 0.0
    Overall default print level:    0
    Print level for DALTON.STAT:    1
 
-    Geometry optimization
+@   Geometry optimization
       Starting at iteration:    0
-      Maximum number of iterations:   20
+      Maximum number of steps:   20
     "Old" integral transformation used (limited to max 255 basis functions)
  --------------------------------------------------------------------------------
 
 
-                  .----------------------------------------------.
-                  | Commencing geometry optimization using .WALK |
-                  `----------------------------------------------'
+                .-------------------------------------------------.
+                | Commencing geometry optimization based on .WALK |
+                `-------------------------------------------------'
 
 
 
@@ -254,7 +253,7 @@ H    -1.45235 0.899623 0.0
   Number of basis sets to read;    2
   The basis set is "6-311G Pol 1 0.0845D0 3 1.292D0 2 0.0845D0" from the basis set library.
   Basis set file used for this atomic type with Z =   8 :
-     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/6-311G"
+     "/home/arnfinn/dalton/build-master/basis/6-311G"
 
   Atomic type no.    2
   --------------------
@@ -263,7 +262,7 @@ H    -1.45235 0.899623 0.0
   Number of basis sets to read;    2
   The basis set is "6-311G Pol 1 0.0360D0 2 0.750D0 Charge=1.0 Atoms=1" from the basis set library.
   Basis set file used for this atomic type with Z =   1 :
-     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/6-311G"
+     "/home/arnfinn/dalton/build-master/basis/6-311G"
 
 
                          SYMGRP: Point group information
@@ -496,12 +495,6 @@ Point group: C2v
 
 
 
-    *************************************************************************
-    ****************** Output from HERMIT input processing ******************
-    *************************************************************************
-
-
-
      ************************************************************************
      ************************** Output from HERINT **************************
      ************************************************************************
@@ -512,7 +505,7 @@ Point group: C2v
  Megabytes written:                              0.660
 
  >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -546,8 +539,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:41 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:09 2014
+     Host name              : c29-3.local                             
 
  Title lines from ".mol" input file:
      Geometry optimization using WALK module plus                            
@@ -591,9 +584,11 @@ Point group: C2v
      Threshold for SCF convergence     1.00D-05
 
 
- >>>>> DIIS optimization of Hartree-Fock <<<<<
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
- C1-DIIS algorithm; max error vectors =    5
+ C1-DIIS algorithm; max error vectors =    8
 
  Automatic occupation of symmetries with  10 electrons.
 
@@ -605,42 +600,38 @@ Point group: C2v
       Virial theorem: -V/T =      1.997271
 @      MULPOP O      -0.56; H   _1  0.28; H   _2  0.28; 
  -----------------------------------------------------------------------------
-@  2  -76.0427775618       3.85D-01  -2.13D-01     3   1   1   0
-      Virial theorem: -V/T =      2.001859
+@  2  -76.0427418607       3.86D-01  -2.13D-01     3   1   1   0
+      Virial theorem: -V/T =      2.001798
 @      MULPOP O      -0.46; H   _1  0.23; H   _2  0.23; 
  -----------------------------------------------------------------------------
-@  3  -76.0506585657       8.69D-02  -7.88D-03     3   1   1   0
-      Virial theorem: -V/T =      2.002129
-@      MULPOP O      -0.50; H   _1  0.25; H   _2  0.25; 
+@  3  -76.0506603692       8.71D-02  -7.92D-03     3   1   1   0
+      Virial theorem: -V/T =      2.002140
+@      MULPOP O      -0.49; H   _1  0.25; H   _2  0.25; 
  -----------------------------------------------------------------------------
-@  4  -76.0514148689       2.07D-02  -7.56D-04     3   1   1   0
-      Virial theorem: -V/T =      2.001298
+@  4  -76.0514124051       2.14D-02  -7.52D-04     3   1   1   0
+      Virial theorem: -V/T =      2.001279
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  5  -76.0514535670       9.42D-03  -3.87D-05     3   1   1   0
-      Virial theorem: -V/T =      2.001693
+@  5  -76.0514529162       9.92D-03  -4.05D-05     3   1   1   0
+      Virial theorem: -V/T =      2.001701
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  6  -76.0514589341       1.95D-03  -5.37D-06     3   1   1   0
-      Virial theorem: -V/T =      2.001527
+@  6  -76.0514589026       1.99D-03  -5.99D-06     3   1   1   0
+      Virial theorem: -V/T =      2.001528
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  7  -76.0514594957       3.76D-04  -5.62D-07     3   1   1   0
-      Virial theorem: -V/T =      2.001552
-@      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
- -----------------------------------------------------------------------------
-@  8  -76.0514595187       6.76D-05  -2.30D-08     3   1   1   0
+@  7  -76.0514595039       3.04D-04  -6.01D-07     3   1   1   0
       Virial theorem: -V/T =      2.001554
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  9  -76.0514595192       1.17D-05  -5.22D-10     3   1   1   0
-      Virial theorem: -V/T =      2.001555
+@  8  -76.0514595189       4.58D-05  -1.51D-08     3   1   1   0
+      Virial theorem: -V/T =      2.001554
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@ 10  -76.0514595192       3.51D-06  -2.03D-11     3   1   1   0
+@  9  -76.0514595192       9.36D-06  -2.44D-10     3   1   1   0
 
-@ *** DIIS converged in  10 iterations !
-@     Converged SCF energy, gradient:    -76.051459519202    3.51D-06
+@ *** DIIS converged in   9 iterations !
+@     Converged SCF energy, gradient:    -76.051459519190    9.36D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -653,25 +644,25 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.56922336    -1.34804008    -0.58147058     0.04268015     0.24249826
-         0.24495334     0.32485718     0.72670586
+  1    -20.56922369    -1.34804018    -0.58147029     0.04268016     0.24249831
+         0.24495338     0.32485716     0.72670592
 
-  2     -0.71259756     0.07205206     0.25777260     0.31867234     0.67492520
-         1.24798542
+  2     -0.71259788     0.07205205     0.25777257     0.31867226     0.67492512
+         1.24798527
 
-  3     -0.50896862     0.24568363     1.24411975     1.71081712     3.47137652
-         5.48825108
+  3     -0.50896892     0.24568357     1.24411958     1.71081709     3.47137638
+         5.48825086
 
-  4      1.50204477     3.52160289
+  4      1.50204479     3.52160278
 
-    E(LUMO) :     0.04268015 au (symmetry 1)
-  - E(HOMO) :    -0.50896862 au (symmetry 3)
+    E(LUMO) :     0.04268016 au (symmetry 1)
+  - E(HOMO) :    -0.50896892 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.55164878 au
+    gap     :     0.55164908 au
 
- >>> Writing SIRIFC interface file <<<
+ >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.030       0.047
+ >>>> CPU and wall time for SCF :       0.026       0.041
 
 
                        .-----------------------------------.
@@ -683,15 +674,15 @@ Point group: C2v
 @    Spatial symmetry:            1
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -76.051459519202                 
+@    Final HF energy:             -76.051459519190                 
 @    Nuclear repulsion:             9.055004525638
-@    Electronic energy:           -85.106464044840
+@    Electronic energy:           -85.106464044828
 
-@    Final gradient norm:           0.000003513328
+@    Final gradient norm:           0.000009362558
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:41 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:09 2014
+     Host name              : c29-3.local                             
 
  (Only coefficients >0.0100 are printed.)
 
@@ -701,9 +692,9 @@ Point group: C2v
     Orbital         1        2        3        4        5
    1 O   :1s     0.5515  -0.1140   0.0375   0.0169  -0.0112
    2 O   :1s     0.4717  -0.1904   0.0639   0.0299  -0.0191
-   3 O   :1s     0.0055   0.5435  -0.1978  -0.1118   0.0720
+   3 O   :1s     0.0055   0.5435  -0.1978  -0.1118   0.0721
    4 O   :1s    -0.0008   0.3877  -0.3034  -0.0048  -0.0172
-   5 O   :1s     0.0009  -0.0158  -0.0142  -0.9376   2.4975
+   5 O   :1s     0.0009  -0.0158  -0.0142  -0.9376   2.4976
    6 O   :2py    0.0018   0.0352   0.2521  -0.0371  -0.0909
    7 O   :2py   -0.0007   0.0605   0.3840  -0.0538  -0.0759
    8 O   :2py    0.0002   0.0192   0.2997  -0.0922  -0.5805
@@ -712,7 +703,7 @@ Point group: C2v
   11 O   :3d2+  -0.0001   0.0014  -0.0117   0.0023   0.0011
   12 H   :1s     0.0002   0.0905   0.0881  -0.0012  -0.0180
   13 H   :1s     0.0002   0.0812   0.1527   0.0639   0.0940
-  14 H   :1s    -0.0003  -0.0043   0.0193   0.0462  -1.5813
+  14 H   :1s    -0.0003  -0.0043   0.0193   0.0462  -1.5814
   15 H   :1s    -0.0001   0.0077   0.0005   0.8169  -0.0607
   16 H   :2px   -0.0001  -0.0234  -0.0312   0.0134  -0.0245
   17 H   :2py   -0.0001  -0.0145   0.0085   0.0093   0.0023
@@ -754,11 +745,11 @@ Point group: C2v
 
 
  >>>> Total CPU  time used in SIRIUS :      0.05 seconds
- >>>> Total wall time used in SIRIUS :      0.08 seconds
+ >>>> Total wall time used in SIRIUS :      0.09 seconds
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:41 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:09 2014
+     Host name              : c29-3.local                             
 
 
                      .---------------------------------------.
@@ -777,8 +768,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:41 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:09 2014
+     Host name              : c29-3.local                             
 
 
    ***************************************************************************
@@ -787,8 +778,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:41 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:09 2014
+     Host name              : c29-3.local                             
 
 
                              Molecular geometry (au)
@@ -815,11 +806,11 @@ Point group: C2v
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1974514215 au
-     Mass-velocity correction:                  -0.2489637589 au
+     Darwin correction:                          0.1974514207 au
+     Mass-velocity correction:                  -0.2489637571 au
 
-     Total relativistic correction:             -0.0515123373 au (0.0677%)
-     Non-relativistic + relativistic energy:   -76.1029718565 au
+     Total relativistic correction:             -0.0515123364 au (0.0677%)
+     Non-relativistic + relativistic energy:   -76.1029718556 au
 
 
 
@@ -827,15 +818,15 @@ Point group: C2v
                              Molecular gradient (au)
                              -----------------------
 
-                         O    y    -0.0410244383
-                         H    x     0.0495115478
-                         H    y     0.0410244383
+                         O    y    -0.0410241134
+                         H    x     0.0495133616
+                         H    y     0.0410241134
 
 
 
- O          0.0000000000           -0.0410244383            0.0000000000
- H   _1     0.0247557739            0.0205122191            0.0000000000
- H   _2    -0.0247557739            0.0205122191            0.0000000000
+ O          0.0000000000           -0.0410241134            0.0000000000
+ H   _1     0.0247566808            0.0205120567            0.0000000000
+ H   _2    -0.0247566808            0.0205120567            0.0000000000
 
 
 
@@ -850,7 +841,7 @@ Point group: C2v
            O    y      H    x      H    y
 
  O    y    0.472257
- H    x   -0.363925    0.780892
+ H    x   -0.363925    0.780891
  H    y   -0.472257    0.363925    0.472257
 
 
@@ -858,9 +849,9 @@ Point group: C2v
 
            O    x      H    x      H    y
 
- O    x    0.657733
- H    x   -0.657733    0.657733
- H    y   -0.481024    0.481024    0.406539
+ O    x    0.657731
+ H    x   -0.657731    0.657731
+ H    y   -0.481023    0.481023    0.406539
 
 
            Symmetry 3
@@ -875,24 +866,24 @@ Point group: C2v
 
            H    z
 
- H    z    0.034091
+ H    z    0.034092
 
 
 
 
             O      x    O      y    O      z    H   _1 x    H   _1 y    H   _1 z
 
- O      x    0.657733
+ O      x    0.657731
  O      y    0.000000    0.472257
  O      z    0.000000    0.000000    0.036481
 
- H   _1 x   -0.328867   -0.181963    0.000000    0.359656
- H   _1 y   -0.240512   -0.236128    0.000000    0.211237    0.219699
+ H   _1 x   -0.328866   -0.181962    0.000000    0.359656
+ H   _1 y   -0.240511   -0.236128    0.000000    0.211237    0.219699
  H   _1 z    0.000000    0.000000   -0.018241    0.000000    0.000000    0.017643
 
- H   _2 x   -0.328867    0.181963    0.000000   -0.030790    0.029275    0.000000
- H   _2 y    0.240512   -0.236128    0.000000   -0.029275    0.016429    0.000000
- H   _2 z    0.000000    0.000000   -0.018241    0.000000    0.000000    0.000598
+ H   _2 x   -0.328866    0.181962    0.000000   -0.030790    0.029275    0.000000
+ H   _2 y    0.240511   -0.236128    0.000000   -0.029275    0.016429    0.000000
+ H   _2 z    0.000000    0.000000   -0.018241    0.000000    0.000000    0.000597
 
 
             H   _2 x    H   _2 y    H   _2 z
@@ -909,7 +900,7 @@ Point group: C2v
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.887037           2.254623           7.520614
+              0.887037           2.254623           7.520612
 
 
                              Dipole moment components
@@ -917,7 +908,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      y      0.88703715         2.25462340         7.52061413
+      y      0.88703693         2.25462284         7.52061228
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -960,7 +951,7 @@ Point group: C2v
 
 
 
- Largest deviation from orthonormality of OMOs:0.310862E-13
+ Largest deviation from orthonormality of OMOs:0.319744E-13
  - found for element   15  15
 
 
@@ -973,7 +964,7 @@ Point group: C2v
 
  Iteration number:  0
 
-  Norm of molecular gradient:     0.0612389050
+  Norm of molecular gradient:     0.0612393118
 
 @ Energy at current point:   -76.0514595192
 
@@ -985,7 +976,7 @@ Point group: C2v
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           2           1       6.123890D-02    0          4.59D+00
+    1           2           1       6.123931D-02    0          4.59D+00
     2           1           2       0.000000D+00    0          1.00D+00
     3           0           2
     4           0           1
@@ -999,9 +990,9 @@ Point group: C2v
 
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
-@    0     1       1      0.00347347    0.19642478   -0.01768347   -0.00003071 
-@    0     1       2     -0.06114032<   0.90240626    0.06775254<  -0.00207121<
-@    0     2       1      0.00000000    1.16654927<   0.00000000    0.00000000 
+@    0     1       1      0.00347480    0.19642492   -0.01769023   -0.00003074 
+@    0     1       2     -0.06114065<   0.90240558    0.06775296<  -0.00207123<
+@    0     2       1      0.00000000    1.16654565<   0.00000000    0.00000000 
 
   This is Newton step.
 
@@ -1015,7 +1006,7 @@ Point group: C2v
   ----------------------------------
    O    y       0.428038    0.695306
    H    x       0.851572   -0.524237
-   H    y      -0.302669   -0.491655
+   H    y      -0.302668   -0.491656
 
 
    sym 2            1
@@ -1030,7 +1021,7 @@ Point group: C2v
  Level shift employed:          0.0000000000
 
 
- Predicted energy change   -0.0021019175
+ Predicted energy change   -0.0021019650
 
 
                                +--------------------+
@@ -1042,9 +1033,9 @@ Point group: C2v
                            Cartesian displacements (au)
                            ----------------------------
 
- O          0.0000000000            0.0395395355            0.0000000000
- H   _1    -0.0357634583           -0.0197697678            0.0000000000
- H   _2     0.0357634583           -0.0197697678            0.0000000000
+ O          0.0000000000            0.0395369550            0.0000000000
+ H   _1    -0.0357676638           -0.0197684775            0.0000000000
+ H   _2     0.0357676638           -0.0197684775            0.0000000000
 
 
 
@@ -1056,11 +1047,11 @@ Point group: C2v
             O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H   _1:   -0.034085    0.000000
- H   _2:   -0.034085   -0.037850    0.000000
+ H   _1:   -0.034086    0.000000
+ H   _2:   -0.034086   -0.037855    0.000000
 
 
-  Max differential change in interatomic separation is    0.037850 Angstrom
+  Max differential change in interatomic separation is    0.037855 Angstrom
   between atoms    3 and    2, "H   _2" and "H   _1".
 
 
@@ -1075,9 +1066,9 @@ Point group: C2v
                             Cartesian coordinates (au)
                             --------------------------
 
- O          0.0000000000           -0.1853663575            0.0000000000
- H   _1     1.4165865417            0.8798532322            0.0000000000
- H   _2    -1.4165865417            0.8798532322            0.0000000000
+ O          0.0000000000           -0.1853689380            0.0000000000
+ H   _1     1.4165823362            0.8798545225            0.0000000000
+ H   _2    -1.4165823362            0.8798545225            0.0000000000
 
 
 
@@ -1089,11 +1080,11 @@ Point group: C2v
             O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H   _1:    0.937915    0.000000
- H   _2:    0.937915    1.499251    0.000000
+ H   _1:    0.937914    0.000000
+ H   _2:    0.937914    1.499246    0.000000
 
 
-  Max    interatomic separation is    1.4993 Angstrom (    2.8332 Bohr)
+  Max    interatomic separation is    1.4992 Angstrom (    2.8332 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
 
   Min HX interatomic separation is    0.9379 Angstrom (    1.7724 Bohr)
@@ -1104,8 +1095,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H   _1     O            0.937915
-  bond distance:  H   _2     O            0.937915
+  bond distance:  H   _1     O            0.937914
+  bond distance:  H   _2     O            0.937914
 
 
   Bond angles (degrees):
@@ -1184,50 +1175,52 @@ Point group: C2v
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- >>>>> DIIS optimization of Hartree-Fock <<<<<
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
- C1-DIIS algorithm; max error vectors =    5
+ C1-DIIS algorithm; max error vectors =    8
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1    -75.9276161479        3.70530D+00    1.24D-01    1
+@  1    -75.9276151192        3.70534D+00    1.24D-01    1
       Virial theorem: -V/T =      1.998550
 @      MULPOP O      -1.04; H   _1  0.52; H   _2  0.52; 
  -----------------------------------------------------------------------------
-@  2    -76.0522267785        1.71209D-01   -1.25D-01    2
-      Virial theorem: -V/T =      1.998498
+@  2    -76.0522145313        1.71899D-01   -1.25D-01    2
+      Virial theorem: -V/T =      1.998525
 @      MULPOP O      -0.58; H   _1  0.29; H   _2  0.29; 
  -----------------------------------------------------------------------------
-@  3    -76.0532935157        4.44759D-02   -1.07D-03    3
-      Virial theorem: -V/T =      2.000581
+@  3    -76.0532958391        4.39404D-02   -1.08D-03    3
+      Virial theorem: -V/T =      2.000566
 @      MULPOP O      -0.51; H   _1  0.25; H   _2  0.25; 
  -----------------------------------------------------------------------------
-@  4    -76.0533803817        1.83676D-02   -8.69D-05    4
-      Virial theorem: -V/T =      1.999466
+@  4    -76.0533801453        1.86065D-02   -8.43D-05    4
+      Virial theorem: -V/T =      1.999460
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  5    -76.0533968690        2.15087D-03   -1.65D-05    5
+@  5    -76.0533968463        2.18102D-03   -1.67D-05    5
       Virial theorem: -V/T =      1.999819
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  6    -76.0533977575        3.65342D-04   -8.88D-07    5
-      Virial theorem: -V/T =      1.999833
+@  6    -76.0533977435        3.77436D-04   -8.97D-07    6
+      Virial theorem: -V/T =      1.999834
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  7    -76.0533977816        9.38677D-05   -2.42D-08    5
+@  7    -76.0533977696        7.82272D-05   -2.61D-08    7
       Virial theorem: -V/T =      1.999836
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  8    -76.0533977832        1.45220D-05   -1.62D-09    5
+@  8    -76.0533977707        1.71150D-05   -1.08D-09    8
       Virial theorem: -V/T =      1.999836
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  9    -76.0533977833        1.96871D-06   -3.29D-11    5
+@  9    -76.0533977707        3.46723D-06   -4.58D-11    8
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -76.053397783251    1.97D-06
+@     Converged SCF energy, gradient:    -76.053397770744    3.47D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1240,23 +1233,23 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.56241059    -1.36458596    -0.58466173     0.04379885     0.24046758
-         0.25348978     0.32179280     0.74743394
+  1    -20.56241086    -1.36458657    -0.58466262     0.04379882     0.24046756
+         0.25349005     0.32179288     0.74743544
 
-  2     -0.73453628     0.07236809     0.26368308     0.31886736     0.69880331
-         1.24357805
+  2     -0.73453592     0.07236812     0.26368302     0.31886745     0.69880281
+         1.24357839
 
-  3     -0.51126397     0.24525519     1.24393568     1.72839831     3.49413875
-         5.49240299
+  3     -0.51126421     0.24525516     1.24393556     1.72839637     3.49414118
+         5.49240283
 
-  4      1.50480466     3.56254290
+  4      1.50480600     3.56254203
 
-    E(LUMO) :     0.04379885 au (symmetry 1)
-  - E(HOMO) :    -0.51126397 au (symmetry 3)
+    E(LUMO) :     0.04379882 au (symmetry 1)
+  - E(HOMO) :    -0.51126421 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.55506282 au
+    gap     :     0.55506303 au
 
- >>> Writing SIRIFC interface file <<<
+ >>> Writing SIRIFC interface file
 
 
  Check ratio for geometry walk with converged SCF :
@@ -1267,13 +1260,13 @@ Point group: C2v
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0019382640  -0.0021019175    0.922141
+ actual, predicted and ratio:  -0.0019382516  -0.0021019650    0.922114
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
 
 
- >>>> CPU and wall time for SCF :       0.026       0.043
+ >>>> CPU and wall time for SCF :       0.025       0.042
 
 
                        .-----------------------------------.
@@ -1285,15 +1278,15 @@ Point group: C2v
 @    Spatial symmetry:            1
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -76.053397783251                 
-@    Nuclear repulsion:             9.380256611813
-@    Electronic energy:           -85.433654395063
+@    Final HF energy:             -76.053397770744                 
+@    Nuclear repulsion:             9.380262930664
+@    Electronic energy:           -85.433660701408
 
-@    Final gradient norm:           0.000001968712
+@    Final gradient norm:           0.000003467232
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:41 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             
 
 
 
@@ -1301,8 +1294,8 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.06 seconds
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:41 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             
 
 
                      .---------------------------------------.
@@ -1310,9 +1303,9 @@ Point group: C2v
                      `---------------------------------------'
 
 
- Center of mass dipole origin  :    0.000000   -0.066152    0.000000
+ Center of mass dipole origin  :    0.000000   -0.066155    0.000000
 
- Center of mass gauge origin   :    0.000000   -0.066152    0.000000
+ Center of mass gauge origin   :    0.000000   -0.066155    0.000000
 
 
                  .------------------------------------------------.
@@ -1321,8 +1314,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:41 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             
 
  Old LUGDR file opened in ORTREL.
 
@@ -1333,16 +1326,16 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:42 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             
 
 
                              Molecular geometry (au)
                              -----------------------
 
- O          0.0000000000           -0.1853663575            0.0000000000
- H   _1     1.4165865417            0.8798532322            0.0000000000
- H   _2    -1.4165865417            0.8798532322            0.0000000000
+ O          0.0000000000           -0.1853689380            0.0000000000
+ H   _1     1.4165823362            0.8798545225            0.0000000000
+ H   _2    -1.4165823362            0.8798545225            0.0000000000
 
 
 
@@ -1353,19 +1346,19 @@ Point group: C2v
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-     Total energy        -76.0533977833 au (Hartrees)
-                         -2069.51822755 eV
+     Total energy        -76.0533977707 au (Hartrees)
+                         -2069.51822721 eV
                            -199678.1651 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1973969232 au
-     Mass-velocity correction:                  -0.2489025700 au
+     Darwin correction:                          0.1973969200 au
+     Mass-velocity correction:                  -0.2489025645 au
 
-     Total relativistic correction:             -0.0515056468 au (0.0677%)
-     Non-relativistic + relativistic energy:   -76.1049034300 au
+     Total relativistic correction:             -0.0515056445 au (0.0677%)
+     Non-relativistic + relativistic energy:   -76.1049034152 au
 
 
 
@@ -1373,15 +1366,15 @@ Point group: C2v
                              Molecular gradient (au)
                              -----------------------
 
-                         O    y     0.0042556299
-                         H    x    -0.0068892270
-                         H    y    -0.0042556299
+                         O    y     0.0042559979
+                         H    x    -0.0068911376
+                         H    y    -0.0042559979
 
 
 
- O          0.0000000000            0.0042556299            0.0000000000
- H   _1    -0.0034446135           -0.0021278149            0.0000000000
- H   _2     0.0034446135           -0.0021278149            0.0000000000
+ O          0.0000000000            0.0042559979            0.0000000000
+ H   _1    -0.0034455688           -0.0021279990            0.0000000000
+ H   _2     0.0034455688           -0.0021279990            0.0000000000
 
 
 
@@ -1395,18 +1388,18 @@ Point group: C2v
 
            O    y      H    x      H    y
 
- O    y    0.538516
- H    x   -0.498203    0.958105
- H    y   -0.538516    0.498203    0.538516
+ O    y    0.538520
+ H    x   -0.498206    0.958107
+ H    y   -0.538520    0.498206    0.538520
 
 
            Symmetry 2
 
            O    x      H    x      H    y
 
- O    x    0.829487
- H    x   -0.829487    0.829487
- H    y   -0.626747    0.626747    0.466427
+ O    x    0.829486
+ H    x   -0.829486    0.829486
+ H    y   -0.626751    0.626751    0.466432
 
 
            Symmetry 3
@@ -1421,30 +1414,30 @@ Point group: C2v
 
            H    z
 
- H    z   -0.004863
+ H    z   -0.004865
 
 
 
 
             O      x    O      y    O      z    H   _1 x    H   _1 y    H   _1 z
 
- O      x    0.829487
- O      y    0.000000    0.538516
+ O      x    0.829486
+ O      y    0.000000    0.538520
  O      z    0.000000    0.000000   -0.003995
 
- H   _1 x   -0.414743   -0.249101    0.000000    0.446898
- H   _1 y   -0.313373   -0.269258    0.000000    0.281237    0.251236
+ H   _1 x   -0.414743   -0.249103    0.000000    0.446898
+ H   _1 y   -0.313375   -0.269260    0.000000    0.281239    0.251238
  H   _1 z    0.000000    0.000000    0.001998    0.000000    0.000000   -0.002215
 
- H   _2 x   -0.414743    0.249101    0.000000   -0.032155    0.032136    0.000000
- H   _2 y    0.313373   -0.269258    0.000000   -0.032136    0.018022    0.000000
+ H   _2 x   -0.414743    0.249103    0.000000   -0.032155    0.032136    0.000000
+ H   _2 y    0.313375   -0.269260    0.000000   -0.032136    0.018022    0.000000
  H   _2 z    0.000000    0.000000    0.001998    0.000000    0.000000    0.000217
 
 
             H   _2 x    H   _2 y    H   _2 z
 
  H   _2 x    0.446898
- H   _2 y   -0.281237    0.251236
+ H   _2 y   -0.281239    0.251238
  H   _2 z    0.000000    0.000000   -0.002215
 
 
@@ -1455,7 +1448,7 @@ Point group: C2v
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.863182           2.193989           7.318358
+              0.863183           2.193993           7.318374
 
 
                              Dipole moment components
@@ -1463,7 +1456,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      y      0.86318158         2.19398859         7.31835817
+      y      0.86318340         2.19399321         7.31837360
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1478,11 +1471,11 @@ Point group: C2v
             O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H   _1:    0.937915    0.000000
- H   _2:    0.937915    1.499251    0.000000
+ H   _1:    0.937914    0.000000
+ H   _2:    0.937914    1.499246    0.000000
 
 
-  Max    interatomic separation is    1.4993 Angstrom (    2.8332 Bohr)
+  Max    interatomic separation is    1.4992 Angstrom (    2.8332 Bohr)
   between atoms    3 and    2, "H   _2" and "H   _1".
 
   Min HX interatomic separation is    0.9379 Angstrom (    1.7724 Bohr)
@@ -1493,8 +1486,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H   _1     O            0.937915
-  bond distance:  H   _2     O            0.937915
+  bond distance:  H   _1     O            0.937914
+  bond distance:  H   _2     O            0.937914
 
 
   Bond angles (degrees):
@@ -1506,8 +1499,8 @@ Point group: C2v
 
 
 
- Largest deviation from orthonormality of OMOs:0.457412E-13
- - found for element   12  12
+ Largest deviation from orthonormality of OMOs:0.366374E-13
+ - found for element    7   7
 
 
    ***************************************************************************
@@ -1519,12 +1512,12 @@ Point group: C2v
 
  Iteration number:  1
 
-  Norm of molecular gradient:     0.0071341645
+  Norm of molecular gradient:     0.0071354164
 
-@ Energy at current point:   -76.0533977833
+@ Energy at current point:   -76.0533977707
   Energy at initial point:   -76.0514595192
 
-  Change in energy since start of walk:-0.0019382640 au
+  Change in energy since start of walk:-0.0019382516 au
                                                -5.09 kJ/mol
                                                -1.22 kCal/mol
 
@@ -1538,7 +1531,7 @@ Point group: C2v
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           2           1       7.134164D-03    0          6.08D+00
+    1           2           1       7.135416D-03    0          6.08D+00
     2           1           2       0.000000D+00    0          1.00D+00
     3           0           2
     4           0           1
@@ -1552,9 +1545,9 @@ Point group: C2v
 
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
-@    1     1       1     -0.00105353    0.18171089    0.00579785   -0.00000305 
-@    1     1       2      0.00705595<   1.10511486   -0.00638481<  -0.00002253<
-@    1     2       1      0.00000000    1.48043957<   0.00000000    0.00000000 
+@    1     1       1     -0.00105440    0.18171123    0.00580263   -0.00000306 
+@    1     1       2      0.00705708<   1.10512304   -0.00638579<  -0.00002253<
+@    1     2       1      0.00000000    1.48044228<   0.00000000    0.00000000 
 
   This is Newton step.
 
@@ -1566,16 +1559,16 @@ Point group: C2v
 
    sym 1            1           2
   ----------------------------------
-   O    y       0.463326    0.672307
-   H    x       0.823404   -0.567456
-   H    y      -0.327621   -0.475393
+   O    y       0.463324    0.672307
+   H    x       0.823405   -0.567454
+   H    y      -0.327620   -0.475393
 
 
    sym 2            1
   ----------------------
-   O    x       0.748959
-   H    x      -0.529594
-   H    y      -0.398235
+   O    x       0.748958
+   H    x      -0.529593
+   H    y      -0.398237
 
 
  Old trust radius:              0.500000
@@ -1583,7 +1576,7 @@ Point group: C2v
  Level shift employed:          0.0000000000
 
 
- Predicted energy change   -0.0000255795
+ Predicted energy change   -0.0000255917
 
 
                                +--------------------+
@@ -1595,9 +1588,9 @@ Point group: C2v
                            Cartesian displacements (au)
                            ----------------------------
 
- O          0.0000000000           -0.0016062549            0.0000000000
- H   _1     0.0059376248            0.0008031275            0.0000000000
- H   _2    -0.0059376248            0.0008031275            0.0000000000
+ O          0.0000000000           -0.0016047130            0.0000000000
+ H   _1     0.0059407984            0.0008023565            0.0000000000
+ H   _2    -0.0059407984            0.0008023565            0.0000000000
 
 
 
@@ -1609,11 +1602,11 @@ Point group: C2v
             O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H   _1:    0.003278    0.000000
- H   _2:    0.003278    0.006284    0.000000
+ H   _1:    0.003279    0.000000
+ H   _2:    0.003279    0.006287    0.000000
 
 
-  Max differential change in interatomic separation is    0.006284 Angstrom
+  Max differential change in interatomic separation is    0.006287 Angstrom
   between atoms    3 and    2, "H   _2" and "H   _1".
 
 
@@ -1628,9 +1621,9 @@ Point group: C2v
                             Cartesian coordinates (au)
                             --------------------------
 
- O          0.0000000000           -0.1869726124            0.0000000000
- H   _1     1.4225241665            0.8806563597            0.0000000000
- H   _2    -1.4225241665            0.8806563597            0.0000000000
+ O          0.0000000000           -0.1869736510            0.0000000000
+ H   _1     1.4225231346            0.8806568790            0.0000000000
+ H   _2    -1.4225231346            0.8806568790            0.0000000000
 
 
 
@@ -1643,7 +1636,7 @@ Point group: C2v
             ------      ------      ------
  O     :    0.000000
  H   _1:    0.941193    0.000000
- H   _2:    0.941193    1.505535    0.000000
+ H   _2:    0.941193    1.505534    0.000000
 
 
   Max    interatomic separation is    1.5055 Angstrom (    2.8450 Bohr)
@@ -1678,7 +1671,7 @@ Point group: C2v
 
 
  >>>> Total CPU  time used in ABACUS:   0.13 seconds
- >>>> Total wall time used in ABACUS:   0.65 seconds
+ >>>> Total wall time used in ABACUS:   0.17 seconds
 
 
                    .-------------------------------------------.
@@ -1686,7 +1679,7 @@ Point group: C2v
                    `-------------------------------------------'
 
 
-@  Geometry walk step no.   1:  Molecular energy =    -76.053398   Molecular gradient =  0.007134
+@  Geometry walk step no.   1:  Molecular energy =    -76.053398   Molecular gradient =  0.007135
 
 
      @@>>>>>>>>>> Geometry walk iteration number:    2 <<<<<<<<<<
@@ -1737,42 +1730,44 @@ Point group: C2v
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- >>>>> DIIS optimization of Hartree-Fock <<<<<
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
- C1-DIIS algorithm; max error vectors =    5
+ C1-DIIS algorithm; max error vectors =    8
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1    -76.0522123207        3.68458D-01    1.19D-03    1
+@  1    -76.0522118013        3.68526D-01    1.19D-03    1
       Virial theorem: -V/T =      1.999865
 @      MULPOP O      -0.45; H   _1  0.23; H   _2  0.23; 
  -----------------------------------------------------------------------------
-@  2    -76.0534150519        1.52002D-02   -1.20D-03    2
-      Virial theorem: -V/T =      2.000049
+@  2    -76.0534132725        1.56400D-02   -1.20D-03    2
+      Virial theorem: -V/T =      1.999997
 @      MULPOP O      -0.51; H   _1  0.25; H   _2  0.25; 
  -----------------------------------------------------------------------------
-@  3    -76.0534233009        1.58869D-03   -8.25D-06    3
-      Virial theorem: -V/T =      2.000016
+@  3    -76.0534231386        2.35348D-03   -9.87D-06    3
+      Virial theorem: -V/T =      2.000055
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  4    -76.0534235264        5.72752D-04   -2.26D-07    4
-      Virial theorem: -V/T =      2.000032
+@  4    -76.0534234825        1.11663D-03   -3.44D-07    4
+      Virial theorem: -V/T =      2.000002
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  5    -76.0534235455        1.83879D-04   -1.91D-08    5
-      Virial theorem: -V/T =      2.000019
+@  5    -76.0534235435        2.20675D-04   -6.10D-08    5
+      Virial theorem: -V/T =      2.000024
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  6    -76.0534235496        3.71316D-05   -4.14D-09    5
+@  6    -76.0534235497        3.36555D-05   -6.20D-09    6
       Virial theorem: -V/T =      2.000020
 @      MULPOP O      -0.51; H   _1  0.26; H   _2  0.26; 
  -----------------------------------------------------------------------------
-@  7    -76.0534235499        8.05660D-06   -2.33D-10    5
+@  7    -76.0534235499        7.74983D-06   -1.96D-10    7
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -76.053423549857    8.06D-06
+@     Converged SCF energy, gradient:    -76.053423549869    7.75D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1785,23 +1780,23 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.56296201    -1.36274112    -0.58384109     0.04372560     0.24065311
-         0.25257633     0.32199932     0.74463332
+  1    -20.56296213    -1.36274126    -0.58384116     0.04372558     0.24065316
+         0.25257634     0.32199934     0.74463360
 
-  2     -0.73289099     0.07232023     0.26324503     0.31877772     0.69703350
-         1.24368844
+  2     -0.73289090     0.07232022     0.26324495     0.31877770     0.69703312
+         1.24368851
 
-  3     -0.51094950     0.24531030     1.24402036     1.72808598     3.49052804
-         5.49202784
+  3     -0.51094960     0.24531028     1.24402030     1.72808519     3.49052858
+         5.49202775
 
-  4      1.50362791     3.55947147
+  4      1.50362820     3.55947091
 
-    E(LUMO) :     0.04372560 au (symmetry 1)
-  - E(HOMO) :    -0.51094950 au (symmetry 3)
+    E(LUMO) :     0.04372558 au (symmetry 1)
+  - E(HOMO) :    -0.51094960 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.55467511 au
+    gap     :     0.55467517 au
 
- >>> Writing SIRIFC interface file <<<
+ >>> Writing SIRIFC interface file
 
 
  Check ratio for geometry walk with converged SCF :
@@ -1812,13 +1807,13 @@ Point group: C2v
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0000257666  -0.0000255795    1.007313
+ actual, predicted and ratio:  -0.0000257791  -0.0000255917    1.007325
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
 
 
- >>>> CPU and wall time for SCF :       0.022       0.036
+ >>>> CPU and wall time for SCF :       0.021       0.032
 
 
                        .-----------------------------------.
@@ -1830,24 +1825,24 @@ Point group: C2v
 @    Spatial symmetry:            1
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -76.053423549857                 
-@    Nuclear repulsion:             9.347343416826
-@    Electronic energy:           -85.400766966683
+@    Final HF energy:             -76.053423549869                 
+@    Nuclear repulsion:             9.347343116180
+@    Electronic energy:           -85.400766666049
 
-@    Final gradient norm:           0.000008056596
+@    Final gradient norm:           0.000007749829
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:42 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             
 
 
 
  >>>> Total CPU  time used in SIRIUS :      0.03 seconds
- >>>> Total wall time used in SIRIUS :      0.06 seconds
+ >>>> Total wall time used in SIRIUS :      0.05 seconds
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:42 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             
 
 
                      .---------------------------------------.
@@ -1855,9 +1850,9 @@ Point group: C2v
                      `---------------------------------------'
 
 
- Center of mass dipole origin  :    0.000000   -0.067489    0.000000
+ Center of mass dipole origin  :    0.000000   -0.067490    0.000000
 
- Center of mass gauge origin   :    0.000000   -0.067489    0.000000
+ Center of mass gauge origin   :    0.000000   -0.067490    0.000000
 
 
                  .------------------------------------------------.
@@ -1866,8 +1861,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:42 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             
 
  Old LUGDR file opened in ORTREL.
 
@@ -1878,16 +1873,16 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:42 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             
 
 
                              Molecular geometry (au)
                              -----------------------
 
- O          0.0000000000           -0.1869726124            0.0000000000
- H   _1     1.4225241665            0.8806563597            0.0000000000
- H   _2    -1.4225241665            0.8806563597            0.0000000000
+ O          0.0000000000           -0.1869736510            0.0000000000
+ H   _1     1.4225231346            0.8806568790            0.0000000000
+ H   _2    -1.4225231346            0.8806568790            0.0000000000
 
 
 
@@ -1906,11 +1901,11 @@ Point group: C2v
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1973997327 au
-     Mass-velocity correction:                  -0.2489049562 au
+     Darwin correction:                          0.1973997349 au
+     Mass-velocity correction:                  -0.2489049594 au
 
-     Total relativistic correction:             -0.0515052235 au (0.0677%)
-     Non-relativistic + relativistic energy:   -76.1049287734 au
+     Total relativistic correction:             -0.0515052245 au (0.0677%)
+     Non-relativistic + relativistic energy:   -76.1049287743 au
 
 
 
@@ -1918,15 +1913,15 @@ Point group: C2v
                              Molecular gradient (au)
                              -----------------------
 
-                         O    y     0.0000538843
-                         H    x    -0.0000723544
-                         H    y    -0.0000538843
+                         O    y     0.0000533619
+                         H    x    -0.0000723900
+                         H    y    -0.0000533619
 
 
 
- O          0.0000000000            0.0000538843            0.0000000000
- H   _1    -0.0000361772           -0.0000269421            0.0000000000
- H   _2     0.0000361772           -0.0000269421            0.0000000000
+ O          0.0000000000            0.0000533619            0.0000000000
+ H   _1    -0.0000361950           -0.0000266810            0.0000000000
+ H   _2     0.0000361950           -0.0000266810            0.0000000000
 
 
 
@@ -1941,7 +1936,7 @@ Point group: C2v
            O    y      H    x      H    y
 
  O    y    0.529833
- H    x   -0.483508    0.940027
+ H    x   -0.483508    0.940026
  H    y   -0.529833    0.483508    0.529833
 
 
@@ -1949,9 +1944,9 @@ Point group: C2v
 
            O    x      H    x      H    y
 
- O    x    0.813708
- H    x   -0.813708    0.813708
- H    y   -0.610740    0.610740    0.458320
+ O    x    0.813703
+ H    x   -0.813703    0.813703
+ H    y   -0.610737    0.610737    0.458319
 
 
            Symmetry 3
@@ -1973,23 +1968,23 @@ Point group: C2v
 
             O      x    O      y    O      z    H   _1 x    H   _1 y    H   _1 z
 
- O      x    0.813708
+ O      x    0.813703
  O      y    0.000000    0.529833
  O      z    0.000000    0.000000   -0.000050
 
- H   _1 x   -0.406854   -0.241754    0.000000    0.438434
- H   _1 y   -0.305370   -0.264917    0.000000    0.273562    0.247038
+ H   _1 x   -0.406852   -0.241754    0.000000    0.438432
+ H   _1 y   -0.305369   -0.264916    0.000000    0.273561    0.247038
  H   _1 z    0.000000    0.000000    0.000025    0.000000    0.000000   -0.000025
 
- H   _2 x   -0.406854    0.241754    0.000000   -0.031580    0.031808    0.000000
- H   _2 y    0.305370   -0.264917    0.000000   -0.031808    0.017878    0.000000
+ H   _2 x   -0.406852    0.241754    0.000000   -0.031581    0.031807    0.000000
+ H   _2 y    0.305369   -0.264916    0.000000   -0.031807    0.017878    0.000000
  H   _2 z    0.000000    0.000000    0.000025    0.000000    0.000000    0.000000
 
 
             H   _2 x    H   _2 y    H   _2 z
 
- H   _2 x    0.438434
- H   _2 y   -0.273562    0.247038
+ H   _2 x    0.438432
+ H   _2 y   -0.273561    0.247038
  H   _2 z    0.000000    0.000000   -0.000025
 
 
@@ -2000,7 +1995,7 @@ Point group: C2v
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.863914           2.195851           7.324572
+              0.863916           2.195854           7.324582
 
 
                              Dipole moment components
@@ -2008,7 +2003,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      y      0.86391447         2.19585142         7.32457191
+      y      0.86391564         2.19585438         7.32458179
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -2024,7 +2019,7 @@ Point group: C2v
             ------      ------      ------
  O     :    0.000000
  H   _1:    0.941193    0.000000
- H   _2:    0.941193    1.505535    0.000000
+ H   _2:    0.941193    1.505534    0.000000
 
 
   Max    interatomic separation is    1.5055 Angstrom (    2.8450 Bohr)
@@ -2061,7 +2056,7 @@ Point group: C2v
 
  Iteration number:  2
 
-  Norm of molecular gradient:     0.0000835036
+  Norm of molecular gradient:     0.0000830144
 
 @ Energy at current point:   -76.0534235499
   Energy at initial point:   -76.0514595192
@@ -2080,7 +2075,7 @@ Point group: C2v
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           2           1       8.350362D-05    0          5.90D+00
+    1           2           1       8.301442D-05    0          5.90D+00
     2           1           2       0.000000D+00    0          1.00D+00
     3           0           2
     4           0           1
@@ -2094,9 +2089,9 @@ Point group: C2v
 
            @sym        mode          gradient        eigenvalue    
            @-------------------------------------------------------
-            @ 1           1        -0.0000049260     0.1832733518
-            @ 1           2         0.0000833582     1.0814901611
-            @ 2           1         0.0000000000     1.4497548531
+            @ 1           1        -0.0000053082     0.1832727362
+            @ 1           2         0.0000828445     1.0814891541
+            @ 2           1         0.0000000000     1.4497476089
 
 
                               +----------------------+
@@ -2115,7 +2110,7 @@ Point group: C2v
   ----------------------
    O    x       0.749187
    H    x      -0.529755
-   H    y      -0.397590
+   H    y      -0.397591
 
 
 
@@ -2128,9 +2123,9 @@ Point group: C2v
                             Cartesian coordinates (au)
                             --------------------------
 
- O          0.0000000000           -0.1869726124            0.0000000000
- H   _1     1.4225241665            0.8806563597            0.0000000000
- H   _2    -1.4225241665            0.8806563597            0.0000000000
+ O          0.0000000000           -0.1869736510            0.0000000000
+ H   _1     1.4225231346            0.8806568790            0.0000000000
+ H   _2    -1.4225231346            0.8806568790            0.0000000000
 
 
 
@@ -2143,7 +2138,7 @@ Point group: C2v
             ------      ------      ------
  O     :    0.000000
  H   _1:    0.941193    0.000000
- H   _2:    0.941193    1.505535    0.000000
+ H   _2:    0.941193    1.505534    0.000000
 
 
   Max    interatomic separation is    1.5055 Angstrom (    2.8450 Bohr)
@@ -2186,7 +2181,7 @@ Point group: C2v
                    `-------------------------------------------'
 
 
-@  Geometry walk step no.   2:  Molecular energy =    -76.053424   Molecular gradient =  0.000084
+@  Geometry walk step no.   2:  Molecular energy =    -76.053424   Molecular gradient =  0.000083
 
 
                           .-----------------------------.
@@ -2217,15 +2212,15 @@ Point group: C2v
  Changes of defaults for *ABALNR:
  --------------------------------
 
- Number of frequencies     :   3
- Frequencies               :  0.000000  0.059200  0.096000
+ Number of frequencies          :   3
+ Frequencies                    :  0.000000  0.059200  0.096000
  Print level                    :   0
  Lin Resp convergence threshold :  5.00D-05
  Max. Lin Resp iterations       :  60
 
- Center of mass dipole origin  :    0.000000   -0.067489    0.000000
+ Center of mass dipole origin  :    0.000000   -0.067490    0.000000
 
- Center of mass gauge origin   :    0.000000   -0.067489    0.000000
+ Center of mass gauge origin   :    0.000000   -0.067490    0.000000
 
 
                  .------------------------------------------------.
@@ -2234,8 +2229,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:42 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             
 
  Old LUGDR file opened in ORTREL.
 
@@ -2245,7 +2240,7 @@ Point group: C2v
      ***********************************************************************
 
 
- Integral transformation: Total CPU and WALL times (sec)       0.024       0.030
+ Integral transformation: Total CPU and WALL times (sec)       0.024       0.033
 
 
    ***************************************************************************
@@ -2254,16 +2249,16 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:43 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             
 
 
                              Molecular geometry (au)
                              -----------------------
 
- O          0.0000000000           -0.1869726124            0.0000000000
- H   _1     1.4225241665            0.8806563597            0.0000000000
- H   _2    -1.4225241665            0.8806563597            0.0000000000
+ O          0.0000000000           -0.1869736510            0.0000000000
+ H   _1     1.4225231346            0.8806568790            0.0000000000
+ H   _2    -1.4225231346            0.8806568790            0.0000000000
 
 
 
@@ -2282,11 +2277,11 @@ Point group: C2v
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1973997327 au
-     Mass-velocity correction:                  -0.2489049562 au
+     Darwin correction:                          0.1973997349 au
+     Mass-velocity correction:                  -0.2489049594 au
 
-     Total relativistic correction:             -0.0515052235 au (0.0677%)
-     Non-relativistic + relativistic energy:   -76.1049287734 au
+     Total relativistic correction:             -0.0515052245 au (0.0677%)
+     Non-relativistic + relativistic energy:   -76.1049287743 au
 
 
 
@@ -2295,7 +2290,7 @@ Point group: C2v
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.863914           2.195851           7.324572
+              0.863916           2.195854           7.324582
 
 
                              Dipole moment components
@@ -2303,7 +2298,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      y      0.86391447         2.19585142         7.32457191
+      y      0.86391564         2.19585438         7.32458179
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -2319,38 +2314,38 @@ Point group: C2v
     Symmetry 1
                        Ey
 
-        O    y    -0.44820312
-        H    x    -0.05948315
-        H    y     0.44820312
+        O    y    -0.44820273
+        H    x    -0.05948295
+        H    y     0.44820273
 
     Symmetry 2
                        Ex
 
-        O    x    -0.59855814
-        H    x     0.59855814
-        H    y    -0.15808270
+        O    x    -0.59855657
+        H    x     0.59855657
+        H    y    -0.15808415
 
     Symmetry 3
                        Ez
 
-        O    z    -0.80918980
-        H    z     0.80918980
+        O    z    -0.80918971
+        H    z     0.80918971
 
 
 
                        Ex             Ey             Ez
 
-      O      x    -0.59855814     0.00000000     0.00000000
-      O      y     0.00000000    -0.44820312     0.00000000
-      O      z     0.00000000     0.00000000    -0.80918980
+      O      x    -0.59855657     0.00000000     0.00000000
+      O      y     0.00000000    -0.44820273     0.00000000
+      O      z     0.00000000     0.00000000    -0.80918971
 
-      H   _1 x     0.29927907    -0.02974157     0.00000000
-      H   _1 y    -0.07904135     0.22410156     0.00000000
-      H   _1 z     0.00000000     0.00000000     0.40459490
+      H   _1 x     0.29927829    -0.02974148     0.00000000
+      H   _1 y    -0.07904208     0.22410136     0.00000000
+      H   _1 z     0.00000000     0.00000000     0.40459485
 
-      H   _2 x     0.29927907     0.02974157     0.00000000
-      H   _2 y     0.07904135     0.22410156     0.00000000
-      H   _2 z     0.00000000     0.00000000     0.40459490
+      H   _2 x     0.29927829     0.02974148     0.00000000
+      H   _2 y     0.07904208     0.22410136     0.00000000
+      H   _2 z     0.00000000     0.00000000     0.40459485
 
 
 
@@ -2372,9 +2367,9 @@ Point group: C2v
 
                          Ex          Ey          Ez
 
-            Ex       7.419983    0.000000    0.000000
-            Ey       0.000000    5.849026    0.000000
-            Ez       0.000000    0.000000    5.501168
+            Ex       7.419981    0.000000    0.000000
+            Ey       0.000000    5.849045    0.000000
+            Ez       0.000000    0.000000    5.501169
 
 
 
@@ -2384,7 +2379,7 @@ Point group: C2v
                          Ex          Ey          Ez
 
             Ex       1.099528    0.000000    0.000000
-            Ey       0.000000    0.866736    0.000000
+            Ey       0.000000    0.866739    0.000000
             Ez       0.000000    0.000000    0.815189
 
 
@@ -2418,31 +2413,31 @@ Point group: C2v
           ----------------------------------------------------
                             Ex             Ey             Ez
 
-                Ex    7.419983       0.000000       0.000000    
-                Ey    0.000000       5.849026       0.000000    
-                Ez    0.000000       0.000000       5.501168    
+                Ex    7.419981       0.000000       0.000000    
+                Ey    0.000000       5.849045       0.000000    
+                Ez    0.000000       0.000000       5.501169    
 
-Isotropic polarizability:   6.256725    
+Isotropic polarizability:   6.256732    
 
           Polarizability tensor for frequency     0.059200 au
           ----------------------------------------------------
                             Ex             Ey             Ez
 
-                Ex    7.477648       0.000000       0.000000    
-                Ey    0.000000       5.908097       0.000000    
-                Ez    0.000000       0.000000       5.576149    
+                Ex    7.477646       0.000000       0.000000    
+                Ey    0.000000       5.908117       0.000000    
+                Ez    0.000000       0.000000       5.576150    
 
-Isotropic polarizability:   6.320632    
+Isotropic polarizability:   6.320638    
 
           Polarizability tensor for frequency     0.096000 au
           ----------------------------------------------------
                             Ex             Ey             Ez
 
-                Ex    7.574278       0.000000       0.000000    
-                Ey    0.000000       6.008979       0.000000    
-                Ez    0.000000       0.000000       5.707157    
+                Ex    7.574277       0.000000       0.000000    
+                Ey    0.000000       6.008999       0.000000    
+                Ez    0.000000       0.000000       5.707158    
 
-Isotropic polarizability:   6.430138    
+Isotropic polarizability:   6.430145    
 
 
    Interatomic separations (in Angstrom):
@@ -2452,7 +2447,7 @@ Isotropic polarizability:   6.430138
             ------      ------      ------
  O     :    0.000000
  H   _1:    0.941193    0.000000
- H   _2:    0.941193    1.505535    0.000000
+ H   _2:    0.941193    1.505534    0.000000
 
 
   Max    interatomic separation is    1.5055 Angstrom (    2.8450 Bohr)
@@ -2515,14 +2510,14 @@ Isotropic polarizability:   6.430138
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
 
- Center-of-mass coordinates (a.u.):    0.000000   -0.067489    0.000000
+ Center-of-mass coordinates (a.u.):    0.000000   -0.067490    0.000000
 
 
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA       0.571364          1.000000    0.000000    0.000000
-   IB       1.142186          0.000000    1.000000    0.000000
+   IA       0.571365          1.000000    0.000000    0.000000
+   IB       1.142184          0.000000    1.000000    0.000000
    IC       1.713549          0.000000    0.000000    1.000000
 
 
@@ -2533,8 +2528,8 @@ Isotropic polarizability:   6.430138
 
                A                   B                   C
 
-         884513.5850         442466.6091         294931.0987 MHz
-           29.504197           14.759097            9.837843 cm-1
+         884511.0037         442467.2510         294931.0970 MHz
+           29.504111           14.759119            9.837842 cm-1
 
 
   Vibrational Frequencies and IR Intensities
@@ -2547,7 +2542,7 @@ Isotropic polarizability:   6.430138
    2      A1     4143.10    0.018877     25.492   0.6033
    3      A1     1726.12    0.007865     85.621   2.0263
 
-   1      B2     4245.09    0.019342     88.297   2.0896
+   1      B2     4245.08    0.019342     88.296   2.0896
 
 
 
@@ -2558,16 +2553,16 @@ Isotropic polarizability:   6.430138
                 1  4245     2  4143     3  1726 
   ----------------------------------------------
 
-    O      x   -0.068292    0.000000    0.000000
-    O      y    0.000000    0.048869   -0.067888
+    O      x   -0.068292    0.000000   -0.000000
+    O      y   -0.000000   -0.048869   -0.067888
     O      z    0.000000    0.000000    0.000000
 
-    H   _1 x    0.541926   -0.571652   -0.411499
-    H   _1 y    0.406725   -0.387790    0.538715
+    H   _1 x    0.541925    0.571652   -0.411499
+    H   _1 y    0.406725    0.387790    0.538715
     H   _1 z    0.000000    0.000000    0.000000
 
-    H   _2 x    0.541926    0.571652    0.411499
-    H   _2 y   -0.406725   -0.387790    0.538715
+    H   _2 x    0.541925   -0.571652    0.411499
+    H   _2 y   -0.406725    0.387790    0.538715
     H   _2 z    0.000000    0.000000    0.000000
 
 
@@ -2579,9 +2574,9 @@ Isotropic polarizability:   6.430138
 
   mode           dMA/dQi        dMB/dQi        dMC/dQi
   ----------------------------------------------------
-   1            1.445548      -0.000000       0.000000
-   2           -0.000000      -0.776716       0.000000
-   3           -0.000000       1.423471       0.000000
+   1            1.445539       0.000000       0.000000
+   2           -0.000000       0.776716       0.000000
+   3            0.000000       1.423470       0.000000
 
 
 
@@ -2591,7 +2586,7 @@ Isotropic polarizability:   6.430138
              electronic     vibrational           total    energy 
 
              -76.053424        0.023042      -76.030381    Hartrees
-           -16691796.94         5057.16    -16686739.79    cm-1
+           -16691796.94         5057.15    -16686739.80    cm-1
              -199678.23           60.50      -199617.74    kJ/mol
               -47724.24           14.46       -47709.78    kcal/mol
 
@@ -2607,21 +2602,21 @@ Isotropic polarizability:   6.430138
 
  Temp.(K)  Translational     Rotational    Vibrational      Total
 
-    50.00     3.4600D+04           6.07         1.0000   2.100652D+05
-   100.00     1.9573D+05          16.43         1.0000   3.216137D+06
-   200.00     1.1072D+06          45.43         1.0000   5.029914D+07
-   273.15     2.4136D+06          72.06         1.0001   1.739417D+08
-   298.15     3.0043D+06          82.06         1.0002   2.465899D+08
-   300.00     3.0511D+06          82.82         1.0003   2.527463D+08
-   400.00     6.2633D+06         127.01         1.0020   7.971130D+08
-   500.00     1.0942D+07         177.09         1.0070   1.951243D+09
-   600.00     1.7260D+07         232.43         1.0163   4.076931D+09
-   700.00     2.5375D+07         292.56         1.0300   7.646535D+09
-   800.00     3.5431D+07         357.15         1.0481   1.326227D+10
-   900.00     4.7562D+07         425.88         1.0702   2.167871D+10
-  1000.00     6.1895D+07         498.54         1.0963   3.382901D+10
-  1500.00     1.7056D+08         914.45         1.2816   1.998861D+11
-  2000.00     3.5013D+08        1406.78         1.5548   7.658201D+11
+    50.00     3.4600D+04           6.07         1.0000   2.100654D+05
+   100.00     1.9573D+05          16.43         1.0000   3.216139D+06
+   200.00     1.1072D+06          45.43         1.0000   5.029917D+07
+   273.15     2.4136D+06          72.06         1.0001   1.739418D+08
+   298.15     3.0043D+06          82.06         1.0002   2.465901D+08
+   300.00     3.0511D+06          82.82         1.0003   2.527465D+08
+   400.00     6.2633D+06         127.01         1.0020   7.971136D+08
+   500.00     1.0942D+07         177.09         1.0070   1.951245D+09
+   600.00     1.7260D+07         232.43         1.0163   4.076935D+09
+   700.00     2.5375D+07         292.57         1.0300   7.646542D+09
+   800.00     3.5431D+07         357.15         1.0481   1.326229D+10
+   900.00     4.7562D+07         425.89         1.0702   2.167873D+10
+  1000.00     6.1895D+07         498.54         1.0963   3.382904D+10
+  1500.00     1.7056D+08         914.45         1.2816   1.998864D+11
+  2000.00     3.5013D+08        1406.78         1.5548   7.658216D+11
 
 
                                 +------------------+
@@ -2638,8 +2633,8 @@ Isotropic polarizability:   6.430138
 
                          Ex          Ey          Ez
 
-            Ex       0.132812    0.000000    0.000000
-            Ey       0.000000    0.819191    0.000000
+            Ex       0.132811   -0.000000    0.000000
+            Ey      -0.000000    0.819192    0.000000
             Ez       0.000000    0.000000    0.000000
 
 
@@ -2649,8 +2644,8 @@ Isotropic polarizability:   6.430138
 
                          Ex          Ey          Ez
 
-            Ex       0.019681    0.000000    0.000000
-            Ey       0.000000    0.121392    0.000000
+            Ex       0.019681   -0.000000    0.000000
+            Ey      -0.000000    0.121392    0.000000
             Ez       0.000000    0.000000    0.000000
 
 
@@ -2662,8 +2657,8 @@ Isotropic polarizability:   6.430138
 
                          EA          EB          EC
 
-            EA       0.019681    0.000000    0.000000
-            EB       0.000000    0.121392    0.000000
+            EA       0.019681   -0.000000    0.000000
+            EB      -0.000000    0.121392    0.000000
             EC       0.000000    0.000000    0.000000
 
 
@@ -2679,7 +2674,7 @@ Isotropic polarizability:   6.430138
                          EA          EB          EC
 
             EA       1.099528    0.000000    0.000000
-            EB       0.000000    0.866736    0.000000
+            EB       0.000000    0.866739    0.000000
             EC       0.000000    0.000000    0.815189
 
 
@@ -2691,8 +2686,8 @@ Isotropic polarizability:   6.430138
 
                          EA          EB          EC
 
-            EA       1.119209    0.000000    0.000000
-            EB       0.000000    0.988128    0.000000
+            EA       1.119208   -0.000000    0.000000
+            EB      -0.000000    0.988131    0.000000
             EC       0.000000    0.000000    0.815189
 
 
@@ -2703,8 +2698,8 @@ Isotropic polarizability:   6.430138
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.20 seconds
- >>>> Total wall time used in ABACUS:   0.52 seconds
+ >>>> Total CPU  time used in ABACUS:   0.19 seconds
+ >>>> Total wall time used in ABACUS:   0.32 seconds
 
 
                    .-------------------------------------------.
@@ -2754,9 +2749,9 @@ Isotropic polarizability:   6.430138
            the required MO integrals are already available.
 
 
-   SCF energy         :      -76.053423549856703
- -- inactive part     :      -85.400766966683079
- -- nuclear repulsion :        9.347343416826378
+   SCF energy         :      -76.053423549869251
+ -- inactive part     :      -85.400766666049407
+ -- nuclear repulsion :        9.347343116180150
 
 
                      ***************************************
@@ -2806,13 +2801,13 @@ Isotropic polarizability:   6.430138
  A operator, symmetry, frequency:   YDIPLEN    1  0.000000
  B operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
- Value of linear response -<<A;B>>(omega):       5.849025847707
+ Value of linear response -<<A;B>>(omega):       5.849045104677
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   YDIPLEN    1 -0.059200
  B operator, symmetry, frequency:   YDIPLEN    1  0.059200
 
- Value of linear response -<<A;B>>(omega):       5.908097492382
+ Value of linear response -<<A;B>>(omega):       5.908117107579
 
 
  >>>>>>>>>> Linear response calculation
@@ -2849,13 +2844,13 @@ Isotropic polarizability:   6.430138
  A operator, symmetry, frequency:   XDIPLEN    2  0.000000
  B operator, symmetry, frequency:   XDIPLEN    2  0.000000
 
- Value of linear response -<<A;B>>(omega):       7.419983045871
+ Value of linear response -<<A;B>>(omega):       7.419981440011
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   XDIPLEN    2 -0.059200
  B operator, symmetry, frequency:   XDIPLEN    2  0.059200
 
- Value of linear response -<<A;B>>(omega):       7.477647997228
+ Value of linear response -<<A;B>>(omega):       7.477646434696
 
 
  >>>>>>>>>> Linear response calculation
@@ -2892,25 +2887,25 @@ Isotropic polarizability:   6.430138
  A operator, symmetry, frequency:   ZDIPLEN    3  0.000000
  B operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
- Value of linear response -<<A;B>>(omega):       5.501167509037
+ Value of linear response -<<A;B>>(omega):       5.501168551229
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   ZDIPLEN    3 -0.059200
  B operator, symmetry, frequency:   ZDIPLEN    3  0.059200
 
- Value of linear response -<<A;B>>(omega):       5.576149116419
+ Value of linear response -<<A;B>>(omega):       5.576150147612
 
  >>>> Total CPU  time used in RESPONSE:   0.01 seconds
- >>>> Total wall time used in RESPONSE:   0.05 seconds
+ >>>> Total wall time used in RESPONSE:   0.02 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.85 seconds
- >>>> Total wall time used in DALTON:   1.98 seconds
+ >>>> Total CPU  time used in DALTON:   0.82 seconds
+ >>>> Total wall time used in DALTON:   1.25 seconds
 
  
-     Date and time (Linux)  : Mon Oct 21 15:29:43 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Wed Mar 26 14:47:10 2014
+     Host name              : c29-3.local                             

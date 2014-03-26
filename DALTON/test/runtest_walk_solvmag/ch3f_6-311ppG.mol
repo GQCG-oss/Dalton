@@ -1,5 +1,5 @@
 ATOMBASIS
-Geomatry walk and calculation of shielding and magnetizability for a
+Geometry walk and calculation of shielding and magnetizability for a
 solvated molecule (equilibrium solvation)
 Nosymmetry Atomtypes=3
 Charge=6.0 Atoms=1 Basis=6-311++G(2d,2p)

@@ -21,12 +21,14 @@ f.add(from_string = 'Molecular properties transformed to the following Eckart fr
       tolerance = 1.0e-8)
 
 # Molecular gradients (Low numbers, so difficult to test)
+#ADJUST
 f.add(from_string = 'Molecular gradient (au)',
       num_lines    = 6,
       ignore_below = 1.0e-3,
       tolerance = 1.0e-4)
 
 # Molecular hessians (Low numbers, so difficult to test)
+#ADJUST
 f.add(from_string = 'Molecular Hessian (au)',
       num_lines    = 20,
       ignore_below = 1.0e-3,
@@ -114,6 +116,7 @@ f.add(from_string = 'Static polarizability at effective geometry',
 
 # Second derivatives
 # (many small numbers, difficult to test with high enough precision)
+#ADJUST
 f.add(from_string = 'All displacements are now done',
       to_string = 'Vibrationally averaged molecular properties', 
       ignore_below = 1.0e-1,
@@ -121,6 +124,7 @@ f.add(from_string = 'All displacements are now done',
 
 # Vibrationally averaged molecular properties
 # (many small numbers, difficult to test with high enough precision)
+#ADJUST
 f.add(from_string = 'Vibrationally averaged molecular properties', 
       to_string = 'Numerical differentiation complete.',
       ignore_below = 1.0e-3,
