@@ -6313,8 +6313,17 @@ contains
     dtype = MPI_DOUBLE_PRECISION
     n = reccounts(infpar%lg_mynum+1)
 
+#ifdef VAR_INT64
+#ifdef VAR_MPI_32BIT_INT
     call MPI_ALLGATHERV(sendbuf,n,dtype,recbuf,reccounts,&
                         &disps,dtype,infpar%lg_comm,ierr)
+#else
+    call lsquit('Error in lsmpi_localallgatherv_realk4 VAR_INT64 and not VAR_MPI_32BIT_INT',-1)
+#endif
+#else
+    call MPI_ALLGATHERV(sendbuf,n,dtype,recbuf,reccounts,&
+                        &disps,dtype,infpar%lg_comm,ierr)
+#endif
 
     if(ierr/=0)then
       call lsquit("ERROR(lsmpi_localallgatherv_realk4):mpi is wrong",-1)
