@@ -325,7 +325,7 @@ class Filter:
                     for w in string_l[line].split():
                         i += 1
                         if (f.use_mask) and (i not in f.mask):
-                            break
+                            continue
                         # do not consider words like TzB1g
                         # otherwise we would extract 1 later
                         if re.match(r'^[0-9\.eEdD\+\-]*$', w):
