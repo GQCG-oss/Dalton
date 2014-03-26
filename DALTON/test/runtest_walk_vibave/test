@@ -9,67 +9,122 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
+
+# HF energy (14 times)
 f.add(string = 'Final HF energy',
       tolerance = 1.0e-10)
 
-#f.add(from_string = 'Molecular gradient (au)',
-#      num_lines    = 6,
-#      ignore_below = 1.0e-4,
-#      tolerance = 1.0e-6)
+# Numerical differentiation set up
+f.add(from_string = 'Molecular properties transformed to the following Eckart frame',
+      num_lines = 5,
+      ignore_below = 1.0e-8,
+      tolerance = 1.0e-8)
 
-
-#f.add(from_string = 'Molecular Hessian (au)',
-#      num_lines    = 20,
-#      ignore_below = 1.0e-4,
-#      tolerance = 1.0e-5)
-
-f.add(from_string = 'Static polarizabilities (ang',
-      num_lines = 8,
+# Molecular gradients (Low numbers, so difficult to test)
+f.add(from_string = 'Molecular gradient (au)',
+      num_lines    = 6,
       ignore_below = 1.0e-3,
-      tolerance = 2.0e-5)
+      tolerance = 1.0e-4)
 
-f.add(string = 'Isotropic magnetizability',
-      tolerance = 1.0e-10)
+# Molecular hessians (Low numbers, so difficult to test)
+f.add(from_string = 'Molecular Hessian (au)',
+      num_lines    = 20,
+      ignore_below = 1.0e-3,
+      tolerance = 1.0e-4)
 
-f.add(from_string = 'Magnetizabilities                    au',
+# Initial static polarizabilities
+f.add(from_string = 'Static polarizability at effective geometry',
       num_lines = 8,
-      tolerance = 1.0e-3)
+      ignore_below = 1.0e-10,
+      tolerance = 1.0e-8)
 
+# Magnetizabilities (check SI numbers since they are largest)
+f.add(from_string = 'Magnetizabilities                    au',
+      num_lines = 9,
+      tolerance = 1.0e-5,
+      mask = [2])
+
+# g-tensor
 f.add(from_string = 'Molecular rotational g-tensor\n',
       num_lines = 8,
       tolerance = 1.0e-4)
 
+# Initial shielding tensor
 f.add(from_string = 'Chemical shielding tensors at effective geometry',
       num_lines = 24,
       ignore_below = 1.0e-6,
       tolerance = 1.0e-5)
 
+# Chemical shielding for nitrogen and hydrogen
+f.add(from_string = 'Chemical shielding for ',
+      num_lines = 10,
+      ignore_below = 1.0e-4,
+      tolerance = 1.0e-7)
+
+# Chemical shielding summary
+f.add(string = '@1 N ',
+      tolerance = 1.0e-10)
+f.add(string = '@2 H ',
+      tolerance = 1.0e-10)
+
+# Projected gradient
 f.add(string = 'Norm of projected gradient',
       tolerance = 1.0e-5)
 
+# Energy at effective geometry 
 f.add(string = 'Energy at effective geometry:',
       tolerance = 1.0e-8)
 
-f.add(from_string = 'Shielding tensors in symmetry',
-      num_lines = 20,
-      ignore_below = 6.0,
+# Dipole moments
+f.add(from_string = 'Dipole moment components',
+      num_lines = 8,
+      ignore_below = 1.0e-4,
+      tolerance = 1.0e-8,
+      mask = [3])
+
+# Dipole moment at effective geometry 
+f.add(from_string = 'Dipole moment at effective geometry',
+      num_lines = 6,
+      ignore_below = 1.0e-8,
+      tolerance = 1.0e-8)
+
+# Magnetizabilities at effective geometry 
+f.add(from_string = 'Magnetizabilities at effective geometry',
+      num_lines = 8,
+      ignore_below = 1.0e-7,
+      tolerance = 1.0e-8)
+
+# g-tensor at effective geometry
+f.add(from_string = 'Rotational g tensor at effective geometry',
+      num_lines = 8,
+      ignore_below = 1.0e-8,
+      tolerance = 1.0e-8)
+
+# Chemical shielding tensors at effective geometry 
+f.add(from_string = 'Chemical shielding tensors at effective geometry',
+      num_lines = 23,
+      ignore_below = 1.0e-8,
+      tolerance = 1.0e-8)
+
+# Static polarizability at effective geometry
+f.add(from_string = 'Static polarizability at effective geometry',
+      num_lines = 8,
+      ignore_below = 1.0e-8,
+      tolerance = 1.0e-8)
+
+# Second derivatives
+# (many small numbers, difficult to test with high enough precision)
+f.add(from_string = 'All displacements are now done',
+      to_string = 'Vibrationally averaged molecular properties', 
+      ignore_below = 1.0e-1,
       tolerance = 1.0e-5)
 
-f.add(from_string = 'Shielding tensors in symmetry',
-      num_lines = 20,
-      ignore_below = 1.0e-1,
-      tolerance = 1.0e-4)
-
-
-
-#f.add(string = 'Diamagnetic contribution:',
-#      ignore_below = 1.0,
-#      tolerance = 1.0e-5)
-#f.add(string = 'Paramagnetic:',
-#      tolerance = 1.0e-3)
-
-
-
+# Vibrationally averaged molecular properties
+# (many small numbers, difficult to test with high enough precision)
+f.add(from_string = 'Vibrationally averaged molecular properties', 
+      to_string = 'Numerical differentiation complete.',
+      ignore_below = 1.0e-3,
+      tolerance = 2.0e-5)
 
 test.run(['walk_vibave.dal'], ['nh3_sto-3g.mol'], {'out': f})
 
