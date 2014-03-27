@@ -10,13 +10,13 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'Hartree-Fock total energy',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 f.add(string = 'MP2 second order energy',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 f.add(string = 'Final MCSCF energy',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 f.add(string = 'DIPLEN  >>',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 
 test.run(['rsp_polar.dal'], ['lih.mol'], {'out': f})
 

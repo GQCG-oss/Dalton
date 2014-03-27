@@ -10,7 +10,7 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'TEST STRING',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 
 test.run(['dft_disp_d3.dal'], ['tmp.mol'], {'out': f})
 

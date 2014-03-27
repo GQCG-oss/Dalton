@@ -12,49 +12,49 @@ f = Filter()
 
 # HF energy (2 times)
 f.add(string = 'Final HF energy',
-      tolerance = 1.0e-10)
+      rel_tolerance = 1.0e-10)
 
 # Molecular gradients (Low numbers, so difficult to test)
 #ADJUST
 f.add(from_string = 'Molecular gradient (au)',
       num_lines    = 9,
       ignore_below = 1.0e-3,
-      tolerance = 1.0e-4)
+      rel_tolerance = 1.0e-4)
 
 # Molecular hessians (Low numbers, so difficult to test)
 #ADJUST
 f.add(from_string = 'Molecular Hessian (au)',
       num_lines    = 57,
       ignore_below = 1.0e-3,
-      tolerance = 1.0e-3)
+      rel_tolerance = 1.0e-3)
 
 
 # Geometry
 f.add(from_string = 'Molecular geometry (au)',
       num_lines    = 9,
       ignore_below = 1.0e-6,
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 
 # Magnetizabilities 
 #ADJUST
 f.add(from_string = 'ABACUS - MAGNETIZABILITIES',
       to_string = 'ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
       ignore_below = 1.0,
-      tolerance = 2.0e-5)
+      rel_tolerance = 2.0e-5)
 
 # g-tensors
 #ADJUST
 f.add(from_string = 'ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
       to_string = 'ABACUS - CHEMICAL SHIELDINGS',
       ignore_below = 1.0,
-      tolerance = 2.0e-5)
+      rel_tolerance = 2.0e-5)
 
 # Chemical shielding
 #ADJUST
 f.add(from_string = 'ABACUS - CHEMICAL SHIELDINGS',
       to_string = 'Interatomic separations',
       ignore_below = 1.0,
-      tolerance = 2.0e-5)
+      rel_tolerance = 2.0e-5)
 
 
 
