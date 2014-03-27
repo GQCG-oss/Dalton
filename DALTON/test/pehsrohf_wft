@@ -111,8 +111,6 @@ cat > pehsrohf_wft.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *SCF INPUT
-.MAX ERR
-10
 .DOUBLY OCCUPIED
 6
 .SINGLY OCCUPIED
@@ -145,14 +143,6 @@ CTRL[1]=5
 ERROR[1]="INCORRECT POTENTIAL"
 
 #
-# Convergence
-#
-CRIT1=`$GREP " DIIS converged in  44 iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
-
-#
 # Energies
 #
 CRIT1=`$GREP "Monopoles * ( |0)\.001447......" $log | wc -l`
@@ -163,9 +153,9 @@ CRIT5=`$GREP "Nuclear * (\-|\-0)\.259766......" $log | wc -l`
 CRIT6=`$GREP "Multipole * (\-|\-0)\.003579......" $log | wc -l`
 CRIT7=`$GREP "Total PE energy: * (\-|\-0)\.029715......" $log | wc -l`
 CRIT8=`$GREP "Final HF energy: * \-111\.257389......" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 `
-CTRL[3]=8
-ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 `
+CTRL[2]=8
+ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
 # Induced dipole moments in environment
@@ -176,9 +166,9 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
  CRIT4=`$GREP "  4 * ( |0)\.29873... * ( |0)\.02220... * (\-|\-0)\.02167..." $log | wc -l`
  CRIT5=`$GREP "  5 * ( |0)\.06133... * ( |0)\.16073... * (\-|\-0)\.01224..." $log | wc -l`
  CRIT6=`$GREP "  6 * ( |0)\.08835... * (\-|\-0)\.01079... * ( |0)\.03173..." $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
-CTRL[4]=6
-ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
+CTRL[3]=6
+ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
 #
 # dipole moment of formaldehyde
@@ -186,12 +176,12 @@ ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 CRIT1=`$GREP "x * ( |0)\.14604..." $log | wc -l`
 CRIT2=`$GREP "y * \-1\.61526..." $log | wc -l`
 CRIT3=`$GREP "z * ( |0)\.04849..." $log | wc -l`
-TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
-CTRL[5]=3
-ERROR[5]="DIPOLE MOMENT NOT CORRECT"
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
+CTRL[4]=3
+ERROR[4]="DIPOLE MOMENT NOT CORRECT"
 
 PASSED=1 
-for i in 1 2 3 4 5
+for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
