@@ -146,6 +146,8 @@ cat > pehf_iter.dal <<'%EOF%'
 .VERBOSE
 .ITERATIVE
 1.0d-10
+.REDTHR
+-2
 **WAVE FUNCTIONS
 .HF
 **PROPERTIES
@@ -177,8 +179,22 @@ CRIT2=`$GREP "Multipole moments upto 3rd order." $log | wc -l`
 CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
 CRIT4=`$GREP "Iterative solver for induced moments will be used" $log | wc -l`
 CRIT5=`$GREP "with convergence threshold: 1\.0E\-10" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
-CTRL[1]=5
+CRIT6=`$GREP "Using reduced threshold in first few SCF iterations." $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[1]=6
+ERROR[1]="INCORRECT POTENTIAL"
+
+#
+# Reduced threshold
+#
+CRIT1=`$GREP "INFO\: using reduced threshold to determine induced dipole moments\:" $log | wc -l`
+CRIT2=`$GREP "INFO\: using reduced threshold to determine induced dipole moments\:  1\.0E\+00" $log | wc -l`
+CRIT3=`$GREP "INFO\: using reduced threshold to determine induced dipole moments\:  1\.0E\-02" $log | wc -l`
+CRIT4=`$GREP "INFO\: using reduced threshold to determine induced dipole moments\:  1\.0E\-04" $log | wc -l`
+CRIT5=`$GREP "INFO\: using reduced threshold to determine induced dipole moments\:  1\.0E\-06" $log | wc -l`
+CRIT6=`$GREP "INFO\: using reduced threshold to determine induced dipole moments\:  1\.0E\-08" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[1]=10
 ERROR[1]="INCORRECT POTENTIAL"
 
 #
