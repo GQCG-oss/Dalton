@@ -67,9 +67,6 @@ C
       forceupdate = .true.
 #endif
 
-C TODO Beyer
-      write(*,*) "Entered RP_ERES"
-C TODO ... Beyer
 C
 C------------------
 C     Add to trace.
@@ -416,12 +413,8 @@ C
 C
   210    CONTINUE
 
-         write(*,*) " Serial Printing Fock Matrix"
-         do i=1, 50
-            write(*,*) work(kfock+i-1)
-         enddo
 
-  888    continue
+  888    continue !Continuation point in case the Fock matrix was calculated in parallel.
 C
 C====================================================
 C        End of loop over distributions of integrals.
@@ -541,11 +534,6 @@ C !!!!!!!!!!!!!!!!!!!!!!!!
 C FIX THE LOAD BALANCING! ITS CRAZY OUT OF SYNC RIGHT NOW!!!!!!!!
 C 
 C
-C
-C
-C
-C AS OF MARCH 2014 THIS IS NOT A FUNCTIONING ROUTINE!!!!
-C
 C PAR_RP_ERES is a Parallel subroutine for RP_ERES.F
 C It calculates the AO-FOCK matrix in parallel by distributing the two-electron integrals 
 C over several processes and assembling the partial Fock matrices from every process before returning.
@@ -574,10 +562,9 @@ C Every slave calculates its own batch of intgrals depending on the last index i
 #include "ibtfun.h"
 
 ! These include files depend on previous include files
-#include "infpar.h" !TODO no need to common block update
+#include "infpar.h" 
 #include "eribuf.h" 
 
-! Experimental. I wont transfer this yet... I think it's already shared with the slaves... TODO check it out!!! TODO 
 #include "inftap.h"
 #include "ccorb.h"
 #include "infind.h" !Possibly this should be replaced with ccisao.h !see if the include file in subroutine ccrdao is infind or ccisao
@@ -636,7 +623,6 @@ C     Miscellaneous
 
 C**********************************************************************
 
-      write(*,*) myid, "entered par_rp_eres"
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       call mpi_bcast(forceupdate,1,mpi_logical,0,mpi_comm_world, ierr)
 
@@ -905,8 +891,6 @@ C **********************************************************
 
 
 
-
-
 C *******************************************
 C            Primary parallel loop. 
 C *******************************************
@@ -1032,18 +1016,6 @@ C     Assemble the Fock Matrix in the master's work array
          call mpi_reduce(work(kfock), fockd, lfock, MPI_REAL8,
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
       endif
-
-
-      if (myid.eq.0) then
-         write(*,*) "Printing Fock Matrix"
-         do i=1, 50
-            write(*,*) work(kfock+i-1)
-         enddo
-      endif
-
-C   TODO   remove this before release
-      call mpi_barrier(mpi_comm_world, ierr)
-
 
 
       RETURN
