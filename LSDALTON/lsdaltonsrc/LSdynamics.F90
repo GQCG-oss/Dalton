@@ -215,7 +215,7 @@ If (dyn%NHChain) then
    Do i = 2, dyn%CLen
       dyn%Q(i) = kB*dyn%Temp/dyn%omega**2
    Enddo
-   If (dyn%Init) then ! Initial conditions are read
+   If (dyn%Init_NHC) then ! Initial conditions are read
       Do i = 1, dyn%CLen
          traj%eta(i) = dyn%eta(i)
          traj%v_eta(i) = dyn%v_eta(i)
