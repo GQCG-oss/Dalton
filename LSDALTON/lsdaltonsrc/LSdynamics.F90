@@ -702,13 +702,17 @@ If (.NOT. dyn%Mass_Weight) then   ! Cartesian
 Else  ! Mass-weighted
   Call Calc_Kinetic(NAtoms*3,NAtoms,traj%Velocities,traj%CurrKinetic)
 Endif
-  traj%CurrEnergy = traj%CurrPotential + traj%CurrKinetic
-  Call Underline(lupri, 'Final energy conservation (au)', -1)
-  Write(lupri,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
-                              '   Potential energy: ',traj%CurrPotential, &
-                              '   Kinetic energy: ', traj%CurrKinetic
-  Write(lupri,'(31X,A,F14.8)') 'Energy conserv.: ',&
-  &traj%CurrEnergy-traj%InitialEnergy
+If (dyn%NHchain) then
+  Call NHC_Hamiltonian(NAtoms,dyn%CLen,traj%CurrPotential+traj%CurrKinetic,&
+       &traj%CurrEnergy,dyn%Q,traj%eta,traj%v_eta,dyn%Temp)
+Endif
+If (.NOT. dyn%NHchain) traj%CurrEnergy = traj%CurrPotential + traj%CurrKinetic
+Call Underline(lupri, 'Final energy conservation (au)', -1)
+Write(lupri,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
+                            '   Potential energy: ',traj%CurrPotential, &
+                            '   Kinetic energy: ', traj%CurrKinetic
+Write(lupri,'(31X,A,F14.8)') 'Energy conserv.: ',&
+&traj%CurrEnergy-traj%InitialEnergy
 !
 If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
   Call Calc_AngMom_Cart(NAtoms*3,NAtoms,traj%Mass,traj%Coordinates,&
