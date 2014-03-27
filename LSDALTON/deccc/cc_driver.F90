@@ -1439,7 +1439,7 @@ contains
     real(realk)            :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
     real(realk)            :: iter_cpu,iter_wall
     integer                :: nnodes
-    character(3)           :: safefilet11, safefilet12, safefilet21, safefilet22
+    character(3)           :: safefilet11, safefilet12, safefilet21, safefilet1f, safefile2f
     !SOME DUMMIES FOR TESTING
     type(array)            :: tmp
     character(ARR_MSG_LEN) :: msg
@@ -1454,8 +1454,10 @@ contains
     
     safefilet11 = 't11'
     safefilet12 = 't12'
+    safefilet1f = 't1f'
     safefilet21 = 't21'
     safefilet22 = 't22'
+    safefilet2f = 't2f'
 
     nnodes      = 1
 
@@ -1720,6 +1722,19 @@ contains
     break_iterations = .false.
     crop_ok          = .false.
     prev_norm        = 1.0E6_realk
+    ! get guess amplitude vectors in the first iteration --> zero if no
+    ! restart, else the t*.restart files are read
+    if(DECinfo%use_singles)then
+       t1(1) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
+       t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
+       call get_guess_vectors(restart,old_iter,converged,t2(1),safefilet21,safefilet22, safefilet2f, & 
+                                    & t1(1),safefilet11,safefilet12, safefilet1f  )
+    else
+       t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
+       call get_guess_vectors(restart,old_iter,converged,t2(1),safefilet21,safefilet22, safefilet2f )
+    endif
+
+    if(.not.converged)then
 
     CCIteration : do iter=1,DECinfo%ccMaxIter
 
@@ -1741,19 +1756,6 @@ contains
           call array_free(omega2(iter-DECinfo%ccMaxDIIS))
        end if RemoveOldVectors
 
-
-       ! get guess amplitude vectors in the first iteration --> zero if no
-       ! restart, else the t*.restart files are read
-       GetGuessVectors : if(iter == 1) then
-          if(DECinfo%use_singles)then
-            t1(iter) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
-            t2(iter) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
-            call get_guess_vectors(restart,t2(iter),safefilet21,safefilet22,t1(iter),safefilet11,safefilet12)
-          else
-            t2(iter) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
-            call get_guess_vectors(restart,t2(iter),safefilet21,safefilet22)
-         endif
-       end if GetGuessVectors
 
        ! Initialize residual vectors
        if(DECinfo%use_singles)then
@@ -1987,10 +1989,10 @@ contains
           !if .not.DECinfo%CCSDnosaferun option is set, make sure data is in dense
           if(saferun)then
             if(DECinfo%use_singles)then
-              call save_current_guess(iter,t2(iter+1),safefilet21,safefilet22,&
+              call save_current_guess(iter+old_iter-1,t2(iter+1),safefilet21,safefilet22,&
               &t1(iter+1),safefilet11,safefilet12)
             else
-              call save_current_guess(iter,t2(iter+1),safefilet21,safefilet22)
+              call save_current_guess(iter+old_iter-1,t2(iter+1),safefilet21,safefilet22)
             endif
           endif
        end if
@@ -2012,12 +2014,24 @@ contains
        call flush(DECinfo%output)
 #endif
 
-        call print_ccjob_iterinfo(iter,two_norm_total,ccenergy,.false.,fragment_job)
+        call print_ccjob_iterinfo(iter+old_iter-1,two_norm_total,ccenergy,.false.,fragment_job)
 
        last_iter = iter
        if(break_iterations) exit
          
     end do CCIteration
+ else
+       ! Initialize residual vectors
+       if(DECinfo%use_singles)then
+         omega1(1) = array_minit( ampl2_dims, 2 , local=local, atype='LDAR' )
+         call array_zero(omega1(1))
+       endif
+       omega2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
+       call array_zero(omega2(1))
+
+       break_iterations = .true.
+       last_iter = 1
+ endif
 
 
 
@@ -2030,27 +2044,31 @@ contains
 
     ! remove rest of the singles amplitudes and residuals
     do i=last_iter,max(last_iter-DECinfo%ccMaxDIIS+1,1),-1
-       if(DECinfo%use_singles) then
-          ! Save final singles amplitudes
-          if(i==last_iter) then
-             if(.not.longrange_singles) then ! just copy
-                t1_final = array2_init(ampl2_dims)
-             end if
-             call dcopy(int(t1(i)%nelms),t1(last_iter)%elm1,1,t1_final%val,1)
-          end if
-
-          ! Free singles amplitudes and residuals
-          call array_free( t1(i)     )
-          call array_free( omega1(i) )
-
-       end if
 
 
-       ! Save final double amplitudes
+       ! Save final double amplitudes (to file if saferun)
        if(i==last_iter) then
           t2_final = array4_init([nv,no,nv,no])
           call array_cp_tiled2dense(t2(last_iter),.true.)
           call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
+
+          if(DECinfo%use_singles) then
+             if(.not.longrange_singles) then ! intitialize and copy, else just copy
+                t1_final = array2_init(ampl2_dims)
+             end if
+             call dcopy(int(t1(i)%nelms),t1(last_iter)%elm1,1,t1_final%val,1)
+          endif
+
+          !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
+          if(saferun)then
+             if(DECinfo%use_singles)then
+                call save_current_guess(iter+old_iter-1,t2(last_iter),safefilet2f,safefilet2f,&
+                &t1(last_iter),safefilet1f,safefilet1f)
+             else
+                call save_current_guess(iter+old_iter-1,t2(last_iter),safefilet2f,safefilet2f)
+             endif
+          endif
+
           call array_change_itype_to_td(t2(last_iter),local)
        end if
 
@@ -2059,10 +2077,17 @@ contains
        ! Free doubles amplitudes
        call array_free(t2(i))
 
+
+       ! Free singles amplitudes and residuals
+       if(DECinfo%use_singles) then
+          call array_free( t1(i)     )
+          call array_free( omega1(i) )
+       end if
+
     end do
 
    ! Write finalization message
-   call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter,&
+   call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter+old_iter-1,&
    &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
 
     ! Save two-electron integrals in the order (virt,occ,virt,occ)
@@ -2131,15 +2156,11 @@ contains
 
     !transform back to original basis   
     if(DECinfo%use_singles)then
-      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
-      &vovo=t2_final%val,vo=t1_final%val)
-      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
-      &vovo=VOVO%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=t2_final%val,vo=t1_final%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=VOVO%val)
     else
-      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
-      &vovo=t2_final%val)
-      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,&
-      &vovo=VOVO%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=t2_final%val)
+      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=VOVO%val)
     endif
 
     call mem_dealloc(Uocc)
@@ -2168,168 +2189,222 @@ contains
   !is returned
   !> \author Patrick Ettenhuber
   !> \date December 2012
-  subroutine get_guess_vectors(restart,t2,safefilet21,safefilet22,t1,safefilet11,safefilet12)
-    implicit none
-    logical,intent(out) :: restart
-    !> contains the guess doubles amplitudes on output
-    type(array),intent(inout) :: t2
-    !> the filenames to check for valid doubles amplitudes
-    character(3),intent(in) :: safefilet21,safefilet22
-    !> contains the singles amplitudes on output
-    type(array),intent(inout),optional :: t1
-    !> the filenames to check for valid singles amplitudes
-    character(3),intent(in), optional :: safefilet11,safefilet12
-    integer :: no,nv
-    integer :: fu_t11,fu_t12,fu_t21,fu_t22,fu_t1,fu_t2
-    logical :: file_exists11,file_exists12,file_exists21,file_exists22
-    logical :: file_status11,file_status12,file_status21,file_status22
-    logical :: readfile1, readfile2
-    integer :: saved_iter11,saved_iter12,saved_iter21,saved_iter22,iter_start
-    integer :: saved_nel11,saved_nel12,saved_nel21,saved_nel22
-    logical :: all_singles
-    character(11) :: fullname11, fullname12, fullname21, fullname22
-    character(ARR_MSG_LEN) :: msg
-    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12)
-    !print *,"CHECK INPUT",safefilet11,safefilet12,all_singles,DECinfo%use_singles
-    fu_t11=111
-    fu_t12=112
-    fu_t21=121
-    fu_t22=122
-    nv=t2%dims(1)
-    no=t2%dims(3)
+  subroutine get_guess_vectors(restart,iter_start,converged,t2,safefilet21,safefilet22,safefilet2f,&
+  & t1,safefilet11,safefilet12,safefilet1f)
+  implicit none
+  logical,intent(out) :: restart
+  logical, intent(out) :: converged
+  !> contains the guess doubles amplitudes on output
+  type(array),intent(inout) :: t2
+  !> the filenames to check for valid doubles amplitudes
+  character(3),intent(in) :: safefilet21,safefilet22,safefilet2f
+  !> contains the singles amplitudes on output
+  type(array),intent(inout),optional :: t1
+  !> the filenames to check for valid singles amplitudes
+  character(3),intent(in), optional :: safefilet11,safefilet12,safefilet1f
+  integer :: no,nv
+  integer :: fu_t11,fu_t12,fu_t21,fu_t22,fu_t1,fu_t2,fu_t2f,fu_t1f
+  logical :: file_exists11,file_exists12,file_exists1f,file_exists21,file_exists22,file_exists2f
+  logical :: file_status11,file_status12,file_status1f,file_status21,file_status22,file_status2f
+  logical :: readfile1, readfile2
+  integer :: saved_iter11,saved_iter12,saved_iter1f,saved_iter21,saved_iter22,saved_iter2f,iter_start
+  integer :: saved_nel11,saved_nel12,saved_nel21,saved_nel22
+  logical :: all_singles, fin1_exists, fin2_exists
+  character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
+  character(ARR_MSG_LEN) :: msg
+
+  all_singles=present(t1).and.present(safefilet11).and.present(safefilet12).and.present(safefilet1f)
+
+  !print *,"CHECK INPUT",safefilet11,safefilet12,all_singles,DECinfo%use_singles
+  fu_t11=111
+  fu_t12=112
+  fu_t1f=113
+  fu_t21=121
+  fu_t22=122
+  fu_t2f=123
+  nv=t2%dims(1)
+  no=t2%dims(3)
 
 
-    iter_start=0
-    !check for safe files of the amplitudes in the current directory and read
-    !them if they exist and ok
-    readfile1=.false.
-    readfile2=.false.
+  iter_start=0
+  !check for safe files of the amplitudes in the current directory and read
+  !them if they exist and ok
+  readfile1 = .false.
+  readfile2 = .false.
+  converged = .false.
+
+  if(DECinfo%DECrestart)then
+
+     !CHECK IF THERE ARE CONVERGED AMPLITUDES AVAILABLE
+     if(DECinfo%use_singles.and.all_singles)then
+        fin1=safefilet1f//'.restart'
+        INQUIRE(FILE=fin1,EXIST=file_exists1f)
+        if(file_exists1f)then
+           file_status1f=.true.
+           OPEN(fu_t1f,FILE=fin1,STATUS='OLD',FORM='UNFORMATTED')
+           READ(fu_t1f)saved_iter1f
+           READ(fu_t1f)saved_nel1f
+           if(saved_nel1f/=no*nv)then
+              print *,"WARNING(ccsolver_par):wrong dimensions in final singles amplitudes file,&
+              & checking previous iterations"
+           else
+             fu_t1     = fu_t1f
+             readfile1 = .true.
+           endif
+        endif
+     endif
+     fin2=safefilet1f//'.restart'
+     INQUIRE(FILE=fin2,EXIST=file_exists2f)
+     if(file_exists2f)then
+        file_status2f=.true.
+        OPEN(fu_t2f,FILE=fin2,STATUS='OLD',FORM='UNFORMATTED')
+        READ(fu_t2f)saved_iter2f
+        READ(fu_t2f)saved_nel2f
+        if(saved_nel2f/=no**2*nv**2)then
+           print *,"WARNING(ccsolver_par):wrong dimensions in final doubles amplitudes file,&
+           & checking previous iterations"
+        else
+           fu_t2=fu_t2f
+           readfile2=.true.
+        endif
+        iter_start = saved_iter2f
+     endif
     
-    !this can be skipped by input, but restart is default
-    if(DECinfo%DECrestart)then
-      if(DECinfo%use_singles.and.all_singles)then
+     !SET IF WE ARE RESTARTING FROM CONVERGED AMPLITUDES
+     if(DECinfo%use_singles)then
+        converged = readfile1.and.readfile2
+     else
+        converged = readfile2
+     endif
+
+     !THEN CHECK IF THERE ARE AMPLITUDES FROM OTHER ITERATIONS AVAILALBE
+     if(DECinfo%use_singles.and.all_singles.and..not.readfile1)then
         fullname11=safefilet11//'.restart'
         fullname12=safefilet12//'.restart'
 
         file_status11=.false.
         INQUIRE(FILE=fullname11,EXIST=file_exists11)
         if(file_exists11)then
-          file_status11=.true.
-          OPEN(fu_t11,FILE=fullname11,STATUS='OLD',FORM='UNFORMATTED')
-          READ(fu_t11)saved_iter11
-          READ(fu_t11)saved_nel11
-          if(saved_nel11/=no*nv)then
-            call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
-            &file",DECinfo%output)
-          endif
+           file_status11=.true.
+           OPEN(fu_t11,FILE=fullname11,STATUS='OLD',FORM='UNFORMATTED')
+           READ(fu_t11)saved_iter11
+           READ(fu_t11)saved_nel11
+           if(saved_nel11/=no*nv)then
+              call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
+              &file",DECinfo%output)
+           endif
         endif
-       
+
         file_status12=.false.
         INQUIRE(FILE=fullname12,EXIST=file_exists12)
         if(file_exists12)then
-          file_status12=.true.
-          OPEN(fu_t12,FILE=fullname12,STATUS='OLD',FORM='UNFORMATTED')
-          READ(fu_t12)saved_iter12
-          READ(fu_t12)saved_nel12
-          if(saved_nel12/=no*nv)then
-            call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
-            &file",DECinfo%output)
-          endif
+           file_status12=.true.
+           OPEN(fu_t12,FILE=fullname12,STATUS='OLD',FORM='UNFORMATTED')
+           READ(fu_t12)saved_iter12
+           READ(fu_t12)saved_nel12
+           if(saved_nel12/=no*nv)then
+              call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
+              &file",DECinfo%output)
+           endif
         endif
-       
+
         !CHECK WHICH IS THE PREFERRED FILE TO READ
         if(file_status11.and.file_status12)then
-          if(saved_iter11>saved_iter12)then
-            fu_t1=fu_t11
-            CLOSE(fu_t12)
-            readfile1=.true.
-          else
-            fu_t1=fu_t12
-            CLOSE(fu_t11)
-            readfile1=.true.
-          endif
-        elseif(file_status11)then
-          fu_t1=fu_t11
-          readfile1=.true.
-        elseif(file_status12)then
-          fu_t1=fu_t12
-          readfile1=.true.
+           if(saved_iter11>saved_iter12)then
+              fu_t1=fu_t11
+              CLOSE(fu_t12)
+              readfile1=.true.
+           else
+              fu_t1=fu_t12
+              CLOSE(fu_t11)
+              readfile1=.true.
+           endif
+           elseif(file_status11)then
+           fu_t1=fu_t11
+           readfile1=.true.
+           elseif(file_status12)then
+           fu_t1=fu_t12
+           readfile1=.true.
         endif  
-      endif
+     endif
 
-      fullname21=safefilet21//'.restart'
-      fullname22=safefilet22//'.restart'
-     
-      file_status21=.false.
-      INQUIRE(FILE=fullname21,EXIST=file_exists21)
-      if(file_exists21)then
-        file_status21=.true.
-        OPEN(fu_t21,FILE=fullname21,STATUS='OLD',FORM='UNFORMATTED')
-        READ(fu_t21)saved_iter21
-        READ(fu_t21)saved_nel21
-        if(saved_nel21/=no*no*nv*nv)then
-          call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
-          &file",DECinfo%output)
+     if(.not.readfile2)then
+
+        fullname21=safefilet21//'.restart'
+        fullname22=safefilet22//'.restart'
+
+        file_status21=.false.
+        INQUIRE(FILE=fullname21,EXIST=file_exists21)
+        if(file_exists21)then
+           file_status21=.true.
+           OPEN(fu_t21,FILE=fullname21,STATUS='OLD',FORM='UNFORMATTED')
+           READ(fu_t21)saved_iter21
+           READ(fu_t21)saved_nel21
+           if(saved_nel21/=no*no*nv*nv)then
+              call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
+              &file",DECinfo%output)
+           endif
         endif
-      endif
-     
-      file_status22=.false.
-      INQUIRE(FILE=fullname22,EXIST=file_exists22)
-      if(file_exists22)then
-        file_status22=.true.
-        OPEN(fu_t22,FILE=fullname22,STATUS='OLD',FORM='UNFORMATTED')
-        READ(fu_t22)saved_iter22
-        READ(fu_t22)saved_nel22
-        if(saved_nel22/=no*no*nv*nv)then
-          call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
-          &file",DECinfo%output)
+
+        file_status22=.false.
+        INQUIRE(FILE=fullname22,EXIST=file_exists22)
+        if(file_exists22)then
+           file_status22=.true.
+           OPEN(fu_t22,FILE=fullname22,STATUS='OLD',FORM='UNFORMATTED')
+           READ(fu_t22)saved_iter22
+           READ(fu_t22)saved_nel22
+           if(saved_nel22/=no*no*nv*nv)then
+              call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
+              &file",DECinfo%output)
+           endif
         endif
-      endif
-     
-      !CHECK WHICH IS THE PREFERRED FILE TO READ
-      if(file_status21.and.file_status22)then
-        if(saved_iter21>saved_iter22)then
-          iter_start=saved_iter21
-          fu_t2=fu_t21
-          CLOSE(fu_t22)
-          readfile2=.true.
+
+        !CHECK WHICH IS THE PREFERRED FILE TO READ
+        if(file_status21.and.file_status22)then
+           if(saved_iter21>saved_iter22)then
+              iter_start=saved_iter21
+              fu_t2=fu_t21
+              CLOSE(fu_t22)
+              readfile2=.true.
+           else
+              iter_start=saved_iter22
+              fu_t2=fu_t22
+              CLOSE(fu_t21)
+              readfile2=.true.
+           endif
+           WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
+           elseif(file_status21)then
+           iter_start=saved_iter21
+           fu_t2=fu_t21
+           WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
+           readfile2=.true.
+           elseif(file_status22)then
+           iter_start=saved_iter22
+           fu_t2=fu_t22
+           WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
+           readfile2=.true.
         else
-          iter_start=saved_iter22
-          fu_t2=fu_t22
-          CLOSE(fu_t21)
-          readfile2=.true.
-        endif
-        WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
-      elseif(file_status21)then
-        iter_start=saved_iter21
-        fu_t2=fu_t21
-        WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
-        readfile2=.true.
-      elseif(file_status22)then
-        iter_start=saved_iter22
-        fu_t2=fu_t22
-        WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
-        readfile2=.true.
-      else
-        iter_start=1
-      endif  
-    endif
+           iter_start=1
+        endif  
+     endif
+
+  endif
 
 
-    if(readfile1)then
-      READ(fu_t1)t1%elm1
-      CLOSE(fu_t1)
-      restart = .true.
-    else
-      call array_zero(t1)
-    endif
-    if(readfile2)then
-      READ(fu_t2) t2%elm1
-      CLOSE(fu_t2)
-      restart = .true.
-    else
-      call array_zero(t2)
-    endif
+  if(readfile1)then
+     READ(fu_t1)t1%elm1
+     CLOSE(fu_t1)
+     restart = .true.
+  else
+     call array_zero(t1)
+  endif
+  if(readfile2)then
+     READ(fu_t2) t2%elm1
+     CLOSE(fu_t2)
+     restart = .true.
+  else
+     call array_zero(t2)
+  endif
   end subroutine get_guess_vectors
 
   !> \brief Subroutine to save the current guess amplitudes for the next
@@ -2338,46 +2413,46 @@ contains
   !> \date Dezember 2012
   subroutine save_current_guess(iter,t2,safefilet21,safefilet22,&
   &t1,safefilet11,safefilet12)
-    implicit none
-    !> iteration number
-    integer,intent(in) :: iter
-    !> doubles guess amplitudes for the next iteration
-    type(array), intent(in) :: t2
-    !> alternating filenames for the doubles amplitudes
-    character(3),intent(in) :: safefilet21,safefilet22
-    !> singles guess amplitudes for the next iteration
-    type(array), intent(in), optional :: t1
-    !> alternating filenames for the singles amplitudes
-    character(3),intent(in), optional :: safefilet11,safefilet12
-    integer :: fu_t21,fu_t22
-    integer :: fu_t11,fu_t12
-    logical :: file_status11,file_status12,file_status21,file_status22
-    logical :: all_singles
-    character(ARR_MSG_LEN) :: msg
-#ifdef SYS_AIX
-    character(12) :: fullname11,  fullname12,  fullname21,  fullname22
-    character(12) :: fullname11D, fullname12D, fullname21D, fullname22D
-#else
-    character(11) :: fullname11, fullname12, fullname21, fullname22
-    character(11) :: fullname11D, fullname12D, fullname21D, fullname22D
-#endif
-    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12)
-    fu_t11=111
-    fu_t12=112
-    fu_t21=121
-    fu_t22=122
-    if(DECinfo%use_singles.and.all_singles)then
-      !msg="singles norm save"
-      !call print_norm(t1,msg)
-#ifdef SYS_AIX
-      fullname11=safefilet11//'.writing\0'
-      fullname12=safefilet12//'.writing\0'
-#else
-      fullname11=safefilet11//'.writing'
-      fullname12=safefilet12//'.writing'
-#endif
+  implicit none
+  !> iteration number
+  integer,intent(in) :: iter
+  !> doubles guess amplitudes for the next iteration
+  type(array), intent(in) :: t2
+  !> alternating filenames for the doubles amplitudes
+  character(3),intent(in) :: safefilet21,safefilet22
+  !> singles guess amplitudes for the next iteration
+  type(array), intent(in), optional :: t1
+  !> alternating filenames for the singles amplitudes
+  character(3),intent(in), optional :: safefilet11,safefilet12
+  integer :: fu_t21,fu_t22
+  integer :: fu_t11,fu_t12
+  logical :: file_status11,file_status12,file_status21,file_status22
+  logical :: all_singles
+  character(ARR_MSG_LEN) :: msg
+  #ifdef SYS_AIX
+  character(12) :: fullname11,  fullname12,  fullname21,  fullname22
+  character(12) :: fullname11D, fullname12D, fullname21D, fullname22D
+  #else
+  character(11) :: fullname11, fullname12, fullname21, fullname22
+  character(11) :: fullname11D, fullname12D, fullname21D, fullname22D
+  #endif
+  all_singles=present(t1).and.present(safefilet11).and.present(safefilet12)
+  fu_t11=111
+  fu_t12=112
+  fu_t21=121
+  fu_t22=122
+  if(DECinfo%use_singles.and.all_singles)then
+     !msg="singles norm save"
+     !call print_norm(t1,msg)
+     #ifdef SYS_AIX
+     fullname11=safefilet11//'.writing\0'
+     fullname12=safefilet12//'.writing\0'
+     #else
+     fullname11=safefilet11//'.writing'
+     fullname12=safefilet12//'.writing'
+     #endif
 
-      if(mod(iter,2)==1)then
+     if(mod(iter,2)==1)then
         file_status11=.false. 
         OPEN(fu_t11,FILE=fullname11,STATUS='REPLACE',FORM='UNFORMATTED')
         WRITE(fu_t11)iter
@@ -2387,15 +2462,15 @@ contains
         WRITE(fu_t11)file_status11
         ENDFILE(fu_t11)
         CLOSE(fu_t11)
-#ifdef SYS_AIX
+        #ifdef SYS_AIX
         fullname11D=safefilet11//'.restart\0'
         fullname11=safefilet11//'\0'
-#else
+        #else
         fullname11D=safefilet11//'.restart'
-#endif
-       if(file_status11)call rename(fullname11,fullname11D)
+        #endif
+        if(file_status11)call rename(fullname11,fullname11D)
 
-      elseif(mod(iter,2)==0)then
+        elseif(mod(iter,2)==0)then
         file_status12=.false. 
         OPEN(fu_t12,FILE=fullname12,STATUS='REPLACE',FORM='UNFORMATTED')
         WRITE(fu_t12)iter
@@ -2405,63 +2480,63 @@ contains
         WRITE(fu_t12)file_status12
         ENDFILE(fu_t12)
         CLOSE(fu_t12)
-#ifdef SYS_AIX
+        #ifdef SYS_AIX
         fullname12D=safefilet12//'.restart\0'
         fullname12=safefilet12//'\0'
-#else
+        #else
         fullname12D=safefilet12//'.restart'
-#endif
+        #endif
         if(file_status12)call rename(fullname12,fullname12D)
 
-      else
+     else
         call lsquit("ERROR(ccdriver_par):impossible iteration&
         &number)",DECinfo%output)
-      endif
-    endif
+     endif
+  endif
 
-    !msg="doubles norm save"
-    !call print_norm(t2,msg)
-    fullname21=safefilet21//'.writing'
-    fullname22=safefilet22//'.writing'
-    if(mod(iter,2)==1)then
-      file_status21=.false. 
-      OPEN(fu_t21,FILE=fullname21,STATUS='REPLACE',FORM='UNFORMATTED')
-      WRITE(fu_t21)iter
-      WRITE(fu_t21)t2%nelms
-      WRITE(fu_t21)t2%elm1
-      file_status21=.true. 
-      WRITE(fu_t22)file_status21
-      ENDFILE(fu_t21)
-      CLOSE(fu_t21)
-#ifdef SYS_AIX
-      fullname21D=safefilet21//'.restart\0'
-      fullname21=safefilet21//'\0'
-#else
-      fullname21D=safefilet21//'.restart'
-#endif
-      if(file_status21)call rename(fullname21,fullname21D)
+  !msg="doubles norm save"
+  !call print_norm(t2,msg)
+  fullname21=safefilet21//'.writing'
+  fullname22=safefilet22//'.writing'
+  if(mod(iter,2)==1)then
+     file_status21=.false. 
+     OPEN(fu_t21,FILE=fullname21,STATUS='REPLACE',FORM='UNFORMATTED')
+     WRITE(fu_t21)iter
+     WRITE(fu_t21)t2%nelms
+     WRITE(fu_t21)t2%elm1
+     file_status21=.true. 
+     WRITE(fu_t22)file_status21
+     ENDFILE(fu_t21)
+     CLOSE(fu_t21)
+     #ifdef SYS_AIX
+     fullname21D=safefilet21//'.restart\0'
+     fullname21=safefilet21//'\0'
+     #else
+     fullname21D=safefilet21//'.restart'
+     #endif
+     if(file_status21)call rename(fullname21,fullname21D)
 
-    elseif(mod(iter,2)==0)then
-      file_status22=.false. 
-      OPEN(fu_t22,FILE=fullname22,STATUS='REPLACE',FORM='UNFORMATTED')
-      WRITE(fu_t22)iter
-      WRITE(fu_t22)t2%nelms
-      WRITE(fu_t22)t2%elm1
-      file_status22=.true.
-      WRITE(fu_t22)file_status22
-      ENDFILE(fu_t22)
-      CLOSE(fu_t22)
-#ifdef SYS_AIX
-      fullname22D=safefilet22//'.restart\0'
-      fullname22=safefilet22//'\0'
-#else
-      fullname22D=safefilet22//'.restart'
-#endif
-      if(file_status22)call rename(fullname22,fullname22D)
-    else
-      call lsquit("ERROR(ccdriver_par):impossible iteration&
-      &number)",DECinfo%output)
-    endif
+     elseif(mod(iter,2)==0)then
+     file_status22=.false. 
+     OPEN(fu_t22,FILE=fullname22,STATUS='REPLACE',FORM='UNFORMATTED')
+     WRITE(fu_t22)iter
+     WRITE(fu_t22)t2%nelms
+     WRITE(fu_t22)t2%elm1
+     file_status22=.true.
+     WRITE(fu_t22)file_status22
+     ENDFILE(fu_t22)
+     CLOSE(fu_t22)
+     #ifdef SYS_AIX
+     fullname22D=safefilet22//'.restart\0'
+     fullname22=safefilet22//'\0'
+     #else
+     fullname22D=safefilet22//'.restart'
+     #endif
+     if(file_status22)call rename(fullname22,fullname22D)
+  else
+     call lsquit("ERROR(ccdriver_par):impossible iteration&
+     &number)",DECinfo%output)
+  endif
   end subroutine save_current_guess
 
 
