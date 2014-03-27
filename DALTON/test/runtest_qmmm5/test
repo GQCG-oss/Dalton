@@ -11,13 +11,13 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 
 # Energy
-f.add(from_string = 'QM/MM "QMMM" calculation converged :',
+f.add(from_re = 'QM\/MM \"QMMM\" calculation converged',
       num_lines = 13,
       tolerance = 1.0e-8)
 
-f.add(string = '@ B-freq = 0.040000  C-freq = 0.040000',
+f.add(re = '[XYZ]DIPLEN  \; [XYZ]DIPLEN',
       tolerance = 1.0e-9)
 
-test.run(['qmmm6.dal'], ['ch2o_cc-pvdz.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['qmmm5.dal'], ['ch2o_cc-pvdz.mol'], {'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)
