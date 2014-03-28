@@ -86,7 +86,6 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccarray2_simple.F90
     LSDALTON/deccc/ccarray4_simple.F90
     LSDALTON/deccc/ccorbital.F90
-    LSDALTON/deccc/ccri_simple.F90
     LSDALTON/deccc/dec_atom.F90
     LSDALTON/deccc/dec_driver.F90
     LSDALTON/deccc/dec_driver_slave.F90

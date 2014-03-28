@@ -114,7 +114,7 @@ ccorbital, ccarray2_simple, ccarray3_simple, ccarray4_simple, dec_pdm, decmpi
 Level 0 
 dec_settings, full_driver_f12contractions, CABS,
 
-dec_utils, array3_memory, array4_memory, array_memory, manual_reorderings, ccri_simple, f12_routines, dec_workarounds
+dec_utils, array3_memory, array4_memory, array_memory, manual_reorderings, f12_routines, dec_workarounds
 
 
 ------------------------

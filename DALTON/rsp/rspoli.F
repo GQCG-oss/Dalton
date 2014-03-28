@@ -246,10 +246,11 @@ C If also single determinant, then nothing to do in MO part
 C
       !IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
       !IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000
-      IF ((DIRFCK.OR.HSFOCK.OR.DODFT) .AND. KZCONF.EQ.0) GO TO 1000
-      ! new test Dec. 2011, also valid for SOPPA .and. DIRFCK
-      ! where TDHF true /hjaaj
+      IF (HSFOCK.OR.DODFT) GO TO 1000
       ! ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
+      IF (DIRFCK .AND. KZCONF.EQ.0 .AND. NASHT.EQ.0) GO TO 1000
+      ! new test Dec. 2011, also valid for SOPPA .and. DIRFCK
+      ! where TDHF true (KZCONF > 0 and NASHT == 0 for SOPPA) /hjaaj
 
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
