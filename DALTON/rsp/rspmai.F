@@ -342,7 +342,7 @@ C
          CALL TITLER('RHF response calculation (TDHF)','*',103)
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
-         IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
+         ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
 C

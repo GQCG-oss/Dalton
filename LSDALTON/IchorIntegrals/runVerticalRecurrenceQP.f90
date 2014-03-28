@@ -19,7 +19,7 @@ CONTAINS
     integer :: iseglabel,lufile,iseg,iPrim,nPrim
     integer :: non1Prim(16),pure1Prim(4),ia,ib,ic,id,GPUrun,K,center
     logical :: Gen,SegQ,SegP,Seg,Seg1Prim,CPU,nPrimnTUV,DoOpenMP
-    logical :: Collapse,segwtuv
+    logical :: Collapse,segwtuv,DoOpenACC
     Character(len=48) :: FileName    
     character(len=3) :: ARCSTRING,Xdir,Ydir,Zdir
     character(len=1) :: centerString
@@ -29,15 +29,22 @@ CONTAINS
 !=====================================================================================================0
 ! Vertical
 !=====================================================================================================
-    DO GPUrun = 1,1!2
+    DO GPUrun = 1,2
        CPU = .TRUE.
        IF(GPUrun.EQ.2)CPU = .FALSE.
        DoOpenMP = .FALSE.
+       DoOpenACC = .FALSE.
        IF(CPU)DoOpenMP = .TRUE.
+       IF(.NOT.CPU)DoOpenACC = .TRUE.
        Collapse = .TRUE.
-       IF(.NOT.CPU)Collapse = .TRUE.
+!       IF(.NOT.CPU)Collapse = .TRUE.
 !       Collapse = .FALSE.
        IF(.NOT.CPU)nPrimnTUV = .FALSE.
+       IF(CPU)THEN
+          ARCSTRING = 'CPU'
+       ELSE
+          ARCSTRING = 'GPU'
+       ENDIF
        do center=1,4
           IF(center.EQ.1)centerString='A'
           IF(center.EQ.2)centerString='B'
@@ -55,11 +62,6 @@ CONTAINS
                 Seg = .TRUE.      ; SegLabel = 'Seg     '; iSegLabel = 3
              ELSEIF(iseg.EQ.5)THEN
                 Seg1Prim = .TRUE. ; SegLabel = 'Seg1Prim'; iSegLabel = 8
-             ENDIF
-             IF(CPU)THEN
-                ARCSTRING = 'CPU'
-             ELSE
-                ARCSTRING = 'GPU'
              ENDIF
              DO I =1,48
                 FileName(I:I) = ' '
@@ -110,7 +112,13 @@ CONTAINS
              ENDIF
 
              WRITE(LUFILE,'(5A)')'MODULE AGC_',ARCSTRING,'_OBS_VERTICALRECURRENCEMOD',centerString,SegLabel(1:iSegLabel)
-             MaxAngmomQP = 8
+             MaxAngmomQP = 8 !currently only D functions
+             IF((SegQ.OR.SegP).OR.Seg)THEN
+                MaxAngmomQP = 4 
+                !Highest possible is (DD|SS) otherwise
+                !a General Vertical Recurrence is required followed by
+                !a ElectronTransfer
+             ENDIF
              WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
              WRITE(LUFILE,'(A)')'  '
              WRITE(LUFILE,'(A)')' CONTAINS'
@@ -170,8 +178,8 @@ CONTAINS
                 IF(COLLAPSE)THEN
                    call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,nTUV,DoOpenMP)
                 ENDIF
-                IF(DoOpenMP)THEN
-                   call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,Collapse,Center,centerstring)
+                IF(DoOpenMP.OR.DoOpenACC)THEN
+                   call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,Collapse,Center,centerstring,DoOpenMP,DoOpenACC)
                 ENDIF
 !                         WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPrimP*nPassP'
 !                         WRITE(LUFILE,'(A)')'   iPrimQ = mod(IP-1,nPrimQ)+1'
@@ -274,8 +282,8 @@ CONTAINS
                    ENDIF
                    WRITE(LUFILE,'(A)')'  enddo'
                 ENDIF
-                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
-!                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
                 WRITE(LUFILE,'(3A)')'end subroutine VerticalRecurrence'//ARCSTRING,SegLabel(1:iSegLabel),'0'
              endif
              !========================================================================================================
@@ -369,8 +377,8 @@ CONTAINS
              IF(Collapse)THEN
                 call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
              ENDIF
-             IF(DoOpenMP)THEN
-                call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring)
+             IF(DoOpenMP.OR.DoOpenACC)THEN
+                call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring,DoOpenMP,DoOpenACC)
              ENDIF
              IF(Collapse)THEN
                 call PrintCollapseLoopStart(Gen,SegQ,SegP,Seg,seg1prim,LUFILE)
@@ -643,15 +651,25 @@ CONTAINS
                 ENDIF
                 WRITE(LUFILE,'(A)')'  enddo'
              ENDIF
-             IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
-!             IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!             IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+             IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
              WRITE(LUFILE,'(4A)')'end subroutine VerticalRecurrence'//ARCSTRING,SegLabel(1:iSegLabel),'1',centerString
 
              !============================================================================================================
              !         VerticalRecurrence GENERAL
              !============================================================================================================
 
-             DO JMAX=2,MaxAngmomQP
+             DO JMAX=2,MaxAngmomQP                                  !Gen   !Seg
+                IF(center.EQ.1.AND.JMAX.GT.MaxAngmomQP)CYCLE        !DDDD  DDSS
+                IF(Gen.OR.Seg1Prim)THEN
+                   IF(center.EQ.3.AND.JMAX.GT.MaxAngmomQP-1)CYCLE  !PDDD
+                   IF(center.EQ.2.AND.JMAX.GT.MaxAngmomQP-2)CYCLE   !PDPD
+                   IF(center.EQ.4.AND.JMAX.GT.MaxAngmomQP-3)CYCLE   !PPPD
+                ELSE
+                   IF(center.EQ.3.AND.JMAX.GT.MaxAngmomQP)CYCLE    !SSDD
+                   IF(center.EQ.2.AND.JMAX.GT.MaxAngmomQP-1)CYCLE   !PDSS 
+                   IF(center.EQ.4.AND.JMAX.GT.MaxAngmomQP-1)CYCLE   !SSPD                   
+                ENDIF
                 nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
                 nTUVPLUS = (JMAX+2)*(JMAX+3)*(JMAX+4)/6   
                 allocate(TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
@@ -799,8 +817,8 @@ CONTAINS
                 IF(Collapse)THEN
                    call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
                 ENDIF
-                IF(DoOpenMP)THEN
-                   call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring)
+                IF(DoOpenMP.OR.DoOpenACC)THEN
+                   call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring,DoOpenMP,DoOpenACC)
                 ENDIF
                 ! ======================================================================
                 !    iPassP Loop 
@@ -1186,8 +1204,8 @@ CONTAINS
                    ENDIF
                    WRITE(LUFILE,'(A)')'  ENDDO'
                 ENDIF
-                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
-!                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+                IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
                 WRITE(LUFILE,'(A)')' end subroutine'
 
 
@@ -1204,16 +1222,23 @@ CONTAINS
     ENDDO
 
 !BUILDRJ000
-    DO GPUrun = 1,1!2
+    DO GPUrun = 1,2
        CPU = .TRUE.
        IF(GPUrun.EQ.2)CPU = .FALSE.
        DoOpenMP = .FALSE.
+       DoOpenACC = .FALSE.
        IF(CPU)DoOpenMP = .TRUE.
+       IF(.NOT.CPU)DoOpenACC = .TRUE.
        Collapse = .TRUE.
-       IF(.NOT.CPU)Collapse = .TRUE.
+!       IF(.NOT.CPU)Collapse = .TRUE.
        IF(.NOT.CPU)nPrimnTUV = .FALSE.
        center=1
        centerString='A'
+       IF(CPU)THEN
+          ARCSTRING = 'CPU'
+       ELSE
+          ARCSTRING = 'GPU'
+       ENDIF
        DO iseg = 1,5
           IF(iseg.GT.1.AND.iseg.LT.5)CYCLE
           Gen = .FALSE.; SegQ=.FALSE.; SegP=.FALSE.;Seg=.FALSE.;Seg1Prim=.FALSE.
@@ -1221,11 +1246,6 @@ CONTAINS
              Gen = .TRUE.      ; SegLabel = 'Gen     '; iSegLabel = 3
           ELSE!IF(iseg.EQ.5)THEN
              Seg1Prim = .TRUE. ; SegLabel = 'Seg1Prim'; iSegLabel = 8
-          ENDIF
-          IF(CPU)THEN
-             ARCSTRING = 'CPU'
-          ELSE
-             ARCSTRING = 'GPU'
           ENDIF
           DO I =1,48
              FileName(I:I) = ' '
@@ -1264,6 +1284,10 @@ CONTAINS
           IF(center.EQ.1)THEN
              IF(Gen.OR.Seg1Prim)THEN
                 DO JMAX=2,MaxAngmomQP
+                   IF(center.EQ.1.AND.JMAX.GT.MaxAngmomQP)CYCLE    !DDDD
+                   IF(center.EQ.3.AND.JMAX.GT.MaxAngmomQP-1)CYCLE  !PDDD
+                   IF(center.EQ.2.AND.JMAX.GT.MaxAngmomQP-2)CYCLE  !PDPD
+                   IF(center.EQ.4.AND.JMAX.GT.MaxAngmomQP-3)CYCLE  !PPPD
                    nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
                    nTUVPLUS = (JMAX+2)*(JMAX+3)*(JMAX+4)/6   
                    allocate(TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
@@ -1347,8 +1371,8 @@ CONTAINS
                    WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
                    IF(DoOpenMP)THEN
                       !OPENMP
-!                      WRITE(LUFILE,'(A)')  '!$OMP DO &'
-                      WRITE(LUFILE,'(A)')  '!$OMP PARALLEL DO DEFAULT(none) &'
+                      WRITE(LUFILE,'(A)')  '!$OMP DO &'
+!                      WRITE(LUFILE,'(A)')  '!$OMP PARALLEL DO DEFAULT(none) &'
                       WRITE(LUFILE,'(A)')  '!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
                       IF(COLLAPSE)THEN
                        IF(Seg1Prim)THEN
@@ -1360,10 +1384,27 @@ CONTAINS
                        WRITE(LUFILE,'(A)') '!$OMP         iPrimQ,iPrimP,iPassP,&'
                       ENDIF
                       WRITE(LUFILE,'(A)')  '!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
-                      WRITE(LUFILE,'(A)')  '!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &'
-                      WRITE(LUFILE,'(A)')  '!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&'
-                      WRITE(LUFILE,'(A)')  '!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)'
-
+                      WRITE(LUFILE,'(A)')  '!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) '
+!                      WRITE(LUFILE,'(A)')  '!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &'
+!                      WRITE(LUFILE,'(A)')  '!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&'
+!                      WRITE(LUFILE,'(A)')  '!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)'
+                   ENDIF
+                   IF(DoOpenACC)THEN
+                      WRITE(LUFILE,'(A)')  '!$ACC parallel loop &'
+                      WRITE(LUFILE,'(A)')  '!$ACC present(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&'
+                      WRITE(LUFILE,'(A)')  '!$ACC         TABFJW,reducedExponents,Pcent,Qcent,RJ000array)       &'
+                      WRITE(LUFILE,'(A)')  '!$ACC private(iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
+                      IF(COLLAPSE)THEN
+                       IF(Seg1Prim)THEN
+                        WRITE(LUFILE,'(A)')'!$ACC         iP,iPassP,&'
+                       ELSE
+                        WRITE(LUFILE,'(A)')'!$ACC         iP,iPrimQ,iPrimP,iPassP,&'
+                       ENDIF
+                      ELSE
+                       WRITE(LUFILE,'(A)') '!$ACC         iPrimQ,iPrimP,iPassP,&'
+                      ENDIF
+                      WRITE(LUFILE,'(A)')  '!$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
+                      WRITE(LUFILE,'(A)')  '!$ACC         mPX,mPY,mPZ,RWVAL,GVAL)'
                    ENDIF
                    IF(Collapse)THEN
                       IF(Seg1Prim)THEN
@@ -1479,8 +1520,8 @@ CONTAINS
                       ENDIF
                    ENDIF
                    WRITE(LUFILE,'(A)')'  ENDDO'
-!                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
-                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
                    WRITE(LUFILE,'(A)')' end subroutine'
                    deallocate(TUVINDEX)
                    deallocate(TINDEX)
@@ -1551,91 +1592,130 @@ CONTAINS
     ENDIF
   End Subroutine PrintCollapseLoopStart
 
-  Subroutine PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring)
+  Subroutine PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring,OpenMP,OpenACC)
     implicit none
     logical,intent(in) :: Gen,SegQ,SegP,Seg,seg1prim,Collapse
     integer,intent(in) :: LUFILE,JMAX,Center                
-    integer :: JTMP
+    logical,intent(in) :: OpenMP,OpenACC
+    integer :: JTMP,iSHARED
+    logical :: INCLUDESHARED
     character(len=1) :: centerString
-!    WRITE(LUFILE,'(A)')'!$OMP DO &'
-    WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
-    WRITE(LUFILE,'(A)')'!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
+    character(len=5) :: DIR
+    character(len=7) :: SHARED
+    DIR = '!    '     
+    SHARED = '       '
+    iSHARED = 7
+    IF(OpenMP)THEN
+       DIR = '!$OMP'
+       SHARED = 'SHARED'
+       iSHARED = 6
+!       WRITE(LUFILE,'(2A)')DIR,' PARALLEL DO DEFAULT(none) &'
+       WRITE(LUFILE,'(2A)')DIR,' DO &'
+    ENDIF
+    IF(OpenACC)THEN
+       DIR = '!$ACC' 
+       SHARED = 'PRESENT'
+       iSHARED = 7
+       WRITE(LUFILE,'(2A)')DIR,' PARALLEL LOOP &'
+    ENDIF
+    INCLUDESHARED = OpenACC
+
+    WRITE(LUFILE,'(2A)')DIR,' PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
     IF(JMAX.EQ.0.OR.JMAX.EQ.1)THEN !RJ000 calc
-       WRITE(LUFILE,'(A)')'!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
-       WRITE(LUFILE,'(A)')'!$OMP         RWVAL,GVAL,&'
+       WRITE(LUFILE,'(2A)')DIR,'         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
+       WRITE(LUFILE,'(2A)')DIR,'         RWVAL,GVAL,&'
     ENDIF
     IF(JMAX.EQ.0)THEN
-       WRITE(LUFILE,'(A)')'!$OMP         Px,Py,Pz,&'             
+       WRITE(LUFILE,'(2A)')DIR,'         Px,Py,Pz,&'             
     ELSE
-       WRITE(LUFILE,'(A)')'!$OMP         mPx,mPy,mPz,&'             
+       WRITE(LUFILE,'(2A)')DIR,'         mPx,mPy,mPz,&'             
     ENDIF
     IF(JMAX.GE.1)THEN
-       IF(center.EQ.1)WRITE(LUFILE,'(A)')'!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&'             
-       IF(center.EQ.2)WRITE(LUFILE,'(A)')'!$OMP         Bx,By,Bz,Xpb,Ypb,Zpb,alphaP,&'             
-       IF(center.EQ.3)WRITE(LUFILE,'(A)')'!$OMP         Xqc,Yqc,Zqc,alphaQ,&'             
-       IF(center.EQ.4)WRITE(LUFILE,'(A)')'!$OMP         Xqd,Yqd,Zqd,alphaQ,&'             
-       WRITE(LUFILE,'(A)')'!$OMP         alphaXpq,alphaYpq,alphaZpq,&'
+       IF(center.EQ.1)WRITE(LUFILE,'(2A)')DIR,'         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&'             
+       IF(center.EQ.2)WRITE(LUFILE,'(2A)')DIR,'         Bx,By,Bz,Xpb,Ypb,Zpb,alphaP,&'             
+       IF(center.EQ.3)WRITE(LUFILE,'(2A)')DIR,'         Xqc,Yqc,Zqc,alphaQ,&'             
+       IF(center.EQ.4)WRITE(LUFILE,'(2A)')DIR,'         Xqd,Yqd,Zqd,alphaQ,&'             
+       WRITE(LUFILE,'(2A)')DIR,'         alphaXpq,alphaYpq,alphaZpq,&'
     ENDIF
     IF(center.GT.2)THEN
        IF(JMAX.GT.1)THEN
-          WRITE(LUFILE,'(A)')'!$OMP         invexpQ,inv2expQ,&'   
+          WRITE(LUFILE,'(2A)')DIR,'         invexpQ,inv2expQ,&'   
        ELSE
-          WRITE(LUFILE,'(A)')'!$OMP         invexpQ,&'   
+          WRITE(LUFILE,'(2A)')DIR,'         invexpQ,&'   
        ENDIF
     ELSE
        IF(JMAX.GT.1)THEN
-          WRITE(LUFILE,'(A)')'!$OMP         invexpP,inv2expP,&'  
+          WRITE(LUFILE,'(2A)')DIR,'         invexpP,inv2expP,&'  
        ELSEIF(JMAX.GT.0)THEN
-          WRITE(LUFILE,'(A)')'!$OMP         invexpP,&'   
+          WRITE(LUFILE,'(2A)')DIR,'         invexpP,&'   
        ENDIF
     ENDIF
     IF(JMAX.GT.0)THEN    
-       WRITE(LUFILE,'(A)')'!$OMP         PREF,&'   
+       WRITE(LUFILE,'(2A)')DIR,'         PREF,&'   
     ENDIF
     IF(JMAX.EQ.1)THEN    
-       WRITE(LUFILE,'(A)')'!$OMP         TMP1,TMP2,&'   
+       WRITE(LUFILE,'(2A)')DIR,'         TMP1,TMP2,&'   
     ENDIF
     IF(JMAX.GT.1)THEN
        IF(.NOT.Gen)THEN
-          WRITE(LUFILE,'(A)')'!$OMP         TMPAUXarray,&'
+          WRITE(LUFILE,'(2A)')DIR,'         TMPAUXarray,&'
        ENDIF
        DO JTMP=1,JMAX
-          WRITE(LUFILE,'(A,I1,A)')'!$OMP         TMParray',JTMP,',&'
+          WRITE(LUFILE,'(A,A,I1,A)')DIR,'         TMParray',JTMP,',&'
        ENDDO
-       WRITE(LUFILE,'(A)')'!$OMP         TwoTerms,&'
+       WRITE(LUFILE,'(2A)')DIR,'         TwoTerms,&'
     ENDIF
-    IF(COLLAPSE)THEN
-       IF(Seg1Prim)THEN
-          WRITE(LUFILE,'(A,A,A)')'!$OMP         iP,iPassP) &'
-       ELSEIF(Seg)THEN
-          WRITE(LUFILE,'(A,A,A)')'!$OMP         iP,iPrimQ,iPrimP,iPrimQP,iPassP) &'
-       ELSE !Gen
-          WRITE(LUFILE,'(A,A,A)')'!$OMP         iP,iPrimQ,iPrimP,iPassP) &'
-       ENDIF
-    ELSE
-       IF(.Not.Seg1Prim)THEN
-          WRITE(LUFILE,'(A,A,A)')'!$OMP         iPrimQ,iPrimP,iPassP) &'
+    IF(INCLUDESHARED)THEN
+       IF(COLLAPSE)THEN
+          IF(Seg1Prim)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPassP) &'
+          ELSEIF(Seg)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPrimQ,iPrimP,iPrimQP,iPassP) &'
+          ELSE !Gen
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPrimQ,iPrimP,iPassP) &'
+          ENDIF
        ELSE
-          WRITE(LUFILE,'(A,A,A)')'!$OMP         iPassP) &'
-       ENDIF
-    ENDIF
-    IF(JMAX.LT.2)THEN
-       WRITE(LUFILE,'(A)')'!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&'
-    ELSE
-       WRITE(LUFILE,'(A)')'!$OMP SHARED(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&'
-    ENDIF
-    WRITE(LUFILE,'(A)')'!$OMP        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&'
-    IF(center.GT.2)THEN
-       IF(JMAX.GT.0)THEN
-          WRITE(LUFILE,'(A,A,A)')'!$OMP        Qexp,',centerstring,'center, &'
+          IF(.Not.Seg1Prim)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iPrimQ,iPrimP,iPassP) &'
+          ELSE
+             WRITE(LUFILE,'(2A)')DIR,'         iPassP) &'
+          ENDIF
        ENDIF
     ELSE
-       IF(JMAX.GT.0)THEN
-          WRITE(LUFILE,'(A,A,A)')'!$OMP        Pexp,',centerstring,'center, &'
+       IF(COLLAPSE)THEN
+          IF(Seg1Prim)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPassP)'
+          ELSEIF(Seg)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPrimQ,iPrimP,iPrimQP,iPassP)'
+          ELSE !Gen
+             WRITE(LUFILE,'(2A)')DIR,'         iP,iPrimQ,iPrimP,iPassP)'
+          ENDIF
+       ELSE
+          IF(.Not.Seg1Prim)THEN
+             WRITE(LUFILE,'(2A)')DIR,'         iPrimQ,iPrimP,iPassP)'
+          ELSE
+             WRITE(LUFILE,'(2A)')DIR,'         iPassP)'
+          ENDIF
        ENDIF
     ENDIF
-    WRITE(LUFILE,'(A,A,A)')      '!$OMP        nPrimP,nPrimQ,nPassP)'
-
+    IF(INCLUDESHARED)THEN
+       IF(JMAX.LT.2)THEN
+          WRITE(LUFILE,'(4A)')DIR,' ',SHARED(1:iSHARED),'(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&'
+       ELSE
+          WRITE(LUFILE,'(4A)')DIR,' ',SHARED(1:iSHARED),'(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&'
+       ENDIF
+       WRITE(LUFILE,'(2A)')DIR,'        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&'
+       IF(center.GT.2)THEN
+          IF(JMAX.GT.0)THEN
+             WRITE(LUFILE,'(4A)')DIR,'        Qexp,',centerstring,'center, &'
+          ENDIF
+       ELSE
+          IF(JMAX.GT.0)THEN
+             WRITE(LUFILE,'(4A)')DIR,'        Pexp,',centerstring,'center, &'
+          ENDIF
+       ENDIF
+       WRITE(LUFILE,'(2A)')      DIR,'        nPrimP,nPrimQ,nPassP)'
+    ENDIF
 !!This is a CPU code so if OpenMP it uses OpenMP. However, I would like 
 !!to test OpenACC so in case of no OpenMP and OpenACC it uses OpenACC)
 !#ifdef VAR_OMP

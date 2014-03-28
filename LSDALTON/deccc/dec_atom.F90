@@ -311,8 +311,13 @@ contains
        end if
 
     end do
-    if(idx /= fragment%nunoccAOS) &
-         & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
+    !print *,"checking",idx,fragment%nunoccAOS,fragment%EOSatoms,pairfrag
+    
+    if(idx /= fragment%nunoccAOS) then
+      print *,unocc_list
+      print *,unoccEOS
+      call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
+    endif
 
 
     !set max distance in AOS space
@@ -4123,10 +4128,11 @@ contains
     type(joblist),intent(inout) :: jobs
     integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags, minocc,minunocc,minbasis
     integer:: maxbasis, nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
-    real(realk) :: avocc,avunocc,tcpu,twall,avbasis,avRmaxAOS, avRmaxAE, maxRmaxAOS, maxRmaxAE, minRmaxAOS, minRmaxAE
+    real(realk) :: avocc,avunocc,tcpu,twall,avbasis
+    real(realk) :: avRmaxAOS, avRmaxAE, maxRmaxAOS, maxRmaxAE, minRmaxAOS, minRmaxAE
+    real(realk) :: avDmaxAOS, avDmaxAE, maxDmaxAOS, maxDmaxAE, minDmaxAOS, minDmaxAE
     logical,pointer :: occAOS(:,:),unoccAOS(:,:),fragbasis(:,:)
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
-    real(realk), pointer :: RmaxAOS(:), RmaxAE(:), RaveAOS(:),RaveAE(:), RsdvAE(:),RsdvAOS(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -4153,6 +4159,12 @@ contains
     avRmaxAE   = 0.0E0_realk
     minRmaxAOS = huge(minRmaxAOS)
     minRmaxAE  = huge(minRmaxAE)
+    maxDmaxAOS = 0.0E0_realk
+    maxDmaxAE  = 0.0E0_realk
+    avDmaxAOS  = 0.0E0_realk
+    avDmaxAE   = 0.0E0_realk
+    minDmaxAOS = huge(minDmaxAOS)
+    minDmaxAE  = huge(minDmaxAE)
 
     call mem_alloc(occAOS,nocc,natoms)
     call mem_alloc(unoccAOS,nunocc,natoms)
@@ -4161,12 +4173,6 @@ contains
     call mem_alloc(occsize,natoms)
     call mem_alloc(unoccsize,natoms)
     call mem_alloc(basissize,natoms)
-    call mem_alloc(RmaxAOS,natoms)
-    call mem_alloc(RmaxAE,natoms)
-    call mem_alloc(RaveAOS,natoms)
-    call mem_alloc(RaveAE,natoms)
-    call mem_alloc(RsdvAOS,natoms)
-    call mem_alloc(RsdvAE,natoms)
     occAOS    = .false.
     unoccAOS  = .false.
     fragbasis = .false.
@@ -4226,19 +4232,19 @@ contains
        minocc   = min(minocc,occdim)
        minunocc = min(minunocc,unoccdim)
        minbasis = min(minbasis,basisdim)
-       !Get max distances in Fragment
-       RmaxAE(atom)  = AtomicFragments(atom)%RmaxAE
-       RmaxAOS(atom) = AtomicFragments(atom)%RmaxAOS
-       RaveAE(atom)  = AtomicFragments(atom)%RaveAE
-       RaveAOS(atom) = AtomicFragments(atom)%RaveAOS
-       RsdvAE(atom)  = AtomicFragments(atom)%RsdvAE
-       RsdvAOS(atom) = AtomicFragments(atom)%RsdvAOS
-       maxRmaxAE     = max(maxRmaxAE,RmaxAE(atom))
-       maxRmaxAOS    = max(maxRmaxAOS,RmaxAOS(atom))
-       avRmaxAE      = avRmaxAE  + RmaxAE(atom)
-       avRmaxAOS     = avRmaxAOS + RmaxAOS(atom)
-       minRmaxAE     = min(minRmaxAE,RmaxAE(atom))
-       minRmaxAOS    = min(minRmaxAOS,RmaxAOS(atom))
+       !Get Radii and diameters in Fragment
+       maxRmaxAE     = max(maxRmaxAE,AtomicFragments(atom)%RmaxAE)
+       maxRmaxAOS    = max(maxRmaxAOS,AtomicFragments(atom)%RmaxAOS)
+       avRmaxAE      = avRmaxAE  + AtomicFragments(atom)%RmaxAE
+       avRmaxAOS     = avRmaxAOS + AtomicFragments(atom)%RmaxAOS
+       minRmaxAE     = min(minRmaxAE,AtomicFragments(atom)%RmaxAE)
+       minRmaxAOS    = min(minRmaxAOS,AtomicFragments(atom)%RmaxAOS)
+       maxDmaxAE     = max(maxDmaxAE,AtomicFragments(atom)%DmaxAE)
+       maxDmaxAOS    = max(maxDmaxAOS,AtomicFragments(atom)%DmaxAOS)
+       avDmaxAE      = avDmaxAE  + AtomicFragments(atom)%DmaxAE
+       avDmaxAOS     = avDmaxAOS + AtomicFragments(atom)%DmaxAOS
+       minDmaxAE     = min(minDmaxAE,AtomicFragments(atom)%DmaxAE)
+       minDmaxAOS    = min(minDmaxAOS,AtomicFragments(atom)%DmaxAOS)
 
        ! Store dimensions
        occsize(atom)   = occdim
@@ -4258,6 +4264,8 @@ contains
     avbasis   = avbasis   / real(nsingle)
     avRmaxAOS = avRmaxAOS / real(nsingle)
     avRmaxAE  = avRmaxAE  / real(nsingle)
+    avDmaxAOS = avDmaxAOS / real(nsingle)
+    avDmaxAE  = avDmaxAE  / real(nsingle)
 
 
 
@@ -4274,24 +4282,42 @@ contains
     write(DECinfo%output,'(1X,a)') '***************************************************************&
          &****************'
 
-    write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Rave(AOS/AE)      Rsdv(AOS/AE)'
+    if(DECinfo%PL <= 1) then
+      write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
+    endif
 
     do i=1,natoms
        myatom = fragtrack(i)
 
        PrintFragInfo: if(which_fragments(myatom)) then
 
-          write(DECinfo%output,'(1X,i6,1X,i6,1X,i6,1X,i6,3X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3," FRAG_SIZE")') &
+          if(DECinfo%PL>1)then
+            write(DECinfo%output,*)
+            write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
+          endif
+          write(DECinfo%output,'(1X,i6,1X,i6,1X,i6,1X,i6,3X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,10X,"FRAG_SIZE")') &
                & myatom, &
                & occsize(myatom), &
                & unoccsize(myatom), &
                & basissize(myatom), &
-               & RmaxAOS(myatom)*bohr_to_angstrom, &
-               & RmaxAE(myatom)*bohr_to_angstrom, &
-               & RaveAOS(myatom)*bohr_to_angstrom, &
-               & RaveAE(myatom)*bohr_to_angstrom, &
-               & RsdvAOS(myatom)*bohr_to_angstrom, &
-               & RsdvAE(myatom)*bohr_to_angstrom
+               & AtomicFragments(myatom)%RmaxAOS*bohr_to_angstrom, &
+               & AtomicFragments(myatom)%RmaxAE*bohr_to_angstrom, &
+               & AtomicFragments(myatom)%DmaxAOS*bohr_to_angstrom, &
+               & AtomicFragments(myatom)%DmaxAE*bohr_to_angstrom
+          if(DECinfo%PL>1)then
+            write(DECinfo%output,*) '   Rave(AOS/AE)      Rsdv(AOS/AE)      Dave(AOS/AE)      Dsdv(AOS/AE)'
+            write(DECinfo%output,'(4X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3," FRAG_SIZE_EXT")') &
+               & AtomicFragments(myatom)%RaveAOS*bohr_to_angstrom, &
+               & AtomicFragments(myatom)%RaveAE*bohr_to_angstrom, &
+               & AtomicFragments(myatom)%RsdvAOS*bohr_to_angstrom, &
+               & AtomicFragments(myatom)%RsdvAE*bohr_to_angstrom , &
+               & AtomicFragments(myatom)%DaveAOS*bohr_to_angstrom, &
+               & AtomicFragments(myatom)%DaveAE*bohr_to_angstrom, &
+               & AtomicFragments(myatom)%DsdvAOS*bohr_to_angstrom, &
+               & AtomicFragments(myatom)%DsdvAE*bohr_to_angstrom
+            write(DECinfo%output,*)
+            write(DECinfo%output,'(4X,"------------------------------------------------------------------")')
+          endif
 
        end if PrintFragInfo
 
@@ -4299,17 +4325,23 @@ contains
     write(DECinfo%output,*)
 
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
-    &'FRAGANALYSIS: Max/Ave/Min occ     : ', maxocc,avocc,minocc
+    &'FRAGANALYSIS: Max/Ave/Min occ         : ', maxocc,avocc,minocc
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
-    &'FRAGANALYSIS: Max/Ave/Min unocc   : ', maxunocc,avunocc,minunocc
+    &'FRAGANALYSIS: Max/Ave/Min unocc       : ', maxunocc,avunocc,minunocc
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
-    &'FRAGANALYSIS: Max/Ave/Min basis   : ', maxbasis,avbasis,minbasis
+    &'FRAGANALYSIS: Max/Ave/Min basis       : ', maxbasis,avbasis,minbasis
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min dist AE : ', &
+    &'FRAGANALYSIS: Max/Ave/Min Radius AOS  : ',&
+    &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
+    write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
+    &'FRAGANALYSIS: Max/Ave/Min Radius AE   : ', &
     &maxRmaxAE*bohr_to_angstrom,avRmaxAE*bohr_to_angstrom,minRmaxAE*bohr_to_angstrom
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min dist AOS: ',&
-    &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
+    &'FRAGANALYSIS: Max/Ave/Min Diameter AOS: ',&
+    &maxDmaxAOS*bohr_to_angstrom,avDmaxAOS*bohr_to_angstrom,minDmaxAOS*bohr_to_angstrom
+    write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
+    &'FRAGANALYSIS: Max/Ave/Min Diameter AE : ', &
+    &maxDmaxAE*bohr_to_angstrom,avDmaxAE*bohr_to_angstrom,minDmaxAE*bohr_to_angstrom
     write(DECinfo%output,*)
 
 
@@ -4380,12 +4412,6 @@ contains
     call mem_dealloc( occsize   )
     call mem_dealloc( unoccsize )
     call mem_dealloc( basissize )
-    call mem_dealloc( RmaxAOS   )
-    call mem_dealloc( RmaxAE    )
-    call mem_dealloc( RaveAOS   )
-    call mem_dealloc( RaveAE    )
-    call mem_dealloc( RsdvAOS   )
-    call mem_dealloc( RsdvAE    )
 
 
   end subroutine create_dec_joblist_driver
@@ -6399,6 +6425,8 @@ contains
     ! Total number of pairs
     npairs = count(dofrag)*(count(dofrag)-1)/2
 
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
     write(DECinfo%output,'(1X,a)') '******************************************************************'
     write(DECinfo%output,'(1X,a)') '*            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *'
     write(DECinfo%output,'(1X,a)') '******************************************************************'

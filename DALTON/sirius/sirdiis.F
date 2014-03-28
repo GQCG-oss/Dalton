@@ -895,11 +895,10 @@ C
            CALL MEMGET2('REAL','F_PE', KFPE, NNBASX, WRK, KFREE, LFREE)
            CALL MEMGET2('REAL','E_PE', KEPE,      1, WRK, KFREE, LFREE)
            IF (NASHT == 0 .OR. HSFOCK) THEN
-             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE),
-     &                        WRK(KFREE), LFREE-KFREE+1)
+             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE))
            ELSE
              CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
-     &                        WRK(KEPE), WRK(KFREE), LFREE-KFREE+1)
+     &                        WRK(KEPE))
            END IF
            ESOLT = WRK(KEPE)
            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
@@ -1561,11 +1560,9 @@ C
       END IF
       IF (PEQM) THEN
         IF (NASHT == 0 .OR. HSFOCK) THEN
-            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1,
-     &                         WRK(KFREE), LFREE-KFREE+1)
+            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
         ELSE
-            CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1,
-     &                         WRK(KFREE), LFREE-KFREE+1)
+            CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1)
         END IF
       END IF
 C
