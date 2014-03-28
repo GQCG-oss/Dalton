@@ -1901,7 +1901,7 @@ contains
     call ls_mpi_buffer(Co,nbas,nocc,infpar%master)
     call ls_mpi_buffer(Cv,nbas,nvir,infpar%master)
 
-    if (ccmodel==MODEL_CCSD) then 
+    if (ccmodel/=MODEL_RPA) then 
       if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
       call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
 
@@ -1914,7 +1914,7 @@ contains
     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-    if (.not.master.and.ccmodel==MODEL_CCSD) then
+    if (.not.master.and.ccmodel/=MODEL_RPA) then
       pgmo_diag = get_arr_from_parr(pgmo_diag_addr(infpar%lg_mynum+1))
       if (nbatch>1) pgmo_up   = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
     endif
@@ -2070,7 +2070,6 @@ contains
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%MOCCSD,Master)
-    call ls_mpi_buffer(DECitem%Max_num_MO,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)

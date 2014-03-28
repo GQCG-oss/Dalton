@@ -101,7 +101,7 @@ contains
     if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
 #endif
     ! temporary default for moccsd:
-    if (DECinfo%MOCCSD) local = .true.
+    if (decinfo%moccsd) local = .true.
 
 
 
@@ -299,6 +299,8 @@ contains
 #ifdef VAR_MPI
     if(infpar%lg_nodtot>1)local=.false.
 #endif
+    ! temporary default for moccsd:
+    if (decinfo%moccsd) local = .true.
 
     ! is this a frozen core calculation or not?
     if (DECinfo%frozencore) then
@@ -1700,7 +1702,7 @@ contains
     !____________________________________________________________________________!
     !
     mo_ccsd = .false.
-    if (DECinfo%MOCCSD.and.(nb<=DECinfo%Max_num_MO)) mo_ccsd = .true.
+    if (DECinfo%MOCCSD) mo_ccsd = .true.
     !
     ! Check if there is enough memory to performed an MO-CCSD calculation.
     !   YES: get full set of t1 free gmo and pack them
@@ -1709,7 +1711,6 @@ contains
       call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
                           & nb,no,nv,CCmodel,MOinfo)
     end if
-
 
     ! readme : the iteration sequence is universal and may be used for all
     !          iterative cc models (linear or non-linear) and is
