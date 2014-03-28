@@ -339,7 +339,7 @@ C
          IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
-         IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
+         ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
 C
