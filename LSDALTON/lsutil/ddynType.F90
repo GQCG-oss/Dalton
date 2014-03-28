@@ -45,7 +45,7 @@ Type dyntype
      ! Multistep order for Nose-Hoover
      Integer :: MStep 
      ! Initial conditions for Nose-Hoover chain
-     Logical :: Init
+     Logical :: Init_NHC
      Real(realk), pointer :: eta(:)
      Real(realk), pointer :: v_eta(:)
      ! Time step 

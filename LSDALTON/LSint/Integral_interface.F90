@@ -92,7 +92,8 @@ MODULE IntegralInterfaceMOD
        & II_get_exchange_mat_regular_full, II_get_admm_exchange_mat,get_T23,&
        & II_get_ADMM_K_gradient, II_get_coulomb_mat,ii_get_exchange_mat_mixed,&
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
-       & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI
+       & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
+       & II_get_2int_ScreenRealMat
   private
 
 INTERFACE II_get_coulomb_mat
@@ -2855,6 +2856,33 @@ setting%Output%RealGabMatrix = .FALSE.
 CALL retrieve_Output(lupri,setting,GAB,setting%IntegralTransformGC)
 
 END SUBROUTINE II_get_2int_ScreenMat
+
+!> \brief Calculates the 4 center 2 eri screening mat
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param Gab the output matrix
+SUBROUTINE II_get_2int_ScreenRealMat(LUPRI,LUERR,SETTING,nbast,GAB)
+IMPLICIT NONE
+INTEGER               :: LUPRI,LUERR,nbast
+real(realk)           :: GAB(nbast,nbast)
+TYPE(LSSETTING)       :: SETTING
+IF(setting%IntegralTransformGC)THEN
+   !I do not think it makes sense to transform afterwards 
+   !so here the basis needs to be transformed
+   call lsquit('II_get_2int_ScreenMat and IntegralTransformGC do not work',-1)
+ENDIF
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+call ls_dzero(GAB,nbast*nbast)
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+setting%Output%RealGabMatrix = .TRUE.
+CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
+     &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
+setting%Output%RealGabMatrix = .FALSE.
+CALL retrieve_Output(lupri,setting,GAB,setting%IntegralTransformGC)
+END SUBROUTINE II_get_2int_ScreenRealMat
 
 !> \brief Calculates get the maxGabelm eri screening mat
 !> \author J. Rekkedal

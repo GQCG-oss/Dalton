@@ -1274,11 +1274,11 @@ contains
     if (.not.mpi_split) then
       ! Check that every nodes will have a job in residual calc.
       ! But the dimension of the batch must stay above MinMOBatch.
-      magic  = 1
+      magic  = int(1.5*nnod)
       Nbatch = ((ntot-1)/dimMO+1)
       Nbatch = Nbatch*(Nbatch+1)/2
        
-      do while (Nbatch<magic*nnod.and.(dimMO>MinMOBatch).and.nnod>1)
+      do while (Nbatch<magic.and.(dimMO>MinMOBatch).and.nnod>1)
         dimMO = dimMO-1
         Nbatch = ((ntot-1)/dimMO+1)
         Nbatch = Nbatch*(Nbatch+1)/2
@@ -1340,19 +1340,19 @@ contains
     ! step must be skiped.
     if (.not.mpi_split) then
       ! Check that every nodes has a job:
-      magic = 2 
+      magic = int(2*nnod)
       ng    = ((nb-1)/MaxGamma+1)
       na    = ((nb-1)/MaxAlpha+1)
        
-      ! Number of Alpha batches must be at least magic*nnod
-      if (na*ng<magic*nnod.and.(MaxAlpha>MinAObatch).and.nnod>1)then
-        MaxAlpha = (nb/(magic*nnod))
+      ! Number of Alpha batches must be at least magic
+      if (na*ng<magic.and.(MaxAlpha>MinAObatch).and.nnod>1)then
+        MaxAlpha = (nb/magic)
         if (MaxAlpha<MinAObatch) MaxAlpha = MinAObatch
       end if
        
       na    = ((nb-1)/MaxAlpha+1)
-      if (na*ng<magic*nnod.and.(MaxAlpha==MinAObatch).and.nnod>1)then
-        do while(na*ng<magic*nnod)
+      if (na*ng<magic.and.(MaxAlpha==MinAObatch).and.nnod>1)then
+        do while(na*ng<magic)
           MaxGamma = MaxGamma - 1
           if (MaxGamma<MinAObatch) then
             MaxGamma = MinAObatch
@@ -1871,11 +1871,9 @@ contains
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
-        pack_gmo%ti(tile)%t(1:ncopy) = pack_gmo%ti(tile)%t(1:ncopy) + tmp(1:ncopy)
-        !call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
+        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
       else
-        pack_gmo%elm2(1:ncopy,tile) = pack_gmo%elm2(1:ncopy,tile) + tmp(1:ncopy)
-        !call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
+        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
       end if
 
     ! 2nd case: current batch corresponds to an upper diagonal block,
@@ -1897,11 +1895,9 @@ contains
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
-        pack_gmo%ti(tile)%t(1:ncopy) = pack_gmo%ti(tile)%t(1:ncopy) + tmp(1:ncopy)
-        !call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
+        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
       else
-        pack_gmo%elm2(1:ncopy,tile) = pack_gmo%elm2(1:ncopy,tile) + tmp(1:ncopy)
-        !call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
+        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
       end if
 
     end if
@@ -1948,11 +1944,9 @@ contains
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_get_tile(pack_gmo,tile,tmp,ncopy)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
-        tmp(1:ncopy) = pack_gmo%ti(tile)%t(1:ncopy)
-        !call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
+        call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
-        tmp(1:ncopy) = pack_gmo%elm2(1:ncopy,tile)
-        !call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
+        call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
       end if
 
       do s=1,ntot
@@ -1983,11 +1977,9 @@ contains
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call array_get_tile(pack_gmo,tile,tmp,ncopy)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
-        tmp(1:ncopy) = pack_gmo%ti(tile)%t(1:ncopy)
-        !call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
+        call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
-        tmp(1:ncopy) = pack_gmo%elm2(1:ncopy,tile)
-        !call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
+        call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
       end if
 
       ! get first batch pqrs:

@@ -1694,6 +1694,7 @@ contains
     !> Simple pointer structure
     type(mypointer),intent(inout) :: thepointer
     integer(kind=long),parameter :: IL512=512,IL1=1
+#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
     if(start < 1) then
        print *, 'start = ', start
        call lsquit('mypointer_init: start value is smaller than 1!',-1)
@@ -1719,6 +1720,13 @@ contains
     ! Make pointer point to requested values
     nullify(thepointer%p)
     thepointer%p => arr(thepointer%start:thepointer%end)
+#else
+    call mem_alloc(thepointer%p,N)
+    ! Set simple pointer info
+    thepointer%start = 1
+    thepointer%N = N
+    thepointer%end = start + N -1
+#endif
 
   end subroutine mypointer_init
 

@@ -1906,8 +1906,8 @@ contains
           call mem_alloc(gvvoo,o2v2,comm=infpar%lg_comm)
           call mem_alloc(gvoov,o2v2,comm=infpar%lg_comm)
 #else
-          call mem_alloc(gvvoo,o2v2)
-          call mem_alloc(gvoov,o2v2)
+          call mem_alloc(gvvoo,o2v2,simple=.true.)
+          call mem_alloc(gvoov,o2v2,simple=.true.)
 #endif
        endif
     endif
@@ -2790,7 +2790,7 @@ contains
        lead = tl
        !use w3 as buffer which is allocated largest possible
        w2size  = tlov
-       w3size  = min(o2v2,tlov + els2add)
+       w3size  = max(o2v2,tlov + els2add)
      else
        call lsquit("ERROR(get_cnd_terms_mo):no valid scheme",-1)
      endif
@@ -4432,7 +4432,7 @@ contains
 
     if(scheme==2)then
       mem_used = get_min_mem_req(no,nv,nb,nba,nbg,2,scheme,.false.)
-      e2a = int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk/8E0_realk),kind=8)
+      e2a = int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8)
     endif
   end subroutine get_max_batch_sizes
 
@@ -5622,6 +5622,7 @@ contains
 
     omega2%elm1 = 0.0E0_realk
  
+    call LSTIMER('MO-CCSD init calc.',tcpu1,twall1,DECinfo%output)
 
     !===========================================================================
     !                          MPI COMMUNICATIONS
@@ -5639,6 +5640,8 @@ contains
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
              & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock)
     end if StartUpSlaves
+
+    call LSTIMER('MO-CCSD MPI-comm.',tcpu1,twall1,DECinfo%output)
 
     ! If RTAR type of array is used then we reduce the partial MO batches
     ! to the MPI process that will treat it (depending on joblist)
@@ -5733,6 +5736,8 @@ contains
 
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
+
+    call LSTIMER('MO-CCSD A2 B2 + comm',tcpu1,twall1,DECinfo%output)
 
     ! Get C2 and D2 terms
     call wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo, &
