@@ -13,13 +13,21 @@ module gasci_input_cfg
 
   integer, parameter, public :: gasci_input_max_number_of_gas_spaces = 6
   integer, parameter, public :: gasci_input_max_number_of_ptg_irreps = 8
-
+! Mickael : parameters for CT control 
+!  integer, parameter, public :: gasci_input_ct_parameter_1           = 10
+!  integer, parameter, public :: gasci_input_ct_parameter_2           = 30
+!  integer, parameter, public :: gasci_input_max_number_of_occlses    = 5000 
+   
 ! character block
 
   character (len = 72), public :: gasci_input_run_title        = 'no title specified'
   character (len = 72), public :: gasci_input_ini_wavef        = 'none'
   character (len = 72), public :: gasci_input_ci_type          = 'none'
   character (len = 72), public :: gasci_input_calculation_size = 'NORMAL'
+! Mickael : character block for CT control 
+!  character (len =  9), public :: CT(gasci_input_max_number_of_ct_types)     = 'none'
+!  character (len =  9), public :: CTAB(gasci_input_max_number_of_ctab_types) = 'none'
+!  character (len = 72), public :: GASAB                                      = 'none'
 
 ! logical block
   logical, public :: gasci_input_inactive_shell_set   =  .false.
@@ -33,6 +41,10 @@ module gasci_input_cfg
   logical, public :: gasci_input_natural_orb_occ_nr   =  .true.
   logical, public :: gasci_input_skip_4index_trafo    =  .false.
   logical, public :: gasci_input_fci_dump             =  .false.
+! Mickael : logical block for CT control 
+!  logical, public :: gasci_input_charge_transfer      =  .false.
+!  logical, public :: gasci_input_occlse_manual_control=  .false.
+!  logical, public :: gasci_input_gas_conf_for_ct      =  .false.
 
 ! double precision block
 
@@ -63,6 +75,23 @@ module gasci_input_cfg
   integer, public :: gasci_input_init_input_type      =  0
   integer, public :: gasci_input_ttss_dist_strategy   =  2
   integer, public :: gasci_input_mem_reduction_multp  =  3
+! Mickael : integer block for CT control 
+!  integer, public :: INCTAB                           =  0 
+!  integer, public :: CTLIST()                         =  0 
+!  integer, public :: CTLISTAB()                       =  0 
+!  integer, public :: NCTLIST()                        =  0 
+!  integer, public :: CTABN                            =  0 
+!  integer, public :: CTN()                            =  0 
+!  integer, public :: NCTLISTAB()                      =  0 
+!  integer, public :: GASLIST()                        =  0 
+!  integer, public :: NGASLIST                         =  0 
+!  integer, public :: GASCTN                           =  0 
+!  integer, public :: GAS_CT()                         =  0 
+!  integer, public :: NSYS                             =  0 
+!  integer, public :: NCT                              =  0 
+!  integer, public :: NCLSOCC                          =  0 
+!  integer, public :: NCLSOCC                          =  0 
+
 
 ! input orbital spaces
   integer, public :: nish_gasci_input(gasci_input_max_number_of_ptg_irreps)

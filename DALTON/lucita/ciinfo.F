@@ -1697,6 +1697,7 @@ C       END DO
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
+#include "priunit.h"
 *. Input
       DIMENSION IGSMIN(NGAS),IGSMAX(NGAS)
 *. Output
@@ -1705,12 +1706,12 @@ C       END DO
 *. Local scratch
       DIMENSION IOCA(MXPNGAS),IOC(MXPNGAS)
 *
-*
-      NTEST = 00
+* Mick: write(6,*) changed to write(lupri,*). 
+      NTEST = 100
       IF(NTEST.GE.10) THEN
-         WRITE(6,*)  ' OCCLS in action '
-         WRITE(6,*) ' =================='
-         WRITE(6,*) ' NGAS NEL ', NGAS,NEL
+         WRITE(LUPRI,*)  ' OCCLS in action '
+         WRITE(LUPRI,*) ' =================='
+         WRITE(LUPRI,*) ' NGAS NEL ', NGAS,NEL
       END IF
 *
       ISKIP = 1
@@ -1742,7 +1743,7 @@ C       END DO
             IOCA(KGAS) = IOCA(KGAS)+1
           END IF
         END IF
-C?      WRITE(6,*) ' Another accumulated occupation: '
+C?      WRITE(LUPRI,*) ' Another accumulated occupation: '
 C?      CALL IWRTMA(IOCA,1,NGAS,1,NGAS)
 *. corresponding occupation of each active space
         NEGA=0
@@ -1754,7 +1755,13 @@ C?      CALL IWRTMA(IOCA,1,NGAS,1,NGAS)
             IF(IOC(IGAS).LT.0) NEGA = 1
           END IF
         END DO
-C?      WRITE(6,*) ' Another occupation: '
+
+***********************************************************************
+*Mickael : Charge Transfer Control for GASCI. 
+
+
+***********************************************************************
+C?      WRITE(LUPRI,*) ' Another occupation: '
 C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
         IFIRST = 0
 *. Correct number of electrons
@@ -1763,7 +1770,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
           NOCCLS = NOCCLS + 1
           IF(IWAY.EQ.2) THEN
             IF(NTEST.GE.100) THEN
-              WRITE(6,*) ' Another allowed class : '
+              WRITE(LUPRI,*) ' Another allowed class : '
               CALL IWRTMA(IOC,1,NGAS,1,NGAS)
             END IF
             CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
@@ -1778,15 +1785,15 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
       IF(NONEW.EQ.0) GOTO 1000
 *
       IF(NTEST.GE.10) THEN
-         WRITE(6,*) ' Number of Allowed occupation classes ', NOCCLS
+         WRITE(LUPRI,*) ' Number of Allowed occupation classes ', NOCCLS
          IF(IWAY.EQ.2.AND.NTEST.GE.20) THEN
-           WRITE(6,*) ' Occupation classes '
+           WRITE(LUPRI,*) ' Occupation classes '
            CALL IWRTMA(IOCCLS,NGAS,NOCCLS,NGAS,NOCCLS)
          END IF
       END IF
 *
       IF(I_DO_BASSPC.EQ.1) THEN
-        WRITE(6,*) ' Base CI spaces for the classes '
+        WRITE(LUPRI,*) ' Base CI spaces for the classes '
         CALL IWRTMA(IBASSPC,1,NOCCLS,1,NOCCLS)
       END IF
 *
@@ -1800,11 +1807,13 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *
 *     Jeppe Olsen, August 1995
 *
+* Mick: write(6,*) changed to write(lupri,*). 
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
+#include "priunit.h"
 *. Specific input
       INTEGER IOCCLS(NGAS,NOCCLS)
 *. Scratch
@@ -1812,9 +1821,9 @@ C     INTEGER IACOC(MXPNGAS)
 *. Output
       INTEGER INCCLS(*)
 *
-      NTEST = 0
+      NTEST = 100
       IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' OCCLS_IN_CI :  Input classes '
+        WRITE(LUPRI,*) ' OCCLS_IN_CI :  Input classes '
         CALL IWRTMA(IOCCLS,NGAS,NOCCLS,NGAS,NOCCLS)
       END IF
 *
@@ -1850,11 +1859,11 @@ CMI     IF(INCLUDE.EQ.1) THEN
       END DO
 *
       IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' Output from OCCLS_IN_CI '
-        WRITE(6,*) ' ========================'
-        WRITE(6,*) ' CI space under study ', ICISPC
-        WRITE(6,*) ' Number of occupation classes included ',NINCCLS
-        WRITE(6,*) ' Active classes : 1 => active 0=> inactive '
+        WRITE(LUPRI,*) ' Output from OCCLS_IN_CI '
+        WRITE(LUPRI,*) ' ========================'
+        WRITE(LUPRI,*) ' CI space under study ', ICISPC
+        WRITE(LUPRI,*) ' Number of occupation classes included ',NINCCLS
+        WRITE(LUPRI,*) ' Active classes : 1 => active 0=> inactive '
         CALL IWRTMA(INCCLS,1,NOCCLS,1,NOCCLS)
       END IF
 *
