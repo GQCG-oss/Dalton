@@ -2093,8 +2093,6 @@ contains
     call ls_mpi_buffer(DECitem%use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
-    call ls_mpi_buffer(DECitem%simulate_eri,Master)
-    call ls_mpi_buffer(DECitem%fock_with_ri,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)

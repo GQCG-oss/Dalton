@@ -31,7 +31,6 @@ module rpa_module
   use decmpi_module!, only: mpi_communicate_ccsd_calcdata,distribute_mpi_jobs
 #endif
     use dec_fragment_utils
-    use ri_simple_operations
     use tensor_interface_module
     use array2_simple_operations!, only: array2_init, array2_add,&
 !         & array2_transpose, array2_free, array2_add_to
