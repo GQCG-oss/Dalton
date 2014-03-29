@@ -364,7 +364,8 @@ contains
     integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
     !> loop integers
-    integer :: i,j,k,idx,tuple_type
+    integer :: i,j,k,idx,ij_type,tuple_type
+
 
     ! init pdm work arrays for vvvo integrals
     ! init ccsd_doubles_help_arrays
@@ -413,6 +414,18 @@ contains
     ij = 0
     i_old = 0
     j_old = 0
+    ij_type = 0
+
+! copy in orbital energies and create ccsdpt intermediates and triples amplitudes
+!$acc data copyout(ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2) &
+!$acc& copyin(eivalocc,eivalvirt) create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)
+
+!$acc kernels present(ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2)
+    ccsdpt_singles = 0.0E0_realk
+    ccsdpt_doubles = 0.0E0_realk
+    ccsdpt_doubles_2 = 0.0E0_realk
+!$acc end kernels
 
  ijrun_par: do ij_count = 1,b_size + 1
 
@@ -424,76 +437,206 @@ contains
 
                ! calculate i and j from composite ij value
                call calc_i_and_j(ij,nocc,i,j)
-    
+
                ! has the i and j index changed?
-               if (i .eq. i_old) then
-    
+               if ((i .eq. i_old) .and. (j .ne. j_old)) then
+
+                  ij_type = 1
+
+               else if ((i .ne. i_old) .and. (j .eq. j_old)) then
+
+                  ij_type = 2
+
+               else ! (i .ne. i_old) .and. (j .ne. j_old))
+
+                  ij_type = 3
+
+               end if
+
+               ! select ij combination
+               TypeOf_ij_combi: select case(ij_type)
+
+               case(1)
+
+                  ! i .gt. j
+
                   ! get the j'th v^3 tile only
                   call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
-    
-                  ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
-                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
-    
+
+! move ccsd_doubles block to the device (we need also ccsd_doubles(:,:,:,i)) !
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j))
+
+! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+#endif
+
+! move integral and blocks to the device
+!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i),vvoo(:,:,i,j),vvoo(:,:,j,i))
+
                   ! store j index
                   j_old = j
-    
-               else if (j .eq. j_old) then
-    
+
+               case(2)
+
                   ! get the i'th v^3 tile only
-                  call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
-    
-                  ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
-                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-    
+                  if (i .eq. j) then
+
+!$acc enter data copyin(vvvo_pdm_j) create(vvvo_pdm_i)
+
+!$acc kernels present(vvvo_pdm_i,vvvo_pdm_j,ccsd_doubles_portions_i,ccsd_doubles_portions_j)
+                     vvvo_pdm_i = vvvo_pdm_j
+                     ccsd_doubles_portions_i = ccsd_doubles_portions_j
+!$acc end kernels
+
+!$acc exit data delete(vvvo_pdm_j)
+
+! move integral blocks to the device (we need ccsd_doubles for i, but no need for ccsd_doubles since i == j)
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),ovoo(:,:,i,j),vvoo(:,:,i,j))
+
+                  else ! i .gt. j
+
+! move integral and ccsd_doubles blocks to the device
+!$acc enter data copyin(vvvo_pdm_j,ccsd_doubles(:,:,:,j))
+
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+
+! move integral and ccsd_doubles blocks to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),vvvo_pdm_i)
+
+                     ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#endif
+
+! move integral and ccsd_doubles blocks to the device
+!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i),vvoo(:,:,i,j),vvoo(:,:,j,i))
+
+                  end if
+
                   ! store i index
                   i_old = i
+
+               case(3)
     
-               else
-    
-                  ! get the i'th and j'th v^3 tile
-                  call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
-                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
-    
-                  ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
-                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-    
-                  ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
-                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+                  if (i .eq. j) then
+
+                     ! get the i'th v^3 tile
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+
+! move integral and ccsd_doubles blocks to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),vvvo_pdm_i)
+
+                     ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#endif
+
+! move integral blocks to the device (no need for ccsd_doubles since i == j)
+!$acc enter data copyin(ovoo(:,:,i,j),vvoo(:,:,i,j))
+
+                  else ! i .gt. j
+
+                     ! get the i'th and j'th v^3 tiles
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),vvvo_pdm_i,vvvo_pdm_j)
+
+                     ! store portions of ccsd_doubles (the i'th and j'th indices) to avoid unnecessary reorderings
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+#endif
+
+! move integral and ccsd_doubles blocks to the device
+!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i),vvoo(:,:,i,j),vvoo(:,:,j,i))
+
+                  end if
     
                   ! store i and j indices
                   i_old = i
                   j_old = j
     
-               end if
+               end select TypeOf_ij_combi
 
         krun_par: do k=1,j
  
                      ! get the k'th tile
                      call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
-     
-                     ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
-                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
-     
+
                      ! select type of tuple
                      tuple_type = -1
-                     ! i == j == k
-                     ! this always gives zero contribution
-                     ! i == j > k
-                     if ((i .eq. j) .and. (j .gt. k) .and. (i .gt. k)) tuple_type = 1
-                     ! i > j == k
-                     if ((i .gt. j) .and. (j .eq. k) .and. (i .gt. k)) tuple_type = 2
-                     ! i > j > k
-                     if ((i .gt. j) .and. (j .gt. k) .and. (i .gt. k)) tuple_type = 3
+
+                     if ((i .eq. j) .and. (j .eq. k)) then
+
+                        ! i == j == k
+                        ! this always gives zero contribution
+                        cycle
+
+                     else if ((i .eq. j) .and. (j .gt. k)) then
+
+                        ! i == j > k
+                        tuple_type = 1
+! move ccsd_doubles block to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,k))
+
+                     else if ((i .gt. j) .and. (j .eq. k)) then
+
+                        ! i > j == k
+                        tuple_type = 2
+! no need to transfer any ccsd_doubles block since k == j
+
+                     else
+
+                        ! i > j > k
+                        tuple_type = 3
+! move ccsd_doubles block to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,k))
+
+                     end if
+
+                     ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+                     if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
+
+#ifdef VAR_OPENACC
+                        call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
+#else
+                        call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
+#endif
+
+                     end if
      
                      ! generate tuple(s)
                      TypeOfTuple_par: select case(tuple_type)
      
                      case(1)
+
+! move integral blocks to the device
+!$acc enter data copyin(vvvo_pdm_k,ovoo(:,:,i,k),ovoo(:,:,k,i),vvoo(:,:,i,k),vvoo(:,:,k,i))
 
                         call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
                                                 & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
@@ -512,8 +655,15 @@ contains
                                              & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                              & vvvo_pdm_i,vvvo_pdm_k,&
                                              & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
-     
+
+! delete reference to device arrays such that the memory may be be re-used
+!$acc exit data delete(ccsd_doubles(:,:,:,k),vvvo_pdm_k,ovoo(:,:,i,k),ovoo(:,:,k,i),&
+!$acc& vvoo(:,:,i,k),vvoo(:,:,k,i))
+ 
                      case(2)
+
+! move integral blocks to the device
+!$acc enter data copyin(ovoo(:,:,j,k),vvoo(:,:,j,k))
 
                         call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
                                                 & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
@@ -532,8 +682,15 @@ contains
                                              & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                              & vvvo_pdm_i,vvvo_pdm_j,&
                                              & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
-     
+
+! delete reference to device arrays such that the memory may be be re-used
+!$acc exit data delete(ovoo(:,:,j,k),vvoo(:,:,j,k))
+ 
                      case(3)
+
+! move integral blocks to the device
+!$acc enter data copyin(vvvo_pdm_k,ovoo(:,:,i,k),ovoo(:,:,k,i),&
+!$acc& ovoo(:,:,j,k),ovoo(:,:,k,j),vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))
 
                         call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
                                                 & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
@@ -557,12 +714,30 @@ contains
                                              & ovoo(:,:,j,i),ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                              & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
                                              & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+
+! delete reference to device arrays such that the memory may be be re-used
+!$acc exit data delete(ccsd_doubles(:,:,:,k),vvvo_pdm_k,ovoo(:,:,i,k),ovoo(:,:,k,i),&
+!$acc& ovoo(:,:,j,k),ovoo(:,:,k,j),vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))
      
                      end select TypeOfTuple_par
   
                   end do krun_par
-  
+
+! delete reference to device arrays such that the memory may be be re-used
+               if (j .eq. i) then
+
+!$acc exit data delete(ccsd_doubles(:,:,:,i),vvvo_pdm_i,ovoo(:,:,i,j),vvoo(:,:,i,j))
+
+               else ! i .gt. j
+
+!$acc exit data delete(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),vvvo_pdm_i,vvvo_pdm_j,&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i),vvoo(:,:,i,j),vvoo(:,:,j,i))
+
+               end if
+
             end do ijrun_par
+
+!$acc end data
 
     ! release ccsd_doubles_help_arrays
     call mem_dealloc(ccsd_doubles_portions_i)
@@ -621,10 +796,21 @@ contains
     ! init 3d wrk array
     call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
 
+! copy in orbital energies and create ccsdpt intermediates and triples amplitudes
 !$acc data copyout(ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2) &
-!$acc& copyin(eivalocc,eivalvirt) create(trip_tmp,trip_ampl)
+!$acc& copyin(eivalocc,eivalvirt) create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)
+
+!$acc kernels present(ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2)
+    ccsdpt_singles = 0.0E0_realk
+    ccsdpt_doubles = 0.0E0_realk
+    ccsdpt_doubles_2 = 0.0E0_realk
+!$acc end kernels
 
  irun_ser: do i=1,nocc
+
+! move integral and ccsd_doubles blocks to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),vvvo(:,:,:,i))
 
           ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
@@ -635,52 +821,83 @@ contains
                   & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-!$acc enter data copyin(ccsd_doubles_portions_i,vvvo(:,:,:,i))
-
     jrun_ser: do j=1,i
 
-             ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+                 if (j .eq. i) then 
+
+! move integral blocks to the device (no need for ccsd_doubles since j == i)
+!$acc enter data copyin(ovoo(:,:,i,j),vvoo(:,:,i,j))
+
+                 else ! i .gt. j
+
+! move integral and ccsd_doubles blocks to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,j),vvvo(:,:,:,j),ovoo(:,:,i,j),ovoo(:,:,j,i),&
+!$acc& vvoo(:,:,i,j),vvoo(:,:,j,i))
+
+! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
-             call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+                    call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
+                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #else
-             call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+                    call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
+                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
-!$acc enter data copyin(ccsd_doubles_portions_j,vvvo(:,:,:,j),ovoo(:,:,i,j),ovoo(:,:,j,i)) &
-!$acc& copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i))
+                 end if
 
        krun_ser: do k=1,j
 
-                    ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
-#ifdef VAR_OPENACC
-                    call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
-#else
-                    call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
-#endif
-
-!$acc enter data copyin(ccsd_doubles_portions_k,vvvo(:,:,:,k),ovoo(:,:,i,k),ovoo(:,:,k,i)) &
-!$acc& copyin(ovoo(:,:,j,k),ovoo(:,:,k,j),vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) &
-!$acc& copyin(ccsd_doubles(:,:,i,k),ccsd_doubles(:,:,k,i),ccsd_doubles(:,:,j,k),ccsd_doubles(:,:,k,j))
- 
                     ! select type of tuple
                     tuple_type = -1
-                    ! i == j == k
-                    ! this always gives zero contribution
-                    ! i == j > k
-                    if ((i .eq. j) .and. (j .gt. k) .and. (i .gt. k)) tuple_type = 1
-                    ! i > j == k
-                    if ((i .gt. j) .and. (j .eq. k) .and. (i .gt. k)) tuple_type = 2
-                    ! i > j > k
-                    if ((i .gt. j) .and. (j .gt. k) .and. (i .gt. k)) tuple_type = 3
+
+                    if ((i .eq. j) .and. (j .eq. k)) then
+
+                       ! i == j == k
+                       ! this always gives zero contribution
+                       cycle
+
+                    else if ((i .eq. j) .and. (j .gt. k)) then
+
+                       ! i == j > k
+                       tuple_type = 1
+! move ccsd_doubles block to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,k))
+
+                    else if ((i .gt. j) .and. (j .eq. k)) then
+
+                       ! i > j == k
+                       tuple_type = 2
+! no need to transfer any ccsd_doubles block since k == j
+
+                    else
+
+                       ! i > j > k 
+                       tuple_type = 3
+! move ccsd_doubles block to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,k))
+
+                    end if
+
+                    ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+                    if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
+
+#ifdef VAR_OPENACC
+                       call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
+                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
+#else
+                       call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
+                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
+#endif
+
+                    end if
     
                     ! generate tuple(s)
                     TypeOfTuple_ser: select case(tuple_type)
     
                     case(1)
+
+! move integral blocks to the device
+!$acc enter data copyin(vvvo(:,:,:,k),ovoo(:,:,i,k),ovoo(:,:,k,i),vvoo(:,:,i,k),vvoo(:,:,k,i))
 
                        call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
                                                & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
@@ -699,8 +916,15 @@ contains
                                             & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                             & vvvo(:,:,:,i),vvvo(:,:,:,k),&
                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
+
+! delete reference to device arrays such that the memory may be be re-used
+!$acc exit data delete(ccsd_doubles(:,:,:,k),vvvo(:,:,:,k),ovoo(:,:,i,k),ovoo(:,:,k,i),&
+!$acc& vvoo(:,:,i,k),vvoo(:,:,k,i))
     
                     case(2)
+
+! move integral blocks to the device
+!$acc enter data copyin(ovoo(:,:,j,k),vvoo(:,:,j,k))
 
                        call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
                                                & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
@@ -719,8 +943,15 @@ contains
                                             & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                             & vvvo(:,:,:,i),vvvo(:,:,:,j),&
                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
-    
+
+! delete reference to device arrays such that the memory may be be re-used
+!$acc exit data delete(ovoo(:,:,j,k),vvoo(:,:,j,k))
+ 
                     case(3)
+
+! move integral blocks to the device
+!$acc enter data copyin(vvvo(:,:,:,k),ovoo(:,:,i,k),ovoo(:,:,k,i),&
+!$acc& ovoo(:,:,j,k),ovoo(:,:,k,j),vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))
 
                        call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
                                                & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
@@ -744,20 +975,30 @@ contains
                                             & ovoo(:,:,k,j),vvvo(:,:,:,i),vvvo(:,:,:,j),vvvo(:,:,:,k),&
                                             & ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,trip_tmp,trip_ampl)
 
-                    end select TypeOfTuple_ser
+! delete reference to device arrays such that the memory may be be re-used
+!$acc exit data delete(ccsd_doubles(:,:,:,k),vvvo(:,:,:,k),ovoo(:,:,i,k),ovoo(:,:,k,i),&
+!$acc& ovoo(:,:,j,k),ovoo(:,:,k,j),vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))
 
-!$acc exit data delete(ccsd_doubles_portions_k,vvvo(:,:,:,k),ovoo(:,:,i,k),ovoo(:,:,k,i)) &
-!$acc& delete(ovoo(:,:,j,k),ovoo(:,:,k,j),vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) &
-!$acc& delete(ccsd_doubles(:,:,i,k),ccsd_doubles(:,:,k,i),ccsd_doubles(:,:,j,k),ccsd_doubles(:,:,k,j))
+                    end select TypeOfTuple_ser
 
                  end do krun_ser
 
-!$acc exit data delete(ccsd_doubles_portions_j,vvvo(:,:,:,j),ovoo(:,:,i,j),ovoo(:,:,j,i)) &
-!$acc& delete(vvoo(:,:,i,j),vvoo(:,:,j,i),ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i))
-    
+! delete reference to device arrays such that the memory may be be re-used
+                 if (j .eq. i) then
+
+!$acc exit data delete(ovoo(:,:,i,j),vvoo(:,:,i,j))
+
+                 else ! i .gt. j
+
+!$acc exit data delete(ccsd_doubles(:,:,:,j),vvvo(:,:,:,j),ovoo(:,:,i,j),ovoo(:,:,j,i),&
+!$acc& vvoo(:,:,i,j),vvoo(:,:,j,i))
+
+                 end if
+ 
               end do jrun_ser
 
-!$acc exit data delete(ccsd_doubles_portions_i,vvvo(:,:,:,i))
+! delete reference to device arrays such that the memory may be be re-used
+!$acc exit data delete(ccsd_doubles(:,:,:,i),vvvo(:,:,:,i))
  
            end do irun_ser
 
