@@ -139,6 +139,8 @@ cat > energy_corehole__2.dal <<'%EOF%'
  1 0 0 0
  3
 *OPTIMI
+.CI PROGRAM
+SIRIUS-CI
 .NEO ALWAYS
 .TRACI
 .NO ABS
@@ -178,6 +180,8 @@ cat > energy_corehole__3.dal <<'%EOF%'
 .MOSTART
  NEWORB
 *OPTIMI
+.CI PROGRAM
+SIRIUS-CI
 .NR ALWAYS
 .TRACI
 .OPTIMA

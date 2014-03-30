@@ -2413,7 +2413,7 @@ C           ... 170: repeat until (MCSIM .GE. NCSIM .OR. NRS .GE. LAST)
                LAST = LAST + 1
                IF (LAST .LT. NRS) GO TO 172
             END IF
-            FAC = 1 + LAST - IFRST
+            FAC = 1 + LAST - IFRST ! yields degeneracy
             FAC = D1 / SQRT(FAC)
             DO 174 I = IFRST,LAST
                WRK(NRS + NLIST(I)) = FAC

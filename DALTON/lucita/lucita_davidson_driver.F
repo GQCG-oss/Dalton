@@ -304,7 +304,8 @@ C               ====================================
 C  1 :               INITIAL VARIATIONAL SUBSPACE
 C               ====================================
 C
-      ninvec = nrootsl
+      ninvec       = nrootsl
+      ninvec_local = 0
       IF( IRESTR .EQ. 0 ) THEN
         IF(NPRDET .EQ. 0 ) THEN
 C         ==================================================
@@ -314,9 +315,9 @@ C
 C         in order treat degeneracies, the lowest 6 * NROOTSL
 C         elements are obtained
 C
-          NFINDM = MIN(NDIM,6*NROOTSL)
+          NFINDM = MIN(NDIM,6*NROOTSL+6)
 
-          ninvec = min(NFINDM,4*nrootsl)
+          ninvec = min(NFINDM,4*nrootsl+6)
 !!!! DEBUG
 !         NFINDM = 12; ninvec = 12 
 !!!! DEBUG
@@ -397,7 +398,7 @@ C
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
               WRITE(luwrt,*) ' NOTE! degenerate initial vectors for CI'
               WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
-              NDEG = 1
+              if(.not.plus_combi) NDEG = 1
             END IF
 
 *. Initial guess in compressed form in SCR1
@@ -425,8 +426,13 @@ C
      &                  LUDIA,JPACK)
 #endif
 #endif
-            ibase   = ibase   + ndeg
-            irootsi = irootsi + ndeg 
+            do ii = 1,ndeg
+              scr1(ii) = 0.0d0
+            end do
+
+            ninvec_local = ninvec_local + 1
+            ibase        = ibase   + ndeg
+            irootsi      = irootsi + ndeg 
           end do
         ELSE
 * =====================================
@@ -438,11 +444,14 @@ C
           ELSE
             JPACK = 0
           END IF
+          ninvec_local = ninvec
           DO 1984 IROOTSI = 1, NROOTSL
             CALL WRSVCD(LU1,LBLK,VEC1,IPNTR,
      &           PEIGVC((IROOTSI-1)*NPRDET+1),NPRDET,NDIM,LUDIA,JPACK)
  1984     CONTINUE
         END IF
+        ninvec = ninvec_local
+        if(ninvec < nrootsl) call quit('less startvec than CI roots')
       END IF
 
 !     release scratch memory

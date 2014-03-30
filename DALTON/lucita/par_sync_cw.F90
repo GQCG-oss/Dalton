@@ -205,7 +205,9 @@ contains
 !           call dalton_mpi_bcast(nas1_lucita,                0, mpi_comm_world)
 !           call dalton_mpi_bcast(nas2_lucita,                0, mpi_comm_world)
 !           call dalton_mpi_bcast(nas3_lucita,                0, mpi_comm_world)
-            call dalton_mpi_bcast(lucita_cfg_max_holes_ras1,  0, mpi_comm_world)
+            call dalton_mpi_bcast(lucita_cfg_min_e_ras1,      0, mpi_comm_world)
+            call dalton_mpi_bcast(lucita_cfg_max_e_ras1,      0, mpi_comm_world)
+            call dalton_mpi_bcast(lucita_cfg_min_e_ras3,      0, mpi_comm_world)
             call dalton_mpi_bcast(lucita_cfg_max_e_ras3,      0, mpi_comm_world)
         end select
       end if

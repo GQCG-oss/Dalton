@@ -41,6 +41,7 @@ module lucita_cfg
   logical, public :: lucita_cfg_fci_dump             =  .false.
   logical, public :: lucita_cfg_transition_densm     =  .false.
   logical, public :: lucita_cfg_initialize_cb        =  .true.
+  logical, public :: lucita_cfg_plus_combi           =  .false.
 
 ! double precision block
 
@@ -66,7 +67,9 @@ module lucita_cfg
   integer, public :: lucita_cfg_nr_gas_spaces        =  0
   integer, public :: lucita_cfg_nr_ptg_irreps        =  0
  !integer, public :: lucita_cfg_nr_calc_sequences    =  1 ! number of different GAS specifications
-  integer, public :: lucita_cfg_max_holes_ras1       =  0
+  integer, public :: lucita_cfg_min_e_ras1           =  0
+  integer, public :: lucita_cfg_max_e_ras1           =  0
+  integer, public :: lucita_cfg_min_e_ras3           =  0
   integer, public :: lucita_cfg_max_e_ras3           =  0
   integer, public :: lucita_cfg_density_calc_lvl     =  1
   integer, public :: lucita_cfg_spindensity_calc_lvl =  0
