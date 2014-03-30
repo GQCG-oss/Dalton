@@ -2373,6 +2373,7 @@ subroutine get_mo_integral_par_slave()
 
    call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
    call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.)
+  call ls_free(mylsitem)
 
 end subroutine get_mo_integral_par_slave
 #endif
