@@ -1711,11 +1711,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       &.false.,nb,no,nv,DECinfo%ccMaxDIIS,restart,restart_from_converged,old_iter)
 
 
-   !============================================================================!
-   !                          MO-CCSD initialization                            !
-   !____________________________________________________________________________!
-   !
-   if(.not.restart_from_converged)then
+   If_converged: if(.not.restart_from_converged)then
+
+      !============================================================================!
+      !                          MO-CCSD initialization                            !
+      !____________________________________________________________________________!
+      !
       mo_ccsd = .false.
       if (DECinfo%MOCCSD.and.(nb<=DECinfo%Max_num_MO)) mo_ccsd = .true.
       !
@@ -1726,20 +1727,19 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
             & nb,no,nv,CCmodel,MOinfo)
       end if
-   endif
 
 
-   ! readme : the iteration sequence is universal and may be used for all
-   !          iterative cc models (linear or non-linear) and is
-   !          semi-independent on the storage of vectors (allocation and
-   !          deallocation, etc)
+      ! readme : the iteration sequence is universal and may be used for all
+      !          iterative cc models (linear or non-linear) and is
+      !          semi-independent on the storage of vectors (allocation and
+      !          deallocation, etc)
 
-   ! iterate
-   break_iterations = .false.
-   crop_ok          = .false.
-   prev_norm        = 1.0E6_realk
 
-   If_converged: if(.not.restart_from_converged)then
+      ! iterate
+      break_iterations = .false.
+      crop_ok          = .false.
+      prev_norm        = 1.0E6_realk
+
 
       CCIteration : do iter=1,DECinfo%ccMaxIter
 
@@ -2027,6 +2027,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end do CCIteration
 
    else
+      call array_mv_dense2tiled( t2(1), .true. )
+
       !FAST EXIT IF CONVERGED AMPLITUDES HAVE BEEN FOUND
       if(DECinfo%use_singles)then
          omega1(1) = array_minit( ampl2_dims, 2 , local=local, atype='LDAR' )
@@ -2038,6 +2040,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       print *,"WARNING(ccsolver_par): efficient iajb integrals are not&
          & implemented to use PDM. Here we use iajb = 0, but the amplitudes&
          & should be correct for the use in (T)"
+      call get_mo_integral_par(iajb,Co,Cv,Co,Cv,mylsitem)
 
       ConvergedEnergyForCCmodel: select case(CCmodel)
       case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )

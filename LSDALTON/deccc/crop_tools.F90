@@ -219,7 +219,7 @@ module crop_tools_module
          end if
 
          ecorr = ecorr_s + ecorr_d
-         elseif(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+      else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
          t1%itype=REPLICATED
          call array_sync_replicated(t1)
          ecorr=get_cc_energy_parallel(t1,t2,gmo)

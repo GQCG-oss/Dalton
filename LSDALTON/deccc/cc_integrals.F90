@@ -2003,6 +2003,236 @@ contains
   
   end subroutine unpack_gmo
 
+  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+     implicit none
+     type(array),intent(inout)   :: integral
+     type(array),intent(in)      :: trafo1,trafo2,trafo3,trafo4
+     type(lsitem), intent(inout) :: mylsitem
+     !Integral stuff
+     integer :: alphaB,gammaB,dimAlpha,dimGamma
+     integer :: dim1,dim2,dim3,MinAObatch
+     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
+     integer :: iorb,nthreads
+     integer :: nb,n1,n2,n3,n4,fa,fg,la,lg,i,k,myload
+     type(batchtoorb), pointer :: batch2orbAlpha(:)
+     type(batchtoorb), pointer :: batch2orbGamma(:)
+     Character(80)        :: FilenameCS,FilenamePS
+     Character(80),pointer:: BatchfilenamesCS(:,:)
+     Character(80),pointer:: BatchfilenamesPS(:,:)
+     Character            :: INTSPEC(5)
+     logical :: FoundInMem,fullRHS, doscreen
+     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
+     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
+     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+     TYPE(DECscreenITEM)  :: DecScreen
+     real(realk), pointer :: w1(:),w2(:)
+     real(realk) :: MemFree
+     integer(kind=long) :: maxsize
+     logical :: master
+
+
+     master         = .true.
+
+
+     nb = trafo1%dims(1)
+     n1 = trafo1%dims(2)
+     n2 = trafo2%dims(2)
+     n3 = trafo3%dims(2)
+     n4 = trafo4%dims(2)
+
+     maxsize=nb**4
+     call mem_alloc( w1, maxsize )
+     call mem_alloc( w2, maxsize )
+
+
+     !INTEGRAL DIRECT STUFF HAPPENINING HERE
+     ! Set integral info
+     ! *****************
+     INTSPEC(1)               = 'R' !R = Regular Basis set on the 1th center 
+     INTSPEC(2)               = 'R' !R = Regular Basis set on the 2th center 
+     INTSPEC(3)               = 'R' !R = Regular Basis set on the 3th center 
+     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
+     INTSPEC(5)               = 'C' !C = Coulomb operator
+     doscreen                 = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
+
+     !==================================================
+     !                  Batch construction             !
+     !==================================================
+
+
+     ! Get free memory and determine maximum batch sizes
+     ! -------------------------------------------------
+     if(master)then
+        call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+        call get_currently_available_memory(MemFree)
+
+
+        MaxAllowedDimAlpha = nb
+        MaxAllowedDimGamma = nb
+     endif
+
+     ! ************************************************
+     ! * Determine batch information for Gamma batch  *
+     ! ************************************************
+
+     ! Orbital to batch information
+     ! ----------------------------
+     call mem_alloc(orb2batchGamma,nb)
+     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
+        & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
+        &nbatchesGamma,orb2BatchGamma,'R')
+     if(master.and.DECinfo%PL>1)&
+        &write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
+        & 'with maximum size',MaxActualDimGamma
+
+     ! Translate batchindex to orbital index
+     ! -------------------------------------
+     call mem_alloc(batch2orbGamma,nbatchesGamma)
+     do i=1,nbatchesGamma
+        call mem_alloc(batch2orbGamma(i)%orbindex,batchdimGamma(i))
+        batch2orbGamma(i)%orbindex = 0
+        batch2orbGamma(i)%norbindex = 0
+     end do
+     do iorb=1,nb
+        i = orb2batchGamma(iorb)
+        batch2orbGamma(i)%norbindex = batch2orbGamma(i)%norbindex+1
+        K = batch2orbGamma(i)%norbindex
+        batch2orbGamma(i)%orbindex(K) = iorb
+     end do
+
+
+     ! ************************************************
+     ! * Determine batch information for Alpha batch  *
+     ! ************************************************
+
+     ! Orbital to batch information
+     ! ----------------------------
+     call mem_alloc(orb2batchAlpha,nb)
+     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
+        & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
+     if(master.and.DECinfo%PL>1)&
+        &write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
+        &, 'with maximum size',MaxActualDimAlpha
+
+     !Translate batchindex to orbital index
+     !-------------------------------------
+     call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+     do i=1,nbatchesAlpha
+        call mem_alloc(batch2orbAlpha(i)%orbindex,batchdimAlpha(i) )
+        batch2orbAlpha(i)%orbindex = 0
+        batch2orbAlpha(i)%norbindex = 0
+     end do
+     do iorb=1,nb
+        i = orb2batchAlpha(iorb)
+        batch2orbAlpha(i)%norbindex = batch2orbAlpha(i)%norbindex+1
+        K = batch2orbAlpha(i)%norbindex
+        batch2orbAlpha(i)%orbindex(K) = iorb
+     end do
+
+     ! ************************************************
+     ! *  Allocate matrices used in the batched loop  *
+     ! ************************************************
+
+     ! ************************************************
+     ! *  precalculate the full schreening matrix     *
+     ! ************************************************
+
+     ! This subroutine builds the full screening matrix.
+     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
+        & nbatchesAlpha,nbatchesGamma,INTSPEC)
+     IF(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
+        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
+           & nb,nbatchesAlpha,nbatchesGamma,&
+           & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+           & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+        call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
+           & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
+           & batchindexAlpha,batchindexGamma,&
+           & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+     ENDIF
+
+     myload = 0
+
+     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
+        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+        GammaEnd   = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
+        !short hand notation
+        fg         = GammaStart
+        lg         = dimGamma
+
+
+        BatchAlpha: do alphaB = 1, nbatchesAlpha
+
+           !check if the current job is to be done by current node
+           !call check_job(scheme,first_round,dynamic_load,alphaB,gammaB,nbatchesAlpha,&
+           !  &nbatchesGamma,tasks,tasksw,print_debug)
+           !break the loop if alpha become too large, necessary to account for all
+           !of the mpi and non mpi schemes, this is accounted for, because static,
+           !and dynamic load balancing are enabled
+           if(alphaB>nbatchesAlpha) exit
+
+           dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
+           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+           AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)          ! Last index in alpha batch
+
+           !short hand notation
+           fa         = AlphaStart
+           la         = dimAlpha
+           myload     = myload + la * lg
+
+           IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
+           IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
+
+           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,batchindexAlpha(alphaB),&
+              &batchindexGamma(gammaB),batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC)
+
+
+           call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
+           call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
+           call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
+           call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
+
+
+           call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize)
+
+
+        enddo BatchAlpha
+     enddo BatchGamma
+
+     ! Free integral stuff
+     ! *******************
+     nullify(Mylsitem%setting%LST_GAB_LHS)
+     nullify(Mylsitem%setting%LST_GAB_RHS)
+     call free_decscreen(DECSCREEN)
+
+     ! Free gamma stuff
+     call mem_dealloc(orb2batchGamma)
+     call mem_dealloc(batchdimGamma)
+     call mem_dealloc(batchsizeGamma)
+     call mem_dealloc(batchindexGamma)
+     do i=1,nbatchesGamma
+        call mem_dealloc(batch2orbGamma(i)%orbindex)
+        batch2orbGamma(i)%orbindex => null()
+     end do
+     call mem_dealloc(batch2orbGamma)
+
+     ! Free alpha stuff
+     call mem_dealloc(orb2batchAlpha)
+     call mem_dealloc(batchdimAlpha)
+     call mem_dealloc(batchsizeAlpha)
+     call mem_dealloc(batchindexAlpha)
+     do i=1,nbatchesAlpha
+        call mem_dealloc(batch2orbAlpha(i)%orbindex)
+        batch2orbAlpha(i)%orbindex => null()
+     end do
+     call mem_dealloc(batch2orbAlpha)
+
+     call mem_dealloc( w1 )
+     call mem_dealloc( w2 )
+  end subroutine get_mo_integral_par
+
 end module ccintegrals
 
 #ifdef VAR_MPI
