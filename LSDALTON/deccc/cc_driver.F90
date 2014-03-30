@@ -1550,12 +1550,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ampl2_dims = [nv,no]
 
    ! create transformation matrices in array form
-   Co   = array_minit( occ_dims, 2, local=local, atype='LDAR' )
-   Cv   = array_minit( virt_dims,2, local=local, atype='LDAR' )
-   Co2  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
-   Cv2  = array_minit( virt_dims,2, local=local, atype='LDAR' )
-   fock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
-
+   Co   = array_minit( occ_dims, 2, local=local, atype='REPD' )
+   Cv   = array_minit( virt_dims,2, local=local, atype='REPD' )
+   Co2  = array_minit( occ_dims, 2, local=local, atype='REPD' )
+   Cv2  = array_minit( virt_dims,2, local=local, atype='REPD' )
+   fock = array_minit( ao2_dims, 2, local=local, atype='REPD' )
 
    call array_convert( Co_d,   Co   )
    call array_convert( Cv_d,   Cv   )
@@ -2027,7 +2026,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end do CCIteration
 
    else
-      call array_mv_dense2tiled( t2(1), .true. )
+      if(.not.local)then
+         call array_mv_dense2tiled( t2(1), .true. )
+         call array_sync_replicated( Co )
+         call array_sync_replicated( Cv )
+      endif
 
       !FAST EXIT IF CONVERGED AMPLITUDES HAVE BEEN FOUND
       if(DECinfo%use_singles)then
@@ -2037,10 +2040,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       omega2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
       call array_zero(omega2(1))
 
-      print *,"WARNING(ccsolver_par): efficient iajb integrals are not&
-         & implemented to use PDM. Here we use iajb = 0, but the amplitudes&
-         & should be correct for the use in (T)"
-      call get_mo_integral_par(iajb,Co,Cv,Co,Cv,mylsitem)
+      call get_mo_integral_par(iajb,Co,Cv,Co,Cv,mylsitem,local)
 
       ConvergedEnergyForCCmodel: select case(CCmodel)
       case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )

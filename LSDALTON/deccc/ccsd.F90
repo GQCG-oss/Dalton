@@ -1485,8 +1485,7 @@ contains
     ! This subroutine builds the full screening matrix.
     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
          & nbatchesAlpha,nbatchesGamma,INTSPEC)
-    IF(mylsitem%setting%scheme%cs_screen .OR. &
-         & mylsitem%setting%scheme%ps_screen)THEN
+    IF(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
             & nb,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&

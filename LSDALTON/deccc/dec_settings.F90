@@ -242,7 +242,7 @@ contains
 #ifdef VAR_MPI
     ! Number of workers = Number of nodes minus master itself
     nworkers = infpar%nodtot -1
-    if(nworkers<1) then
+    if(nworkers<1.and..not.fullcalc) then
        call lsquit('DEC calculations using MPI require at least two MPI processes!',-1)
     end if
 #endif

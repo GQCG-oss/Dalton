@@ -59,6 +59,8 @@
          call cc_gmo_data_slave
       case(MOCCSDDATA);
          call moccsd_data_slave
+      case(MO_INTEGRAL_SIMPLE);
+         call get_mo_integral_par_slave
       case(CCSDSLV4E2);
          call calculate_E2_and_permute_slave
       case(RPAGETRESIDUAL);
@@ -66,7 +68,6 @@
 #ifdef MOD_UNRELEASED 
       case(CCSDPTSLAVE);
          call ccsdpt_slave
-!endif mod_unreleased
 #endif
       case(GROUPINIT);
          call init_mpi_groups_slave
