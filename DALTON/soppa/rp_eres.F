@@ -207,9 +207,6 @@ C--------------------------------------------
 C        Backtransformation of trial vectors.
 C--------------------------------------------
 C
-C TODO BEYER
-C        Check if BCKTR contains stuff that need to be broadcast to all slaves.
-C TODO ... BEYER
          DTIME     = SECOND()
          CALL SO_BCKTR(WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,WORK(KBTR1E),
      &                 LBTR1E,WORK(KBTR1D),LBTR1D,WORK(KBTJ1E),LBTJ1E,
@@ -606,20 +603,27 @@ C     Intent of Dummy arguments
 C     Variables for updating the slaves' /common/ blocks.
       integer*8:: firstmem, lastmem 
       integer  :: bytesize, allocstatus
-
+      integer  :: isymtr
 C     Variables for the spinning barrier
       logical :: reset, release, flag, exitspinningbarrier 
 
 C     MPI related and load balancing variables
       integer :: numprocs, sharedwork, rest, firstindex, lastindex
-      integer :: isymtr, request 
+      integer :: request 
       integer, dimension(MPI_STATUS_SIZE) :: mpistatus
+
+C     Dynamic load balancing variables
+      integer, allocatable :: sorteddists(:,:)
+      integer, allocatable :: requestarray(:)
+      integer :: bigILLL, smallILLL, requestone
+      integer :: numhits, doneID, tempID 
+      logical :: pollone, polltwo, manage
       
 C     Miscellaneous
       DIMENSION INDEXA(MXCORB)
       DIMENSION FOCKD(LFOCK) 
       logical :: debugging = .false.
-      real :: starttime, stoptime
+      real    :: starttime, stoptime
 
 C**********************************************************************
 
@@ -785,11 +789,7 @@ C**********************************************************
       forceupdate = .false.
       endif commonblocktransfers
 
-C*********************************************************************** 
-C
 C This data should be updated every time PAR_RP_ERES is called 
-C
-C********************************************************************** 
       call mpi_bcast(work(kdens),ldens,mpi_real8,0,mpi_comm_world, ierr)
       call mpi_bcast(isympar, 1, mpi_integer, 0, mpi_comm_world, ierr)
       isymtr = isympar 
@@ -797,8 +797,7 @@ C**********************************************************************
 
 
 C **********************************************************
-C     LOAD BALANCING TODO TODO TODO Needs MAJOR fixing! The loadimbalance per ILLL is severe!!!!!
-C 
+C     STATIC LOAD BALANCING
 C     The number of indexes to be handled is distributed evenly over 
 C     available processes. The tasks that are leftover once all processes
 C     have received their share of jobs is distributed among the slaves
@@ -856,6 +855,7 @@ C **********************************************************
 210   continue 
       if (myid.lt.rest) then      
          if (iprint.gt.3) then
+            ! TODO make a flag that regulates how often this is printed.
             write(lupri,*)"Spinning load balance used in PAR_RP_ERES. ",
      &                    "The number of employed processes might be ",
      &                    "in excess of what is appropriate for this ", 
@@ -888,6 +888,7 @@ C **********************************************************
 
 
 666   continue  !redirection point for the static load balancing schemes
+
 
 
 
@@ -1007,7 +1008,6 @@ C     label 800 is the redirection point for slaves from the spinning barrier
 800   continue 
 
 
-
 C     Assemble the Fock Matrix in the master's work array
       if  (myid.eq.0) then
          call mpi_reduce(MPI_IN_PLACE, work(kfock), lfock, MPI_REAL8,
@@ -1043,8 +1043,8 @@ C transfers. They are never explicitly needed in a calculation.
 C They should always be of type int.
 C
 C Getbytespan calculates the total amount of bytes needed for an MPI_BCAST 
-C to transfer the whole block in one go, including the first but excluding 
-C the last variable.
+C to transfer the whole block in one go (with datatype = mpi_byte), 
+C including the first but excluding the <name>last variable.
 
           use mpi
 #include "implicit.h"
@@ -1103,4 +1103,112 @@ C the last variable.
       return
       end subroutine 
 
-#endif
+C /* deck presortaodist*/
+      subroutine presortaodist(Nindex, indxbt, outlist)
+C Pre-calculate IDEL2 indexes before starting the parallel calculation
+C TODO add documentation!
+C
+C
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "eridst.h"
+
+      integer, intent(in) :: Nindex
+      integer, dimension(2, Nindex), intent(out):: outlist
+      integer, dimension(*), intent(in) :: indxbt
+      integer :: i
+
+
+      do i=1, Nindex
+         call getdst(i, 0, 0)
+         call pickao(0)
+         call eridsi(indxbt, 0)
+         outlist(1, i) = ndistr
+         outlist(2, i) = i 
+      enddo
+
+      return
+
+
+      end subroutine
+
+
+
+C /* deck getbigjob*/
+      subroutine getbigjob(list, cols, nextindex)
+C
+C F.Beyer Mar. 2014.
+C Selection routine for dynamic load balancing for the par_rp_eres subroutine.
+C Before doing two-electron integrals, the amount of work associated with every 
+C AO index (ILLL) is estimated and a list of work and corresponding indexes is created 
+C by the subroutine presortaodist.
+C
+C Fetch the largest available job from the supplied list.
+C Once the job is found, set the matrix entry that describes the amount of work to 0, 
+C update the nextindex variable to the corresponding ILLL index and return.
+C
+C First row in the list is the number of distributions associated with the integral.
+C Second row in the list is the ILLL index that corresponds to the amount of work.
+
+#include "implicit.h"
+      integer, intent(in) :: cols
+      integer, dimension(2,cols), intent(inout) :: list
+      integer, intent(out)  :: nextindex
+      integer, dimension(2) :: temparray
+      integer :: highdex
+     
+      temparray = maxloc(list, dim=2, mask=list.gt.0)
+      highdex = temparray(1)
+C TODO Insert error checking in case no value is found!
+      nextindex = list(2, highdex) 
+      list(1, highdex ) = 0 
+
+      return
+     
+      end subroutine
+
+
+C /* deck getsmalljob*/
+      subroutine getsmalljob(list, cols, nextindex)
+C
+C F.Beyer Mar. 2014.
+C Selection routine for dynamic load balancing for the par_rp_eres subroutine.
+C Before doing two-electron integrals, the amount of work associated with every 
+C AO index (ILLL) is estimated and a list of work and corresponding indexes is created 
+C by the subroutine presortaodist.
+C
+C Fetch the smallest available job from the supplied list.
+C Once the job is found, set the matrix entry that describes the amount of work to 0, 
+C update the nextindex variable to the corresponding ILLL index and return.
+C
+C First row in the list is the number of distributions associated with the integral.
+C Second row in the list is the ILLL index that corresponds to the amount of work.
+
+#include "implicit.h"
+      integer, intent(in) :: cols
+      integer, dimension(2,cols), intent(inout) :: list
+      integer, intent(out)  :: nextindex
+      integer, dimension(2) :: temparray
+      integer :: lowdex
+      
+      temparray = minloc(list, dim=2, mask=list.gt.0)
+      lowdex = temparray(1)
+C TODO Insert error checking in case no value is found!
+      nextindex = list(2, lowdex) 
+      list(1, lowdex ) = 0 
+
+      return
+     
+      end subroutine
+
+
+
+
+
+
+
+#endif !!! End of VAR_MPI preprocessing flag from subroutine getbytespan
