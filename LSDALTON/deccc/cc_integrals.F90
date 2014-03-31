@@ -1851,7 +1851,8 @@ contains
     !> working array:
     real(realk), intent(inout) :: tmp(:)
 
-    integer :: s, r, rs, q, ibatch, ipack, ncopy, nnod
+    integer :: s, r, rs, q, ibatch, ipack, nnod
+    integer(kind=long) :: ncopy
 
     ipack = 1
     nnod = 1
@@ -1935,7 +1936,8 @@ contains
     !> working array:
     real(realk), intent(inout) :: tmp(:)
 
-    integer :: s, r, rs, sr, q, ibat1, ibat2, ipack, ncopy, nnod
+    integer :: s, r, rs, sr, q, ibat1, ibat2, ipack, nnod
+    integer(kind=long) :: ncopy
 
     ipack  = 1
     nnod = 1
