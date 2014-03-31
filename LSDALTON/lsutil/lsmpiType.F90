@@ -9,7 +9,9 @@ module lsmpi_type
   use Integralparameters
   use memory_handling, only: mem_alloc,mem_dealloc, max_mem_used_global,&
        & longintbuffersize, print_maxmem, stats_mem, copy_from_mem_stats,&
-       & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats
+       & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats, &
+       & MemModParamPrintMemory, Print_Memory_info, &
+       & MemModParamPrintMemorylupri
 #ifdef VAR_MPI
   use infpar_module
 #ifdef USE_MPI_MOD_F90
@@ -227,7 +229,7 @@ module lsmpi_type
 #else
   integer,parameter :: int_to_short = 4 !no int64
 #endif
-
+  integer,parameter :: MaxIncreaseSize = 50000000 !0.4 GB
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !Checking and measuring variables!
@@ -3129,13 +3131,28 @@ contains
             IF(nInteger8.EQ.0) nInteger8 = incremInteger
             IF(nShort.EQ.0) nShort = incremShort
             IF(nCha.EQ.0) nCha = incremCha
+            IF(MemModParamPrintMemory)THEN
+               print*,'MemModParamPrintMemory   mynum',mynum
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,&
+                    & 'InitBuffer: Before allocation in AddtoBuffer')
+               Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',nDP
+               Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',nInteger4
+               Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',nInteger8
+               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',nShort
+               Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
+               Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
+            ENDIF
             call mem_alloc(lsmpibufferDP,nDP)
             call mem_alloc(lsmpibufferInt4,nInteger4)
             call mem_alloc(lsmpibufferInt8,nInteger8)
             call mem_alloc(lsmpibufferSho,nShort)
             call mem_alloc(lsmpibufferLog,nLog)
             call mem_alloc(lsmpibufferCha,nCha)
-            iDP   = 0
+             IF(MemModParamPrintMemory)THEN
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,&
+                    &'InitBuffer: After allocation in AddtoBuffer')
+            ENDIF
+           iDP   = 0
             iInt4 = 0
             iInt8 = 0
             iSho  = 0
@@ -3153,12 +3170,25 @@ contains
             nShort = ndim(4)
             nLog = ndim(5)
             nCha = ndim(6)
+            IF(MemModParamPrintMemory)THEN
+               print*,'MemModParamPrintMemory   mynum',mynum
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,'InitBuffer: Before allocation in ReadFromBuffer')
+               Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',nDP
+               Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',nInteger4
+               Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',nInteger8
+               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',nShort
+               Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
+               Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
+            ENDIF
             if(ndp.gt.0) call mem_alloc(lsmpibufferDP,nDP)
             if(ninteger4.gt.0) call mem_alloc(lsmpibufferInt4,nInteger4)
             if(ninteger8.gt.0) call mem_alloc(lsmpibufferInt8,nInteger8)
             if(nshort .gt. 0) call mem_alloc(lsmpibufferSho,nShort)
             if(nlog.gt.0) call mem_alloc(lsmpibufferLog,nLog)
             if(ncha .gt. 0) call mem_alloc(lsmpibufferCha,nCha)
+            IF(MemModParamPrintMemory)THEN
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,'InitBuffer: After allocation in ReadFromBuffer')
+            ENDIF
             if(job.eq.lsmpibroadcast) then  ! BCAST
                IF(ndim(1).GT.0)THEN
                   call ls_mpibcast(lsmpibufferDP,nDP,master,COMM)
@@ -3214,12 +3244,25 @@ contains
          IF(nInteger8.EQ.0) nInteger8 = incremInteger+1
          IF(nShort.EQ.0) nShort = incremShort+int_to_short
          IF(nCha.EQ.0) nCha = incremCha+1
+         IF(MemModParamPrintMemory)THEN
+            print*,'MemModParamPrintMemory   mynum',mynum
+            CALL Print_Memory_info(MemModParamPrintMemorylupri,'InitBuffer: Before allocation in LSMPIREDUCTION')
+            Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',nDP
+            Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',nInteger4
+            Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',nInteger8
+            Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',nShort
+            Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
+            Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
+         ENDIF
          call mem_alloc(lsmpibufferDP,nDP)
          call mem_alloc(lsmpibufferInt4,nInteger4)
          call mem_alloc(lsmpibufferInt8,nInteger8)
          call mem_alloc(lsmpibufferSho,nShort)
          call mem_alloc(lsmpibufferLog,nLog)
          call mem_alloc(lsmpibufferCha,nCha)
+         IF(MemModParamPrintMemory)THEN
+            CALL Print_Memory_info(MemModParamPrintMemorylupri,'InitBuffer: After allocation in ReadFromBuffer')
+         ENDIF
          iDP = 0
          iInt4 = 0
          iInt8 = 0
@@ -3387,12 +3430,26 @@ contains
             !call ls_mpibcast(lsmpibufferCha,iCha,master,COMM)
          ENDIF
          IF(mynum.NE.master)THEN
+            IF(MemModParamPrintMemory)THEN
+               print*,'MemModParamPrintMemory   mynum',mynum
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,'FinalBuffer: Before deallocation')
+               Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',size(lsmpibufferDP)
+               Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',size(lsmpibufferInt4)
+               Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',size(lsmpibufferInt8)
+               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',size(lsmpibufferSho)
+               Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',size(lsmpibufferLog)
+               Write(MemModParamPrintMemorylupri,*)'# Character elements     ',size(lsmpibufferCha)
+            ENDIF
             call mem_dealloc(lsmpibufferDP)
             call mem_dealloc(lsmpibufferInt4)
             call mem_dealloc(lsmpibufferInt8)
             call mem_dealloc(lsmpibufferSho)
             call mem_dealloc(lsmpibufferLog)
             call mem_dealloc(lsmpibufferCha)
+            IF(MemModParamPrintMemory)THEN
+               print*,'MemModParamPrintMemory   mynum',mynum
+               CALL Print_Memory_info(MemModParamPrintMemorylupri,'FinalBuffer: After deallocation')
+            ENDIF
          ELSE
             AddToBuffer = .FALSE.
          ENDIF
@@ -3412,12 +3469,26 @@ contains
          iSho = 0
          iLog = 0
          iCha = 0
+         IF(MemModParamPrintMemory)THEN
+            print*,'MemModParamPrintMemory   mynum',mynum
+            CALL Print_Memory_info(MemModParamPrintMemorylupri,'FinalBuffer: Before deallocation LSMPIREDUCTIONmaster')
+            Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',size(lsmpibufferDP)
+            Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',size(lsmpibufferInt4)
+            Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',size(lsmpibufferInt8)
+            Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',size(lsmpibufferSho)
+            Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',size(lsmpibufferLog)
+            Write(MemModParamPrintMemorylupri,*)'# Character elements     ',size(lsmpibufferCha)
+         ENDIF
          call mem_dealloc(lsmpibufferDP)
          call mem_dealloc(lsmpibufferInt4)
          call mem_dealloc(lsmpibufferInt8)
          call mem_dealloc(lsmpibufferSho)
          call mem_dealloc(lsmpibufferLog)
          call mem_dealloc(lsmpibufferCha)
+         IF(MemModParamPrintMemory)THEN
+            print*,'MemModParamPrintMemory   mynum',mynum
+            CALL Print_Memory_info(MemModParamPrintMemorylupri,'FinalBuffer: After deallocation LSMPIREDUCTIONmaster')
+         ENDIF
       ELSE
          call lsquit('Job specifier invalid in ls_mpiFinalizeBuffer',-1)
       ENDIF
@@ -3485,7 +3556,7 @@ contains
          tmpbuffer(i) = lsmpibufferInt4(i)
       ENDDO
       call mem_dealloc(lsmpibufferInt4)
-      nInteger4 = nInteger4 + MAX(incremInteger,add,nInteger4)
+      nInteger4 = nInteger4 + MIN(MAX(incremInteger,add,nInteger4),MaxIncreaseSize)
       call mem_alloc(lsmpibufferInt4,nInteger4)
       DO i=1,n
          lsmpibufferInt4(i) = tmpbuffer(i)
@@ -3506,7 +3577,7 @@ contains
          tmpbuffer(i) = lsmpibufferInt8(i)
       ENDDO
       call mem_dealloc(lsmpibufferInt8)
-      nInteger8 = nInteger8 + MAX(incremInteger,add,nInteger8)
+      nInteger8 = nInteger8 + MIN(MAX(incremInteger,add,nInteger8),MaxIncreaseSize)
       call mem_alloc(lsmpibufferInt8,nInteger8)
       DO i=1,n
          lsmpibufferInt8(i) = tmpbuffer(i)
@@ -3528,7 +3599,7 @@ contains
          tmpbuffer(i) = lsmpibufferSho(i)
       ENDDO
       call mem_dealloc(lsmpibufferSho)
-      nShort = nShort + MAX(incremShort,add*int_to_short,nShort)
+      nShort = nShort + MIN(MAX(incremShort,add*int_to_short,nShort),MaxIncreaseSize)
       call mem_alloc(lsmpibufferSho,nShort)
       DO i=1,n
          lsmpibufferSho(i) = tmpbuffer(i)
@@ -3550,7 +3621,7 @@ contains
          tmpbuffer(i) = lsmpibufferLog(i)
       ENDDO
       call mem_dealloc(lsmpibufferLog)
-      nLog = nLog + MAX(incremLog,add,nLog)
+      nLog = nLog + MIN(MAX(incremLog,add,nLog),MaxIncreaseSize)
       call mem_alloc(lsmpibufferLog,nLog)
       DO i=1,n
          lsmpibufferLog(i) = tmpbuffer(i)
@@ -3572,7 +3643,7 @@ contains
          tmpbuffer(i) = lsmpibufferCha(i)
       ENDDO
       call mem_dealloc(lsmpibufferCha)
-      nCha = nCha + MAX(incremCha,add,nCha)
+      nCha = nCha + MIN(MAX(incremCha,add,nCha),MaxIncreaseSize)
       call mem_alloc(lsmpibufferCha,nCha)
       DO i=1,n
          lsmpibufferCha(i) = tmpbuffer(i)
@@ -3594,7 +3665,7 @@ contains
          tmpbuffer(i) = lsmpibufferDP(i)
       ENDDO
       call mem_dealloc(lsmpibufferDP)
-      nDP = n + MAX(incremDP,add,n)
+      nDP = n + MIN(MAX(incremDP,add,n),MaxIncreaseSize)
       call mem_alloc(lsmpibufferDP,nDP)
       DO i=1,n
          lsmpibufferDP(i) = tmpbuffer(i)
@@ -5959,10 +6030,11 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest,win
     integer,intent(in)               :: pos
 #ifdef VAR_MPI
-    integer(kind=ls_mpik)            :: n
+    integer(kind=ls_mpik)            :: n,ierr
     integer(kind=MPI_ADDRESS_KIND)   :: offset
     
     n=1
+    ierr = 0
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 #ifdef VAR_HAVE_MPI3
     call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER8,obuf,n,&
@@ -5980,10 +6052,11 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest,win
     integer,intent(in)               :: pos
 #ifdef VAR_MPI
-    integer(kind=ls_mpik)            :: n
+    integer(kind=ls_mpik)            :: n,ierr
     integer(kind=MPI_ADDRESS_KIND)   :: offset
     
     n=1
+    ierr = 0
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 #ifdef VAR_HAVE_MPI3
     call MPI_GET_ACCUMULATE(ibuf,n,MPI_INTEGER4,obuf,n,&
@@ -6213,8 +6286,16 @@ contains
       dtype = MPI_DOUBLE_PRECISION
       n = reccounts(infpar%lg_mynum+1)
      
+#ifdef VAR_INT64
+#ifdef VAR_MPI_32BIT_INT
+  call lsquit('Error in lsmpi_localallgatherv_realk8 VAR_INT64 and VAR_MPI_32BIT_INT',-1)
+#else
       call MPI_ALLGATHERV(sendbuf,n,dtype,recbuf,reccounts,&
                           &disps,dtype,infpar%lg_comm,ierr)
+#endif
+#else
+  call lsquit('Error in lsmpi_localallgatherv_realk8 no VAR_INT64',-1)
+#endif
      
       if(ierr/=0)then
         call lsquit("ERROR(lsmpi_localallgatherv_realk4):mpi is wrong",-1)
@@ -6234,8 +6315,17 @@ contains
     dtype = MPI_DOUBLE_PRECISION
     n = reccounts(infpar%lg_mynum+1)
 
+#ifdef VAR_INT64
+#ifdef VAR_MPI_32BIT_INT
     call MPI_ALLGATHERV(sendbuf,n,dtype,recbuf,reccounts,&
                         &disps,dtype,infpar%lg_comm,ierr)
+#else
+    call lsquit('Error in lsmpi_localallgatherv_realk4 VAR_INT64 and not VAR_MPI_32BIT_INT',-1)
+#endif
+#else
+    call MPI_ALLGATHERV(sendbuf,n,dtype,recbuf,reccounts,&
+                        &disps,dtype,infpar%lg_comm,ierr)
+#endif
 
     if(ierr/=0)then
       call lsquit("ERROR(lsmpi_localallgatherv_realk4):mpi is wrong",-1)

@@ -2092,8 +2092,6 @@ contains
     call ls_mpi_buffer(DECitem%use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
-    call ls_mpi_buffer(DECitem%simulate_eri,Master)
-    call ls_mpi_buffer(DECitem%fock_with_ri,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
@@ -2238,7 +2236,52 @@ contains
 
   end subroutine mpi_dec_fullinfo_master_to_slaves_precursor
 
+  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+     implicit none
+     type(array),intent(inout)   :: integral
+     type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
+     type(lsitem), intent(inout) :: mylsitem
+     integer :: addr1(infpar%lg_nodtot)
+     integer :: addr2(infpar%lg_nodtot)
+     integer :: addr3(infpar%lg_nodtot)
+     integer :: addr4(infpar%lg_nodtot)
+     integer :: addr5(infpar%lg_nodtot)
+     logical :: master
+
+
+     master = (infpar%lg_mynum == infpar%master)
+
+     if(master) call ls_mpibcast(MO_INTEGRAL_SIMPLE,infpar%master,infpar%lg_comm)
+
+     if(master)then
+        addr1 = trafo1%addr_p_arr
+        addr2 = trafo2%addr_p_arr
+        addr3 = trafo3%addr_p_arr
+        addr4 = trafo4%addr_p_arr
+        addr5 = integral%addr_p_arr
+     endif
+
+     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
+     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     if(.not.master)then
+        trafo1 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+        trafo2 = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+        trafo3 = get_arr_from_parr(addr3(infpar%lg_mynum+1))
+        trafo4 = get_arr_from_parr(addr4(infpar%lg_mynum+1))
+        integral = get_arr_from_parr(addr5(infpar%lg_mynum+1))
+     endif
+
+
+  end subroutine wake_slaves_for_simple_mo
 end module decmpi_module
+
 
 #else
 module decmpi_module

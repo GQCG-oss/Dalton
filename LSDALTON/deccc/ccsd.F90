@@ -45,7 +45,6 @@ module ccsd_module
 #endif
 
     use dec_fragment_utils
-    use ri_simple_operations
     use array2_simple_operations!, only: array2_init, array2_add,&
 !         & array2_transpose, array2_free, array2_add_to
     use array3_simple_operations!, only: array_reorder_3d
@@ -1485,8 +1484,7 @@ contains
     ! This subroutine builds the full screening matrix.
     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
          & nbatchesAlpha,nbatchesGamma,INTSPEC)
-    IF(mylsitem%setting%scheme%cs_screen .OR. &
-         & mylsitem%setting%scheme%ps_screen)THEN
+    IF(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
             & nb,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
@@ -1906,8 +1904,8 @@ contains
           call mem_alloc(gvvoo,o2v2,comm=infpar%lg_comm)
           call mem_alloc(gvoov,o2v2,comm=infpar%lg_comm)
 #else
-          call mem_alloc(gvvoo,o2v2)
-          call mem_alloc(gvoov,o2v2)
+          call mem_alloc(gvvoo,o2v2,simple=.true.)
+          call mem_alloc(gvoov,o2v2,simple=.true.)
 #endif
        endif
     endif
@@ -2790,7 +2788,7 @@ contains
        lead = tl
        !use w3 as buffer which is allocated largest possible
        w2size  = tlov
-       w3size  = min(o2v2,tlov + els2add)
+       w3size  = max(o2v2,tlov + els2add)
      else
        call lsquit("ERROR(get_cnd_terms_mo):no valid scheme",-1)
      endif
@@ -4432,7 +4430,7 @@ contains
 
     if(scheme==2)then
       mem_used = get_min_mem_req(no,nv,nb,nba,nbg,2,scheme,.false.)
-      e2a = int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk/8E0_realk),kind=8)
+      e2a = int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8)
     endif
   end subroutine get_max_batch_sizes
 
@@ -4868,63 +4866,6 @@ contains
 
     return
   end function getFockCorrection
-
-  !> \brief Simple Fock from RI integrals
-  function getInactiveFockFromRI(l_ao,xocc,yocc,h1) result(this)
-
-    implicit none
-    type(array2) :: this
-    type(ri), intent(in) :: l_ao
-    type(array2), intent(in) :: h1,xocc,yocc
-    type(ri) :: IJ,alphaI,Ibeta
-    integer :: nocc,naux,nbas,l,i
-    real(realk) :: trace
-    real(realk), pointer :: tmpfock(:,:)
-
-    nbas = xocc%dims(1)
-    nocc = xocc%dims(2)
-    naux = l_ao%dims(3)
-
-    IJ = ri_init([nocc,nocc,naux])
-    alphaI = ri_init([nbas,nocc,naux])
-    Ibeta = ri_init([nocc,nbas,naux])
-
-    ! transform
-    do l=1,naux
-       IJ%val(:,:,l) = matmul(matmul(transpose(xocc%val),l_ao%val(:,:,l)), &
-            yocc%val)
-       alphaI%val(:,:,l) = matmul(l_ao%val(:,:,l),yocc%val)
-       Ibeta%val(:,:,l) = matmul(transpose(xocc%val),l_ao%val(:,:,l))
-    end do
-
-    call mem_alloc(tmpfock,nbas,nbas)
-    tmpfock = 0.0E0_realk
-
-    do l=1,naux
-
-       ! 2g_mu_nu_i_i
-       trace=0E0_realk
-       do i=1,nocc
-          trace=trace+IJ%val(i,i,l)
-       end do
-       tmpfock=tmpfock+2E0_realk*trace*l_ao%val(:,:,l)
-
-       ! -g_mu_i_i_nu
-       tmpfock=tmpfock-matmul(alphaI%val(:,:,l),Ibeta%val(:,:,l))
-
-    end do
-    tmpfock=tmpfock+h1%val
-
-    this = array2_init([nbas,nbas],tmpfock)
-    call mem_dealloc(tmpfock)
-
-    ! free
-    call ri_free(IJ)
-    call ri_free(alphaI)
-    call ri_free(Ibeta)
-
-    return
-  end function getInactiveFockFromRI
 
   !> \brief Get T1 transformed Fock matrices
   subroutine getFockMatrices(ifock,xocc,xvirt,yocc,yvirt, &

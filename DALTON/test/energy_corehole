@@ -387,7 +387,8 @@ CRIT3=`$GREP "1\.9773803.* 1\.0216663" $log | wc -l`
 CRIT4=`$GREP "1\.9277516.* 0*\.0781791" $log | wc -l`
 CRIT5=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-CTRL[5]=8
+# crit4 is found three times on master branch
+CTRL[5]=9
 ERROR[5]="NO OCCUPANCIES NOT CORRECT"
 
 PASSED=1

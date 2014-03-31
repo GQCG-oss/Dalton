@@ -142,8 +142,6 @@ contains
     ! -- CC solver options
 
     DECinfo%ccsd_expl               = .false.
-    DECinfo%simulate_eri            = .false.
-    DECinfo%fock_with_ri            = .false.
     DECinfo%ccMaxIter               = 100
     DECinfo%ccMaxDIIS               = 3
     DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
@@ -241,7 +239,7 @@ contains
 #ifdef VAR_MPI
     ! Number of workers = Number of nodes minus master itself
     nworkers = infpar%nodtot -1
-    if(nworkers<1) then
+    if(nworkers<1.and..not.fullcalc) then
        call lsquit('DEC calculations using MPI require at least two MPI processes!',-1)
     end if
 #endif
@@ -733,8 +731,6 @@ contains
     write(lupri,*) 'use_preconditioner ', DECitem%use_preconditioner
     write(lupri,*) 'use_preconditioner_in_b ', DECitem%use_preconditioner_in_b
     write(lupri,*) 'use_crop ', DECitem%use_crop
-    write(lupri,*) 'simulate_eri ', DECitem%simulate_eri
-    write(lupri,*) 'fock_with_ri ', DECitem%fock_with_ri
 #ifdef MOD_UNRELEASED    
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG

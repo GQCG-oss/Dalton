@@ -81,6 +81,8 @@ contains
     type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
     logical :: DoBasis
+    logical :: ForcePrint
+    ForcePrint=.TRUE.
 
     ! **************************************************************
     ! *                       RUN CALCULATION                      *
@@ -96,12 +98,30 @@ contains
 
     ! Calculate fragment energies
     ! ***************************
+    
     call atomic_fragment_energy_and_prop(MyFragment)
+    call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output,ForcePrint)
 
-    call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output)
+!    CALL MP2_TK_energyContribution(MyFragment)
 
   end subroutine get_fragment_and_Energy
 
+  subroutine MP2_TK_energyContribution(MyFragment)
+    implicit none
+    type(decfrag), intent(inout) :: MyFragment
+    real(realk) :: tcpu, twall
+    logical :: ForcePrint
+    ForcePrint=.TRUE.
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    ! Calculate fragment energy quantities based on screening matrices
+    ! ***************************
+!    call MP2_TK_integrals_and_amplitudes(MyFragment)
+!    call MP2_TK2_integrals_and_amplitudes(MyFragment)
+    call MP2_TK3_integrals_and_amplitudes(MyFragment)
+
+    call LSTIMER('TK',tcpu,twall,DECinfo%output,ForcePrint)
+  end subroutine MP2_TK_energyContribution
 
   !> \brief Construct new fragment based on list of orbitals in OccAOS and UnoccAOS,
   !> and calculate fragment energy. 
@@ -2266,6 +2286,7 @@ contains
  ! Restore the original CC model 
  ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
  MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
+! call lsquit('TEST DONE',-1)
 
 end subroutine optimize_atomic_fragment
 

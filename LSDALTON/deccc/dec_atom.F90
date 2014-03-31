@@ -311,8 +311,13 @@ contains
        end if
 
     end do
-    if(idx /= fragment%nunoccAOS) &
-         & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
+    !print *,"checking",idx,fragment%nunoccAOS,fragment%EOSatoms,pairfrag
+    
+    if(idx /= fragment%nunoccAOS) then
+      print *,unocc_list
+      print *,unoccEOS
+      call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
+    endif
 
 
     !set max distance in AOS space

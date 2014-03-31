@@ -2013,6 +2013,302 @@ contains
   
   end subroutine unpack_gmo
 
+  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local)
+     implicit none
+     type(array),intent(inout)   :: integral
+     type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
+     type(lsitem), intent(inout) :: mylsitem
+     logical, intent(in) :: local
+     !Integral stuff
+     integer :: alphaB,gammaB,dimAlpha,dimGamma
+     integer :: dim1,dim2,dim3,MinAObatch
+     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
+     integer :: iorb,nthreads
+     integer :: idx,nb,n1,n2,n3,n4,fa,fg,la,lg,i,k,myload
+     type(batchtoorb), pointer :: batch2orbAlpha(:)
+     type(batchtoorb), pointer :: batch2orbGamma(:)
+     Character(80)        :: FilenameCS,FilenamePS
+     Character(80),pointer:: BatchfilenamesCS(:,:)
+     Character(80),pointer:: BatchfilenamesPS(:,:)
+     Character            :: INTSPEC(5)
+     logical :: FoundInMem,fullRHS, doscreen
+     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
+     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
+     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+     TYPE(DECscreenITEM)  :: DecScreen
+     real(realk), pointer :: w1(:),w2(:)
+     real(realk) :: MemFree
+     integer(kind=long) :: maxsize
+     logical :: master
+     integer(kind=ls_mpik) :: me, nnod
+     integer, pointer :: jobdist(:,:)
+
+
+     master  = .true.
+     me      = 0
+     nnod    = 1
+#ifdef VAR_MPI
+     master  = (infpar%lg_mynum == infpar%master)
+     me      = infpar%lg_mynum
+     nnod    = infpar%lg_nodtot
+#endif
+
+
+     nb = trafo1%dims(1)
+     n1 = trafo1%dims(2)
+     n2 = trafo2%dims(2)
+     n3 = trafo3%dims(2)
+     n4 = trafo4%dims(2)
+
+     ! Set integral info
+     ! *****************
+     INTSPEC(1)               = 'R' !R = Regular Basis set on the 1th center 
+     INTSPEC(2)               = 'R' !R = Regular Basis set on the 2th center 
+     INTSPEC(3)               = 'R' !R = Regular Basis set on the 3th center 
+     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
+     INTSPEC(5)               = 'C' !C = Coulomb operator
+     doscreen                 = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
+
+     !==================================================
+     !                  Batch construction             !
+     !==================================================
+
+
+     ! Get free memory and determine maximum batch sizes
+     ! -------------------------------------------------
+     if(master)then
+#ifdef VAR_MPI
+        if(.not.local)call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+#endif
+
+        call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+        call get_currently_available_memory(MemFree)
+
+
+        MaxAllowedDimAlpha = nb
+        MaxAllowedDimGamma = nb
+        gamm: do i = MinAObatch, nb
+           alp: do k = MinAObatch, nb
+
+              maxsize=max(max(nb**2*k*i,n1*n2*k*i),n1*n2*n3*n4)
+              maxsize=maxsize + max(n1*nb*k*i,n1*n2*n3*i)
+
+              if(float(maxsize*8)/(1024.0**3) > 0.8E0_realk*MemFree )then
+                 MaxAllowedDimAlpha = k - 1
+                 MaxAllowedDimGamma = i
+                 exit gamm
+              endif
+
+           enddo alp
+        enddo gamm
+
+        if(DECinfo%manual_batchsizes)then
+           MaxAllowedDimGamma = max(DECinfo%ccsdGbatch,MinAObatch)
+           MaxAllowedDimAlpha = max(DECinfo%ccsdAbatch,MinAObatch)
+        endif
+
+        if(MaxAllowedDimAlpha < MinAObatch)call lsquit("ERROR(get_mo_integral_par)not enough memory",-1)
+
+     endif
+
+     if(.not.local)then
+        integral%access_type = ALL_ACCESS
+        trafo1%access_type = ALL_ACCESS
+        trafo2%access_type = ALL_ACCESS
+        trafo3%access_type = ALL_ACCESS
+        trafo4%access_type = ALL_ACCESS
+#ifdef VAR_MPI
+        call ls_mpibcast(MaxAllowedDimAlpha,infpar%master,infpar%lg_comm)
+        call ls_mpibcast(MaxAllowedDimGamma,infpar%master,infpar%lg_comm)
+#endif
+     endif
+
+
+     ! ************************************************
+     ! * Determine batch information for Gamma batch  *
+     ! ************************************************
+
+     ! Orbital to batch information
+     ! ----------------------------
+     call mem_alloc(orb2batchGamma,nb)
+     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
+        & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
+        &nbatchesGamma,orb2BatchGamma,'R')
+     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
+        & 'with maximum size',MaxActualDimGamma
+
+     ! Translate batchindex to orbital index
+     ! -------------------------------------
+     call mem_alloc(batch2orbGamma,nbatchesGamma)
+     do idx=1,nbatchesGamma
+        call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
+        batch2orbGamma(idx)%orbindex = 0
+        batch2orbGamma(idx)%norbindex = 0
+     end do
+     do iorb=1,nb
+        idx = orb2batchGamma(iorb)
+        batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+        K = batch2orbGamma(idx)%norbindex
+        batch2orbGamma(idx)%orbindex(K) = iorb
+     end do
+
+
+     ! ************************************************
+     ! * Determine batch information for Alpha batch  *
+     ! ************************************************
+
+     ! Orbital to batch information
+     ! ----------------------------
+     call mem_alloc(orb2batchAlpha,nb)
+     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
+        & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
+     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
+        &, 'with maximum size',MaxActualDimAlpha
+
+     ! Translate batchindex to orbital index
+     ! -------------------------------------
+     call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+     do idx=1,nbatchesAlpha
+        call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+        batch2orbAlpha(idx)%orbindex = 0
+        batch2orbAlpha(idx)%norbindex = 0
+     end do
+     do iorb=1,nb
+        idx = orb2batchAlpha(iorb)
+        batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+        K = batch2orbAlpha(idx)%norbindex
+        batch2orbAlpha(idx)%orbindex(K) = iorb
+     end do
+
+
+     maxsize=max(max(nb**2*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*MaxActualDimAlpha*MaxActualDimGamma),n1*n2*n3*n4)
+     call mem_alloc( w1, maxsize )
+     maxsize=max(n1*nb*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*n3*MaxActualDimGamma)
+     call mem_alloc( w2, maxsize )
+
+
+     ! ************************************************
+     ! *  precalculate the full schreening matrix     *
+     ! ************************************************
+
+     ! This subroutine builds the full screening matrix.
+     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
+        & nbatchesAlpha,nbatchesGamma,INTSPEC)
+     IF(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
+        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
+           & nb,nbatchesAlpha,nbatchesGamma,&
+           & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+           & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+        call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
+           & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
+           & batchindexAlpha,batchindexGamma,&
+           & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+     ENDIF
+
+     call mem_alloc(jobdist,nbatchesAlpha,nbatchesGamma)
+     !JOB distribution
+     do gammaB=1,nbatchesGamma
+        do alphaB = 1,nbatchesAlpha
+           jobdist(alphaB,gammaB) = mod(alphaB + (gammaB - 1) * nbatchesAlpha,nnod)
+        enddo
+     enddo
+
+
+     myload = 0
+
+
+     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
+        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+        GammaEnd   = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
+        !short hand notation
+        fg         = GammaStart
+        lg         = dimGamma
+
+
+        BatchAlpha: do alphaB = 1, nbatchesAlpha
+
+           if( me /= jobdist(alphaB,gammaB) ) cycle BatchAlpha
+
+
+           dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
+           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+           AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)          ! Last index in alpha batch
+
+           !short hand notation
+           fa         = AlphaStart
+           la         = dimAlpha
+           myload     = myload + la * lg
+
+           IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+           IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+
+           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,batchindexAlpha(alphaB),&
+              &batchindexGamma(gammaB),batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC)
+
+
+           call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
+           call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
+           call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
+           call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
+
+           !something more sophisticated can be implemented here
+
+           call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize)
+
+
+        enddo BatchAlpha
+     enddo BatchGamma
+
+     ! Free integral stuff
+     ! *******************
+     nullify(Mylsitem%setting%LST_GAB_LHS)
+     nullify(Mylsitem%setting%LST_GAB_RHS)
+     call free_decscreen(DECSCREEN)
+
+     ! Free gamma stuff
+     call mem_dealloc(orb2batchGamma)
+     call mem_dealloc(batchdimGamma)
+     call mem_dealloc(batchsizeGamma)
+     call mem_dealloc(batchindexGamma)
+     do i=1,nbatchesGamma
+        call mem_dealloc(batch2orbGamma(i)%orbindex)
+        batch2orbGamma(i)%orbindex => null()
+     end do
+     call mem_dealloc(batch2orbGamma)
+
+     ! Free alpha stuff
+     call mem_dealloc(orb2batchAlpha)
+     call mem_dealloc(batchdimAlpha)
+     call mem_dealloc(batchsizeAlpha)
+     call mem_dealloc(batchindexAlpha)
+     do i=1,nbatchesAlpha
+        call mem_dealloc(batch2orbAlpha(i)%orbindex)
+        batch2orbAlpha(i)%orbindex => null()
+     end do
+     call mem_dealloc(batch2orbAlpha)
+
+     call mem_dealloc(jobdist)
+
+     call mem_dealloc( w1 )
+     call mem_dealloc( w2 )
+
+     if(.not.local)then
+        integral%access_type = MASTER_ACCESS
+        trafo1%access_type = MASTER_ACCESS
+        trafo2%access_type = MASTER_ACCESS
+        trafo3%access_type = MASTER_ACCESS
+        trafo4%access_type = MASTER_ACCESS
+     endif
+
+
+#ifdef VAR_MPI
+     call lsmpi_barrier(infpar%lg_comm)
+#endif
+
+  end subroutine get_mo_integral_par
+
 end module ccintegrals
 
 #ifdef VAR_MPI
@@ -2071,4 +2367,23 @@ subroutine cc_gmo_data_slave()
   end if
 
 end subroutine cc_gmo_data_slave
+
+subroutine get_mo_integral_par_slave()
+   use dec_typedef_module
+   use ccintegrals
+   use daltoninfo
+   !use tensor_interface
+   use typedeftype, only: lsitem
+   use decmpi_module, only: wake_slaves_for_simple_mo
+   use ccintegrals, only : get_mo_integral_par
+
+   implicit none
+   type(array) :: integral,trafo1,trafo2,trafo3,trafo4
+   type(lsitem) :: mylsitem
+
+   call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+   call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.)
+  call ls_free(mylsitem)
+
+end subroutine get_mo_integral_par_slave
 #endif
