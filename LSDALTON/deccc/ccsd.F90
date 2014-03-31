@@ -45,7 +45,6 @@ module ccsd_module
 #endif
 
     use dec_fragment_utils
-    use ri_simple_operations
     use array2_simple_operations!, only: array2_init, array2_add,&
 !         & array2_transpose, array2_free, array2_add_to
     use array3_simple_operations!, only: array_reorder_3d
@@ -4867,63 +4866,6 @@ contains
 
     return
   end function getFockCorrection
-
-  !> \brief Simple Fock from RI integrals
-  function getInactiveFockFromRI(l_ao,xocc,yocc,h1) result(this)
-
-    implicit none
-    type(array2) :: this
-    type(ri), intent(in) :: l_ao
-    type(array2), intent(in) :: h1,xocc,yocc
-    type(ri) :: IJ,alphaI,Ibeta
-    integer :: nocc,naux,nbas,l,i
-    real(realk) :: trace
-    real(realk), pointer :: tmpfock(:,:)
-
-    nbas = xocc%dims(1)
-    nocc = xocc%dims(2)
-    naux = l_ao%dims(3)
-
-    IJ = ri_init([nocc,nocc,naux])
-    alphaI = ri_init([nbas,nocc,naux])
-    Ibeta = ri_init([nocc,nbas,naux])
-
-    ! transform
-    do l=1,naux
-       IJ%val(:,:,l) = matmul(matmul(transpose(xocc%val),l_ao%val(:,:,l)), &
-            yocc%val)
-       alphaI%val(:,:,l) = matmul(l_ao%val(:,:,l),yocc%val)
-       Ibeta%val(:,:,l) = matmul(transpose(xocc%val),l_ao%val(:,:,l))
-    end do
-
-    call mem_alloc(tmpfock,nbas,nbas)
-    tmpfock = 0.0E0_realk
-
-    do l=1,naux
-
-       ! 2g_mu_nu_i_i
-       trace=0E0_realk
-       do i=1,nocc
-          trace=trace+IJ%val(i,i,l)
-       end do
-       tmpfock=tmpfock+2E0_realk*trace*l_ao%val(:,:,l)
-
-       ! -g_mu_i_i_nu
-       tmpfock=tmpfock-matmul(alphaI%val(:,:,l),Ibeta%val(:,:,l))
-
-    end do
-    tmpfock=tmpfock+h1%val
-
-    this = array2_init([nbas,nbas],tmpfock)
-    call mem_dealloc(tmpfock)
-
-    ! free
-    call ri_free(IJ)
-    call ri_free(alphaI)
-    call ri_free(Ibeta)
-
-    return
-  end function getInactiveFockFromRI
 
   !> \brief Get T1 transformed Fock matrices
   subroutine getFockMatrices(ifock,xocc,xvirt,yocc,yvirt, &

@@ -209,12 +209,6 @@ module dec_typedef_module
      logical :: use_preconditioner_in_b
      !> Use CROP (if false we use DIIS)
      logical :: use_crop
-     !> Simulate full ERI using RI arrays 
-     !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
-     logical :: simulate_eri
-     !> Construct Fock matrix from RI integrals (obsolete for the moment)
-     !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
-     logical :: fock_with_ri
      !> logial to set whether special communication processes should be spawned
      logical :: spawn_comm_proc
 
