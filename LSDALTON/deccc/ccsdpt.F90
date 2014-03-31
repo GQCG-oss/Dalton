@@ -3572,6 +3572,9 @@ contains
     integer, pointer :: distribution(:)
     Character            :: intSpec(5)
     integer :: myload
+    logical :: master
+    integer :: double_2G_nel
+    double_2G_nel = 100000000
 
     ! Lots of timings
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -3597,11 +3600,13 @@ contains
     ! CBAI: Integrals (AB|IC) in the order (C,B,A,I)
     dims = [nvirt,nvirt,nvirt,nocc]
 
+    master = .true.
 #ifdef VAR_MPI
 
     CBAI = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
     call array_zero_tiled_dist(CBAI)
 
+    master = (infpar%lg_mynum == infpar%master)
 #else
 
     CBAI = array_init(dims,4)
@@ -3631,7 +3636,7 @@ contains
          & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
          & nbatchesGamma,orb2BatchGamma,'R')
 
-    write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
+    if(master)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
     ! Translate batchindex to orbital index
     ! -------------------------------------
@@ -3665,7 +3670,7 @@ contains
          & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
          & nbatchesAlpha,orb2BatchAlpha,'R')
 
-    write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
+    if(master)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
     ! Translate batchindex to orbital index
     ! -------------------------------------
@@ -3716,7 +3721,10 @@ contains
     call mem_alloc(tmp2,size2)
     call mem_alloc(tmp3,size3)
 
+    print *,"Allocations completed"
+
 #ifdef VAR_MPI
+    call lsmpi_barrier(infpar%lg_comm)
 
     ! alloc distribution array
     nullify(distribution)
@@ -3878,13 +3886,15 @@ contains
        end do BatchAlpha
     end do BatchGamma
 
+    print *,"LOOP DONE, reducing"
 #ifdef VAR_MPI
+    call lsmpi_barrier(infpar%lg_comm)
 
     if (infpar%lg_nodtot .gt. 1) then
 
        ! now, reduce o^2v^2 and o^3v integrals onto master
-       call lsmpi_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt,infpar%lg_comm)
-       call lsmpi_allreduce(JAIK%val,nocc,nvirt,nocc,nocc, infpar%lg_comm) 
+       call lsmpi_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt,infpar%lg_comm)! double_2G_nel )
+       call lsmpi_allreduce(JAIK%val,nocc,nvirt,nocc,nocc, infpar%lg_comm)! double_2G_nel ) 
 
     end if
 

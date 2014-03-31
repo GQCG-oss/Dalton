@@ -29,7 +29,6 @@ use dec_fragment_utils!,only: get_density_from_occ_orbitals
 use crop_tools_module
 use array2_simple_operations
 use array4_simple_operations
-use ri_simple_operations!,only: get_ao_ri_intermediate, ri_reset,ri_init, ri_free
 use mp2_module!,only: get_VOVO_integrals
 use atomic_fragment_operations
 use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
