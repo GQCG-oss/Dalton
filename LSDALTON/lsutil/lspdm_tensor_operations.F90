@@ -3792,7 +3792,7 @@ module lspdm_tensor_operations_module
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
+    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
     if(.not.ls)CALL lsmpi_win_unlock(dest, arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_acc = time_pdm_acc + sto - sta

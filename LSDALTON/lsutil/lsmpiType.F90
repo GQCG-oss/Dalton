@@ -183,10 +183,10 @@ module lsmpi_type
 !!!!!!!!!!!!!!!!!!!!!!!!!
 
 #ifdef VAR_MPI
-  integer,parameter     :: LSMPIBROADCAST=1
-  integer,parameter     :: LSMPIREDUCTION=2
-  integer,parameter     :: LSMPIREDUCTIONmaster=3
-  integer,parameter     :: LSMPISENDRECV=4
+  integer,parameter     :: LSMPIBROADCAST       = 1
+  integer,parameter     :: LSMPIREDUCTION       = 2
+  integer,parameter     :: LSMPIREDUCTIONmaster = 3
+  integer,parameter     :: LSMPISENDRECV        = 4
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -199,9 +199,10 @@ module lsmpi_type
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
   !integer,parameter     :: SPLIT_MPI_MSG = 2147483640
-  integer,parameter     :: SPLIT_MPI_MSG = 1000000000
+  integer,parameter     :: SPLIT_MPI_MSG      = 1000000000
   !split mpi one sided communication into 1GB msg
-  integer,parameter     :: MAX_SIZE_ONE_SIDED = 125000000
+  !integer,parameter     :: MAX_SIZE_ONE_SIDED = 125000000
+  integer,parameter     :: MAX_SIZE_ONE_SIDED = 17
 
   !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 

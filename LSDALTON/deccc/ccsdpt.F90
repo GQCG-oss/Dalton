@@ -3725,11 +3725,8 @@ contains
     call mem_alloc(tmp2,size2)
     call mem_alloc(tmp3,size3)
 
-    print *,"Allocations completed"
 
 #ifdef VAR_MPI
-    call lsmpi_barrier(infpar%lg_comm)
-
     ! alloc distribution array
     nullify(distribution)
     call mem_alloc(distribution,nbatchesGamma*nbatchesAlpha)
@@ -3765,8 +3762,8 @@ contains
 
           end if
 
-!          write (DECinfo%output, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%lg_mynum,alphaB,&
-!                          &nbatchesAlpha,gammaB,nbatchesGamma
+          if(DECinfo%PL>2)write (DECinfo%output, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
+             &,infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
 #endif
 
@@ -3812,7 +3809,7 @@ contains
           k = dimGamma
           n = nvirt*nocc*dimAlpha
 !          call dec_simple_dgemm(m,k,n,CoccT(1:nocc,GammaStart:GammaEnd),tmp2,tmp1,'N','N')
-          call dgemm('N','N',m,n,k,1.0E0_realk,CoccT(1:nocc,GammaStart:GammaEnd),m,tmp2,k,0.0E0_realk,tmp1,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,CoccT(1,GammaStart),nocc,tmp2,k,0.0E0_realk,tmp1,m)
 
           ! JAIK(J,A,I;K) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cocc(alpha,K)
           m = nvirt*nocc**2
@@ -3821,7 +3818,7 @@ contains
 !          call dec_simple_dgemm_update(m,k,n,tmp1,&
 !                                     & CoccT(1:nocc,AlphaStart:AlphaEnd),JAIK%val,'N','T')
 !          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart:AlphaEnd,1:nocc),k,1.0E0_realk,JAIK%val,m)
-          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart:,:),nbasis-AlphaStart+1,1.0E0_realk,JAIK%val,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart,1),nbasis,1.0E0_realk,JAIK%val,m)
 
           ! JAIB(J,A,I;B) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cvirt(alpha,B)
           m = nvirt*nocc**2
@@ -3830,7 +3827,7 @@ contains
 !          call dec_simple_dgemm_update(m,k,n,tmp1,&
 !                                     & CvirtT(1:nvirt,AlphaStart:AlphaEnd),JAIB%val,'N','T')
 !          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart:AlphaEnd,1:nvirt),k,1.0E0_realk,JAIB%val,m)
-          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart:,:),nbasis-AlphaStart+1,1.0E0_realk,JAIB%val,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart,1),nbasis,1.0E0_realk,JAIB%val,m)
 
           ! Reorder: tmp3(B,alphaB;gammaB,A) --> tmp1(gammaB,A;B,alphaB)
           m = nvirt*dimAlpha
@@ -3842,7 +3839,7 @@ contains
           k = dimGamma
           n = dimAlpha*nvirt**2
 !          call dec_simple_dgemm(m,k,n,CvirtT(1:nvirt,GammaStart:GammaEnd),tmp1,tmp3,'N','N')
-          call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(:,GammaStart:),m,tmp1,k,0.0E0_realk,tmp3,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(1,GammaStart),nvirt,tmp1,k,0.0E0_realk,tmp3,m)
 
           ! reorder tmp1 and do CBAI(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
           m = nvirt**3
@@ -3855,7 +3852,7 @@ contains
 
              ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,i)
 !             call dec_simple_dgemm(m,k,n,tmp3,CoccT(i,AlphaStart:AlphaEnd),tmp1,'N','T')
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart:,i),nbasis-AlphaStart+1,0.0E0_realk,tmp1,m)
+             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
 
              ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
              ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
@@ -3890,9 +3887,7 @@ contains
        end do BatchAlpha
     end do BatchGamma
 
-    print *,"LOOP DONE, reducing"
 #ifdef VAR_MPI
-    call lsmpi_barrier(infpar%lg_comm)
 
     if (infpar%lg_nodtot .gt. 1) then
        call ass_D4to1(JAIB%val,dummy1,[nocc,nvirt,nocc,nvirt])
