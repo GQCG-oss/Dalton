@@ -3573,7 +3573,8 @@ contains
     Character            :: intSpec(5)
     integer :: myload
     logical :: master
-    integer, parameter :: double_2G_nel = 100000000
+    integer :: double_2G_nel
+    double_2G_nel = 100000000
 
     ! Lots of timings
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -3892,8 +3893,8 @@ contains
     if (infpar%lg_nodtot .gt. 1) then
 
        ! now, reduce o^2v^2 and o^3v integrals onto master
-       call lsmpi_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt,infpar%lg_comm, double_2G_nel )
-       call lsmpi_allreduce(JAIK%val,nocc,nvirt,nocc,nocc, infpar%lg_comm, double_2G_nel ) 
+       call lsmpi_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt,infpar%lg_comm)! double_2G_nel )
+       call lsmpi_allreduce(JAIK%val,nocc,nvirt,nocc,nocc, infpar%lg_comm)! double_2G_nel ) 
 
     end if
 
