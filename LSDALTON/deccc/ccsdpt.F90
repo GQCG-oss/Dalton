@@ -3574,7 +3574,11 @@ contains
     integer :: myload
     logical :: master
     integer :: double_2G_nel
+    integer(kind=long) :: o2v2,o3v
+    real(realk), pointer :: dummy1(:),dummy2(:)
     double_2G_nel = 100000000
+    o2v2 = nocc*nocc*nvirt*nvirt
+    o3v  = nocc*nocc*nocc*nvirt
 
     ! Lots of timings
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -3891,10 +3895,11 @@ contains
     call lsmpi_barrier(infpar%lg_comm)
 
     if (infpar%lg_nodtot .gt. 1) then
-
+       call ass_D4to1(JAIB%val,dummy1,[nocc,nvirt,nocc,nvirt])
+       call ass_D4to1(JAIK%val,dummy2,[nocc,nvirt,nocc,nocc])
        ! now, reduce o^2v^2 and o^3v integrals onto master
-       call lsmpi_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt,infpar%lg_comm)! double_2G_nel )
-       call lsmpi_allreduce(JAIK%val,nocc,nvirt,nocc,nocc, infpar%lg_comm)! double_2G_nel ) 
+       call lsmpi_allreduce(dummy1,o2v2,infpar%lg_comm,double_2G_nel )
+       call lsmpi_allreduce(dummy2,o3v, infpar%lg_comm,double_2G_nel ) 
 
     end if
 

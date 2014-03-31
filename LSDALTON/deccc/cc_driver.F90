@@ -1427,7 +1427,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(array) :: omega2_opt, t2_opt, omega2_prec, u
    type(array) :: xo,yo,xv,yv,h1
    type(array) :: Lmo
-   real(realk)             :: two_norm_total, one_norm_total,one_norm1, one_norm2, prev_norm
+   real(realk)             :: test_norm,two_norm_total, one_norm_total,one_norm1, one_norm2, prev_norm
    real(realk), pointer    :: B(:,:),c(:)
    integer                 :: iter,last_iter,i,j,k,l
    logical                 :: crop_ok,break_iterations,saferun
@@ -1692,16 +1692,18 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    ! get guess amplitude vectors in the first iteration --> zero if no
    ! restart, else the t*.restart files are read
+   two_norm_total = DECinfo%ccConvergenceThreshold + 1.0E0_realk
    if(DECinfo%use_singles)then
       t1(1) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
       t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
-      call get_guess_vectors(restart,old_iter,restart_from_converged,t2(1),&
+      call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),&
          &safefilet21,safefilet22, safefilet2f, t1(1),safefilet11,safefilet12, safefilet1f  )
    else
       t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
-      call get_guess_vectors(restart,old_iter,restart_from_converged,t2(1),&
+      call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),&
          &safefilet21,safefilet22, safefilet2f )
    endif
+   restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
 
 
    ! title
@@ -1909,6 +1911,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call print_norm(omega2(iter),one_norm2,.true.)
          one_norm_total = one_norm1 + one_norm2
          two_norm_total = sqrt(one_norm_total)
+         test_norm      = two_norm_total
 
          !intentionally crash the calculation prematurely
          if(iter==5.and.DECinfo%CRASHCALC.and.DECinfo%full_molecular_cc)then
@@ -1919,7 +1922,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             WRITE(DECinfo%output,*)'Calculation was intentionally crashed due to keyword .CRASHCALC'
             WRITE(DECinfo%output,*)'This keyword is only used for debug and testing purposes'
             WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
-            print*,"SETTING TWONORM TO QUIT";two_norm_total=0.9*DECinfo%ccConvergenceThreshold
+            print*,"SETTING TEST_NORM TO QUIT"
+            test_norm=0.9*DECinfo%ccConvergenceThreshold
          endif
 
          ! simple crop diagnostics
@@ -1931,7 +1935,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          end if
          prev_norm=two_norm_total
          ! check if this is the last iteration
-         if(iter == DECinfo%ccMaxIter .or. two_norm_total < DECinfo%ccConvergenceThreshold) &
+         if(iter == DECinfo%ccMaxIter .or. test_norm < DECinfo%ccConvergenceThreshold) &
             break_iterations=.true.
 
 
@@ -1992,10 +1996,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             !if .not.DECinfo%CCSDnosaferun option is set, make sure data is in dense
             if(saferun)then
                if(DECinfo%use_singles)then
-                  call save_current_guess(iter+old_iter,t2(iter+1),safefilet21,safefilet22,&
+                  call save_current_guess(iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,safefilet22,&
                      &t1(iter+1),safefilet11,safefilet12)
                else
-                  call save_current_guess(iter+old_iter,t2(iter+1),safefilet21,safefilet22)
+                  call save_current_guess(iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,safefilet22)
                endif
             endif
          end if
@@ -2025,32 +2029,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end do CCIteration
 
    else
-      if(.not.local)then
-         call array_mv_dense2tiled( t2(1), .true. )
-         call array_sync_replicated( Co )
-         call array_sync_replicated( Cv )
-      endif
 
-      !FAST EXIT IF CONVERGED AMPLITUDES HAVE BEEN FOUND
-      if(DECinfo%use_singles)then
-         omega1(1) = array_minit( ampl2_dims, 2 , local=local, atype='LDAR' )
-         call array_zero(omega1(1))
-      endif
-      omega2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
-      call array_zero(omega2(1))
+      !call get_mo_integral_par(iajb,Co,Cv,Co,Cv,mylsitem,local)
 
-      call get_mo_integral_par(iajb,Co,Cv,Co,Cv,mylsitem,local)
-
-      ConvergedEnergyForCCmodel: select case(CCmodel)
-      case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
-         ccenergy = get_cc_energy(t1(1),t2(1),iajb,no,nv)
-      case default
-         call lsquit("ERROR(ccsolver_par):energy expression for your model&
-            & not yet implemented",-1)
-      end select ConvergedEnergyForCCmodel
-
-      two_norm_total   = 0.0E0_realk
-      
       call print_ccjob_iterinfo(old_iter,two_norm_total,ccenergy,.false.,fragment_job)
 
       break_iterations = .true.
@@ -2073,7 +2054,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
          t2_final = array4_init([nv,no,nv,no])
-         call array_cp_tiled2dense(t2(last_iter),.true.)
+         if(.not.restart_from_converged)then
+            call array_cp_tiled2dense(t2(last_iter),.true.)
+         endif
          call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
 
          if(DECinfo%use_singles) then
@@ -2086,10 +2069,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
          if(saferun.and..not.restart_from_converged)then
             if(DECinfo%use_singles)then
-               call save_current_guess(i+old_iter,t2(last_iter),safefilet2f,safefilet2f,&
-                  &t1(last_iter),safefilet1f,safefilet1f)
+               call save_current_guess(i+old_iter,two_norm_total,ccenergy,&
+                  &t2(last_iter),safefilet2f,safefilet2f,t1(last_iter),safefilet1f,safefilet1f)
             else
-               call save_current_guess(i+old_iter,t2(last_iter),safefilet2f,safefilet2f)
+               call save_current_guess(i+old_iter,two_norm_total,ccenergy,&
+                  &t2(last_iter),safefilet2f,safefilet2f)
             endif
          endif
 
@@ -2097,7 +2081,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end if
 
       ! Free doubles residuals
-      call array_free(omega2(i))
+      if(.not.restart_from_converged)call array_free(omega2(i))
       ! Free doubles amplitudes
       call array_free(t2(i))
 
@@ -2105,7 +2089,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       ! Free singles amplitudes and residuals
       if(DECinfo%use_singles) then
          call array_free( t1(i)     )
-         call array_free( omega1(i) )
+         if(.not.restart_from_converged)call array_free( omega1(i) )
       end if
 
    end do
@@ -2215,11 +2199,11 @@ end subroutine ccsolver_par
 !is returned
 !> \author Patrick Ettenhuber
 !> \date December 2012
-subroutine get_guess_vectors(restart,iter_start,converged,t2,safefilet21,safefilet22,safefilet2f,&
+subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,safefilet21,safefilet22,safefilet2f,&
       & t1,safefilet11,safefilet12,safefilet1f)
    implicit none
    logical,intent(out) :: restart
-   logical, intent(out) :: converged
+   real(realk), intent(out) :: norm,energy
    !> contains the guess doubles amplitudes on output
    type(array),intent(inout) :: t2
    !> the filenames to check for valid doubles amplitudes
@@ -2257,7 +2241,6 @@ subroutine get_guess_vectors(restart,iter_start,converged,t2,safefilet21,safefil
    !them if they exist and ok
    readfile1 = .false.
    readfile2 = .false.
-   converged = .false.
 
    if(DECinfo%DECrestart)then
 
@@ -2295,13 +2278,6 @@ subroutine get_guess_vectors(restart,iter_start,converged,t2,safefilet21,safefil
             readfile2=.true.
          endif
          iter_start = saved_iter2f
-      endif
-
-      !SET IF WE ARE RESTARTING FROM CONVERGED AMPLITUDES
-      if(DECinfo%use_singles)then
-         converged = readfile1.and.readfile2
-      else
-         converged = readfile2
       endif
 
       !THEN CHECK IF THERE ARE AMPLITUDES FROM OTHER ITERATIONS AVAILALBE
@@ -2346,10 +2322,10 @@ subroutine get_guess_vectors(restart,iter_start,converged,t2,safefilet21,safefil
                CLOSE(fu_t11)
                readfile1=.true.
             endif
-            elseif(file_status11)then
+         else if(file_status11)then
             fu_t1=fu_t11
             readfile1=.true.
-            elseif(file_status12)then
+         else if(file_status12)then
             fu_t1=fu_t12
             readfile1=.true.
          endif  
@@ -2400,12 +2376,12 @@ subroutine get_guess_vectors(restart,iter_start,converged,t2,safefilet21,safefil
                readfile2=.true.
             endif
             WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
-            elseif(file_status21)then
+         else if(file_status21)then
             iter_start=saved_iter21
             fu_t2=fu_t21
             WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
             readfile2=.true.
-            elseif(file_status22)then
+         else if(file_status22)then
             iter_start=saved_iter22
             fu_t2=fu_t22
             WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
@@ -2419,7 +2395,9 @@ subroutine get_guess_vectors(restart,iter_start,converged,t2,safefilet21,safefil
 
 
    if(readfile1)then
-      READ(fu_t1)t1%elm1
+      READ(fu_t1) t1%elm1
+      READ(fu_t1) norm
+      READ(fu_t1) energy
       CLOSE(fu_t1)
       restart = .true.
    else
@@ -2427,6 +2405,8 @@ subroutine get_guess_vectors(restart,iter_start,converged,t2,safefilet21,safefil
    endif
    if(readfile2)then
       READ(fu_t2) t2%elm1
+      READ(fu_t2) norm
+      READ(fu_t2) energy
       CLOSE(fu_t2)
       restart = .true.
    else
@@ -2438,11 +2418,13 @@ end subroutine get_guess_vectors
 !iteration
 !> \author Patrick Ettenhuber
 !> \date Dezember 2012
-subroutine save_current_guess(iter,t2,safefilet21,safefilet22,&
+subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
       &t1,safefilet11,safefilet12)
    implicit none
    !> iteration number
    integer,intent(in) :: iter
+   !> write the corresponding residual norm into the file
+   real(realk), intent(in) :: res_norm,energy
    !> doubles guess amplitudes for the next iteration
    type(array), intent(in) :: t2
    !> alternating filenames for the doubles amplitudes
@@ -2485,6 +2467,8 @@ subroutine save_current_guess(iter,t2,safefilet21,safefilet22,&
          WRITE(fu_t11)iter
          WRITE(fu_t11)t1%nelms
          WRITE(fu_t11)t1%elm1
+         WRITE(fu_t11)res_norm
+         WRITE(fu_t11)energy
          file_status11=.true.
          WRITE(fu_t11)file_status11
          ENDFILE(fu_t11)
@@ -2497,12 +2481,14 @@ subroutine save_current_guess(iter,t2,safefilet21,safefilet22,&
 #endif
          if(file_status11)call rename(fullname11,fullname11D)
 
-         elseif(mod(iter,2)==0)then
+      else if(mod(iter,2)==0)then
          file_status12=.false. 
          OPEN(fu_t12,FILE=fullname12,STATUS='REPLACE',FORM='UNFORMATTED')
          WRITE(fu_t12)iter
          WRITE(fu_t12)t1%nelms
          WRITE(fu_t12)t1%elm1
+         WRITE(fu_t12)res_norm
+         WRITE(fu_t12)energy
          file_status12=.true.
          WRITE(fu_t12)file_status12
          ENDFILE(fu_t12)
@@ -2521,8 +2507,6 @@ subroutine save_current_guess(iter,t2,safefilet21,safefilet22,&
       endif
    endif
 
-   !msg="doubles norm save"
-   !call print_norm(t2,msg)
    fullname21=safefilet21//'.writing'
    fullname22=safefilet22//'.writing'
    if(mod(iter,2)==1)then
@@ -2531,6 +2515,8 @@ subroutine save_current_guess(iter,t2,safefilet21,safefilet22,&
       WRITE(fu_t21)iter
       WRITE(fu_t21)t2%nelms
       WRITE(fu_t21)t2%elm1
+      WRITE(fu_t21)res_norm
+      WRITE(fu_t21)energy
       file_status21=.true. 
       WRITE(fu_t22)file_status21
       ENDFILE(fu_t21)
@@ -2543,12 +2529,14 @@ subroutine save_current_guess(iter,t2,safefilet21,safefilet22,&
 #endif
       if(file_status21)call rename(fullname21,fullname21D)
 
-      elseif(mod(iter,2)==0)then
+   else if(mod(iter,2)==0)then
       file_status22=.false. 
       OPEN(fu_t22,FILE=fullname22,STATUS='REPLACE',FORM='UNFORMATTED')
       WRITE(fu_t22)iter
       WRITE(fu_t22)t2%nelms
       WRITE(fu_t22)t2%elm1
+      WRITE(fu_t22)res_norm
+      WRITE(fu_t22)energy
       file_status22=.true.
       WRITE(fu_t22)file_status22
       ENDFILE(fu_t22)
@@ -2568,5 +2556,3 @@ end subroutine save_current_guess
 
 
 end module ccdriver
-
-! LocalWords:  iter
