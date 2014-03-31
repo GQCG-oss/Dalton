@@ -851,7 +851,7 @@ contains
     if (master) then 
       select case(CCmodel)
 
-      case(MODEL_CCSD)
+      case(MODEL_CCSD,MODEL_CCSDpT)
         call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nb,no,nv, &
                & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem,.false.)
         if (.not.mo_ccsd) return
@@ -875,7 +875,7 @@ contains
         call get_AO_batches_size_rpa(ntot,nb,no,nv,MaxAllowedDimAlpha, &
                   & MaxAllowedDimGamma,MyLsItem)
       case default
-          call lsquit('only RPA and CCSD model should use this routine',DECinfo%output)
+          call lsquit('only RPA, CCSD and CCSD(T) model should use this routine',DECinfo%output)
       end select
 
     end if
@@ -1174,7 +1174,7 @@ contains
     call mem_dealloc(tasks)
     ! Problem specific to one sided comm. and maybe bcast,
     ! We must use a barrier after one sided communication epoc:
-    if (.not.local_moccsd.and.ccmodel==MODEL_CCSD) then
+    if (.not.local_moccsd.and.ccmodel/=MODEL_RPA) then
       call lsmpi_barrier(infpar%lg_comm)
     end if
 #endif
@@ -1292,13 +1292,18 @@ contains
     call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
     if ((MemFree-MemNeed)<=0.0E0_realk) then
       mo_ccsd = .false.
-      write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
-                             & back to standard algorithm.'
       write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
       write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+      if (DECinfo%force_scheme) then
+        call lsquit('Insufficient memory in MO-based CCSD (remove force scheme)',DECinfo%output)
+      else
+        write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+                               & back to standard algorithm.'
+      end if
       return
     else 
-      print '(a,F12.5,a)', ' Required memory :',MemNeed,' GB'
+      write(DECinfo%output,'(a,F12.5,a)') ' Available memory:',MemFree,' GB'
+      write(DECinfo%output,'(a,F12.5,a)') ' Required memory :',MemNeed,' GB'
     end if
     Nbatch = (ntot-1)/dimMO + 1
 
@@ -1400,7 +1405,8 @@ contains
     !> memory needed:
     real(realk), intent(inout) :: MemOut
     ! intermediate memory:
-    integer :: MemNeed, nnod, nTileMax
+    integer :: nnod
+    integer(kind=long) :: MemNeed, nTileMax
 
     nnod = 1
 #ifdef VAR_MPI
@@ -1453,7 +1459,8 @@ contains
     !> memory needed:
     real(realk), intent(out) :: MemOut
     !> intermediate memory:
-    integer :: MemNeed, nnod, nTileMax, nMOB
+    integer :: nnod, nMOB
+    integer(kind=long) :: nTileMax, MemNeed
 
     nMOB = (M-1)/X + 1
     nnod = 1
@@ -1465,6 +1472,7 @@ contains
     ! Packed gmo diag blocks:
     nTileMax = (nMOB-1)/nnod + 3
     MemNeed = nTileMax*X*(X+1)*M*(M+1)/4
+
     ! Packed gmo upper blocks:
     nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
     MemNeed = MemNeed + nTileMax*X*X*M*(M+1)/2
@@ -1843,7 +1851,8 @@ contains
     !> working array:
     real(realk), intent(inout) :: tmp(:)
 
-    integer :: s, r, rs, q, ibatch, ipack, ncopy, nnod
+    integer :: s, r, rs, q, ibatch, ipack, nnod
+    integer(kind=long) :: ncopy
 
     ipack = 1
     nnod = 1
@@ -1927,7 +1936,8 @@ contains
     !> working array:
     real(realk), intent(inout) :: tmp(:)
 
-    integer :: s, r, rs, sr, q, ibat1, ibat2, ipack, ncopy, nnod
+    integer :: s, r, rs, sr, q, ibat1, ibat2, ipack, nnod
+    integer(kind=long) :: ncopy
 
     ipack  = 1
     nnod = 1

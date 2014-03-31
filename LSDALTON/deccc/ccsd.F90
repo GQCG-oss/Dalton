@@ -795,7 +795,7 @@ contains
 
 #endif
 
-    if (mo_ccsd.and.(CCmodel==MODEL_CCSD)) then 
+    if (mo_ccsd) then 
        call get_mo_ccsd_residual(pgmo_diag,pgmo_up,t1,omega1,t2,omega2,iajb,nb,no,nv,&
             & iter,MOinfo,mylsitem,xo%elm2,xv%elm2,yo%elm2,yv%elm2,delta_fock,ppfock,&
             & pqfock,qpfock,qqfock)
@@ -5561,8 +5561,8 @@ contains
     gvooo  = 0.0E0_realk
     Nbat = MOinfo%nbatch
 
-    omega2%elm1 = 0.0E0_realk
- 
+    call array_zero(omega2)
+
     call LSTIMER('MO-CCSD init calc.',tcpu1,twall1,DECinfo%output)
 
     !===========================================================================
