@@ -66,6 +66,11 @@ CALL LS_GETTIM(t1,t2)
     IF (AO3.EQ.AOPcharge) nAtomsC_full = setting%molecule(3)%p%nAtoms
     IF (AO4.EQ.AOPcharge) nAtomsD_full = setting%molecule(4)%p%nAtoms
       
+    IF (AO1.EQ.AOelField) nAtomsA_full = setting%molecule(1)%p%nAtoms
+    IF (AO2.EQ.AOelField) nAtomsB_full = setting%molecule(2)%p%nAtoms
+    IF (AO3.EQ.AOelField) nAtomsC_full = setting%molecule(3)%p%nAtoms
+    IF (AO4.EQ.AOelField) nAtomsD_full = setting%molecule(4)%p%nAtoms
+      
     !Specify if auxiliary basis sets are used for left- or right-hand side, used when building fragments
     tasks%lhs_aux = AO1.EQ.AOdfdefault.OR.AO2.EQ.AOdfdefault
     tasks%rhs_aux = AO3.EQ.AOdfdefault.OR.AO4.EQ.AOdfdefault
@@ -1264,6 +1269,9 @@ ENDIF
       ELSE IF (AO(iAO).EQ.AOpCharge) THEN
         nAtoms(iAO) = mol(iAO)%p%nAtoms
         noPart(iAO) = .TRUE.
+      ELSE IF (AO(iAO).EQ.AOelField) THEN
+        nAtoms(iAO) = mol(iAO)%p%nAtoms
+        noPart(iAO) = .TRUE.
       ELSE IF (AO(iAO).EQ.AONuclear) THEN
         nAtoms(iAO) = 1
         noPart(iAO) = .TRUE.
@@ -1709,6 +1717,9 @@ DO iAO=1,4
   ELSE IF (AO(iAO).EQ.AOpCharge) THEN
     nAtoms(iAO) = mol(iAO)%p%nAtoms
     noPart(iAO) = .TRUE.
+  ELSE IF (AO(iAO).EQ.AOelField) THEN
+    nAtoms(iAO) = mol(iAO)%p%nAtoms
+    noPart(iAO) = .TRUE.
   ELSE IF (AO(iAO).EQ.AONuclear) THEN
     nAtoms(iAO) = 1
     noPart(iAO) = .TRUE.
@@ -2120,6 +2131,8 @@ ELSE
         nbastA = nbastA + orbInfo(iA)%numAtomicOrbitalsReg(iatomfull)
       ELSE IF (AOA.EQ.AOpCharge) THEN
         nbastA = nbastA + 1
+      ELSE IF (AOA.EQ.AOelField) THEN
+        nbastA = nbastA + 3
       ELSE
         CALL LSQUIT('Error in getTaskDimension. Not an implemented AOA option',lupri)
       ENDIF
@@ -2146,6 +2159,8 @@ ELSE
         nBastB = nBastB + orbInfo(iB)%numAtomicOrbitalsAux(iatomfull)
       ELSE IF (AOB.EQ.AOpCharge) THEN
         nbastB = nbastB + 1
+      ELSE IF (AOB.EQ.AOelField) THEN
+        nbastB = nbastB + 3
       ELSE
         CALL LSQUIT('Error in getTaskDimension. Not an implemented AOB option',lupri)
       ENDIF

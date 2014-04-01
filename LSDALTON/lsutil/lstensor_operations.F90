@@ -652,7 +652,7 @@ CONTAINS
     TYPE(LSTENSOR),intent(inout) :: newLSTENSORitem
     integer,intent(in) :: lupri
     !
-    integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+    integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
     integer :: I,J,K,L,M,n1,n2,n3,n4,n5
     call lstensor_nullify(newLSTENSORitem)
     IF(ASSOCIATED(oldLSTENSORitem%LSAO).OR.ASSOCIATED(oldLSTENSORitem%SLSAO))THEN
@@ -700,6 +700,8 @@ CONTAINS
        n3 = size(oldLSTENSORitem%INDEX,3)
        n4 = size(oldLSTENSORitem%INDEX,4)
        call mem_alloc(newLSTENSORitem%INDEX,n1,n2,n3,n4)
+       nsize = n1*n2*n3*n4*mem_intsize
+       call mem_allocated_mem_lstensor(nsize)
        DO L=1,n4
           DO K=1,n3
              DO J=1,n2
@@ -721,6 +723,9 @@ CONTAINS
        n1 = size(oldLSTENSORitem%maxgab,1)
        n2 = size(oldLSTENSORitem%maxgab,2)
        call mem_alloc(newLSTENSORitem%maxgab,n1,n2)
+       nsize = n1*n2*mem_shortintsize
+       call mem_allocated_mem_lstensor(nsize)
+
        DO J=1,n2
           DO I=1,n1
              newLSTENSORitem%maxgab(I,J) = oldLSTENSORitem%maxgab(I,J)
@@ -733,6 +738,9 @@ CONTAINS
        n1 = size(oldLSTENSORitem%maxprimgab,1)
        n2 = size(oldLSTENSORitem%maxprimgab,2)
        call mem_alloc(newLSTENSORitem%maxprimgab,n1,n2)
+       nsize = n1*n2*mem_shortintsize
+       call mem_allocated_mem_lstensor(nsize)
+
        DO J=1,n2
           DO I=1,n1
              newLSTENSORitem%maxprimgab(I,J) = oldLSTENSORitem%maxprimgab(I,J)
@@ -746,6 +754,8 @@ CONTAINS
        n1 = size(oldLSTENSORitem%MBIE,2)
        n2 = size(oldLSTENSORitem%MBIE,3)
        call mem_alloc(newLSTENSORitem%MBIE,newLSTENSORitem%nMBIE,n1,n2)
+       nsize = SIZE(newLSTENSORitem%MBIE,KIND=long)*mem_realsize
+       call mem_allocated_mem_lstensor(nsize)
        DO K=1,n2
         DO J=1,n1
          DO I=1,newLSTENSORitem%nMBIE
@@ -762,6 +772,8 @@ CONTAINS
        n1 = size(oldLSTENSORitem%nAOBATCH,1)
        n2 = size(oldLSTENSORitem%nAOBATCH,2)
        call mem_alloc(newLSTENSORitem%nAOBATCH,n1,n2)
+       nsize = n1*n2*mem_intsize
+       call mem_allocated_mem_lstensor(nsize)
        DO J=1,n2
           DO I=1,n1
              newLSTENSORitem%nAOBATCH(I,J) = oldLSTENSORitem%nAOBATCH(I,J)
@@ -770,9 +782,6 @@ CONTAINS
     ELSE
        NULLIFY(newLSTENSORitem%nAOBATCH)
     ENDIF
-
-    call LSTENSOR_mem_est(newLSTENSORitem,nmemsize)
-    call add_mem_to_global(nmemsize)
 
   End Subroutine LSTENSOR_copy
 
@@ -785,15 +794,19 @@ CONTAINS
 
     call LSTENSOR_local_free(LSTENSORitem)
 
-    call LSTENSOR_mem_est(LSTENSORitem,nsize)
-    call remove_mem_from_global(nsize)
     IF(ASSOCIATED(LSTENSORitem%maxgab))THEN
+       nsize = size(LSTENSORitem%maxgab,KIND=long)*mem_shortintsize
+       call mem_deallocated_mem_lstensor(nsize)
        CALL MEM_DEALLOC(LSTENSORitem%maxgab)
     ENDIF
     IF(ASSOCIATED(LSTENSORitem%maxprimgab))THEN
+       nsize = size(LSTENSORitem%maxprimgab,KIND=long)*mem_shortintsize
+       call mem_deallocated_mem_lstensor(nsize)
        CALL MEM_DEALLOC(LSTENSORitem%maxprimgab)
     ENDIF
     IF(ASSOCIATED(LSTENSORitem%MBIE))THEN
+       nsize = size(LSTENSORitem%MBIE,KIND=long)*mem_realsize
+       call mem_deallocated_mem_lstensor(nsize)
        CALL MEM_DEALLOC(LSTENSORitem%MBIE)
     ENDIF
 #ifdef VAR_MPI
@@ -816,8 +829,6 @@ CONTAINS
     !
     integer :: I,J,K,L,M
 
-    call LSTENSOR_mem_est(LSTENSORitem,nsize)
-    call remove_mem_from_global(nsize)
     IF(ASSOCIATED(LSTENSORitem%LSAO).OR.ASSOCIATED(LSTENSORitem%SLSAO))THEN
        call free_lstensorMem(LSTENSORitem%lstmem_index)
     ENDIF
@@ -828,9 +839,13 @@ CONTAINS
        CALL MEM_DEALLOC(LSTENSORitem%SLSAO)
     ENDIF
     IF(ASSOCIATED(LSTENSORitem%INDEX))THEN
+       nsize = size(LSTENSORitem%INDEX,KIND=long)*mem_intsize
+       call mem_deallocated_mem_lstensor(nsize)
        CALL MEM_DEALLOC(LSTENSORitem%INDEX)
     ENDIF
     IF(ASSOCIATED(LSTENSORitem%nAOBATCH))THEN
+       nsize = size(LSTENSORitem%nAOBATCH,KIND=long)*mem_intsize
+       call mem_deallocated_mem_lstensor(nsize)
        CALL MEM_DEALLOC(LSTENSORitem%nAOBATCH)
     ENDIF
 #ifdef VAR_MPI
@@ -841,65 +856,9 @@ CONTAINS
        CALL MEM_DEALLOC(LSTENSORitem%G_fullatoms2)
     ENDIF
 #endif
-    call LSTENSOR_mem_est(LSTENSORitem,nsize)
-    call add_mem_to_global(nsize)
   End Subroutine LSTENSOR_local_free
 
-  Subroutine LSTENSOR_mem_est(LSTENSORitem,nsize)
-    implicit none
-    TYPE(LSTENSOR),intent(in) :: LSTENSORitem
-    integer(kind=long) :: nsize
-    !
-    integer(kind=long) :: nsize1
-    integer :: I,J,K,L,M,n1
-    nsize = 0
-    IF(ASSOCIATED(LSTENSORitem%INDEX))THEN
-       n1 = size(LSTENSORitem%INDEX)
-       nsize = nsize + n1*mem_intsize
-    ENDIF
-    IF(ASSOCIATED(LSTENSORitem%maxgab))THEN
-       n1 = size(LSTENSORitem%maxgab)
-       nsize = nsize + n1*mem_intsize
-    ENDIF
-    IF(ASSOCIATED(LSTENSORitem%maxprimgab))THEN
-       n1 = size(LSTENSORitem%maxprimgab)
-       nsize = nsize + n1*mem_intsize
-    ENDIF
-    IF(ASSOCIATED(LSTENSORitem%MBIE))THEN
-       n1 = size(LSTENSORitem%MBIE)
-       nsize = nsize + n1*mem_realsize
-    ENDIF
-    IF(ASSOCIATED(LSTENSORitem%nAOBATCH))THEN
-       n1 = size(LSTENSORitem%nAOBATCH)
-       nsize = nsize + n1*mem_intsize
-    ENDIF
-    nsize = nsize + 568
-  End Subroutine LSTENSOR_mem_est
-
   !END PRIMITIVE SUBROUTINE
-
-  !> \brief add memory used for lstensor to global statistics
-  !> \author T. Kjaergaard
-  !> \date 2010
-  !> \param nsize size of memory
-  SUBROUTINE ADD_MEM_TO_GLOBAL(nsize)
-    implicit none
-    integer(KIND=long),intent(in) :: nsize
-    call mem_allocated_mem_lstensor(nsize)
-    
-  END SUBROUTINE ADD_MEM_TO_GLOBAL
-  
-  !> \brief remove memory used for lstensor from global statistics
-  !> \author T. Kjaergaard
-  !> \date 2010
-  !> \param nsize size of memory
-  SUBROUTINE REMOVE_MEM_FROM_GLOBAL(nsize)
-    implicit none
-    integer(KIND=long),intent(in) :: nsize
-    call mem_deallocated_mem_lstensor(nsize)
-    
-  END SUBROUTINE REMOVE_MEM_FROM_GLOBAL
-  
 
   !> \brief set the lstensor to zero
   !> \author T. Kjaergaard
@@ -953,7 +912,7 @@ CONTAINS
     integer :: offset,lstmem_index
     LOGICAL :: ERROR,Screen,ScreenAtom
     LOGICAL,pointer :: nonscreenAB(:,:),nonscreenAC(:,:),nonscreenCD(:,:)
-    integer(kind=long) :: nmemsize,AllocInt,AllocIntS,AllocRealk
+    integer(kind=long) :: nmemsize,AllocInt,AllocIntS,AllocRealk,nsize
     TYPE(LSAOTENSOR),pointer    :: lsao
 !    integer,pointer :: inttmp(:,:)
     integer,pointer :: inttmp2(:)
@@ -984,6 +943,8 @@ CONTAINS
 
     maxnatom = MAX(natom(1),natom(2),natom(3),natom(4))
     call mem_alloc(TENSOR%nAOBATCH,maxnatom,4)
+    nsize = maxnatom*4*mem_intsize
+    call mem_allocated_mem_lstensor(nsize)
 !    inttmp => TENSOR%nAOBATCH
 !    DO IAO = 1,4
 !       inttmp2 => AOT(IAO)%p%ATOMICnBatch
@@ -1049,6 +1010,8 @@ CONTAINS
     ENDDO
     TENSOR%nLSAO = I
     CALL MEM_ALLOC(TENSOR%INDEX,natom(1),natom(2),natom(3),natom(4))
+    nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+    call mem_allocated_mem_lstensor(nsize)
     DO Latom = 1,natom(4)
        DO Katom = 1,natom(3)
           DO Jatom = 1,natom(2)
@@ -1234,8 +1197,6 @@ CONTAINS
  call mem_dealloc(nonscreenCD)
  call FREE_EMPTY_AO(AOTE)
  
- call LSTENSOR_mem_est(TENSOR,nmemsize)
- call add_mem_to_global(nmemsize)
 END SUBROUTINE INIT_LSTENSOR_5DIM
 
   SUBROUTINE Init_lstensor_1dim(TENSOR,ndim,lupri)
@@ -1244,7 +1205,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
     INTEGER            :: ndim,lupri
     !
     INTEGER :: imat,iAO,lstmem_index
-    integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+    integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
     TYPE(LSAOTENSOR),pointer    :: lsao
     call LSTENSOR_nullify(TENSOR)
     TENSOR%pChargetensor = .FALSE.
@@ -1262,6 +1223,9 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
     TENSOR%lstmem_index = lstmem_index
     call lsaotensor_nullify(TENSOR%LSAO(1))
     CALL MEM_ALLOC(TENSOR%INDEX,1,1,1,1)
+    nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+    call mem_allocated_mem_lstensor(nsize)
+
     TENSOR%INDEX = 1
     DO IAO = 1,4
        TENSOR%natom(iAO) = 1
@@ -1274,6 +1238,9 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
     lsao => TENSOR%LSAO(1)
     lsao%ATOM(1) = 1; lsao%ATOM(2) = 1; lsao%ATOM(3) = 1; lsao%ATOM(4) = 1
     call mem_alloc(TENSOR%nAOBATCH,1,4)
+    nsize = size(TENSOR%nAOBATCH,KIND=long)*mem_intsize
+    call mem_allocated_mem_lstensor(nsize)
+
     TENSOR%nAOBATCH(1,1) = 1; TENSOR%nAOBATCH(1,2) = 1
     TENSOR%nAOBATCH(1,3) = 1; TENSOR%nAOBATCH(1,4) = 1
     lsao%AOBATCH(1) = 0; lsao%AOBATCH(2) = 0
@@ -1299,8 +1266,6 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
        lsao%startLocalOrb(iAO)=1
     ENDDO
 
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call add_mem_to_global(nmemsize)
   end subroutine Init_lstensor_1dim
 
   !> \brief copy an lstensor to a new lstensor
@@ -1338,7 +1303,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
     Integer   :: ibatch2,ibatch1,jbatch1,jbatch2,nbatB,nbatA,IATOM,lstmem_index
     Integer   :: nbat1(natoms1),nbat2(natoms2),nstart1(natoms1),nstart2(natoms2)
     integer  :: nbatches1,nbatches2,nbatJ,nbatI,Jbatch,Ibatch,Lbatch,Kbatch
-    integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+    integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
     TYPE(LSAOTENSOR),pointer    :: lsao1
     TYPE(LSAOTENSOR),pointer    :: lsao2
 !    print*,'TENSOR1 in build_sublstensor_from_full_lstensor'
@@ -1362,6 +1327,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
        IF(ASSOCIATED(TENSOR1%nAOBATCH))THEN
           maxnatom = MAX(natoms1,natoms2,natoms3,natoms4)
           call mem_alloc(TENSOR2%nAOBATCH,maxnatom,4)
+          nsize = size(TENSOR2%nAOBATCH,KIND=long)*mem_intsize
+          call mem_allocated_mem_lstensor(nsize)
           DO IATOM = 1,natoms1
              IATOM2 = atoms1(IATOM)
              TENSOR2%nAOBATCH(IATOM,1) = TENSOR1%nAOBATCH(IATOM2,1)
@@ -1390,6 +1357,9 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
        TENSOR2%nLSAO = 1
        CALL MEM_ALLOC(TENSOR2%LSAO,1)
        CALL MEM_ALLOC(TENSOR2%INDEX,1,1,1,1)
+       nsize = size(TENSOR2%INDEX,KIND=long)*mem_intsize
+       call mem_allocated_mem_lstensor(nsize)
+
        TENSOR2%INDEX(1,1,1,1) = 1
        TENSOR2%nbast(1) = 1
        TENSOR2%nbast(2) = TENSOR2%nLSAO
@@ -1423,6 +1393,9 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
           TENSOR2%nLSAO = TENSOR2%natom(1)
           CALL MEM_ALLOC(TENSOR2%LSAO,TENSOR2%natom(1))
           CALL MEM_ALLOC(TENSOR2%INDEX,TENSOR2%natom(1),1,1,4)
+          nsize = size(TENSOR2%INDEX,KIND=long)*mem_intsize
+          call mem_allocated_mem_lstensor(nsize)
+
           DO I2=1,4
              DO Iatom2 = 1,TENSOR2%natom(1)
                 TENSOR2%INDEX(Iatom2,1,1,I2) = Iatom2
@@ -1441,6 +1414,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
           TENSOR2%nbast(4) = 1
           CALL MEM_ALLOC(TENSOR2%LSAO,natoms1+natoms2+natoms3+natoms4)
           CALL MEM_ALLOC(TENSOR2%INDEX,Maxnatom,1,1,4)
+          nsize = size(TENSOR2%INDEX,KIND=long)*mem_intsize
+          call mem_allocated_mem_lstensor(nsize)
           natomG = 0
           DO iAO=1,4
              DO Iatom2 = 1,natom(iAO)
@@ -1502,6 +1477,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
        ENDIF
        CALL MEM_ALLOC(TENSOR2%LSAO,TENSOR1%natom(1))
        CALL MEM_ALLOC(TENSOR2%INDEX,TENSOR1%natom(1),1,1,1)
+       nsize = size(TENSOR2%INDEX,KIND=long)*mem_intsize
+       call mem_allocated_mem_lstensor(nsize)
        DO Iatom1 = 1,natoms1
           TENSOR2%INDEX(Iatom1,1,1,1) = Iatom1
        ENDDO
@@ -1565,6 +1542,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
           TENSOR2%nSLSAO  = I2
           CALL MEM_ALLOC(TENSOR2%SLSAO,TENSOR2%nSLSAO)
           CALL MEM_ALLOC(TENSOR2%INDEX,TENSOR2%natom(1),TENSOR2%natom(2),1,1)
+          nsize = size(TENSOR2%INDEX,KIND=long)*mem_intsize
+          call mem_allocated_mem_lstensor(nsize)
           call retrieve_lstMemVal(TENSOR1%lstmem_index,AllocInt,AllocRealk,AllocInts)
           call init_lstensorMem(AllocInt,AllocRealk,AllocInts,lstmem_index)
           call zero_lstensorMem
@@ -1598,6 +1577,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
        IF(associated(TENSOR1%maxgab))THEN
           IF(natoms1.EQ.TENSOR1%natom(1).AND.natoms2.EQ.TENSOR1%natom(2))THEN
              call mem_alloc(TENSOR2%maxgab,TENSOR1%nbatches(1),TENSOR1%nbatches(2))
+             nsize = size(TENSOR2%maxgab,KIND=long)*mem_shortintsize
+             call mem_allocated_mem_lstensor(nsize)
              do jbat = 1,TENSOR1%nbatches(2) 
                 do ibat = 1,TENSOR1%nbatches(1) 
                    TENSOR2%maxgab(ibat,jbat) = TENSOR1%maxgab(ibat,jbat)
@@ -1621,6 +1602,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
              TENSOR2%nbatches(3) = 1
              TENSOR2%nbatches(4) = 1
              call mem_alloc(TENSOR2%maxgab,nbatches1,nbatches2)
+             nsize = size(TENSOR2%maxgab,KIND=long)*mem_shortintsize
+             call mem_allocated_mem_lstensor(nsize)
              call ls_sizero(TENSOR2%maxgab,nbatches1*nbatches2)
              DO Jatom2 = 1,natoms2 
                 Jatom1 = atoms2(Jatom2)
@@ -1656,6 +1639,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
        IF(associated(TENSOR1%maxprimgab))THEN
           IF(natoms1.EQ.TENSOR1%natom(1).AND.natoms2.EQ.TENSOR1%natom(2))THEN
              call mem_alloc(TENSOR2%maxprimgab,TENSOR1%nbatches(1),TENSOR1%nbatches(2))
+             nsize = size(TENSOR2%maxprimgab,KIND=long)*mem_shortintsize
+             call mem_allocated_mem_lstensor(nsize)
              do jbat = 1,TENSOR1%nbatches(2) 
                 do ibat = 1,TENSOR1%nbatches(1) 
                    TENSOR2%maxprimgab(ibat,jbat) = TENSOR1%maxprimgab(ibat,jbat)
@@ -1680,6 +1665,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
              TENSOR2%nbatches(4) = 1
              nullify(TENSOR2%maxprimgab)
              call mem_alloc(TENSOR2%maxprimgab,nbatches1,nbatches2)
+             nsize = size(TENSOR2%maxprimgab,KIND=long)*mem_shortintsize
+             call mem_allocated_mem_lstensor(nsize)
              call ls_sizero(TENSOR2%maxprimgab,nbatches1*nbatches2)
              DO Jatom2 = 1,natoms2 
                 Jatom1 = atoms2(Jatom2)
@@ -1718,6 +1705,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
           IF(natoms1.EQ.TENSOR1%natom(1).AND.natoms2.EQ.TENSOR1%natom(2))THEN
              nullify(TENSOR2%MBIE)
              call mem_alloc(TENSOR2%MBIE,TENSOR1%nMBIE,TENSOR1%nbatches(1),TENSOR1%nbatches(2))
+             nsize = size(TENSOR2%MBIE,KIND=long)*mem_realsize
+             call mem_allocated_mem_lstensor(nsize)
              do jbat = 1,TENSOR1%nbatches(2) 
                 do ibat = 1,TENSOR1%nbatches(1) 
                    TENSOR2%MBIE(1,ibat,jbat) = TENSOR1%MBIE(1,ibat,jbat)
@@ -1739,6 +1728,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
              TENSOR2%nbatches(4) = 1
              nullify(TENSOR2%MBIE)
              call mem_alloc(TENSOR2%MBIE,2,nbatches1,nbatches2)
+             nsize = size(TENSOR2%MBIE,KIND=long)*mem_realsize
+             call mem_allocated_mem_lstensor(nsize)
              call ls_dzero(TENSOR2%MBIE,2*nbatches1*nbatches2)
              DO Jatom2 = 1,natoms2 
                 Jatom1 = atoms2(Jatom2)
@@ -1791,6 +1782,8 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
        TENSOR2%nLSAO  = natoms1*natoms2*natoms3*natoms4
        CALL MEM_ALLOC(TENSOR2%LSAO,TENSOR2%nLSAO)
        CALL MEM_ALLOC(TENSOR2%INDEX,natoms1,natoms2,natoms3,natoms4)
+       nsize = size(TENSOR2%INDEX,KIND=long)*mem_intsize
+       call mem_allocated_mem_lstensor(nsize)
        !FIXME OVERKILL TOO MUCH MEMORY FOR TENSOR2
        call retrieve_lstMemVal(TENSOR1%lstmem_index,AllocInt,AllocRealk,AllocInts)
        call init_lstensorMem(AllocInt,AllocRealk,AllocInts,lstmem_index)
@@ -1835,10 +1828,6 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
        enddo
        TENSOR2%nLSAO  = I2
     endif
-    IF(.NOT.TENSOR2%Econtrib)THEN
-       call LSTENSOR_mem_est(TENSOR2,nmemsize)
-       call add_mem_to_global(nmemsize)
-    ENDIF
   end SUBROUTINE build_sublstensor_from_full_lstensor
 
   !> \brief 
@@ -2702,6 +2691,7 @@ subroutine memdist_lstensor_SetupFullinfo(TENSOR,AO1,AO2,nbast1,nbast2,&
     NULLIFY(TENSOR%G_INDEX)
     CALL MEM_ALLOC(TENSOR%G_LSAO,I)
     CALL MEM_ALLOC(TENSOR%G_INDEX,natom(1),natom(2))
+
     DO Jatom = 1,natom(2)
        DO Iatom = 1,natom(1)
           TENSOR%G_INDEX(Iatom,Jatom) = 0 !if 0 lsaotensor not call mem_allocd 
@@ -2752,8 +2742,6 @@ subroutine memdist_lstensor_SetupFullinfo(TENSOR,AO1,AO2,nbast1,nbast2,&
     call mem_dealloc(nonscreenAB)
     call FREE_EMPTY_AO(AOTE)
 
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call add_mem_to_global(nmemsize)
 #else
     call lsquit('called memdist_lstensor_SetupFullinfo but no MPI',-1)
 #endif
@@ -2783,16 +2771,13 @@ end subroutine memdist_lstensor_SetupFullinfo
     Integer   :: nbat1(natoms1),nbat2(natoms2),nstart1(natoms1),nstart2(natoms2)
     integer  :: nbatches1,nbatches2,nbatJ,nbatI,Jbatch,Ibatch,Lbatch,Kbatch
     INTEGER :: natom(2),nbat(2),AOTbatch(2),batAOT(2),nAng(2),maxBat,maxAng
-    integer(kind=long) :: nmemsize,AllocInt,AllocIntS,AllocRealk
+    integer(kind=long) :: nmemsize,AllocInt,AllocIntS,AllocRealk,nsize
     TYPE(LSAOTENSOR),pointer    :: lsao
 !    REAL(REALK),pointer     :: elms(:)
 !    TYPE(LSAOTENSOR),pointer    :: lsao2
 !    REAL(REALK),pointer     :: elms2(:)
 !    print*,'TENSOR in memdist_lstensor_SetupLocalinfo'
 !    call lstensor_print(TENSOR1,6)
-
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call remove_mem_from_global(nmemsize)
 
     call SET_EMPTY_AO(AOTE)
     AOT(1)%p => AO1
@@ -2812,6 +2797,8 @@ end subroutine memdist_lstensor_SetupFullinfo
     IF(ASSOCIATED(TENSOR%G_nAOBATCH))THEN
        maxnatom = MAX(natoms1,natoms2)
        call mem_alloc(TENSOR%nAOBATCH,maxnatom,2)
+       nsize = size(TENSOR%nAOBATCH,KIND=long)*mem_intsize
+       call mem_allocated_mem_lstensor(nsize)
        DO IATOM = 1,natoms1
           IATOM2 = atoms1(IATOM)
           TENSOR%nAOBATCH(IATOM,1) = TENSOR%G_nAOBATCH(IATOM2,1)
@@ -2844,6 +2831,8 @@ end subroutine memdist_lstensor_SetupFullinfo
        TENSOR%nLSAO  = natoms1*natoms2
        NULLIFY(TENSOR%INDEX)
        CALL MEM_ALLOC(TENSOR%INDEX,natoms1,natoms2,1,1)
+       nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+       call mem_allocated_mem_lstensor(nsize)
        !memory estimation
        AllocInt = 0
        AllocIntS = 0
@@ -2975,8 +2964,6 @@ end subroutine memdist_lstensor_SetupFullinfo
        IF(I2.NE.TENSOR%nLSAO)call lsquit('lstensor dim mismatch I2',-1)
     endif
     call FREE_EMPTY_AO(AOTE)
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call add_mem_to_global(nmemsize)
 #else
     call lsquit('called memdist_lstensor_SetupFullinfo but no MPI',-1)
 #endif
@@ -2995,10 +2982,7 @@ end subroutine memdist_lstensor_SetupFullinfo
     TYPE(AOITEMPOINTER) :: AOT(2)
     TYPE(AOITEM),target :: AOTE
     integer :: lstmem_index
-    integer(kind=long) :: nmemsize,AllocInt,AllocIntS,AllocRealk
-
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call remove_mem_from_global(nmemsize)
+    integer(kind=long) :: nmemsize,AllocInt,AllocIntS,AllocRealk,nsize
 
     call SET_EMPTY_AO(AOTE)
     AOT(1)%p => AOTE
@@ -3012,6 +2996,8 @@ end subroutine memdist_lstensor_SetupFullinfo
     nullify(TENSOR%nAOBATCH)
     IF(ASSOCIATED(TENSOR%G_nAOBATCH))THEN
        call mem_alloc(TENSOR%nAOBATCH,1,2)
+       nsize = size(TENSOR%nAOBATCH,KIND=long)*mem_intsize
+       call mem_allocated_mem_lstensor(nsize)
        TENSOR%nAOBATCH(1,1) = 1
        TENSOR%nAOBATCH(1,2) = 1
     ENDIF
@@ -3027,6 +3013,8 @@ end subroutine memdist_lstensor_SetupFullinfo
     TENSOR%nLSAO  = 0
     NULLIFY(TENSOR%INDEX)
     CALL MEM_ALLOC(TENSOR%INDEX,1,1,1,1)
+    nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+    call mem_allocated_mem_lstensor(nsize)
     !memory estimation
     CALL MEM_ALLOC(TENSOR%LSAO,1)
     AllocInt = 1
@@ -3036,8 +3024,6 @@ end subroutine memdist_lstensor_SetupFullinfo
     call zero_lstensorMem
     TENSOR%lstmem_index = lstmem_index
     call FREE_EMPTY_AO(AOTE)
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call add_mem_to_global(nmemsize)
 #else
     call lsquit('called build_empty_sublstensor but no MPI',-1)
 #endif
@@ -3053,8 +3039,6 @@ end subroutine memdist_lstensor_SetupFullinfo
     TYPE(LSTENSOR)     :: TENSOR2
     integer(kind=long) :: nmemsize
     call LSTENSOR_nullify(TENSOR2)
-    call LSTENSOR_mem_est(TENSOR2,nmemsize)
-    call add_mem_to_global(nmemsize)
   end SUBROUTINE alloc_build_empty_sublstensor
 
   !> \brief build full 5 dimensional array from an lstensor 
@@ -3809,7 +3793,7 @@ end subroutine elmsFrom5dim_FuncLstSub
     INTEGER    :: IATOM,JATOM,nbat1,nbat2,offset1,offset2,maxBat,maxAng
     LOGICAL    :: ERROR
     type(lsaotensor),pointer :: lsao
-    integer(kind=long)  :: nmemsize
+    integer(kind=long)  :: nmemsize,nsize
     integer(kind=short) :: maxgab,maxgab2
     ERROR=.FALSE.
     IF(dim1.NE.TENSOR%nbatches(1))ERROR=.TRUE.
@@ -3828,12 +3812,12 @@ end subroutine elmsFrom5dim_FuncLstSub
        ENDDO
     ELSE
        IF(.NOT.ASSOCIATED(TENSOR%maxgab))THEN
-          call LSTENSOR_mem_est(TENSOR,nmemsize)
-          call remove_mem_from_global(nmemsize)
           nbatches1 = TENSOR%nbatches(1)
           nbatches2 = TENSOR%nbatches(2)
           NULLIFY(TENSOR%maxgab)
           CALL MEM_ALLOC(TENSOR%maxgab,nbatches1,nbatches2)
+          nsize = size(TENSOR%maxgab,KIND=long)*mem_shortintsize
+          call mem_allocated_mem_lstensor(nsize)
           call ls_sizero(TENSOR%maxgab,nbatches1*nbatches2)
           ndim5 = TENSOR%ndim5
           DO Jatom = 1,TENSOR%natom(2)
@@ -3873,8 +3857,6 @@ end subroutine elmsFrom5dim_FuncLstSub
                 ENDIF
              ENDDO
           ENDDO
-          call LSTENSOR_mem_est(TENSOR,nmemsize)
-          call add_mem_to_global(nmemsize)
        ENDIF
        DO J = 1,dim2
           DO I = 1,dim1
@@ -4004,7 +3986,7 @@ end subroutine elmsFrom5dim_FuncLstSub
     INTEGER :: nElms,startLocalOrb,nAngG,batAOTG,nbatches1,nbatches2
     INTEGER :: batAOTGJ,batAOTGI
     LOGICAL :: ERROR,Screen,ScreenAtom,OVERALLscreen
-    integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+    integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
     TYPE(SLSAOTENSOR),pointer    :: slsao
 
     AOT(1)%p => AO1
@@ -4045,6 +4027,8 @@ end subroutine elmsFrom5dim_FuncLstSub
     CALL MEM_ALLOC(TENSOR%SLSAO,TENSOR%nSLSAO)
     NULLIFY(TENSOR%INDEX)
     CALL MEM_ALLOC(TENSOR%INDEX,natom(1),natom(2),1,1)
+    nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+    call mem_allocated_mem_lstensor(nsize)
     DO Jatom = 1,natom(2)
        DO Iatom = 1,natom(1)
           TENSOR%INDEX(Iatom,Jatom,1,1) = 0 !if 0 lsaotensor not call mem_allocd 
@@ -4060,6 +4044,9 @@ end subroutine elmsFrom5dim_FuncLstSub
     maxnatom = MAX(TENSOR%natom(1),TENSOR%natom(2))
     nullify(TENSOR%nAOBATCH)
     call mem_alloc(TENSOR%nAOBATCH,maxnatom,2)
+    nsize = size(TENSOR%nAOBATCH,KIND=long)*mem_intsize
+    call mem_allocated_mem_lstensor(nsize)
+
     DO IATOM = 1,TENSOR%natom(1)
        TENSOR%nAOBATCH(IATOM,1) = AO1%ATOMICnBatch(IATOM)
     ENDDO
@@ -4228,8 +4215,6 @@ end subroutine elmsFrom5dim_FuncLstSub
        Call INIT_SCREENING_LSTENSOR(TENSOR,AO1,AO2,nbast1,nbast2,ODscreen,lupri,nonscreenAB)
     ELSE
        !already initialised 
-       call LSTENSOR_mem_est(TENSOR,nmemsize)
-       call remove_mem_from_global(nmemsize)
     ENDIF
     nullify(TENSOR%maxprimgab)
     DO Jatom = 1,natom(2)
@@ -4258,8 +4243,6 @@ end subroutine elmsFrom5dim_FuncLstSub
     ENDDO
     CALL MEM_DEALLOC(nonscreenAB)
 
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call add_mem_to_global(nmemsize)
   END SUBROUTINE INIT_PS_LSTENSOR
 
   !> \brief initiate the primitive screening lstensor structure
@@ -4289,24 +4272,23 @@ end subroutine elmsFrom5dim_FuncLstSub
     TYPE(AOITEM),target  :: AO1,AO2
     !
     INTEGER :: I,J,dim,nbatches1,nbatches2
-    integer(kind=long) :: nmemsize
+    integer(kind=long) :: nmemsize,nsize
     IF(.NOT.TENSOR%Screentensor)THEN
        !not initialised yet
        Call INIT_SCREENING_LSTENSOR(TENSOR,AO1,AO2,nbast1,nbast2,ODscreen,lupri)
     ELSE
        !already initialised 
-       call LSTENSOR_mem_est(TENSOR,nmemsize)
-       call remove_mem_from_global(nmemsize)
     ENDIF
     tensor%screenoutput=.false.
     nbatches1 = TENSOR%nbatches(1)
     nbatches2 = TENSOR%nbatches(2)
     nullify(TENSOR%maxgab)
     call mem_alloc(TENSOR%maxgab,nbatches1,nbatches2)
+    nsize = size(TENSOR%maxgab,KIND=long)*mem_shortintsize
+    call mem_allocated_mem_lstensor(nsize)
+
     dim = nbatches2*nbatches1
     call ls_sizero(TENSOR%maxgab,dim)
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call add_mem_to_global(nmemsize)
 
   END SUBROUTINE INIT_CS_LSTENSOR
   
@@ -4376,14 +4358,15 @@ end subroutine elmsFrom5dim_FuncLstSub
     integer :: Jbatch,Ibatch,Iatom,Jatom,nBatI,nBatJ,jbat,ibat
     integer :: n1,n2,s1,s2,nA,nB,maxbat
     type(slsaotensor),pointer :: slsao
-    integer(kind=long) :: nmemsize
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call remove_mem_from_global(nmemsize)
+    integer(kind=long) :: nmemsize,nsize
 
     nbatches1 = TENSOR%nbatches(1)
     nbatches2 = TENSOR%nbatches(2)
     nullify(TENSOR%maxprimgab)
     call mem_alloc(TENSOR%maxprimgab,nbatches1,nbatches2)
+    nsize = size(TENSOR%maxprimgab,KIND=long)*mem_shortintsize
+    call mem_allocated_mem_lstensor(nsize)
+
     call ls_sizero(TENSOR%maxprimgab,nbatches1*nbatches2)
 
 !    Jbatch = 0
@@ -4417,8 +4400,6 @@ end subroutine elmsFrom5dim_FuncLstSub
      ENDDO
 !     Jbatch = Jbatch + nbatJ
     ENDDO
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call add_mem_to_global(nmemsize)
   END SUBROUTINE Set_lst_maxprimgab
 
   subroutine determine_maxprimgab(maxprimgab,elms,n1,n2,s1,s2,nA,nB)
@@ -4451,7 +4432,7 @@ end subroutine elmsFrom5dim_FuncLstSub
     real(realk)        :: fullmat(natoms,1)
     !
     Integer :: I,J,lstmem_index
-    integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+    integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
     integer(kind=short) :: maxGab
     call lstensor_nullify(TENSOR)
     TENSOR%pChargetensor = .FALSE.
@@ -4474,6 +4455,8 @@ end subroutine elmsFrom5dim_FuncLstSub
     TENSOR%nbatches(4) = 1
     nullify(TENSOR%maxgab)
     call mem_alloc(TENSOR%maxgab,natoms,1)
+    nsize = size(TENSOR%maxgab,KIND=long)*mem_shortintsize
+    call mem_allocated_mem_lstensor(nsize)
     maxgab = shortzero
     DO I = 1,natoms
        IF(abs(fullmat(I,1)).GT.shortintCRIT)THEN
@@ -4489,11 +4472,15 @@ end subroutine elmsFrom5dim_FuncLstSub
     TENSOR%maxprimgabelm = maxgab
     nullify(TENSOR%maxprimgab)
     call mem_alloc(TENSOR%maxprimgab,natoms,1)
+    nsize = size(TENSOR%maxprimgab,KIND=long)*mem_shortintsize
+    call mem_allocated_mem_lstensor(nsize)
     DO I = 1,natoms
        TENSOR%maxprimgab(I,1) = TENSOR%maxgab(I,1)
     ENDDO
     nullify(TENSOR%nAOBATCH)
     call mem_alloc(TENSOR%nAOBATCH,natoms,2)
+    nsize = size(TENSOR%nAOBATCH,KIND=long)*mem_intsize
+    call mem_allocated_mem_lstensor(nsize)
     DO J=1,2
        DO I = 1,natoms
           TENSOR%nAOBATCH(I,J) = 1
@@ -4501,6 +4488,8 @@ end subroutine elmsFrom5dim_FuncLstSub
     ENDDO
     nullify(TENSOR%INDEX)
     call mem_alloc(TENSOR%INDEX,natoms,1,1,1)
+    nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+    call mem_allocated_mem_lstensor(nsize)
     nullify(TENSOR%SLSAO)
     call mem_alloc(TENSOR%SLSAO,natoms)
     AllocInt = natoms*2
@@ -4526,8 +4515,6 @@ end subroutine elmsFrom5dim_FuncLstSub
     TENSOR%nSLSAO = natoms 
     TENSOR%nLSAO = 0
     nullify(TENSOR%LSAO)
-    call LSTENSOR_mem_est(TENSOR,nmemsize)
-    call add_mem_to_global(nmemsize)
 
   END SUBROUTINE build_Nuclearlstensor
 
@@ -5808,12 +5795,10 @@ logical   :: ODscreen
 !
 Integer :: I,J,K,nbatches1,nbatches2
 real(realk),parameter :: D0 = 0.0E0_realk 
-integer(kind=long) :: nmemsize
+integer(kind=long) :: nmemsize,nsize
 
 IF(TENSOR%Screentensor)THEN
    !already initialised 
-   call LSTENSOR_mem_est(TENSOR,nmemsize)
-   call remove_mem_from_global(nmemsize)
 ELSE
    TENSOR%Screentensor = .TRUE.
 ENDIF
@@ -5822,14 +5807,15 @@ nbatches1=AO1%nbatches
 nbatches2=AO2%nbatches
 nullify(TENSOR%MBIE)
 call mem_alloc(TENSOR%MBIE,2,nbatches1,nbatches2)
+nsize = size(TENSOR%MBIE,KIND=long)*mem_realsize
+call mem_allocated_mem_lstensor(nsize)
+
 DO K = 1,nbatches2
    DO J = 1,nbatches1
       TENSOR%MBIE(1,J,K) = D0
       TENSOR%MBIE(2,J,K) = D0
    ENDDO
 ENDDO
-call LSTENSOR_mem_est(TENSOR,nmemsize)
-call add_mem_to_global(nmemsize)
 end SUBROUTINE init_MBIE_lstensor_5dim
 
 SUBROUTINE init_gradientlstensor(TENSOR,natom1,natom2,natom3,natom4,samefrag,nmat,dimtensor1,Maggrad,lupri)
@@ -5840,7 +5826,7 @@ LOGICAL            :: sameFrag,maggrad
 !
 integer :: maxnatom,I,iatom,iatom1,iatom2,iatom3,iatom4,lstmem_index
 type(lsaotensor),pointer :: lsao
-integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
 call lstensor_nullify(TENSOR)
 IF(SameFrag)THEN
    IF (nAtom2.NE.nAtom1) CALL LSQUIT('Error in init_gradientlstensor nAtoms inconsist!',lupri)
@@ -5851,6 +5837,8 @@ IF(SameFrag)THEN
    NULLIFY(TENSOR%INDEX)
    CALL MEM_ALLOC(TENSOR%LSAO,natom1)
    CALL MEM_ALLOC(TENSOR%INDEX,natom1,1,1,4)
+   nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+   call mem_allocated_mem_lstensor(nsize)
    DO I=1,4
       DO Iatom = 1,maxnAtom
          TENSOR%INDEX(Iatom,1,1,I) = Iatom
@@ -5866,6 +5854,8 @@ ELSE
    NULLIFY(TENSOR%INDEX)
    CALL MEM_ALLOC(TENSOR%LSAO,natom1+natom2+natom3+natom4)
    CALL MEM_ALLOC(TENSOR%INDEX,Maxnatom,1,1,4)
+   nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+   call mem_allocated_mem_lstensor(nsize)
    DO Iatom1 = 1,natom1
       TENSOR%INDEX(Iatom1,1,1,1) = Iatom1
    ENDDO
@@ -5996,8 +5986,6 @@ TENSOR%nbast(2) = TENSOR%nLSAO
 TENSOR%nbast(3) = 1
 TENSOR%nbast(4) = 1
 
-call LSTENSOR_mem_est(TENSOR,nmemsize)
-call add_mem_to_global(nmemsize)
 end SUBROUTINE init_gradientlstensor
 
 SUBROUTINE init_pcharge_lstensor(TENSOR,natom1,nmat,lupri)
@@ -6007,7 +5995,7 @@ INTEGER            :: lupri,natom1,nmat
 
 INTEGER :: nElms,lstmem_index
 INTEGER :: IELM,IMAT2,I,J,Iatom,iatom1,iatom2,iatom3,iatom4
-integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
 TYPE(LSAOTENSOR),pointer    :: lsao
 REAL(REALK),pointer     :: elms(:)
 call lstensor_nullify(tensor)
@@ -6015,6 +6003,8 @@ NULLIFY(TENSOR%LSAO)
 NULLIFY(TENSOR%INDEX)
 CALL MEM_ALLOC(TENSOR%LSAO,natom1)
 CALL MEM_ALLOC(TENSOR%INDEX,natom1,1,1,1)
+nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+call mem_allocated_mem_lstensor(nsize)
 DO Iatom = 1,natom1
    TENSOR%INDEX(Iatom,1,1,1) = Iatom
 ENDDO
@@ -6077,8 +6067,6 @@ DO Iatom = 1,natom1
 ENDDO
 TENSOR%nLSAO = natom1
 
-call LSTENSOR_mem_est(TENSOR,nmemsize)
-call add_mem_to_global(nmemsize)
 end SUBROUTINE init_pcharge_lstensor
 
 subroutine build_grad_from_gradlstensor(TENSOR,GRAD,natom,nmat,lupri)
@@ -6441,7 +6429,7 @@ SUBROUTINE build_BatchGab(AOfull1,AOfull2,AO1,AO2,iBatch1,jBatch1,&
   !
   INTEGER    :: I1,I2,dim,ielms,nbatches1,nbatches2
   INTEGER    :: nAngmomA,nAngmomB,nAngmomC,nAngmomD
-  integer(kind=long) :: nmemsize
+  integer(kind=long) :: nmemsize,nsize
   TYPE(SLSAOTENSOR),pointer    :: lsao1
   TYPE(SLSAOTENSOR),pointer    :: lsao2
   integer(kind=short),pointer     :: elms1(:),elms2(:)
@@ -6455,8 +6443,6 @@ SUBROUTINE build_BatchGab(AOfull1,AOfull2,AO1,AO2,iBatch1,jBatch1,&
   PS_SCREEN = ASSOCIATED(TENSOR1%maxprimgab)
   call lstensor_nullify(TENSOR2)
   call init_ps_lstensor(TENSOR2,AO1,AO2,dim1,dim2,.FALSE.,6)
-  call LSTENSOR_mem_est(TENSOR2,nmemsize)
-  call remove_mem_from_global(nmemsize)
 
 !  print*,'the FULL LSTENSOR'
 !  call lstensor_print(TENSOR1,6)
@@ -6476,15 +6462,18 @@ SUBROUTINE build_BatchGab(AOfull1,AOfull2,AO1,AO2,iBatch1,jBatch1,&
   IF(CS_SCREEN)THEN
      nullify(TENSOR2%maxgab)
      call mem_alloc(TENSOR2%maxgab,nbatches1,nbatches2)
+     nsize = size(TENSOR2%maxgab,KIND=long)*mem_shortintsize
+     call mem_allocated_mem_lstensor(nsize)
+
      call ls_sizero(TENSOR2%maxgab,dim)
   ENDIF
   IF(PS_SCREEN)THEN
      nullify(TENSOR2%maxprimgab)
      call mem_alloc(TENSOR2%maxprimgab,nbatches1,nbatches2)
+     nsize = size(TENSOR2%maxprimgab,KIND=long)*mem_shortintsize
+     call mem_allocated_mem_lstensor(nsize)
      call ls_sizero(TENSOR2%maxprimgab,dim)
   ENDIF
-  call LSTENSOR_mem_est(TENSOR2,nmemsize)
-  call add_mem_to_global(nmemsize)
 
   Jatom2 = 0
   jatom_old = 0
@@ -6574,7 +6563,7 @@ SUBROUTINE build_BatchGabK(AOfull,AO1,iBatch1,ibatchStart,dim1,TENSOR1,TENSOR2)
   !
   INTEGER    :: I1,I2,dim,ielms,nbatches1,nbatches2
   INTEGER    :: nAngmomA,nAngmomB,nAngmomC,nAngmomD
-  integer(kind=long) :: nmemsize
+  integer(kind=long) :: nmemsize,nsize
   TYPE(SLSAOTENSOR),pointer    :: lsao1
   TYPE(SLSAOTENSOR),pointer    :: lsao2
   integer(kind=short),pointer     :: elms1(:),elms2(:)
@@ -6588,8 +6577,6 @@ SUBROUTINE build_BatchGabK(AOfull,AO1,iBatch1,ibatchStart,dim1,TENSOR1,TENSOR2)
   PS_SCREEN = ASSOCIATED(TENSOR1%maxprimgab)
   call lstensor_nullify(TENSOR2)
   call init_ps_lstensor(TENSOR2,AO1,AOfull,dim1,AOfull%nbast,.FALSE.,6)
-  call LSTENSOR_mem_est(TENSOR2,nmemsize)
-  call remove_mem_from_global(nmemsize)
 
 !  print*,'the FULL LSTENSOR'
 !  call lstensor_print(TENSOR1,6)
@@ -6609,15 +6596,17 @@ SUBROUTINE build_BatchGabK(AOfull,AO1,iBatch1,ibatchStart,dim1,TENSOR1,TENSOR2)
   IF(CS_SCREEN)THEN
      nullify(TENSOR2%maxgab)
      call mem_alloc(TENSOR2%maxgab,nbatches1,nbatches2)
+     nsize = size(TENSOR2%maxgab,KIND=long)*mem_shortintsize
+     call mem_allocated_mem_lstensor(nsize)
      call ls_sizero(TENSOR2%maxgab,dim)
   ENDIF
   IF(PS_SCREEN)THEN
      nullify(TENSOR2%maxprimgab)
      call mem_alloc(TENSOR2%maxprimgab,nbatches1,nbatches2)
+     nsize = size(TENSOR2%maxprimgab,KIND=long)*mem_shortintsize
+     call mem_allocated_mem_lstensor(nsize)
      call ls_sizero(TENSOR2%maxprimgab,dim)
   ENDIF
-  call LSTENSOR_mem_est(TENSOR2,nmemsize)
-  call add_mem_to_global(nmemsize)
 
   jBatch = 0
   DO jBatch2=1,nbatches2

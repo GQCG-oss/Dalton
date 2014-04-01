@@ -215,7 +215,7 @@ If (dyn%NHChain) then
    Do i = 2, dyn%CLen
       dyn%Q(i) = kB*dyn%Temp/dyn%omega**2
    Enddo
-   If (dyn%Init) then ! Initial conditions are read
+   If (dyn%Init_NHC) then ! Initial conditions are read
       Do i = 1, dyn%CLen
          traj%eta(i) = dyn%eta(i)
          traj%v_eta(i) = dyn%v_eta(i)
@@ -566,12 +566,9 @@ Type(Matrix), intent(inout) :: S,H1
 Type(Matrix), intent(inout) :: CMO       ! Orbitals
 Real(realk) :: CPUTime,WallTime
 Real(realk), parameter :: fs2au = 41.3413733365613E0_realk
-Real(realk), pointer :: mw_velocities(:)
-! Allocate some memory if integration in mass-weighted
+! If integration in mass-weighted coordinates ...
 If (dyn%Mass_Weight) then
-   Call mem_alloc(mw_velocities,3*NAtoms)
-   mw_Velocities = Traj%Velocities
-   ! Remove mass-weighting
+   ! Remove mass-weighting since thermostat is in Cartesian
    Call Mass_weight_vector(nAtoms,traj%velocities,Traj%Mass,'REMOVE')
 Endif
 !
@@ -580,16 +577,24 @@ Endif
 ! First we apply Lc...
 Call L_c(traj%eta,traj%v_eta,dyn%TimeStep*fs2au,dyn%Temp,dyn%CLen,&
 & dyn%MStep,traj%velocities,dyn%Q,traj%mass,NAtoms)
+! Apply mass-weighting if needed: integrator is in both MW and Cart.
+If (dyn%Mass_Weight) then
+   Call Mass_weight_vector(nAtoms,traj%velocities,Traj%Mass,'WEIGHT')
+Endif
 ! Then take a normal Verlet step
 Call Verlet_step(F,D,S,H1,CMO,ls,config,luerr,lupri,NAtoms,traj,dyn)
+! Remove mass-weighting if needed as thermostat is still in Cartesian...
+If (dyn%Mass_Weight) then
+   Call Mass_weight_vector(nAtoms,traj%velocities,Traj%Mass,'REMOVE')
+Endif
 ! Finally apply Lc again
 Call L_c(traj%eta,traj%v_eta,dyn%TimeStep*fs2au,dyn%Temp,dyn%CLen,&
 & dyn%MStep,traj%velocities,dyn%Q,traj%mass,NAtoms)
-! Copy mass-weighted velocities back and deallocate
+! Mass-weight final velocities if needed
 If (dyn%Mass_Weight) then
-   Traj%Velocities = mw_Velocities 
-   Call mem_dealloc(mw_velocities)
+   Call Mass_weight_vector(nAtoms,traj%velocities,Traj%Mass,'WEIGHT')
 Endif
+!
 End subroutine NH_chain
 !===============!
 ! Finalize_Step !
@@ -697,13 +702,17 @@ If (.NOT. dyn%Mass_Weight) then   ! Cartesian
 Else  ! Mass-weighted
   Call Calc_Kinetic(NAtoms*3,NAtoms,traj%Velocities,traj%CurrKinetic)
 Endif
-  traj%CurrEnergy = traj%CurrPotential + traj%CurrKinetic
-  Call Underline(lupri, 'Final energy conservation (au)', -1)
-  Write(lupri,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
-                              '   Potential energy: ',traj%CurrPotential, &
-                              '   Kinetic energy: ', traj%CurrKinetic
-  Write(lupri,'(31X,A,F14.8)') 'Energy conserv.: ',&
-  &traj%CurrEnergy-traj%InitialEnergy
+If (dyn%NHchain) then
+  Call NHC_Hamiltonian(NAtoms,dyn%CLen,traj%CurrPotential+traj%CurrKinetic,&
+       &traj%CurrEnergy,dyn%Q,traj%eta,traj%v_eta,dyn%Temp)
+Endif
+If (.NOT. dyn%NHchain) traj%CurrEnergy = traj%CurrPotential + traj%CurrKinetic
+Call Underline(lupri, 'Final energy conservation (au)', -1)
+Write(lupri,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
+                            '   Potential energy: ',traj%CurrPotential, &
+                            '   Kinetic energy: ', traj%CurrKinetic
+Write(lupri,'(31X,A,F14.8)') 'Energy conserv.: ',&
+&traj%CurrEnergy-traj%InitialEnergy
 !
 If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
   Call Calc_AngMom_Cart(NAtoms*3,NAtoms,traj%Mass,traj%Coordinates,&

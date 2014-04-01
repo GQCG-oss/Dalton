@@ -142,71 +142,71 @@ contains
   end function orbital_init
 
 
-  !> \brief Initialize orbital, assign center and list of significant atoms from logical array.
-  !> (Small wrapper for orbital_init)
-  function orbital_init_from_logical_array(orb_number,central_atom,natoms,which_atoms) result(myorbital)
-
-    implicit none
-    !> Orbital to initialize
-    type(decorbital) :: myorbital
-    !> Orbital index
-    integer, intent(in) :: orb_number
-    !> Central atom for orbital
-    integer, intent(in) :: central_atom
-    !> Number of atoms in FULL molecule
-    integer,intent(in) :: natoms
-    !> Which atoms are included in orbital extent?
-    logical,dimension(natoms) :: which_atoms
-    integer :: num_atoms
-    integer, pointer :: list_atoms(:)
-    integer :: i,idx
-
-    ! Number of atoms in orbital extent
-    num_atoms = count(which_atoms)
-
-    ! Sanity check
-    if(num_atoms ==0) then
-       write(DECinfo%output,*) 'No atoms for orbital: ', orb_number
-       call lsquit('orbital_init_from_logical_array: No atoms in orbital extent!',-1)
-    end if
-
-    ! Convert logical atom list to integer list of atomic indices
-    call mem_alloc(list_atoms,num_atoms)
-    idx=0
-    do i=1,natoms
-       if(which_atoms(i)) then
-          idx =idx+1
-          list_atoms(idx) = i
-       end if
-    end do
-
-    ! Init orbital
-    myorbital = orbital_init(orb_number,central_atom,num_atoms,list_atoms)
-
-    call mem_dealloc(list_atoms)
-
-  end function orbital_init_from_logical_array
-
-
-
-  !> \brief Copy orbital (orbital also intialized here)
-  subroutine copy_orbital(OriginalOrbital,OrbitalCopy)
-
-    implicit none
-
-    !> Original orbital
-    type(decorbital),intent(in) :: OriginalOrbital
-    !> Copy of original orbitals
-    type(decorbital),intent(inout) :: OrbitalCopy
-
-    OrbitalCopy%orbitalnumber = OriginalOrbital%orbitalnumber
-    OrbitalCopy%centralatom = OriginalOrbital%centralatom
-    OrbitalCopy%numberofatoms = OriginalOrbital%numberofatoms
-
-    call mem_alloc(OrbitalCopy%atoms,OrbitalCopy%numberofatoms)
-    OrbitalCopy%atoms = OriginalOrbital%atoms
-
-  end subroutine copy_orbital
+!!$  !> \brief Initialize orbital, assign center and list of significant atoms from logical array.
+!!$  !> (Small wrapper for orbital_init)
+!!$  function orbital_init_from_logical_array(orb_number,central_atom,natoms,which_atoms) result(myorbital)
+!!$
+!!$    implicit none
+!!$    !> Orbital to initialize
+!!$    type(decorbital) :: myorbital
+!!$    !> Orbital index
+!!$    integer, intent(in) :: orb_number
+!!$    !> Central atom for orbital
+!!$    integer, intent(in) :: central_atom
+!!$    !> Number of atoms in FULL molecule
+!!$    integer,intent(in) :: natoms
+!!$    !> Which atoms are included in orbital extent?
+!!$    logical,dimension(natoms) :: which_atoms
+!!$    integer :: num_atoms
+!!$    integer, pointer :: list_atoms(:)
+!!$    integer :: i,idx
+!!$
+!!$    ! Number of atoms in orbital extent
+!!$    num_atoms = count(which_atoms)
+!!$
+!!$    ! Sanity check
+!!$    if(num_atoms ==0) then
+!!$       write(DECinfo%output,*) 'No atoms for orbital: ', orb_number
+!!$       call lsquit('orbital_init_from_logical_array: No atoms in orbital extent!',-1)
+!!$    end if
+!!$
+!!$    ! Convert logical atom list to integer list of atomic indices
+!!$    call mem_alloc(list_atoms,num_atoms)
+!!$    idx=0
+!!$    do i=1,natoms
+!!$       if(which_atoms(i)) then
+!!$          idx =idx+1
+!!$          list_atoms(idx) = i
+!!$       end if
+!!$    end do
+!!$
+!!$    ! Init orbital
+!!$    myorbital = orbital_init(orb_number,central_atom,num_atoms,list_atoms)
+!!$
+!!$    call mem_dealloc(list_atoms)
+!!$
+!!$  end function orbital_init_from_logical_array
+!!$
+!!$
+!!$
+!!$  !> \brief Copy orbital (orbital also intialized here)
+!!$  subroutine copy_orbital(OriginalOrbital,OrbitalCopy)
+!!$
+!!$    implicit none
+!!$
+!!$    !> Original orbital
+!!$    type(decorbital),intent(in) :: OriginalOrbital
+!!$    !> Copy of original orbitals
+!!$    type(decorbital),intent(inout) :: OrbitalCopy
+!!$
+!!$    OrbitalCopy%orbitalnumber = OriginalOrbital%orbitalnumber
+!!$    OrbitalCopy%centralatom = OriginalOrbital%centralatom
+!!$    OrbitalCopy%numberofatoms = OriginalOrbital%numberofatoms
+!!$
+!!$    call mem_alloc(OrbitalCopy%atoms,OrbitalCopy%numberofatoms)
+!!$    OrbitalCopy%atoms = OriginalOrbital%atoms
+!!$
+!!$  end subroutine copy_orbital
 
 
 
@@ -2223,7 +2223,12 @@ contains
     else
        DECinfo%RepeatAF=.false.
     end if
-
+    IF(DECinfo%InteractionEnergy)THEN
+       IF(DECinfo%ccmodel.NE.DECinfo%fragopt_red_model)THEN
+          !turn of recalculation of Atomic fragment calculations
+          DECinfo%RepeatAF = .FALSE.
+       ENDIF
+    ENDIF
 
   end subroutine dec_orbital_sanity_check
 
@@ -2277,8 +2282,8 @@ contains
   !> \brief Determine which atoms have one or more orbitals assigned.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine which_atoms_have_orbitals_assigned(ncore,nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
-
+  subroutine which_atoms_have_orbitals_assigned(ncore,nocc,nunocc,natoms,&
+       & OccOrbitals,UnoccOrbitals,dofrag,PhantomAtom)
     implicit none
     !> Number of core orbitals in full molecule
     integer,intent(in) :: ncore
@@ -2294,6 +2299,9 @@ contains
     type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> dofrag(P) is true/false if atom P has one or more/zero orbitals assigned.
     logical,intent(inout) :: dofrag(natoms)
+    !> Which atoms are Phantom Atoms
+    logical, intent(in) :: PhantomAtom(natoms)
+    !local 
     integer, dimension(natoms) :: nocc_per_atom, nunocc_per_atom
     integer :: i
 
@@ -2311,14 +2319,31 @@ contains
     do i=1,natoms
        if(DECinfo%onlyoccpart) then
           ! Only consider occupied orbitals
-          if( (nocc_per_atom(i)==0) ) dofrag(i)=.false.
+          if( (nocc_per_atom(i)==0) ) then
+             dofrag(i)=.false.
+          else
+             if(PhantomAtom(i))then
+                print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nunocc_per_atom(i)',nunocc_per_atom(i)
+                print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
+                dofrag(i)=.false.
+                print*,'Setting dofrag to false'
+             endif
+          endif
        else
           ! Consider occupied as well as unoccupied orbitals
-          if( (nocc_per_atom(i)==0) .and. (nunocc_per_atom(i)==0) ) dofrag(i)=.false.
+          if( (nocc_per_atom(i)==0) .and. (nunocc_per_atom(i)==0) )then
+             dofrag(i)=.false.
+          else
+             if(PhantomAtom(i))then
+                print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nunocc_per_atom(i)',nunocc_per_atom(i)
+                print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
+                dofrag(i)=.false.
+                print*,'Setting dofrag to false'
+             endif
+          endif
        end if
     end do
 
   end subroutine which_atoms_have_orbitals_assigned
-
 
 end module orbital_operations

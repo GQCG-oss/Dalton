@@ -81,6 +81,8 @@ contains
     type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
     logical :: DoBasis
+    logical :: ForcePrint
+    ForcePrint=.TRUE.
 
     ! **************************************************************
     ! *                       RUN CALCULATION                      *
@@ -96,12 +98,30 @@ contains
 
     ! Calculate fragment energies
     ! ***************************
+    
     call atomic_fragment_energy_and_prop(MyFragment)
+    call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output,ForcePrint)
 
-    call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output)
+!    CALL MP2_TK_energyContribution(MyFragment)
 
   end subroutine get_fragment_and_Energy
 
+  subroutine MP2_TK_energyContribution(MyFragment)
+    implicit none
+    type(decfrag), intent(inout) :: MyFragment
+    real(realk) :: tcpu, twall
+    logical :: ForcePrint
+    ForcePrint=.TRUE.
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    ! Calculate fragment energy quantities based on screening matrices
+    ! ***************************
+!    call MP2_TK_integrals_and_amplitudes(MyFragment)
+!    call MP2_TK2_integrals_and_amplitudes(MyFragment)
+    call MP2_TK3_integrals_and_amplitudes(MyFragment)
+
+    call LSTIMER('TK',tcpu,twall,DECinfo%output,ForcePrint)
+  end subroutine MP2_TK_energyContribution
 
   !> \brief Construct new fragment based on list of orbitals in OccAOS and UnoccAOS,
   !> and calculate fragment energy. 
@@ -1345,7 +1365,7 @@ contains
     integer :: nthreads, idx, nbatchINT, intstep, ncore,offset
     integer :: i,j,k,a,b,c,atomI,atomJ,atomA,atomB
     real(realk) :: intMEM, solMEM,OO,VV,AA,BB,mem_required
-    real(realk) :: singleenergy, pairenergy, tmp, tmp2
+    real(realk) :: singleenergy, pairenergy, tmp, tmp2, InteractionEcorr
     real(realk),dimension(MyMolecule%natoms,MyMolecule%natoms) :: e1,e2,e3,e4,e1_tmp,e2_tmp,e3_tmp,e4_tmp
     integer, dimension(4) :: dims
     real(realk), pointer :: gval(:,:,:),t2val(:,:,:),ppfock(:,:)
@@ -1354,7 +1374,7 @@ contains
 #endif
     type(decorbital), pointer :: OccOrbitals(:)
     type(decorbital), pointer :: UnoccOrbitals(:)
-    integer :: nocc,nunocc,nbasis,natoms
+    integer :: nocc,nunocc,nbasis,natoms,lupri
 
     write(DECinfo%output,*) 'Using DEC-MP2 debug routine for full molecular system...'
 
@@ -1660,8 +1680,28 @@ contains
           Ecorr = Ecorr + e1(atomI,atomJ)
        end do
     end do
+    
+    IF(DECinfo%InteractionEnergy.OR.DECinfo%PrintInteractionEnergy)THEN
+       ! Total Interaction Energy
+       !mylsitem%input%molecule%ATOM(I)%SubSystemIndex
+       InteractionEcorr =0.0_realk
+       do atomI=1,natoms          
+          do atomJ=1,natoms
+             IF(MyMolecule%SubSystemIndex(atomI).NE.MyMolecule%SubSystemIndex(atomJ))THEN
+                energy_matrix(atomI,atomJ) = e1(atomI,atomJ) &
+                     & + e2(atomI,atomJ) + e3(atomI,atomJ) + e4(atomI,atomJ)
+                ! Calculate correlation energy using occ scheme
+                ! (of course we get the same for the other schemes).
+                InteractionEcorr = InteractionEcorr + e1(atomI,atomJ)
+             ENDIF
+          end do
+       end do
+       IF(DECinfo%InteractionEnergy)THEN
+          Ecorr = InteractionEcorr
+       ENDIF
+    ENDIF
 
-
+    
     ! Only consider pairs IJ where J>I; thus, move contributions
     do atomI=1,natoms
        do atomJ=atomI+1,natoms
@@ -1691,6 +1731,14 @@ contains
        call print_pair_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
             & MyMolecule%DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
     end if
+
+    IF(DECinfo%PrintInteractionEnergy)THEN
+     lupri=6
+     write(lupri,'(15X,a,f20.10)')'Interaction Correlation energy  :',InteractionEcorr
+     write(DECinfo%output,'(a)')' '
+     write(DECinfo%output,'(a)')' '
+     write(DECinfo%output,'(15X,a,f20.10)')'Interaction Correlation energy  :',InteractionEcorr
+    ENDIF
 
     call mem_dealloc(ppfock)
 
@@ -2233,6 +2281,7 @@ contains
  ! Restore the original CC model 
  ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
  MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
+! call lsquit('TEST DONE',-1)
 
 end subroutine optimize_atomic_fragment
 

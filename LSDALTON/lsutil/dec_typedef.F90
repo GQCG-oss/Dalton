@@ -180,9 +180,6 @@ module dec_typedef_module
      logical :: PNOtriangular
      !> Use MO-based algorithm to solve the CCSD equations
      logical :: MOCCSD
-     !> Maximum number of MOs until which an MO-CCSD calculation should be
-     !> performed
-     integer :: Max_num_MO
      !> do not update the singles residual
      logical :: CCDhack
      !> Crash Calc Debug keyword - to test restart option
@@ -209,12 +206,6 @@ module dec_typedef_module
      logical :: use_preconditioner_in_b
      !> Use CROP (if false we use DIIS)
      logical :: use_crop
-     !> Simulate full ERI using RI arrays 
-     !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
-     logical :: simulate_eri
-     !> Construct Fock matrix from RI integrals (obsolete for the moment)
-     !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
-     logical :: fock_with_ri
      !> logial to set whether special communication processes should be spawned
      logical :: spawn_comm_proc
 
@@ -230,6 +221,11 @@ module dec_typedef_module
 
      !> Debug keyword to specify pure hydrogen atoms
      logical :: PUREHYDROGENdebug
+
+     !> Calculate the Interaction Energy (Ref to article)
+     logical :: InteractionEnergy
+     !> Print the Interaction Energy (Ref to article)
+     logical :: PrintInteractionEnergy
 
      !> MPI settings
      !> ************
@@ -356,6 +352,8 @@ module dec_typedef_module
      logical :: PairEstimate
      !> Carry out pair estimate, but anyway run all pairs.
      logical :: PairEstimateIgnore
+     !> initiation radius of the estimated fragments
+     real(realk) :: EstimateINITradius
      ! --
 
 
@@ -548,6 +546,8 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+     !> Which atoms are phantom atoms (only basis functions)
+     Logical, pointer :: PhantomAtom(:) => null()
      
 
      !> Occ-Occ Fock matrix in MO basis
@@ -566,6 +566,7 @@ module dec_typedef_module
      !> Cabs-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fcp(:,:) => null()
 
+     integer,pointer :: SubSystemIndex(:) => null()
 
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()
@@ -1100,7 +1101,7 @@ module dec_typedef_module
     !> Total dimension of the batch
     integer, pointer :: dimTot(:)
     !> Tile index for pdm arrays
-    integer, pointer :: tileInd(:)
+    integer, pointer :: tileInd(:,:)
 
   end type MObatchInfo
 

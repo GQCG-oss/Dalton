@@ -205,129 +205,129 @@ NELECTRONS = NCHARGE - INT(Moleculecharge)
 
 END SUBROUTINE DETERMINE_NELECTRONS
 
-!> \brief Divide a molecule into molecular fragments (by setting up indices)
-!> \author S. Reine
-!> \date 2010-02-05
-!> \param Molecule The molecule to be fragmented
-!> \param fragmentIndex Indices specifying for each atom in Molecule which fragment it belongs to
-!> \param numFragments The number of fragments the molecule should be divied into
-!> \param lupri Default output unit
-SUBROUTINE fragmentMolecule(Molecule,fragmentIndex,numFragments,lupri)
-implicit none
-TYPE(MOLECULEINFO),intent(in) :: MOLECULE
-Integer,intent(in)            :: numFragments,lupri
-Integer,intent(inout)         :: fragmentIndex(MOLECULE%nAtoms)
-!
-Integer :: numOrbitals,numFragOrbitals,iFragment,I,totOrb
-logical :: Increased
-
-
-IF (numFragments.GT.MOLECULE%nAtoms) THEN
-  CALL LSQUIT('ERROR: fragmentMolecule entered with numFragments > nAtoms',lupri)
-ELSEIF (numFragments.EQ.MOLECULE%nAtoms) THEN
-  TOTorb=0
-  iFragment = 0
-  DO I=1,MOLECULE%nAtoms
-    numOrbitals = MOLECULE%ATOM(I)%nContOrbREG
-    TOTorb = TOTorb + MOLECULE%ATOM(I)%nContOrbREG
-    iFragment = iFragment + 1
-    fragmentIndex(I) = iFragment
-  ENDDO
-ELSE
-! Divide the molecule into fragments with approximately similar number of
-! orbitals
-
-! First get the average number of orbitals per fragment
-  numFragOrbitals = MOLECULE%nbastREG/numFragments
-
-! Then partition the molecule into fragments of about this number of orbitails
-  TOTorb=0
-  numOrbitals = 0
-  iFragment   = 1
-  Increased = .FALSE.
-  DO I=1,MOLECULE%nAtoms
-    numOrbitals = numOrbitals + MOLECULE%ATOM(I)%nContOrbREG
-    TOTorb = TOTorb + MOLECULE%ATOM(I)%nContOrbREG
-    fragmentIndex(I) = iFragment
-    Increased = .TRUE.
-    IF((TOTorb .GE. iFragment*numFragOrbitals .AND. .NOT. (ifragment.EQ.numFragments) ))THEN
-      iFragment = iFragment + 1
-      numOrbitals = 0
-      Increased = .FALSE.
-    ENDIF
-  ENDDO
-  IF(.NOT.Increased) ifragment=ifragment-1
-  IF(iFragment .NE. numFragments) THEN
-     TOTorb=0
-     numOrbitals = 0
-     iFragment   = numFragments
-     Increased = .FALSE.
-     DO I=MOLECULE%nAtoms,1,-1
-        numOrbitals = numOrbitals + MOLECULE%ATOM(I)%nContOrbREG
-        TOTorb = TOTorb + MOLECULE%ATOM(I)%nContOrbREG
-        fragmentIndex(I) = iFragment
-        Increased = .TRUE.
-        IF (TOTorb .GE. (numFragments-iFragment+1)*numFragOrbitals .AND. .NOT. ((numFragments-ifragment+1).EQ.numFragments)) THEN
-           iFragment = iFragment - 1
-           numOrbitals = 0
-           Increased = .FALSE.
-        ENDIF
-     ENDDO
-     IF(.NOT.Increased)ifragment=ifragment+1
-     ifragment = numFragments-iFragment+1
-  ENDIF
-  IF(iFragment .NE. numFragments) THEN
-     WRITE(LUPRI,*)'FRAGEMENT ',iFragment
-     WRITE(LUPRI,*)'NODES     ',numFragments
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     WRITE(LUPRI,*)'WARNING WARNING WANING '
-     CALL LSQUIT('ifrag not equal to number of nodes',lupri)
-  ENDIF
-ENDIF
-
-END SUBROUTINE fragmentMolecule
+!!$!> \brief Divide a molecule into molecular fragments (by setting up indices)
+!!$!> \author S. Reine
+!!$!> \date 2010-02-05
+!!$!> \param Molecule The molecule to be fragmented
+!!$!> \param fragmentIndex Indices specifying for each atom in Molecule which fragment it belongs to
+!!$!> \param numFragments The number of fragments the molecule should be divied into
+!!$!> \param lupri Default output unit
+!!$SUBROUTINE fragmentMolecule(Molecule,fragmentIndex,numFragments,lupri)
+!!$implicit none
+!!$TYPE(MOLECULEINFO),intent(in) :: MOLECULE
+!!$Integer,intent(in)            :: numFragments,lupri
+!!$Integer,intent(inout)         :: fragmentIndex(MOLECULE%nAtoms)
+!!$!
+!!$Integer :: numOrbitals,numFragOrbitals,iFragment,I,totOrb
+!!$logical :: Increased
+!!$
+!!$
+!!$IF (numFragments.GT.MOLECULE%nAtoms) THEN
+!!$  CALL LSQUIT('ERROR: fragmentMolecule entered with numFragments > nAtoms',lupri)
+!!$ELSEIF (numFragments.EQ.MOLECULE%nAtoms) THEN
+!!$  TOTorb=0
+!!$  iFragment = 0
+!!$  DO I=1,MOLECULE%nAtoms
+!!$    numOrbitals = MOLECULE%ATOM(I)%nContOrbREG
+!!$    TOTorb = TOTorb + MOLECULE%ATOM(I)%nContOrbREG
+!!$    iFragment = iFragment + 1
+!!$    fragmentIndex(I) = iFragment
+!!$  ENDDO
+!!$ELSE
+!!$! Divide the molecule into fragments with approximately similar number of
+!!$! orbitals
+!!$
+!!$! First get the average number of orbitals per fragment
+!!$  numFragOrbitals = MOLECULE%nbastREG/numFragments
+!!$
+!!$! Then partition the molecule into fragments of about this number of orbitails
+!!$  TOTorb=0
+!!$  numOrbitals = 0
+!!$  iFragment   = 1
+!!$  Increased = .FALSE.
+!!$  DO I=1,MOLECULE%nAtoms
+!!$    numOrbitals = numOrbitals + MOLECULE%ATOM(I)%nContOrbREG
+!!$    TOTorb = TOTorb + MOLECULE%ATOM(I)%nContOrbREG
+!!$    fragmentIndex(I) = iFragment
+!!$    Increased = .TRUE.
+!!$    IF((TOTorb .GE. iFragment*numFragOrbitals .AND. .NOT. (ifragment.EQ.numFragments) ))THEN
+!!$      iFragment = iFragment + 1
+!!$      numOrbitals = 0
+!!$      Increased = .FALSE.
+!!$    ENDIF
+!!$  ENDDO
+!!$  IF(.NOT.Increased) ifragment=ifragment-1
+!!$  IF(iFragment .NE. numFragments) THEN
+!!$     TOTorb=0
+!!$     numOrbitals = 0
+!!$     iFragment   = numFragments
+!!$     Increased = .FALSE.
+!!$     DO I=MOLECULE%nAtoms,1,-1
+!!$        numOrbitals = numOrbitals + MOLECULE%ATOM(I)%nContOrbREG
+!!$        TOTorb = TOTorb + MOLECULE%ATOM(I)%nContOrbREG
+!!$        fragmentIndex(I) = iFragment
+!!$        Increased = .TRUE.
+!!$        IF (TOTorb .GE. (numFragments-iFragment+1)*numFragOrbitals .AND. .NOT. ((numFragments-ifragment+1).EQ.numFragments)) THEN
+!!$           iFragment = iFragment - 1
+!!$           numOrbitals = 0
+!!$           Increased = .FALSE.
+!!$        ENDIF
+!!$     ENDDO
+!!$     IF(.NOT.Increased)ifragment=ifragment+1
+!!$     ifragment = numFragments-iFragment+1
+!!$  ENDIF
+!!$  IF(iFragment .NE. numFragments) THEN
+!!$     WRITE(LUPRI,*)'FRAGEMENT ',iFragment
+!!$     WRITE(LUPRI,*)'NODES     ',numFragments
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     WRITE(LUPRI,*)'WARNING WARNING WANING '
+!!$     CALL LSQUIT('ifrag not equal to number of nodes',lupri)
+!!$  ENDIF
+!!$ENDIF
+!!$
+!!$END SUBROUTINE fragmentMolecule
 
 !> \brief Builds a molecular fragment from a subset of the atoms in the original molecule
 !> \author S. Reine and T. Kjaergaard
@@ -370,6 +370,17 @@ FRAGMOL%nbastJK=0
 FRAGMOL%nprimbastJK=0
 FRAGMOL%nbastVAL=0
 FRAGMOL%nprimbastVAL=0
+
+FRAGMOL%nSubSystems = DALMOL%nSubSystems
+IF(FRAGMOL%nSubSystems.NE.0)THEN
+   call mem_alloc(FRAGMOL%SubSystemLabel,FRAGMOL%nSubSystems)
+   do I = 1, FRAGMOL%nSubSystems
+      FRAGMOL%SubSystemLabel(I) = DALMOL%SubSystemLabel(I)
+   enddo
+ELSE
+   NULLIFY(FRAGMOL%SubSystemLabel)
+ENDIF
+
 CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%REGULAR)
 IF(AUXBASIS)THEN
    CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%AUXILIARY)
@@ -382,31 +393,31 @@ IF(JKBASIS)THEN
 ENDIF
 END SUBROUTINE BUILD_FRAGMENT
 
-!> \brief 
-!> \author
-!> \date
-!> \param 
-SUBROUTINE buildFragmentFromFragmentIndex(FRAGMENT,MOLECULE,FragmentIndex,iFrag,lupri)
-implicit none
-TYPE(MOLECULEINFO) :: FRAGMENT
-TYPE(MOLECULEINFO),intent(IN)  :: MOLECULE
-Integer,intent(IN)             :: FragmentIndex(MOLECULE%nAtoms)
-Integer,intent(IN)             :: iFrag
-Integer,intent(IN)             :: lupri
-!
-Integer :: iAtom
-Integer :: nAtoms
-!
-nAtoms=0
-Do iAtom=1,MOLECULE%nATOMS
-  IF(FragmentIndex(iAtom) .EQ. iFrag)THEN
-    nAtoms=nAtoms+1
-    CALL COPY_ATOM(MOLECULE,iAtom,FRAGMENT,nAtoms,lupri)
-  ENDIF
-ENDDO
-FRAGMENT%nAtoms = nAtoms
-!
-END SUBROUTINE buildFragmentFromFragmentIndex
+!!$!> \brief 
+!!$!> \author
+!!$!> \date
+!!$!> \param 
+!!$SUBROUTINE buildFragmentFromFragmentIndex(FRAGMENT,MOLECULE,FragmentIndex,iFrag,lupri)
+!!$implicit none
+!!$TYPE(MOLECULEINFO) :: FRAGMENT
+!!$TYPE(MOLECULEINFO),intent(IN)  :: MOLECULE
+!!$Integer,intent(IN)             :: FragmentIndex(MOLECULE%nAtoms)
+!!$Integer,intent(IN)             :: iFrag
+!!$Integer,intent(IN)             :: lupri
+!!$!
+!!$Integer :: iAtom
+!!$Integer :: nAtoms
+!!$!
+!!$nAtoms=0
+!!$Do iAtom=1,MOLECULE%nATOMS
+!!$  IF(FragmentIndex(iAtom) .EQ. iFrag)THEN
+!!$    nAtoms=nAtoms+1
+!!$    CALL COPY_ATOM(MOLECULE,iAtom,FRAGMENT,nAtoms,lupri)
+!!$  ENDIF
+!!$ENDDO
+!!$FRAGMENT%nAtoms = nAtoms
+!!$!
+!!$END SUBROUTINE buildFragmentFromFragmentIndex
 
 
 !> \brief Free the dalton-fragments
