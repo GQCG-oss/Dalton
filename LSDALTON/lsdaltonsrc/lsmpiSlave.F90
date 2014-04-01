@@ -140,6 +140,8 @@
             call cc_gmo_data_slave
          case(MOCCSDDATA);
             call moccsd_data_slave
+         case(DEC_SETTING_TO_SLAVES);
+            call set_dec_settings_on_slaves
          case(CCSDDATA);
             call ccsd_data_preparation
          case(CCSD_COMM_PROC_MASTER);
