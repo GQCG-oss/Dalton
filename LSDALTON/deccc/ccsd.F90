@@ -1388,7 +1388,7 @@ contains
 #endif
       if(scheme==4)then
         write(def_atype,'(A4)')'LDAR'
-      elseif(scheme==2.or.scheme==3)then
+      else if(scheme==2.or.scheme==3)then
         write(def_atype,'(A4)')'TDAR'
       endif
       gvvooa = array_ainit( [nv,no,no,nv],4, local=local, atype=def_atype )
@@ -1693,7 +1693,7 @@ contains
         !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
         if(scheme==4)then
           if( worker )call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,1.0E0_realk,gvvooa%elm1,nv)
-        elseif(scheme==3.or.scheme==2)then
+        else if(scheme==3.or.scheme==2)then
 #if VAR_MPI
           if(talker.and.lock_outside) call arr_lock_wins(gvvooa,'s',mode)
           if( worker )call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,0.0E0_realk,w2%d,nv)
@@ -1754,7 +1754,7 @@ contains
         !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
         if(scheme==4)then
           if( worker )call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,1.0E0_realk,gvoova%elm1,nv)
-        elseif(scheme==3.or.scheme==2)then
+        else if(scheme==3.or.scheme==2)then
 #ifdef VAR_MPI
           if( worker )call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,0.0E0_realk,w2%d,nv)
           if( talker .and. lock_outside )call arr_lock_wins(gvoova,'s',mode)
@@ -1942,7 +1942,7 @@ contains
 
        if(iter==1.and.scheme==4)then
          call lsmpi_allreduce(govov%elm1,o2v2,infpar%lg_comm,double_2G_nel)
-       elseif(scheme==3)then
+       else if(scheme==3)then
          call array_cp_tiled2dense(govov,.false.)
        endif
 
@@ -2166,14 +2166,14 @@ contains
         call array_free(gvoova)
         call array_free(gvvooa)
 #ifdef VAR_MPI
-      elseif(scheme==3)then
+      else if(scheme==3)then
         gvvooa%elm1 => null()
         gvoova%elm1 => null()
         call array_free(gvoova)
         call array_free(gvvooa)
         call mem_dealloc(gvoov)
         call mem_dealloc(gvvoo)
-      elseif(scheme==2)then
+      else if(scheme==2)then
         call array_free(gvoova)
         call array_free(gvvooa)
 #endif
@@ -2338,7 +2338,7 @@ contains
       ! Reorder u [c a i k] -> u [a i c k]
       if(scheme==4.or.scheme==3)then
         call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1%d)
-      elseif(scheme==2)then
+      else if(scheme==2)then
         call array_convert(u2,w1%d,[2,3,4,1])
       endif
       ! u [a i k c] * F[k c] =+ Omega [a i]
@@ -2482,7 +2482,7 @@ contains
 
 #ifdef VAR_MPI
     !THE INTENSIVE SCHEMES
-    elseif(s==2)then
+    else if(s==2)then
        omega2%access_type = ALL_ACCESS
        t2%access_type     = ALL_ACCESS
        nnod             = infpar%lg_nodtot
@@ -2783,7 +2783,7 @@ contains
        lead = no * nv
        w2size = o2v2
        w3size = o2v2
-     elseif(s==3.or.s==2)then
+     else if(s==3.or.s==2)then
        faif = 1
        lead = tl
        !use w3 as buffer which is allocated largest possible
@@ -2808,12 +2808,12 @@ contains
      !Reorder gvvoo [a c k i] -> goovv [a i c k]
      if(s==4)then
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w2)
-     elseif(s==3)then
+     else if(s==3)then
        call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w1)
        do i=1,tl
          call dcopy(no*nv,w1(fai+i-1),no*nv,w2(i),tl)
        enddo
-     elseif(s==2)then
+     else if(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)then
          call arr_lock_wins(gvvoo,'s',mode)
@@ -2855,12 +2855,12 @@ contains
      !Reorder t [a d l i] -> t [a i d l]
      if(s==4)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w3)
-     elseif(s==3)then
+     else if(s==3)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
        do i=1,tl
          call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
        enddo
-     elseif(s==2)then
+     else if(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)then
          call arr_lock_wins(t2,'s',mode)
@@ -2893,7 +2893,7 @@ contains
      !Reorder govov [k d l c] -> govov [d l c k]
      if(s==3.or.s==4)then
        call array_reorder_4d(1.0E0_realk,govov%elm1,no,nv,no,nv,[2,3,4,1],0.0E0_realk,w1)
-     elseif(s==2.and..not.lock_outside)then
+     else if(s==2.and..not.lock_outside)then
 #ifdef VAR_MPI
        call array_gather_tilesinfort(govov,w1,o2v2,infpar%master,[2,3,4,1])
        call ls_mpibcast(w1,o2v2,infpar%master,infpar%lg_comm)
@@ -2914,14 +2914,14 @@ contains
      if(s==4)then
        w1=0.0E0_realk
        call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w3,no*nv,0.0E0_realk,w1(fai),no*nv)
-     elseif(s==3)then
+     else if(s==3)then
        call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
        call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w1,no*nv,0.0E0_realk,w3,lead)
        w1=0.0E0_realk
        do i=1,tl
          call dcopy(no*nv,w3(i),tl,w1(fai+i-1),no*nv)
        enddo
-     elseif(s==2)then
+     else if(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(t2,'s',mode)
        call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2,oo=[1,4,2,3],wrk=w3,iwrk=w3size)
@@ -2939,7 +2939,7 @@ contains
        call array_reorder_4d(0.5E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
        !contribution 3: preOmC [a j b i] -> =+ Omega [a b i j]
        call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,4,2],1.0E0_realk,omega2%elm1)
-     elseif(s==2)then
+     else if(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(omega2,'s',mode)
        call array_two_dim_1batch(omega2,[1,3,4,2],'a',w3,2,fai,tl,lock_outside)
@@ -2963,13 +2963,13 @@ contains
      if(s==4)then
        call array_reorder_4d(2.0E0_realk,gvoov%elm1,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
        call array_reorder_4d(-1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,2,4],1.0E0_realk,w2)
-     elseif(s==3)then
+     else if(s==3)then
        call array_reorder_4d(2.0E0_realk,gvoov%elm1,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w1)
        call array_reorder_4d(-1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,2,4],1.0E0_realk,w1)
        do i=1,tl
          call dcopy(no*nv,w1(fai+i-1),no*nv,w2(i),tl)
        enddo
-     elseif(s==2)then
+     else if(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(gvoov,'s',mode)
        if(lock_outside)call arr_lock_wins(gvvoo,'s',mode)
@@ -3002,12 +3002,12 @@ contains
      !Transpose u [d a i l] -> u [a i l d]
      if(s==4)then
        call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w3)
-     elseif(s==3)then
+     else if(s==3)then
        call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
        do i=1,tl
          call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
        enddo
-     elseif(s==2)then
+     else if(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(u2,'s',mode)
        call array_two_dim_1batch(u2,[2,3,4,1],'g',w3,2,fai,tl,lock_outside)
@@ -3038,14 +3038,14 @@ contains
      if(s==4)then
        w1=0.0E0_realk
        call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w3,nv*no,0.0E0_realk,w1(fai),nv*no)
-     elseif(s==3)then
+     else if(s==3)then
        call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
        call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w1,nv*no,0.0E0_realk,w3,lead)
        w1=0.0E0_realk
        do i=1,tl
          call dcopy(no*nv,w3(i),tl,w1(fai+i-1),no*nv)
        enddo
-     elseif(s==2)then
+     else if(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(u2,'s',mode)
        call array_gather(1.0E0_realk,u2,0.0E0_realk,w1,o2v2,oo=[2,3,4,1],wrk=w3,iwrk=w3size)
@@ -3060,7 +3060,7 @@ contains
      ! preOmD [a i b j] -> =+ Omega [a b i j]
      if(s==4.or.s==3)then
        call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
-     elseif(s==2)then
+     else if(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)call arr_lock_wins(omega2,'s',mode)
        call array_two_dim_1batch(omega2,[1,3,2,4],'a',w3,2,fai,tl,lock_outside)
@@ -3126,7 +3126,7 @@ contains
     if(s==4.or.s==3)then
       w1=0.0E0_realk
       call dgemm('n','n',tl,nor,no*no,0.5E0_realk,t2%elm1(fai),nv*nv,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
-    elseif(s==2)then
+    else if(s==2)then
 #ifdef VAR_MPI
       call mem_alloc(w2,tl*no*no)
       if(lock_outside)call arr_lock_wins(t2,'s',mode)
@@ -3178,7 +3178,7 @@ contains
       om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
       !$OMP END WORKSHARE
 #endif
-    elseif(s==2)then
+    else if(s==2)then
 #ifdef VAR_MPI
       if(lock_outside)call arr_lock_wins(om2,'s',mode)
       call array_two_dim_1batch(om2,[1,2,3,4],'a',w1,2,1,nv*nv,lock_outside)
@@ -3438,7 +3438,7 @@ contains
            full2T=tlen
            l1=0
            l2=0
-         elseif(lsa<lsg)then
+         else if(lsa<lsg)then
            !case 1 is a  submatrix of the type:
            !                                   full2=lg-goffs
            ! ------|                          |------|
@@ -3475,7 +3475,7 @@ contains
            l1=aoffs
            l2=aoffs
            second_trafo_step=.true.
-         elseif(lsa<lsg)then
+         else if(lsa<lsg)then
            if(lsa>=fg)then
              !case 3 is a  submatrix of the type: 
              !                                       full2=lg
@@ -3723,7 +3723,7 @@ contains
           !$OMP END WORKSHARE
 #endif
        endif
-    elseif(s==2)then
+    else if(s==2)then
 #ifdef VAR_MPI
        if( t .and. lock_outside )call arr_lock_wins(omega,'s',mode)
        if( w ) then
@@ -3809,7 +3809,7 @@ contains
             !$OMP END WORKSHARE
 #endif
          endif
-       elseif(s==2)then
+       else if(s==2)then
          if( w ) then
             !$OMP WORKSHARE
             w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
@@ -4331,9 +4331,9 @@ contains
       endif
       if(scheme==4)then
         print *,"NON PDM-SCHEME WITH HIGH MEMORY REQUIREMENTS"
-      elseif(scheme==3)then
+      else if(scheme==3)then
         print *,"SCHEME WITH MEDIUM MEMORY REQUIREMENTS (PDM)"
-      elseif(scheme==2)then
+      else if(scheme==2)then
         print *,"SCHEME WITH LOW MEMORY REQUIREMENTS (PDM)"
       else
         print *,"SCHEME ",scheme," DOES NOT EXIST"
@@ -4551,7 +4551,7 @@ contains
       ! w1 + FO + w2 + w3
       memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,i8*nb*nb)+i8*nb*nb+(2_long*no*no)*nv*nv)
       !memrq=memrq+max(memin,memout)
-    elseif(s==3)then
+    else if(s==3)then
       !govov stays in pdm and is dense in second part
       ! u 2 + omega2 + H +G  + keep space for one update batch
       call get_int_dist_info(int((i8*nv)*nv*no*no,kind=8),fe,ne,master)
@@ -4583,7 +4583,7 @@ contains
            & + max(i8*nb*nb,max(2_long*tl1,i8*tl2)))       &
            & + 2.0E0_realk * (i8*nv**2)*no**2
       !memrq=memrq+max(memin,memout)
-    elseif(s==2)then
+    else if(s==2)then
       call array_default_batches(d1,mode,tdim,splt)
       call array_get_ntpm(d1,tdim,mode,ntpm,ntiles)
       nloctiles=ntiles/nnod

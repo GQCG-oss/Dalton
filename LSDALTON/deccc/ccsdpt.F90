@@ -3576,6 +3576,8 @@ contains
     integer :: double_2G_nel
     integer(kind=long) :: o2v2,o3v
     real(realk), pointer :: dummy1(:),dummy2(:)
+    integer(kind=ls_mpik) :: mode
+
     double_2G_nel = 100000000
     o2v2 = nocc*nocc*nvirt*nvirt
     o3v  = nocc*nocc*nocc*nvirt
@@ -3606,11 +3608,11 @@ contains
 
     master = .true.
 #ifdef VAR_MPI
-
-    CBAI = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
-    call array_zero_tiled_dist(CBAI)
-
+    mode   = MPI_MODE_NOCHECK
     master = (infpar%lg_mynum == infpar%master)
+
+    CBAI   = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
+    call array_zero_tiled_dist(CBAI)
 #else
 
     CBAI = array_init(dims,4)
@@ -3866,7 +3868,10 @@ contains
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
 
-             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3)
+             call arr_lock_win(CBAI,i,'s',assert=mode)
+             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
+             call lsmpi_win_flush(CBAI%wi(i),rank=get_residence_of_tile(i,CBAI))
+             call arr_unlock_win(CBAI,i)
 
           end do
 
