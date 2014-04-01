@@ -444,20 +444,20 @@ contains
     !                        F12-Specific                        !
     ! ============================================================
     !> F12 Specific Variables
-    nbasis   = fragment%nbasis
-    noccEOS  = fragment%noccEOS
+    nbasis    = fragment%nbasis
+    noccEOS   = fragment%noccEOS
     nunoccEOS = fragment%nunoccEOS
 
-    noccAOS  = fragment%noccAOS
+    noccAOS   = fragment%noccAOS
     nunoccAOS = fragment%nunoccAOS  
-    nocvAOS  = fragment%noccAOS + fragment%nunoccAOS
-    nvirtAOS = fragment%nunoccAOS
+    nocvAOS   = fragment%noccAOS + fragment%nunoccAOS
+    nvirtAOS  = fragment%nunoccAOS
     
     !CURRENTLY THE full matrices are in the CABS AO BASIS and needs to be transformed 
     !to the CABS-MO and RI-MO basis which happens in this routine 
 
-    ncabsAO = fragment%nCabsAO !size(fragment%Ccabs,1)
-    ncabsMO = size(fragment%Ccabs,2)
+    ncabsAO   = fragment%ncabsAO !size(fragment%Ccabs,1)
+    ncabsMO   = size(fragment%Ccabs,2)
     
     IF(fragment%nCabsAO.NE.size(fragment%Ccabs,1))THEN
        call lsquit('Dimension mismatch in atomic_fragment_init_f12',-1)
@@ -478,46 +478,77 @@ contains
        print *, "ncabsMO", ncabsMO
        print *, "---------------------------------------"
     end if 
-    
+
     ! hJir
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
-
-    do i=1, fragment%noccEOS
-       ix = fragment%occEOSidx(i)
-       fragment%hJir(i,:) = MyMolecule%hJir(ix,:)
+    
+    do j=1, fragment%ncabsAO   
+       do i=1, fragment%noccEOS
+          iy = fragment%cabsbasis_idx(j)
+          ix = fragment%occEOSidx(i)
+          fragment%hJir(i,j) = MyMolecule%hJir(ix,iy)
+       enddo
     enddo
 
     call F12_RI_transform_realMat(fragment%hJir,noccEOS,ncabsAO,fragment%Cri,ncabsAO)
 
     ! Krs
     call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
-    call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
+    
+    do j=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAO
+          ix = fragment%cabsbasis_idx(i)
+          iy = fragment%cabsbasis_idx(j)
+          fragment%Krs(i,j) = MyMolecule%Krs(ix,iy)
+       enddo
+    enddo   
+    !call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
     call F12_RI_transform_realMat(fragment%Krs,ncabsAO, ncabsAO,fragment%Cri,ncabsAO)
 
     ! Frs
     call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
-    call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
+    do j=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAO
+          ix = fragment%cabsbasis_idx(i)
+          iy = fragment%cabsbasis_idx(j)
+          fragment%Frs(i,j) = MyMolecule%Frs(ix,iy)
+       enddo
+    enddo
+    !call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
     call F12_RI_transform_realMat(fragment%Frs,ncabsAO,ncabsAO,fragment%Cri,ncabsAO)
 
     ! Frm
     call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
-    do i=1, fragment%noccAOS
-       iy = fragment%occAOSidx(i)
-       fragment%Frm(:,i) = MyMolecule%Frm(:,iy)
+    do j=1, fragment%noccAOS
+       do i=1, fragment%ncabsAO
+          ix = fragment%cabsbasis_idx(i)
+          iy = fragment%occAOSidx(j)
+          fragment%Frm(i,j) = MyMolecule%Frm(ix,iy)
+       enddo
     enddo
     call F12_RI_transform_realMat(fragment%Frm,ncabsAO,noccAOS,fragment%Cri,ncabsAO)
-
+    
     ! Fcp in the order of the index (occ to virt)
+    ! Extracting from the full in molecule_mo_f12, needs to be changed 
     ! HACK NOT fragment%Fcp, ncabsMO, nocvAOS)
     call mem_alloc(Fcp, ncabsAO, nocvAOS)
-    do i=1, fragment%noccAOS
-       iy = fragment%occAOSidx(i)
-       Fcp(:,i) = MyMolecule%Fcp(:,iy)
+    
+     do j=1, fragment%noccAOS
+       do i=1, fragment%ncabsAO
+          ix = fragment%cabsbasis_idx(i)
+          iy = fragment%occAOSidx(j)
+          Fcp(i,j) = MyMolecule%Fcp(ix,iy)
+       enddo
     enddo
-    do i=fragment%noccAOS+1, fragment%nunoccAOS+fragment%noccAOS
-       iy = fragment%unoccAOSidx(i-fragment%noccAOS)
-       Fcp(:,i) = MyMolecule%Fcp(:,iy+MyMolecule%nocc)
+
+    do j=fragment%noccAOS+1, fragment%nunoccAOS+fragment%noccAOS
+       do i=1, fragment%ncabsAO
+          ix = fragment%cabsbasis_idx(i)         
+          iy = fragment%unoccAOSidx(j-fragment%noccAOS)
+          Fcp(i,j) = MyMolecule%Fcp(ix,iy+MyMolecule%nocc)
+       enddo
     enddo
+
     call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
     call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOS,fragment%Ccabs,ncabsAO,ncabsMO)
     call mem_dealloc(Fcp)
