@@ -3765,7 +3765,7 @@ contains
           end if
 
           if(DECinfo%PL>2)write (DECinfo%output, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
-             &,infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+             &infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
 #endif
 
@@ -3870,7 +3870,7 @@ contains
 
              call arr_lock_win(CBAI,i,'s',assert=mode)
              call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
-             call lsmpi_win_flush(CBAI%wi(i),rank=get_residence_of_tile(i,CBAI))
+             call lsmpi_win_flush(CBAI%wi(i),rank=int(get_residence_of_tile(i,CBAI),kind=ls_mpik))
              call arr_unlock_win(CBAI,i)
 
           end do
