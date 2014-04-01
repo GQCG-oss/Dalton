@@ -52,6 +52,10 @@ contains
     write(DECinfo%output,'(a)')   '              Full molecular driver               '
     write(DECinfo%output,'(a,/)') ' ================================================ '
 
+#ifdef VAR_MPI
+    call set_dec_settings_on_slaves()
+#endif
+
     ! run cc program
     if(DECinfo%F12) then ! F12 correction
 #ifdef MOD_UNRELEASED

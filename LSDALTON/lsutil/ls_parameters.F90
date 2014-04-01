@@ -108,6 +108,7 @@ MODULE Integralparameters
   integer,parameter :: RPAGETRESIDUAL               = 44
   integer,parameter :: MOCCSDDATA                   = 45
   integer,parameter :: MO_INTEGRAL_SIMPLE           = 46
+  integer,parameter :: DEC_SETTING_TO_SLAVES        = 47
 
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1
