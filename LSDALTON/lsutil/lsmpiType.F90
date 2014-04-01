@@ -6217,7 +6217,7 @@ contains
     endif
 #endif
   end subroutine lsmpi_acc_realkV
-  subroutine lsmpi_acc_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze)
+  subroutine lsmpi_acc_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
     real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
@@ -6225,6 +6225,7 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
+    logical, intent(in) :: flush_it
 #ifdef VAR_MPI
     integer :: newpos
     integer(kind=4) :: n4,k,i
@@ -6234,7 +6235,7 @@ contains
       do i=1,nelms,k
         n4=k
         if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
-        call lsmpi_acc_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze)
+        call lsmpi_acc_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze,flush_it)
       enddo
     else
       do j=1,nelms,batchsze
@@ -6243,11 +6244,14 @@ contains
           &(mod(nelms-j+1,batchsze)/=0))n=mod(nelms,batchsze)
         newpos = pos+j-1
         call lsmpi_acc_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
+#ifdef VAR_HAVE_MPI3
+        if(flush_it)call lsmpi_win_flush(win,rank=dest)
+#endif
       enddo
     endif
 #endif
   end subroutine lsmpi_acc_realkV_parts_wrapper8
-  subroutine lsmpi_acc_realkV_parts(buf,nelms,pos,dest,win,batchsze)
+  subroutine lsmpi_acc_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
     real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
@@ -6255,6 +6259,7 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
+    logical, intent(in) :: flush_it
 #ifdef VAR_MPI
     integer :: newpos
     integer(kind=8) :: n,i
@@ -6264,6 +6269,9 @@ contains
         &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
       newpos = pos+i-1
       call lsmpi_acc_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
+#ifdef VAR_HAVE_MPI3
+      if(flush_it)call lsmpi_win_flush(win,rank=dest)
+#endif
     enddo
 #endif
   end subroutine lsmpi_acc_realkV_parts

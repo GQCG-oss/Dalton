@@ -3870,7 +3870,6 @@ contains
 
              call arr_lock_win(CBAI,i,'s',assert=mode)
              call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
-             call lsmpi_win_flush(CBAI%wi(i),rank=get_residence_of_tile(i,CBAI))
              call arr_unlock_win(CBAI,i)
 
           end do

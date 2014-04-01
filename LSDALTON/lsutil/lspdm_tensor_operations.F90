@@ -3786,7 +3786,7 @@ module lspdm_tensor_operations_module
     sta  = MPI_WTIME()
 
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
+    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze,.true.)
     if(.not.ls)CALL lsmpi_win_unlock(dest, arr%wi(globtilenr))
 
     sto          = MPI_WTIME()
@@ -3826,7 +3826,7 @@ module lspdm_tensor_operations_module
     sta  = MPI_WTIME()
 
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
+    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze,.true.)
     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
 
     sto          = MPI_WTIME()
@@ -4236,12 +4236,13 @@ module lspdm_tensor_operations_module
     fe=1
     ne=0
     nnod = 1
+
+#ifdef VAR_MPI
 #ifdef VAR_LSDEBUG
     msg_len_mpi=24
 #else
-    msg_len_mpi=170000000
+    msg_len_mpi=SPLIT_MPI_MSG
 #endif
-#ifdef VAR_MPI
     nnod = infpar%lg_nodtot
     me   = infpar%lg_mynum
     do node=0,nnod-1
@@ -4249,7 +4250,7 @@ module lspdm_tensor_operations_module
       sta=MPI_WTIME()
       !print *,infpar%lg_mynum,"distributing",fe,fe+ne-1,ne,o2v2,node
       if(.not.lock_outside)call lsmpi_win_lock(node,win,'s')
-      call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
+      call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi,.true.)
       if(.not.lock_outside)call lsmpi_win_unlock(node,win)
       sto = MPI_WTIME()
       time_pdm_acc = time_pdm_acc + sto - sta
