@@ -64,7 +64,7 @@ C
       integer :: numprocs
       call mpi_comm_size(mpi_comm_world, numprocs, ierr) 
       ISYMPAR = ISYMTR
-      forceupdate = .true.
+      forceupdate = .true. !Implicitly saved. Do NOT move the initialization to the main block of code.
 #endif
 
 C
@@ -525,19 +525,23 @@ C
 #ifdef VAR_MPI
 C  /* Deck PAR_RP_ERES */
       SUBROUTINE PAR_RP_ERES(WORK, LWORK, MYID)
-C TODO TODO TODO 
-C
-C !!!!!!!!!!!!!!!!!!!!!!!! 
-C FIX THE LOAD BALANCING! ITS CRAZY OUT OF SYNC RIGHT NOW!!!!!!!!
-C 
-C
 C PAR_RP_ERES is a Parallel subroutine for RP_ERES.F
-C It calculates the AO-FOCK matrix in parallel by distributing the two-electron integrals 
-C over several processes and assembling the partial Fock matrices from every process before returning.
+C It calculates the AO-FOCK matrix in parallel by distributing the 
+C two-electron integrals over several processes and assembling the 
+C partial Fock matrices from every process before returning.
 C
-C WORK is the array where master and every slave assembles the fock matrix incrementally. This is the 'output' of the subroutine.
+C WORK is the array where master and every slave assembles the fock matrix 
+C incrementally. This is the 'output' of this subroutine.
 C
-C Every slave calculates its own batch of intgrals depending on the last index in the two-electron integral.
+C The load balancing is done by examining the number of distributions associated 
+C with every AO index in the two-electron integrals, before the integrals are 
+C performed. The total load is calculated and the work is spread as evenly as 
+C possible among the master and all slaves. The AO indices with the biggest 
+C associated load of distributions is assigned first; then the smaller indices 
+C are assigned.
+C
+C A large number of common blocks need to be transferred from the master to 
+C the slaves by using the subroutine getbytespan and mpi_bcast. 
 
       use mpi 
       use dyn_iadrpk
@@ -564,7 +568,7 @@ C Every slave calculates its own batch of intgrals depending on the last index i
 
 #include "inftap.h"
 #include "ccorb.h"
-#include "infind.h" !Possibly this should be replaced with ccisao.h !see if the include file in subroutine ccrdao is infind or ccisao
+#include "infind.h" 
 #include "blocks.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
@@ -623,7 +627,7 @@ C     Pre-sorting load balancing variables
 C     Miscellaneous
       DIMENSION INDEXA(MXCORB)
       DIMENSION FOCKD(LFOCK) 
-      logical :: debugging = .false.
+      logical :: debugging = .false., printspininfo = .true.
       real    :: starttime, stoptime
 
 
@@ -767,6 +771,7 @@ C**********************************************************
       call getbytespan(gradml, gnrinfLAST, bytesize) 
       call mpi_bcast(gradml, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
 
+      ! Common blocks with explicitly set sizes, no need to calculate bytespan
       call mpi_bcast(basdir,612, mpi_character, 0, mpi_comm_world, ierr)
       call mpi_bcast(fnvajkl, 10, mpi_character, 0, mpi_comm_world,ierr)
       call mpi_bcast(vclthr, 24, mpi_byte, 0, mpi_comm_world, ierr)
@@ -781,7 +786,6 @@ C**********************************************************
 
       call mpi_bcast(work, kendsv, mpi_real8, 0, mpi_comm_world, ierr)
 
-
       call cpu_time(stoptime)
 
       if (myid.eq.0) then
@@ -791,27 +795,22 @@ C**********************************************************
          endif
       endif
 
-      forceupdate = .false.
+      forceupdate = .false. ! This avoids redundant updating of common blocks. RP_ERES sets this to true when necessary.
       endif commonblocktransfers
 
-C This data should be updated every time PAR_RP_ERES is called 
+C     This data needs to be updated every time PAR_RP_ERES is called 
       call mpi_bcast(work(kdens),ldens,mpi_real8,0,mpi_comm_world, ierr)
       call mpi_bcast(isympar, 1, mpi_integer, 0, mpi_comm_world, ierr)
-      isymtr = isympar 
       call dzero(work(kfock), lfock)
-
+      isymtr = isympar 
 
 
 C**************************************************    
 C     Start load balancing
 C**************************************************    
-
-
-
       sharedwork = ntot/numprocs 
       rest = mod(ntot, numprocs)
-C TODO 
-      NormalStaticLoadBalance: if (.not.presorting) then
+
 C **********************************************************
 C     UNSORTED STATIC LOAD BALANCING
 C     The number of indexes to be handled is distributed evenly over 
@@ -828,6 +827,7 @@ C     so this load balancing scheme might be slower for smaller systems.
 C     For large systems the amount of work is assumed to even out as the
 C     number of ILLL indexes grows. TODO this has not been benchmarked yet.
 C **********************************************************
+      NormalStaticLoadBalance: if (.not.presorting) then
       if (sharedwork.eq.1) goto 200 !load balancing for low task/process ratio
       if (sharedwork.lt.1) goto 210 !load balancing when there are excess processes 
 
@@ -864,17 +864,22 @@ C     Normal static load balancing
 C **********************************************************
 C   SPINNING BARRIER 
 C   Spinning barrier in case there are too many processes compared
-C   to number of tasks.  The processes will sleep, enabling the 
-C   remaining processes to use them for threaded MKL applications.
-C   TODO It's very likely that a slave stalled by a bcast will be 
-C   available for the MKL library. Thus if INTEL is not availabe, a bcast
-C   solution might be applicable as well.
+C   to the number of AO indices. The surplus processes will sleep, 
+C   enabling the remaining processes to use them for threaded MKL 
+C   applications
+C 
+C   F.Beyer.
+C   TODO As of Apr. 2014 the sleepqq function is only available 
+C   through Intel. It's possible that slaves stalled with an 
+C   mpi_bcast are available for scheduling with the MKL library. 
+C   If INTEL is not availabe, blocking the surplus slaves with an
+C   mpi_bcast solution might be applicable.
 C **********************************************************
 210   continue 
 
       if (myid.lt.rest) then      
-         if (iprint.gt.3) then
-            ! TODO make a flag that regulates how often this is printed.
+         if ((iprint.gt.3).and.(printspininfo) ) then
+            printspininfo = .false.
             write(lupri,*)"Spinning load balance used in PAR_RP_ERES. ",
      &                    "The number of employed processes might be ",
      &                    "in excess of what is appropriate for this ", 
@@ -886,6 +891,7 @@ C **********************************************************
 
       exitspinningbarrier = .false. 
       spinningbarrier: if (myid.ge.ntot) then
+         ! The release signal is sent from the master towards the end of the subroutine
          call mpi_irecv(exitspinningbarrier, 1, MPI_LOGICAL, 0, myid,
      &   mpi_comm_world, request, ierr) 
 
@@ -902,7 +908,7 @@ C **********************************************************
       endif spinningbarrier
 
 
-666   continue  !redirection point for the static load balancing schemes
+666   continue  !redirection point for the non-presorted load balancing schemes
 
       endif NormalStaticLoadBalance
 
@@ -917,7 +923,7 @@ C**************************************************
 
 
 
-      IF (myid.eq.0) then
+      mastersorting: if (myid.eq.0) then
 
 C        FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
          allocate( presortarray(2, ntot), stat=allocstatus )
@@ -954,11 +960,10 @@ C        TRANSFER TWO-ELECTRON INDICES TO SLAVES AND KEEP OWN WORK IN A VECTOR
          numrecipients = min(numprocs, ntot)
          DO i=2, numrecipients
             TargetID = i-1 
-            !contiguous block of memory being sent... clever??
+            !The indices are easier to transfer by sending whole columns since they're stored contiguously.
             call mpi_send(finalsorted(1, i), maxnumjobs, mpi_integer, 
      &                    TargetID, TargetID, mpi_comm_world, ierr) 
          ENDDO
-
          AssignedIndices = finalsorted(:,1) 
 
 
@@ -972,14 +977,13 @@ C        DEALLOCATE BEFORE CALCULATING FOCK MATRIX
          if(.not.(deallocstatus.eq.0) ) then
             call quit('Finalsorted was not deallocated in PAR_RP_ERES')
          endif
-
      
-      ENDIF !master
+      endif mastersorting
 
 
-
-
-
+C************************************************** 
+C     Slaves receive the indices to integrate over
+C**************************************************
       IF (myid.ne.0) then
          call mpi_bcast(maxnumjobs, 1, mpi_integer, 0, 
      &                  mpi_comm_world, ierr) 
@@ -988,7 +992,6 @@ C        DEALLOCATE BEFORE CALCULATING FOCK MATRIX
          if(.not.(allocstatus.eq.0) ) then
             call quit('Allocation error in PAR_RP_ERES')
          endif
-
 
          call mpi_recv(AssignedIndices, maxnumjobs, mpi_integer, 0, 
      &                 myid, mpi_comm_world, mpistatus, ierr)
@@ -1000,21 +1003,17 @@ C     ALL PROCESSES PERFORM THE INTEGRALS WITH THE PRE-ORDERED AO INDICES
          if ( .not.(AssignedIndices(i).eq.0) ) then
             firstindex = AssignedIndices(i)
             lastindex  = AssignedIndices(i)
-            write(*,*) myid, "integrating", firstindex
             goto 999  ! Perform integral, then return to label 998
 998         continue
          else
             continue
          endif
       ENDDO
-      write(*,*) myid, "done with all integrals"
 
       deallocate( AssignedIndices, stat=deallocstatus)
       if(.not.(allocstatus.eq.0) ) then
          call quit('Deallocation error in PAR_RP_ERES')
       endif
-
-
 
       goto 888 !exit the dynamic load leveler now that all integrals are done
       endif PresortedStaticBalance
@@ -1025,7 +1024,7 @@ C     ALL PROCESSES PERFORM THE INTEGRALS WITH THE PRE-ORDERED AO INDICES
 C *******************************************
 C            Primary parallel loop. 
 C *******************************************
-999         continue
+999         continue !direction point from the pre-sorted load balancer
             doilll: DO 300 ILLL = firstindex, lastindex
                   if (.not.direct) then
                      call quit('RPA in parallel must use .DIRECT. ',
@@ -1064,7 +1063,6 @@ C *******************************************
 C------------------------------------------------------------------------
 C              Loop over number of distributions in disk.
 C------------------------------------------------------------------------
-
                idel2loop: DO 310 IDEL2 = 1,NUMDIS
 
                   IDEL  = INDEXA(IDEL2)
@@ -1076,7 +1074,6 @@ C------------------------------------------------------------------------
 C---------------------------------------------
 C                 Work space allocation no. 3.
 C---------------------------------------------
-
                   LXINT  = NDISAO(ISYDIS)
                   KXINT   = KEND2
                   KEND3   = KXINT  + LXINT
@@ -1105,7 +1102,6 @@ C---------------------------------------------
 C----------------------------------------------
 C                 Calculate the AO-Fock matrix.
 C----------------------------------------------
-C
                   IF (TRIPLET) THEN
                      CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
      &                               WORK(KFOCK),WORK(KEND4),
@@ -1115,14 +1111,12 @@ C
                      CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
      &                              WORK(KFOCK),WORK(KEND4),
      &                              LWORK4,IDEL,ISYMD,.FALSE.,
-     &                              'CrashPlease',ISYMTR)
+     &                              'Dummy',ISYMTR)
                   END IF
   310          enddo idel2loop
   300       enddo doilll
       if (presorting) goto 998
-888   continue ! target goto when all processes have finished their integrals
-
-
+888   continue ! target goto when all pre-sorted processes finishes their integrals
 
 C     The master sends a release signal to all 
 C     processes participating in the spinning barrier.
@@ -1136,12 +1130,8 @@ C     processes participating in the spinning barrier.
          endif
       endif
 
-
-
 C     label 800 is the redirection point for slaves from the spinning barrier 
 800   continue 
-
-         write(*,*) myid, "ready for reduction assembly"
 
 C     Assemble the Fock Matrix in the master's work array
       if  (myid.eq.0) then
@@ -1151,7 +1141,6 @@ C     Assemble the Fock Matrix in the master's work array
          call mpi_reduce(work(kfock), fockd, lfock, MPI_REAL8,
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
       endif
-
 
       RETURN
       END SUBROUTINE
@@ -1168,8 +1157,17 @@ C /* deck getbytespan */
 C Frederik Beyer, March 2014.
 C
 C This subroutine calculates the size of a common block in bytes.
+C This is used for easy updating of common block in parallel calculations.
+C The former approaches relied on counting the number of occurrences
+C of variables of a particular type and then transferring a common in
+C a series of mpi_bcasts; one for every datatype in the common block.
+C This approach utilizes the contiguous storage of variables in a common
+C block to calculate the span in bytes from the first variable
+C in the common block and up to, but not including, the last variable.
+C
 C Point the firstvar to the first variable in the common block  
 C and point lastvar to the last variable in the common block.
+C
 C Lastvar should have a name like <commonblockname>LAST
 C ie. CCSDGNINPLAST (see include/ccsdinp.h for an example)
 C
@@ -1180,6 +1178,12 @@ C
 C Getbytespan calculates the total amount of bytes needed for an MPI_BCAST 
 C to transfer the whole block in one go (with datatype = mpi_byte), 
 C including the first but excluding the <name>last variable.
+C
+C Example of use:
+C to update the common block /eribuf/:
+C
+C      call getbytespan(lbuf, eribufLAST, bytesize)
+C      call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
 
           use mpi
 #include "implicit.h"
@@ -1223,7 +1227,6 @@ C including the first but excluding the <name>last variable.
          else
             numrendezsends  = numrendezsends + 1
          endif
-
          write(lupri, '(a, i8)') 
      &   "Running amount of Bytes transferred via getbytespan: ",
      &   totaltransfer
@@ -1231,7 +1234,6 @@ C including the first but excluding the <name>last variable.
      &               "eager protocol: ", numeagersends
          write(lupri, '(a, i8)') "Estimated transfers using the "
      &                "rendezvous protocol: ", numrendezsends
-
       endif
 
 
@@ -1240,11 +1242,17 @@ C including the first but excluding the <name>last variable.
 
 C /* deck presortaodist*/
       subroutine presortaodist(Nindex, indxbt, outlist)
-C Pre-calculate IDEL2 indexes before starting the parallel calculation
-C TODO add documentation!
+C A subroutine associated with the atomic integral parallel RPA/SOPPA calculations.
+C Pre-calculate IDEL2 indexes before starting a parallel calculation.
 C
+C This routine assembles a matrix that counts the number of distributions
+C associated with an ILLL AO integral index. This array is used by getallocsize
+C and partitionAOindices to pre-sort the integrals that need to be done to 
+C assemble the AO Fock matrix so the load per process can be spread as evenly
+C as possible.
 C
-C
+C The first row in outlist is the number of distributions
+C The second row in outlist is the associated ILLL index
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1252,11 +1260,10 @@ C
 #include "mxcent.h"
 #include "eridst.h"
 
-      integer,               intent(in) :: Nindex
-      integer, dimension(*), intent(in) :: indxbt
+      integer,                       intent(in) :: Nindex
+      integer, dimension(*),         intent(in) :: indxbt
       integer, dimension(2, Nindex), intent(out):: outlist
       integer :: i
-
 
       do i=1, Nindex
          call getdst(i, 0, 0)
@@ -1268,13 +1275,18 @@ C
 
       return
 
-
       end subroutine
 
 
 
 C /* deck getbigjob*/
       subroutine getbigjob(list, cols, nextindex)
+C
+C NOTE !!!! As of April 2014 this routine is not used by par_rp_eres as indicated. 
+C A pre-sorting algorithm has been implemented in its stead. 
+C
+C
+C
 C
 C F.Beyer Mar. 2014.
 C Selection routine for dynamic load balancing for the par_rp_eres subroutine.
@@ -1310,6 +1322,11 @@ C TODO Insert error checking in case no value is found!
 C /* deck getsmalljob*/
       subroutine getsmalljob(list, cols, nextindex)
 C
+C NOTE !!!! As of April 2014 this routine is not used by par_rp_eres as indicated. 
+C A pre-sorting algorithm has been implemented in its stead. 
+C
+C
+C
 C F.Beyer Mar. 2014.
 C Selection routine for dynamic load balancing for the par_rp_eres subroutine.
 C Before doing two-electron integrals, the amount of work associated with every 
@@ -1344,7 +1361,14 @@ C TODO Insert error checking in case no value is found!
 
 C     /* deck getallocsize */
       SUBROUTINE getallocsize(ntot, originalsort, maxnumjobs)
-
+C A subroutine associated with the atomic integral parallel RPA/SOPPA calculations.
+C 
+C This subroutine calculates which process will be assigned the
+C most single jobs (not the largest total amount of work) for a
+C parallel RPA/SOPPA calculation. Its output is used to allocate 
+C the right amount of storage by the master when it starts pre-sorting
+C the integrals for the parallel calculation of the AO Fock matrix.
+C
       use mpi
 #include "implicit.h"
       integer,                     intent(in)  :: ntot
@@ -1394,7 +1418,18 @@ C     /* deck getallocsize */
 C     /* deck partitionAOindices */
       SUBROUTINE  partitionAOindices(ntot, rows, cols, presortedarray,
      &                               sorted)
-
+C A subroutine associated with the atomic integral parallel RPA/SOPPA calculations.
+C
+C The output from this routine is the array 'sorted'.
+C The sorted matrix contains AO integral indexes for two-electron integrals.
+C Every column contains a list of ILLL indexes that are to be assigned as work 
+C to a single process. The total amount of work per column is estimated based
+C on the number of distributions that are related to the ILLL indexes in the column. 
+C
+C This pre-sorting of ILLL indexes for a parallel calculation approximates an
+C even distribution of total work for all processes when calculating the Fock
+C matrix in parallel.
+C
       use mpi
 #include "implicit.h"
       integer,                        intent(in)    :: ntot, rows, cols
@@ -1406,13 +1441,11 @@ C     /* deck partitionAOindices */
       integer :: numprocs
       integer :: allocstatus, deallocstatus
 
-
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       allocate (sumofwork(2, numprocs) , stat=allocstatus)
       if(.not.(allocstatus.eq.0) ) then
          call quit('Allocation error in partitionAOindices')
       endif
-
  
       call izero(sorted, (rows*cols) )
       call izero(sumofwork, (2*numprocs) )
@@ -1446,7 +1479,6 @@ C        ADD AO-INDEX TO FIRST AVAILABLE ROW IN THE LAZY SLAVE'S COLUMN
       return
 
       END SUBROUTINE
-
 
 
 
