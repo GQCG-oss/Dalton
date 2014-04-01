@@ -5634,12 +5634,7 @@ C
       CHARACTER*8 NAME(8)
 C
 #include "ccorb.h"
-C
-C   #include "infind.h" replaced by: #include <ccisao.h>
-C   (WK/UniKA/28-04-2003).
-C
-#include "ccisao.h"
-C
+#include "infind.h"
 #include "ccsdsym.h"
 #include "cbieri.h"
 #include "eribuf.h"
