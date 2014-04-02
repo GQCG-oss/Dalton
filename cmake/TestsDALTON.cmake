@@ -318,6 +318,7 @@ add_dalton_test(choles_ccsdpt_energy "dalton;cholesky;long")
 
 if(ENABLE_PELIB)
 add_dalton_test(pehf_iter             "dalton;peqm;parallel;short")
+add_dalton_test(pehf_cpp              "dalton;peqm;parallel;short")
 add_dalton_test(pehf_direct           "dalton;peqm;parallel;short")
 add_dalton_test(pehf_gspol            "dalton;peqm;parallel;short")
 add_dalton_test(pehf_damp             "dalton;peqm;parallel;short")
