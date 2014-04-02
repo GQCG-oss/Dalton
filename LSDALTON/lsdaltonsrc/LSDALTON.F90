@@ -659,6 +659,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use lstiming, only: init_timers, lstimer,  print_timers
   use lspdm_tensor_operations_module,only:init_persistent_array
   use GCtransMod, only: init_AO2GCAO_GCAO2AO
+  use IntegralInterfaceModuleDF,only:init_IIDF_matrix
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
@@ -678,6 +679,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call set_matrix_default !initialize global matrix counters
   call init_rsp_util      !initialize response util module
   call lstmem_init
+  call init_IIDF_matrix
 #ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
 #endif
@@ -702,6 +704,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use lstensorMem, only: lstmem_free
   use lspdm_tensor_operations_module,only:free_persistent_array
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
+  use IntegralInterfaceModuleDF,only:free_IIDF_matrix
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
@@ -720,6 +723,7 @@ implicit none
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
+  call free_IIDF_matrix
   call lstmem_free
 
 #ifdef VAR_ICHOR
