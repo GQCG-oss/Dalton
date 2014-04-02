@@ -128,6 +128,7 @@ implicit none
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
+  config%CounterPoiseCorrection = .false.
   config%PrintMemory = .false.
   config%doESGopt = .false.
   config%noDecEnergy = .false.
@@ -1025,6 +1026,9 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
+        CASE('.SCFCOUNTERPOISE')
+           !Perform Counter Poise Correction of the SCF Energy
+           config%CounterPoiseCorrection = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
@@ -3308,6 +3312,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       WRITE(config%LUPRI,'(A)')' '
       CALL lsQUIT('Cartesian basisfunction without H1DAIG starting guess.',config%lupri)
    endif
+
+! Check Counter Poise Input :
+   IF(config%CounterPoiseCorrection.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
+      call lsquit('.SCFCOUNTERPOISE keyword require SubSystems in MOLECULE.INP',-1)
+   ENDIF
 
 ! Check integral input:
 !======================
