@@ -14,6 +14,7 @@ DALTON
 - Removed the maximum of 20 excitations in summary output for second and third order transition moments.
 - Bugfix for parallel calculations and some type of geometry optimizations with ano basis sets
   (this bug resulted in aborted calculations, not in wrong results)
+- Print irrep names together with symmetry numbers for easier interpretation of output
 
 
 LSDALTON
