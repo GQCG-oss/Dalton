@@ -709,7 +709,7 @@ contains
     logical :: loc
  
     ! Sanity check
-    if(arr%initialized)call lsquit("ERROR(array_ainit):array already initialized",-1) 
+    !if(arr%initialized)call lsquit("ERROR(array_ainit):array already initialized",-1) 
     do i=1, nmodes
       if (dims(i) == 0) call lsquit("ERROR(array_minit): 0 dimendion not allowed",-1)
     end do
@@ -802,7 +802,7 @@ contains
     logical :: zeros_in_tiles,wcps
     !choose which kind of array
 
-    if(arr%initialized)call lsquit("ERROR(array_init):array already initialized",-1) 
+    !if(arr%initialized)call lsquit("ERROR(array_init):array already initialized",-1) 
 
     !DEFAULTS
     it     = DENSE

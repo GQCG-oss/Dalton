@@ -3556,7 +3556,7 @@ contains
     integer :: alphaB,gammaB,dimAlpha,dimGamma,idx
     real(realk),pointer :: tmp1(:),tmp2(:),tmp3(:)
     integer(kind=long) :: size1,size2,size3
-    integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd,m,k,n,i,dims(4),order(4)
+    integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd,m,k,n,i,j,dims(4),order(4)
     logical :: FullRHS,doscreen
     real(realk) :: tcpu, twall
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
@@ -3573,21 +3573,23 @@ contains
     Character            :: intSpec(5)
     integer :: myload
     logical :: master
-    integer :: double_2G_nel
+    integer :: double_2G_nel,dest,fe,nblocks,rblock,iblock
+    integer, parameter :: block = 14000000
     integer(kind=long) :: o2v2,o3v
     real(realk), pointer :: dummy1(:),dummy2(:)
     integer(kind=ls_mpik) :: mode
 
     double_2G_nel = 100000000
-    o2v2 = nocc*nocc*nvirt*nvirt
-    o3v  = nocc*nocc*nocc*nvirt
+    nblocks       = (nvirt**3)/block
+    rblock        = mod( nvirt**3, block )
+    o2v2          = nocc*nocc*nvirt*nvirt
+    o3v           = nocc*nocc*nocc*nvirt
 
     ! Lots of timings
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Integral screening?
-    doscreen = mylsitem%setting%scheme%cs_screen.OR.&
-         & mylsitem%setting%scheme%ps_screen
+    doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
 
     ! allocate arrays to update during integral loop 
     ! **********************************************
@@ -3784,21 +3786,18 @@ contains
           m = nbasis*dimGamma*dimAlpha
           k = nbasis
           n = nvirt
-!          call dec_simple_dgemm(m,k,n,tmp1,CvirtT,tmp2,'T','T')
           call dgemm('T','N',m,n,k,1.0E0_realk,tmp1,k,Cvirt,k,0.0E0_realk,tmp2,m)
 
           ! tmp3(B;alphaB,gammaB,A) = sum_{delta} CvirtT(B,delta) tmp2(delta;alphaB,gammaB,A)
           m = nvirt
           k = nbasis
           n = dimAlpha*dimGamma*nvirt
-!          call dec_simple_dgemm(m,k,n,CvirtT,tmp2,tmp3,'N','N')
           call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT,m,tmp2,k,0.0E0_realk,tmp3,m)
 
           ! tmp1(I;,alphaB,gammaB,A) = sum_{delta} CoccT(I,delta) tmp2(delta,alphaB,gammaB,A)
           m = nocc
           k = nbasis
           n = dimAlpha*dimGamma*nvirt
-!          call dec_simple_dgemm(m,k,n,CoccT,tmp2,tmp1,'N','N')
           call dgemm('N','N',m,n,k,1.0E0_realk,CoccT,m,tmp2,k,0.0E0_realk,tmp1,m)
 
           ! Reorder: tmp1(I,alphaB;gammaB,A) --> tmp2(gammaB,A;I,alphaB)
@@ -3810,25 +3809,18 @@ contains
           m = nocc
           k = dimGamma
           n = nvirt*nocc*dimAlpha
-!          call dec_simple_dgemm(m,k,n,CoccT(1:nocc,GammaStart:GammaEnd),tmp2,tmp1,'N','N')
           call dgemm('N','N',m,n,k,1.0E0_realk,CoccT(1,GammaStart),nocc,tmp2,k,0.0E0_realk,tmp1,m)
 
           ! JAIK(J,A,I;K) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cocc(alpha,K)
           m = nvirt*nocc**2
           k = dimAlpha
           n = nocc
-!          call dec_simple_dgemm_update(m,k,n,tmp1,&
-!                                     & CoccT(1:nocc,AlphaStart:AlphaEnd),JAIK%val,'N','T')
-!          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart:AlphaEnd,1:nocc),k,1.0E0_realk,JAIK%val,m)
           call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart,1),nbasis,1.0E0_realk,JAIK%val,m)
 
           ! JAIB(J,A,I;B) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cvirt(alpha,B)
           m = nvirt*nocc**2
           k = dimAlpha
           n = nvirt
-!          call dec_simple_dgemm_update(m,k,n,tmp1,&
-!                                     & CvirtT(1:nvirt,AlphaStart:AlphaEnd),JAIB%val,'N','T')
-!          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart:AlphaEnd,1:nvirt),k,1.0E0_realk,JAIB%val,m)
           call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart,1),nbasis,1.0E0_realk,JAIB%val,m)
 
           ! Reorder: tmp3(B,alphaB;gammaB,A) --> tmp1(gammaB,A;B,alphaB)
@@ -3840,7 +3832,6 @@ contains
           m = nvirt
           k = dimGamma
           n = dimAlpha*nvirt**2
-!          call dec_simple_dgemm(m,k,n,CvirtT(1:nvirt,GammaStart:GammaEnd),tmp1,tmp3,'N','N')
           call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(1,GammaStart),nvirt,tmp1,k,0.0E0_realk,tmp3,m)
 
           ! reorder tmp1 and do CBAI(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
@@ -3853,7 +3844,6 @@ contains
           do i=1,nocc
 
              ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,i)
-!             call dec_simple_dgemm(m,k,n,tmp3,CoccT(i,AlphaStart:AlphaEnd),tmp1,'N','T')
              call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
 
              ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
@@ -3868,8 +3858,23 @@ contains
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
 
+             dest = get_residence_of_tile(i,CBAI)
+             !call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
              call arr_lock_win(CBAI,i,'s',assert=mode)
-             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
+             do iblock = 1, nblocks
+                fe = 1 + (iblock - 1) * block
+                call lsmpi_acc(tmp2(fe:fe+block-1),block,fe,int(dest,kind=ls_mpik),CBAI%wi(i))
+#ifdef VAR_HAVE_MPI3
+                call lsmpi_win_flush(CBAI%wi(i),rank=int(dest,kind=ls_mpik),local=.true.)
+#endif
+             enddo
+             if( rblock > 0 )then
+                fe = 1 + nblocks * block
+                call lsmpi_acc(tmp2(fe:),rblock,fe,int(dest,kind=ls_mpik),CBAI%wi(i))
+#ifdef VAR_HAVE_MPI3
+                call lsmpi_win_flush(CBAI%wi(i),rank=int(dest,kind=ls_mpik),local=.true.)
+#endif
+             endif
              call arr_unlock_win(CBAI,i)
 
           end do
@@ -3879,8 +3884,7 @@ contains
           do i=1,nocc
 
              ! for description, see mpi section above
-!             call dec_simple_dgemm(m,k,n,tmp3,CoccT(i,AlphaStart:AlphaEnd),tmp1,'N','T')
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart:,i),nbasis-AlphaStart+1,0.0E0_realk,tmp1,m)
+             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,CBAI%elm4(:,:,:,i))
 
