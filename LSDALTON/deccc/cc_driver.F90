@@ -1549,11 +1549,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ampl2_dims = [nv,no]
 
    ! create transformation matrices in array form
-   Co   = array_minit( occ_dims, 2, local=local, atype='REPD' )
-   Cv   = array_minit( virt_dims,2, local=local, atype='REPD' )
-   Co2  = array_minit( occ_dims, 2, local=local, atype='REPD' )
-   Cv2  = array_minit( virt_dims,2, local=local, atype='REPD' )
-   fock = array_minit( ao2_dims, 2, local=local, atype='REPD' )
+   Co   = array_minit( occ_dims, 2, local=local, atype='LDAR' )
+   Cv   = array_minit( virt_dims,2, local=local, atype='LDAR' )
+   Co2  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
+   Cv2  = array_minit( virt_dims,2, local=local, atype='LDAR' )
+   fock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
 
    call array_convert( Co_d,   Co   )
    call array_convert( Cv_d,   Cv   )
@@ -1591,6 +1591,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       else
          ! Fock matrix for fragment from density made from input MOs
          call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
+         !print *,"DEBUGGGING: zero fragment iFOck instead of calculating it"
+         !call array_zero(ifock)
       end if
 
       ! Long range Fock correction:
@@ -1606,9 +1608,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       if(DECinfo%frozencore) then
          ! Fock matrix from input MOs
          ifock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
+         call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
          !print *,"DEBUGGGING: zero iFOck instead of calculating it"
          !call array_zero(ifock)
-         call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
          ! Correction to actual Fock matrix
          delta_fock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
          call array_cp_data(fock,delta_fock)
