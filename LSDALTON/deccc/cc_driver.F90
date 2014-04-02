@@ -1590,9 +1590,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call Get_AOt1Fock(mylsitem,t1_final,ifock,no,nv,nb,Co,Co2,Cv2)
       else
          ! Fock matrix for fragment from density made from input MOs
-         call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
-         !print *,"DEBUGGGING: zero fragment iFOck instead of calculating it"
-         !call array_zero(ifock)
+         !call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
+         print *,"DEBUGGGING: zero fragment iFOck instead of calculating it"
+         call array_zero(ifock)
       end if
 
       ! Long range Fock correction:
@@ -1608,9 +1608,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       if(DECinfo%frozencore) then
          ! Fock matrix from input MOs
          ifock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
-         call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
-         !print *,"DEBUGGGING: zero iFOck instead of calculating it"
-         !call array_zero(ifock)
+         !call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
+         print *,"DEBUGGGING: zero iFOck instead of calculating it"
+         call array_zero(ifock)
          ! Correction to actual Fock matrix
          delta_fock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
          call array_cp_data(fock,delta_fock)

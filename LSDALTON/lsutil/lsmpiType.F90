@@ -200,9 +200,15 @@ module lsmpi_type
   !describable by a 32bit integer and dividable by 8
   !integer,parameter     :: SPLIT_MPI_MSG = 2147483640
   integer,parameter     :: SPLIT_MPI_MSG      = 1000000000
-  !split mpi one sided communication into 1GB msg
-  !integer,parameter     :: MAX_SIZE_ONE_SIDED = 125000000
+  !The recommended size of message chunks
+  integer,parameter     :: SPLIT_MSG_REC      =  100000000
+  !split mpi one sided communication into 1GB msg, with CRAY workaround in 100MB
+  !chunks
+#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+  integer,parameter     :: MAX_SIZE_ONE_SIDED = 125000000
+#else
   integer,parameter     :: MAX_SIZE_ONE_SIDED =  14000000
+#endif
 
   !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
@@ -6246,7 +6252,7 @@ contains
         newpos = pos+j-1
         call lsmpi_acc_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
 #ifdef VAR_HAVE_MPI3
-        if(flush_it)call lsmpi_win_flush(win,rank=dest)
+        if(flush_it)call lsmpi_win_flush(win,rank=dest,local=.true.)
 #endif
       enddo
     endif
@@ -6271,7 +6277,7 @@ contains
       newpos = pos+i-1
       call lsmpi_acc_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
 #ifdef VAR_HAVE_MPI3
-      if(flush_it)call lsmpi_win_flush(win,rank=dest)
+      if(flush_it)call lsmpi_win_flush(win,rank=dest,local=.true.)
 #endif
     enddo
 #endif

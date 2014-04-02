@@ -1020,7 +1020,7 @@ contains
 
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
-      k=250000000
+      k=SPLIT_MSG_REC
 
       nelms = nbas*nocc
       call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
@@ -2009,7 +2009,7 @@ contains
 
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
-      k=250000000
+      k=SPLIT_MSG_REC
 
       nelms = nvir*nocc
       call ls_mpibcast_chunks(t1%elm1,nelms,infpar%master,infpar%lg_comm,k)

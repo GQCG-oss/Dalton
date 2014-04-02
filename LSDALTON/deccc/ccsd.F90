@@ -960,7 +960,7 @@ contains
     type(matrix) :: Dens, iFock
     ! CHECKING and MEASURING variables
     integer(kind=long) :: maxsize64,dummy64
-    integer :: myload,double_2G_nel,nelms,n4
+    integer :: myload,nelms,n4
     real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2, deb1,deb2,MemFree,ActuallyUsed
     real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,time_a, time_c, time_d,time_singles
     real(realk) :: time_doubles,time_start,timewall_start,wait_time,max_wait_time
@@ -1016,7 +1016,6 @@ contains
     stopp                    = 0.0E0_realk
     print_debug              = (DECinfo%PL>3)
     debug                    = .false.
-    double_2G_nel            = 100000000
 
     ! Set some shorthand notations
     ! ****************************
@@ -1941,7 +1940,7 @@ contains
     if(infpar%lg_nodtot>1.or.scheme==3) then
 
        if(iter==1.and.scheme==4)then
-         call lsmpi_allreduce(govov%elm1,o2v2,infpar%lg_comm,double_2G_nel)
+         call lsmpi_allreduce(govov%elm1,o2v2,infpar%lg_comm,SPLIT_MSG_REC)
        else if(scheme==3)then
          call array_cp_tiled2dense(govov,.false.)
        endif
@@ -1951,12 +1950,12 @@ contains
        !***********************************************************************
        if(Ccmodel > MODEL_CC2)then
 
-         call lsmpi_allreduce(sio4%d,int((i8*nor)*no2,kind=8),infpar%lg_comm,double_2G_nel)
+         call lsmpi_allreduce(sio4%d,int((i8*nor)*no2,kind=8),infpar%lg_comm,SPLIT_MSG_REC)
 
          if(scheme==4)then
 
-           call lsmpi_allreduce(gvvooa%elm1,o2v2,infpar%lg_comm,double_2G_nel)
-           call lsmpi_allreduce(gvoova%elm1,o2v2,infpar%lg_comm,double_2G_nel)
+           call lsmpi_allreduce(gvvooa%elm1,o2v2,infpar%lg_comm,SPLIT_MSG_REC)
+           call lsmpi_allreduce(gvoova%elm1,o2v2,infpar%lg_comm,SPLIT_MSG_REC)
 
          endif
 
@@ -2007,7 +2006,7 @@ contains
 #endif
 
 #ifdef VAR_MPI
-        call lsmpi_local_reduction(w1%d,o2v2,infpar%master,double_2G_nel)
+        call lsmpi_local_reduction(w1%d,o2v2,infpar%master,SPLIT_MSG_REC)
 #endif
       else
         call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1%d,o2v2)
@@ -2091,7 +2090,7 @@ contains
           w1%d(1_long:o2v2) = omega2%elm1(1_long:o2v2)
 #endif
 #ifdef VAR_MPI
-          call lsmpi_local_reduction(w1%d,o2v2,infpar%master,double_2G_nel)
+          call lsmpi_local_reduction(w1%d,o2v2,infpar%master,SPLIT_MSG_REC)
 #endif
         else
           call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1%d,o2v2)
@@ -2144,7 +2143,7 @@ contains
           w1%d(1_long:o2v2) = omega2%elm1(1_long:o2v2)
 #endif
 #ifdef VAR_MPI
-          call lsmpi_local_reduction(w1%d,o2v2,infpar%master,double_2G_nel)
+          call lsmpi_local_reduction(w1%d,o2v2,infpar%master,SPLIT_MSG_REC)
 #endif
         else
           call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1%d,o2v2)
@@ -2186,9 +2185,9 @@ contains
 #ifdef VAR_MPI
     if(infpar%lg_nodtot>1) then
       if(scheme==4.or.scheme==3)&
-       &call lsmpi_local_reduction(omega2%elm1,o2v2,infpar%master,double_2G_nel)
-      call lsmpi_local_reduction(Gbi,nb*no,infpar%master,double_2G_nel)
-      call lsmpi_local_reduction(Had,nb*nv,infpar%master,double_2G_nel)
+       &call lsmpi_local_reduction(omega2%elm1,o2v2,infpar%master,SPLIT_MSG_REC)
+      call lsmpi_local_reduction(Gbi,nb*no,infpar%master,SPLIT_MSG_REC)
+      call lsmpi_local_reduction(Had,nb*nv,infpar%master,SPLIT_MSG_REC)
     endif
     !convert stuff
     !set for correct access again, save as i a j b
@@ -5430,7 +5429,6 @@ contains
     real(realk), pointer :: goooo(:), govoo(:), gvooo(:)
 
     !> MPI info:
-    integer :: double_2G_nel
     integer, pointer :: joblist(:)
     logical :: master, local
     integer(kind=ls_mpik) :: tile_master, myrank, nnod
@@ -5662,17 +5660,16 @@ contains
 #ifdef VAR_MPI
     ! MPI reduction of arrays: omega2, B2prep, G_Pi, HaQ, and all int
     no2v2 = int(nvir*nvir*nocc*nocc, kind=long)
-    double_2G_nel = 100000000
-    call lsmpi_local_reduction(G_Pi,ntot*nocc,infpar%master,double_2G_nel)
-    call lsmpi_local_reduction(H_aQ,nvir*ntot,infpar%master,double_2G_nel)
-    call lsmpi_local_reduction(goooo,nocc**4,infpar%master,double_2G_nel)
-    call lsmpi_local_reduction(govoo,nvir*nocc**3,infpar%master,double_2G_nel)
-    call lsmpi_local_reduction(gvooo,nvir*nocc**3,infpar%master,double_2G_nel)
+    call lsmpi_local_reduction(G_Pi,ntot*nocc,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(H_aQ,nvir*ntot,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(goooo,nocc**4,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(govoo,nvir*nocc**3,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(gvooo,nvir*nocc**3,infpar%master,SPLIT_MSG_REC)
      
     ! ALL REDUCE FOR C2 AND D2 TERMS WITH MPI:
-    call lsmpi_allreduce(gvoov,no2v2,infpar%lg_comm,double_2G_nel)
-    call lsmpi_allreduce(gvvoo,no2v2,infpar%lg_comm,double_2G_nel)
-    if (iter==1) call lsmpi_allreduce(govov%elm1,no2v2,infpar%lg_comm,double_2G_nel)
+    call lsmpi_allreduce(gvoov,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
+    call lsmpi_allreduce(gvvoo,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
+    if (iter==1) call lsmpi_allreduce(govov%elm1,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
 #endif
 
     call mem_dealloc(tmp1)
@@ -5687,7 +5684,7 @@ contains
     nullify(tmp2)
 
 #ifdef VAR_MPI
-    call lsmpi_local_reduction(omega2%elm1,no2v2,infpar%master,double_2G_nel)
+    call lsmpi_local_reduction(omega2%elm1,no2v2,infpar%master,SPLIT_MSG_REC)
 #endif
 
     ! Slaves exit the routines:
@@ -6778,7 +6775,7 @@ subroutine ccsd_data_preparation()
 
   !split messages in 2GB parts, compare to counterpart in
   !mpi_communicate_ccsd_calcdate
-  k=250000000
+  k=SPLIT_MSG_REC
 
   nelms = nbas*nocc
   if( lspdm_use_comm_proc )then
@@ -7060,9 +7057,9 @@ subroutine moccsd_data_slave()
   !==============================================================================
   ! Receive data from master:
   !
-  !split messages in 2GB parts, compare to counterpart in
+  !split messages in parts, compare to counterpart in
   !ccsd_data_preparation
-  k=250000000
+  k=SPLIT_MSG_REC
 
   nelms = nvir*nocc
   call ls_mpibcast_chunks(t1%elm1,nelms,infpar%master,infpar%lg_comm,k)

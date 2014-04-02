@@ -3573,8 +3573,8 @@ contains
     Character            :: intSpec(5)
     integer :: myload
     logical :: master
-    integer :: double_2G_nel,dest,fe,nblocks,rblock,iblock
-    integer, parameter :: block = 14000000
+!    integer :: double_2G_nel,dest,fe,nblocks,rblock,iblock
+!    integer, parameter :: block = 14000000
     integer(kind=long) :: o2v2,o3v
     real(realk), pointer :: dummy1(:),dummy2(:)
     integer(kind=ls_mpik) :: mode
@@ -3644,7 +3644,7 @@ contains
          & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
          & nbatchesGamma,orb2BatchGamma,'R')
 
-    if(master)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
+    if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
     ! Translate batchindex to orbital index
     ! -------------------------------------
@@ -3678,7 +3678,7 @@ contains
          & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
          & nbatchesAlpha,orb2BatchAlpha,'R')
 
-    if(master)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
+    if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
     ! Translate batchindex to orbital index
     ! -------------------------------------
@@ -3858,23 +3858,23 @@ contains
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
 
-             dest = get_residence_of_tile(i,CBAI)
-             !call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
+!             dest = get_residence_of_tile(i,CBAI)
              call arr_lock_win(CBAI,i,'s',assert=mode)
-             do iblock = 1, nblocks
-                fe = 1 + (iblock - 1) * block
-                call lsmpi_acc(tmp2(fe:fe+block-1),block,fe,int(dest,kind=ls_mpik),CBAI%wi(i))
-#ifdef VAR_HAVE_MPI3
-                call lsmpi_win_flush(CBAI%wi(i),rank=int(dest,kind=ls_mpik),local=.true.)
-#endif
-             enddo
-             if( rblock > 0 )then
-                fe = 1 + nblocks * block
-                call lsmpi_acc(tmp2(fe:),rblock,fe,int(dest,kind=ls_mpik),CBAI%wi(i))
-#ifdef VAR_HAVE_MPI3
-                call lsmpi_win_flush(CBAI%wi(i),rank=int(dest,kind=ls_mpik),local=.true.)
-#endif
-             endif
+             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
+!             do iblock = 1, nblocks
+!                fe = 1 + (iblock - 1) * block
+!                call lsmpi_acc(tmp2(fe:fe+block-1),block,fe,int(dest,kind=ls_mpik),CBAI%wi(i))
+!#ifdef VAR_HAVE_MPI3
+!                call lsmpi_win_flush(CBAI%wi(i),rank=int(dest,kind=ls_mpik),local=.true.)
+!#endif
+!             enddo
+!             if( rblock > 0 )then
+!                fe = 1 + nblocks * block
+!                call lsmpi_acc(tmp2(fe:),rblock,fe,int(dest,kind=ls_mpik),CBAI%wi(i))
+!#ifdef VAR_HAVE_MPI3
+!                call lsmpi_win_flush(CBAI%wi(i),rank=int(dest,kind=ls_mpik),local=.true.)
+!#endif
+!             endif
              call arr_unlock_win(CBAI,i)
 
           end do
