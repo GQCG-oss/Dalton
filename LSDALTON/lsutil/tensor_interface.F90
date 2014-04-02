@@ -1150,32 +1150,28 @@ contains
     type(array), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:)
     integer, intent(in), optional :: order(arr%mode)
-    if(present(order))call array_convert_arr2fort(arr,fort,arr%nelms,order)
-    if(.not.present(order))call array_convert_arr2fort(arr,fort,arr%nelms)
+    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
   end subroutine array_convert_arr2fort_wrapper1
   subroutine array_convert_arr2fort_wrapper2(arr,fort,order)
     implicit none
     type(array), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:)
     integer, intent(in), optional :: order(arr%mode)
-    if(present(order))call array_convert_arr2fort(arr,fort,arr%nelms,order)
-    if(.not.present(order))call array_convert_arr2fort(arr,fort,arr%nelms)
+    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
   end subroutine array_convert_arr2fort_wrapper2
   subroutine array_convert_arr2fort_wrapper3(arr,fort,order)
     implicit none
     type(array), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    if(present(order))call array_convert_arr2fort(arr,fort,arr%nelms,order)
-    if(.not.present(order))call array_convert_arr2fort(arr,fort,arr%nelms)
+    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
   end subroutine array_convert_arr2fort_wrapper3
   subroutine array_convert_arr2fort_wrapper4(arr,fort,order)
     implicit none
     type(array), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    if(present(order))call array_convert_arr2fort(arr,fort,arr%nelms,order)
-    if(.not.present(order))call array_convert_arr2fort(arr,fort,arr%nelms)
+    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
   end subroutine array_convert_arr2fort_wrapper4
 
   !\brief all the following wrappers are necessary to use the conversion routine
@@ -1185,32 +1181,28 @@ contains
     type(array), intent(inout) :: arr
     real(realk), intent(in) :: fortarr(arr%nelms)
     integer, intent(in),optional :: order(arr%mode)
-    if(present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms,order)
-    if(.not.present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms)
+    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
   end subroutine array_convert_fort2arr_wrapper1
   subroutine array_convert_fort2arr_wrapper2(fortarr,arr,order)
     implicit none
     real(realk), intent(in) :: fortarr(:,:)
     type(array), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    if(present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms,order)
-    if(.not.present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms)
+    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
   end subroutine array_convert_fort2arr_wrapper2
   subroutine array_convert_fort2arr_wrapper3(fortarr,arr,order)
     implicit none
     real(realk), intent(in) :: fortarr(:,:,:)
     type(array), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    if(present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms,order)
-    if(.not.present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms)
+    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
   end subroutine array_convert_fort2arr_wrapper3
   subroutine array_convert_fort2arr_wrapper4(fortarr,arr,order)
     implicit none
     real(realk), intent(in) :: fortarr(:,:,:,:)
     type(array), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    if(present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms,order)
-    if(.not.present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms)
+    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
   end subroutine array_convert_fort2arr_wrapper4
 
 
