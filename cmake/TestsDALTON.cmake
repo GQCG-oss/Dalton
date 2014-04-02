@@ -56,6 +56,13 @@ add_dalton_test(energy_localize_selected         "dalton;energy;short")
 add_dalton_test(energy_corehole     "dalton;medium")
 add_dalton_test(energy_solv         "dalton;medium")
 
+if (ENABLE_SRDFT) 
+   add_dalton_test(energy_srpbe0_mp2    "dalton;srdft;energy;short;parallel")
+   add_dalton_test(energy_srpbe_mp2     "dalton;srdft;energy;short;parallel")
+   add_dalton_test(energy_srpbe_nevpt2  "dalton;srdft;energy;short;parallel")
+   add_dalton_test(energy_srpbe_nolr    "dalton;srdft;energy;short;parallel")
+endif()
+
 add_dalton_test(dft_hcth120       "dalton;dft;short;parallel")
 add_dalton_test(dft_camb3lyp      "dalton;dft;short;parallel")
 add_dalton_test(dft_pbe           "dalton;dft;short;parallel")

@@ -17,20 +17,20 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > energy_MP2sr.info <<'%EOF%'
-   energy_MP2sr
-   -------------
+cat > energy_srpbe_nolr.info <<'%EOF%'
+   energy_srpbe_nolr
+   -----------------
    Molecule:         H2O
-   Wave Functions:   SCF, MP2
+   Wave Functions:   SCF / cc-pVDZ (Atombasis)
    Test Purpose:     Check srDFT energy calculations
-                     with symmetry, with GGA (PBE), with erf 0.4,
-                     with test MP2 with short-range integrals
+                     with symmetry, with GGA (PBE),
+                     with erf 0.0 (i.e. standard DFT in sr code)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > energy_MP2sr.mol <<'%EOF%'
+cat > energy_srpbe_nolr.mol <<'%EOF%'
 ATOMBASIS
 NEVPT2-srDFT Energy calculation with symmetry
 Basis set specified with ATOMBASIS
@@ -45,27 +45,22 @@ H2   -1.45235 0.899623 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > energy_MP2sr.dal <<'%EOF%'
+cat > energy_srpbe_nolr.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 **INTEGRALS
 *TWOINT
 .DOSRINTEGRALS
 .ERF
- 0.4
+ 0.0 ! no long-range integrals, i.e. KS-DFT calculation
 **WAVE FUNCTIONS
 .HFSRDFT
-.MP2
 .SRFUN
 SRXPBEHSE SRCPBERI
 *SCF INPUT
 .DOUBLY OCCUPIED
  3 1 1 0
-*MP2 INPUT
-.MP2 FROZEN
- 2 0 0 0
-.SRINTS 
-**END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -74,8 +69,8 @@ SRXPBEHSE SRCPBERI
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >energy_MP2sr.check
-cat >>energy_MP2sr.check <<'%EOF%'
+echo $CHECK_SHELL >energy_srpbe_nolr.check
+cat >>energy_srpbe_nolr.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -119,46 +114,21 @@ CRIT4=`$GREP "Total number of orbitals * 24" $log | wc -l`
 CRIT5=`$GREP "Spin multiplicity .* 1" $log | wc -l`
 CRIT6=`$GREP "Total number of symmetries * 4" $log | wc -l`
 CRIT7=`$GREP "Reference state symmetry * 1" $log | wc -l`
-TEST[4]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT4  \+ $CRIT5  \+ \
+TEST[4]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7`
-CTRL[4]=6
+CTRL[4]=7
 ERROR[4]="INCORRECT WAVE FUNCTION"
 
 # SCF energy:
-CRIT1=`$GREP "Hartree-Fock total  *energy *: * \-76\.3321969" $log | wc -l`
+#   @ Final HF-SRDFT energy:       -76.346541615413
+CRIT1=`$GREP "Final HF-SRDFT energy: * \-76\.3465416" $log | wc -l`
 TEST[5]=`expr $CRIT1`
 CTRL[5]=1
-ERROR[5]="HF-srPBE ENERGY NOT CORRECT"
+ERROR[5]="PBE energy via HF-srPBE NOT CORRECT"
 
-# MP2 energy:
-# new numbers 14-feb-2010:
-#  MP2 contribution from short-range integrals :            -0.1403388860
-#  MP2 contribution from short-range integrals :            -0.2068793093
-#  MP2 contribution from  long-range integrals :            -0.0024695881
-#  MP2 contribution from  long-range integrals :            -0.0027576441 !!!!!
-#  MP2 contribution from       sr-lr integrals :            -0.0248653481
-#  MP2 contribution from sr-sr+sr-lr integrals :            -0.1652042341
-#  MP2 contribution from        full integrals :            -0.1676738222
-#  MP2 contribution from       sr-lr integrals :            -0.0297343951
-#  MP2 contribution from sr-sr+sr-lr integrals :            -0.2366137044
-#  MP2 contribution from        full integrals :            -0.2393713485
-# old numbers:
-#   MP2 contribution from short-range integrals :            -0.1403388860
-#   MP2 contribution from short-range integrals :            -0.2068793093
-# + MP2 contribution from long-range integrals  :            -0.0024695881
-# + MP2 contribution from  long-range integrals :            -0.0027576412
-#CRIT1=`$GREP "MP2 second order .* energy *: * \-76\.3349496" $log | wc -l`
-#CRIT2=`$GREP "MP2 second order .* energy *: * \-76\.3349545" $log | wc -l`
-CRIT1=`$GREP "MP2 contribution .* short-range .* \-0*\.140338" $log | wc -l`
-CRIT2=`$GREP "MP2 contribution .* short-range .* \-0*\.206879" $log | wc -l`
-CRIT3=`$GREP "MP2 contribution .* long-range .* \-0*\.002469" $log | wc -l`
-CRIT4=`$GREP "MP2 contribution .* long-range .* \-0*\.0027576" $log | wc -l`
-TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`  # 1 + 1 + 1 + 1
-CTRL[6]=4
-ERROR[6]="MP2-srPBE ENERGY NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4 5 6
+for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]} ' ( ' ${TEST[i]} ${CTRL[i]} ' )'
