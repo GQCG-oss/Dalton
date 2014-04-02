@@ -253,7 +253,13 @@ TYPE(MATRIX),target :: tmp
 Real(realk)         :: OLDTHRESH
 
 CALL II_get_nucel_mat(LUPRI,LUERR,SETTING,h)
-IF (setting%scheme%intprint.GE.2) write(lupri,'(A46,F18.8)') 'Nuclear-electron-attraction-matrix dot product::',mat_dotproduct(h,h)
+IF (setting%scheme%intprint.GE.2) THEN
+  write(lupri,'(A46,F18.8)') 'Nuclear-electron-attraction-matrix dot product::',mat_dotproduct(h,h)
+  IF (setting%scheme%intprint.GE.10) THEN
+    write(lupri,'(A46)') 'Nuclear-electron-attraction matrix'
+    call mat_print(h,1,h%nrow,1,h%ncol,lupri)
+  ENDIF
+ENDIF
 
 nbast = h%nrow
 CALL mat_init(tmp,nbast,nbast)
