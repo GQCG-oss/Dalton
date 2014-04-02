@@ -3573,15 +3573,10 @@ contains
     Character            :: intSpec(5)
     integer :: myload
     logical :: master
-!    integer :: double_2G_nel,dest,fe,nblocks,rblock,iblock
-!    integer, parameter :: block = 14000000
     integer(kind=long) :: o2v2,o3v
     real(realk), pointer :: dummy1(:),dummy2(:)
     integer(kind=ls_mpik) :: mode
 
-    double_2G_nel = 100000000
-    nblocks       = (nvirt**3)/block
-    rblock        = mod( nvirt**3, block )
     o2v2          = nocc*nocc*nvirt*nvirt
     o3v           = nocc*nocc*nocc*nvirt
 
@@ -3858,23 +3853,8 @@ contains
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
 
-!             dest = get_residence_of_tile(i,CBAI)
              call arr_lock_win(CBAI,i,'s',assert=mode)
              call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
-!             do iblock = 1, nblocks
-!                fe = 1 + (iblock - 1) * block
-!                call lsmpi_acc(tmp2(fe:fe+block-1),block,fe,int(dest,kind=ls_mpik),CBAI%wi(i))
-!#ifdef VAR_HAVE_MPI3
-!                call lsmpi_win_flush(CBAI%wi(i),rank=int(dest,kind=ls_mpik),local=.true.)
-!#endif
-!             enddo
-!             if( rblock > 0 )then
-!                fe = 1 + nblocks * block
-!                call lsmpi_acc(tmp2(fe:),rblock,fe,int(dest,kind=ls_mpik),CBAI%wi(i))
-!#ifdef VAR_HAVE_MPI3
-!                call lsmpi_win_flush(CBAI%wi(i),rank=int(dest,kind=ls_mpik),local=.true.)
-!#endif
-!             endif
              call arr_unlock_win(CBAI,i)
 
           end do
@@ -3901,8 +3881,8 @@ contains
        call ass_D4to1(JAIB%val,dummy1,[nocc,nvirt,nocc,nvirt])
        call ass_D4to1(JAIK%val,dummy2,[nocc,nvirt,nocc,nocc])
        ! now, reduce o^2v^2 and o^3v integrals onto master
-       call lsmpi_allreduce(dummy1,o2v2,infpar%lg_comm,double_2G_nel )
-       call lsmpi_allreduce(dummy2,o3v, infpar%lg_comm,double_2G_nel ) 
+       call lsmpi_allreduce(dummy1,o2v2,infpar%lg_comm,SPLIT_MSG_REC )
+       call lsmpi_allreduce(dummy2,o3v, infpar%lg_comm,SPLIT_MSG_REC ) 
 
     end if
 

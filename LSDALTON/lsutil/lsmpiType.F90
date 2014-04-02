@@ -207,7 +207,7 @@ module lsmpi_type
 #ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
   integer,parameter     :: MAX_SIZE_ONE_SIDED = 125000000
 #else
-  integer,parameter     :: MAX_SIZE_ONE_SIDED =  14000000
+  integer,parameter     :: MAX_SIZE_ONE_SIDED =  12500000
 #endif
 
   !mpistatus

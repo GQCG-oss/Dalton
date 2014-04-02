@@ -6672,7 +6672,7 @@ subroutine ccsd_data_preparation()
   use typedeftype,only:lsitem,array
   use infpar_module
   use lsmpi_type, only:ls_mpibcast,ls_mpibcast_chunks,LSMPIBROADCAST,MPI_COMM_NULL,&
-  &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer
+  &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer,SPLIT_MSG_REC
   use lsmpi_op, only:mpicopy_lsitem
   use daltoninfo, only:ls_free
   use memory_handling, only: mem_alloc, mem_dealloc
