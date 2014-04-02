@@ -533,7 +533,6 @@ contains
        call mem_alloc(Bjiij_term9,nocc,nocc)
 
        if(DECinfo%use_canonical) then 
-
           call mp2f12_Xijij_term1(Xijij_term1,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
           call mp2f12_Xijij_term2(Xijij_term2,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
           call mp2f12_Xijij_term3(Xijij_term3,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
@@ -655,18 +654,11 @@ contains
        call mp2f12_Xijij(Xijij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
        call mp2f12_Xjiij(Xjiij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
 
-    else
+    else !> Non - canonical
        
        call mem_alloc(Xijkl,nocc,nocc,nocc,nocc)
        call mp2f12_Xijijfull(Xijkl,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
 
-       ! the way you build Xijij frok Xijkl
-       !    do j=1,nocc
-       !       do i=1,nocc
-       !          Xijij(i,j) = Xijkl(i,i,j,j)
-       !          Xjiij(i,j) = Xijkl(i,j,j,i)          
-       !       enddo
-       !    enddo
     endif
 
     call mem_alloc(Bijij,nocc,nocc)
@@ -693,7 +685,6 @@ contains
           !> Setting Bmatrix = 0
           Bijij_debug = 0.0E0_realk
           Bjiij_debug = 0.0E0_realk  
-
           call submp2f12_EBX(E22_debug,Bijij_debug,Bjiij_debug,Xijij,Xjiij,Fii%elms,nocc)
 
        else
@@ -780,14 +771,9 @@ contains
           !print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
           print *, '----------------------------------------'
 
-
-
        endif
-
-
        
     endif
-    !   write(*,*) 'MP2f12 energy term <1|H0-E0|1>',E22
     call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
 
     if(DECinfo%use_canonical) then
@@ -827,15 +813,17 @@ contains
        endif
 
     else
-       
+  
        call mem_dealloc(Xijkl)
-       call mem_dealloc(Xijkl_term1)
-       call mem_dealloc(Xijkl_term2)
-       call mem_dealloc(Xijkl_term3)
-       call mem_dealloc(Xijkl_term4)      
-    
+       
+       if(DECinfo%F12DEBUG) then
+          call mem_dealloc(Xijkl_term1)
+          call mem_dealloc(Xijkl_term2)
+          call mem_dealloc(Xijkl_term3)
+          call mem_dealloc(Xijkl_term4)   
+       endif
     endif
-
+    
     call mem_dealloc(Bijij)
     call mem_dealloc(Bjiij)
 
@@ -888,34 +876,6 @@ contains
 
   end subroutine full_canonical_mp2_f12
 #endif
-
-!!$  !> Brief: Integral print
-!!$  !> Author: Yang M. Wang
-!!$  !> Data: August 2013
-!!$  subroutine matrix_print_4d(A, p, q, r, s)
-!!$    implicit none
-!!$
-!!$    real(realk),intent(in)  :: A(p,q,r,s)
-!!$    integer,intent(in)      :: p,q,r,s
-!!$    !
-!!$    integer     :: i,j,k,l
-!!$ 
-!!$    do i=1, p
-!!$       do j=1, q
-!!$          do k=1, r
-!!$             do l=1, s 
-!!$                if(abs(A(i,j,k,l)) > 1E-10_realk) then
-!!$                   print *, i,j,k,l, A(i,j,k,l)
-!!$                else
-!!$                   print *, i,j,k,l, 0E0_realk
-!!$                endif
-!!$             enddo
-!!$          enddo
-!!$       enddo
-!!$    enddo
-!!$    
-!!$  end subroutine matrix_print_4d
-
 
   !> \brief Memory check for full_canonical_mp2 subroutine
   !> \author Kasper Kristensen

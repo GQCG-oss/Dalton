@@ -61,7 +61,7 @@ module f12_integrals_module
   !       & array4_close_file, array4_write_file_type1, mat_transpose, &
   !     & array4_read_file_type2
 
-  public :: get_f12_fragment_energy, get_f12_pair_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21
+  public :: get_f12_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21
 
   private
 
@@ -242,9 +242,6 @@ contains
 
     dopair = .FALSE.
     if(present(Fragment1) .AND. present(Fragment2)) then
-       print *, "------------------------------"
-       print *, " Do pair fragment calculation "
-       print *, "------------------------------"
        dopair = .TRUE.
     endif
 
@@ -270,19 +267,18 @@ contains
     ! ***********************************************************
     
     if(DECinfo%F12debug) then
-       print *, "--------------------------"
-       print *, "F12-integrals single fragment energy"
-       print *, "--------------------------"
-       print *, "nbasis: ", nbasis
-       print *, "noccEOS: ", noccEOS
+       print *, "-------------------------------------------------"
+       print *, "     F12-integrals.F90 single fragment energy    "
+       print *, "-------------------------------------------------"
+       print *, "nbasis:    ", nbasis
+       print *, "noccEOS:   ", noccEOS
        print *, "nunoccEOS: ", nunoccEOS
-       print *, "--------------------------"
-       print *, "nocvAOS", nocvAOS
-       print *, "noccAOS", noccAOS
-       print *, "nvirtAOS", nvirtAOS
-       print *, "ncabsAO", ncabsAO
-       print *, "ncabsMO", ncabsMO
-       print *, "--------------------------"
+       print *, "-------------------------------------------------"
+       print *, "nocvAOS    ", nocvAOS
+       print *, "noccAOS    ", noccAOS
+       print *, "nvirtAOS   ", nvirtAOS
+       print *, "ncabsAO    ", ncabsAO
+       print *, "ncabsMO    ", ncabsMO
     end if
 
     ! ***********************************************************
@@ -473,6 +469,7 @@ contains
        call get_mp2f12_sf_E21(V4ijkl, noccEOS, V4energy, -1.0E0_realk)
     endif
 
+    E_21 = 0.0E0_realk
     E_21 = V1energy + V2energy + V3energy + V4energy
 
     if(DECinfo%F12debug) then
@@ -649,6 +646,7 @@ contains
   
     endif
 
+    E_22 = 0.0E0_realk
     E_22 = X1energy + X2energy + X3energy + X4energy 
 
        if(DECinfo%F12debug) then
@@ -1000,6 +998,7 @@ contains
        call get_mp2f12_sf_E23(B9ijkl, noccEOS, B9energy,  -2.0E0_realk)     
     endif
 
+    E_23 = 0.0E0_realk
     E_23 = B1energy + B2energy + B3energy + B4energy + B5energy + B6energy + B7energy &
          & + B8energy + B9energy
 
@@ -1019,7 +1018,8 @@ contains
        print *, '----------------------------------------'
        print *, "E_23_B_sum:", E_23
     end if
-
+    
+    E_F12 = 0.0E0_realk
     E_F12 = E_21 + E_22 + E_23
 
     MP2energy = Myfragment%energies(FRAGMODEL_OCCMP2)
@@ -1028,7 +1028,9 @@ contains
     end if
     
     if(DECinfo%F12debug) then
-       print *,   '----------------- DEC-MP2F12 CALCULATION ----------------'
+       print *,   '----------------------------------------------------------------'
+       print *,   '                    DEC-MP2F12 CALCULATION                      '
+       print *,   '----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') 'WANGY TOYCODE: MP2 CORRELATION ENERGY =           ', MP2energy
        write(*,'(1X,a,f20.10)') 'WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =     ', E_21
        write(*,'(1X,a,f20.10)') 'WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =     ', E_22
@@ -1048,6 +1050,9 @@ contains
 
     !> Setting the MP2-F12 correction
     Myfragment%energies(FRAGMODEL_MP2f12) = E_F12
+
+    !> Need to be set for the single_fragments
+    Myfragment%EoccFOP_Corr = E_F12
 
     ! ***********************************************************
     ! Free Memory

@@ -1307,7 +1307,6 @@ contains
 
     !Build F12 Cabs and Ri for a fragment
     if(DECinfo%F12) then
-       print *, "create_f12_cabs_and_ri_fragment_info(fragment)"
        call create_f12_cabs_and_ri_fragment_info(fragment)
     endif
 

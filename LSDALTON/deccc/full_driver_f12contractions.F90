@@ -54,8 +54,10 @@ contains
     integer :: i,j,a,b
     real(realk) :: tmp
 
-    ! Setting Ciajb = 0
-    Ciajb = 0.0E0_realk
+    if(DECinfo%F12Debug) then
+       ! Setting Ciajb = 0
+       Ciajb = 0.0E0_realk
+    endif
 
     do j=1,nocc
        do i=1,nocc
@@ -82,8 +84,10 @@ contains
     integer :: i,j,a,b
     real(realk) :: tmp
 
-    ! Setting Ciajb = 0
-    Ciajb = 0.0E0_realk
+    if(DECinfo%F12Debug) then
+       ! Setting Ciajb = 0
+       Ciajb = 0.0E0_realk
+    endif
 
     do j=1,nocc
        do i=1,nocc

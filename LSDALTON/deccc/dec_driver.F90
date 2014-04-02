@@ -1286,7 +1286,6 @@ subroutine print_dec_info()
     if(esti) then
        ! Get estimated pair fragment energies for occupied partitioning scheme
        call mem_alloc(FragEnergiesOcc,natoms,natoms)
-       ! Always MP2 model for estimated fragments
        call get_occfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesOcc)
 
        ! We do not want to consider atomic fragment energies now so zero them

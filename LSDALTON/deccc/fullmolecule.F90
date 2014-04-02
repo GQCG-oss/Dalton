@@ -928,12 +928,12 @@ contains
        print *, "--------------------------"
        print *, "Molecule_mo_f12"
        print *, "--------------------------"
-       print *, "nbasis: ", nbasis
-       print *, "nocc: ", nocc
-       print *, "nvirt: ", nvirt
+       print *, "nbasis:   ", nbasis
+       print *, "nocc:     ", nocc
+       print *, "nvirt:    ", nvirt
        print *, "--------------------------"
-       print *, "ncabsAO: ", ncabsAO
-       print *, "ncabsMO: ", ncabsMO
+       print *, "ncabsAO:  ", ncabsAO
+       print *, "ncabsMO:  ", ncabsMO
        print *, "nocvfull: ", nocc+nvirt
        print *, "--------------------------"
     end if
