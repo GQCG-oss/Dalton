@@ -99,7 +99,6 @@
 
     integer, dimension(4) :: new_order,order1,order2,dims
     integer :: a,b,c,d,maxdim
-    integer :: dim1,dim2,dim3,dim4,dim1b,dim2b,dim3b,vdim
     integer :: i,j,l
     integer :: aa,bb,cc,dd,block_size,fina,finb,finc,find
     integer :: order_type,m,n
@@ -332,7 +331,6 @@
 
     integer, dimension(4) :: new_order,order1,order2,dims
     integer :: a,b,c,d,maxdim
-    integer :: dim1,dim2,dim3,dim4,dim1b,dim2b,dim3b,vdim
     integer :: i,j,l
     integer :: aa,bb,cc,dd,fina,finb,finc,find
     integer :: order_type,m,n
@@ -820,7 +818,6 @@
 
     integer, dimension(3) :: new_order,order1,order2,dims
     integer :: a,b,c,fina,finb,finc
-    integer :: dim1,dim2,dim3,dim1b,dim2b
     integer :: aa,bb,cc,block_size
     integer :: order_type
     integer :: vec_size
@@ -922,7 +919,6 @@
 
     integer, dimension(3) :: new_order,order1,order2,dims
     integer :: a,b,c,fina,finb,finc
-    integer :: dim1,dim2,dim3,dim1b,dim2b
     integer :: aa,bb,cc,block_size
     integer :: order_type
     integer :: di2(2)

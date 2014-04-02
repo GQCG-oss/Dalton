@@ -351,7 +351,9 @@ contains
   end subroutine set_sync_default
 !******************************************************************************
   
-#else 
-module dummy_sync_coworkers
-#endif
 end module
+#else 
+subroutine sync_coworkers
+! dummy routine for non-mpi compilation
+end
+#endif

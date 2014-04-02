@@ -194,6 +194,7 @@ C
       LOGICAL CINMEM
 C
 C Used from common blocks:
+C   pgroup : REP
 C   CICB01 : NCIRED,NJCR,JCROOT(*),THRCIT
 C   INFINP : POTNUC,FLAG(*),LSYM,ISTACI
 C   INFVAR : NCONF
@@ -204,6 +205,7 @@ C   INFTAP : LUIT1,LUIT3,LUIT5
 C
 #include "maxorb.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "cicb01.h"
 #include "infinp.h"
 #include "infvar.h"
@@ -540,14 +542,12 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
 
 
       J = LUW4
-  815 WRITE (J,'(//A/,(I5,0P,F25.15,1P,D15.2))')
-     *   ' CI energies and residuals:',
-     *   (I,ECI(I),residual_croot(i), I = 1,NCROOT)
+  815 CONTINUE
 
-      IF(NCROOT .EQ. 1) THEN 
-C JT 22-03-05 : add pretty output line if only one root
-        WRITE (J,'(//A,(F25.15))')' Final CI energy:',ECI(1)
-      ENDIF
+      WRITE (J,'(//A,I2,3A/,(A,I5,0P,F25.15,1P,D15.2))')
+     &   '@ Final CI energies and residuals in symmetry',LSYM,
+     &     ' (irrep ',REP(LSYM-1),')',
+     &   ('@',I,ECI(I),WRK(KRESID+I-1), I = 1,NCROOT)
 
       IF (J .NE. LUPRI) THEN
          J = LUPRI

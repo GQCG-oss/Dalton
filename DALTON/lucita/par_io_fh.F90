@@ -357,7 +357,9 @@ contains
  
   end subroutine int2char_converter
 
-#else 
-module dummy_fhio_model
-#endif
 end module
+#else 
+subroutine fhio_model
+! dummy routine for non-mpi compilation
+end
+#endif

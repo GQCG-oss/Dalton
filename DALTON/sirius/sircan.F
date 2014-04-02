@@ -821,6 +821,7 @@ C
 C
 C Used from common blocks:
 C  GNRINF: WRINDX
+C  pgroup: REP
 C  INFINP: LSYM
 C  INFORB: ICMO(*),...
 C  INFIND: ISSMO()
@@ -828,6 +829,7 @@ C
 #include "maxash.h"
 #include "maxorb.h"
 #include "gnrinf.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
@@ -954,28 +956,28 @@ C        ... regenerate ISSORD() as ISSMO() may have been changed in ORD2SS
             END DO
             IF (IPRINT .GE. 2 .AND. .NOT. MOISNO) THEN
                WRITE(LUPRI,'(/A)')
-     *           ' GETNO: The natural orbitals are reordered.'
+     &           ' GETNO: The natural orbitals are reordered.'
             ENDIF
         END IF
       END IF
       IF (IPRINT .GE. 1) THEN
          WRITE (LUPRI,'(/A/A)')
-     *      ' Occupancies of natural orbitals',
-     *      ' -------------------------------'
+     &      ' Occupancies of natural orbitals',
+     &      ' -------------------------------'
          IF (SUPSYM .AND. .NOT. NOAVER) WRITE (LUPRI,'(/A)')
-     *      ' NOTE: degenerate orbitals have been averaged.'
+     &      ' NOTE: degenerate orbitals have been averaged.'
          DO 520 ISYM = 1,NSYM
             NOCCI = NOCC(ISYM)
             IF (NOCCI .EQ. 0) THEN
-               WRITE (LUPRI,3030) ISYM
+               WRITE (LUPRI,3030) ISYM,REP(ISYM-1)
             ELSE
                OCCSUM = DSUM(NOCCI,OCCNO(IORB(ISYM)+1),1)
-               IORBI = IORB(ISYM)
+               IORBI  = IORB(ISYM)
                IF (SUPSYM) THEN
-                  WRITE (LUPRI,3045) ISYM,OCCSUM,
+                  WRITE (LUPRI,3045) ISYM,REP(ISYM-1),OCCSUM,
      &               (OCCNO(IORBI+I),ISSMO(IORBI+I),I=1,NOCCI)
                ELSE
-                  WRITE (LUPRI,3040) ISYM,OCCSUM,
+                  WRITE (LUPRI,3040) ISYM,REP(ISYM-1),OCCSUM,
      &               (OCCNO(IORBI+I),I=1,NOCCI)
                END IF
             END IF
@@ -983,17 +985,19 @@ C        ... regenerate ISSORD() as ISSMO() may have been changed in ORD2SS
 C  HJAAJ MAERKE TODO 921106: if (supsym) print also sorted after supsym
 C  HJAAJ MAERKE TODO 071108: if (supsym) also OCCSUM for each supersym
       END IF
- 3030 FORMAT(/' Symmetry',I3,' -- No occupied orbitals')
- 3040 FORMAT(/' Symmetry',I3,' -- Total occupation in this symmetry is',
-     &          F14.9,//,(5F14.9))
- 3045 FORMAT(/' Symmetry',I3,' (supersymmetry in parenthesis)',
+ 3030 FORMAT(/' Symmetry',I2,'  ( ',A,') -- No occupied orbitals')
+ 3040 FORMAT(/' Symmetry',I2,'  ( ',A,
+     &        ') -- Total occupation in this symmetry is',F14.9,
+     &      //,(5F14.9))
+ 3045 FORMAT(/' Symmetry',I2,'  ( ',A,
+     &        ') -- Supersymmetry in parenthesis',
      &       /' -- Total occupation in this symmetry is',F14.9,
-     *       //,4(F14.9,' (',I2,')'))
+     &       //,4(F14.9,' (',I2,')'))
       IF (IPRINT .GT. 5 .AND. NASHT .GT. 0 .AND. .NOT.MOISNO) THEN
          DO 620 ISYM = 1,NSYM
          IF (NASH(ISYM) .GT. 0) THEN
             WRITE (LUPRI,'(/A,I3)')
-     *         ' Transformation to NO (active orb.) for symmetry',ISYM
+     &         ' Transformation to NO (active orb.) for symmetry',ISYM
             IST  = IASH(ISYM) + 1
             IEND = IASH(ISYM) + NASH(ISYM)
             CALL OUTPUT(UNO,IST,IEND,IST,IEND,NASHT,NASHT,1,LUPRI)
@@ -1006,12 +1010,12 @@ C
       IF (.NOT.MOISNO) THEN
       IF (.NOT.NATORB) THEN
          IF (IPRINT .GE. 5) WRITE (LUPRI,'(/A)')
-     *      ' GETNO: the orbital coefficients are NOT transformed to'//
-     *      ' natural orbitals.'
+     &      ' GETNO: the orbital coefficients are NOT transformed to'//
+     &      ' natural orbitals.'
       ELSE
          IF (IPRINT .GE. 3) WRITE (LUPRI,'(/A)')
-     *      ' GETNO: the orbital coefficients are transformed to'//
-     *      ' natural orbitals.'
+     &      ' GETNO: the orbital coefficients are transformed to'//
+     &      ' natural orbitals.'
          IF (LWRK1 .LT. NCMOT) CALL ERRWRK('GETNO.NATORB',NCMOT,LWRK1)
          DO 800 ISYM = 1,NSYM
             NASHI  = NASH(ISYM)

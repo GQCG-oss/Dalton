@@ -180,9 +180,6 @@ module dec_typedef_module
      logical :: PNOtriangular
      !> Use MO-based algorithm to solve the CCSD equations
      logical :: MOCCSD
-     !> Maximum number of MOs until which an MO-CCSD calculation should be
-     !> performed
-     integer :: Max_num_MO
      !> do not update the singles residual
      logical :: CCDhack
      !> Crash Calc Debug keyword - to test restart option
@@ -229,6 +226,9 @@ module dec_typedef_module
      logical :: InteractionEnergy
      !> Print the Interaction Energy (Ref to article)
      logical :: PrintInteractionEnergy
+
+     !> Stress Test 
+     logical :: StressTest
 
      !> MPI settings
      !> ************
@@ -637,6 +637,8 @@ module dec_typedef_module
      !> without thinking about which CC model we are using...
      !> Energy using occupied partitioning scheme
      real(realk) :: EoccFOP
+     !> Energy using occupied partitioning scheme with the F12 Correction
+     real(realk) :: EoccFOP_Corr
      !> Energy using virtual partitioning scheme
      real(realk) :: EvirtFOP
      !> Lagrangian energy 

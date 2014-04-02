@@ -464,7 +464,9 @@ contains
 
   end subroutine build_new_communicator_group
   
-#else 
-module dummy_comm_model
-#endif
 end module
+#else 
+subroutine comm_model
+! dummy routine for non-mpi compilation
+end
+#endif

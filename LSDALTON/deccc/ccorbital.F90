@@ -618,7 +618,8 @@ contains
           charge = charge + lowdin_charge(n,i)
           error = 1E0_realk - charge
 
-          if(error < approximated_norm_threshold) then ! atom list converged for orbital i
+          if(error < approximated_norm_threshold .or. n==natoms ) then 
+             ! atom list converged for orbital i
 
              ! Set list of atoms to consider for orbital and exit loop
              norbital_extent = n
