@@ -6251,6 +6251,14 @@ ELSE
    IntegralTransformGC =.FALSE.
 ENDIF
 
+IF (setting%scheme%intprint.GT.10) THEN
+  write(lupri,'(A)') 'DMAT in II_get_coulomb_mat_mixed'
+  DO I=1,ndmat
+    write(lupri,'(1X,A,I3)')  'IDMAT',I
+    CALL mat_print(Dmat(I),1,Dmat(1)%ncol,1,Dmat(1)%nrow,lupri)
+  ENDDO
+ENDIF
+
 IF (SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J) THEN
   !Consistency testing
   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.(AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)&
@@ -6272,6 +6280,13 @@ IF(IntegralTransformGC)THEN
    setting%IntegralTransformGC = .TRUE. 
 ENDIF
 
+IF (setting%scheme%intprint.GT.10) THEN
+  write(lupri,'(A)') 'Fmat in II_get_coulomb_mat_mixed'
+  DO I=1,ndmat
+    write(lupri,'(1X,A,I3)')  'IDMAT',I
+    CALL mat_print(F(I),1,F(1)%ncol,1,F(1)%nrow,lupri)
+  ENDDO
+ENDIF
 
 IF (SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J) THEN
    IF (SETTING%SCHEME%PARI_J) THEN
