@@ -4052,7 +4052,45 @@ contains
 
   end subroutine get_coredensity_for_fragment
 
+  !> \brief Modify dofrag according to StressTest Keyword 
+  !> only 2 atomic fragments and 1 pair fragment
+  !> \author Thomas Kjaergaard
+  !> \date Marts 2014
+  subroutine StressTest_mod_dofrag(natoms,nocc,nunocc,&
+       & DistanceTable,OccOrbitals, UnoccOrbitals, dofrag, mylsitem)
+    implicit none
+    !> Number of atoms in full molecule
+    integer, intent(in) :: nAtoms
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Distance table for all atoms in the molecule
+    real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
+    !> Information about DEC occupied orbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Logical vector telling which atoms have orbitals assigned
+    logical,dimension(natoms),intent(inout) :: dofrag
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    integer,dimension(natoms) :: af_list
+    integer :: njobs,i,j
 
+    ! Get list of atomic fragment ordered according to their (very roughly) estimated sizes
+    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
+         & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
+
+    i=0    
+    do j=1,nAtoms
+       if(dofrag(af_list(j)))then
+          i=i+1
+          IF(i.GT.2)dofrag(af_list(j))=.FALSE.
+       endif
+    end do
+
+  end subroutine StressTest_mod_dofrag
 
   !> \brief Create job list for DEC fragment optimization calculations.
   !> \author Kasper Kristensen

@@ -2097,6 +2097,7 @@ contains
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%InteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
+    call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)

@@ -209,6 +209,11 @@ contains
     call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,natoms,&
          & OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
+    IF(DECinfo%StressTest)THEN
+       call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,&
+            & MyMolecule%DistanceTable,OccOrbitals, UnoccOrbitals, dofrag, mylsitem)
+    ENDIF
+
     if(DECinfo%PairEstimate .and. count(dofrag)>1) then
        ! Use estimated pair fragments to determine which pair fragments to calculate at the FOT level
        ! (only if there actually are any pair fragments)
@@ -1143,8 +1148,6 @@ subroutine print_dec_info()
 
 
   end subroutine fragment_jobs
-
-
 
   !> \brief Carry out fragment optimizations and (possibly) calculate 
   !> estimated pair fragment energies.

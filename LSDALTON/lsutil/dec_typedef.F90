@@ -227,6 +227,9 @@ module dec_typedef_module
      !> Print the Interaction Energy (Ref to article)
      logical :: PrintInteractionEnergy
 
+     !> Stress Test 
+     logical :: StressTest
+
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split

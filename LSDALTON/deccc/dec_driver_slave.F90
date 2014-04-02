@@ -90,6 +90,11 @@ contains
     call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,&
          & natoms,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
+    IF(DECinfo%StressTest)THEN
+     call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,&
+          & MyMolecule%DistanceTable,OccOrbitals,UnoccOrbitals,dofrag,mylsitem)
+    ENDIF
+
     ! Internal control of first order property keywords
     ! (Necessary because these must be false during fragment optimization.)
     ! Better solution should be implemented at some point...
