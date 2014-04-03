@@ -100,7 +100,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,Co_f,Cv_f,fock_f,nbasis,nocc,nvi
    if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
 #endif
    ! temporary default for moccsd:
-   if (DECinfo%MOCCSD) local = .true.
+   if (decinfo%moccsd) local = .true.
 
 
 
@@ -298,6 +298,8 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
 #endif
+    ! temporary default for moccsd:
+    if (decinfo%moccsd) local = .true.
 
    ! is this a frozen core calculation or not?
    if (DECinfo%frozencore) then
@@ -1720,7 +1722,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       !____________________________________________________________________________!
       !
       mo_ccsd = .false.
-      if (DECinfo%MOCCSD.and.(nb<=DECinfo%Max_num_MO)) mo_ccsd = .true.
+      if (DECinfo%MOCCSD) mo_ccsd = .true.
       !
       ! Check if there is enough memory to performed an MO-CCSD calculation.
       !   YES: get full set of t1 free gmo and pack them

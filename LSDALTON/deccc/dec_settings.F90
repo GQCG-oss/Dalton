@@ -84,7 +84,6 @@ contains
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
     DECinfo%MOCCSD               = .false.
-    DECinfo%Max_num_MO           = 300
 
     ! -- Output options 
     DECinfo%output               = output
@@ -151,6 +150,7 @@ contains
     DECinfo%PureHydrogenDebug       = .false.
     DECinfo%InteractionEnergy       = .false.
     DECinfo%PrintInteractionEnergy  = .false.
+    DECinfo%StressTest              = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -468,7 +468,6 @@ contains
        !***********
 
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
-       case('.MAX_NUM_MO'); read(input,*) DECinfo%Max_num_MO
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
@@ -495,6 +494,9 @@ contains
        case('.PRINTINTERACTIONENERGY')     
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
+       case('.STRESSTEST')     
+          !Calculate biggest 2 atomic fragments and the biggest pair fragment
+          DECinfo%StressTest  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -894,14 +896,14 @@ contains
     case('.RPA');     modelnumber = MODEL_RPA
     case default
        print *, 'Model not found: ', myword
-       write(DECinfo%output)'Model not found: ', myword
-       write(DECinfo%output)'Models supported are:'
-       write(DECinfo%output)'.MP2'
-       write(DECinfo%output)'.CC2'
-       write(DECinfo%output)'.CCSD'
-       write(DECinfo%output)'.CCD'
-       write(DECinfo%output)'.CCSD(T)'
-       write(DECinfo%output)'.RPA'
+       write(DECinfo%output,*)'Model not found: ', myword
+       write(DECinfo%output,*)'Models supported are:'
+       write(DECinfo%output,*)'.MP2'
+       write(DECinfo%output,*)'.CC2'
+       write(DECinfo%output,*)'.CCSD'
+       write(DECinfo%output,*)'.CCD'
+       write(DECinfo%output,*)'.CCSD(T)'
+       write(DECinfo%output,*)'.RPA'
        call lsquit('Requested model not found!',-1)
     end SELECT
 

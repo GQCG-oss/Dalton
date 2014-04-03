@@ -909,6 +909,7 @@ contains
     nocc     = MyMolecule%nocc
     nvirt    = MyMolecule%nunocc
     noccfull = nocc
+
 !HACK we do call Fcp for Fcp - indicating 
 !     that this is a Fock(nCabsMO,nbasis)
 !     However all AO -> MO transformations
@@ -927,12 +928,12 @@ contains
        print *, "--------------------------"
        print *, "Molecule_mo_f12"
        print *, "--------------------------"
-       print *, "nbasis: ", nbasis
-       print *, "nocc: ", nocc
-       print *, "nvirt: ", nvirt
+       print *, "nbasis:   ", nbasis
+       print *, "nocc:     ", nocc
+       print *, "nvirt:    ", nvirt
        print *, "--------------------------"
-       print *, "ncabsAO: ", ncabsAO
-       print *, "ncabsMO: ", ncabsMO
+       print *, "ncabsAO:  ", ncabsAO
+       print *, "ncabsMO:  ", ncabsMO
        print *, "nocvfull: ", nocc+nvirt
        print *, "--------------------------"
     end if
@@ -956,12 +957,12 @@ contains
       print *,'molecule_mo_f12: Get all F12 Fock integrals'
       print *,'-------------------------------------------'
       print *, "norm2D(hJir)", norm2D(MyMolecule%hJir)
-      print *, "norm2D(Krs)", norm2D(MyMolecule%Krs)
-      print *, "norm2D(Frs)", norm2D(MyMolecule%Frs)
-      print *, "norm2D(Fac)", norm2D(MyMolecule%Fac)
-      print *, "norm2D(Frm)", norm2D(MyMolecule%Frm)
-      print *, "norm2D(Fcp)", norm2D(MyMolecule%Fcp)
-      print *, "norm2D(Fij)", norm2D(MyMolecule%Fij)
+      print *, "norm2D(Krs)",  norm2D(MyMolecule%Krs)
+      print *, "norm2D(Frs)",  norm2D(MyMolecule%Frs)
+      print *, "norm2D(Fac)",  norm2D(MyMolecule%Fac)
+      print *, "norm2D(Frm)",  norm2D(MyMolecule%Frm)
+      print *, "norm2D(Fcp)",  norm2D(MyMolecule%Fcp)
+      print *, "norm2D(Fij)",  norm2D(MyMolecule%Fij)
       print *,'-------------------------------------------' 
     end if
 

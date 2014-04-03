@@ -81,11 +81,13 @@ contains
        do k=1,p
           do j=1,n
              do i=1,m 
-                norm4D = norm4D + A(i,j,k,l)
+                norm4D = norm4D + A(i,j,k,l)*A(i,j,k,l)
              enddo
           enddo
        enddo
     enddo
+
+   norm4D = sqrt(norm4D)
 
   end function norm4D
 
