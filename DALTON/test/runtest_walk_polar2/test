@@ -12,50 +12,51 @@ f = Filter()
 
 # Energy
 f.add(re = 'Final CI energy',
-      tolerance = 1.0e-10)
+      rel_tolerance = 1.0e-10)
 f.add(re = 'Final MCSCF energy:',
-      tolerance = 1.0e-10)
+      rel_tolerance = 1.0e-10)
 f.add(re = 'Nuclear repulsion:',
-      tolerance = 1.0e-10)
+      rel_tolerance = 1.0e-10)
 f.add(re = 'Hartree-Fock total',
-      tolerance = 1.0e-10)
+      rel_tolerance = 1.0e-10)
 f.add(re = 'MP2 second order energy',
-      tolerance = 1.0e-10)
+      rel_tolerance = 1.0e-10)
 
 
 # Molecular gradients (Low numbers, so difficult to test)
 #ADJUST
 f.add(from_re = 'Molecular gradient \(au\)',
       num_lines    = 6,
-#      ignore_below = 1.0e-3,
-      tolerance = 1.0e-5)
+      abs_tolerance = 1.0e-5)
 
 # Molecular hessians (Low numbers, so difficult to test)
 #ADJUST
 f.add(from_re = 'Molecular Hessian \(au\)',
       num_lines    = 35,
-      ignore_below = 1.0e-3,
-      tolerance = 1.0e-5)
+      abs_tolerance = 1.0e-5)
 
 # Dipole moment 
 f.add(from_re = 'Dipole moment components',
       num_lines    = 5,
       mask = [3],
-      tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-5)
 
 f.add(re = 'bond distance:',
-      tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-6)
 f.add(re = 'bond angle:',
-      tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-5)
 f.add(re = 'Norm of molecular gradient:',
-      tolerance = 1.0e-4)
+      rel_tolerance = 1.0e-4)
 f.add(re = 'Energy at current point:',
-      tolerance = 1.0e-11)
-f.add(re = 'Geometry optimization has converged\.')
+      rel_tolerance = 1.0e-11)
+f.add(re = 'Geometry optimization has converged\.',
+      rel_tolerance = 1.0e-6)
 
 # Symmetry
-f.add(re = 'Number of coordinates in each symmetry:')
-f.add(re = 'Number of orbitals in each symmetry:')
+f.add(re = 'Number of coordinates in each symmetry:',
+      rel_tolerance = 1.0e-6)
+f.add(re = 'Number of orbitals in each symmetry:',
+      rel_tolerance = 1.0e-6)
 
 
 test.run(['walk_polar2.dal'], ['o2_aug-cc-pvdz.mol'], {'out': f})
