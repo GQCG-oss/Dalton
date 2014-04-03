@@ -66,7 +66,7 @@ CONTAINS
     logical :: CFG_restart,CFG_purifyrestart,dens_exsist,OnMaster,gcbasis
     type(matrix) :: D1(1),TMP
     real(realk),pointer :: Dfull(:,:),D1full(:,:)
-    Character(len=1) :: SubIndexString(2)
+    Character(len=80) :: SubIndexString(2)
     SubIndexString(1) = ls%input%Molecule%SubSystemLabel(1)
     SubIndexString(2) = ls%input%Molecule%SubSystemLabel(2)
     OnMaster = .TRUE.
@@ -92,7 +92,7 @@ CONTAINS
     config%decomp%nocc = nelectronsSub/2
     config%diag%nocc = nelectronsSub/2
 
-    WRITE(lupri,*)'Subsystem ',SubIndexString(SubIndex)
+    WRITE(lupri,*)'Subsystem ',TRIM(SubIndexString(SubIndex))
     CALL PRINT_MOLECULEINFO(LUPRI,ls%input%MOLECULE,ls%input%BASIS,ls%input%DALTON%MOLPRINT)
     CALL PRINT_MOLECULE_AND_BASIS(LUPRI,ls%input%MOLECULE,ls%input%BASIS%REGULAR)
 
@@ -211,7 +211,7 @@ CONTAINS
     ENDIF
     
     restart_lun = -1  !initialization
-    call lsopen(restart_lun,'dens.restart.Sub'//SubIndexString(SubIndex),&
+    call lsopen(restart_lun,'dens.restart.Sub'//TRIM(SubIndexString(SubIndex)),&
          & 'UNKNOWN','UNFORMATTED')
     rewind restart_lun
     call mat_write_to_disk(restart_lun,D1(1),OnMaster)
