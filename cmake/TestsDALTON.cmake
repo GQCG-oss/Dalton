@@ -40,8 +40,7 @@ endmacro()
 # "long" cc2_r12 tests are placed apart on purpose to make it less likely that they
 # are run at the same time (then they can be significantly slower)
 
-add_dalton_runtest(runtest_rsp_polar "dalton;runtest")
-
+add_dalton_runtest(rsp_polar         "dalton;runtest;rsp;parallel;short")
 add_dalton_runtest(qmmm1             "dalton;runtest;qmmm;parallel;short")
 add_dalton_runtest(qmmm2             "dalton;runtest;qmmm;parallel;short")
 add_dalton_runtest(qmmm3             "dalton;runtest;qmmm;parallel;medium")
@@ -129,7 +128,6 @@ add_dalton_test(rsp_lrso2             "dalton;rsp;short;parallel")
 add_dalton_test(rsp_mcdbterm          "dalton;rsp;short;parallel")
 add_dalton_test(rsp_mnf               "dalton;rsp;short;parallel")
 add_dalton_test(rsp_phosph            "dalton;rsp;short;parallel")
-add_dalton_test(rsp_polar             "dalton;rsp;short;parallel")
 add_dalton_test(rsp_propave           "dalton;rsp;short")
 add_dalton_test(rsp_socorr            "dalton;rsp;short")
 add_dalton_test(rsp_socorr2           "dalton;rsp;short")
