@@ -1,0 +1,7 @@
+
+   dft_qr_nosym
+   ------------------
+   Molecule:         H2O
+   Wave Functions:   DFT LDA / aug-cc-pVDZ
+   Test Purpose:     DFT LDA hyperpolarizability test w/o symmetry.
+

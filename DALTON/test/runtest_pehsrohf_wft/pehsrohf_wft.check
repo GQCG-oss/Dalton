@@ -1,0 +1,84 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+#
+# Potential readin
+#
+CRIT1=`$GREP "Number of classical sites: * 6" $log | wc -l`
+CRIT2=`$GREP "Multipole moments upto 2nd order." $log | wc -l`
+CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
+CRIT4=`$GREP "Iterative solver for induced moments will be used" $log | wc -l`
+CRIT5=`$GREP "with convergence threshold: 1\.0E\-08" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
+CTRL[1]=5
+ERROR[1]="INCORRECT POTENTIAL"
+
+#
+# Convergence
+#
+CRIT1=`$GREP " DIIS converged in  4[0-4] iterations" $log | wc -l`
+TEST[2]=`expr $CRIT1 `
+CTRL[2]=1
+ERROR[2]="CONVERGENCE PROBLEM"
+
+#
+# Energies
+#
+CRIT1=`$GREP "Monopoles *      0*\.001447" $log | wc -l`
+CRIT2=`$GREP "Dipoles *      \-0*\.003653" $log | wc -l`
+CRIT3=`$GREP "Quadrupoles *    0*\.00758[45]" $log | wc -l`
+CRIT4=`$GREP "Electronic *     0*\.2282[45]" $log | wc -l`
+CRIT5=`$GREP "Nuclear *      \-0*\.25976" $log | wc -l`
+CRIT6=`$GREP "Multipole *    \-0*\.003579" $log | wc -l`
+CRIT7=`$GREP "Total PE energy: * \-0*\.029715" $log | wc -l`
+CRIT8=`$GREP "Final HF energy: * \-111\.257389" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 `
+CTRL[3]=8
+ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
+
+#
+# Induced dipole moments in environment
+#
+ CRIT1=`$GREP "  1 * ( |0)\.12473... * ( |0)\.27132... * (\-|\-0)\.01765..." $log | wc -l`
+ CRIT2=`$GREP "  2 * ( |0)\.20285... * ( |0)\.12868... * (\-|\-0)\.03160..." $log | wc -l`
+ CRIT3=`$GREP "  3 * ( |0)\.03080... * ( |0)\.08745... * ( |0)\.06416..." $log | wc -l`
+ CRIT4=`$GREP "  4 * ( |0)\.29873... * ( |0)\.02220... * (\-|\-0)\.02167..." $log | wc -l`
+ CRIT5=`$GREP "  5 * ( |0)\.06133... * ( |0)\.16073... * (\-|\-0)\.01224..." $log | wc -l`
+ CRIT6=`$GREP "  6 * ( |0)\.08835... * (\-|\-0)\.01079... * ( |0)\.03173..." $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
+CTRL[4]=6
+ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
+
+#
+# dipole moment of formaldehyde
+#
+CRIT1=`$GREP "x *  0*\.1460[34]" $log | wc -l`
+CRIT2=`$GREP "y * \-1\.61526" $log | wc -l`
+CRIT3=`$GREP "z *  0*\.04849" $log | wc -l`
+TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
+CTRL[5]=3
+ERROR[5]="DIPOLE MOMENT NOT CORRECT"
+
+PASSED=1 
+for i in 1 2 3 4 5
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi                

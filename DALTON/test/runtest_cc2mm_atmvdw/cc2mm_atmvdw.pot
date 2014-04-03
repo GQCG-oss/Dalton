@@ -1,0 +1,52 @@
+**SYSTP
+.NUMMTP  # The number of different MM typesr;ie: SPC, SPCEC1, SPCE01 etc
+ 1
+.TYPE
+ 0       # Allways start with type 0 which is the QM system!!
+.MODEL
+ SPC
+.CHARGS
+ 13
+ -0.2605
+ -0.0165
+  0.3157
+ -0.0366
+ -0.1596
+ -0.1918
+ -0.4399
+  0.0792
+  0.0902
+  0.1052
+  0.0715
+  0.3036
+  0.1397
+.SIGEPS
+ 13
+ 6.708867  0.0001115   # Atomic parameters in order: sigma_i, epsilon_i
+ 6.708867  0.0001115   # Interaction is calculated as 
+ 6.708867  0.0001115   # Evdw_ij = 4*epsilon_ij*[sigma_ij/R^12-sigma_ij/R^6]
+ 6.708867  0.0001115   # Construction of two-body parameters are given
+ 6.708867  0.0001115   # as input in DALTON.INP, *QM3 with the keyword
+ 6.708867  0.0001115   # .ATMVDW. A multiplication and an additive rule
+ 5.801443  0.0002709   # is implemented for both parameters:
+ 4.572986  0.0000478   # SIGADD (+), SIGMLT (*), EPSADD (+), EPSMLT  (*)
+ 4.572986  0.0000478
+ 4.572986  0.0000478
+ 4.572986  0.0000478
+ 0.000000  0.0000000
+ 4.572986  0.0000478
+*******
+.TYPE
+ 1-10
+.MODEL
+ SPC_E01
+.ALPISO
+ 1
+ 9.718
+.SIGEPS
+ 3
+ 5.954092  0.00024224
+ 0.000000  0.00000000
+ 0.000000  0.00000000
+*******
+**END OF

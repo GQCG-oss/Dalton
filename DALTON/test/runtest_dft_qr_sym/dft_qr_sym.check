@@ -1,0 +1,32 @@
+#!/bin/ksh
+AWK=awk
+log=$1
+ERRLIST=""
+. ./functions || { echo "current dir is not the test dir" ; exit 1; }
+
+check_scf_energy DFT -75.935844970093 4e-9
+                     
+check_hyperpolarizabilities 0.0 0.0 'Y;Y,Y' -15.36418364 1e-4
+check_hyperpolarizabilities 0.1 0.0 'Y;Y,Y' -17.25772592 1e-4
+check_hyperpolarizabilities 0.1 0.1 'Y;Y,Y' -22.61634941 1e-4
+check_hyperpolarizabilities 0.0 0.0 'X;X,Y' -21.38430844 1e-4
+check_hyperpolarizabilities 0.1 0.0 'X;X,Y' -22.86902589 1e-4
+check_hyperpolarizabilities 0.0 0.1 'X;X,Y' -23.17289327 1e-4
+check_hyperpolarizabilities 0.1 0.1 'X;X,Y' -26.80630318 1e-4
+check_hyperpolarizabilities 0.0 0.0 'Z;Z,Y'  -1.29484755 1e-4
+check_hyperpolarizabilities 0.1 0.0 'Z;Z,Y'  -1.65164644 1e-4
+check_hyperpolarizabilities 0.0 0.1 'Z;Z,Y'  -1.50263285 1e-4
+check_hyperpolarizabilities 0.1 0.1 'Z;Z,Y'  -2.82628015 1e-4
+check_hyperpolarizabilities 0.1 0.0 'Y;X,X' -23.17289419 1e-4
+check_hyperpolarizabilities 0.1 0.1 'Y;X,X' -28.37918504 1e-4
+check_hyperpolarizabilities 0.1 0.0 'Y;Z,Z'  -1.50263302 1e-4
+check_hyperpolarizabilities 0.1 0.1 'Y;Z,Z'  -1.92230587 1e-4
+
+if [ "$ERRLIST" = "" ]; then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo "Failed tests: $ERRLIST"
+  echo THERE IS A PROBLEM
+  exit 1
+fi

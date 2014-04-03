@@ -1,0 +1,6 @@
+   pcmsoppa_excit
+   -----------
+   Molecule:         Acrolein
+   Wave Function:    PCM-SOPPA/RPA / 3-21G
+   Test Purpose:     Test of energies and excitation energies
+                     through RESPONSE using the PCM
