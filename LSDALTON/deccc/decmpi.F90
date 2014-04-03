@@ -3,7 +3,6 @@
 !> \author Kasper Kristensen
 !> \date March 2012
 module decmpi_module
-#ifdef VAR_MPI
 
   use precision
   use typedeftype!, only: lsitem
@@ -22,6 +21,7 @@ module decmpi_module
   use array2_simple_operations
 
 contains
+#ifdef VAR_MPI
 
 
 
