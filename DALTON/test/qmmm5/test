@@ -13,10 +13,10 @@ f = Filter()
 # Energy
 f.add(from_re = 'QM\/MM \"QMMM\" calculation converged',
       num_lines = 13,
-      tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-8)
 
 f.add(re = '[XYZ]DIPLEN  \; [XYZ]DIPLEN',
-      tolerance = 1.0e-9)
+      rel_tolerance = 1.0e-9)
 
 test.run(['qmmm5.dal'], ['ch2o_cc-pvdz.mol'], {'out': f}, args='-put POTENTIAL.INP')
 

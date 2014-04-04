@@ -13,14 +13,13 @@ f = Filter()
 # Energy
 f.add(from_re = 'QM\/MM \"QMMM\" calculation converged',
       num_lines = 13,
-      tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-8)
 
-#ADJUST
 f.add(re = 'gamma\([XYZ]\;[XYZ]\,[XYZ]\,[XYZ]\)',
-      tolerance = 1.0e-4)
+      abs_tolerance = 1.0e-3)
 
-f.add(re = 'Averaged gamma parallel to the applied field is')
-
+f.add(re = 'Averaged gamma parallel to the applied field is',
+      rel_tolerance = 1.0e-8)
 
 test.run(['qmmm7.dal'], ['ch2o_cc-pvdz.mol'], {'out': f}, args='-put POTENTIAL.INP')
 
