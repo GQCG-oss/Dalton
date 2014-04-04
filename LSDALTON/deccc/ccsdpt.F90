@@ -1798,13 +1798,16 @@ contains
     ! performed, and in order to take optimal advantage of the symmetry of the amplitudes, we carry out
     ! the amplitudes in accordance to the following scheme
     !
-    ! in 11/12   : iik --312--> kii --312--> iki
-    ! in 211/212 : kii ........ iki ........ iik
-    ! in 221/222 : iki ........ iik ........ kii
+    !! in 11/12   : iik --312--> kii --312--> iki
+    ! in 11/12   : iik --132--> iki --231--> kii
+    !! in 211/212 : kii ........ iki ........ iik
+    ! in 211/212 : kii ........ kii ........ iik
+    !! in 221/222 : iki ........ iik ........ kii
+    ! in 221/222 : iki ........ iik ........ iki
 
     do idx = 1,3
 
-       if (idx .eq. 1) then
+       if (idx .eq. 1) then ! iik
 
           ! calculate contribution to ccsdpt_singles:
 
@@ -1825,64 +1828,64 @@ contains
           call ccsdpt_contract_221(oindex1,oindex3,oindex1,no,nv,jaik_tile_31,jaik_tile_13,&
                            & ccsdpt_doubles_2(:,:,:,oindex1),trip,.true.,async_id_5)
 
-       else if (idx .eq. 2) then
-
-          ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
-          ! and trip is a 3d work array
-#ifdef VAR_OPENACC
-          call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,wrk_3d,async_id_5)
-#else
-          call array_reorder_3d(1.0E0_realk,trip,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,wrk_3d)
-#endif
-
-          call ccsdpt_contract_11(oindex3,oindex1,oindex1,nv,no,abij_tile_12,abij_tile_12,ccsdpt_singles(:,oindex3),&
-                       & wrk_3d,.true.,async_id_5)
-          call ccsdpt_contract_12(oindex3,oindex1,oindex1,nv,no,abij_tile_13,abij_tile_31,ccsdpt_singles(:,oindex1),&
-                       & wrk_3d,.true.,async_id_5)
-
-          ! calculate contributions to ccsdpt_doubles (virt part):
-
-          call ccsdpt_contract_211(oindex1,oindex3,oindex1,nv,no,&
-                           & ccsdpt_doubles(:,:,oindex1,oindex3),trip,wrk_3d,int_virt_tile_o1,.true.,async_id_5)
-
-          ! now do occ part:
-
-          call ccsdpt_contract_221(oindex1,oindex1,oindex3,no,nv,jaik_tile_13,jaik_tile_31,&
-                           & ccsdpt_doubles_2(:,:,:,oindex1),wrk_3d,.false.,async_id_5)
-          call ccsdpt_contract_222(oindex1,oindex1,oindex3,no,nv,jaik_tile_12,&
-                           & ccsdpt_doubles_2(:,:,:,oindex3),wrk_3d,async_id_5)
-
-       else if (idx .eq. 3) then
+       else if (idx .eq. 2) then ! kii
 
           ! iki: this case is redundant since both the coulumb and the exchange contributions
           ! will be contructed from the ampl_iki trip amplitudes and therefore end up
           ! canceling each other when added to ccsdpt_singles
 
-          ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
-          ! and wrk_3d is a 3d work array
+          ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
+          ! and trip is a 3d work array
 #ifdef VAR_OPENACC
-          call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,trip,async_id_5)
+          call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
+                           & nv,[1,3,2],0.0E0_realk,wrk_3d,async_id_5)
 #else
-          call array_reorder_3d(1.0E0_realk,wrk_3d,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,trip)
+          call array_reorder_3d(1.0E0_realk,trip,nv,nv,&
+                           & nv,[1,3,2],0.0E0_realk,wrk_3d)
 #endif
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex1,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles(:,:,oindex1,oindex1),wrk_3d,trip,int_virt_tile_o3,.false.,async_id_5)
+                           & ccsdpt_doubles(:,:,oindex1,oindex1),trip,wrk_3d,int_virt_tile_o3,.false.,async_id_5)
           call ccsdpt_contract_212(oindex1,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles(:,:,oindex3,oindex1),wrk_3d,trip,int_virt_tile_o1,async_id_5)
+                           & ccsdpt_doubles(:,:,oindex3,oindex1),trip,wrk_3d,int_virt_tile_o1,async_id_5)
 
           ! now do occ part:
 
           call ccsdpt_contract_221(oindex3,oindex1,oindex1,no,nv,jaik_tile_12,jaik_tile_12,&
-                           & ccsdpt_doubles_2(:,:,:,oindex3),trip,.false.,async_id_5)
+                           & ccsdpt_doubles_2(:,:,:,oindex3),wrk_3d,.false.,async_id_5)
           call ccsdpt_contract_222(oindex3,oindex1,oindex1,no,nv,jaik_tile_31,&
-                           & ccsdpt_doubles_2(:,:,:,oindex1),trip,async_id_5)
+                           & ccsdpt_doubles_2(:,:,:,oindex1),wrk_3d,async_id_5)
+
+       else if (idx .eq. 3) then ! iki
+
+          ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
+          ! and wrk_3d is a 3d work array
+#ifdef VAR_OPENACC
+          call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,nv,&
+                           & nv,[2,3,1],0.0E0_realk,trip,async_id_5)
+#else
+          call array_reorder_3d(1.0E0_realk,wrk_3d,nv,nv,&
+                           & nv,[2,3,1],0.0E0_realk,trip)
+#endif
+
+          call ccsdpt_contract_11(oindex3,oindex1,oindex1,nv,no,abij_tile_12,abij_tile_12,ccsdpt_singles(:,oindex3),&
+                       & trip,.true.,async_id_5)
+          call ccsdpt_contract_12(oindex3,oindex1,oindex1,nv,no,abij_tile_13,abij_tile_31,ccsdpt_singles(:,oindex1),&
+                       & trip,.true.,async_id_5)
+
+          ! calculate contributions to ccsdpt_doubles (virt part):
+
+          call ccsdpt_contract_211(oindex1,oindex3,oindex1,nv,no,&
+                           & ccsdpt_doubles(:,:,oindex1,oindex3),wrk_3d,trip,int_virt_tile_o1,.true.,async_id_5)
+
+          ! now do occ part:
+
+          call ccsdpt_contract_221(oindex1,oindex1,oindex3,no,nv,jaik_tile_13,jaik_tile_31,&
+                           & ccsdpt_doubles_2(:,:,:,oindex1),trip,.false.,async_id_5)
+          call ccsdpt_contract_222(oindex1,oindex1,oindex3,no,nv,jaik_tile_12,&
+                           & ccsdpt_doubles_2(:,:,:,oindex3),trip,async_id_5)
 
        end if
 
@@ -2066,17 +2069,19 @@ contains
 #endif
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
-    ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
-    ! performed, and in order to take optimal advantage of the symmetry of the amplitudes, we carry out
-    ! the amplitudes in accordance to the following scheme
+    ! we implicitly do a [2,3,1] reordering. 
+    ! in order to minimize the number of reorderings needed to be performed, 
+    ! in order to take optimal advantage of the symmetry of the amplitudes, 
+    ! AND to finish all work that involves int_virt_tile_o3 first such that this may be updated (gpu),
+    ! we carry out the amplitudes in accordance to the following scheme
     !
-    ! in 11/12   : ijk --312--> kij --312--> jki --213--> kji --312--> ikj --312--> jik
-    ! in 211/212 : kij ........ jki ........ ijk ........ ikj ........ jik ........ kji
-    ! in 221/222 : jki ........ ijk ........ kij ........ jik ........ kji ........ ikj
+    ! in 11/12   : ijk --213--> jik --132--> jki --321--> ikj --213--> kij --132--> kji
+    ! in 211/212 : kij ........ ikj ........ ijk ........ kji ........ jki ........ jik
+    ! in 221/222 : jki ........ kji ........ kij ........ jik ........ ijk ........ ikj
 
     do idx = 1,6
 
-       if (idx .eq. 1) then
+       if (idx .eq. 1) then ! ijk
 
           ! calculate contributions to ccsdpt_singles:
 
@@ -2099,49 +2104,49 @@ contains
           call ccsdpt_contract_222(oindex2,oindex3,oindex1,no,nv,jaik_tile_23,&
                            & ccsdpt_doubles_2(:,:,:,oindex1),trip,async_id_5)
 
-       else if (idx .eq. 2) then
+       else if (idx .eq. 2) then ! kij
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,wrk_3d,async_id_5)
+                           & nv,[2,1,3],0.0E0_realk,wrk_3d,async_id_5)
 #else
           call array_reorder_3d(1.0E0_realk,trip,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,wrk_3d)
+                           & nv,[2,1,3],0.0E0_realk,wrk_3d)
 #endif
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_11(oindex3,oindex1,oindex2,nv,no,abij_tile_12,abij_tile_21,ccsdpt_singles(:,oindex3),&
+          call ccsdpt_contract_11(oindex2,oindex1,oindex3,nv,no,abij_tile_13,abij_tile_31,ccsdpt_singles(:,oindex2),&
                        & wrk_3d,.false.,async_id_5)
-          call ccsdpt_contract_12(oindex3,oindex1,oindex2,nv,no,abij_tile_13,abij_tile_31,ccsdpt_singles(:,oindex2),&
+          call ccsdpt_contract_12(oindex2,oindex1,oindex3,nv,no,abij_tile_12,abij_tile_21,ccsdpt_singles(:,oindex3),&
                        & wrk_3d,.false.,async_id_5)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          call ccsdpt_contract_211(oindex2,oindex3,oindex1,nv,no,&
-                           & ccsdpt_doubles(:,:,oindex2,oindex3),trip,wrk_3d,int_virt_tile_o1,.false.,async_id_5)
-          call ccsdpt_contract_212(oindex2,oindex3,oindex1,nv,no,&
-                           & ccsdpt_doubles(:,:,oindex1,oindex3),trip,wrk_3d,int_virt_tile_o2,async_id_5)
+          call ccsdpt_contract_211(oindex3,oindex2,oindex1,nv,no,&
+                           & ccsdpt_doubles(:,:,oindex3,oindex2),trip,wrk_3d,int_virt_tile_o1,.false.,async_id_5)
+          call ccsdpt_contract_212(oindex3,oindex2,oindex1,nv,no,&
+                           & ccsdpt_doubles(:,:,oindex1,oindex2),trip,wrk_3d,int_virt_tile_o3,async_id_5)
 
           ! now do occ part:
 
-          call ccsdpt_contract_221(oindex1,oindex2,oindex3,no,nv,jaik_tile_23,jaik_tile_32,&
+          call ccsdpt_contract_221(oindex1,oindex3,oindex2,no,nv,jaik_tile_32,jaik_tile_23,&
                            & ccsdpt_doubles_2(:,:,:,oindex1),wrk_3d,.false.,async_id_5)
-          call ccsdpt_contract_222(oindex1,oindex2,oindex3,no,nv,jaik_tile_12,&
-                           & ccsdpt_doubles_2(:,:,:,oindex3),wrk_3d,async_id_5)
+          call ccsdpt_contract_222(oindex1,oindex3,oindex2,no,nv,jaik_tile_13,&
+                           & ccsdpt_doubles_2(:,:,:,oindex2),wrk_3d,async_id_5)
 
-       else if (idx .eq. 3) then
+       else if (idx .eq. 3) then ! jki
 
           ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
           ! and wrk_3d is a 3d work array
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,trip,async_id_5)
+                           & nv,[1,3,2],0.0E0_realk,trip,async_id_5)
 #else
           call array_reorder_3d(1.0E0_realk,wrk_3d,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,trip)
+                           & nv,[1,3,2],0.0E0_realk,trip)
 #endif
 
           ! calculate contributions to ccsdpt_singles:
@@ -2165,17 +2170,82 @@ contains
           call ccsdpt_contract_222(oindex3,oindex1,oindex2,no,nv,jaik_tile_31,&
                            & ccsdpt_doubles_2(:,:,:,oindex2),trip,async_id_5)
 
-       else if (idx .eq. 4) then
+       else if (idx .eq. 4) then ! kji
 
-          !*** special reordering (see note above)
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
-                           & nv,[2,1,3],0.0E0_realk,wrk_3d,async_id_5)
+                           & nv,[3,2,1],0.0E0_realk,wrk_3d,async_id_5)
 #else
           call array_reorder_3d(1.0E0_realk,trip,nv,nv,&
-                           & nv,[2,1,3],0.0E0_realk,wrk_3d)
+                           & nv,[3,2,1],0.0E0_realk,wrk_3d)
+#endif
+
+          ! calculate contributions to ccsdpt_singles:
+
+          call ccsdpt_contract_11(oindex1,oindex3,oindex2,nv,no,abij_tile_32,abij_tile_23,ccsdpt_singles(:,oindex1),&
+                       & wrk_3d,.false.,async_id_5)
+          call ccsdpt_contract_12(oindex1,oindex3,oindex2,nv,no,abij_tile_31,abij_tile_13,ccsdpt_singles(:,oindex2),&
+                       & wrk_3d,.false.,async_id_5)
+
+          ! calculate contributions to ccsdpt_doubles (virt part):
+
+          call ccsdpt_contract_211(oindex2,oindex1,oindex3,nv,no,&
+                           & ccsdpt_doubles(:,:,oindex2,oindex1),trip,wrk_3d,int_virt_tile_o3,.false.,async_id_5)
+          call ccsdpt_contract_212(oindex2,oindex1,oindex3,nv,no,&
+                           & ccsdpt_doubles(:,:,oindex3,oindex1),trip,wrk_3d,int_virt_tile_o2,async_id_5)
+
+          ! now do occ part:
+
+          call ccsdpt_contract_221(oindex3,oindex2,oindex1,no,nv,jaik_tile_21,jaik_tile_12,&
+                           & ccsdpt_doubles_2(:,:,:,oindex3),wrk_3d,.false.,async_id_5)
+          call ccsdpt_contract_222(oindex3,oindex2,oindex1,no,nv,jaik_tile_32,&
+                           & ccsdpt_doubles_2(:,:,:,oindex1),wrk_3d,async_id_5)
+
+       else if (idx .eq. 5) then ! ikj
+
+          ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
+          ! and wrk_3d is a 3d work array
+#ifdef VAR_OPENACC
+          call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,nv,&
+                           & nv,[2,1,3],0.0E0_realk,trip,async_id_5)
+#else
+          call array_reorder_3d(1.0E0_realk,wrk_3d,nv,nv,&
+                           & nv,[2,1,3],0.0E0_realk,trip)
+#endif
+
+          ! calculate contributions to ccsdpt_singles:
+
+          call ccsdpt_contract_11(oindex3,oindex1,oindex2,nv,no,abij_tile_12,abij_tile_21,ccsdpt_singles(:,oindex3),&
+                       & trip,.false.,async_id_5)
+          call ccsdpt_contract_12(oindex3,oindex1,oindex2,nv,no,abij_tile_13,abij_tile_31,ccsdpt_singles(:,oindex2),&
+                       & trip,.false.,async_id_5)
+
+          ! calculate contributions to ccsdpt_doubles (virt part):
+
+          call ccsdpt_contract_211(oindex2,oindex3,oindex1,nv,no,&
+                           & ccsdpt_doubles(:,:,oindex2,oindex3),wrk_3d,trip,int_virt_tile_o1,.false.,async_id_5)
+          call ccsdpt_contract_212(oindex2,oindex3,oindex1,nv,no,&
+                           & ccsdpt_doubles(:,:,oindex1,oindex3),wrk_3d,trip,int_virt_tile_o2,async_id_5)
+
+          ! now do occ part:
+
+          call ccsdpt_contract_221(oindex1,oindex2,oindex3,no,nv,jaik_tile_23,jaik_tile_32,&
+                           & ccsdpt_doubles_2(:,:,:,oindex1),trip,.false.,async_id_5)
+          call ccsdpt_contract_222(oindex1,oindex2,oindex3,no,nv,jaik_tile_12,&
+                           & ccsdpt_doubles_2(:,:,:,oindex3),trip,async_id_5)
+
+       else if (idx .eq. 6) then ! jik
+
+          ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
+          ! and trip is a 3d work array
+#ifdef VAR_OPENACC
+          call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
+                           & nv,[1,3,2],0.0E0_realk,wrk_3d,async_id_5)
+#else
+          call array_reorder_3d(1.0E0_realk,trip,nv,nv,&
+                           & nv,[1,3,2],0.0E0_realk,wrk_3d)
 #endif
 
           ! calculate contributions to ccsdpt_singles:
@@ -2198,72 +2268,6 @@ contains
                            & ccsdpt_doubles_2(:,:,:,oindex2),wrk_3d,.false.,async_id_5)
           call ccsdpt_contract_222(oindex2,oindex1,oindex3,no,nv,jaik_tile_21,&
                            & ccsdpt_doubles_2(:,:,:,oindex3),wrk_3d,async_id_5)
-
-       else if (idx .eq. 5) then
-
-          ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
-          ! and wrk_3d is a 3d work array
-#ifdef VAR_OPENACC
-          call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,trip,async_id_5)
-#else
-          call array_reorder_3d(1.0E0_realk,wrk_3d,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,trip)
-#endif
-
-          ! calculate contributions to ccsdpt_singles:
-
-          call ccsdpt_contract_11(oindex1,oindex3,oindex2,nv,no,abij_tile_32,abij_tile_23,ccsdpt_singles(:,oindex1),&
-                       & trip,.false.,async_id_5)
-          call ccsdpt_contract_12(oindex1,oindex3,oindex2,nv,no,abij_tile_31,abij_tile_13,ccsdpt_singles(:,oindex2),&
-                       & trip,.false.,async_id_5)
-
-          ! calculate contributions to ccsdpt_doubles (virt part):
-
-          call ccsdpt_contract_211(oindex2,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles(:,:,oindex2,oindex1),wrk_3d,trip,int_virt_tile_o3,.false.,async_id_5)
-          call ccsdpt_contract_212(oindex2,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles(:,:,oindex3,oindex1),wrk_3d,trip,int_virt_tile_o2,async_id_5)
-
-          ! now do occ part:
-
-          call ccsdpt_contract_221(oindex3,oindex2,oindex1,no,nv,jaik_tile_21,jaik_tile_12,&
-                           & ccsdpt_doubles_2(:,:,:,oindex3),trip,.false.,async_id_5)
-          call ccsdpt_contract_222(oindex3,oindex2,oindex1,no,nv,jaik_tile_32,&
-                           & ccsdpt_doubles_2(:,:,:,oindex1),trip,async_id_5)
-
-       else if (idx .eq. 6) then
-
-          ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
-          ! and trip is a 3d work array
-#ifdef VAR_OPENACC
-          call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,wrk_3d,async_id_5)
-#else
-          call array_reorder_3d(1.0E0_realk,trip,nv,nv,&
-                           & nv,[3,1,2],0.0E0_realk,wrk_3d)
-#endif
-
-          ! calculate contributions to ccsdpt_singles:
-
-          call ccsdpt_contract_11(oindex2,oindex1,oindex3,nv,no,abij_tile_13,abij_tile_31,ccsdpt_singles(:,oindex2),&
-                       & wrk_3d,.false.,async_id_5)
-          call ccsdpt_contract_12(oindex2,oindex1,oindex3,nv,no,abij_tile_12,abij_tile_21,ccsdpt_singles(:,oindex3),&
-                       & wrk_3d,.false.,async_id_5)
-
-          ! calculate contributions to ccsdpt_doubles (virt part):
-
-          call ccsdpt_contract_211(oindex3,oindex2,oindex1,nv,no,&
-                           & ccsdpt_doubles(:,:,oindex3,oindex2),trip,wrk_3d,int_virt_tile_o1,.false.,async_id_5)
-          call ccsdpt_contract_212(oindex3,oindex2,oindex1,nv,no,&
-                           & ccsdpt_doubles(:,:,oindex1,oindex2),trip,wrk_3d,int_virt_tile_o3,async_id_5)
-
-          ! now do occ part:
-
-          call ccsdpt_contract_221(oindex1,oindex3,oindex2,no,nv,jaik_tile_32,jaik_tile_23,&
-                           & ccsdpt_doubles_2(:,:,:,oindex1),wrk_3d,.false.,async_id_5)
-          call ccsdpt_contract_222(oindex1,oindex3,oindex2,no,nv,jaik_tile_13,&
-                           & ccsdpt_doubles_2(:,:,:,oindex2),wrk_3d,async_id_5)
 
        end if
 
