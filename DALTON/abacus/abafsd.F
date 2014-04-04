@@ -1869,8 +1869,7 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
             KTMAT = KWRK
             MWRK  = KTMAT + 3 * N2BASX
             IF (MWRK > LWRK) CALL STOPIT('ONEDRL', 'PEQM', MWRK, LWRK)
-            LLEFT = LWRK - MWRK + 1
-            CALL PE_IFC_LONDON(WORK(KTMAT), 1, WORK(MWRK), LWRK-MWRK+1)
+            CALL PE_IFC_LONDON(WORK(KTMAT), 1)
             CALL DAXPY(N2BASX*3, D1, WORK(KTMAT), 1, WORK(KMATS), 1)
          END IF
 

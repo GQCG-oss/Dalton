@@ -20,14 +20,14 @@
 !...      http://daltonprogram.org
 !
 #if defined (BUILD_PELIB)
-      subroutine pe_ifc_dalinp_reader(word)
+      subroutine pe_ifc_input_reader(word)
         use pe_variables, only: peqm
-        use polarizable_embedding, only: pe_dalton_input
+        use polarizable_embedding, only: pe_input_reader
 #include "priunit.h"
         character(len=7), intent(inout) :: word
         peqm = .true.
-        call pe_dalton_input(word, lucmd, lupri)
-      end subroutine pe_ifc_dalinp_reader
+        call pe_input_reader(word, lucmd)
+      end subroutine pe_ifc_input_reader
 
       subroutine pe_ifc_init()
         use polarizable_embedding, only: pe_init
@@ -37,27 +37,28 @@
         call pe_init(lupri, cord(1:3,1:natoms), charge(1:natoms))
       end subroutine pe_ifc_init
 
-      subroutine pe_ifc_fock(denmats, fckmats, nmats, energies,
-     &                       work, nwrk)
+      subroutine pe_ifc_finalize()
+        use polarizable_embedding, only: pe_finalize
+        call pe_finalize()
+      end subroutine pe_ifc_finalize
+
+      subroutine pe_ifc_fock(denmats, fckmats, nmats, energies)
         use polarizable_embedding, only: pe_master
 #include "inforb.h"
-        integer, intent(in) :: nmats, nwrk
+        integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
         real*8, dimension(nmats), intent(out) :: energies
-        real*8, dimension(nwrk), intent(inout) :: work
         call pe_master(runtype='fock', denmats=denmats, fckmats=fckmats,
-     &                 nmats=nmats, energies=energies, dalwrk=work)
+     &                 nmats=nmats, energies=energies)
       end subroutine pe_ifc_fock
 
-      subroutine pe_ifc_energy(denmats, nmats, work, nwrk)
+      subroutine pe_ifc_energy(denmats, nmats)
         use polarizable_embedding, only: pe_master
 #include "inforb.h"
-        integer, intent(in) :: nmats, nwrk
+        integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
-        real*8, dimension(nwrk), intent(inout) :: work
-        call pe_master(runtype='energy', denmats=denmats, nmats=nmats,
-     &                 dalwrk=work)
+        call pe_master(runtype='energy', denmats=denmats, nmats=nmats)
       end subroutine pe_ifc_energy
 
       function pe_ifc_noneq_sol()
@@ -70,15 +71,14 @@
         end if
       end function pe_ifc_noneq_sol
 
-      subroutine pe_ifc_noneq(denmats, fckmats, nmats, work, nwrk)
+      subroutine pe_ifc_noneq(denmats, fckmats, nmats)
         use polarizable_embedding, only: pe_master
 #include "inforb.h"
-        integer, intent(in) :: nmats, nwrk
+        integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
-        real*8, dimension(nwrk), intent(inout) :: work
         call pe_master(runtype='noneq', denmats=denmats,
-     &                 fckmats=fckmats, nmats=nmats, dalwrk=work)
+     &                 fckmats=fckmats, nmats=nmats)
       end subroutine pe_ifc_noneq
 
       function pe_ifc_mep()
@@ -102,15 +102,14 @@
       end function pe_ifc_mep_noqm
  
       subroutine pe_ifc_mepcalc(denmats, nmats, work, nwrk)
+
         use polarizable_embedding, only: pe_master
         use pe_variables, only: mep_qmcube
 #include "inforb.h"
-        integer, intent(in) :: nmats, nwrk
+        integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
-        real*8, dimension(nwrk), intent(inout) :: work
         if (mep_qmcube) then
-            call pe_master(runtype='mep', denmats=denmats,
-     &                     nmats=nmats, dalwrk=work)
+            call pe_master(runtype='mep', denmats=denmats, nmats=nmats)
         end if
       end subroutine pe_ifc_mepcalc
 
@@ -120,21 +119,19 @@
       end subroutine pe_ifc_mepcalc_noqm
  
       subroutine pe_ifc_london(fckmats, nmats, work, nwrk)
+
         use polarizable_embedding, only: pe_master
 #include "inforb.h"
-        integer, intent(in) :: nmats, nwrk
+        integer, intent(in) :: nmats
         real*8, dimension(3*nmats*n2basx), intent(out) :: fckmats
-        real*8, dimension(nwrk), intent(inout) :: work
-        call pe_master('london', fckmats=fckmats, nmats=nmats,
-     &                 dalwrk=work)
+        call pe_master('london', fckmats=fckmats, nmats=nmats)
       end subroutine pe_ifc_london
 
 #if defined(VAR_MPI)
-      subroutine pe_ifc_mpi(work, nwrk, runtype)
+      subroutine pe_ifc_mpi(runtype)
         use polarizable_embedding, only: pe_mpi
-        integer, intent(in) :: nwrk, runtype
-        real*8, dimension(nwrk), intent(inout) :: work
-        call pe_mpi(work, runtype)
+        integer, intent(in) :: runtype
+        call pe_mpi(runtype)
       end subroutine pe_ifc_mpi
 #endif
 
@@ -155,9 +152,6 @@
 !   INFORB: NNASHX, NNBASX, NNORBX, etc.
 !   INFTAP: LUIT2
 !
-
-      use polarizable_embedding, only: pe_master
-
       implicit none
 
 #include "priunit.h"
@@ -280,7 +274,7 @@
 
       allocate(fckao(nnbasx))
       call pe_master(runtype='fock', denmats=fdtao, fckmats=fckao,
-     &               nmats=1, energies=energy, dalwrk=wrk)
+     &               nmats=1, energies=energy)
       deallocate(fdtao)
 
       call uthu(fckao, fckmo, cmo, wrk, nbast, norbt)
@@ -403,7 +397,7 @@
         !--------------------------------------
         allocate(fxcaos(ncsim*nnbasx))
         call pe_master(runtype='response', denmats=fdtvaos,
-     &                 fckmats=fxcaos, nmats=ncsim, dalwrk=wrk(1:nwrk))
+     &                 fckmats=fxcaos, nmats=ncsim)
         deallocate(fdtvaos)
 
         do i = 1, ncsim
@@ -522,7 +516,7 @@
 
         allocate(fxoaos(nosim*nnbasx))
         call pe_master(runtype='response', denmats=bodtaos,
-     &                 fckmats=fxoaos, nmats=nosim, dalwrk=wrk(1:nwrk))
+     &                 fckmats=fxoaos, nmats=nosim)
         deallocate(bodtaos)
 
 
@@ -733,7 +727,7 @@
          allocate(fxcaos(ncsim*nnbasx))
          fxcaos = 0.0d0
          call pe_master(runtype='response', denmats=fdtvaos,
-     &                 fckmats=fxcaos, nmats=ncsim, dalwrk=wrk(1:nwrk))
+     &                 fckmats=fxcaos, nmats=ncsim)
          deallocate(fdtvaos)
 
          do i = 1, ncsim
@@ -965,14 +959,12 @@ C
 
         allocate(fckaos(nosim*nnbasx))
         call pe_master(runtype='response', denmats=daos,
-     &                 fckmats=fckaos, nmats=nosim,
-     &                 dalwrk=wrk)
+     &                 fckmats=fckaos, nmats=nosim)
         deallocate(daos)
 !        if (trplet) then
 !            allocate(fckaotrs(nosim*nnbasx))
 !            call pe_master(runtype='response', denmats=daotrs,
-!     &                     fckmats=fckaotrs, nmats=nosim,
-!     &                     dalwrk=wrk)
+!     &                     fckmats=fckaotrs, nmats=nosim)
 !            deallocate(daotrs)
 !        end if
 
@@ -1351,6 +1343,7 @@ C
             !-----------------------------------------------------------
             ! Calculate PE response operators in AO basis
             !-----------------------------------------------------------
+
             if (.not. tdhf) then
                allocate(fcaos(10*nnbasx))
                fcaos = 0.0d0
@@ -1811,9 +1804,8 @@ C
 
          allocate(fcaos(4*nnbasx))
          fcaos = 0.0d0
-         call pe_master(runtype='response',
-     &                  denmats=dcaos, fckmats=fcaos,
-     &                  nmats=4, dalwrk=wrk(1:nwrk))
+         call pe_master(runtype='response', denmats=dcaos,
+     &                  fckmats=fcaos, nmats=4)
          deallocate(dcaos)
 
          allocate(fcmo(nnorbx))
@@ -1964,9 +1956,8 @@ C
 
          allocate(fcaos(15*nnbasx))
          fcaos = 0.0d0
-         call pe_master(runtype='response',
-     &                  denmats=dcaos, fckmats=fcaos,
-     &                  nmats=15, dalwrk=wrk(1:nwrk))
+         call pe_master(runtype='response', denmats=dcaos,
+     &                  fckmats=fcaos, nmats=15)
          deallocate(dcaos)
 
          allocate(fcmo(nnorbx))

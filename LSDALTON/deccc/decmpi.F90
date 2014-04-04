@@ -529,6 +529,10 @@ contains
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_start,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_end,MyMolecule%natoms)
+       IF(DECINFO%F12)THEN
+          call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
+          call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
+       ENDIF
        call mem_alloc(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%nocc)
        call mem_alloc(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%nunocc)
 !       IF(DECinfo%F12)THEN
@@ -542,6 +546,7 @@ contains
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%nunocc)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%PhantomAtom,MyMolecule%natoms)
        IF(DECinfo%F12)THEN
           call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
           call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
@@ -554,6 +559,7 @@ contains
           !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
           call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis)
        ENDIF
+       call mem_alloc(MyMolecule%SubSystemIndex,MyMolecule%nAtoms)
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms)
     end if
@@ -564,7 +570,10 @@ contains
     call ls_mpibcast(MyMolecule%atom_size,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%atom_start,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%atom_end,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
-
+    IF(DECINFO%F12)THEN
+       call ls_mpibcast(MyMolecule%atom_cabssize,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%atom_cabsstart,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    ENDIF
 
     ! Real pointers
     ! -------------
@@ -581,6 +590,7 @@ contains
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%PhantomAtom,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     IF(DECinfo%F12)THEN
        call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
        call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
@@ -593,6 +603,7 @@ contains
        !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
        call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     ENDIF
+    call ls_mpibcast(MyMolecule%SubSystemIndex,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
 
@@ -644,6 +655,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%nunoccFA,master)
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
+    CALL ls_mpi_buffer(MyFragment%nCabsAO,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
     CALL ls_mpi_buffer(MyFragment%nunoccLOC,master)
@@ -675,6 +687,12 @@ contains
     call ls_mpi_buffer(MyFragment%DaveAOS,master)
     call ls_mpi_buffer(MyFragment%DsdvAE,master)
     call ls_mpi_buffer(MyFragment%DsdvAOS,master)
+    call ls_mpi_buffer(MyFragment%RmaxAE,master)
+    call ls_mpi_buffer(MyFragment%RmaxAOS,master)
+    call ls_mpi_buffer(MyFragment%RaveAE,master)
+    call ls_mpi_buffer(MyFragment%RaveAOS,master)
+    call ls_mpi_buffer(MyFragment%RsdvAE,master)
+    call ls_mpi_buffer(MyFragment%RsdvAOS,master)
 
 
     ! Integer pointers
@@ -709,6 +727,10 @@ contains
        call mem_alloc(MyFragment%atoms_idx,MyFragment%natoms)
        nullify(MyFragment%basis_idx)
        call mem_alloc(MyFragment%basis_idx,MyFragment%nbasis)
+       nullify(MyFragment%cabsbasis_idx)
+       IF(decinfo%F12)THEN
+          call mem_alloc(MyFragment%cabsbasis_idx,MyFragment%nCabsAO)
+       ENDIF
     end if
 
 
@@ -725,6 +747,9 @@ contains
     call ls_mpi_buffer(MyFragment%EOSatoms,MyFragment%nEOSatoms,master)
     call ls_mpi_buffer(MyFragment%atoms_idx,MyFragment%natoms,master)
     call ls_mpi_buffer(MyFragment%basis_idx,MyFragment%nbasis,master)
+    IF(decinfo%F12)THEN
+       call ls_mpi_buffer(MyFragment%cabsbasis_idx,MyFragment%nCabsAO,master)
+    ENDIF
     if(MyFragment%t1_stored) then ! only used for CC singles effects
        call ls_mpi_buffer(MyFragment%t1_occidx,MyFragment%t1dims(2),master)
        call ls_mpi_buffer(MyFragment%t1_virtidx,MyFragment%t1dims(1),master)
@@ -1064,28 +1089,35 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    January 2014
-  subroutine get_mo_ccsd_joblist(MOinfo, joblist)
+  subroutine get_mo_ccsd_joblist(MOinfo, joblist, pgmo_diag, pgmo_up)
 
     implicit none
 
     type(MObatchInfo), intent(in) :: MOinfo
+    type(array), intent(in) :: pgmo_diag, pgmo_up
     integer, intent(inout) :: joblist(:)
 
-    integer, pointer :: workloads(:), easytrace(:), work_in_node(:)
+    integer, pointer :: workloads(:), easytrace(:,:), work_in_node(:)
+    integer :: swapar(3)
     integer :: nnod, njob, swap, i, j, next_nod, ijob
 
     nnod = infpar%lg_nodtot
     njob = MOinfo%Nbatch
 
     call mem_alloc(workloads,njob)
-    call mem_alloc(easytrace,njob)
+    call mem_alloc(easytrace,njob,3)
     call mem_alloc(work_in_node,nnod)
  
     workloads=MOinfo%dimTot
  
-    ! Associate a number to each job:
+    ! Associate a integer three-vector to each job:
+    ! the first number is the tile index
+    ! the second number is 0 for pgmo_diag array
+    ! and 1 for pgmo_up array.
+    ! and the third number is the global job index
     do i = 1, njob
-      easytrace(i) = i
+      easytrace(i,1:2) = MOinfo%tileInd(i,:)
+      easytrace(i,3) = i
     end do
 
     ! Sort the jobs according to their size, and keep track of indices
@@ -1097,39 +1129,56 @@ contains
           workloads(j)=workloads(i)
           workloads(i)=swap
 
-          swap=easytrace(j)
-          easytrace(j)=easytrace(i)
-          easytrace(i)=swap
+          swapar=easytrace(j,:)
+          easytrace(j,:)=easytrace(i,:)
+          easytrace(i,:)=swapar
         endif
       enddo
     enddo
 
     ! Associate a rank node to each job:
     work_in_node = 0
-    next_nod = 1
-    do ijob=1,njob
-
-      joblist(ijob) = next_nod
+    ! for the nnod first jobs, each node treat the batch that stand on its memory.
+    do ijob=1,min(nnod,njob)
+      if (easytrace(ijob,2)==0) then 
+        ! tile in pgmo_diag array
+        next_nod = get_residence_of_tile(easytrace(ijob,1),pgmo_diag) + 1
+      else 
+        ! tile in pgmo_up array
+        next_nod = get_residence_of_tile(easytrace(ijob,1),pgmo_up) + 1
+      end if
+      ! Update joblist and workload
+      joblist(ijob) = next_nod 
       work_in_node(next_nod) = work_in_node(next_nod) + workloads(ijob)
-
-      ! get node with smallest work:
-      next_nod = 1
-      do i=2, nnod
-        if (work_in_node(i)<work_in_node(next_nod)) next_nod = i
-      end do
     end do
 
+    ! If more jobs then attribute node depending on workload:
+    if (nnod<njob) then
+      do ijob=nnod+1,njob
+
+        ! get node with smallest work:
+        next_nod = 1
+        do i=2, nnod
+          if (work_in_node(i)<work_in_node(next_nod)) next_nod = i
+        end do
+
+        ! Update joblist and workload
+        joblist(ijob) = next_nod
+        work_in_node(next_nod) = work_in_node(next_nod) + workloads(ijob)
+      end do
+    end if
+ 
     ! go back to initial order:
     do i=1,njob
       do j=i+1,njob
-        if( easytrace(j) < easytrace(i) )then
+        if( easytrace(j,3) < easytrace(i,3) )then
           swap=joblist(j)
           joblist(j)=joblist(i)
           joblist(i)=swap
 
-          swap=easytrace(j)
-          easytrace(j)=easytrace(i)
-          easytrace(i)=swap
+          swapar=easytrace(j,:)
+          easytrace(j,:)=easytrace(i,:)
+          easytrace(i,:)=swapar
         endif
       enddo
     enddo
@@ -1933,14 +1982,14 @@ contains
       call mem_alloc(MOinfo%StartInd1,MOinfo%nbatch)
       call mem_alloc(MOinfo%StartInd2,MOinfo%nbatch)
       call mem_alloc(MOinfo%dimTot,MOinfo%nbatch)
-      call mem_alloc(MOinfo%tileInd,MOinfo%nbatch)
+      call mem_alloc(MOinfo%tileInd,MOinfo%nbatch,2)
     end if
     call ls_mpi_buffer(MOinfo%dimInd1,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%dimInd2,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%StartInd1,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%StartInd2,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%dimTot,MOinfo%nbatch,infpar%master)
-    call ls_mpi_buffer(MOinfo%tileInd,MOinfo%nbatch,infpar%master)
+    call ls_mpi_buffer(MOinfo%tileInd,MOinfo%nbatch,2,infpar%master)
 
     if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
     call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
@@ -2049,6 +2098,8 @@ contains
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
+    call ls_mpi_buffer(DECitem%InteractionEnergy,Master)
+    call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
@@ -2093,6 +2144,7 @@ contains
     call ls_mpi_buffer(DECitem%pairFOthr,Master)
     call ls_mpi_buffer(DECitem%PairMP2,Master)
     call ls_mpi_buffer(DECitem%PairEstimate,Master)
+    call ls_mpi_buffer(DECitem%EstimateINITradius,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%MP2density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)

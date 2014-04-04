@@ -13,11 +13,14 @@ PROGRAM TUV
   integer :: ip1,jp1,kp1,p1,ip2,jp2,kp2,p2,ijkcartP
   real(realk),pointer :: uniqeparam(:)
   character(len=15),pointer :: uniqeparamNAME(:)
+    character(len=3) :: ARCSTRING
+    integer :: GPUrun
+    logical :: DoOpenMP,DoOpenACC,CPU
 
   !buildtuvindex
   sphericalGTO = .TRUE.
   LUMOD3=3
-  open(unit = LUMOD3, file="AutoGenCoderunSphContractOBS2_new.f90",status="unknown")
+  open(unit = LUMOD3, file="AutoGenCoderunSphContractOBS2_new.F90",status="unknown")
   WRITE(LUMOD3,'(A)')'MODULE AGC_OBS_Sphcontract2Mod'
   WRITE(LUMOD3,'(A)')'!Automatic Generated Code (AGC) by runSphContractOBS2.f90 in tools directory'
   WRITE(LUMOD3,'(A)')'use IchorPrecisionModule  '
@@ -28,6 +31,20 @@ PROGRAM TUV
   ! 0 1 2 3 4
   ! S P D F 
   !
+DO GPUrun = 1,2
+    CPU = .TRUE.
+    IF(GPUrun.EQ.2)CPU = .FALSE.
+    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#ifdef VAR_OPENACC  '
+    DoOpenMP = .FALSE.
+    DoOpenACC = .FALSE.
+    IF(CPU)DoOpenMP = .TRUE.
+    IF(.NOT.CPU)DoOpenACC = .TRUE.
+    IF(CPU)THEN
+       ARCSTRING = 'CPU'
+    ELSE
+       ARCSTRING = 'GPU'
+    ENDIF
+
   JMAX1=2
   JMAX2=2
   do JMAXP = 0,JMAX1+JMAX2
@@ -81,9 +98,9 @@ PROGRAM TUV
         IF(SphericalTrans.AND.(l12.LT.5.OR.(l12.EQ.5.AND.l1.EQ.3)) )THEN
 !           IF(l1.GE.l12/2)THEN
               IF(l12.LT.10)THEN
-                 WRITE(LUMOD3,'(A,I1,A,I1,A)')'subroutine SphericalContractOBS2_maxAngQ',l1+l2,'_maxAngC',l1,'(nlmP,nContPasses,IN,OUT)'
+                 WRITE(LUMOD3,'(A,I1,A,I1,A)')'subroutine SphericalContractOBS2_'//ARCSTRING//'_maxAngQ',l1+l2,'_maxAngC',l1,'(nlmP,nContPasses,IN,OUT)'
               ELSE
-                 WRITE(LUMOD3,'(A,I2,A,I1,A)')'subroutine SphericalContractOBS2_maxAngQ',l1+l2,'_maxAngC',l1,'(nlmP,nContPasses,IN,OUT)'
+                 WRITE(LUMOD3,'(A,I2,A,I1,A)')'subroutine SphericalContractOBS2_'//ARCSTRING//'_maxAngQ',l1+l2,'_maxAngC',l1,'(nlmP,nContPasses,IN,OUT)'
               ENDIF
               WRITE(LUMOD3,'(A)')'  implicit none'
               WRITE(LUMOD3,'(A)')'  integer,intent(in)        :: nlmP,nContPasses'
@@ -187,7 +204,9 @@ PROGRAM TUV
               !              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(in)    :: IN(',ijkcartP,',ijkQcart,nPasses)'
               !              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(',ijkP,',ijkQcart,nPasses)'
 
-              WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) PRIVATE(iPass,ijkP) SHARED(nlmP,nContPasses,IN,OUT)'
+!              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) PRIVATE(iPass,ijkP) SHARED(nlmP,nContPasses,IN,OUT)'
+              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP DO PRIVATE(iPass,ijkP)'
+              IF(DoOpenACC)WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iPass,ijkP) PRESENT(nlmP,nContPasses,IN,OUT)'
               WRITE(LUMOD3,'(A)')'  DO iPass=1,nContPasses'
               WRITE(LUMOD3,'(A)')'   DO ijkP=1,nlmP'
               do ilmP=1,ijk
@@ -228,17 +247,20 @@ PROGRAM TUV
               enddo
               WRITE(LUMOD3,'(A)')'   ENDDO'
               WRITE(LUMOD3,'(A)')'  ENDDO'
-              WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
+!              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
+              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP END DO'
               IF(l12.LT.10)THEN
-                 WRITE(LUMOD3,'(A,I1,A,I1,A)')'end subroutine SphericalContractOBS2_maxAngQ',l1+l2,'_maxAngC',l1,' '
+                 WRITE(LUMOD3,'(A,I1,A,I1,A)')'end subroutine SphericalContractOBS2_'//ARCSTRING//'_maxAngQ',l1+l2,'_maxAngC',l1,' '
               ELSE
-                 WRITE(LUMOD3,'(A,I2,A,I1,A)')'end subroutine SphericalContractOBS2_maxAngQ',l1+l2,'_maxAngC',l1,' '
+                 WRITE(LUMOD3,'(A,I2,A,I1,A)')'end subroutine SphericalContractOBS2_'//ARCSTRING//'_maxAngQ',l1+l2,'_maxAngC',l1,' '
               ENDIF
               WRITE(LUMOD3,'(A)')'  '
               WRITE(LUMOD3,'(A)')'  '
            !endif
         ENDIF !SphericalTrans
      enddo
+  enddo
+    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#endif'
   enddo
 
   WRITE(LUMOD3,'(A)')'END MODULE AGC_OBS_Sphcontract2Mod'

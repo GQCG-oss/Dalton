@@ -104,7 +104,7 @@ Character(80)             :: Filename
 Real(realk)               :: eeGradtmp(3,setting%molecule(1)%p%nAtoms)
 
 integer :: nbast,naux
-logical :: ReCalcGab,saveNOSEGMENT,OnMaster
+logical :: ReCalcGab,saveNOSEGMENT
 
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
@@ -118,8 +118,7 @@ DO idmat=1,ndlhs
   write(Filename,'(A8,I3)') 'LSCALPHA',idmat
   IF (.not.io_file_exist(Filename,SETTING%IO)) call lsquit('Error in II_get_df_J_gradient. CALPHA does not exsit!',-1)
   CALL mat_init(calpha(idmat),naux,1)
-  OnMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-  call io_read_mat(calpha(idmat),Filename,Setting%IO,OnMaster,lupri,luerr)
+  call io_read_mat(calpha(idmat),Filename,Setting%IO,lupri,luerr)
 ENDDO
 
 
@@ -1584,11 +1583,8 @@ logical :: inc_scheme,do_inc
 integer :: nmat,nrow,ncol
 integer :: i,j,natoms
 real(realk) :: tmp_sum
-logical :: OnMaster
 Real(realk),pointer   :: eigValphaBeta(:), copy_alpBeta(:,:)
 Real(realk)         :: minEigv,maxEigv,conditionNum
-
-OnMaster = .NOT.Setting%scheme%MATRICESINMEMORY
 
 IF (matrix_type .EQ. mtype_unres_dense)THEN
   IF (SETTING%SCHEME%FMM) call lsquit('Not allowed combination in II_get_regular_df_coulomb_mat. FMM and unrestricted',-1)
@@ -1657,7 +1653,7 @@ do Idmat=1,nmat
 !  Either calculate the (alpha|beta) matrix and its cholesky-factorization and write
 !  OR read cholesky-factorization from file
    IF (io_file_exist(Filename,SETTING%IO)) THEN
-      call io_read_mat(alphabeta,Filename,SETTING%IO,OnMaster,LUPRI,LUERR)
+      call io_read_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
    ELSE
       call mat_zero(alphabeta)
       call initIntegralOutputDims(setting%output,naux,1,naux,1,1)
@@ -1693,7 +1689,10 @@ do Idmat=1,nmat
       CALL mat_dpotrf(alphabeta)
 !     Save Cholesky-factors to file
       call io_add_filename(SETTING%IO,Filename,LUPRI)
-      call io_write_mat(alphabeta,Filename,SETTING%IO,OnMaster,LUPRI,LUERR)
+      call io_write_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
+
+!TODO in case of SCALAPACK save alphabeta in memory instead of file. TK
+!     add a SaveAB_DF logical and so on like CABS.      
    ENDIF
    call LSTIMER('ALBE  ',TSTART,TEND,LUPRI)
 
@@ -1717,12 +1716,12 @@ do Idmat=1,nmat
       ELSE
          IF(setting%scheme%incremental) THEN
             call mat_init(calpha_old,naux,1)
-            call io_read_mat(calpha_old,Filename,Setting%IO,OnMaster,lupri,luerr)
+            call io_read_mat(calpha_old,Filename,Setting%IO,lupri,luerr)
             call mat_daxpy(1E0_realk,calpha_old,calpha)
             call mat_free(calpha_old)
          ENDIF
       ENDIF
-      call io_write_mat(calpha,Filename,Setting%IO,OnMaster,lupri,luerr)
+      call io_write_mat(calpha,Filename,Setting%IO,lupri,luerr)
       ! **** End write
    ENDIF
    

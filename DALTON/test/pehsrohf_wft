@@ -111,8 +111,6 @@ cat > pehsrohf_wft.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *SCF INPUT
-.MAX ERR
-10
 .DOUBLY OCCUPIED
 6
 .SINGLY OCCUPIED
@@ -162,12 +160,12 @@ ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Induced dipole moments in environment
 #
- CRIT1=`$GREP "  1 * ( |0)\.12473... * ( |0)\.27132... * (\-|\-0)\.01765..." $log | wc -l`
- CRIT2=`$GREP "  2 * ( |0)\.20285... * ( |0)\.12868... * (\-|\-0)\.03160..." $log | wc -l`
- CRIT3=`$GREP "  3 * ( |0)\.03080... * ( |0)\.08745... * ( |0)\.06416..." $log | wc -l`
- CRIT4=`$GREP "  4 * ( |0)\.29873... * ( |0)\.02220... * (\-|\-0)\.02167..." $log | wc -l`
- CRIT5=`$GREP "  5 * ( |0)\.06133... * ( |0)\.16073... * (\-|\-0)\.01224..." $log | wc -l`
- CRIT6=`$GREP "  6 * ( |0)\.08835... * (\-|\-0)\.01079... * ( |0)\.03173..." $log | wc -l`
+ CRIT1=`$GREP "  1 * 0*\.12473... * 0*\.27132... * \-0*\.01765..." $log | wc -l`
+ CRIT2=`$GREP "  2 * 0*\.20285... * 0*\.12868... * \-0*\.03160..." $log | wc -l`
+ CRIT3=`$GREP "  3 * 0*\.03080... * 0*\.08745... * 0*\.06416..." $log | wc -l`
+ CRIT4=`$GREP "  4 * 0*\.29873... * 0*\.02220... * \-0*\.02167..." $log | wc -l`
+ CRIT5=`$GREP "  5 * 0*\.06133... * 0*\.16073... * \-0*\.01224..." $log | wc -l`
+ CRIT6=`$GREP "  6 * 0*\.08835... * \-0*\.01079... * 0*\.03173..." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[3]=6
 ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
@@ -177,7 +175,7 @@ ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 #
 CRIT1=`$GREP "x *  0*\.1460[34]" $log | wc -l`
 CRIT2=`$GREP "y * \-1\.61526" $log | wc -l`
-CRIT3=`$GREP "z *  0*\.04849" $log | wc -l`
+CRIT3=`$GREP "z *  0*\.048[45]." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[4]=3
 ERROR[4]="DIPOLE MOMENT NOT CORRECT"

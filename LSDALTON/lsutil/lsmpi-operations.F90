@@ -9,14 +9,15 @@ module lsmpi_op
   use basis_typetype, only: BASISSETINFO
   use basis_type, only: lsmpi_alloc_basissetinfo
   use lstiming, only: lstimer
-  use memory_handling, only: mem_alloc,mem_dealloc
+  use memory_handling, only: mem_alloc,mem_dealloc, mem_shortintsize,&
+       & mem_realsize, mem_intsize, mem_allocated_mem_lstensor
   use integralparameters
   use Matrix_Operations, only: mat_mpicopy, mtype_scalapack, matrix_type
   use matrix_operations_scalapack, only: pdm_matrixsync
   use molecule_typetype, only: MOLECULEINFO
   use LSTENSOR_OPERATIONSMOD, only: lstensor_NULLIFY, lstensor,&
-       & add_mem_to_global,slsaotensor_nullify,lsaotensor_nullify,&
-       & lsaotensor,slsaotensor, LSTENSOR_mem_est
+       & slsaotensor_nullify,lsaotensor_nullify,&
+       & lsaotensor,slsaotensor
   use LSTENSORmem, only: mem_LSTpointer_alloc, init_lstensorMem, &
        & retrieve_lstMemVal, free_lstensorMem, set_lstmemrealkbufferpointer
   use f12_module, only: GaussianGeminal
@@ -696,7 +697,7 @@ integer(kind=ls_mpik) :: master
 !
 logical    :: isAssociated
 INTEGER    :: I,J,K,L,offset,n1,n2,n3,n4
-integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
 integer :: AllocInt4,AllocRealk4,AllocIntS4
 real(realk) :: ts,te
 
@@ -763,6 +764,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call Mem_alloc(TENSOR%maxgab,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%maxgab,KIND=long)*mem_shortintsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%maxgab,TENSOR%nbatches(1),TENSOR%nbatches(2),Master)
 ELSE
@@ -774,6 +777,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%maxprimgab,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%maxprimgab,KIND=long)*mem_shortintsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%maxprimgab,TENSOR%nbatches(1),TENSOR%nbatches(2),Master)
 ELSE
@@ -785,6 +790,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%MBIE,TENSOR%nMBIE,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%MBIE,KIND=long)*mem_realsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%MBIE,TENSOR%nMBIE,TENSOR%nbatches(1),&
         & TENSOR%nbatches(2),Master)
@@ -806,6 +813,8 @@ IF(isAssociated)THEN
    call LS_MPI_BUFFER(n2,Master)
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%nAOBATCH,n1,n2)
+      nsize = size(TENSOR%nAOBATCH,KIND=long)*mem_intsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%nAOBATCH,n1,n2,Master)
 ELSE
@@ -835,6 +844,8 @@ IF(isAssociated)THEN
          IF(n2.NE.1)call lsquit('error in mpicopy_lstensor A.',-1)
          IF(n3.NE.1)call lsquit('error in mpicopy_lstensor B.',-1)
          call mem_alloc(TENSOR%INDEX,n1,n2,n3,n4)
+         nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+         call mem_allocated_mem_lstensor(nsize)
          DO L=1,n1
             DO I=1,n4
                TENSOR%INDEX(I,1,1,L) = I
@@ -859,6 +870,8 @@ IF(isAssociated)THEN
       call LS_MPI_BUFFER(n4,Master)
       IF(SLAVE)THEN
          call mem_alloc(TENSOR%INDEX,n1,n2,n3,n4)
+         nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+         call mem_allocated_mem_lstensor(nsize)
       ENDIF
       call LS_MPI_BUFFER(TENSOR%INDEX,n1,n2,n3,n4,Master)
    ENDIF
@@ -896,10 +909,6 @@ ENDIF
 !   Call Determine_slstensor_memory(tensor,nmemsize)
 !   call add_mem_to_global(nmemsize)
 !ENDIF
-IF(SLAVE)THEN
-   call LSTENSOR_mem_est(TENSOR,nmemsize)
-   call add_mem_to_global(nmemsize)
-ENDIF
 end SUBROUTINE mpicopy_lstensor
 
 subroutine mpicopy_slsaotensor(LSAO,Slave,Master)
@@ -1263,6 +1272,12 @@ call LS_MPI_BUFFER(dalton%ADMM_JKBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_DFBASIS,Master)
 call LS_MPI_BUFFER(dalton%ADMM_MCWEENY,Master)
 call LS_MPI_BUFFER(dalton%ADMM_2ERI,Master)
+call LS_MPI_BUFFER(dalton%ADMM_CONST_EL,Master)
+call LS_MPI_BUFFER(dalton%ADMM_FUNC,len(dalton%ADMM_FUNC),Master)
+call LS_MPI_BUFFER(dalton%ADMMQ_ScaleXC2,Master)
+call LS_MPI_BUFFER(dalton%ADMMQ_ScaleE,Master)
+call LS_MPI_BUFFER(dalton%PRINT_EK3,Master)
+
 call LS_MPI_BUFFER(dalton%SR_EXCHANGE,Master)
 
 !Coulomb attenuated method CAM parameters
@@ -1408,6 +1423,7 @@ call LS_MPI_BUFFER(scheme%ADMM_2ERI,Master)
 call LS_MPI_BUFFER(scheme%ADMM_CONST_EL,Master)
 call LS_MPI_BUFFER(scheme%ADMMQ_ScaleXC2,Master)
 call LS_MPI_BUFFER(scheme%ADMMQ_ScaleE,Master)
+call LS_MPI_BUFFER(scheme%PRINT_EK3,Master)
 
 call LS_MPI_BUFFER(scheme%CAM,Master)
 call LS_MPI_BUFFER(scheme%CAMalpha,Master)
@@ -1544,6 +1560,24 @@ call LS_MPI_BUFFER(MOLECULE%label,22,Master)
 call LS_MPI_BUFFER(MOLECULE%nelectrons,Master)
 call LS_MPI_BUFFER(MOLECULE%charge,Master)
 
+
+call LS_MPI_BUFFER(MOLECULE%nSubSystems,Master)
+IF(Molecule%nSubSystems.NE.0)THEN
+   IF(SLAVE)THEN
+      call mem_alloc(Molecule%SubSystemLabel,Molecule%nSubSystems)
+   ENDIF
+   IF(len(Molecule%SubSystemLabel(1)).NE.80)THEN
+      CALL LSQUIT('Dim mismatch in mpicopy_molecule',-1)
+   ENDIF
+   do I = 1,Molecule%nSubSystems       
+      call LS_MPI_BUFFER(Molecule%SubSystemLabel(I),80,Master)
+   enddo
+ELSE
+   IF(SLAVE)THEN
+      NULLIFY(Molecule%SubSystemLabel)
+   ENDIF
+ENDIF
+
 end subroutine mpicopy_molecule
 
 !> \brief MPI Copies(Broadcasts) an atom from MOLECULE
@@ -1571,6 +1605,7 @@ call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Frag,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%CENTER,3,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Atomic_number,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%molecularIndex,Master)
+call LS_MPI_BUFFER(MOLECULE%ATOM(I)%SubsystemIndex,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Charge,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nbasis,Master)
 do K = 1,MOLECULE%ATOM(I)%nbasis

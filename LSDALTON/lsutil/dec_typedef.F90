@@ -231,6 +231,11 @@ module dec_typedef_module
      !> Debug keyword to specify pure hydrogen atoms
      logical :: PUREHYDROGENdebug
 
+     !> Calculate the Interaction Energy (Ref to article)
+     logical :: InteractionEnergy
+     !> Print the Interaction Energy (Ref to article)
+     logical :: PrintInteractionEnergy
+
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split
@@ -356,6 +361,8 @@ module dec_typedef_module
      logical :: PairEstimate
      !> Carry out pair estimate, but anyway run all pairs.
      logical :: PairEstimateIgnore
+     !> initiation radius of the estimated fragments
+     real(realk) :: EstimateINITradius
      ! --
 
 
@@ -519,6 +526,10 @@ module dec_typedef_module
      integer, pointer :: atom_start(:) => null()
      !> Index of the last basis function for an atom
      integer, pointer :: atom_end(:) => null()
+     !> Number of CABS basis functions on atoms
+     integer, pointer :: atom_cabssize(:) => null()
+     !> Index of the first CABS basis function for an atom
+     integer, pointer :: atom_cabsstart(:) => null()
 
      !> Occupied MO coefficients (mu,i)
      real(realk), pointer :: Co(:,:) => null()
@@ -544,6 +555,8 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+     !> Which atoms are phantom atoms (only basis functions)
+     Logical, pointer :: PhantomAtom(:) => null()
      
 
      !> Occ-Occ Fock matrix in MO basis
@@ -562,6 +575,7 @@ module dec_typedef_module
      !> Cabs-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fcp(:,:) => null()
 
+     integer,pointer :: SubSystemIndex(:) => null()
 
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()
@@ -667,10 +681,14 @@ module dec_typedef_module
      integer :: natoms=0
      !> Number of basis functions
      integer :: nbasis=0
+     !> Number of CABS basis functions
+     integer :: ncabsAO=0
      !> Atomic indices
      integer, pointer :: atoms_idx(:) => null()
      !> Corresponding basis function indices
      integer,pointer :: basis_idx(:) => null()
+     !> Corresponding CABS basis function indices
+     integer,pointer :: cabsbasis_idx(:) => null()
 
      !> Has the information inside the expensive box below been initialized or not?
      logical :: BasisInfoIsSet
@@ -1092,7 +1110,7 @@ module dec_typedef_module
     !> Total dimension of the batch
     integer, pointer :: dimTot(:)
     !> Tile index for pdm arrays
-    integer, pointer :: tileInd(:)
+    integer, pointer :: tileInd(:,:)
 
   end type MObatchInfo
 

@@ -30,6 +30,9 @@ MODULE memory_handling
 #endif
    private
    public Set_PrintSCFmemory
+   public Set_MemModParamPrintMemory, Print_Memory_info
+   public MemModParamPrintMemorylupri,MemModParamPrintMemory
+   public Set_PrintMemoryLowerLimit
    public get_available_memory
    public init_globalmemvar
    public init_threadmemvar
@@ -77,9 +80,13 @@ MODULE memory_handling
    public mem_allocated_lattice_cell
    public mem_allocated_mem_lattice_cell
    public mem_deallocated_mem_lattice_cell
+   public mem_add_external_memory
 #endif
    public longintbuffersize
    logical,save :: PrintSCFmemory
+   logical,save :: MemModParamPrintMemory
+   integer,save :: MemModParamPrintMemorylupri
+   integer,save :: PrintMemoryLowerLimit
    integer,save :: longintbuffersize
 !Monitor memory for integral code and possibly other parts!
 !GLOBAL VARIABLES
@@ -164,28 +171,6 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_tp_allocated_ATOMTYPEITEM, max_mem_tp_used_ATOMTYPEITEM       !Count 'ATOMTYPEITEM' memory, integral code
    integer(KIND=long),save :: mem_tp_allocated_ATOMITEM, max_mem_tp_used_ATOMITEM       !Count 'ATOMITEM' memory, integral code
    integer(KIND=long),save :: mem_tp_allocated_LSMATRIX, max_mem_tp_used_LSMATRIX       !Count 'LSMATRIX' memory, integral code
-! used for checkpoint
-   integer(KIND=long),save :: mem_check_allocated_global,mem_check_allocated_type_matrix
-   integer(KIND=long),save :: mem_check_allocated_type_matrix_MPIFULL
-   integer(KIND=long),save :: mem_check_allocated_real,mem_check_allocated_integer
-   integer(KIND=long),save :: mem_check_allocated_mpi
-   integer(KIND=long),save :: mem_check_allocated_complex
-   integer(KIND=long),save :: mem_check_allocated_character,mem_check_allocated_logical
-   integer(KIND=long),save :: mem_check_allocated_AOBATCH,mem_check_allocated_ODBATCH
-   integer(KIND=long),save :: mem_check_allocated_DECORBITAL
-   integer(KIND=long),save :: mem_check_allocated_DECFRAG
-   integer(KIND=long),save :: mem_check_allocated_BATCHTOORB
-   integer(KIND=long),save :: mem_check_allocated_DecAObatchinfo
-   integer(KIND=long),save :: mem_check_allocated_MYPOINTER
-   integer(KIND=long),save :: mem_check_allocated_ARRAY2
-   integer(KIND=long),save :: mem_check_allocated_ARRAY4
-   integer(KIND=long),save :: mem_check_allocated_ARRAY
-   integer(KIND=long),save :: mem_check_allocated_MP2DENS
-   integer(KIND=long),save :: mem_check_allocated_TRACEBACK
-   integer(KIND=long),save :: mem_check_allocated_MP2GRAD
-   integer(KIND=long),save :: mem_check_allocated_LSAOTENSOR,mem_check_allocated_SLSAOTENSOR
-   integer(KIND=long),save :: mem_check_allocated_GLOBALLSAOTENSOR,mem_check_allocated_ATOMTYPEITEM
-   integer(KIND=long),save :: mem_check_allocated_ATOMITEM,mem_check_allocated_LSMATRIX
 !Memory distributed on types:
    integer(KIND=long),save :: mem_tp_allocated_linkshell, max_mem_tp_used_linkshell         !Count memory, type linkshell
    integer(KIND=long),save :: mem_tp_allocated_integralitem, max_mem_tp_used_integralitem   !Count memory, type integralitem
@@ -309,30 +294,11 @@ MODULE memory_handling
 !$OMP mem_tp_allocated_overlapT, max_mem_tp_used_overlapT,&  
 !$OMP mem_tp_allocated_ODitem, max_mem_tp_used_ODitem,&
 !$OMP mem_tp_allocated_FMM, max_mem_tp_used_FMM,&
-!$OMP mem_tp_allocated_lstensor, max_mem_tp_used_lstensor,&
-!$OMP mem_check_allocated_global,mem_check_allocated_type_matrix,&
-!$OMP mem_check_allocated_type_matrix_MPIFULL,&
-!$OMP mem_check_allocated_real,mem_check_allocated_integer,&
-!$OMP mem_check_allocated_complex,&
-!$OMP mem_check_allocated_character,mem_check_allocated_logical,&
-!$OMP mem_check_allocated_AOBATCH,mem_check_allocated_ODBATCH,&
-!$OMP mem_check_allocated_DECORBITAL,mem_check_allocated_DECFRAG,&
-!$OMP mem_check_allocated_BATCHTOORB,&
-!$OMP mem_check_allocated_DECAOBATCHINFO,&
-!$OMP mem_check_allocated_MYPOINTER,&
-!$OMP mem_check_allocated_ARRAY,&
-!$OMP mem_check_allocated_ARRAY2,&
-!$OMP mem_check_allocated_ARRAY4,&
-!$OMP mem_check_allocated_MP2DENS,&
-!$OMP mem_check_allocated_TRACEBACK,&
-!$OMP mem_check_allocated_MP2GRAD,&
-!$OMP mem_check_allocated_LSAOTENSOR,mem_check_allocated_SLSAOTENSOR,&
-!$OMP mem_check_allocated_GLOBALLSAOTENSOR,mem_check_allocated_ATOMTYPEITEM,&
 #ifdef MOD_UNRELEASED
 !$OMP mem_tp_allocated_lvec_data, max_mem_tp_used_lvec_data,&
 !$OMP mem_tp_allocated_lattice_cell, max_mem_tp_used_lattice_cell,&
 #endif
-!$OMP mem_check_allocated_ATOMITEM,mem_check_allocated_LSMATRIX)
+!$OMP mem_tp_allocated_lstensor, max_mem_tp_used_lstensor)
 
 !Interfaces for allocating/deallocating pointers
 INTERFACE mem_alloc
@@ -415,6 +381,26 @@ implicit none
 logical,intent(in) :: inputPrintSCFmemory
 PrintSCFmemory = inputPrintSCFmemory
 end subroutine Set_PrintSCFmemory
+
+subroutine Set_MemModParamPrintMemory(inputMemModParamPrintMemory,lupri)
+implicit none
+logical,intent(in) :: inputMemModParamPrintMemory
+integer,intent(in) :: lupri
+MemModParamPrintMemory = inputMemModParamPrintMemory
+IF(MemModParamPrintMemory)THEN
+   call Set_PrintSCFmemory(inputMemModParamPrintMemory)
+ENDIF
+MemModParamPrintMemorylupri = lupri
+PrintMemoryLowerLimit = 0
+end subroutine Set_MemModParamPrintMemory
+
+Subroutine Set_PrintMemoryLowerLimit(inputPrintMemoryLowerLimit)
+implicit none
+integer,intent(in) :: inputPrintMemoryLowerLimit
+IF(MemModParamPrintMemory)THEN
+   PrintMemoryLowerLimit = inputPrintMemoryLowerLimit
+ENDIF
+End Subroutine Set_PrintMemoryLowerLimit
 
 subroutine set_sizes_of_types()
 implicit none
@@ -539,6 +525,18 @@ subroutine mem_TurnOffThread_Memory()
 implicit none
 mem_InsideOMPsection = .FALSE.
 
+IF(MemModParamPrintMemory)THEN
+ IF(max_mem_used_global_tmp.GT.max_mem_used_global)THEN              
+  IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+   WRITE(MemModParamPrintMemorylupri,'(A)')&
+        & 'Increased Maximum Memory Usage in mem_TurnOffThread_Memory'
+   call print_mem_alloc(MemModParamPrintMemorylupri,max_mem_used_global_tmp,'TOTAL')
+   WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_TurnOffThread_Memory'
+   call print_mem_alloc(6,max_mem_used_global_tmp,'TOTAL')
+   call LsTraceBack('Increased Maximum Memory Usage in mem_TurnOffThread_Memory')
+  ENDIF
+ ENDIF
+ENDIF
 max_mem_used_global = MAX(max_mem_used_global,max_mem_used_global_tmp)
 max_mem_used_type_matrix = MAX(max_mem_used_type_matrix,max_mem_used_type_matrix_tmp)
 max_mem_used_type_matrix_MPIFULL = MAX(max_mem_used_type_matrix_MPIFULL,max_mem_used_type_matrix_MPIFULL_tmp)
@@ -633,6 +631,9 @@ end subroutine mem_TurnONThread_Memory
 
 subroutine init_globalmemvar()
 implicit none
+MemModParamPrintMemory = .FALSE.
+MemModParamPrintMemorylupri = 6
+PrintMemoryLowerLimit = 0
 call Set_PrintSCFmemory(.FALSE.)
 call set_sizes_of_types()
 mem_InsideOMPsection = .FALSE.
@@ -812,6 +813,18 @@ subroutine collect_thread_memory()
   implicit none
 !$OMP CRITICAL
     mem_allocated_global = mem_allocated_global+mem_tp_allocated_global
+    IF(MemModParamPrintMemory)THEN
+     IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+      IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+       WRITE(MemModParamPrintMemorylupri,'(A)')&
+            & 'Increased Maximum Memory Usage in collect_thread_memory'
+       call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+       WRITE(*,'(A)')'Increased Maximum Memory Usage in collect_thread_memory'
+       call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+       call LsTraceBack('Increased Maximum Memory Usage in collect_thread_memory')
+      ENDIF
+     ENDIF
+    ENDIF
     max_mem_used_global_tmp = max_mem_used_global_tmp+max_mem_tp_used_global
     mem_allocated_type_matrix = mem_allocated_type_matrix+mem_tp_allocated_type_matrix
     max_mem_used_type_matrix_tmp = max_mem_used_type_matrix_tmp+max_mem_tp_used_type_matrix
@@ -1337,6 +1350,77 @@ end subroutine collect_thread_memory
 !$OMP END CRITICAL
   end subroutine stats_mem_tp
 
+  subroutine Print_Memory_info(lupri,String)
+    implicit none
+    integer       :: lupri    
+    Character*(*) ::  STRING
+    character(len=4) :: Unit
+    real(realk) :: Mem_with_correct_unit
+    IF(MemModParamPrintMemory)THEN
+       IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+          call GetMemwithUnit(Unit,max_mem_used_global,Mem_with_correct_unit)
+          WRITE(lupri,'(A)')' '
+          WRITE(lupri,'(3A,F6.2,1X,A)')'The maximum memory used ',TRIM(STRING),':     ',Mem_with_correct_unit,Unit
+          WRITE(*,'(3A,F6.2,1X,A)')'The maximum memory used ',TRIM(STRING),':     ',Mem_with_correct_unit,Unit
+          call GetMemwithUnit(Unit,mem_allocated_global,Mem_with_correct_unit)
+          WRITE(lupri,'(3A,F6.2,1X,A)')'The current allocated memory ',TRIM(STRING),': ',Mem_with_correct_unit,Unit
+          WRITE(*,'(3A,F6.2,1X,A)')'The current allocated memory ',TRIM(STRING),': ',Mem_with_correct_unit,Unit
+          WRITE(*,'(A)')'-----------------------------------------------------------------------------------'
+          if (mem_allocated_type_matrix > 0_long) call print_mem_alloc(lupri,mem_allocated_type_matrix,'type(matrix)')
+          if (mem_allocated_real > 0_long) call print_mem_alloc(lupri,mem_allocated_real,'real')
+          if (mem_allocated_mpi > 0_long) call print_mem_alloc(lupri,mem_allocated_mpi,'MPI')
+          if (mem_allocated_complex > 0_long) call print_mem_alloc(lupri,mem_allocated_complex,'complex')
+          if (mem_allocated_integer > 0_long) call print_mem_alloc(lupri,mem_allocated_integer,'integer')
+          if (mem_allocated_logical > 0_long) call print_mem_alloc(lupri,mem_allocated_logical,'logical')
+          if (mem_allocated_character > 0_long) call print_mem_alloc(lupri,mem_allocated_character,'character')
+          if (mem_allocated_AOBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_AOBATCH,'AOBATCH')
+          if (mem_allocated_DECORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_DECORBITAL,'DECORBITAL')
+          if (mem_allocated_DECFRAG > 0_long) call print_mem_alloc(lupri,mem_allocated_DECFRAG,'DECFRAG')
+          if (mem_allocated_BATCHTOORB > 0_long) call print_mem_alloc(lupri,mem_allocated_BATCHTOORB,'BATCHTOORB')
+          if (mem_allocated_DECAOBATCHINFO > 0_long) call print_mem_alloc(lupri,mem_allocated_DECAOBATCHINFO,'DECAOBATCHINFO')
+          if (mem_allocated_MYPOINTER > 0_long) call print_mem_alloc(lupri,mem_allocated_MYPOINTER,'MYPOINTER')
+          if (mem_allocated_ARRAY2 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY2,'ARRAY2')
+          if (mem_allocated_ARRAY4 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY4,'ARRAY4')
+          if (mem_allocated_ARRAY > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY,'ARRAY')
+          if (mem_allocated_MP2DENS > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2DENS,'MP2DENS')
+          if (mem_allocated_TRACEBACK > 0_long) call print_mem_alloc(lupri,mem_allocated_TRACEBACK,'TRACEBACK')
+          if (mem_allocated_MP2GRAD > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2GRAD,'MP2GRAD')
+          if (mem_allocated_ODBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_ODBATCH,'ODBATCH')
+          if (mem_allocated_LSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_LSAOTENSOR,'LSAOTENSOR')
+          if (mem_allocated_SLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_SLSAOTENSOR,'SLSAOTENSOR')
+          if (mem_allocated_GLOBALLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
+          if (mem_allocated_ATOMTYPEITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMTYPEITEM,'ATOMTYPEITEM')
+          if (mem_allocated_ATOMITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMITEM,'ATOMITEM')
+          if (mem_allocated_LSMATRIX > 0_long) call print_mem_alloc(lupri,mem_allocated_LSMATRIX,'LSMATRIX')
+          if (mem_allocated_overlapT > 0_long) call print_mem_alloc(lupri,mem_allocated_overlapT,'overlapType')
+          if (mem_allocated_FMM > 0_long) call print_mem_alloc(lupri,mem_allocated_FMM,'FMM   ')
+          WRITE(lupri,'(A)')' '
+          call LsTraceBack(STRING)
+       ENDIF
+    ENDIF
+  end subroutine Print_Memory_info
+
+  subroutine GetMemWithUnit(Unit,Mem,Mem_with_correct_unit)
+    implicit none
+    character(len=4) :: Unit    
+    integer(KIND=long) :: Mem
+    real(realk) :: Mem_with_correct_unit
+
+    if (mem < 100) then !Divide by 1 to typecast real
+       Unit = 'Byte' 
+       Mem_with_correct_unit = mem/1.0E0_realk
+    else if (mem < 1000000) then
+       Unit = 'kB  ' 
+       Mem_with_correct_unit = mem/1000.0E0_realk
+    else if (mem < 1000000000) then
+       Unit = 'MB  ' 
+       Mem_with_correct_unit = mem/(1000.0E0_realk*1000.0E0_realk)
+    else
+       Unit = 'GB  ' 
+       Mem_with_correct_unit = mem/(1000.0E0_realk*1000.0E0_realk*1000.0E0_realk)
+    endif
+  end subroutine GetMemWithUnit
+
    !> \brief For given SCF it, print amount of memory allocated for different data types.
    !> \author S. Host
    !> \date 2009
@@ -1423,6 +1507,7 @@ end subroutine collect_thread_memory
        if (mem_allocated_ATOMITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMITEM,'ATOMITEM')
        if (mem_allocated_LSMATRIX > 0_long) call print_mem_alloc(lupri,mem_allocated_LSMATRIX,'LSMATRIX')
        if (mem_allocated_overlapT > 0_long) call print_mem_alloc(lupri,mem_allocated_overlapT,'overlapType')
+       if (mem_allocated_FMM > 0_long) call print_mem_alloc(lupri,mem_allocated_FMM,'FMM   ')
        
        
        if (mem_allocated_linkshell > 0_long) call print_mem_alloc(lupri,mem_allocated_linkshell,'linkshell')
@@ -1432,7 +1517,6 @@ end subroutine collect_thread_memory
        if (mem_allocated_overlap > 0_long) call print_mem_alloc(lupri,mem_allocated_overlap,'overlap')
        if (mem_allocated_ODitem > 0_long) call print_mem_alloc(lupri,mem_allocated_ODitem,'ODitem')
        if (mem_allocated_lstensor > 0_long) call print_mem_alloc(lupri,mem_allocated_lstensor,'lstensor')
-       if (mem_allocated_FMM > 0_long) call print_mem_alloc(lupri,mem_allocated_FMM,'FMM   ')
 #ifdef MOD_UNRELEASED
        if (mem_allocated_lvec_data > 0_long) call print_mem_alloc(lupri,mem_allocated_lvec_data,'lvec_data')
        if (mem_allocated_lattice_cell > 0_long) call print_mem_alloc(lupri,mem_allocated_lattice_cell,'lattice_cell')
@@ -4814,6 +4898,23 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
 
 !----- MEMORY HANDLING -----!
 
+  !subroutine that adds the memory used in external libraries. 
+  subroutine mem_add_external_memory(nsize)
+     implicit none
+     integer (kind=long), intent(in) :: nsize
+     max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global+nsize)
+     if (mem_allocated_global  + nsize < 0) then
+        write(*,*) 'Allocated Memory                               =', mem_allocated_global
+        write(*,*) 'Added Memory                                   =', nsize
+        write(*,*) 'Total memory negative! mem_add_external_memory =', mem_allocated_global + nsize
+        IF(mem_allocated_global.GT.0.AND.nsize.GT.0)THEN
+           call memory_error_quit('Error in mem_add_external_memory - probably integer overflow!',nsize)
+        else
+           call memory_error_quit('Error in mem_add_external_memory!',nsize)
+        endif
+     endif
+  end subroutine mem_add_external_memory
+
   subroutine mem_allocated_mem_real(nsize)
      implicit none
      integer (kind=long), intent(in) :: nsize
@@ -4846,6 +4947,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
            call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
         endif
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_real'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_real'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_real')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      endif
   end subroutine mem_allocated_mem_real
@@ -4914,6 +5027,19 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
            call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!',nsize)
         endif
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_mpi'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_mpi'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_mpi')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      endif
   end subroutine mem_allocated_mem_mpi
@@ -4983,6 +5109,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
            call memory_error_quit('Error in mem_allocated_mem_Complex - probably integer overflow!',nsize)
         endif
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_complex'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_complex'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_complex')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      endif
   end subroutine mem_allocated_mem_complex
@@ -5034,6 +5172,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_integer = MAX(max_mem_used_integer,mem_allocated_integer)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_integer'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_integer'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_integer')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_integer
@@ -5087,6 +5237,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_character = MAX(max_mem_used_character,mem_allocated_character)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_character'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_character'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_character')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
   end subroutine mem_allocated_mem_character
@@ -5131,6 +5293,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_logical = MAX(max_mem_used_logical,mem_allocated_logical)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_logical'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_logical'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_logical')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_logical
@@ -5175,6 +5349,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_AOBATCH = MAX(max_mem_used_AOBATCH,mem_allocated_AOBATCH)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_AOBATCH'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_AOBATCH'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_AOBATCH')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_AOBATCH
@@ -5219,6 +5405,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_OVERLAPT = MAX(max_mem_used_OVERLAPT,mem_allocated_OVERLAPT)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_OVERLAPT'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_OVERLAPT'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_OVERLAPT')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_OVERLAPT
@@ -5263,6 +5461,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_DECORBITAL = MAX(max_mem_used_DECORBITAL,mem_allocated_DECORBITAL)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_DECORBITAL'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_DECORBITAL'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_DECORBITAL')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_DECORBITAL
@@ -5311,6 +5521,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_DECFRAG = MAX(max_mem_used_DECFRAG,mem_allocated_DECFRAG)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_DECFRAG'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_DECFRAG'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_DECFRAG')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_DECFRAG
@@ -5356,6 +5578,19 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_BATCHTOORB = MAX(max_mem_used_BATCHTOORB,mem_allocated_BATCHTOORB)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_BATCHTOORB'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_BATCHTOORB'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_BATCHTOORB')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_BATCHTOORB
@@ -5400,6 +5635,19 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_DECAOBATCHINFO = MAX(max_mem_used_DECAOBATCHINFO,mem_allocated_DECAOBATCHINFO)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_DECAOBATCHINFO'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_DECAOBATCHINFO'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_DECAOBATCHINFO')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_DECAOBATCHINFO
@@ -5445,6 +5693,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_MYPOINTER = MAX(max_mem_used_MYPOINTER,mem_allocated_MYPOINTER)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_MYPOINTER'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_MYPOINTER'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_MYPOINTER')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_MYPOINTER
@@ -5490,6 +5750,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_ARRAY2 = MAX(max_mem_used_ARRAY2,mem_allocated_ARRAY2)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_ARRAY2'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_ARRAY2'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_ARRAY2')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_ARRAY2
@@ -5535,6 +5807,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_ARRAY4 = MAX(max_mem_used_ARRAY4,mem_allocated_ARRAY4)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_ARRAY4'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_ARRAY4'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_ARRAY4')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_ARRAY4
@@ -5579,6 +5863,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_ARRAY = MAX(max_mem_used_ARRAY,mem_allocated_ARRAY)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_ARRAY'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_ARRAY'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_ARRAY')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_ARRAY
@@ -5623,6 +5919,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_MP2DENS = MAX(max_mem_used_MP2DENS,mem_allocated_MP2DENS)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_MP2DENS'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_MP2DENS'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_MP2DENS')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_MP2DENS
@@ -5669,6 +5977,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_TRACEBACK = MAX(max_mem_used_TRACEBACK,mem_allocated_TRACEBACK)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_TRACEBACK'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_TRACEBACK'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_TRACEBACK')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_TRACEBACK
@@ -5714,6 +6034,19 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_MP2GRAD = MAX(max_mem_used_MP2GRAD,mem_allocated_MP2GRAD)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_MP2GRAD'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_MP2GRAD'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_MP2GRAD')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_MP2GRAD
@@ -5760,6 +6093,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_ODBATCH = MAX(max_mem_used_ODBATCH,mem_allocated_ODBATCH)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_ODBATCH'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_ODBATCH'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_ODBATCH')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_ODBATCH
@@ -5804,6 +6149,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_LSAOTENSOR = MAX(max_mem_used_LSAOTENSOR,mem_allocated_LSAOTENSOR)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_LSAOTENSOR'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_LSAOTENSOR'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_LSAOTENSOR')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_LSAOTENSOR
@@ -5848,6 +6205,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_SLSAOTENSOR = MAX(max_mem_used_SLSAOTENSOR,mem_allocated_SLSAOTENSOR)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_SLSAOTENSOR'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_SLSAOTENSOR'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_SLSAOTENSOR')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_SLSAOTENSOR
@@ -5892,6 +6261,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_GLOBALLSAOTENSOR = MAX(max_mem_used_GLOBALLSAOTENSOR,mem_allocated_GLOBALLSAOTENSOR)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_GLOBALLSAOTENSOR'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_GLOBALLSAOTENSOR'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_GLOBALLSAOTENSOR')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_GLOBALLSAOTENSOR
@@ -5936,6 +6317,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_ATOMTYPEITEM = MAX(max_mem_used_ATOMTYPEITEM,mem_allocated_ATOMTYPEITEM)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_ATOMTYPEITEM'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_ATOMTYPEITEM'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_ATOMTYPEITEM')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_ATOMTYPEITEM
@@ -5980,6 +6373,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_ATOMITEM = MAX(max_mem_used_ATOMITEM,mem_allocated_ATOMITEM)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_ATOMITEM'
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_ATOMITEM'
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_ATOMITEM')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_ATOMITEM
@@ -6024,6 +6429,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         max_mem_used_LSMATRIX = MAX(max_mem_used_LSMATRIX,mem_allocated_LSMATRIX)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_LSMATRIX '
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_LSMATRIX '
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_LSMATRIX')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_LSMATRIX
@@ -6268,6 +6685,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
               write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
               call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
            endif
+           IF(MemModParamPrintMemory)THEN
+              IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+                 IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                    WRITE(MemModParamPrintMemorylupri,'(A)')&
+                         & 'Increased Maximum Memory Usage in mem_allocated_mem_FMM '
+                    call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                    WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_FMM '
+                    call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                    call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_FMM')
+                 ENDIF
+              ENDIF
+           ENDIF
            max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
         ENDIF
      ENDIF
@@ -6321,14 +6750,19 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
      ELSE
 !        CALL print_maxmem(6,nsize,'add LStensor')
         mem_allocated_lstensor = mem_allocated_lstensor + nsize
+        IF(MemModParamPrintMemory)THEN
+!           IF(mem_allocated_lstensor.GT.max_mem_used_lstensor)THEN              
+!              IF(max_mem_used_lstensor.GT.PrintMemoryLowerLimit)THEN
+!                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+!                      & 'Increased LStensor Memory Usage'
+!                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_lstensor,'LSTENSOR')
+!                 WRITE(*,'(A)')'Increased LStensor Memory Usage'
+!                 call print_mem_alloc(6,mem_allocated_lstensor,'TOTAL')
+!                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_LSTENSOR')
+!              ENDIF
+!           ENDIF
+        ENDIF
         max_mem_used_lstensor = MAX(max_mem_used_lstensor,mem_allocated_lstensor)
-        !Count also the total memory:
-        mem_allocated_global = mem_allocated_global  + nsize
-        if (mem_allocated_global < 0) then
-           write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
-        endif
-        max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_lstensor
 
@@ -6340,20 +6774,10 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
         if (mem_tp_allocated_lstensor < 0) then
            call memory_error_quit('Error in mem_tp_deallocated_mem_tp_lstensor - probably integer overflow!',nsize)
         endif
-        !Count also the total memory:
-        mem_tp_allocated_global = mem_tp_allocated_global - nsize
-        if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
-        endif
      ELSE
         mem_allocated_lstensor = mem_allocated_lstensor - nsize
         if (mem_allocated_lstensor < 0) then
            call memory_error_quit('Error in mem_deallocated_mem_lstensor - probably integer overflow!',nsize)
-        endif
-        !Count also the total memory:
-        mem_allocated_global = mem_allocated_global - nsize
-        if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_lstensor
@@ -6382,6 +6806,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
            call memory_error_quit('Error in mem_allocated_mem_type_matrix - probably integer overflow!',nsize)
         endif
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_MATRIX '
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_MATRIX '
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_MATRIX')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
      IF(present(nsizeFULL))THEN
@@ -6459,6 +6895,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
            call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
         endif
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_lvec_data '
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_lvec_data '
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_lvec_data')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_lvec_data
@@ -6512,6 +6960,18 @@ END SUBROUTINE Lattice_cell_deallocate_1dim
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
            call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
         endif
+        IF(MemModParamPrintMemory)THEN
+           IF(mem_allocated_global.GT.max_mem_used_global)THEN              
+              IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
+                 WRITE(MemModParamPrintMemorylupri,'(A)')&
+                      & 'Increased Maximum Memory Usage in mem_allocated_mem_lattice_cell '
+                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_global,'TOTAL')
+                 WRITE(*,'(A)')'Increased Maximum Memory Usage in mem_allocated_mem_lattice_cell '
+                 call print_mem_alloc(6,mem_allocated_global,'TOTAL')
+                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_lattice_cell')
+              ENDIF
+           ENDIF
+        ENDIF
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
    end subroutine mem_allocated_mem_lattice_cell

@@ -29,9 +29,9 @@ public :: arh_symmetric, arh_antisymmetric, SolverItem, arh_set_default_config,&
      & arh_test_convergence, fifo_inverse_metric,&
      & arh_get_weights, arh_get_M, fifo_inv_metric_times_vector,&
      & arh_precond, arh_PCG, arh_lintrans, arh_xdep_matrices,&
-     & debug_get_hessian, arh_crop_x_and_res,  arh_crop_intermed_sub,&
+     & arh_crop_x_and_res,  arh_crop_intermed_sub,&
      & arh_crop_setup_redsp, arh_crop_optimal_x, arh_crop_extra_dim,&
-     & arh_get_TR_denom!, epred
+     & arh_get_TR_denom!, epred, debug_get_hessian
 !> Used to pass info about symmetry of trial vectors/matrices
 integer, parameter :: arh_symmetric = 1
 !> Used to pass info about symmetry of trial vectors/matrices
@@ -1253,73 +1253,73 @@ contains
    end subroutine arh_xdep_matrices
 
 !###### Debug section ###############################
-
-   !> \brief Set up ARH or exact Hessian by linear transformation
-   !> \author S. Host
-   !> \date 2005
-   subroutine debug_get_hessian(arh,decomp,fifoqueue,hes)
-   implicit none
-           !> Contains solver info (ARH/TrFD)
-           type(SolverItem),intent(inout)    :: arh
-           !> Contains decomposed overlap matrix (Löwdin, Cholesky or other)
-           type(decompItem),intent(in)       :: decomp
-           !> Contains Fock/KS and density matrices from previous SCF iterations
-           TYPE(modFIFO),intent(inout)          :: fifoqueue
-           !> Hessian. Dimension should be nbas*(nbas+1)/2 - nbas (output)
-           TYPE(matrix),intent(inout)        :: hes 
-           integer                 :: m, l, vecdim, matdim
-           TYPE(matrix)            :: x_trial, x_trial_mat, column, scr
-
-      matdim = fifoqueue%D_exp%nrow
-      vecdim = matdim*(matdim+1)/2 - matdim
-
-      call MAT_INIT(scr,matdim,matdim)
-      call MAT_INIT(x_trial,vecdim,1)
-      call MAT_INIT(x_trial_mat,matdim,matdim)
-      call MAT_INIT(column,vecdim,1)
-
-      if (arh%debug_hessian_exact) then
-         arh%set_do_2nd_order = .true.
-         arh%set_arhterms     = .false.
-      endif
-
-      do m = 1, vecdim
-         call MAT_ZERO(x_trial)
-         call MAT_ZERO(x_trial_mat)
-         call mat_create_elm(m, 1, 1.0E0_realk, x_trial)
-         call mat_VEC_TO_MAT('a', x_trial, scr)
-      !write (LUPRI,*) "xmat:"
-      !call MAT_PRINT(scr, 1, scr%nrow, 1, scr%ncol, LUPRI)
-         call project_oao_basis(decomp, scr, arh_antisymmetric, x_trial_mat)  
-      !write (LUPRI,*) "xmat projected:"
-      !call MAT_PRINT(x_trial_mat, 1, x_trial_mat%nrow, 1, x_trial_mat%ncol, LUPRI)
-         call project_oao_basis(decomp, x_trial_mat, arh_antisymmetric, scr)
-      !write (LUPRI,*) "xmat projected again:"
-      !call MAT_PRINT(scr, 1, x_trial_mat%nrow, 1, x_trial_mat%ncol, LUPRI)
-         !column = m'th column of hessian:
-      !write(lupri,*) 'antisymmetric:', antisymmetric
-         call arh_lintrans(arh,decomp,x_trial_mat,arh_antisymmetric,0.0E0_realk,scr,fifoqueue)
-         call MAT_TO_VEC('a', scr, column)
-         do l = 1, vecdim !Put elements of column in m'th column of hessian
-            call mat_create_elm(l,m,column%elms(l),hes)
-         enddo         
-      enddo
-
-      call mat_scal(4.0E0_realk, hes)
-
-      if (arh%debug_hessian_exact) then
-         arh%set_do_2nd_order = arh%cfg_do_2nd_order
-         arh%set_arhterms     = arh%cfg_arhterms
-      endif
-
-      !write (LUPRI,*) "Hessian:"
-      !call MAT_PRINT(hes, 1, hes%nrow, 1, hes%ncol, LUPRI)
-
-      call MAT_FREE(x_trial)
-      call MAT_FREE(x_trial_mat)
-      call MAT_FREE(column)
-      call MAT_FREE(scr)
-   end subroutine debug_get_hessian
+!!$
+!!$   !> \brief Set up ARH or exact Hessian by linear transformation
+!!$   !> \author S. Host
+!!$   !> \date 2005
+!!$   subroutine debug_get_hessian(arh,decomp,fifoqueue,hes)
+!!$   implicit none
+!!$           !> Contains solver info (ARH/TrFD)
+!!$           type(SolverItem),intent(inout)    :: arh
+!!$           !> Contains decomposed overlap matrix (Löwdin, Cholesky or other)
+!!$           type(decompItem),intent(in)       :: decomp
+!!$           !> Contains Fock/KS and density matrices from previous SCF iterations
+!!$           TYPE(modFIFO),intent(inout)          :: fifoqueue
+!!$           !> Hessian. Dimension should be nbas*(nbas+1)/2 - nbas (output)
+!!$           TYPE(matrix),intent(inout)        :: hes 
+!!$           integer                 :: m, l, vecdim, matdim
+!!$           TYPE(matrix)            :: x_trial, x_trial_mat, column, scr
+!!$
+!!$      matdim = fifoqueue%D_exp%nrow
+!!$      vecdim = matdim*(matdim+1)/2 - matdim
+!!$
+!!$      call MAT_INIT(scr,matdim,matdim)
+!!$      call MAT_INIT(x_trial,vecdim,1)
+!!$      call MAT_INIT(x_trial_mat,matdim,matdim)
+!!$      call MAT_INIT(column,vecdim,1)
+!!$
+!!$      if (arh%debug_hessian_exact) then
+!!$         arh%set_do_2nd_order = .true.
+!!$         arh%set_arhterms     = .false.
+!!$      endif
+!!$
+!!$      do m = 1, vecdim
+!!$         call MAT_ZERO(x_trial)
+!!$         call MAT_ZERO(x_trial_mat)
+!!$         call mat_create_elm(m, 1, 1.0E0_realk, x_trial)
+!!$         call mat_VEC_TO_MAT('a', x_trial, scr)
+!!$      !write (LUPRI,*) "xmat:"
+!!$      !call MAT_PRINT(scr, 1, scr%nrow, 1, scr%ncol, LUPRI)
+!!$         call project_oao_basis(decomp, scr, arh_antisymmetric, x_trial_mat)  
+!!$      !write (LUPRI,*) "xmat projected:"
+!!$      !call MAT_PRINT(x_trial_mat, 1, x_trial_mat%nrow, 1, x_trial_mat%ncol, LUPRI)
+!!$         call project_oao_basis(decomp, x_trial_mat, arh_antisymmetric, scr)
+!!$      !write (LUPRI,*) "xmat projected again:"
+!!$      !call MAT_PRINT(scr, 1, x_trial_mat%nrow, 1, x_trial_mat%ncol, LUPRI)
+!!$         !column = m'th column of hessian:
+!!$      !write(lupri,*) 'antisymmetric:', antisymmetric
+!!$         call arh_lintrans(arh,decomp,x_trial_mat,arh_antisymmetric,0.0E0_realk,scr,fifoqueue)
+!!$         call MAT_TO_VEC('a', scr, column)
+!!$         do l = 1, vecdim !Put elements of column in m'th column of hessian
+!!$            call mat_create_elm(l,m,column%elms(l),hes)
+!!$         enddo         
+!!$      enddo
+!!$
+!!$      call mat_scal(4.0E0_realk, hes)
+!!$
+!!$      if (arh%debug_hessian_exact) then
+!!$         arh%set_do_2nd_order = arh%cfg_do_2nd_order
+!!$         arh%set_arhterms     = arh%cfg_arhterms
+!!$      endif
+!!$
+!!$      !write (LUPRI,*) "Hessian:"
+!!$      !call MAT_PRINT(hes, 1, hes%nrow, 1, hes%ncol, LUPRI)
+!!$
+!!$      call MAT_FREE(x_trial)
+!!$      call MAT_FREE(x_trial_mat)
+!!$      call MAT_FREE(column)
+!!$      call MAT_FREE(scr)
+!!$   end subroutine debug_get_hessian
 
 !####################################################################################
 !  The following section contains routines for using the Conjugate Residual Optimal

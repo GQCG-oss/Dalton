@@ -104,13 +104,13 @@ fi
 # molecular electrostatic potential cube file test
 #
 CRIT1=`$GREP "3 * \-7\.956158 * \-5\.543175 * \-8\.166415" pehf_mep.m0_mep.cube | wc -l`
-CRIT2=`$GREP "55 * ( |0)\.333333 * ( |0)\.000000 * ( |0)\.000000" pehf_mep.m0_mep.cube | wc -l`
-CRIT3=`$GREP "53 * ( |0)\.000000 * ( |0)\.333333 * ( |0)\.000000" pehf_mep.m0_mep.cube | wc -l`
-CRIT4=`$GREP "53 * ( |0)\.000000 * ( |0)\.000000 * ( |0)\.333333" pehf_mep.m0_mep.cube | wc -l`
+CRIT2=`$GREP "55 * 0*\.333333 * 0*\.000000 * 0*\.000000" pehf_mep.m0_mep.cube | wc -l`
+CRIT3=`$GREP "53 * 0*\.000000 * 0*\.333333 * 0*\.000000" pehf_mep.m0_mep.cube | wc -l`
+CRIT4=`$GREP "53 * 0*\.000000 * 0*\.000000 * 0*\.333333" pehf_mep.m0_mep.cube | wc -l`
 # line 11
-CRIT5=`$GREP "( |0)\.47429E\-03 * ( |0)\.55338E\-03 * ( |0)\.63550E\-03 * ( |0)\.72041E\-03 * ( |0)\.80780E\-03 * ( |0)\.89732E\-03" pehf_mep.m0_mep.cube | wc -l`
+CRIT5=`$GREP "0*\.47429E\-03 * 0*\.55338E\-03 * 0*\.63550E\-03 * 0*\.72041E\-03 * 0*\.80780E\-03 * 0*\.89732E\-03" pehf_mep.m0_mep.cube | wc -l`
 # line 100
-CRIT6=`$GREP "( |0)\.40513E\-03 * ( |0)\.50550E\-03 * ( |0)\.61343E\-03 * ( |0)\.72906E\-03 * ( |0)\.85250E\-03 * ( |0)\.98374E\-03" pehf_mep.m0_mep.cube | wc -l`
+CRIT6=`$GREP "0*\.40513E\-03 * 0*\.50550E\-03 * 0*\.61343E\-03 * 0*\.72906E\-03 * 0*\.85250E\-03 * 0*\.98374E\-03" pehf_mep.m0_mep.cube | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[1]=6
 ERROR[1]="MOLECULAR ELECTROSTATIC POTENTIAL CUBE FILE NOT CORRECT"
@@ -119,13 +119,13 @@ ERROR[1]="MOLECULAR ELECTROSTATIC POTENTIAL CUBE FILE NOT CORRECT"
 # induced molecular electrostatic potential cube file test
 #
 CRIT1=`$GREP "3 * \-7\.956158 * \-5\.543175 * \-8\.166415" pehf_mep.ind_mep.cube | wc -l`
-CRIT2=`$GREP "55 * ( |0)\.333333 * ( |0)\.000000 * ( |0)\.000000" pehf_mep.ind_mep.cube | wc -l`
-CRIT3=`$GREP "53 * ( |0)\.000000 * ( |0)\.333333 * ( |0)\.000000" pehf_mep.ind_mep.cube | wc -l`
-CRIT4=`$GREP "53 * ( |0)\.000000 * ( |0)\.000000 * ( |0)\.333333" pehf_mep.ind_mep.cube | wc -l`
+CRIT2=`$GREP "55 * 0*\.333333 * 0*\.000000 * 0*\.000000" pehf_mep.ind_mep.cube | wc -l`
+CRIT3=`$GREP "53 * 0*\.000000 * 0*\.333333 * 0*\.000000" pehf_mep.ind_mep.cube | wc -l`
+CRIT4=`$GREP "53 * 0*\.000000 * 0*\.000000 * 0*\.333333" pehf_mep.ind_mep.cube | wc -l`
 # line 11
-CRIT5=`$GREP "(\-|\-0)\.18168E\-02 * (\-|\-0)\.18516E\-02 * (\-|\-0)\.18848E\-02 * (\-|\-0)\.19161E\-02 * (\-|\-0)\.19452E\-02 * (\-|\-0)\.19718E\-02" pehf_mep.ind_mep.cube | wc -l`
+CRIT5=`$GREP "\-0*\.18168E\-02 * \-0*\.18516E\-02 * \-0*\.18848E\-02 * \-0*\.19161E\-02 * \-0*\.19452E\-02 * \-0*\.19718E\-02" pehf_mep.ind_mep.cube | wc -l`
 # line 100
-CRIT6=`$GREP "(\-|\-0)\.20762E\-02 * (\-|\-0)\.21466E\-02 * (\-|\-0)\.22181E\-02 * (\-|\-0)\.22903E\-02 * (\-|\-0)\.23629E\-02 * (\-|\-0)\.24356E\-02" pehf_mep.ind_mep.cube | wc -l`
+CRIT6=`$GREP "\-0*\.20762E\-02 * \-0*\.21466E\-02 * \-0*\.22181E\-02 * \-0*\.22903E\-02 * \-0*\.23629E\-02 * \-0*\.24356E\-02" pehf_mep.ind_mep.cube | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[2]=6
 ERROR[2]="INDUCED POTENTIAL CUBE FILE NOT CORRECT"
@@ -134,13 +134,13 @@ ERROR[2]="INDUCED POTENTIAL CUBE FILE NOT CORRECT"
 # electric field cube file test
 #
 CRIT1=`$GREP "3 * \-7\.956158 * \-5\.543175 * \-8\.166415" pehf_mep.m0_field_2.cube | wc -l`
-CRIT2=`$GREP "55 * ( |0)\.333333 * ( |0)\.000000 * ( |0)\.000000" pehf_mep.m0_field_2.cube | wc -l`
-CRIT3=`$GREP "53 * ( |0)\.000000 * ( |0)\.333333 * ( |0)\.000000" pehf_mep.m0_field_2.cube | wc -l`
-CRIT4=`$GREP "53 * ( |0)\.000000 * ( |0)\.000000 * ( |0)\.333333" pehf_mep.m0_field_2.cube | wc -l`
+CRIT2=`$GREP "55 * 0*\.333333 * 0*\.000000 * 0*\.000000" pehf_mep.m0_field_2.cube | wc -l`
+CRIT3=`$GREP "53 * 0*\.000000 * 0*\.333333 * 0*\.000000" pehf_mep.m0_field_2.cube | wc -l`
+CRIT4=`$GREP "53 * 0*\.000000 * 0*\.000000 * 0*\.333333" pehf_mep.m0_field_2.cube | wc -l`
 # line 11
-CRIT5=`$GREP "(\-|\-0)\.15551E\-03 * (\-|\-0)\.17098E\-03 * (\-|\-0)\.18725E\-03 * (\-|\-0)\.20425E\-03 * (\-|\-0)\.22190E\-03 * (\-|\-0)\.24011E\-03" pehf_mep.m0_field_2.cube | wc -l`
+CRIT5=`$GREP "\-0*\.15551E\-03 * \-0*\.17098E\-03 * \-0*\.18725E\-03 * \-0*\.20425E\-03 * \-0*\.22190E\-03 * \-0*\.24011E\-03" pehf_mep.m0_field_2.cube | wc -l`
 # line 100
-CRIT6=`$GREP "(\-|\-0)\.11323E\-03 * (\-|\-0)\.12747E\-03 * (\-|\-0)\.14318E\-03 * (\-|\-0)\.16044E\-03 * (\-|\-0)\.17933E\-03 * (\-|\-0)\.19989E\-03" pehf_mep.m0_field_2.cube | wc -l`
+CRIT6=`$GREP "\-0*\.11323E\-03 * \-0*\.12747E\-03 * \-0*\.14318E\-03 * \-0*\.16044E\-03 * \-0*\.17933E\-03 * \-0*\.19989E\-03" pehf_mep.m0_field_2.cube | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[3]=6
 ERROR[3]="ELECTRIC FIELD CUBE FILE NOT CORRECT"
@@ -149,13 +149,13 @@ ERROR[3]="ELECTRIC FIELD CUBE FILE NOT CORRECT"
 # induced electric field cube file test
 #
 CRIT1=`$GREP "3 * \-7\.956158 * \-5\.543175 * \-8\.166415" pehf_mep.ind_field_3.cube | wc -l`
-CRIT2=`$GREP "55 * ( |0)\.333333 * ( |0)\.000000 * ( |0)\.000000" pehf_mep.ind_field_3.cube | wc -l`
-CRIT3=`$GREP "53 * ( |0)\.000000 * ( |0)\.333333 * ( |0)\.000000" pehf_mep.ind_field_3.cube | wc -l`
-CRIT4=`$GREP "53 * ( |0)\.000000 * ( |0)\.000000 * ( |0)\.333333" pehf_mep.ind_field_3.cube | wc -l`
+CRIT2=`$GREP "55 * 0*\.333333 * 0*\.000000 * 0*\.000000" pehf_mep.ind_field_3.cube | wc -l`
+CRIT3=`$GREP "53 * 0*\.000000 * 0*\.333333 * 0*\.000000" pehf_mep.ind_field_3.cube | wc -l`
+CRIT4=`$GREP "53 * 0*\.000000 * 0*\.000000 * 0*\.333333" pehf_mep.ind_field_3.cube | wc -l`
 # line 11
-CRIT5=`$GREP "( |0)\.10678E\-03 * ( |0)\.10227E\-03 * ( |0)\.96926E\-04 * ( |0)\.90729E\-04 * ( |0)\.83655E\-04 * ( |0)\.75696E\-04" pehf_mep.ind_field_3.cube | wc -l`
+CRIT5=`$GREP "0*\.10678E\-03 * 0*\.10227E\-03 * 0*\.96926E\-04 * 0*\.90729E\-04 * 0*\.83655E\-04 * 0*\.75696E\-04" pehf_mep.ind_field_3.cube | wc -l`
 # line 100
-CRIT6=`$GREP "( |0)\.20952E\-03 * ( |0)\.21296E\-03 * ( |0)\.21565E\-03 * ( |0)\.21746E\-03 * ( |0)\.21823E\-03 * ( |0)\.21780E\-03" pehf_mep.ind_field_3.cube | wc -l`
+CRIT6=`$GREP "0*\.20952E\-03 * 0*\.21296E\-03 * 0*\.21565E\-03 * 0*\.21746E\-03 * 0*\.21823E\-03 * 0*\.21780E\-03" pehf_mep.ind_field_3.cube | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[4]=6
 ERROR[4]="INDUCED ELECTRIC FIELD CUBE FILE NOT CORRECT"
