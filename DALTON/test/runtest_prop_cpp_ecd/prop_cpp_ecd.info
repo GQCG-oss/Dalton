@@ -1,0 +1,6 @@
+   prop_cpp_ecd
+   --------
+   Molecule:         CHBrClF
+   Wave Function:    HF
+   Test Purpose:     Electronic circular dichroism (ECD) using CPP
+                     the algorithm with symmetrized trial vectors

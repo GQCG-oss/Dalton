@@ -1,0 +1,5 @@
+   choles_kt3_ctocd
+    ---------------
+   Molecule:         HCP
+   Wave Function:    KT3 / Turbomole-TZP
+   Test Purpose:     Cholesky KT3 energy and CTOCD shieldings

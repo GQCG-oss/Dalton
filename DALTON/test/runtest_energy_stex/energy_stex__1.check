@@ -1,0 +1,62 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Basis set
+CRIT1=`$GREP "C * 1 * 6\.0000 * 44 * 32 * \[11s6p3d\|5s4p3d\]" $log | wc -l`
+CRIT2=`$GREP "O * 1 * 8\.0000 * 44 * 32 * \[11s6p3d\|5s4p3d\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 2 * 14\.0000 * 88 * 64" $log | wc -l`
+CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=4
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (2| )\.1320000000" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7`
+CTRL[2]=7
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Energy
+CRIT1=`$GREP "Final HF energy\: * \-112\.77814446" $log | wc -l`
+TEST[3]=`expr $CRIT1`
+CTRL[3]=1
+ERROR[3]="HF ENERGY NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+#Local setup
+tar=energy_stex.tar
+gunzip $tar.gz
+tar xvf  $tar SIRIFC
+mv -v SIRIFC SIRIFC1
+tar rvf $tar SIRIFC1
+gzip $tar
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+

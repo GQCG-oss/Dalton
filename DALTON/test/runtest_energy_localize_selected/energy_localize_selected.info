@@ -1,0 +1,5 @@
+   energy_localize_selected
+   -------------
+   Molecule:         C6H6
+   Wave Functions:   SCF
+   Test Purpose:     Check Boys localization of selected orbitals

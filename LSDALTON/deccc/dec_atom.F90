@@ -1298,7 +1298,7 @@ contains
     if(infpar%mynum/=infpar%master) then
        call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
             fragment%natoms,DECinfo%output,0)
-
+    endif
 #else
     call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
          fragment%natoms,DECinfo%output,0)

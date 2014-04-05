@@ -759,7 +759,7 @@ subroutine print_dec_info()
     real(realk) :: fragenergy(ndecenergies)
     real(realk) :: t1cpu, t2cpu, t1wall, t2wall, dt
     integer(kind=ls_mpik) ::master, sender, groupsize,IERR
-    logical :: only_update,dofragopt
+    logical :: only_update,dofragopt,backup_files
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE)
 #endif
@@ -862,7 +862,7 @@ subroutine print_dec_info()
        counter=counter+1
 
        if(k<=jobs%njobs) then
-          if(jobs%jobsdone(k)) cycle  ! job is already done
+          if(jobs%jobsdone(k)) cycle JobLoop ! job is already done
        end if
 
        ! *********************************************
@@ -1101,9 +1101,19 @@ subroutine print_dec_info()
           call LSTIMER('START',t2cpu,t2wall,DECinfo%output)
           dt = t2wall - t1wall
 
+          backup_files =  (((float(jobdone) < 0.25*float(jobs%njobs)) .or. &
+              &(dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. & 
+              & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_one_frag_job) 
+
+           print *,"BACKUP",backup_files
+           print *,"crit 1:",float(jobdone) ,0.25*float(jobs%njobs)
+           print *,"crit 2:",dt , DECinfo%TimeBackup
+           print *,"crit 3:",all(jobs%jobsdone)
+           print *,"crit 4:",.not. all(jobs%dofragopt)
+           print *,"crit 5:",DECinfo%only_one_frag_job
+
           ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
-          Backup: if( (( (dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. &
-               & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_one_frag_job) ) then
+          Backup: if( backup_files )then
              ! Note: If only fragment optimization jobs are requested this is not necessary
              ! because the fragment energies are anyway stored in add_fragment_to_file above.
 

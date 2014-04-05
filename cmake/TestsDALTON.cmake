@@ -22,6 +22,15 @@ macro(add_dalton_perl_test _name _labels)
     endif()
 endmacro()
 
+macro(add_dalton_runtest _name _labels)
+    add_test(
+        ${_name}
+        python ${CMAKE_SOURCE_DIR}/DALTON/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
 # all tests here should contain the label "dalton"
 
 # all tests with label short should run in less than 30 seconds sequential on a 2GHz CPU
@@ -32,6 +41,15 @@ endmacro()
 
 # "long" cc2_r12 tests are placed apart on purpose to make it less likely that they
 # are run at the same time (then they can be significantly slower)
+
+add_dalton_runtest(rsp_polar         "dalton;runtest;rsp;parallel;short")
+add_dalton_runtest(qmmm1             "dalton;runtest;qmmm;parallel;short")
+add_dalton_runtest(qmmm2             "dalton;runtest;qmmm;parallel;short")
+add_dalton_runtest(qmmm3             "dalton;runtest;qmmm;parallel;medium")
+add_dalton_runtest(qmmm4             "dalton;runtest;qmmm;parallel;short")
+add_dalton_runtest(qmmm5             "dalton;runtest;qmmm;parallel;medium")
+add_dalton_runtest(qmmm6             "dalton;runtest;qmmm;medium;parallel")
+add_dalton_runtest(qmmm7             "dalton;runtest;qmmm;parallel;medium")
 
 add_dalton_test(gen1int_fluorobenzene_cart  "dalton;gen1int;short;parallel")
 add_dalton_test(gen1int_fluorobenzene_spher "dalton;gen1int;short;parallel")
@@ -120,7 +138,6 @@ add_dalton_test(rsp_lrso2             "dalton;rsp;short;parallel")
 add_dalton_test(rsp_mcdbterm          "dalton;rsp;short;parallel")
 add_dalton_test(rsp_mnf               "dalton;rsp;short;parallel")
 add_dalton_test(rsp_phosph            "dalton;rsp;short;parallel")
-add_dalton_test(rsp_polar             "dalton;rsp;short;parallel")
 add_dalton_test(rsp_propave           "dalton;rsp;short")
 add_dalton_test(rsp_socorr            "dalton;rsp;short")
 add_dalton_test(rsp_socorr2           "dalton;rsp;short")
@@ -205,7 +222,6 @@ add_dalton_test(dftmm_6       "dalton;qm3;parallel")
 add_dalton_test(dftmm_7       "dalton;qm3;parallel")
 add_dalton_test(dftmm_8       "dalton;qm3;parallel")
 add_dalton_test(dftmm_9       "dalton;qm3;parallel")
-add_dalton_test(qmmm6         "dalton;qmmm;medium;parallel")
 
 add_dalton_test(ccsdmm_spc_fop    "dalton;qm3;medium")
 add_dalton_test(ccsdmm_oldtg      "dalton;qm3;medium")
@@ -527,13 +543,7 @@ add_dalton_perl_test(neq_exc_sym       "dalton;perl;pcm")
 add_dalton_perl_test(OR_hf             "dalton;perl;pcm")
 add_dalton_perl_test(pcm_excit         "dalton;perl;pcm")
 add_dalton_perl_test(qm3pcm_1          "dalton;perl;qm3;pcm")
-add_dalton_perl_test(qmmm1             "dalton;perl;qmmm;parallel;medium")
 add_dalton_perl_test(qmmm1_short       "dalton;perl;qmmm;parallel;short")
-add_dalton_perl_test(qmmm2             "dalton;perl;qmmm;parallel;short")
-add_dalton_perl_test(qmmm3             "dalton;perl;qmmm;parallel;medium")
-add_dalton_perl_test(qmmm4             "dalton;perl;qmmm;parallel;short")
-add_dalton_perl_test(qmmm5             "dalton;perl;qmmm;parallel;medium")
-add_dalton_perl_test(qmmm7             "dalton;perl;qmmm;parallel;medium")
 add_dalton_perl_test(shield_spin       "dalton;perl;pcm")
 add_dalton_perl_test(tpa_pcm_sym       "dalton;perl;pcm")
 add_dalton_perl_test(trp_qr_pcm        "dalton;perl;pcm")

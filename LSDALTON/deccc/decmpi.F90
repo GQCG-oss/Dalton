@@ -2,7 +2,6 @@
 !> DEC MPI handling
 !> \author Kasper Kristensen
 !> \date March 2012
-#ifdef VAR_MPI
 module decmpi_module
 
   use precision
@@ -22,6 +21,7 @@ module decmpi_module
   use array2_simple_operations
 
 contains
+#ifdef VAR_MPI
 
 
 
@@ -1020,7 +1020,7 @@ contains
 
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
-      k=250000000
+      k=SPLIT_MSG_REC
 
       nelms = nbas*nocc
       call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
@@ -1841,6 +1841,7 @@ contains
 
   end subroutine print_MPI_fragment_statistics
 
+
   !> \brief Bcast DEC setting structure
   !> \author Kasper Kristensen
   !> \date June 2013
@@ -2008,7 +2009,7 @@ contains
 
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
-      k=250000000
+      k=SPLIT_MSG_REC
 
       nelms = nvir*nocc
       call ls_mpibcast_chunks(t1%elm1,nelms,infpar%master,infpar%lg_comm,k)
@@ -2281,18 +2282,25 @@ contains
 
 
   end subroutine wake_slaves_for_simple_mo
-end module decmpi_module
-
 
 #else
-module decmpi_module
-
-contains
-
-!Added to avoid "has no symbols" linking warning
-subroutine decmpi_module_void()
-end subroutine decmpi_module_void
-
+  !Added to avoid "has no symbols" linking warning
+  subroutine decmpi_module_void()
+  end subroutine decmpi_module_void
+#endif
 end module decmpi_module
 
+
+
+#ifdef VAR_MPI
+subroutine set_dec_settings_on_slaves()
+   use infpar_module
+   use lsmpi_type
+   use Integralparameters
+   use dec_typedef_module
+   use decmpi_module, only:mpibcast_dec_settings
+   implicit none
+   if(infpar%mynum == infpar%master) call ls_mpibcast(DEC_SETTING_TO_SLAVES,infpar%master,MPI_COMM_LSDALTON)
+   call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
+end subroutine set_dec_settings_on_slaves
 #endif
