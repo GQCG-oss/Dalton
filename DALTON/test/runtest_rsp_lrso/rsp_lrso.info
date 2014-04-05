@@ -1,0 +1,5 @@
+   rsp_lrso
+   --------
+   Molecule:         O2
+   Wave Function:    MCSCF (CAS) / ANO (Atombasis)
+   Test Purpose:     Linear response spin-orbit

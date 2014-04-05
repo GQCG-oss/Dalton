@@ -1,0 +1,8 @@
+BASIS
+aug-cc-pVDZ
+N2 AC Test
+------------
+Atomtypes=1 Cartesian Angstrom
+Atoms=2 Charge=7.0
+N    0.0 0.0  0.0
+N    0.0 0.0  1.098

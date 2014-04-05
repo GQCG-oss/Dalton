@@ -1,0 +1,8 @@
+   DFT-AC  
+   ------------
+   Molecule:         N2 
+   Wave Function:    DFT / HCTH(ac) / aug-cc-pVDZ
+   Test Purpose:     Calculate excitation energies of N2 with an 
+                     asymptotically corrected (ac) functional. The 
+                     gradient-regulated ac is used. 
+                     Experimental IPs are used as input.                     

@@ -1,0 +1,29 @@
+INTGRL
+Geometry optimization, calculation of quadrupole moment, magnetizabilities
+and nuclear shieldings at the optimized geometry
+    1    0
+        7.    2    6    1    1    1    1    1    1
+ N1   0.00000 0.000000  1.034
+ N2   0.00000 0.000000 -1.034
+H   7    0
+1792.96029032
+ 269.84707155
+  61.33531163
+  17.00072818
+   5.18324751
+   0.67431212
+   0.18300181
+H   4    0
+13.75333842
+ 3.01377620
+ 0.81923924
+ 0.22417597
+H   1    0
+0.87680110
+H   1    0
+1.09547007
+H   1    0
+1.25075670
+H   1    0
+1.29425886
+

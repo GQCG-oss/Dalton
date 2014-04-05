@@ -1,0 +1,11 @@
+BASIS
+STO-3G
+Vibrational averaging of shieldings, magnetizabilities and polarizabilities
+
+Atomtypes=2 Nosymmetry
+Charge=7.0 Atoms=1
+N          0.6023400            0.00000000              0.00000000
+Charge=1.0 Atoms=3
+H         -0.1947831            0.899791                1.558484
+H         -0.1947831            0.899791               -1.558484
+H         -0.1947831           -1.7995826090           -0.000000
