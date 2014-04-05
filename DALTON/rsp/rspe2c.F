@@ -1725,10 +1725,10 @@ C
             WRITE(LUPRI,'(/A/,5(/A,1P,D15.7),/)')
      * '@ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :',
      *      '@    a.u.:',FREQ(IFREQ),
-     *      '     cm-1:',XTKAYS*FREQ(IFREQ),
-     *      '     e.V.:',XTEV*FREQ(IFREQ),
-     *      '  kJ/mol.:',XKJMOL*FREQ(IFREQ),
-     *      '     nm  :',XTNM/FREQ(IFREQ)
+     *      '@    cm-1:',XTKAYS*FREQ(IFREQ),
+     *      '@    eV  :',XTEV*FREQ(IFREQ),
+     *      '@  kJ/mol:',XKJMOL*FREQ(IFREQ),
+     *      '@    nm  :',XTNM/FREQ(IFREQ)
          END IF
 
          DO 400 IOP = 1,NOP
@@ -2563,10 +2563,12 @@ C
 #include "ibndxdef.h"
 C
 C Used from common blocks:
-C  /WRKRSP/: ??
-C  /INFPRI/: LUERR
+C  pgroup.h: REP
+C  wrkrsp.h: ??
+C  infpri.h: LUERR
 C
 #include "priunit.h"
+#include "pgroup.h"
 #include "inforb.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
@@ -2583,17 +2585,19 @@ C
 C
       CALL QENTER('RSPCTL')
       IF (MMPCM) CALL MMPCMINIT()
-      IF (IPRRSP .GE. 2) THEN
+      IF (IPRRSP .GE. 1) THEN
          IF (LINEQ) THEN
-            WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
-     *   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
-     *   'FOR LINEAR RESPONSE PROPERTIES >>>',
-     &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
+            WRITE (LUPRI,'(///2A//A,I2,3A,L3/)')
+     &   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
+     &   'FOR LINEAR RESPONSE PROPERTIES >>>',
+     &   ' Operator symmetry =',KSYMOP,'  ( ',REP(KSYMOP-1),
+     &   '); triplet = ',TRPLET
          ELSE
-            WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
-     *   ' <<< EXCITATION ENERGIES',
-     *   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
-     &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
+            WRITE (LUPRI,'(///2A//A,I2,3A,L3/)')
+     &   ' <<< EXCITATION ENERGIES',
+     &   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
+     &   ' Operator symmetry =',KSYMOP,'  ( ',REP(KSYMOP-1),
+     &   '); triplet = ',TRPLET
          END IF
       END IF
 C
@@ -3289,6 +3293,7 @@ C                         the response calculation(s) )
 C  /WRKRSP/ :
 C
 #include "priunit.h"
+#include "pgroup.h"
 #include "infopt.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -3695,21 +3700,23 @@ C ---------------------------- not non-adiabatic coupling:
  600        CONTINUE  ! go to 600 if non-adiabatic coupling ("HDO" in label)
          END IF
          PRI_LINE = ' '
-         WRITE (PRI_LINE,'(3(A,I2))')
+         WRITE (PRI_LINE,'(3(A,I2),3A)')
      &   '@ Excit. operator sym',KSYMOP,' & ref. state sym',IREFSY,
-     &   ' => excited state symmetry',KSYMST
+     &   ' => excited state symmetry',KSYMST,'  ( ',REP(KSYMST-1),')'
          CALL TITLER(PRI_LINE,'*',103)
          DO 555 INUM = 1,NBX
             PRI_LINE = ' '
-            WRITE (PRI_LINE,'(A,I5,A,I3)')
-     *      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST
+            WRITE (PRI_LINE,'(A,I5,A,I2,3A)')
+     &      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST,
+     &      '  ( ',REP(KSYMST-1),')'
             CALL HEADER(PRI_LINE,0)
-            WRITE(LUPRI,'( A,1P,G16.8,A,3(/A1,19X,G16.8,A),
-     *                   //A,T21,G16.8,A)')
-     *      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),'au',
-     *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV',
-     *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1',
-     *      ' ',WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
+            WRITE(LUPRI,'( A,1P,G16.8,A
+     &                    /A,T21,3(G16.8,A)
+     &                   //A,T21,G16.8,A)')
+     &      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
+     &      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV;',
+     &          WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1;',
+     *          WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
      *      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
             IF (SOPPA) THEN
               TXNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
@@ -3792,22 +3799,24 @@ C     Print oscillator/rotatory strengths
 C
       IF (RSPOCD .OR. RSPECD) THEN
 
-         CALL AROUND('Absorption and Circular Dichroism Spectra')
+         CALL AROUND('@  Absorption and Circular Dichroism Spectra')
 
-         WRITE (LUPRI,'(/,3(/,5X,A,I3))')
-     &   ' Reference  state    symmetry:',IREFSY,
-     &   ' Excitation operator symmetry:',KSYMOP,
-     &   ' Excited    state    symmetry:',KSYMST
+         WRITE (LUPRI,'(3(/A,I3,3A))')
+     &'@  Reference  state    symmetry:',IREFSY,
+     &  '  ( ',REP(IREFSY-1),')',
+     &'@  Excitation operator symmetry:',KSYMOP,
+     &  '  ( ',REP(KSYMOP-1),')',
+     &'@  Excited    state    symmetry:',KSYMST,'  ( ',REP(KSYMST-1),')'
 
-         WRITE (LUPRI,'(/,5X,A,/5X,A,//)')
-     &      ' Units: 10**(-40) (esu**2)*(cm**2) (rotatory   strength)',
-     &      '        dimensionless              (oscillator strength)'
+         WRITE (LUPRI,'(/A/A)')
+     &   '@  Units: 10**(-40) (esu**2)*(cm**2) (rotatory   strength)',
+     &   '@         dimensionless              (oscillator strength)'
 
          CALL HEADER('Oscillator and Scalar Rotatory Strength',18)
          WRITE(LUPRI,'(/,8X,A,/,8X,A,/,8X,A)')
-     &   ' State Frequency   Oscillator Strength    Rotatory  Strength',
-     &   '         (eV)      Velocity     Length    Velocity    Length',
-     &   ' -----------------------------------------------------------'
+     &'@  State Frequency   Oscillator Strength    Rotatory  Strength',
+     &'@          (eV)      Velocity     Length    Velocity    Length',
+     &'@  -----------------------------------------------------------'
 
          DO LOCST = 1,NPPCNV(KSYMOP)
 
@@ -3829,13 +3838,13 @@ C
      &                                WRK(KTRMAG+IOFF1),1)/EXENG
 
 
-               WRITE(LUPRI,'(8X,I5,5(1X,F10.4))')
-     &         LOCST,EXEV,OSCVEL,OSCLEN,ROTVEL*ESUECD,ROTLEN*ESUECD
+               WRITE(LUPRI,'(A,9X,I5,5F11.4)')
+     &         '@',LOCST,EXEV,OSCVEL,OSCLEN,ROTVEL*ESUECD,ROTLEN*ESUECD
 
             ELSE
 
-             WRITE(LUPRI,'(8X,I5,1X,F10.4,1X,A,1X,F10.4,1X,A,1X,F10.4)')
-     &         LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
+             WRITE(LUPRI,'(A,9X,I5,F11.4,1X,A,F11.4,1X,A,F11.4)')
+     &         '@',LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
 
                ROTVEL = 0.0D0
 
@@ -4053,12 +4062,12 @@ C
          END DO
 
          CALL HEADER('Total Rotatory Strength Tensor',18)
-         WRITE(LUPRI,'(/,A,/,A,A,/,A,A)')
-     &   ' State Gauge                 Total Rotatory Strength Tensor ',
-     &   '                  xx        xy        xz        yy        yz',
-     &   '        zz',
-     &   ' -----------------------------------------------------------',
-     &   '------------'
+         WRITE(LUPRI,'(/A/A/A)')
+     &' State Gauge                 Total Rotatory Strength Tensor ',
+     &'                  xx        xy        xz        yy        yz'//
+     &'        zz',
+     &' -----------------------------------------------------------'//
+     &'------------'
          LENTOT = 3*3*NPPCNV(KSYMOP)
          CALL DCOPY(LENTOT,RMVEL,1,RTVEL,1)
          CALL DAXPY(LENTOT,1.0D0,RQVEL,1,RTVEL,1)
@@ -4149,6 +4158,7 @@ C
       DIMENSION XINDX(*),WRK(*)
 C
 #include "priunit.h"
+#include "pgroup.h"
 #include "infpri.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -4226,13 +4236,14 @@ C
 C     Call RSPCTL to solve linear set of response equations
 C
       DO 600 IOP = 1,NGPLR(KSYMOP)
-         WRITE (LUPRI,'(//A,I3,/2A,/A,I3,/A,(T25,5F10.6))') 
-     &   ' RSPLR -- linear response calculation for symmetry',KSYMOP,
-     &   ' RSPLR -- operator label : ',LBLLR(KSYMOP,IOP),
+         WRITE (LUPRI,'(//A,I2,3A/2A/A,I3/A,(T25,5F10.6))') 
+     &  ' RSPLR -- linear response calculation for symmetry',KSYMOP,
+     &    '  ( ',REP(KSYMOP-1),')',
+     &  ' RSPLR -- operator label : ',LBLLR(KSYMOP,IOP),
      &  ' RSPLR -- operator spin  : ',OPRANK(INDPRP(LBLLR(KSYMOP,IOP))),
-     &   ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
+     &  ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
          CALL GETGPV(LBLLR(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
-     *               WRK(KGD),LWRK1)
+     &               WRK(KGD),LWRK1)
          DNORM = DNRM2(KZYVAR,WRK(KGD),1)
          write(lupri,*) 'FREQ 2 ',FREQ(1:NFREQ)
          IF (IPRRSP .GT. 30) THEN
@@ -4338,7 +4349,7 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
                NVEC   = (IOP-1)*2*NFREQ + (IBOFF+IVEC-1)*2 + 2
                CALL WRITDX(LURSP2,NVEC,IRAT*KZYVAR,WRK(IBV))
                IF (IPRRSP .GT. 30) THEN
-                  CALL HEADER('Residuum vectors in RSPLR for operator '
+                  CALL HEADER('Residual vectors in RSPLR for operator '
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                   DNORM = DNRM2(KZYVAR,WRK(IBV),1)
@@ -5828,10 +5839,11 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*)
       DIMENSION XINDX(*),VECB(*), WRK(LWRK)
 C
+#include "priunit.h"
+#include "pgroup.h"
 #include "infrsp.h"
 #include "maxorb.h"
 #include "infvar.h"
-#include "priunit.h"
 #include "inftap.h"
 #include "rspprp.h"
 #include "inflr.h"
@@ -5842,9 +5854,9 @@ C
 C
       WRITE(LUPRI,'(A)') ' '
       CALL PRSYMB(LUPRI,'=',70,1)
-      WRITE(LUPRI,'(2A)')
-     &     ' >>>>>>>>    L I N E A R   R E S P O N S E   ',
-     &     'F U N C T I O N   <<<<<<<<'
+      WRITE(LUPRI,'(A)')
+     &     ' >>>>>>>>    L I N E A R   R E S P O N S E   '//
+     &     'F U N C T I O N S   <<<<<<<<'
       CALL PRSYMB(LUPRI,'=',70,1)
 C
       KVECA = 1
@@ -5855,7 +5867,7 @@ C     Define variables that depend on symmetry
 C
       DO IOPA = 1, NGPLR(KSYMOP)
          CALL GETGPV(LBLLR(KSYMOP,IOPA),FC,DUMMY,CMO,UDV,PV,XINDX,
-     *               ANTSYM,WRK(KVECA),LWRK)
+     &               ANTSYM,WRK(KVECA),LWRK)
 C
 C     Loop over solution vectors
 C
@@ -5872,12 +5884,12 @@ C     Compute linear response value
 C
                VAL = DDOT(KZYVAR,WRK(KVECA),1,VECB,1)
 C              
-               WRITE(LUPRI,'(/A,2(/A,A10,I4,F10.6),/,/A,F20.12)')
+               WRITE(LUPRI,'(/A,2(/A,A10,I4,3A,F10.6),/,/A,F20.12)')
      &              ' Linear response function in a.u.',
      &              ' A operator, symmetry, frequency: ',
-     &              LBLLR(KSYMOP,IOPA),KSYMOP,-FREQ(IFREQ),
+     & LBLLR(KSYMOP,IOPA),KSYMOP,'  ( ',REP(KSYMOP-1),')',-FREQ(IFREQ),
      &              ' B operator, symmetry, frequency: ',
-     &                LBLLR(KSYMOP,IOPB),KSYMOP, FREQ(IFREQ),
+     & LBLLR(KSYMOP,IOPB),KSYMOP,'  ( ',REP(KSYMOP-1),')', FREQ(IFREQ),
      &              ' Value of linear response -<<A;B>>(omega): ',VAL
             END DO
          END DO
