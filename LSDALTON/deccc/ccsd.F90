@@ -89,49 +89,54 @@ module ccsd_module
     
 
 contains
-  function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
 
-    integer none
-    type(array), intent(in) :: omega2
-    type(array), intent(inout) :: ppfock, qqfock
-    logical, intent(in) :: loc
-    type(array) :: prec
-    integer, dimension(4) :: dims
-    integer :: a,i,b,j
 
-    if(omega2%mode/=4.or.ppfock%mode/=2.or.qqfock%mode/=2)then
+function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
+
+   implicit none
+   type(array), intent(in) :: omega2
+   type(array), intent(inout) :: ppfock, qqfock
+   logical, intent(in) :: loc
+   type(array) :: prec
+   integer, dimension(4) :: dims
+   integer :: a,i,b,j
+   real(realk) :: time_prec
+
+   call time_start_phase(PHASE_WORK, twall = time_prec)
+
+   if(omega2%mode/=4.or.ppfock%mode/=2.or.qqfock%mode/=2)then
       call lsquit("ERROR(precondition_doubles_newarr):wrong number of modes&
-      & for this operation",DECinfo%output)
-    endif
-    dims = omega2%dims
+         & for this operation",DECinfo%output)
+   endif
+   dims = omega2%dims
 
-    !make sure all data is local
-    if(loc)then
+   !make sure all data is local
+   if(loc)then
       prec = array_init(dims,4)
-     
+
       !$OMP PARALLEL DEFAULT(NONE) SHARED(prec,dims,omega2,ppfock,qqfock) &
       !$OMP PRIVATE(i,j,a,b)
-      
+
       !$OMP DO COLLAPSE(4)
       do j=1,dims(4)
-        do i=1,dims(3)
-          do b=1,dims(2)
-            do a=1,dims(1)
-     
-             prec%elm4(a,b,i,j) = omega2%elm4(a,b,i,j) / &
-                  ( ppfock%elm2(i,i) - qqfock%elm2(a,a) + &
-                    ppfock%elm2(j,j) - qqfock%elm2(b,b) )
-     
+         do i=1,dims(3)
+            do b=1,dims(2)
+               do a=1,dims(1)
+
+                  prec%elm4(a,b,i,j) = omega2%elm4(a,b,i,j) / &
+                     ( ppfock%elm2(i,i) - qqfock%elm2(a,a) + &
+                     ppfock%elm2(j,j) - qqfock%elm2(b,b) )
+
+               end do
             end do
-          end do
-        end do
+         end do
       end do
       !$OMP END DO
       !$OMP END PARALLEL
 
-    else
-    !make sure all data is in the correct for this routine, that is omega2 is
-    !TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
+   else
+      !make sure all data is in the correct for this routine, that is omega2 is
+      !TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
 
       prec = array_init(dims,4,TILED_DIST,MASTER_ACCESS,omega2%tdim)
       call array_change_atype_to_rep(ppfock,loc)
@@ -139,59 +144,65 @@ contains
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
       call array_change_atype_to_d(ppfock)
       call array_change_atype_to_d(qqfock)
-    endif
+   endif
 
-  end function precondition_doubles_newarr
-
-
-  !> \brief Preconditioning of doubles residual interface
-  !> \author Kasper Kristensen
-  !> \date October 2010
-  function precondition_doubles_oldarr(omega2,ppfock,qqfock) result(prec)
-
-    integer none
-    type(array4), intent(in) :: omega2
-    type(array2), intent(in) :: ppfock, qqfock
-    type(array4) :: prec
-
-    if(DECinfo%array4OnFile) then ! omega2 is written from file
-       prec = precondition_doubles_file(omega2,ppfock,qqfock)
-    else ! omega2 is stored in memory
-       prec = precondition_doubles_memory(omega2,ppfock,qqfock)
-    end if
-
-  end function precondition_doubles_oldarr
+   if(DECinfo%PL>2)then
+      call time_start_phase(PHASE_WORK, ttot = time_prec, &
+         &labelttot = 'PREC: PRECONDITION DOUBLES:', output = DECinfo%output)
+   else
+      call time_start_phase(PHASE_WORK)
+   endif
+end function precondition_doubles_newarr
 
 
+!> \brief Preconditioning of doubles residual interface
+!> \author Kasper Kristensen
+!> \date October 2010
+function precondition_doubles_oldarr(omega2,ppfock,qqfock) result(prec)
 
-  !> \brief Preconditioning of doucles residual
-  !> when arrays are kept in memory.
-  !> \author Marcin Ziolkowski
-  function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
+   implicit none
+   type(array4), intent(in) :: omega2
+   type(array2), intent(in) :: ppfock, qqfock
+   type(array4) :: prec
 
-    integer none
-    type(array4), intent(in) :: omega2
-    type(array2), intent(in) :: ppfock, qqfock
-    type(array4) :: prec
-    integer, dimension(4) :: dims
-    integer :: a,i,b,j
+   if(DECinfo%array4OnFile) then ! omega2 is written from file
+      prec = precondition_doubles_file(omega2,ppfock,qqfock)
+   else ! omega2 is stored in memory
+      prec = precondition_doubles_memory(omega2,ppfock,qqfock)
+   end if
 
-    dims = omega2%dims
-    prec = array4_init(dims)
+end function precondition_doubles_oldarr
 
-    do a=1,dims(1)
-       do i=1,dims(2)
-          do b=1,dims(3)
-             do j=1,dims(4)
 
-                prec%val(a,i,b,j) = omega2%val(a,i,b,j) / &
-                     ( ppfock%val(i,i) - qqfock%val(a,a) + &
-                     ppfock%val(j,j) - qqfock%val(b,b) )
 
-             end do
-          end do
-       end do
-    end do
+!> \brief Preconditioning of doucles residual
+!> when arrays are kept in memory.
+!> \author Marcin Ziolkowski
+function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
+
+   implicit none
+   type(array4), intent(in) :: omega2
+   type(array2), intent(in) :: ppfock, qqfock
+   type(array4) :: prec
+   integer, dimension(4) :: dims
+   integer :: a,i,b,j
+
+   dims = omega2%dims
+   prec = array4_init(dims)
+
+   do a=1,dims(1)
+      do i=1,dims(2)
+         do b=1,dims(3)
+            do j=1,dims(4)
+
+               prec%val(a,i,b,j) = omega2%val(a,i,b,j) / &
+                  ( ppfock%val(i,i) - qqfock%val(a,a) + &
+                  ppfock%val(j,j) - qqfock%val(b,b) )
+
+            end do
+         end do
+      end do
+   end do
 
     return
   end function precondition_doubles_memory
@@ -203,7 +214,7 @@ contains
   !> \author Kasper Kristensen
   function precondition_doubles_file(omega2,ppfock,qqfock) result(prec)
 
-    integer none
+    implicit none
     type(array4), intent(in) :: omega2
     type(array2), intent(in) :: ppfock, qqfock
     type(array4) :: prec

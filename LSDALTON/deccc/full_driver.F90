@@ -137,53 +137,28 @@ contains
           end do
        end do
 
-#ifdef MOD_UNRELEASED
-
-       if (DECinfo%ccModel == MODEL_CCSDpT) then
-          ! ccsd(t) correction
-          Ecorr = ccsolver_justenergy_pt(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
-               & mylsitem,print_level,fragment_job,Co_fc=Co_fc,ppfock_fc=ppfock_fc)
-       else
-#endif
-          Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,Co_fc,&
-               & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
-               & print_level,fragment_job,ppfock_fc,MyMolecule%qqfock)
-#ifdef MOD_UNRELEASED
-       end if
-#endif
-       !endif mod_unreleased
+       Ecorr = ccsolver_justenergy_pt(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+          & mylsitem,print_level,fragment_job,Co_fc=Co_fc,ppfock_fc=ppfock_fc)
 
        call mem_dealloc(ppfock_fc)
        call mem_dealloc(Co_fc)
 
     else
 
-#ifdef MOD_UNRELEASED
 
-       if (Decinfo%ccModel == MODEL_CCSDpT) then
+       if(DECinfo%CCSDmultipliers)then
 
-          Ecorr = ccsolver_justenergy_pt(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
-               & mylsitem,print_level,fragment_job)
+          call ccsolver_energy_multipliers(DECinfo%ccmodel,MyMolecule%Co,MyMolecule%Cv,&
+             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
+             & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ecorr)
 
        else
-          !endif mod_unreleased
-#endif
 
-          if(DECinfo%CCSDmultipliers)then
-             call ccsolver_energy_multipliers(DECinfo%ccmodel,MyMolecule%Co,MyMolecule%Cv,&
-                  & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
-                  & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ecorr)
-          else
-             Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,MyMolecule%Co,MyMolecule%Cv,&
-                  & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
-                  & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock)
-          endif
+          Ecorr = ccsolver_justenergy_pt(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+             & mylsitem,print_level,fragment_job)
 
-#ifdef MOD_UNRELEASED
+       endif
 
-       end if
-       !endif mod_unreleased
-#endif
 
     end if
 

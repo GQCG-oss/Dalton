@@ -55,210 +55,209 @@ contains
 
 
 
-!> \brief Get coupled-cluster energy by calling general ccsolver.
-!> \author Kasper Kristensen
-function ccsolver_justenergy(ccmodel,MyMolecule,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-      &mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f) result(ccenergy)
-
-   implicit none
-
-   !> CC model
-   integer,intent(inout) :: ccmodel
-   !> full molecule information
-   type(fullmolecule), intent(in) :: MyMolecule
-   !> Number of occupied orbitals in full molecule/fragment AOS
-   !> (only number of valence orbitals for frozen core)
-   integer, intent(in) :: nocc
-   !> Number of virtual orbitals in full molecule/fragment AOS
-   integer, intent(in) :: nvirt
-   !> Number of basis functions in full molecule/atomic extent
-   integer, intent(in) :: nbasis
-   !> Fock matrix in AO basis for fragment or full molecule
-   real(realk), dimension(nbasis,nbasis), intent(in) :: fock_f
-   !> Occupied MO coefficients  for fragment/full molecule
-   real(realk), dimension(nbasis,nocc), intent(inout) :: Co_f
-   !> Virtual MO coefficients  for fragment/full molecule
-   real(realk), dimension(nbasis,nvirt), intent(inout) :: Cv_f
-   !> Occ-occ block of Fock matrix in MO basis
-   real(realk), dimension(nocc,nocc), intent(inout) :: ppfock_f
-   !> Virt-virt block of Fock matrix in MO basis
-   real(realk), dimension(nvirt,nvirt), intent(inout) :: qqfock_f
-   !> Is this a fragment job (true) or a full molecular calculation (false)
-   logical, intent(in) :: fragment_job
-   !> LS item information
-   type(lsitem), intent(inout) :: mylsitem
-   !> How much to print? ( ccPrintLevel>0 --> print info stuff)
-   integer, intent(in) :: ccPrintLevel
-   !> Coupled cluster energy for fragment/full molecule
-   real(realk) :: ccenergy!,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
-   type(array4) :: t2_final,VOVO, mp2_amp!,ccsdpt_t2
-   type(array2) :: t1_final!,ccsdpt_t1
-   logical :: local
-
-   local=.true.
-#ifdef VAR_MPI
-   if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
-#endif
-   ! temporary default for moccsd:
-   if (decinfo%moccsd) local = .true.
-
-
-
-   if(DECinfo%CCDEBUG)then
-
-      if(DECinfo%use_pnos)then
-
-         !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
-         call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, Cv_f, Co_f, VOVO )
-         call mp2_solver( nocc, nvirt, ppfock_f, qqfock_f, VOVO, mp2_amp )
-         call array4_free( VOVO )
-
-         !CALL THE SOLVER WITH PNO ARGUMENT
-         call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-            & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-            & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
-
-         !FREE MP2 AMPLITUDES
-         call array4_free( mp2_amp )
-
-      else
-
-         !CALL DEBUG SOLVER WITHOUT PNOS
-         call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-            & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-            & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
-
-      endif
-   else
-
-      ! CALL PRODUCTION SOLVER
-      call ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-         & t1_final,t2_final,VOVO,.false.,local)
-
-   endif
-
-
-   ! Print fragment energies (currently only for occupied partitioning scheme)
-   if(DECinfo%full_molecular_cc .and. DECinfo%full_print_frag_energies) then
-      call fragment_energies_in_fulL_ccsd_occ(MyMolecule,mylsitem,t1_final,t2_final,VOVO) 
-   end if
-
-   ! Free arrays
-   call array2_free(t1_final)
-   call array4_free(t2_final)
-   call array4_free(VOVO)
-
-end function ccsolver_justenergy
-
-
-!> \brief Calculate and print CCSD (or CCD) fragment energies from amplitudes
-!> for the full molecular system. Only intended for testing purposes.
-!> Only for occupied partitioning scheme at this stage.
-!> \author Kasper Kristensen
-subroutine fragment_energies_in_fulL_ccsd_occ(MyMolecule,mylsitem,t1,t2,VOVO) 
-
-   implicit none
-
-   !> full molecule information
-   type(fullmolecule), intent(in) :: MyMolecule
-   !> LS item information
-   type(lsitem), intent(inout) :: mylsitem
-   !> Singles amplitudes (not changed but need to be inout)
-   type(array2),intent(inout) :: t1
-   !> Doubles amplitudes (not changed but need to be inout)
-   type(array4),intent(inout) :: t2
-   !> Integrals (ai|bj) stored as (a,i,b,j) (not changed but need to be inout)
-   type(array4),intent(inout) :: VOVO
-   integer :: natoms,nocc_tot,ncore,i,p,pdx,nvirt,nocc
-   type(decorbital), pointer :: occorbitals(:)
-   type(decorbital), pointer :: unoccorbitals(:)
-   logical, pointer :: orbitals_assigned(:)
-   type(array2) :: ccsd_mat_tot,ccsd_mat_tmp
-   real(realk) :: interactionE
+!!> \brief Get coupled-cluster energy by calling general ccsolver.
+!!> \author Kasper Kristensen
+!function ccsolver_justenergy(ccmodel,MyMolecule,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
+!      &mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f) result(ccenergy)
+!
+!   implicit none
+!
+!   !> CC model
+!   integer,intent(inout) :: ccmodel
+!   !> full molecule information
+!   type(fullmolecule), intent(in) :: MyMolecule
+!   !> Number of occupied orbitals in full molecule/fragment AOS
+!   !> (only number of valence orbitals for frozen core)
+!   integer, intent(in) :: nocc
+!   !> Number of virtual orbitals in full molecule/fragment AOS
+!   integer, intent(in) :: nvirt
+!   !> Number of basis functions in full molecule/atomic extent
+!   integer, intent(in) :: nbasis
+!   !> Fock matrix in AO basis for fragment or full molecule
+!   real(realk), dimension(nbasis,nbasis), intent(in) :: fock_f
+!   !> Occupied MO coefficients  for fragment/full molecule
+!   real(realk), dimension(nbasis,nocc), intent(inout) :: Co_f
+!   !> Virtual MO coefficients  for fragment/full molecule
+!   real(realk), dimension(nbasis,nvirt), intent(inout) :: Cv_f
+!   !> Occ-occ block of Fock matrix in MO basis
+!   real(realk), dimension(nocc,nocc), intent(inout) :: ppfock_f
+!   !> Virt-virt block of Fock matrix in MO basis
+!   real(realk), dimension(nvirt,nvirt), intent(inout) :: qqfock_f
+!   !> Is this a fragment job (true) or a full molecular calculation (false)
+!   logical, intent(in) :: fragment_job
+!   !> LS item information
+!   type(lsitem), intent(inout) :: mylsitem
+!   !> How much to print? ( ccPrintLevel>0 --> print info stuff)
+!   integer, intent(in) :: ccPrintLevel
+!   !> Coupled cluster energy for fragment/full molecule
+!   real(realk) :: ccenergy!,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
+!   type(array4) :: t2_final,VOVO, mp2_amp!,ccsdpt_t2
+!   type(array2) :: t1_final!,ccsdpt_t1
+!   logical :: local
+!
+!   local=.true.
+!#ifdef VAR_MPI
+!   if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
+!#endif
+!   ! temporary default for moccsd:
+!   if (decinfo%moccsd) local = .true.
+!
+!
+!
+!   if(DECinfo%CCDEBUG)then
+!
+!      if(DECinfo%use_pnos)then
+!
+!         !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
+!         call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, Cv_f, Co_f, VOVO )
+!         call mp2_solver( nocc, nvirt, ppfock_f, qqfock_f, VOVO, mp2_amp )
+!         call array4_free( VOVO )
+!
+!         !CALL THE SOLVER WITH PNO ARGUMENT
+!         call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
+!            & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+!            & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
+!
+!         !FREE MP2 AMPLITUDES
+!         call array4_free( mp2_amp )
+!
+!      else
+!
+!         !CALL DEBUG SOLVER WITHOUT PNOS
+!         call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
+!            & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+!            & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
+!
+!      endif
+!   else
+!
+!      ! CALL PRODUCTION SOLVER
+!      call ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
+!         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
+!         & t1_final,t2_final,VOVO,.false.,local)
+!
+!   endif
+!
+!
+!   ! Print fragment energies (currently only for occupied partitioning scheme)
+!   if(DECinfo%full_molecular_cc .and. DECinfo%full_print_frag_energies) then
+!      call fragment_energies_in_fulL_ccsd_occ(MyMolecule,mylsitem,t1_final,t2_final,VOVO) 
+!   end if
+!
+!   ! Free arrays
+!   call array2_free(t1_final)
+!   call array4_free(t2_final)
+!   call array4_free(VOVO)
+!
+!end function ccsolver_justenergy
 
 
-#ifdef MOD_UNRELEASED
-   natoms = MyMolecule%natoms
-   ! Note: For frozen core approx: nocc_tot = nocc + ncore,  nocc=#valence orbitals
-   !       Without frozen core approx: nocc_tot = nocc
-   nocc_tot = MyMolecule%nocc
-   if(DECinfo%frozencore) then
-      ncore = MyMolecule%ncore
-      nocc = MyMolecule%nval
-   else
-      ncore = 0
-      nocc = nocc_tot
-   endif
-   nvirt = MyMolecule%nunocc
+!!> \brief Calculate and print CCSD (or CCD) fragment energies from amplitudes
+!!> for the full molecular system. Only intended for testing purposes.
+!!> Only for occupied partitioning scheme at this stage.
+!!> \author Kasper Kristensen
+!subroutine fragment_energies_in_fulL_ccsd_occ(MyMolecule,mylsitem,t1,t2,VOVO) 
+!
+!   implicit none
+!
+!   !> full molecule information
+!   type(fullmolecule), intent(in) :: MyMolecule
+!   !> LS item information
+!   type(lsitem), intent(inout) :: mylsitem
+!   !> Singles amplitudes (not changed but need to be inout)
+!   type(array2),intent(inout) :: t1
+!   !> Doubles amplitudes (not changed but need to be inout)
+!   type(array4),intent(inout) :: t2
+!   !> Integrals (ai|bj) stored as (a,i,b,j) (not changed but need to be inout)
+!   type(array4),intent(inout) :: VOVO
+!   integer :: natoms,nocc_tot,ncore,i,p,pdx,nvirt,nocc
+!   type(decorbital), pointer :: occorbitals(:)
+!   type(decorbital), pointer :: unoccorbitals(:)
+!   logical, pointer :: orbitals_assigned(:)
+!   type(array2) :: ccsd_mat_tot,ccsd_mat_tmp
+!   real(realk) :: interactionE
+!
+!
+!#ifdef MOD_UNRELEASED
+!   natoms = MyMolecule%natoms
+!   ! Note: For frozen core approx: nocc_tot = nocc + ncore,  nocc=#valence orbitals
+!   !       Without frozen core approx: nocc_tot = nocc
+!   nocc_tot = MyMolecule%nocc
+!   if(DECinfo%frozencore) then
+!      ncore = MyMolecule%ncore
+!      nocc = MyMolecule%nval
+!   else
+!      ncore = 0
+!      nocc = nocc_tot
+!   endif
+!   nvirt = MyMolecule%nunocc
+!
+!   ! -- Analyze basis and create orbitals
+!   call mem_alloc(occorbitals,nocc_tot)
+!   call mem_alloc(unoccorbitals,nvirt)
+!   call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc_tot,nvirt,natoms, &
+!      & occorbitals,unoccorbitals)
+!
+!   ! Orbital assignment
+!   call mem_alloc(orbitals_assigned,natoms)
+!   orbitals_assigned=.false.
+!   do p=1,nocc_tot
+!      pdx = occorbitals(p)%centralatom
+!      orbitals_assigned(pdx) = .true.
+!   end do
+!   do p=1,nvirt
+!      pdx = unoccorbitals(p)%centralatom
+!      orbitals_assigned(pdx) = .true.
+!   end do
+!
+!   ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
+!   call array4_reorder(VOVO,[1,3,2,4])
+!   ! reorder doubles amplitudes from (a,i,b,j) to (a,b,i,j)
+!   call array4_reorder(t2,[1,3,2,4])
+!
+!   ! Calculate and print out ccsd fragment and pair interaction energies
+!   ccsd_mat_tot = array2_init([natoms,natoms])
+!   ccsd_mat_tmp = array2_init([natoms,natoms])
+!   call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2,t1,VOVO,occorbitals,&
+!      & ccsd_mat_tot%val,ccsd_mat_tmp%val)
+!   call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
+!   IF(DECinfo%InteractionEnergy)THEN
+!      call lsquit('InteractionEnergy not implemented in full ccsd',-1)
+!   ENDIF
+!   IF(DECinfo%PrintInteractionEnergy)THEN
+!      call add_dec_interactionenergies(natoms,ccsd_mat_tot%val,orbitals_assigned,&
+!         & interactionE,MyMolecule%SubSystemIndex,2)
+!      write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy : ',interactionE
+!   ENDIF
+!
+!   ! Delete orbitals 
+!   do i=1,nocc_tot
+!      call orbital_free(OccOrbitals(i))
+!   end do
+!   do i=1,nvirt
+!      call orbital_free(UnoccOrbitals(i))
+!   end do
+!   call mem_dealloc(occorbitals)
+!   call mem_dealloc(unoccorbitals)
+!   call mem_dealloc(orbitals_assigned)
+!   call array2_free(ccsd_mat_tot)
+!   call array2_free(ccsd_mat_tmp)
+!
+!   ! reorder VOVO integrals back: from (a,b,i,j) to (a,i,b,j)
+!   call array4_reorder(VOVO,[1,3,2,4])
+!   ! reorder doubles amplitudes back: from (a,b,i,j) to (a,i,b,j)
+!   call array4_reorder(t2,[1,3,2,4])
+!#endif
+!
+!end subroutine fragment_energies_in_fulL_ccsd_occ
 
-   ! -- Analyze basis and create orbitals
-   call mem_alloc(occorbitals,nocc_tot)
-   call mem_alloc(unoccorbitals,nvirt)
-   call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc_tot,nvirt,natoms, &
-      & occorbitals,unoccorbitals)
-
-   ! Orbital assignment
-   call mem_alloc(orbitals_assigned,natoms)
-   orbitals_assigned=.false.
-   do p=1,nocc_tot
-      pdx = occorbitals(p)%centralatom
-      orbitals_assigned(pdx) = .true.
-   end do
-   do p=1,nvirt
-      pdx = unoccorbitals(p)%centralatom
-      orbitals_assigned(pdx) = .true.
-   end do
-
-   ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
-   call array4_reorder(VOVO,[1,3,2,4])
-   ! reorder doubles amplitudes from (a,i,b,j) to (a,b,i,j)
-   call array4_reorder(t2,[1,3,2,4])
-
-   ! Calculate and print out ccsd fragment and pair interaction energies
-   ccsd_mat_tot = array2_init([natoms,natoms])
-   ccsd_mat_tmp = array2_init([natoms,natoms])
-   call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2,t1,VOVO,occorbitals,&
-      & ccsd_mat_tot%val,ccsd_mat_tmp%val)
-   call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
-   IF(DECinfo%InteractionEnergy)THEN
-      call lsquit('InteractionEnergy not implemented in full ccsd',-1)
-   ENDIF
-   IF(DECinfo%PrintInteractionEnergy)THEN
-      call add_dec_interactionenergies(natoms,ccsd_mat_tot%val,orbitals_assigned,&
-         & interactionE,MyMolecule%SubSystemIndex,2)
-      write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy : ',interactionE
-   ENDIF
-
-   ! Delete orbitals 
-   do i=1,nocc_tot
-      call orbital_free(OccOrbitals(i))
-   end do
-   do i=1,nvirt
-      call orbital_free(UnoccOrbitals(i))
-   end do
-   call mem_dealloc(occorbitals)
-   call mem_dealloc(unoccorbitals)
-   call mem_dealloc(orbitals_assigned)
-   call array2_free(ccsd_mat_tot)
-   call array2_free(ccsd_mat_tmp)
-
-   ! reorder VOVO integrals back: from (a,b,i,j) to (a,i,b,j)
-   call array4_reorder(VOVO,[1,3,2,4])
-   ! reorder doubles amplitudes back: from (a,b,i,j) to (a,i,b,j)
-   call array4_reorder(t2,[1,3,2,4])
-#endif
-
-end subroutine fragment_energies_in_fulL_ccsd_occ
 
 
-
-#ifdef MOD_UNRELEASED
 
 !> \brief get ccsd(t) corrections for full molecule.
-!> \author Janus Juul Eriksen
+!> \author Janus Juul Eriksen, modified by Patrick Ettenhuber and TK
 !> \date February 2013
-function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
+function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       & ccPrintLevel,fragment_job,Co_fc,ppfock_fc) result(ccenergy)
 
    implicit none
@@ -297,7 +296,12 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
 
-   call time_get_start_times(wwork = time_CCSD_work, wcomm = time_CCSD_comm, widle = time_CCSD_idle) 
+   call time_start_phase(PHASE_WORK, swwork = time_CCSD_work, swcomm = time_CCSD_comm, swidle = time_CCSD_idle) 
+
+   ccenergy   = 0.0E0_realk
+   ccsdpt_e4  = 0.0E0_realk
+   ccsdpt_e5  = 0.0E0_realk
+   ccsdpt_tot = 0.0E0_realk
 
    local=.true.
 #ifdef VAR_MPI
@@ -308,10 +312,13 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    ! is this a frozen core calculation or not?
    if (DECinfo%frozencore) then
+
       ncore = MyMolecule%ncore
+
       if(.not. present(Co_fc)) then
          call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
       end if
+
       if(.not. present(ppfock_fc)) then
          call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
       end if
@@ -341,24 +348,42 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    end if
 
-   call time_get_diff_times(wwork = time_CCSD_work, wcomm = time_CCSD_comm, widle = time_CCSD_idle) 
-   call time_get_start_times(wwork = time_pT_work, wcomm = time_pT_comm, widle = time_pT_idle) 
+   if(DECinfo%PL>1)then
+      call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
+         &swwork = time_pT_work, swcomm = time_pT_comm, swidle = time_pT_idle, &
+         &labeldwwork = 'MASTER WORK CCSD: ',&
+         &labeldwcomm = 'MASTER COMM CCSD: ',&
+         &labeldwidle = 'MASTER IDLE CCSD: ') 
+   endif
 
    natoms = MyMolecule%natoms
    nocc_tot = MyMolecule%nocc
 
-   ccsdpt_t1 = array2_init([nvirt,nocc])
-   ccsdpt_t2 = array4_init([nvirt,nvirt,nocc,nocc])
+   if(ccmodel == MODEL_CCSDpT)then
 
-   if(DECinfo%frozencore) then
-      call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,t2_final,&
-         & ccsdpt_t1,ccsdpt_t2)
+      ccsdpt_t1 = array2_init([nvirt,nocc])
+      ccsdpt_t2 = array4_init([nvirt,nvirt,nocc,nocc])
+
+      if(DECinfo%frozencore) then
+         call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,t2_final,&
+            & ccsdpt_t1,ccsdpt_t2)
+      else
+         call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
+            & MyMolecule%Cv,mylsitem,t2_final,ccsdpt_t1,ccsdpt_t2)
+      end if
+
+      if(DECinfo%PL>1)then
+         call time_start_phase(PHASE_WORK,dwwork = time_pT_work, dwcomm = time_pT_comm, dwidle = time_pT_idle, &
+            &labeldwwork = 'MASTER WORK pT: ',&
+            &labeldwcomm = 'MASTER COMM pT: ',&
+            &labeldwidle = 'MASTER IDLE pT: ') 
+      endif
+
    else
-      call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-         & MyMolecule%Cv,mylsitem,t2_final,ccsdpt_t1,ccsdpt_t2)
-   end if
 
-   call time_get_diff_times(wwork = time_pT_work, wcomm = time_pT_comm, widle = time_pT_idle) 
+      call array4_reorder(t2_final,[1,3,2,4])
+
+   endif
 
    ! as we want to  print out fragment and pair interaction fourth-order energy contributions,
    ! then for locality analysis purposes we need occ_orbitals and
@@ -393,13 +418,15 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       & ccsd_mat_tot%val,ccsd_mat_tmp%val)
 
    call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
-   IF(DECinfo%InteractionEnergy)THEN
+
+
+   if(DECinfo%InteractionEnergy)then
       call lsquit('InteractionEnergy not implemented in full ccsd_pt',-1)
-   ENDIF
-   IF(DECinfo%PrintInteractionEnergy)THEN
+   endif
+   if(DECinfo%PrintInteractionEnergy)then
       call add_dec_interactionenergies(natoms,ccsd_mat_tot%val,orbitals_assigned,&
          & interactionECCSD,MyMolecule%SubSystemIndex,2)
-   ENDIF
+   endif
 
    ! release ccsd stuff
    call array2_free(ccsd_mat_tot)
@@ -408,44 +435,51 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ! free integrals
    call array4_free(VOVO)
 
-   ! now we calculate fourth-order (which are printed out in print_e4_full) and fifth-order energies
-   e4_mat_tot = array2_init([natoms,natoms])
-   e4_mat_tmp = array2_init([natoms,natoms])
-   e5_mat_tot = array2_init([natoms,natoms])
+   if(ccmodel == MODEL_CCSDpT)then
+      ! now we calculate fourth-order (which are printed out in print_e4_full) and fifth-order energies
+      e4_mat_tot = array2_init([natoms,natoms])
+      e4_mat_tmp = array2_init([natoms,natoms])
+      e5_mat_tot = array2_init([natoms,natoms])
 
-   call ccsdpt_energy_e4_full(nocc,nvirt,natoms,ncore,t2_final,ccsdpt_t2,occ_orbitals,&
-      & e4_mat_tot%val,e4_mat_tmp%val,ccsdpt_e4)
+      call ccsdpt_energy_e4_full(nocc,nvirt,natoms,ncore,t2_final,ccsdpt_t2,occ_orbitals,&
+         & e4_mat_tot%val,e4_mat_tmp%val,ccsdpt_e4)
 
-   call ccsdpt_energy_e5_full(nocc,nvirt,natoms,ncore,t1_final,ccsdpt_t1,&
-      & occ_orbitals,unocc_orbitals,e5_mat_tot%val,ccsdpt_e5)
+      call ccsdpt_energy_e5_full(nocc,nvirt,natoms,ncore,t1_final,ccsdpt_t1,&
+         & occ_orbitals,unocc_orbitals,e5_mat_tot%val,ccsdpt_e5)
 
-   ! print out the fourth- and fifth-order fragment and pair interactin energies
-   call print_e4_full(natoms,e4_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
+      ! print out the fourth- and fifth-order fragment and pair interactin energies
+      call print_e4_full(natoms,e4_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
 
-   call print_e5_full(natoms,e5_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
-   IF(DECinfo%PrintInteractionEnergy)THEN
-      call add_dec_interactionenergies(natoms,e4_mat_tot%val,orbitals_assigned,&
-         & InteractionECCSDPT4,MyMolecule%SubSystemIndex)
-      write(DECinfo%output,'(A)') ' '
-      write(DECinfo%output,'(A)') ' '
-      write(DECinfo%output,'(A)') 'Interaction Energies '
-      write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
-         & interactionECCSD
-      write(DECinfo%output,'(1X,a,g20.10)') '(fourth order) CCSD(T) Interaction correlation energy:',&
-         & InteractionECCSDPT4
-      call add_dec_interactionenergies(natoms,e5_mat_tot%val,orbitals_assigned,&
-         & InteractionECCSDPT5,MyMolecule%SubSystemIndex)
-      write(DECinfo%output,'(1X,a,g20.10)') '(fifth order) CCSD(T) Interaction correlation energy :',&
-         & InteractionECCSDPT5
-      write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) Interaction correlation energy         :',&
-         & InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionECCSD
-      write(DECinfo%output,'(A)') ' '
-   ENDIF
+      call print_e5_full(natoms,e5_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
 
-   ! release stuff
-   call array2_free(e4_mat_tot)
-   call array2_free(e4_mat_tmp)
-   call array2_free(e5_mat_tot)
+
+      if(DECinfo%PrintInteractionEnergy)then
+         call add_dec_interactionenergies(natoms,e4_mat_tot%val,orbitals_assigned,&
+            & InteractionECCSDPT4,MyMolecule%SubSystemIndex)
+         write(DECinfo%output,'(A)') ' '
+         write(DECinfo%output,'(A)') ' '
+         write(DECinfo%output,'(A)') 'Interaction Energies '
+         write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
+            & interactionECCSD
+         write(DECinfo%output,'(1X,a,g20.10)') '(fourth order) CCSD(T) Interaction correlation energy:',&
+            & InteractionECCSDPT4
+         call add_dec_interactionenergies(natoms,e5_mat_tot%val,orbitals_assigned,&
+            & InteractionECCSDPT5,MyMolecule%SubSystemIndex)
+         write(DECinfo%output,'(1X,a,g20.10)') '(fifth order) CCSD(T) Interaction correlation energy :',&
+            & InteractionECCSDPT5
+         write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) Interaction correlation energy         :',&
+            & InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionECCSD
+         write(DECinfo%output,'(A)') ' '
+      endif
+
+      ! release stuff
+      call array2_free(e4_mat_tot)
+      call array2_free(e4_mat_tmp)
+      call array2_free(e5_mat_tot)
+   endif
+
+
+
    do i=1,nocc_tot
       call orbital_free(occ_orbitals(i))
    end do
@@ -462,9 +496,15 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ! finally, print out total energies 
    write(DECinfo%output,*)
    write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a)') '*****************************************************************************'
-   write(DECinfo%output,'(1X,a)') '*                      Full CCSD(T) calculation is done !                   *'
-   write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+   if(ccmodel == MODEL_CCSDpT)then
+      write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+      write(DECinfo%output,'(1X,a)') '*                      Full CCSD(T) calculation is done !                   *'
+      write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+   else
+      write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+      write(DECinfo%output,'(1X,a)') '*                      Full CCSD calculation is done !                      *'
+      write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+   endif
    write(DECinfo%output,*)
    write(DECinfo%output,*)
    write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
@@ -475,35 +515,38 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ! now update ccenergy with ccsd(t) correction
    ccenergy = ccenergy + ccsdpt_tot
 
-   write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a,g20.10)') 'The E4 doubles and triples contribution =', ccsdpt_e4
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a,g20.10)') 'The E5 singles and triples contribution =', ccsdpt_e5
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) energy contribution       =', ccsdpt_tot
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) correlation energy        =', ccenergy
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-   write(DECinfo%output,*)
-   write(DECinfo%output,*)
+   if(ccmodel == MODEL_CCSDpT)then
+      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a,g20.10)') 'The E4 doubles and triples contribution =', ccsdpt_e4
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a,g20.10)') 'The E5 singles and triples contribution =', ccsdpt_e5
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) energy contribution       =', ccsdpt_tot
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) correlation energy        =', ccenergy
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+   endif
 
    ! free amplitude arrays
    call array2_free(t1_final)
    call array4_free(t2_final)
-   call array2_free(ccsdpt_t1)
-   call array4_free(ccsdpt_t2)
 
-end function ccsolver_justenergy_pt
-!endif mod_unreleased
-#endif
+   if(ccmodel == MODEL_CCSDpT)then
+      call array2_free(ccsdpt_t1)
+      call array4_free(ccsdpt_t2)
+   endif
+
+end function ccsolver_justenergy
 
 !> \brief For a given fragment, calculate singles and doubles amplitudes and
 !> two-electron integrals (a i | bj ) required for CC energy.
