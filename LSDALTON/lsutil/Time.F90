@@ -530,11 +530,16 @@ subroutine time_phase_operations1()
    last_phase = PHASE_INIT
 end subroutine time_phase_operations1
 
-subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot)
+subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot,&
+      &labeldt,labeldc,labelat,labelac,labeltwall,labeltcpu,labelttot,labelctot,output)
    implicit none
    !> phase is a job specifier from the parameter list
    integer,intent(in) :: phase
    real(realk),intent(inout), optional :: dt, dc, at, ac,twall, tcpu,ttot,ctot
+   character*(*), intent(in), optional :: labeldt,labeldc,labelat,labelac,labeltwall,labeltcpu,labelttot,labelctot
+   integer,intent(in),optional         :: output
+   integer :: op
+   character(len=100), pointer :: line
    real(realk) :: deltacpu,deltawall
 
    CALL LS_GETTIM(PHASEcputime2,PHASEwalltime2)
@@ -544,15 +549,61 @@ subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot)
 
    call add_time_to_job(last_phase,DeltaCPU,DeltaWall)
 
+   op = 6
+   if(present(output)) op = output
+
    !return the requested information
-   if(present(dt)) dt       = DeltaWall
-   if(present(dc)) dc       = DeltaCPU
-   if(present(at)) at       = at + DeltaWall
-   if(present(ac)) ac       = ac + DeltaCPU
-   if(present(twall)) twall = PHASEwalltime2
-   if(present(tcpu )) tcpu  = PHASEcputime2
-   if(present(ttot )) ttot  = PHASEwalltime2 - ttot
-   if(present(ctot )) ctot  = PHASEcputime2  - ctot
+   !print the info requested, to the output requested
+
+   if(present(dt))then
+      dt       = DeltaWall
+      if(present(labeldt))then
+         write (op,'(1X,A,g10.3,"s")')labeldt(1:len(labeldt)),dt
+      endif
+   endif
+   if(present(dc))then
+      dc       = DeltaCPU
+      if(present(labeldc))then
+         write (op,'(1X,A,g10.3,"s")')labeldc(1:len(labeldc)),dc
+      endif
+   endif
+   if(present(at))then
+      at       = at + DeltaWall
+      if(present(labelat))then
+         write (op,'(1X,A,g10.3,"s")')labelat(1:len(labelat)),ac
+      endif
+   endif
+   if(present(ac))then
+      ac       = ac + DeltaCPU
+      if(present(labelac))then
+         write (op,'(1X,A,g10.3,"s")')labelac(1:len(labelac)),ac
+      endif
+   endif
+   if(present(twall))then
+      twall = PHASEwalltime2
+      if(present(labeltwall))then
+         write (op,'(1X,A,g10.3,"s")')labeltwall(1:len(labeltwall)),twall
+      endif
+   endif
+   if(present(tcpu ))then
+      tcpu  = PHASEcputime2
+      if(present(labeltcpu))then
+         write (op,'(1X,A,g10.3,"s")')labeltcpu(1:len(labeltcpu)),tcpu
+      endif
+   endif
+   if(present(ttot ))then 
+      ttot  = PHASEwalltime2 - ttot
+      if(present(labelttot))then
+         write (op,'(1X,A,g10.3,"s")')labelttot(1:len(labelttot)),ttot
+      endif
+   endif
+   if(present(ctot ))then
+      ctot  = PHASEcputime2  - ctot
+      if(present(labelctot))then
+         write (op,'(1X,A,g10.3,"s")')labelctot(1:len(labelctot)),ctot
+      endif
+   endif
+
 
    PHASEcputime1  = PHASEcputime2
    PHASEwalltime1 = PHASEwalltime2
@@ -560,6 +611,32 @@ subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot)
    last_phase = phase
 
 end subroutine time_start_phase
+
+subroutine time_get_start_times( winit, wwork, wcomm, widle, cinit, cwork, ccomm, cidle  )
+  implicit none
+  real(realk), intent(inout), optional :: winit, wwork, wcomm, widle,cinit, cwork, ccomm, cidle
+  if(present(winit)) winit = WT_PHASE(PHASE_INIT_IDX)
+  if(present(cinit)) cinit = CT_PHASE(PHASE_INIT_IDX)
+  if(present(wwork)) wwork = WT_PHASE(PHASE_WORK_IDX)
+  if(present(cwork)) cwork = CT_PHASE(PHASE_WORK_IDX)
+  if(present(wcomm)) wcomm = WT_PHASE(PHASE_COMM_IDX)
+  if(present(ccomm)) ccomm = CT_PHASE(PHASE_COMM_IDX)
+  if(present(widle)) widle = WT_PHASE(PHASE_IDLE_IDX)
+  if(present(cidle)) cidle = CT_PHASE(PHASE_IDLE_IDX)
+end subroutine time_get_start_times
+
+subroutine time_get_diff_times( winit, wwork, wcomm, widle, cinit, cwork, ccomm, cidle  )
+  implicit none
+  real(realk), intent(inout), optional :: winit, wwork, wcomm, widle,cinit, cwork, ccomm, cidle
+  if(present(winit)) winit = WT_PHASE(PHASE_INIT_IDX)-winit
+  if(present(cinit)) cinit = CT_PHASE(PHASE_INIT_IDX)-cinit
+  if(present(wwork)) wwork = WT_PHASE(PHASE_WORK_IDX)-wwork
+  if(present(cwork)) cwork = CT_PHASE(PHASE_WORK_IDX)-cwork
+  if(present(wcomm)) wcomm = WT_PHASE(PHASE_COMM_IDX)-wcomm
+  if(present(ccomm)) ccomm = CT_PHASE(PHASE_COMM_IDX)-ccomm
+  if(present(widle)) widle = WT_PHASE(PHASE_IDLE_IDX)-widle
+  if(present(cidle)) cidle = CT_PHASE(PHASE_IDLE_IDX)-cidle
+end subroutine time_get_diff_times
 
 subroutine add_time_to_job(job,deltacpu,deltawall)
    implicit none

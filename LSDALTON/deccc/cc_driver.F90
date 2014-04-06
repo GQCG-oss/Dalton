@@ -294,6 +294,11 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    logical :: local
    real(realk) :: InteractionECCSD,InteractionECCSDPT4,InteractionECCSDPT5
 
+   real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
+   real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
+
+   call time_get_start_times(wwork = time_CCSD_work, wcomm = time_CCSD_comm, widle = time_CCSD_idle) 
+
    local=.true.
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
@@ -336,11 +341,8 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    end if
 
-
-   ! do ccsd
-
-   !    ! free integrals
-   !    call array4_free(VOVO)
+   call time_get_diff_times(wwork = time_CCSD_work, wcomm = time_CCSD_comm, widle = time_CCSD_idle) 
+   call time_get_start_times(wwork = time_pT_work, wcomm = time_pT_comm, widle = time_pT_idle) 
 
    natoms = MyMolecule%natoms
    nocc_tot = MyMolecule%nocc
@@ -356,6 +358,7 @@ function ccsolver_justenergy_pt(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          & MyMolecule%Cv,mylsitem,t2_final,ccsdpt_t1,ccsdpt_t2)
    end if
 
+   call time_get_diff_times(wwork = time_pT_work, wcomm = time_pT_comm, widle = time_pT_idle) 
 
    ! as we want to  print out fragment and pair interaction fourth-order energy contributions,
    ! then for locality analysis purposes we need occ_orbitals and
@@ -1444,6 +1447,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    character(3), parameter :: safefilet21 = 't21'
    character(3), parameter :: safefilet22 = 't22'
    character(3), parameter :: safefilet2f = 't2f'
+   real(realk) :: time_work, time_comm, time_idle, time_fock_mat, time_prec1
+   real(realk) :: time_start_guess,time_copy_opt,time_crop_mat,time_energy,time_iter 
+   real(realk) :: time_main,time_mixing,time_mo_ints,time_new_guess,time_norm,time_residual
+   real(realk) :: time_solve_crop,time_t1_trafo,time_write,time_finalize
    !SOME DUMMIES FOR TESTING
    type(array4) :: iajb_a4
    type(array)            :: tmp
@@ -1451,6 +1458,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer                :: ii, jj, aa, bb, old_iter
    logical                :: restart, w_cp, restart_from_converged
 
+   call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
    !Set defaults
    restart     = .false.
@@ -1464,7 +1472,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    nnodes      = infpar%lg_nodtot
    w_cp        = DECinfo%spawn_comm_proc
 
+   call time_start_phase(PHASE_COMM, at = time_work)
+
    if ( w_cp ) call lspdm_start_up_comm_procs
+
+   call time_start_phase(PHASE_WORK, at = time_comm)
 
 #ifndef COMPILER_UNDERSTANDS_FORTRAN_2003
    call lsquit("ERROR(ccsolver_par):Your compiler does not support certain&
@@ -1473,10 +1485,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 #endif
 
 #endif
-
-
-   call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
-   if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
    ! Sanity check 1: Number of orbitals
@@ -1576,6 +1584,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !           and Fock matrix calculated from a "fragment density" determined from
    !           fragment's occupied molecular orbitals (which for frozen core includes only valence
    !           orbitals).
+   call time_start_phase(PHASE_work, at = time_work, twall = time_fock_mat)
 
    ! Density corresponding to input MOs
    call mem_alloc(dens,nb,nb)
@@ -1633,8 +1642,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          & solver",-1)
    end if MP2Special
 
-   if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
-   if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+   if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_fock_mat, &
+      &twall = time_prec1 , labelttot = 'CCSOL: AO FOCK MATRIX :', output = DECinfo%output)
 
    ! get fock matrices for preconditioning
    Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
@@ -1665,6 +1674,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end if Preconditioner
 
+   if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_prec1,&
+      &labelttot = 'CCSOL: PRECOND. INIT. :', output = DECinfo%output)
+
    call mem_dealloc( ppfock_d )
    call mem_dealloc( qqfock_d )
 
@@ -1694,6 +1706,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
    call mem_alloc( c, DECinfo%ccMaxIter                    )
 
+   call time_start_phase( PHASE_work, at = time_work, twall = time_start_guess )
+
    ! get guess amplitude vectors in the first iteration --> zero if no
    ! restart, else the t*.restart files are read
    two_norm_total = DECinfo%ccConvergenceThreshold + 1.0E0_realk
@@ -1709,13 +1723,15 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    endif
    restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
 
+   if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_start_guess,&
+      &labelttot = 'CCSOL: STARTING GUESS :', output = DECinfo%output, twall = time_main  )
 
    ! title
    Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,&
       &.false.,nb,no,nv,DECinfo%ccMaxDIIS,restart,restart_from_converged,old_iter)
 
 
-   If_converged: if(.not.restart_from_converged)then
+   If_not_converged: if(.not.restart_from_converged)then
 
       !============================================================================!
       !                          MO-CCSD initialization                            !
@@ -1728,8 +1744,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       !   YES: get full set of t1 free gmo and pack them
       !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
       if (mo_ccsd) then
+         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
+
          call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
             & nb,no,nv,CCmodel,MOinfo)
+
+         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
+          &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
+
       end if
 
 
@@ -1747,8 +1769,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       CCIteration : do iter=1,DECinfo%ccMaxIter
 
-         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
-         call LSTIMER('START',iter_cpu,iter_wall,DECinfo%output)
+         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_iter ) 
 
          ! remove old vectors
          RemoveOldVectors : if(iter > DECinfo%ccMaxDIIS) then
@@ -1774,6 +1795,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          omega2(iter) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
          call array_zero(omega2(iter))
 
+         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_t1_trafo ) 
          ! get singles
          T1Related : if(DECinfo%use_singles) then
 
@@ -1788,9 +1810,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          end if T1Related
 
-         if(DECinfo%PL>1) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
-         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
-
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_t1_trafo, &
+            &labelttot= 'CCIT: T1 TRAFO        :', output = DECinfo%output, twall = time_residual ) 
 
          ! readme : get residuals, so far this solver supports only singles and doubles
          !          amplitudes (extension to higher iterative model is trivial); differences
@@ -1814,10 +1835,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
          end select SelectCoupledClusterModel
 
-         if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
-
-
-         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
+            &labelttot= 'CCIT: RESIDUAL        :', output = DECinfo%output, twall = time_crop_mat ) 
 
          ! calculate crop/diis matrix
          B=0.0E0_realk
@@ -1853,15 +1872,16 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !msg="DIIS mat, new"
          !call print_norm(B,DECinfo%ccMaxIter*DECinfo%ccMaxIter,msg)
 
-         if(DECinfo%PL>1) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_crop_mat, &
+            &labelttot= 'CCIT: CROP MATRIX     :', output = DECinfo%output, twall = time_solve_crop ) 
          ! solve crop/diis equation
          c=0.0E0_realk
          call CalculateDIIScoefficients(DECinfo%ccMaxDIIS,DECinfo%ccMaxIter,iter,B,c, &
             DECinfo%cc_driver_debug)
 
 
-         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
-
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_solve_crop, &
+            &labelttot= 'CCIT: SOLVE CROP      :', output = DECinfo%output, twall = time_mixing ) 
 
 
          ! mixing omega to get optimal
@@ -1892,8 +1912,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          end do
 
 
-         if(DECinfo%PL>1) call LSTIMER('CCIT: MIXING',tcpu,twall,DECinfo%output)
-         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_mixing, &
+            &labelttot= 'CCIT: MIXING          :', output = DECinfo%output, twall = time_copy_opt ) 
 
          ! if crop, put the optimal in place of trial (not for diis)
          if(DECinfo%use_crop) then
@@ -1905,8 +1925,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call array_cp_data( t2_opt,     t2(iter)     )
          end if
 
-         if(DECinfo%PL>1) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
-         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_copy_opt, &
+            &labelttot= 'CCIT: COPY OPTIMALS   :', output = DECinfo%output, twall = time_norm ) 
 
          ! check for the convergence
          one_norm1 = 0.0E0_realk
@@ -1943,8 +1963,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             break_iterations=.true.
 
 
-         if(DECinfo%PL>1) call LSTIMER('CCIT: CONV',tcpu,twall,DECinfo%output)
-         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_norm, &
+            &labelttot= 'CCIT: GET NORMS       :', output = DECinfo%output, twall = time_energy ) 
 
 
          ! calculate the correlation energy and fragment energy
@@ -1968,8 +1988,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                & not yet implemented",-1)
          end select EnergyForCCmodel
 
-         if(DECinfo%PL>1) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
-         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_energy, &
+            &labelttot= 'CCIT: GET ENERGY      :', output = DECinfo%output, twall = time_new_guess) 
 
          ! generate next trial vector if this is not the last iteration
          if(.not.break_iterations) then
@@ -1999,16 +2019,24 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
             !if .not.DECinfo%CCSDnosaferun option is set, make sure data is in dense
             if(saferun)then
+
+               if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, twall = time_write ) 
+
                if(DECinfo%use_singles)then
                   call save_current_guess(iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,safefilet22,&
                      &t1(iter+1),safefilet11,safefilet12)
                else
                   call save_current_guess(iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,safefilet22)
                endif
+
+               if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_write, &
+                  &labelttot= ' -NG: NEW GUESS WRITE :', output = DECinfo%output) 
+
             endif
          end if
 
-         if(DECinfo%PL>1) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_new_guess, &
+            &labelttot= 'CCIT: NEW GUESS VEC.  :', output = DECinfo%output ) 
 
 
          ! delete optimals
@@ -2019,7 +2047,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call array_free(t2_opt)
          call array_free(omega2_opt)
 
-         call LSTIMER('CC ITERATION',iter_cpu,iter_wall,DECinfo%output)
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_iter, &
+            &labelttot= 'CCIT: ITERATION       :', output = DECinfo%output) 
 
 #ifdef __GNUC__
          call flush(DECinfo%output)
@@ -2040,12 +2069,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       break_iterations = .true.
       last_iter        = 1
-   endif If_converged
+   endif If_not_converged
 
 
 
-   call LSTIMER('START',ttotend_cpu,ttotend_wall,DECinfo%output)
-
+   call time_start_phase( PHASE_work, at = time_work, ttot = time_main, labelttot = 'CCSOL: MAIN LOOP      :', &
+      & output = DECinfo%output, twall = time_finalize )
 
 
    ! Free memory and save final amplitudes
@@ -2193,6 +2222,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_print_mem_info(DECinfo%output,.true.,.false.)
    endif
 #endif
+
+   if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_finalize, &
+      &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output, twall = ttotstart_wall )
 
 end subroutine ccsolver_par
 
