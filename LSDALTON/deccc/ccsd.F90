@@ -1768,11 +1768,12 @@ contains
               else
                  ! i a j b
 #ifdef VAR_MPI
-                 if( talker .and. lock_outside )call arr_lock_wins(govov,'s',mode)
+                 if( talker .and. lock_outside .and. .not. restart )call arr_lock_wins(govov,'s',mode)
                  if( worker )call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1%d,la,0.0E0_realk,w2%d,no)
                  if( lspdm_use_comm_proc  )call lsmpi_barrier(infpar%pc_comm)
                  call time_start_phase(PHASE_COMM, at = time_intloop_work)
-                 if( talker )call array_add(govov,1.0E0_realk,w2%d,order=[1,4,2,3],wrk=w3%d,iwrk=w3%n)
+                 if( talker .and. .not. restart )call array_add(govov,1.0E0_realk,w2%d,order=[1,4,2,3],wrk=w3%d,iwrk=w3%n)
+                 if( talker .and. restart )call array_add(govov,1.0E0_realk,w2%d,order=[1,4,2,3] )
                  call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 #endif
               endif
@@ -1800,7 +1801,9 @@ contains
 
               !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
               if(scheme==4)then
+
                  if( worker )call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,1.0E0_realk,gvoova%elm1,nv)
+
               else if(scheme==3.or.scheme==2)then
 #ifdef VAR_MPI
                  if( worker )call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,0.0E0_realk,w2%d,nv)
