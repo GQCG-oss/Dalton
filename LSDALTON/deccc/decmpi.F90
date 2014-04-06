@@ -27,7 +27,6 @@ contains
 
   !> \brief Send three fragment energies (for occupied, virtual, and Lagrangian schemes)
   !> from given sender (typically a slave) to given receiver (typically the master).
-  !> For (T) also pass (T) fragment energies.
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine mpi_send_recv_fragmentenergy(comm,MySender,MyReceiver,fragenergy,job)
@@ -679,7 +678,9 @@ contains
     call ls_mpi_buffer(MyFragment%EvirtFOP,master)
     call ls_mpi_buffer(MyFragment%LagFOP,master)
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
-    call ls_mpi_buffer(MyFragment%slavetime,master)
+    call ls_mpi_buffer(MyFragment%slavetime_work,master)
+    call ls_mpi_buffer(MyFragment%slavetime_comm,master)
+    call ls_mpi_buffer(MyFragment%slavetime_idle,master)
     call ls_mpi_buffer(MyFragment%RejectThr,2,master)
     call ls_mpi_buffer(MyFragment%DmaxAE,master)
     call ls_mpi_buffer(MyFragment%DmaxAOS,master)

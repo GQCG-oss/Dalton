@@ -48,7 +48,7 @@ use rpa_module
 
 
 public :: ccsolver, ccsolver_par, fragment_ccsolver, ccsolver_justenergy,&
-   & ccsolver_justenergy_pt, mp2_solver
+   & mp2_solver
 private
 
 contains

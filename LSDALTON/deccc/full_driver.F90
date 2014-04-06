@@ -137,7 +137,7 @@ contains
           end do
        end do
 
-       Ecorr = ccsolver_justenergy_pt(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
           & mylsitem,print_level,fragment_job,Co_fc=Co_fc,ppfock_fc=ppfock_fc)
 
        call mem_dealloc(ppfock_fc)
@@ -154,7 +154,7 @@ contains
 
        else
 
-          Ecorr = ccsolver_justenergy_pt(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+          Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
              & mylsitem,print_level,fragment_job)
 
        endif

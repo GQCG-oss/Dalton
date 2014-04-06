@@ -500,7 +500,7 @@ contains
                   & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
                   & MyMolecule,mylsitem,.true.)
              flops_slaves = MyFragment%flops_slaves
-             tottime = MyFragment%slavetime ! time used by all local slaves
+             tottime = MyFragment%slavetime_work + MyFragment%slavetime_comm ! time used by all local slaves
              fragenergy = MyFragment%energies
              call copy_fragment_info_job(MyFragment,singlejob)
 
@@ -512,7 +512,7 @@ contains
                 call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                      & AtomicFragments(atomA),grad=grad)
                 flops_slaves = AtomicFragments(atomA)%flops_slaves
-                tottime = AtomicFragments(atomA)%slavetime ! time used by all local slaves
+                tottime = AtomicFragments(atomA)%slavetime_work + AtomicFragments(atomA)%slavetime_comm ! time used by all local slaves
                 fragenergy = AtomicFragments(atomA)%energies
                 call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
                 call atomic_fragment_free_basis_info(AtomicFragments(atomA))
@@ -531,7 +531,7 @@ contains
                         & natoms,PairFragment,grad)
                 end if
                 flops_slaves = PairFragment%flops_slaves
-                tottime = PairFragment%slavetime ! time used by all local slaves
+                tottime = PairFragment%slavetime_work + PairFragment%slavetime_comm ! time used by all local slaves
                 fragenergy=PairFragment%energies
 
                 call copy_fragment_info_job(PairFragment,singlejob)
