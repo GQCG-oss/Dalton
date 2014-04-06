@@ -1748,17 +1748,20 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,5X,a)') 'Job', '#occ', &
          & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load'
-    avflop=0.0E0_realk
-    totflops=0.0E0_realk
+
+    avflop         = 0.0E0_realk
+    totflops       = 0.0E0_realk
     tottime_actual = 0.0E0_realk
-    slavetime= 0.0_realk
+    slavetime      = 0.0_realk
 
 
-    minflop = huge(1.0)
-    maxflop=tiny(1.0)
-    minidx=0
-    maxidx=0
-    N=0
+    minflop        = huge(minflop)
+    maxflop        = tiny(maxflop)
+    minidx         = 0
+    maxidx         = 0
+    N              = 0
+
+
     do i=1,jobs%njobs
        ! If nocc is zero, the job was not done and we do not print it
        if(jobs%nocc(i)==0) cycle
@@ -1777,11 +1780,7 @@ contains
        ! Effective slave time (WITHOUT dead time by slaves)
        slavetime = slavetime + jobs%load(i)*jobs%nslaves(i)*jobs%LMtime(i)
 
-       if(DECinfo%ccmodel==MODEL_MP2 .and. (.not. jobs%dofragopt(i))) then
-          write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
-               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
-       else
-          jobs%load(i)=-1.0_realk
+       if(.not. jobs%dofragopt(i)) then
           write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
                & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
        end if
@@ -1832,11 +1831,11 @@ contains
        write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MAXIMUM Gflops/s per MPI process = ', &
             & maxflop, ' for job ', maxidx
 #endif
-    write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
-       if(DECinfo%ccmodel==MODEL_MP2 .and. (.not. any(jobs%dofragopt)) ) then
+    write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%)     = ', globalloss
+       if(.not. any(jobs%dofragopt) ) then
           ! Only print local loss when it is actually implemented
-          write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
-          write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
+          write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)      = ', localloss
+          write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)      = ', localloss+globalloss
        end if
     write(DECinfo%output,*) '-----------------------------------------------------------------------------'
 

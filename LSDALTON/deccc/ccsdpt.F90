@@ -4153,6 +4153,7 @@ contains
     integer(kind=long) :: o2v2,o3v
     real(realk), pointer :: dummy1(:),dummy2(:)
     integer(kind=ls_mpik) :: mode
+    call time_start_phase(PHASE_WORK)
 
     o2v2          = nocc*nocc*nvirt*nvirt
     o3v           = nocc*nocc*nocc*nvirt
@@ -4430,9 +4431,11 @@ contains
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
 
+             call time_start_phase(PHASE_COMM)
              call arr_lock_win(CBAI,i,'s',assert=mode)
              call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
              call arr_unlock_win(CBAI,i)
+             call time_start_phase(PHASE_WORK)
 
           end do
 
@@ -4457,9 +4460,15 @@ contains
     if (infpar%lg_nodtot .gt. 1) then
        call ass_D4to1(JAIB%val,dummy1,[nocc,nvirt,nocc,nvirt])
        call ass_D4to1(JAIK%val,dummy2,[nocc,nvirt,nocc,nocc])
+       
+       call time_start_phase(PHASE_IDLE)
+       call lsmpi_barrier(infpar%lg_comm)
+
        ! now, reduce o^2v^2 and o^3v integrals onto master
+       call time_start_phase(PHASE_COMM)
        call lsmpi_allreduce(dummy1,o2v2,infpar%lg_comm,SPLIT_MSG_REC )
        call lsmpi_allreduce(dummy2,o3v, infpar%lg_comm,SPLIT_MSG_REC ) 
+       call time_start_phase(PHASE_WORK)
 
     end if
 

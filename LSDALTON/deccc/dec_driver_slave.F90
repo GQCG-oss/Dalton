@@ -354,6 +354,7 @@ contains
 
        ! Send finished job to master
        ! ***************************
+       call time_start_phase(PHASE_COMM)
        ! (If job=0 it is an empty job not containing any real information)
        call ls_mpisendrecv(job,MPI_COMM_LSDALTON,infpar%mynum,master)
 
@@ -391,6 +392,7 @@ contains
        ! Receive new job task
        ! ********************
        call ls_mpisendrecv(job,MPI_COMM_LSDALTON,master,infpar%mynum)
+       call time_start_phase(PHASE_WORK)
 
        ! Carry out fragment optimization (job>0), or finish if all jobs are done (job=-1)
        ! ********************************************************************************
@@ -402,7 +404,7 @@ contains
        else
 
           ! Timing and flops
-          call LSTIMER('START',t1cpu,t1wall,DECinfo%output)
+          call time_start_phase(PHASE_WORK, twall = t1wall )
           call start_flop_counter()
 
           atomA=jobs%atom1(job)
@@ -456,6 +458,7 @@ contains
           split=.false.
           divide=.true.
           ! Special case: Never divide for fragment optimization
+          call time_start_phase(PHASE_COMM)
           if(jobs%dofragopt(job)) divide=.false.
 
           DoDivide: do while(divide)
@@ -475,6 +478,7 @@ contains
              end if
           end do DoDivide
 
+          call time_start_phase(PHASE_WORK)
           print '(a,i8,a,i8)', 'Slave ', infpar%mynum, ' will do  job ', job
 
           ! Communicator in setting may have changed due to division of local group
@@ -554,23 +558,26 @@ contains
           end if FragoptCheck3
 
 
-          call get_slave_timers(slave_times,infpar%lg_comm)
-
-          print *,slave_times
 
 
           ! Set fragment job info
           ! *********************
-          call LSTIMER('START',t2cpu,t2wall,DECinfo%output)
+          call get_slave_timers(slave_times,infpar%lg_comm)
+          call time_start_phase(PHASE_WORK, twall = t2wall )
           call end_flop_counter(flops) ! flops for local master
           singlejob%LMtime(1) = t2wall - t1wall  ! wall time used by local master
-          tottime = tottime + singlejob%LMtime(1) ! total time for all local slaves and local master
-          singlejob%flops(1) = flops + flops_slaves  ! FLOPS for local master + local slaves
-          singlejob%nslaves(1) = infpar%lg_nodtot ! Sizes of local slot (local master + local slaves)
+          tottime = tottime + singlejob%LMtime(1) !kaspers accounting
+          tottime =  singlejob%LMtime(1)
+          !only count over slaves, for master we use the upper
+          do i = 1, infpar%lg_nodtot-1
+             tottime = tottime + slave_times(i*nphases + PHASE_WORK_IDX)
+          enddo
+          singlejob%flops(1)     = flops + flops_slaves  ! FLOPS for local master + local slaves
+          singlejob%nslaves(1)   = infpar%lg_nodtot ! Sizes of local slot (local master + local slaves)
           ! load distribution: { tottime / time(local master) } / number of nodes (ideally 1.0)
-          singlejob%load(1) = (tottime/singlejob%LMtime(1))/real(singlejob%nslaves(1))
-          singlejob%jobsdone(1) = .true.
-          singlejob%esti(1) = jobs%esti(job)
+          singlejob%load(1)      = (tottime/singlejob%LMtime(1))/real(singlejob%nslaves(1))
+          singlejob%jobsdone(1)  = .true.
+          singlejob%esti(1)      = jobs%esti(job)
           singlejob%dofragopt(1) = jobs%dofragopt(job)
 
           print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
