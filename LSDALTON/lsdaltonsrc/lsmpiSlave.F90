@@ -76,6 +76,7 @@ end subroutine lsmpi_init
 #ifdef VAR_MPI
 
 subroutine lsmpi_slave(comm)
+   use lstiming
    use infpar_module
    use lsmpi_type
    use lsmpi_test
@@ -180,6 +181,10 @@ subroutine lsmpi_slave(comm)
 #endif
       case(PDMA4SLV);
          call PDM_ARRAY_SLAVE(comm)
+      case(INITSLAVETIME);
+         call init_slave_timers_slave(comm)
+      case(GETSLAVETIME);
+         call get_slave_timers_slave(comm)
       case(GIVE_BIRTH);
          call give_birth_to_child_process
 

@@ -191,17 +191,20 @@ contains
     integer :: num,extra,narrays,nocctot
     type(mypointer),pointer :: CvirtTspecial(:,:)
     real(realk),pointer :: mini1(:),mini2(:),mini3(:),mini4(:)
+    real(realk) :: time_mp2work, time_mp2comm, time_mp2idle
     logical :: ts,fc
     Character            :: intSpec(5)
+
+
+    call time_start_phase( PHASE_WORK, swwork=time_mp2work , swcomm=time_mp2comm , swidle=time_mp2idle )
+
     myload = 0
 
 
 ! If MPI is not used, consider the single node to be "master"
-master=.true.
+    master=.true.
 #ifdef VAR_MPI
-if(infpar%lg_mynum /= 0) then  ! this is a local slave
-master=.false.
-end if
+    master= (infpar%lg_mynum == infpar%master)
 #endif
 
 
@@ -481,6 +484,7 @@ end if
     ! Master starts up slave
     StartUpSlaves: if(wakeslave .and. master) then
 
+       call time_start_phase( PHASE_COMM )
 
        ! Wake up slaves to do the job: MP2 - integrals and amplitudes  (MP2INAMP)
        call ls_mpibcast(MP2INAMP,infpar%master,infpar%lg_comm)
@@ -493,6 +497,8 @@ end if
 
        ! Communicate fragment information to slaves
        call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order_integrals,.true.)
+
+       call time_start_phase( PHASE_WORK )
 
     end if StartUpSlaves
     HSTATUS = 80
@@ -1657,6 +1663,10 @@ end if
 ! then we of course skip the addition of different components of the array.
  MPIcollect: if(wakeslave) then
 
+    call time_start_phase( PHASE_IDLE )
+    call lsmpi_barrier(infpar%lg_comm)
+    call time_start_phase( PHASE_COMM )
+
     ! Add up contibutions to output arrays using MPI reduce
     call lsmpi_local_reduction(goccEOS%val(:,:,:,:),goccEOS%dims(1),&
           &goccEOS%dims(2),goccEOS%dims(3),goccEOS%dims(4),masterrank)
@@ -1699,6 +1709,7 @@ end if
    if(master) MyFragment%slavetime_work=0.0E0_realk
    call lsmpi_reduction(MyFragment%slavetime_work,infpar%master,infpar%lg_comm)
 
+   call time_start_phase( PHASE_WORK )
 end if MPIcollect
 
 ! Number of MPI tasks (=nalpha*ngamma)
@@ -1708,9 +1719,9 @@ MyFragment%ntasks= nbatchesAlpha*nbatchesGamma
 
 
 if(master) then
- call LSTIMER('MP2-INT FIN',tcpu,twall,DECinfo%output)
- call LSTIMER('MP2-INT TOTAL',tcpuTOT,twallTOT,DECinfo%output)
- call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
+   call LSTIMER('MP2-INT FIN',tcpu,twall,DECinfo%output)
+   call LSTIMER('MP2-INT TOTAL',tcpuTOT,twallTOT,DECinfo%output)
+   call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
 end if
 
 end subroutine MP2_integrals_and_amplitudes_workhorse

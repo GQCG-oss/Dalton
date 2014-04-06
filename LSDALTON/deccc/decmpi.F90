@@ -336,6 +336,9 @@ contains
     !> Communicate basis (expensive box in decfrag)
     logical,intent(in) :: DoBasis
     integer(kind=ls_mpik) :: master
+
+    call time_start_phase( PHASE_COMM )
+
     master = 0
 
     ! Init MPI buffer which eventually will contain all fragment info
@@ -371,6 +374,7 @@ contains
     ! SLAVE: Deallocate buffer etc.
     call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
 
+    call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_mp2_int_and_amp
 
 
@@ -2284,6 +2288,9 @@ contains
 
   end subroutine wake_slaves_for_simple_mo
 
+
+
+
 #else
   !Added to avoid "has no symbols" linking warning
   subroutine decmpi_module_void()
@@ -2304,4 +2311,5 @@ subroutine set_dec_settings_on_slaves()
    if(infpar%mynum == infpar%master) call ls_mpibcast(DEC_SETTING_TO_SLAVES,infpar%master,MPI_COMM_LSDALTON)
    call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
 end subroutine set_dec_settings_on_slaves
+
 #endif

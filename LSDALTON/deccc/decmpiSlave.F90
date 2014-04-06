@@ -87,6 +87,10 @@ subroutine dec_lsmpi_slave(comm)
          call lsmpi_default_mpi_group
       case(PDMA4SLV);
          call PDM_ARRAY_SLAVE(comm)
+      case(INITSLAVETIME);
+         call init_slave_timers_slave(comm)
+      case(GETSLAVETIME);
+         call get_slave_timers_slave(comm)
 #ifdef VAR_SCALAPACK
       case(GRIDINIT);
          call PDM_GRIDINIT_SLAVE

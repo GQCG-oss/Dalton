@@ -10,6 +10,7 @@ module dec_driver_slave_module
   use lstiming
   use infpar_module
   use lsmpi_type
+  use lsmpi_op, only: init_slave_timers, get_slave_timers
   use typedeftype
   use dec_typedef_module
   use DALTONINFO, only: ls_free
@@ -315,6 +316,7 @@ contains
     real(realk) :: t1cpu, t2cpu, t1wall, t2wall
     real(realk) :: t1cpuacc, t2cpuacc, t1wallacc, t2wallacc
     real(realk) :: flops
+    real(realk), pointer :: slave_times(:)
     integer(kind=ls_mpik) :: master
     master = 0
     fragenergy=0.0_realk
@@ -486,6 +488,9 @@ contains
           end if
 
 
+          
+          call init_slave_timers(slave_times,infpar%lg_comm)
+
           ! RUN FRAGMENT CALCULATION
           ! ************************
 
@@ -495,13 +500,16 @@ contains
                 call lsquit('fragments_slave: Fragment optimization requested for pair fragment!',-1)
              end if
 
+
              ! Fragment optimization
              call optimize_atomic_fragment(atomA,MyFragment,MyMolecule%nAtoms, &
-                  & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
-                  & MyMolecule,mylsitem,.true.)
+                  & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, MyMolecule,mylsitem,.true.)
+
+
              flops_slaves = MyFragment%flops_slaves
              tottime = MyFragment%slavetime_work + MyFragment%slavetime_comm ! time used by all local slaves
              fragenergy = MyFragment%energies
+
              call copy_fragment_info_job(MyFragment,singlejob)
 
           else
@@ -511,9 +519,11 @@ contains
 
                 call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                      & AtomicFragments(atomA),grad=grad)
+
                 flops_slaves = AtomicFragments(atomA)%flops_slaves
                 tottime = AtomicFragments(atomA)%slavetime_work + AtomicFragments(atomA)%slavetime_comm ! time used by all local slaves
                 fragenergy = AtomicFragments(atomA)%energies
+
                 call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
                 call atomic_fragment_free_basis_info(AtomicFragments(atomA))
 
@@ -530,6 +540,7 @@ contains
                         & AtomicFragments(atomA), AtomicFragments(atomB), &
                         & natoms,PairFragment,grad)
                 end if
+
                 flops_slaves = PairFragment%flops_slaves
                 tottime = PairFragment%slavetime_work + PairFragment%slavetime_comm ! time used by all local slaves
                 fragenergy=PairFragment%energies
@@ -541,6 +552,11 @@ contains
              end if SingleOrPair
 
           end if FragoptCheck3
+
+
+          call get_slave_timers(slave_times,infpar%lg_comm)
+
+          print *,slave_times
 
 
           ! Set fragment job info
@@ -559,6 +575,8 @@ contains
 
           print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
                & job, singlejob%LMtime(1)
+
+          call mem_dealloc(slave_times)
        end if DoJob
    
 
