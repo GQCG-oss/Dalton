@@ -100,8 +100,8 @@
             pe_ifc_mep_noqm = 0
         end if
       end function pe_ifc_mep_noqm
- 
-      subroutine pe_ifc_mepcalc(denmats, nmats, work, nwrk)
+
+      subroutine pe_ifc_mepcalc(denmats, nmats)
 
         use polarizable_embedding, only: pe_master
         use pe_variables, only: mep_qmcube
@@ -117,7 +117,7 @@
         use polarizable_embedding, only: pe_master
         call pe_master(runtype='mep')
       end subroutine pe_ifc_mepcalc_noqm
- 
+
       subroutine pe_ifc_london(fckmats, nmats, work, nwrk)
 
         use polarizable_embedding, only: pe_master
@@ -138,7 +138,7 @@
       subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
 !
 !     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
-!                based on PCMGRAD 
+!                based on PCMGRAD
 !
 !     Purpose:  calculate (MCSCF) energy and gradient contribution
 !               from a PE potential using the PE library
@@ -208,10 +208,10 @@
           write(lupri,*) ' >>> PE GRADIENT WARNING <<< '
           write(lupri,*) ' < CREF | GRAD > =', test
        end if
-       ! --------------------------------------------------     
+       ! --------------------------------------------------
        ! Add PE gradient contribution to MCSCF gradient
        call daxpy(nvarh, 1.0d0, pegrd, 1, grd, 1)
-       deallocate(pegrd)      
+       deallocate(pegrd)
        if (luit2 > 0) then
           nc4 = max(nconf, 4)
           nw4 = max(nwopt, 4)
@@ -220,8 +220,8 @@
           write(luit2) star8, star8, star8, solvdi
           if (nconf > 1) call writt(luit2, nc4, diape)
           write(luit2) star8, star8, star8, eodata
-       end if      
-       call qexit('pe_grad')      
+       end if
+       call qexit('pe_grad')
        end subroutine pe_grad
 
 !------------------------------------------------------------------------------
@@ -262,9 +262,9 @@
 
       call qenter('pe_fckmo')
 
-      allocate(dcao(n2basx), dvao(n2basx))      
+      allocate(dcao(n2basx), dvao(n2basx))
       call fckden((nisht>0), (nasht>0), dcao, dvao, cmo, dv, wrk, nwrk)
-      if (nisht==0) dcao = 0.0d0 
+      if (nisht==0) dcao = 0.0d0
       if (nasht > 0) dcao = dcao + dvao
       deallocate(dvao)
 
@@ -1127,7 +1127,7 @@ C
 
          !-----------------------------------------------------------
          ! Get Fg = Vmul - R*<0|F|>Fe from file
-         !----------------------------------------------------------- 
+         !-----------------------------------------------------------
          if (.not. tdhf) then
             allocate(fpe(nnorbx))
             if (lusifc <= 0) then
@@ -1140,7 +1140,7 @@ C
             call readt(lusifc, nnorbx, fpe)
             if (lopen) call gpclose(lusifc, 'KEEP')
             allocate(fupe(norbt,norbt))
-            call dsptsi(norbt, fpe, fupe)            
+            call dsptsi(norbt, fpe, fupe)
             deallocate(fpe)
          end if
          !-----------------------------------------------------------
@@ -1178,7 +1178,7 @@ C
             !  DT2X = D_pq(k2,k1) = <0|[k2,[k1,Epq]|0>
             udvmo = 0.0d0
             call oitd1(isymc,zymc,udcmo,udvmo,isymb)
-            ! DT2X in udvmo (re-used to save memory)            
+            ! DT2X in udvmo (re-used to save memory)
             udcao = 0.0d0
             isymbc = muld2h(isymb,isymc)
             call motoao(udvmo,udcao,cmo,isymbc,wrk,lfree)
@@ -1188,33 +1188,33 @@ C
 
             !  DTX = D_pq(k2) = <0|[k2,Epq]|0>
             udcmo = 0.0d0
-            udvmo = 0.0d0            
+            udvmo = 0.0d0
             call deq27mo(isymc, zymc, udv, udcmo, udvmo,
      &                   wrk, lfree)
             if (nasht > 0) then
-               udcmo = udcmo + udvmo                
+               udcmo = udcmo + udvmo
             end if
             udcao = 0.0d0
-            call motoao(udcmo,udcao,cmo,isymb,wrk,lfree) 
+            call motoao(udcmo,udcao,cmo,isymb,wrk,lfree)
             call dgefsp(nbast, udcao, dcaos(2*nnbasx+1:3*nnbasx))
             ! needed to fit with HF code
-            dcaos(2*nnbasx+1:3*nnbasx) = 
+            dcaos(2*nnbasx+1:3*nnbasx) =
      &      0.5d0*dcaos(2*nnbasx+1:3*nnbasx)
 
             !  DT2X = D_pq(k1,k2) = <0|[k1,[k2,Epq]|0>
             udvmo = 0.0d0
             call oitd1(isymb,zymb,udcmo,udvmo,isymc)
-            ! DT2X in udvmo (re-used to save memory)            
+            ! DT2X in udvmo (re-used to save memory)
             udcao = 0.0d0
             isymbc = muld2h(isymc,isymb)
             call motoao(udvmo,udcao,cmo,isymbc,wrk,lfree)
-            call dgefsp(nbast, udcao, dcaos(3*nnbasx+1:4*nnbasx))    
+            call dgefsp(nbast, udcao, dcaos(3*nnbasx+1:4*nnbasx))
             ! needed to fit with HF code
-            dcaos(3*nnbasx+1:4*nnbasx) = 
+            dcaos(3*nnbasx+1:4*nnbasx) =
      &      0.5d0*dcaos(3*nnbasx+1:4*nnbasx)
-            deallocate(udcmo,udvmo) 
+            deallocate(udcmo,udvmo)
 
-            if (tdhf) then            
+            if (tdhf) then
             write(lupri,*) 'PE-DFT or HF QR detected: Skipping CI dens.'
             end if
             if (.not. tdhf ) then
@@ -1227,21 +1227,21 @@ C
                ncr    = mzconf(isymc)
                kzvarl = mzconf(1)
                kzvarr = mzyvar(isymc)
-              
+
                den1 = 0.0d0 ! edh: This is equal to udtv later...
                allocate(udtv(n2ashx), udtvao(n2basx))
-              
+
                udtv = 0.0d0
                udtvao = 0.0d0
                call rspgdm(1, ilsym, irsym, ncl, ncr, kzvarl, kzvarr,
      &                     cref, vecc, ovlap, udtv, dummy, 0 ,0, .true.,
-     &                    .true., xindx, wrk, 1, lfree, .true.)       
+     &                    .true., xindx, wrk, 1, lfree, .true.)
                call fckden2(.false.,.true., dummy, udtvao, cmo,
-     &                   udtv, wrk, lfree)               
+     &                   udtv, wrk, lfree)
                call dgefsp(nbast, udtvao, dcaos(4*nnbasx+1:5*nnbasx))
-               dcaos(4*nnbasx+1:5*nnbasx) = 
+               dcaos(4*nnbasx+1:5*nnbasx) =
      &         1.0d0*dcaos(4*nnbasx+1:5*nnbasx)
-         
+
                ! Construct the density matrix <01L|..|0> + <0|..|01R>
                ilsym  = irefsy
                irsym  = muld2h(irefsy,isymb)
@@ -1249,7 +1249,7 @@ C
                ncr    = mzconf(isymb)
                kzvarl = mzconf(1)
                kzvarr = mzyvar(isymb)
-         
+
                udtv = 0.0d0
                udtvao = 0.0d0
                call rspgdm(1, ilsym, irsym, ncl, ncr, kzvarl, kzvarr,
@@ -1257,13 +1257,13 @@ C
      &                     .true., xindx, wrk, 1, lfree, .true.)
                call fckden2(.false.,.true., dummy, udtvao, cmo,
      &                      udtv, wrk, lfree)
-               call dgefsp(nbast, udtvao, dcaos(5*nnbasx+1:6*nnbasx))  
-                dcaos(5*nnbasx+1:6*nnbasx) = 
-     &         1.0d0*dcaos(5*nnbasx+1:6*nnbasx)  
+               call dgefsp(nbast, udtvao, dcaos(5*nnbasx+1:6*nnbasx))
+                dcaos(5*nnbasx+1:6*nnbasx) =
+     &         1.0d0*dcaos(5*nnbasx+1:6*nnbasx)
 
                if (mzconf(isymb) .gt. 0 .and. mzconf(isymc) .gt. 0) then
-           
-                  ! Construct <01L|..|02R> + <02L|..|01R> density            
+
+                  ! Construct <01L|..|02R> + <02L|..|01R> density
                   ilsym  = muld2h(irefsy,isymb)
                   irsym  = muld2h(irefsy,isymc)
                   ncl    = mzconf(isymb)
@@ -1271,21 +1271,21 @@ C
                   kzvarl = mzyvar(isymb)
                   kzvarr = mzyvar(isymc)
                   isymdn = muld2h(ilsym,irsym)
-                 
+
                   udtv = 0.0d0
                   udtvao = 0.0d0
                   call rspgdm(1, ilsym, irsym, ncl, ncr, kzvarl, kzvarr,
-     &                        vecb, vecc, ovlap, udtv, dummy, 0 ,0, 
-     &                       .true., .true., xindx, wrk, 1, lfree, 
+     &                        vecb, vecc, ovlap, udtv, dummy, 0 ,0,
+     &                       .true., .true., xindx, wrk, 1, lfree,
      &                       .false.)
                   call fckden2(.false.,.true., dummy, udtvao, cmo,
      &                       udtv, wrk, lfree)
                   call dgefsp(nbast, udtvao, dcaos(6*nnbasx+1:7*nnbasx))
                end if
-               dcaos(6*nnbasx+1:7*nnbasx) = 
+               dcaos(6*nnbasx+1:7*nnbasx) =
      &         1.0d0*dcaos(6*nnbasx+1:7*nnbasx)
 
-               ! D_pq = <0|Epq|0>     
+               ! D_pq = <0|Epq|0>
                udcao = 0.0d0
                udvao = 0.0d0
                call dgefsp(nasht, udv, dv)
@@ -1314,9 +1314,9 @@ C
                call mtrsp(nbast, nbast, dvaao, nbast, dvatr, nbast)
                udtvao = dvbao - dvatr
                call dgefsp(nbast, udtvao, dcaos(8*nnbasx+1:9*nnbasx))
-               dcaos(8*nnbasx+1:9*nnbasx) = 
-     &         2.0d0*dcaos(8*nnbasx+1:9*nnbasx) 
-              
+               dcaos(8*nnbasx+1:9*nnbasx) =
+     &         2.0d0*dcaos(8*nnbasx+1:9*nnbasx)
+
                ! D_pq(k1,S2) = <02L|[k1,Epq]|0> + <0|[k1,Epq]|02R>
                dva    = 0.0d0
                dvb    = 0.0d0
@@ -1329,17 +1329,17 @@ C
      &                      dva, wrk, lfree)
                call fckden2(.false.,.true., dummy, dvbao, cmo,
      &                      dvb, wrk, lfree)
-               call mtrsp(nbast, nbast, dvaao, nbast, dvatr, nbast) 
+               call mtrsp(nbast, nbast, dvaao, nbast, dvatr, nbast)
                udtvao = dvbao - dvatr
                call dgefsp(nbast, udtvao, dcaos(9*nnbasx+1:10*nnbasx))
-               dcaos(9*nnbasx+1:10*nnbasx) = 
-     &         2.0d0*dcaos(9*nnbasx+1:10*nnbasx) 
-              
+               dcaos(9*nnbasx+1:10*nnbasx) =
+     &         2.0d0*dcaos(9*nnbasx+1:10*nnbasx)
+
                deallocate(dva, dvb, dvaao, dvbao, dvatr)
                deallocate(udtv,udtvao)
 
             end if
-            deallocate(udcao, udvao)            
+            deallocate(udcao, udvao)
             !-----------------------------------------------------------
             ! Calculate PE response operators in AO basis
             !-----------------------------------------------------------
@@ -1349,13 +1349,13 @@ C
                fcaos = 0.0d0
                call pe_master(runtype='response',
      &                        denmats=dcaos, fckmats=fcaos,
-     &                        nmats=10, dalwrk=tmpwrk)
+     &                        nmats=10)
             else
                allocate(fcaos(4*nnbasx))
                fcaos = 0.0d0
                call pe_master(runtype='response',
      &                        denmats=dcaos, fckmats=fcaos,
-     &                        nmats=4, dalwrk=tmpwrk)
+     &                        nmats=4)
             end if
             deallocate(dcaos)
 
@@ -1372,14 +1372,14 @@ C
             !|   <01L| [qj+,TB] |02R> + <02L| [qj+,TB] |01R> |
             !\                       0                       /
 
-            ! ionstruct <01L|..|02R> + <02L|..|01R> density 
-            ilsym  = muld2h(irefsy,isymb)  
+            ! ionstruct <01L|..|02R> + <02L|..|01R> density
+            ilsym  = muld2h(irefsy,isymb)
             irsym  = muld2h(irefsy,isymc)
             ncl    = mzconf(isymb)
             ncr    = mzconf(isymc)
             kzvarl = mzyvar(isymb)
             kzvarr = mzyvar(isymc)
-           
+
             den1 = 0.0d0
             call rspgdm(1, ilsym, irsym, ncl, ncr, kzvarl, kzvarr,
      &                  vecb, vecc, ovlap, den1, dummy, 0, 0, .true.,
@@ -1389,10 +1389,10 @@ C
             isymdn = muld2h(ilsym,irsym)
 
             if ( mzwopt(isyma) .gt. 0 ) then
-               call orbsx(1, isyma, kzyva, etrs, fupe, ovlap, 
+               call orbsx(1, isyma, kzyva, etrs, fupe, ovlap,
      &                    isymdn, den1, mjwop, 1, lfree)
            end if
-        end if   
+        end if
         !-----------------------------------------------------------
         !case 2
         !-----------------------------------------------------------
@@ -1400,24 +1400,24 @@ C
         if (pe_polar) then
 
            allocate(fcmo(nnorbx))
-           allocate(fxo1k(norbt,norbt))             
+           allocate(fxo1k(norbt,norbt))
            fxo1k = 0.0d0
            if (.not. tdhf) then
-              allocate(fxc1s(norbt,norbt)) 
+              allocate(fxc1s(norbt,norbt))
               fxc1s = 0.0d0
            end if
 
-           ! Fxo = R*<0|Fe(1k)|0>Fe 
+           ! Fxo = R*<0|Fe(1k)|0>Fe
            fcmo = 0.0d0
-           call uthu(2.0d0*fcaos(1:nnbasx), fcmo, cmo, 
+           call uthu(2.0d0*fcaos(1:nnbasx), fcmo, cmo,
      &               wrk, nbast, norbt)
-           call dsptsi(norbt, fcmo, fxo1k)            
+           call dsptsi(norbt, fcmo, fxo1k)
 
            if (.not. tdhf) then
               ! Fxc(1S) = ( R*<01lE|0>+<0|E01R> )Fe
               ! edh: Should it be 1.0d0 or 2.0d0 ???
               fcmo = 0.0d0
-              call uthu(1.0d0*fcaos(4*nnbasx+1:5*nnbasx), fcmo, cmo, 
+              call uthu(1.0d0*fcaos(4*nnbasx+1:5*nnbasx), fcmo, cmo,
      &                  wrk, nbast, norbt)
               call dsptsi(norbt, fcmo, fxc1s)
            end if
@@ -1425,30 +1425,30 @@ C
            ! fcas2_1 = Fa[1](1k)
            allocate(fcas2_1(norbt,norbt))
            fcas2_1 = 0.0d0
-           if (.not. tdhf) then 
+           if (.not. tdhf) then
               fcas2_1 = fxo1k + fxc1s
               deallocate(fxc1s)
-           else 
+           else
               fcas2_1 = fxo1k
            end if
            deallocate(fxo1k)
 
            if (.not. tdhf) then
               if (mzconf(isymc) .le. 0) return
-            
+
              !/   0    \
              !| Sj(2)  | * <0| Fa[1](1k) |0>
              !|   0    |
              !\ Sj(2)* /
-                         
+
               if (isyma .eq. isymc) then
                   ovlap = 1.0d0
-                  call melone(fcas2_1, 1, udv, ovlap, fact, 
+                  call melone(fcas2_1, 1, udv, ovlap, fact,
      &                        200,'fact for Fxo(1k) + Fxc(1S) ')
                   nzconf = mzconf(isyma)
                   nzvar  = mzvar(isyma)
                   call daxpy(nzconf, fact, vecc, 1, etrs, 1)
-                  call daxpy(nzconf,fact, 
+                  call daxpy(nzconf,fact,
      &                         vecc(nzvar+1), 1, etrs(nzvar+1), 1)
               end if
            end if
@@ -1460,9 +1460,9 @@ C
               fxc2s = 0.0d0
            end if
 
-           ! Fxo(2k) = R*<0|[2k,Epq]|0>Fe 
+           ! Fxo(2k) = R*<0|[2k,Epq]|0>Fe
            fcmo = 0.0d0
-           call uthu(2.0d0*fcaos(2*nnbasx+1:3*nnbasx), 
+           call uthu(2.0d0*fcaos(2*nnbasx+1:3*nnbasx),
      &                fcmo, cmo, wrk, nbast, norbt)
            call dsptsi(norbt, fcmo, fxo2k)
 
@@ -1481,19 +1481,19 @@ C
            if (.not. tdhf) then
               fcas2_2 = fxo2k + fxc2s
               deallocate(fxc2s)
-           else 
+           else
               fcas2_2 = fxo2k
-           end if            
+           end if
            deallocate(fxo2k)
-           
+
            if (.not. tdhf) then
               if (mzconf(isymb) .le. 0) return
-            
+
              !/   0    \
              !| Sj(1)  | * <0| Fa[1](2k) |0>
              !|   0    |
              !\ Sj(1)* /
-             
+
               if (isyma .eq. isymb) then
                   ovlap = 1.0d0
                   call melone(fcas2_2, 1, udv, ovlap, fact,
@@ -1501,35 +1501,35 @@ C
                     nzconf = mzconf(isyma)
                     nzvar  = mzvar(isyma)
                     call daxpy(nzconf, fact, vecb, 1, etrs, 1)
-                    call daxpy(nzconf,fact, 
+                    call daxpy(nzconf,fact,
      &                         vecb(nzvar+1), 1, etrs(nzvar+1), 1)
               end if
            end if
         end if
 !       !-----------------------------------------------------------
 !       !case 3
-!       !-----------------------------------------------------------        
-        allocate(fxpeb(norbt,norbt))        
+!       !-----------------------------------------------------------
+        allocate(fxpeb(norbt,norbt))
         fxpeb = 0.0d0
         call oith1(isymb,zymb,fupe,fxpeb,1)
 
         ! fcas3_1 = Fg(k1) + F[a1]
         allocate(fcas3_1(norbt,norbt))
-        if (pe_polar) then       
-            fcas3_1 = fxpeb + fcas2_1     
-        else 
-            fcas3_1 = fxpeb   
-        end if  
+        if (pe_polar) then
+            fcas3_1 = fxpeb + fcas2_1
+        else
+            fcas3_1 = fxpeb
+        end if
 
         if (.not. tdhf) then
 
            if (mzconf(isymc) .le. 0) return
-         
+
           !/   <0| [qj,TD1] |02R>  + <02L| [qj,TD1] |0>  \
           !|   <j| TD1 |02R>                             |
           !|   <0| [qj+,TD1] |02R> + <02L| [qj+,TD1] |0> |
           !\  -<02L| TD1 |j>                             /
-         
+
           ! 1a. Construct the density matrix <02L|..|0> + <0|..|02R>
            ilsym  = irefsy
            irsym  = muld2h(irefsy,isymc)
@@ -1537,12 +1537,12 @@ C
            ncr    = mzconf(isymc)
            kzvarl = mzconf(1)
            kzvarr = mzyvar(isymc)
-         
+
            den1 = 0.0d0
            call rspgdm(1, ilsym, irsym, ncl, ncr, kzvarl, kzvarr,
      &                 cref, vecc, ovlap, den1, dummy, 0 ,0, .true.,
      &                 .true., xindx, wrk, 1, lfree, .true.)
-         
+
 !          1b. Make the gradient
            isymdn = muld2h(ilsym,irsym)
            isymst = muld2h(isyma,irefsy)
@@ -1554,34 +1554,34 @@ C
            lorb    = ( mzwopt(isyma) .gt. 0 )
            nzyvec = mzyvar(isymc)
            nzcvec = mzconf(isymc)
-         
+
            call rsp1gr(1, kzyva, idummy, 0 , isyma, 0, isymc, etrs,
      &               vecc, nzyvec, nzcvec, ovlap, isymdn, den1, fcas3_1,
      &               xindx, mjwop, wrk(1), lfree, lorb, lcon, .false.)
         end if
         deallocate(fcas3_1)
-  
+
         allocate(fxpec(norbt,norbt))
         fxpec = 0.0d0
         call oith1(isymc,zymc,fupe,fxpec,1)
 
         ! fcas3_2 = Fg(2k) + Fa[1]
-        allocate(fcas3_2(norbt,norbt))       
-        if (pe_polar) then       
-            fcas3_2 = fxpec + fcas2_2 
+        allocate(fcas3_2(norbt,norbt))
+        if (pe_polar) then
+            fcas3_2 = fxpec + fcas2_2
         else
-            fcas3_2 = fxpec         
+            fcas3_2 = fxpec
         end if
 
         if (.not. tdhf) then
-         
+
            if (mzconf(isymb) .le. 0) return
-         
+
           !/   <0| [qj,TD2] |01R>  + <01L| [qj,TD2] |0>  \
           !|   <j| TD2 |01R>                             |
           !|   <0| [qj+,TD2] |01R> + <01L| [qj+,TD2] |0> |
           !\  -<01L| TD2 |j>                             /
-         
+
           ! 2a. Construct the density matrix <01L|..|0> + <0|..|01R>
            ilsym  = irefsy
            irsym  = muld2h(irefsy,isymb)
@@ -1589,12 +1589,12 @@ C
            ncr    = mzconf(isymb)
            kzvarl = mzconf(1)
            kzvarr = mzyvar(isymb)
-         
+
            den1 = 0.0d0
            call rspgdm(1, ilsym, irsym, ncl, ncr, kzvarl, kzvarr,
      &               cref, vecb, ovlap, den1, dummy, 0 ,0, .true.,
      &               .true., xindx, wrk, 1, lfree, .true.)
-         
+
           ! 2b. Make the gradient
            isymdn = muld2h(ilsym,irsym)
            isymst = muld2h(isyma,irefsy)
@@ -1606,17 +1606,17 @@ C
            lorb    = ( mzwopt(isyma) .gt. 0 )
            nzyvec = mzyvar(isymb)
            nzcvec = mzconf(isymb)
-         
+
            call rsp1gr(1, kzyva, idummy, 0 , isyma, 0, isymb, etrs,
      &               vecb, nzyvec, nzcvec, ovlap, isymdn, den1, fcas3_2,
      &               xindx, mjwop, wrk(1), lfree, lorb, lcon, .false.)
         end if
-        deallocate(fcas3_2)          
+        deallocate(fcas3_2)
 !       !-----------------------------------------------------------
 !       !case 4
 !       !-----------------------------------------------------------
 
-!       !fx2pe = 0.5*Fg(1k,2k) + 0.5*Fg(2k,1k) + ... 
+!       !fx2pe = 0.5*Fg(1k,2k) + 0.5*Fg(2k,1k) + ...
         allocate(fx2pe(norbt,norbt))
         fx2pe = 0.0d0
         if (.not. tdhf) then
@@ -1626,7 +1626,7 @@ C
         end if
         fx2pe = 0.5d0 * fx2pe
 
-        ! ... + fcas2_1(2k) + fcas2_2(k1) 
+        ! ... + fcas2_1(2k) + fcas2_2(k1)
         if (pe_polar) then
             call oith1(isymc,zymc,fcas2_1, fx2pe,  isymb)
             call oith1(isymb,zymb,fcas2_2, fx2pe, isymc)
@@ -1646,7 +1646,7 @@ C
                   fact   = ddot(nzconf, vecb, 1, vecc(nzvar+1), 1) +
      &                     ddot(nzconf, vecc, 1, vecb(nzvar+1), 1)
                            call daxpy(n2orbx, fact, fxo, 1, fx2pe, 1)
-                  deallocate(fxo)  
+                  deallocate(fxo)
                end if
             end if
 
@@ -1669,40 +1669,40 @@ C
      &                   fcmo, cmo, wrk, nbast, norbt)
                call dsptsi(norbt, fcmo, fxo1k2k)
 
-               !fxo(2k,1k) = R*<0|Fe(2k,1k)|0>Fe          
+               !fxo(2k,1k) = R*<0|Fe(2k,1k)|0>Fe
                fcmo    = 0.0d0
                call uthu(1.0d0*fcaos(3*nnbasx+1:4*nnbasx),
-     &                   fcmo, cmo, wrk, nbast, norbt)               
+     &                   fcmo, cmo, wrk, nbast, norbt)
                call dsptsi(norbt, fcmo, fxo2k1k)
             end if
 
             ! + ... fxc(1s2s) + fxc(2s1s) + 2fxc(1s2k) + 2fxc(1k2S)
             if (.not. tdhf) then
                ! fxc(1s2s) = R* ( <01L|..|02R> + <02L|..|01R> )Fe
-               fcmo    = 0.0d0 
+               fcmo    = 0.0d0
                call uthu(0.25d0*fcaos(6*nnbasx+1:7*nnbasx), fcmo, cmo,
      &                   wrk, nbast, norbt)
                call dsptsi(norbt, fcmo, fxc1s2s)
 
-               ! + ... fxc(1s2k) + fxc(1k2S)              
-               ! fxc(1s2k) = ( <01L|[k2,Epq]|0> + <0|[k2,Epq]|01R> )Fe            
+               ! + ... fxc(1s2k) + fxc(1k2S)
+               ! fxc(1s2k) = ( <01L|[k2,Epq]|0> + <0|[k2,Epq]|01R> )Fe
                call uthu(2.0d0*fcaos(8*nnbasx+1:9*nnbasx), fcmo, cmo,
      &                   wrk, nbast, norbt)
                call dsptsi(norbt, fcmo, fxc1s2k)
-              
-               ! fxc(1k2s) = ( <02L|[k1,Epq]|0> + <0|[k1,Epq]|02R> )Fe            
+
+               ! fxc(1k2s) = ( <02L|[k1,Epq]|0> + <0|[k1,Epq]|02R> )Fe
                call uthu(2.0d0*fcaos(9*nnbasx+1:10*nnbasx), fcmo, cmo,
      &                   wrk, nbast, norbt)
                call dsptsi(norbt, fcmo, fxc1k2s)
             end if
             deallocate(fcmo)
-               
+
             if (.not. tdhf) then
-               fx2pe = fx2pe + fxo1k2k + fxo2k1k 
-     &               + fxc1s2s + fxc1s2k + fxc1k2s               
+               fx2pe = fx2pe + fxo1k2k + fxo2k1k
+     &               + fxc1s2s + fxc1s2k + fxc1k2s
                deallocate(fxc1s2s, fxc1s2k, fxc1k2s)
-            else 
-               fx2pe = fx2pe + fxo1k2k + fxo2k1k               
+            else
+               fx2pe = fx2pe + fxo1k2k + fxo2k1k
             end if
             deallocate(fxo1k2k, fxo2k1k)
 
