@@ -76,7 +76,7 @@ contains
   !> Brief: Gives the single fragment energy for MP2F12
   !> Author: Yang M. Wang
   !> Date: April 2013
-  subroutine get_f12_fragment_energy(MyFragment,Fragment1,Fragment2,natoms)
+  subroutine get_f12_fragment_energy(MyFragment, Taibj, Fragment1,Fragment2,natoms)
     implicit none
 
     !> Atomic fragment to be determined (Single or Pair fragment)
@@ -122,6 +122,10 @@ contains
     !> F12 integrals for the V4_term sum_mc <ji|r^-1|cm> * <cm|f12|lk>
     real(realk), pointer :: V4ijkl(:,:,:,:) ! Not necessary 
 
+    !> The introduction of the C-terms as an external term
+    !> F12 integrals for the V5_term sum_ab <ij|r^-1|ab> * <ab|t_2|kl>
+    real(realk), pointer :: V5ijkl(:,:,:,:)  
+
     ! ***********************************************************
     !   Allocating for C matrix
     ! ***********************************************************
@@ -137,7 +141,13 @@ contains
     real(realk), pointer :: Fpq(:,:)
     !> Cijab
     real(realk), pointer :: Cijab(:,:,:,:)
+    !> Fock Fac
+    real(realk), pointer :: Rijac(:,:,:,:)
 
+    !> t2EOS amplitudes stored in the order T(a,i,b,j)
+    real(realk), intent(in), pointer :: Taibj(:,:,:,:) 
+    real(realk), pointer :: Tabij(:,:,:,:) 
+    
     ! ***********************************************************
     !   Allocating for X matrix Canonical
     ! ***********************************************************
@@ -209,12 +219,14 @@ contains
     integer :: nbasis
     !> number of occupied MO orbitals in EOS 
     integer :: noccEOS, nunoccEOS, noccfull
+    !> number of occupied MO orbitals in AOS 
+    integer :: noccAOS
+    !> number of virtual MO orbitals in AOS 
+    integer :: nunoccAOS
     !> number of occupied + virtual MO orbitals in EOS 
     integer :: nocvAOS  
     !> number of virtual MO orbitals in AOS 
     integer :: nvirtAOS
-    !> number of occupied MO orbitals in AOS 
-    integer :: noccAOS
 
     !> number of CABS AO orbitals
     integer :: ncabsAO
@@ -223,7 +235,7 @@ contains
 
     integer :: ix, iy, i, j, m, n, k, l, p, q, c, r, s, t, a, b
 
-    real(realk) :: V1energy, V2energy, V3energy, V4energy
+    real(realk) :: V1energy, V2energy, V3energy, V4energy, V5energy
     real(realk) :: X1energy, X2energy, X3energy, X4energy, X4energyY
     real(realk) :: B1energy, B2energy, B3energy, B4energy
     real(realk) :: B5energy, B6energy, B7energy, B8energy, B9energy  
@@ -254,8 +266,9 @@ contains
     nunoccEOS = MyFragment%nunoccEOS
     noccfull = noccEOS
 
-    nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
     noccAOS = MyFragment%noccAOS
+    nunoccAOS = MyFragment%nunoccAOS
+    nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
     nvirtAOS = MyFragment%nunoccAOS
 
     ncabsAO = size(MyFragment%Ccabs,1)    
@@ -274,12 +287,19 @@ contains
        print *, "noccEOS:   ", noccEOS
        print *, "nunoccEOS: ", nunoccEOS
        print *, "-------------------------------------------------"
-       print *, "nocvAOS    ", nocvAOS
        print *, "noccAOS    ", noccAOS
+       print *, "nocvAOS    ", nocvAOS
        print *, "nvirtAOS   ", nvirtAOS
        print *, "ncabsAO    ", ncabsAO
        print *, "ncabsMO    ", ncabsMO
     end if
+
+    ! ***********************************************************
+    !   Allocating memory the C matrix 
+    ! ***********************************************************
+    call mem_alloc(Cijab, noccEOS,  noccEOS,  nvirtAOS,  nvirtAOS) 
+    call mem_alloc(Rijac, noccEOS,  noccEOS,  nvirtAOS,  ncabsMO)
+    call mem_alloc(Tabij, nvirtAOS, nvirtAOS,  noccEOS,  noccEOS)
 
     ! ***********************************************************
     !   Allocating memory for V matrix
@@ -295,6 +315,8 @@ contains
     call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOS, ncabsMO)
 
     call mem_alloc(V4ijkl, noccEOS, noccEOS, noccEOS, noccEOS) 
+
+    call mem_alloc(V5ijkl, noccEOS, noccEOS, noccEOS, noccEOS) 
 
     ! ***********************************************************
     !   Allocating memory for X matrix Canonical
@@ -393,8 +415,56 @@ contains
 
     ! ***********************************************************
     ! Creating the C matrix 
-    ! ***********************************************************
-    call mem_alloc(Cijab, noccEOS, noccEOS, nvirtAOS, nvirtAOS)  
+    ! **********************************************************
+    
+    !> Rijca <ij|f12|ca> stored as (i,j,c,a)       r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiac','RCRRG',Rijac)
+    
+    Cijab = 0.0E0_realk
+    do i=1, noccEOS
+       do j=1, noccEOS      
+          do a=1, nvirtAOS
+             do b=1, nvirtAOS      
+    !            tmp2 = 0.0E0_realk
+                tmp  = 0.0E0_realk
+                do c=1, ncabsMO
+                    tmp =   tmp + Rijac(i,j,a,c)*(Myfragment%Fcp(c,b+noccAOS)) + Rijac(j,i,b,c)*(Myfragment%Fcp(c,a+noccAOS)) 
+     !              tmp2 = tmp2 + Rijac(j,i,a,c)*(Myfragment%Fcp(c,b+noccAOS)) + Rijac(i,j,b,c)*(Myfragment%Fcp(c,a+noccAOS)) 
+                enddo
+                Cijab(i,j,a,b) = tmp 
+      !          Cijab(j,i,a,b) = tmp2 
+             end do
+          end do
+       end do
+    end do
+
+    m = noccEOS*noccEOS    ! <ij C ab> <ab T kl> = <m V2 n> 
+    k = nvirtAOS*nvirtAOS
+    n = noccEOS*noccEOS
+   ! call array_reorder_4d(1.0E0_realk,Taibj,nvirtAOS,nvirtAOS,noccEOS,noccEOS,[1,3,2,4],0.0E0_realk,Tabij)
+
+   !>  dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+   ! call dgemm('N','N',m,n,k,1.0E0_realk,Cijab,m,Tabij,n,0.0E0_realk,V5ijkl,m)
+
+    !> Brute Force need to do this with dgemm at some point
+    do i=1, noccEOS
+       do j=1, noccEOS      
+          do k=1, noccEOS
+             do l=1, noccEOS      
+                tmp  =  0.0E0_realk
+!                tmp2  = 0.0E0_realk
+                do a=1, nvirtAOS
+                   do b=1, nvirtAOS      
+                      tmp =  tmp +  Cijab(i,j,a,b)*Taibj(a,k,b,l) 
+ !                     tmp2 = tmp2 + Cijab(j,i,a,b)*Taibj(a,k,b,l) 
+                   enddo
+                end do
+                V5ijkl(i,j,k,l) = tmp 
+           !     V5ijkl(j,i,k,l) = tmp2 
+             end do
+          end do
+       end do
+    end do
 
     ! ***********************************************************
     ! Creating the V matrix 
@@ -455,6 +525,12 @@ contains
        print *, '(V4 Term):'
        print *, '----------------------------------------'
        print *, 'norm4D(V4ijkl):', norm4D(V4ijkl)  
+       print *, '----------------------------------------'
+       print *, '(V5 Term):'
+       print *, '----------------------------------------'
+       print *, 'norm4D(Cijab):', norm4D(Cijab)
+       print *, 'norm4D(Rijac):', norm4D(Rijac)
+       print *, 'norm4D(Taibj):', norm4D(Taibj)
     end if
 
     if(dopair) then
@@ -462,15 +538,17 @@ contains
        call get_mp2f12_pf_E21(V2ijkl, Fragment1, Fragment2, MyFragment, noccEOS, V2energy, -1.0E0_realk)
        call get_mp2f12_pf_E21(V3ijkl, Fragment1, Fragment2, MyFragment, noccEOS, V3energy, -1.0E0_realk)
        call get_mp2f12_pf_E21(V4ijkl, Fragment1, Fragment2, MyFragment, noccEOS, V4energy, -1.0E0_realk)
+       call get_mp2f12_pf_E21(V5ijkl, Fragment1, Fragment2, MyFragment, noccEOS, V5energy, -1.0E0_realk)
     else 
        call get_mp2f12_sf_E21(V1ijkl, noccEOS, V1energy,  1.0E0_realk)
        call get_mp2f12_sf_E21(V2ijkl, noccEOS, V2energy, -1.0E0_realk)
        call get_mp2f12_sf_E21(V3ijkl, noccEOS, V3energy, -1.0E0_realk)
        call get_mp2f12_sf_E21(V4ijkl, noccEOS, V4energy, -1.0E0_realk)
+       call get_mp2f12_sf_E21(V5ijkl, noccEOS, V5energy,  1.0E0_realk)
     endif
 
     E_21 = 0.0E0_realk
-    E_21 = V1energy + V2energy + V3energy + V4energy
+    E_21 = V1energy + V2energy + V3energy + V4energy + V5energy
 
     if(DECinfo%F12debug) then
        print *, '----------------------------------------'
@@ -480,6 +558,7 @@ contains
        print *, "E_21_V_term2:", V2energy
        print *, "E_21_V_term3:", V3energy
        print *, "E_21_V_term4:", V4energy
+       print *, "E_21_V_term5:", V5energy
        print *, '----------------------------------------'
        print *, "E_21_Vsum:", E_21
     end if
@@ -1069,6 +1148,8 @@ contains
    
     !> C-term
     call mem_dealloc(Cijab)
+    call mem_dealloc(Rijac)
+    call mem_dealloc(Tabij)
 
     !> Coeff
     call mem_dealloc(CoccEOS)
@@ -1090,6 +1171,8 @@ contains
     call mem_dealloc(Rijmc)
 
     call mem_dealloc(V4ijkl)
+
+    call mem_dealloc(V5ijkl)
 
     !> X-terms - Canonical
     call mem_dealloc(X1ijkl)
@@ -1857,6 +1940,34 @@ contains
     call mem_dealloc(kjli)
 
   end subroutine get_mp2f12_AO_transform_MO
+
+  subroutine mp2f12_Vijkl_coupling(Vijkl,Cijab,Taibj,nocc,nvirt)
+    implicit none
+    real(realk),intent(INOUT) :: Vijkl(nocc,nocc,nocc,nocc)
+    real(realk),intent(INOUT) :: Cijab(nocc,nocc,nvirt,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,k,l,a,b
+    real(realk) :: tmp
+    real(realk) :: tmp2
+    
+    do i=1,nocc
+       do j=1,nocc
+          tmp = 0E0_realk
+          tmp2 = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp =  tmp +  Cijab(i,j,a,b)*Taibj(a,i,b,j)
+                tmp2 = tmp2 + Cijab(j,i,a,b)*Taibj(a,i,b,j)
+             enddo
+          enddo
+          Vijkl(i,j,i,j) =  Vijkl(i,j,i,j) + tmp
+          Vijkl(i,j,j,i) =  Vijkl(i,j,j,i) + tmp2
+       enddo
+    enddo
+
+  end subroutine mp2f12_Vijkl_coupling
 
   subroutine free_batch(orb2batchGamma, batchdimGamma, batchsizeGamma, batchindexGamma, batch2orbGamma, &
        & orb2batchAlpha, batchdimAlpha, batchsizeAlpha, batchindexAlpha, batch2orbAlpha, nbatchesGamma, nbatchesAlpha)

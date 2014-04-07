@@ -407,7 +407,7 @@ contains
     
 #ifdef MOD_UNRELEASED
     if(DECinfo%F12) then    
-       call get_f12_fragment_energy(MyFragment)
+       call get_f12_fragment_energy(MyFragment, t2occ%val)
        !> Free cabs after each calculation
        call free_cabs()
 
@@ -988,7 +988,7 @@ contains
 
 #ifdef MOD_UNRELEASED
     if(DECinfo%F12) then
-       call get_f12_fragment_energy(PairFragment, Fragment1, Fragment2, natoms)
+       call get_f12_fragment_energy(PairFragment, t2occ%val, Fragment1, Fragment2, natoms)
     
        !> Free density matrix
        call free_cabs()
