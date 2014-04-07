@@ -246,12 +246,14 @@ contains
     real(realk),pointer :: Vijij_term2(:,:)
     real(realk),pointer :: Vijij_term3(:,:)
     real(realk),pointer :: Vijij_term4(:,:)
+    real(realk),pointer :: Vijij_term5(:,:)
 
     real(realk),pointer :: Vjiij(:,:)    
     real(realk),pointer :: Vjiij_term1(:,:)
     real(realk),pointer :: Vjiij_term2(:,:)
     real(realk),pointer :: Vjiij_term3(:,:)
     real(realk),pointer :: Vjiij_term4(:,:)
+    real(realk),pointer :: Vjiij_term5(:,:)
 
     real(realk),pointer :: Xijkl(:,:,:,:)
     real(realk),pointer :: Xijkl_term1(:,:,:,:)
@@ -359,11 +361,11 @@ contains
     call mp2f12_Vijij(Vijij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
     call mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
 
-    call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)
+    call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)    
     !   call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
     call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
     !   call mp2f12_Cjaib(Cjaib,Giajc,Fac%elms,nocc,nvirt,ncabs)
-
+    
     if(DECinfo%use_canonical) then
        !construct canonical T amplitudes
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
@@ -426,6 +428,47 @@ contains
           end do
        end do
     endif
+  
+    if(DECinfo%F12DEBUG) then    
+
+    endif
+    
+    print *, '----------------------------------------'
+    print *, '            R matrix - Terms            '
+    print *, '----------------------------------------'
+    do i=1, nocc
+       do j=1, nocc      
+          do a=1, nvirt
+             do c=1, ncabs     
+                print *,'i,j,a,c Giajc', i,j,a,c, Giajc(i,a,j,c)
+             end do
+          end do
+       end do
+    end do
+    print *, '----------------------------------------'
+    print *, '            T matrix - Terms            '
+    print *, '----------------------------------------'
+    do i=1, nocc
+       do j=1, nocc      
+          do a=1, nvirt
+             do b=1, nvirt     
+                print *,'i,j,a,b Taibj', i,j,a,b, Taibj(a,i,b,j)
+             end do
+          end do
+       end do
+    end do
+    print *, '----------------------------------------'
+    print *, '            C matrix - Terms            '
+    print *, '----------------------------------------'
+    do i=1, nocc
+       do j=1, nocc      
+          do a=1, nvirt
+             do b=1, nvirt      
+                print *,'i,j,a,b Cijab', i,j,a,b, Ciajb(i,a,j,b)
+             end do
+          end do
+       end do
+    end do
 
     call mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
     call mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
@@ -438,11 +481,13 @@ contains
        call mem_alloc(Vijij_term2,nocc,nocc)
        call mem_alloc(Vijij_term3,nocc,nocc)
        call mem_alloc(Vijij_term4,nocc,nocc)
+       call mem_alloc(Vijij_term5,nocc,nocc)
 
        call mem_alloc(Vjiij_term1,nocc,nocc)
        call mem_alloc(Vjiij_term2,nocc,nocc)
        call mem_alloc(Vjiij_term3,nocc,nocc)
        call mem_alloc(Vjiij_term4,nocc,nocc)
+       call mem_alloc(Vjiij_term5,nocc,nocc)
 
        call mp2f12_Vijij_term1(Vijij_term1,Fijkl,nocc,noccfull,nbasis,ncabs)
        call mp2f12_Vijij_term2(Vijij_term2,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
@@ -455,9 +500,15 @@ contains
        call mp2f12_Vjiij_term4(Vjiij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
 
        !> Coupling with the C-matrix, only needs to be done once
-       call mp2f12_Vijij_coupling(Vijij_term1,Ciajb,Taibj,nocc,nvirt)
-       call mp2f12_Vjiij_coupling(Vjiij_term1,Ciajb,Taibj,nocc,nvirt)
-
+       call mp2f12_Vijij_term5(Vijij_term5,Ciajb,Taibj,nocc,nvirt)
+       call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
+        
+       print *, '----------------------------------------'
+       print *, '           C - matrix terms             '
+       print *, '----------------------------------------'
+       print *, 'norm4D(Ciajb): ', norm4D(Ciajb)
+       print *, 'norm4D(Giajc): ', norm4D(Giajc)
+       print *, 'norm4D(Taibj): ', norm4D(Taibj)
        print *, '----------------------------------------'
        print *, '           V - matrix terms             '
        print *, '----------------------------------------'
@@ -474,10 +525,12 @@ contains
        print *, 'E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
        print *, 'E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
        print *, 'E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
+       print *, 'E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
 
        E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
-            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)) 
+            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
+            & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
 
        print *, 'E21_Vsum: ', E21_debug
        print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
@@ -493,11 +546,13 @@ contains
        call mem_dealloc(Vijij_term2)
        call mem_dealloc(Vijij_term3)
        call mem_dealloc(Vijij_term4)
+       call mem_dealloc(Vijij_term5)
 
        call mem_dealloc(Vjiij_term1)
        call mem_dealloc(Vjiij_term2)
        call mem_dealloc(Vjiij_term3)
-       call mem_dealloc(Vjiij_term4)      
+       call mem_dealloc(Vjiij_term4)
+       call mem_dealloc(Vjiij_term5)
     endif
 
     if(DECinfo%F12DEBUG) then
@@ -860,19 +915,19 @@ contains
        mp2f12_energy = 0.0E0_realk
        mp2f12_energy = mp2_energy+E21+E22
        
-       write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY =        ', mp2_energy
-       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2 CORRELATION ENERGY =       ', mp2_energy
-       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ', E21
-       write(DECinfo%output,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY =  ', E21
-       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ', E22
-       write(DECinfo%output,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY =  ', E22
-       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY =     ', E21+E22
-       write(DECinfo%output,*) 'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22       
+       write(DECinfo%output,*)  'TOYCODE: MP2 CORRELATION ENERGY =        ', mp2_energy
+       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2 CORRELATION ENERGY =        ', mp2_energy
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E21 CORRECTION TO ENERGY =  ', E21
+       write(DECinfo%output,*)  'TOYCODE: F12 E21 CORRECTION TO ENERGY =  ', E21
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E22 CORRECTION TO ENERGY =  ', E22
+       write(DECinfo%output,*)  'TOYCODE: F12 E22 CORRECTION TO ENERGY =  ', E22
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22
+       write(DECinfo%output,*)  'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22       
        ! Total MP2-F12 correlation energy
        ! Getting this energy 
        write(*,'(1X,a)') '----------------------------------------------------'
-       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12 CORRELATION ENERGY =  ', mp2f12_energy
-       write(DECinfo%output,*) 'TOYCODE: MP2-F12 CORRELATION ENERGY =   ', mp2f12_energy
+       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12 CORRELATION ENERGY =    ', mp2f12_energy
+       write(DECinfo%output,*)  'TOYCODE: MP2-F12 CORRELATION ENERGY =    ', mp2f12_energy
     endif
 
     call array4_free(array4Taibj)
@@ -1029,7 +1084,6 @@ contains
     ENDDO
     mp2f12_EBX = mp2f12_EBX + tmp/16E0_realk
   end subroutine submp2f12_EBXfull
-
 
   !> Function for finding the E21 energy  
   function mp2f12_E21(Vijij,Vjiij,nocc) result(energy)
