@@ -138,18 +138,6 @@ contains
 
     call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
 
-#ifdef VAR_MPI
-
-    print *,'proc no. ',infpar%lg_mynum,'after get_CCSDpT_integrals'
-    call array4_print_norm_nrm(jaik,jaik_norm)
-    call array4_print_norm_nrm(abij,abij_norm)
-    call array_print_norm_nrm(cbai,cbai_norm)
-    print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
-    print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
-    print *,'proc no. ',infpar%lg_mynum,'cbai_norm = ',cbai_norm
-
-#endif
-
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
     call array2_free(C_can_virt)
@@ -159,18 +147,6 @@ contains
     ! ***************************************************
 
     call ccsdpt_local_can_trans(ccsd_doubles,nocc,nvirt,Uocc,Uvirt)
-
-#ifdef VAR_MPI
-
-    print *,'proc no. ',infpar%lg_mynum,'after ccsdpt_local_can_trans'
-    call array4_print_norm_nrm(jaik,jaik_norm)
-    call array4_print_norm_nrm(abij,abij_norm)
-    call array_print_norm_nrm(cbai,cbai_norm)
-    print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
-    print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
-    print *,'proc no. ',infpar%lg_mynum,'cbai_norm = ',cbai_norm
-
-#endif
 
     ! Now we transpose the unitary transformation matrices as we will need these in the transformation
     ! of the ^{ccsd}T^{ab}_{ij}, ^{*}T^{a}_{i}, and ^{*}T^{ab}_{ij} amplitudes from canonical to local basis
@@ -218,24 +194,6 @@ contains
     ! the parallel version of the ijk-loop
     call ijk_loop_par(nocc,nvirt,jaik%val,abij%val,cbai,ccsd_doubles%val,&
                     & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt,nodtotal)
-
-#ifdef VAR_MPI
-
-    print *,'proc no. ',infpar%lg_mynum,'after ijk_loop_par'
-    call array4_print_norm_nrm(jaik,jaik_norm)
-    call array4_print_norm_nrm(abij,abij_norm)
-    call array_print_norm_nrm(cbai,cbai_norm)
-    call array4_print_norm_nrm(ccsdpt_doubles,ccsdpt_doubles_norm)
-    call array4_print_norm_nrm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
-    call array2_print_norm_nrm(ccsdpt_singles,ccsdpt_singles_norm)
-    print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
-    print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
-    print *,'proc no. ',infpar%lg_mynum,'cbai_norm = ',cbai_norm
-    print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_norm = ',ccsdpt_doubles_norm
-    print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_2_norm = ',ccsdpt_doubles_2_norm
-    print *,'proc no. ',infpar%lg_mynum,'ccsdpt_singles_norm = ',ccsdpt_singles_norm
-
-#endif
 
 #else
 
