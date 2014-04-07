@@ -1107,13 +1107,6 @@ subroutine print_dec_info()
               &(dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. & 
               & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_one_frag_job) 
 
-           print *,"BACKUP",backup_files
-           print *,"crit 1:",float(jobdone) ,0.25*float(jobs%njobs)
-           print *,"crit 2:",dt , DECinfo%TimeBackup
-           print *,"crit 3:",all(jobs%jobsdone)
-           print *,"crit 4:",.not. all(jobs%dofragopt)
-           print *,"crit 5:",DECinfo%only_one_frag_job
-
           ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
           Backup: if( backup_files )then
              ! Note: If only fragment optimization jobs are requested this is not necessary

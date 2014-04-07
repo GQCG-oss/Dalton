@@ -1750,7 +1750,7 @@ contains
     write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,5X,a,5X,a)') 'Job', '#occ', &
+    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,4X,a,6X,a)') 'Job', '#occ', &
          & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load1', 'Load2'
 
     avflop         = 0.0E0_realk
@@ -1837,11 +1837,11 @@ contains
             & maxflop, ' for job ', maxidx
 #endif
     write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%)     = ', globalloss
-       if(.not. any(jobs%dofragopt) ) then
+       !if(.not. any(jobs%dofragopt) ) then
           ! Only print local loss when it is actually implemented
           write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)      = ', localloss
           write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)      = ', localloss+globalloss
-       end if
+       !end if
     write(DECinfo%output,*) '-----------------------------------------------------------------------------'
 
     end if

@@ -108,9 +108,9 @@ contains
      frag%slavetime_idle(ccmodel) = tottime_idle
 
      if(DECinfo%PL>0)then
-        write(DECinfo%output,'("Portion time spent working       in ",a," is: ",g10.3,"%")')label,tottime_work/time_tot
-        write(DECinfo%output,'("Portion time spent communicating in ",a," is: ",g10.3,"%")')label,tottime_comm/time_tot
-        write(DECinfo%output,'("Portion time spent idle          in ",a," is: ",g10.3,"%")')label,tottime_idle/time_tot
+        write(DECinfo%output,'("Portion time spent working       in ",a," is: ",g10.3,"%")')label,tottime_work/time_tot*100
+        write(DECinfo%output,'("Portion time spent communicating in ",a," is: ",g10.3,"%")')label,tottime_comm/time_tot*100
+        write(DECinfo%output,'("Portion time spent idle          in ",a," is: ",g10.3,"%")')label,tottime_idle/time_tot*100
      endif
 
      call mem_dealloc(time_tot_node)
