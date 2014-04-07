@@ -109,6 +109,8 @@ MODULE Integralparameters
   integer,parameter :: MOCCSDDATA                   = 45
   integer,parameter :: MO_INTEGRAL_SIMPLE           = 46
   integer,parameter :: DEC_SETTING_TO_SLAVES        = 47
+  integer,parameter :: INITSLAVETIME                = 48
+  integer,parameter :: GETSLAVETIME                 = 49
 
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1

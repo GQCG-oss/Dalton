@@ -833,7 +833,9 @@ module dec_typedef_module
      ! INTEGRAL TIME ACCOUNTING
      ! ************************
      ! MPI: Time(s) used by local slaves
-     real(realk) :: slavetime
+     real(realk) :: slavetime_work
+     real(realk) :: slavetime_comm
+     real(realk) :: slavetime_idle
 
 
   end type decfrag

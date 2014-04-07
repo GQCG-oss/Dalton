@@ -477,6 +477,7 @@ contains
        call print_MPI_fragment_statistics(jobs,mastertime,'PAIR FRAGMENTS')
     end if
 #endif
+
     IF(DECinfo%InteractionEnergy)THEN
        ! Interaction correlation energy 
        do j=1,ndecenergies
@@ -488,13 +489,14 @@ contains
        do j=1,ndecenergies
           call add_dec_energies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
        end do
-       IF(DECinfo%PrintInteractionEnergy)THEN
+       if(DECinfo%PrintInteractionEnergy)then
           do j=1,ndecenergies
              call add_dec_Interactionenergies(natoms,FragEnergies(:,:,j),dofrag,&
                   & Interactionenergies(j),mymolecule%SubSystemIndex)
           end do
-       ENDIF
-    ENDIF
+       endif
+    endif
+
     ! Print all fragment energies
     call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
          & mymolecule%DistanceTable,energies)

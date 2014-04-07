@@ -27,7 +27,6 @@ contains
 
   !> \brief Send three fragment energies (for occupied, virtual, and Lagrangian schemes)
   !> from given sender (typically a slave) to given receiver (typically the master).
-  !> For (T) also pass (T) fragment energies.
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine mpi_send_recv_fragmentenergy(comm,MySender,MyReceiver,fragenergy,job)
@@ -337,6 +336,9 @@ contains
     !> Communicate basis (expensive box in decfrag)
     logical,intent(in) :: DoBasis
     integer(kind=ls_mpik) :: master
+
+    call time_start_phase( PHASE_COMM )
+
     master = 0
 
     ! Init MPI buffer which eventually will contain all fragment info
@@ -372,6 +374,7 @@ contains
     ! SLAVE: Deallocate buffer etc.
     call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
 
+    call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_mp2_int_and_amp
 
 
@@ -679,7 +682,9 @@ contains
     call ls_mpi_buffer(MyFragment%EvirtFOP,master)
     call ls_mpi_buffer(MyFragment%LagFOP,master)
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
-    call ls_mpi_buffer(MyFragment%slavetime,master)
+    call ls_mpi_buffer(MyFragment%slavetime_work,master)
+    call ls_mpi_buffer(MyFragment%slavetime_comm,master)
+    call ls_mpi_buffer(MyFragment%slavetime_idle,master)
     call ls_mpi_buffer(MyFragment%RejectThr,2,master)
     call ls_mpi_buffer(MyFragment%DmaxAE,master)
     call ls_mpi_buffer(MyFragment%DmaxAOS,master)
@@ -1743,17 +1748,20 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,5X,a)') 'Job', '#occ', &
          & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load'
-    avflop=0.0E0_realk
-    totflops=0.0E0_realk
+
+    avflop         = 0.0E0_realk
+    totflops       = 0.0E0_realk
     tottime_actual = 0.0E0_realk
-    slavetime= 0.0_realk
+    slavetime      = 0.0_realk
 
 
-    minflop = huge(1.0)
-    maxflop=tiny(1.0)
-    minidx=0
-    maxidx=0
-    N=0
+    minflop        = huge(minflop)
+    maxflop        = tiny(maxflop)
+    minidx         = 0
+    maxidx         = 0
+    N              = 0
+
+
     do i=1,jobs%njobs
        ! If nocc is zero, the job was not done and we do not print it
        if(jobs%nocc(i)==0) cycle
@@ -1772,11 +1780,7 @@ contains
        ! Effective slave time (WITHOUT dead time by slaves)
        slavetime = slavetime + jobs%load(i)*jobs%nslaves(i)*jobs%LMtime(i)
 
-       if(DECinfo%ccmodel==MODEL_MP2 .and. (.not. jobs%dofragopt(i))) then
-          write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
-               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
-       else
-          jobs%load(i)=-1.0_realk
+       if(.not. jobs%dofragopt(i)) then
           write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
                & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
        end if
@@ -1827,11 +1831,11 @@ contains
        write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MAXIMUM Gflops/s per MPI process = ', &
             & maxflop, ' for job ', maxidx
 #endif
-    write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
-       if(DECinfo%ccmodel==MODEL_MP2 .and. (.not. any(jobs%dofragopt)) ) then
+    write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%)     = ', globalloss
+       if(.not. any(jobs%dofragopt) ) then
           ! Only print local loss when it is actually implemented
-          write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
-          write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
+          write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)      = ', localloss
+          write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)      = ', localloss+globalloss
        end if
     write(DECinfo%output,*) '-----------------------------------------------------------------------------'
 
@@ -2283,6 +2287,9 @@ contains
 
   end subroutine wake_slaves_for_simple_mo
 
+
+
+
 #else
   !Added to avoid "has no symbols" linking warning
   subroutine decmpi_module_void()
@@ -2303,4 +2310,5 @@ subroutine set_dec_settings_on_slaves()
    if(infpar%mynum == infpar%master) call ls_mpibcast(DEC_SETTING_TO_SLAVES,infpar%master,MPI_COMM_LSDALTON)
    call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
 end subroutine set_dec_settings_on_slaves
+
 #endif
