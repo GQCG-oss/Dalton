@@ -1,6 +1,7 @@
 
 subroutine pdm_array_slave(comm)
   use precision
+  use lstiming
   !use matrix_operations_scalapack, only: BLOCK_SIZE, SLGrid, DLEN_
   use memory_handling, only: mem_alloc,mem_dealloc
   use matrix_operations, only: mtype_scalapack, matrix_type
@@ -29,7 +30,10 @@ subroutine pdm_array_slave(comm)
    integer       :: it
 #ifdef VAR_MPI
    loc = (infpar%parent_comm /= MPI_COMM_NULL)
+
+   call time_start_phase(PHASE_COMM)
    CALL PDM_ARRAY_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
+   call time_start_phase(PHASE_WORK)
 
    SELECT CASE(JOB)
      CASE(JOB_TEST_ARRAY)
@@ -101,6 +105,7 @@ subroutine pdm_array_slave(comm)
        AF = get_cc_energy_parallel(A,B,C)
      CASE(JOB_GET_FRAG_CC_ENERGY)
        !the counterpart to this buffer is in get_fragment_cc_energy
+       call time_start_phase(PHASE_COMM)
        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
        call ls_mpi_buffer(i,infpar%master)
        call mem_alloc(dims,i)
@@ -109,6 +114,7 @@ subroutine pdm_array_slave(comm)
        call mem_alloc(dims2,j)
        call ls_mpi_buffer(dims2,j,infpar%master)
        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+       call time_start_phase(PHASE_WORK)
 
        AF = get_fragment_cc_energy_parallel(A,B,C,i,j,dims,dims2)
 

@@ -227,6 +227,9 @@ module dec_typedef_module
      !> Print the Interaction Energy (Ref to article)
      logical :: PrintInteractionEnergy
 
+     !> Stress Test 
+     logical :: StressTest
+
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split
@@ -634,6 +637,8 @@ module dec_typedef_module
      !> without thinking about which CC model we are using...
      !> Energy using occupied partitioning scheme
      real(realk) :: EoccFOP
+     !> Energy using occupied partitioning scheme with the F12 Correction
+     real(realk) :: EoccFOP_Corr
      !> Energy using virtual partitioning scheme
      real(realk) :: EvirtFOP
      !> Lagrangian energy 
@@ -828,7 +833,9 @@ module dec_typedef_module
      ! INTEGRAL TIME ACCOUNTING
      ! ************************
      ! MPI: Time(s) used by local slaves
-     real(realk) :: slavetime
+     real(realk) :: slavetime_work
+     real(realk) :: slavetime_comm
+     real(realk) :: slavetime_idle
 
 
   end type decfrag

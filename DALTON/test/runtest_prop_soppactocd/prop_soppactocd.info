@@ -1,0 +1,6 @@
+   prop_soppactocd
+   ---------------
+   Molecule:         H2O
+   Wave Function:    MP2 (SOPPA)
+   Test Purpose:     Calculation of CTOCD-DZ magnetizability and
+	             shielding constants through ABACUS

@@ -4340,7 +4340,7 @@ contains
     integer :: alphaB,gammaB,dimAlpha,dimGamma,idx
     real(realk),pointer :: tmp1(:),tmp2(:),tmp3(:)
     integer(kind=long) :: size1,size2,size3
-    integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd,m,k,n,i,dims(4),order(4)
+    integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd,m,k,n,i,j,dims(4),order(4)
     logical :: FullRHS,doscreen
     real(realk) :: tcpu, twall
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
@@ -4356,13 +4356,20 @@ contains
     integer, pointer :: distribution(:)
     Character            :: intSpec(5)
     integer :: myload
+    logical :: master
+    integer(kind=long) :: o2v2,o3v
+    real(realk), pointer :: dummy1(:),dummy2(:)
+    integer(kind=ls_mpik) :: mode
+    call time_start_phase(PHASE_WORK)
+
+    o2v2          = nocc*nocc*nvirt*nvirt
+    o3v           = nocc*nocc*nocc*nvirt
 
     ! Lots of timings
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Integral screening?
-    doscreen = mylsitem%setting%scheme%cs_screen.OR.&
-         & mylsitem%setting%scheme%ps_screen
+    doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
 
     ! allocate arrays to update during integral loop 
     ! **********************************************
@@ -4382,8 +4389,10 @@ contains
     dims = [nvirt,nvirt,nvirt,nocc]
 
 #ifdef VAR_MPI
+    mode   = MPI_MODE_NOCHECK
+    master = (infpar%lg_mynum == infpar%master)
 
-    CBAI = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
+    CBAI   = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
     call array_zero_tiled_dist(CBAI)
 
 #else
@@ -4415,7 +4424,7 @@ contains
          & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
          & nbatchesGamma,orb2BatchGamma,'R')
 
-    write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
+    if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
     ! Translate batchindex to orbital index
     ! -------------------------------------
@@ -4449,7 +4458,7 @@ contains
          & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
          & nbatchesAlpha,orb2BatchAlpha,'R')
 
-    write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
+    if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
     ! Translate batchindex to orbital index
     ! -------------------------------------
@@ -4537,8 +4546,8 @@ contains
 
           end if
 
-!          write (DECinfo%output, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%lg_mynum,alphaB,&
-!                          &nbatchesAlpha,gammaB,nbatchesGamma
+          if(DECinfo%PL>2)write (*, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
+             &infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
 #endif
 
@@ -4557,21 +4566,18 @@ contains
           m = nbasis*dimGamma*dimAlpha
           k = nbasis
           n = nvirt
-!          call dec_simple_dgemm(m,k,n,tmp1,CvirtT,tmp2,'T','T')
           call dgemm('T','N',m,n,k,1.0E0_realk,tmp1,k,Cvirt,k,0.0E0_realk,tmp2,m)
 
           ! tmp3(B;alphaB,gammaB,A) = sum_{delta} CvirtT(B,delta) tmp2(delta;alphaB,gammaB,A)
           m = nvirt
           k = nbasis
           n = dimAlpha*dimGamma*nvirt
-!          call dec_simple_dgemm(m,k,n,CvirtT,tmp2,tmp3,'N','N')
           call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT,m,tmp2,k,0.0E0_realk,tmp3,m)
 
           ! tmp1(I;,alphaB,gammaB,A) = sum_{delta} CoccT(I,delta) tmp2(delta,alphaB,gammaB,A)
           m = nocc
           k = nbasis
           n = dimAlpha*dimGamma*nvirt
-!          call dec_simple_dgemm(m,k,n,CoccT,tmp2,tmp1,'N','N')
           call dgemm('N','N',m,n,k,1.0E0_realk,CoccT,m,tmp2,k,0.0E0_realk,tmp1,m)
 
           ! Reorder: tmp1(I,alphaB;gammaB,A) --> tmp2(gammaB,A;I,alphaB)
@@ -4583,26 +4589,19 @@ contains
           m = nocc
           k = dimGamma
           n = nvirt*nocc*dimAlpha
-!          call dec_simple_dgemm(m,k,n,CoccT(1:nocc,GammaStart:GammaEnd),tmp2,tmp1,'N','N')
-          call dgemm('N','N',m,n,k,1.0E0_realk,CoccT(1:nocc,GammaStart:GammaEnd),m,tmp2,k,0.0E0_realk,tmp1,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,CoccT(1,GammaStart),nocc,tmp2,k,0.0E0_realk,tmp1,m)
 
           ! JAIK(J,A,I;K) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cocc(alpha,K)
           m = nvirt*nocc**2
           k = dimAlpha
           n = nocc
-!          call dec_simple_dgemm_update(m,k,n,tmp1,&
-!                                     & CoccT(1:nocc,AlphaStart:AlphaEnd),JAIK%val,'N','T')
-!          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart:AlphaEnd,1:nocc),k,1.0E0_realk,JAIK%val,m)
-          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart:,:),nbasis-AlphaStart+1,1.0E0_realk,JAIK%val,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart,1),nbasis,1.0E0_realk,JAIK%val,m)
 
           ! JAIB(J,A,I;B) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cvirt(alpha,B)
           m = nvirt*nocc**2
           k = dimAlpha
           n = nvirt
-!          call dec_simple_dgemm_update(m,k,n,tmp1,&
-!                                     & CvirtT(1:nvirt,AlphaStart:AlphaEnd),JAIB%val,'N','T')
-!          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart:AlphaEnd,1:nvirt),k,1.0E0_realk,JAIB%val,m)
-          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart:,:),nbasis-AlphaStart+1,1.0E0_realk,JAIB%val,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart,1),nbasis,1.0E0_realk,JAIB%val,m)
 
           ! Reorder: tmp3(B,alphaB;gammaB,A) --> tmp1(gammaB,A;B,alphaB)
           m = nvirt*dimAlpha
@@ -4613,8 +4612,7 @@ contains
           m = nvirt
           k = dimGamma
           n = dimAlpha*nvirt**2
-!          call dec_simple_dgemm(m,k,n,CvirtT(1:nvirt,GammaStart:GammaEnd),tmp1,tmp3,'N','N')
-          call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(:,GammaStart:),m,tmp1,k,0.0E0_realk,tmp3,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(1,GammaStart),nvirt,tmp1,k,0.0E0_realk,tmp3,m)
 
           ! reorder tmp1 and do CBAI(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
           m = nvirt**3
@@ -4626,8 +4624,7 @@ contains
           do i=1,nocc
 
              ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,i)
-!             call dec_simple_dgemm(m,k,n,tmp3,CoccT(i,AlphaStart:AlphaEnd),tmp1,'N','T')
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart:,i),nbasis-AlphaStart+1,0.0E0_realk,tmp1,m)
+             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
 
              ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
              ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
@@ -4641,7 +4638,11 @@ contains
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
 
-             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3)
+             call time_start_phase(PHASE_COMM)
+             call arr_lock_win(CBAI,i,'s',assert=mode)
+             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
+             call arr_unlock_win(CBAI,i)
+             call time_start_phase(PHASE_WORK)
 
           end do
 
@@ -4650,8 +4651,7 @@ contains
           do i=1,nocc
 
              ! for description, see mpi section above
-!             call dec_simple_dgemm(m,k,n,tmp3,CoccT(i,AlphaStart:AlphaEnd),tmp1,'N','T')
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart:,i),nbasis-AlphaStart+1,0.0E0_realk,tmp1,m)
+             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,CBAI%elm4(:,:,:,i))
 
@@ -4666,9 +4666,17 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
+       call ass_D4to1(JAIB%val,dummy1,[nocc,nvirt,nocc,nvirt])
+       call ass_D4to1(JAIK%val,dummy2,[nocc,nvirt,nocc,nocc])
+       
+       call time_start_phase(PHASE_IDLE)
+       call lsmpi_barrier(infpar%lg_comm)
+
        ! now, reduce o^2v^2 and o^3v integrals onto master
-       call lsmpi_allreduce(JAIB%val,nocc,nvirt,nocc,nvirt,infpar%lg_comm)
-       call lsmpi_allreduce(JAIK%val,nocc,nvirt,nocc,nocc, infpar%lg_comm) 
+       call time_start_phase(PHASE_COMM)
+       call lsmpi_allreduce(dummy1,o2v2,infpar%lg_comm,SPLIT_MSG_REC )
+       call lsmpi_allreduce(dummy2,o3v, infpar%lg_comm,SPLIT_MSG_REC ) 
+       call time_start_phase(PHASE_WORK)
 
     end if
 
