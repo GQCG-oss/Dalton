@@ -4203,7 +4203,7 @@ contains
 
     ! Determine optimal batchsizes and corresponding sizes of arrays
     call get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
-         & size1,size2,size3)
+         & size1,size2,size3,.true.)
 
 
     ! ************************************************
@@ -4534,7 +4534,7 @@ contains
   !> \author Kasper Kristensen & Janus Eriksen
   !> \date September 2011, rev. October 2012
   subroutine get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
-     & size1,size2,size3)
+     & size1,size2,size3,adapt_to_nnodes)
 
     implicit none
   
@@ -4556,9 +4556,16 @@ contains
     integer(kind=long),intent(inout) :: size2
     !> Dimension of temporary array 3
     integer(kind=long),intent(inout) :: size3
+    !> choose to split if more nodes are available than necessary
+    logical,intent(in) :: adapt_to_nnodes
     !> memory reals
     real(realk) :: MemoryNeeded, MemoryAvailable
     integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma
+    integer(kind=ls_mpik) :: nnod
+    nnod = 1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
 
 
     ! Memory currently available
@@ -4593,10 +4600,17 @@ contains
        call get_max_arraysizes_for_ccsdpt_integrals(alphaDim,gamma,nbasis,nocc,nvirt,&
             & size1,size2,size3,MemoryNeeded)
   
-       if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
-          GammaOpt = gamma
-          exit
-       end if
+         if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
+            if(adapt_to_nnodes)then
+               if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
+                  GammaOpt = gamma 
+                  exit GammaLoop
+               endif
+            else
+               GammaOpt = gamma
+               exit GammaLoop
+            endif
+         end if
   
     end do GammaLoop
   
@@ -4615,15 +4629,25 @@ contains
     ! Largest possible alpha batch size
     ! =================================
     AlphaLoop: do alpha = MaxAObatch,MinAOBatch,-1
-  
+
        call get_max_arraysizes_for_ccsdpt_integrals(alpha,gammadim,nbasis,nocc,nvirt,&
-            & size1,size2,size3,MemoryNeeded)
-  
+          & size1,size2,size3,MemoryNeeded)
+
        if(MemoryNeeded < MemoryAvailable .or. (alpha==minAObatch) ) then
-          AlphaOpt = alpha
-          exit
+
+          if( adapt_to_nnodes  )then
+
+             if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
+                AlphaOpt = alpha 
+                exit AlphaLoop
+             endif
+
+          else
+             AlphaOpt = alpha
+             exit AlphaLoop
+          endif
        end if
-  
+
     end do AlphaLoop
   
     ! If alpha batch size was set manually we use that value instead

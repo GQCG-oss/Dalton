@@ -4512,7 +4512,9 @@ contains
     joblist12%ntasks(1:joblist1%njobs) = joblist1%ntasks
     joblist12%flops(1:joblist1%njobs) = joblist1%flops
     joblist12%LMtime(1:joblist1%njobs) = joblist1%LMtime
-    joblist12%load(1:joblist1%njobs) = joblist1%load
+    joblist12%workt(1:joblist1%njobs) = joblist1%workt
+    joblist12%commt(1:joblist1%njobs) = joblist1%commt
+    joblist12%idlet(1:joblist1%njobs) = joblist1%idlet
 
     ! Joblist 2 --> Joblist12
     startidx=joblist1%njobs+1
@@ -4529,7 +4531,9 @@ contains
     joblist12%ntasks(startidx:njobs) = joblist2%ntasks
     joblist12%flops(startidx:njobs) = joblist2%flops
     joblist12%LMtime(startidx:njobs) = joblist2%LMtime
-    joblist12%load(startidx:njobs) = joblist2%load
+    joblist12%workt(startidx:njobs) = joblist2%workt
+    joblist12%commt(startidx:njobs) = joblist2%commt
+    joblist12%idlet(startidx:njobs) = joblist2%idlet
 
   end subroutine concatenate_joblists
 
@@ -4951,7 +4955,9 @@ contains
     jobs%ntasks(1:nold) = oldjobs%ntasks(1:nold)
     jobs%flops(1:nold) = oldjobs%flops(1:nold)
     jobs%LMtime(1:nold) = oldjobs%LMtime(1:nold)
-    jobs%load(1:nold) = oldjobs%load(1:nold)
+    jobs%workt(1:nold) = oldjobs%workt(1:nold)
+    jobs%commt(1:nold) = oldjobs%commt(1:nold)
+    jobs%idlet(1:nold) = oldjobs%idlet(1:nold)
 
 
     ! Set logical vectors with fragment orbital information
@@ -5120,20 +5126,22 @@ contains
 
 
     ! Copy old job list information
-    jobscopy%atom1 = jobs%atom1
-    jobscopy%atom2 = jobs%atom2
-    jobscopy%jobsize = jobs%jobsize
-    jobscopy%jobsdone = jobs%jobsdone
+    jobscopy%atom1     = jobs%atom1
+    jobscopy%atom2     = jobs%atom2
+    jobscopy%jobsize   = jobs%jobsize
+    jobscopy%jobsdone  = jobs%jobsdone
     jobscopy%dofragopt = jobs%dofragopt
-    jobscopy%esti = jobs%esti
-    jobscopy%nslaves = jobs%nslaves
-    jobscopy%nocc = jobs%nocc
-    jobscopy%nunocc = jobs%nunocc
-    jobscopy%nbasis = jobs%nbasis
-    jobscopy%ntasks = jobs%ntasks
-    jobscopy%flops = jobs%flops
-    jobscopy%LMtime = jobs%LMtime
-    jobscopy%load = jobs%load
+    jobscopy%esti      = jobs%esti
+    jobscopy%nslaves   = jobs%nslaves
+    jobscopy%nocc      = jobs%nocc
+    jobscopy%nunocc    = jobs%nunocc
+    jobscopy%nbasis    = jobs%nbasis
+    jobscopy%ntasks    = jobs%ntasks
+    jobscopy%flops     = jobs%flops
+    jobscopy%LMtime    = jobs%LMtime
+    jobscopy%workt     = jobs%workt
+    jobscopy%commt     = jobs%commt
+    jobscopy%idlet     = jobs%idlet
 
   end subroutine copy_joblist
 

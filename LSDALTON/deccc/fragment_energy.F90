@@ -284,6 +284,8 @@ contains
     type(array2) :: t1, ccsdpt_t1
     type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2
     real(realk) :: tcpu, twall,debugenergy
+    ! timings are allocated and deallocated behind the curtains
+    real(realk),pointer :: times_ccsd(:), times_pt(:)
 
     ! type(matrix) :: Dmat
     ! real(realk),pointer :: dens(:,:)
@@ -305,6 +307,7 @@ contains
 
     case(MODEL_CC2,MODEL_RPA,MODEL_CCSD,MODEL_CCSDpT) ! higher order CC (currently CC2 or CCSD)
 
+       call dec_fragment_time_init(times_ccsd)
 
        ! Solve CC equation to calculate amplitudes and integrals 
        ! *******************************************************
@@ -332,14 +335,17 @@ contains
        ! Note, t2occ and t2virt also contain singles contributions
        call array4_free(u)
 
-#ifdef MOD_UNRELEASED
+       call dec_fragment_time_get(times_ccsd)
 
+#ifdef MOD_UNRELEASED
        ! calculate ccsd(t) fragment energies
        ! ***********************************
 
        ! we calculate (T) contribution to single  fragment energy 
        ! and store in MyFragment%energies(FRAGMODEL_OCCpT) and MyFragment%energies(FRAGMODEL_VIRTpT)
        if(MyFragment%ccmodel==MODEL_CCSDpT) then
+
+          call dec_fragment_time_init(times_pt)
 
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
           ccsdpt_t1 = array2_init([MyFragment%nunoccAOS,MyFragment%noccAOS])
@@ -360,8 +366,9 @@ contains
           call array2_free(ccsdpt_t1)
           call array4_free(ccsdpt_t2)
 
+          call dec_fragment_time_get(times_pt)
+
        end if
-!endif mod_unreleased
 #endif 
 
        call array2_free(t1)
@@ -418,6 +425,12 @@ contains
        call array4_free(VOVV)
     end if
 
+    if(MyFragment%ccmodel /= MODEL_MP2)then
+       call dec_time_evaluate_efficiency_frag(MyFragment,times_ccsd,MODEL_CCSD,'CCSD part')
+    endif
+    if(MyFragment%ccmodel == MODEL_CCSDpT)then
+       call dec_time_evaluate_efficiency_frag(MyFragment,times_pt,MODEL_CCSDpT,'(T)  part')
+    endif
     ! Free remaining arrays
     call array4_free(VOVOocc)
     call array4_free(VOVOvirt)
@@ -893,6 +906,7 @@ contains
     type(array4) :: g,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVO,ccsdpt_t2,VOVOvirtTMP
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
+    real(realk),pointer :: times_ccsd(:), times_pt(:)
 
     !type(matrix) :: Dmat
     !real(realk),pointer :: dens(:,:)
@@ -911,6 +925,7 @@ contains
 
     else ! higher order CC (currently CC2 or CCSD)
 
+       call dec_fragment_time_init(times_ccsd)
 
        ! Solve CC equation to calculate amplitudes and integrals 
        ! *******************************************************
@@ -937,6 +952,8 @@ contains
             & t2occ, t2virt, PairFragment)
        ! Note, t2occ and t2virt also contain singles contributions
        call array4_free(u)
+
+       call dec_fragment_time_get(times_ccsd)
 
     end if WhichCCmodel
 
@@ -991,7 +1008,6 @@ contains
     end if
 
 #ifdef MOD_UNRELEASED
-
     ! calculate ccsd(t) pair interaction energies
     ! *******************************************
 
@@ -999,6 +1015,8 @@ contains
     ! in PairFragment%energies(FRAGMODEL_OCCpT) and PairFragment%energies(FRAGMODEL_VIRTpT) 
 
     if (PairFragment%CCModel == MODEL_CCSDpT) then
+
+       call dec_fragment_time_init(times_pt)
 
        ! init ccsd(t) singles and ccsd(t) doubles
        ccsdpt_t1 = array2_init([PairFragment%nunoccAOS,PairFragment%noccAOS])
@@ -1020,20 +1038,28 @@ contains
        call array2_free(ccsdpt_t1)
        call array4_free(ccsdpt_t2)
 
+       call dec_fragment_time_get(times_pt)
+
     end if
-!endif mod_unreleased
 #endif
 
     if( PairFragment%ccmodel /= MODEL_MP2 ) then
        call array2_free(t1)
        call array4_free(t2)
+       call dec_time_evaluate_efficiency_frag(PairFragment,times_ccsd,MODEL_CCSD,'CCSD part')
     end if
+
+    if(PairFragment%ccmodel == MODEL_CCSDpT)then
+       call dec_time_evaluate_efficiency_frag(PairFragment,times_pt,MODEL_CCSDPT,'(T)  part')
+    endif
 
     ! Free remaining arrays
     call array4_free(VOVOocc)
     call array4_free(VOVOvirt)
     call array4_free(t2occ)
     call array4_free(t2virt)
+
+
 
   end subroutine pair_fragment_energy_and_prop
 
@@ -1993,6 +2019,10 @@ contains
     logical :: expansion_converged
     type(array4) :: t2,g
     real(realk),pointer :: OccContribs(:),VirtContribs(:)    
+    real(realk),pointer :: times_fragopt(:)
+
+
+    call dec_fragment_time_init(times_fragopt)
 
 
     write(DECinfo%output,'(a)')    ' FOP'
@@ -2256,6 +2286,9 @@ contains
 
  ! Ensure that energies in fragment are set consistently
  call set_energies_decfrag_structure_fragopt(AtomicFragment)
+
+ call dec_fragment_time_get(times_fragopt)
+ call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,AtomicFragment%ccmodel,'Fragment optmization')
 
 
  ! Restore the original CC model 

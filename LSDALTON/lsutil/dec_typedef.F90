@@ -26,6 +26,9 @@ module dec_typedef_module
 
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
+  !> how many real models in total are there, disregard MODEL_NONE
+  integer,parameter :: ndecmodels   = 5
+  !> Number of different fragment energies
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
   integer,parameter :: MODEL_CC2    = 2
@@ -833,9 +836,9 @@ module dec_typedef_module
      ! INTEGRAL TIME ACCOUNTING
      ! ************************
      ! MPI: Time(s) used by local slaves
-     real(realk) :: slavetime_work
-     real(realk) :: slavetime_comm
-     real(realk) :: slavetime_idle
+     real(realk),dimension(ndecmodels) :: slavetime_work
+     real(realk),dimension(ndecmodels) :: slavetime_comm
+     real(realk),dimension(ndecmodels) :: slavetime_idle
 
 
   end type decfrag
@@ -1077,8 +1080,11 @@ module dec_typedef_module
      !> Time used for local master
      real(realk),pointer :: LMtime(:)
      !> Measure of load distribution:
-     !> { (total times for nodes) / (time for local master) } / number of nodes
-     real(realk),pointer :: load(:)
+     !> ( work and communication times for nodes) / {(time for local master) * (number of nodes) }
+     !> ( work times for nodes) / {(time for local master) * (number of nodes) }
+     real(realk),pointer :: commt(:)
+     real(realk),pointer :: workt(:)
+     real(realk),pointer :: idlet(:)
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.

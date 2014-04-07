@@ -381,7 +381,7 @@ contains
     ! Determine optimal batchsizes with available memory
     ! **************************************************
     if(master) then
-       call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,bat,.true.)
+       call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,bat,.true.,.true.)
     end if
 
 
@@ -1282,7 +1282,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
 if(.not. master) then
    ! effective time for slaves
-   MyFragment%slavetime_work = tmpidiff
+   MyFragment%slavetime_work(MODEL_MP2) = tmpidiff
    ! FLOP count for integral loop for slaves
    call end_flop_counter(flops)
 end if
@@ -1706,8 +1706,8 @@ end if
    if(master) MyFragment%flops_slaves = flops ! save flops for local slaves (not local master)
 
    ! Total time for all slaves (not local master itself)
-   if(master) MyFragment%slavetime_work=0.0E0_realk
-   call lsmpi_reduction(MyFragment%slavetime_work,infpar%master,infpar%lg_comm)
+   if(master) MyFragment%slavetime_work(MODEL_MP2)=0.0E0_realk
+   call lsmpi_reduction(MyFragment%slavetime_work(MODEL_MP2),infpar%master,infpar%lg_comm)
 
    call time_start_phase( PHASE_WORK )
 end if MPIcollect
@@ -2934,7 +2934,7 @@ end subroutine Get_ijba_integrals
   !> STEP 3: Final transformations (diagonal->local basis) after integral loop
   !> \author Kasper Kristensen
   !> \date December 2011
-subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,bat,printstuff)
+subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,bat,printstuff,adapt_to_nnodes)
 
   implicit none
 
@@ -2947,25 +2947,29 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   !> Print memory summary for local master?
   !> (If this subroutine is called by local slave we never print, 
   !> regardless of value of printstuff)
-  logical,intent(in) :: printstuff
+  logical,intent(in) :: printstuff, adapt_to_nnodes
   real(realk) :: MemoryAvailable, GB, MemoryNeeded
   integer :: noccEOS,nocc,nvirtEOS,nvirt,nbasis,GammaOpt,AlphaOpt,step,nvbatches
   integer :: MaxAObatch, MinAOBatch, MaxVirtBatch, MinVirtBatch,gamma,alpha,A, nthreads
   logical :: doprint
+  integer :: max_alpha, max_gamma, MaxActualDimAlpha, MaxActualDimGamma, nbatchesAlpha, nbatchesGamma
+  integer(kind=ls_mpik) :: nnod
 #ifdef VAR_OMP
-    integer, external :: OMP_GET_MAX_THREADS
+  integer, external :: OMP_GET_MAX_THREADS
 #endif
 
-doprint = printstuff
+  doprint = printstuff
+  nnod = 1
 #ifdef VAR_MPI
-! Only print for local master
-if(infpar%lg_mynum/=0) doprint=.false.
+  ! Only print for local master
+  if(infpar%lg_mynum/=0) doprint=.false.
+  nnod = infpar%lg_nodtot
 #endif
 
 #ifdef VAR_OMP
-nthreads=OMP_GET_MAX_THREADS()
+  nthreads=OMP_GET_MAX_THREADS()
 #else
-nthreads=1
+  nthreads=1
 #endif
   if(DECinfo%PL>0) write(DECinfo%output,*) 'Estimating batch sizes for MP2 integrals/amplitudes.'
 
@@ -3030,12 +3034,21 @@ nthreads=1
   GammaLoop: do gamma = MaxAObatch,MinAOBatch,-1
 
      call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-          & bat%MaxAllowedDimAlpha, gamma, bat%virtbatch, step, nthreads, bat%size1, MemoryNeeded)
+        & bat%MaxAllowedDimAlpha, gamma, bat%virtbatch, step, nthreads, bat%size1, MemoryNeeded)
 
      if(MemoryNeeded < MemoryAvailable) then
-        GammaOpt = gamma
-        exit
+
+        if(adapt_to_nnodes)then
+           if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
+              GammaOpt = gamma 
+              exit GammaLoop
+           endif
+        else
+           GammaOpt = gamma
+           exit GammaLoop
+        endif
      end if
+
 
   end do GammaLoop
 
@@ -3052,9 +3065,8 @@ nthreads=1
 
   ! Max size with actual batchsizes
   call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-       & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch,step,nthreads,bat%size1,MemoryNeeded)
-  if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual gamma size, memory (GB) =', &
-       & GammaOpt,bat%MaxAllowedDimGamma,MemoryNeeded
+     & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch,step,nthreads,bat%size1,MemoryNeeded)
+
 
 
 
@@ -3063,7 +3075,7 @@ nthreads=1
   AlphaLoop: do alpha = MaxAObatch,MinAOBatch,-1
 
      call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-          & alpha, bat%MaxAllowedDimGamma, bat%virtbatch,step,nthreads, bat%size1,MemoryNeeded)
+        & alpha, bat%MaxAllowedDimGamma, bat%virtbatch,step,nthreads, bat%size1,MemoryNeeded)
 
      ! Sanity check: We must ensure that the sum of the sizes of tmp1 and tmp2
      ! in the first step is larger than the size of tmp4 in the second step.
@@ -3075,9 +3087,20 @@ nthreads=1
      end if
 
      if(MemoryNeeded < MemoryAvailable) then
-        AlphaOpt = alpha
-        exit
+
+        if( adapt_to_nnodes  )then
+
+           if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
+              AlphaOpt = alpha 
+              exit AlphaLoop
+           endif
+
+        else
+           AlphaOpt = alpha
+           exit AlphaLoop
+        endif
      end if
+
 
   end do AlphaLoop
 
@@ -3090,10 +3113,13 @@ nthreads=1
   ! Find possible alpha batch size smaller than or equal to AlphaOpt
   call determine_MaxOrbitals(DECinfo%output,MyFragment%mylsitem%setting,AlphaOpt,bat%MaxAllowedDimAlpha,'R')
   call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-       & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
-  if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual alpha size, memory (GB) =', &
-       & AlphaOpt,bat%MaxAllowedDimAlpha,MemoryNeeded
+     & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
 
+
+  if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual gamma size, memory (GB) =', &
+     & GammaOpt,bat%MaxAllowedDimGamma,MemoryNeeded
+  if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual alpha size, memory (GB) =', &
+     & AlphaOpt,bat%MaxAllowedDimAlpha,MemoryNeeded
 
 
   ! *********************************************************************
@@ -3112,12 +3138,12 @@ nthreads=1
 
 
      call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-          & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, A, step,nthreads,bat%size2,MemoryNeeded)
+        & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, A, step,nthreads,bat%size2,MemoryNeeded)
 
      if(MemoryNeeded < MemoryAvailable) then
         bat%virtbatch = A
         if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,i8,g10.3)') 'Virtual batch size,  memory (GB) =', &
-             & bat%virtbatch,MemoryNeeded
+           & bat%virtbatch,MemoryNeeded
         if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,i8)') 'Number of virtual batches =', nvbatches
         exit
      end if
@@ -3130,50 +3156,50 @@ nthreads=1
   ! *********************************************************************
 
   step=3
-     call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-          & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size3,MemoryNeeded)
+  call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
+     & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size3,MemoryNeeded)
 
 
   ! Print out and sanity check
   ! ==========================
-if(doprint) then
-  write(DECinfo%output,*)
-  write(DECinfo%output,*)
-  write(DECinfo%output,*) '======================================================================='
-  write(DECinfo%output,*) '                  MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             '
-  write(DECinfo%output,*) '======================================================================='
-  write(DECinfo%output,*)
-  write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
-  write(DECinfo%output,*)
-  write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
-  write(DECinfo%output,'(1X,a,2i8)')   'Number of occupied orbitals AOS/EOS     =', nocc, noccEOS
-  write(DECinfo%output,'(1X,a,2i8)')   'Number of virtual  orbitals AOS/EOS     =', nvirt, nvirtEOS
-  write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', bat%MaxAllowedDimAlpha
-  write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', bat%MaxAllowedDimGamma
-  write(DECinfo%output,'(1X,a,i8)')    'Maximum virtual batch dimension         =', bat%virtbatch
-  write(DECinfo%output,'(1X,a,i8)')    'Number of OMP threads                   =', nthreads
-  write(DECinfo%output,*)
-end if
+  if(doprint) then
+     write(DECinfo%output,*)
+     write(DECinfo%output,*)
+     write(DECinfo%output,*) '======================================================================='
+     write(DECinfo%output,*) '                  MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             '
+     write(DECinfo%output,*) '======================================================================='
+     write(DECinfo%output,*)
+     write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
+     write(DECinfo%output,*)
+     write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
+     write(DECinfo%output,'(1X,a,2i8)')   'Number of occupied orbitals AOS/EOS     =', nocc, noccEOS
+     write(DECinfo%output,'(1X,a,2i8)')   'Number of virtual  orbitals AOS/EOS     =', nvirt, nvirtEOS
+     write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', bat%MaxAllowedDimAlpha
+     write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', bat%MaxAllowedDimGamma
+     write(DECinfo%output,'(1X,a,i8)')    'Maximum virtual batch dimension         =', bat%virtbatch
+     write(DECinfo%output,'(1X,a,i8)')    'Number of OMP threads                   =', nthreads
+     write(DECinfo%output,*)
+  end if
 
   step=1
   call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-       & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
-if(MemoryNeeded > MemoryAvailable) then
-   write(DECinfo%output,'(1X,a)') 'STEP 1 in integral loop'
-   write(DECinfo%output,'(1X,a)') '-----------------------'
-   write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
-   write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 1 (GB)    =', realk*bat%size1(1)/GB
-   write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 2 (GB)    =', realk*bat%size1(2)/GB
-   write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 3 (GB)    =', realk*bat%size1(3)/GB
-   write(DECinfo%output,*)
-   call stats_mem(DECinfo%output)
-   call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
+     & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
+  if(MemoryNeeded > MemoryAvailable) then
+     write(DECinfo%output,'(1X,a)') 'STEP 1 in integral loop'
+     write(DECinfo%output,'(1X,a)') '-----------------------'
+     write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
+     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 1 (GB)    =', realk*bat%size1(1)/GB
+     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 2 (GB)    =', realk*bat%size1(2)/GB
+     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 3 (GB)    =', realk*bat%size1(3)/GB
+     write(DECinfo%output,*)
+     call stats_mem(DECinfo%output)
+     call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
         & larger than the available memory!',DECinfo%output)
-end if
+  end if
 
   step=2
   call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-       & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size2,MemoryNeeded)
+     & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size2,MemoryNeeded)
   if(MemoryNeeded > MemoryAvailable) then
      write(DECinfo%output,'(1X,a)') 'STEP 2 in integral loop'
      write(DECinfo%output,'(1X,a)') '-----------------------'
@@ -3185,7 +3211,7 @@ end if
      write(DECinfo%output,*)
      call stats_mem(DECinfo%output)
      call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
-          & larger than the available memory!',DECinfo%output)
+        & larger than the available memory!',DECinfo%output)
   end if
 
   step=3
