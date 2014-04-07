@@ -369,11 +369,10 @@ contains
     !> loop integers
     integer :: i,j,k,idx,ij_type,tuple_type
 #ifdef VAR_OPENACC
-    integer(kind=acc_handle_kind) :: async_id_1,async_id_2,async_id_3,async_id_4
-    integer(kind=acc_handle_kind) :: async_id_5,async_id_6,async_id_7,async_id_8
+    ! 9 is the unique number of handles
+    integer(kind=acc_handle_kind), dimension(10) :: async_id
 #else
-    integer :: async_id_1,async_id_2,async_id_3,async_id_4
-    integer :: async_id_5,async_id_6,async_id_7,async_id_8
+    integer, dimension(10) :: async_id
 #endif
 
 
@@ -428,28 +427,32 @@ contains
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
 #ifdef VAR_OPENACC
-    async_id_1 = int(1,kind=acc_handle_kind)
-    async_id_2 = int(2,kind=acc_handle_kind)
-    async_id_3 = int(3,kind=acc_handle_kind)
-    async_id_4 = int(4,kind=acc_handle_kind)
-    async_id_5 = int(5,kind=acc_handle_kind)
-    async_id_6 = int(6,kind=acc_handle_kind)
-    async_id_7 = int(7,kind=acc_handle_kind)
-    async_id_8 = int(8,kind=acc_handle_kind)
+    async_id(1) = int(1,kind=acc_handle_kind) ! handle for ccsd_doubles
+    async_id(2) = int(2,kind=acc_handle_kind) ! handle for vvvo integrals
+    async_id(3) = int(3,kind=acc_handle_kind) ! handle for ovoo integrals
+    async_id(4) = int(4,kind=acc_handle_kind) ! handle for vvoo integrals
+    async_id(5) = int(5,kind=acc_handle_kind) ! handle for generating triples amplitudes
+    async_id(6) = int(6,kind=acc_handle_kind) ! handle for generating ccsd(t) intermediates
+    async_id(7) = int(7,kind=acc_handle_kind) ! handle for ccsdpt_singles
+    async_id(8) = int(8,kind=acc_handle_kind) ! handle for ccsdpt_doubles
+    async_id(9) = int(9,kind=acc_handle_kind) ! handle for ccsdpt_doubles_2
+    async_id(10) = int(10,kind=acc_handle_kind) ! handle for ccsd_doubles_portions_i/j/k
 #else
-    async_id_1 = -1
-    async_id_2 = -2
-    async_id_3 = -3
-    async_id_4 = -4
-    async_id_5 = -5
-    async_id_6 = -6
-    async_id_7 = -7
-    async_id_8 = -8
+    async_id(1) = -1
+    async_id(2) = -2
+    async_id(3) = -3
+    async_id(4) = -4
+    async_id(5) = -5
+    async_id(6) = -6
+    async_id(7) = -7
+    async_id(8) = -8
+    async_id(9) = -9
+    async_id(9) = -10
 #endif
 
 ! copy in orbital energies and create triples amplitudes and work arrays
 !$acc enter data create(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k) &
-!$acc& copyin(eivalocc,eivalvirt) async(async_id_1)
+!$acc& copyin(eivalocc,eivalvirt) 
 
  ijrun_par: do ij_count = 1,b_size + 1
 
@@ -484,85 +487,97 @@ contains
 
                   ! i .gt. j
 
-                  ! get the j'th v^3 tile only
-                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
+! move ccsd_doubles blocks to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-! move ccsd_doubles block to the device
-!$acc enter data copyin(ccsd_doubles(:,:,:,j),vvvo_pdm_j) async(async_id_2)
-
+!$acc wait(async_id(1),async_id(5)) async(async_id(10)) 
 ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id_2)
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(10))
 #else
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
-! move integral and blocks to the device (we need also ccsd_doubles(:,:,:,i))
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),vvvo_pdm_i,&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i),vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id_1)
+! move integrals to the device
+!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
 
-!copyin singles intermediates on async_id_6
-!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id_6)
-!copyin doubles intermediates (1) on async_id_7
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id_7)
-!copyin doubles intermediates (2) on async_id_8
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id_8)
+! copyin ccsdpt intermediates
+!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id(7))
+!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(7))
+!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(8))
+
+                  ! get the j'th v^3 tile only
+                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
+
+! move integrals to the device
+!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
 
                   ! store j index
                   j_old = j
 
                case(2)
 
-                  ! get the i'th v^3 tile only
                   if (i .eq. j) then
 
-!$acc enter data copyin(vvvo_pdm_j) create(vvvo_pdm_i) async(async_id_1)
+! move ccsd_doubles and integrals blocks to the device
+! (we need ccsd_doubles for i, but no need for ccsd_doubles since i == j)
+!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
-!$acc kernels present(vvvo_pdm_i,vvvo_pdm_j,ccsd_doubles_portions_i,ccsd_doubles_portions_j) async(async_id_1)
-                     vvvo_pdm_i = vvvo_pdm_j
-                     ccsd_doubles_portions_i = ccsd_doubles_portions_j
-!$acc end kernels
-
-!$acc exit data delete(vvvo_pdm_j) async(async_id_1)
-
-! move integral blocks to the device (we need ccsd_doubles for i, but no need for ccsd_doubles since i == j)
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),ovoo(:,:,i,j),vvoo(:,:,i,j)) async(async_id_2)
-
-!copyin singles intermediates on async_id_6
-!$acc enter data copyin(ccsdpt_singles(:,i)) async(async_id_6)
-!copyin doubles intermediates (1) on async_id_7
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j)) async(async_id_7)
-!copyin doubles intermediates (2) on async_id_8
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id_8)
-
-                  else ! i .gt. j
-
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
-
-! move integral and ccsd_doubles blocks to the device
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),vvvo_pdm_i) async(async_id_1)
-
+!$acc wait(async_id(1),async_id(5)) async(async_id(10))
                      ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id_1)
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(10))
 #else
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-! move integral and ccsd_doubles blocks to the device
-!$acc enter data copyin(vvvo_pdm_j,ccsd_doubles(:,:,:,j),ovoo(:,:,i,j),&
-!$acc& ovoo(:,:,j,i),vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id_2)
+!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(3))
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(4))
 
-!copyin singles intermediates on async_id_6
-!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id_6)
-!copyin doubles intermediates (1) on async_id_7
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id_7)
-!copyin doubles intermediates (2) on async_id_8
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id_8)
+! copyin ccsdpt intermediates
+!$acc enter data copyin(ccsdpt_singles(:,i)) async(async_id(7))
+!$acc enter data copyin(ccsdpt_doubles(:,:,i,j)) async(async_id(8))
+!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
+
+! no need to get i'th tile as j'th tile is already present on the host node.
+! just copy on the host node and copyin to the device.
+                     vvvo_pdm_i = vvvo_pdm_j
+!$acc enter data copyin(vvvo_pdm_i) async(async_id(2))
+
+                  else ! i .gt. j
+
+! move ccsd_doubles blocks to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
+
+!$acc wait(async_id(1),async_id(5)) async(async_id(10))
+                     ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(10))
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#endif
+
+! move integrals to the device
+!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
+
+! copyin ccsdpt intermediates
+!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id(7))
+!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
+!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
+
+                     ! get the i'th v^3 tile only
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+
+! move integrals to the device
+!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
 
                   end if
 
@@ -573,45 +588,46 @@ contains
     
                   if (i .eq. j) then
 
-                     ! get the i'th v^3 tile
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+! move ccsd_doubles blocks to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
-! move integral and ccsd_doubles blocks to the device
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),vvvo_pdm_i) async(async_id_1)
-
+!$acc wait(async_id(1),async_id(5)) async(async_id(10))
                      ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id_1)
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(10))
 #else
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
 ! move integral blocks to the device (no need for ccsd_doubles since i == j)
-!$acc enter data copyin(ovoo(:,:,i,j),vvoo(:,:,i,j)) async(async_id_2)
+!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(3))
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(4))
 
-!copyin singles intermediates on async_id_6
-!$acc enter data copyin(ccsdpt_singles(:,i)) async(async_id_6)
-!copyin doubles intermediates (1) on async_id_7
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j)) async(async_id_7)
-!copyin doubles intermediates (2) on async_id_8
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id_8)
+! copyin ccsdpt intermediates
+!$acc enter data copyin(ccsdpt_singles(:,i)) async(async_id(7))
+!$acc enter data copyin(ccsdpt_doubles(:,:,i,j)) async(async_id(8))
+!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
+
+                     ! get the i'th v^3 tile
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+
+! move integrals to the device
+!$acc enter data copyin(vvvo_pdm_i) async(async_id(2))
 
                   else ! i .gt. j
 
-                     ! get the i'th and j'th v^3 tiles
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),vvvo_pdm_i) async(async_id_1)
-                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
-!$acc enter data copyin(ccsd_doubles(:,:,:,j),vvvo_pdm_j) async(async_id_2)
+! move ccsd_doubles blocks to the device
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
+!$acc wait(async_id(1),async_id(5)) async(async_id(10))
                      ! store portions of ccsd_doubles (the i'th and j'th indices) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id_1)
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(10))
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id_2)
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(10))
 #else
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
@@ -619,15 +635,21 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
-! move integral and ccsd_doubles blocks to the device
-!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i),vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id_2)
+! move ccsd_doubles and integral blocks to the device
+!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
 
-!copyin singles intermediates on async_id_6
-!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id_6)
-!copyin doubles intermediates (1) on async_id_7
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id_7)
-!copyin doubles intermediates (2) on async_id_8
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id_8)
+! copyin ccsdpt intermediates
+!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id(7))
+!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
+!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
+
+                     ! get the i'th and j'th v^3 tiles
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
+
+! move integrals to the device
+!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
 
                   end if
     
@@ -638,9 +660,6 @@ contains
                end select TypeOf_ij_combi
 
         krun_par: do k=1,j
- 
-                     ! get the k'th tile
-                     call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
 
                      ! select type of tuple
                      tuple_type = -1
@@ -657,14 +676,32 @@ contains
                         tuple_type = 1
 
 ! move ccsd_doubles block to the device
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id_3)
+!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-!copyin singles intermediates on async_id_6
-!$acc enter data copyin(ccsdpt_singles(:,k)) async(async_id_6)
-!copyin doubles intermediates (1) on async_id_7
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id_7)
-!copyin doubles intermediates (2) on async_id_8
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id_8)
+!$acc wait(async_id(1),async_id(5)) async(async_id(10))
+                        ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+#ifdef VAR_OPENACC
+                        call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(10))
+#else
+                        call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
+#endif
+
+! move integral blocks to the device
+!$acc enter data copyin(ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(3))
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(4))
+
+! copyin ccsdpt intermediates
+!$acc enter data copyin(ccsdpt_singles(:,k)) async(async_id(7))
+!$acc enter data copyin(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(8))
+!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
+
+                        ! get the k'th tile
+                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
+
+! move integrals to the device
+!$acc enter data copyin(vvvo_pdm_k) async(async_id(2))
 
                      else if ((i .gt. j) .and. (j .eq. k)) then
 
@@ -672,8 +709,12 @@ contains
                         tuple_type = 2
 ! no need to transfer any ccsd_doubles block since k == j
 
-!copyin doubles intermediates (1) on async_id_7
-!$acc enter data copyin(ccsdpt_doubles(:,:,j,k)) async(async_id_7)
+! move integral blocks to the device
+!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(3))
+!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(4))
+
+! copyin ccsdpt intermediates
+!$acc enter data copyin(ccsdpt_doubles(:,:,j,k)) async(async_id(8))
 
                      else
 
@@ -681,120 +722,117 @@ contains
                         tuple_type = 3
 
 ! move ccsd_doubles block to the device
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id_3)
+!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-!copyin singles intermediates on async_id_6
-!$acc enter data copyin(ccsdpt_singles(:,k)) async(async_id_6)
-!copyin doubles intermediates (1) on async_id_7
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id_7)
-!copyin doubles intermediates (2) on async_id_8
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id_8)
-
-                     end if
-
-                     ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
-                     if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
-
+!$acc wait(async_id(1),async_id(5)) async(async_id(10))
+                        ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                         call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id_3)
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(10))
 #else
                         call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
+! move integral blocks to the device
+!$acc enter data copyin(ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(3))
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(4))
+
+! copyin ccsdpt intermediates
+!$acc enter data copyin(ccsdpt_singles(:,k)) async(async_id(7))
+!$acc enter data copyin(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(8))
+!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
+
+                        ! get the k'th tile
+                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
+
+! move integrals to the device
+!$acc enter data copyin(vvvo_pdm_k) async(async_id(2))
+
                      end if
-     
+
                      ! generate tuple(s)
                      TypeOfTuple_par: select case(tuple_type)
      
                      case(1)
 
-! move integral blocks to the device
-!$acc enter data copyin(vvvo_pdm_k,ovoo(:,:,i,k),ovoo(:,:,k,i),vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id_3)
-
-!$acc wait(async_id_1,async_id_2,async_id_3,async_id_5) async(async_id_4)
+!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
 
                         call trip_generator_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
                                                 & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
                                                 & ccsd_doubles_portions_k,&
                                                 & vvvo_pdm_i,vvvo_pdm_k,&
                                                 & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
-                                                & trip_tmp,trip_ampl,async_id_4)
+                                                & trip_tmp,trip_ampl,async_id(5))
      
                         ! generate triples amplitudes from trip arrays
      
-                        call trip_denom(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id_4)
+                        call trip_denom(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
      
                         ! now do the contractions
 
-!$acc wait(async_id_4,async_id_6,async_id_7,async_id_8) async(async_id_5)
+!$acc wait(async_id(5),async_id(7),async_id(8),async_id(9)) async(async_id(6))
      
                         call ccsdpt_driver_case1(i,k,nocc,nvirt,vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
                                              & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                              & vvvo_pdm_i,vvvo_pdm_k,ccsdpt_singles,ccsdpt_doubles,&
-                                             & ccsdpt_doubles_2,trip_tmp,trip_ampl,async_id_5)
+                                             & ccsdpt_doubles_2,trip_tmp,trip_ampl,async_id(6))
 
-!$acc wait(async_id_5) async(async_id_3)
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc exit data delete(ccsd_doubles(:,:,:,k),vvvo_pdm_k,ovoo(:,:,i,k),ovoo(:,:,k,i),&
-!$acc& vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id_3)
+!$acc wait(async_id(6)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!$acc wait(async_id(6)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_k) async(async_id(2))
+!$acc wait(async_id(6)) async(async_id(3))
+!$acc exit data delete(ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(3))
+!$acc wait(async_id(6)) async(async_id(4))
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(4))
 
-!$acc wait(async_id_5) async(async_id_6)
-!copyout singles intermediates on async_id_6
-!$acc exit data copyout(ccsdpt_singles(:,k)) async(async_id_6)
-
-!$acc wait(async_id_5) async(async_id_7)
-!copyout doubles intermediates (1) on async_id_7
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id_7)
-
-!$acc wait(async_id_5) async(async_id_8)
-!copyout doubles intermediates (2) on async_id_8
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,k)) async(async_id_8)
+! copyout ccsdpt intermediates
+!$acc wait(async_id(6)) async(async_id(7))
+!$acc exit data copyout(ccsdpt_singles(:,k)) async(async_id(7))
+!$acc wait(async_id(6)) async(async_id(8))
+!$acc exit data copyout(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(8))
+!$acc wait(async_id(6)) async(async_id(9))
+!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
  
                      case(2)
 
-! move integral blocks to the device
-!$acc enter data copyin(ovoo(:,:,j,k),vvoo(:,:,j,k)) async(async_id_3)
-
-!$acc wait(async_id_1,async_id_2,async_id_3,async_id_5) async(async_id_4)
+!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
 
                         call trip_generator_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
                                                 & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
                                                 & ccsd_doubles_portions_j,&
                                                 & vvvo_pdm_i,vvvo_pdm_j,&
                                                 & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
-                                                & trip_tmp,trip_ampl,async_id_4)
+                                                & trip_tmp,trip_ampl,async_id(5))
 
                         ! generate triples amplitudes from trip arrays
      
-                        call trip_denom(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id_4)
+                        call trip_denom(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
      
-!$acc wait(async_id_4,async_id_7) async(async_id_5)
+!$acc wait(async_id(5),async_id(8)) async(async_id(6))
 
                         ! now do the contractions
      
                         call ccsdpt_driver_case2(i,j,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
                                              & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                              & vvvo_pdm_i,vvvo_pdm_j,ccsdpt_singles,ccsdpt_doubles,&
-                                             & ccsdpt_doubles_2,trip_tmp,trip_ampl,async_id_5)
+                                             & ccsdpt_doubles_2,trip_tmp,trip_ampl,async_id(6))
 
-!$acc wait(async_id_5) async(async_id_3)
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc exit data delete(ovoo(:,:,j,k),vvoo(:,:,j,k)) async(async_id_3)
+!$acc wait(async_id(6)) async(async_id(3))
+!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(4))
 
-!$acc wait(async_id_5) async(async_id_7)
-!copyout doubles intermediates (1) on async_id_7
-!$acc exit data copyout(ccsdpt_doubles(:,:,j,k)) async(async_id_7)
+! copyout ccsdpt intermediates
+!$acc wait(async_id(6)) async(async_id(8))
+!$acc exit data copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(8))
  
                      case(3)
 
-! move integral blocks to the device
-!$acc enter data copyin(vvvo_pdm_k,ovoo(:,:,i,k),ovoo(:,:,k,i),&
-!$acc& ovoo(:,:,j,k),ovoo(:,:,k,j),vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id_3)
-
-!$acc wait(async_id_1,async_id_2,async_id_3,async_id_5) async(async_id_4)
+!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
 
                         call trip_generator_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
                                                 & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
@@ -804,84 +842,85 @@ contains
                                                 & vvvo_pdm_j,vvvo_pdm_k,&
                                                 & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
                                                 & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
-                                                & trip_tmp,trip_ampl,async_id_4)
+                                                & trip_tmp,trip_ampl,async_id(5))
 
                         ! generate triples amplitudes from trip arrays
      
-                        call trip_denom(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id_4)
+                        call trip_denom(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
      
                         ! now do the contractions
 
-!$acc wait(async_id_4,async_id_6,async_id_7,async_id_8) async(async_id_5)
+!$acc wait(async_id(5),async_id(7),async_id(8),async_id(9)) async(async_id(6))
 
                         call ccsdpt_driver_case3(i,j,k,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,i,k),&
                                              & vvoo(:,:,j,i),vvoo(:,:,j,k),vvoo(:,:,k,i),&
                                              & vvoo(:,:,k,j),ovoo(:,:,i,j),ovoo(:,:,i,k),&
                                              & ovoo(:,:,j,i),ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                              & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,ccsdpt_singles,ccsdpt_doubles,&
-                                             & ccsdpt_doubles_2,trip_tmp,trip_ampl,async_id_5)
+                                             & ccsdpt_doubles_2,trip_tmp,trip_ampl,async_id(6))
 
-!$acc wait(async_id_5) async(async_id_3)
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc exit data delete(ccsd_doubles(:,:,:,k),vvvo_pdm_k,ovoo(:,:,i,k),ovoo(:,:,k,i),&
-!$acc& ovoo(:,:,j,k),ovoo(:,:,k,j),vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id_3)
+!$acc wait(async_id(6)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!$acc wait(async_id(6)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_k) async(async_id(2))
+!$acc wait(async_id(6)) async(async_id(3))
+!$acc exit data delete(ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(3))
+!$acc wait(async_id(6)) async(async_id(4))
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(4))
 
-!$acc wait(async_id_5) async(async_id_6)
-!copyout singles intermediates on async_id_6
-!$acc exit data copyout(ccsdpt_singles(:,k)) async(async_id_6)
-
-!$acc wait(async_id_5) async(async_id_7)
-!copyout doubles intermediates (1) on async_id_7
+! copyout ccsdpt intermediates
+!$acc wait(async_id(6)) async(async_id(7))
+!$acc exit data copyout(ccsdpt_singles(:,k)) async(async_id(7))
+!$acc wait(async_id(6)) async(async_id(8))
 !$acc exit data copyout(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id_7)
-
-!$acc wait(async_id_5) async(async_id_8)
-!copyout doubles intermediates (2) on async_id_8
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,k)) async(async_id_8)
+!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(8))
+!$acc wait(async_id(6)) async(async_id(9))
+!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
      
                      end select TypeOfTuple_par
   
                   end do krun_par
 
-! delete reference to device arrays such that the memory may be be re-used
                if (j .eq. i) then
 
-!$acc wait(async_id_5) async(async_id_1)
-!$acc exit data delete(ccsd_doubles(:,:,:,i),vvvo_pdm_i,ovoo(:,:,i,j),vvoo(:,:,i,j)) async(async_id_1)
+! delete reference to device arrays such that the memory may be be re-used
+!$acc wait(async_id(6)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(1))
+!$acc wait(async_id(6)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_i) async(async_id(2))
+!$acc wait(async_id(6)) async(async_id(3))
+!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(3))
+!$acc wait(async_id(6)) async(async_id(4))
+!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(4))
 
-!$acc wait(async_id_1) async(async_id_2)
-
-!$acc wait(async_id_5) async(async_id_6)
-!copyout singles intermediates on async_id_6
-!$acc exit data copyout(ccsdpt_singles(:,i)) async(async_id_6)
-
-!$acc wait(async_id_5) async(async_id_7)
-!copyin doubles intermediates (1) on async_id_7
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,j)) async(async_id_7)
-
-!$acc wait(async_id_5) async(async_id_8)
-!copyout doubles intermediates (2) on async_id_8
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,i)) async(async_id_8)
+! copyout ccsdpt intermediates
+!$acc wait(async_id(6)) async(async_id(7))
+!$acc exit data copyout(ccsdpt_singles(:,i)) async(async_id(7))
+!$acc wait(async_id(6)) async(async_id(8))
+!$acc exit data copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(8))
+!$acc wait(async_id(6)) async(async_id(9))
+!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
 
                else ! i .gt. j
 
-!$acc wait(async_id_5) async(async_id_1)
-!$acc exit data delete(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),vvvo_pdm_i,vvvo_pdm_j,&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i),vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id_1)
+! delete reference to device arrays such that the memory may be be re-used
+!$acc wait(async_id(6)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
+!$acc wait(async_id(6)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
+!$acc wait(async_id(6)) async(async_id(3))
+!$acc exit data delete(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
+!$acc wait(async_id(6)) async(async_id(4))
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
 
-!$acc wait(async_id_1) async(async_id_2)
-
-!$acc wait(async_id_5) async(async_id_6)
-!copyout singles intermediates on async_id_6
-!$acc exit data copyout(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id_6)
-
-!$acc wait(async_id_5) async(async_id_7)
-!copyout doubles intermediates (1) on async_id_7
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id_7)
-
-!$acc wait(async_id_5) async(async_id_8)
-!copyout doubles intermediates (2) on async_id_8
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id_8)
+! copyout ccsdpt intermediates
+!$acc wait(async_id(6)) async(async_id(7))
+!$acc exit data copyout(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id(7))
+!$acc wait(async_id(6)) async(async_id(8))
+!$acc exit data copyout(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
+!$acc wait(async_id(6)) async(async_id(9))
+!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
 
                end if
 
@@ -984,7 +1023,7 @@ contains
 ! copy in orbital energies and create triples amplitudes and work arrays
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k) &
-!$acc& copyin(eivalocc,eivalvirt) async(async_id(1))
+!$acc& copyin(eivalocc,eivalvirt)
 
  irun_ser: do i=1,nocc
 
@@ -1248,7 +1287,6 @@ contains
 
                  end do krun_ser
 
-! delete reference to device arrays such that the memory may be be re-used
                  if (j .eq. i) then
 
 ! delete reference to device arrays such that the memory may be be re-used
@@ -4736,6 +4774,7 @@ contains
     call LSTIMER('CCSD(T) INT',tcpu,twall,DECinfo%output)
 
   end subroutine get_CCSDpT_integrals
+
 
   !> \brief Get optimal batch sizes to be used in get_CCSDpT_integrals
   !> using the available memory.
