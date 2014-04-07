@@ -3473,20 +3473,20 @@ contains
     ! init temp energy
     ccsdpt_e5 = 0.0E0_realk
 
-                    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,a,a_eos,energy_tmp),&
-                    !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc_eos,nvirt_eos,MyFragment),&
-                    !$OMP REDUCTION(+:ccsdpt_e5)
-  ido_frag_singles: do i=1,nocc_eos
-                    i_eos = MyFragment%idxo(i)
-     ado_frag_singles: do a=1,nvirt_eos
-                       a_eos = MyFragment%idxu(a)
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,a,a_eos,energy_tmp),&
+    !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc_eos,nvirt_eos,MyFragment),&
+    !$OMP REDUCTION(+:ccsdpt_e5)
+    do i=1,nocc_eos
+       i_eos = MyFragment%idxo(i)
+       do a=1,nvirt_eos
+          a_eos = MyFragment%idxu(a)
 
-                          energy_tmp = ccsd_singles%val(a_eos,i_eos) * ccsdpt_singles%val(a_eos,i_eos)
-                          ccsdpt_e5 = ccsdpt_e5 + energy_tmp
+          energy_tmp = ccsd_singles%val(a_eos,i_eos) * ccsdpt_singles%val(a_eos,i_eos)
+          ccsdpt_e5 = ccsdpt_e5 + energy_tmp
 
-                       end do ado_frag_singles
-                    end do ido_frag_singles
-                    !$OMP END PARALLEL DO
+       end do 
+    end do 
+    !$OMP END PARALLEL DO
 
     MyFragment%energies(FRAGMODEL_OCCpT5) = 2.0E0_realk * ccsdpt_e5
 
@@ -3542,78 +3542,78 @@ contains
     PairFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
     PairFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
 
-  ido_pair_singles: do i=1,nocc_eos
-                    i_eos = PairFragment%idxo(i)
-                    AtomI = PairFragment%occAOSorb(i_eos)%CentralAtom
-     ado_pair_singles: do a=1,nvirt_eos
-                       a_eos = PairFragment%idxu(a)
-                       AtomA = PairFragment%unoccAOSorb(a_eos)%CentralAtom
+    do i=1,nocc_eos
+       i_eos = PairFragment%idxo(i)
+       AtomI = PairFragment%occAOSorb(i_eos)%CentralAtom
+       do a=1,nvirt_eos
+          a_eos = PairFragment%idxu(a)
+          AtomA = PairFragment%unoccAOSorb(a_eos)%CentralAtom
 
-                       ! occ in frag # 1, virt in frag # 2
+          ! occ in frag # 1, virt in frag # 2
 
-                          occ_in_frag_1 = .false.
-                          do idx = 1,Fragment1%nEOSatoms
-                             if (Fragment1%EOSatoms(idx) .eq. AtomI) then
-                                occ_in_frag_1 = .true.
-                             end if
-                          end do
+          occ_in_frag_1 = .false.
+          do idx = 1,Fragment1%nEOSatoms
+             if (Fragment1%EOSatoms(idx) .eq. AtomI) then
+                occ_in_frag_1 = .true.
+             end if
+          end do
 
-                          virt_in_frag_2 = .false.
-                          do adx = 1,Fragment2%nEOSatoms
-                             if (Fragment2%EOSatoms(adx) .eq. AtomA) then
-                                virt_in_frag_2 = .true.
-                             end if
-                          end do
+          virt_in_frag_2 = .false.
+          do adx = 1,Fragment2%nEOSatoms
+             if (Fragment2%EOSatoms(adx) .eq. AtomA) then
+                virt_in_frag_2 = .true.
+             end if
+          end do
 
-                          if (occ_in_frag_1 .and. virt_in_frag_2) then
-                             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
-                               & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
-                               & * ccsdpt_singles%val(a_eos,i_eos)
-                          end if
+          if (occ_in_frag_1 .and. virt_in_frag_2) then
+             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
+               & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
+               & * ccsdpt_singles%val(a_eos,i_eos)
+          end if
 
-                       ! virt in frag # 1, occ in frag # 2
+          ! virt in frag # 1, occ in frag # 2
                             
-                          occ_in_frag_2 = .false. 
-                          do idx = 1,Fragment2%nEOSatoms
-                             if (Fragment2%EOSatoms(idx) .eq. AtomI) then
-                                occ_in_frag_2 = .true.
-                             end if
-                          end do 
-                             
-                          virt_in_frag_1 = .false.
-                          do adx = 1,Fragment1%nEOSatoms
-                             if (Fragment1%EOSatoms(adx) .eq. AtomA) then
-                                virt_in_frag_1 = .true.
-                             end if
-                          end do
-                             
-                          if (occ_in_frag_2 .and. virt_in_frag_1) then
-                             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
-                               & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
-                               & * ccsdpt_singles%val(a_eos,i_eos)
-                          end if
+          occ_in_frag_2 = .false. 
+          do idx = 1,Fragment2%nEOSatoms
+             if (Fragment2%EOSatoms(idx) .eq. AtomI) then
+                occ_in_frag_2 = .true.
+             end if
+          end do 
+             
+          virt_in_frag_1 = .false.
+          do adx = 1,Fragment1%nEOSatoms
+             if (Fragment1%EOSatoms(adx) .eq. AtomA) then
+                virt_in_frag_1 = .true.
+             end if
+          end do
+             
+          if (occ_in_frag_2 .and. virt_in_frag_1) then
+             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
+               & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
+               & * ccsdpt_singles%val(a_eos,i_eos)
+          end if
 
-                       ! sanity checks
+          ! sanity checks
 
-                          if (.not. (occ_in_frag_1 .or. occ_in_frag_2)) then
-                             call lsquit('Problem in evaluation of E[5] contr. &
-                                  & to pair fragment energy: occ orbital neither in frag 1 or 2',DECinfo%output)        
-                          end if
-                          if (.not. (virt_in_frag_1 .or. virt_in_frag_2)) then
-                             call lsquit('Problem in evaluation of E[5] contr. &
-                                  & to pair fragment energy: virt orbital neither in frag 1 or 2',DECinfo%output)
-                          end if
-                          if (occ_in_frag_1 .and. occ_in_frag_2) then
-                             call lsquit('Problem in evaluation of E[5] contr. &
-                                  & to pair fragment energy: occ orbital both in frag 1 or 2',DECinfo%output)
-                          end if
-                          if (virt_in_frag_1 .and. virt_in_frag_2) then
-                             call lsquit('Problem in evaluation of E[5] contr. &
-                                  & to pair fragment energy: virt orbital both in frag 1 or 2',DECinfo%output)
-                          end if
+          if (.not. (occ_in_frag_1 .or. occ_in_frag_2)) then
+             call lsquit('Problem in evaluation of E[5] contr. &
+                  & to pair fragment energy: occ orbital neither in frag 1 or 2',DECinfo%output)        
+          end if
+          if (.not. (virt_in_frag_1 .or. virt_in_frag_2)) then
+             call lsquit('Problem in evaluation of E[5] contr. &
+                  & to pair fragment energy: virt orbital neither in frag 1 or 2',DECinfo%output)
+          end if
+          if (occ_in_frag_1 .and. occ_in_frag_2) then
+             call lsquit('Problem in evaluation of E[5] contr. &
+                  & to pair fragment energy: occ orbital both in frag 1 or 2',DECinfo%output)
+          end if
+          if (virt_in_frag_1 .and. virt_in_frag_2) then
+             call lsquit('Problem in evaluation of E[5] contr. &
+                  & to pair fragment energy: virt orbital both in frag 1 or 2',DECinfo%output)
+          end if
 
-                       end do ado_pair_singles
-                    end do ido_pair_singles
+       end do
+    end do
 
     ! insert into occ. part. scheme part
     PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
@@ -3684,34 +3684,34 @@ contains
     energy_res_cou = 0.0E0_realk
     energy_res_exc = 0.0E0_realk
 
-                        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
-                        !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:virt_contribs)
-  jdo_frag_doubles_cou: do j=1,nocc_eos
-                        j_eos = MyFragment%idxo(j)
-     ido_frag_doubles_cou: do i=1,nocc_eos
-                           i_eos = MyFragment%idxo(i)
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
+    !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
+    !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:virt_contribs)
+    do j=1,nocc_eos
+       j_eos = MyFragment%idxo(j)
+       do i=1,nocc_eos
+          i_eos = MyFragment%idxo(i)
 
-                              do b=1,nvirt_aos
-                                 do a=1,nvirt_aos
+          do b=1,nvirt_aos
+             do a=1,nvirt_aos
 
-                                    energy_tmp = 4.0E0_realk * ccsd_doubles%val(a,b,i_eos,j_eos) &
-                                                   & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
-                                    energy_res_cou = energy_res_cou + energy_tmp
+                energy_tmp = 4.0E0_realk * ccsd_doubles%val(a,b,i_eos,j_eos) &
+                               & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                energy_res_cou = energy_res_cou + energy_tmp
 
-                                    ! update contribution from aos orbital a
-                                    virt_contribs(a) = virt_contribs(a) + energy_tmp
+                ! update contribution from aos orbital a
+                virt_contribs(a) = virt_contribs(a) + energy_tmp
 
-                                    ! update contribution from aos orbital b 
-                                    ! (only if different from aos orbital a to avoid double counting)
-                                    if (a .ne. b) virt_contribs(b) = virt_contribs(b) + energy_tmp
+                ! update contribution from aos orbital b 
+                ! (only if different from aos orbital a to avoid double counting)
+                if (a .ne. b) virt_contribs(b) = virt_contribs(b) + energy_tmp
 
-                                 end do
-                              end do
+             end do
+          end do
 
-                           end do ido_frag_doubles_cou
-                        end do jdo_frag_doubles_cou
-                        !$OMP END PARALLEL DO
+       end do
+    end do
+    !$OMP END PARALLEL DO
 
     ! reorder from (a,b,i,j) to (a,b,j,i)
     call array4_reorder(ccsd_doubles,[1,2,4,3])
@@ -3719,31 +3719,31 @@ contains
                         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
                         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
                         !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:virt_contribs)
-  jdo_frag_doubles_exc: do j=1,nocc_eos
-                        j_eos = MyFragment%idxo(j)
-     ido_frag_doubles_exc: do i=1,nocc_eos
-                           i_eos = MyFragment%idxo(i)
+    do j=1,nocc_eos
+       j_eos = MyFragment%idxo(j)
+       do i=1,nocc_eos
+          i_eos = MyFragment%idxo(i)
 
-                              do b=1,nvirt_aos
-                                 do a=1,nvirt_aos
+          do b=1,nvirt_aos
+             do a=1,nvirt_aos
 
-                                    energy_tmp = 2.0E0_realk * ccsd_doubles%val(a,b,i_eos,j_eos) &
-                                                   & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
-                                    energy_res_exc = energy_res_exc - energy_tmp
+                energy_tmp = 2.0E0_realk * ccsd_doubles%val(a,b,i_eos,j_eos) &
+                               & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                energy_res_exc = energy_res_exc - energy_tmp
 
-                                    ! update contribution from aos orbital a
-                                    virt_contribs(a) = virt_contribs(a) - energy_tmp
+                ! update contribution from aos orbital a
+                virt_contribs(a) = virt_contribs(a) - energy_tmp
 
-                                    ! update contribution from aos orbital b 
-                                    ! (only if different from aos orbital a to avoid double counting)
-                                    if (a .ne. b) virt_contribs(b) = virt_contribs(b) - energy_tmp
+                ! update contribution from aos orbital b 
+                ! (only if different from aos orbital a to avoid double counting)
+                if (a .ne. b) virt_contribs(b) = virt_contribs(b) - energy_tmp
 
-                                 end do
-                              end do
+             end do
+          end do
 
-                           end do ido_frag_doubles_exc
-                        end do jdo_frag_doubles_exc
-                        !$OMP END PARALLEL DO
+       end do
+    end do
+    !$OMP END PARALLEL DO
 
     !get total fourth--order energy contribution
     MyFragment%energies(FRAGMODEL_OCCpT4) = energy_res_cou + energy_res_exc
@@ -3764,66 +3764,66 @@ contains
     energy_res_cou = 0.0E0_realk
     energy_res_exc = 0.0E0_realk
 
-                        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
-                        !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:occ_contribs)
-  bdo_frag_doubles_exc: do b=1,nvirt_eos
-                        b_eos = MyFragment%idxu(b)
-     ado_frag_doubles_exc: do a=1,nvirt_eos
-                           a_eos = MyFragment%idxu(a)
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
+    !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
+    !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:occ_contribs)
+    do b=1,nvirt_eos
+       b_eos = MyFragment%idxu(b)
+       do a=1,nvirt_eos
+          a_eos = MyFragment%idxu(a)
 
-                              do j=1,nocc_aos
-                                 do i=1,nocc_aos
+          do j=1,nocc_aos
+             do i=1,nocc_aos
 
-                                    energy_tmp = 2.0E0_realk * ccsd_doubles%val(i,j,a_eos,b_eos) &
-                                                   & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
-                                    energy_res_exc = energy_res_exc - energy_tmp
+                energy_tmp = 2.0E0_realk * ccsd_doubles%val(i,j,a_eos,b_eos) &
+                               & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                energy_res_exc = energy_res_exc - energy_tmp
 
-                                    ! update contribution from aos orbital i
-                                    occ_contribs(i) = occ_contribs(i) - energy_tmp
+                ! update contribution from aos orbital i
+                occ_contribs(i) = occ_contribs(i) - energy_tmp
 
-                                    ! update contribution from aos orbital j 
-                                    ! (only if different from aos orbital i to avoid double counting)
-                                    if (i .ne. j) occ_contribs(j) = occ_contribs(j) - energy_tmp
+                ! update contribution from aos orbital j 
+                ! (only if different from aos orbital i to avoid double counting)
+                if (i .ne. j) occ_contribs(j) = occ_contribs(j) - energy_tmp
 
-                                 end do
-                              end do
+             end do
+          end do
 
-                           end do ado_frag_doubles_exc
-                        end do bdo_frag_doubles_exc
-                        !$OMP END PARALLEL DO
+       end do
+    end do
+    !$OMP END PARALLEL DO
 
     ! reorder form (j,i,a,b) to (i,j,a,b)
     call array4_reorder(ccsd_doubles,[2,1,3,4])
 
-                        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
-                        !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:occ_contribs)
-  bdo_frag_doubles_cou: do b=1,nvirt_eos
-                        b_eos = MyFragment%idxu(b)
-     ado_frag_doubles_cou: do a=1,nvirt_eos
-                           a_eos = MyFragment%idxu(a)
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
+    !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
+    !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:occ_contribs)
+    do b=1,nvirt_eos
+       b_eos = MyFragment%idxu(b)
+       do a=1,nvirt_eos
+          a_eos = MyFragment%idxu(a)
 
-                              do j=1,nocc_aos
-                                 do i=1,nocc_aos
+          do j=1,nocc_aos
+             do i=1,nocc_aos
 
-                                    energy_tmp = 4.0E0_realk * ccsd_doubles%val(i,j,a_eos,b_eos) &
-                                                   & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
-                                    energy_res_cou = energy_res_cou + energy_tmp
+                energy_tmp = 4.0E0_realk * ccsd_doubles%val(i,j,a_eos,b_eos) &
+                               & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                energy_res_cou = energy_res_cou + energy_tmp
 
-                                    ! update contribution from aos orbital i
-                                    occ_contribs(i) = occ_contribs(i) + energy_tmp
+                ! update contribution from aos orbital i
+                occ_contribs(i) = occ_contribs(i) + energy_tmp
 
-                                    ! update contribution from aos orbital j 
-                                    ! (only if different from aos orbital i to avoid double counting)
-                                    if (i .ne. j) occ_contribs(j) = occ_contribs(j) + energy_tmp
+                ! update contribution from aos orbital j 
+                ! (only if different from aos orbital i to avoid double counting)
+                if (i .ne. j) occ_contribs(j) = occ_contribs(j) + energy_tmp
 
-                                 end do
-                              end do
+             end do
+          end do
 
-                           end do ado_frag_doubles_cou
-                        end do bdo_frag_doubles_cou
-                        !$OMP END PARALLEL DO
+       end do
+    end do
+    !$OMP END PARALLEL DO
 
     !get total fourth--order energy contribution
     MyFragment%energies(FRAGMODEL_VIRTpT4) = energy_res_cou + energy_res_exc
@@ -3913,56 +3913,56 @@ contains
     energy_res_cou = 0.0E0_realk
     energy_res_exc = 0.0E0_realk
 
-                        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
-                        !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_cou)
-  jdo_pair_doubles_cou: do j=1,nocc_eos
-                        j_eos = PairFragment%idxo(j)
-     ido_pair_doubles_cou: do i=1,nocc_eos
-                           i_eos = PairFragment%idxo(i)
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
+    !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
+    !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_cou)
+    do j=1,nocc_eos
+       j_eos = PairFragment%idxo(j)
+       do i=1,nocc_eos
+          i_eos = PairFragment%idxo(i)
 
-                              if (.not. dopair_occ(i,j)) cycle ido_pair_doubles_cou
+          if (.not. dopair_occ(i,j)) cycle 
 
-                              do b=1,nvirt_aos
-                                 do a=1,nvirt_aos
+          do b=1,nvirt_aos
+             do a=1,nvirt_aos
 
-                                    energy_tmp = ccsd_doubles%val(a,b,i_eos,j_eos) &
-                                               & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
-                                    energy_res_cou = energy_res_cou + energy_tmp
+                energy_tmp = ccsd_doubles%val(a,b,i_eos,j_eos) &
+                           & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                energy_res_cou = energy_res_cou + energy_tmp
 
-                                 end do
-                              end do
+             end do
+          end do
 
-                           end do ido_pair_doubles_cou
-                        end do jdo_pair_doubles_cou
-                        !$OMP END PARALLEL DO
+       end do
+    end do
+    !$OMP END PARALLEL DO
 
     ! reorder from (a,b,i,j) to (a,b,j,i)
     call array4_reorder(ccsd_doubles,[1,2,4,3])
 
-                        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
-                        !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_exc)
-  jdo_pair_doubles_exc: do j=1,nocc_eos
-                        j_eos = PairFragment%idxo(j)
-     ido_pair_doubles_exc: do i=1,nocc_eos
-                           i_eos = PairFragment%idxo(i)
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
+    !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
+    !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_exc)
+    do j=1,nocc_eos
+       j_eos = PairFragment%idxo(j)
+       do i=1,nocc_eos
+          i_eos = PairFragment%idxo(i)
 
-                              if (.not. dopair_occ(i,j)) cycle ido_pair_doubles_exc
+          if (.not. dopair_occ(i,j)) cycle
 
-                              do b=1,nvirt_aos
-                                 do a=1,nvirt_aos
+          do b=1,nvirt_aos
+             do a=1,nvirt_aos
 
-                                    energy_tmp = ccsd_doubles%val(a,b,i_eos,j_eos) &
-                                               & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
-                                    energy_res_exc = energy_res_exc + energy_tmp
+                energy_tmp = ccsd_doubles%val(a,b,i_eos,j_eos) &
+                           & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                energy_res_exc = energy_res_exc + energy_tmp
 
-                                 end do
-                              end do
+             end do
+          end do
 
-                           end do ido_pair_doubles_exc
-                        end do jdo_pair_doubles_exc
-                        !$OMP END PARALLEL DO
+       end do
+    end do
+    !$OMP END PARALLEL DO
 
     ! get total fourth--order energy contribution
     PairFragment%energies(FRAGMODEL_OCCpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
@@ -3983,56 +3983,56 @@ contains
     energy_res_cou = 0.0E0_realk
     energy_res_exc = 0.0E0_realk
 
-                        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
-                        !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_exc)
-  bdo_pair_doubles_exc: do b=1,nvirt_eos
-                        b_eos = PairFragment%idxu(b)
-     ado_pair_doubles_exc: do a=1,nvirt_eos
-                           a_eos = PairFragment%idxu(a)
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
+    !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
+    !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_exc)
+    do b=1,nvirt_eos
+       b_eos = PairFragment%idxu(b)
+       do a=1,nvirt_eos
+          a_eos = PairFragment%idxu(a)
 
-                              if (.not. dopair_virt(a,b)) cycle ado_pair_doubles_exc
+          if (.not. dopair_virt(a,b)) cycle
     
-                              do j=1,nocc_aos
-                                 do i=1,nocc_aos
+          do j=1,nocc_aos
+             do i=1,nocc_aos
 
-                                    energy_tmp = ccsd_doubles%val(i,j,a_eos,b_eos) &
-                                               & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
-                                    energy_res_exc = energy_res_exc + energy_tmp
+                energy_tmp = ccsd_doubles%val(i,j,a_eos,b_eos) &
+                           & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                energy_res_exc = energy_res_exc + energy_tmp
 
-                                 end do
-                              end do
+             end do
+          end do
     
-                           end do ado_pair_doubles_exc
-                        end do bdo_pair_doubles_exc
-                        !$OMP END PARALLEL DO
+       end do
+    end do
+    !$OMP END PARALLEL DO
 
     ! reorder form (j,i,a,b) to (i,j,a,b)
     call array4_reorder(ccsd_doubles,[2,1,3,4])
 
-                        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
-                        !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_cou)
-  bdo_pair_doubles_cou: do b=1,nvirt_eos
-                        b_eos = PairFragment%idxu(b)
-     ado_pair_doubles_cou: do a=1,nvirt_eos
-                           a_eos = PairFragment%idxu(a)
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
+    !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
+    !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_cou)
+    do b=1,nvirt_eos
+       b_eos = PairFragment%idxu(b)
+       do a=1,nvirt_eos
+          a_eos = PairFragment%idxu(a)
 
-                              if (.not. dopair_virt(a,b)) cycle ado_pair_doubles_cou
+          if (.not. dopair_virt(a,b)) cycle
 
-                              do j=1,nocc_aos
-                                 do i=1,nocc_aos
+          do j=1,nocc_aos
+             do i=1,nocc_aos
 
-                                    energy_tmp = ccsd_doubles%val(i,j,a_eos,b_eos) &
-                                               & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
-                                    energy_res_cou = energy_res_cou + energy_tmp
+                energy_tmp = ccsd_doubles%val(i,j,a_eos,b_eos) &
+                           & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                energy_res_cou = energy_res_cou + energy_tmp
 
-                                 end do
-                              end do
+             end do
+          end do
 
-                           end do ado_pair_doubles_cou
-                        end do bdo_pair_doubles_cou
-                        !$OMP END PARALLEL DO
+       end do
+    end do
+    !$OMP END PARALLEL DO
 
     ! get total fourth--order energy contribution
     PairFragment%energies(FRAGMODEL_VIRTpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
@@ -4303,7 +4303,6 @@ contains
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
     integer :: i,a
-!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
 
     ! print out fragment energies
 
