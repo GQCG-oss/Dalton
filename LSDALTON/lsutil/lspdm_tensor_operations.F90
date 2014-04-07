@@ -562,6 +562,8 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
+      call time_start_phase(PHASE_COMM)
+
       call pdm_array_sync(infpar%lg_comm,JOB_GET_FRAG_CC_ENERGY,t1,t2,gmo)
       call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
       call ls_mpi_buffer(occ_num,infpar%master)
@@ -569,9 +571,14 @@ module lspdm_tensor_operations_module
       call ls_mpi_buffer(virt_num,infpar%master)
       call ls_mpi_buffer(virt_idx,virt_num,infpar%master)
       call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+      call time_start_phase(PHASE_WORK)
     endif
     call memory_allocate_array_dense(gmo)
+
+    call time_start_phase(PHASE_COMM)
     call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
+    call time_start_phase(PHASE_WORK)
 
     Eocc  = 0.0E0_realk
     Evirt = 0.0E0_realk
@@ -647,8 +654,10 @@ module lspdm_tensor_operations_module
 
     call arr_deallocate_dense(gmo)
     
+    call time_start_phase(PHASE_COMM)
     call lsmpi_local_reduction(Eocc,infpar%master)
     call lsmpi_local_reduction(Evirt,infpar%master)
+    call time_start_phase(PHASE_WORK)
 
     fEc = 0.50E0_realk*(Eocc + Evirt)
 #else
@@ -753,7 +762,10 @@ module lspdm_tensor_operations_module
     endif
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
+      call time_start_phase(PHASE_COMM)
+
       call pdm_array_sync(infpar%lg_comm,JOB_PREC_DOUBLES_PAR,omega2,ppfock,qqfock,prec)
+      call time_start_phase(PHASE_WORK)
     endif
 
     dims=prec%dims
@@ -762,7 +774,14 @@ module lspdm_tensor_operations_module
     !do a loop over the local tiles of the preconditioned matrix and get the
     !corresponding tiles of the residual to form the preconditioned residual
     do lt=1,prec%nlti
+
+      call time_start_phase(PHASE_COMM)
+
       call array_get_tile(omega2,prec%ti(lt)%gt,prec%ti(lt)%t,prec%ti(lt)%e)
+
+      call time_start_phase(PHASE_WORK)
+
+
       call ass_D1to4(prec%ti(lt)%t,om,prec%ti(lt)%d)
       
       !get offset for global indices
@@ -798,7 +817,11 @@ module lspdm_tensor_operations_module
     enddo
     
     !crucial barrier, wait for all slaves to finish their jobs
+    call time_start_phase(PHASE_IDLE)
+
     call lsmpi_barrier(infpar%lg_comm)
+
+    call time_start_phase(PHASE_WORK)
 #endif
   end subroutine precondition_doubles_parallel
 

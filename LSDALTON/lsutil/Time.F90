@@ -530,11 +530,62 @@ subroutine time_phase_operations1()
    last_phase = PHASE_INIT
 end subroutine time_phase_operations1
 
-subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot)
+
+!\brief this subroutine is intended to be used for getting the time a node
+!spends on work, communication or in an idle status (there is also a negligible
+!initialitzation time), but it can be used for general purpose timing and output
+!of the corresponding times. There are a number of possbilies of times that can
+!be taken, but the phase argument has to be  there, because it defines the
+!nature of the following steps (that may be of type PHASE_INIT, PHASE_COMM,
+!PHASE_WORK or PHASE_IDLE) until the next call to this routine is made (with a
+!different or the same phase argument). Arguments:
+! phase  : one of the phases defined at the beginning of this module
+! (label)dt     : output the difference wall time since last call to subroutine
+! (label)dc     : output the difference cpu  time since last call to subroutine
+! (label)at     : output the value of at plus difference wall time since last call to subroutine
+! (label)ac     : output the value of at plus difference cpu  time since last call to subroutine
+! (label)twall  : output wall time at call
+! (label)tcpu   : output cpu  time at call
+! (label)ttot   : output difference ttot - wall time at call
+! (label)tcpu   : output difference tcpu - cpu  time at call
+! (label)swinit : output value of WT_PHASE(PHASE_INIT_IDX)
+! (label)swwork : output value of WT_PHASE(PHASE_WORK_IDX)
+! (label)swcomm : output value of WT_PHASE(PHASE_COMM_IDX)
+! (label)swidle : output value of WT_PHASE(PHASE_IDLE_IDX)
+! (label)cwinit : output value of CT_PHASE(PHASE_INIT_IDX)
+! (label)cwwork : output value of CT_PHASE(PHASE_WORK_IDX)
+! (label)cwcomm : output value of CT_PHASE(PHASE_COMM_IDX)
+! (label)cwidle : output value of CT_PHASE(PHASE_IDLE_IDX)
+! output        : chose where to write the information
+!
+! if the label to a corresponding value is given, there will be a print with the
+! specified label and corresponding value to the output specified in output
+!
+!> \author Patrick Ettenhuber
+!> \date april 2014
+subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot,&
+      &swinit,swwork, swcomm, swidle, scinit, scwork, sccomm, scidle,&
+      &dwinit,dwwork, dwcomm, dwidle, dcinit, dcwork, dccomm, dcidle,&
+      &labeldt,labeldc,labelat,labelac,labeltwall,labeltcpu,labelttot,labelctot,&
+      &labelswinit, labelswwork, labelswcomm, labelswidle, labelscinit, labelscwork, &
+      &labelsccomm, labelscidle, &
+      &labeldwinit, labeldwwork, labeldwcomm, labeldwidle, labeldcinit, labeldcwork, &
+      &labeldccomm, labeldcidle, &
+      &output)
    implicit none
    !> phase is a job specifier from the parameter list
    integer,intent(in) :: phase
    real(realk),intent(inout), optional :: dt, dc, at, ac,twall, tcpu,ttot,ctot
+   real(realk),intent(inout), optional :: swinit, swwork, swcomm, swidle, scinit, scwork, sccomm, scidle
+   real(realk),intent(inout), optional :: dwinit, dwwork, dwcomm, dwidle, dcinit, dcwork, dccomm, dcidle
+   character*(*), intent(in), optional :: labeldt,labeldc,labelat,labelac,labeltwall,labeltcpu,labelttot,labelctot
+   character*(*), intent(in), optional :: labelswinit, labelswwork, labelswcomm, labelswidle, labelscinit, &
+      &labelscwork, labelsccomm, labelscidle
+   character*(*), intent(in), optional :: labeldwinit, labeldwwork, labeldwcomm, labeldwidle, labeldcinit, &
+      &labeldcwork, labeldccomm, labeldcidle
+   integer,intent(in),optional         :: output
+   integer :: op
+   character(len=100), pointer :: line
    real(realk) :: deltacpu,deltawall
 
    CALL LS_GETTIM(PHASEcputime2,PHASEwalltime2)
@@ -544,15 +595,156 @@ subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot)
 
    call add_time_to_job(last_phase,DeltaCPU,DeltaWall)
 
+   op = 6
+   if(present(output)) op = output
+
    !return the requested information
-   if(present(dt)) dt       = DeltaWall
-   if(present(dc)) dc       = DeltaCPU
-   if(present(at)) at       = at + DeltaWall
-   if(present(ac)) ac       = ac + DeltaCPU
-   if(present(twall)) twall = PHASEwalltime2
-   if(present(tcpu )) tcpu  = PHASEcputime2
-   if(present(ttot )) ttot  = PHASEwalltime2 - ttot
-   if(present(ctot )) ctot  = PHASEcputime2  - ctot
+   !print the info requested, to the output requested
+
+   if(present(dt))then
+      dt       = DeltaWall
+      if(present(labeldt))then
+         write (op,'(1X,A,g10.3,"s")')labeldt(1:len(labeldt)),dt
+      endif
+   endif
+   if(present(dc))then
+      dc       = DeltaCPU
+      if(present(labeldc))then
+         write (op,'(1X,A,g10.3,"s")')labeldc(1:len(labeldc)),dc
+      endif
+   endif
+   if(present(at))then
+      at       = at + DeltaWall
+      if(present(labelat))then
+         write (op,'(1X,A,g10.3,"s")')labelat(1:len(labelat)),ac
+      endif
+   endif
+   if(present(ac))then
+      ac       = ac + DeltaCPU
+      if(present(labelac))then
+         write (op,'(1X,A,g10.3,"s")')labelac(1:len(labelac)),ac
+      endif
+   endif
+   if(present(twall))then
+      twall = PHASEwalltime2
+      if(present(labeltwall))then
+         write (op,'(1X,A,g10.3,"s")')labeltwall(1:len(labeltwall)),twall
+      endif
+   endif
+   if(present(tcpu ))then
+      tcpu  = PHASEcputime2
+      if(present(labeltcpu))then
+         write (op,'(1X,A,g10.3,"s")')labeltcpu(1:len(labeltcpu)),tcpu
+      endif
+   endif
+   if(present(ttot ))then 
+      ttot  = PHASEwalltime2 - ttot
+      if(present(labelttot))then
+         write (op,'(1X,A,g10.3,"s")')labelttot(1:len(labelttot)),ttot
+      endif
+   endif
+   if(present(ctot ))then
+      ctot  = PHASEcputime2  - ctot
+      if(present(labelctot))then
+         write (op,'(1X,A,g10.3,"s")')labelctot(1:len(labelctot)),ctot
+      endif
+   endif
+   if(present(swinit))then 
+      swinit = WT_PHASE(PHASE_INIT_IDX)
+      if(present(labelswinit))then
+         write (op,'(1X,A,g10.3,"s")')labelswinit(1:len(labelswinit)),swinit
+      endif
+   endif
+   if(present(scinit))then 
+      scinit = CT_PHASE(PHASE_INIT_IDX)
+      if(present(labelscinit))then
+         write (op,'(1X,A,g10.3,"s")')labelscinit(1:len(labelscinit)),scinit
+      endif
+   endif
+   if(present(swwork))then 
+      swwork = WT_PHASE(PHASE_WORK_IDX)
+      if(present(labelswwork))then
+         write (op,'(1X,A,g10.3,"s")')labelswwork(1:len(labelswwork)),swwork
+      endif
+   endif
+   if(present(scwork))then 
+      scwork = CT_PHASE(PHASE_WORK_IDX)
+      if(present(labelscwork))then
+         write (op,'(1X,A,g10.3,"s")')labelscwork(1:len(labelscwork)),scwork
+      endif
+   endif
+   if(present(swcomm))then 
+      swcomm = WT_PHASE(PHASE_COMM_IDX)
+      if(present(labelswcomm))then
+         write (op,'(1X,A,g10.3,"s")')labelswcomm(1:len(labelswcomm)),swcomm
+      endif
+   endif
+   if(present(sccomm))then 
+      sccomm = CT_PHASE(PHASE_COMM_IDX)
+      if(present(labelsccomm))then
+         write (op,'(1X,A,g10.3,"s")')labelsccomm(1:len(labelsccomm)),sccomm
+      endif
+   endif
+   if(present(swidle))then 
+      swidle = WT_PHASE(PHASE_IDLE_IDX)
+      if(present(labelswidle))then
+         write (op,'(1X,A,g10.3,"s")')labelswidle(1:len(labelswidle)),swidle
+      endif
+   endif
+   if(present(scidle))then 
+      scidle = CT_PHASE(PHASE_IDLE_IDX)
+      if(present(labelscidle))then
+         write (op,'(1X,A,g10.3,"s")')labelscidle(1:len(labelscidle)),scidle
+      endif
+   endif
+   if(present(dwinit))then 
+      dwinit = WT_PHASE(PHASE_INIT_IDX)-dwinit
+      if(present(labeldwinit))then
+         write (op,'(1X,A,g10.3,"s")')labeldwinit(1:len(labeldwinit)),dwinit
+      endif
+   endif
+   if(present(dcinit))then 
+      dcinit = CT_PHASE(PHASE_INIT_IDX)-dcinit
+      if(present(labeldcinit))then
+         write (op,'(1X,A,g10.3,"s")')labeldcinit(1:len(labeldcinit)),dcinit
+      endif
+   endif
+   if(present(dwwork))then 
+      dwwork = WT_PHASE(PHASE_WORK_IDX)-dwwork
+      if(present(labeldwwork))then
+         write (op,'(1X,A,g10.3,"s")')labeldwwork(1:len(labeldwwork)),dwwork
+      endif
+   endif
+   if(present(dcwork))then 
+      dcwork = CT_PHASE(PHASE_WORK_IDX)-dcwork
+      if(present(labeldcwork))then
+         write (op,'(1X,A,g10.3,"s")')labeldcwork(1:len(labeldcwork)),dcwork
+      endif
+   endif
+   if(present(dwcomm))then 
+      dwcomm = WT_PHASE(PHASE_COMM_IDX)-dwcomm
+      if(present(labeldwcomm))then
+         write (op,'(1X,A,g10.3,"s")')labeldwcomm(1:len(labeldwcomm)),dwcomm
+      endif
+   endif
+   if(present(dccomm))then 
+      dccomm = CT_PHASE(PHASE_COMM_IDX)-dccomm
+      if(present(labeldccomm))then
+         write (op,'(1X,A,g10.3,"s")')labeldccomm(1:len(labeldccomm)),dccomm
+      endif
+   endif
+   if(present(dwidle))then 
+      dwidle = WT_PHASE(PHASE_IDLE_IDX)-dwidle
+      if(present(labeldwidle))then
+         write (op,'(1X,A,g10.3,"s")')labeldwidle(1:len(labeldwidle)),dwidle
+      endif
+   endif
+   if(present(dcidle))then 
+      dcidle = CT_PHASE(PHASE_IDLE_IDX)-dcidle
+      if(present(labeldcidle))then
+         write (op,'(1X,A,g10.3,"s")')labeldcidle(1:len(labeldcidle)),dcidle
+      endif
+   endif
 
    PHASEcputime1  = PHASEcputime2
    PHASEwalltime1 = PHASEwalltime2
@@ -560,6 +752,8 @@ subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot)
    last_phase = phase
 
 end subroutine time_start_phase
+
+
 
 subroutine add_time_to_job(job,deltacpu,deltawall)
    implicit none

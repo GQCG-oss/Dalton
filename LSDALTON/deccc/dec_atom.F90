@@ -417,7 +417,9 @@ contains
     fragment%ntasks=0
 
     ! TIME FOR LOCAL MPI SLAVES
-    fragment%slavetime = 0.0E0_realk
+    fragment%slavetime_work = 0.0E0_realk
+    fragment%slavetime_comm = 0.0E0_realk
+    fragment%slavetime_idle = 0.0E0_realk
     
     ! Free stuff
     call mem_dealloc(occ_listEFF)
