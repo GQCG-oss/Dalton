@@ -811,7 +811,7 @@ contains
     call mem_alloc( unocc_atoms, natoms )
 
     call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,MyMolecule%distancetable(:,MyAtom),&
-         & init_radius,Occ_atoms, Unocc_atoms)
+         & init_radius,init_radius,Occ_atoms, Unocc_atoms)
 
     ! Init atomic fragment
     pairfrag=.false.

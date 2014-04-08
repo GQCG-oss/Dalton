@@ -1408,7 +1408,8 @@ contains
   !> \brief Subroutine that creates initial fragment
   !> \date august 2011
   !> \author Ida-Marie Hoyvik
-  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,init_radius,Occ,Virt)
+  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
+       & init_Occradius,init_Virtradius,Occ,Virt)
     implicit none
     !> number of atoms in MOLECULE
     Integer, intent(in)    :: natoms
@@ -1416,8 +1417,10 @@ contains
     integer,intent(in), dimension(natoms) :: nocc_per_atom, nunocc_per_atom
     !> Distances from central atom to other atoms
     real(realk),intent(in) :: DistMyAtom(natoms)
-    !> Include orbitals assigned to atoms within this distance of central atom
-    real(realk),intent(in) :: init_radius
+    !> Include Occ orbitals assigned to atoms within this distance of central atom
+    real(realk),intent(in) :: init_Occradius
+    !> Include Virt orbitals assigned to atoms within this distance of central atom
+    real(realk),intent(in) :: init_Virtradius
     !> Which AOS atoms to include for occ and virt spaces
     !> (entry i is T if orbitals on atom i is included)
     !> (In practice occ and virt will be identical but we keep it general)
@@ -1427,7 +1430,8 @@ contains
 
     FOT=DECinfo%FOT
 
-    write(DECinfo%output,'(a,f5.2)') " FOP Radius for initial fragment: ",init_radius
+    write(DECinfo%output,'(a,f5.2)') " FOP Occ Radius for initial fragment: ",init_Occradius
+    write(DECinfo%output,'(a,f5.2)') " FOP Virt Radius for initial fragment: ",init_Virtradius
 
     ! Include atoms within init_radius
     Occ=.false.
@@ -1437,8 +1441,10 @@ contains
        ! Skip if no orbitals are assigned - do NOT modify this line.
        if(nocc_per_atom(i)==0 .or. nunocc_per_atom(i)==0) cycle
 
-       if (DistMyAtom(i) .le. init_radius) then
+       if (DistMyAtom(i) .le. init_Occradius) then
           Occ(i) = .true.
+       end if
+       if (DistMyAtom(i) .le. init_Virtradius) then
           Virt(i) = .true.
        end if
 

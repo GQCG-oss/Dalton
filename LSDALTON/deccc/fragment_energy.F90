@@ -2014,7 +2014,7 @@ contains
      !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
      type(array2),intent(inout),optional :: t1full
      real(realk)                    :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
-     real(realk)                    :: LagEnergyOld, OccEnergyOld, VirtEnergyOld, FOT, init_radius
+     real(realk)                    :: LagEnergyOld, OccEnergyOld, VirtEnergyOld, FOT, init_Occradius, init_Virtradius
      logical, dimension(natoms)     :: Occ_atoms,Virt_atoms,OccOld,VirtOld
      real(realk),dimension(natoms)  :: DistMyAtom,SortedDistMyAtom
      integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
@@ -2100,11 +2100,18 @@ contains
      !                            Initial fragment
      ! ======================================================================
 
-     ! Start fragment optimization by calculating initial fragment where atoms within 2 Angstrom
-     ! of central atom are included
-     init_radius = 2.0_realk/bohr_to_angstrom
+     ! Start fragment optimization by calculating initial fragment 
+     IF(DECinfo%onlyoccpart) then
+        !All Occupied orbitals assigned to atoms within 0.01 Angstrom of central atom are included
+        init_Occradius = 0.01_realk/bohr_to_angstrom
+     ELSE
+        !All Occupied orbitals assigned to atoms within 2 Angstrom of central atom are included
+        init_Occradius = 2.0_realk/bohr_to_angstrom
+     ENDIF
+     !All Virtual orbitals assigned to atoms within 2 Angstrom of central atom are included
+     init_Virtradius = 2.0_realk/bohr_to_angstrom
      call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
-        & init_radius, Occ_atoms,Virt_atoms)
+        & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
      call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
         & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
         & AtomicFragment)
