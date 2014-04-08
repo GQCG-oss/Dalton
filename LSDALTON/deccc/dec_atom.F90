@@ -1371,14 +1371,14 @@ contains
     type(lsitem), intent(inout) :: mylsitem
 
     type(matrix) :: CMO_RI
-    integer :: ncabsAO,ncabs,lupri
+    integer :: ncabsAO,ncabs
 
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
 
     call mat_init(CMO_RI,ncabsAO,ncabsAO)
 
     call init_cabs()
-    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,lupri)
+    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
     call free_cabs()
 
     ! NB! Memory leak need to be freed somewhere
