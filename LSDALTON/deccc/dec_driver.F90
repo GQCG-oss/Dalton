@@ -1123,6 +1123,16 @@ subroutine print_dec_info()
           call LSTIMER('START',t2cpu,t2wall,DECinfo%output)
           dt = t2wall - t1wall
 
+                    !BACKUP IF:
+          !1) We are doing a fragopt, safe every converged fragment
+
+          !2) OR 
+          !   a) the finished job is one of the first quarter according to the
+          !      job-list, i.e. if it is one of the largest calcluations.
+          !   b) the time since the last backup is larger than DECinfo%TimeBackup
+
+          !3) DECinfo%only_one_frag_job is requested -- this is only for debugging
+
           backup_files =  (((float(jobdone) < 0.25*float(jobs%njobs)) .or. &
               &(dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. & 
               & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_one_frag_job) 
