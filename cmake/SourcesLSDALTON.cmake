@@ -443,6 +443,7 @@ set(LSINT_SOURCES
 set(LSUTIL_PRECISION_SOURCES
     LSDALTON/lsutil/ls_precision.F90
     LSDALTON/lsutil/ptr_assoc.F90
+    LSDALTON/lsutil/lsmpi_mod.F90
     )
 set(LSUTIL_MATRIXM_SOURCES
     LSDALTON/lsutil/matrix_module.F90    LSDALTON/

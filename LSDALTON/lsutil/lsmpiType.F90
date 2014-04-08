@@ -14,11 +14,7 @@ module lsmpi_type
        & MemModParamPrintMemorylupri
 #ifdef VAR_MPI
   use infpar_module
-#ifdef USE_MPI_MOD_F90
-  use mpi
-#else
-  include 'mpif.h'
-#endif
+  use lsmpi_module
 #endif
 
   INTERFACE ls_mpibcast_chunks
