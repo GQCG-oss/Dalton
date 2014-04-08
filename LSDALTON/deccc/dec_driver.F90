@@ -957,8 +957,15 @@ subroutine print_dec_info()
        ! atomA/=atomB : Pair fragment job
 
        if(atomA==atomB) then ! single
-          print '(1X,a,i8,a,i15,a,i8)', 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
-               &  ' is single fragment: ', atomA
+
+          if(jobs%dofragopt(jobdone)) then
+             write(*, '(1X,a,i6,a,i15,a,i8)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
+                &  ' is single fragment optimization: ', atomA
+          else
+             write(*, '(1X,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
+                &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nunoccAOS,&
+                &' #b',AtomicFragments(atomA)%nbasis,' is single fragment: ', atomA
+          endif
 
           ! Fragment "atomA" is stored in AtomicFragments(atomA).
           ! However, the basis information has not yet been initialized
@@ -1008,8 +1015,6 @@ subroutine print_dec_info()
 
        else ! pair calculation
 
-          print '(1X,a,i8,a,i15,a,2i8)', 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
-               &  ' is pair fragment: ', atomA,atomB
 
           ! Get energy (and possibly density or gradient)
           ! *********************************************
@@ -1018,20 +1023,34 @@ subroutine print_dec_info()
           if(jobs%esti(jobdone)) then
              ! Estimated pair fragment
              call merged_fragment_init(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
-                  & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
-                  & MyMolecule,mylsitem,.true.,PairFragment,esti=.true.)
+                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
+                & MyMolecule,mylsitem,.true.,PairFragment,esti=.true.)
+
+             write(*, '(1X,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
+                &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                &' #b',PairFragment%nbasis,' is pair   estimate: ', atomA,atomB
+
           else
              ! Pair fragment according to FOT precision
              call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                  & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
-                  & MyMolecule,mylsitem,.true.,PairFragment)
+                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
+                & MyMolecule,mylsitem,.true.,PairFragment)
+
+             write(*, '(1X,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
+                &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                &' #b',PairFragment%nbasis,' is pair   fragment: ', atomA,atomB
+
           end if
 
+
           if(DECinfo%SinglesPolari) then
+
              call pair_driver_singles(natoms,nocc,nunocc,&
                   & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),PairFragment,t1old,t1new)
+
           else
+
              if(jobs%esti(jobdone)) then
                 call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                      & EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
@@ -1041,6 +1060,7 @@ subroutine print_dec_info()
                      & AtomicFragments(atomA), AtomicFragments(atomB),&
                      & natoms,PairFragment,grad)
              end if
+
           end if
 
           ! Update pair energies

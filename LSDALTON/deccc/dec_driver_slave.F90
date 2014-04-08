@@ -481,7 +481,7 @@ contains
           end do DoDivide
 
           call time_start_phase(PHASE_WORK)
-          print '(a,i8,a,i8)', 'Slave ', infpar%mynum, ' will do  job ', job
+          !print '(a,i8,a,i8)', 'Slave ', infpar%mynum, ' will do  job ', job
 
           ! Communicator in setting may have changed due to division of local group
           ! Ensure that the correct local communicator is used.
@@ -506,10 +506,13 @@ contains
                 call lsquit('fragments_slave: Fragment optimization requested for pair fragment!',-1)
              end if
 
+             write(*, '(1X,a,i4,a,i6,a,i15,a,i8)') 'Slave ',infpar%lg_mynum,' will do job: ', &
+                & job, ' of size ', jobs%jobsize(job),&
+                &  ' single fragment optimization: ', atomA
 
              ! Fragment optimization
              call optimize_atomic_fragment(atomA,MyFragment,MyMolecule%nAtoms, &
-                  & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, MyMolecule,mylsitem,.true.)
+                & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, MyMolecule,mylsitem,.true.)
 
 
              flops_slaves = MyFragment%flops_slaves
@@ -524,9 +527,13 @@ contains
 
 
              SingleOrPair: if( atomA == atomB ) then ! single  fragment
+                write(*, '(1X,a,i4,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6)') 'Slave ',infpar%lg_mynum,'will do job: ', &
+                   &job, ' of size ', jobs%jobsize(job),&
+                   &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nunoccAOS,&
+                   &' #b',AtomicFragments(atomA)%nbasis,' single fragment: ', atomA
 
                 call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                     & AtomicFragments(atomA),grad=grad)
+                   & AtomicFragments(atomA),grad=grad)
 
                 flops_slaves = AtomicFragments(atomA)%flops_slaves
                 !tottime = AtomicFragments(atomA)%slavetime_work(AtomicFragments(atomA)%ccmodel) + &
@@ -542,13 +549,24 @@ contains
                 if(jobs%esti(job)) then
                    ! Estimated pair fragment
                    call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                        & EstAtomicFragments(atomA), EstAtomicFragments(atomB), &
-                        & natoms,PairFragment,grad)
+                      & EstAtomicFragments(atomA), EstAtomicFragments(atomB), &
+                      & natoms,PairFragment,grad)
+
+                   write(*, '(1X,a,i4,ai6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%lg_mynum, &
+                      &' will do job: ', job, ' of size ', jobs%jobsize(job),&
+                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                      &' #b',PairFragment%nbasis,' pair   estimate: ', atomA,atomB
                 else
                    ! Pair fragment according to FOT precision
                    call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                        & AtomicFragments(atomA), AtomicFragments(atomB), &
-                        & natoms,PairFragment,grad)
+                      & AtomicFragments(atomA), AtomicFragments(atomB), &
+                      & natoms,PairFragment,grad)
+
+                   write(*, '(1X,a,i4,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%lg_mynum, &
+                      &' will do job: ', job, ' of size ', jobs%jobsize(job),&
+                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                      &' #b',PairFragment%nbasis,' pair   fragment: ', atomA,atomB
+
                 end if
 
                 flops_slaves = PairFragment%flops_slaves
