@@ -59,6 +59,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     LSDALTON/lsdaltonsrc/Profile.F90
     LSDALTON/lsdaltonsrc/IchorTesting.F90
     LSDALTON/lsdaltonsrc/IchorProfile.F90
+    LSDALTON/lsdaltonsrc/SCFCounterPoiseCorrection.F90
     )
 set(DDYNAM_SOURCES
     LSDALTON/ddynam/LSinput.F90
@@ -229,6 +230,7 @@ set(INTERESTLIB_SOURCES
     LSDALTON/interest/src/module_interest_osr.f90
     )
 set(ICHORINT_SOURCES
+    LSDALTON/IchorIntegrals/MainIchorInterface.F90
     LSDALTON/IchorIntegrals/IchorPresicion.F90
     LSDALTON/IchorIntegrals/IchorParameters.F90
     LSDALTON/IchorIntegrals/IchorCommon.F90

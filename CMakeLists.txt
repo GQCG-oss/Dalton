@@ -4,6 +4,10 @@
 # we need at least 2.8 for external projects support
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
+# set not CYGWIN_WIN32, to quench warning messages from CYGWIN cmake
+# will do no harm if not CYGWIN
+set(CMAKE_LEGACY_CYGWIN_WIN32 0)
+
 # set project name and languanges that are involved
 project(DALTON Fortran C CXX)
 

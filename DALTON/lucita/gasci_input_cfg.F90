@@ -45,6 +45,7 @@ module gasci_input_cfg
 !  logical, public :: gasci_input_charge_transfer      =  .false.
 !  logical, public :: gasci_input_occlse_manual_control=  .false.
 !  logical, public :: gasci_input_gas_conf_for_ct      =  .false.
+  logical, public :: gasci_input_plus_combi           =  .false.
 
 ! double precision block
 
@@ -63,7 +64,9 @@ module gasci_input_cfg
   integer, public :: gasci_input_local_print_lvl      =  0
   integer, public :: gasci_input_nr_gas_spaces        =  0
   integer, public :: gasci_input_nr_ptg_irreps        =  0
-  integer, public :: gasci_input_max_holes_ras1       =  0
+  integer, public :: gasci_input_min_e_ras1           =  0
+  integer, public :: gasci_input_max_e_ras1           =  0
+  integer, public :: gasci_input_min_e_ras3           =  0
   integer, public :: gasci_input_max_e_ras3           =  0
   integer, public :: gasci_input_density_calc_lvl     =  0
   integer, public :: gasci_input_spindensity_calc_lvl =  0

@@ -1,0 +1,6 @@
+   prop_nolondon_soppacc
+   ---------------------
+   Molecule:         H2O
+   Wave Function:    CCSD (SOPPA(CCSD))
+   Test Purpose:     Calculation of SOPPA(CCSD) no-London shielding constants
+                     through ABACUS

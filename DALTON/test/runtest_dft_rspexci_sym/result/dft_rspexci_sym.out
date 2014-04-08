@@ -1,0 +1,1916 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Sun Sep  8 20:38:35 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/bast/DALTON-2013.0-Source/build/test_dft_rspexci_sym
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+**INTEGRALS                                       
+.PROPRINT                                         
+**WAVE FUNCTIONS                                  
+.DFT                                              
+ B3LYP                                            
+**RESPONSE                                        
+*LINEAR                                           
+.SINGLE RESIDUE                                   
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+cc-pVDZ                                                                        
+H2O                                                                            
+                                                                               
+    2                                                                          
+        8.    1                                                                
+O     0.0  0.0000000000 0.0                                                    
+        1.    2                                                                
+H1    1.430    0.0  1.1                                                        
+H2   -1.430    0.0  1.1                                                        
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: H2O                                                                     
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+ - molecule centered at center of mass and rotated so
+   principal axes of inertia are along coordinate axes.
+
+ Symmetry class found: C(2v)          
+
+ Symmetry Independent Centres             
+ ----------------------------
+       8 :      0.00000000     0.00000000    -0.12310635  Isotope  1
+       1 :      0.00000000     1.43000000     0.97689365  Isotope  1
+
+ The following elements were found:   X  Y     
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+Full point group is: C(2v)          
+Represented as:      C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H1  _1      1.007825
+                           H1  _2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  Basis set used is "cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    26    14      [9s4p1d|3s2p1d]                                    
+  H1          2    1.0000     7     5      [4s1p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      3   10.0000    40    24
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z  -0.1231063545
+  H1  / 1 :     4  x   0.0000000000    5  y   1.4300000000    6  z   0.9768936455
+  H1  / 2 :     7  x   0.0000000000    8  y  -1.4300000000    9  z   0.9768936455
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    2    3    1
+
+  Symmetry  A1  ( 1)
+
+    1   O     z    3
+    2   H1    y    [  5  -    8 ]/2
+    3   H1    z    [  6  +    9 ]/2
+
+  Symmetry  B1  ( 2)
+
+    4   O     x    1
+    5   H1    x    [  4  +    7 ]/2
+
+  Symmetry  B2  ( 3)
+
+    6   O     y    2
+    7   H1    y    [  5  +    8 ]/2
+    8   H1    z    [  6  -    9 ]/2
+
+  Symmetry  A2  ( 4)
+
+    9   H1    x    [  4  -    7 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H1  _1      H1  _2
+            ------      ------      ------
+ O     :    0.000000
+ H1  _1:    0.954707    0.000000
+ H1  _2:    0.954707    1.513447    0.000000
+
+
+  Max    interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
+  between atoms    3 and    2, "H1  _2" and "H1  _1".
+
+  Min HX interatomic separation is    0.9547 Angstrom (    1.8041 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H1  _1     O            0.954707
+  bond distance:  H1  _2     O            0.954707
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H1  _1     O          H1  _2       104.863
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.606537          0.000000    1.000000    0.000000
+   IB       1.154222          0.000000    0.000000    1.000000
+   IC       1.760759          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         833220.2929         437852.3988         287023.3200 MHz
+           27.793237           14.605184            9.574067 cm-1
+
+
+@  Nuclear repulsion energy :    9.218170507464 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          11    4    7    2
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        1s         3
+    4     O        2pz        6
+    5     O        2pz        9
+    6     O        3d0       12
+    7     O        3d2+      14
+    8     H1       1s        15 +   16
+    9     H1       1s        17 +   18
+   10     H1       2py       21 -   22
+   11     H1       2pz       23 +   24
+
+
+  Symmetry  B1 ( 2)
+
+   12     O        2px        4
+   13     O        2px        7
+   14     O        3d1+      13
+   15     H1       2px       19 +   20
+
+
+  Symmetry  B2 ( 3)
+
+   16     O        2py        5
+   17     O        2py        8
+   18     O        3d1-      11
+   19     H1       1s        15 -   16
+   20     H1       1s        17 -   18
+   21     H1       2py       21 +   22
+   22     H1       2pz       23 -   24
+
+
+  Symmetry  A2 ( 4)
+
+   23     O        3d2-      10
+   24     H1       2px       19 -   20
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: HUCKOVLP !
+                        +---------------------------------+
+
+ Symmetry of operator:  A1 ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       1.00000000
+       2       0.00000114     1.00000000
+       3       0.19189620     0.93332372     1.00000000
+       4       0.00000000    -0.00000000    -0.00000000     1.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.80456378
+       6       0.00000000     0.00000000     0.00000000    -0.00000000
+       7      -0.00000000     0.00000000     0.00000000    -0.00000000
+       8       0.13077685     1.04109080     1.23690679     0.49943665
+       9       0.13645964     1.07532436     1.29805659     0.30848202
+      10      -0.17602087    -0.68316833    -0.62150941    -0.61041701
+      11      -0.13540067    -0.52551410    -0.47808417     0.16363958
+      12       0.99999950    -0.00000582     0.19190838     0.00000000
+      13      -0.00000611     0.99985277     0.93292841    -0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.99701045
+      15       0.12564438     1.01708862     1.20693558     0.51348098
+
+               Column   5     Column   6     Column   7     Column   8
+       5       1.00000000
+       6       0.00000000     1.00000000
+       7       0.00000000     0.00000000     1.00000000
+       8       0.68535546     0.01705812    -0.16107075     2.75144509
+       9       0.47707681     0.00276926    -0.02614867     2.77773423
+      10      -0.49387605    -0.34241882    -0.03988913    -0.36377054
+      11       0.40626514     0.41255526     0.35957847    -0.00000000
+      12      -0.00000000     0.00000000     0.00000000     0.13123045
+      13      -0.00000000     0.00000000     0.00000000     1.04900111
+      14       0.81041643     0.00000000    -0.00000000     0.51827400
+      15       0.69821800     0.01904608    -0.17984203     2.71090241
+
+               Column   9     Column  10     Column  11     Column  12
+       9       3.21432890
+      10      -0.35046066     2.50588638
+      11      -0.00000000     0.00000000     2.10227015
+      12       0.13720864    -0.17571121    -0.13516247     1.00000000
+      13       1.08972095    -0.67802091    -0.52155455    -0.00000000
+      14       0.34188659    -0.59708735     0.17252161     0.00000000
+      15       2.68401428    -0.35607955    -0.00000000     0.12606019
+
+               Column  13     Column  14     Column  15     Column  16
+      13       1.00000000
+      14      -0.00000000     1.00000000
+      15       1.02423273     0.52989376     2.67957347
+      16       0.00000000     0.00000000     0.00000000     1.00000000
+      17       0.00000000     0.00000000     0.00000000     0.80456378
+      18       0.00000000     0.00000000     0.00000000    -0.00000000
+      19       0.00000000     0.00000000     0.00000000     0.63319112
+      20       0.00000000     0.00000000     0.00000000     0.99701045
+
+               Column  17     Column  18     Column  19     Column  20
+      17       1.00000000
+      18       0.00000000     1.00000000
+      19       0.78616979     0.39026242     2.10227015
+      20       0.81041643     0.00000000     0.63181957     1.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.00000000
+      22       0.80456378     1.00000000
+      23      -0.00000000     0.00000000     1.00000000
+      24       0.64926765     0.89096210     0.24780116     1.24855491
+      25       0.40102663     0.62019985     0.04022872     0.83701338
+      26      -0.16035099     0.14413093    -0.32889453     0.36377054
+      27      -0.61041701    -0.49387605    -0.04585650    -0.00000000
+      28       0.99701045     0.81041643     0.00000000     0.67375620
+      29       0.66752528     0.90768340     0.27668005     1.28104255
+
+               Column  25     Column  26     Column  27     Column  28
+      25       0.78567110
+      26       0.35046066     1.49411362
+      27      -0.00000000     0.00000000     1.89772985
+      28       0.44445257    -0.14439399    -0.59708735     1.00000000
+      29       0.82387726     0.35607955    -0.00000000     0.68886188
+
+               Column  29     Column  30     Column  31
+      29       1.32042653
+      30       0.00000000     1.00000000
+      31       0.00000000     0.50734115     1.89772985
+    ==== End of matrix output ====
+
+
+                         +-------------------------------+
+                         ! Integrals of operator: HUCKEL !
+                         +-------------------------------+
+
+ Symmetry of operator:  A1 ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       1.00000000
+       2       0.00000114     1.00000000
+       3       0.19189620     0.93332372     1.00000000
+       4       0.00000000    -0.00000000    -0.00000000     1.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.80456378
+       6       0.00000000     0.00000000     0.00000000    -0.00000000
+       7      -0.00000000     0.00000000     0.00000000    -0.00000000
+       8       0.13077685     1.04109080     1.23690679     0.49943665
+       9       0.13645964     1.07532436     1.29805659     0.30848202
+      10      -0.17602087    -0.68316833    -0.62150941    -0.61041701
+      11      -0.13540067    -0.52551410    -0.47808417     0.16363958
+      12       0.99999950    -0.00000582     0.19190838     0.00000000
+      13      -0.00000611     0.99985277     0.93292841    -0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.99701045
+      15       0.08884399     0.71919026     0.85343233     0.36308588
+
+               Column   5     Column   6     Column   7     Column   8
+       5       1.00000000
+       6       0.00000000     1.00000000
+       7       0.00000000     0.00000000     1.00000000
+       8       0.68535546     0.01705812    -0.16107075     2.75144509
+       9       0.47707681     0.00276926    -0.02614867     2.77773423
+      10      -0.49387605    -0.34241882    -0.03988913    -0.36377054
+      11       0.40626514     0.41255526     0.35957847    -0.00000000
+      12      -0.00000000     0.00000000     0.00000000     0.13123045
+      13      -0.00000000     0.00000000     0.00000000     1.04900111
+      14       0.81041643     0.00000000    -0.00000000     0.51827400
+      15       0.49371468     0.01346761    -0.12716752     1.91689748
+
+               Column   9     Column  10     Column  11     Column  12
+       9       3.21432890
+      10      -0.35046066     2.50588638
+      11      -0.00000000     0.00000000     2.10227015
+      12       0.13720864    -0.17571121    -0.13516247   -20.68090000
+      13       1.08972095    -0.67802091    -0.52155455     0.00000000
+      14       0.34188659    -0.59708735     0.17252161     0.00000000
+      15       1.89788470    -0.25178627    -0.00000000    -0.70800876
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -1.25040000
+      14       0.00000000    -0.61620000
+      15      -0.47539239    -0.15683648    -0.62742003
+      16       0.00000000     0.00000000     0.00000000     1.00000000
+      17       0.00000000     0.00000000     0.00000000     0.80456378
+      18       0.00000000     0.00000000     0.00000000    -0.00000000
+      19       0.00000000     0.00000000     0.00000000     0.63319112
+      20       0.00000000     0.00000000     0.00000000     0.99701045
+
+               Column  17     Column  18     Column  19     Column  20
+      17       1.00000000
+      18       0.00000000     1.00000000
+      19       0.78616979     0.39026242     2.10227015
+      20       0.81041643     0.00000000     0.63181957    -0.61620000
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.00000000
+      22       0.80456378     1.00000000
+      23      -0.00000000     0.00000000     1.00000000
+      24       0.64926765     0.89096210     0.24780116     1.24855491
+      25       0.40102663     0.62019985     0.04022872     0.83701338
+      26      -0.16035099     0.14413093    -0.32889453     0.36377054
+      27      -0.61041701    -0.49387605    -0.04585650    -0.00000000
+      28       0.99701045     0.81041643     0.00000000     0.67375620
+      29       0.47201165     0.64182909     0.19564234     0.90583388
+
+               Column  25     Column  26     Column  27     Column  28
+      25       0.78567110
+      26       0.35046066     1.49411362
+      27      -0.00000000     0.00000000     1.89772985
+      28       0.44445257    -0.14439399    -0.59708735    -0.61620000
+      29       0.58256920     0.25178627    -0.00000000    -0.20388743
+
+               Column  29     Column  30     Column  31
+      29      -0.37257997
+      30       0.00000000     1.00000000
+      31       0.00000000     0.50734115     1.89772985
+    ==== End of matrix output ====
+
+
+                         +--------------------------------+
+                         ! Integrals of operator: OVERLAP !
+                         +--------------------------------+
+
+ Symmetry of operator:  A1 ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       1.00000000
+       2       0.00000114     1.00000000
+       3       0.19189620     0.93332372     1.00000000
+       4       0.00000000    -0.00000000    -0.00000000     1.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.80456378
+       6       0.00000000     0.00000000     0.00000000    -0.00000000
+       7      -0.00000000     0.00000000     0.00000000    -0.00000000
+       8       0.13077685     1.04109080     1.23690679     0.49943665
+       9       0.13645964     1.07532436     1.29805659     0.30848202
+      10      -0.17602087    -0.68316833    -0.62150941    -0.61041701
+      11      -0.13540067    -0.52551410    -0.47808417     0.16363958
+
+               Column   5     Column   6     Column   7     Column   8
+       5       1.00000000
+       6       0.00000000     1.00000000
+       7       0.00000000     0.00000000     1.00000000
+       8       0.68535546     0.01705812    -0.16107075     2.75144509
+       9       0.47707681     0.00276926    -0.02614867     2.77773423
+      10      -0.49387605    -0.34241882    -0.03988913    -0.36377054
+      11       0.40626514     0.41255526     0.35957847    -0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9       3.21432890
+      10      -0.35046066     2.50588638
+      11      -0.00000000     0.00000000     2.10227015
+      12       0.00000000     0.00000000     0.00000000     1.00000000
+      13       0.00000000     0.00000000     0.00000000     0.80456378
+      14       0.00000000     0.00000000     0.00000000    -0.00000000
+      15       0.00000000     0.00000000     0.00000000     0.63319112
+
+               Column  13     Column  14     Column  15     Column  16
+      13       1.00000000
+      14       0.00000000     1.00000000
+      15       0.78616979     0.39026242     2.10227015
+      16       0.00000000     0.00000000     0.00000000     1.00000000
+      17       0.00000000     0.00000000     0.00000000     0.80456378
+      18       0.00000000     0.00000000     0.00000000    -0.00000000
+      19       0.00000000     0.00000000     0.00000000     0.64926765
+      20       0.00000000     0.00000000     0.00000000     0.40102663
+      21       0.00000000     0.00000000     0.00000000    -0.16035099
+      22       0.00000000     0.00000000     0.00000000    -0.61041701
+
+               Column  17     Column  18     Column  19     Column  20
+      17       1.00000000
+      18       0.00000000     1.00000000
+      19       0.89096210     0.24780116     1.24855491
+      20       0.62019985     0.04022872     0.83701338     0.78567110
+      21       0.14413093    -0.32889453     0.36377054     0.35046066
+      22      -0.49387605    -0.04585650    -0.00000000    -0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.49411362
+      22       0.00000000     1.89772985
+      23       0.00000000     0.00000000     1.00000000
+      24       0.00000000     0.00000000     0.50734115     1.89772985
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: HJPOPOVL !
+                        +---------------------------------+
+
+ Symmetry of operator:  A1 ( 1)
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000     0.00000114     0.19189620     0.00000000    -0.00000000
+       2       0.00000114     1.00000000     0.93332372    -0.00000000     0.00000000
+       3       0.19189620     0.93332372     1.00000000    -0.00000000     0.00000000
+       4       0.00000000    -0.00000000    -0.00000000     1.00000000     0.80456378
+       5      -0.00000000     0.00000000     0.00000000     0.80456378     1.00000000
+       8       0.25123476     1.28187677     1.36401512     0.55802247     0.63548206
+       9       0.26863389     1.64275482     1.84964652     0.46476787     0.66115905
+      10      -0.31770606    -0.54809416    -0.36506810    -0.60579967    -0.27130415
+      11      -0.24438928    -0.42161089    -0.28082161     0.06778172     0.22317628
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000    -0.00000000     0.01031895     0.00428540    -0.03433568
+       2       0.00000000     0.00000000     0.80030483     0.50789390    -0.81824249
+       3       0.00000000     0.00000000     1.10979846     0.74646667    -0.87795073
+       4      -0.00000000    -0.00000000     0.44085083     0.15219618    -0.61503435
+       5       0.00000000     0.00000000     0.73522886     0.29299457    -0.71644794
+       6       1.00000000     0.00000000     0.01239694     0.00051699    -0.26039590
+       7       0.00000000     1.00000000    -0.11705777    -0.00488162    -0.03033410
+       8       0.02171929    -0.20508373     2.75144509     2.56041440    -0.52655443
+       9       0.00502154    -0.04741572     2.99505405     3.21432890    -0.60020000
+      10      -0.42444173    -0.04944417    -0.20098664    -0.10072132     2.50588638
+      11       0.51137864     0.44571181    -0.00000000    -0.00000000     0.00000000
+
+               Column  11     Column  12     Column  13     Column  14     Column  15
+       1      -0.02641206     0.00000000     0.00000000     0.00000000     0.00000000
+       2      -0.62941730     0.00000000     0.00000000     0.00000000     0.00000000
+       3      -0.67534672     0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.25949743     0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.58935400     0.00000000     0.00000000     0.00000000     0.00000000
+       6       0.31373187     0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.27344514     0.00000000     0.00000000     0.00000000     0.00000000
+      11       2.10227015     0.00000000     0.00000000     0.00000000     0.00000000
+      12       0.00000000     1.00000000     0.80456378    -0.00000000     0.73260078
+      13       0.00000000     0.80456378     1.00000000     0.00000000     1.14046780
+      14       0.00000000    -0.00000000     0.00000000     1.00000000     0.29677906
+      15       0.00000000     0.53378147     0.43187178     0.48374579     2.10227015
+
+               Column  16     Column  17     Column  18     Column  19     Column  20
+      16       1.00000000     0.80456378    -0.00000000     0.57310608     0.19785503
+      17       0.80456378     1.00000000     0.00000000     0.95579752     0.38089293
+      18      -0.00000000     0.00000000     1.00000000     0.18008888     0.00751018
+      19       0.72542921     0.82612668     0.31551343     1.24855491     1.05433321
+      20       0.60419823     0.85950676     0.07294725     0.61969356     0.78567110
+      21      -0.25375810     0.07917639    -0.40767784     0.20098664     0.10072132
+      22      -0.60579967    -0.27130415    -0.05684096    -0.00000000    -0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+      16      -0.06694388    -0.61503435     0.00000000     0.00000000
+      17       0.20908548    -0.71644794     0.00000000     0.00000000
+      18      -0.25011121    -0.03487205     0.00000000     0.00000000
+      19       0.52655443    -0.00000000     0.00000000     0.00000000
+      20       0.60020000    -0.00000000     0.00000000     0.00000000
+      21       1.49411362     0.00000000     0.00000000     0.00000000
+      22       0.00000000     1.89772985     0.00000000     0.00000000
+      23       0.00000000     0.00000000     1.00000000     0.38581278
+      24       0.00000000     0.00000000     0.62886952     1.89772985
+    ==== End of matrix output ====
+
+
+                         +--------------------------------+
+                         ! Integrals of operator: XDIPLEN !
+                         +--------------------------------+
+
+ Symmetry of operator:  B1 ( 2)
+
+               Column   1     Column   2     Column   3     Column   4
+      12       0.06146481     0.66674206     0.75341513    -0.00000000
+      13       0.01316247     0.68348554     0.90690836    -0.00000000
+      14       0.00000000     0.00000000     0.00000000     0.46599662
+      15       0.00929676     0.54362582     0.71885870     0.40293043
+
+               Column   5     Column   6     Column   7     Column   8
+      12      -0.00000000    -0.26904328     0.46599662     0.88456018
+      13       0.00000000    -0.23293349     0.40345265     1.29076888
+      14       0.40345265     0.00000000     0.00000000     0.19266859
+      15       0.62725729    -0.12626945     0.10607745     1.65336123
+
+               Column   9     Column  10     Column  11     Column  12
+      12       1.14933690    -0.38165375    -0.29357981     0.00000000
+      13       1.77748438    -0.30878832    -0.23752948     0.00000000
+      14       0.11529496    -0.34587824    -0.02205467     0.00000000
+      15       1.68251114    -0.14624632     0.00000000     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+      23       0.00000000     0.00000000     0.00000000     0.46599662
+      24       0.00000000     0.00000000     0.00000000     0.52380956
+
+               Column  17     Column  18     Column  19     Column  20
+      23       0.40345265     0.00000000     0.25046916     0.14988345
+      24       0.81543448     0.21219703     1.00864932     0.67809562
+
+               Column  21     Column  22     Column  23     Column  24
+      23      -0.20563619    -0.34587824     0.00000000
+      24       0.14624632     0.00000000     0.00000000     0.00000000
+    ==== End of matrix output ====
+
+
+                         +--------------------------------+
+                         ! Integrals of operator: YDIPLEN !
+                         +--------------------------------+
+
+ Symmetry of operator:  B2 ( 3)
+
+               Column   1     Column   2     Column   3     Column   4
+      16       0.06146481     0.66674206     0.75341513    -0.00000000
+      17       0.01316247     0.68348554     0.90690836    -0.00000000
+      18       0.00000000     0.00000000     0.00000000     0.46599662
+      19       0.00737805     0.57221795     0.79350590     0.31520834
+      20       0.00306406     0.36314414     0.53372367     0.10882027
+      21      -0.01525325    -0.04141756     0.09112392    -0.03681913
+      22      -0.01888462    -0.45003337    -0.48287290     0.18554066
+
+               Column   5     Column   6     Column   7     Column   8
+      16      -0.00000000    -0.26904328    -0.46599662     1.29433102
+      17       0.00000000    -0.23293349    -0.40345265     1.97416410
+      18       0.40345265     0.00000000    -0.00000000     0.32143214
+      19       0.52568863    -0.13574462    -0.33416547     2.86000000
+      20       0.20949111    -0.08616561    -0.15337381     2.27377719
+      21       0.11499701    -0.05285176     0.04601924     1.42058026
+      22       0.42138811     0.42401118     0.54139151    -0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+      16       1.29080325     0.09429093    -0.73332937     0.00000000
+      17       2.04982282     0.65614227    -0.74978976     0.00000000
+      18       0.12066474    -0.31251073    -0.04698818     0.00000000
+      19       2.89531189     1.24143029    -0.00000000     0.00000000
+      20       2.86000000     1.03522288    -0.00000000     0.00000000
+      21       1.32538388     2.86000000     0.00000000     0.00000000
+      22      -0.00000000     0.00000000     2.86000000     0.00000000
+      23       0.00000000     0.00000000     0.00000000     0.46599662
+      24       0.00000000     0.00000000     0.00000000     0.52380956
+
+               Column  13     Column  14     Column  15     Column  16
+      23       0.40345265     0.00000000     0.51986165     0.00000000
+      24       0.81543448     0.21219703     2.86000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+    ==== End of matrix output ====
+
+
+                         +--------------------------------+
+                         ! Integrals of operator: ZDIPLEN !
+                         +--------------------------------+
+
+ Symmetry of operator:  A1 ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.12310635
+       2      -0.00000014    -0.12310635
+       3      -0.02362364    -0.11489808    -0.12310635
+       4       0.06146481     0.66674206     0.75341513    -0.12310635
+       5       0.01316247     0.68348554     0.90690836    -0.09904691
+       6      -0.00000000    -0.00000000     0.00000000     0.53808655
+       8      -0.01042404     0.31200276     0.45811807     1.06554431
+       9      -0.01444208     0.14696238     0.25075765     1.19506870
+      10       0.00278467    -0.36593101    -0.40636114    -0.64477643
+      11       0.01143881     0.26214043     0.40627320     0.23192913
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.12310635
+       6       0.46586699    -0.12310635
+       7       0.00000000     0.00000000    -0.12310635
+       8       1.61077314     0.22719288    -0.04455294     2.68786922
+       9       1.87990020     0.13307458     0.00053418     2.71355092
+      10      -0.64203541    -0.50044960    -0.01177315    -0.35536513
+      11       0.66385869     0.11090502    -0.03179964     1.65336123
+
+               Column   9     Column  10     Column  11     Column  12
+       9       3.14005748
+      10      -0.34236279     2.44798448
+      11       1.68251114    -0.14624632     2.05369435
+      12       0.00000000     0.00000000     0.00000000    -0.12310635
+      13       0.00000000     0.00000000     0.00000000    -0.09904691
+      14       0.00000000     0.00000000     0.00000000     0.46599662
+      15       0.00000000     0.00000000     0.00000000     0.32498058
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.12310635
+      14       0.40345265    -0.12310635
+      15       0.53047479     0.35919022     2.05369435
+      16       0.00000000     0.00000000     0.00000000    -0.12310635
+      17       0.00000000     0.00000000     0.00000000    -0.09904691
+      18       0.00000000     0.00000000     0.00000000     0.46599662
+      19       0.00000000     0.00000000     0.00000000     0.23527937
+      20       0.00000000     0.00000000     0.00000000     0.05945134
+      21       0.00000000     0.00000000     0.00000000    -0.01707891
+      22       0.00000000     0.00000000     0.00000000     0.26068688
+
+               Column  17     Column  18     Column  19     Column  20
+      17      -0.12310635
+      18       0.40345265    -0.12310635
+      19       0.41600554     0.31901215     1.21970536
+      20       0.13314057     0.14906164     0.81767305     0.76751710
+      21       0.09725358    -0.30270835     0.35536513     0.34236279
+      22       0.48218739    -0.14721561     1.00864932     0.67809562
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.45959010
+      22       0.14624632     1.85388023
+      23       0.00000000     0.00000000    -0.12310635
+      24       0.00000000     0.00000000     0.14974011     1.85388023
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: XXQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  A1 ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.01264295
+       2       0.00724095     0.26531179
+       3       0.00740506     0.31988733     0.41728532
+       4      -0.00378335    -0.04104009    -0.04637509     0.38647526
+       5      -0.00081019    -0.04207071    -0.05582309     0.54063697
+       6       0.00139385     0.05120071     0.05582967    -0.03312094
+       7      -0.00241422    -0.08868223    -0.09669983     0.00000000
+       8       0.00468247     0.52684143     0.76643186     0.35424524
+       9       0.00466814     0.56085133     0.83179568     0.25472452
+      10      -0.00673027    -0.06711661    -0.01285315    -0.13027680
+      11      -0.00574937    -0.08509006    -0.05413508     0.29316737
+
+               Column   5     Column   6     Column   7     Column   8
+       5       0.91188905
+       6      -0.02867559     0.28508275
+       7       0.00000000     0.06090193     0.21475926
+       8       0.65488432     0.04469163    -0.16910610     3.22304819
+       9       0.51948300     0.05540929    -0.12251516     3.77901925
+      10      -0.09110873    -0.16974153    -0.00289781     0.86219150
+      11       0.58442229     0.18101799     0.19668846     0.80757904
+
+               Column   9     Column  10     Column  11     Column  12
+       9       5.08269533
+      10       0.82200614     2.37746059
+      11       0.82181722    -0.07143355     2.24693670
+      12       0.00000000     0.00000000     0.00000000     0.19513203
+      13       0.00000000     0.00000000     0.00000000     0.27184265
+      14       0.00000000     0.00000000     0.00000000    -0.02868357
+      15       0.00000000     0.00000000     0.00000000     0.29221895
+
+               Column  13     Column  14     Column  15     Column  16
+      13       0.45783892
+      14      -0.02483379     0.21475926
+      15       0.49702417     0.12438028     1.88547347
+      16       0.00000000     0.00000000     0.00000000     0.38647526
+      17       0.00000000     0.00000000     0.00000000     0.54063697
+      18       0.00000000     0.00000000     0.00000000    -0.02868357
+      19       0.00000000     0.00000000     0.00000000     0.53130055
+      20       0.00000000     0.00000000     0.00000000     0.42311081
+      21       0.00000000     0.00000000     0.00000000     0.21828250
+      22       0.00000000     0.00000000     0.00000000    -0.18601094
+
+               Column  17     Column  18     Column  19     Column  20
+      17       0.91188905
+      18      -0.02483379     0.32024449
+      19       0.95463582     0.11265959     1.75787948
+      20       0.81756066     0.01404216     1.63604337     2.01488652
+      21       0.54996528    -0.09013690     1.04114605     0.86582769
+      22      -0.16030822     0.03022897     0.49267155     0.33121365
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.99727642
+      22       0.07143355     2.12780031
+      23       0.00000000     0.00000000     0.21475926
+      24       0.00000000     0.00000000     0.18121947     1.80150563
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: XYQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  A2 ( 4)
+
+               Column   1     Column   2     Column   3     Column   4
+      23      -0.00241422    -0.08868223    -0.09669983     0.00000000
+      24      -0.00037176    -0.12400214    -0.18151479    -0.09117329
+
+               Column   5     Column   6     Column   7     Column   8
+      23       0.00000000     0.06090193     0.00000000    -0.10748951
+      24      -0.16265164     0.03631378     0.01874888    -0.54580889
+
+               Column   9     Column  10     Column  11     Column  12
+      16       0.00000000     0.00000000     0.00000000    -0.09567162
+      17       0.00000000     0.00000000     0.00000000    -0.13439716
+      18       0.00000000     0.00000000     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.00000000    -0.10506910
+      20       0.00000000     0.00000000     0.00000000    -0.10136016
+      21       0.00000000     0.00000000     0.00000000     0.00575515
+      22       0.00000000     0.00000000     0.00000000     0.05287434
+      23      -0.11239264     0.04884812     0.08860351     0.00000000
+      24      -0.54989869    -0.16314734     0.00000000     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+      16      -0.13439716     0.00000000    -0.18150677     0.00000000
+      17      -0.22702506     0.00000000    -0.30949285     0.00000000
+      18       0.00000000    -0.05274262    -0.05435844     0.00000000
+      19      -0.18755146    -0.01664100    -0.40585988     0.00000000
+      20      -0.19512958    -0.00384743    -0.29401822     0.00000000
+      21      -0.01797502     0.02150200    -0.18073162     0.00000000
+      22       0.06159284     0.00299794     0.00000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: XZQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  B1 ( 2)
+
+               Column   1     Column   2     Column   3     Column   4
+      12       0.00189168     0.02052005     0.02318755    -0.09567162
+      13       0.00040510     0.02103535     0.02791155    -0.13439716
+      14      -0.00241422    -0.08868223    -0.09669983     0.01434179
+      15       0.00000015    -0.07865531    -0.11750274    -0.12071397
+
+               Column   5     Column   6     Column   7     Column   8
+      12      -0.13439716    -0.00828023     0.01434179    -0.05359864
+      13      -0.22702506    -0.00716890     0.01241690    -0.10454489
+      14       0.01241690    -0.03045096    -0.05274262    -0.09272730
+      15      -0.20385752    -0.02014405    -0.00782710    -0.40378952
+
+               Column   9     Column  10     Column  11     Column  12
+      12      -0.04259669     0.04112834    -0.03134431     0.00000000
+      13      -0.09539477     0.05208939    -0.05797696     0.00000000
+      14      -0.10680216     0.07958496     0.01770082     0.00000000
+      15      -0.41090861     0.03571677    -0.18073162     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+      23       0.00000000     0.00000000     0.00000000     0.01434179
+      24       0.00000000     0.00000000     0.00000000    -0.07505221
+
+               Column  17     Column  18     Column  19     Column  20
+      23       0.01241690    -0.05274262    -0.00893242     0.00076547
+      24      -0.13755535    -0.04882554    -0.24633578    -0.16560683
+
+               Column  21     Column  22     Column  23     Column  24
+      23       0.01517322    -0.00764701     0.00000000
+      24      -0.03571677    -0.16314734     0.00000000     0.00000000
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: YYQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  A1 ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.01264295
+       2       0.00724095     0.26531179
+       3       0.00740506     0.31988733     0.41728532
+       4      -0.00378335    -0.04104009    -0.04637509     0.38647526
+       5      -0.00081019    -0.04207071    -0.05582309     0.54063697
+       6       0.00139385     0.05120071     0.05582967    -0.03312094
+       7       0.00241422     0.08868223     0.09669983     0.00000000
+       8       0.00455756     0.42915392     0.61860313     0.29240280
+       9       0.00472756     0.52718426     0.77693271     0.24368225
+      10      -0.00617605    -0.18975600    -0.21737711    -0.22270357
+      11      -0.00475111     0.01134447     0.06779232     0.24381118
+
+               Column   5     Column   6     Column   7     Column   8
+       5       0.91188905
+       6      -0.02867559     0.28508275
+       7       0.00000000    -0.06090193     0.21475926
+       8       0.54208293     0.06822764     0.05950765     2.13000952
+       9       0.49648538     0.06117237     0.10238660     2.78662350
+      10      -0.28357980    -0.14238193    -0.06014808    -0.17732398
+      11       0.47515378     0.09623648    -0.00709513     0.80757904
+
+               Column   9     Column  10     Column  11     Column  12
+       9       4.06024533
+      10      -0.18681108     1.02871592
+      11       0.82181722    -0.07143355     1.22448670
+      12       0.00000000     0.00000000     0.00000000     0.38647526
+      13       0.00000000     0.00000000     0.00000000     0.54063697
+      14       0.00000000     0.00000000     0.00000000    -0.02868357
+      15       0.00000000     0.00000000     0.00000000     0.29965667
+
+               Column  13     Column  14     Column  15     Column  16
+      13       0.91188905
+      14      -0.02483379     0.32024449
+      15       0.48166848     0.14656389     1.22448670
+      16       0.00000000     0.00000000     0.00000000     0.19513203
+      17       0.00000000     0.00000000     0.00000000     0.27184265
+      18       0.00000000     0.00000000     0.00000000    -0.02868357
+      19       0.00000000     0.00000000     0.00000000     0.24076718
+      20       0.00000000     0.00000000     0.00000000     0.20603555
+      21       0.00000000     0.00000000     0.00000000    -0.00888728
+      22       0.00000000     0.00000000     0.00000000     0.00965754
+
+               Column  17     Column  18     Column  19     Column  20
+      17       0.45783892
+      18      -0.02483379     0.21475926
+      19       0.43289109     0.05840107     0.80601815
+      20       0.39740460     0.00616811     0.78048976     0.99243652
+      21       0.05235572    -0.08051306     0.17732398     0.18681108
+      22       0.09570968     0.03961412     0.49267155     0.33121365
+
+               Column  21     Column  22     Column  23     Column  24
+      21       0.61336319
+      22       0.07143355     1.10535031
+      23       0.00000000     0.00000000     0.21475926
+      24       0.00000000     0.00000000     0.14372172     1.10535031
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: YZQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  B2 ( 3)
+
+               Column   1     Column   2     Column   3     Column   4
+      16       0.00189168     0.02052005     0.02318755    -0.09567162
+      17       0.00040510     0.02103535     0.02791155    -0.13439716
+      18      -0.00241422    -0.08868223    -0.09669983     0.01434179
+      19       0.00013099    -0.05753332    -0.08929301    -0.14293917
+      20       0.00014001    -0.01472141    -0.02577609    -0.10650510
+      21       0.00024285    -0.00022642    -0.01489488     0.00365776
+      22      -0.00018507    -0.06367222    -0.10258566    -0.07055494
+
+               Column   5     Column   6     Column   7     Column   8
+      16      -0.13439716    -0.00828023    -0.01434179    -0.10282974
+      17      -0.22702506    -0.00716890    -0.01241690    -0.19631371
+      18       0.01241690    -0.03045096     0.05274262    -0.12653347
+      19      -0.25814286    -0.01489620     0.01684479    -0.69847896
+      20      -0.20637263    -0.00488269    -0.00078330    -0.55530962
+      21      -0.03737383     0.02872812    -0.00339561    -0.34693896
+      22      -0.17214261    -0.01066057     0.01196961    -0.54580889
+
+               Column   9     Column  10     Column  11     Column  12
+      16      -0.04928510    -0.03665047    -0.09423450     0.00000000
+      17      -0.11001074    -0.11068440    -0.18301109     0.00000000
+      18      -0.11177639     0.07190725     0.03771217     0.00000000
+      19      -0.70710295    -0.30318634    -0.40585988     0.00000000
+      20      -0.69847896    -0.25282566    -0.29401822     0.00000000
+      21      -0.32368977    -0.69847896    -0.18073162     0.00000000
+      22      -0.54989869    -0.16314734    -0.69847896     0.00000000
+      23       0.00000000     0.00000000     0.00000000     0.01434179
+      24       0.00000000     0.00000000     0.00000000    -0.07505221
+
+               Column  13     Column  14     Column  15     Column  16
+      23       0.01241690    -0.05274262    -0.03835887     0.00000000
+      24      -0.13755535    -0.04882554    -0.69847896     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: ZZQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  A1 ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.00885416
+       2       0.00724095     0.26152299
+       3       0.00667801     0.31635116     0.41349653
+       4       0.00000000     0.00000000    -0.00000000     0.19134323
+       5      -0.00000000     0.00000000     0.00000000     0.26879432
+       6      -0.00278770    -0.10240142    -0.11165934    -0.00000000
+       7       0.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00446241     0.49218741     0.71184425     0.22348721
+       9       0.00433136     0.55405017     0.81968538     0.16698098
+      10      -0.00645788    -0.01804880     0.05356957    -0.01332191
+      11      -0.00553954    -0.20465621    -0.23804616     0.09397405
+
+               Column   5     Column   6     Column   7     Column   8
+       5       0.45405013
+       6       0.00000000     0.17580872
+       7       0.00000000     0.00000000     0.31645570
+       8       0.40134210    -0.12038315    -0.07853465     2.56660760
+       9       0.32319697    -0.12923781    -0.01512145     3.11630658
+      10       0.06928538    -0.00970449    -0.05609286     0.94897998
+      11       0.21060172     0.18674551     0.16762460    -0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9       4.31581978
+      10       0.90561915     1.77960547
+      11      -0.00000000     0.00000000     1.38391323
+      12       0.00000000     0.00000000     0.00000000     0.38268647
+      13       0.00000000     0.00000000     0.00000000     0.53758864
+      14       0.00000000     0.00000000     0.00000000    -0.00000000
+      15       0.00000000     0.00000000     0.00000000     0.37045126
+
+               Column  13     Column  14     Column  15     Column  16
+      13       0.90810025
+      14       0.00000000     0.21097046
+      15       0.60363001     0.13090050     1.74537646
+      16       0.00000000     0.00000000     0.00000000     0.38268647
+      17       0.00000000     0.00000000     0.00000000     0.53758864
+      18       0.00000000     0.00000000     0.00000000    -0.00000000
+      19       0.00000000     0.00000000     0.00000000     0.50067158
+      20       0.00000000     0.00000000     0.00000000     0.41979559
+      21       0.00000000     0.00000000     0.00000000     0.21565948
+      22       0.00000000     0.00000000     0.00000000    -0.30141717
+
+               Column  17     Column  18     Column  19     Column  20
+      17       0.90810025
+      18       0.00000000     0.21097046
+      19       0.89684765     0.08754052     1.45999888
+      20       0.81041522     0.01556891     1.43634846     1.82744088
+      21       0.53355961    -0.05262784     0.95435756     0.78221468
+      22      -0.37920358    -0.01538103    -0.00000000    -0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.64081035
+      22       0.00000000     1.34874468
+      23       0.00000000     0.00000000     0.31645570
+      24       0.00000000     0.00000000     0.23650709     1.67503936
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: KINENERG !
+                        +---------------------------------+
+
+ Symmetry of operator:  A1 ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1      29.21492803
+       2      -8.02494220     3.10607772
+       3       0.16670741     0.49951317     0.45345000
+       4       0.00000000    -0.00000000    -0.00000000     2.53596069
+       5      -0.00000000     0.00000000     0.00000000     0.70004312
+       6      -0.00000000     0.00000000     0.00000000    -0.00000000
+       8       0.01469645     0.26928561     0.33121345     0.31359825
+       9       0.03636465     0.23926386     0.27464262     0.12451855
+      10      -0.08121215    -0.61717593    -0.47906217    -0.95217051
+      11      -0.06247089    -0.47475072    -0.36850936    -0.21795257
+
+               Column   5     Column   6     Column   7     Column   8
+       5       0.68825000
+       6       0.00000000     4.14750000
+       7       0.00000000     0.00000000     4.14750000
+       8       0.39715773     0.02559650    -0.24169423     1.06433868
+       9       0.17945873     0.00192363    -0.01816383     0.54363024
+      10      -0.56213832    -0.67206547     0.34814871    -0.06241434
+      11       0.14844728     0.72165674     0.98293017     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9       0.51430285
+      10      -0.12048981     3.90306547
+      11      -0.00000000     0.00000000     3.59981110
+      12       0.00000000     0.00000000     0.00000000     2.53596069
+      13       0.00000000     0.00000000     0.00000000     0.70004312
+      14       0.00000000     0.00000000     0.00000000    -0.00000000
+      15       0.00000000     0.00000000     0.00000000     0.51448628
+
+               Column  13     Column  14     Column  15     Column  16
+      13       0.68825000
+      14       0.00000000     4.14750000
+      15       0.58086137     0.71512347     3.59981110
+      16       0.00000000     0.00000000     0.00000000     2.53596069
+      17       0.00000000     0.00000000     0.00000000     0.70004312
+      18       0.00000000     0.00000000     0.00000000    -0.00000000
+      19       0.00000000     0.00000000     0.00000000     0.40767772
+      20       0.00000000     0.00000000     0.00000000     0.16187411
+      21       0.00000000     0.00000000     0.00000000    -0.72333538
+      22       0.00000000     0.00000000     0.00000000    -0.95217051
+
+               Column  17     Column  18     Column  19     Column  20
+      17       0.68825000
+      18       0.00000000     4.14750000
+      19       0.51630505     0.37183727     0.93281825
+      20       0.23329634     0.02794436     0.29628531     0.21769715
+      21      -0.14991845    -1.25073687     0.06241434     0.12048981
+      22      -0.56213832    -0.58253975    -0.00000000    -0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+      21       3.36693453
+      22       0.00000000     3.67018890
+      23       0.00000000     0.00000000     4.14750000
+      24       0.00000000     0.00000000     0.92966051     3.67018890
+    ==== End of matrix output ====
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:       11412 ( 25.3% )
+ Megabytes written:                              0.137
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    4    1    2    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.705882      -1.507590      -0.670019      -0.291429
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.616200
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.731893      -0.256887
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:35 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ Title lines from ".mol" input file:
+     H2O                                                                     
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Kohn-Sham DFT calculation.
+
+@    Time-dependent Kohn-Sham DFT calculation (TD-DFT).
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+@    For the wave function of type :      >>> KS-DFT <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           24 |   11    4    7    2
+     Number of basis functions          24 |   11    4    7    2
+
+      ** Automatic occupation of RKS orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               5 |    3    1    1    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.450305353827   9.9999994678   -5.32D-07
+@  1  -76.1658718318       2.33D+00  -7.62D+01     3   1   1   0
+      Virial theorem: -V/T =      2.004207
+@      MULPOP O      -0.43; H1  _1  0.21; H1  _2  0.21; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.599730987660   9.9999994655   -5.35D-07
+@  2  -76.3650293502       6.68D-01  -1.99D-01     3   1   1   0
+      Virial theorem: -V/T =      1.997912
+@      MULPOP O      -0.22; H1  _1  0.11; H1  _2  0.11; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.502224575837   9.9999994686   -5.31D-07
+@  3  -76.3803051397       2.53D-01  -1.53D-02     3   1   1   0
+      Virial theorem: -V/T =      2.008791
+@      MULPOP O      -0.21; H1  _1  0.10; H1  _2  0.10; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.565238088255   9.9999994634   -5.37D-07
+@  4  -76.3821135155       1.46D-01  -1.81D-03     3   1   1   0
+      Virial theorem: -V/T =      2.001552
+@      MULPOP O      -0.28; H1  _1  0.14; H1  _2  0.14; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.541923462979   9.9999994653   -5.35D-07
+@  5  -76.3830504307       4.79D-03  -9.37D-04     3   1   1   0
+      Virial theorem: -V/T =      2.004205
+@      MULPOP O      -0.25; H1  _1  0.13; H1  _2  0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.542582952169   9.9999994653   -5.35D-07
+@  6  -76.3830514035       1.17D-04  -9.73D-07     3   1   1   0
+      Virial theorem: -V/T =      2.004125
+@      MULPOP O      -0.25; H1  _1  0.13; H1  _2  0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.542599403447   9.9999994653   -5.35D-07
+@  7  -76.3830514043       4.45D-06  -7.13D-10     3   1   1   0
+
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -76.383051404261    4.45D-06
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Sym       Kohn-Sham orbital energies
+
+  1    -19.11780184    -0.99258396    -0.36062835     0.05581119     0.61891625
+         0.90435965     1.21049441     1.59654994
+
+  2     -0.28460790     0.92249169     1.43317442     2.92602037
+
+  3     -0.51216740     0.13164226     0.56760747     0.99822273     1.67579046
+         2.12756203
+
+  4      1.23635164     2.97457644
+
+    E(LUMO) :     0.05581119 au (symmetry 1)
+  - E(HOMO) :    -0.28460790 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.34041909 au
+
+ >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       1.555       1.563
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
+
+@    Final DFT energy:            -76.383051404261                 
+@    Nuclear repulsion:             9.218170507464
+@    Electronic energy:           -85.601221911725
+
+@    Final gradient norm:           0.000004451229
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:37 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         1        2        3        4        5
+   1 O   :1s     1.0027  -0.0067   0.0073   0.0312   0.0638
+   2 O   :1s     0.0151   0.8672  -0.3247  -0.2509   0.4733
+   3 O   :1s    -0.0128  -0.1515  -0.1921  -0.7691  -0.5937
+   4 O   :2pz    0.0029   0.1676   0.7983  -0.3507   0.5437
+   5 O   :2pz   -0.0021  -0.0859  -0.0136  -0.1470  -0.3005
+   6 O   :3d0    0.0000   0.0022   0.0185  -0.0082   0.0015
+   7 O   :3d2+  -0.0005  -0.0046  -0.0021   0.0049   0.0987
+   8 H1  :1s    -0.0009   0.3526   0.3391   0.1785  -1.3705
+   9 H1  :1s     0.0014  -0.1613  -0.1231   0.6843   1.2890
+  10 H1  :2py    0.0010  -0.0377  -0.0244   0.0018  -0.2580
+  11 H1  :2pz    0.0009  -0.0188   0.0157  -0.0049  -0.0507
+
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :2px    0.9267  -1.4058   0.0061
+   2 O   :2px    0.0620   1.6611   0.6522
+   3 O   :3d1+   0.0193  -0.0027  -0.1700
+   4 H1  :2px    0.0329   0.0250  -0.7641
+
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :2py    0.7344  -0.5309   0.4321
+   2 O   :2py   -0.1437  -0.3706   0.1483
+   3 O   :3d1-   0.0238  -0.0117  -0.1065
+   4 H1  :1s     0.5641   0.1605  -1.6033
+   5 H1  :1s    -0.1732   1.2469   1.6407
+   6 H1  :2py   -0.0156  -0.0030  -0.0630
+   7 H1  :2pz   -0.0281   0.0013  -0.1396
+
+ Molecular orbitals for symmetry species  4
+ ------------------------------------------
+
+    Orbital         1        2
+   1 O   :3d2-  -0.1382   1.0667
+   2 H1  :2px   -0.6829  -0.3785
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.56 seconds
+ >>>> Total wall time used in SIRIUS :      1.57 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:37 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+  Linear Response single residue calculation
+ -------------------------------------------
+
+ Print level                                    : IPRPP  =   2
+ Maximum number of iterations for eigenval.eqs. : MAXITP =  60
+ Threshold for convergence of eigenvalue eqs.   : THCPP  = 1.000D-03
+ Maximum iterations in optimal orbital algorithm: MAXITO =   5
+
+      1 Excitation energies are calculated for symmetry no.    1
+
+      1 Excitation energies are calculated for symmetry no.    2
+
+      1 Excitation energies are calculated for symmetry no.    3
+
+      1 Excitation energies are calculated for symmetry no.    4
+
+ Integral transformation: Total CPU and WALL times (sec)       0.003       0.003
+
+
+   SCF energy         :      -76.383051404260769
+ -- inactive part     :      -85.601221911724821
+ -- nuclear repulsion :        9.218170507464057
+
+
+                    *****************************************
+                    *** DFT response calculation (TD-DFT) ***
+                    *****************************************
+
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    1
+
+ Number of excitations of this symmetry            1
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      33
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      33
+ Electrons in DFTMOMO:    9.99999946525301
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  1; triplet =   F
+
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:    8)
+ RSP solution vector no.    1; norm of residual   4.81D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+  ******************************************************************************
+  *** @ Excit. operator sym 1 & ref. state sym 1 => excited state symmetry 1 ***
+  ******************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry  1
+ ---------------------------------------
+
+@ Excitation energy :  0.36477216    au
+@                      9.9259555     eV
+@                      80058.235     cm-1
+                       957.70917     kJ / mol
+
+@ Total energy :      -76.018279     au
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+             J Chem Phys 128, 044118 (2008)
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+      3    4  0.704165  0.015481  0.481188  0.309743  0.474286  0.228220
+
+@ Overlap diagnostic LAMBDA =    0.4842
+
+
+ Time used in polarization propagator calculation is      1.42 CPU seconds for symmetry 1
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    2
+
+ Number of excitations of this symmetry            1
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       2
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      19
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      19
+ Electrons in DFTMOMO:    9.99999946525301
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  2; triplet =   F
+
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:    8)
+ RSP solution vector no.    1; norm of residual   4.39D-05
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+  ******************************************************************************
+  *** @ Excit. operator sym 2 & ref. state sym 1 => excited state symmetry 2 ***
+  ******************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry  2
+ ---------------------------------------
+
+@ Excitation energy :  0.28013272    au
+@                      7.6227989     eV
+@                      61482.024     cm-1
+                       735.48833     kJ / mol
+
+@ Total energy :      -76.102919     au
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+             J Chem Phys 128, 044118 (2008)
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+     12    4 -0.707101 -0.015364  0.421541  0.322069  0.478500  0.201707
+
+@ Overlap diagnostic LAMBDA =    0.4218
+
+
+ Time used in polarization propagator calculation is      1.38 CPU seconds for symmetry 2
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    3
+
+ Number of excitations of this symmetry            1
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       3
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      28
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      28
+ Electrons in DFTMOMO:    9.99999946525301
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  3; triplet =   F
+
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:    8)
+ RSP solution vector no.    1; norm of residual   9.09D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+  ******************************************************************************
+  *** @ Excit. operator sym 3 & ref. state sym 1 => excited state symmetry 3 ***
+  ******************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry  3
+ ---------------------------------------
+
+@ Excitation energy :  0.43711818    au
+@                      11.894591     eV
+@                      95936.350     cm-1
+                       1147.6536     kJ / mol
+
+@ Total energy :      -75.945933     au
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+             J Chem Phys 128, 044118 (2008)
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+      3   17 -0.703996 -0.011838  0.442506  0.304668  0.479083  0.211997
+
+@ Overlap diagnostic LAMBDA =    0.4443
+
+
+ Time used in polarization propagator calculation is      1.40 CPU seconds for symmetry 3
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    4
+
+ Number of excitations of this symmetry            1
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       4
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      15
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      15
+ Electrons in DFTMOMO:    9.99999946525301
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  4; triplet =   F
+
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:    6)
+ RSP solution vector no.    1; norm of residual   3.18D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+  ******************************************************************************
+  *** @ Excit. operator sym 4 & ref. state sym 1 => excited state symmetry 4 ***
+  ******************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry  4
+ ---------------------------------------
+
+@ Excitation energy :  0.34860624    au
+@                      9.4860583     eV
+@                      76510.225     cm-1
+                       915.26554     kJ / mol
+
+@ Total energy :      -76.034445     au
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+             J Chem Phys 128, 044118 (2008)
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+     12   17  0.706382  0.005425  0.353211  0.273220  0.491341  0.173547
+
+@ Overlap diagnostic LAMBDA =    0.3534
+
+
+ Time used in polarization propagator calculation is      1.13 CPU seconds for symmetry 4
+
+ >>>> Total CPU  time used in RESPONSE:   5.33 seconds
+ >>>> Total wall time used in RESPONSE:   5.36 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   6.92 seconds
+ >>>> Total wall time used in DALTON:   6.96 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:42 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

@@ -1,0 +1,8 @@
+   cc2mm_spc_fop
+   --------------
+   Molecule:         H2O
+   Wave Function:    CC2 / cc-pVDZ
+   Test Purpose:     Check energy, dipole moment and quadrupole moment
+                     calculated using the SPC model for the five water 
+                     molecules surrounding the QM water molecule. 
+                     OLDTG = .FALSE.

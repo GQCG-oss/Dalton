@@ -232,7 +232,7 @@ module cc_debug_routines_module
      MaxSubSpace = DECinfo%ccMaxDIIS
 
      ! title
-     Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace)
+     Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace,.false.,.false.,1)
 
      ! dimension vectors
      occ_dims   = [nbasis,nocc]

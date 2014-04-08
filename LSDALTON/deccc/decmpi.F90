@@ -2,7 +2,6 @@
 !> DEC MPI handling
 !> \author Kasper Kristensen
 !> \date March 2012
-#ifdef VAR_MPI
 module decmpi_module
 
   use precision
@@ -22,6 +21,7 @@ module decmpi_module
   use array2_simple_operations
 
 contains
+#ifdef VAR_MPI
 
 
 
@@ -1020,7 +1020,7 @@ contains
 
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
-      k=250000000
+      k=SPLIT_MSG_REC
 
       nelms = nbas*nocc
       call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
@@ -1841,6 +1841,7 @@ contains
 
   end subroutine print_MPI_fragment_statistics
 
+
   !> \brief Bcast DEC setting structure
   !> \author Kasper Kristensen
   !> \date June 2013
@@ -1901,7 +1902,7 @@ contains
     call ls_mpi_buffer(Co,nbas,nocc,infpar%master)
     call ls_mpi_buffer(Cv,nbas,nvir,infpar%master)
 
-    if (ccmodel==MODEL_CCSD) then 
+    if (ccmodel/=MODEL_RPA) then 
       if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
       call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
 
@@ -1914,7 +1915,7 @@ contains
     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-    if (.not.master.and.ccmodel==MODEL_CCSD) then
+    if (.not.master.and.ccmodel/=MODEL_RPA) then
       pgmo_diag = get_arr_from_parr(pgmo_diag_addr(infpar%lg_mynum+1))
       if (nbatch>1) pgmo_up   = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
     endif
@@ -2008,7 +2009,7 @@ contains
 
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
-      k=250000000
+      k=SPLIT_MSG_REC
 
       nelms = nvir*nocc
       call ls_mpibcast_chunks(t1%elm1,nelms,infpar%master,infpar%lg_comm,k)
@@ -2070,7 +2071,6 @@ contains
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%MOCCSD,Master)
-    call ls_mpi_buffer(DECitem%Max_num_MO,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)
@@ -2098,6 +2098,7 @@ contains
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%InteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
+    call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
@@ -2237,17 +2238,69 @@ contains
 
   end subroutine mpi_dec_fullinfo_master_to_slaves_precursor
 
-end module decmpi_module
+  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+     implicit none
+     type(array),intent(inout)   :: integral
+     type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
+     type(lsitem), intent(inout) :: mylsitem
+     integer :: addr1(infpar%lg_nodtot)
+     integer :: addr2(infpar%lg_nodtot)
+     integer :: addr3(infpar%lg_nodtot)
+     integer :: addr4(infpar%lg_nodtot)
+     integer :: addr5(infpar%lg_nodtot)
+     logical :: master
+
+
+     master = (infpar%lg_mynum == infpar%master)
+
+     if(master) call ls_mpibcast(MO_INTEGRAL_SIMPLE,infpar%master,infpar%lg_comm)
+
+     if(master)then
+        addr1 = trafo1%addr_p_arr
+        addr2 = trafo2%addr_p_arr
+        addr3 = trafo3%addr_p_arr
+        addr4 = trafo4%addr_p_arr
+        addr5 = integral%addr_p_arr
+     endif
+
+     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
+     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     if(.not.master)then
+        trafo1 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+        trafo2 = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+        trafo3 = get_arr_from_parr(addr3(infpar%lg_mynum+1))
+        trafo4 = get_arr_from_parr(addr4(infpar%lg_mynum+1))
+        integral = get_arr_from_parr(addr5(infpar%lg_mynum+1))
+     endif
+
+
+  end subroutine wake_slaves_for_simple_mo
 
 #else
-module decmpi_module
-
-contains
-
-!Added to avoid "has no symbols" linking warning
-subroutine decmpi_module_void()
-end subroutine decmpi_module_void
-
+  !Added to avoid "has no symbols" linking warning
+  subroutine decmpi_module_void()
+  end subroutine decmpi_module_void
+#endif
 end module decmpi_module
 
+
+
+#ifdef VAR_MPI
+subroutine set_dec_settings_on_slaves()
+   use infpar_module
+   use lsmpi_type
+   use Integralparameters
+   use dec_typedef_module
+   use decmpi_module, only:mpibcast_dec_settings
+   implicit none
+   if(infpar%mynum == infpar%master) call ls_mpibcast(DEC_SETTING_TO_SLAVES,infpar%master,MPI_COMM_LSDALTON)
+   call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
+end subroutine set_dec_settings_on_slaves
 #endif

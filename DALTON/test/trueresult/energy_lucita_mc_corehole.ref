@@ -1,0 +1,1726 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2013.2
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Sun Mar 30 23:45:34 2014
+     Host name              : stefans-mac-book-pro.local              
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /Users/Stefanknecht/progs/dalton/dalton-git-repo/DALTON/test/2014-03-30T23_45-testjob-pid-48431
+   2) /Users/Stefanknecht/progs/dalton/dalton-git-repo/my_dalton_seq/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | Stefanknecht
+ Host                     | stefans-mac-book-pro.local
+ System                   | Darwin-11.4.2
+ CMake generator          | Unix Makefiles
+ Processor                | i386
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/local/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.6.2 20111019 (prerelease)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | i686-apple-darwin11-llvm-gcc-4.2 (GCC) 4.2.1 (Base
+                          | d on Apple Inc. build 5658) (LLVM build 2336.9.00)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | i686-apple-darwin11-llvm-g++-4.2 (GCC) 4.2.1 (Base
+                          | d on Apple Inc. build 5658) (LLVM build 2336.9.00)
+ BLAS                     | /opt/local/lib/libf77blas.a;/usr/lib/libcblas.dyli
+                          | b;/usr/lib/libatlas.dylib
+ LAPACK                   | /usr/lib/libatlas.dylib;/usr/lib/liblapack.dylib
+ Static linking           | OFF
+ Last Git revision        | e873a8f38c5140ca86e6fec5aef1ecdcb7835d97
+ Configuration time       | 2014-03-30 23:38:59.129845
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE FUNCTIONS                               
+**WAVE FUNCTIONS                                  
+.MCSCF                                            
+.WESTA                                            
+*CONFIGURATION INPUT                              
+.INACTIVE                                         
+ 2 0 0 0                                          
+.RAS1 SPACE                                       
+ 1 0 0 0                                          
+.RAS2 SPACE                                       
+ 4 2 2 0                                          
+.RAS3 SPACE                                       
+ 0 0 0 0                                          
+.RAS1 ELECTRONS                                   
+ 1 1                                              
+.ELECTR                                           
+ 10                                               
+.SYMMET                                           
+ 2                                                
+.SPIN MULTIPLICITY                                
+ 1                                                
+*ORBITA                                           
+.MOSTART                                          
+ NEWORB                                           
+*OPTIMI                                           
+.CI PROGRAM                                       
+LUCITA                                            
+.NR ALWAYS                                        
+.TRACI                                            
+.OPTIMA                                           
+.NO ABS                                           
+.DETERM                                           
+.MAX MAC                                          
+ 30                                               
+*CI VEC                                           
+.PLUS COMBINATIONS                                
+.STARTO                                           
+**END OF INPUT                                    
+
+
+   Content of the .mol file
+ ----------------------------
+
+INTGRL                                                                         
+Calculation of core-hole excitations using both a frozen and a relaxed         
+core orbital. This is a three step job                                         
+    2    2  X  Y       1.D-15                                                  
+       8.     1    3    1    1    1                                            
+O   0.000000             0.000000                  2.132                       
+   11    5                                                                     
+15330.     0.000508   -0.000115 0.000000   0.000000  0.0                       
+2299.      0.003929   -0.000895 0.000000   0.000000  0.0                       
+522.4      0.020243   -0.004636 0.000000   0.000000  0.0                       
+147.3      0.079181   -0.018724 0.000000   0.000000  0.0                       
+47.55      0.230687   -0.058463 0.000000   0.000000  0.0                       
+16.76      0.433118   -0.136463 0.000000   0.000000  0.0                       
+6.207      0.350260   -0.175740 0.000000   0.000000  0.0                       
+1.752      0.042728    0.160934 1.000000   0.000000  0.0                       
+0.6882     -0.008154   0.603418 0.000000   0.000000  0.0                       
+0.2384     0.002381    0.378765 0.000000   1.000000  0.0                       
+0.073760   0.0         0.0      0.0        0.0       1.000000                  
+    6    4                                                                     
+34.46      0.015928    0.000000  0.000000   0.0                                
+7.749      0.099740    0.000000  0.000000   0.0                                
+2.280      0.310492    0.000000  0.000000   0.0                                
+0.7156     0.491026    1.000000  0.000000   0.0                                
+0.2140     0.336337    0.000000  1.000000   0.0                                
+0.05974    0.0         0.0       0.0        1.000                              
+    3    3                                                                     
+2.314      1.000000    0.000000   0.0                                          
+0.645      0.000000    1.000000   0.0                                          
+0.214000   0.0         0.0        1.0000                                       
+        6.    1    3    1    1    1                                            
+C   0.        0.000000  0.000000                                               
+   11    5                                                                     
+8236.       0.000531 -0.000113   0.000000   0.000000  0.0                      
+1235.       0.004108 -0.000878   0.000000   0.000000  0.0                      
+280.8       0.021087 -0.004540   0.000000   0.000000  0.0                      
+79.27       0.081853 -0.018133   0.000000   0.000000  0.0                      
+25.59       0.234817 -0.055760   0.000000   0.000000  0.0                      
+8.997       0.434401 -0.126895   0.000000   0.000000  0.0                      
+3.319       0.346129 -0.170352   0.000000   0.000000  0.0                      
+0.9059      0.039378 0.140382    1.000000   0.000000  0.0                      
+0.3643     -0.008983 0.598684    0.000000   0.000000  0.0                      
+0.1285      0.002385 0.395389    0.000000   1.000000  0.0                      
+0.04402     0.000000 0.000000    0.000000   0.000000  1.0                      
+    6    4                                                                     
+18.71      0.014031    0.000000  0.000000  0.0                                 
+4.133      0.086866    0.000000  0.000000  0.0                                 
+1.200      0.290216    0.000000  0.000000  0.0                                 
+0.3827     0.501008    1.000000  0.000000  0.0                                 
+0.1209     0.343406    0.000000  1.000000  0.0                                 
+0.03569    0.000000    0.000000  0.000000  1.0                                 
+    3    3                                                                     
+1.097      1.000000    0.000000  0.0                                           
+0.318      0.000000    1.000000  0.0                                           
+0.100      0.000000    0.000000  1.0                                           
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Calculation of core-hole excitations using both a frozen and a relaxed  
+ 2: core orbital. This is a three step job                                  
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           C          12.000000
+
+                       Total mass:    27.994915 amu
+                       Natural abundance:  98.663 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    1.218120
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    44    32      [11s6p3d|5s4p3d]                                   
+  C           1    6.0000    44    32      [11s6p3d|5s4p3d]                                   
+  ----------------------------------------------------------------------
+  total:      2   14.0000    88    64
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-15
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    6
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z   2.1320000000
+  C       :     4  x   0.0000000000    5  y   0.0000000000    6  z   0.0000000000
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     2    2    2    0
+
+  Symmetry  A1  ( 1)
+
+    1   O     z    3
+    2   C     z    6
+
+  Symmetry  B1  ( 2)
+
+    3   O     x    1
+    4   C     x    4
+
+  Symmetry  B2  ( 3)
+
+    5   O     y    2
+    6   C     y    5
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           C     
+            ------      ------
+ O     :    0.000000
+ C     :    1.128206    0.000000
+
+
+  Max    interatomic separation is    1.1282 Angstrom (    2.1320 Bohr)
+  between atoms    2 and    1, "C     " and "O     ".
+
+  Min YX interatomic separation is    1.1282 Angstrom (    2.1320 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C          O            1.128206
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.000000          0.000000    0.000000    1.000000
+   IB       8.726914          0.000000    1.000000    0.000000
+   IC       8.726914          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =        57910.39 MHz     (    1.931683 cm-1)
+
+
+@  Nuclear repulsion energy :   22.514071294559 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          30   14   14    6
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        1s         3
+    4     O        1s         4
+    5     O        1s         5
+    6     O        2pz        8
+    7     O        2pz       11
+    8     O        2pz       14
+    9     O        2pz       17
+   10     O        3d0       20
+   11     O        3d2+      22
+   12     O        3d0       25
+   13     O        3d2+      27
+   14     O        3d0       30
+   15     O        3d2+      32
+   16     C        1s        33
+   17     C        1s        34
+   18     C        1s        35
+   19     C        1s        36
+   20     C        1s        37
+   21     C        2pz       40
+   22     C        2pz       43
+   23     C        2pz       46
+   24     C        2pz       49
+   25     C        3d0       52
+   26     C        3d2+      54
+   27     C        3d0       57
+   28     C        3d2+      59
+   29     C        3d0       62
+   30     C        3d2+      64
+
+
+  Symmetry  B1 ( 2)
+
+   31     O        2px        6
+   32     O        2px        9
+   33     O        2px       12
+   34     O        2px       15
+   35     O        3d1+      21
+   36     O        3d1+      26
+   37     O        3d1+      31
+   38     C        2px       38
+   39     C        2px       41
+   40     C        2px       44
+   41     C        2px       47
+   42     C        3d1+      53
+   43     C        3d1+      58
+   44     C        3d1+      63
+
+
+  Symmetry  B2 ( 3)
+
+   45     O        2py        7
+   46     O        2py       10
+   47     O        2py       13
+   48     O        2py       16
+   49     O        3d1-      19
+   50     O        3d1-      24
+   51     O        3d1-      29
+   52     C        2py       39
+   53     C        2py       42
+   54     C        2py       45
+   55     C        2py       48
+   56     C        3d1-      51
+   57     C        3d1-      56
+   58     C        3d1-      61
+
+
+  Symmetry  A2 ( 4)
+
+   59     O        3d2-      18
+   60     O        3d2-      23
+   61     O        3d2-      28
+   62     C        3d2-      50
+   63     C        3d2-      55
+   64     C        3d2-      60
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-15
+ Number of two-electron integrals written:      474134 ( 21.9% )
+ Megabytes written:                              5.434
+
+ >>>  Time used in TWOINT     is   0.22 seconds
+ >>>> Total CPU  time used in HERMIT:   0.26 seconds
+ >>>> Total wall time used in HERMIT:   0.26 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ CI program in use: LUCITA   
+
+          dimension of LUCITA work space :           63613499
+
+  Number of internal combinations per symmetry 
+  =========================================== 
+  CI space            1
+               2000.               1960.               1960.               1920.
+
+ SETCI, core memory needed for CI:
+ LCINDX =           0
+ LACIMX =           0
+ LBCIMX =           0
+
+ Number of determinants:          1960
+
+ Number of configurations:        1960
+
+ Time used in SETCI :      0.27s
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Sun Mar 30 23:45:35 2014
+     Host name              : stefans-mac-book-pro.local              
+
+ Title lines from ".mol" input file:
+     Calculation of core-hole excitations using both a frozen and a relaxed  
+     core orbital. This is a three step job                                  
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    MC-SCF optimization.
+@              Type: restricted active space calculation (RAS)
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART NEWORB" input option
+
+     Wave function specification
+     ============================
+@    For the wave function of type :      >>> MC-SCF <<<
+@    Number of closed shell electrons           4
+@    Number of electrons in active shells      10
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   2
+
+Number of active orbitals in RAS1, RAS2, and RAS3 :   1   8   0
+
+@    Minimum number of electrons in RAS1 :   1 (maximum   1 holes)
+@    Maximum number of electrons in RAS1 :   1 (minimum   1 holes)
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+@    Inactive orbitals                   2 |    2    0    0    0
+@    Active orbitals in RAS1             1 |    1    0    0    0
+@    Active orbitals in RAS2             8 |    4    2    2    0
+@    Active orbitals                     9 |    5    2    2    0
+     Secondary orbitals                 53 |   23   12   12    6
+     Total number of orbitals           64 |   30   14   14    6
+     Number of basis functions          64 |   30   14   14    6
+
+     Optimization information
+     ========================
+@    Number of determinants                1960
+@    Number of orbital rotations            223
+     ------------------------------------------
+@    Total number of variables             2183
+
+     Maximum number of macro iterations      30
+     Maximum number of micro iterations     720
+     Threshold for MCSCF gradient      1.00D-05
+     Number of initial trial vectors          1
+     Number of initial CI iterations         20
+     Number of simultaneous trial vectors     1
+
+@    This calculation converges to the lowest state for the specified symmetry and spin species.
+
+     Maximum number of NEO/NR iterations  24
+
+
+        SIRIUS MCSCF optimization (SIROPT)
+ ================================================
+
+
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000D+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000D+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000D+00
+
+ Symmetry  1
+
+   1.000000000   1.973134586   1.982492897   0.012752795   0.026467843
+
+ Symmetry  2
+
+   1.977401592   1.021652823
+
+ Symmetry  3
+
+   1.926971790   0.079125675
+
+
+ <<< MACRO ITERATION  1 >>>
+ --------------------------
+
+ Integral transformation: Total CPU and WALL times (sec)       0.158       0.159
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     0.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+ Total MCSCF energy       :          -102.288287103304555  (MACRO    1)
+
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -78.118084477941991
+ - Active energy          :           -46.684273919921672
+
+ Norm of total gradient   :             1.533845554998
+ -    of CI gradient      :             0.000006749551
+ -    of orbital gradient :             1.533845554983
+
+ WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
+          that is, the off-diagonal elements of the one-electron density matrix which
+          couple the different RAS spaces are ignored.
+      Virial theorem: -V/T =      2.012915
+@      MULPOP O       0.10; C      -0.10; 
+
+ ***WARNING from SNRST:    3 negative elements of orbital Hessian diagonal
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+ Dimension    CSF residual   orb. residual  total residual   conv. thresh.
+         2      1.8232D-02      1.1182D-02      2.1388D-02      3.0677D-01
+
+ *** Newton-Raphson eq.s converged
+
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000D+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000D+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000D+00
+
+ Symmetry  1
+
+   1.000000000   1.973129460   1.982490597   0.012755926   0.026470617
+
+ Symmetry  2
+
+   1.977405668   1.021648612
+
+ Symmetry  3
+
+   1.926973074   0.079126047
+
+
+ <<< MACRO ITERATION  2 >>>
+ --------------------------
+
+ Integral transformation: Total CPU and WALL times (sec)       0.122       0.124
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     0.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+ Total MCSCF energy       :          -102.320012913164717  (MACRO    2)
+
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -78.119336311094273
+ - Active energy          :           -46.714747896629547
+
+ Norm of total gradient   :             0.027762663953
+ -    of CI gradient      :             0.021623624498
+ -    of orbital gradient :             0.017412190365
+
+ WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
+          that is, the off-diagonal elements of the one-electron density matrix which
+          couple the different RAS spaces are ignored.
+      Virial theorem: -V/T =      2.000841
+@      MULPOP O       0.17; C      -0.17; 
+
+ ***WARNING from SNRST:    3 negative elements of orbital Hessian diagonal
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+ Dimension    CSF residual   orb. residual  total residual   conv. thresh.
+         7      1.4125D-03      2.1329D-04      1.4285D-03      2.4255D-03
+
+ *** Newton-Raphson eq.s converged
+
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000D+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000D+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000D+00
+
+ Symmetry  1
+
+   1.000000000   1.973573698   1.982943358   0.012322668   0.026175000
+
+ Symmetry  2
+
+   1.977370961   1.021672686
+
+ Symmetry  3
+
+   1.927731953   0.078209676
+
+
+ <<< MACRO ITERATION  3 >>>
+ --------------------------
+
+ Integral transformation: Total CPU and WALL times (sec)       0.127       0.127
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     0.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+ Total MCSCF energy       :          -102.320153682191474  (MACRO    3)
+
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -78.120878368890246
+ - Active energy          :           -46.713346607860331
+
+ Norm of total gradient   :             0.002920161075
+ -    of CI gradient      :             0.001750266474
+ -    of orbital gradient :             0.002337500369
+
+ WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
+          that is, the off-diagonal elements of the one-electron density matrix which
+          couple the different RAS spaces are ignored.
+      Virial theorem: -V/T =      2.001164
+@      MULPOP O       0.16; C      -0.16; 
+
+ ***WARNING from SNRST:    3 negative elements of orbital Hessian diagonal
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+ Dimension    CSF residual   orb. residual  total residual   conv. thresh.
+        12      2.7818D-05      2.9545D-06      2.7975D-05      4.3711D-05
+
+ *** Newton-Raphson eq.s converged
+
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000D+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000D+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000D+00
+
+ Symmetry  1
+
+   1.000000000   1.973575602   1.982977328   0.012296081   0.026173500
+
+ Symmetry  2
+
+   1.977380480   1.021666219
+
+ Symmetry  3
+
+   1.927751101   0.078179689
+
+
+ <<< MACRO ITERATION  4 >>>
+ --------------------------
+
+ Integral transformation: Total CPU and WALL times (sec)       0.126       0.126
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     0.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+ Total MCSCF energy       :          -102.320154137896111  (MACRO    4)
+
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -78.121178182764069
+ - Active energy          :           -46.713047249691137
+
+ Norm of total gradient   :             0.000028622191
+ -    of CI gradient      :             0.000028296486
+ -    of orbital gradient :             0.000004305654
+
+ WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
+          that is, the off-diagonal elements of the one-electron density matrix which
+          couple the different RAS spaces are ignored.
+      Virial theorem: -V/T =      2.001182
+@      MULPOP O       0.16; C      -0.16; 
+
+ ***WARNING from SNRST:    3 negative elements of orbital Hessian diagonal
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     5.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+ Dimension    CSF residual   orb. residual  total residual   conv. thresh.
+         4      4.1354D-06      6.1427D-06      7.4050D-06      9.8000D-06
+
+ *** Newton-Raphson eq.s converged
+
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000D+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000D+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000D+00
+
+ Symmetry  1
+
+   1.000000000   1.973575584   1.982977583   0.012295830   0.026173460
+
+ Symmetry  2
+
+   1.977380291   1.021666409
+
+ Symmetry  3
+
+   1.927751681   0.078179162
+
+
+ <<< MACRO ITERATION  5 >>>
+ --------------------------
+
+ Integral transformation: Total CPU and WALL times (sec)       0.123       0.124
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+   ------------------------------------------------
+   expectation value of operator <S**2> =     0.000
+   ------------------------------------------------
+
+  
+  Recompute energy from 1-/2- particle dens mats  
+  (additional check of correctness of the results)
+  ================================================
+  One-electron energy:   0.0000000000000000     
+  Two-electron energy:   0.0000000000000000     
+  ====================
+  Total energy       :   0.0000000000000000     
+  
+
+   **********************************************
+   calculating E2b lhs vector for b state =   1
+   **********************************************
+
+ Total MCSCF energy       :          -102.320154137995189  (MACRO    5)
+
+ - Nuclear repulsion      :            22.514071294559098
+ - Inactive energy        :           -78.121171262791535
+ - Active energy          :           -46.713054169762763
+
+ Norm of total gradient   :             0.000007404876
+ -    of CI gradient      :             0.000004135347
+ -    of orbital gradient :             0.000006142564
+
+ WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
+          that is, the off-diagonal elements of the one-electron density matrix which
+          couple the different RAS spaces are ignored.
+      Virial theorem: -V/T =      2.001182
+@      MULPOP O       0.16; C      -0.16; 
+
+ (SIRSTP) Close to convergence, ratio set to one.
+ Energy difference; actual and predicted:   -9.90781D-11   -9.91297D-11
+
+ (SIRSTP) Close to convergence, ratio set to one.
+ Energy difference; actual and predicted:    9.99479D-01
+ Close to convergence, ratio set to one.
+
+ *** Optimization control: MCSCF converged ***
+     Number of macro iterations used            5
+     Number of micro iterations used           25
+     Total number of CPU seconds used         1.82
+
+ >>>> CPU and wall time for MCSCF :       1.818       1.883
+
+
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
+
+ 
+     Date and time (Linux)  : Sun Mar 30 23:45:36 2014
+     Host name              : stefans-mac-book-pro.local              
+
+
+  ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
+ ---------------------------------------------------------------------
+    1    2   -102.288287103305   1.5338455550  0.000000   0.0493089042
+    2    7   -102.320012913165   0.0277626640  0.994832   0.0261052622
+    3   12   -102.320153682191   0.0029201611  1.017245   0.0012524797
+    4    4   -102.320154137896   0.0000286222  1.000931   0.0000140760
+    5    0   -102.320154137995   0.0000074049  1.000000   0.0000000000
+
+
+  ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
+ ------------------------------------------------------------------------------
+    1   1817    0.000001    0.000007     82    1.146821    1.533846    1.533846
+    2   1650    0.008242    0.021624     82   -0.010329    0.017412    0.027763
+    3   1650    0.000322    0.001750    128   -0.002026    0.002338    0.002920
+    4   1661    0.000005    0.000028    105   -0.000003    0.000004    0.000029
+    5    558    0.000001    0.000004    105    0.000003    0.000006    0.000007
+
+
+  ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
+ ------------------------------------------------------------------------------
+
+    1     2     1     1      0.28      0.16      0.10      0.05      0.05
+    2     7     4     3      0.47      0.12      0.32      0.15      0.05
+    3    12     8     4      0.61      0.13      0.46      0.25      0.04
+    4     4     3     1      0.29      0.13      0.14      0.08      0.04
+    5     0     0     0      0.15      0.12      0.00      0.00
+
+
+ ITER         EMY                 EACTIV              EMCSCF
+
+    1    -78.118084477942    -46.684273919922   -102.288287103305
+    2    -78.119336311094    -46.714747896630   -102.320012913165
+    3    -78.120878368890    -46.713346607860   -102.320153682191
+    4    -78.121178182764    -46.713047249691   -102.320154137896
+    5    -78.121171262792    -46.713054169763   -102.320154137995
+
+
+ ITER         DEPRED              DEACT               RATIO
+
+    1      0.000000000000      0.000000000000      0.000000000000
+    2     -0.031890629741     -0.031725809860      0.994831714452
+    3     -0.000138382628     -0.000140769027      1.017244926934
+    4     -0.000000455281     -0.000000455705      1.000930955537
+    5     -0.000000000099     -0.000000000099      1.000000000000
+
+
+ ITER    BETA           GAMMA             STPLNG              RTRUST
+
+    1      0.00000000  1.00000000      0.049308904188      0.700000000000
+    2      0.00000000  1.00000000      0.026105262203      0.700000000000
+    3      0.00000000  1.00000000      0.001252479722      0.700000000000
+    4      0.00000000  1.00000000      0.000014075972      0.700000000000
+    5      0.00000000  0.00000000      0.000000000000      0.700000000000
+
+
+ Reduced L root no.  1
+ ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
+ ----------------------------------------------------------------------------
+    1    0.000000000000    0.000000000000   -0.000207948388    0.049308465700
+    2    0.000000000000    0.000000000000   -0.008574952296    0.023791280627
+    3    0.000000000000    0.000000000000   -0.000413728870    0.001089386750
+    4    0.000000000000    0.000000000000   -0.000006949271    0.000007514848
+    5    0.000000000000    0.000000000000    0.000000000000    0.000000000000
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            2
+@    Total charge of molecule:    0
+@    State number:                1
+
+@    Final MCSCF energy:         -102.320154137995                 
+@    Nuclear repulsion:            22.514071294559
+@    Electronic energy:          -124.834225432554
+
+@    Final gradient norm:           0.000007404876
+
+ 
+     Date and time (Linux)  : Sun Mar 30 23:45:36 2014
+     Host name              : stefans-mac-book-pro.local              
+
+   **************************************************************
+   calculating 1-/2-particle density matrix for eigen state =   1
+   **************************************************************
+
+ Occupancies of natural orbitals
+ -------------------------------
+
+ Symmetry  1 -- Total occupation in this symmetry is   8.995022457
+
+   2.000000000   2.000000000   1.000000000   1.973575584   1.982977583
+   0.012295830   0.026173460
+
+ Symmetry  2 -- Total occupation in this symmetry is   2.999046701
+
+   1.977380291   1.021666409
+
+ Symmetry  3 -- Total occupation in this symmetry is   2.005930842
+
+   1.927751681   0.078179162
+
+ Symmetry  4 -- No occupied orbitals
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         3        4        5        6        7        8        9
+   1 O   :1s    -0.0023  -0.0002  -0.0114  -0.0248   0.0866   0.0109  -0.0125
+   2 O   :1s    -0.0128  -0.2642  -0.0005  -0.1635   0.7418  -0.0456  -0.0489
+   4 O   :1s     0.1835   0.0972  -0.1694  -0.2533  -0.0402  -0.7413   0.7212
+   5 O   :1s     0.0822  -0.0094  -0.0631  -0.2132   0.0512  -4.3397   3.6697
+   6 O   :2pz    0.0200   0.6141  -0.4770   0.5226  -1.1025  -0.0658   0.0278
+   7 O   :2pz   -0.0337  -0.0165   0.0192   0.0093   0.0939   0.0108  -0.0165
+   8 O   :2pz   -0.1375  -0.1228   0.1275  -0.1496   0.2874   0.4940  -0.4823
+   9 O   :2pz   -0.0182   0.0083   0.0166  -0.0028  -0.0103   0.7519  -2.1563
+  10 O   :3d0   -0.0011  -0.0149   0.0122  -0.0116   0.0018   0.0020  -0.0024
+  12 O   :3d0    0.0151  -0.0157   0.0152  -0.0453   0.0052  -0.0227  -0.0071
+  13 O   :3d2+  -0.0001   0.0008  -0.0015   0.0189   0.0070   0.0000   0.0018
+  14 O   :3d0    0.0427   0.0243  -0.0111   0.0044  -0.0140  -0.0731   0.1198
+  15 O   :3d2+   0.0000  -0.0012  -0.0015   0.0244   0.0102  -0.0009  -0.0067
+  16 C   :1s    -1.1604  -0.0024  -0.0887  -0.4902  -0.1079   0.0160  -0.0354
+  17 C   :1s    -0.4302   0.2507   0.8557  -0.0347  -0.6309   0.0990  -0.2118
+  18 C   :1s     0.1742   0.0275   0.1496   1.2423   0.0516   0.0181  -0.0412
+  19 C   :1s     0.0679   0.2125  -0.0523  -0.4600  -0.1300   1.8960  -2.1163
+  20 C   :1s    -0.0254   0.0173   0.0177   0.0431  -0.0188   3.0484  -2.8117
+  21 C   :2pz    0.0169  -1.1070   0.0162  -0.3412  -2.0927  -0.0437  -0.0150
+  22 C   :2pz   -0.1015   0.2821  -0.0145   0.4585   0.7043   0.1675  -0.1013
+  23 C   :2pz   -0.0347   0.3480  -0.0283   0.4663   0.7280   1.0429  -1.2707
+  24 C   :2pz   -0.0003   0.0024   0.0023   0.0205  -0.0033   1.6240   0.9571
+  25 C   :3d0   -0.0116  -0.0409   0.0165   0.1823   0.0193   0.0043  -0.0018
+  26 C   :3d2+   0.0021   0.0006  -0.0014  -0.1683  -0.0241  -0.0024   0.0084
+  27 C   :3d0   -0.0193  -0.0002  -0.0031   0.1580   0.0183   0.0701  -0.1488
+  28 C   :3d2+   0.0001   0.0027   0.0020  -0.1531  -0.0408  -0.0054   0.0203
+  29 C   :3d0    0.0071   0.0064  -0.0013   0.0541   0.0025   0.3017   0.0270
+  30 C   :3d2+   0.0001   0.0016   0.0023  -0.0146  -0.0067  -0.0145   0.0518
+
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
+
+    Orbital         1        2        3        4
+   1 O   :2px    0.7043  -0.7540   0.0173   0.1680
+   2 O   :2px    0.0063  -0.0128   0.0008   0.0053
+   3 O   :2px   -0.0422  -0.0657  -0.0488  -0.1111
+   4 O   :2px   -0.0021  -0.0744   0.5856  -2.8160
+   5 O   :3d1+  -0.0126  -0.0057  -0.0031   0.0027
+   6 O   :3d1+  -0.0328  -0.0058  -0.0014  -0.0487
+   7 O   :3d1+  -0.0083  -0.0100   0.0046   0.2540
+   8 C   :2px    0.8557   1.0105   0.2212   0.0525
+   9 C   :2px   -0.1705  -0.0766  -0.0680  -0.0342
+  10 C   :2px   -0.2061  -0.0245   0.1595   0.8852
+  11 C   :2px    0.0030   0.0336  -1.5566   1.5846
+  12 C   :3d1+   0.0310  -0.0075  -0.0013   0.0010
+  13 C   :3d1+   0.0108  -0.0043   0.0488   0.0387
+  14 C   :3d1+  -0.0083   0.0083  -0.1762   0.5463
+
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
+
+    Orbital         1        2        3        4
+   1 O   :2py    0.7443  -0.9398   0.0459   0.1309
+   2 O   :2py    0.0085   0.0599   0.0009   0.0064
+   3 O   :2py   -0.0313   0.2414  -0.0289  -0.1263
+   4 O   :2py    0.0056   0.0056   0.6200  -2.7597
+   5 O   :3d1-  -0.0131   0.0027  -0.0027   0.0018
+   6 O   :3d1-  -0.0369  -0.0041  -0.0007  -0.0486
+   7 O   :3d1-  -0.0117   0.0031   0.0016   0.2475
+   8 C   :2py    0.7885   1.4545   0.1570   0.1096
+   9 C   :2py   -0.1663  -0.3406  -0.0541  -0.0429
+  10 C   :2py   -0.2161  -0.4291   0.1254   0.9066
+  11 C   :2py   -0.0010  -0.0047  -1.5640   1.5152
+  12 C   :3d1-   0.0345   0.0154   0.0000  -0.0002
+  13 C   :3d1-   0.0195   0.0244   0.0470   0.0432
+  14 C   :3d1-  -0.0055   0.0040  -0.1744   0.5030
+
+ Molecular orbitals for symmetry species  4
+ ------------------------------------------
+
+    Orbital         1        2
+   1 O   :3d2-  -0.0014  -0.0416
+   2 O   :3d2-  -0.0368   0.1047
+   3 O   :3d2-   0.0479  -1.2747
+   4 C   :3d2-  -0.0397  -0.0191
+   5 C   :3d2-   0.1156  -0.0329
+   6 C   :3d2-  -1.0783   0.6911
+
+ Printout of CI-coefficients abs greater than 0.05000 for root  1
+ *** NOTE: this root is the reference state ***
+
+   ******************************************************
+   Analysis of leading coefficients for eigen state =   1
+   ******************************************************
+
+   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+   =========================================================
+   Coefficient of combination        2 is   0.6807257753
+   Corresponding alpha and beta strings
+       2   3   6   7   8
+       1   2   3   6   8
+   Coefficient of combination       25 is   0.6807384329
+   Corresponding alpha and beta strings
+       1   2   3   6   8
+       2   3   6   7   8
+
+   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+   =========================================================
+
+    ( no coefficients )
+
+   Printout of coefficients in interval  0.5000E-01 to 0.1000E+00
+   =========================================================
+   Coefficient of combination       93 is  -0.0668042591
+   Corresponding alpha and beta strings
+       2   3   6   7   9
+       1   2   3   7   8
+   Coefficient of combination      177 is  -0.0971379854
+   Corresponding alpha and beta strings
+       2   3   6   7   9
+       1   2   3   6   9
+   Coefficient of combination      254 is  -0.0553336016
+   Corresponding alpha and beta strings
+       2   3   6   7   8
+       1   2   3   7   9
+   Coefficient of combination       43 is  -0.0553345698
+   Corresponding alpha and beta strings
+       1   2   3   7   9
+       2   3   6   7   8
+   Coefficient of combination      199 is  -0.0668054208
+   Corresponding alpha and beta strings
+       1   2   3   7   8
+       2   3   6   7   9
+   Coefficient of combination      205 is  -0.0971396567
+   Corresponding alpha and beta strings
+       1   2   3   6   9
+       2   3   6   7   9
+   Norm of printed CI vector ..  0.96071379E+00
+
+     Magnitude of CI coefficients 
+    ==============================
+
+   10- 1 TO 10- 0           2  0.92679240E+00    0.92679240E+00
+   10- 2 TO 10- 1          90  0.68828483E-01    0.99562088E+00
+   10- 3 TO 10- 2         362  0.42258342E-02    0.99984671E+00
+   10- 4 TO 10- 3         824  0.15179787E-03    0.99999851E+00
+   10- 5 TO 10- 4         542  0.14857391E-05    0.10000000E+01
+
+    Number of coefficients less than 10^{- 5} is       140
+
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.83 seconds
+ >>>> Total wall time used in SIRIUS :      1.92 seconds
+
+ 
+     Date and time (Linux)  : Sun Mar 30 23:45:37 2014
+     Host name              : stefans-mac-book-pro.local              
+
+ NOTE:    9 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   2.09 seconds
+ >>>> Total wall time used in DALTON:   2.19 seconds
+
+ 
+     Date and time (Linux)  : Sun Mar 30 23:45:37 2014
+     Host name              : stefans-mac-book-pro.local              

@@ -183,10 +183,10 @@ module lsmpi_type
 !!!!!!!!!!!!!!!!!!!!!!!!!
 
 #ifdef VAR_MPI
-  integer,parameter     :: LSMPIBROADCAST=1
-  integer,parameter     :: LSMPIREDUCTION=2
-  integer,parameter     :: LSMPIREDUCTIONmaster=3
-  integer,parameter     :: LSMPISENDRECV=4
+  integer,parameter     :: LSMPIBROADCAST       = 1
+  integer,parameter     :: LSMPIREDUCTION       = 2
+  integer,parameter     :: LSMPIREDUCTIONmaster = 3
+  integer,parameter     :: LSMPISENDRECV        = 4
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -199,9 +199,16 @@ module lsmpi_type
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
   !integer,parameter     :: SPLIT_MPI_MSG = 2147483640
-  integer,parameter     :: SPLIT_MPI_MSG = 1000000000
-  !split mpi one sided communication into 1GB msg
+  integer,parameter     :: SPLIT_MPI_MSG      = 1000000000
+  !The recommended size of message chunks
+  integer,parameter     :: SPLIT_MSG_REC      =  100000000
+  !split mpi one sided communication into 1GB msg, with CRAY workaround in 100MB
+  !chunks
+#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
   integer,parameter     :: MAX_SIZE_ONE_SIDED = 125000000
+#else
+  integer,parameter     :: MAX_SIZE_ONE_SIDED =  12500000
+#endif
 
   !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
@@ -1263,7 +1270,7 @@ contains
 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1292,7 +1299,7 @@ contains
 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1326,7 +1333,7 @@ contains
       !     Send/receive regular integer
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(integerbuffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(integerbuffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1379,7 +1386,7 @@ contains
         !     Send/receive regular integer
         if(mynum.EQ.sender) then ! send stuff to receiver
            call MPI_SEND(buffer(1:nbuf),n,DATATYPE,receiver,tag,comm,ierr)
-        elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+        else if(mynum.EQ.receiver) then  ! receive stuff from sender
            call MPI_RECV(buffer(1:nbuf),n,DATATYPE,sender,tag,comm,status,ierr)
         else ! Error: Node should be either sender or receiver
            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1417,7 +1424,7 @@ contains
       !     Send/receive regular integer
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer(1:nbuf),n,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer(1:nbuf),n,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1461,7 +1468,7 @@ contains
         !     Send/receive 
         if(mynum.EQ.sender) then ! send stuff to receiver
            call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-        elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+        else if(mynum.EQ.receiver) then  ! receive stuff from sender
            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
         else ! Error: Node should be either sender or receiver
            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1493,7 +1500,7 @@ contains
       !     Send/receive 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1536,7 +1543,7 @@ contains
         !     Send/receive 
         if(mynum.EQ.sender) then ! send stuff to receiver
            call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-        elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+        else if(mynum.EQ.receiver) then  ! receive stuff from sender
            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
         else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1566,7 +1573,7 @@ contains
       !     Send/receive 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
        print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1594,7 +1601,7 @@ contains
 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1637,7 +1644,7 @@ contains
         !     Send/receive 
         if(mynum.EQ.sender) then ! send stuff to receiver
            call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-        elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+        else if(mynum.EQ.receiver) then  ! receive stuff from sender
            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
         else ! Error: Node should be either sender or receiver
            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1670,7 +1677,7 @@ contains
       !     Send/receive 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1703,7 +1710,7 @@ contains
       !     Send/receive 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1738,7 +1745,7 @@ contains
       !     Send/receive 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1773,7 +1780,7 @@ contains
 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1812,7 +1819,7 @@ contains
             !64 bit mpi logical
             call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
          ENDIF
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          IF(mpi_logical_extent.EQ.4)THEN
             !32 bit mpi logical
             call MPI_RECV(buffer4,thesize,DATATYPE,sender,tag,comm,status,ierr)
@@ -1857,7 +1864,7 @@ contains
             BUFFER8 = BUFFER
             call MPI_SEND(buffer8,thesize,DATATYPE,receiver,tag,comm,ierr)
          ENDIF
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          IF(mpi_logical_extent.EQ.4)THEN
             !32 bit mpi logical
             call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
@@ -1921,7 +1928,7 @@ contains
               !64 bit mpi logical
               call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
            ENDIF
-        elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+        else if(mynum.EQ.receiver) then  ! receive stuff from sender
            IF(mpi_logical_extent.EQ.4)THEN
               !32 bit mpi logical
               call mem_alloc(buffer4,nbuf)
@@ -1983,7 +1990,7 @@ contains
               !64 bit mpi logical
               call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
            ENDIF
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
            IF(mpi_logical_extent.EQ.4)THEN
               !32 bit mpi logical
               call mem_alloc(buffer4,nbuf)
@@ -2053,7 +2060,7 @@ contains
               call MPI_SEND(buffer8,thesize,DATATYPE,receiver,tag,comm,ierr)
               call mem_dealloc(buffer8)
            ENDIF
-        elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+        else if(mynum.EQ.receiver) then  ! receive stuff from sender
            IF(mpi_logical_extent.EQ.4)THEN
               !32 bit mpi logical
               call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
@@ -2118,7 +2125,7 @@ contains
             call MPI_SEND(buffer8,thesize,DATATYPE,receiver,tag,comm,ierr)
             call mem_dealloc(buffer8)
          ENDIF
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          IF(mpi_logical_extent.EQ.4)THEN
             !32 bit mpi logical
             call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
@@ -2182,7 +2189,7 @@ contains
             call MPI_SEND(buffer8,thesize,DATATYPE,receiver,tag,comm,ierr)
             call mem_dealloc(buffer8)
          ENDIF
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          IF(mpi_logical_extent.EQ.4)THEN
             !32 bit mpi logical
             call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
@@ -2247,7 +2254,7 @@ contains
             !64 bit mpi logical
             call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
          ENDIF
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          IF(mpi_logical_extent.EQ.4)THEN
             !32 bit mpi logical
             call mem_alloc(buffer4,nbuf1,nbuf2)
@@ -2290,7 +2297,7 @@ contains
       !     Send/receive 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -2332,7 +2339,7 @@ contains
         !     Send/receive 
         if(mynum.EQ.sender) then ! send stuff to receiver
            call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-        elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+        else if(mynum.EQ.receiver) then  ! receive stuff from sender
            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
         else ! Error: Node should be either sender or receiver
            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -2364,7 +2371,7 @@ contains
       !     Send/receive 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -2406,7 +2413,7 @@ contains
         !     Send/receive 
         if(mynum.EQ.sender) then ! send stuff to receiver
            call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-        elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+        else if(mynum.EQ.receiver) then  ! receive stuff from sender
            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
         else ! Error: Node should be either sender or receiver
            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -2438,7 +2445,7 @@ contains
       !     Send/receive 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      elseif(mynum.EQ.receiver) then  ! receive stuff from sender
+      else if(mynum.EQ.receiver) then  ! receive stuff from sender
          call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -3100,7 +3107,7 @@ contains
          ! Set addtobuffer and check that current rank is meaningful
          IF(mynum.EQ.sender)THEN
             addtobuffer=.true.
-         elseif(mynum.EQ.receiver) then
+         else if(mynum.EQ.receiver) then
             addtobuffer=.false.
          else
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -3237,7 +3244,7 @@ contains
             iLog = 0
             iCha = 0
          ENDIF
-      ELSEIF(Job.EQ.LSMPIREDUCTION)THEN
+      else if(Job.EQ.LSMPIREDUCTION)THEN
          IF(nLog.EQ.0) nLog = incremLog+1
          IF(nDP.EQ.0) nDP = incremDP+1
          IF(nInteger4.EQ.0) nInteger4 = incremInteger+1
@@ -3404,7 +3411,7 @@ contains
             IF(iCha.NE.nCha) call lsquit('The full Buffer has not been used Cha',-1)
             call nullify_mpibuffer
          ENDIF
-      ELSEIF(Job.EQ.LSMPIREDUCTION)THEN
+      else if(Job.EQ.LSMPIREDUCTION)THEN
          IF(iDP.GT.0)THEN
             call lsmpi_barrier(comm)
             call lsmpi_reduction(lsmpibufferDP(1:iDP),iDP,master,comm)
@@ -3459,7 +3466,7 @@ contains
          iSho = 0
          iLog = 0
          iCha = 0
-      ELSEIF(Job.EQ.LSMPIREDUCTIONmaster)THEN
+      else if(Job.EQ.LSMPIREDUCTIONmaster)THEN
          IF(mynum.NE.master)THEN
             call lsquit('Programming error in ls_mpiFinalizeBuffer',-1)
          ENDIF
@@ -5705,7 +5712,7 @@ contains
     ierr = 0
     if(typeoflock=='e')then
       CALL MPI_WIN_LOCK(MPI_LOCK_EXCLUSIVE,dest,assert,win,ierr)
-    elseif(typeoflock=='s')then
+    else if(typeoflock=='s')then
       CALL MPI_WIN_LOCK(MPI_LOCK_SHARED,dest,assert,win,ierr)
     else
       call lsquit("ERROR(lsmpi_win_lock): no valid lock type selected",-1)
@@ -5733,6 +5740,44 @@ contains
     time_win_unlock = time_win_unlock + te - ta
 #endif
   end subroutine lsmpi_win_unlock
+
+  subroutine lsmpi_win_flush(win,rank,local)
+     implicit none
+     integer(kind=ls_mpik) :: win
+     integer(kind=ls_mpik), optional :: rank
+     logical, optional :: local
+#ifdef VAR_MPI   
+#ifdef VAR_HAVE_MPI3
+     integer(kind=ls_mpik) :: ierr
+     logical :: loc
+     loc  = .false.
+     ierr = 0
+
+     if(present(local))loc = local
+
+     if(loc)then
+        if(present(rank))then
+           call MPI_WIN_FLUSH_LOCAL(rank,win,ierr)
+        else
+           call MPI_WIN_FLUSH_LOCAL_ALL(win,ierr)
+        endif
+     else
+        if(present(rank))then
+           call MPI_WIN_FLUSH(rank,win,ierr)
+        else
+           call MPI_WIN_FLUSH_ALL(win,ierr)
+        endif
+     endif
+
+     if(ierr /= 0_ls_mpik)then
+        call lsquit("ERROR(lsmpi_win_flush): non zero exit, error in mpi",-1)
+     endif
+#else
+     print *,"WARNING(lsmpi_win_flush)called without MPI3, unlock should force&
+     & the sync"
+#endif
+#endif
+  end subroutine lsmpi_win_flush
 
   !=========================================================!
   !                   MPI PUT ROUTINES                      !
@@ -6179,7 +6224,7 @@ contains
     endif
 #endif
   end subroutine lsmpi_acc_realkV
-  subroutine lsmpi_acc_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze)
+  subroutine lsmpi_acc_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
     real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
@@ -6187,6 +6232,7 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
+    logical, intent(in) :: flush_it
 #ifdef VAR_MPI
     integer :: newpos
     integer(kind=4) :: n4,k,i
@@ -6196,7 +6242,7 @@ contains
       do i=1,nelms,k
         n4=k
         if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
-        call lsmpi_acc_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze)
+        call lsmpi_acc_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze,flush_it)
       enddo
     else
       do j=1,nelms,batchsze
@@ -6205,11 +6251,14 @@ contains
           &(mod(nelms-j+1,batchsze)/=0))n=mod(nelms,batchsze)
         newpos = pos+j-1
         call lsmpi_acc_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
+#ifdef VAR_HAVE_MPI3
+        if(flush_it)call lsmpi_win_flush(win,rank=dest,local=.true.)
+#endif
       enddo
     endif
 #endif
   end subroutine lsmpi_acc_realkV_parts_wrapper8
-  subroutine lsmpi_acc_realkV_parts(buf,nelms,pos,dest,win,batchsze)
+  subroutine lsmpi_acc_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
     real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
@@ -6217,6 +6266,7 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
+    logical, intent(in) :: flush_it
 #ifdef VAR_MPI
     integer :: newpos
     integer(kind=8) :: n,i
@@ -6226,6 +6276,9 @@ contains
         &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
       newpos = pos+i-1
       call lsmpi_acc_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
+#ifdef VAR_HAVE_MPI3
+      if(flush_it)call lsmpi_win_flush(win,rank=dest,local=.true.)
+#endif
     enddo
 #endif
   end subroutine lsmpi_acc_realkV_parts

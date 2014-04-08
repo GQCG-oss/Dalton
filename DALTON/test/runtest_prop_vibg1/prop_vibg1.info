@@ -1,0 +1,5 @@
+   prop_vibg1
+   ----------
+   Molecule:         H2
+   Wave Function:    Full CI / 6-31G**
+   Test Purpose:     Calculation of vibrational g-factor
