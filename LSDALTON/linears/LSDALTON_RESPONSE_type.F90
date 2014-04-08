@@ -4,6 +4,8 @@ module lsdalton_response_type_mod
   type rsp_tasksitem
      !> Response 
      logical :: doResponse
+     !> Dipole Moment
+     logical :: doDipole
      !> Gradient
      logical :: doGrad
 #ifdef MOD_UNRELEASED
@@ -46,6 +48,7 @@ contains
     type(rsp_tasksitem),intent(inout) :: tasksitem
 
     tasksitem%doResponse = .false.
+    tasksitem%doDipole = .false.
     tasksitem%doGrad = .false.
 #ifdef MOD_UNRELEASED
     tasksitem%doNumHess = .false.

@@ -62,15 +62,16 @@ contains
     !create config struct to be passed to rsp_contribs / rsp_equations
     !    molcfg = rsp_molcfg(0E0_realk*S,ls%setting%MOLECULE(1)%p%Natoms, &
     !         & config%decomp%lupri,config%decomp%luerr, &
-    !         & ls%setting,config%decomp,config%response%rspsolverinput)
-    call init_rsp_molcfg(molcfg,S,ls%setting%MOLECULE(1)%p%Natoms, &
-         & config%decomp%lupri,config%decomp%luerr, &
-         & ls%setting,config%decomp,config%response%rspsolverinput)
+    !         & ls%setting,config%decomp,config%response%rspsolverinput)    
+    IF(config%response%tasks%doDipole.OR.config%response%tasks%doResponse)THEN
+       call init_rsp_molcfg(molcfg,S,ls%setting%MOLECULE(1)%p%Natoms, &
+            & config%decomp%lupri,config%decomp%luerr, &
+            & ls%setting,config%decomp,config%response%rspsolverinput)
+    ENDIF
 
-    ! Kasper K, we ALWAYS calculate the permanent electric dipole for LSDALTON -
-    ! also if no response properties have been requested.
-    call Get_dipole_moment(molcfg,F,D,S,.true.,DipoleMoment)
-
+    IF(config%response%tasks%doDipole)THEN
+       call Get_dipole_moment(molcfg,F,D,S,.true.,DipoleMoment)
+    ENDIF
 
     if(config%response%tasks%doResponse)Then
        !ajt This call generates Cmo/orbe in rsp_util, which rsp_solver needs
