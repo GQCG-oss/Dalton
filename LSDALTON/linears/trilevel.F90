@@ -49,33 +49,32 @@ contains
 !> \param F full Fock matrix 
 !> \param S full Overlap matrix 
 !> \param nbast full dimensions 
-subroutine trilevel_diag_per_ang(ang,basis_size,bCMO,F,S,nbast)
+subroutine trilevel_diag_per_ang(ang,basis_size,bCMO,F,S,nbast,nb)
 implicit none
-
-integer, intent(in)     :: ang, basis_size(:), nbast
+integer, intent(in)     :: ang, nbast,nb
+integer, intent(in)     :: basis_size(:)
 real(realk), intent(in) :: F(nbast,nbast), S(nbast,nbast)
-real(realk),target      :: bCMO( basis_size(ang+1), basis_size(ang+1))
+real(realk),target      :: bCMO(nb,nb)
 !
 real(realk), pointer    :: bF(:,:), bS(:,:), eig(:), wrk(:)
-integer                 :: i, j, k, istart, info, nb, lwrk,itype
+integer                 :: i, j, k, istart, info, lwrk,itype
 integer,     pointer    :: indexlist(:) 
 #ifdef VAR_LSESSL
-integer :: ifail(basis_size(ang+1)),iwrk(5*basis_size(ang+1)),nfound
+integer :: ifail(nb),iwrk(5*nb),nfound
 real(realk) :: no_ref,tol
-real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
+real(realk) :: Z(nb,nb)
 #endif
  
  info = 0
- nb =  basis_size(ang+1)
  itype=1
  call trilevel_indexlist(ang,basis_size,indexlist)
 
 !create subblock matrix
  call mem_alloc(bS,nb,nb)
- bF => bCMO
+ call mem_alloc(bF,nb,nb)
 
- do i=1, nb
-  do j=1, nb
+ do j=1, nb
+  do i=1, nb
        bF(i,j)=F(indexlist(i),indexlist(j))
        bS(i,j)=S(indexlist(i),indexlist(j))
   enddo
@@ -115,6 +114,7 @@ real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
 
   call mem_dealloc(eig)
   call mem_dealloc(wrk)
+  bCMO = bF
  else
   bCMO(1,1)=1E0_realk
  endif
@@ -122,6 +122,7 @@ real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
 !cleanup
 call mem_dealloc(indexlist)
 call mem_dealloc(bS)
+call mem_dealloc(bF)
 
 end subroutine trilevel_diag_per_ang
 
@@ -333,7 +334,7 @@ integer, pointer       ::  perm(:), iperm(:), basis_size(:)
 
      call mem_alloc(bCMO,nb,nb)
      !diagonal angular block => bCMO
-     call trilevel_diag_per_ang(ang,basis_size,bCMO,F%elms,S%elms,nbast)
+     call trilevel_diag_per_ang(ang,basis_size,bCMO,F%elms,S%elms,nbast,nb)
      !set occupation numbers based on element table in ecdata
      call trilevel_set_occ(occ(ipos:nbast),ang,BASIS%REGULAR%ATOMTYPE(itype)%Charge)
      !Build full MO coefficient matrix from the bCMO blocks
@@ -606,8 +607,8 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
 
    call mem_alloc(bCMO,nb,nb)
 
-   do i=1, nb
-    do j=1, nb
+   do j=1, nb
+    do i=1, nb
        bCMO(i,j)=CMO(indexlist(i),indexlist(j))
     enddo
    enddo
