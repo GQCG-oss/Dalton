@@ -106,6 +106,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/abacus/abaort.F
     DALTON/abacus/abapcm.F
     DALTON/abacus/abaptr.F
+    DALTON/abacus/abaqfit.F
     DALTON/abacus/abaqm3.F
     DALTON/abacus/abaqmmm.F
     DALTON/abacus/abaqpg.F
