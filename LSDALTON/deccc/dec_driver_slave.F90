@@ -552,7 +552,7 @@ contains
                       & EstAtomicFragments(atomA), EstAtomicFragments(atomB), &
                       & natoms,PairFragment,grad)
 
-                   write(*, '(1X,a,i4,ai6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%lg_mynum, &
+                   write(*, '(1X,a,i4,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%lg_mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&
                       &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
                       &' #b',PairFragment%nbasis,' pair   estimate: ', atomA,atomB
