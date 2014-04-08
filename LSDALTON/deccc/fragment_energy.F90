@@ -287,6 +287,9 @@ contains
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
 
+    times_ccsd => null()
+    times_pt   => null()
+
     ! type(matrix) :: Dmat
     ! real(realk),pointer :: dens(:,:)
 
@@ -907,6 +910,9 @@ contains
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
     real(realk),pointer :: times_ccsd(:), times_pt(:)
+
+    times_ccsd => null()
+    times_pt   => null()
 
     !type(matrix) :: Dmat
     !real(realk),pointer :: dens(:,:)
@@ -2019,7 +2025,7 @@ contains
      real(realk),pointer :: OccContribs(:),VirtContribs(:)    
      real(realk),pointer :: times_fragopt(:)
 
-
+     times_fragopt => null()
      call dec_fragment_time_init(times_fragopt)
 
 

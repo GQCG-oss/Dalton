@@ -323,6 +323,7 @@ contains
     master = 0
     fragenergy=0.0_realk
     only_update=.true.
+    slave_times => null() 
 
     call LSTIMER('START',t1cpuacc,t1wallacc,DECinfo%output)
 
@@ -494,7 +495,6 @@ contains
           end if
 
 
-          
           call init_slave_timers(slave_times,infpar%lg_comm)
 
           ! RUN FRAGMENT CALCULATION
@@ -637,6 +637,7 @@ contains
                & job, singlejob%LMtime(1)
 
           call mem_dealloc(slave_times)
+          slave_times => null() 
 
 
        end if DoJob
