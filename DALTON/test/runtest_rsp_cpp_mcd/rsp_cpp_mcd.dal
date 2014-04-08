@@ -1,0 +1,22 @@
+**DALTON INPUT
+.RUN RESPONSE                                     
+.DIRECT                                           
+**INTEGRALS                                       
+.DIPLEN                                           
+.ANGMOM                                           
+**WAVE FUNCTION INPUT                             
+.DFT                                              
+ CAMB3LYP                                         
+**RESPONSE INPUT                                  
+*ABSORP                                           
+.MCD                                              
+.BFREQ                                            
+ 2                                                 
+ 0.505 0.51                                             
+.DAMPING                                          
+ 0.004556                                         
+.MAXRM                                            
+ 1000                                             
+.THCLR                                            
+ 1.0D-5
+**END OF DALTON INPUT

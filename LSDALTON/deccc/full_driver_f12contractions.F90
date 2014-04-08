@@ -55,7 +55,7 @@ contains
     real(realk) :: tmp
 
     ! Setting Ciajb = 0 
-    !Ciajb = 0.0E0_realk
+    ! Ciajb = 0.0E0_realk
 
     do j=1,nocc
        do i=1,nocc
@@ -83,7 +83,7 @@ contains
     real(realk) :: tmp
 
     ! Setting Ciajb = 0
-    !Ciajb = 0.0E0_realk
+    ! Ciajb = 0.0E0_realk
 
     do j=1,nocc
        do i=1,nocc
@@ -185,6 +185,37 @@ contains
        enddo
     enddo
   end subroutine mp2f12_Vijij
+
+  !> \brief Vijij term1 contribution for MP2-f12
+  !> \author Yang M. Wang
+  !> \date March 2013
+  subroutine mp2f12_Vijij_term5(Vijij,Ciajb,Taibj,nocc,nvirt)
+   implicit none
+    real(realk),intent(INOUT) :: Vijij(nocc,nocc)
+    real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,a,b
+    real(realk) :: tmp
+
+    ! Setting Ciajb = 0 
+    ! Ciajb = 0.0E0_realk
+
+    Vijij = 0.0E0_realk
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp = tmp + Ciajb(i,a,j,b)*Taibj(a,i,b,j)
+             enddo
+          enddo
+          Vijij(i,j) = Vijij(i,j) + tmp
+       enddo
+    enddo
+  end subroutine mp2f12_Vijij_term5
 
   !> \brief Vijij term1 contribution for MP2-f12
   !> \author Yang M. Wang
@@ -316,6 +347,35 @@ contains
        enddo
     enddo
   end subroutine mp2f12_Vjiij
+
+  !> \brief Vijij term1 contribution for MP2-f12
+  !> \author Yang M. Wang
+  !> \date March 2013
+  subroutine mp2f12_Vjiij_term5(Vjiij,Ciajb,Taibj,nocc,nvirt)
+    implicit none
+    real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
+    real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,a,b
+    real(realk) :: tmp
+
+    ! Setting Ciajb = 0
+    Vjiij = 0.0E0_realk
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp = tmp + Ciajb(j,a,i,b)*Taibj(a,i,b,j)
+             enddo
+          enddo
+          Vjiij(i,j) = Vjiij(i,j) + tmp
+       enddo
+    enddo
+  end subroutine mp2f12_Vjiij_term5
 
   !> \brief Vjiij term1 contribution for MP2-f12
   !> \author Yang M. Wang
@@ -1682,20 +1742,37 @@ contains
     integer, intent(IN)        :: nocc,nvirt,ncabs
     !
     integer :: i,j,a,b,c
-
-    Ciajb = 0E0_realk
-    DO c=1,ncabs
-       DO b=1,nvirt
-          DO j=1,nocc
-             DO a=1,nvirt
-                DO i=1,nocc
-                   Ciajb(i,a,j,b) = Ciajb(i,a,j,b) + Givic(i,a,j,c)*Fvc(b,c) &
-                        &                                  + Givic(j,b,i,c)*Fvc(a,c)
+    real(realk) :: tmp,tmp2
+    
+    tmp = 0.0E0_realk
+    Ciajb = 0.0E0_realk
+ 
+    DO i=1,nocc
+       DO j=1,nocc
+          DO a=1,nvirt
+             DO b=1,nvirt
+!                tmp = 0.0E0_realk
+                DO c=1,ncabs
+!                   tmp = tmp + Ciajb(i,a,j,b) + Givic(i,a,j,c)*Fvc(b,c)+Givic(j,b,i,c)*Fvc(a,c)
+                   Ciajb(i,a,j,b) = Ciajb(i,a,j,b) + Givic(i,a,j,c)*Fvc(b,c)+Givic(j,b,i,c)*Fvc(a,c)
                 ENDDO
+!                print *, "i j a b Cijab", i,j,a,b, tmp               
              ENDDO
           ENDDO
        ENDDO
     ENDDO
+
+    print *, '----------------------------------------'
+    print *, '            Fvc matrix - Terms            '
+    print *, '----------------------------------------'
+    do a=1, nvirt
+       do c=1, ncabs    
+          if(abs(Fvc(a,c)) > 1.0E-10 ) then
+             print *,'a,c Fvc', a,c, Fvc(a,c)
+          endif
+       end do
+    end do
+
   end subroutine mp2f12_Ciajb
 
 

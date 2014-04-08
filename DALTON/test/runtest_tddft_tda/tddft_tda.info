@@ -1,0 +1,5 @@
+   tddft_tda
+   ---------
+   Molecule:         H2O
+   Wave Function:    Combined functional (Turbomole version of B-P86) with TDA
+   Test Purpose:     Tamm-Dancoff approximation to TDDFT calculation of excitation energies

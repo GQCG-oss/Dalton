@@ -1,0 +1,115 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# Basis set
+CRIT1=`$GREP "C * 1 * 6\.0000 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 4 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 5 * 10\.0000 * 54 * 34" $log | wc -l`
+CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=4
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 15" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * 1\.185081007[0-9]" $log | wc -l`
+CRIT6=`$GREP "5 * y * 1\.185081007[0-9]" $log | wc -l`
+CRIT7=`$GREP "6 * z * 1\.185081007[0-9]" $log | wc -l`
+CRIT8=`$GREP "7 * x * \-1\.185081007[0-9]" $log | wc -l`
+CRIT9=`$GREP "8 * y * \-1\.185081007[0-9]" $log | wc -l`
+CRIT10=`$GREP "9 * z *   1\.185081007[0-9]" $log | wc -l`
+CRIT11=`$GREP "10 * x *   1\.185081007[0-9]" $log | wc -l`
+CRIT12=`$GREP "11 * y * \-1\.185081007[0-9]" $log | wc -l`
+CRIT13=`$GREP "12 * z * \-1\.185081007[0-9]" $log | wc -l`
+CRIT14=`$GREP "13 * x * \-1\.185081007[0-9]" $log | wc -l`
+CRIT15=`$GREP "14 * y *   1\.185081007[0-9]" $log | wc -l`
+CRIT16=`$GREP "15 * z * \-1\.185081007[0-9]" $log | wc -l`
+TEST[2]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+                $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
+                $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16`
+CTRL[2]=16
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Symmetry
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 3 * 4 * 4 * 4" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry\: * 10 * 8 * 8 * 8" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="SYMMETRY NOT CORRECT"
+
+# Energies
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-40\.198654135" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy *\: * \-40\.36262743" $log | wc -l`
+TEST[4]=`expr   $CRIT1 \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="ENERGIES NOT CORRECT"
+
+# Properties setup
+CRIT1=`$GREP "\"New\" .*integral transformation used" $log | wc -l`
+CRIT2=`$GREP "SOPPA \: * Second Order Polarization Propagator Approximation" $log | wc -l`
+CRIT3=`$GREP "Nuclear spin\-spin coupling constants" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[5]=3
+ERROR[5]="CALCULATION OF PROPERTIES NOT SET UP CORRECTLY"
+
+# H-C coupling
+CRIT1=`$GREP "Isotropic coupling * \: * 121\.[456]... Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-4\.(48|49|50|51).. Hz" $log | wc -l`
+CRIT3=`$GREP "Asymmetry * \: * \-*0*\.00" $log | wc -l`
+CRIT4=`$GREP "S parameter * \: * 4\.(48|49|50|51).. Hz" $log | wc -l`
+CRIT5=`$GREP "A parameter * \: * \-*0*\.0[01].. Hz" $log | wc -l`
+CRIT6=`$GREP "Isotropic DSO contribution\: * 0*\.303. Hz" $log | wc -l`
+CRIT7=`$GREP "Isotropic PSO contribution\: * 1\.0[67].. Hz" $log | wc -l`
+CRIT8=`$GREP "Isotropic SD contribution \: * 0*\.0[45].. Hz" $log | wc -l`
+CRIT9=`$GREP "Isotropic FC contribution \: * 120\.[01]... Hz" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[6]=36
+ERROR[6]="C-H SPIN-SPIN COUPLING NOT CORRECT"
+
+# H-H coupling
+CRIT1=`$GREP "Isotropic coupling * \: * \-13\.6... Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-15\.6... Hz" $log | wc -l`
+CRIT3=`$GREP "Asymmetry * \: * \-0*\.6" $log | wc -l`
+CRIT4=`$GREP "S parameter * \: * 16\.[56]... Hz" $log | wc -l`
+CRIT5=`$GREP "A parameter * \: * 2\.95.. Hz" $log | wc -l`
+CRIT6=`$GREP "Isotropic DSO contribution\: * \-3\.45.. Hz" $log | wc -l`
+CRIT7=`$GREP "Isotropic PSO contribution\: * 2\.59.. Hz" $log | wc -l`
+CRIT8=`$GREP "Isotropic SD contribution \: * 0*\.3[34].. Hz" $log | wc -l`
+CRIT9=`$GREP "Isotropic FC contribution \: * \-13\.(13|12|11|10|09).. Hz" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[7]=54
+ERROR[7]="H-H SPIN-SPIN COUPLING NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi

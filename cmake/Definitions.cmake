@@ -16,6 +16,11 @@ add_definitions(-DVAR_MFDS)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 add_definitions(-DIMPLICIT_NONE)
 
+if(ENABLE_TITANBUILD)
+   add_definitions(-DVAR_HAVE_MPI3)
+   add_definitions(-DVAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN)
+endif()
+
 add_definitions(-DBINARY_INFO_AVAILABLE)
 
 if(cmake_build_type_tolower STREQUAL "debug")

@@ -1,0 +1,5 @@
+   dftmm_9
+   -----------
+   Molecule:         CH2O(DFT)/2 H2O(MM)
+   Wave Function:    B3LYP / STO-3G  
+   Test Purpose:     QR-DFT/MM using direct MM integral option

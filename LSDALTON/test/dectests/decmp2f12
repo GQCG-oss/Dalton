@@ -58,7 +58,6 @@ ATOMS
 .SimulateFull
 .MP2
 .F12debug
-.CANONICAL
 .MEMORY
 2
 *END OF INPUT
@@ -96,19 +95,19 @@ CTRL[2]=1
 ERROR[2]="MP2 correlation energy is not correct"
 
 # F12 CONTRIBUTION TO CORRELATION ENERGY
-CRIT1=`$GREP "F12 CORRECTION TO ENERGY : * \-0.3248716" $log | wc -l`
+CRIT1=`$GREP "F12 CORRECTION TO ENERGY : * \-0.323156" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
 ERROR[3]="F12 correction energy is not correct"
 
 # MP2-F12 CORRELATION ENERGY
-CRIT1=`$GREP "MP2-F12 CORRELATION ENERGY : *\-0.453722" $log | wc -l`
+CRIT1=`$GREP "MP2-F12 CORRELATION ENERGY : *\-0.452007" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="MP2-F12 corrected correlation energy is not correct"
 
 # TOTAL MP2-F12 CORRELATION ENERGY
-CRIT1=`$GREP "E: Total MP2-F12 energy: *\-76.437697" $log | wc -l`
+CRIT1=`$GREP "E: Total MP2-F12 energy: *\-76.435981" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="MP2-F12 corrected correlation energy is not correct"

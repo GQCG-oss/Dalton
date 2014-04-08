@@ -1,0 +1,7 @@
+
+   dft_optimize_nosym
+   ------------------
+   Molecule:         H2O
+   Wave Function:    DFT B3LYP / 6-31G*
+   Test Purpose:     DFT B3LYP geometry optimization w/o symmetry
+

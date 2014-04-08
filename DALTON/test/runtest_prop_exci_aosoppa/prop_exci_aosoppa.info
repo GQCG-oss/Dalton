@@ -1,0 +1,5 @@
+   prop_exci_aosoppa
+   -----------------
+   Molecule:         H2O
+   Wave Function:    MP2 (AO-SOPPA)
+   Test Purpose:     Calculation of excitation energies through ABACUS

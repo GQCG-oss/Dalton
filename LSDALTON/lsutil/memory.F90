@@ -17,16 +17,7 @@ use tensor_type_def_module
 use lattice_type
 #endif
 #ifdef VAR_MPI
-#ifdef USE_MPI_MOD_F90
-#ifdef VAR_HAVE_MPI3
-!use lsmpi_f08
-use mpi
-#else
-use mpi
-#endif
-#else
-include 'mpif.h'
-#endif
+use lsmpi_module
 #endif
 private
 public Set_PrintSCFmemory

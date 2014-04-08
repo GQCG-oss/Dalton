@@ -1,5 +1,6 @@
 module lsmpi_op
   use precision
+  use lstiming
   use molecule_typetype, only: molecularOrbitalInfo
   use io, only: io_init
   use typedeftype, only: DALTONINPUT,LSITEM,lssetting,reducedScreeningInfo,&
@@ -30,12 +31,9 @@ module lsmpi_op
        & lsmpi_print, lsmpi_default_mpi_group, lsmpi_finalize, lsmpi_barrier,&
        & LSMPIREDUCTION, LSMPIREDUCTIONmaster
   use infpar_module
+  use lsmpi_module
 
-#ifdef USE_MPI_MOD_F90
-  use mpi
-#else
-  include 'mpif.h'
-#endif 
+
 
 #endif
   !*****************************************
@@ -1784,7 +1782,115 @@ logical                                  :: slave
 IF (SLAVE) call init_reduced_screen_info(redCS)
 
 END SUBROUTINE mpicopy_reduced_screen_info
+
+  subroutine init_slave_timers(times,comm)
+     implicit none
+     integer(kind=ls_mpik),intent(in) :: comm
+     real(realk), pointer,intent(inout) :: times(:)
+     integer(kind=ls_mpik) :: nnod,me
+
+     call time_start_phase(PHASE_WORK)
+     if(associated(times)) call lsquit("ERROR(init_slave_timers):pointer already associtated",-1)
+
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+
+     if(me==0_ls_mpik) then
+        call time_start_phase(PHASE_COMM)
+        call ls_mpibcast(INITSLAVETIME,me,comm)
+        call time_start_phase(PHASE_WORK)
+     endif
+
+     call mem_alloc(times,nphases*nnod)
+     times = 0.0E0_realk
+     call time_start_phase(PHASE_WORK, &
+        &swinit = times(me*nphases+PHASE_INIT_IDX) ,&
+        &swwork = times(me*nphases+PHASE_WORK_IDX) ,&
+        &swcomm = times(me*nphases+PHASE_COMM_IDX) ,&
+        &swidle = times(me*nphases+PHASE_IDLE_IDX) )
+
+
+     call time_start_phase(PHASE_COMM)
+     call lsmpi_reduction(times,nphases*nnod,infpar%master,comm)
+     call time_start_phase(PHASE_WORK)
+
+
+  end subroutine init_slave_timers
+
+  subroutine get_slave_timers(times,comm)
+     implicit none
+     integer(kind=ls_mpik),intent(in) :: comm
+     real(realk), pointer,intent(inout) :: times(:)
+     integer(kind=ls_mpik) :: nnod,me
+
+     call time_start_phase(PHASE_WORK)
+     if(.not.associated(times)) call lsquit("ERROR(get_slave_timers):pointer not associtated",-1)
+
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+
+     if(me==infpar%master) then
+        call time_start_phase(PHASE_COMM)
+        call ls_mpibcast(GETSLAVETIME,me,comm)
+        call time_start_phase(PHASE_WORK)
+        times(nphases+1:) = -1.E0_realk * times(nphases+1:)
+     endif
+
+     call time_start_phase(PHASE_WORK, &
+        &dwinit = times(me*nphases+PHASE_INIT_IDX) ,&
+        &dwwork = times(me*nphases+PHASE_WORK_IDX) ,&
+        &dwcomm = times(me*nphases+PHASE_COMM_IDX) ,&
+        &dwidle = times(me*nphases+PHASE_IDLE_IDX) )
+
+
+     call time_start_phase(PHASE_COMM)
+     call lsmpi_reduction(times,nphases*nnod,infpar%master,comm)
+     call time_start_phase(PHASE_WORK)
+
+
+  end subroutine get_slave_timers
+
 #endif
 
 end module lsmpi_op
 
+#ifdef VAR_MPI
+subroutine init_slave_timers_slave(comm)
+   use precision, only: realk
+   use lstiming
+   use memory_handling, only: mem_dealloc
+   use lsmpi_op, only: init_slave_timers
+   implicit none
+   integer(kind=ls_mpik) :: comm,nnod
+   real(realk), pointer :: times(:)
+
+   times => null()
+
+   call init_slave_timers(times,comm)
+
+   call mem_dealloc(times)
+
+end subroutine init_slave_timers_slave
+
+subroutine get_slave_timers_slave(comm)
+   use precision, only: realk, ls_mpik
+   use lstiming, only: nphases
+   use lsmpi_type, only: get_size_for_comm
+   use memory_handling, only: mem_alloc,mem_dealloc
+   use lsmpi_op, only: get_slave_timers
+   implicit none
+   integer(kind=ls_mpik) :: comm,nnod
+   real(realk), pointer :: times(:)
+
+   call get_size_for_comm(comm, nnod)
+   call mem_alloc(times,nphases*nnod) 
+   times = 0.0E0_realk
+
+   call get_slave_timers(times,comm)
+
+   call mem_dealloc(times)
+
+end subroutine get_slave_timers_slave
+#endif

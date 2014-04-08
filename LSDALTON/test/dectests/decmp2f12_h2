@@ -95,19 +95,19 @@ CTRL[2]=1
 ERROR[2]="MP2 correlation energy is not correct"
 
 # F12 CONTRIBUTION TO CORRELATION ENERGY
-CRIT1=`$GREP "F12 CORRECTION TO ENERGY : * \-0.012347" $log | wc -l`
+CRIT1=`$GREP "F12 CORRECTION TO ENERGY : * \-0.012393" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
 ERROR[3]="F12 correction energy is not correct"
 
 # MP2-F12 CORRELATION ENERGY
-CRIT1=`$GREP "MP2-F12 CORRELATION ENERGY : *\-0.042407" $log | wc -l`
+CRIT1=`$GREP "MP2-F12 CORRELATION ENERGY : *\-0.042453" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="MP2-F12 corrected correlation energy is not correct"
 
 # TOTAL MP2-F12 CORRELATION ENERGY
-CRIT1=`$GREP "E: Total MP2-F12 energy: *\-1.037257" $log | wc -l`
+CRIT1=`$GREP "E: Total MP2-F12 energy: *\-1.037303" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="MP2-F12 corrected correlation energy is not correct"

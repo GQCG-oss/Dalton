@@ -1,0 +1,5 @@
+   energy_symm
+   -----------
+   Molecule:         H2O
+   Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
+   Test Purpose:     Check energy calculation with symmetry

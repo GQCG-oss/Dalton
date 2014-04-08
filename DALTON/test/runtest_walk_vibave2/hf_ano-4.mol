@@ -1,0 +1,8 @@
+ATOMBASIS
+Vibrational averaging of shieldings
+
+Atomtypes=2 Nosymmetry        Integrals=0.10D-14
+Charge=1.0 Atoms=1 Basis=ano-4 3 2 0
+H          0.0000000000            0.0000000000            1.7497928937
+Basis=ano-4 4 3 2 0 Charge=9.0 Atoms=1
+F          0.0000000000            0.0000000000            0.0241892414
