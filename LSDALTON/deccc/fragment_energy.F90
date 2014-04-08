@@ -2066,7 +2066,8 @@ contains
         AtomicFragment%EvirtFOP=0E0_realk
         AtomicFragment%energies=0E0_realk
         call dec_fragment_time_get(times_fragopt)
-        call mem_dealloc(times_fragopt)
+        call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
+           &AtomicFragment%ccmodel,'Fragment optmization')
         return
      end if
 
@@ -2077,7 +2078,8 @@ contains
            &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
            &MyMolecule,mylsitem,freebasisinfo,t1full)
         call dec_fragment_time_get(times_fragopt)
-        call mem_dealloc(times_fragopt)
+        call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
+           &AtomicFragment%ccmodel,'Fragment optmization')
         return
      end if
 
@@ -2290,8 +2292,6 @@ contains
      call set_energies_decfrag_structure_fragopt(AtomicFragment)
 
      call dec_fragment_time_get(times_fragopt)
-     call mem_dealloc(times_fragopt)
-
      call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,AtomicFragment%ccmodel,'Fragment optmization')
 
 
