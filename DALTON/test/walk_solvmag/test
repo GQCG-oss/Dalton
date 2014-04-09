@@ -31,24 +31,39 @@ f.add(from_string = 'Molecular geometry (au)',
       abs_tolerance = 1.0e-6)
 
 # Magnetizabilities 
-f.add(from_string = 'ABACUS - MAGNETIZABILITIES',
-      to_string = 'ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
+#f.add(from_string = 'ABACUS - MAGNETIZABILITIES',
+#      to_string = 'ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
 #      mask = [2,3,4],
-      abs_tolerance = 1.0e-4)
+#      abs_tolerance = 1.0e-4)
 f.add(from_re = 'magnetizability tensor \(au\)',
       num_lines = 9,
-      abs_tolerance = 1.0e-10)
+      abs_tolerance = 1.0e-6)
 
 
 # g-tensors
-f.add(from_string = 'ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
-      to_string = 'ABACUS - CHEMICAL SHIELDINGS',
-      abs_tolerance = 2.0e-6)
+#f.add(from_string = 'ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
+#      to_string = 'ABACUS - CHEMICAL SHIELDINGS',
+#      abs_tolerance = 2.0e-6)
+f.add(from_re = 'Molecular rotational g\-factor',
+      num_lines = 9,
+      abs_tolerance = 1.0e-6)
 
 # Chemical shielding
-f.add(from_string = 'ABACUS - CHEMICAL SHIELDINGS',
-      to_string = 'Interatomic separations',
+f.add(from_re = 'Shielding tensors in symmetry coordinates \(ppm\)',
+      num_lines = 30,
+      abs_tolerance = 2.0e-5)
+
+f.add(from_re = 'Chemical shielding for ',
+      num_lines = 45,
       abs_tolerance = 1.0e-3)
+
+f.add(from_re = 'Summary of chemical shieldings',
+      num_lines = 14,
+      abs_tolerance = 1.0e-3)
+
+#f.add(from_string = 'ABACUS - CHEMICAL SHIELDINGS',
+#      to_string = 'Interatomic separations',
+#      abs_tolerance = 1.0e-3)
 
 test.run(['walk_solvmag.dal'], ['ch3f_6-311ppG.mol'], {'out': f})
 
