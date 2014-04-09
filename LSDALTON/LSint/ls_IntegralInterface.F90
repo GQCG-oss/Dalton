@@ -59,7 +59,8 @@ MODULE ls_Integral_Interface
   use SphCart_Matrices, only: spherical_transformation
   use Thermite_OD, only: getTotalGeoComp
 #if VAR_MPI
-  use lsmpi_type, only:LSGETINT,LSJENGIN,LSLINK, ls_mpibcast, lsmpi_barrier, lsmpi_reduction
+  use lsmpi_type, only:LSGETINT,LSJENGIN,LSLINK, ls_mpibcast, lsmpi_barrier, &
+       & lsmpi_reduction, get_MPI_COMM_SELF
   use lsmpi_op, only: LSTASK, LS_TASK_MANAGER, LSMPI_TASK_LIST,&
   & lsmpi_lstensor_reduction, lsmpi_probe_and_irecv_add_lstmemrealkbuf,&
   & lsmpi_isend_lstmemrealkbuf, lsmpi_blocking_recv_add_lstmemrealkbuf
@@ -337,6 +338,12 @@ Logical                    :: saveCSscreen,savePSscreen,CS_screen,PS_screen
 integer                    :: ndim_full(5)
 real(realk)                :: t(8),t1,t2,t3,t4
 real(realk)                :: part(2)
+Logical                    :: SMasterWakeSlaves
+integer(kind=ls_mpik)      :: Snode,SNumnodes,SComm
+IF(.NOT.setting%scheme%doMPI)THEN
+ call deactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
+
 CALL LS_GETTIM(t1,t2)
 t = 0E0_realk
 #endif
@@ -378,7 +385,7 @@ PS_screen = setting%scheme%PS_SCREEN
 ! ***************************************************************************
 ! *                                MPI Specific                             *
 ! ***************************************************************************
-IF (setting%node.EQ.infpar%master) THEN
+IF (setting%scheme%MasterWakeSlaves.AND.setting%node.EQ.infpar%master) THEN
    !if gradient test that all molecules are same otherwise quit. 
    !   Brano: Spawn here!
    call ls_mpibcast(LSGETINT,infpar%master,setting%comm)
@@ -560,9 +567,48 @@ CALL ls_free_lstensors(dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created)
 if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
 
 #ifdef VAR_MPI
+IF(.NOT.setting%scheme%doMPI)THEN
+   call ReactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
+
 ENDIF
 #endif
 END SUBROUTINE ls_getIntegrals
+
+#ifdef VAR_MPI
+subroutine DeactivateIntegralMPI(Setting,Savenode,SaveNumnodes,SaveComm,&
+     & SaveMasterWakeSlaves)
+  implicit none
+  Type(LSSETTING),intent(inout)       :: SETTING
+  Logical,intent(inout)               :: SaveMasterWakeSlaves
+  integer(kind=ls_mpik),intent(inout) :: Savenode,SaveNumnodes,SaveComm   
+  !this means that this subroutine (ls_getIntegrals) have been
+  !call from a slave and it wants to calculate the full contribution
+  SaveMasterWakeSlaves = setting%scheme%MasterWakeSlaves
+  Savenode = setting%node
+  SaveNumnodes = setting%numnodes
+  SaveComm = setting%comm
+
+  setting%scheme%MasterWakeSlaves = .FALSE.
+  setting%node = infpar%master
+  setting%numnodes = 1_ls_mpik
+  !MPI_COMM_SELF is the local comm which only contains the rank itself
+  call GET_MPI_COMM_SELF(setting%comm) 
+END subroutine DeactivateIntegralMPI
+
+subroutine ReactivateIntegralMPI(Setting,Savenode,SaveNumnodes,SaveComm,&
+     & SaveMasterWakeSlaves)
+  implicit none
+  Type(LSSETTING),intent(inout)    :: SETTING
+  Logical,intent(in)               :: SaveMasterWakeSlaves
+  integer(kind=ls_mpik),intent(in) :: Savenode,SaveNumnodes,SaveComm   
+  !Revert Back
+   setting%scheme%MasterWakeSlaves = SaveMasterWakeSlaves
+   setting%node = Savenode
+   setting%numnodes = SaveNumnodes
+   setting%comm = SaveComm
+END subroutine ReactivateIntegralMPI
+#endif
 
 !> \brief Generalized routine to get explicit integrals for given operator Oper 
 !> \author S. Reine
@@ -935,6 +981,13 @@ type(lstensor),pointer :: gabCS_rhs_full,gabCS_lhs_full
 integer :: iAO,natoms,numnodes
 logical :: rhsCS_created,doscreen,UseMPI
 logical :: lhs_created,rhs_created,lhsCS_created,PermuteResultTensor
+#ifdef VAR_MPI
+Logical                    :: SMasterWakeSlaves
+integer(kind=ls_mpik)      :: Snode,SNumnodes,SComm
+IF(.NOT.setting%scheme%doMPI)THEN
+ call deactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
+#endif
 #ifdef VAR_SCALAPACK
 IF(matrix_type.EQ.mtype_scalapack)THEN
    IF (setting%node.EQ.infpar%master) THEN
@@ -956,7 +1009,7 @@ CALL ls_create_lstensor_full(setting,'AC_TYPE',AO1,AO3,AO2,AO4,Oper,Spec,&
 IF (setting%node.EQ.infpar%master) THEN
    natoms = MAX(setting%molecule(1)%p%nAtoms,setting%molecule(2)%p%nAtoms,&
         &setting%molecule(3)%p%nAtoms,setting%molecule(4)%p%nAtoms)
-   IF(natoms.GT.1.AND.setting%scheme%LINK)THEN
+   IF(setting%scheme%MasterWakeSlaves.AND.natoms.GT.1.AND.setting%scheme%LINK)THEN
       call ls_mpibcast(LSLINK,infpar%master,setting%comm)
       call lsmpi_link_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
    ELSE
@@ -1017,6 +1070,12 @@ ELSE
    CALL ls_free_lstensors(dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created)
    if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
 ENDIF
+
+#ifdef VAR_MPI
+IF(.NOT.setting%scheme%doMPI)THEN
+ call ReactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
+#endif
 END SUBROUTINE ls_get_exchange_mat
 
 !!$!> \brief Calculate the exchange matrix
@@ -1745,6 +1804,11 @@ Logical                    :: saveCSscreen,savePSscreen,CS_screen,PS_screen
 integer                    :: ndim_full(5),iatom,jatom,ilsao,iatom2,jatom2,node
 real(realk)                :: t(8),t1,t2,t3,t4
 real(realk)                :: part(2)
+Logical                    :: SMasterWakeSlaves
+integer(kind=ls_mpik)      :: Snode,SNumnodes,SComm
+IF(.NOT.setting%scheme%doMPI)THEN
+   call deactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
 #endif
 !type(matrix)               :: tmp
 !CALL LSTIMER('START',TS,TE,6)
@@ -1781,7 +1845,7 @@ PS_screen = setting%scheme%PS_SCREEN
 ! ***************************************************************************
 ! *                                MPI Specific                             *
 ! ***************************************************************************
-IF (setting%node.EQ.infpar%master) THEN
+IF (setting%scheme%MasterWakeSlaves.AND.setting%node.EQ.infpar%master) THEN
    call ls_mpibcast(LSJENGIN,infpar%master,setting%comm)
    call lsmpi_jengine_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
 ENDIF
@@ -1919,6 +1983,11 @@ t(6) = t4 - t2 !Node wall time += task wall time
 ENDIF
 #endif
 ENDIF !memdist_jengine
+#ifdef VAR_MPI
+IF(.NOT.setting%scheme%doMPI)THEN
+   call ReactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
+#endif
 END SUBROUTINE ls_jengine
 
 !> \brief Calculate the coulomb matrix using the jengine method

@@ -1300,6 +1300,8 @@ integer(kind=ls_mpik) :: master
 
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 call LS_MPI_BUFFER(scheme%NOBQBQ,Master)
+call LS_MPI_BUFFER(scheme%doMPI,Master)
+call LS_MPI_BUFFER(scheme%MasterWakeSlaves,Master)
 call LS_MPI_BUFFER(scheme%noOMP,Master)
 call LS_MPI_BUFFER(scheme%CFG_LSDALTON,Master)
 call LS_MPI_BUFFER(scheme%DOPASS,Master)

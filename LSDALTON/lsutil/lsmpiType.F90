@@ -258,6 +258,11 @@ module lsmpi_type
 !$OMP lsmpibufferInt8,lsmpibufferSho,lsmpibufferLog,lsmpibufferCha)
 
 contains
+    SUBROUTINE GET_MPI_COMM_SELF(outputcomm)
+      implicit none
+      integer(kind=ls_mpik),intent(inout) :: OutputComm   
+      OutputComm = MPI_COMM_SELF !Predefined Communicator - the local processor
+    END SUBROUTINE GET_MPI_COMM_SELF
 
     subroutine ls_mpibcast_integer(buffer,master,comm)
       implicit none
