@@ -15,6 +15,9 @@ DALTON
 - aug-cc-pVTZ-lresc basis set added to $BASDIR
 - A Warning is issued when orbitals are deleted due to linear dependencies(before SCF),
   AngPso (a 0th order LRESC diamagentic corr) is not calculated in this case. 
+- Bugfix for parallel calculations and some type of geometry optimizations with ano basis sets
+  (this bug resulted in aborted calculations, not in wrong results)
+
 
 LSDALTON
 --------
