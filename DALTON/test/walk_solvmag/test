@@ -14,51 +14,41 @@ f = Filter()
 f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-10)
 
-# Molecular gradients (Low numbers, so difficult to test)
-#ADJUST
+# Molecular gradients
 f.add(from_string = 'Molecular gradient (au)',
       num_lines    = 9,
-      ignore_below = 1.0e-3,
-      rel_tolerance = 1.0e-4)
+      abs_tolerance = 1.0e-6)
 
-# Molecular hessians (Low numbers, so difficult to test)
-#ADJUST
+# Molecular hessians
 f.add(from_string = 'Molecular Hessian (au)',
       num_lines    = 57,
-      ignore_below = 1.0e-3,
-      rel_tolerance = 1.0e-3)
+      abs_tolerance = 1.0e-5)
 
 
 # Geometry
 f.add(from_string = 'Molecular geometry (au)',
       num_lines    = 9,
-      ignore_below = 1.0e-6,
-      rel_tolerance = 1.0e-7)
+      abs_tolerance = 1.0e-6)
 
 # Magnetizabilities 
-#ADJUST
 f.add(from_string = 'ABACUS - MAGNETIZABILITIES',
       to_string = 'ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
-      ignore_below = 1.0,
-      rel_tolerance = 2.0e-5)
+#      mask = [2,3,4],
+      abs_tolerance = 1.0e-4)
+f.add(from_re = 'magnetizability tensor \(au\)',
+      num_lines = 9,
+      abs_tolerance = 1.0e-10)
+
 
 # g-tensors
-#ADJUST
 f.add(from_string = 'ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
       to_string = 'ABACUS - CHEMICAL SHIELDINGS',
-      ignore_below = 1.0,
-      rel_tolerance = 2.0e-5)
+      abs_tolerance = 2.0e-6)
 
 # Chemical shielding
-#ADJUST
 f.add(from_string = 'ABACUS - CHEMICAL SHIELDINGS',
       to_string = 'Interatomic separations',
-      ignore_below = 1.0,
-      rel_tolerance = 2.0e-5)
-
-
-
-
+      abs_tolerance = 1.0e-3)
 
 test.run(['walk_solvmag.dal'], ['ch3f_6-311ppG.mol'], {'out': f})
 
