@@ -8,7 +8,7 @@ CMake will look in the environment variable MATH_ROOT.
 For instance my .bashrc contains::
 
   source /opt/intel/bin/compilervars.sh intel64
-  export MATH_ROOT='/opt/intel/mkl/'
+  export MATH_ROOT=/opt/intel/mkl
 
 
 Order of math libraries

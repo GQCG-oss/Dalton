@@ -147,7 +147,7 @@ integer :: BasisContmaxsize
 real(realk),allocatable :: TmpArray1(:)
 real(realk),allocatable :: TmpArray2(:)
 INTPRINT=IchorDebugSpec
-call set_ichor_memvar(MaxMemAllocated,MemAllocated)
+call set_ichor_memvar(MaxMemAllocated,MemAllocated,MaxMem)
 allocate(OrderdListA(nTypesA))
 call mem_ichor_alloc(OrderdListA)
 call GenerateOrderdListOfTypes(lupri,nTypesA,AngmomOfTypeA,OrderdListA)
@@ -351,7 +351,13 @@ deallocate(OrderdListB)
 !call output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
 !call output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,6)
 call retrieve_ichor_memvar(MaxMemAllocated,MemAllocated)
-!call stats_ichor_mem(lupri)
+IF(INTPRINT.GT.3)THEN
+   call stats_ichor_mem(lupri)
+ENDIF
+
+IF(MemAllocated.NE.0)THEN
+   call ichorquit('MemoryLeak in IchorGab',lupri)
+ENDIF
 end subroutine IchorGab
 
 subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&

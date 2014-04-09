@@ -1,0 +1,18 @@
+set(PARENT_DEFINITIONS "-DPRG_DALTON")
+set(ExternalProjectCMakeArgs
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+    -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+    )
+add_external(qfitlib)
+if(ENABLE_GEN1INT)
+    add_dependencies(qfitlib gen1int_interface)
+endif()
+set(DALTON_LIBS
+    ${PROJECT_BINARY_DIR}/external/lib/libqfitlib.a
+    ${DALTON_LIBS}
+    )
+

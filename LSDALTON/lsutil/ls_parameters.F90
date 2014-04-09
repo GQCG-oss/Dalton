@@ -58,6 +58,7 @@ MODULE Integralparameters
   integer,parameter :: GeoDerivCoulombSpec = 10
   integer,parameter :: GeoDerivLHSSpec     = 11
   integer,parameter :: GeoDerivRHSSpec     = 12
+
 ! THESE ARE MPI JOB SPECIFIERS 
   integer,parameter :: MATRIXTY                     =  1
   integer,parameter :: LSGETINT                     =  2
@@ -106,6 +107,11 @@ MODULE Integralparameters
   integer,parameter :: CCGETGMO                     = 43
   integer,parameter :: RPAGETRESIDUAL               = 44
   integer,parameter :: MOCCSDDATA                   = 45
+  integer,parameter :: MO_INTEGRAL_SIMPLE           = 46
+  integer,parameter :: DEC_SETTING_TO_SLAVES        = 47
+  integer,parameter :: INITSLAVETIME                = 48
+  integer,parameter :: GETSLAVETIME                 = 49
+
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2

@@ -366,9 +366,10 @@ C ::: Finally the number of atoms are updated. :::
                CALL LINE5R(MLINE(NCI),Q,NONT2,MBSI,IQM,JCO,MXAQN,
      &                    BASIS,ATOMBA,LMULBS,BSNM,
      &                    RADIUS_PCM, ALPHA_PCM)
-               CALL LINE5W(MLINE(NCI),Q,NONT(K),MBSI,BASIS,ATOMBA,
-     &                    LMULBS,BSNM,IQM,JCO,MXAQN,
-     &                    RADIUS_PCM, ALPHA_PCM)
+!              CALL LINE5W(MLINE(NCI),Q,NONT(K),MBSI,BASIS,ATOMBA,
+!    &                    LMULBS,BSNM,IQM,JCO,MXAQN,
+!    &                    RADIUS_PCM, ALPHA_PCM)
+               CALL LINE5_UPD(MLINE(NCI),NONT(K))
             END IF
  510        CONTINUE
             IF (J .EQ. NINT(ATMARR(4,I))) THEN

@@ -1,0 +1,7 @@
+
+   dft_energy_sym
+   --------------
+   Molecule:         Glycine
+   Wave Function:    DFT LDA/OWN
+   Test Purpose:     DFT polarizability calculation
+

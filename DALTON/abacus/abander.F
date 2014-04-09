@@ -2251,9 +2251,10 @@ C
                   CALL LINE5R(MLINE(NCLINE(ICENT1) - 1),Q1,NONT1,MBSI1,
      &                 IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,
      &                 RADIUS_PCM, ALPHA_PCM)
-                  CALL LINE5W(MLINE(NCLINE(ICENT1) - 1),Q1,NAT,MBSI1,
-     &                 BASIS,ATOMBA,LMULBS,BSNM,IQM1,JCO1,MXAQN,
-     &                 RADIUS_PCM, ALPHA_PCM)
+!                 CALL LINE5W(MLINE(NCLINE(ICENT1) - 1),Q1,NAT,MBSI1,
+!    &                 BASIS,ATOMBA,LMULBS,BSNM,IQM1,JCO1,MXAQN,
+!    &                 RADIUS_PCM, ALPHA_PCM)
+                  CALL LINE5_UPD(MLINE(NCLINE(ICENT1) - 1),NAT)
                ELSE
                   WRITE (MLINE(NCLINE(ICENT1)-1)(13:15),'(I3)') NAT
                END IF
@@ -2276,9 +2277,10 @@ C
             CALL LINE5R(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,
      &           IQM1,JCO1,MXAQN,BASIS,ATOMBA,LMULBS,BSNM,
      &           RADIUS_PCM, ALPHA_PCM)
-            CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,
-     &           BASIS,ATOMBA,LMULBS,BSNM,IQM1,JCO1,MXAQN,
-     &           RADIUS_PCM, ALPHA_PCM)
+!           CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,
+!    &           BASIS,ATOMBA,LMULBS,BSNM,IQM1,JCO1,MXAQN,
+!    &           RADIUS_PCM, ALPHA_PCM)
+            CALL LINE5_UPD(MLINE(NCLINE(KCENT1) - 1),NAT)
             BASIS  = .FALSE.
             ATOMBA = .FALSE.
          ELSE

@@ -128,6 +128,8 @@ implicit none
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
+  config%CounterPoiseCorrection = .false.
+  config%PrintMemory = .false.
   config%doESGopt = .false.
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
@@ -542,7 +544,7 @@ DO
             !CASE('.PURIFY');     config%opt%cfg_density_method = config%opt%cfg_f2d_purification - NO LONGER SUPPORTED! /Stinne 16-08-2010
             !                     read(LUCMD,*) config%opt%cfg_purification_method
             CASE('.PRINTFINALCMO'); config%opt%print_final_cmo=.true.
-            CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
+!            CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
             CASE('.RESTART');    config%diag%CFG_restart =  .TRUE.
             CASE('.CRASHCALC');    config%opt%crashcalc =  .TRUE.
             CASE('.PURIFYRESTARTDENSITY'); config%diag%CFG_purifyrestart =  .TRUE.
@@ -1024,6 +1026,9 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
+        CASE('.SCFCOUNTERPOISE')
+           !Perform Counter Poise Correction of the SCF Energy
+           config%CounterPoiseCorrection = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
@@ -1420,7 +1425,7 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
   LOGICAL,intent(inout)                :: READWORD
   character(len=80),intent(inout)  :: WORD
   character(len=2)   :: PROMPT
-  integer :: i
+  integer :: i,PrintMemoryLowerLimit
 
   INFOLOOP: DO   
      IF(READWORD) THEN
@@ -1438,6 +1443,19 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         EXIT INFOLOOP
      ENDIF
      SELECT CASE(WORD)
+     CASE('.PRINTMEMORY');  
+        config%PrintMemory = .TRUE.
+        call Set_MemModParamPrintMemory(config%PrintMemory,config%lupri)
+     CASE('.PRINTMEMORYLOWERLIMIT'); 
+        !Do not print stack everytime the Maximum Allocated memory is increased
+        !only print if Maximum Allocated memory is greater then PrintMemoryLowerLimit
+        !Give input in byte
+        IF(config%PrintMemory)THEN
+           READ(LUCMD,*) PrintMemoryLowerLimit
+           call Set_PrintMemoryLowerLimit(PrintMemoryLowerLimit)
+        ELSE
+           call lsquit('Error .PRINTMEMORYLOWERLIMIT requires .PRINTMEMORY',-1)
+        ENDIF
      CASE('.DEBUG_SCF_MEM')
         call Set_PrintSCFmemory(.TRUE.)
      CASE('.DEBUG_MPI_MEM')
@@ -1568,6 +1586,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
      if (WORD(1:1) == '*') then
        !which type of response is wanted??
        SELECT CASE(WORD)
+       CASE('*DIPOLE')
+          config%response%tasks%doDipole=.true.
        ! Kasper K
        CASE('*ALPHA')
            config%response%tasks%doALPHA=.true.
@@ -3294,6 +3314,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       WRITE(config%LUPRI,'(A)')' '
       CALL lsQUIT('Cartesian basisfunction without H1DAIG starting guess.',config%lupri)
    endif
+
+! Check Counter Poise Input :
+   IF(config%CounterPoiseCorrection.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
+      call lsquit('.SCFCOUNTERPOISE keyword require SubSystems in MOLECULE.INP',-1)
+   ENDIF
 
 ! Check integral input:
 !======================

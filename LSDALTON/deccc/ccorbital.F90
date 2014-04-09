@@ -618,7 +618,8 @@ contains
           charge = charge + lowdin_charge(n,i)
           error = 1E0_realk - charge
 
-          if(error < approximated_norm_threshold) then ! atom list converged for orbital i
+          if(error < approximated_norm_threshold .or. n==natoms ) then 
+             ! atom list converged for orbital i
 
              ! Set list of atoms to consider for orbital and exit loop
              norbital_extent = n
@@ -2199,6 +2200,8 @@ contains
              write(DECinfo%output,*) 'Atom = ',i
              write(DECinfo%output,*) 'Number of occupied orbitals   assigned = ', nocc_per_atom(i)
              write(DECinfo%output,*) 'Number of unoccupied orbitals assigned = ', nunocc_per_atom(i)
+             write(DECinfo%output,*) 'If you use Phantom Atoms try .ONLYOCCPART keyword'
+             print*,'If you use Phantom Atoms try .ONLYOCCPART keyword'
              call lsquit('Orbital assigment is inconsistent &
                   & with DEC scheme',DECinfo%output)
           end if

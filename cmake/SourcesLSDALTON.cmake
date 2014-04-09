@@ -59,6 +59,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     LSDALTON/lsdaltonsrc/Profile.F90
     LSDALTON/lsdaltonsrc/IchorTesting.F90
     LSDALTON/lsdaltonsrc/IchorProfile.F90
+    LSDALTON/lsdaltonsrc/SCFCounterPoiseCorrection.F90
     )
 set(DDYNAM_SOURCES
     LSDALTON/ddynam/LSinput.F90
@@ -87,7 +88,6 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccarray2_simple.F90
     LSDALTON/deccc/ccarray4_simple.F90
     LSDALTON/deccc/ccorbital.F90
-    LSDALTON/deccc/ccri_simple.F90
     LSDALTON/deccc/dec_atom.F90
     LSDALTON/deccc/dec_driver.F90
     LSDALTON/deccc/dec_driver_slave.F90
@@ -231,6 +231,7 @@ set(INTERESTLIB_SOURCES
     LSDALTON/interest/src/module_interest_osr.f90
     )
 set(ICHORINT_SOURCES
+    LSDALTON/IchorIntegrals/MainIchorInterface.F90
     LSDALTON/IchorIntegrals/IchorPresicion.F90
     LSDALTON/IchorIntegrals/IchorParameters.F90
     LSDALTON/IchorIntegrals/IchorCommon.F90
@@ -443,6 +444,7 @@ set(LSINT_SOURCES
 set(LSUTIL_PRECISION_SOURCES
     LSDALTON/lsutil/ls_precision.F90
     LSDALTON/lsutil/ptr_assoc.F90
+    LSDALTON/lsutil/lsmpi_mod.F90
     )
 set(LSUTIL_MATRIXM_SOURCES
     LSDALTON/lsutil/matrix_module.F90    LSDALTON/

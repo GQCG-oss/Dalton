@@ -1,0 +1,5 @@
+   prop_exci_aorpad
+   ----------------
+   Molecule:         H2O
+   Wave Function:    MP2 (RPA(D))
+   Test Purpose:     Calculation of excitation energies through ABACUS

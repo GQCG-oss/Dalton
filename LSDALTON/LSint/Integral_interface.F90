@@ -92,7 +92,8 @@ MODULE IntegralInterfaceMOD
        & II_get_exchange_mat_regular_full, II_get_admm_exchange_mat,get_T23,&
        & II_get_ADMM_K_gradient, II_get_coulomb_mat,ii_get_exchange_mat_mixed,&
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
-       & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI
+       & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
+       & II_get_2int_ScreenRealMat
   private
 
 INTERFACE II_get_coulomb_mat
@@ -2856,6 +2857,33 @@ CALL retrieve_Output(lupri,setting,GAB,setting%IntegralTransformGC)
 
 END SUBROUTINE II_get_2int_ScreenMat
 
+!> \brief Calculates the 4 center 2 eri screening mat
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param Gab the output matrix
+SUBROUTINE II_get_2int_ScreenRealMat(LUPRI,LUERR,SETTING,nbast,GAB)
+IMPLICIT NONE
+INTEGER               :: LUPRI,LUERR,nbast
+real(realk)           :: GAB(nbast,nbast)
+TYPE(LSSETTING)       :: SETTING
+IF(setting%IntegralTransformGC)THEN
+   !I do not think it makes sense to transform afterwards 
+   !so here the basis needs to be transformed
+   call lsquit('II_get_2int_ScreenMat and IntegralTransformGC do not work',-1)
+ENDIF
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+call ls_dzero(GAB,nbast*nbast)
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+setting%Output%RealGabMatrix = .TRUE.
+CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
+     &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
+setting%Output%RealGabMatrix = .FALSE.
+CALL retrieve_Output(lupri,setting,GAB,setting%IntegralTransformGC)
+END SUBROUTINE II_get_2int_ScreenRealMat
+
 !> \brief Calculates get the maxGabelm eri screening mat
 !> \author J. Rekkedal
 !> \date 2010
@@ -5577,19 +5605,18 @@ real(realk),intent(IN)        :: constrain_factor
 !
 TYPE(MATRIX) :: S23,S22,S22inv
 Character(80) :: Filename = 'ADMM_T23'
-Logical :: onMaster,McWeeny,ERI2C
+Logical :: McWeeny,ERI2C
 real(realk) :: lambda
 Logical     :: const_electrons
 Logical     :: scale_finalE
 
-onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
 !these options are for the ERI metric
 !with McWeeny ADMM1 is assumed, without ADMM2
 McWeeny = setting%scheme%ADMM_MCWEENY
 ERI2C = setting%scheme%ADMM_2ERI
 
 IF (io_file_exist(Filename,setting%IO)) THEN
-  call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+  call io_read_mat(T23,Filename,setting%IO,LUPRI,LUERR)
 ELSE
   CALL mat_init(S22,n2,n2)
   CALL mat_init(S22inv,n2,n2)
@@ -5613,7 +5640,7 @@ ELSE
   CALL mat_free(S23)
   CALL mat_free(S22)
   call io_add_filename(setting%IO,Filename,LUPRI)
-  call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+  call io_write_mat(T23,Filename,setting%IO,LUPRI,LUERR)
 ENDIF
 ! IF constraining the total charge
 ! Lagrangian multiplier for conservation of the total nb. of electrons

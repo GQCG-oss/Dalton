@@ -1,0 +1,5 @@
+   hfmmpcm_1
+   -----------
+   Molecule:         CH2O(HF)/2 H2O(MM)
+   Wave Function:    RHF / STO-3G  
+   Test Purpose:     Test of HF/MM/PCM energy, dipole moment and excitation energy

@@ -1,0 +1,7 @@
+
+   dft_open_lr
+   ---------------
+   Molecule:         H2O+
+   Wave Functions:   open-shell DFT B3LYP / aug-cc-pVDZ
+   Test Purpose:     open-shell DFT B3LYP polarizability test w/symmetry.
+

@@ -4261,7 +4261,7 @@ complex(8),allocatable       :: NMST(:,:)
 type(Matrix)                 :: Dx(3),Fx(3)
 real(realk)                  :: Factor
 integer                      :: natoms,icoor,jcoor,k,lupri,nbast
-Character(len=4),allocatable :: atomName(:) 
+Character(len=4),allocatable :: atomName(:)
 real(realk)         :: TS,TE
 character(len=1)        :: CHRXYZ(-3:3)
 DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
@@ -4269,7 +4269,6 @@ nbast = D%nrow
 lupri = molcfg%lupri
 natoms = molcfg%natoms
 CALL LSTIMER('START ',TS,TE,LUPRI)
-allocate(NMST(3*natoms,3))
 
 WRITE(LUPRI,*) '=========================================================='
 WRITE(LUPRI,*) '      NUCLEAR MAGNETIC SHIELDING(NMS) TENSOR RESULTS   '
@@ -4277,8 +4276,13 @@ WRITE(LUPRI,*) '=========================================================='
 
 call pert_dens(molcfg,S,(/'MAG '/),(/3/),(/D/),(/F/),Dx,Fx,freq=(/(0d0,0d0)/))
 Fx=0
-Factor=53.2513535188477d0!53.2513539566280 !1e6*alpha^2 
-NMST=(0.d0,0.d0)
+Factor=53.25135351884770E0_realk!53.2513539566280 !1e6*alpha^2 
+allocate(NMST(3*natoms,3))
+do icoor=1,3
+   do jcoor=1,3*natoms  
+      NMST(jcoor,icoor) = 0.0E0_realk
+   enddo
+enddo
 call rsp_oneave(molcfg, S,(/'NUCM'/),(/Dx/),(/3*natoms,3/), NMST)
 call rsp_oneave(molcfg, S,(/'NUCM','MAG '/),(/D/),(/3*natoms,3/), NMST)
 Dx=0

@@ -20,8 +20,8 @@ fi
 cat > IchorProfile.info <<'%EOF%'
    IchorProfile
    -------------
-   Test Purpose:     Test Ichor Integrals agains Thermite Integrals
-   Molecule:         2 NCH molecule/UnitTest_genD
+   Test Purpose:     Test Profile feature of Ichor Integrals
+   Molecule:         2 N atoms/UnitTest_genD
 %EOF%
 
 #######################################################################
@@ -36,12 +36,12 @@ AtomTypes=1 Nosymmetry Angstrom
 Charge=7.0 Atoms=2
 N        0.000000    0.000000    0.115054
 N        8.000000    0.000000    0.115054
-Charge=6.0 Atoms=2
-C        0.000000    0.933817   -0.268460
-C        8.000000    0.933817   -0.268460
-Charge=1.0 Atoms=2
-H        8.808710   -0.466909   -0.268460
-H        7.191290   -0.466909   -0.268460
+#Charge=6.0 Atoms=2
+#C        0.000000    0.933817   -0.268460
+#C        8.000000    0.933817   -0.268460
+#Charge=1.0 Atoms=2
+#H        8.808710   -0.466909   -0.268460
+#H        7.191290   -0.466909   -0.268460
 %EOF%
 
 #######################################################################
@@ -81,18 +81,13 @@ else
    GREP="egrep"
 fi
 
-CRIT1=`$GREP "QQQ SUCCESFUL DECPACK J TEST" $log | wc -l`
+CRIT1=`$GREP "Norm of Ichor4Center: * 1671\.7296166564" $log | wc -l`
 TEST[ 1]=`expr  $CRIT1`
 CTRL[ 1]=1
-ERROR[ 1]=" DECPACKED J using Ichor NOT CORRECT -"
-
-CRIT1=`$GREP "QQQ SUCCESFUL DECPACK JOLD TEST" $log | wc -l`
-TEST[ 2]=`expr  $CRIT1`
-CTRL[ 2]=1
-ERROR[ 2]=" DECPACKED J using Thermite NOT CORRECT -"
+ERROR[ 1]=" Profile Run Ichor Integrals NOT CORRECT -"
 
 PASSED=1
-for((i=1;i<=2;i++))
+for((i=1;i<=1;i++))
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
 

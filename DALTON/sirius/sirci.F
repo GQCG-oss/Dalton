@@ -186,6 +186,7 @@ C
       LOGICAL CINMEM
 C
 C Used from common blocks:
+C   PGROUP : REP
 C   CICB01 : NCIRED,NJCR,JCROOT(*),THRCIT
 C   INFINP : POTNUC,FLAG(*),LSYM
 C   INFVAR : NCONF
@@ -195,6 +196,7 @@ C   INFTAP : LUIT1,LUIT3,LUIT5
 C
 #include "maxorb.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "cicb01.h"
 #include "infinp.h"
 #include "infvar.h"
@@ -633,15 +635,14 @@ C            i.e. 1-el. energy can be calculated
   805   FORMAT( 1X,A,F25.12)
   806   FORMAT(/1X,A,F25.12)
       ENDIF
-      J = LUW4
-  815 WRITE (J,'(//A/,(I5,0P,F25.15,1P,D15.2))')
-     *   ' CI energies and residuals:',
-     *   (I,ECI(I),WRK(KRESID+I-1), I = 1,NCROOT)
 
-      IF(NCROOT .EQ. 1) THEN 
-C JT 22-03-05 : add pretty output line if only one root
-        WRITE (J,'(//A,(F25.15))')' Final CI energy:',ECI(1)
-      ENDIF
+      J = LUW4
+  815 CONTINUE
+
+      WRITE (J,'(//A,I2,3A/,(A,I5,0P,F25.15,1P,D15.2))')
+     &   '@ Final CI energies and residuals in symmetry',LSYM,
+     &     ' (irrep ',REP(LSYM-1),')',
+     &   ('@',I,ECI(I),WRK(KRESID+I-1), I = 1,NCROOT)
 
       IF (J .NE. LUPRI) THEN
          J = LUPRI

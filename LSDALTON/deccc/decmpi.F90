@@ -2,7 +2,6 @@
 !> DEC MPI handling
 !> \author Kasper Kristensen
 !> \date March 2012
-#ifdef VAR_MPI
 module decmpi_module
 
   use precision
@@ -22,12 +21,12 @@ module decmpi_module
   use array2_simple_operations
 
 contains
+#ifdef VAR_MPI
 
 
 
   !> \brief Send three fragment energies (for occupied, virtual, and Lagrangian schemes)
   !> from given sender (typically a slave) to given receiver (typically the master).
-  !> For (T) also pass (T) fragment energies.
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine mpi_send_recv_fragmentenergy(comm,MySender,MyReceiver,fragenergy,job)
@@ -337,6 +336,9 @@ contains
     !> Communicate basis (expensive box in decfrag)
     logical,intent(in) :: DoBasis
     integer(kind=ls_mpik) :: master
+
+    call time_start_phase( PHASE_COMM )
+
     master = 0
 
     ! Init MPI buffer which eventually will contain all fragment info
@@ -372,6 +374,7 @@ contains
     ! SLAVE: Deallocate buffer etc.
     call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
 
+    call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_mp2_int_and_amp
 
 
@@ -681,7 +684,9 @@ contains
     call ls_mpi_buffer(MyFragment%EvirtFOP,master)
     call ls_mpi_buffer(MyFragment%LagFOP,master)
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
-    call ls_mpi_buffer(MyFragment%slavetime,master)
+    call ls_mpi_buffer(MyFragment%slavetime_work,ndecmodels,master)
+    call ls_mpi_buffer(MyFragment%slavetime_comm,ndecmodels,master)
+    call ls_mpi_buffer(MyFragment%slavetime_idle,ndecmodels,master)
     call ls_mpi_buffer(MyFragment%RejectThr,2,master)
     call ls_mpi_buffer(MyFragment%DmaxAE,master)
     call ls_mpi_buffer(MyFragment%DmaxAOS,master)
@@ -1076,7 +1081,7 @@ contains
 
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
-      k=250000000
+      k=SPLIT_MSG_REC
 
       nelms = nbas*nocc
       call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
@@ -1537,7 +1542,9 @@ contains
        call mem_alloc(jobs%ntasks,jobs%njobs)
        call mem_alloc(jobs%flops,jobs%njobs)
        call mem_alloc(jobs%LMtime,jobs%njobs)
-       call mem_alloc(jobs%load,jobs%njobs)
+       call mem_alloc(jobs%workt,jobs%njobs)
+       call mem_alloc(jobs%commt,jobs%njobs)
+       call mem_alloc(jobs%idlet,jobs%njobs)
     end if
 
     ! Buffer handling for pointers
@@ -1554,7 +1561,9 @@ contains
     call ls_mpi_buffer(jobs%ntasks,jobs%njobs,master)
     call ls_mpi_buffer(jobs%flops,jobs%njobs,master)
     call ls_mpi_buffer(jobs%LMtime,jobs%njobs,master)
-    call ls_mpi_buffer(jobs%load,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%workt,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%commt,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%idlet,jobs%njobs,master)
 
   end subroutine mpicopy_fragment_joblist
 
@@ -1797,19 +1806,21 @@ contains
     write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,5X,a)') 'Job', '#occ', &
-         & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load'
-    avflop=0.0E0_realk
-    totflops=0.0E0_realk
+    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,4X,a,6X,a)') 'Job', '#occ', &
+         & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load1', 'Load2'
+
+    avflop         = 0.0E0_realk
+    totflops       = 0.0E0_realk
     tottime_actual = 0.0E0_realk
-    slavetime= 0.0_realk
+    slavetime      = 0.0E0_realk
+
+    minflop        = huge(minflop)
+    maxflop        = tiny(maxflop)
+    minidx         = 0
+    maxidx         = 0
+    N              = 0
 
 
-    minflop = huge(1.0)
-    maxflop=tiny(1.0)
-    minidx=0
-    maxidx=0
-    N=0
     do i=1,jobs%njobs
        ! If nocc is zero, the job was not done and we do not print it
        if(jobs%nocc(i)==0) cycle
@@ -1826,15 +1837,13 @@ contains
        ! Update total time used by ALL nodes (including dead time by local slaves)
        tottime_actual = tottime_actual + jobs%LMtime(i)*jobs%nslaves(i)
        ! Effective slave time (WITHOUT dead time by slaves)
-       slavetime = slavetime + jobs%load(i)*jobs%nslaves(i)*jobs%LMtime(i)
+       slavetime = slavetime + jobs%workt(i) + jobs%commt(i)
 
-       if(DECinfo%ccmodel==MODEL_MP2 .and. (.not. jobs%dofragopt(i))) then
-          write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
-               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
-       else
-          jobs%load(i)=-1.0_realk
-          write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
-               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
+       if(.not. jobs%dofragopt(i)) then
+          write(DECinfo%output,'(6i8,3X,4g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
+               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), &
+               &(jobs%workt(i)+jobs%commt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), &
+               &(jobs%workt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), 'STAT'
        end if
 
        ! Accumulated Gflops per sec
@@ -1883,12 +1892,12 @@ contains
        write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MAXIMUM Gflops/s per MPI process = ', &
             & maxflop, ' for job ', maxidx
 #endif
-    write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
-       if(DECinfo%ccmodel==MODEL_MP2 .and. (.not. any(jobs%dofragopt)) ) then
+    write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%)     = ', globalloss
+       !if(.not. any(jobs%dofragopt) ) then
           ! Only print local loss when it is actually implemented
-          write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
-          write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
-       end if
+          write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)      = ', localloss
+          write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)      = ', localloss+globalloss
+       !end if
     write(DECinfo%output,*) '-----------------------------------------------------------------------------'
 
     end if
@@ -1896,6 +1905,7 @@ contains
     write(DECinfo%output,*)
 
   end subroutine print_MPI_fragment_statistics
+
 
   !> \brief Bcast DEC setting structure
   !> \author Kasper Kristensen
@@ -1957,7 +1967,7 @@ contains
     call ls_mpi_buffer(Co,nbas,nocc,infpar%master)
     call ls_mpi_buffer(Cv,nbas,nvir,infpar%master)
 
-    if (ccmodel==MODEL_CCSD) then 
+    if (ccmodel/=MODEL_RPA) then 
       if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
       call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
 
@@ -1970,7 +1980,7 @@ contains
     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-    if (.not.master.and.ccmodel==MODEL_CCSD) then
+    if (.not.master.and.ccmodel/=MODEL_RPA) then
       pgmo_diag = get_arr_from_parr(pgmo_diag_addr(infpar%lg_mynum+1))
       if (nbatch>1) pgmo_up   = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
     endif
@@ -2064,7 +2074,7 @@ contains
 
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
-      k=250000000
+      k=SPLIT_MSG_REC
 
       nelms = nvir*nocc
       call ls_mpibcast_chunks(t1%elm1,nelms,infpar%master,infpar%lg_comm,k)
@@ -2126,7 +2136,6 @@ contains
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%MOCCSD,Master)
-    call ls_mpi_buffer(DECitem%Max_num_MO,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)
@@ -2151,13 +2160,12 @@ contains
     call ls_mpi_buffer(DECitem%use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
-    call ls_mpi_buffer(DECitem%simulate_eri,Master)
-    call ls_mpi_buffer(DECitem%fock_with_ri,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%InteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
+    call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
@@ -2297,17 +2305,73 @@ contains
 
   end subroutine mpi_dec_fullinfo_master_to_slaves_precursor
 
-end module decmpi_module
+  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+     implicit none
+     type(array),intent(inout)   :: integral
+     type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
+     type(lsitem), intent(inout) :: mylsitem
+     integer :: addr1(infpar%lg_nodtot)
+     integer :: addr2(infpar%lg_nodtot)
+     integer :: addr3(infpar%lg_nodtot)
+     integer :: addr4(infpar%lg_nodtot)
+     integer :: addr5(infpar%lg_nodtot)
+     logical :: master
+
+
+     master = (infpar%lg_mynum == infpar%master)
+
+     if(master) call ls_mpibcast(MO_INTEGRAL_SIMPLE,infpar%master,infpar%lg_comm)
+
+     if(master)then
+        addr1 = trafo1%addr_p_arr
+        addr2 = trafo2%addr_p_arr
+        addr3 = trafo3%addr_p_arr
+        addr4 = trafo4%addr_p_arr
+        addr5 = integral%addr_p_arr
+     endif
+
+     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
+     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     if(.not.master)then
+        trafo1 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+        trafo2 = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+        trafo3 = get_arr_from_parr(addr3(infpar%lg_mynum+1))
+        trafo4 = get_arr_from_parr(addr4(infpar%lg_mynum+1))
+        integral = get_arr_from_parr(addr5(infpar%lg_mynum+1))
+     endif
+
+
+  end subroutine wake_slaves_for_simple_mo
+
+
+
 
 #else
-module decmpi_module
-
-contains
-
-!Added to avoid "has no symbols" linking warning
-subroutine decmpi_module_void()
-end subroutine decmpi_module_void
-
+  !Added to avoid "has no symbols" linking warning
+  subroutine decmpi_module_void()
+  end subroutine decmpi_module_void
+#endif
 end module decmpi_module
+
+
+
+#ifdef VAR_MPI
+subroutine set_dec_settings_on_slaves()
+   use infpar_module
+   use lsmpi_type
+   use Integralparameters
+   use dec_typedef_module
+   use decmpi_module, only:mpibcast_dec_settings
+   implicit none
+   if(infpar%mynum == infpar%master) call ls_mpibcast(DEC_SETTING_TO_SLAVES,infpar%master,MPI_COMM_LSDALTON)
+   call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
+end subroutine set_dec_settings_on_slaves
 
 #endif

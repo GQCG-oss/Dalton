@@ -86,7 +86,6 @@ contains
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
     DECinfo%MOCCSD               = .false.
-    DECinfo%Max_num_MO           = 300
 
     ! -- Output options 
     DECinfo%output               = output
@@ -145,8 +144,6 @@ contains
     ! -- CC solver options
 
     DECinfo%ccsd_expl               = .false.
-    DECinfo%simulate_eri            = .false.
-    DECinfo%fock_with_ri            = .false.
     DECinfo%ccMaxIter               = 100
     DECinfo%ccMaxDIIS               = 3
     DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
@@ -155,6 +152,7 @@ contains
     DECinfo%PureHydrogenDebug       = .false.
     DECinfo%InteractionEnergy       = .false.
     DECinfo%PrintInteractionEnergy  = .false.
+    DECinfo%StressTest              = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -244,7 +242,7 @@ contains
 #ifdef VAR_MPI
     ! Number of workers = Number of nodes minus master itself
     nworkers = infpar%nodtot -1
-    if(nworkers<1) then
+    if(nworkers<1.and..not.fullcalc) then
        call lsquit('DEC calculations using MPI require at least two MPI processes!',-1)
     end if
 #endif
@@ -474,7 +472,6 @@ contains
        !***********
 
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
-       case('.MAX_NUM_MO'); read(input,*) DECinfo%Max_num_MO
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
@@ -501,6 +498,9 @@ contains
        case('.PRINTINTERACTIONENERGY')     
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
+       case('.STRESSTEST')     
+          !Calculate biggest 2 atomic fragments and the biggest pair fragment
+          DECinfo%StressTest  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -739,8 +739,6 @@ contains
     write(lupri,*) 'use_preconditioner ', DECitem%use_preconditioner
     write(lupri,*) 'use_preconditioner_in_b ', DECitem%use_preconditioner_in_b
     write(lupri,*) 'use_crop ', DECitem%use_crop
-    write(lupri,*) 'simulate_eri ', DECitem%simulate_eri
-    write(lupri,*) 'fock_with_ri ', DECitem%fock_with_ri
 #ifdef MOD_UNRELEASED    
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
@@ -902,14 +900,14 @@ contains
     case('.RPA');     modelnumber = MODEL_RPA
     case default
        print *, 'Model not found: ', myword
-       write(DECinfo%output)'Model not found: ', myword
-       write(DECinfo%output)'Models supported are:'
-       write(DECinfo%output)'.MP2'
-       write(DECinfo%output)'.CC2'
-       write(DECinfo%output)'.CCSD'
-       write(DECinfo%output)'.CCD'
-       write(DECinfo%output)'.CCSD(T)'
-       write(DECinfo%output)'.RPA'
+       write(DECinfo%output,*)'Model not found: ', myword
+       write(DECinfo%output,*)'Models supported are:'
+       write(DECinfo%output,*)'.MP2'
+       write(DECinfo%output,*)'.CC2'
+       write(DECinfo%output,*)'.CCSD'
+       write(DECinfo%output,*)'.CCD'
+       write(DECinfo%output,*)'.CCSD(T)'
+       write(DECinfo%output,*)'.RPA'
        call lsquit('Requested model not found!',-1)
     end SELECT
 
