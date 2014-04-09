@@ -121,6 +121,7 @@ contains
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
     DECinfo%OnlyOccPart            = .false.
+    DECinfo%OnlyVirtPart            = .false.
     ! Repeat atomic fragment calcs after fragment optimization
     DECinfo%RepeatAF               = .true.
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
@@ -480,6 +481,7 @@ contains
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
+       case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
 
        case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     
@@ -627,6 +629,10 @@ contains
 
        if(DECinfo%onlyoccpart) then
           call lsquit('DEC gradient cannot be evaluated when only occupied &
+               & partitioning scheme is used!',DECinfo%output)
+       end if
+       if(DECinfo%onlyvirtpart) then
+          call lsquit('DEC gradient cannot be evaluated when only virtual &
                & partitioning scheme is used!',DECinfo%output)
        end if
 

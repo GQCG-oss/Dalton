@@ -761,9 +761,13 @@ contains
     write(DECinfo%output,'(1X,a,i7)') 'Energy summary for fragment: ', &
          & MyFragment%EOSatoms(1)
     write(DECinfo%output,*) '**********************************************************************'
-    write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', Eocc
+    if(.not. DECinfo%onlyvirtpart) then
+       write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', Eocc
+    endif
     if(.not. DECinfo%onlyoccpart) then
        write(DECinfo%output,'(1X,a,g20.10)') 'Single virtual  energy = ', Evirt
+    endif
+    if(.not. (DECinfo%onlyoccpart.OR. DECinfo%onlyvirtpart)) then
        write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian occ term  = ', lag_occ
        write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian virt term = ', lag_virt
     end if
@@ -1342,9 +1346,13 @@ contains
          & Fragment1%EOSatoms(1), Fragment2%EOSatoms(1)
     write(DECinfo%output,*) '*****************************************************************************'
 
-    write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair occ energy  = ', pairdist,Eocc
+    if(.not. DECinfo%onlyvirtpart) then
+       write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair occ energy  = ', pairdist,Eocc
+    endif
     if(.not. DECinfo%onlyoccpart) then
        write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair virt energy = ', pairdist,Evirt
+    endif
+    if(.not. (DECinfo%onlyoccpart.or. DECinfo%onlyvirtpart)) then
        write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. occ term  = ', pairdist,lag_occ
        write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. virt term = ', pairdist,lag_virt
     end if
@@ -1726,19 +1734,27 @@ contains
 
 
     ! Print stuff
-    call print_atomic_fragment_energies(natoms,e1,orbitals_assigned,&
-         & 'MP2 occupied single energies','AF_MP2_OCC')
+    if(.not. DECinfo%onlyvirtpart) then
+       call print_atomic_fragment_energies(natoms,e1,orbitals_assigned,&
+            & 'MP2 occupied single energies','AF_MP2_OCC')
+    endif
     if(.not.DECinfo%onlyoccpart) then
        call print_atomic_fragment_energies(natoms,e3,orbitals_assigned,&
             & 'MP2 virtual single energies','AF_MP2_VIR')
+    endif
+    if(.not.(DECinfo%onlyoccpart.or. DECinfo%onlyvirtpart)) then
        call print_atomic_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
             & 'MP2 Lagrangian single energies','AF_MP2_LAG')
     end if
-    call print_pair_fragment_energies(natoms,e1,orbitals_assigned,&
-         & MyMolecule%DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
+    if(.not. DECinfo%onlyvirtpart) then
+       call print_pair_fragment_energies(natoms,e1,orbitals_assigned,&
+            & MyMolecule%DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
+    endif
     if(.not.DECinfo%onlyoccpart) then
        call print_pair_fragment_energies(natoms,e3,orbitals_assigned,&
             & MyMolecule%DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')
+    endif
+    if(.not.(DECinfo%onlyoccpart.or. DECinfo%onlyvirtpart)) then
        call print_pair_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
             & MyMolecule%DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
     end if
@@ -2108,8 +2124,13 @@ contains
         !All Occupied orbitals assigned to atoms within 2 Angstrom of central atom are included
         init_Occradius = 2.0_realk/bohr_to_angstrom
      ENDIF
-     !All Virtual orbitals assigned to atoms within 2 Angstrom of central atom are included
-     init_Virtradius = 2.0_realk/bohr_to_angstrom
+     IF(DECinfo%onlyvirtpart) then
+        !All Virtual orbitals assigned to atoms within 0.01 Angstrom of central atom are included
+        init_Virtradius = 0.01_realk/bohr_to_angstrom
+     ELSE
+        !All Virtual orbitals assigned to atoms within 2 Angstrom of central atom are included
+        init_Virtradius = 2.0_realk/bohr_to_angstrom
+     ENDIF
      call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
         & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
      call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
@@ -2394,7 +2415,10 @@ contains
           call transform_virt_amp_to_FOs(t2,AtomicFragment)
           call calculate_corrdens_AOS_occocc(t2,AtomicFragment)
        end if
-
+       if(DECinfo%onlyVirtpart) then
+          WRITE(DECinfo%output,*)'WARNING FOs usign onlyVirtpart not tested'
+          call lsquit('Error FOs usign onlyVirtpart not tested',-1)
+       endif
        REDUCTION_LOOP: do iter=1,max_iter_red
 
           if(ov==1) then
@@ -2519,13 +2543,17 @@ contains
          & AtomicFragment%noccFA
     write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
          & AtomicFragment%nbasis
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
-         & AtomicFragment%EoccFOP
+    if(.not. DECinfo%onlyvirtpart) then
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
+            & AtomicFragment%EoccFOP
+    endif
     if(.not. DECinfo%onlyoccpart) then
-       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
-            & AtomicFragment%LagFOP
        write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :', &
             & AtomicFragment%EvirtFOP
+    endif
+    if(.NOT.(DECinfo%onlyoccpart.OR. DECinfo%onlyvirtpart))then
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
+            & AtomicFragment%LagFOP
     end if
     write(DECinfo%output,'(1X,a,g14.2)')  'FOP Done: Occupied reduction threshold     :', &
          & AtomicFragment%RejectThr(1)
@@ -2738,13 +2766,17 @@ contains
          & AtomicFragment%noccAOS
     write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
          & AtomicFragment%nbasis
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
-         & AtomicFragment%EoccFOP
+    if(.not. DECinfo%onlyvirtpart) then
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
+            & AtomicFragment%EoccFOP
+    endif
     if(.not. DECinfo%onlyoccpart) then
-       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
-            & AtomicFragment%LagFOP
        write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :', &
             & AtomicFragment%EvirtFOP
+    endif
+    if(.NOT.(DECinfo%onlyoccpart.OR. DECinfo%onlyvirtpart))then
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
+            & AtomicFragment%LagFOP
     end if
     write(DECinfo%output,'(1X,a,g14.2)')  'FOP Done: Reduction threshold              :', RejectThresh
     write(DECinfo%output,'(1X,a,i6,a,i6,a,f5.2,a)')  'FOP Done: Occupied reduction removed ', &
@@ -2786,11 +2818,16 @@ contains
 
     ! Default: Test convergence for both Lagrangian, occupied, and virtual energies
     ! If DECinfo%onlyoccpart: Only test for energy using occupied partitioning scheme
+    ! If DECinfo%onlyvirtpart: Only test for energy using virtual partitioning scheme
 
 
     ! Lagrangian
     TEST_CONVERGENCE_LAG: if(DECinfo%OnlyOccPart) then 
        ! do not consider Lagrangian error if we are only interested in occupied partitioning scheme
+       ! --> just set Lagrangian to be converged always
+       lag_converged=.true.
+    elseif(DECinfo%OnlyVirtPart) then 
+       ! do not consider Lagrangian error if we are only interested in virtual partitioning scheme
        ! --> just set Lagrangian to be converged always
        lag_converged=.true.
     else
@@ -2804,16 +2841,20 @@ contains
        end if
     end if TEST_CONVERGENCE_LAG
 
-    ! Occupied (always check)
-    TEST_CONVERGENCE_OCC: if  (OccEnergyDiff < FOT) then
-       write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Occupied energy converged, energydiff   =', OccEnergyDiff
+    ! Occupied 
+    TEST_CONVERGENCE_OCC: if(DECinfo%OnlyVirtPart) then
        occ_converged=.true.
     else
-       write(DECinfo%output,*) 'FOP: Occupied energy NOT converged'
-       occ_converged=.false.
-    end if TEST_CONVERGENCE_OCC
+       if  (OccEnergyDiff < FOT) then
+          write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Occupied energy converged, energydiff   =', OccEnergyDiff
+          occ_converged=.true.
+       else
+          write(DECinfo%output,*) 'FOP: Occupied energy NOT converged'
+          occ_converged=.false.
+       end if
+    endif TEST_CONVERGENCE_OCC
 
-    ! Virtual (same treatment as for Lagrangian energy)
+    ! Virtual 
     TEST_CONVERGENCE_VIRT: if(DECinfo%OnlyOccPart) then
        virt_converged=.true.
     else
@@ -2938,25 +2979,32 @@ contains
          & Fragment%noccAOS
     write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of basis functions        :', &
          & Fragment%nbasis
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied Fragment energy         :', &
-         & Fragment%EoccFOP
+    if(.not. DECinfo%OnlyVirtPart) then
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied Fragment energy         :', &
+            & Fragment%EoccFOP
+    endif
     if(.not. DECinfo%OnlyOccPart) then
        write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual Fragment energy          :', &
             & Fragment%EvirtFOP
+    endif
+    if(.not. (DECinfo%OnlyOccPart.or.DECinfo%OnlyVirtPart)) then
        write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian Fragment energy       :', &
             & Fragment%LagFOP
     end if
 
     PrintDiff: if(iter/=0) then ! no point in printing energy differences for initial energy
-       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied energy diff             :', &
-            & OccEnergyDiff
+       if(.not. DECinfo%OnlyVirtPart) then
+          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied energy diff             :', &
+               & OccEnergyDiff
+       endif
        if(.not. DECinfo%OnlyOccPart) then
           write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual energy diff              :', &
                & VirtEnergyDiff
+       endif
+       if(.not. (DECinfo%OnlyOccPart.or.DECinfo%OnlyVirtPart)) then
           write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian energy diff           :', &
                & LagEnergyDiff
        end if
-
     end if PrintDiff
 
     write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
