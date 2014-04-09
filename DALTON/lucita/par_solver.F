@@ -1450,6 +1450,6 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PAR_DUMMY
-C     dummy routine for normal compilation.
+C     dummy routine for non-mpi compilation.
       END 
 #endif /* defined VAR_MPI*/
