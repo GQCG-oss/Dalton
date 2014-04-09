@@ -1590,6 +1590,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
      if (WORD(1:1) == '*') then
        !which type of response is wanted??
        SELECT CASE(WORD)
+       CASE('*DIPOLE')
+          config%response%tasks%doDipole=.true.
        ! Kasper K
        CASE('*ALPHA')
            config%response%tasks%doALPHA=.true.

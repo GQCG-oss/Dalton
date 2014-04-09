@@ -1,0 +1,5 @@
+   gen1int_water_cart
+   -------------
+   Molecule:         H2O
+   Test Purpose:     Check Gen1int module using water molecule, Cartesian
+                     basis sets, and without symmetry

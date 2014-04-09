@@ -444,6 +444,11 @@ SUBROUTINE COMPARE_MATRICES(lupri,ndim,numrealvec,nfsze,lmax,ll)
   integer :: l1,l2,l3,nbast
   TYPE(lvec_data_t) :: erikll(7)
 
+  !PE: nbast was not set and the compiler kept complaining, I set it to Zero
+  !here, the responsible person should make sure the correct value is set. Even
+  !though there were several complaints through the mailing list this was not
+  !fixed by the responsible person. KEEP THE CODE CLEAN
+  nbast = 0
 
   ! write fmat to file
   scfit=scfit+1

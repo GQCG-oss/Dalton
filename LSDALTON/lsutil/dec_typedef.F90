@@ -26,6 +26,9 @@ module dec_typedef_module
 
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
+  !> how many real models in total are there, disregard MODEL_NONE
+  integer,parameter :: ndecmodels   = 5
+  !> Number of different fragment energies
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
   integer,parameter :: MODEL_CC2    = 2
@@ -226,6 +229,9 @@ module dec_typedef_module
      logical :: InteractionEnergy
      !> Print the Interaction Energy (Ref to article)
      logical :: PrintInteractionEnergy
+
+     !> Stress Test 
+     logical :: StressTest
 
      !> MPI settings
      !> ************
@@ -634,6 +640,8 @@ module dec_typedef_module
      !> without thinking about which CC model we are using...
      !> Energy using occupied partitioning scheme
      real(realk) :: EoccFOP
+     !> Energy using occupied partitioning scheme with the F12 Correction
+     real(realk) :: EoccFOP_Corr
      !> Energy using virtual partitioning scheme
      real(realk) :: EvirtFOP
      !> Lagrangian energy 
@@ -828,7 +836,9 @@ module dec_typedef_module
      ! INTEGRAL TIME ACCOUNTING
      ! ************************
      ! MPI: Time(s) used by local slaves
-     real(realk) :: slavetime
+     real(realk),dimension(ndecmodels) :: slavetime_work
+     real(realk),dimension(ndecmodels) :: slavetime_comm
+     real(realk),dimension(ndecmodels) :: slavetime_idle
 
 
   end type decfrag
@@ -1070,8 +1080,11 @@ module dec_typedef_module
      !> Time used for local master
      real(realk),pointer :: LMtime(:)
      !> Measure of load distribution:
-     !> { (total times for nodes) / (time for local master) } / number of nodes
-     real(realk),pointer :: load(:)
+     !> ( work and communication times for nodes) / {(time for local master) * (number of nodes) }
+     !> ( work times for nodes) / {(time for local master) * (number of nodes) }
+     real(realk),pointer :: commt(:)
+     real(realk),pointer :: workt(:)
+     real(realk),pointer :: idlet(:)
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.

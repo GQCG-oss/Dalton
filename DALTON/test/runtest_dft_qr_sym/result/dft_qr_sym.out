@@ -1,0 +1,1295 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Sun Sep  8 20:38:33 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/bast/DALTON-2013.0-Source/build/test_dft_qr_sym
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+**WAVE FUNCTIONS                                  
+.DFT                                              
+ B3LYP                                            
+*SCF INPUT                                        
+*DFT INPUT                                        
+.GRID TYPE                                        
+LMG BLOCK                                         
+**RESPONSE                                        
+*QUADRATIC                                        
+.E3TEST                                           
+.DIPLEN                                           
+.FREQUENCIES                                      
+2                                                 
+0 0.1                                             
+**END OF DALTON INPUT                             
+                                                  
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+3-21G                                                                          
+Water                                                                          
+STO-3G basis                                                                   
+    2    2  X  Z                                                               
+        8.    1                                                                
+O      .0000   -.2249  0.0000000000                                            
+        1.    1                                                                
+H     1.4523    .8996   .0000000000                                            
+                                                                               
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Water                                                                   
+ 2: STO-3G basis                                                            
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/3-21G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 3-21G                                                                           
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/3-21G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 3-21G                                                                           
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2y  Oxy  Oyz
+   -----+--------------------
+     E  |  E   C2y  Oxy  Oyz
+    C2y | C2y   E   Oyz  Oxy
+    Oxy | Oxy  Oyz   E   C2y
+    Oyz | Oyz  Oxy  C2y   E 
+
+   * Character table
+
+        |  E   C2y  Oxy  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B2  |   1   -1    1   -1
+    B1  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B2   B1   A2 
+   -----+--------------------
+    A1  | A1   B2   B1   A2 
+    B2  | B2   A1   A2   B1 
+    B1  | B1   A2   A1   B2 
+    A2  | A2   B1   B2   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H   _1      1.007825
+                           H   _2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000   -0.099052    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  Basis set used is "3-21G" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    15     9      [6s3p|3s2p]                                        
+  H           2    1.0000     3     2      [3s|2s]                                            
+  ----------------------------------------------------------------------
+  total:      3   10.0000    21    13
+  ----------------------------------------------------------------------
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y  -0.2249000000    3  z   0.0000000000
+  H   / 1 :     4  x   1.4523000000    5  y   0.8996000000    6  z   0.0000000000
+  H   / 2 :     7  x  -1.4523000000    8  y   0.8996000000    9  z   0.0000000000
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    3    2    1
+
+  Symmetry  A1  ( 1)
+
+    1   O     y    2
+    2   H     x    [  4  -    7 ]/2
+    3   H     y    [  5  +    8 ]/2
+
+  Symmetry  B2  ( 2)
+
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
+    6   H     y    [  5  -    8 ]/2
+
+  Symmetry  B1  ( 3)
+
+    7   O     z    3
+    8   H     z    [  6  +    9 ]/2
+
+  Symmetry  A2  ( 4)
+
+    9   H     z    [  6  -    9 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H   _1      H   _2
+            ------      ------      ------
+ O     :    0.000000
+ H   _1:    0.971970    0.000000
+ H   _2:    0.971970    1.537048    0.000000
+
+
+  Max    interatomic separation is    1.5370 Angstrom (    2.9046 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9720 Angstrom (    1.8368 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H   _1     O            0.971970
+  bond distance:  H   _2     O            0.971970
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     O          H   _2       104.500
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.633856          1.000000    0.000000    0.000000
+   IB       1.190502          0.000000    1.000000    0.000000
+   IC       1.824358          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         797308.3077         424509.2262         277017.4133 MHz
+           26.595342           14.160104            9.240306 cm-1
+
+
+@  Nuclear repulsion energy :    9.055287756882 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           7    4    2    0
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        1s         3
+    4     O        2py        5
+    5     O        2py        8
+    6     H        1s        10 +   11
+    7     H        1s        12 +   13
+
+
+  Symmetry  B2 ( 2)
+
+    8     O        2px        4
+    9     O        2px        7
+   10     H        1s        10 -   11
+   11     H        1s        12 -   13
+
+
+  Symmetry  B1 ( 3)
+
+   12     O        2pz        6
+   13     O        2pz        9
+
+
+  No orbitals in symmetry  A2 ( 4)
+
+  Symmetries of electric field:  B2 (2)  A1 (1)  B1 (3)
+
+  Symmetries of magnetic field:  B1 (3)  A2 (4)  B2 (2)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:        1270 ( 30.3% )
+ Megabytes written:                              0.021
+
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                                       1.00D-09    1.00D-10    2.00D-12
+     Default threshold for number of electrons:                1.00D-03
+     DFT radial quadrature accuracy and ang. expansion order:              1.00D-13  35
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    4    2    1    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.704227      -1.499405      -0.671093      -0.296838
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.731017      -0.261120
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.616200
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:33 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ Title lines from ".mol" input file:
+     Water                                                                   
+     STO-3G basis                                                            
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Kohn-Sham DFT calculation.
+
+@    Time-dependent Kohn-Sham DFT calculation (TD-DFT).
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+@    For the wave function of type :      >>> KS-DFT <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           13 |    7    4    2    0
+     Number of basis functions          13 |    7    4    2    0
+
+      ** Automatic occupation of RKS orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               5 |    3    1    1    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.461563613096   9.9999995404   -4.60D-07
+@  1  -75.7528913356       2.22D+00  -7.58D+01     3   1   1   0
+      Virial theorem: -V/T =      2.001811
+@      MULPOP O      -0.39; H   _1  0.19; H   _2  0.19; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.530933374733   9.9999992830   -7.17D-07
+@  2  -75.9351900808       1.23D-01  -1.82D-01     3   1   1   0
+      Virial theorem: -V/T =      2.004647
+@      MULPOP O      -0.65; H   _1  0.32; H   _2  0.32; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.515844437096   9.9999992948   -7.05D-07
+@  3  -75.9357881247       3.89D-02  -5.98D-04     3   1   1   0
+      Virial theorem: -V/T =      2.006273
+@      MULPOP O      -0.64; H   _1  0.32; H   _2  0.32; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.525455309943   9.9999992967   -7.03D-07
+@  4  -75.9358112725       2.87D-02  -2.31D-05     3   1   1   0
+      Virial theorem: -V/T =      2.005085
+@      MULPOP O      -0.66; H   _1  0.33; H   _2  0.33; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.521212912873   9.9999992955   -7.04D-07
+@  5  -75.9358448758       1.46D-03  -3.36D-05     3   1   1   0
+      Virial theorem: -V/T =      2.005588
+@      MULPOP O      -0.65; H   _1  0.32; H   _2  0.32; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.521403260470   9.9999992956   -7.04D-07
+@  6  -75.9358449700       2.29D-05  -9.42D-08     3   1   1   0
+      Virial theorem: -V/T =      2.005565
+@      MULPOP O      -0.65; H   _1  0.33; H   _2  0.33; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
+@  7  -75.9358449701       1.82D-06  -1.17D-10     3   1   1   0
+
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -75.935844970074    1.82D-06
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Sym       Kohn-Sham orbital energies
+
+  1    -18.99421001    -0.98173104    -0.32181405     0.09909685     1.00220397
+         1.52461427     2.74909273
+
+  2     -0.49856010     0.19073726     0.92848984     1.64831150
+
+  3     -0.25396941     1.44257600
+
+    E(LUMO) :     0.09909685 au (symmetry 1)
+  - E(HOMO) :    -0.25396941 au (symmetry 3)
+  ------------------------------------------
+    gap     :     0.35306626 au
+
+ >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.944       0.950
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
+
+@    Final DFT energy:            -75.935844970074                 
+@    Nuclear repulsion:             9.055287756882
+@    Electronic energy:           -84.991132726956
+
+@    Final gradient norm:           0.000001822454
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:34 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         1        2        3        4        5
+   1 O   :1s     0.9822  -0.2255   0.1054   0.1104   0.0582
+   2 O   :1s     0.1026   0.2160  -0.0897  -0.0574  -0.0983
+   3 O   :1s    -0.0420   0.6785  -0.4784  -0.9865  -0.0033
+   4 O   :2py    0.0036   0.1179   0.4396  -0.2589  -0.3211
+   5 O   :2py   -0.0072   0.1135   0.4765  -0.4645  -0.1851
+   6 H   :1s     0.0027   0.1246   0.1314   0.0875   0.9529
+   7 H   :1s     0.0074   0.0278   0.1277   0.8187  -0.5508
+
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :2px    0.4100  -0.3670   0.2103
+   2 O   :2px    0.3411  -0.7378   0.3082
+   3 H   :1s     0.2361   0.0894  -0.9484
+   4 H   :1s     0.2051   1.0836   0.7949
+
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
+
+    Orbital         1        2
+   1 O   :2pz    0.5295   1.0251
+   2 O   :2pz    0.6244  -0.9702
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.95 seconds
+ >>>> Total wall time used in SIRIUS :      0.95 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:34 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+ Quadratic Response calculation
+ ------------------------------
+
+ First hyperpolarizability calculation : HYPCAL= T
+
+ Spin of operator A , ISPINA=    0
+ Spin of operator B , ISPINB=    0
+ Spin of operator C , ISPINC=    0
+
+  2 B-frequencies  0.000000D+00  1.000000D-01
+  2 C-frequencies  0.000000D+00  1.000000D-01
+
+ Print level                                    : IPRHYP =   2
+ Maximum number of iterations in lin.rsp. solver: MAXITL =  60
+ Threshold for convergence of linear resp. eq.s : THCLR  = 1.000D-03
+ Maximum iterations in optimal orbital algorithm: MAXITO =   5
+ Direct one-index transformation                : DIROIT= T
+
+ Test of contributions from E3 and S3 terms.
+
+    1 A OPERATORS OF SYMMETRY NO:    1 AND LABELS:
+
+          YDIPLEN 
+
+    1 A OPERATORS OF SYMMETRY NO:    2 AND LABELS:
+
+          XDIPLEN 
+
+    1 A OPERATORS OF SYMMETRY NO:    3 AND LABELS:
+
+          ZDIPLEN 
+
+    1 B OPERATORS OF SYMMETRY NO:    1 AND LABELS:
+
+          YDIPLEN 
+
+    1 B OPERATORS OF SYMMETRY NO:    2 AND LABELS:
+
+          XDIPLEN 
+
+    1 B OPERATORS OF SYMMETRY NO:    3 AND LABELS:
+
+          ZDIPLEN 
+
+    1 C OPERATORS OF SYMMETRY NO:    1 AND LABELS:
+
+          YDIPLEN 
+
+    1 C OPERATORS OF SYMMETRY NO:    2 AND LABELS:
+
+          XDIPLEN 
+
+    1 C OPERATORS OF SYMMETRY NO:    3 AND LABELS:
+
+          ZDIPLEN 
+
+ Integral transformation: Total CPU and WALL times (sec)       0.000       0.001
+
+
+   SCF energy         :      -75.935844970074086
+ -- inactive part     :      -84.991132726956124
+ -- nuclear repulsion :        9.055287756882032
+
+
+                    *****************************************
+                    *** DFT response calculation (TD-DFT) ***
+                    *****************************************
+
+
+
+ Linear response calculations for quadratic response
+ - singlet property operator of symmetry    1
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      16
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      16
+
+
+ QRLRVE -- linear response calculation for symmetry  1
+ QRLRVE -- operator label : YDIPLEN 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies :  0.000000  0.100000  0.200000
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry =  1; triplet =   F
+
+
+ *** THE REQUESTED    3 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   18)
+ RSP solution vector no.    1; norm of residual   7.35D-04
+ RSP solution vector no.    2; norm of residual   7.04D-04
+ RSP solution vector no.    3; norm of residual   6.13D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   YDIPLEN     FREQUENCY   0.000000D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.00000):     4.22047358686    
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   YDIPLEN     FREQUENCY   0.100000D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.10000):     4.39703511948    
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   YDIPLEN     FREQUENCY   0.200000D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.20000):     5.10690160893    
+
+
+ Linear response calculations for quadratic response
+ - singlet property operator of symmetry    2
+
+
+ Perturbation symmetry.     KSYMOP:       2
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      13
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      13
+
+
+ QRLRVE -- linear response calculation for symmetry  2
+ QRLRVE -- operator label : XDIPLEN 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies :  0.000000  0.100000  0.200000
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry =  2; triplet =   F
+
+
+ *** THE REQUESTED    3 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   18)
+ RSP solution vector no.    1; norm of residual   2.62D-05
+ RSP solution vector no.    2; norm of residual   2.61D-05
+ RSP solution vector no.    3; norm of residual   2.60D-05
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   XDIPLEN     FREQUENCY   0.000000D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     6.99254256716    
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   XDIPLEN     FREQUENCY   0.100000D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.10000):     7.21249061505    
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2    LABEL   XDIPLEN     FREQUENCY   0.200000D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.20000):     7.98279469154    
+
+
+ Linear response calculations for quadratic response
+ - singlet property operator of symmetry    3
+
+
+ Perturbation symmetry.     KSYMOP:       3
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:       7
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :       7
+
+
+ QRLRVE -- linear response calculation for symmetry  3
+ QRLRVE -- operator label : ZDIPLEN 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies :  0.000000  0.100000  0.200000
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry =  3; triplet =   F
+
+RSPORT:    2 out of    3 new trial vectors linear dependent
+
+ *** THE REQUESTED    3 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   14)
+ RSP solution vector no.    1; norm of residual   9.05D-16
+ RSP solution vector no.    2; norm of residual   8.37D-16
+ RSP solution vector no.    3; norm of residual   8.23D-16
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3    LABEL   ZDIPLEN     FREQUENCY   0.000000D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):    0.837736295868    
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3    LABEL   ZDIPLEN     FREQUENCY   0.100000D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.10000):    0.865316213696    
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3    LABEL   ZDIPLEN     FREQUENCY   0.200000D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.20000):     1.01801727208    
+ 
+ ======================================================================
+ >>>>>>>>    L I N E A R   R E S P O N S E   F U N C T I O N   <<<<<<<<
+ ======================================================================
+
+ The -<<A;B>>(omega_b) functions from vectors generated
+ in a *QUADRA calculation of <<A;B,C>>(omega_b,omega_c)
+
+ Note: the accuracy of off-diagonal elements will be linear
+ in the convergence threshold THCLR =  1.00D-03
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      16
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      16
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.000000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.000000
+
+@ Value of linear response -<<A;B>>(omega):       4.220473586864
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.100000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.100000
+
+@ Value of linear response -<<A;B>>(omega):       4.397035119481
+
+
+ Perturbation symmetry.     KSYMOP:       2
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      13
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      13
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   XDIPLEN    2 -0.000000
+@ B operator, symmetry, frequency:   XDIPLEN    2  0.000000
+
+@ Value of linear response -<<A;B>>(omega):       6.992542567161
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   XDIPLEN    2 -0.100000
+@ B operator, symmetry, frequency:   XDIPLEN    2  0.100000
+
+@ Value of linear response -<<A;B>>(omega):       7.212490615048
+
+
+ Perturbation symmetry.     KSYMOP:       3
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:       7
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :       7
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   ZDIPLEN    3 -0.000000
+@ B operator, symmetry, frequency:   ZDIPLEN    3  0.000000
+
+@ Value of linear response -<<A;B>>(omega):       0.837736295868
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   ZDIPLEN    3 -0.100000
+@ B operator, symmetry, frequency:   ZDIPLEN    3  0.100000
+
+@ Value of linear response -<<A;B>>(omega):       0.865316213696
+
+
+  Results from quadratic response calculation
+ --------------------------------------------
+
+ 1norm(B - C) = BMINC =   0.0000000000000000     
+ DFT-QR computed in a linearly-scaling fashion.
+
+
+   COU CONTRIBUTION TO HYPVAL         -7.98382917         -7.98382917
+
+   DFT CONTRIBUTION TO HYPVAL          1.17298500         -6.81084417
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Y,Y) =    -15.36416739
+
+   COU CONTRIBUTION TO HYPVAL         -9.19208185         -9.19208185
+
+   DFT CONTRIBUTION TO HYPVAL          1.37129696         -7.82078489
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Y,Y) =    -17.25770216
+@ B-freq = 0.000000  C-freq = 0.100000     beta(Y;Y,Y) = beta(Y,Y,Y)
+ 1norm(B - C) = BMINC =   0.0000000000000000     
+
+   COU CONTRIBUTION TO HYPVAL        -12.65234422        -12.65234422
+
+   DFT CONTRIBUTION TO HYPVAL          1.94533329        -10.70701092
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.100000  C-freq = 0.100000     beta(Y;Y,Y) =    -22.61629895
+
+   COU CONTRIBUTION TO HYPVAL         -6.99415979         -6.99415979
+
+   DFT CONTRIBUTION TO HYPVAL          1.62902646         -5.36513333
+@ B-freq = 0.000000  C-freq = 0.000000     beta(X;X,Y) =    -21.38430054
+
+   COU CONTRIBUTION TO HYPVAL         -7.68740324         -7.68740324
+
+   DFT CONTRIBUTION TO HYPVAL          1.79776443         -5.88963881
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.100000  C-freq = 0.000000     beta(X;X,Y) =    -22.86901549
+
+   COU CONTRIBUTION TO HYPVAL         -7.70131125         -7.70131125
+
+   DFT CONTRIBUTION TO HYPVAL          1.82584962         -5.87546162
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.000000  C-freq = 0.100000     beta(X;X,Y) =    -23.17288140
+
+   COU CONTRIBUTION TO HYPVAL         -9.41014093         -9.41014093
+
+   DFT CONTRIBUTION TO HYPVAL          2.24759305         -7.16254788
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.100000  C-freq = 0.100000     beta(X;X,Y) =    -26.80628414
+
+   COU CONTRIBUTION TO HYPVAL         -0.43235074         -0.43235074
+
+   DFT CONTRIBUTION TO HYPVAL          0.04778673         -0.38456401
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Z,Y) =     -1.29484407
+
+   COU CONTRIBUTION TO HYPVAL         -0.55561432         -0.55561432
+
+   DFT CONTRIBUTION TO HYPVAL          0.06370880         -0.49190552
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Z,Y) =     -1.65164031
+
+   COU CONTRIBUTION TO HYPVAL         -0.48537827         -0.48537827
+
+   DFT CONTRIBUTION TO HYPVAL          0.05432943         -0.43104883
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.000000  C-freq = 0.100000     beta(Z;Z,Y) =     -1.50262797
+
+   COU CONTRIBUTION TO HYPVAL         -0.93177722         -0.93177722
+
+   DFT CONTRIBUTION TO HYPVAL          0.11361797         -0.81815925
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.100000  C-freq = 0.100000     beta(Z;Z,Y) =     -2.82626146
+@ B-freq = 0.000000  C-freq = 0.000000     beta(X;Y,X) = beta(X,X,Y)
+@ B-freq = 0.100000  C-freq = 0.000000     beta(X;Y,X) = beta(X,X,Y)
+@ B-freq = 0.000000  C-freq = 0.100000     beta(X;Y,X) = beta(X,X,Y)
+@ B-freq = 0.100000  C-freq = 0.100000     beta(X;Y,X) = beta(X,X,Y)
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;X,X) = beta(X,X,Y)
+
+   COU CONTRIBUTION TO HYPVAL         -7.70130959         -7.70130959
+
+   DFT CONTRIBUTION TO HYPVAL          1.82584962         -5.87545997
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;X,X) =    -23.17288306
+@ B-freq = 0.000000  C-freq = 0.100000     beta(Y;X,X) = beta(Y,X,X)
+ 1norm(B - C) = BMINC =   0.0000000000000000     
+
+   COU CONTRIBUTION TO HYPVAL         -9.62986710         -9.62986710
+
+   DFT CONTRIBUTION TO HYPVAL          2.40035892         -7.22950818
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.100000  C-freq = 0.100000     beta(Y;X,X) =    -28.37915717
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Y,Z) = beta(Z,Z,Y)
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Y,Z) = beta(Z,Z,Y)
+@ B-freq = 0.000000  C-freq = 0.100000     beta(Z;Y,Z) = beta(Z,Z,Y)
+@ B-freq = 0.100000  C-freq = 0.100000     beta(Z;Y,Z) = beta(Z,Z,Y)
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Z) = beta(Z,Z,Y)
+
+   COU CONTRIBUTION TO HYPVAL         -0.48537817         -0.48537817
+
+   DFT CONTRIBUTION TO HYPVAL          0.05432943         -0.43104873
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Z,Z) =     -1.50262807
+@ B-freq = 0.000000  C-freq = 0.100000     beta(Y;Z,Z) = beta(Y,Z,Z)
+ 1norm(B - C) = BMINC =   0.0000000000000000     
+
+   COU CONTRIBUTION TO HYPVAL         -0.54511769         -0.54511769
+
+   DFT CONTRIBUTION TO HYPVAL          0.06284770         -0.48226999
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+ S3TEST Case 1    :              0.00000000
+ S3TEST Case 1 ZC :              0.00000000
+ S3TEST Case 1 ZO :              0.00000000
+ S3TEST Case 1 YC :              0.00000000
+ S3TEST Case 1 YO :              0.00000000
+ S3TEST Final result    :              0.00000000
+ S3TEST Final result ZC :              0.00000000
+ S3TEST Final result ZO :              0.00000000
+ S3TEST Final result YC :              0.00000000
+ S3TEST Final result YO :              0.00000000
+@ B-freq = 0.100000  C-freq = 0.100000     beta(Y;Z,Z) =     -1.92229775
+
+ >>>> Total CPU  time used in RESPONSE:   6.85 seconds
+ >>>> Total wall time used in RESPONSE:   7.34 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   7.81 seconds
+ >>>> Total wall time used in DALTON:   8.30 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:41 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

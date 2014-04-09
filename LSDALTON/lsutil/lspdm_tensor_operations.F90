@@ -562,6 +562,8 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
+      call time_start_phase(PHASE_COMM)
+
       call pdm_array_sync(infpar%lg_comm,JOB_GET_FRAG_CC_ENERGY,t1,t2,gmo)
       call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
       call ls_mpi_buffer(occ_num,infpar%master)
@@ -569,9 +571,14 @@ module lspdm_tensor_operations_module
       call ls_mpi_buffer(virt_num,infpar%master)
       call ls_mpi_buffer(virt_idx,virt_num,infpar%master)
       call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+      call time_start_phase(PHASE_WORK)
     endif
     call memory_allocate_array_dense(gmo)
+
+    call time_start_phase(PHASE_COMM)
     call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
+    call time_start_phase(PHASE_WORK)
 
     Eocc  = 0.0E0_realk
     Evirt = 0.0E0_realk
@@ -647,8 +654,10 @@ module lspdm_tensor_operations_module
 
     call arr_deallocate_dense(gmo)
     
+    call time_start_phase(PHASE_COMM)
     call lsmpi_local_reduction(Eocc,infpar%master)
     call lsmpi_local_reduction(Evirt,infpar%master)
+    call time_start_phase(PHASE_WORK)
 
     fEc = 0.50E0_realk*(Eocc + Evirt)
 #else
@@ -753,7 +762,10 @@ module lspdm_tensor_operations_module
     endif
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
+      call time_start_phase(PHASE_COMM)
+
       call pdm_array_sync(infpar%lg_comm,JOB_PREC_DOUBLES_PAR,omega2,ppfock,qqfock,prec)
+      call time_start_phase(PHASE_WORK)
     endif
 
     dims=prec%dims
@@ -762,7 +774,14 @@ module lspdm_tensor_operations_module
     !do a loop over the local tiles of the preconditioned matrix and get the
     !corresponding tiles of the residual to form the preconditioned residual
     do lt=1,prec%nlti
+
+      call time_start_phase(PHASE_COMM)
+
       call array_get_tile(omega2,prec%ti(lt)%gt,prec%ti(lt)%t,prec%ti(lt)%e)
+
+      call time_start_phase(PHASE_WORK)
+
+
       call ass_D1to4(prec%ti(lt)%t,om,prec%ti(lt)%d)
       
       !get offset for global indices
@@ -798,7 +817,11 @@ module lspdm_tensor_operations_module
     enddo
     
     !crucial barrier, wait for all slaves to finish their jobs
+    call time_start_phase(PHASE_IDLE)
+
     call lsmpi_barrier(infpar%lg_comm)
+
+    call time_start_phase(PHASE_WORK)
 #endif
   end subroutine precondition_doubles_parallel
 
@@ -899,7 +922,7 @@ module lspdm_tensor_operations_module
     if(x%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(infpar%lg_comm,JOB_ADD_PAR,x,y)
       call ls_mpibcast(b,infpar%master,infpar%lg_comm)
-    elseif(x%access_type==MASTER_ACCESS.and.infpar%lg_mynum/=infpar%master)then
+    else if(x%access_type==MASTER_ACCESS.and.infpar%lg_mynum/=infpar%master)then
       call ls_mpibcast(b,infpar%master,infpar%lg_comm)
     endif
 
@@ -1611,10 +1634,10 @@ module lspdm_tensor_operations_module
         ltidx = (i - 1) /nnod + 1
         call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,order)
         call daxpy(nelmsit,sc,buf,1,arr%ti(ltidx)%t,1)
-      elseif(nod==me)then
+      else if(nod==me)then
         call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,order)
         call lsmpi_send(buf,nelmsit,infpar%lg_comm,dest)
-      elseif(dest==me)then
+      else if(dest==me)then
         ltidx = (i - 1) /nnod + 1
         call lsmpi_recv(buf,nelmsit,infpar%lg_comm,nod)
         call daxpy(nelmsit,sc,buf,1,arr%ti(ltidx)%t,1)
@@ -1921,10 +1944,10 @@ module lspdm_tensor_operations_module
     if(op=='p')then
       pga  => lsmpi_put_realk
       pgav => lsmpi_put_realkV_w8
-    elseif(op=='g')then
+    else if(op=='g')then
       pga  => lsmpi_get_realk
       pgav => lsmpi_get_realkV_w8
-    elseif(op=='a')then
+    else if(op=='a')then
       pga  => lsmpi_acc_realk
       pgav => lsmpi_acc_realkV_w8
     endif
@@ -1960,7 +1983,7 @@ module lspdm_tensor_operations_module
 
     if(arr%mode==4.and.n2comb==3.and.o(1)==1.and.o(2)==2.and.o(3)==3.and..not.deb)then
       !ATTENTION ONLY WORKS IF TL <= cons_el_in_t --> always given if order = 1,2,3,4
-      !if modification needed for other types, compare the elseif statement
+      !if modification needed for other types, compare the else if statement
       !where n2comb==2, this has been implemented generally
 
       cons_el_in_t = 1_long
@@ -2030,7 +2053,7 @@ module lspdm_tensor_operations_module
       for4 => null()
 
 
-    elseif(arr%mode==4.and.n2comb==2.and..not.deb)then
+    else if(arr%mode==4.and.n2comb==2.and..not.deb)then
 
       !CODE FOR 2 DIMENSIONS TO COMBINE IF A 4 MODE TENSOR IS GIVEN
 
@@ -2519,10 +2542,10 @@ module lspdm_tensor_operations_module
     if(op=='p')then
       pga  => lsmpi_put_realk
       pgav => lsmpi_put_realkV_w8
-    elseif(op=='g')then
+    else if(op=='g')then
       pga  => lsmpi_get_realk
       pgav => lsmpi_get_realkV_w8
-    elseif(op=='a')then
+    else if(op=='a')then
       pga  => lsmpi_acc_realk
       pgav => lsmpi_acc_realkV_w8
     endif
@@ -3317,10 +3340,10 @@ module lspdm_tensor_operations_module
           ltidx = (i - 1) /nnod + 1
           call tile_in_fort(sc,arr%ti(ltidx)%t,i,arr%tdim,&
                &1.0E0_realk,fort,fullfortdim,arr%mode,order)
-        elseif(src==me)then
+        else if(src==me)then
           ltidx = (i - 1) /nnod + 1
           call lsmpi_send(arr%ti(ltidx)%t,nelintile,infpar%lg_comm,nod)
-        elseif(nod==me)then
+        else if(nod==me)then
           call lsmpi_recv(tmp,nelintile,infpar%lg_comm,src)
           call tile_in_fort(sc,tmp,i,arr%tdim,&
                &1.0E0_realk,fort,fullfortdim,arr%mode,order)
@@ -3373,10 +3396,10 @@ module lspdm_tensor_operations_module
           ltidx = (i - 1) /nnod + 1
           call tile_in_fort(1.0E0_realk,arr%ti(ltidx)%t,i,arr%tdim,&
                            &0.0E0_realk,fort,fullfortdim,arr%mode,order)
-        elseif(src==me)then
+        else if(src==me)then
           ltidx = (i - 1) /nnod + 1
           call lsmpi_send(arr%ti(ltidx)%t,nelintile,infpar%lg_comm,nod)
-        elseif(nod==me)then
+        else if(nod==me)then
           call lsmpi_recv(tmp,nelintile,infpar%lg_comm,src)
           call tile_in_fort(1.0E0_realk,tmp,i,arr%tdim,&
                            &0.0E0_realk,fort,fullfortdim,arr%mode,order)
@@ -3433,10 +3456,10 @@ module lspdm_tensor_operations_module
         ltidx = (i - 1) /nnod + 1
         call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,&
                            &0.0E0_realk,arr%ti(ltidx)%t,i,arr%tdim,order)
-      elseif(nod==me)then
+      else if(nod==me)then
         call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,order)
         call lsmpi_send(buf,nelmsit,infpar%lg_comm,dest)
-      elseif(dest==me)then
+      else if(dest==me)then
         ltidx = (i - 1) /nnod + 1
         call lsmpi_recv(arr%ti(ltidx)%t,nelmsit,infpar%lg_comm,nod)
       endif
@@ -3461,13 +3484,10 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: ti_idx
     character, intent(in) :: locktype
     integer(kind=ls_mpik), optional,intent(in) :: assert
-    integer(kind=ls_mpik) :: ass,node
-
-    ass = int(0,kind=ls_mpik)
-    if(present(assert))ass=assert
+    integer(kind=ls_mpik) ::node
 
     node=get_residence_of_tile(ti_idx,arr)
-    call lsmpi_win_lock(node,arr%wi(ti_idx),locktype,ass)
+    call lsmpi_win_lock(node,arr%wi(ti_idx),locktype,ass=assert)
     arr%lock_set(ti_idx)=.true.
 
   end subroutine arr_lock_win
@@ -3478,9 +3498,9 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: ti_idx
     integer(kind=ls_mpik) :: node
 
-    node=get_residence_of_tile(ti_idx,arr)
+    node                 = get_residence_of_tile(ti_idx,arr)
     call lsmpi_win_unlock(node,arr%wi(ti_idx))
-    arr%lock_set(ti_idx)=.false.
+    arr%lock_set(ti_idx) = .false.
 
   end subroutine arr_unlock_win
 
@@ -3489,15 +3509,15 @@ module lspdm_tensor_operations_module
     type(array) :: arr
     character, intent(in) :: locktype
     integer(kind=ls_mpik), optional,intent(in) :: assert
-    integer(kind=ls_mpik) :: ass,node
+    integer(kind=ls_mpik) :: node
     integer :: i
-    ass = int(0,kind=ls_mpik)
-    if(present(assert))ass=assert
+
     do i=1,arr%ntiles
-      node=get_residence_of_tile(i,arr)
-      call lsmpi_win_lock(node,arr%wi(i),locktype,ass)
-      arr%lock_set(i)=.true.
+      node            = get_residence_of_tile(i,arr)
+      call lsmpi_win_lock(node,arr%wi(i),locktype,ass=assert)
+      arr%lock_set(i) = .true.
     enddo
+
   end subroutine arr_lock_wins
 
   !\> \brief unlock all windows of a tensor 
@@ -3694,7 +3714,7 @@ module lspdm_tensor_operations_module
     !if nrm is present return the squared norm, else print the norm
     if(infpar%lg_mynum==0.and.present(nrm))then
       nrm = norm
-    elseif(infpar%lg_mynum==0)then
+    else if(infpar%lg_mynum==0)then
       write(DECinfo%output,'("LOCAL TILE NORM ON",I3,f20.15)') dest,sqrt(norm)
     endif
 #endif
@@ -3754,12 +3774,9 @@ module lspdm_tensor_operations_module
     !> input the fortan array which should be transferred to the tile
     real(realk),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set
-    logical :: ls
     integer :: cidx
-    ls = .false.
-    if(present(lock_set))ls=lock_set
     cidx=get_cidx(modidx,arr%ntpm,arr%mode)
-    call array_accumulate_tile(arr,cidx,fort,nelms,lock_set=ls)
+    call array_accumulate_tile(arr,cidx,fort,nelms,lock_set=lock_set)
   end subroutine array_accumulate_tile_modeidx
   subroutine array_acct4(arr,globtilenr,fort,nelms,lock_set)
     implicit none
@@ -3768,8 +3785,7 @@ module lspdm_tensor_operations_module
     integer(kind=4),intent(in) :: nelms
     real(realk),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set
-    if(present(lock_set))call array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms,lock_set)
-    if(.not.present(lock_set))call array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms)
+    call array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms,lock_set=lock_set)
   end subroutine array_acct4
   subroutine array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms,lock_set)
     implicit none
@@ -3789,15 +3805,17 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    dest=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
+    dest = get_residence_of_tile(globtilenr,arr)
+    sta  = MPI_WTIME()
+
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
+    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze,.true.)
     if(.not.ls)CALL lsmpi_win_unlock(dest, arr%wi(globtilenr))
-    sto = MPI_WTIME()
+
+    sto          = MPI_WTIME()
     time_pdm_acc = time_pdm_acc + sto - sta
     bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
-    nmsg_acc = nmsg_acc + 1
+    nmsg_acc     = nmsg_acc + 1
 #endif
   end subroutine array_accumulate_tile_combidx4
   subroutine array_acct8(arr,globtilenr,fort,nelms,lock_set)
@@ -3807,8 +3825,7 @@ module lspdm_tensor_operations_module
     integer(kind=8),intent(in) :: nelms
     real(realk),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set
-    if(present(lock_set))call array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms,lock_set)
-    if(.not.present(lock_set))call array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms)
+    call array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms,lock_set=lock_set)
   end subroutine array_acct8
   subroutine array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms,lock_set)
     implicit none
@@ -3828,15 +3845,17 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    dest=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
+    dest = get_residence_of_tile(globtilenr,arr)
+    sta  = MPI_WTIME()
+
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze)
+    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr),maxsze,.true.)
     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(globtilenr))
-    sto = MPI_WTIME()
+
+    sto          = MPI_WTIME()
     time_pdm_acc = time_pdm_acc + sto - sta
     bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
-    nmsg_acc = nmsg_acc + 1
+    nmsg_acc     = nmsg_acc + 1
 #endif
   end subroutine array_accumulate_tile_combidx8
 
@@ -4223,7 +4242,7 @@ module lspdm_tensor_operations_module
     if(me<int(mod(o2v2,int(nnod,kind=long)),kind=ls_mpik))then
       nintel = nintel + 1
       firstintel = firstintel + int(me) 
-    elseif(me>=int(mod(o2v2,int(nnod,kind=long)),kind=ls_mpik))then
+    else if(me>=int(mod(o2v2,int(nnod,kind=long)),kind=ls_mpik))then
       firstintel = firstintel + int(mod(o2v2,int(nnod,kind=long))) 
     endif
   end subroutine get_int_dist_info
@@ -4240,12 +4259,13 @@ module lspdm_tensor_operations_module
     fe=1
     ne=0
     nnod = 1
+
+#ifdef VAR_MPI
 #ifdef VAR_LSDEBUG
     msg_len_mpi=24
 #else
-    msg_len_mpi=170000000
+    msg_len_mpi=SPLIT_MPI_MSG
 #endif
-#ifdef VAR_MPI
     nnod = infpar%lg_nodtot
     me   = infpar%lg_mynum
     do node=0,nnod-1
@@ -4253,7 +4273,7 @@ module lspdm_tensor_operations_module
       sta=MPI_WTIME()
       !print *,infpar%lg_mynum,"distributing",fe,fe+ne-1,ne,o2v2,node
       if(.not.lock_outside)call lsmpi_win_lock(node,win,'s')
-      call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
+      call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi,.true.)
       if(.not.lock_outside)call lsmpi_win_unlock(node,win)
       sto = MPI_WTIME()
       time_pdm_acc = time_pdm_acc + sto - sta

@@ -2,9 +2,9 @@ MODULE IchorParametersModule
 !> Spherical Specification
 Integer,parameter :: SphericalParam = 1 !spherical harmonic basis set
 !Job Specification
-integer,parameter :: IcorJobEri = 1     !4 center 2 electronic repulsion integrals
+integer,parameter :: IchorJobEri = 1     !4 center 2 electronic repulsion integrals
 !Input Spec
-integer,parameter :: IcorInputNoInput = 1 !no input in inputstorage (no Density matrix)
+integer,parameter :: IchorInputNoInput = 1 !no input in inputstorage (no Density matrix)
 !Parallelization specification 
 integer,parameter :: IchorParNone = 1     !no parallelization
 !> Screening specification 

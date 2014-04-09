@@ -1,0 +1,7 @@
+   pehf_nomb
+   -----------
+   Molecule:         Acrolein and two classical water molecules
+   Wave Function:    PE-HF / STO-3G
+   Test Purpose:     Testing the many-body neglect approximation option
+                     of the PE library using the iterative and direct
+                     solver for induced moments

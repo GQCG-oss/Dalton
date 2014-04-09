@@ -1,0 +1,53 @@
+#!/bin/ksh
+AWK=awk
+log=$1
+ERRLIST=""
+. ./functions || { echo "current dir is not the test dir" ; exit 1; }
+
+check_scf_energy DFT -75.880414456863 1e-10
+check_hyperpolarizabilities 0.0 0.0 'X;X,X'   0.24049351 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Y;X,X' -18.79765701 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Z;X,X'   0.00000000 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;X,X'   0.22352069 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;X,X' -21.30375971 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;X,X'   0.00000000 1e-5
+check_hyperpolarizabilities 0.0 0.0 'X;Y,X' -18.79765701 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Y;Y,X'  -1.21574338 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Z;Y,X'   0.00000000 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;Y,X' -21.30375971 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;Y,X'  -1.39859979 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;Y,X'   0.00000000 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Z;Z,X'   0.67576009 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;Z,X'   1.04501788 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;X,Y' -21.05606557 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;X,Y'  -1.39866285 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;X,Y'   0.00000000 1e-5
+check_hyperpolarizabilities 0.0 0.0 'X;Y,Y'  -1.21574338 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Y;Y,Y'  -8.23359584 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Z;Y,Y'   0.00000000 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;Y,Y'  -1.39866285 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;Y,Y' -10.33620236 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;Y,Y'   0.00000000 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Z;Z,Y'  -4.23722322 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;Z,Y' -12.95552868 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;X,Z'  -0.00000001 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;X,Z'   0.00000000 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;X,Z'   0.82541481 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;Y,Z'   0.00000000 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;Y,Z'   0.00000000 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;Y,Z'  -5.07307916 1e-5
+check_hyperpolarizabilities 0.0 0.0 'X;Z,Z'   0.67576009 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Y;Z,Z'  -4.23722322 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Z;Z,Z'  -0.00000003 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;Z,Z'   0.82541481 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;Z,Z'  -5.07307916 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;Z,Z'  -0.00000001 1e-5
+
+if [ "$ERRLIST" = "" ]; then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo "Failed tests: $ERRLIST"
+  echo THERE IS A PROBLEM
+  exit 1
+fi

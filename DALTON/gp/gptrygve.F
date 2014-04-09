@@ -51,6 +51,26 @@ C
       CALL FLSHFO(LUPRI)
       RETURN
       END
+      SUBROUTINE HEADER_A(HEAD,IN)
+C
+C     HEADER_A is same as HEADER, except with an '@ in column 1
+C     April 2014, Hans Joergen Aa. Jensen
+C
+      CHARACTER HEAD*(*)
+#include "priunit.h"
+C
+      LHEAD = LNBLNK(HEAD)
+      IF (IN .GE. 0) THEN
+         INDENT = MAX(1,IN)
+      ELSE
+         INDENT = MAX(1,(80 - LHEAD)/2)
+      END IF
+      WRITE (LUPRI, '(//,150A)') '@',(' ',I=1,INDENT), HEAD(1:LHEAD)
+      WRITE (LUPRI, '(   150A)') ' ',(' ',I=1,INDENT), ('-',I=1,LHEAD)
+      WRITE (LUPRI, '()')
+      CALL FLSHFO(LUPRI)
+      RETURN
+      END
 C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
 #include "implicit.h"

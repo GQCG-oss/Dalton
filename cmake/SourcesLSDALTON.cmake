@@ -230,6 +230,7 @@ set(INTERESTLIB_SOURCES
     LSDALTON/interest/src/module_interest_osr.f90
     )
 set(ICHORINT_SOURCES
+    LSDALTON/IchorIntegrals/MainIchorInterface.F90
     LSDALTON/IchorIntegrals/IchorPresicion.F90
     LSDALTON/IchorIntegrals/IchorParameters.F90
     LSDALTON/IchorIntegrals/IchorCommon.F90
@@ -442,6 +443,7 @@ set(LSINT_SOURCES
 set(LSUTIL_PRECISION_SOURCES
     LSDALTON/lsutil/ls_precision.F90
     LSDALTON/lsutil/ptr_assoc.F90
+    LSDALTON/lsutil/lsmpi_mod.F90
     )
 set(LSUTIL_MATRIXM_SOURCES
     LSDALTON/lsutil/matrix_module.F90    LSDALTON/

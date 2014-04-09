@@ -5,6 +5,7 @@ module dec_fragment_utils
 
   use fundamental
   use precision
+  use lstiming
   use ls_util!,only: dgemm_ts
   use typedeftype!,only: lsitem
   use molecule_module!, only: get_geometry
@@ -20,6 +21,7 @@ module dec_fragment_utils
   use BUILDAOBATCH
 #ifdef VAR_MPI
   use infpar_module
+  use lsmpi_op
 #endif
 
 #ifdef VAR_PAPI
@@ -58,6 +60,94 @@ module dec_fragment_utils
   end interface read_32bit_to_64bit
 
 contains
+
+
+  subroutine dec_time_evaluate_efficiency_frag(frag,t,ccmodel,label)
+     implicit none
+     type(decfrag), intent(inout) :: frag
+     real(realk), pointer, intent(inout) :: t(:)
+     integer, intent(in) :: ccmodel
+     character*(*), intent(in) :: label
+     integer(kind=ls_mpik) :: nnod,nod
+     real(realk) :: tottime_work, tottime_idle, tottime_comm
+     real(realk) :: max_work, max_comm, max_idle, time_tts, time_tot
+     real(realk),pointer :: time_tot_node(:)
+     nnod = 1
+#ifdef VAR_MPI
+     nnod = infpar%lg_nodtot
+#endif
+     call mem_alloc(time_tot_node,nnod)
+
+     tottime_work = 0.0E0_realk
+     tottime_comm = 0.0E0_realk
+     tottime_idle = 0.0E0_realk
+     time_tts     = t(PHASE_WORK_IDX) + t(PHASE_COMM_IDX) + t(PHASE_IDLE_IDX)
+
+     !skip local master time, this time will be added outside
+     do nod = 1, nnod
+        tottime_work = tottime_work + t((nod-1)*nphases + PHASE_WORK_IDX)
+        tottime_comm = tottime_comm + t((nod-1)*nphases + PHASE_COMM_IDX)
+        tottime_idle = tottime_idle + t((nod-1)*nphases + PHASE_IDLE_IDX)
+        time_tot_node(nod) = &
+           &t((nod-1)*nphases + PHASE_WORK_IDX) + &
+           &t((nod-1)*nphases + PHASE_COMM_IDX) + &
+           &t((nod-1)*nphases + PHASE_IDLE_IDX)
+     enddo
+
+     time_tot = tottime_work + tottime_comm + tottime_idle
+
+     !timings are not precise of course, test if they are correct within 1%
+     if( abs(time_tot - time_tts*nnod) > time_tot*1.0E-2_realk )then
+        print *,"WARNING(dec_time_evaluate_efficiency_frag)&
+           &MAYBE SOMETHING WRONG WITH TIMERS",time_tot,time_tts,nnod
+        print *,"TOTAL TIMES ON NODES",time_tot_node
+     endif
+
+     frag%slavetime_work(ccmodel) = tottime_work
+     frag%slavetime_comm(ccmodel) = tottime_comm
+     frag%slavetime_idle(ccmodel) = tottime_idle
+
+     if(DECinfo%PL>0)then
+        write(DECinfo%output,'("Portion time spent working       in ",a," is: ",g10.3,"%")')label,tottime_work/time_tot*100
+        write(DECinfo%output,'("Portion time spent communicating in ",a," is: ",g10.3,"%")')label,tottime_comm/time_tot*100
+        write(DECinfo%output,'("Portion time spent idle          in ",a," is: ",g10.3,"%")')label,tottime_idle/time_tot*100
+     endif
+
+     call mem_dealloc(time_tot_node)
+     call mem_dealloc(t)
+  end subroutine dec_time_evaluate_efficiency_frag
+
+
+  subroutine dec_fragment_time_init(t)
+     implicit none
+     real(realk), pointer, intent(inout) :: t(:)
+
+#ifdef VAR_MPI
+     call init_slave_timers(t,infpar%lg_comm)
+#else
+     call mem_alloc(t,nphases)
+     call time_start_phase(PHASE_WORK, &
+        &swinit = t(PHASE_INIT_IDX) ,&
+        &swwork = t(PHASE_WORK_IDX) ,&
+        &swcomm = t(PHASE_COMM_IDX) ,&
+        &swidle = t(PHASE_IDLE_IDX) )
+#endif
+
+  end subroutine dec_fragment_time_init
+
+  subroutine dec_fragment_time_get(t)
+     implicit none
+     real(realk), pointer, intent(inout) :: t(:)
+#ifdef VAR_MPI
+     call get_slave_timers(t,infpar%lg_comm)
+#else
+     call time_start_phase(PHASE_WORK, &
+        &dwinit = t(PHASE_INIT_IDX) ,&
+        &dwwork = t(PHASE_WORK_IDX) ,&
+        &dwcomm = t(PHASE_COMM_IDX) ,&
+        &dwidle = t(PHASE_IDLE_IDX) )
+#endif
+  end subroutine dec_fragment_time_get
 
   !> \brief Returns number of unique elements in a vector
   function unique_entries(vector,size_of_vector) result(num)
@@ -1318,7 +1408,8 @@ contains
   !> \brief Subroutine that creates initial fragment
   !> \date august 2011
   !> \author Ida-Marie Hoyvik
-  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,init_radius,Occ,Virt)
+  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
+       & init_Occradius,init_Virtradius,Occ,Virt)
     implicit none
     !> number of atoms in MOLECULE
     Integer, intent(in)    :: natoms
@@ -1326,8 +1417,10 @@ contains
     integer,intent(in), dimension(natoms) :: nocc_per_atom, nunocc_per_atom
     !> Distances from central atom to other atoms
     real(realk),intent(in) :: DistMyAtom(natoms)
-    !> Include orbitals assigned to atoms within this distance of central atom
-    real(realk),intent(in) :: init_radius
+    !> Include Occ orbitals assigned to atoms within this distance of central atom
+    real(realk),intent(in) :: init_Occradius
+    !> Include Virt orbitals assigned to atoms within this distance of central atom
+    real(realk),intent(in) :: init_Virtradius
     !> Which AOS atoms to include for occ and virt spaces
     !> (entry i is T if orbitals on atom i is included)
     !> (In practice occ and virt will be identical but we keep it general)
@@ -1337,7 +1430,8 @@ contains
 
     FOT=DECinfo%FOT
 
-    write(DECinfo%output,'(a,f5.2)') " FOP Radius for initial fragment: ",init_radius
+    write(DECinfo%output,'(a,f5.2)') " FOP Occ Radius for initial fragment: ",init_Occradius
+    write(DECinfo%output,'(a,f5.2)') " FOP Virt Radius for initial fragment: ",init_Virtradius
 
     ! Include atoms within init_radius
     Occ=.false.
@@ -1347,8 +1441,10 @@ contains
        ! Skip if no orbitals are assigned - do NOT modify this line.
        if(nocc_per_atom(i)==0 .or. nunocc_per_atom(i)==0) cycle
 
-       if (DistMyAtom(i) .le. init_radius) then
+       if (DistMyAtom(i) .le. init_Occradius) then
           Occ(i) = .true.
+       end if
+       if (DistMyAtom(i) .le. init_Virtradius) then
           Virt(i) = .true.
        end if
 
@@ -1974,10 +2070,6 @@ contains
     call atomic_fragment_free_basis_info(fragment)
     call free_fragment_t1(fragment)
    
-    if(DECinfo%F12debug) then 
-       print *, "atomic_fragment_free"
-    end if
-
   end subroutine atomic_fragment_free
 
   !> \brief Delete the "simple" part of the atomic fragment structure, i.e.
@@ -2192,10 +2284,6 @@ contains
     !> Atomic fragment to be freed
     type(decfrag),intent(inout) :: fragment
     
-    if(DECinfo%F12debug) then   
-        print *, "atomic_fragment_free_f12"
-    end if
-
     ! Free CABS MOs !
     if(associated(fragment%Ccabs)) then
        call mem_dealloc(fragment%Ccabs)
@@ -3406,7 +3494,9 @@ contains
     write(funit) jobs%ntasks
     write(funit) jobs%flops
     write(funit) jobs%LMtime
-    write(funit) jobs%load
+    write(funit) jobs%workt
+    write(funit) jobs%commt
+    write(funit) jobs%idlet
 
   end subroutine write_fragment_joblist_to_file
 
@@ -3487,7 +3577,9 @@ contains
 
     read(funit) jobs%flops
     read(funit) jobs%LMtime
-    read(funit) jobs%load
+    read(funit) jobs%workt
+    read(funit) jobs%commt
+    read(funit) jobs%idlet
 
     write(DECinfo%output,*)
     write(DECinfo%output,*) 'JOB LIST RESTART'
@@ -3536,7 +3628,9 @@ contains
     call mem_alloc(jobs%ntasks,njobs)
     call mem_alloc(jobs%flops,njobs)
     call mem_alloc(jobs%LMtime,njobs)
-    call mem_alloc(jobs%load,njobs)
+    call mem_alloc(jobs%commt,njobs)
+    call mem_alloc(jobs%workt,njobs)
+    call mem_alloc(jobs%idlet,njobs)
     jobs%nslaves = 0
     jobs%nocc    = 0
     jobs%nunocc  = 0
@@ -3544,7 +3638,9 @@ contains
     jobs%ntasks  = 0
     jobs%flops   = 0.0E0_realk
     jobs%LMtime  = 0.0E0_realk
-    jobs%load    = 0.0E0_realk
+    jobs%commt   = 0.0E0_realk
+    jobs%workt   = 0.0E0_realk
+    jobs%idlet   = 0.0E0_realk
 
   end subroutine init_joblist
 
@@ -3624,9 +3720,19 @@ contains
        nullify(jobs%LMtime)
     end if
 
-    if(associated(jobs%load)) then
-       call mem_dealloc(jobs%load)
-       nullify(jobs%load)
+    if(associated(jobs%workt)) then
+       call mem_dealloc(jobs%workt)
+       nullify(jobs%workt)
+    end if
+
+    if(associated(jobs%commt)) then
+       call mem_dealloc(jobs%commt)
+       nullify(jobs%commt)
+    end if
+
+    if(associated(jobs%idlet)) then
+       call mem_dealloc(jobs%idlet)
+       nullify(jobs%idlet)
     end if
 
   end subroutine free_joblist
@@ -3670,7 +3776,9 @@ contains
     jobs%ntasks(position)    = singlejob%ntasks(1)
     jobs%flops(position)     = singlejob%flops(1)
     jobs%LMtime(position)    = singlejob%LMtime(1)
-    jobs%load(position)      = singlejob%load(1)
+    jobs%workt(position)     = singlejob%workt(1)
+    jobs%commt(position)     = singlejob%commt(1)
+    jobs%idlet(position)     = singlejob%idlet(1)
 
   end subroutine put_job_into_joblist
 
@@ -4637,15 +4745,32 @@ contains
 #ifdef MOD_UNRELEASED
     ! MODIFY FOR NEW CORRECTION
     if(DECInfo%F12) then
+
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+            & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
+      
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+            & DistanceTable, 'MP2f12 occupied pair energies','PF_MP2f12_OCC')
+      
        write(DECinfo%output,*)
-       write(DECinfo%output,'(13X,a)') '**********************************************************'
-       write(DECinfo%output,'(13X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
-       write(DECinfo%output,'(13X,a)') '**********************************************************'
-       write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY : ', energies(FRAGMODEL_OCCMP2)  
-       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY : ', energies(FRAGMODEL_MP2f12)
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+       write(DECinfo%output,'(1X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+       write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_OCCMP2)  
+       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_MP2f12)
        write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
             & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
        write(DECinfo%output,*)       
+
+       if(DECinfo%F12debug) then
+          write(*,'(1X,a)') '**********************************************************'
+          write(*,'(1X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
+          write(*,'(1X,a)') '**********************************************************'
+          write(*,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_OCCMP2)  
+          write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_MP2f12)
+          write(*,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+               & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
+       endif
     endif
 #endif
 
