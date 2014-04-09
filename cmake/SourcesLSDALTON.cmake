@@ -59,7 +59,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     LSDALTON/lsdaltonsrc/Profile.F90
     LSDALTON/lsdaltonsrc/IchorTesting.F90
     LSDALTON/lsdaltonsrc/IchorProfile.F90
-    LSDALTON/lsdaltonsrc/SCFCounterPoiseCorrection.F90
+    LSDALTON/lsdaltonsrc/SCFinteractionEnergy.F90
     )
 set(DDYNAM_SOURCES
     LSDALTON/ddynam/LSinput.F90
