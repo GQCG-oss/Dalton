@@ -63,12 +63,12 @@ contains
 !> \brief Get maximum batch dimension encountered in integral program.
 !> \author Kasper Kristensen
 !> \date February 2011
-function max_batch_dimension(mylsitem,nbasis,lupri) result(maxdim)  
+function max_batch_dimension(mylsitem,nbasis) result(maxdim)  
   implicit none 
   !> LS item info
   type(lsitem), intent(inout) :: mylsitem
   !> Number of basis function
-  integer, intent(in) :: nbasis,lupri
+  integer, intent(in) :: nbasis
   integer :: maxdim
   integer, pointer :: orb2batch(:), batchdim(:)
   integer :: i, nbatches
@@ -80,7 +80,7 @@ function max_batch_dimension(mylsitem,nbasis,lupri) result(maxdim)
   
   ! Get batch info
   call II_getBatchOrbitalInfo(mylsitem%setting,nbasis,&
-       & orb2Batch,nbatches,lupri,lupri)
+       & orb2Batch,nbatches,DECinfo%output,DECinfo%output)
   
   ! Vector containing dimensions for each batch
   call mem_alloc(batchdim,nbatches)

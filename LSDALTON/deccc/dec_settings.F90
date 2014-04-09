@@ -710,7 +710,7 @@ contains
        OO=nocc      ! Number of occupied orbitals (as real)
        VV=nvirt     ! Number of virtual orbitals (as real)
        ! Maximum batch dimension (as real)
-       BB=max_batch_dimension(mylsitem,nbasis,DECinfo%output)
+       BB=max_batch_dimension(mylsitem,nbasis)
        AA=nbasis    ! Number of atomic orbitals (as real)       
        call estimate_memory_for_mp2_energy(nthreads,OO,VV,AA,BB,intMEM,intStep,solMEM)
        mem_required = max(intMEM,solMEM)
