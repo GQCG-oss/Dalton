@@ -45,7 +45,7 @@ module pno_ccsd_module
      type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
      !INTERNAL VARIABLES
      type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:),pno_govov(:),pno_gvovo(:)
-     integer :: ns,ns2,ns3,c,nc,nc2
+     integer :: ns,c,nc,nc2
      real(realk),pointer :: w1(:),w2(:),w3(:), w4(:),w5(:)
      real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:),h1(:), h2(:), r1(:,:),r2(:,:)
      real(realk),pointer :: gvvvv(:), gvovo(:), govov(:), goooo(:), goovv(:), gvvov(:), gooov(:)
@@ -449,7 +449,7 @@ module pno_ccsd_module
      call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,3,4,1], nul, w2 ) ! aldj -> ldja
      call array_reorder_4d( p10, govov, no, nv, no, nv, [4,1,3,2], nul, w3 ) ! kdlc -> ckld
      !C intermediate w1(ckja) -  0.5 w3(ckld) w2(ldja)
-     !call dgemm( 'n', 'n', no*nv, no*nv, no*nv, m05, w3, no*nv, w2, no*nv, p10, w1, no*nv)
+     call dgemm( 'n', 'n', no*nv, no*nv, no*nv, m05, w3, no*nv, w2, no*nv, p10, w1, no*nv)
      call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,4,3,2], nul, w2 ) ! bkci -> bick
      !call print_tensor_unfolding_with_labels(w2,&
      !  &[nv,no],'bi',2,[nv,no],'ck',2,'FULL T2')
@@ -2244,16 +2244,21 @@ module pno_ccsd_module
      integer,intent(in)    :: p_idx(:,:),p_nidx(:)
      integer,intent(inout) :: oidx1(:,:),oidx2(:,:)
      character :: tr11,tr12,tr21,tr22,TRamp_pos1(2),TRamp_pos2(2),trh1,trh2
-     real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:),h1(:), h2(:), h3(:), h4(:)
+     real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:)
+     real(realk),pointer :: p5(:,:,:,:), p6(:,:,:,:)
+     real(realk),pointer :: pij(:,:,:,:), pji(:,:,:,:)
+     real(realk),pointer :: h1(:), h2(:), h3(:), h4(:)
      real(realk),pointer :: r1(:,:),r2(:,:),d(:,:),d1(:,:),d2(:,:)
      real(realk),pointer :: o(:),t(:),S1(:,:), t21(:), t22(:), f1(:,:,:)
      logical :: skiptrafo,cyc
-     integer :: space, a,i,b,j,k, nv,rpd,pno,pnv,nc,nc2,nidx1,nidx2,ns2,ns3,kp(2)
+     integer :: space,nv,rpd,pno,pnv,nc,nc2,nidx1,nidx2,ns1,ns2,kp(2)
+     integer :: a,i,ic,b,j,jc,k,kc,l,lc,c
      integer :: rpd1,pno1,pnv1,Sidx1,ldS1
      integer :: rpd2,pno2,pnv2,Sidx2,ldS2
      integer :: pair1,pair2,paircontrib(2,2)
      integer :: order1(4), ldh1,ldh2,ldh3
      integer :: suborder(2),i_idx,j_idx,pos_in_res,ipos_in_res
+     integer :: nidx_h1, nidx_h2
      integer,pointer :: idx(:),idx1(:),idx2(:)
      integer(kind=8) :: o2v2
      integer,parameter :: paircontribs = 2
@@ -2268,10 +2273,10 @@ module pno_ccsd_module
      integer, intent(in) :: yep
      real(realk), intent(in) :: reference(yep,no,yep,no)
      real(realk), pointer :: check_ref(:,:,:,:), phelp(:,:,:,:)
-     integer :: diff1,diff2, id(2),kcount
+     integer :: diff11,diff12,diff21,diff22, id(2),kcount
      integer :: bpc,epc
      !reduce the no
-     logical :: add_contrib,FAspace,FAspace1,PS,PS1
+     logical :: add_contrib,add_contrib1,add_contrib2,FAspace,FAspace1,PS,PS1,PS2
      real(realk) :: pref
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -2292,15 +2297,15 @@ module pno_ccsd_module
 
      OneIdxSpaceLoop1: do nc = 1, p_nidx(ns)
         ! extract indices:
-        ns2 = p_idx(nc,ns)
+        ns1 = p_idx(nc,ns)
 
-        call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
+        call check_if_contributes(ns,ns1,pno_cv,pno_S,cyc)
 
-        !print *,""
-        !print *,""
-        !print *,""
-        !print *,""
-        !print *,"ENTERING LOOP",ns,ns2,cyc,pno,pno_cv(ns2)%n
+        print *,""
+        print *,""
+        print *,""
+        print *,""
+        print *,"ENTERING LOOP",ns,ns1,cyc,pno,pno_cv(ns1)%n
 
         if( cyc )then
 
@@ -2308,16 +2313,16 @@ module pno_ccsd_module
 
         endif
 
-        call get_overlap_idx(ns,ns2,pno_cv,oidx1,nidx1,ndidx1=diff1,ndidx2=diff2)
+        call get_overlap_idx(ns,ns1,pno_cv,oidx1,nidx1,ndidx1=diff11,ndidx2=diff12)
 
-        d1       => pno_cv(ns2)%d
-        t21      => pno_t2(ns2)%elm1
-        idx1     => pno_cv(ns2)%iaos
-        pnv1     =  pno_cv(ns2)%ns2
-        pno1     =  pno_cv(ns2)%n
-        rpd1     =  pno_cv(ns2)%rpd
-        FAspace1 =  pno_cv(ns2)%is_FA_space
-        PS1      =  pno_cv(ns2)%PS
+        d1       => pno_cv(ns1)%d
+        t21      => pno_t2(ns1)%elm1
+        idx1     => pno_cv(ns1)%iaos
+        pnv1     =  pno_cv(ns1)%ns2
+        pno1     =  pno_cv(ns1)%n
+        rpd1     =  pno_cv(ns1)%rpd
+        FAspace1 =  pno_cv(ns1)%is_FA_space
+        PS1      =  pno_cv(ns1)%PS
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2331,6 +2336,11 @@ module pno_ccsd_module
         !up during the loops
         call ass_D1to4( goovv, p2, [no, no,nv,  nv] )
         if( PS )then
+
+           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+           !CODE FOR TRIANGULAR RESIDUAL CONTRIBUTIONS!
+           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
            !associate pointers such as to write k last in this case, does not
            !change anything for the pno1==2 case but helps a lot otherwise
            call ass_D1to4( w1,    p1, [nv,rpd,nv,rpd1] )
@@ -2353,26 +2363,28 @@ module pno_ccsd_module
 
                  i = idx(paircontrib(1,pair1))
 
-                 if(ns==ns2)then
+                 if(ns==ns1)then
                     k = j
                  else
-                    k = oidx1(nidx1+diff1+1,3)
+                    k = oidx1(nidx1+diff11+1,3)
                  endif
 
 #ifdef VAR_LSDEBUG
-                 if(k==i)call lsquit("ERROR(PNO C-term)this should never happen",-1)
+                 if(k==i)call lsquit("ERROR(get_common_idx_summation_for_current_aibj): &
+                    &this should never happen i==j",-1)
 #endif
 
               else
 
 #ifdef VAR_LSDEBUG
-                 if(nidx1/=1)call lsquit("ERROR(here)this should never occur",-1)
+                 if(nidx1/=1)call lsquit("ERROR(get_common_idx_summation_for_current_aibj): &
+                    &this should never occur nidx1/=1",-1)
 #endif
                  i = oidx1(1,3)
                  k = idx1(1)
 
               endif
-              add_contrib = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns2 ) &
+              add_contrib = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
                     &.or.(.not. PS1 .and. i/=j)
 
               if(add_contrib     .and.pair1==1)bpc = 1
@@ -2381,6 +2393,8 @@ module pno_ccsd_module
               if(.not.add_contrib.and.pair1==2)epc = 1
            enddo
 
+
+           !LOOP OVER THE CONTRIBUTIONS
            do pair1 = bpc, epc
 
               i = idx(paircontrib(1,pair1))
@@ -2395,267 +2409,470 @@ module pno_ccsd_module
 
               if( PS1 ) then
 
-                 !find index k, k=j if ns=ns2 else the non-overlapping index
-                 if(ns==ns2)then
-                    k = paircontrib(2,pair1)
+                 !find index k, k=j if ns=ns1 else the non-overlapping index
+                 if(ns==ns1)then
+                    k = idx1(paircontrib(2,pair1))
+#ifdef VAR_LSDEBUG
+                    if(k /= j)call lsquit("ERROR():something wrong with &
+                    &obtaining the indices",-1)
+#endif
                  else
-                    k = oidx1(nidx1+diff1+1,2)
+                    k = oidx1(nidx1+diff11+1,3)
                  endif
 
-                 do a=1,nv
-                    do b=1,nv
-                       p4(b,1,a,1) = p2(idx1(k),j,a,b)
-                    enddo
-                 enddo
+                 p4(:,1,:,1) = p2(k,j,:,:)
 
                  ! transform c to \bar(c} of (ki)  and a to \bar{a} of (ij)
-                 call dgemm('t','n', pnv1, nv, nv,  p10, d1, nv, p4, nv, nul, w2, pnv1)
-                 call dgemm('n','n', pnv1, pnv,nv, p10, w2, pnv1, d, nv, nul, h4, pnv1)
+                 call dgemm('t','n', pnv, nv, nv,  p10, d, nv, p4, nv, nul, w2, pnv)
+                 call dgemm('n','n', pnv, pnv1,nv, p10, w2, pnv, d1, nv, nul, h4, pnv)
 
               else
 
-                 do k=1,pno1
-                    do a=1,nv
-                       do b=1,nv
-                          p4(b,1,a,k) = p2(idx1(k),j,a,b)
-                       enddo
-                    enddo
-                    call dgemm('t','n', pnv1, nv, nv, p10, d1, nv, p4(1,1,1,k), nv, nul, w2, pnv1)
-                    call dgemm('n','n', pnv1, pnv,nv, p10, w2, pnv1, d, nv, nul, h4(1+(k-1)*pnv*pnv1), pnv1)
+                 do kc=1,pno1
+
+                    p4(:,1,:,kc) = p2(idx1(kc),j,:,:)
+                    call dgemm('t','n', pnv, nv, nv, p10, d, nv, p4(1,1,1,kc), nv, nul, w2, pnv)
+                    call dgemm('n','n', pnv, pnv1,nv, p10, w2, pnv, d1, nv, nul, h4(1+(kc-1)*pnv*pnv1), pnv)
+
                  enddo
 
               endif
+
+              !!THE INNER CONTRACTION LOOP - BUILDING THE C INTERMEDIATE
+              OneIdxSpaceLoop21: do nc2=1, p_nidx(ns)
+                 ! extract indices:
+                 ns2 = p_idx(nc2,ns)
+
+                 call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
+
+                 if( cyc )then
+
+                    cycle OneIdxSpaceLoop21
+
+                 endif
+
+
+                 call get_overlap_idx(ns,ns2,pno_cv,oidx2,nidx2,ndidx1=diff21,ndidx2=diff22)
+
+                 d2   => pno_cv(ns2)%d
+                 t22  => pno_t2(ns2)%elm1
+                 idx2 => pno_cv(ns2)%iaos
+                 pnv2 =  pno_cv(ns2)%ns2
+                 pno2 =  pno_cv(ns2)%n
+                 rpd2 =  pno_cv(ns2)%rpd
+                 PS2  =  pno_cv(ns2)%PS
+
+                 if( PS2 )then
+                    if(ns==ns2)then
+                       l = idx2(paircontrib(1,pair1))
+                    else
+                       l = oidx2(nidx2+diff21+1,3)
+                    endif
+
+                 elseif( rpd2 == 1 )then
+                    l = idx2(1)
+
+                    if( l == i ) cycle
+                 endif
+                 print *,""
+                 print *,"PAIR CONTRIB LOOP",ns2,PS1,PS2,i,j,k,l
+
+                 !Get the integrals kdlc -> ckld and transform c and d to their
+                 !corresponding spaces, (iajb -> bija) 
+                 call ass_D1to4( govov, p2, [no, nv, no, nv]  )
+                 call ass_D1to4( w1,    p1, [rpd1,rpd2,nv,nv] )
+                 if( PS1 ) then
+
+                    if( PS2 )then
+
+                       !find index k, k=j if ns=ns1 else the non-overlapping index
+                       p1(1,1,:,:) = p2(k,:,l,:)
+
+                    else
+
+                       do lc=1,pno2
+                          p1(1,lc,:,:) = p2(k,:,idx2(lc),:)
+                       enddo
+
+                    endif
+
+                 else
+
+                    if( PS2 ) then
+
+                       do kc=1,pno1
+                          p1(kc,1,:,:) = p2(idx1(kc),:,oidx2(nidx2+diff21+1,3),:)
+                       enddo
+
+                    else
+
+                       do lc=1,pno2
+                          do kc=1,pno1
+                             p1(kc,lc,:,:) = p2(idx1(kc),:,idx2(lc),:)
+                          enddo
+                       enddo
+
+                    endif
+
+                 endif
+
+                 ! transform c to \bar(c} in (ki) and d to \bar{d} in (lj)
+                 call dgemm('t','t',pnv1,rpd1*rpd2*nv,nv,  p10, d1, nv, w1, rpd1*rpd2*nv, nul, w3, pnv1)
+                 call dgemm('n','n',pnv1*rpd1*rpd2,pnv2,nv,p10, w3, pnv1*rpd1*rpd2, d2, nv, nul, w1, pnv1*rpd1*rpd2)
+
+                 !get the amplitudes in the correct order eldj -> ldje transform to a and contract to
+                 ! -0.5 w1(ckld) w2(ldja) += w4(ckja)
+                 call ass_D1to4( t22, p2, [pnv2,rpd2,pnv2,rpd2] )
+                 if( PS2 )then
+                    if(l<j)call array_reorder_2d(p10,t22,pnv2,pnv2,[1,2],nul,w3)
+                    if(j>l)call array_reorder_2d(p10,t22,pnv2,pnv2,[2,1],nul,w3)
+                    nidx_h2 = 1
+                 else
+                    call ass_D1to4( w3,  p3, [rpd2,pnv2,nidx_h2,pnv2] )
+                    do b=1,pnv2
+                       do jc=1,nidx2
+                          do a=1,pnv2
+                             do ic=1,pno2
+                                p3(ic,b,jc,a) = p2(a,ic,b,oidx2(jc,2))
+                             enddo
+                          enddo
+                       enddo
+                    enddo
+                    nidx_h2 = nidx2
+                 endif
+
+                 call do_overlap_trafo(ns,ns2,2,pno_S,rpd2*pnv2*nidx_h2,pnv,pnv2,w3,w2,ptr=h1,ptr2=h2)
+
+                 call print_tensor_unfolding_with_labels(w1,&
+                    &[pnv1,rpd1],'ck',2,[rpd2,pnv2],'ld',2,'inner pair mat 1')
+                 call print_tensor_unfolding_with_labels(h1,&
+                    &[rpd2,pnv2],'ld',2,[nidx_h2,pnv],'ja',2,'inner pair mat 2')
+
+                 call dgemm('n','n', pnv1*rpd1, nidx_h2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1, rpd2*pnv2, nul, h2, pnv1*rpd1)
+
+                 call print_tensor_unfolding_with_labels(h2,&
+                    &[pnv1,rpd1],'ck',2,[nidx_h2,pnv],'ja',2,'inner pair result')
+
+                 call ass_D1to4( h2, p3, [pnv1,rpd1,nidx_h2,pnv] )
+                 call ass_D1to4( h4, p4, [rpd,pnv,pnv1,rpd1] )
+
+                 call print_tensor_unfolding_with_labels(h4,&
+                    &[rpd,pnv],'ja',2,[pnv1,rpd1],'ck',2,'pair mat 2 - before add')
+
+                 if( PS1 )then
+
+                    do c=1,pnv1
+                       do a=1,pnv
+                          p4(1,a,c,1) = p4(1,a,c,1) + p3(c,1,1,a)
+                       enddo
+                    enddo
+
+                 else
+
+                    do kc=1,rpd1
+                       do c=1,pnv1
+                          do a=1,pnv
+                             p4(1,a,c,kc) = p4(1,a,c,kc) + p3(c,kc,1,a)
+                          enddo
+                       enddo
+                    enddo
+
+                    !do kc=1,rpd1
+                    !   do c=1,pnv1
+                    !      do a=1,pnv
+                    !         do jc=1,nidx_h2
+                    !            p4(oidx2(jc,1),a,c,kc) = p4(oidx2(jc,1),a,c,kc) + p3(c,kc,jc,a)
+                    !         enddo
+                    !      enddo
+                    !   enddo
+                    !enddo
+                 endif
+
+                 call print_tensor_unfolding_with_labels(h4,&
+                    &[rpd,pnv],'ja',2,[pnv1,rpd1],'ck',2,'pair mat 2 - after add')
+
+              enddo OneIdxSpaceLoop21
+
+              print *,""
+              print *,"EXIT RECT CONTRIB LOOP",pair1
+
+
+              !get the amplitudes, extract the necessary indices, 
+              !reorder dkci -> dick :D transform to current space (bick) and do the contraction,
+              !bick ja,ck^T = bija, do the permutation and addition of the contribution
+
+              call ass_D1to4( t21, p6, [pnv1,rpd1,pnv1, rpd1] )
+              call ass_D1to4( w1,  p5, [pnv1,1   ,pnv1, rpd1] )
+
+              if( PS1 )then
+
+                 if(k<i)call array_reorder_2d(p10,p6,pnv1,pnv1,[1,2],nul,w1)
+                 if(k>i)call array_reorder_2d(p10,p6,pnv1,pnv1,[2,1],nul,w1)
+
+              else
+
+                 do kc=1,pno1
+                    p5(:,1,:,kc) = p6(:,kc,:,oidx1(1,2))
+                 enddo
+
+              endif
+
+
+              do kc = 1,rpd1
+
+                 call do_overlap_trafo(ns,ns1,1,pno_S, pnv,pnv1, pnv1,w1(1+(kc-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
+
+                 call print_tensor_unfolding_with_labels(h1,&
+                    &[pnv,rpd],'bi',2,[pnv1,1],'ck',2,'pair mat 1')
+                 call print_tensor_unfolding_with_labels(h4(1+(kc-1)*pnv1*pnv:),&
+                    &[pnv1,1],'ck',2,[rpd,pnv],'ja',2,'pair mat 2')
+
+
+                 call dgemm('n','t', pnv, pnv, pnv1, m10, h1, pnv, h4(1+(kc-1)*pnv1*pnv), pnv, nul, h2, pnv)
+
+
+                 call print_tensor_unfolding_with_labels(h2,&
+                    &[pnv],'b',1,[pnv],'a',1,'pair result after adding')
+
+
+                 call print_tensor_unfolding_with_labels(o,&
+                    &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ - Before')
+
+                 add_contrib1 = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
+                    &.or.(.not. PS1 .and. i/=j)
+                 add_contrib2 = ((PS1 .and. ((i>j.and.oidx1(1,3)==idx(1)).or.(i<j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
+                    &.or.(.not. PS1 .and. i/=j)
+
+                 if(add_contrib1) call array_reorder_2d(p10,h2,pnv,pnv,paircontrib(:,3-pair1),p10,o)
+                 if(add_contrib2) call array_reorder_2d(p05,h2,pnv,pnv,paircontrib(:,pair1),p10,o)
+
+                 call print_tensor_unfolding_with_labels(o,&
+                    &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
+
+              enddo
 
 
            enddo
 
         else
-           call ass_D1to4( w1,    p1, [nv,rpd1,rpd,nv] )
+
+
+           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+           !CODE FOR RECTANGULAR RESIDUAL CONTRIBUTIONS!
+           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+           
+
+           call ass_D1to4( w1, p1, [rpd1,rpd,nv,nv] )
            if( PS1 )then
 #ifdef VAR_LSDEBUG
-              if(diff2 /= 1.or.nidx1/=1) then
-                 call lsquit("PROGRAMMING ERROR(get_common_idx_summation_for_current_aibj): this should never occur",-1)
+              if(diff12 /= 1.or.nidx1/=1) then
+                 call lsquit("ERROR(get_common_idx_summation_for_current_aibj): this should never occur",-1)
               endif
 #endif
-              do a=1,nv
-                 do j=1,pno
-                    do b=1,nv
-                       p1(b,1,j,a) = p2(oidx1(nidx1+diff1+1,3),idx(j),a,b)
-                    enddo
-                 enddo
+              do j=1,pno
+                 p1(1,j,:,:) = p2(oidx1(nidx1+diff11+1,3),idx(j),:,:)
               enddo
            else
-              do a=1,nv
-                 do j=1,pno
-                    do k=1,pno1
-                       do b=1,nv
-                          p1(b,k,j,a) = p2(idx1(k),idx(j),a,b)
-                       enddo
-                    enddo
+              do j=1,pno
+                 do k=1,pno1
+                    p1(k,j,:,:) = p2(idx1(k),idx(j),:,:)
                  enddo
               enddo
            endif
            ! transform c to \bar(c} of (ki)  and a to \bar{a} of (ij)
-           call dgemm('t','n', pnv1, rpd1*rpd*nv, nv,  p10, d1, nv, w1, nv, nul, w2, pnv1)
-           call dgemm('n','n', pnv1*rpd1*rpd, pnv, nv, p10, w2, pnv1*rpd1*rpd, d, nv, nul, w4, pnv1*rpd1*rpd)
-        endif
+           call dgemm('t','t', pnv1, rpd1*rpd*nv, nv,  p10, d1, nv, w1,rpd1*rpd*nv, nul, w2, pnv1)
+           call dgemm('n','n', pnv1*rpd1*rpd, pnv, nv, p10, w2, pnv1*rpd1*rpd, d, nv, nul, w1, pnv1*rpd1*rpd)
+           call array_reorder_4d(p10,w1,pnv1,rpd1,rpd,pnv,[3,4,1,2],nul,w4)
+
+           !At this point the integrals with transformed virtual indices are
+           !restricted to the correct occupied space (i.e. k and j belong to the
+           !corresponding amplitude spaces) and saved in the order jack :)
 
 
-        !!THE INNER CONTRACTION LOOP - BUILDING THE C INTERMEDIATE
-        !OneIdxSpaceLoop2: do nc2=1, p_nidx(ns)
-        !  ! extract indices:
-        !  ns3 = p_idx(nc2,ns)
+           !!!THE INNER CONTRACTION LOOP - BUILDING THE C INTERMEDIATE
+           OneIdxSpaceLoop22: do nc2=1, p_nidx(ns)
+              ! extract indices:
+              ns2 = p_idx(nc2,ns)
 
-        !  call check_if_contributes(ns,ns3,pno_cv,pno_S,cyc)
+              call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
 
-        !  if( cyc )then
+              if( cyc )then
 
-        !    cycle OneIdxSpaceLoop2
+                 cycle OneIdxSpaceLoop22
 
-        !  endif
-
-        !  call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
-
-        !  d2   => pno_cv(ns3)%d
-        !  t22  => pno_t2(ns3)%elm1
-        !  idx2 => pno_cv(ns3)%iaos
-        !  pnv2 =  pno_cv(ns3)%ns2
-        !  pno2 =  pno_cv(ns3)%n
-        !  rpd2 =  pno_cv(ns3)%rpd
-
-        !  !Get the integrals kdlc -> ckld and transform c and d to their
-        !  !corresponding spaces, (iajb -> bija) 
-        !  call ass_D1to4( w1,    p1, [nv,pno1,pno2,nv] )
-        !  call ass_D1to4( govov, p2, [no, nv,no,   nv] )
-        !  do a=1,nv
-        !  do j=1,pno2
-        !    do i=1,pno1
-        !    do b=1,nv
-        !      p1(b,i,j,a) = p2(idx1(i),a,idx2(j),b)
-        !    enddo
-        !    enddo
-        !  enddo
-        !  enddo
-
-        !  ! transform c to \bar(c} in (ki) and d to \bar{d} in (lj)
-        !  call dgemm('t','n',pnv1,pno1*pno2*nv,nv,  p10, d1, nv, w1, nv, nul, w3, pnv1)
-        !  call dgemm('n','n',pnv1*pno1*pno2,pnv2,nv,p10, w3, pnv1*pno1*pno2, d2, nv, nul, w1, pnv1*pno1*pno2)
-
-        !  !get the amplitudes in the correct order eldj -> ldje transform to a and contract to
-        !  ! -0.5 w1(ckld) w2(ldja) += w4(ckja)
-        !  call ass_D1to4( w3,  p3, [pno2,pnv2,nidx2,pnv2] )
-        !  call ass_D1to4( t22, p2, [pnv2,pno2,pnv2,pno2] )
-        !  do b=1,pnv2
-        !  do j=1,nidx2
-        !    do a=1,pnv2
-        !    do i=1,pno2
-        !      p3(i,b,j,a) = p2(a,i,b,oidx2(j,2))
-        !    enddo
-        !    enddo
-        !  enddo
-        !  enddo
-
-        !  call do_overlap_trafo(ns,ns3,2,pno_S,pno2*pnv2*nidx2,pnv,pnv2,w3,w2,ptr=h1,ptr2=h2)
-
-        !  call dgemm('n','n', pnv1*pno1, nidx2*pnv, pno2*pnv2, m05, w1, pnv1*pno1, h1, pno2*pnv2, nul, h2, pnv1*pno1)
-
-        !  call ass_D1to4( h2, p3, [pnv1,pno1,nidx2,pnv] )
-        !  call ass_D1to4( w4, p4, [pnv1,pno1,pno,pnv] )
-        !  do a=1,pnv
-        !  do j=1,nidx2
-        !    do i=1,pno1
-        !    do b=1,pnv1
-        !      p4(b,i,oidx2(j,1),a) = p4(b,i,oidx2(j,1),a) + p3(b,i,j,a)
-        !    enddo
-        !    enddo
-        !  enddo
-        !  enddo
-
-        !enddo OneIdxSpaceLoop2
-
-        !get the amplitudes, extract the necessary indices, 
-        !reorder dkci -> dick :D transform to current space (bick) and do the contraction,
-        !bick ckja = bija, do the permutation and addition of the contribution
-
-        if( PS ) then
-
-           do pair1 = bpc, epc
-
-              call ass_D1to4( t21, p2, [pnv1,rpd1,pnv1, rpd1] )
-              call ass_D1to4( w1,  p1, [pnv1,1   ,pnv1, rpd1] )
-
-              if(pair1==1)then
-                 h4 => w4(1:pnv1*rpd1*rpd*pnv)
-              else if(pair1==2)then
-                 h4 => w4(pnv1*rpd1*rpd*pnv+1:2*pnv1*rpd1*rpd*pnv)
               endif
 
-              j = idx(paircontrib(2,pair1))
+              call get_overlap_idx(ns,ns2,pno_cv,oidx2,nidx2,ndidx1=diff21,ndidx2=diff22)
 
-              if( PS1 )then
+              d2   => pno_cv(ns2)%d
+              t22  => pno_t2(ns2)%elm1
+              idx2 => pno_cv(ns2)%iaos
+              pnv2 =  pno_cv(ns2)%ns2
+              pno2 =  pno_cv(ns2)%n
+              rpd2 =  pno_cv(ns2)%rpd
+              PS2  =  pno_cv(ns2)%PS
 
-                 i = idx(paircontrib(1,pair1))
+              print *,""
+              print *,"RECT CONTRIB LOOP",ns2,PS1,PS2
 
-                 if(ns==ns2)then
-                    k = j
+              !Get the integrals kdlc -> ckld and transform c and d to their
+              !corresponding spaces, (iajb -> bija) 
+              call ass_D1to4( govov, p2, [no, nv, no, nv]  )
+              call ass_D1to4( w1,    p1, [rpd1,rpd2,nv,nv] )
+              if( PS1 ) then
+                 if( PS2 )then
+                    p1(1,1,:,:) = p2(oidx1(nidx1+diff11+1,3),:,oidx2(nidx2+diff21+1,3),:)
                  else
-                    k = oidx1(nidx1+diff1+1,3)
+                    do lc=1,pno2
+                       p1(1,lc,:,:) = p2(oidx1(nidx1+diff11+1,3),:,lc,:)
+                    enddo
                  endif
-
-                 if(k<i)call array_reorder_2d(p10,p2,pnv1,pnv1,[1,2],nul,w1)
-                 if(k>i)call array_reorder_2d(p10,p2,pnv1,pnv1,[2,1],nul,w1)
-#ifdef VAR_LSDEBUG
-                 if(k==i)call lsquit("ERROR(PNO C-term)this should never happen",-1)
-#endif
-
               else
-
-#ifdef VAR_LSDEBUG
-                 if(nidx1/=1)call lsquit("ERROR(here)this should never occur",-1)
-#endif
-                 i = oidx1(1,2)
-                 do k=1,pno1
-                    p1(:,1,:,k) = p2(:,k,:,i)
-                 enddo
-                 i = oidx1(1,3)
-                 k = idx1(1)
-
+                 if( PS2 ) then
+                    do k=1,pno1
+                       p1(k,1,:,:) = p2(idx1(k),:,oidx2(nidx2+diff21+1,3),:)
+                    enddo
+                 else
+                    do lc=1,pno2
+                       do k=1,pno1
+                          p1(k,lc,:,:) = p2(idx1(k),:,idx2(lc),:)
+                       enddo
+                    enddo
+                 endif
               endif
 
+              ! transform c to \bar(c} in (ki) and d to \bar{d} in (lj)
+              call dgemm('t','t',pnv1,rpd1*rpd2*nv,nv,  p10, d1, nv, w1, rpd1*rpd2*nv, nul, w3, pnv1)
+              call dgemm('n','n',pnv1*rpd1*rpd2,pnv2,nv,p10, w3, pnv1*rpd1*rpd2, d2, nv, nul, w1, pnv1*rpd1*rpd2)
 
-              do kcount = 1,rpd1
+              !get the amplitudes in the correct order eldj -> ldje transform to a and contract to
+              ! -0.5 w1(ckld) w2(ldja) += w4(ckja)
+              call ass_D1to4( w3,  p3, [rpd2,pnv2,nidx2,pnv2] )
+              call ass_D1to4( t22, p2, [pnv2,rpd2,pnv2,rpd2] )
+              if( PS2 )then
+                 if(nidx2/=1)call lsquit("ERRROROROROOROROROR",-1)
+                 if( oidx2(nidx2+diff21+1,2) < oidx2(1,2) ) then
+                    do b=1,pnv2
+                       do a=1,pnv2
+                          p3(1,b,1,a) = p2(a,1,b,1)
+                       enddo
+                    enddo
+                 else
+                    p3(1,:,1,:) = p2(:,1,:,1)
+                 endif
+              else
+                 do b=1,pnv2
+                    do j=1,nidx2
+                       do a=1,pnv2
+                          do i=1,pno2
+                             p3(i,b,j,a) = p2(a,i,b,oidx2(j,2))
+                          enddo
+                       enddo
+                    enddo
+                 enddo
+              endif
 
-                 call do_overlap_trafo(ns,ns2,1,pno_S, pnv,pnv1, pnv1,w1(1+(kcount-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(ns,ns2,2,pno_S,rpd2*pnv2*nidx2,pnv,pnv2,w3,w2,ptr=h1,ptr2=h2)
+              call print_tensor_unfolding_with_labels(w1,&
+                 &[pnv1,rpd1],'ck',2,[rpd2,pnv2],'ld',2,'inner rect mat 1')
+              call print_tensor_unfolding_with_labels(h1,&
+                 &[rpd2,pnv2],'ld',2,[nidx2,pnv],'ja',2,'inner rect mat 2')
 
-                 !call print_tensor_unfolding_with_labels(h1,&
-                 !   &[pnv,rpd],'bi',2,[pnv1,1],'ck',2,'pair mat 1')
-                 !call print_tensor_unfolding_with_labels(h4(1+(kcount-1)*pnv1*pnv:),&
-                 !   &[pnv1,1],'ck',2,[rpd,pnv],'ja',2,'pair mat 2')
+              call dgemm('n','n', pnv1*rpd1, nidx2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1, rpd2*pnv2, nul, h2, pnv1*rpd1)
 
+              call print_tensor_unfolding_with_labels(h2,&
+                 &[pnv1,rpd1],'ck',2,[nidx2,pnv],'ja',2,'inner rect result')
 
-                 call dgemm('n','n', pnv, pnv, pnv1, m10, h1, pnv, h4(1+(kcount-1)*pnv1*pnv), pnv1, nul, h2, pnv)
+              call print_tensor_unfolding_with_labels(w4,&
+                 &[rpd,pnv],'ja',2,[pnv1,rpd1],'ck',2,'rect mat 2 - before add')
 
+              call ass_D1to4( h2, p3, [pnv1,rpd1,nidx2,pnv] )
+              call ass_D1to4( w4, p4, [rpd,pnv,pnv1,rpd1] )
+              if( PS1 )then
+                 if( PS2 )then
+                    do c=1,pnv1
+                       do a=1,pnv
+                          p4(oidx2(1,1),a,c,1) = p4(oidx2(1,1),a,c,1) + p3(c,1,1,a)
+                       enddo
+                    enddo
+                 else
+                    do c=1,pnv1
+                       do a=1,pnv
+                          do j=1,nidx2
+                             p4(oidx2(j,1),a,c,1) = p4(oidx2(j,1),a,c,1) + p3(c,1,j,a)
+                          enddo
+                       enddo
+                    enddo
+                 endif
+              else
+                 if( PS2 )then
+                    do k=1,pno1
+                       do c=1,pnv1
+                          do a=1,pnv
+                             p4(oidx2(1,1),a,c,k) = p4(oidx2(1,1),a,c,k) + p3(c,k,1,a)
+                          enddo
+                       enddo
+                    enddo
+                 else
+                    do k=1,pno1
+                       do c=1,pnv1
+                          do a=1,pnv
+                             do j=1,nidx2
+                                p4(oidx2(j,1),a,c,k) = p4(oidx2(j,1),a,c,k) + p3(c,k,j,a)
+                             enddo
+                          enddo
+                       enddo
+                    enddo
+                 endif
+              endif
+              call print_tensor_unfolding_with_labels(w4,&
+                 &[rpd,pnv],'ja',2,[pnv1,rpd1],'ck',2,'rect mat 2 - after add')
 
-                 !call print_tensor_unfolding_with_labels(h2,&
-                 !   &[pnv],'b',1,[pnv],'a',1,'pair result after adding')
+           enddo OneIdxSpaceLoop22
 
-                 !Find out if one of the contributions needs to be added
-                 !add_contrib = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns2 ) &
-                 !   &.or.(.not. PS1 .and. i/=j)
+           print *,""
+           print *,"EXIT RECT CONTRIB LOOP"
 
-
-                    call array_reorder_2d(p10,h2,pnv,pnv,paircontrib(:,3-pair1),p10,o)
-                    call array_reorder_2d(p05,h2,pnv,pnv,paircontrib(:,pair1),p10,o)
-                 !   print *,ns,"adding P10",ns2," pair",i,j,k,idx,";",idx1
-                    !call print_tensor_unfolding_with_labels(o,&
-                    !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
-                 !else
-                 !   print *,ns,ns2,"P10 CONTRIB NOT ADDED",i,j,k,idx,";",idx1
-                 !endif
-
-              enddo
-
-
-           enddo
-
-
-        else
+           !get the amplitudes, extract the necessary indices, 
+           !reorder dkci -> dick :D transform to current space (bick) and do the contraction,
+           !bick ja,ck^T = bija, do the permutation and addition of the contribution
 
            call ass_D1to4( t21, p2, [pnv1,rpd1,pnv1, rpd1] )
            call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,rpd1] )
            if( PS1 )then
 
-              k = oidx1(nidx1+diff1+1,3)
+              k = oidx1(nidx1+diff11+1,3)
               i = oidx1(1,3)
 
               if(k<i)call array_reorder_2d(p10,p2,pnv1,pnv1,[1,2],nul,p1)
               if(k>i)call array_reorder_2d(p10,p2,pnv1,pnv1,[2,1],nul,p1)
 
            else
+
               do k=1,pno1
-                 do b=1,pnv1
-                    do i=1,nidx1
-                       do a=1,pnv1
-                          p1(a,i,b,k) = p2(a,k,b,oidx1(i,2))
-                       enddo
-                    enddo
+                 do i=1,nidx1
+                    p1(:,i,:,k) = p2(:,k,:,oidx1(i,2))
                  enddo
               enddo
+
            endif
 
-           call do_overlap_trafo(ns,ns2,1,pno_S, pnv,nidx1*pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
+           call do_overlap_trafo(ns,ns1,1,pno_S, pnv,nidx1*pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
 
 
-           !call print_tensor_unfolding_with_labels(h1,&
-           !   &[pnv,nidx1],'bi',2,[pnv1,rpd1],'ck',2,'rect mat 1')
-           !call print_tensor_unfolding_with_labels(w4,&
-           !   &[pnv1,rpd1],'ck',2,[rpd,pnv],'ja',2,'rect mat 2')
+           call print_tensor_unfolding_with_labels(h1,&
+              &[pnv,nidx1],'bi',2,[pnv1,rpd1],'ck',2,'rect mat 1')
+           call print_tensor_unfolding_with_labels(w4,&
+              &[pnv1,rpd1],'ck',2,[rpd,pnv],'ja',2,'rect mat 2')
 
 
-           call dgemm('n','n', pnv*nidx1,rpd*pnv, rpd1*pnv1, m10, h1,pnv*nidx1, w4, pnv1*rpd1, nul, h2, pnv*nidx1)
+           call dgemm('n','t', pnv*nidx1,rpd*pnv, rpd1*pnv1, m10, h1,pnv*nidx1, w4, pnv*rpd, nul, h2, pnv*nidx1)
 
-           !call print_tensor_unfolding_with_labels(h2,&
-           !   &[pnv,nidx1],'bi',2,[rpd,pnv],'ja',2,'rect result')
+           call print_tensor_unfolding_with_labels(h2,&
+              &[pnv,nidx1],'bi',2,[rpd,pnv],'ja',2,'rect result')
+
+           call print_tensor_unfolding_with_labels(o,&
+              &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ - Before')
 
            call ass_D1to4( h2, p2, [pnv,nidx1,rpd,pnv ] )
            call ass_D1to4( o,  p1, [pnv,rpd, pnv, rpd ] )
@@ -2671,9 +2888,15 @@ module pno_ccsd_module
                  enddo
               enddo
            enddo
-           !print *,ns,"adding",ns2," as symmetrized",pno,pno1,rpd,rpd1
-           !call print_tensor_unfolding_with_labels(o,&
-           !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
+           print *,ns,"adding",ns1," as symmetrized",pno,pno1,rpd,rpd1
+           call print_tensor_unfolding_with_labels(o,&
+              &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
+        endif
+
+        
+        if(ns==2 .and. ns1==2)then
+           print *,"DONE"
+           stop 0
         endif
 
 
@@ -2705,9 +2928,9 @@ module pno_ccsd_module
         !      !THE INNER CONTRACTION LOOP - BUILDING THE D INTERMEDIATE
         !      OneIdxSpaceLoop3: do nc2=1, p_nidx(ns)
         !        ! extract indices:
-        !        ns3 = p_idx(nc2,ns)
+        !        ns2 = p_idx(nc2,ns)
         !
-        !        call check_if_contributes(ns,ns3,pno_cv,pno_S,cyc)
+        !        call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
         !
         !        if( cyc )then
         !
@@ -2715,13 +2938,13 @@ module pno_ccsd_module
         !
         !        endif
         !
-        !        call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
+        !        call get_overlap_idx(ns,ns2,pno_cv,oidx2,nidx2)
         !
-        !        d2   => pno_cv(ns3)%d
-        !        t22  => pno_t2(ns3)%elm1
-        !        idx2 => pno_cv(ns3)%iaos
-        !        pnv2 =  pno_cv(ns3)%ns2
-        !        pno2 =  pno_cv(ns3)%n
+        !        d2   => pno_cv(ns2)%d
+        !        t22  => pno_t2(ns2)%elm1
+        !        idx2 => pno_cv(ns2)%iaos
+        !        pnv2 =  pno_cv(ns2)%ns2
+        !        pno2 =  pno_cv(ns2)%n
         !
         !        !Get the L integrals lfkc -> cklf and transform c and d to their
         !        !corresponding spaces, (iajb -> bjia) 
@@ -2755,7 +2978,7 @@ module pno_ccsd_module
         !        enddo
         !        enddo
         !
-        !        call do_overlap_trafo(ns,ns3,1,pno_S, pnv, nidx2*pno2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
+        !        call do_overlap_trafo(ns,ns2,1,pno_S, pnv, nidx2*pno2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
         !        call array_reorder_4d( p10, h1, pnv, nidx2, pnv2, pno2, [4,3,1,2], nul, h2 )
         !        call dgemm('n','n', pnv1*pno1, pnv*nidx2, pno2*pnv2, p05, w1, pnv1*pno1, h2, pno2*pnv2, nul, h1, pnv1*pno1)
         !
@@ -2787,7 +3010,7 @@ module pno_ccsd_module
         !      enddo
         !      enddo
         !
-        !      call do_overlap_trafo(ns,ns2,1,pno_S,pnv,nidx1*pnv1*pno1,pnv1,w1,w2,ptr=h1,ptr2=h2)
+        !      call do_overlap_trafo(ns,ns1,1,pno_S,pnv,nidx1*pnv1*pno1,pnv1,w1,w2,ptr=h1,ptr2=h2)
         !      call dgemm('n','n',pnv*nidx1,pnv*pno,pnv1*pno1,p05,h1,pnv*nidx1,w4,pnv1*pno1,nul,h2,pnv*nidx1)
         !
         !      !add D2 contribution to o
@@ -2821,9 +3044,9 @@ module pno_ccsd_module
         !      !THE INNER CONTRACTION LOOP - BUILDING THE E22 INTERMEDIATE
         !      OneIdxSpaceLoop4: do nc2=1, p_nidx(ns)
         !        ! extract indices:
-        !        ns3 = p_idx(nc2,ns)
+        !        ns2 = p_idx(nc2,ns)
         !
-        !        call check_if_contributes(ns,ns3,pno_cv,pno_S,cyc)
+        !        call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
         !
         !        if( cyc )then
         !
@@ -2831,13 +3054,13 @@ module pno_ccsd_module
         !
         !        endif
         !
-        !        call get_overlap_idx(ns,ns3,pno_cv,oidx2,nidx2)
+        !        call get_overlap_idx(ns,ns2,pno_cv,oidx2,nidx2)
         !
-        !        d2   => pno_cv(ns3)%d
-        !        t22  => pno_t2(ns3)%elm1
-        !        idx2 => pno_cv(ns3)%iaos
-        !        pnv2 =  pno_cv(ns3)%ns2
-        !        pno2 =  pno_cv(ns3)%n
+        !        d2   => pno_cv(ns2)%d
+        !        t22  => pno_t2(ns2)%elm1
+        !        idx2 => pno_cv(ns2)%iaos
+        !        pnv2 =  pno_cv(ns2)%ns2
+        !        pno2 =  pno_cv(ns2)%n
         !
         !        !Get the integrals g(kdlc) as (dklc) and transform c and d to (lj)
         !        !such that the order klcd is obtained
@@ -2896,13 +3119,13 @@ module pno_ccsd_module
         !      enddo
         !      enddo
         !
-        !      call do_overlap_trafo(ns,ns2,1,pno_S, pnv,nidx1*pnv1*pno1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
+        !      call do_overlap_trafo(ns,ns1,1,pno_S, pnv,nidx1*pnv1*pno1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
         !    
         !      call dgemm('n','n',pnv*nidx1*pnv1,pno,pno1,m10,h1,pnv*nidx1*pnv1,w4,pno1,nul,h2,pnv*nidx1*pnv1)
         !      call array_reorder_4d(p10,h2,pnv,nidx1,pnv1,pno,[3,4,1,2], nul, h1)
         !
         !      !transform b index to the correct space
-        !      call do_overlap_trafo(ns,ns2,1,pno_S, pnv,pno*pnv*nidx1,pnv1,h1,h2,ptr=h1)
+        !      call do_overlap_trafo(ns,ns1,1,pno_S, pnv,pno*pnv*nidx1,pnv1,h1,h2,ptr=h1)
         !
         !      call ass_D1to4( h1, p2, [pnv,pno,pnv,nidx1] )
         !      call ass_D1to4( o,  p1, [pnv,pno, pnv, pno] )
@@ -2920,33 +3143,33 @@ module pno_ccsd_module
      enddo OneIdxSpaceLoop1
 
      !contribution done, check the individual elements
-     !call ass_D1to4(o,check_ref,[pnv,rpd,pnv,rpd])
-     !if( PS )then
-     !   j=2
-     !   i=1
-     !   do b = 1, pnv
-     !      do a = 1, pnv
-     !         if( abs(check_ref(a,1,b,1) - reference(a,idx(i),b,idx(j))) > 1.0E-12 )then
-     !            print *,"wrong element in PNO space",ns,"el",a,b
-     !            print *,"element",check_ref(a,1,b,1),reference(a,idx(i),b,idx(j)),reference(a,idx(j),b,idx(i))
-     !            stop 0
-     !         endif
-     !      enddo
-     !   enddo
-     !else
-     !   do j = 1, pno
-     !      do b = 1, pnv
-     !         do i = 1, pno
-     !            do a = 1, pnv
-     !               if( abs(check_ref(a,i,b,j) - reference(a,idx(i),b,idx(j))) > 1.0E-12 )then
-     !                  print *,"wrong element in rectangular space",a,i,b,j,check_ref(a,i,b,j),reference(a,idx(i),b,idx(j))
-     !                  stop 0
-     !               endif
-     !            enddo
-     !         enddo
-     !      enddo
-     !   enddo
-     !endif
+     call ass_D1to4(o,check_ref,[pnv,rpd,pnv,rpd])
+     if( PS )then
+        j=2
+        i=1
+        do b = 1, pnv
+           do a = 1, pnv
+              if( abs(check_ref(a,1,b,1) - reference(a,idx(i),b,idx(j))) > 1.0E-12 )then
+                 print *,"wrong element in PNO space",ns,"el",a,b
+                 print *,"element",check_ref(a,1,b,1),reference(a,idx(i),b,idx(j)),reference(a,idx(j),b,idx(i))
+                 stop 0
+              endif
+           enddo
+        enddo
+     else
+        do j = 1, pno
+           do b = 1, pnv
+              do i = 1, pno
+                 do a = 1, pnv
+                    if( abs(check_ref(a,i,b,j) - reference(a,idx(i),b,idx(j))) > 1.0E-12 )then
+                       print *,"wrong element in rectangular space",a,i,b,j,check_ref(a,i,b,j),reference(a,idx(i),b,idx(j))
+                       stop 0
+                    endif
+                 enddo
+              enddo
+           enddo
+        enddo
+     endif
 
   end subroutine get_common_idx_summation_for_current_aibj
 
