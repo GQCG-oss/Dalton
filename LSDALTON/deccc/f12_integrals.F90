@@ -637,7 +637,7 @@ contains
           print *, 'norm4D(X4ijkl):' , norm4D(X4ijkl)
        endif
 
-    else 
+    else !non-canonical
 
        ! ***********************************************************
        ! Creating the X matrix Non-Canonical
@@ -710,7 +710,9 @@ contains
           call get_mp2f12_sf_E22(Fij, X3ijkl, noccEOS, noccAOS, X3energy, -1.0E0_realk)
           call get_mp2f12_sf_E22(Fij, X4ijkl, noccEOS, noccAOS, X4energy, -1.0E0_realk)
        endif
-    else
+   
+   else !> Noncanonical
+
        if(dopair) then
           call get_mp2f12_pf_E22(Fkj, X1ijkn, noccEOS, noccAOS, Fragment1, Fragment2, MyFragment, X1energy,  1.0E0_realk)
           call get_mp2f12_pf_E22(Fkj, X2ijkn, noccEOS, noccAOS, Fragment1, Fragment2, MyFragment, X2energy, -1.0E0_realk)
@@ -740,7 +742,7 @@ contains
           print *, "E_22_Xsum:", E_22
        end if
 
-    ! ***********************************************************
+
     ! Creating the B matrix 
     ! ***********************************************************
 
@@ -854,7 +856,19 @@ contains
 
     !> term2
     !> B2ijkl Brute force
-    B2ijkl = 0.0E0_realk
+    ! 4 Do loop and OMP setting this to zero (Not necessary in general)
+    B2ijkl = 0.0E0_realk 
+    B3ijkl = 0.0E0_realk
+    B4ijkl = 0.0E0_realk
+    B5ijkl = 0.0E0_realk
+    B6ijkl = 0.0E0_realk
+    B7ijkl = 0.0E0_realk
+    B8ijkl = 0.0E0_realk
+    B9ijkl = 0.0E0_realk
+   !$OMP PARALLEL PRIVATE(i,j,r,s,t,m,c,n,a,p,q, &
+     !$OMP tmp,tmp2) DEFAULT(shared)
+    
+    !$OMP DO COLLAPSE(2) 
     do i=1, noccEOS
        do j=1, noccEOS
           tmp  = 0.0E0_realk
@@ -867,10 +881,12 @@ contains
           B2ijkl(i,j,j,i) = tmp2
        enddo
     enddo
+    !$OMP END DO NOWAIT
 
     !> term3
     !> B3ijkl Brute force
-    B3ijkl = 0.0E0_realk
+
+    !$OMP DO COLLAPSE(2)
     do i=1, noccEOS
        do j=1, noccEOS
           tmp  = 0.0E0_realk
@@ -883,10 +899,13 @@ contains
           B3ijkl(i,j,j,i) = tmp2
        enddo
     enddo
+    !$OMP END DO NOWAIT
+
 
     !> term4
     !> B4ijkl Brute force
-    B4ijkl = 0.0E0_realk
+
+    !$OMP DO COLLAPSE(2)
     do i=1, noccEOS
        do j=1, noccEOS
 
@@ -907,10 +926,11 @@ contains
           B4ijkl(i,j,j,i) = tmp2
        enddo
     enddo
+    !$OMP END DO NOWAIT
 
     !> term5
     !> B5ijkl Brute force with memory savings
-    B5ijkl = 0.0E0_realk
+    !$OMP DO COLLAPSE(2)   
     do i=1, noccEOS
        do j=1, noccEOS
 
@@ -931,11 +951,14 @@ contains
           B5ijkl(i,j,j,i) = tmp2
        enddo
     enddo
+    !$OMP END DO NOWAIT
 
+    
     !> term6
     !> Need to change this and separate this into two parts one for the Fij and one for the Fab
     !> B6ijkl Brute force with memory savings
-    B6ijkl = 0.0E0_realk
+    
+    !$OMP DO COLLAPSE(2)
     do i=1, noccEOS
        do j=1, noccEOS    
           tmp  = 0.0E0_realk
@@ -952,7 +975,7 @@ contains
 
                 enddo
              enddo
-             
+ 
              do p=1, nvirtAOS
                 do q=1, nvirtAOS
                    tmp = tmp + Rijpa(i,j,p+noccAOS,a)*Fab(q,p)*Rijpa(i,j,q+noccAOS,a) + &
@@ -968,9 +991,10 @@ contains
           B6ijkl(i,j,j,i) = tmp2
        enddo
     enddo
+    !$OMP END DO NOWAIT
 
     !> B7ijkl Brute force with memory savings
-    B7ijkl = 0.0E0_realk
+    !$OMP DO COLLAPSE(2)
     do i=1, noccEOS
        do j=1, noccEOS    
           tmp  = 0.0E0_realk
@@ -993,9 +1017,10 @@ contains
           B7ijkl(i,j,j,i) = tmp2
        enddo
     enddo
+    !$OMD END DO NOWAIT
 
     !> B8ijkl Brute force with memory savings
-    B8ijkl = 0.0E0_realk
+    !$OMP DO COLLAPSE(2)
     do i=1, noccEOS
        do j=1, noccEOS    
           tmp  = 0.0E0_realk
@@ -1015,10 +1040,10 @@ contains
           B8ijkl(i,j,j,i) = tmp2
        enddo
     enddo
+    !$OMP END DO NOWAIT 
 
     !> B9ijkl Brute force with memory savings
-    B9ijkl = 0.0E0_realk
-
+    !$OMP DO COLLAPSE(2)
     do i=1, noccEOS
        do j=1, noccEOS    
           tmp  = 0.0E0_realk
@@ -1039,6 +1064,9 @@ contains
        !   print *, tmp, tmp2, B9ijkl(i,j,i,j), B9ijkl(i,j,j,i), i,j
        enddo
     enddo
+    !$OMP END DO NOWAIT 
+ 
+    !$OMP END PARALLEL
 
     if(DECinfo%F12debug) then
        print *, '----------------------------------------'
@@ -1282,7 +1310,6 @@ contains
     Bijkl = 0.0E0_realk
 
     if(DECinfo%use_canonical) then
-
        do j=1,n1
           do i=1,n1
              tmp2 = Fij(i,i) + Fij(j,j)
@@ -1291,9 +1318,9 @@ contains
           enddo
        enddo
 
-    else 
-
-       do i=1,n1
+    else !> Non-canonical
+      !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(i,j,k,tmp2,tmp3) DEFAULT(shared)
+         do i=1,n1
           do j=1,n1
              tmp2 = 0E0_realk
              tmp3 = 0E0_realk
@@ -1306,23 +1333,37 @@ contains
 
           enddo
        enddo
+      !$OMP END PARALLEL DO
     endif
 
     do i=1, n1
        tmp = tmp + Bijkl(i,i,i,i)
     enddo
-
     energy = 0.25E0_realk*tmp
-    tmp = 0E0_realk         ! NB Important reset
 
+
+    tmp2 = 0E0_realk
+
+    !Spawning of threads making unique copies of i,j and tmp on different
+    !memory spaces.
+    !$OMP PARALLEL PRIVATE(i,j,tmp) DEFAULT(shared)
+    tmp  = 0E0_realk         ! NB Important reset
+    !$OMP DO 
     do j=1, n1
        do i=j+1, n1
           tmp = tmp +  7.0E0_realk * Bijkl(i,j,i,j) + Bijkl(i,j,j,i)
        enddo
     enddo
-    energy = energy + 0.0625E0_realk*tmp
-    energy = energy*scalar
+    !The first thread finished can go on
+    !$OMP END DO NOWAIT
 
+    !This needs to be done in serial, they cannot read and write simultaneously
+    !$OMP CRITICAL
+    tmp2 = tmp2 + tmp
+    !$OMP END CRITICAL
+    !$OMP END PARALLEL  
+    energy = energy + 0.0625E0_realk*tmp2
+    energy = energy*scalar
     call mem_dealloc(Bijkl)
 
   end subroutine get_mp2f12_sf_E22
@@ -1866,7 +1907,7 @@ contains
           call mem_dealloc(tmp2) 
           
           do i=1, dim1
-             if (abs(tmp1(i)) > 10.0E-10) then
+             if (abs(tmp1(i)) > 10.0E-10_realk) then
                ! write(DECinfo%output,'(1X,a,1i4,f20.10)') 'tmp3:', i, tmp1(i)
              endif
           enddo
@@ -1883,7 +1924,7 @@ contains
           call mem_dealloc(tmp1)
           
           do i=1, dim2
-             if (abs(tmp2(i)) > 10.0E-10) then
+             if (abs(tmp2(i)) > 10.0E-10_realk) then
                 ! write(DECinfo%output,'(1X,a,1i4,f20.10)') 'tmp4:', i, tmp2(i)
              endif
           enddo
@@ -1900,7 +1941,7 @@ contains
           call mem_dealloc(tmp2)
 
           do i=1, dim1
-             if (abs(tmp1(i)) > 10.0E-10) then
+             if (abs(tmp1(i)) > 10.0E-10_realk) then
                ! write(DECinfo%output,'(1X,a,1i4,f20.10)') 'tmp5:', i, tmp1(i)
              endif
           enddo
