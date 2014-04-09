@@ -3230,7 +3230,7 @@ contains
     V = MyFragment%nunoccAOS ! Number of virtual orbitals
     A = MyFragment%nbasis ! Number of atomic orbitals
     ! Maximum batch dimension in integral subroutines
-    Bint = max_batch_dimension(MyFragment%mylsitem,MyFragment%nbasis)
+    Bint = max_batch_dimension(MyFragment%mylsitem,MyFragment%nbasis,DECinfo%output)
     B=Bint
     Oeos = MyFragment%noccEOS ! Number of occupied EOS orbitals
     Veos = MyFragment%nunoccEOS ! Number of unoccupied EOS orbitals

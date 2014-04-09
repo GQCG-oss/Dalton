@@ -1472,7 +1472,7 @@ contains
 
     ! Estimate memory consumption
     ! ***************************
-    nbatchINT = max_batch_dimension(mylsitem,nbasis)
+    nbatchINT = max_batch_dimension(mylsitem,nbasis,DECinfo%output)
     OO=nocc ! Number of occupied orbitals (as real)
     VV=nunocc ! Number of virtual orbitals (as real)
     BB=nbatchINT ! Maximum batch dimension (as real)

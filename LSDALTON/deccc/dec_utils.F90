@@ -60,7 +60,46 @@ module dec_fragment_utils
   end interface read_32bit_to_64bit
 
 contains
-
+!> \brief Get maximum batch dimension encountered in integral program.
+!> \author Kasper Kristensen
+!> \date February 2011
+function max_batch_dimension(mylsitem,nbasis,lupri) result(maxdim)  
+  implicit none 
+  !> LS item info
+  type(lsitem), intent(inout) :: mylsitem
+  !> Number of basis function
+  integer, intent(in) :: nbasis,lupri
+  integer :: maxdim
+  integer, pointer :: orb2batch(:), batchdim(:)
+  integer :: i, nbatches
+  
+  ! Initialize stuff
+  nullify(orb2batch)
+  nullify(batchdim)
+  call mem_alloc(orb2batch,nbasis)
+  
+  ! Get batch info
+  call II_getBatchOrbitalInfo(mylsitem%setting,nbasis,&
+       & orb2Batch,nbatches,lupri,lupri)
+  
+  ! Vector containing dimensions for each batch
+  call mem_alloc(batchdim,nbatches)
+  batchdim = 0
+  do i=1,nbasis
+     batchdim(orb2batch(i)) = batchdim(orb2batch(i))+1
+  end do
+  
+  ! Find maximum batch dimension
+  maxdim=0
+  do i=1,nbatches
+     if( batchdim(i) > maxdim ) maxdim=batchdim(i)
+  end do
+  
+  ! Clean up
+  call mem_dealloc(batchdim)
+  call mem_dealloc(orb2batch)
+  
+end function max_batch_dimension
 
   subroutine dec_time_evaluate_efficiency_frag(frag,t,ccmodel,label)
      implicit none

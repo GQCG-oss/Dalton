@@ -36,7 +36,8 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_symm_dense, mtype_dense, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
-use DEC_settings_mod, only: dec_set_default_config, config_dec_input
+use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
+     & check_cc_input
 use dec_typedef_module,only: DECinfo,MODEL_MP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
@@ -3686,6 +3687,9 @@ ENDIF
    ! Check that DEC input is consistent with geometry optimization and orbital localization.
    call DEC_meaningful_input(config)
 
+   nocc = config%decomp%nocc
+   nvirt = (nbast-nocc)
+   call check_cc_input(ls,nocc,nvirt,nbast)
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)

@@ -6,10 +6,11 @@
 !> \date 2010-06-16
 !>
 MODULE DEC_settings_mod
-
+  use typedeftype
   use fundamental
   use precision
   use dec_typedef_module
+  use dec_fragment_utils
   use ls_util
 #ifdef VAR_MPI
   use infpar_module
@@ -683,7 +684,59 @@ contains
 
 
   end subroutine check_dec_input
-  
+
+  !> \brief Check that CC input is consistent with calc requirements
+  !> \author Thomas Kjaergaard
+  !> \date October 2014
+  subroutine check_cc_input(mylsitem,nocc,nvirt,nbasis)
+    implicit none
+    type(lsitem),intent(inout) :: mylsitem
+    integer,intent(in) :: nocc,nvirt,nbasis
+    !
+    real(realk) :: OO,VV,BB,AA,intMEM, solMEM,mem_required,GB
+    integer     :: intstep,nthreads
+    ! Number of OMP threads
+#ifdef VAR_OMP
+    ! LSDALTON compiled with OMP
+    nthreads=OMP_GET_MAX_THREADS()
+#else
+    ! No OMP, set number of threads to one
+    nthreads=1
+#endif
+
+    GB = 1.0E+9_realk !1GB
+    SELECT CASE(DECinfo%ccModel)
+    CASE(MODEL_MP2)
+       OO=nocc      ! Number of occupied orbitals (as real)
+       VV=nvirt     ! Number of virtual orbitals (as real)
+       ! Maximum batch dimension (as real)
+       BB=max_batch_dimension(mylsitem,nbasis,DECinfo%output)
+       AA=nbasis    ! Number of atomic orbitals (as real)       
+       call estimate_memory_for_mp2_energy(nthreads,OO,VV,AA,BB,intMEM,intStep,solMEM)
+       mem_required = max(intMEM,solMEM)
+       mem_required = mem_required + DECinfo%fullmolecule_memory
+       mem_required = nocc*nvirt*nocc*nvirt*8.0E0_realk/GB
+       IF(mem_required.GT.DECinfo%memory)THEN
+          CALL FullMemoryError(mem_required)
+          call lsquit('Memory specification too small',DECinfo%output)
+       ENDIF
+!    CASE(MODEL_CC2)
+!    CASE(MODEL_CCSD)
+!    CASE(MODEL_CCSDpT)
+    case default
+    end SELECT
+  end subroutine check_cc_input
+
+  subroutine FullMemoryError(nsize)
+    implicit none
+    real(realk) :: nsize
+    WRITE(DECinfo%output,'(A)')'Error in Memory specification. '
+    WRITE(DECinfo%output,'(A)')'The memory specified using the .MEMORY keyword'
+    WRITE(DECinfo%output,'(A)')'is not big enough for the calculations requirements '
+    WRITE(DECinfo%output,'(A,F10.2,A)')'Requirements    :',nsize,' Gb'
+    WRITE(DECinfo%output,'(A,I12,A)')  'Memory specified:',DECinfo%memory,' Gb'
+  end subroutine FullMemoryError
+
   subroutine DEC_settings_print(DECitem,lupri)
     type(DECsettings) :: DECitem
     integer,intent(in) :: lupri

@@ -54,52 +54,7 @@ module mp2_module
 
 contains
 
-
-
-  !> \brief Get maximum batch dimension encountered in integral program.
-  !> \author Kasper Kristensen
-  !> \date February 2011
-  function max_batch_dimension(mylsitem,nbasis) result(maxdim)
-
-    implicit none
-
-    !> LS item info
-    type(lsitem), intent(inout) :: mylsitem
-    !> Number of basis function
-    integer, intent(in) :: nbasis
-    integer :: maxdim
-    integer, pointer :: orb2batch(:), batchdim(:)
-    integer :: i, nbatches
-
-    ! Initialize stuff
-    nullify(orb2batch)
-    nullify(batchdim)
-    call mem_alloc(orb2batch,nbasis)
-
-    ! Get batch info
-    call II_getBatchOrbitalInfo(mylsitem%setting,nbasis,&
-         & orb2Batch,nbatches,DECinfo%output,DECinfo%output)
-
-    ! Vector containing dimensions for each batch
-    call mem_alloc(batchdim,nbatches)
-    batchdim = 0
-    do i=1,nbasis
-       batchdim(orb2batch(i)) = batchdim(orb2batch(i))+1
-    end do
-
-    ! Find maximum batch dimension
-    maxdim=0
-    do i=1,nbatches
-       if( batchdim(i) > maxdim ) maxdim=batchdim(i)
-    end do
-
-    ! Clean up
-    call mem_dealloc(batchdim)
-    call mem_dealloc(orb2batch)
-
-  end function max_batch_dimension
-
-
+  !max_batch_dimension function moved to dec_util.F90
 
   !> \brief Workhorse for calculating EOS integrals and EOS amplitudes for MP2 calculation -
   !> both for occupied and virtual partitioning schemes.
