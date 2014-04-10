@@ -65,13 +65,6 @@ module f12_integrals_module
 
   private
 
-  !> Coefficient Type
-  TYPE ctype
-     real(realk), pointer :: cmat(:,:)
-     integer :: n1
-     integer :: n2
-  END TYPE ctype
-
 contains
   !> Brief: Gives the single fragment energy for MP2F12
   !> Author: Yang M. Wang
