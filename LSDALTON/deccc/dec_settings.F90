@@ -115,6 +115,7 @@ contains
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
     DECinfo%FragmentExpansionSize  = 5
+    DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_one_frag_job      = .false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
@@ -543,6 +544,7 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
+       case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.ONLY_ONE_JOB'); DECinfo%only_one_frag_job    = .true.
 
@@ -827,6 +829,7 @@ contains
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
+    write(lupri,*) 'FragmentExpansionRI ', DECitem%FragmentExpansionRI
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
