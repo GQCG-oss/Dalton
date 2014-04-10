@@ -1312,9 +1312,9 @@ contains
        enddo
 
     else !> Non-canonical
-      !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(i,j,k,tmp2,tmp3) DEFAULT(shared)
+      !$OMP PARALLEL DO PRIVATE(i,j,k,tmp2,tmp3) DEFAULT(none) SHARED(Bijkl,Fij,Xijkl,n1,n2)
          do i=1,n1
-          do j=1,n1
+          do j=1,i-1
              tmp2 = 0E0_realk
              tmp3 = 0E0_realk
              do k=1,n2
@@ -1323,9 +1323,24 @@ contains
              enddo
              Bijkl(i,j,i,j) = -1.0E0_realk*tmp2
              Bijkl(i,j,j,i) = -1.0E0_realk*tmp3
-
+          enddo
+          tmp2 = 0E0_realk
+          do k=1,n2
+             tmp2 = tmp2 + Xijkl(i,i,i,k)*Fij(k,i) + Xijkl(i,i,i,k)*Fij(k,i)  
+          enddo
+          Bijkl(i,i,i,i) = -1.0E0_realk*tmp2
+          do j=i+1,n1
+             tmp2 = 0E0_realk
+             tmp3 = 0E0_realk
+             do k=1,n2
+                tmp2 = tmp2 + Xijkl(i,j,i,k)*Fij(k,j) + Xijkl(j,i,j,k)*Fij(k,i)  
+                tmp3 = tmp3 + Xijkl(j,i,i,k)*Fij(k,j) + Xijkl(i,j,j,k)*Fij(k,i)  
+             enddo
+             Bijkl(i,j,i,j) = -1.0E0_realk*tmp2
+             Bijkl(i,j,j,i) = -1.0E0_realk*tmp3
           enddo
        enddo
+      
       !$OMP END PARALLEL DO
     endif
 
@@ -1333,28 +1348,16 @@ contains
        tmp = tmp + Bijkl(i,i,i,i)
     enddo
     energy = 0.25E0_realk*tmp
-
-
+    
     tmp2 = 0E0_realk
-
-    !Spawning of threads making unique copies of i,j and tmp on different
-    !memory spaces.
-    !$OMP PARALLEL PRIVATE(i,j,tmp) DEFAULT(shared)
     tmp  = 0E0_realk         ! NB Important reset
-    !$OMP DO 
     do j=1, n1
        do i=j+1, n1
           tmp = tmp +  7.0E0_realk * Bijkl(i,j,i,j) + Bijkl(i,j,j,i)
        enddo
     enddo
-    !The first thread finished can go on
-    !$OMP END DO NOWAIT
 
-    !This needs to be done in serial, they cannot read and write simultaneously
-    !$OMP CRITICAL
     tmp2 = tmp2 + tmp
-    !$OMP END CRITICAL
-    !$OMP END PARALLEL  
     energy = energy + 0.0625E0_realk*tmp2
     energy = energy*scalar
     call mem_dealloc(Bijkl)
