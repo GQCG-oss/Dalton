@@ -36,7 +36,8 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_symm_dense, mtype_dense, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
-use DEC_settings_mod, only: dec_set_default_config, config_dec_input
+use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
+     & check_cc_input
 use dec_typedef_module,only: DECinfo,MODEL_MP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
@@ -128,7 +129,8 @@ implicit none
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
-  config%CounterPoiseCorrection = .false.
+  config%SCFinteractionEnergy = .false.
+  config%SameSubSystems = .false.
   config%PrintMemory = .false.
   config%doESGopt = .false.
   config%noDecEnergy = .false.
@@ -1026,9 +1028,12 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
-        CASE('.SCFCOUNTERPOISE')
-           !Perform Counter Poise Correction of the SCF Energy
-           config%CounterPoiseCorrection = .true.
+        CASE('.SCFINTERACTIONENERGY')
+           !Calculated the SCF Interaction energy 
+           !using Counter Poise Correction
+           config%SCFinteractionEnergy = .true.
+        CASE('.SAMESUBSYSTEMS')
+           config%SameSubSystems = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
@@ -3316,8 +3321,8 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    endif
 
 ! Check Counter Poise Input :
-   IF(config%CounterPoiseCorrection.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
-      call lsquit('.SCFCOUNTERPOISE keyword require SubSystems in MOLECULE.INP',-1)
+   IF(config%SCFinteractionEnergy.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
+      call lsquit('.SCFINTERACTIONENERGY keyword require SubSystems in MOLECULE.INP',-1)
    ENDIF
 
 ! Check integral input:
@@ -3682,6 +3687,9 @@ ENDIF
    ! Check that DEC input is consistent with geometry optimization and orbital localization.
    call DEC_meaningful_input(config)
 
+   nocc = config%decomp%nocc
+   nvirt = (nbast-nocc)
+   call check_cc_input(ls,nocc,nvirt,nbast)
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)

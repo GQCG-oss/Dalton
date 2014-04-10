@@ -320,12 +320,16 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
+     !> Use RI for Fragment Expansion 
+     logical :: FragmentExpansionRI
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
+     !> Only consider virtual partitioning
+     logical :: OnlyVirtPart
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
