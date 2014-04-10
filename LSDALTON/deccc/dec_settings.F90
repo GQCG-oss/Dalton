@@ -150,6 +150,7 @@ contains
     DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
     DECinfo%F12                     = .false.
     DECinfo%F12debug                = .false.
+    DECinfo%SOS                     = .false.
     DECinfo%PureHydrogenDebug       = .false.
     DECinfo%InteractionEnergy       = .false.
     DECinfo%PrintInteractionEnergy  = .false.
@@ -499,6 +500,7 @@ contains
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
        case('.STRESSTEST')     
+       case('.SOSEX'); DECinfo%SOS=.true.
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
