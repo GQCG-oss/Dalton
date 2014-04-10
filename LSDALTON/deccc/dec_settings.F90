@@ -703,7 +703,7 @@ contains
     integer     :: intstep,nthreads
     ! Number of OMP threads
 #ifdef VAR_OMP
-    ! LSDALTON compiled with OMP
+    integer, external :: OMP_GET_MAX_THREADS
     nthreads=OMP_GET_MAX_THREADS()
 #else
     ! No OMP, set number of threads to one
