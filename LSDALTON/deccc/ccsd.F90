@@ -6185,25 +6185,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                 & yocc,nocc,0.0E0_realk,tmp1,dimK*nocc*nocc)
      
       ! add to previous loops:
-      !$OMP PARALLEL DEFAULT(NONE) SHARED(nocc,dimK,P_sta,tmp1,tmp2,B2prep,goooo)&
+      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(nocc,dimK,P_sta,tmp1,B2prep)&
       !$OMP PRIVATE(i,pos1,pos2)
-      !$OMP DO
       do i=1,nocc*nocc*nocc
         pos1 = 1 + (i-1)*dimK
         pos2 = P_sta + (i-1)*nocc
         call daxpy(dimK,1.0E0_realk,tmp1(pos1),1,B2prep(pos2),1)
       end do
-      !$OMP END DO
+      !$OMP END PARALLEL DO
       call array_reorder_4d(1.0E0_realk,tmp1,dimK,nocc,nocc,nocc, &
                             & [1,3,2,4],0.0E0_realk,tmp2)
-      !$OMP DO
+      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(nocc,dimK,P_sta,tmp2,goooo)&
+      !$OMP PRIVATE(i,pos1,pos2)
       do i=1,nocc*nocc*nocc
         pos1 = 1 + (i-1)*dimK
         pos2 = P_sta + (i-1)*nocc
         call daxpy(dimK,1.0E0_realk,tmp2(pos1),1,goooo(pos2),1)
       end do
-      !$OMP END DO
-      !$OMP END PARALLEL
+      !$OMP END PARALLEL DO
     end if
     !===========================================================================
 
