@@ -102,7 +102,6 @@
       end function pe_ifc_mep_noqm
 
       subroutine pe_ifc_mepcalc(denmats, nmats)
-
         use polarizable_embedding, only: pe_master
         use pe_variables, only: mep_qmcube
 #include "inforb.h"
@@ -118,8 +117,7 @@
         call pe_master(runtype='mep')
       end subroutine pe_ifc_mepcalc_noqm
 
-      subroutine pe_ifc_london(fckmats, nmats, work, nwrk)
-
+      subroutine pe_ifc_london(fckmats, nmats)
         use polarizable_embedding, only: pe_master
 #include "inforb.h"
         integer, intent(in) :: nmats
@@ -2215,9 +2213,9 @@ C     as to what works best for singly bonded C,N,O
 
 !------------------------------------------------------------------------------
 
-      subroutine Tk_lao_integrals(Tk_ints, nints, ncomps, coord,
-     &                            work, nwrk)
+      subroutine Tk_lao_integrals(Tk_ints, nints, ncomps, coord)
 
+      use pe_work
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -2228,15 +2226,16 @@ C     as to what works best for singly bonded C,N,O
       character(len=8), dimension(9*mxcent) :: labint
       integer, dimension(9*mxcent) :: intrep, intadr
 
-      integer, intent(in) :: nints, ncomps, nwrk
+      integer, intent(in) :: nints, ncomps
       real(8), dimension(3), intent(in) :: coord
       real(8), dimension(nints*ncomps*3), intent(inout) :: Tk_ints
-      real(8), dimension(nwrk), intent(inout) :: work
 
       integer :: i, j, k, l, m, n
       real(8) :: dd
       real(8), dimension(3) :: backup
       character(len=7) :: inttype
+      integer :: nwrk
+      real(8), dimension(:), allocatable :: temp
 
       dd = 0.001d0
       k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(ncomps)) - 1.0d0)) - 1
@@ -2265,14 +2264,16 @@ C     as to what works best for singly bonded C,N,O
 !    else
 !        stop 'wrong order specified or not implemented'
       end if
-!
+
+      nwrk = size(pewrk)
+
       Tk_ints = 0.0d0
-!
+
       if (k == 0) then
           n = ncomps * 3
-          call get1in(Tk_ints(1), inttype, n, work(1), nwrk, labint,
-     &                intrep, intadr, 0, .false., 0, trimat, dummy,
-     &                .false., dummy, 1)
+          call get1in(Tk_ints(1), inttype, n, pewrk(1), nwrk,
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
           Tk_ints = - Tk_ints
       else if (k == 1) then
 !          n = 3
@@ -2281,66 +2282,68 @@ C     as to what works best for singly bonded C,N,O
 !      ! x first
 !          do j=1,3
 !          diporg(j) = coord(j) + dd
-!          call get1in(work(1:m), 'PCMBSOL', n, work(m+1), nwrk, labint,
+!          call get1in(temp(1:m), 'PCMBSOL', n, pewrk(1), nwrk, labint,
 !     &                intrep, intadr, 0, .false., 0, trimat, dummy,
 !     &                .false., dummy, 1)
 !          diporg(j) = coord(j) - dd
-!          call get1in(work(m+1:2*m), 'PCMBSOL', n, work(2*m+1),
+!          call get1in(temp(m+1:2*m), 'PCMBSOL', n, pewrk(1),
 !     &    nwrk, labint,
 !     &                intrep, intadr, 0, .false., 0, trimat, dummy,
 !     &                .false., dummy, 1)
-!         TK_ints((j-1)*m+1:j*m) = (work(1:m) - work(m+1:m*2))/(2.0d0*dd)
+!         TK_ints((j-1)*m+1:j*m) = (temp(1:m) - temp(m+1:m*2))/(2.0d0*dd)
 !          diporg = coord
 !          enddo
 
       ! analytical approach
           n = 9
-          call get1in(Tk_ints(1), inttype, n, work(1), nwrk, labint,
-     &                intrep, intadr, 0, .false., 0, trimat, dummy,
-     &                .false., dummy, 1)
+          call get1in(Tk_ints(1), inttype, n, pewrk(1), nwrk,
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
       else if (k == 2) then
+          allocate(temp(2*9*nints))
           n = 9
           m = nints * n
           ! xx, xy, xz
           diporg = coord
           diporg(1) = coord(1) + dd
-          call get1in(work(1:m), 'EFIELB1', n, work(m+1), nwrk, labint,
-     &                intrep, intadr, 0, .false., 0, trimat, dummy,
-     &                .false., dummy, 1)
-          diporg(1) = coord(1) - dd
-          call get1in(work(1+m:2*m), 'EFIELB1', n, work(2*m+1), nwrk,
+          call get1in(temp(1:m), 'EFIELB1', n, pewrk(1), nwrk,
      &                labint, intrep, intadr, 0, .false., 0, trimat,
      &                dummy, .false., dummy, 1)
-          Tk_ints(1:m) = work(1:m) - work(m+1:2*m)
+          diporg(1) = coord(1) - dd
+          call get1in(temp(1+m:2*m), 'EFIELB1', n, pewrk(1), nwrk,
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
+          Tk_ints(1:m) = temp(1:m) - temp(m+1:2*m)
 
           ! yy, yz
           diporg = coord
           diporg(2) = coord(2) + dd
-          call get1in(work(1:m), 'EFIELB1', n, work(m+1), nwrk,
+          call get1in(temp(1:m), 'EFIELB1', n, pewrk(1), nwrk,
      &                labint, intrep, intadr, 0, .false., 0, trimat,
      &                dummy, .false., dummy, 1)
           diporg(2) = coord(2) - dd
-          call get1in(work(1+m:2*m), 'EFIELB1', n, work(2*m+1), nwrk,
+          call get1in(temp(1+m:2*m), 'EFIELB1', n, pewrk(1), nwrk,
      &                labint, intrep, intadr, 0, .false., 0, trimat,
      &                dummy, .false., dummy, 1)
           i = 3 * nints
-          Tk_ints(m+1:m+2*i+1) = work(i+1:m) - work(m+i+1:2*m)
+          Tk_ints(m+1:m+2*i+1) = temp(i+1:m) - temp(m+i+1:2*m)
 
           ! zz
           diporg = coord
           diporg(3) = coord(3) + dd
-          call get1in(work(1:m), 'EFIELB1', n, work(m+1), nwrk,
+          call get1in(temp(1:m), 'EFIELB1', n, pewrk(1), nwrk,
      &                labint, intrep, intadr, 0, .false., 0, trimat,
      &                dummy, .false., dummy, 1)
           diporg(3) = coord(3) - dd
-          call get1in(work(1+m:2*m), 'EFIELB1', n, work(2*m+1),nwrk,
+          call get1in(temp(1+m:2*m), 'EFIELB1', n, pewrk(1), nwrk,
      &                labint, intrep, intadr, 0, .false., 0, trimat,
      &                dummy, .false., dummy, 1)
 
           i = 6 * nints
-          Tk_ints(m+i+1:2*m) = work(i+1:m) - work(m+i+1:2*m)
+          Tk_ints(m+i+1:2*m) = temp(i+1:m) - temp(m+i+1:2*m)
           ! suspecting sign from magnus
           Tk_ints = - Tk_ints / (2.0d0 * dd)
+          deallocate(temp)
 !      else if (k == 3) then
 !          n = 6
 !          m = nints
@@ -2348,28 +2351,28 @@ C     as to what works best for singly bonded C,N,O
 !          l = 0
 !          do j = 1, 3
 !              diporg(j) = diporg(j) + 0.01d0
-!              call get1in(work(l*i+1), inttype, n, work(j*i+1), nwrk,
+!              call get1in(temp(l*i+1), inttype, n, pewrk(1), nwrk,
 !     &                    labint, intrep, intadr, 0, .false., 0, trimat,
 !     &                    dummy, .false., dummy, 1)
 !              diporg(j) = diporg(j) - 2.0d0 * 0.01d0
-!              call get1in(work(j*i+1), inttype, n, work((j+1)*i+1),
+!              call get1in(temp(j*i+1), inttype, n, pewrk(1),
 !     &                    nwrk, labint, intrep, intadr, 0, .false., 0,
 !     &                    trimat, dummy, .false., dummy, 1)
 !              diporg(j) = coord(j)
-!              work(l*i+1:j*i) = (work(l*i+1:j*i) - work(j*i+1:(j+1)*i))
+!              temp(l*i+1:j*i) = (temp(l*i+1:j*i) - temp(j*i+1:(j+1)*i))
 !     &                                           / (2.0d0 * 0.01d0)
 !              l = l + 1
 !          end do
-!          Tk_ints(1:m) = work(1:m)
-!          Tk_ints(m+1:2*m) = work(i+1:i+1+m)
-!          Tk_ints(2*m+1:3*m) = work(2*i+1:2*i+1+m)
-!          Tk_ints(3*m+1:4*m) = work(i+1+m:i+1+2*m)
-!          Tk_ints(4*m+1:5*m) = work(2*i+1+m:2*i+1+2*m)
-!          Tk_ints(5*m+1:6*m) = work(2*i+1+2*m:2*i+1+3*m)
-!          Tk_ints(6*m+1:7*m) = work(i+1+3*m:i+1+4*m)
-!          Tk_ints(7*m+1:8*m) = work(2*i+1+3*m:2*i+1+4*m)
-!          Tk_ints(8*m+1:9*m) = work(2*i+1+4*m:2*i+1+5*m)
-!          Tk_ints(9*m+1:10*m) = work(2*i+1+5*m:2*i+1+6*m)
+!          Tk_ints(1:m) = temp(1:m)
+!          Tk_ints(m+1:2*m) = temp(i+1:i+1+m)
+!          Tk_ints(2*m+1:3*m) = temp(2*i+1:2*i+1+m)
+!          Tk_ints(3*m+1:4*m) = temp(i+1+m:i+1+2*m)
+!          Tk_ints(4*m+1:5*m) = temp(2*i+1+m:2*i+1+2*m)
+!          Tk_ints(5*m+1:6*m) = temp(2*i+1+2*m:2*i+1+3*m)
+!          Tk_ints(6*m+1:7*m) = temp(i+1+3*m:i+1+4*m)
+!          Tk_ints(7*m+1:8*m) = temp(2*i+1+3*m:2*i+1+4*m)
+!          Tk_ints(8*m+1:9*m) = temp(2*i+1+4*m:2*i+1+5*m)
+!          Tk_ints(9*m+1:10*m) = temp(2*i+1+5*m:2*i+1+6*m)
 !          Tk_ints = -1.0d0 * Tk_ints
       end if
 

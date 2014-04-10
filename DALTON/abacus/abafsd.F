@@ -1705,6 +1705,7 @@ C  /* Deck onedrl */
       SUBROUTINE ONEDRL(KEY,OMATX,OMATY,OMATZ,IATOM,DERX,DERY,DERZ,WORK,
      &                  LWORK,IPRINT,INTPRI)
 C
+        use pe_work
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1722,7 +1723,7 @@ C
 #include "infinp.h"
 #include "pcmlog.h"
 #include "qmmm.h"
-#include "efield.h"
+#include"efield.h"
 #include "infpar.h"
       DIMENSION OMATX(N2BASX), OMATY(N2BASX), OMATZ(N2BASX),
      &          WORK(LWORK)
@@ -1868,8 +1869,11 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
          IF (PEQM .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
             KTMAT = KWRK
             MWRK  = KTMAT + 3 * N2BASX
+            LLEFT = LWRK - MWRK + 1
             IF (MWRK > LWRK) CALL STOPIT('ONEDRL', 'PEQM', MWRK, LWRK)
+            call dalwrk2pewrk(work(mwrk), lleft)
             CALL PE_IFC_LONDON(WORK(KTMAT), 1)
+            call nullify_pewrk()
             CALL DAXPY(N2BASX*3, D1, WORK(KTMAT), 1, WORK(KMATS), 1)
          END IF
 
