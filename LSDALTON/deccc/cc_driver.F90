@@ -1500,6 +1500,26 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    character(ARR_MSG_LEN) :: msg
    integer                :: ii, jj, aa, bb, old_iter
    logical                :: restart, w_cp, restart_from_converged
+   time_work        = 0.0E0_realk
+   time_comm        = 0.0E0_realk
+   time_idle        = 0.0E0_realk
+   time_fock_mat    = 0.0E0_realk
+   time_prec1       = 0.0E0_realk
+   time_start_guess = 0.0E0_realk
+   time_copy_opt    = 0.0E0_realk
+   time_crop_mat    = 0.0E0_realk
+   time_energy      = 0.0E0_realk
+   time_iter        = 0.0E0_realk
+   time_main        = 0.0E0_realk
+   time_mixing      = 0.0E0_realk
+   time_mo_ints     = 0.0E0_realk
+   time_new_guess   = 0.0E0_realk
+   time_norm        = 0.0E0_realk
+   time_residual    = 0.0E0_realk
+   time_solve_crop  = 0.0E0_realk
+   time_t1_trafo    = 0.0E0_realk
+   time_write       = 0.0E0_realk
+   time_finalize    = 0.0E0_realk
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
