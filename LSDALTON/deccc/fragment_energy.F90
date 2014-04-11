@@ -500,37 +500,40 @@ contains
     MyFragment%OccContribs=0E0_realk
     MyFragment%VirtContribs=0E0_realk
     if(MyFragment%ccmodel==MODEL_RPA) then
-      prefac_coul=1._realk
-      prefac_k=0.5_realk
+       prefac_coul=1._realk
+       prefac_k=0.5_realk
     else
-      prefac_coul=2._realk
-      prefac_k=1._realk
+       prefac_coul=2._realk
+       prefac_k=1._realk
     endif
 
 
     ! Sanity checks
     ! *************
     something_wrong=.false.
-    if(t2occ%dims(1) /= nvirtAOS) something_wrong=.true.
-    if(t2occ%dims(2) /= noccEOS) something_wrong=.true.
-    if(t2occ%dims(3) /= nvirtAOS) something_wrong=.true.
-    if(t2occ%dims(4) /= noccEOS) something_wrong=.true.
+    IF(.NOT.DECinfo%OnlyVirtPart)THEN
+       if(t2occ%dims(1) /= nvirtAOS) something_wrong=.true.
+       if(t2occ%dims(2) /= noccEOS) something_wrong=.true.
+       if(t2occ%dims(3) /= nvirtAOS) something_wrong=.true.
+       if(t2occ%dims(4) /= noccEOS) something_wrong=.true.
+       
+       if(gocc%dims(1) /= nvirtAOS) something_wrong=.true.
+       if(gocc%dims(2) /= noccEOS) something_wrong=.true.
+       if(gocc%dims(3) /= nvirtAOS) something_wrong=.true.
+       if(gocc%dims(4) /= noccEOS) something_wrong=.true.
+    ENDIF
 
-    if(gocc%dims(1) /= nvirtAOS) something_wrong=.true.
-    if(gocc%dims(2) /= noccEOS) something_wrong=.true.
-    if(gocc%dims(3) /= nvirtAOS) something_wrong=.true.
-    if(gocc%dims(4) /= noccEOS) something_wrong=.true.
-
-    if(t2virt%dims(1) /= nvirtEOS) something_wrong=.true.
-    if(t2virt%dims(2) /= noccAOS) something_wrong=.true.
-    if(t2virt%dims(3) /= nvirtEOS) something_wrong=.true.
-    if(t2virt%dims(4) /= noccAOS) something_wrong=.true.
-
-    if(gvirt%dims(1) /= nvirtEOS) something_wrong=.true.
-    if(gvirt%dims(2) /= noccAOS) something_wrong=.true.
-    if(gvirt%dims(3) /= nvirtEOS) something_wrong=.true.
-    if(gvirt%dims(4) /= noccAOS) something_wrong=.true.
-
+    IF(.NOT.DECinfo%OnlyOccPart)THEN
+       if(t2virt%dims(1) /= nvirtEOS) something_wrong=.true.
+       if(t2virt%dims(2) /= noccAOS) something_wrong=.true.
+       if(t2virt%dims(3) /= nvirtEOS) something_wrong=.true.
+       if(t2virt%dims(4) /= noccAOS) something_wrong=.true.
+       
+       if(gvirt%dims(1) /= nvirtEOS) something_wrong=.true.
+       if(gvirt%dims(2) /= noccAOS) something_wrong=.true.
+       if(gvirt%dims(3) /= nvirtEOS) something_wrong=.true.
+       if(gvirt%dims(4) /= noccAOS) something_wrong=.true.
+    ENDIF
     if(something_wrong) then
        print *, 't2occ%dims =', t2occ%dims
        print *, 'gocc%dims  =', gocc%dims
@@ -545,187 +548,190 @@ contains
     end if
 
 
-    call mem_TurnONThread_Memory()
-    !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c,virt_tmp)
-    call init_threadmemvar()
-    e1=0E0_realk
-    e2=0E0_realk
-    ! Contributions from each individual virtual orbital
-    call mem_alloc(virt_tmp,nvirtAOS)
-    virt_tmp = 0.0E0_realk
+    IF(.NOT.DECinfo%OnlyVirtPart)THEN
+       call mem_TurnONThread_Memory()
+       !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c,virt_tmp)
+       call init_threadmemvar()
+       e1=0E0_realk
+       e2=0E0_realk
+       ! Contributions from each individual virtual orbital
+       call mem_alloc(virt_tmp,nvirtAOS)
+       virt_tmp = 0.0E0_realk       
+
+       !$OMP DO SCHEDULE(dynamic,1)
+
+       ! Calculate e1 and e2
+       ! *******************
+       do j=1,noccEOS
+          do b=1,nvirtAOS
+             do i=1,noccEOS
+                do a=1,nvirtAOS
 
 
-    !$OMP DO SCHEDULE(dynamic,1)
+                   ! Contribution 1
+                   ! --------------
 
-    ! Calculate e1 and e2
-    ! *******************
-    do j=1,noccEOS
-       do b=1,nvirtAOS
-          do i=1,noccEOS
-             do a=1,nvirtAOS
+                   ! Energy contribution for orbitals (j,b,i,a)
+                   tmp = t2occ%val(a,i,b,j)*(prefac_coul*gocc%val(a,i,b,j) -prefac_k*gocc%val(b,i,a,j))
 
+                   ! Update total atomic fragment energy contribution 1
+                   e1 = e1 + tmp
 
-                ! Contribution 1
-                ! --------------
-
-                ! Energy contribution for orbitals (j,b,i,a)
-                tmp = t2occ%val(a,i,b,j)*(prefac_coul*gocc%val(a,i,b,j) -prefac_k*gocc%val(b,i,a,j))
-
-                ! Update total atomic fragment energy contribution 1
-                e1 = e1 + tmp
-
-                ! Update contribution from orbital a
-                virt_tmp(a) = virt_tmp(a) + tmp
-                ! Update contribution from orbital b (only if different from a to avoid double counting)
-                if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
+                   ! Update contribution from orbital a
+                   virt_tmp(a) = virt_tmp(a) + tmp
+                   ! Update contribution from orbital b (only if different from a to avoid double counting)
+                   if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
 
 
-                ! Contribution 2
-                ! --------------
+                   ! Contribution 2
+                   ! --------------
 
-                ! Skip contribution 2 for anything but MP2
-                if(MyFragment%ccmodel==MODEL_MP2) then
+                   ! Skip contribution 2 for anything but MP2
+                   if(MyFragment%ccmodel==MODEL_MP2) then
+                      ! Multiplier (multiplied by one half)
+                      multaibj = prefac_coul*t2occ%val(a,i,b,j) - prefac_k*t2occ%val(b,i,a,j)
+
+                      do c=1,nvirtAOS
+
+                         ! Energy contribution for orbitals (j,b,i,a,c)
+                         tmp = t2occ%val(c,i,b,j)*MyFragment%qqfock(c,a) + t2occ%val(a,i,c,j)*MyFragment%qqfock(c,b)
+                         tmp = multaibj*tmp
+
+                         ! Update total atomic fragment energy contribution 2
+                         e2 = e2 + tmp
+
+                         ! Update contribution from orbital a
+                         virt_tmp(a) = virt_tmp(a) + tmp
+                         ! Update contribution from orbital b (only if different from a to avoid double counting)
+                         if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
+                         ! Update contribution from orbital c (only if different from a and b)
+                         if( (a/=c) .and. (b/=c) ) virt_tmp(c) = virt_tmp(c) + tmp
+
+                      end do
+
+                   end if
+
+
+                end do
+             end do
+          end do
+       end do
+
+       !$OMP END DO NOWAIT
+
+       ! Total e1, e2, and individual virt atomic contributions are found by summing all thread contributions
+       !$OMP CRITICAL
+       Eocc = Eocc + e1
+       lag_occ = lag_occ + e2
+
+       ! Update total virtual contributions to fragment energy
+       do a=1,nvirtAOS
+          MyFragment%VirtContribs(a) =MyFragment%VirtContribs(a) + virt_tmp(a)
+       end do
+
+       !$OMP END CRITICAL
+
+       call mem_dealloc(virt_tmp)
+       call collect_thread_memory()
+       !$OMP END PARALLEL
+       call mem_TurnOffThread_Memory()
+    ELSE
+       Eocc = 0.0E0_realk
+       lag_occ = 0.0E0_realk
+    ENDIF
+
+    IF(.NOT.DECinfo%OnlyOccPart)THEN
+       ! Calculate e3 and e4
+       ! *******************
+
+       call mem_TurnONThread_Memory()
+       !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e3,e4,j,b,i,a,k,occ_tmp)
+       call init_threadmemvar()
+       e3=0E0_realk
+       e4=0E0_realk
+
+       ! Contributions from each individual occupied orbital
+       call mem_alloc(occ_tmp,noccAOS)
+       occ_tmp = 0.0E0_realk
+
+
+       !$OMP DO SCHEDULE(dynamic,1)
+       do j=1,noccAOS
+          do b=1,nvirtEOS
+             do i=1,noccAOS
+                do a=1,nvirtEOS
+
+
+                   ! Contribution 3
+                   ! --------------
+
                    ! Multiplier (multiplied by one half)
-                   multaibj = prefac_coul*t2occ%val(a,i,b,j) - prefac_k*t2occ%val(b,i,a,j)
-
-                   do c=1,nvirtAOS
-
-                      ! Energy contribution for orbitals (j,b,i,a,c)
-                      tmp = t2occ%val(c,i,b,j)*MyFragment%qqfock(c,a) + t2occ%val(a,i,c,j)*MyFragment%qqfock(c,b)
-                      tmp = multaibj*tmp
-
-                      ! Update total atomic fragment energy contribution 2
-                      e2 = e2 + tmp
-
-                      ! Update contribution from orbital a
-                      virt_tmp(a) = virt_tmp(a) + tmp
-                      ! Update contribution from orbital b (only if different from a to avoid double counting)
-                      if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
-                      ! Update contribution from orbital c (only if different from a and b)
-                      if( (a/=c) .and. (b/=c) ) virt_tmp(c) = virt_tmp(c) + tmp
-
-                   end do
-
-                end if
+                   multaibj = prefac_coul*t2virt%val(a,i,b,j) -prefac_k*t2virt%val(b,i,a,j)
 
 
+                   ! Energy contribution for orbitals (j,b,i,a)
+                   tmp = multaibj*gvirt%val(a,i,b,j)
+                   ! Update total atomic fragment energy contribution 3
+                   e3 = e3 + tmp
+
+                   ! Update contribution from orbital i
+                   occ_tmp(i) = occ_tmp(i) + tmp
+                   ! Update contribution from orbital j (only if different from i to avoid double counting)
+                   if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+
+
+                   ! Contribution 4
+                   ! --------------
+
+                   ! Skip contribution 4 for anything but MP2
+                   if(MyFragment%ccmodel==MODEL_MP2) then
+
+                      do k=1,noccAOS
+
+                         tmp =  t2virt%val(a,k,b,j)*MyFragment%ppfock(k,i) &
+                              & + t2virt%val(a,i,b,k)*MyFragment%ppfock(k,j)
+                         tmp = -multaibj*tmp
+
+                         ! Update total atomic fragment energy contribution 4
+                         e4 = e4 + tmp
+
+                         ! Update contribution from orbital i
+                         occ_tmp(i) = occ_tmp(i) + tmp
+                         ! Update contribution from orbital j (only if different from i to avoid double counting)
+                         if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+                         ! Update contribution from orbital k (only if different from i and j)
+                         if( (i/=k) .and. (j/=k) ) occ_tmp(k) = occ_tmp(k) + tmp
+
+                      end do
+
+                   end if
+
+                end do
              end do
           end do
        end do
-    end do
 
-    !$OMP END DO NOWAIT
+       !$OMP END DO NOWAIT
 
-    ! Total e1, e2, and individual virt atomic contributions are found by summing all thread contributions
-    !$OMP CRITICAL
-    Eocc = Eocc + e1
-    lag_occ = lag_occ + e2
+       ! Total e3, e4, and individual occ atomic contributions are found by summing all thread contributions
+       !$OMP CRITICAL
+       Evirt = Evirt + e3
+       lag_virt = lag_virt + e4
 
-    ! Update total virtual contributions to fragment energy
-    do a=1,nvirtAOS
-       MyFragment%VirtContribs(a) =MyFragment%VirtContribs(a) + virt_tmp(a)
-    end do
-
-    !$OMP END CRITICAL
-
-    call mem_dealloc(virt_tmp)
-    call collect_thread_memory()
-    !$OMP END PARALLEL
-    call mem_TurnOffThread_Memory()
-
-
-
-
-    ! Calculate e3 and e4
-    ! *******************
-
-    call mem_TurnONThread_Memory()
-    !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e3,e4,j,b,i,a,k,occ_tmp)
-    call init_threadmemvar()
-    e3=0E0_realk
-    e4=0E0_realk
-
-    ! Contributions from each individual occupied orbital
-    call mem_alloc(occ_tmp,noccAOS)
-    occ_tmp = 0.0E0_realk
-
-
-    !$OMP DO SCHEDULE(dynamic,1)
-    do j=1,noccAOS
-       do b=1,nvirtEOS
-          do i=1,noccAOS
-             do a=1,nvirtEOS
-
-
-                ! Contribution 3
-                ! --------------
-
-                ! Multiplier (multiplied by one half)
-                multaibj = prefac_coul*t2virt%val(a,i,b,j) -prefac_k*t2virt%val(b,i,a,j)
-
-
-                ! Energy contribution for orbitals (j,b,i,a)
-                tmp = multaibj*gvirt%val(a,i,b,j)
-
-                ! Update total atomic fragment energy contribution 3
-                e3 = e3 + tmp
-
-                ! Update contribution from orbital i
-                occ_tmp(i) = occ_tmp(i) + tmp
-                ! Update contribution from orbital j (only if different from i to avoid double counting)
-                if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
-
-
-                ! Contribution 4
-                ! --------------
-
-                ! Skip contribution 4 for anything but MP2
-                if(MyFragment%ccmodel==MODEL_MP2) then
-
-                   do k=1,noccAOS
-
-                      tmp =  t2virt%val(a,k,b,j)*MyFragment%ppfock(k,i) &
-                           & + t2virt%val(a,i,b,k)*MyFragment%ppfock(k,j)
-                      tmp = -multaibj*tmp
-
-                      ! Update total atomic fragment energy contribution 4
-                      e4 = e4 + tmp
-
-                      ! Update contribution from orbital i
-                      occ_tmp(i) = occ_tmp(i) + tmp
-                      ! Update contribution from orbital j (only if different from i to avoid double counting)
-                      if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
-                      ! Update contribution from orbital k (only if different from i and j)
-                      if( (i/=k) .and. (j/=k) ) occ_tmp(k) = occ_tmp(k) + tmp
-
-                   end do
-
-                end if
-
-             end do
-          end do
+       ! Update total occupied contributions to fragment energy
+       do i=1,noccAOS
+          MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
        end do
-    end do
+       !$OMP END CRITICAL
 
-    !$OMP END DO NOWAIT
-
-    ! Total e3, e4, and individual occ atomic contributions are found by summing all thread contributions
-    !$OMP CRITICAL
-    Evirt = Evirt + e3
-    lag_virt = lag_virt + e4
-
-    ! Update total occupied contributions to fragment energy
-    do i=1,noccAOS
-       MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
-    end do
-    !$OMP END CRITICAL
-
-    call mem_dealloc(occ_tmp)
-    call collect_thread_memory()
-    !$OMP END PARALLEL
-    call mem_TurnOffThread_Memory()
-
-
+       call mem_dealloc(occ_tmp)
+       call collect_thread_memory()
+       !$OMP END PARALLEL
+       call mem_TurnOffThread_Memory()
+    ELSE
+       Evirt = 0.0E0_realk
+       lag_virt = 0.0E0_realk
+    ENDIF
 
     ! Total atomic fragment energy
     ! ****************************
@@ -1156,26 +1162,29 @@ contains
     ! Sanity checks
     ! *************
     something_wrong=.false.
-    if(t2occ%dims(1) /= nvirtAOS) something_wrong=.true.
-    if(t2occ%dims(2) /= noccEOS) something_wrong=.true.
-    if(t2occ%dims(3) /= nvirtAOS) something_wrong=.true.
-    if(t2occ%dims(4) /= noccEOS) something_wrong=.true.
+    IF(.NOT.DECinfo%OnlyVirtPart)THEN
+       if(t2occ%dims(1) /= nvirtAOS) something_wrong=.true.
+       if(t2occ%dims(2) /= noccEOS) something_wrong=.true.
+       if(t2occ%dims(3) /= nvirtAOS) something_wrong=.true.
+       if(t2occ%dims(4) /= noccEOS) something_wrong=.true.
+       
+       if(gocc%dims(1) /= nvirtAOS) something_wrong=.true.
+       if(gocc%dims(2) /= noccEOS) something_wrong=.true.
+       if(gocc%dims(3) /= nvirtAOS) something_wrong=.true.
+       if(gocc%dims(4) /= noccEOS) something_wrong=.true.
+    ENDIF
 
-    if(gocc%dims(1) /= nvirtAOS) something_wrong=.true.
-    if(gocc%dims(2) /= noccEOS) something_wrong=.true.
-    if(gocc%dims(3) /= nvirtAOS) something_wrong=.true.
-    if(gocc%dims(4) /= noccEOS) something_wrong=.true.
-
-    if(t2virt%dims(1) /= nvirtEOS) something_wrong=.true.
-    if(t2virt%dims(2) /= noccAOS) something_wrong=.true.
-    if(t2virt%dims(3) /= nvirtEOS) something_wrong=.true.
-    if(t2virt%dims(4) /= noccAOS) something_wrong=.true.
-
-    if(gvirt%dims(1) /= nvirtEOS) something_wrong=.true.
-    if(gvirt%dims(2) /= noccAOS) something_wrong=.true.
-    if(gvirt%dims(3) /= nvirtEOS) something_wrong=.true.
-    if(gvirt%dims(4) /= noccAOS) something_wrong=.true.
-
+    IF(.NOT.DECinfo%OnlyOccPart)THEN
+       if(t2virt%dims(1) /= nvirtEOS) something_wrong=.true.
+       if(t2virt%dims(2) /= noccAOS) something_wrong=.true.
+       if(t2virt%dims(3) /= nvirtEOS) something_wrong=.true.
+       if(t2virt%dims(4) /= noccAOS) something_wrong=.true.
+       
+       if(gvirt%dims(1) /= nvirtEOS) something_wrong=.true.
+       if(gvirt%dims(2) /= noccAOS) something_wrong=.true.
+       if(gvirt%dims(3) /= nvirtEOS) something_wrong=.true.
+       if(gvirt%dims(4) /= noccAOS) something_wrong=.true.
+    ENDIF
     if(something_wrong) then
        print *, 't2occ%dims =', t2occ%dims
        print *, 'gocc%dims  =', gocc%dims
@@ -1189,127 +1198,138 @@ contains
             & Input dimensions do not match!',-1)
     end if
 
-    ! Calculate e1 and e2
-    ! *******************
+    if(.not. DECinfo%onlyVirtpart) then
 
-    call mem_TurnONThread_Memory()
-    !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c)
-    call init_threadmemvar()
-    e1=0E0_realk
-    e2=0E0_realk
-
-    !$OMP DO SCHEDULE(dynamic,1)
-
-    do j=1,noccEOS
-       do b=1,nvirtAOS
-          do i=1,noccEOS
-
-             ! Only update for "interaction orbital pairs" - see which_pairs_occ
-             if( dopair_occ(i,j) ) then  !DoPair1and2
-
-                do a=1,nvirtAOS
-
-                   ! Update pair interaction energy contribution 1
-                   e1 = e1 + t2occ%val(a,i,b,j)*(prefac_coul*gocc%val(a,i,b,j) -prefac_k*gocc%val(b,i,a,j))
-
-
-                   ! Skip contribution 2 for anything but MP2
-                   if(pairfragment%ccmodel==MODEL_MP2) then
-
-                      ! Multiplier (multiplied by one half)
-                      multaibj = prefac_coul*t2occ%val(a,i,b,j) - prefac_k*t2occ%val(b,i,a,j)
-
-                      tmp = 0E0_realk
-                      do c=1,nvirtAOS
-                         tmp = tmp + t2occ%val(c,i,b,j)*PairFragment%qqfock(c,a) &
-                              & + t2occ%val(a,i,c,j)*PairFragment%qqfock(c,b)
-                      end do
-
-                      ! Update pair interaction energy contribution 2
-                      e2 = e2 + multaibj*tmp
-
-                   end if
-
-
-                end do
-
-             end if
-
-          end do
-       end do
-    end do
-
-    !$OMP END DO NOWAIT
-
-    ! Total e1 and e2 contributions are found by summing all thread contributions
-    !$OMP CRITICAL
-    Eocc = Eocc + e1
-    lag_occ = lag_occ + e2
-    !$OMP END CRITICAL
-
-    call collect_thread_memory()
-    !$OMP END PARALLEL
-    call mem_TurnOffThread_Memory()
-
-    ! Calculate e3 and e4
-    ! *******************
-
-    call mem_TurnONThread_Memory()
-    !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e3,e4,j,b,i,a,k)
-    call init_threadmemvar()
-    e3=0e0_realk
-    e4=0e0_realk
-
-    !$OMP DO SCHEDULE(dynamic,1)
-
-    do j=1,noccAOS
-       do b=1,nvirtEOS
-          do i=1,noccAOS
-             do a=1,nvirtEOS
-
-                ! Only update for "interaction orbital pairs" - see which_pairs_unocc
-                if( dopair_virt(a,b) ) then !Dopair3and4
-
-                   ! Multiplier (multiplied by one half)
-                   multaibj = prefac_coul*t2virt%val(a,i,b,j) - prefac_k*t2virt%val(b,i,a,j)
-
-                   ! Update total atomic fragment energy contribution 3
-                   e3 = e3 + multaibj*gvirt%val(a,i,b,j)
-
-
-                   ! Skip contribution 4 for anything but MP2
-                   if(pairfragment%ccmodel==MODEL_MP2) then
-
-                      tmp=0E0_realk
-                      do k=1,noccAOS
-                         tmp = tmp + t2virt%val(a,k,b,j)*PairFragment%ppfock(k,i) &
-                              & + t2virt%val(a,i,b,k)*PairFragment%ppfock(k,j)
-                      end do
-
-                      ! Update pair interaction energy contribution 4
-                      e4 = e4 - multaibj*tmp
-
-                   end if
-
+       ! Calculate e1 and e2
+       ! *******************
+       
+       call mem_TurnONThread_Memory()
+       !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c)
+       call init_threadmemvar()
+       e1=0E0_realk
+       e2=0E0_realk
+       
+       !$OMP DO SCHEDULE(dynamic,1)
+       
+       do j=1,noccEOS
+          do b=1,nvirtAOS
+             do i=1,noccEOS
+                
+                ! Only update for "interaction orbital pairs" - see which_pairs_occ
+                if( dopair_occ(i,j) ) then  !DoPair1and2
+                   
+                   do a=1,nvirtAOS
+                      
+                      ! Update pair interaction energy contribution 1
+                      e1 = e1 + t2occ%val(a,i,b,j)*(prefac_coul*gocc%val(a,i,b,j) -prefac_k*gocc%val(b,i,a,j))
+                      
+                      
+                      ! Skip contribution 2 for anything but MP2
+                      if(pairfragment%ccmodel==MODEL_MP2) then
+                         
+                         ! Multiplier (multiplied by one half)
+                         multaibj = prefac_coul*t2occ%val(a,i,b,j) - prefac_k*t2occ%val(b,i,a,j)
+                         
+                         tmp = 0E0_realk
+                         do c=1,nvirtAOS
+                            tmp = tmp + t2occ%val(c,i,b,j)*PairFragment%qqfock(c,a) &
+                                 & + t2occ%val(a,i,c,j)*PairFragment%qqfock(c,b)
+                         end do
+                         
+                         ! Update pair interaction energy contribution 2
+                         e2 = e2 + multaibj*tmp
+                         
+                      end if
+                      
+                      
+                   end do
+                   
                 end if
-
+                
              end do
           end do
        end do
-    end do
+       
+       !$OMP END DO NOWAIT
 
-    !$OMP END DO NOWAIT
+       ! Total e1 and e2 contributions are found by summing all thread contributions
+       !$OMP CRITICAL
+       Eocc = Eocc + e1
+       lag_occ = lag_occ + e2
+       !$OMP END CRITICAL
+       
+       call collect_thread_memory()
+       !$OMP END PARALLEL
+       call mem_TurnOffThread_Memory()
+    ELSE
+       Eocc = 0.0E0_realk
+       lag_occ = 0.0E0_realk
+    ENDIF
 
-    ! Total e3 and e4 contributions are found by summing all thread contributions
-    !$OMP CRITICAL
-    Evirt = Evirt + e3
-    lag_virt = lag_virt + e4
-    !$OMP END CRITICAL
+    if(.not. DECinfo%onlyoccpart) then
 
-    call collect_thread_memory()
-    !$OMP END PARALLEL
-    call mem_TurnOffThread_Memory()
+       ! Calculate e3 and e4
+       ! *******************
+       
+       call mem_TurnONThread_Memory()
+       !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e3,e4,j,b,i,a,k)
+       call init_threadmemvar()
+       e3=0e0_realk
+       e4=0e0_realk
 
+       !$OMP DO SCHEDULE(dynamic,1)
+       
+       do j=1,noccAOS
+          do b=1,nvirtEOS
+             do i=1,noccAOS
+                do a=1,nvirtEOS
+                   
+                   ! Only update for "interaction orbital pairs" - see which_pairs_unocc
+                   if( dopair_virt(a,b) ) then !Dopair3and4
+                      
+                      ! Multiplier (multiplied by one half)
+                      multaibj = prefac_coul*t2virt%val(a,i,b,j) - prefac_k*t2virt%val(b,i,a,j)
+                      
+                      ! Update total atomic fragment energy contribution 3
+                      e3 = e3 + multaibj*gvirt%val(a,i,b,j)
+                      
+                      
+                      ! Skip contribution 4 for anything but MP2
+                      if(pairfragment%ccmodel==MODEL_MP2) then
+                         
+                         tmp=0E0_realk
+                         do k=1,noccAOS
+                            tmp = tmp + t2virt%val(a,k,b,j)*PairFragment%ppfock(k,i) &
+                                 & + t2virt%val(a,i,b,k)*PairFragment%ppfock(k,j)
+                         end do
+                         
+                         ! Update pair interaction energy contribution 4
+                         e4 = e4 - multaibj*tmp
+                         
+                      end if
+                      
+                   end if
+                   
+                end do
+             end do
+          end do
+       end do
+       
+       !$OMP END DO NOWAIT
+       
+       ! Total e3 and e4 contributions are found by summing all thread contributions
+       !$OMP CRITICAL
+       Evirt = Evirt + e3
+       lag_virt = lag_virt + e4
+       !$OMP END CRITICAL
+       
+       call collect_thread_memory()
+       !$OMP END PARALLEL
+       call mem_TurnOffThread_Memory()
+    ELSE
+       Evirt = 0.0E0_realk
+       lag_virt = 0.0E0_realk      
+    ENDIF
 
     ! Total pair interaction energy
     ! *****************************
@@ -3307,9 +3327,29 @@ contains
 
 
     ! Exclude orbitals with contributions smaller than threshold
-    do i=1,norb_full
-       if (abs(contributions(i)) < Thresh) OrbAOS(i)=.false.
-    end do
+    if(OccOrVirt=='O') then ! checking occupied orbitals
+       !contributions = OccContribs 
+       IF(.NOT.DECinfo%OnlyOccPart)THEN
+          do i=1,norb_full
+             if (abs(contributions(i)) < Thresh) OrbAOS(i)=.false.
+          end do
+       ELSE
+          !Occupied partitioning only:
+          !OccContribs have not been calculated and we cannot remove any
+          !Occupied Orbitals based on this 
+       ENDIF
+    elseif(OccOrVirt=='V') then
+       !contributions = VirtContribs
+       IF(.NOT.DECinfo%OnlyVirtPart)THEN
+          do i=1,norb_full
+             if (abs(contributions(i)) < Thresh) OrbAOS(i)=.false.
+          end do
+       ELSE
+          !Virtual partitioning only:
+          !VirtContribs have not been calculated and we cannot remove any
+          !Virtual Orbitals based on this 
+       ENDIF
+    endif
 
     ! Sanity check: The orbitals assigned to the central atom in the fragment should ALWAYS be included
     if(OccOrVirt=='O') then ! checking occupied orbitals

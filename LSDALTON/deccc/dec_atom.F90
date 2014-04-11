@@ -167,25 +167,8 @@ contains
              fragment%noccEOS         = fragment%noccEOS + 1
              occEOS(j)                = .true.
              all_atoms( CentralAtom ) = .true.
-             ! Special case: Only virtual partitioning
-             ! ----------------------------------------
-             ! When we are only interested in the virtual partitioning scheme,
-             ! there are effectively zero occupied EOS orbitals.
-             ! However, setting fragment%noccEOS to 0 would cause numerous
-             ! problems many places in the code, since some arrays would have zero size.
-             ! For now, we solve this problem in a pragmatic and dirty manner:
-             ! We simply initialize an occ EOS containing a single dummy orbital.
-             ! At some point we want to separate out the occ and virt
-             ! partitioning scheme, and when this is done, this temporary solution
-             ! will be superfluous.
-             if(DECinfo%onlyvirtpart) then
-                exit OccEOSSize
-             end if
-
           end if
        end do
-
-
     end do OccEOSSize
 
     ! Size of unoccupied EOS
@@ -205,22 +188,6 @@ contains
              fragment%nunoccEOS       = fragment%nunoccEOS + 1
              unoccEOS(j)              = .true.
              all_atoms( CentralAtom ) = .true.
-
-             ! Special case: Only occupied partitioning
-             ! ----------------------------------------
-             ! When we are only interested in the occupied partitioning scheme,
-             ! there are effectively zero virtual EOS orbitals.
-             ! However, setting fragment%nunoccEOS to 0 would cause numerous
-             ! problems many places in the code, since some arrays would have zero size.
-             ! For now, we solve this problem in a pragmatic and dirty manner:
-             ! We simply initialize an unocc EOS containing a single dummy orbital.
-             ! At some point we want to separate out the occ and virt
-             ! partitioning scheme, and when this is done, this temporary solution
-             ! will be superfluous.
-             if(DECinfo%onlyoccpart) then
-                exit UnoccEOSLoop
-             end if
-
           end if
        end do
 
@@ -2666,7 +2633,7 @@ contains
 
     implicit none
     type(decfrag), intent(inout) :: fragment
-    integer :: i,j
+    integer :: i,j,nocc_eos,nvirt_eos
 
     ! don't do that if no occ assigned
     if(fragment%noccEOS == 0) return
@@ -2691,7 +2658,6 @@ contains
        end do
     end do
 
-    return
   end subroutine target_indices
 
 
