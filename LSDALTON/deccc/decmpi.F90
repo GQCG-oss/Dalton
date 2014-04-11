@@ -2164,6 +2164,7 @@ contains
     call ls_mpi_buffer(DECitem%kappaMaxIter,Master)
     call ls_mpi_buffer(DECitem%kappa_driver_debug,Master)
     call ls_mpi_buffer(DECitem%kappaTHR,Master)
+    call ls_mpi_buffer(DECitem%SOS,Master)
     mydim=8  
     call ls_mpi_buffer(DECitem%ncalc,mydim,Master)
     call ls_mpi_buffer(DECitem%EerrFactor,Master)
