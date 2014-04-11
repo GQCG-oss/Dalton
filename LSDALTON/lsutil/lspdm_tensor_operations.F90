@@ -734,7 +734,7 @@ module lspdm_tensor_operations_module
     Ec=E1+E2
 #else
     Ec = 0.0E0_realk
-#ef
+#endif
   end function get_cc_energy_parallel
 
   !> \author Patrick Ettenhuber

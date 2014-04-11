@@ -2259,11 +2259,8 @@ contains
 
      call mem_alloc(jobdist,nbatchesAlpha,nbatchesGamma)
      !JOB distribution
-     do gammaB=1,nbatchesGamma
-        do alphaB = 1,nbatchesAlpha
-           jobdist(alphaB,gammaB) = mod(alphaB + (gammaB - 1) * nbatchesAlpha,nnod)
-        enddo
-     enddo
+     call distribute_mpi_jobs(jobdist,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
+              &batchdimGamma,myload,nnod,me)
 
 
      myload = 0

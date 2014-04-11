@@ -4402,8 +4402,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
       call mem_dealloc(w3)
       lock_outside     = lock_safe
-   endif
 #endif
+   endif
 
 
    call mem_dealloc(w_o2v2)
