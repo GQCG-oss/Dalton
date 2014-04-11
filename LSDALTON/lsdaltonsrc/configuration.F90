@@ -1251,8 +1251,70 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            ENDIF
            INTEGRAL%ADMM_CONST_EL    = .TRUE.
            INTEGRAL%ADMMQ_ScaleXC2   = .FALSE.
-	   INTEGRAL%ADMMQ_ScaleE     = .TRUE.
-        CASE ('.PRINT_EK3');
+           INTEGRAL%ADMMQ_ScaleE     = .TRUE.
+        CASE ('.ADMM2');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE  = .TRUE.
+           INTEGRAL%ADMM_GCBASIS     = .FALSE.
+           INTEGRAL%ADMM_DFBASIS     = .FALSE.
+           INTEGRAL%ADMM_JKBASIS     = .TRUE.
+           INTEGRAL%ADMM_MCWEENY       = .FALSE.
+           INTEGRAL%ADMM_CONST_EL      = .FALSE.
+           INTEGRAL%ADMMQ_ScaleXC2     = .FALSE.
+           INTEGRAL%ADMMQ_ScaleE       = .FALSE.
+        CASE ('.ADMM1');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE  = .TRUE.
+           INTEGRAL%ADMM_GCBASIS     = .FALSE.
+           INTEGRAL%ADMM_DFBASIS     = .FALSE.
+           INTEGRAL%ADMM_JKBASIS     = .TRUE.
+           INTEGRAL%ADMM_MCWEENY       = .TRUE.
+           INTEGRAL%ADMM_CONST_EL      = .FALSE.
+           INTEGRAL%ADMMQ_ScaleXC2     = .FALSE.
+           INTEGRAL%ADMMQ_ScaleE       = .FALSE.
+        CASE ('.ADMMQ');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE  = .TRUE.
+           INTEGRAL%ADMM_GCBASIS     = .FALSE.
+           INTEGRAL%ADMM_DFBASIS     = .FALSE.
+           INTEGRAL%ADMM_JKBASIS     = .TRUE.
+           INTEGRAL%ADMM_MCWEENY       = .FALSE.
+           INTEGRAL%ADMM_CONST_EL      = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2     = .FALSE.
+           INTEGRAL%ADMMQ_ScaleE       = .FALSE.
+        CASE ('.ADMMS');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE  = .TRUE.
+           INTEGRAL%ADMM_GCBASIS     = .FALSE.
+           INTEGRAL%ADMM_DFBASIS     = .FALSE.
+           INTEGRAL%ADMM_JKBASIS     = .TRUE.
+           INTEGRAL%ADMM_MCWEENY       = .FALSE.
+           INTEGRAL%ADMM_CONST_EL      = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2     = .TRUE.
+           INTEGRAL%ADMMQ_ScaleE       = .FALSE.
+        CASE ('.ADMMP');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE  = .TRUE.
+           INTEGRAL%ADMM_GCBASIS     = .FALSE.
+           INTEGRAL%ADMM_DFBASIS     = .FALSE.
+           INTEGRAL%ADMM_JKBASIS     = .TRUE.
+           INTEGRAL%ADMM_MCWEENY       = .FALSE.
+           INTEGRAL%ADMM_CONST_EL      = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2     = .FALSE.
+           INTEGRAL%ADMMQ_ScaleE       = .TRUE.
+        CASE ('.PRINT_EK3'); 
+        ! calculate and print full Exchange when doing ADMM exchange approx.
+        ! > Debugging purpose only
 	   INTEGRAL%PRINT_EK3        = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
