@@ -1,0 +1,37 @@
+**SYSTP
+.NUMMTP
+ 1
+.TYPE
+ 0
+.MODEL
+ SPC_E01
+.CHARGS
+ 6
+ -0.606
+ -0.606
+ -0.669
+ 1.212
+ 0.3345
+ 0.3345
+.ALPISO
+ 1
+ 9.718
+*******
+.TYPE
+ 1-10
+.MODEL
+ SPC_E01
+.ALPISO
+ 1
+ 9.718
+*******
+**TWOIA
+.LJ_A
+ 2
+ 0.00
+ 0.00
+.LJ_B
+ 2
+ 0.000
+ 0.000
+**END OF

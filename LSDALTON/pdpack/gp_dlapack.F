@@ -912,7 +912,9 @@
 * =====================================================================
 *
 *     .. Intrinsic Functions ..
+#ifndef VAR_PGF90
       INTRINSIC          LEN_TRIM
+#endif
 *     ..
 *     .. Executable Statements ..
 *

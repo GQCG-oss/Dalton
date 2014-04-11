@@ -54,6 +54,8 @@ B3LYP
 .ARH DAVID  
 .CONVDYN
 TIGHT
+**RESPONSE
+*DIPOLE
 *END OF INPUT  
 %EOF%
 #######################################################################

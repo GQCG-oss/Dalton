@@ -11,13 +11,6 @@ MODULE Integralparameters
   integer,parameter :: AOdfJK = 7
   integer,parameter :: AOVAL = 8
   integer,parameter :: AOelField = 9
-! SPECIAL DEBUGGING OPTIONS
-  integer,parameter :: AOS1p1cSeg = 10
-  integer,parameter :: AOS2p1cSeg = 11
-  integer,parameter :: AOS2p2cSeg = 12
-  integer,parameter :: AOS2p2cGen = 13
-  integer,parameter :: AOP1p1cSeg = 14
-  integer,parameter :: AOD1p1cSeg = 15
 ! THESE ARE STRING SPECIFIERS FOR THE Operator
   integer,parameter :: CoulombOperator = 1
   integer,parameter :: OverlapOperator = 2
@@ -65,6 +58,7 @@ MODULE Integralparameters
   integer,parameter :: GeoDerivCoulombSpec = 10
   integer,parameter :: GeoDerivLHSSpec     = 11
   integer,parameter :: GeoDerivRHSSpec     = 12
+
 ! THESE ARE MPI JOB SPECIFIERS 
   integer,parameter :: MATRIXTY                     =  1
   integer,parameter :: LSGETINT                     =  2
@@ -113,6 +107,13 @@ MODULE Integralparameters
   integer,parameter :: CCGETGMO                     = 43
   integer,parameter :: RPAGETRESIDUAL               = 44
   integer,parameter :: MOCCSDDATA                   = 45
+  integer,parameter :: MO_INTEGRAL_SIMPLE           = 46
+  integer,parameter :: DEC_SETTING_TO_SLAVES        = 47
+  integer,parameter :: INITSLAVETIME                = 48
+  integer,parameter :: GETSLAVETIME                 = 49
+  integer,parameter :: MP2INAMPRI                   = 50
+  integer,parameter :: SIMPLE_MP2_PAR               = 51
+
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2
@@ -294,18 +295,6 @@ subroutine param_AO_Stringfromparam(AO1,AO1param)
      AO1 = 'pCharge '
   CASE(AOelField) 
      AO1 = 'elField '
-  CASE(AOS1p1cSeg)
-     AO1 = 'S1p1cSeg'
-  CASE(AOS2p1cSeg)
-     AO1 = 'S2p1cSeg'
-  CASE(AOS2p2cSeg)
-     AO1 = 'S2p2cSeg'
-  CASE(AOS2p2cGen)
-     AO1 = 'S2p2cGen'
-  CASE(AOP1p1cSeg)
-     AO1 = 'P1p1cSeg'
-  CASE(AOD1p1cSeg)
-     AO1 = 'D1p1cSeg'
   CASE DEFAULT
      WRITE(6,'(1X,2A)') 'Unknown AO string =',AO1param
      CALL LSQUIT('Unknown Operator II_determineOperatorparameter',-1)

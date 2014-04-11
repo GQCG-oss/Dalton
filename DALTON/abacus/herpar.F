@@ -898,10 +898,10 @@ C  /* Deck her_rvres */
      &                     L_TMPMT,L_GRA,L_HES,L_SUS,L_FCK,ITYPE,
      &                     IPRINT,DINTSKP,GENCTR)
 !     module dependencies
-      use parallel_communication_models_mpi
-      use one_sided_communication_wrappers
       use rma_windows
 #ifdef VAR_MPI
+      use parallel_communication_models_mpi
+      use one_sided_communication_wrappers
 #ifdef USE_MPI_MOD_F90
       use mpi
 #endif
@@ -2497,10 +2497,11 @@ C  /* Deck her_sdres */
       SUBROUTINE HER_SDRES(FMAT,HESSEE,NDMAT,DINTSKP,TSKCPU,IWHICH,
      &                     ICOUNT,ITYPE,IPRINT,GENCTR)
 !     module dependencies
+      use rma_windows
+
+#ifdef VAR_MPI
       use parallel_communication_models_mpi
       use one_sided_communication_wrappers
-      use rma_windows
-#ifdef VAR_MPI
 #ifdef USE_MPI_MOD_F90
       use mpi
 #endif

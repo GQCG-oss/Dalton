@@ -235,11 +235,11 @@ ERROR[3]="FREQUENCY DEPENDENT HYPERPOLARIZABILITY NOT CORRECT"
 #
 # Frequency dependent hyperpolarizability tensor
 #
- CRIT1=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(X\;X\,X\) \= * 32\.830....." $log | wc -l`
- CRIT2=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(Y\;X\,X\) \= * \-25\.474....." $log | wc -l`
+ CRIT1=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(X\;X\,X\) \= * 32\.83......" $log | wc -l`
+ CRIT2=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(Y\;X\,X\) \= * \-25\.47......" $log | wc -l`
  CRIT3=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(Z\;X\,X\) \= * (\-|\-0)\.015....." $log | wc -l`
- CRIT4=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(X\;Y\,X\) \= * \-24\.136....." $log | wc -l`
- CRIT5=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(Y\;Y\,X\) \= * 16\.918....." $log | wc -l`
+ CRIT4=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(X\;Y\,X\) \= * \-24\.13......" $log | wc -l`
+ CRIT5=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(Y\;Y\,X\) \= * 16\.91......" $log | wc -l`
  CRIT6=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(Z\;Y\,X\) \= * ( |0)\.011....." $log | wc -l`
  CRIT7=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(X\;Z\,X\) \= * (\-|\-0)\.015....." $log | wc -l`
  CRIT8=`$GREP "\@ B\-freq \= (0| )\.040000  C\-freq \= (0| )\.040000 * beta\(Y\;Z\,X\) \= * ( |0)\.011....." $log | wc -l`

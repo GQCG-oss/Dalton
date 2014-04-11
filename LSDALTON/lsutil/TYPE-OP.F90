@@ -92,24 +92,6 @@ ELSEIF (AOtype.EQ.AOpCharge) THEN
 ELSEIF (AOtype.EQ.AOelField) THEN
   nc = MOLECULE%nAtoms
   np = MOLECULE%nAtoms
-ELSEIF (AOtype.EQ.AOS1p1cSeg)THEN
-  nc = 1
-  np = 1
-ELSEIF (AOtype.EQ.AOS2p1cSeg)THEN
-  nc = 1
-  np = 2
-ELSEIF (AOtype.EQ.AOS2p2cSeg)THEN
-  nc = 2
-  np = 2
-ELSEIF (AOtype.EQ.AOS2p2cGen)THEN
-  nc = 2
-  np = 2
-ELSEIF (AOtype.EQ.AOP1p1cSeg)THEN
-  nc = 3
-  np = 3
-ELSEIF (AOtype.EQ.AOD1p1cSeg)THEN
-  nc = 5
-  np = 5
 ELSE
   WRITE(LUPRI,'(1X,A,I3)') 'Error in getNbasis. Not valid AOtype =', AOtype
   CALL LSQUIT('AOtype not valid in getNbasis',lupri)
@@ -145,11 +127,7 @@ DALTON%DOPASS = .TRUE.
 DALTON%DENSFIT = .FALSE.
 DALTON%DF_K = .FALSE.
 DALTON%INTEREST = .FALSE.
-#ifdef VAR_SCALAPACK
-DALTON%MATRICESINMEMORY = .TRUE.
-#else
-DALTON%MATRICESINMEMORY = .TRUE.!.FALSE.
-#endif
+DALTON%MATRICESINMEMORY = .FALSE.
 DALTON%MEMDIST = .FALSE.
 DALTON%LOW_ACCURACY_START = .FALSE.
 DALTON%LINSCA = .FALSE.
@@ -2590,6 +2568,8 @@ implicit none
 TYPE(integralconfig), INTENT(IN) :: dalton_inp
 TYPE(LSINTSCHEME),INTENT(INOUT) :: scheme
 
+scheme%doMPI                 = .TRUE.
+scheme%MasterWakeSlaves      = .TRUE.
 scheme%noOMP                 = dalton_inp%noOMP
 scheme%CFG_LSDALTON          = dalton_inp%CFG_LSDALTON
 scheme%DOPASS                = dalton_inp%DOPASS
@@ -2721,6 +2701,8 @@ TYPE(LSINTSCHEME),INTENT(IN) :: scheme
 INTEGER,INTENT(IN)           :: IUNIT
 
 WRITE(IUNIT,'(3X,A22,L7)') 'noBQBQ                ', scheme%noBQBQ
+WRITE(IUNIT,'(3X,A22,L7)') 'doMPI                 ', scheme%doMPI
+WRITE(IUNIT,'(3X,A22,L7)') 'MasterWakeSlaves      ', scheme%MasterWakeSlaves
 WRITE(IUNIT,'(3X,A22,L7)') 'noOMP                 ', scheme%noOMP
 WRITE(IUNIT,'(3X,A22,L7)') 'CFG_LSDALTON          ', scheme%CFG_LSDALTON
 WRITE(IUNIT,'(3X,A22,L7)') 'DOPASS                ', scheme%DOPASS

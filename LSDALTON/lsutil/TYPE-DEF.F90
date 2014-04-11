@@ -221,6 +221,8 @@ END TYPE integralconfig
 TYPE LSINTSCHEME
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 LOGICAL  :: NOBQBQ ! switches off the point charge--point charge repulsion contribution (NUCPOT)
+LOGICAL  :: doMPI
+LOGICAL  :: MasterWakeSlaves
 LOGICAL  :: noOMP
 LOGICAL  :: CFG_LSDALTON
 LOGICAL  :: DOPASS

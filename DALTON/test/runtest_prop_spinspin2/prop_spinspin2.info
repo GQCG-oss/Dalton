@@ -1,0 +1,9 @@
+   prop_spinspin2
+   --------------
+   Molecule:         H2O
+   Wave Function:    MCSCF (CAS)
+   Test Purpose:     Spin-spin coupling constants calculating only the
+                     normally most dominating contributions to the
+                     isotropic and anisotropic coupling constants, namely
+                     the FC-FC and FC-SD terms, thus only solving one
+                     response equation

@@ -1,0 +1,5 @@
+   rsp_propave
+   -----------
+   Molecule:         LiH
+   Wave Function:    SCF / STO-3G
+   Test Purpose:     Check that AVEPRP in response works properly

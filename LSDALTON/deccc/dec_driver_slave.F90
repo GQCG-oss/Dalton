@@ -10,6 +10,7 @@ module dec_driver_slave_module
   use lstiming
   use infpar_module
   use lsmpi_type
+  use lsmpi_op, only: init_slave_timers, get_slave_timers
   use typedeftype
   use dec_typedef_module
   use DALTONINFO, only: ls_free
@@ -87,7 +88,13 @@ contains
 
     ! Get list of which atoms have orbitals assigned
     call mem_alloc(dofrag,natoms)
-    call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
+    call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,&
+         & natoms,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
+
+    IF(DECinfo%StressTest)THEN
+     call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,&
+          & MyMolecule%DistanceTable,OccOrbitals,UnoccOrbitals,dofrag,mylsitem)
+    ENDIF
 
     ! Internal control of first order property keywords
     ! (Necessary because these must be false during fragment optimization.)
@@ -307,12 +314,16 @@ contains
     logical :: morejobs, divide, split,only_update
     real(realk) :: fragenergy(ndecenergies),tottime
     real(realk) :: t1cpu, t2cpu, t1wall, t2wall
-    real(realk) :: t1cpuacc, t2cpuacc, t1wallacc, t2wallacc
+    real(realk) :: tot_work_time, tot_comm_time, tot_idle_time
+    real(realk) :: test_work_time, test_comm_time, test_idle_time, test_master, testtime
+    real(realk) :: t1cpuacc, t2cpuacc, t1wallacc, t2wallacc, mwork, midle, mcomm
     real(realk) :: flops
+    real(realk), pointer :: slave_times(:)
     integer(kind=ls_mpik) :: master
     master = 0
     fragenergy=0.0_realk
     only_update=.true.
+    slave_times => null() 
 
     call LSTIMER('START',t1cpuacc,t1wallacc,DECinfo%output)
 
@@ -346,6 +357,7 @@ contains
 
        ! Send finished job to master
        ! ***************************
+       call time_start_phase(PHASE_COMM)
        ! (If job=0 it is an empty job not containing any real information)
        call ls_mpisendrecv(job,MPI_COMM_LSDALTON,infpar%mynum,master)
 
@@ -383,6 +395,7 @@ contains
        ! Receive new job task
        ! ********************
        call ls_mpisendrecv(job,MPI_COMM_LSDALTON,master,infpar%mynum)
+       call time_start_phase(PHASE_WORK)
 
        ! Carry out fragment optimization (job>0), or finish if all jobs are done (job=-1)
        ! ********************************************************************************
@@ -394,7 +407,7 @@ contains
        else
 
           ! Timing and flops
-          call LSTIMER('START',t1cpu,t1wall,DECinfo%output)
+          call time_start_phase(PHASE_WORK, twall = t1wall, swwork = mwork, swcomm = mcomm, swidle = midle )
           call start_flop_counter()
 
           atomA=jobs%atom1(job)
@@ -448,6 +461,7 @@ contains
           split=.false.
           divide=.true.
           ! Special case: Never divide for fragment optimization
+          call time_start_phase(PHASE_COMM)
           if(jobs%dofragopt(job)) divide=.false.
 
           DoDivide: do while(divide)
@@ -467,7 +481,8 @@ contains
              end if
           end do DoDivide
 
-          print '(a,i8,a,i8)', 'Slave ', infpar%mynum, ' will do  job ', job
+          call time_start_phase(PHASE_WORK)
+          !print '(a,i8,a,i8)', 'Slave ', infpar%mynum, ' will do  job ', job
 
           ! Communicator in setting may have changed due to division of local group
           ! Ensure that the correct local communicator is used.
@@ -480,6 +495,8 @@ contains
           end if
 
 
+          call init_slave_timers(slave_times,infpar%lg_comm)
+
           ! RUN FRAGMENT CALCULATION
           ! ************************
 
@@ -489,25 +506,41 @@ contains
                 call lsquit('fragments_slave: Fragment optimization requested for pair fragment!',-1)
              end if
 
+             write(*, '(1X,a,i4,a,i6,a,i15,a,i8)') 'Slave ',infpar%lg_mynum,' will do job: ', &
+                & job, ' of size ', jobs%jobsize(job),&
+                &  ' single fragment optimization: ', atomA
+
              ! Fragment optimization
              call optimize_atomic_fragment(atomA,MyFragment,MyMolecule%nAtoms, &
-                  & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
-                  & MyMolecule,mylsitem,.true.)
+                & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, MyMolecule,mylsitem,.true.)
+
+
              flops_slaves = MyFragment%flops_slaves
-             tottime = MyFragment%slavetime ! time used by all local slaves
+             !   tottime = MyFragment%slavetime_work(MyFragment%ccmodel) + &
+             !      & MyFragment%slavetime_comm(MyFragment%ccmodel) + &
+             !      & MyFragment%slavetime_idle(MyFragment%ccmodel) 
              fragenergy = MyFragment%energies
+
              call copy_fragment_info_job(MyFragment,singlejob)
 
           else
 
 
              SingleOrPair: if( atomA == atomB ) then ! single  fragment
+                write(*, '(1X,a,i4,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6)') 'Slave ',infpar%lg_mynum,'will do job: ', &
+                   &job, ' of size ', jobs%jobsize(job),&
+                   &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nunoccAOS,&
+                   &' #b',AtomicFragments(atomA)%nbasis,' single fragment: ', atomA
 
                 call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                     & AtomicFragments(atomA),grad=grad)
+                   & AtomicFragments(atomA),grad=grad)
+
                 flops_slaves = AtomicFragments(atomA)%flops_slaves
-                tottime = AtomicFragments(atomA)%slavetime ! time used by all local slaves
+                !tottime = AtomicFragments(atomA)%slavetime_work(AtomicFragments(atomA)%ccmodel) + &
+                !   & AtomicFragments(atomA)%slavetime_comm(AtomicFragments(atomA)%ccmodel) + &
+                !   & AtomicFragments(atomA)%slavetime_idle(AtomicFragments(atomA)%ccmodel) 
                 fragenergy = AtomicFragments(atomA)%energies
+
                 call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
                 call atomic_fragment_free_basis_info(AtomicFragments(atomA))
 
@@ -516,16 +549,30 @@ contains
                 if(jobs%esti(job)) then
                    ! Estimated pair fragment
                    call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                        & EstAtomicFragments(atomA), EstAtomicFragments(atomB), &
-                        & natoms,PairFragment,grad)
+                      & EstAtomicFragments(atomA), EstAtomicFragments(atomB), &
+                      & natoms,PairFragment,grad)
+
+                   write(*, '(1X,a,i4,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%lg_mynum, &
+                      &' will do job: ', job, ' of size ', jobs%jobsize(job),&
+                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                      &' #b',PairFragment%nbasis,' pair   estimate: ', atomA,atomB
                 else
                    ! Pair fragment according to FOT precision
                    call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                        & AtomicFragments(atomA), AtomicFragments(atomB), &
-                        & natoms,PairFragment,grad)
+                      & AtomicFragments(atomA), AtomicFragments(atomB), &
+                      & natoms,PairFragment,grad)
+
+                   write(*, '(1X,a,i4,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%lg_mynum, &
+                      &' will do job: ', job, ' of size ', jobs%jobsize(job),&
+                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                      &' #b',PairFragment%nbasis,' pair   fragment: ', atomA,atomB
+
                 end if
+
                 flops_slaves = PairFragment%flops_slaves
-                tottime = PairFragment%slavetime ! time used by all local slaves
+                !tottime = PairFragment%slavetime_work(PairFragment%ccmodel) + &
+                !   & PairFragment%slavetime_comm(PairFragment%ccmodel) + &
+                !   & PairFragment%slavetime_idle(PairFragment%ccmodel) 
                 fragenergy=PairFragment%energies
 
                 call copy_fragment_info_job(PairFragment,singlejob)
@@ -537,22 +584,62 @@ contains
           end if FragoptCheck3
 
 
+
+
           ! Set fragment job info
           ! *********************
-          call LSTIMER('START',t2cpu,t2wall,DECinfo%output)
-          call end_flop_counter(flops) ! flops for local master
-          singlejob%LMtime(1) = t2wall - t1wall  ! wall time used by local master
-          tottime = tottime + singlejob%LMtime(1) ! total time for all local slaves and local master
-          singlejob%flops(1) = flops + flops_slaves  ! FLOPS for local master + local slaves
+
+          !TIME
+          call get_slave_timers(slave_times,infpar%lg_comm)
+          call time_start_phase(PHASE_WORK, twall = t2wall , dwwork = mwork, dwcomm = mcomm, dwidle = midle )
+          !update the times the slaves have spent in the calclulation with the
+          !master time-> this gives rise to the time spent in the initialization
+          !and finalization of the fragment calculation
+          tot_work_time  = mwork
+          tot_comm_time  = mcomm
+          tot_idle_time  = midle
+          test_work_time = slave_times(PHASE_WORK_IDX)
+          test_comm_time = slave_times(PHASE_COMM_IDX)
+          test_idle_time = slave_times(PHASE_IDLE_IDX)
+          test_master    = test_work_time + test_comm_time + test_idle_time 
+          do i = 2, infpar%lg_nodtot
+             tot_work_time  = tot_work_time  + slave_times((i-1)*nphases+PHASE_WORK_IDX)
+             tot_comm_time  = tot_comm_time  + slave_times((i-1)*nphases+PHASE_COMM_IDX)
+             tot_idle_time  = tot_idle_time  + slave_times((i-1)*nphases+PHASE_IDLE_IDX)
+             test_work_time = test_work_time + slave_times((i-1)*nphases+PHASE_WORK_IDX)
+             test_comm_time = test_comm_time + slave_times((i-1)*nphases+PHASE_COMM_IDX)
+             test_idle_time = test_idle_time + slave_times((i-1)*nphases+PHASE_IDLE_IDX)
+          enddo
+          tottime  = tot_work_time  + tot_comm_time  + tot_idle_time
+          testtime = test_work_time + test_comm_time + test_idle_time
+
+          singlejob%LMtime(1)  = t2wall - t1wall  ! wall time used by local master
           singlejob%nslaves(1) = infpar%lg_nodtot ! Sizes of local slot (local master + local slaves)
-          ! load distribution: { tottime / time(local master) } / number of nodes (ideally 1.0)
-          singlejob%load(1) = (tottime/singlejob%LMtime(1))/real(singlejob%nslaves(1))
-          singlejob%jobsdone(1) = .true.
-          singlejob%esti(1) = jobs%esti(job)
+          singlejob%workt(1)   = tot_work_time    ! collective work time
+          singlejob%commt(1)   = tot_comm_time    ! collective comm time 
+          singlejob%idlet(1)   = tot_idle_time    ! collective idle time
+
+          !check if timings are as expected, within 1% at least
+          if( (abs(mwork + mcomm + midle - singlejob%LMtime(1)) > 1.0E-2_realk*singlejob%LMtime(1)).or.&
+             &( abs((testtime/singlejob%nslaves(1)) - test_master)>1.0E-2_realk*test_master) )then
+             print *,"WARNING(fragments_slave):timing for fragment weird",mwork,mcomm,&
+                &midle,singlejob%LMtime(1),testtime,test_master,singlejob%nslaves(1)
+          endif
+
+          !FLOPS
+          call end_flop_counter(flops) ! flops for local master
+          singlejob%flops(1)     = flops + flops_slaves  ! FLOPS for local master + local slaves
+          singlejob%jobsdone(1)  = .true.
+          singlejob%esti(1)      = jobs%esti(job)
           singlejob%dofragopt(1) = jobs%dofragopt(job)
 
           print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
                & job, singlejob%LMtime(1)
+
+          call mem_dealloc(slave_times)
+          slave_times => null() 
+
+
        end if DoJob
    
 
@@ -580,9 +667,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   integer :: MaxActualDimGamma,nbatchesGamma
   integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
   integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
-  integer :: scheme,nocc,nunocc,MinAObatch,iter
-  real(realk) :: MemFree
-  integer(kind=8) :: dummy
+  logical :: mpi_split
 
   ! Initialize stuff (just dummy arguments here)
   nullify(orb2batchAlpha)
@@ -594,20 +679,17 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   nullify(batchsizeGamma)
   nullify(batchindexGamma)
 
-  ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
-  ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
-  nocc=MyFragment%noccAOS
-  nunocc=MyFragment%nunoccAOS
+  ntasks = 0
 
   ! Determine optimal batchsizes with available memory
   if(MyFragment%ccmodel==MODEL_MP2) then ! MP2
-     call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.)
+     call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.,.false.)
   else  ! CC2 or CCSD
-     iter=1
-     call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
-     call get_currently_available_memory(MemFree)
-     call get_max_batch_sizes(scheme,MyFragment%nbasis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
-          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,dummy,(.not.DECinfo%solver_par))
+     mpi_split = .true.
+     call wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split,ntasks)
+     ! In case of MO-based algorithm the number of tasks depends on the
+     ! number of MO batches and is directly returned by the routine.
+     if (ntasks>0) return
   end if
 
 

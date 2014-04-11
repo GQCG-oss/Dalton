@@ -47,10 +47,7 @@ MODULE ls_Integral_Interface
        & jmatclassicalmat, gradclassicalgrad, electronnuclearclassic
   use MBIEintegraldriver, only: mbie_integral_driver
   use BUILDAOBATCH, only: build_empty_ao, build_empty_nuclear_ao,&
-       & build_empty_pcharge_ao, build_s_1prim1contseg_ao, &
-       & build_s_2prim1contseg_ao, build_s_2prim2contseg_ao,&
-       & build_s_2prim2contgen_ao, build_p_1prim1contseg_ao,&
-       & build_d_1prim1contseg_ao, build_ao, build_shellbatch_ao, &
+       & build_empty_pcharge_ao, build_ao, build_shellbatch_ao, &
        & BUILD_EMPTY_ELFIELD_AO
   use lstiming, only: lstimer, print_timers
   use io, only: io_get_filename, io_get_csidentifier
@@ -62,7 +59,8 @@ MODULE ls_Integral_Interface
   use SphCart_Matrices, only: spherical_transformation
   use Thermite_OD, only: getTotalGeoComp
 #if VAR_MPI
-  use lsmpi_type, only:LSGETINT,LSJENGIN,LSLINK, ls_mpibcast, lsmpi_barrier, lsmpi_reduction
+  use lsmpi_type, only:LSGETINT,LSJENGIN,LSLINK, ls_mpibcast, lsmpi_barrier, &
+       & lsmpi_reduction, get_MPI_COMM_SELF
   use lsmpi_op, only: LSTASK, LS_TASK_MANAGER, LSMPI_TASK_LIST,&
   & lsmpi_lstensor_reduction, lsmpi_probe_and_irecv_add_lstmemrealkbuf,&
   & lsmpi_isend_lstmemrealkbuf, lsmpi_blocking_recv_add_lstmemrealkbuf
@@ -340,6 +338,12 @@ Logical                    :: saveCSscreen,savePSscreen,CS_screen,PS_screen
 integer                    :: ndim_full(5)
 real(realk)                :: t(8),t1,t2,t3,t4
 real(realk)                :: part(2)
+Logical                    :: SMasterWakeSlaves
+integer(kind=ls_mpik)      :: Snode,SNumnodes,SComm
+IF(.NOT.setting%scheme%doMPI)THEN
+ call deactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
+
 CALL LS_GETTIM(t1,t2)
 t = 0E0_realk
 #endif
@@ -381,7 +385,7 @@ PS_screen = setting%scheme%PS_SCREEN
 ! ***************************************************************************
 ! *                                MPI Specific                             *
 ! ***************************************************************************
-IF (setting%node.EQ.infpar%master) THEN
+IF (setting%scheme%MasterWakeSlaves.AND.setting%node.EQ.infpar%master) THEN
    !if gradient test that all molecules are same otherwise quit. 
    !   Brano: Spawn here!
    call ls_mpibcast(LSGETINT,infpar%master,setting%comm)
@@ -563,9 +567,48 @@ CALL ls_free_lstensors(dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created)
 if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
 
 #ifdef VAR_MPI
+IF(.NOT.setting%scheme%doMPI)THEN
+   call ReactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
+
 ENDIF
 #endif
 END SUBROUTINE ls_getIntegrals
+
+#ifdef VAR_MPI
+subroutine DeactivateIntegralMPI(Setting,Savenode,SaveNumnodes,SaveComm,&
+     & SaveMasterWakeSlaves)
+  implicit none
+  Type(LSSETTING),intent(inout)       :: SETTING
+  Logical,intent(inout)               :: SaveMasterWakeSlaves
+  integer(kind=ls_mpik),intent(inout) :: Savenode,SaveNumnodes,SaveComm   
+  !this means that this subroutine (ls_getIntegrals) have been
+  !call from a slave and it wants to calculate the full contribution
+  SaveMasterWakeSlaves = setting%scheme%MasterWakeSlaves
+  Savenode = setting%node
+  SaveNumnodes = setting%numnodes
+  SaveComm = setting%comm
+
+  setting%scheme%MasterWakeSlaves = .FALSE.
+  setting%node = infpar%master
+  setting%numnodes = 1_ls_mpik
+  !MPI_COMM_SELF is the local comm which only contains the rank itself
+  call GET_MPI_COMM_SELF(setting%comm) 
+END subroutine DeactivateIntegralMPI
+
+subroutine ReactivateIntegralMPI(Setting,Savenode,SaveNumnodes,SaveComm,&
+     & SaveMasterWakeSlaves)
+  implicit none
+  Type(LSSETTING),intent(inout)    :: SETTING
+  Logical,intent(in)               :: SaveMasterWakeSlaves
+  integer(kind=ls_mpik),intent(in) :: Savenode,SaveNumnodes,SaveComm   
+  !Revert Back
+   setting%scheme%MasterWakeSlaves = SaveMasterWakeSlaves
+   setting%node = Savenode
+   setting%numnodes = SaveNumnodes
+   setting%comm = SaveComm
+END subroutine ReactivateIntegralMPI
+#endif
 
 !> \brief Generalized routine to get explicit integrals for given operator Oper 
 !> \author S. Reine
@@ -938,6 +981,13 @@ type(lstensor),pointer :: gabCS_rhs_full,gabCS_lhs_full
 integer :: iAO,natoms,numnodes
 logical :: rhsCS_created,doscreen,UseMPI
 logical :: lhs_created,rhs_created,lhsCS_created,PermuteResultTensor
+#ifdef VAR_MPI
+Logical                    :: SMasterWakeSlaves
+integer(kind=ls_mpik)      :: Snode,SNumnodes,SComm
+IF(.NOT.setting%scheme%doMPI)THEN
+ call deactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
+#endif
 #ifdef VAR_SCALAPACK
 IF(matrix_type.EQ.mtype_scalapack)THEN
    IF (setting%node.EQ.infpar%master) THEN
@@ -959,7 +1009,7 @@ CALL ls_create_lstensor_full(setting,'AC_TYPE',AO1,AO3,AO2,AO4,Oper,Spec,&
 IF (setting%node.EQ.infpar%master) THEN
    natoms = MAX(setting%molecule(1)%p%nAtoms,setting%molecule(2)%p%nAtoms,&
         &setting%molecule(3)%p%nAtoms,setting%molecule(4)%p%nAtoms)
-   IF(natoms.GT.1.AND.setting%scheme%LINK)THEN
+   IF(setting%scheme%MasterWakeSlaves.AND.natoms.GT.1.AND.setting%scheme%LINK)THEN
       call ls_mpibcast(LSLINK,infpar%master,setting%comm)
       call lsmpi_link_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
    ELSE
@@ -1020,6 +1070,12 @@ ELSE
    CALL ls_free_lstensors(dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created)
    if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
 ENDIF
+
+#ifdef VAR_MPI
+IF(.NOT.setting%scheme%doMPI)THEN
+ call ReactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
+#endif
 END SUBROUTINE ls_get_exchange_mat
 
 !!$!> \brief Calculate the exchange matrix
@@ -1748,6 +1804,11 @@ Logical                    :: saveCSscreen,savePSscreen,CS_screen,PS_screen
 integer                    :: ndim_full(5),iatom,jatom,ilsao,iatom2,jatom2,node
 real(realk)                :: t(8),t1,t2,t3,t4
 real(realk)                :: part(2)
+Logical                    :: SMasterWakeSlaves
+integer(kind=ls_mpik)      :: Snode,SNumnodes,SComm
+IF(.NOT.setting%scheme%doMPI)THEN
+   call deactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
 #endif
 !type(matrix)               :: tmp
 !CALL LSTIMER('START',TS,TE,6)
@@ -1784,7 +1845,7 @@ PS_screen = setting%scheme%PS_SCREEN
 ! ***************************************************************************
 ! *                                MPI Specific                             *
 ! ***************************************************************************
-IF (setting%node.EQ.infpar%master) THEN
+IF (setting%scheme%MasterWakeSlaves.AND.setting%node.EQ.infpar%master) THEN
    call ls_mpibcast(LSJENGIN,infpar%master,setting%comm)
    call lsmpi_jengine_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
 ENDIF
@@ -1922,6 +1983,11 @@ t(6) = t4 - t2 !Node wall time += task wall time
 ENDIF
 #endif
 ENDIF !memdist_jengine
+#ifdef VAR_MPI
+IF(.NOT.setting%scheme%doMPI)THEN
+   call ReactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
+ENDIF
+#endif
 END SUBROUTINE ls_jengine
 
 !> \brief Calculate the coulomb matrix using the jengine method
@@ -3482,7 +3548,7 @@ LOGICAL              :: LHSGAB !THIS ONLY HAS AN EFFECT WHEN USING FRAGMENTS
 !
 Integer                    :: IAO,JAO,indAO
 integer                    :: AOstring(4)
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASIS_PT)             :: AObasis(4)
 Logical                    :: uniqueAO,emptyAO,intnrm,sameFrag(4,4)
 Integer                    :: ndim(4),indexUnique(4),AObatchdim,batchindex(4),batchsize(4)
 IF (setting%nAO.NE. 4) CALL LSQUIT('Error in SetInputAO. nAO .NE. 4',lupri)
@@ -3502,7 +3568,9 @@ AOstring(4) = AO4
 DO iAO=1,setting%nAO
   FRAGMENTS(iAO)%p => SETTING%FRAGMENT(iAO)%p
 ENDDO
-
+DO iAO=1,setting%nAO
+   AObasis(iAO)%p => Setting%BASIS(iAO)%p
+ENDDO
 INT_INPUT%sameLHSaos = (AO1.EQ.AO2) .AND. (.NOT. AO1.EQ.AOEmpty).AND.samefrag(1,2)
 INT_INPUT%sameRHSaos = (AO3.EQ.AO4) .AND. (.NOT. AO3.EQ.AOEmpty).AND.samefrag(3,4)
 INT_INPUT%sameODs    = (AO1.EQ.AO3) .AND. (AO2.EQ.AO4).AND.samefrag(1,3).AND.samefrag(2,4)
@@ -3511,6 +3579,8 @@ IF(INT_INPUT%CS_int)THEN
    IF(LHSGAB)THEN
       FRAGMENTS(3)%p => FRAGMENTS(1)%p
       FRAGMENTS(4)%p => FRAGMENTS(2)%p
+      AObasis(3)%p => Setting%BASIS(1)%p
+      AObasis(4)%p => Setting%BASIS(2)%p
       AOstring(3) = AO1
       AOstring(4) = AO2
       sameFrag(3,4) = sameFrag(1,2)
@@ -3527,6 +3597,8 @@ IF(INT_INPUT%CS_int)THEN
    ELSE
       FRAGMENTS(1)%p => FRAGMENTS(3)%p
       FRAGMENTS(2)%p => FRAGMENTS(4)%p
+      AObasis(1)%p => Setting%BASIS(3)%p
+      AObasis(2)%p => Setting%BASIS(4)%p
       AOstring(1) = AO3
       AOstring(2) = AO4
       sameFrag(1,2) = sameFrag(3,4)
@@ -3593,8 +3665,8 @@ DO IAO=1,4
     nAObuilds = nAObuilds+1
     indAO   = nAObuilds
     indexUnique(IAO) = indAO
-    CALL SetAObatch(AObuild(indAO),batchindex(iAO),batchsize(iAO),ndim(indAO),AOstring(iAO),intType,SETTING%Scheme,&
-     &              FRAGMENTS(iAO)%p,Setting%BASIS(iAO)%p,LUPRI,LUERR)
+    CALL SetAObatch(AObuild(indAO),batchindex(iAO),batchsize(iAO),ndim(indAO),AOstring(iAO),intType,&
+     &              SETTING%Scheme,FRAGMENTS(iAO)%p,AObasis(iAO)%p,LUPRI,LUERR)
     IF (AOstring(IAO).EQ.AOpCharge) THEN
       INT_INPUT%sameLHSaos = .FALSE.
       INT_INPUT%sameRHSaos = .FALSE.
@@ -3673,30 +3745,6 @@ CASE (AOelField)
    emptyAO = .true.
    CALL BUILD_EMPTY_ELFIELD_AO(AObatch,Molecule,LUPRI)
    nDim = 3
-CASE (AOS1p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_S_1Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOS2p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_S_2Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOS2p2cSeg)
-   emptyAO = .true.
-   CALL BUILD_S_2Prim2ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOS2p2cGen)
-   emptyAO = .true.
-   CALL BUILD_S_2Prim2ContGen_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOP1p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_P_1Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
-CASE (AOD1p1cSeg)
-   emptyAO = .true.
-   CALL BUILD_D_1Prim1ContSeg_AO(AObatch,SCHEME,MOLECULE,LUPRI)
-   nDim = AObatch%nbast
 CASE DEFAULT
    print*,'case: ',AO
    WRITE(lupri,*) 'case: ',AO

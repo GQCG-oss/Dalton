@@ -85,15 +85,15 @@ MODULE IntegralInterfaceMOD
        & II_get_geoderivCoulomb,II_get_GaussianGeminalFourCenter,&
        & II_get_magderiv_4center_eri,II_get_magderivF,&
        & II_get_magderivK,II_get_magderivJ, II_get_Econt,II_get_exchangeEcont,&
-       & II_get_CoulombEcont,II_get_test4center_eri,&
-       & II_get_ABres_4CenterEri,II_get_Fock_mat_full,&
+       & II_get_CoulombEcont,II_get_ABres_4CenterEri,II_get_Fock_mat_full,&
        & II_get_coulomb_mat_full, II_get_coulomb_mat_mixed_full,&
        & II_get_jengine_mat_full, II_get_exchange_mat_full,&
        & ii_get_exchange_mat_mixed_full, II_get_exchange_mat1_full,&
        & II_get_exchange_mat_regular_full, II_get_admm_exchange_mat,get_T23,&
        & II_get_ADMM_K_gradient, II_get_coulomb_mat,ii_get_exchange_mat_mixed,&
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
-       & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI
+       & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
+       & II_get_2int_ScreenRealMat
   private
 
 INTERFACE II_get_coulomb_mat
@@ -808,108 +808,6 @@ setting%MOLECULE(1)%p => temp%p
 CALL retrieve_Output(lupri,setting,output,setting%IntegralTransformGC)
 !call print_mol(setting%MOLECULE(3)%p,lupri)
 END SUBROUTINE II_get_ep_integrals3
-
-!> \brief Calculates the electrostatic-potential AO integrals between two AO-basis functions and a point charge
-!> \author S. Reine
-!> \date 2014
-!> \param Integral the EP type integrals
-!> \param nbasis the number of basis functions
-!> \param R the center of the point charge
-!> \param setting Integral evalualtion settings
-!> \param lupri Default print unit
-!> \param luerr Default error print unit
-SUBROUTINE II_get_ep_AOintegrals(Integral,nbasis,R,SETTING,LUPRI,LUERR)
-IMPLICIT NONE
-REAL(realk)         :: Integral(nbasis,nbasis,1)
-REAL(realk)         :: R(3,1) !vector R={x,y,z}
-TYPE(LSSETTING)     :: SETTING
-INTEGER             :: nbasis,LUPRI,LUERR
-!
-real(realk)         :: OLDTHRESH
-type(MOLECULE_PT)   :: temp,Point
-
-CALL ls_dzero(Integral,nbasis*nbasis)
-!set threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
-call initIntegralOutputDims(setting%output,nbasis,nbasis,1,1,1)
-allocate(Point%p)
-call build_pointMolecule(Point%p,R,1,lupri)
-temp%p  => setting%MOLECULE(3)%p
-setting%MOLECULE(3)%p => Point%p
-CALL ls_getIntegrals(AORdefault,AORdefault,AONuclear,AOempty,&
-     &NucpotOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-CALL retrieve_Output(lupri,setting,Integral,setting%IntegralTransformGC)
-call free_Moleculeinfo(Point%p)
-setting%MOLECULE(3)%p => temp%p
-END SUBROUTINE II_get_ep_AOintegrals
-
-!> \brief Calculates the electric-field AO integrals between two AO-basis functions and the electrostatic field of a point charge
-!> \author S. Reine
-!> \date 2014
-!> \param Integral the EF AO integrals
-!> \param nbasis the number of basis functions
-!> \param R the center of the point charge
-!> \param setting Integral evalualtion settings
-!> \param lupri Default print unit
-!> \param luerr Default error print unit
-SUBROUTINE II_get_ef_AOintegrals(Integral,nbasis,R,SETTING,LUPRI,LUERR)
-IMPLICIT NONE
-REAL(realk)         :: Integral(nbasis,nbasis,3)
-REAL(realk)         :: R(3,1) !vector R={x,y,z}
-TYPE(LSSETTING)     :: SETTING
-INTEGER             :: nbasis,LUPRI,LUERR
-!
-real(realk)         :: OLDTHRESH
-type(MOLECULE_PT)   :: temp,Point
-
-CALL ls_dzero(Integral,nbasis*nbasis*3)
-!set threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
-call initIntegralOutputDims(setting%output,nbasis,nbasis,1,1,3)
-allocate(Point%p)
-call build_pointMolecule(Point%p,R,1,lupri)
-temp%p  => setting%MOLECULE(3)%p
-setting%MOLECULE(3)%p => Point%p
-CALL ls_getIntegrals(AORdefault,AORdefault,AOelField,AOempty,&
-     &NucpotOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-CALL retrieve_Output(lupri,setting,Integral,setting%IntegralTransformGC)
-call free_Moleculeinfo(Point%p)
-setting%MOLECULE(3)%p => temp%p
-END SUBROUTINE II_get_ef_AOintegrals
-
-!> \brief Calculates the nuclear-attraction fock matrix derivative contributions
-!> \author T. Kjaergaard
-!> \date 2010
-!> \param lupri Default print unit
-!> \param luerr Default error print unit
-!> \param setting Integral evalualtion settings
-!> \param h the nuclear attraction fock matrix contribution
-SUBROUTINE II_get_ep_integrals_grad(LUPRI,LUERR,SETTING,Integral,R)
-IMPLICIT NONE
-TYPE(MATRIX)        :: Integral
-REAL(realk)         :: R(3,1) !vector R={x,y,z}
-TYPE(LSSETTING)     :: SETTING
-INTEGER             :: LUPRI,LUERR
-!
-Integer             :: nbast
-real(realk)         :: OLDTHRESH
-type(MOLECULE_PT)   :: temp,Point
-
-CALL mat_zero(Integral)
-!set threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
-nbast = Integral%nrow
-call initIntegralOutputDims(setting%output,nbast,nbast,1,1,1)
-allocate(Point%p)
-call build_pointMolecule(Point%p,R,1,lupri)
-temp%p  => setting%MOLECULE(3)%p
-setting%MOLECULE(3)%p => Point%p
-CALL ls_getIntegrals(AORdefault,AORdefault,AONuclear,AOempty,&
-     &NucpotOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-CALL retrieve_Output(lupri,setting,Integral,setting%IntegralTransformGC)
-call free_Moleculeinfo(Point%p)
-setting%MOLECULE(3)%p => temp%p
-END SUBROUTINE II_get_ep_integrals_grad
 
 !> \brief Calculates the full molecular gradient
 !> \author T. Kjaergaard
@@ -2939,7 +2837,7 @@ TYPE(MATRIX),target   :: GAB
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR
 !
-Integer             :: nbast
+Integer             :: nbast1,nbast2
 !call lsquit('II_get_2int_ScreenMat not implemented ',-LUPRI)
 IF(setting%IntegralTransformGC)THEN
    !I do not think it makes sense to transform afterwards 
@@ -2947,9 +2845,10 @@ IF(setting%IntegralTransformGC)THEN
    call lsquit('II_get_2int_ScreenMat and IntegralTransformGC do not work',-1)
 ENDIF
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
-nbast = GAB%nrow
+nbast1 = GAB%nrow
+nbast2 = GAB%ncol
 call mat_zero(GAB)
-call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+call initIntegralOutputDims(setting%Output,nbast1,nbast2,1,1,1)
 setting%Output%RealGabMatrix = .TRUE.
 CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
      &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
@@ -2957,6 +2856,33 @@ setting%Output%RealGabMatrix = .FALSE.
 CALL retrieve_Output(lupri,setting,GAB,setting%IntegralTransformGC)
 
 END SUBROUTINE II_get_2int_ScreenMat
+
+!> \brief Calculates the 4 center 2 eri screening mat
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param Gab the output matrix
+SUBROUTINE II_get_2int_ScreenRealMat(LUPRI,LUERR,SETTING,nbast,GAB)
+IMPLICIT NONE
+INTEGER               :: LUPRI,LUERR,nbast
+real(realk)           :: GAB(nbast,nbast)
+TYPE(LSSETTING)       :: SETTING
+IF(setting%IntegralTransformGC)THEN
+   !I do not think it makes sense to transform afterwards 
+   !so here the basis needs to be transformed
+   call lsquit('II_get_2int_ScreenMat and IntegralTransformGC do not work',-1)
+ENDIF
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+call ls_dzero(GAB,nbast*nbast)
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+setting%Output%RealGabMatrix = .TRUE.
+CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
+     &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
+setting%Output%RealGabMatrix = .FALSE.
+CALL retrieve_Output(lupri,setting,GAB,setting%IntegralTransformGC)
+END SUBROUTINE II_get_2int_ScreenRealMat
 
 !> \brief Calculates get the maxGabelm eri screening mat
 !> \author J. Rekkedal
@@ -4736,59 +4662,6 @@ setting%scheme%dascreen_thrlog = Dascreen_thrlog
 
 END SUBROUTINE II_get_CoulombEcont
 
-SUBROUTINE II_get_test4center_eri(LUPRI,LUERR,SETTING)
-IMPLICIT NONE
-TYPE(LSSETTING)       :: SETTING
-INTEGER               :: LUPRI,LUERR
-!
-REAL(REALK)           :: outputintegral(5,5,5,5,1),R(3,4),maxInt
-type(MOLECULE_PT)     :: temp(4),Point(4)
-integer :: I,A,B,C,D
-
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-R(1,1) = 0.0E0_realk 
-R(2,1) = 0.0E0_realk 
-R(3,1) = 0.0E0_realk 
-R(1,2) = 1.0E0_realk 
-R(2,2) = 0.0E0_realk 
-R(3,2) = 0.0E0_realk 
-R(1,3) = 1.0E0_realk 
-R(2,3) = 0.0E0_realk 
-R(3,3) = 3.0E0_realk 
-R(1,4) = 0.0E0_realk 
-R(2,4) = 0.0E0_realk 
-R(3,4) = 3.0E0_realk 
-setting%sameMol=.FALSE.
-
-DO I=1,4
-   allocate(Point(I)%p)
-   call build_pointMolecule(Point(I)%p,R(:,I),1,lupri)
-   temp(I)%p  => setting%MOLECULE(I)%p
-   setting%MOLECULE(I)%p => Point(I)%p
-ENDDO
-call initIntegralOutputDims(setting%output,5,5,5,5,1)
-CALL ls_getIntegrals(AOD1p1cSeg,AOD1p1cSeg,AOD1p1cSeg,AOD1p1cSeg,&
-     &CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-IF(setting%IntegralTransformGC)THEN
-   call lsquit('Error in II_get_test4center_eri - IntegralTransformGC not implemented',lupri)
-ELSE
-   CALL retrieve_Output(lupri,setting,outputintegral,setting%IntegralTransformGC)
-ENDIF
-maxInt = 0.0E0_realk
-DO D=1,5
-   DO C=1,5
-      DO B=1,5
-         DO A=1,5
-            maxInt = MAX(maxInt,ABS(outputintegral(A,B,C,D,1)))
-            WRITE(lupri,'(A,I3,A,I3,A,I3,A,I3,A,F18.9)')'Int(',A,',',B,',',C,',',D,')=',outputintegral(A,B,C,D,1)
-         ENDDO
-      ENDDO
-   ENDDO
-ENDDO
-WRITE(lupri,*)'maxInt=',maxInt
-
-END SUBROUTINE II_get_test4center_eri
-
 !> \brief Calculates the (ab|cd) with fixed a and b batchindexes so that the output would be a 4dim tensor with dim (dimAbatch,dimBbatch,fulldimC,fulldimD)
 !> \author T. Kjaergaard
 !> \date 2010-03-17
@@ -5483,8 +5356,6 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 
 !Level 2 XC matrix
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
-tracex2d2 = mat_trAB(F2(1),D2(1))
-write(*,*)     "Tr(x2d2)=", traceX2D2
 
 IF (scaleXC2) THEN
    EX2 = constrain_factor**(4./3.)*EX2            ! RE-SCALING EXC2 TO FIT k2
@@ -5493,6 +5364,9 @@ ENDIF
 IF (.NOT.(scale_finalE)) THEN
    call mat_daxpy(-GGAXfactor,F2(1),k2_xc2)
 endif
+tracex2d2 = mat_trAB(F2(1),D2(1))
+write(lupri,*)     "Tr(x2d2)=", GGAXfactor*traceX2D2
+
 
 
 !Transform to level 3
@@ -5555,22 +5429,25 @@ IF (const_electrons) THEN
   CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AO2,AO3,GC2,GC3,constrain_factor)
 
   CALL mat_mul(S32,T23,'n','n',-1E0_realk,0E0_realk,tmp33)
-  call mat_scal(constrain_factor*constrain_factor, tmp33)
+  IF(scale_finalE) THEN
+    call mat_scal(constrain_factor*constrain_factor, tmp33)
+  ENDIF
   call mat_daxpy(1E0_realk,S33,tmp33)
 
-  write(lupri,*) 'debug:LAMBDA ',2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
   write(lupri,*) 'debug:constrain_factor ',constrain_factor
   scaling_ADMMQ = 2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
 
   IF (scaleXC2) THEN
-     scaling_ADMMQs = scaling_ADMMQ - 2E0_realk/3E0_realk*EX2(1)/nelectrons
+     scaling_ADMMQ = scaling_ADMMQ - 2E0_realk/3E0_realk*EX2(1)*GGAXfactor/nelectrons
   ENDIF
   IF (scale_finalE) THEN
      !scaling_ADMMP = 1E0_realk / mat_trAB(D,S33) * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
      scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(4.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
      call mat_scal(scaling_ADMMP, tmp33)
+     write(lupri,*) 'debug:LAMBDA ',scaling_ADMMP
   ELSE
      call mat_scal(scaling_ADMMQ, tmp33)
+     write(lupri,*) 'debug:LAMBDA ',scaling_ADMMQ
   ENDIF
 
   call mat_daxpy(1E0_realk,tmp33,dXC)
@@ -5728,19 +5605,18 @@ real(realk),intent(IN)        :: constrain_factor
 !
 TYPE(MATRIX) :: S23,S22,S22inv
 Character(80) :: Filename = 'ADMM_T23'
-Logical :: onMaster,McWeeny,ERI2C
+Logical :: McWeeny,ERI2C
 real(realk) :: lambda
 Logical     :: const_electrons
 Logical     :: scale_finalE
 
-onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
 !these options are for the ERI metric
 !with McWeeny ADMM1 is assumed, without ADMM2
 McWeeny = setting%scheme%ADMM_MCWEENY
 ERI2C = setting%scheme%ADMM_2ERI
 
 IF (io_file_exist(Filename,setting%IO)) THEN
-  call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+  call io_read_mat(T23,Filename,setting%IO,LUPRI,LUERR)
 ELSE
   CALL mat_init(S22,n2,n2)
   CALL mat_init(S22inv,n2,n2)
@@ -5764,7 +5640,7 @@ ELSE
   CALL mat_free(S23)
   CALL mat_free(S22)
   call io_add_filename(setting%IO,Filename,LUPRI)
-  call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+  call io_write_mat(T23,Filename,setting%IO,LUPRI,LUERR)
 ENDIF
 ! IF constraining the total charge
 ! Lagrangian multiplier for conservation of the total nb. of electrons

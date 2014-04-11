@@ -1,0 +1,6 @@
+   rsp_solvhyper
+   -------------
+   Molecule:         H2O
+   Wave Function:    SCF / ANO (Atombasis)
+   Test Purpose:     Non-equilibrium solvation first hyper-
+                     polarizabilities

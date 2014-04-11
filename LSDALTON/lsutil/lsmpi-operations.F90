@@ -1,5 +1,6 @@
 module lsmpi_op
   use precision
+  use lstiming
   use molecule_typetype, only: molecularOrbitalInfo
   use io, only: io_init
   use typedeftype, only: DALTONINPUT,LSITEM,lssetting,reducedScreeningInfo,&
@@ -9,14 +10,15 @@ module lsmpi_op
   use basis_typetype, only: BASISSETINFO
   use basis_type, only: lsmpi_alloc_basissetinfo
   use lstiming, only: lstimer
-  use memory_handling, only: mem_alloc,mem_dealloc
+  use memory_handling, only: mem_alloc,mem_dealloc, mem_shortintsize,&
+       & mem_realsize, mem_intsize, mem_allocated_mem_lstensor
   use integralparameters
   use Matrix_Operations, only: mat_mpicopy, mtype_scalapack, matrix_type
   use matrix_operations_scalapack, only: pdm_matrixsync
   use molecule_typetype, only: MOLECULEINFO
   use LSTENSOR_OPERATIONSMOD, only: lstensor_NULLIFY, lstensor,&
-       & add_mem_to_global,slsaotensor_nullify,lsaotensor_nullify,&
-       & lsaotensor,slsaotensor, LSTENSOR_mem_est
+       & slsaotensor_nullify,lsaotensor_nullify,&
+       & lsaotensor,slsaotensor
   use LSTENSORmem, only: mem_LSTpointer_alloc, init_lstensorMem, &
        & retrieve_lstMemVal, free_lstensorMem, set_lstmemrealkbufferpointer
   use f12_module, only: GaussianGeminal
@@ -29,12 +31,9 @@ module lsmpi_op
        & lsmpi_print, lsmpi_default_mpi_group, lsmpi_finalize, lsmpi_barrier,&
        & LSMPIREDUCTION, LSMPIREDUCTIONmaster
   use infpar_module
+  use lsmpi_module
 
-#ifdef USE_MPI_MOD_F90
-  use mpi
-#else
-  include 'mpif.h'
-#endif 
+
 
 #endif
   !*****************************************
@@ -696,7 +695,7 @@ integer(kind=ls_mpik) :: master
 !
 logical    :: isAssociated
 INTEGER    :: I,J,K,L,offset,n1,n2,n3,n4
-integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
 integer :: AllocInt4,AllocRealk4,AllocIntS4
 real(realk) :: ts,te
 
@@ -763,6 +762,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call Mem_alloc(TENSOR%maxgab,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%maxgab,KIND=long)*mem_shortintsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%maxgab,TENSOR%nbatches(1),TENSOR%nbatches(2),Master)
 ELSE
@@ -774,6 +775,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%maxprimgab,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%maxprimgab,KIND=long)*mem_shortintsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%maxprimgab,TENSOR%nbatches(1),TENSOR%nbatches(2),Master)
 ELSE
@@ -785,6 +788,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%MBIE,TENSOR%nMBIE,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%MBIE,KIND=long)*mem_realsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%MBIE,TENSOR%nMBIE,TENSOR%nbatches(1),&
         & TENSOR%nbatches(2),Master)
@@ -806,6 +811,8 @@ IF(isAssociated)THEN
    call LS_MPI_BUFFER(n2,Master)
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%nAOBATCH,n1,n2)
+      nsize = size(TENSOR%nAOBATCH,KIND=long)*mem_intsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%nAOBATCH,n1,n2,Master)
 ELSE
@@ -835,6 +842,8 @@ IF(isAssociated)THEN
          IF(n2.NE.1)call lsquit('error in mpicopy_lstensor A.',-1)
          IF(n3.NE.1)call lsquit('error in mpicopy_lstensor B.',-1)
          call mem_alloc(TENSOR%INDEX,n1,n2,n3,n4)
+         nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+         call mem_allocated_mem_lstensor(nsize)
          DO L=1,n1
             DO I=1,n4
                TENSOR%INDEX(I,1,1,L) = I
@@ -859,6 +868,8 @@ IF(isAssociated)THEN
       call LS_MPI_BUFFER(n4,Master)
       IF(SLAVE)THEN
          call mem_alloc(TENSOR%INDEX,n1,n2,n3,n4)
+         nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+         call mem_allocated_mem_lstensor(nsize)
       ENDIF
       call LS_MPI_BUFFER(TENSOR%INDEX,n1,n2,n3,n4,Master)
    ENDIF
@@ -896,10 +907,6 @@ ENDIF
 !   Call Determine_slstensor_memory(tensor,nmemsize)
 !   call add_mem_to_global(nmemsize)
 !ENDIF
-IF(SLAVE)THEN
-   call LSTENSOR_mem_est(TENSOR,nmemsize)
-   call add_mem_to_global(nmemsize)
-ENDIF
 end SUBROUTINE mpicopy_lstensor
 
 subroutine mpicopy_slsaotensor(LSAO,Slave,Master)
@@ -1293,6 +1300,8 @@ integer(kind=ls_mpik) :: master
 
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 call LS_MPI_BUFFER(scheme%NOBQBQ,Master)
+call LS_MPI_BUFFER(scheme%doMPI,Master)
+call LS_MPI_BUFFER(scheme%MasterWakeSlaves,Master)
 call LS_MPI_BUFFER(scheme%noOMP,Master)
 call LS_MPI_BUFFER(scheme%CFG_LSDALTON,Master)
 call LS_MPI_BUFFER(scheme%DOPASS,Master)
@@ -1551,6 +1560,24 @@ call LS_MPI_BUFFER(MOLECULE%label,22,Master)
 call LS_MPI_BUFFER(MOLECULE%nelectrons,Master)
 call LS_MPI_BUFFER(MOLECULE%charge,Master)
 
+
+call LS_MPI_BUFFER(MOLECULE%nSubSystems,Master)
+IF(Molecule%nSubSystems.NE.0)THEN
+   IF(SLAVE)THEN
+      call mem_alloc(Molecule%SubSystemLabel,Molecule%nSubSystems)
+   ENDIF
+   IF(len(Molecule%SubSystemLabel(1)).NE.80)THEN
+      CALL LSQUIT('Dim mismatch in mpicopy_molecule',-1)
+   ENDIF
+   do I = 1,Molecule%nSubSystems       
+      call LS_MPI_BUFFER(Molecule%SubSystemLabel(I),80,Master)
+   enddo
+ELSE
+   IF(SLAVE)THEN
+      NULLIFY(Molecule%SubSystemLabel)
+   ENDIF
+ENDIF
+
 end subroutine mpicopy_molecule
 
 !> \brief MPI Copies(Broadcasts) an atom from MOLECULE
@@ -1578,6 +1605,7 @@ call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Frag,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%CENTER,3,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Atomic_number,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%molecularIndex,Master)
+call LS_MPI_BUFFER(MOLECULE%ATOM(I)%SubsystemIndex,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Charge,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nbasis,Master)
 do K = 1,MOLECULE%ATOM(I)%nbasis
@@ -1756,7 +1784,115 @@ logical                                  :: slave
 IF (SLAVE) call init_reduced_screen_info(redCS)
 
 END SUBROUTINE mpicopy_reduced_screen_info
+
+  subroutine init_slave_timers(times,comm)
+     implicit none
+     integer(kind=ls_mpik),intent(in) :: comm
+     real(realk), pointer,intent(inout) :: times(:)
+     integer(kind=ls_mpik) :: nnod,me
+
+     call time_start_phase(PHASE_WORK)
+     if(associated(times)) call lsquit("ERROR(init_slave_timers):pointer already associtated",-1)
+
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+
+     if(me==0_ls_mpik) then
+        call time_start_phase(PHASE_COMM)
+        call ls_mpibcast(INITSLAVETIME,me,comm)
+        call time_start_phase(PHASE_WORK)
+     endif
+
+     call mem_alloc(times,nphases*nnod)
+     times = 0.0E0_realk
+     call time_start_phase(PHASE_WORK, &
+        &swinit = times(me*nphases+PHASE_INIT_IDX) ,&
+        &swwork = times(me*nphases+PHASE_WORK_IDX) ,&
+        &swcomm = times(me*nphases+PHASE_COMM_IDX) ,&
+        &swidle = times(me*nphases+PHASE_IDLE_IDX) )
+
+
+     call time_start_phase(PHASE_COMM)
+     call lsmpi_reduction(times,nphases*nnod,infpar%master,comm)
+     call time_start_phase(PHASE_WORK)
+
+
+  end subroutine init_slave_timers
+
+  subroutine get_slave_timers(times,comm)
+     implicit none
+     integer(kind=ls_mpik),intent(in) :: comm
+     real(realk), pointer,intent(inout) :: times(:)
+     integer(kind=ls_mpik) :: nnod,me
+
+     call time_start_phase(PHASE_WORK)
+     if(.not.associated(times)) call lsquit("ERROR(get_slave_timers):pointer not associtated",-1)
+
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+
+     if(me==infpar%master) then
+        call time_start_phase(PHASE_COMM)
+        call ls_mpibcast(GETSLAVETIME,me,comm)
+        call time_start_phase(PHASE_WORK)
+        times(nphases+1:) = -1.E0_realk * times(nphases+1:)
+     endif
+
+     call time_start_phase(PHASE_WORK, &
+        &dwinit = times(me*nphases+PHASE_INIT_IDX) ,&
+        &dwwork = times(me*nphases+PHASE_WORK_IDX) ,&
+        &dwcomm = times(me*nphases+PHASE_COMM_IDX) ,&
+        &dwidle = times(me*nphases+PHASE_IDLE_IDX) )
+
+
+     call time_start_phase(PHASE_COMM)
+     call lsmpi_reduction(times,nphases*nnod,infpar%master,comm)
+     call time_start_phase(PHASE_WORK)
+
+
+  end subroutine get_slave_timers
+
 #endif
 
 end module lsmpi_op
 
+#ifdef VAR_MPI
+subroutine init_slave_timers_slave(comm)
+   use precision, only: realk
+   use lstiming
+   use memory_handling, only: mem_dealloc
+   use lsmpi_op, only: init_slave_timers
+   implicit none
+   integer(kind=ls_mpik) :: comm,nnod
+   real(realk), pointer :: times(:)
+
+   times => null()
+
+   call init_slave_timers(times,comm)
+
+   call mem_dealloc(times)
+
+end subroutine init_slave_timers_slave
+
+subroutine get_slave_timers_slave(comm)
+   use precision, only: realk, ls_mpik
+   use lstiming, only: nphases
+   use lsmpi_type, only: get_size_for_comm
+   use memory_handling, only: mem_alloc,mem_dealloc
+   use lsmpi_op, only: get_slave_timers
+   implicit none
+   integer(kind=ls_mpik) :: comm,nnod
+   real(realk), pointer :: times(:)
+
+   call get_size_for_comm(comm, nnod)
+   call mem_alloc(times,nphases*nnod) 
+   times = 0.0E0_realk
+
+   call get_slave_timers(times,comm)
+
+   call mem_dealloc(times)
+
+end subroutine get_slave_timers_slave
+#endif

@@ -6,7 +6,7 @@ def open_fig_container():
 
 #PLOT PAIR ENERGIES IS A FUNCTION OF THE decinfo STRUCTURE
 #NECESSARY INPUTS ARE THE STRUCTURE WHICH CALLS THE FUNCTION AND FIG OBTAINED   
-def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0,color='b',marker="s",to_diff=0,xa=[0,0],ya=[0,0]):
+def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0,color='b',marker="s",label="series",to_diff=0,xa=[0,0],ya=[0,0]):
    if(to_plot==0):
      ax1 = fig.add_subplot(111)
    else:
@@ -20,26 +20,32 @@ def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0
    ect = 0
    if ecorrtype=="oCCSD" or ecorrtype=="oMP2":
       ov  = "o"
-      ect = 0
+      ect = 1
    elif ecorrtype=="vCCSD" or ecorrtype=="vMP2":
       ov  = "v"
-      ect = 0
+      ect = 1
    elif ecorrtype=="o(T)":
       ov  = "o"
-      ect = 1
+      ect = 2
    elif ecorrtype=="v(T)":
       ov  = "v"
-      ect = 1
+      ect = 2
    else :
       print "ERROR(plot_pair_energies):invalid choice of ecorrtype"
       exit()
    
+   ymax = 0.0
+   atoms = [0,0]
    #READING THE DATA FROM THE STRUCTURE
    if(to_diff==0):
       for i in range(self.pfragjobs):
         x.append(self.pfrags[i].dist)
         if ov == "o":
+          if ecorrtype=="o(T)":
+             if abs(self.pfrags[i].ecorrocc[ect]) > ymax:
+                atoms = [self.pfrags[i].fragid,self.pfrags[i].fragpid]
           y.append(abs(self.pfrags[i].ecorrocc[ect]))
+          ymax = max(ymax,y[-1])
         elif ov =="v":
           y.append(abs(self.pfrags[i].ecorrvirt[ect]))
    else:
@@ -56,6 +62,7 @@ def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0
    #SETTING AXIS PROPERTIES#
    #########################
 
+   print "max pair was",ymax,atoms
    if(to_plot==0):
      xmin = min(x)
      xmax = max(x) 
@@ -83,7 +90,8 @@ def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0
    ax1.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
 
    #plot data as scatter plot
-   ax1.scatter(x, y, s=20, c=color, marker=marker)
+   ax1.scatter(x, y, s=20, c=color, marker=marker, label = label)
+   ax1.legend(loc=3)
 
    return ax1
 

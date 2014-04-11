@@ -18,7 +18,6 @@ module cc_debug_routines_module
    use crop_tools_module
    use array2_simple_operations
    use array4_simple_operations
-   use ri_simple_operations
    use mp2_module
    use ccintegrals
    use ccsd_module
@@ -233,7 +232,7 @@ module cc_debug_routines_module
      MaxSubSpace = DECinfo%ccMaxDIIS
 
      ! title
-     Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace)
+     Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace,.false.,.false.,1)
 
      ! dimension vectors
      occ_dims   = [nbasis,nocc]
@@ -361,15 +360,6 @@ module cc_debug_routines_module
      ! Always in the DEBUG SOLVER: calculate full 4-dimensional AO integrals 
      call get_full_eri(mylsitem,nbasis,gao)
      if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,/)') 'debug :: AO integrals done'
-
-     ! Simulate two-electron integrals (debug mode)
-     if(DECinfo%simulate_eri .or. DECinfo%fock_with_ri) then
-        if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') &
-             'debug :: calculate RI intermediate - temporary'
-        l_ao = get_ao_ri_intermediate(mylsitem)
-        if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') &
-             'debug :: intermediates done'
-     end if
 
      if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -518,13 +508,7 @@ module cc_debug_routines_module
               call getT1transformation(t1(iter),xocc,xvirt,yocc,yvirt,Co,Cv,Co2,Cv2)
            endif
 
-           ! get inactive fock
-           if(DECinfo%fock_with_ri) then
-              ! Debug mode
-              ifock = getInactiveFockFromRI(l_ao,xocc,yocc,h1)
-           else
-              ifock = getInactiveFock_simple(h1,gao,xocc,yocc,nocc,nbasis)
-           end if
+           ifock = getInactiveFock_simple(h1,gao,xocc,yocc,nocc,nbasis)
            ! Note: If not fock_with_ri or ccsd_old, then the relevant
            ! ifock is calculated below in get_ccsd_residual_integral_direct.
            ! Long range fock matrix correction using old scheme
@@ -1011,12 +995,6 @@ module cc_debug_routines_module
      ! remove fock correction
      call array2_free(delta_fock)
      call array4_free(gao)
-
-     if(DECinfo%simulate_eri .or. DECinfo%fock_with_ri) then
-        call ri_free(l_ao)
-        call ri_reset()
-     end if
-
 
      if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
         call array2_free(ppfock_prec)

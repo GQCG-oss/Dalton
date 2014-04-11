@@ -847,11 +847,13 @@ C
 C
 C Used from common blocks:
 C
+C pgroup : REP
 C INFIND : ISSMO
 C
 #include "maxorb.h"
 #include "maxash.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
@@ -885,7 +887,7 @@ C
          ICSYM  = ICMO(ISYM)
 C
          CALL JACO_THR(WRK(KDMAT+IIORBI),CMO(1+ICSYM),
-     &                 NORBI,NORBI,NBASI,0.0D0)
+     &                 NORBI,NORBI,NBASI,1.D-12)
 C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          OCCSUM = D0
@@ -904,7 +906,8 @@ C          Done, Aug. 2004 /hjaaj
 #endif
          IF (IPRNO .GE. 1) THEN
             OCCRHF = 2 * NRHF(ISYM) + NASH(ISYM)
-            WRITE (LUPRI,1840) ISYM,OCCSUM,OCCRHF,OCCSUM-OCCRHF
+            WRITE (LUPRI,1840) ISYM,REP(ISYM-1),
+     &         OCCSUM,OCCRHF,OCCSUM-OCCRHF
 #if !defined (VAR_MP2SUPSYM)
             WRITE (LUPRI,1850) (OCCUP(IORBI+I),I=1,NORBI)
 #else
@@ -922,7 +925,8 @@ C          Done, Aug. 2004 /hjaaj
 C     ... remake ISSORD() as ISSMO() may have changed in ORD2SS
 #endif
 C
- 1840 FORMAT(/' Natural orbital occupation numbers, symmetry',I2
+ 1840 FORMAT(/' Natural orbital occupation numbers, symmetry',I2,
+     &        ' (irrep ',A,')'
      &       /' Sum =',F15.8,'; RHF =',F15.8,'; Difference =',F15.8)
  1850 FORMAT(/,(4X,5F15.8))
 #if defined (VAR_MP2SUPSYM)
@@ -1291,6 +1295,7 @@ C
 C
 C  Used from common blocks:
 C     GNRINF : EMBEDDING
+C     pgroup : REP
 C     INFINP : POTNUC, HSROHF
 C     INFORB : NRHF(*), NRHFT, ...
 C     SCBRHF : IOPRHF,NFRRHF(*)
@@ -1300,6 +1305,7 @@ C
 #include "maxorb.h"
 #include "priunit.h"
 #include "gnrinf.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "scbrhf.h"
@@ -1549,7 +1555,7 @@ C
          END DO
 
          IF (IPRMP2 .GE. 3) THEN
-            WRITE (LUPRI,1740) ISYM, NRHFI
+            WRITE (LUPRI,1740) ISYM, REP(ISYM-1), NRHFI
             IF (NFRRHF_I .GT. 0) WRITE (LUPRI,'(A,I3,A)')
      +        ' Note: the first',NFRRHF_I ,' orbitals are frozen in SCF'
             WRITE (LUPRI,1750) (ORBEN(IORBI+I),I=1,NORBI)
@@ -1584,7 +1590,7 @@ C
  1730 FORMAT(/' Hartree-Fock electronic energy:',F25.12)
  1732 FORMAT( ' Hartree-Fock total      energy:',F25.12)
  1740 FORMAT(/' Hartree-Fock orbital energies, symmetry',I2,
-     &         ', number of occupied SCF orbitals is',I5/)
+     &        ' ( ',A,'),',I5,' occupied SCF orbitals'/)
  1750 FORMAT(4X,5F15.8)
 C
 C

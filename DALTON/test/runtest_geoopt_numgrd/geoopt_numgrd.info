@@ -1,0 +1,6 @@
+   geoopt_numgrd
+   -------------
+   Molecule:         H2O
+   Wave Function:    MP2 / 6-31G
+   Test Purpose:     Geometry optimization (1st order) using numerical
+                     gradients

@@ -29,6 +29,29 @@ ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoCSeg1
 ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoDSeg1PrimoutputCPU.F90 mathfile.o IchorPresicion.o     
 ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoDSeg1PrimoutputCPU.F90 mathfile.o IchorPresicion.o     
 
+echo "compile the GPU files"
+
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoCGenoutputGPU.F90 mathfile.o IchorPresicion.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoCGenoutputGPU.F90 mathfile.o IchorPresicion.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoDGenoutputGPU.F90 mathfile.o IchorPresicion.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoDGenoutputGPU.F90 mathfile.o IchorPresicion.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoCSegQoutputGPU.F90 mathfile.o IchorPresicion.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoCSegQoutputGPU.F90 mathfile.o IchorPresicion.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoDSegQoutputGPU.F90 mathfile.o IchorPresicion.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoDSegQoutputGPU.F90 mathfile.o IchorPresicion.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoCSegPoutputGPU.F90 mathfile.o IchorPresicion.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoCSegPoutputGPU.F90 mathfile.o IchorPresicion.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoDSegPoutputGPU.F90 mathfile.o IchorPresicion.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoDSegPoutputGPU.F90 mathfile.o IchorPresicion.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoCSegoutputGPU.F90 mathfile.o IchorPresicion.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoCSegoutputGPU.F90 mathfile.o IchorPresicion.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoDSegoutputGPU.F90 mathfile.o IchorPresicion.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoDSegoutputGPU.F90 mathfile.o IchorPresicion.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoCSeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoCSeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPAtoDSeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPBtoDSeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o     
+
 
 cp runNewTransferRecurrenceQPAtoCGenoutputCPU.F90 AGC_CPU_TransferRecurrenceAtoCGen.F90 
 cp runNewTransferRecurrenceQPAtoCSeg1PrimoutputCPU.F90 AGC_CPU_TransferRecurrenceAtoCSeg1Prim.F90 
@@ -53,4 +76,29 @@ cp runNewTransferRecurrenceQPBtoDSeg1PrimoutputCPU.F90 AGC_CPU_TransferRecurrenc
 cp runNewTransferRecurrenceQPBtoDSegoutputCPU.F90 AGC_CPU_TransferRecurrenceBtoDSeg.F90 
 cp runNewTransferRecurrenceQPBtoDSegPoutputCPU.F90 AGC_CPU_TransferRecurrenceBtoDSegP.F90 
 cp runNewTransferRecurrenceQPBtoDSegQoutputCPU.F90 AGC_CPU_TransferRecurrenceBtoDSegQ.F90 
+
+#GPU
+cp runNewTransferRecurrenceQPAtoCGenoutputGPU.F90 AGC_GPU_TransferRecurrenceAtoCGen.F90 
+cp runNewTransferRecurrenceQPAtoCSeg1PrimoutputGPU.F90 AGC_GPU_TransferRecurrenceAtoCSeg1Prim.F90 
+cp runNewTransferRecurrenceQPAtoCSegoutputGPU.F90 AGC_GPU_TransferRecurrenceAtoCSeg.F90 
+cp runNewTransferRecurrenceQPAtoCSegPoutputGPU.F90 AGC_GPU_TransferRecurrenceAtoCSegP.F90 
+cp runNewTransferRecurrenceQPAtoCSegQoutputGPU.F90 AGC_GPU_TransferRecurrenceAtoCSegQ.F90 
+
+cp runNewTransferRecurrenceQPAtoDGenoutputGPU.F90 AGC_GPU_TransferRecurrenceAtoDGen.F90 
+cp runNewTransferRecurrenceQPAtoDSeg1PrimoutputGPU.F90 AGC_GPU_TransferRecurrenceAtoDSeg1Prim.F90 
+cp runNewTransferRecurrenceQPAtoDSegoutputGPU.F90 AGC_GPU_TransferRecurrenceAtoDSeg.F90 
+cp runNewTransferRecurrenceQPAtoDSegPoutputGPU.F90 AGC_GPU_TransferRecurrenceAtoDSegP.F90 
+cp runNewTransferRecurrenceQPAtoDSegQoutputGPU.F90 AGC_GPU_TransferRecurrenceAtoDSegQ.F90 
+
+cp runNewTransferRecurrenceQPBtoCGenoutputGPU.F90 AGC_GPU_TransferRecurrenceBtoCGen.F90 
+cp runNewTransferRecurrenceQPBtoCSeg1PrimoutputGPU.F90 AGC_GPU_TransferRecurrenceBtoCSeg1Prim.F90 
+cp runNewTransferRecurrenceQPBtoCSegoutputGPU.F90 AGC_GPU_TransferRecurrenceBtoCSeg.F90 
+cp runNewTransferRecurrenceQPBtoCSegPoutputGPU.F90 AGC_GPU_TransferRecurrenceBtoCSegP.F90 
+cp runNewTransferRecurrenceQPBtoCSegQoutputGPU.F90 AGC_GPU_TransferRecurrenceBtoCSegQ.F90 
+
+cp runNewTransferRecurrenceQPBtoDGenoutputGPU.F90 AGC_GPU_TransferRecurrenceBtoDGen.F90 
+cp runNewTransferRecurrenceQPBtoDSeg1PrimoutputGPU.F90 AGC_GPU_TransferRecurrenceBtoDSeg1Prim.F90 
+cp runNewTransferRecurrenceQPBtoDSegoutputGPU.F90 AGC_GPU_TransferRecurrenceBtoDSeg.F90 
+cp runNewTransferRecurrenceQPBtoDSegPoutputGPU.F90 AGC_GPU_TransferRecurrenceBtoDSegP.F90 
+cp runNewTransferRecurrenceQPBtoDSegQoutputGPU.F90 AGC_GPU_TransferRecurrenceBtoDSegQ.F90 
 

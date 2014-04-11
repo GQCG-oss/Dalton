@@ -10,6 +10,13 @@ Common
 DALTON
 ------
 
+- Default DIIS space increased from 5 to 8, often resulting in 1-2 fewer SCF iterations.
+- Removed the maximum of 20 excitations in summary output for second and third order transition moments.
+- Bugfix for parallel calculations and some type of geometry optimizations with ano basis sets
+  (this bug resulted in aborted calculations, not in wrong results)
+- Print irrep names together with symmetry numbers for easier interpretation of output
+- More important output with '@' in column 1 (can be obtained with 'grep @' on the output)
+
 
 LSDALTON
 --------

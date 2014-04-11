@@ -1,0 +1,5 @@
+   aba_prop_file
+   -----------
+   Molecule:         CH2O
+   Wave Function:    HF / STO-3G  
+   Test Purpose:     Test if correct write to DALTON.PROP from ABACUS
