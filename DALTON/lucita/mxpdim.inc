@@ -26,7 +26,7 @@
       integer, parameter :: MXPCTP =   30
       integer, parameter :: MXCNSM =    8
       integer, parameter :: MTYP   =   30
-!     MXPNGAS = MXPR4T+6
+!     MXPNGAS = MXPR4T+9
 !     max number of GA spaces
       integer, parameter :: MXPNGAS  =  16
       integer, parameter :: MXPNSMST =   8

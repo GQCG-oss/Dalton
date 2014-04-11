@@ -236,6 +236,17 @@
     if (kw_matches(word, '.SKIP4I')) then
       gasci_input_skip_4index_trafo = .true.
     end if
+! Mickael: I add Charge Tranfer control for GASCI 
+!    if (kw_matches(word, '.CT    ')) then
+!      gasci_input_charge_transfer = .true.
+!    end if
+!    if (kw_matches(word, '.CTAB  ')) then
+!      gasci_input_occlse_manual_control = .true.
+!    end if
+!    if (kw_matches(word, '.GAS_CT')) then
+!      gasci_input_gas_conf_for_ct = .true.
+!    end if
+! 
 
     if (kw_matches(word, '.PLUS C')) then
       gasci_input_plus_combi = .true.
