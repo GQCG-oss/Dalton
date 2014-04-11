@@ -81,6 +81,8 @@ subroutine dec_lsmpi_slave(comm)
       case(CCSDPTSLAVE);
          call ccsdpt_slave
 #endif
+      case(SIMPLE_MP2_PAR);
+         call get_simple_parallel_mp2_residual_slave
       case(GROUPINIT);
          call init_mpi_groups_slave
          ! DEC driver - main loop

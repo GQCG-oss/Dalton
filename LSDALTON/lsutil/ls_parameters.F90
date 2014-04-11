@@ -112,6 +112,7 @@ MODULE Integralparameters
   integer,parameter :: INITSLAVETIME                = 48
   integer,parameter :: GETSLAVETIME                 = 49
   integer,parameter :: MP2INAMPRI                   = 50
+  integer,parameter :: SIMPLE_MP2_PAR               = 51
 
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1

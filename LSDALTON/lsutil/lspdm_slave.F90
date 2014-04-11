@@ -103,6 +103,8 @@ subroutine pdm_array_slave(comm)
        call array_zero_tiled_dist(A)
      CASE(JOB_GET_CC_ENERGY)
        AF = get_cc_energy_parallel(A,B,C)
+     CASE(JOB_GET_MP2_ENERGY)
+       AF = get_mp2_energy_parallel(A,B)
      CASE(JOB_GET_FRAG_CC_ENERGY)
        !the counterpart to this buffer is in get_fragment_cc_energy
        call time_start_phase(PHASE_COMM)
