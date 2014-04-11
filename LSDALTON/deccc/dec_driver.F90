@@ -643,9 +643,8 @@ subroutine print_dec_info()
    write(LU,'(a,/)') '--------------------------'
    write(LU,'(a,g15.2)') 'FOT (Fragment Optimization Threshold)               = ',DECinfo%FOT
    write(LU,'(a,A5)')    'Use Pair Estimates to screen pairs                  =           ',&
-   
         & LogicString(Log2It(DECinfo%PairEstimate))
-
+   
    if(DECinfo%PairEstimate) then
         write(LU,'(a,g15.3)') 'Pair distance cutoff threshold (Angstrom)           = ',&
           & DECinfo%pair_distance_threshold*bohr_to_angstrom
@@ -657,6 +656,8 @@ subroutine print_dec_info()
         & DECinfo%simple_orbital_threshold
    write(LU,'(a,i5)')    'Expansion step size                                 =           ',&
         & DECinfo%FragmentExpansionSize
+   write(LU,'(a,A5)')    'Use RI for Expansion step                           =           ',&
+        & LogicString(Log2It(DECinfo%FragmentExpansionRI))
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL
    write(LU,'(a,A5)')    'Fragment-adapted orbitals                           =           ',&
         & LogicString(Log2It(DECinfo%FragAdapt))

@@ -54,7 +54,7 @@ contains
   !> \date January 2011
   subroutine get_fragment_and_Energy(MyAtom,natoms,occ_atoms,Unocc_atoms,&
        & MyMolecule,MyLsitem,nocc_tot,nunocc_tot,OccOrbitals,UnoccOrbitals,&
-       & MyFragment)
+       & MyFragment,FragmentExpansionRI)
 
     implicit none
     !> Central atom in fragment
@@ -79,6 +79,8 @@ contains
     type(decorbital), dimension(nUnocc_tot), intent(in) :: UnoccOrbitals
     !> Atomic fragment to be determined  (NOT pair fragment)
     type(decfrag), intent(inout) :: MyFragment
+    !> Perform Energy Calc using RI?
+    logical,intent(in) :: FragmentExpansionRI
     real(realk) :: tcpu, twall
     logical :: DoBasis
     logical :: ForcePrint
@@ -98,30 +100,15 @@ contains
 
     ! Calculate fragment energies
     ! ***************************
-    
-    call atomic_fragment_energy_and_prop(MyFragment)
+    IF(FragmentExpansionRI)THEN
+       CALL MP2_RI_energyContribution(MyFragment)
+       call get_occ_virt_lag_energies_fragopt(MyFragment)
+    ELSE
+       call atomic_fragment_energy_and_prop(MyFragment)
+    ENDIF
     call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output,ForcePrint)
 
-!    CALL MP2_TK_energyContribution(MyFragment)
-
   end subroutine get_fragment_and_Energy
-
-  subroutine MP2_TK_energyContribution(MyFragment)
-    implicit none
-    type(decfrag), intent(inout) :: MyFragment
-    real(realk) :: tcpu, twall
-    logical :: ForcePrint
-    ForcePrint=.TRUE.
-    call LSTIMER('START',tcpu,twall,DECinfo%output)
-
-    ! Calculate fragment energy quantities based on screening matrices
-    ! ***************************
-!    call MP2_TK_integrals_and_amplitudes(MyFragment)
-!    call MP2_TK2_integrals_and_amplitudes(MyFragment)
-    call MP2_TK3_integrals_and_amplitudes(MyFragment)
-
-    call LSTIMER('TK',tcpu,twall,DECinfo%output,ForcePrint)
-  end subroutine MP2_TK_energyContribution
 
   !> \brief Construct new fragment based on list of orbitals in OccAOS and UnoccAOS,
   !> and calculate fragment energy. 
@@ -514,7 +501,8 @@ contains
     MyFragment%VirtContribs=0E0_realk
     if(MyFragment%ccmodel==MODEL_RPA) then
       prefac_coul=1._realk
-      prefac_k=0.5_realk
+      prefac_k=0.0_realk
+      if(Decinfo%SOS) prefac_k=0.5_realk
     else
       prefac_coul=2._realk
       prefac_k=1._realk
@@ -2030,13 +2018,14 @@ contains
      !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
      type(array2),intent(inout),optional :: t1full
      real(realk)                    :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
-     real(realk)                    :: LagEnergyOld, OccEnergyOld, VirtEnergyOld, FOT, init_Occradius, init_Virtradius
+     real(realk)                    :: LagEnergyOld, OccEnergyOld, VirtEnergyOld, FOT, FOT2
+     real(realk)                    :: init_Occradius, init_Virtradius
      logical, dimension(natoms)     :: Occ_atoms,Virt_atoms,OccOld,VirtOld
      real(realk),dimension(natoms)  :: DistMyAtom,SortedDistMyAtom
      integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
-     integer      :: iter,i,idx
-     integer      :: max_iter_red
-     logical :: expansion_converged
+     integer      :: iter,i,idx,StepsizeLoop3,StepsizeLoop2
+     integer      :: max_iter_red,nAtomsWithOccOrb,nAtomsWithVirtOrb
+     logical :: expansion_converged,FragmentExpansionRI,ExpandFragmentConverged
      type(array4) :: t2,g
      real(realk),pointer :: OccContribs(:),VirtContribs(:)    
      real(realk),pointer :: times_fragopt(:)
@@ -2044,7 +2033,7 @@ contains
      times_fragopt => null()
      call dec_fragment_time_init(times_fragopt)
 
-
+     FragmentExpansionRI = DECinfo%FragmentExpansionRI
      write(DECinfo%output,'(a)')    ' FOP'
      write(DECinfo%output,'(a)')    ' FOP ==============================================='
      write(DECinfo%output,'(a,i4)') ' FOP  Site fragment generator for fragment,',MyAtom
@@ -2135,17 +2124,80 @@ contains
         & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
      call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
         & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-        & AtomicFragment)
+        & AtomicFragment,FragmentExpansionRI)
      ! Print initial fragment information
      call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
+     call GetnAtomsWithOrb(natoms,nocc_per_atom,&
+          & nunocc_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
+
+    ! ======================================================================
+    !                           RI Expansion loop
+    ! ======================================================================
+    
+    IF(FragmentExpansionRI)THEN
+     StepsizeLoop2 = DECinfo%FragmentExpansionSize
+     EXPANSION_LOOP2: do iter = 1,DECinfo%maxiter
+      ! Save information for current fragment (in case current fragment is the final one)
+      OccOld=Occ_atoms;VirtOld=Virt_atoms
+      OccEnergyOld = AtomicFragment%EoccFOP
+      LagEnergyOld = AtomicFragment%LagFOP
+      VirtEnergyOld = AtomicFragment%EvirtFOP
+
+      ! Expand fragment and get new energy
+      call Expandfragment(Occ_atoms,Virt_atoms,DistTrackMyAtom,natoms,&
+           & nocc_per_atom,nunocc_per_atom,ExpandFragmentConverged,&
+           & nAtomsWithOccOrb,nAtomsWithVirtOrb,StepsizeLoop2)
+      
+      call atomic_fragment_free(AtomicFragment)      
+      call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+           & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+           & AtomicFragment,FragmentExpansionRI)
+      
+      ! Energy differences
+      OccEnergyDiff=abs(OccEnergyOld-AtomicFragment%EoccFOP)
+      VirtEnergyDiff=abs(VirtEnergyOld-AtomicFragment%EvirtFOP)
+      LagEnergyDiff=abs(LagEnergyOld-AtomicFragment%LagFOP)
+      call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+
+      WRITE(DECinfo%output,*)'==========================================================='
+      
+      IF(OccEnergyDiff.LT.FOT*300.0E0_realk)THEN
+         StepsizeLoop2 = MAX(1,DECinfo%FragmentExpansionSize-1)
+         write(DECinfo%output,*) 'Modify Stepsize to',StepsizeLoop2
+      ENDIF
+      ! Test if fragment energy (or energies) are converged to FOT precision
+      FOT2 = FOT*4.0E0_realk !the RI does not have be converged as hard as full 
+      call fragopt_check_convergence(LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,&
+           &FOT2,expansion_converged)
+      
+      IF(ExpandFragmentConverged)expansion_converged = .TRUE.
+      ! Exit loop if we are converged
+      ExpansionConvergence2: if(expansion_converged) then
+         !Rewind to last molecule size
+         Occ_atoms = OccOld;Virt_atoms = VirtOld
+         write(DECinfo%output,*) 'FOP RI Fragment expansion converged in iteration ', iter
+         write(DECinfo%output,*) 'Continue with non RI Fragment expansion'
+         exit EXPANSION_LOOP2
+      end if ExpansionConvergence2
+     end do EXPANSION_LOOP2
+     !New Reference without RI
+     FragmentExpansionRI  = .FALSE.
+     call atomic_fragment_free(AtomicFragment)
+     call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+          & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+          & AtomicFragment,FragmentExpansionRI)
+     !Reduce the step size as the sizes have already been converged 
+     !at the RI - MP2 level 
+     StepsizeLoop3 = 1
+    ELSE
+     StepsizeLoop3 = DECinfo%FragmentExpansionSize
+    ENDIF
 
 
-
-     ! ======================================================================
-     !                             Expansion loop
-     ! ======================================================================
-
+ ! ======================================================================
+ !                          Standard Expansion loop
+ ! ======================================================================
      EXPANSION_LOOP: do iter = 1,DECinfo%maxiter
 
         ! Save information for current fragment (in case current fragment is the final one)
@@ -2156,11 +2208,13 @@ contains
 
         ! Expand fragment and get new energy
         call Expandfragment(Occ_atoms,Virt_atoms,DistTrackMyAtom,natoms,&
-           & nocc_per_atom,nunocc_per_atom)
+           & nocc_per_atom,nunocc_per_atom,ExpandFragmentConverged,&
+           & nAtomsWithOccOrb,nAtomsWithVirtOrb,StepsizeLoop2)
+
         call atomic_fragment_free(AtomicFragment)
         call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
            & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-           & AtomicFragment)
+           & AtomicFragment,FragmentExpansionRI)
 
         ! Energy differences
         LagEnergyDiff=abs(LagEnergyOld-AtomicFragment%LagFOP)
@@ -2171,6 +2225,12 @@ contains
         ! Test if fragment energy (or energies) are converged to FOT precision
         call fragopt_check_convergence(LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,&
            &FOT,expansion_converged)
+
+        IF(ExpandFragmentConverged)THEN
+           WRITE(DECinfo%output,*)'Expansion Include Full Molecule'
+           OccOld = Occ_atoms;VirtOld = Virt_atoms
+           expansion_converged = .TRUE.
+        ENDIF
 
         ! Exit loop if we are converged
         ExpansionConvergence: if(expansion_converged) then
@@ -3072,16 +3132,27 @@ contains
   !> date: august-2011
   !> author: Ida-Marie Hoyvik
   subroutine Expandfragment(Occ,Virt,Track,natoms,&
-       & nocc_per_atom,nunocc_per_atom)
+       & nocc_per_atom,nunocc_per_atom,Converged,&
+       & nAtomsWithOccOrb,nAtomsWithVirtOrb,Inputstep)
     implicit none
     integer,intent(in)        :: natoms
     logical,dimension(natoms) :: Occ,Virt,Temp
     integer,intent(in)        :: nocc_per_atom(natoms)
     integer,intent(in)        :: nunocc_per_atom(natoms)
     integer,intent(in)        :: Track(natoms)
-    integer                   :: i,indx,counter,step
-
-    step = DECinfo%FragmentExpansionSize
+    logical,intent(inout)      :: Converged
+    integer,intent(in)         :: nAtomsWithOccOrb,nAtomsWithVirtOrb
+    integer,optional,intent(in):: InputStep
+    !
+    integer :: i,indx,counter,step
+    logical :: VirtConverged,OccConverged
+    OccConverged = .FALSE.
+    VirtConverged = .FALSE.
+    IF(PRESENT(InputStep))THEN
+       step = InputStep
+    ELSE
+       step = DECinfo%FragmentExpansionSize
+    ENDIF
 
     !Exand occ space first
     counter = 0
@@ -3096,7 +3167,9 @@ contains
        end if
     end do
     Occ = Temp
-
+    IF(COUNT(Occ).EQ.nAtomsWithOccOrb)THEN
+       OccConverged = .TRUE.
+    ENDIF
 
     !Expand virt space
     counter =0
@@ -3111,9 +3184,41 @@ contains
        end if
     end do
     Virt = Temp
+    IF(COUNT(Virt).EQ.nAtomsWithVirtOrb)THEN
+       VirtConverged = .TRUE.
+    ENDIF
+
+    IF(VirtConverged.AND.OccConverged)THEN
+       Converged = .TRUE.
+    ELSE
+       Converged = .FALSE.       
+    ENDIF
 
   end subroutine Expandfragment
 
+  !> Expand both occ and virt site fragment
+  !> date: august-2011
+  !> author: Ida-Marie Hoyvik
+  subroutine GetnAtomsWithOrb(natoms,nocc_per_atom,&
+       & nunocc_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
+    implicit none
+    integer,intent(in)        :: natoms
+    integer,intent(in)        :: nocc_per_atom(natoms)
+    integer,intent(in)        :: nunocc_per_atom(natoms)
+    integer,intent(inout)     :: nAtomsWithOccOrb,nAtomsWithVirtOrb
+    !
+    integer                   :: indx
+    nAtomsWithOccOrb = 0
+    nAtomsWithVirtOrb = 0
+    do indx=1,natoms
+       if (nocc_per_atom(indx) > 0) then
+          nAtomsWithOccOrb = nAtomsWithOccOrb + 1
+       end if
+       if (nunocc_per_atom(indx) > 0) then
+          nAtomsWithVirtOrb = nAtomsWithVirtOrb + 1
+       end if
+    end do
+  end subroutine GetnAtomsWithOrb
 
   !> \brief Set logical vectors defining fragment to contain a fixed number of AOS atoms
   !> based on a prioritized track list.
@@ -3270,7 +3375,7 @@ contains
        ! RPA
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRPA)
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRPA)
-       print *,"JOHANNES: CURRENTLY LAGRANGIAN ENERGY IS NOT CONSIDERED; PLEASE IMPLEMENT"
+       !print *,"JOHANNES: CURRENTLY LAGRANGIAN ENERGY IS NOT CONSIDERED; PLEASE IMPLEMENT"
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
        !fragment%LagFOP = fragment%energies(FRAGMODEL_LAGRPA)
