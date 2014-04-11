@@ -789,6 +789,7 @@ contains
     type(lsitem), intent(inout) :: MyLsItem
 
 
+    call time_start_phase(PHASE_WORK)
     ntot = no + nv
 
     ! Set integral info
@@ -887,6 +888,7 @@ contains
     !                  Batch construction             !
     !==================================================
 
+    call time_start_phase(PHASE_COMM)
     ! MPI: Waking slaves up:
 #ifdef VAR_MPI
     StartUpSlaves: if(master.and.nnod>1) then
@@ -903,6 +905,7 @@ contains
     call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 #endif
+    call time_start_phase(PHASE_WORK)
 
 
     ! ************************************************
@@ -1175,7 +1178,9 @@ contains
     ! Problem specific to one sided comm. and maybe bcast,
     ! We must use a barrier after one sided communication epoc:
     if (.not.local_moccsd.and.ccmodel/=MODEL_RPA) then
+      call time_start_phase(PHASE_IDLE)
       call lsmpi_barrier(infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
     end if
 #endif
 
@@ -1854,7 +1859,6 @@ contains
     integer :: s, r, rs, q, ibatch, ipack, nnod
     integer(kind=long) :: ncopy
 
-    ipack = 1
     nnod = 1
 #ifdef VAR_MPI
     nnod = infpar%lg_nodtot
@@ -1864,49 +1868,59 @@ contains
     !           keep only the upper triangular part of the batch.
     if (diag) then
   
+      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
+      !$OMP PRIVATE(q,r,s,rs,ibatch,ipack)
       do s=1,ntot
         do r=1,s
           rs = r + (s-1)*ntot
           do q=1,dimQ
             ibatch = 1 + (q-1)*dimP + (rs-1)*dimP*dimQ
+            ipack = 1 + q*(q-1)/2 + (s*(s-1)/2 + r-1)*(dimQ*(dimQ+1)/2)
             call dcopy(q,gmo(ibatch),1,tmp(ipack),1)
-            ipack = ipack + q
           end do
         end do
       end do
+      !$OMP END PARALLEL DO
   
-      ncopy = ipack - 1
+      ncopy = dimQ*(dimQ+1)/2 + (ntot*(ntot-1)/2 + ntot-1)*(dimQ*(dimQ+1)/2)
       ! accumulate tile
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+        call time_start_phase(PHASE_COMM)
         call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy)
+        call time_start_phase(PHASE_WORK)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
-        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
+        call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
       else
-        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
+        call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
       end if
 
     ! 2nd case: current batch corresponds to an upper diagonal block,
     !           we keep all the pq part and reduced r<=s.
     else
   
+      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
+      !$OMP PRIVATE(r,s,rs,ibatch,ipack,ncopy)
       do s=1,ntot
         do r=1,s
           rs = r + (s-1)*ntot
           ibatch = 1 + (rs-1)*dimP*dimQ
+          ipack = 1 + (s*(s-1)/2 + r-1)*dimP*dimQ
           ncopy = dimP*dimQ
           call dcopy(ncopy,gmo(ibatch),1,tmp(ipack),1)
-          ipack = ipack + ncopy
         end do
       end do
+      !$OMP END PARALLEL DO
   
-      ncopy = ipack - 1
+      ncopy = (ntot*(ntot-1)/2 + ntot)*dimP*dimQ
       ! accumulate tile
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+        call time_start_phase(PHASE_COMM)
         call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy)
+        call time_start_phase(PHASE_WORK)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
-        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
+        call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
       else
-        call daxpy(ipack-1,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
+        call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
       end if
 
     end if
@@ -1952,22 +1966,26 @@ contains
       ncopy = ntot*(ntot+1)*dimP*(dimP+1)/4
 
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+        call time_start_phase(PHASE_COMM)
         call array_get_tile(pack_gmo,tile,tmp,ncopy)
+        call time_start_phase(PHASE_WORK)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
         call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
       end if
 
+      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
+      !$OMP PRIVATE(r,s,rs,sr,ibat1,ibat2,ipack)
       do s=1,ntot
         do r=1,s
           rs = r + (s-1)*ntot
           do q=1,dimQ
+            ipack = 1 + q*(q-1)/2 + (s*(s-1)/2 + r-1)*(dimQ*(dimQ+1)/2)
             ibat1 = 1 + (q-1)*dimP + (rs-1)*dimP*dimQ
             call dcopy(q,tmp(ipack),1,gmo(ibat1),1)
             ibat2 = q + (rs-1)*dimP*dimQ
             call dcopy(q-1,tmp(ipack),1,gmo(ibat2),dimP)
-            ipack  = ipack + q
           end do
           if (r/=s) then
             sr = s + (r-1)*ntot
@@ -1977,7 +1995,8 @@ contains
           end if
         end do
       end do
-  
+      !$OMP END PARALLEL DO
+ 
     ! 2nd case: current batch corresponds to an upper diagonal block,
     else
   
@@ -1985,21 +2004,24 @@ contains
       ncopy = dimP*dimQ*ntot*(ntot+1)/2
 
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+        call time_start_phase(PHASE_COMM)
         call array_get_tile(pack_gmo,tile,tmp,ncopy)
+        call time_start_phase(PHASE_WORK)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
       else
         call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
       end if
 
-      ! get first batch pqrs:
+      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
+      !$OMP PRIVATE(r,s,rs,sr,ibat1,ipack,ncopy)
       do s=1,ntot
         do r=1,s
           rs = r + (s-1)*ntot
+          ipack = 1 + (s*(s-1)/2 + r-1)*dimP*dimQ
           ibat1 = 1 + (rs-1)*dimP*dimQ
           ncopy = dimP*dimQ
           call dcopy(ncopy,tmp(ipack),1,gmo(ibat1),1)
-          ipack  = ipack + ncopy
 
           if (r/=s) then
             sr = s + (r-1)*ntot
@@ -2008,6 +2030,7 @@ contains
           end if
         end do
       end do
+      !$OMP END PARALLEL DO
 
     end if
   
