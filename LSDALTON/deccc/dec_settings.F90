@@ -297,7 +297,8 @@ contains
           ! CC model
        case('.MP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
-          DECinfo%use_singles=.false.  
+          DECinfo%use_singles = .false.  
+          DECinfo%MOCCSD      = .false.
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
