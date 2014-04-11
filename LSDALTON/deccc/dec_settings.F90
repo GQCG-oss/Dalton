@@ -499,8 +499,9 @@ contains
        case('.PRINTINTERACTIONENERGY')     
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
+       case('.SOSEX')
+         DECinfo%SOS = .true.
        case('.STRESSTEST')     
-       case('.SOSEX'); DECinfo%SOS=.true.
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
