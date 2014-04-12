@@ -1813,6 +1813,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       if(ccmodel == MODEL_MP2)then
          atype = 'TDAR'
          t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
+         old_iter = 0
       else
          atype = 'TDPD'
          t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
