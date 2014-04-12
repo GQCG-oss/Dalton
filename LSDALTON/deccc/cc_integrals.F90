@@ -2036,12 +2036,12 @@ contains
   
   end subroutine unpack_gmo
 
-  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local)
+  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective)
      implicit none
      type(array),intent(inout)   :: integral
      type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
      type(lsitem), intent(inout) :: mylsitem
-     logical, intent(in) :: local
+     logical, intent(in) :: local,collective
      !Integral stuff
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,MinAObatch
@@ -2066,9 +2066,11 @@ contains
      logical :: master
      integer(kind=ls_mpik) :: me, nnod
      integer, pointer :: jobdist(:,:)
+     real(realk), pointer :: work(:)
+     integer(kind=long) :: w1size, w2size
 
-    call time_start_phase( PHASE_WORK )
-    
+     call time_start_phase( PHASE_WORK )
+
 
      master  = .true.
      me      = 0
@@ -2126,6 +2128,7 @@ contains
 
               maxsize=max(max(nb**2*k*i,n1*n2*k*i),n1*n2*n3*n4)
               maxsize=maxsize + max(n1*nb*k*i,n1*n2*n3*i)
+              if(collective) maxsize = maxsize + n1*n2*n3*n4
 
               if(float(maxsize*8)/(1024.0**3) > 0.8E0_realk*MemFree )then
                  nba = k - 1
@@ -2135,6 +2138,7 @@ contains
 
            enddo alp
         enddo gamm
+
 
         if(DECinfo%manual_batchsizes)then
            nbg = max(DECinfo%ccsdGbatch,MinAObatch)
@@ -2153,6 +2157,10 @@ contains
               if(nbg<MinAObatch)nbg=MinAObatch
            endif
         endif
+
+        !maxsize=max(max(nb**2*nba*nbg,n1*n2*nba*nbg),n1*n2*n3*n4)
+        !maxsize=maxsize + max(n1*nb*nba*nbg,n1*n2*n3*nbg)
+        !if(collective) maxsize = maxsize + n1*n2*n3*n4
 
         MaxAllowedDimGamma = nbg
         MaxAllowedDimAlpha = nba
@@ -2234,9 +2242,12 @@ contains
 
 
      maxsize=max(max(nb**2*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*MaxActualDimAlpha*MaxActualDimGamma),n1*n2*n3*n4)
-     call mem_alloc( w1, maxsize )
+     w1size = maxsize
+     call mem_alloc( w1, w1size )
      maxsize=max(n1*nb*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*n3*MaxActualDimGamma)
-     call mem_alloc( w2, maxsize )
+     w2size = maxsize
+     call mem_alloc( w2, w2size )
+     if(collective) call mem_alloc(work,(i8*n1)*n2*n3*n4)
 
 
      ! ************************************************
@@ -2259,8 +2270,12 @@ contains
 
      call mem_alloc(jobdist,nbatchesAlpha,nbatchesGamma)
      !JOB distribution
+#ifdef VAR_MPI
      call distribute_mpi_jobs(jobdist,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
               &batchdimGamma,myload,nnod,me)
+#else
+     jobdist = 0
+#endif
 
 
      myload = 0
@@ -2300,13 +2315,17 @@ contains
            call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
            call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
            call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
-           call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
-           !something more sophisticated can be implemented here
-           call time_start_phase( PHASE_COMM )
-           call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize)
-           call time_start_phase( PHASE_WORK )
+           if(collective) then
+              call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,work,n1*n2*n3)
+           else
+              call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
+              !something more sophisticated can be implemented here
+              call time_start_phase( PHASE_COMM )
+              call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize)
+              call time_start_phase( PHASE_WORK )
+           endif
 
         enddo BatchAlpha
      enddo BatchGamma
@@ -2341,8 +2360,6 @@ contains
 
      call mem_dealloc(jobdist)
 
-     call mem_dealloc( w1 )
-     call mem_dealloc( w2 )
 
      if(.not.local)then
         integral%access_type = MASTER_ACCESS
@@ -2356,8 +2373,30 @@ contains
 #ifdef VAR_MPI
      call time_start_phase( PHASE_IDLE )
      call lsmpi_barrier(infpar%lg_comm)
+     if(collective)then
+        call time_start_phase( PHASE_COMM)
+        call ls_mpibcast(work,(i8*n1)*2*n3*n4,infpar%master,infpar%lg_comm)
+        if( me == 0 )then
+           if(w1size > w2size)then
+              call array_scatter(1.0E0_realk,work,0.0E0_realk,integral,integral%nelms,&
+                 &wrk=w1,iwrk=w1size)
+           else
+              call array_scatter(1.0E0_realk,work,0.0E0_realk,integral,integral%nelms,&
+                 &wrk=w2,iwrk=w2size)
+           endif
+        endif
+        call mem_dealloc( work )
+     endif
      call time_start_phase( PHASE_WORK )
+#else
+     if(w1size > w2size)then
+        call array_add(integral,1.0E0_realk,work,wrk=w1,iwrk=w1size)
+     else
+        call array_add(integral,1.0E0_realk,work,wrk=w2,iwrk=w2size)
+     endif
 #endif
+     call mem_dealloc( w1 )
+     call mem_dealloc( w2 )
 
   end subroutine get_mo_integral_par
 
@@ -2434,7 +2473,7 @@ subroutine get_mo_integral_par_slave()
    type(lsitem) :: mylsitem
 
    call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
-   call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.)
+   call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.,.true.)
   call ls_free(mylsitem)
 
 end subroutine get_mo_integral_par_slave

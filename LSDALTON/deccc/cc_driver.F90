@@ -1474,7 +1474,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(array)  :: fock,Co,Cv,Co2,Cv2
    type(array)  :: ppfock,qqfock,pqfock,qpfock
    type(array)  :: ifock,delta_fock
-   type(array)  :: aibj,iajb
+   type(array)  :: iajb
    type(array), pointer :: t2(:),omega2(:)
    type(array), pointer :: t1(:),omega1(:)
    type(array) :: omega1_opt, t1_opt, omega1_prec
@@ -1486,7 +1486,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer                 :: iter,last_iter,i,j,k,l
    logical                 :: crop_ok,break_iterations,saferun
    type(ri)                :: l_ao
-   type(array)             :: ppfock_prec, qqfock_prec
+   type(array)             :: ppfock_prec, qqfock_prec, qpfock_prec
    real(realk)             :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
    real(realk)             :: iter_cpu,iter_wall
    integer                 :: nnodes
@@ -1666,9 +1666,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc(dens,nb,nb)
    call get_density_from_occ_orbitals(nb,no,Co%elm2,dens)
 
+   ifock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
+
    if(fragment_job) then ! fragment: calculate correction
 
-      ifock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
 
       if(longrange_singles) then
          ! Get Fock matrix using singles amplitudes from previous
@@ -1688,13 +1689,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       call array_cp_data(fock,delta_fock)
       call array_add(delta_fock,-1.0E0_realk,ifock)
-      call array_free(ifock)
 
    else 
       ! Full molecule: deltaF = F(Dcore) for frozen core (0 otherwise)
       if(DECinfo%frozencore) then
          ! Fock matrix from input MOs
-         ifock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
          call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
          !print *,"DEBUGGGING: zero iFOck instead of calculating it"
          !call array_zero(ifock)
@@ -1702,14 +1701,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          delta_fock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
          call array_cp_data(fock,delta_fock)
          call array_add(delta_fock,-1.0E0_realk,ifock)
-         call array_free(ifock)
       else
          delta_fock=array_minit( ao2_dims,2,local=local, atype='LDAR' )
          call array_zero(delta_fock)
       end if
    end if
 
-   call mem_dealloc(dens)
 
 
    if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_fock_mat, &
@@ -1718,37 +1715,43 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 
    ! get fock matrices, used in Preconditioning and MP2
-   GetOOFandVVF : if(DECinfo%use_preconditioner .or. &
-      &DECinfo%use_preconditioner_in_b .or. ccmodel == MODEL_MP2) then
 
-      ppfock_prec = array_minit( [no,no], 2, local=local, atype='REPD' )
-      qqfock_prec = array_minit( [nv,nv], 2, local=local, atype='REPD' )
+   ppfock_prec = array_minit( [no,no], 2, local=local, atype='REPD' )
+   qqfock_prec = array_minit( [nv,nv], 2, local=local, atype='REPD' )
+   qpfock_prec = array_minit( [nv,no], 2, local=local, atype='REPD' )
 
-      call array_change_atype_to_rep( ppfock_prec, local )
-      call array_change_atype_to_rep( qqfock_prec, local )
+   call array_change_atype_to_rep( ppfock_prec, local )
+   call array_change_atype_to_rep( qqfock_prec, local )
 
-      if(DECinfo%precondition_with_full .or. ccmodel == MODEL_MP2 ) then
-         call array_convert( ppfock_d, ppfock_prec )
-         call array_convert( qqfock_d, qqfock_prec )
-      else
-         tmp = array_minit( [nb,no], 2, local=local, atype='LDAR' )
-         call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
-         call array_contract_outer_indices_ll(1.0E0_realk,Co,tmp,0.0E0_realk,ppfock_prec)
-         call array_free(tmp)
+   if(DECinfo%precondition_with_full) then
+      call array_convert( ppfock_d, ppfock_prec )
+      call array_convert( qqfock_d, qqfock_prec )
+      call array_zero(qpfock_prec)
+   else
+      tmp = array_minit( [nb,no], 2, local=local, atype='LDAR' )
+      call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
+      call array_contract_outer_indices_ll(1.0E0_realk,Co,tmp,0.0E0_realk,ppfock_prec)
+      call array_free(tmp)
 
-         tmp = array_minit( [nb,nv], 2, local=local, atype='LDAR'  )
-         call array_contract_outer_indices_rl(1.0E0_realk,fock,Cv2,0.0E0_realk,tmp)
-         call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qqfock_prec)
-         call array_free(tmp)
-      end if
+      tmp = array_minit( [nb,nv], 2, local=local, atype='LDAR'  )
+      call array_contract_outer_indices_rl(1.0E0_realk,fock,Cv2,0.0E0_realk,tmp)
+      call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qqfock_prec)
+      call array_free(tmp)
 
-      if( ccmodel /= MODEL_MP2)then
-         call array_change_atype_to_d( ppfock_prec )
-         call array_change_atype_to_d( qqfock_prec )
-      endif
+      tmp = array_minit( [nb,no], 2, local=local, atype='LDAR'  )
+      call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
+      call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qpfock_prec)
+      call array_free(tmp)
+   end if
 
-   end if GetOOFandVVF
+   if( ccmodel /= MODEL_MP2)then
+      call array_change_atype_to_d( ppfock_prec )
+      call array_change_atype_to_d( qqfock_prec )
+   endif
 
+
+   call array_free(ifock)
+   call mem_dealloc(dens)
 
 
    if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_prec1,&
@@ -1795,11 +1798,15 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! restart, else the t*.restart files are read
    two_norm_total = DECinfo%ccConvergenceThreshold + 1.0E0_realk
    if(DECinfo%use_singles)then
+
       t1(1) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
       t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
-      call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),&
-         &safefilet21,safefilet22, safefilet2f, t1(1),safefilet11,safefilet12, safefilet1f  )
+
+      call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
+         & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
+         & t1(1),safefilet11,safefilet12, safefilet1f  )
    else
+
       !if MP2, just zero the array, and keep it in PDM all the time
       if(ccmodel == MODEL_MP2)then
          atype = 'TDAR'
@@ -1807,12 +1814,15 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       else
          atype = 'TDPD'
          t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
-         call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),&
-            &safefilet21,safefilet22, safefilet2f )
+
+         call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
+            & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
+
       endif
    endif
    restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
 
+   call array_free(qpfock_prec)
 
 
    if(DECinfo%PL>1)call time_start_phase( PHASE_WORK, at = time_work, ttot = time_start_guess,&
@@ -1833,10 +1843,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       INTEGRAL : if(ccmodel == MODEL_MP2) then
 
 #ifdef MOD_UNRELEASED
-         call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local)
-         call print_norm(iajb)
+         call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
          call get_mp2_starting_guess( iajb, t2(1), ppfock_prec, qqfock_prec, local )
-         call print_norm(t2(1))
 #else
          call lsquit("ERROR(ccsolver_par):no mp2 implemented",DECinfo%output)
 #endif
@@ -2275,11 +2283,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call array_free(delta_fock)
 
 
-   if(DECinfo%use_preconditioner .or. &
-      &DECinfo%use_preconditioner_in_b .or. ccmodel == MODEL_MP2) then
-      call array_free(ppfock_prec)
-      call array_free(qqfock_prec)
-   end if
+   call array_free(ppfock_prec)
+   call array_free(qqfock_prec)
 
    if(DECinfo%use_singles) then
       !call array2_free(h1)
@@ -2354,13 +2359,16 @@ end subroutine ccsolver_par
 !is returned
 !> \author Patrick Ettenhuber
 !> \date December 2012
-subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,safefilet21,safefilet22,safefilet2f,&
-      & t1,safefilet11,safefilet12,safefilet1f)
+subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vvf,vof,mylsitem,local,&
+   & safefilet21,safefilet22,safefilet2f, t1,safefilet11,safefilet12,safefilet1f)
    implicit none
    logical,intent(out) :: restart
    real(realk), intent(out) :: norm,energy
    !> contains the guess doubles amplitudes on output
-   type(array),intent(inout) :: t2
+   type(array), intent(inout) :: t2,iajb,Co,Cv,oof,vvf,vof
+   logical, intent(in) :: local
+   !> integral info
+   type(lsitem), intent(inout) :: mylsitem
    !> the filenames to check for valid doubles amplitudes
    character(3),intent(in) :: safefilet21,safefilet22,safefilet2f
    !> contains the singles amplitudes on output
@@ -2377,6 +2385,7 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,safefilet21,safef
    logical :: all_singles, fin1_exists, fin2_exists
    character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
    character(ARR_MSG_LEN) :: msg
+   integer :: a,i
 
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12).and.present(safefilet1f)
 
@@ -2556,8 +2565,16 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,safefilet21,safef
       CLOSE(fu_t1)
       restart = .true.
    else
+      !do a=1,nv
+      !   do i=1,no
+
+      !      t1%elm2(a,i) = vof%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
+
+      !   end do
+      !end do
       call array_zero(t1)
    endif
+
    if(readfile2)then
       READ(fu_t2) t2%elm1
       READ(fu_t2) norm
@@ -2565,7 +2582,10 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,safefilet21,safef
       CLOSE(fu_t2)
       restart = .true.
    else
+     ! call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
+      !call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
       call array_zero(t2)
+      !call array_zero(iajb)
    endif
 end subroutine get_guess_vectors
 

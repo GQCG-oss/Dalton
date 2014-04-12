@@ -1838,7 +1838,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
 
   ! Only use slave helper if there is at least two jobs AND
   ! there is at least one local slave available.
-  if(nAtoms > 3 .and. infpar%lg_nodtot>1) then
+  if(nAtoms2 > 3 .and. infpar%lg_nodtot>1) then
      wakeslave=.true.
   else
      wakeslave=.false.
@@ -4225,8 +4225,6 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
          call array_gather(0.5E0_realk,iajb,0.0E0_realk,w_o2v2,iajb%nelms,oo=[2,4,1,3])
          call array_scatter(1.0E0_realk,w_o2v2,0.0E0_realk,omega2,t2%nelms)
-
-         call print_norm(omega2)
 
          call get_slaves_to_simple_par_mp2_res(omega2,iajb,t2,oof,vvf,iter)
 
