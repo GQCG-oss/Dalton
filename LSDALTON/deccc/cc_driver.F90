@@ -1505,7 +1505,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(array)            :: tmp
    character(ARR_MSG_LEN) :: msg
    integer                :: ii, jj, aa, bb, old_iter
-   logical                :: restart, w_cp, restart_from_converged
+   logical                :: restart, w_cp, restart_from_converged, collective
    character(4)           :: atype
 
    time_work        = 0.0E0_realk
@@ -1528,6 +1528,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    time_t1_trafo    = 0.0E0_realk
    time_write       = 0.0E0_realk
    time_finalize    = 0.0E0_realk
+
+   collective       = .false.
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
@@ -1843,7 +1845,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       INTEGRAL : if(ccmodel == MODEL_MP2) then
 
 #ifdef MOD_UNRELEASED
-         call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
+         call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
          call get_mp2_starting_guess( iajb, t2(1), ppfock_prec, qqfock_prec, local )
 #else
          call lsquit("ERROR(ccsolver_par):no mp2 implemented",DECinfo%output)

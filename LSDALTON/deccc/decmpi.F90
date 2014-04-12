@@ -2250,11 +2250,12 @@ contains
 
   end subroutine mpi_dec_fullinfo_master_to_slaves_precursor
 
-  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,c)
      implicit none
      type(array),intent(inout)   :: integral
      type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
      type(lsitem), intent(inout) :: mylsitem
+     logical, intent(inout) :: c
      integer :: addr1(infpar%lg_nodtot)
      integer :: addr2(infpar%lg_nodtot)
      integer :: addr3(infpar%lg_nodtot)
@@ -2282,6 +2283,7 @@ contains
      call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
      call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
      call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+     call ls_mpi_buffer(c,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
      if(.not.master)then

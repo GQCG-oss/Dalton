@@ -2041,7 +2041,8 @@ contains
      type(array),intent(inout)   :: integral
      type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
      type(lsitem), intent(inout) :: mylsitem
-     logical, intent(in) :: local,collective
+     logical, intent(in) :: local
+     logical, intent(inout) :: collective
      !Integral stuff
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,MinAObatch
@@ -2113,7 +2114,8 @@ contains
      if(master)then
 #ifdef VAR_MPI
         call time_start_phase( PHASE_COMM )
-        if(.not.local)call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+        if(.not.local)call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,&
+           &trafo4,mylsitem,collective)
         call time_start_phase( PHASE_WORK )
 #endif
 
@@ -2375,7 +2377,7 @@ contains
      call lsmpi_barrier(infpar%lg_comm)
      if(collective)then
         call time_start_phase( PHASE_COMM)
-        call ls_mpibcast(work,(i8*n1)*2*n3*n4,infpar%master,infpar%lg_comm)
+        call lsmpi_reduction(work,(i8*n1)*2*n3*n4,infpar%master,infpar%lg_comm)
         if( me == 0 )then
            if(w1size > w2size)then
               call array_scatter(1.0E0_realk,work,0.0E0_realk,integral,integral%nelms,&
@@ -2471,9 +2473,10 @@ subroutine get_mo_integral_par_slave()
    implicit none
    type(array) :: integral,trafo1,trafo2,trafo3,trafo4
    type(lsitem) :: mylsitem
+   logical :: c
 
-   call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
-   call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.,.true.)
+   call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,c)
+   call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.,c)
   call ls_free(mylsitem)
 
 end subroutine get_mo_integral_par_slave
