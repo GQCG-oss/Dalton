@@ -2133,9 +2133,13 @@ contains
               if(collective) maxsize = maxsize + n1*n2*n3*n4
 
               if(float(maxsize*8)/(1024.0**3) > 0.8E0_realk*MemFree )then
-                 nba = k - 1
-                 nbg = i
-                 exit gamm
+                 if(nba <= MinAObatch .and. nbg<= MinAObatch .and. collective)then
+                    collective = .false.
+                 else
+                    nba = k - 1
+                    nbg = i
+                    exit gamm
+                 endif
               endif
 
            enddo alp
@@ -2249,7 +2253,10 @@ contains
      maxsize=max(n1*nb*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*n3*MaxActualDimGamma)
      w2size = maxsize
      call mem_alloc( w2, w2size )
-     if(collective) call mem_alloc(work,(i8*n1)*n2*n3*n4)
+     if(collective)then
+        call mem_alloc(work,(i8*n1)*n2*n3*n4)
+        work = 0.0E0_realk
+     endif
 
 
      ! ************************************************
@@ -2319,7 +2326,7 @@ contains
            call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
 
            if(collective) then
-              call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,work,n1*n2*n3)
+              call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,1.0E0_realk,work,n1*n2*n3)
            else
               call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
@@ -2376,8 +2383,8 @@ contains
      call time_start_phase( PHASE_IDLE )
      call lsmpi_barrier(infpar%lg_comm)
      if(collective)then
-        call time_start_phase( PHASE_COMM)
-        call lsmpi_reduction(work,(i8*n1)*2*n3*n4,infpar%master,infpar%lg_comm)
+        call time_start_phase( PHASE_COMM )
+        call lsmpi_reduction(work,(i8*n1)*n2*n3*n4,infpar%master,infpar%lg_comm)
         if( me == 0 )then
            if(w1size > w2size)then
               call array_scatter(1.0E0_realk,work,0.0E0_realk,integral,integral%nelms,&
