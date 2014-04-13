@@ -1845,12 +1845,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       INTEGRAL : if(ccmodel == MODEL_MP2) then
 
-#ifdef MOD_UNRELEASED
          call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
          call get_mp2_starting_guess( iajb, t2(1), ppfock_prec, qqfock_prec, local )
-#else
-         call lsquit("ERROR(ccsolver_par):no mp2 implemented",DECinfo%output)
-#endif
 
       else
 
@@ -1944,12 +1940,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! If you implement a new model, please insert call to your own residual routine here!
          SelectCoupledClusterModel : select case( CCmodel )
          case( MODEL_MP2 )
-#ifdef MOD_UNRELEASED
+
             call get_simple_parallel_mp2_residual(omega2(iter),iajb,t2(iter),ppfock_prec,qqfock_prec,iter,local)
-            call print_norm(omega2(iter))
-#else
-            call lsquit("ERROR(ccsolver_par):no mp2 implemented",DECinfo%output)
-#endif
+
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) !CC2 or  CCSD or CCSD(T)
 
             call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2(iter),t2(iter),&
@@ -2345,7 +2338,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 #ifdef MOD_UNRELEASED
    if( .not. fragment_job .and. DECinfo%PL>2 )then
-      call array4_print_statistics(DECinfo%output)
       call array_print_mem_info(DECinfo%output,.true.,.false.)
    endif
 #endif

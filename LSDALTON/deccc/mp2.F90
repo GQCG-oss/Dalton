@@ -4086,7 +4086,6 @@ end subroutine get_mpi_tasks_for_MP2_int_and_amp
 #endif
 
 
-#ifdef MOD_UNRELEASED
 subroutine get_mp2_starting_guess(iajb,t2, oof, vvf, local)
    implicit none
    type(array), intent(inout) :: iajb, t2, oof, vvf
@@ -4406,7 +4405,6 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
    call mem_dealloc(w_o2v2)
 end subroutine get_simple_parallel_mp2_residual
-#endif
 
 end module mp2_module
 
