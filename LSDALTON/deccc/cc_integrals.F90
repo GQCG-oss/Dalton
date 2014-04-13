@@ -2398,7 +2398,7 @@ contains
      endif
      call time_start_phase( PHASE_WORK )
 #else
-     if(w1size > w2size)then
+     if(w1size > w2size .and. collective )then
         call array_add(integral,1.0E0_realk,work,wrk=w1,iwrk=w1size)
      else
         call array_add(integral,1.0E0_realk,work,wrk=w2,iwrk=w2size)
@@ -2406,6 +2406,7 @@ contains
 #endif
      call mem_dealloc( w1 )
      call mem_dealloc( w2 )
+     if(collective) call mem_dealloc( work )
 
   end subroutine get_mo_integral_par
 
