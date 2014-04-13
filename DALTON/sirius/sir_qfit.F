@@ -31,7 +31,6 @@ C
 #include "priunit.h"
 #include "mxcent.h"
       CHARACTER WORD*7
-#include "abainf.h"
 #if defined (BUILD_QFITLIB)
       call dalton_input(word, lucmd, lupri)
 #endif
@@ -47,7 +46,7 @@ C
       RETURN
       END
 C
-      SUBROUTINE QFITCALC(WORK,LWORK)
+      SUBROUTINE QFITCALC(FDENS, LFDENS)
 #if defined (BUILD_QFITLIB)
       use qfit
 #endif
@@ -59,41 +58,17 @@ C
 #include "moldip.h"
 #include "magone.h"
 #include "orgcom.h"
-      real*8, dimension(lwork) :: work
 C
-      real*8, dimension(:), allocatable :: dens, dso, fso, dummat
-      real*8, dimension(:), allocatable :: charges
-      integer :: m, icharg
+      DIMENSION FDENS(LFDENS)
+      integer :: icharg
 C
-      allocate( dso( nnbasx ) )
-      allocate( fso( nnbasx ) )
-      allocate( dens( nnbasx ) )
-      allocate( dummat( nnbasx ) )
-      dso = 0.0d0
-      fso = 0.0d0
-      dens = 0.0d0
-      dummat = 0.0d0
 #if defined (BUILD_QFITLIB)
-C 
-C     OBTAIN THE AO DENSITY MATRIX
-      CALL DSOFSO(dso,fso,WORK(1),LWORK,MPRINT,
-     &            MNODC,MNODV)
-      CALL DSYM1(dens,dummat,dso,fso,
-     &           .FALSE.,NBAST,MPRINT)
-C
-C     MOLECULAR CHARGE
+      write(*,*) "css: dpi0", dip0
       call molchr(icharg)
-C
-C     INVOKE QFIT AND CALCULATE THE FITTED CHARGES
       call qfit_initialize(cord(1:3,1:natoms), charge(1:natoms),
      *                     icharg, dip0, diporg)
-      call qfit_fit(dens)
+      call qfit_fit(FDENS)
 #endif
-C
-      deallocate( dso )
-      deallocate( fso )
-      deallocate( dens )
-      deallocate( dummat )
 C
       END
 C
@@ -132,3 +107,77 @@ C
  9000 format(4x,'Charges have been fitted to the molecular ',
      *          'electrostatic potential.')
       END
+
+      SUBROUTINE QFITGSCALC(CMO,WRK,KFRSAV,LFRSAV)
+C
+C     CALCULATE MEP CHARGE FITTING FOR GS
+C
+C     LOOSELY BASED ON CALC_MEP BY JACOB KONGSTED
+C
+#include "implicit.h"
+#include "inforb.h"
+#include "mxcent.h"
+#include "dipole.h"
+      DIMENSION WRK(LFRSAV)
+      DIMENSION CMO(*)
+
+      CALL QFITINFO
+
+      CALL QENTER('QFITGSCALC')
+
+      KFREE  = KFRSAV
+      LFREE  = LFRSAV
+
+C     OBTAIN PACKED AO DENSITY
+      CALL MEMGET('REAL',KDV   ,NNASHX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDENC ,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDENV ,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDENS ,NNBASX,WRK,KFREE,LFREE)
+
+      CALL MEMGET('REAL',KXDIP ,NNBASX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KYDIP ,NNBASX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KZDIP ,NNBASX,WRK,KFREE,LFREE)
+      CALL DZERO(WRK(KXDIP), NNBASX)
+      CALL DZERO(WRK(KYDIP), NNBASX)
+      CALL DZERO(WRK(KZDIP), NNBASX)
+
+      CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDENC),WRK(KDENV),
+     &            CMO,WRK(KDV),WRK(KFREE),LFREE)
+      CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENC),1)
+      CALL DZERO(WRK(KDENV),N2BASX)
+      CALL DGEFSP(NBAST,WRK(KDENC),WRK(KDENV))
+      CALL PKSYM1(WRK(KDENV),WRK(KDENS),NBAS,NSYM,1)
+
+C     CALCULATE MOLECULAR DIPOLE
+C     NUCLEAR CONTRIBUTION
+      DUM = 0.0d0
+      CALL DIPNUC(DUM,DUM,0,.FALSE.)
+C
+C     ELECTRONIC CONTRIBUTION
+      lu = -1
+      call gpopen(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
+     &     .FALSE.)
+
+      rewind lu
+
+      call mollab('XDIPLEN ', LU, LUPRI)
+      call readt(LU, nnbasx, WRK(KXDIP))
+      call mollab('YDIPLEN ', LU, LUPRI)
+      call readt(LU, nnbasx, WRK(KYDIP))
+      call mollab('ZDIPLEN ', LU, LUPRI)
+      call readt(LU, nnbasx, WRK(KZDIP))
+      call gpclose(lu, 'keep')
+
+      DIPME(1) = -DDOT(NNBASX, WRK(KDENS), 1, WRK(KXDIP), 1)
+      DIPME(2) = -DDOT(NNBASX, WRK(KDENS), 1, WRK(KYDIP), 1)
+      DIPME(3) = -DDOT(NNBASX, WRK(KDENS), 1, WRK(KZDIP), 1)
+
+      CALL DP0SUM
+
+C     CALCULATE FITTED CHARGES.
+      CALL QFITCALC(WRK(KDENS), NNBASX)
+
+      CALL MEMREL('QFITGSCALC',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('QFITGSCALC')
+
+      END SUBROUTINE
