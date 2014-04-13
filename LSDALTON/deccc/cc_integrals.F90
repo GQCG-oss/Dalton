@@ -2378,6 +2378,8 @@ contains
         trafo4%access_type = MASTER_ACCESS
      endif
 
+     call mem_dealloc( w1 )
+     call mem_dealloc( w2 )
 
 #ifdef VAR_MPI
      call time_start_phase( PHASE_IDLE )
@@ -2386,34 +2388,21 @@ contains
         call time_start_phase( PHASE_COMM )
         call lsmpi_reduction(work,(i8*n1)*n2*n3*n4,infpar%master,infpar%lg_comm)
         if( me == 0 )then
-           if(w1size > w2size)then
-              call array_scatter(1.0E0_realk,work,0.0E0_realk,integral,integral%nelms,&
-                 &wrk=w1,iwrk=w1size)
-           else
-              call array_scatter(1.0E0_realk,work,0.0E0_realk,integral,integral%nelms,&
-                 &wrk=w2,iwrk=w2size)
-           endif
+           call array_convert(work,integral)
         endif
-        call mem_dealloc( work )
      endif
      call time_start_phase( PHASE_WORK )
 #else
-     if(w1size > w2size .and. collective )then
-        call array_add(integral,1.0E0_realk,work,wrk=w1,iwrk=w1size)
-     else
-        call array_add(integral,1.0E0_realk,work,wrk=w2,iwrk=w2size)
-     endif
+     call array_convert(work,integral)
 #endif
-     call mem_dealloc( w1 )
-     call mem_dealloc( w2 )
      if(collective) call mem_dealloc( work )
 
   end subroutine get_mo_integral_par
 
-end module ccintegrals
+  end module ccintegrals
 
 #ifdef VAR_MPI
-!> Purpose: Intermediate routine for the slaves, they get data
+  !> Purpose: Intermediate routine for the slaves, they get data
 !           from the local master and then call the routine to 
 !           calculate MO integrals (non-T1 transformed)
 !

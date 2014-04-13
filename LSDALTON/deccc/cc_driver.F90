@@ -351,9 +351,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    if(DECinfo%PL>1)then
       call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
          &swwork = time_pT_work, swcomm = time_pT_comm, swidle = time_pT_idle, &
-         &labeldwwork = 'MASTER WORK CCSD: ',&
-         &labeldwcomm = 'MASTER COMM CCSD: ',&
-         &labeldwidle = 'MASTER IDLE CCSD: ') 
+         &labeldwwork = 'MASTER WORK CC solver: ',&
+         &labeldwcomm = 'MASTER COMM CC solver: ',&
+         &labeldwidle = 'MASTER IDLE CC solver: ') 
    endif
 
    natoms = MyMolecule%natoms
@@ -385,41 +385,39 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    endif
 
-   if( ccmodel /= MODEL_MP2 )then
-      ! as we want to  print out fragment and pair interaction fourth-order energy contributions,
-      ! then for locality analysis purposes we need occ_orbitals and
-      ! unocc_orbitals (adapted from fragment_energy.f90)
+   ! as we want to  print out fragment and pair interaction fourth-order energy contributions,
+   ! then for locality analysis purposes we need occ_orbitals and
+   ! unocc_orbitals (adapted from fragment_energy.f90)
 
-      ! -- Analyze basis and create orbitals
-      call mem_alloc(occ_orbitals,nocc_tot)
-      call mem_alloc(unocc_orbitals,nvirt)
-      call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc_tot,nvirt,natoms, &
-         & occ_orbitals,unocc_orbitals)
+   ! -- Analyze basis and create orbitals
+   call mem_alloc(occ_orbitals,nocc_tot)
+   call mem_alloc(unocc_orbitals,nvirt)
+   call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc_tot,nvirt,natoms, &
+      & occ_orbitals,unocc_orbitals)
 
-      ! Orbital assignment
-      call mem_alloc(orbitals_assigned,natoms)
-      orbitals_assigned=.false.
-      do p=1,nocc_tot
-         pdx = occ_orbitals(p)%centralatom
-         orbitals_assigned(pdx) = .true.
-      end do
-      do p=1,nvirt
-         pdx = unocc_orbitals(p)%centralatom
-         orbitals_assigned(pdx) = .true.
-      end do
+   ! Orbital assignment
+   call mem_alloc(orbitals_assigned,natoms)
+   orbitals_assigned=.false.
+   do p=1,nocc_tot
+      pdx = occ_orbitals(p)%centralatom
+      orbitals_assigned(pdx) = .true.
+   end do
+   do p=1,nvirt
+      pdx = unocc_orbitals(p)%centralatom
+      orbitals_assigned(pdx) = .true.
+   end do
 
-      ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
-      call array4_reorder(VOVO,[1,3,2,4])
+   ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
+   call array4_reorder(VOVO,[1,3,2,4])
 
-      ! print out ccsd fragment and pair interaction energies
-      ccsd_mat_tot = array2_init([natoms,natoms])
-      ccsd_mat_tmp = array2_init([natoms,natoms])
+   ! print out ccsd fragment and pair interaction energies
+   ccsd_mat_tot = array2_init([natoms,natoms])
+   ccsd_mat_tmp = array2_init([natoms,natoms])
 
-      call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
-         & ccsd_mat_tot%val,ccsd_mat_tmp%val)
+   call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
+      & ccsd_mat_tot%val,ccsd_mat_tmp%val)
 
-      call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
-   endif
+   call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
 
 
    if(DECinfo%InteractionEnergy)then
@@ -430,11 +428,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          & interactionECCSD,MyMolecule%SubSystemIndex,2)
    endif
 
-   if( ccmodel /= MODEL_MP2 )then
-      ! release ccsd stuff
-      call array2_free(ccsd_mat_tot)
-      call array2_free(ccsd_mat_tmp)
-   endif
+   ! release ccsd stuff
+   call array2_free(ccsd_mat_tot)
+   call array2_free(ccsd_mat_tmp)
 
    ! free integrals
    call array4_free(VOVO)
@@ -484,63 +480,68 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
 
 
-   if( ccmodel /= MODEL_MP2 ) then
-      do i=1,nocc_tot
-         call orbital_free(occ_orbitals(i))
-      end do
-      call mem_dealloc(occ_orbitals)
-      do i=1,nvirt
-         call orbital_free(unocc_orbitals(i))
-      end do
-      call mem_dealloc(unocc_orbitals)
-      call mem_dealloc(orbitals_assigned)
+   do i=1,nocc_tot
+      call orbital_free(occ_orbitals(i))
+   end do
+   call mem_dealloc(occ_orbitals)
+   do i=1,nvirt
+      call orbital_free(unocc_orbitals(i))
+   end do
+   call mem_dealloc(unocc_orbitals)
+   call mem_dealloc(orbitals_assigned)
 
-      ! sum up energies
-      ccsdpt_tot = ccsdpt_e4 + ccsdpt_e5
+   ! sum up energies
+   ccsdpt_tot = ccsdpt_e4 + ccsdpt_e5
 
-      ! finally, print out total energies 
+   !MODIFY FOR NEW MODEL
+   write(DECinfo%output,*)
+   write(DECinfo%output,*)
+   write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+   if(ccmodel == MODEL_CCSDpT )then
+      write(DECinfo%output,'(1X,a)') '*                      Full CCSD(T) calculation is done !                   *'
+   else if (ccmodel == MODEL_CCSD ) then
+      write(DECinfo%output,'(1X,a)') '*                      Full CCSD calculation is done !                      *'
+   else if (ccmodel == MODEL_CC2 ) then
+      write(DECinfo%output,'(1X,a)') '*                      Full CC2 calculation is done !                       *'
+   else if (ccmodel == MODEL_MP2 ) then
+      write(DECinfo%output,'(1X,a)') '*                      Full MP2 calculation is done !                       *'
+   else
+      call lsquit("ERROR(ccsolver_justenergy)model not recognized",-1)
+   endif
+   write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+   write(DECinfo%output,*)
+   write(DECinfo%output,*)
+   write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
+   write(DECinfo%output,*)
+   write(DECinfo%output,'(1X,a,g20.10)') 'Total CC solver correlation energy           =', ccenergy
+   write(DECinfo%output,*)
+
+   ! now update ccenergy with ccsd(t) correction
+   ccenergy = ccenergy + ccsdpt_tot
+
+   if(ccmodel == MODEL_CCSDpT)then
+      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
       write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      if(ccmodel == MODEL_CCSDpT)then
-         write(DECinfo%output,'(1X,a)') '*****************************************************************************'
-         write(DECinfo%output,'(1X,a)') '*                      Full CCSD(T) calculation is done !                   *'
-         write(DECinfo%output,'(1X,a)') '*****************************************************************************'
-      else
-         write(DECinfo%output,'(1X,a)') '*****************************************************************************'
-         write(DECinfo%output,'(1X,a)') '*                      Full CCSD calculation is done !                      *'
-         write(DECinfo%output,'(1X,a)') '*****************************************************************************'
-      endif
-      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a,g20.10)') 'The E4 doubles and triples contribution =', ccsdpt_e4
       write(DECinfo%output,*)
       write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
       write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD correlation energy           =', ccenergy
+      write(DECinfo%output,'(1X,a,g20.10)') 'The E5 singles and triples contribution =', ccsdpt_e5
       write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) energy contribution       =', ccsdpt_tot
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) correlation energy        =', ccenergy
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+   endif
 
-      ! now update ccenergy with ccsd(t) correction
-      ccenergy = ccenergy + ccsdpt_tot
-
-      if(ccmodel == MODEL_CCSDpT)then
-         write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-         write(DECinfo%output,*)
-         write(DECinfo%output,'(1X,a,g20.10)') 'The E4 doubles and triples contribution =', ccsdpt_e4
-         write(DECinfo%output,*)
-         write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-         write(DECinfo%output,*)
-         write(DECinfo%output,'(1X,a,g20.10)') 'The E5 singles and triples contribution =', ccsdpt_e5
-         write(DECinfo%output,*)
-         write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-         write(DECinfo%output,*)
-         write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) energy contribution       =', ccsdpt_tot
-         write(DECinfo%output,*)
-         write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-         write(DECinfo%output,*)
-         write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) correlation energy        =', ccenergy
-         write(DECinfo%output,*)
-         write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-         write(DECinfo%output,*)
-         write(DECinfo%output,*)
-      endif
+   if( ccmodel /= MODEL_MP2 ) then
       ! free amplitude arrays
       call array2_free(t1_final)
    endif
@@ -1950,7 +1951,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                & MyLsItem,omega1(iter),t1(iter),pgmo_diag,pgmo_up,MOinfo,&
                & mo_ccsd,iter,local,restart)
 
-         call print_norm(iajb)
          case( MODEL_RPA )
             call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
          case default
