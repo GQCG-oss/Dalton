@@ -963,6 +963,7 @@ C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
+      use pe_work
 #ifdef MOD_CGTO_DIFF_ERI
       use eri_basis_loops
 #endif
@@ -1118,7 +1119,9 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
          ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
+            call dalwrk2pewrk(work(1:mwork))
             CALL PE_IFC_MPI(IPRINT)
+            call nullify_pewrk()
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN

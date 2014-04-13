@@ -8,10 +8,9 @@ module pe_work
 
 contains
 
-subroutine dalwrk2pewrk(dalwrk, nwrk)
+subroutine dalwrk2pewrk(dalwrk)
 
-    integer :: nwrk
-    real(dp), dimension(nwrk), target :: dalwrk
+    real(dp), dimension(:), target :: dalwrk
 
     pewrk => dalwrk
 

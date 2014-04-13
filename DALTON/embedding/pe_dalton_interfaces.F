@@ -2265,7 +2265,11 @@ C     as to what works best for singly bonded C,N,O
 !        stop 'wrong order specified or not implemented'
       end if
 
-      nwrk = size(pewrk)
+      if (associated(pewrk)) then
+          nwrk = size(pewrk)
+      else
+        call quit('ERROR: pewrk not allocated')
+      endif
 
       Tk_ints = 0.0d0
 
