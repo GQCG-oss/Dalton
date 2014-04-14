@@ -461,7 +461,8 @@ C
          ONEPRP = .TRUE.
       END IF
 C
-      CALL TITLER('Output from HERMIT input processing','*',118)
+      CALL TITLER('Output from **INTEGRALS input processing (HERMIT)',
+     &   '*',118)
 C
 C     **** Find Hermit input *****
 C
@@ -478,9 +479,12 @@ C         if reading input from a terminal
       END IF
   910 CONTINUE
          NWARN = NWARN + 1
-         WRITE (LUPRI,*) 'WARNING HERINP: error reading Dalton input'
+         WRITE (LUPRI,'(/A)')
+     &   '   WARNING HERINP: error reading Dalton input file'
   920 CONTINUE
          WORD = '**END O'
+         WRITE (LUPRI,'(/A)')
+     &   ' - Using defaults, no **INTEGRALS input found'
          GOTO 300
   930 CONTINUE
       WORD1 = WORD
@@ -1281,13 +1285,13 @@ cs              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
 cs            ENDIF
             GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN
-         GO TO 299
+         GO TO 300
       ELSE
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in HERINP.')
       END IF
-  299 CONTINUE
+  300 CONTINUE
 
       IF (.NOT. BGWEIL) BGWEIN = WEINBG 
 cLig <>
@@ -1305,7 +1309,7 @@ cLig <>
          WRITE (LUPRI,'(/A)')
      *    ' FATAL ERROR in input: .SPIN-ORBIT and .SOTEST cannot '/
      *    /'both be specified.'
-          CALL QUIT('Error in HERMIT input.')
+          CALL QUIT('Error in **INTEGRALS input.')
       END IF
       IF (HAMILT) THEN
           IF (NOTWO) THEN
@@ -1656,7 +1660,6 @@ cLig <<
 C
 C     **** Process input for various program sections  *****
 C
-  300 CONTINUE
       CALL ER2INI
   301 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
