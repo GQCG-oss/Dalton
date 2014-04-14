@@ -5402,7 +5402,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
              do a=1,nvirt
 
                 energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
-                if(DECinfo%ccmodel /= MODEL_MP2)then
+                if(DECinfo%use_singles)then
                    energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
                 else
                    energy_tmp_2 = 0.0E0_realk
@@ -5432,7 +5432,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
              do a=1,nvirt
 
                 energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
-                if(DECinfo%ccmodel /= MODEL_MP2)then
+                if(DECinfo%use_singles)then
                    energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
                 else
                    energy_tmp_2 = 0.0E0_realk
