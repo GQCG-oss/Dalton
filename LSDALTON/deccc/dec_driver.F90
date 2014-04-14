@@ -209,10 +209,10 @@ contains
     call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,natoms,&
          & OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
-    IF(DECinfo%StressTest)THEN
+    if(DECinfo%StressTest)then
        call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,&
             & MyMolecule%DistanceTable,OccOrbitals, UnoccOrbitals, dofrag, mylsitem)
-    ENDIF
+    endif
 
     if(DECinfo%PairEstimate .and. count(dofrag)>1) then
        ! Use estimated pair fragments to determine which pair fragments to calculate at the FOT level
@@ -1163,12 +1163,6 @@ subroutine print_dec_info()
 #ifdef VAR_MPI
           call free_joblist(singlejob)
 #endif
-
-         if(DECinfo%only_one_frag_job)then
-           print *,"HACK: only one fragment job was requested. The fragment was&
-           & saved and the master is crashed to kill the job"
-           stop 0
-         endif
 
        end if RestartStuff
 

@@ -116,6 +116,7 @@ contains
     DECinfo%FragmentExpansionSize  = 5
     DECinfo%fragadapt              = .false.
     DECinfo%only_one_frag_job      = .false.
+    DECinfo%only_one_frag_job_nr   = -1
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
@@ -541,7 +542,9 @@ contains
           DECinfo%array4OnFile_specified=.true.
        case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
-       case('.ONLY_ONE_JOB'); DECinfo%only_one_frag_job    = .true.
+       case('.ONLY_ONE_JOB')
+          DECinfo%only_one_frag_job    = .true.
+          read(input,*)DECinfo%only_one_frag_job_nr
 
           ! kappabar multiplier equation
        case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 

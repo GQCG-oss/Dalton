@@ -289,6 +289,7 @@ module dec_typedef_module
      logical :: FragAdapt
      !> Hack to only do fragment optimization
      logical :: only_one_frag_job
+     integer :: only_one_frag_job_nr
      !> Has simple orbital threshold been defined manually in input (true),
      !> or should simple orbital threshold be adapted to FOT 
      !> as descripted under FOTlevel (false)?
