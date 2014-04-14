@@ -9,6 +9,7 @@ MODULE DEC_settings_mod
 
   use fundamental
   use precision
+  use memory_handling
   use dec_typedef_module
   use ls_util
 #ifdef VAR_MPI
@@ -115,8 +116,8 @@ contains
     DECinfo%precondition_with_full = .false.
     DECinfo%FragmentExpansionSize  = 5
     DECinfo%fragadapt              = .false.
-    DECinfo%only_one_frag_job      = .false.
-    DECinfo%only_one_frag_job_nr   = -1
+    DECinfo%only_n_frag_jobs       =  0
+    DECinfo%frag_job_nr            => null()
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
@@ -542,9 +543,10 @@ contains
           DECinfo%array4OnFile_specified=.true.
        case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
-       case('.ONLY_ONE_JOB')
-          DECinfo%only_one_frag_job    = .true.
-          read(input,*)DECinfo%only_one_frag_job_nr
+       case('.ONLY_N_JOBS')
+          read(input,*)DECinfo%only_n_frag_jobs
+          call mem_alloc(DECinfo%frag_job_nr,DECinfo%only_n_frag_jobs)
+          read(input,*)DECinfo%frag_job_nr(1:DECinfo%only_n_frag_jobs)
 
           ! kappabar multiplier equation
        case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 
@@ -877,6 +879,10 @@ contains
 
   end subroutine set_input_for_fot_level
 
+  subroutine free_decinfo()
+     implicit none
+     if(associated(DECinfo%frag_job_nr))call mem_dealloc(DECinfo%frag_job_nr)
+  end subroutine
 
   !> MODIFY FOR NEW MODEL
   !> \brief For a given model input (e.g. .MP2 or .CCSD) find model number associated with input.

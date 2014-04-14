@@ -2166,6 +2166,13 @@ contains
     call ls_mpi_buffer(DECitem%ncalc,mydim,Master)
     call ls_mpi_buffer(DECitem%EerrFactor,Master)
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
+    call ls_mpi_buffer(DECitem%only_n_frag_jobs,Master)
+    if(DECitem%only_n_frag_jobs>0)then
+       if(.not. AddToBuffer)then
+          call mem_alloc(DECitem%frag_job_nr,DECitem%only_n_frag_jobs)
+       endif
+       call ls_mpi_buffer(DECitem%frag_job_nr,DECitem%only_n_frag_jobs,Master)
+    endif
 
   end subroutine mpicopy_dec_settings
 

@@ -1526,7 +1526,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !Set defaults
    restart     = .false.
    w_cp        = .false.
-   saferun     = (.not.DECinfo%CCSDnosaferun.or.DECinfo%only_one_frag_job)
+   saferun     = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
 
 
    nnodes      = 1

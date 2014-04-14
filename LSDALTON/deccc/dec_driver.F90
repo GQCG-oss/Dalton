@@ -326,7 +326,6 @@ contains
        end if
     end do
 
-
     ! Now all atomic fragment energies have been calculated and the
     ! fragment information has been stored in AtomicFragments.
 
@@ -363,7 +362,6 @@ contains
     if(DECinfo%first_order) then
        call init_fullmp2grad(MyMolecule,fullgrad)
     end if
-
 
 #ifdef VAR_MPI
 
@@ -429,6 +427,10 @@ contains
              call read_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
           end if
        end if
+       if(DECinfo%only_n_frag_jobs > 0)then
+          jobs%jobsdone  = .false.
+          jobs%dofragopt = .false.
+       endif
 
        call fragment_jobs(nocc,nunocc,natoms,MyMolecule,mylsitem,&
             & OccOrbitals,UnoccOrbitals,jobs,AtomicFragments,&
@@ -1135,7 +1137,7 @@ subroutine print_dec_info()
 
           backup_files =  (((float(jobdone) < 0.25*float(jobs%njobs)) .or. &
               &(dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. & 
-              & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_one_frag_job) 
+              & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_n_frag_jobs>0) 
 
           ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
           Backup: if( backup_files )then
@@ -1224,12 +1226,12 @@ subroutine print_dec_info()
 
     ! Initialize job list for atomic fragment optimizations
     call create_dec_joblist_fragopt(natoms,nocc,nunocc,MyMolecule%DistanceTable,&
-         & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
+       & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
 
     if(DECinfo%DECrestart) then
        write(DECinfo%output,*) 'Restarting atomic fragment optimizations....'
        call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
-            & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
+          & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
     end if
 
     write(DECinfo%output,*)
@@ -1253,17 +1255,17 @@ subroutine print_dec_info()
           end do
        end do
        IF(DECinfo%InteractionEnergy)THEN
-        !We are only intrested in certain fragments. 
-        !So we only do estimates on those we are 
-        !intrested in. 
-        do i=1,natoms
-         do j=1,natoms
-          IF(MyMolecule%SubSystemIndex(i).EQ.MyMolecule%SubSystemIndex(j))THEN
-           MyMolecule%ccmodel(i,j) = MODEL_NONE
-          ENDIF
-         end do
-        end do
-       ENDIF
+          !We are only intrested in certain fragments. 
+          !So we only do estimates on those we are 
+          !intrested in. 
+          do i=1,natoms
+             do j=1,natoms
+                if(MyMolecule%SubSystemIndex(i).EQ.MyMolecule%SubSystemIndex(j))then
+                   MyMolecule%ccmodel(i,j) = MODEL_NONE
+                endif
+             end do
+          end do
+       endif
 
 !
        ! Init estimated atomic fragments by including orbitals assigned to neighbour atoms
