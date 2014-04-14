@@ -10,6 +10,7 @@ Common
 DALTON
 ------
 
+- Bugfix for issue https://repo.ctcc.no/issues/594 FIXME describe it as soon as we fully understand it.
 - Default DIIS space increased from 5 to 8, often resulting in 1-2 fewer SCF iterations.
 - Removed the maximum of 20 excitations in summary output for second and third order transition moments.
 - Bugfix for parallel calculations and some type of geometry optimizations with ano basis sets
