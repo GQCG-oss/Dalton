@@ -2251,6 +2251,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end if
 
    end do
+   call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
 
    ! Write finalization message
    call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter+old_iter,&
@@ -2343,7 +2344,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 #endif
 
    if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_finalize, &
-      &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output, twall = ttotstart_wall )
+      &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output )
 
 end subroutine ccsolver_par
 
