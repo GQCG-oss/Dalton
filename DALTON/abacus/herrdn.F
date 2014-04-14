@@ -609,32 +609,17 @@ C
       KSEG   = KNRC   +  KBLOCK*KSETS
       KLAST  = KSEG   +  KBLOCK*KSETS
 C
-C     Allocate 100 000 for WORK in READ_MOL and
-C     use rest of memory for blocks
-C     /sep 05 hjaaj
 C
-      LWRK   = LWORK  -  KLAST - 100000
-      L_PER_BLCK = KSETS*(KPRIM + 2*KCMAT)
-      MXBLCK = MAX( 30, LWRK / L_PER_BLCK )
-      MXBLCK = MIN( MXBLCK, KBLOCK)
-C
-      KA     = KLAST
-      KC     = KA     +  MXBLCK*KPRIM*KSETS
-      KCC    = KC     +  MXBLCK*KCMAT*KSETS
-      KLAST  = KCC    +  MXBLCK*KCMAT*KSETS
-C     WRITE(LUPRI,'(A,2I16)') 'KLAST, LWORK',KLAST,LWORK
-      IF(KLAST.GT.LWORK) GOTO 5020
-      LWRK   = LWORK  -  KLAST + 1
 C
 C     ********************************************
 C     ***** Read input file and process data *****
 C     ********************************************
 C
-      CALL READ_MOL(LUINFO,WORK(KLAST),LWRK,WORK(KNONT),WORK(KIQM),
+      CALL READ_MOL(LUINFO,WORK(KLAST),LWORK,WORK(KNONT),WORK(KIQM),
      &            WORK(KBLCK),WORK(KJCO),WORK(KNUC),
-     &            WORK(KNRC),WORK(KSEG),WORK(KA),
-     &            WORK(KC),WORK(KCC),
-     &            KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,MXBLCK,HERMIT)
+     &            WORK(KNRC),WORK(KSEG),
+     &            KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,HERMIT)
+
 C     CALL RDLINE(LUINFO)
 C     READ (MLINE(NMLINE),'(A6)') KEYWRD
 C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
@@ -658,8 +643,8 @@ C5030 CONTINUE
       END ! SUBROUITNE READIN
 C  /* Deck read_mol */
       SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
-     &           NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &           KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,MXBLCK,HERMIT)
+     &           NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+     &           KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,HERMIT)
 C******************************************************************************
 C
 C     Reads and processes input file of molecular data
@@ -712,12 +697,13 @@ C******************************************************************************
       DIMENSION NONT(KATOM),IQM(KATOM,KSETS),NBLCK(KATOM,KSETS),
      &          JCO(KANG,KATOM,KSETS),ISGEN(KATOM),
      &          NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
-     &          ALPHA(KPRIM,KBLOCK,KSETS),
-     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS), WORK(LWORK)
+     &          WORK(LWORK)
 C
 C       Local variables
 C
+      real(8), allocatable :: alpha(:, :, :)
+      real(8), allocatable :: cprim(:, :, :, :)
+      real(8), allocatable :: cprimu(:, :, :, :)
       CHARACTER*80 BASREF(10,KATOM,3)
       CHARACTER*1 KASYM(3,3),ID3,SPDCAR,CRT
       CHARACTER*72 TTITLE(2)
@@ -872,11 +858,16 @@ C
       SPHNRM = .NOT.(DOCART .OR. DOOWN)
 C     ... SPHNRM only true if sperical, i.e. the only case
 C         where we know the 5 d's have same norm. Used for Huckel.
+
+      allocate(alpha(kprim, kblock, ksets))
+      allocate(cprim(kprim, kprim, kblock, ksets))
+      allocate(cprimu(kprim, kprim, kblock, ksets))
+
       CALL BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,
      &            IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &            KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,
-     &            ANG,ZMAT,MXSPD,ADDSYM,MXBLCK)
+     &            ANG,ZMAT,MXSPD,ADDSYM)
 C
 C     *************************************************
 C     ***** Process ZMAT coordinates if requested *****
@@ -976,6 +967,10 @@ C
      &            BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
      &            KSETS,KBLOCK,KPRIM,KASYM,NSYMOP,HERMIT)
+
+      deallocate(alpha)
+      deallocate(cprim)
+      deallocate(cprimu)
 C
       IF (IPREAD .GE. 2) THEN
          CALL HEADER('Copy of .mol input',0)
@@ -1068,7 +1063,7 @@ C  /* Deck basinp */
      &                  IQM,NBLCK,JCO,BASREF,
      &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,
-     &                  ANG,ZMAT_INPUT,MXSPD,ADDSYM,MXBLCK)
+     &                  ANG,ZMAT_INPUT,MXSPD,ADDSYM)
 C***********************************************************************
 C
 C       Read orbital and geometry input data
@@ -1651,14 +1646,6 @@ C
             NBLCK(I,J) = NBLOCK
             IBLOCK(J)  = IBLOCK(J) + NBLCK(I,J)
             NOORBTS    = NOORBTS .AND.IQM(I,J).EQ.0
-            IF (IBLOCK(J) .GT. MXBLCK) THEN
-               WRITE (LUPRI,*) ' Too many blocks of basis functions '//
-     &              'in .mol input:',IBLOCK(J),MXBLCK
-               WRITE (LUPRI,*) ' Increase work memory in Dalton '//
-     &              '("dalton -M mb" option) and be welcome back'
-               CALL QUIT('Too many basis function blocks in input, '//
-     &              'see output file')
-            END IF
             IF (IQM(I,J).GT.0) THEN
                IF(IPREAD .GT. 3) THEN
                   WRITE(LUPRI,'(2X,A5,A)') BSET,' set:'
