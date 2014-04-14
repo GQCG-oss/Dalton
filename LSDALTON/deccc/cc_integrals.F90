@@ -1306,9 +1306,6 @@ contains
                                & back to standard algorithm.'
       end if
       return
-    else 
-      write(DECinfo%output,'(a,F12.5,a)') ' Available memory:',MemFree,' GB'
-      write(DECinfo%output,'(a,F12.5,a)') ' Required memory :',MemNeed,' GB'
     end if
     Nbatch = (ntot-1)/dimMO + 1
 

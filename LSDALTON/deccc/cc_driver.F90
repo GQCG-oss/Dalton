@@ -99,9 +99,6 @@ contains
 !#ifdef VAR_MPI
 !   if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
 !#endif
-!   ! temporary default for moccsd:
-!   if (decinfo%moccsd) local = .true.
-!
 !
 !
 !   if(DECinfo%CCDEBUG)then
@@ -307,8 +304,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
 #endif
-    ! temporary default for moccsd:
-    if (decinfo%moccsd) local = .true.
 
    ! is this a frozen core calculation or not?
    if (DECinfo%frozencore) then
@@ -582,8 +577,6 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
 #endif
-   ! temporary default for moccsd:
-   if (DECinfo%MOCCSD) local = .true.
 
    ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
    ! from previous fragment calculations to describe long-range
@@ -1861,6 +1854,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_t1_trafo ) 
          ! get singles
          T1Related : if(DECinfo%use_singles) then
+
+            ! synchronize singles data on slaves
+            call array_sync_replicated(t1(iter))
 
             ! get the T1 transformation matrices
             call array_cp_data(Cv2,yv)
