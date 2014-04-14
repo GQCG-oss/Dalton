@@ -234,6 +234,8 @@ module dec_typedef_module
 
      !> Stress Test 
      logical :: StressTest
+     !> Kohn-Sham Reference
+     logical :: DFTreference
 
      !> MPI settings
      !> ************

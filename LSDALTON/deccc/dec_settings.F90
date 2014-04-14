@@ -155,6 +155,7 @@ contains
     DECinfo%InteractionEnergy       = .false.
     DECinfo%PrintInteractionEnergy  = .false.
     DECinfo%StressTest              = .false.
+    DECinfo%DFTreference            = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
