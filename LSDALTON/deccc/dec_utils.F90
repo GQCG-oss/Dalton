@@ -4445,7 +4445,9 @@ end function max_batch_dimension
        IF(DECinfo%InteractionEnergy)THEN
           call lsquit('InteractionEnergy and first_order not implemented',-1)
        ENDIF
-       write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
+       IF(.NOT.DECinfo%DFTreference)THEN
+          write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
+       ENDIF
        write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
        if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
@@ -4472,7 +4474,9 @@ end function max_batch_dimension
              write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :            ', Eerr
           end if
        ELSE
-          write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
+          IF(.NOT.DECinfo%DFTreference)THEN
+             write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
+          ENDIF
           write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
           ! skip error print for full calculation (0 by definition)
           if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  

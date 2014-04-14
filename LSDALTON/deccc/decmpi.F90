@@ -2125,6 +2125,7 @@ contains
     call ls_mpi_buffer(DECitem%InteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
+    call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
@@ -2181,6 +2182,7 @@ contains
     call ls_mpi_buffer(DECitem%kappaMaxIter,Master)
     call ls_mpi_buffer(DECitem%kappa_driver_debug,Master)
     call ls_mpi_buffer(DECitem%kappaTHR,Master)
+    call ls_mpi_buffer(DECitem%SOS,Master)
     mydim=8  
     call ls_mpi_buffer(DECitem%ncalc,mydim,Master)
     call ls_mpi_buffer(DECitem%EerrFactor,Master)
@@ -2266,11 +2268,12 @@ contains
 
   end subroutine mpi_dec_fullinfo_master_to_slaves_precursor
 
-  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,c)
      implicit none
      type(array),intent(inout)   :: integral
      type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
      type(lsitem), intent(inout) :: mylsitem
+     logical, intent(inout) :: c
      integer :: addr1(infpar%lg_nodtot)
      integer :: addr2(infpar%lg_nodtot)
      integer :: addr3(infpar%lg_nodtot)
@@ -2298,6 +2301,7 @@ contains
      call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
      call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
      call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+     call ls_mpi_buffer(c,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
      if(.not.master)then
@@ -2312,6 +2316,48 @@ contains
   end subroutine wake_slaves_for_simple_mo
 
 
+  subroutine get_slaves_to_simple_par_mp2_res(omega2,iajb,t2,oof,vvf,iter)
+     implicit none
+     type(array),intent(inout) :: omega2,iajb,t2,oof,vvf
+     logical :: master
+     integer :: addr1(infpar%lg_nodtot)
+     integer :: addr2(infpar%lg_nodtot)
+     integer :: addr3(infpar%lg_nodtot)
+     integer :: addr4(infpar%lg_nodtot)
+     integer :: addr5(infpar%lg_nodtot)
+     integer :: iter
+
+
+     master = (infpar%lg_mynum == infpar%master)
+
+     if(master) call ls_mpibcast(SIMPLE_MP2_PAR,infpar%master,infpar%lg_comm)
+
+     if(master)then
+        addr1 = omega2%addr_p_arr
+        addr2 = iajb%addr_p_arr
+        addr3 = t2%addr_p_arr
+        addr4 = oof%addr_p_arr
+        addr5 = vvf%addr_p_arr
+     endif
+
+     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(iter,infpar%master)
+     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     if(.not.master)then
+        omega2 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+        iajb   = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+        t2     = get_arr_from_parr(addr3(infpar%lg_mynum+1))
+        oof    = get_arr_from_parr(addr4(infpar%lg_mynum+1))
+        vvf    = get_arr_from_parr(addr5(infpar%lg_mynum+1))
+     endif
+
+  end subroutine get_slaves_to_simple_par_mp2_res
 
 
 #else

@@ -578,12 +578,6 @@ C
          CALL SIGADD(SIGMAR)
       END IF
 C
-C     Ground state charge fitting calculation
-C
-      IF (QFIT) THEN
-         CALL QFITCALC(WORK(KLAST),LWRK)
-      ENDIF
-C
 C     ****************************
 C     ***** Tra/rot symmetry *****
 C     ****************************
@@ -695,7 +689,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-      PARAMETER (NDIR = 29, NTABLE = 61, D0 = 0.D0)
+      PARAMETER (NDIR = 28, NTABLE = 60, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       LOGICAL   GRDINP
@@ -745,7 +739,7 @@ C  jim-gesc 1.0: TABDIR(#17) ="*LROPTS" , TABLE(60)=".LRESC ". check INTRST for 
      &             'xXXXXXX', '*LOCALI', '*SOPPA ', ! *LOCALI: PFP 27/03-2006 - SOS for spin-spin coupling included
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
-     &             '*ABALNR', '*QFIT  '/
+     &             '*ABALNR'/
 Caug04-hjaaj: disabled currently inactive .NACME
 Csep08-spas: .NACME reactivated for Vib_g
 C                      1          2          3
@@ -787,9 +781,8 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G ', '.LOCALI', '.LRESC ',  ! jim May-12 for LRESC
-C                     61
-     &             '.QFIT  ' /
+     &             '.VIB_G ', '.LOCALI', '.LRESC '/  ! jim May-12 for LRESC
+C
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -894,7 +887,6 @@ C
       ESG    = .FALSE.
       VIB_G  = .FALSE.
       RNLRSC = .FALSE.   ! jim-gesc 1.1: set RNLRSC FALSE
-      QFIT   = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
       CALL DZERO(DIPORG,3)
@@ -993,8 +985,7 @@ C
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
-     &                151,152,153,154,155,156,157,158,159,160,
-     &                161),I
+     &                151,152,153,154,155,156,157,158,159,160),I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1277,16 +1268,6 @@ C        .LOCALI
 Cend-PFP
  160     CONTINUE ! jim-gesc 1.2: set RNLRSC true
          RNLRSC = .TRUE.
-         GOTO 100
-C
- 161     CONTINUE
-!        QFIT
-#if defined (BUILD_QFITLIB)
-         QFIT = .TRUE.
-#else
-         WRITE(LUPRI,*) 'ERROR for .QFIT: QFITLIB not enabled.'
-         CALL QUIT('ERROR for .QFIT: QFITLIB not enabled.')
-#endif
          GOTO 100
 C
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1916,10 +1897,6 @@ CAMT--------------
 
         END IF
       END IF
-      IF (QFIT) THEN
-        WRITE(LUPRI,'(6X,A)') 'Potential derived charges '//
-     &                        'will be calculated (QFITLIB).'
-      ENDIF
 C
 C
 C
@@ -1937,7 +1914,7 @@ cs
             IF (WORD .EQ. TABDIR(I)) THEN
                GO TO
      *         (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,
-     *              22,23,24,25,26,27,28,29), I
+     *              22,23,24,25,26,27,28), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2007,8 +1984,6 @@ C jim-gesc 1.4 : CALL LRSCINP to read OPTNS @ DAL  file
    27   CALL TRPINP(WORD) ! *TRPRSP
       GO TO 200
    28   CALL LNRINP(WORD) ! *ABALNR
-      GO TO 200
-   29   CALL QFITINP(WORD)! *QFIT
       GO TO 200
 C
     1 CONTINUE
@@ -2171,7 +2146,6 @@ C           ... i.e. user hasn't changed DIPORG with .DIPORG
          CORD(2,NUCIND) = CAVORG(2)
          CORD(3,NUCIND) = CAVORG(3)
       END IF
-      IF (QFIT) CALL QFITINFO
       IF (SPINRO) CALL NUCSPR(WORK(KGEOM),CMXYZ,IPRDEF)
       IF (MOLGFA) CALL NUCMGF(WORK(KGEOM),GAGORG,LUPRI,IPRDEF)
       IF (SECNDM) CALL NUCSCM(WORK(KGEOM),DIPORG,LUPRI,IPRDEF)
@@ -2603,10 +2577,6 @@ C
       IF (QUADRU) THEN
          CALL QDRRES(IPRDEF)
       END IF
-C
-      IF (QFIT) THEN
-         CALL QFITRES
-      ENDIF
 C
 C     Second moment gradient
 C

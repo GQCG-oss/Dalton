@@ -501,7 +501,8 @@ contains
     MyFragment%VirtContribs=0E0_realk
     if(MyFragment%ccmodel==MODEL_RPA) then
       prefac_coul=1._realk
-      prefac_k=0.5_realk
+      prefac_k=0.0_realk
+      if(Decinfo%SOS) prefac_k=0.5_realk
     else
       prefac_coul=2._realk
       prefac_k=1._realk
@@ -3374,7 +3375,7 @@ contains
        ! RPA
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRPA)
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRPA)
-       print *,"JOHANNES: CURRENTLY LAGRANGIAN ENERGY IS NOT CONSIDERED; PLEASE IMPLEMENT"
+       !print *,"JOHANNES: CURRENTLY LAGRANGIAN ENERGY IS NOT CONSIDERED; PLEASE IMPLEMENT"
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
        !fragment%LagFOP = fragment%energies(FRAGMODEL_LAGRPA)

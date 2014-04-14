@@ -89,7 +89,7 @@ CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # Total CCSD correlation energy
-CRIT1=`$GREP "Total CCSD correlation energy * = * \-0\.1353[7-8]" $log | wc -l`
+CRIT1=`$GREP "Total CC solver correlation energy * = * \-0\.1353[7-8]" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy (occ. part. scheme) is not correct"

@@ -222,6 +222,8 @@ module dec_typedef_module
      !> Use F12 correction
      logical :: F12DEBUG
 
+     logical :: SOS
+
      !> Debug keyword to specify pure hydrogen atoms
      logical :: PUREHYDROGENdebug
 
@@ -232,6 +234,8 @@ module dec_typedef_module
 
      !> Stress Test 
      logical :: StressTest
+     !> Kohn-Sham Reference
+     logical :: DFTreference
 
      !> MPI settings
      !> ************

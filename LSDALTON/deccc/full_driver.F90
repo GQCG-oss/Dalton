@@ -68,20 +68,20 @@ contains
        call lsquit('f12 not released',-1)
 #endif
     else
-       if(DECinfo%ccModel==MODEL_MP2) then
+       !if(DECinfo%ccModel==MODEL_MP2) then
 
-          if(DECinfo%use_canonical .and. (.not.  DECinfo%full_print_frag_energies) ) then
-             ! simple conventional MP2 calculation, only works for canonical orbitals
-             call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
-          else
-             ! Call routine which calculates individual fragment contributions and prints them,
-             ! works both for canonical and local orbitals
-             call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
-          end if
+       !   if(DECinfo%use_canonical .and. (.not.  DECinfo%full_print_frag_energies) ) then
+       !      ! simple conventional MP2 calculation, only works for canonical orbitals
+       !      call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+       !   else
+       !      ! Call routine which calculates individual fragment contributions and prints them,
+       !      ! works both for canonical and local orbitals
+       !      call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
+       !   end if
 
-       else
+       !else
           call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
-       end if
+       !end if
     end if
 
     ! Get HF energy

@@ -39,6 +39,7 @@ module ccsd_module
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
+  use cc_tools_module
   use dec_workarounds_module
 #ifdef VAR_MPI
   use decmpi_module!, only: mpi_communicate_ccsd_calcdata,distribute_mpi_jobs
@@ -2767,43 +2768,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        call lsmpi_poke()
   end subroutine check_job
   
-  subroutine mo_work_dist(m,fai,tl,nod)
-    implicit none
-    integer,intent(in) :: m
-    integer,intent(inout)::fai
-    integer,intent(inout)::tl
-    integer(kind=ls_mpik) :: nnod, me
-    integer(kind=ls_mpik),optional,intent(inout)::nod
-    integer :: l,ml
-    
-    me   = 0
-    nnod = 1
-#ifdef VAR_MPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
-#endif
-      
-    if(present(nod))me=nod
-
-    !Setting transformation variables for each rank
-    !**********************************************
-    l   = (m) / nnod
-    ml  = mod(m,nnod)
-    fai = me * l + 1
-    tl  = l
-
-    if(ml>0)then
-      if(me<ml)then
-        fai = fai + me
-        tl  = l + 1
-      else
-        fai = fai + ml
-        tl  = l
-      endif
-    endif
-
-  end subroutine mo_work_dist
-
   !> \brief Routine to get the c and the d terms from t1 tranformed integrals
   !using a simple mpi-parallelization
   !> \author Patrick Ettenhuber
@@ -5421,13 +5385,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     energy_res_cou = 0.0E0_realk
     energy_res_exc = 0.0E0_realk
+    !MODIFY FOR NEW MODEL
 
     ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
     ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
     !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:eccsdpt_matrix_cou),&
-    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
+    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
     do j=1,nocc
     atomJ = occ_orbitals(j+offset)%CentralAtom
        do i=1,nocc
@@ -5437,7 +5402,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
              do a=1,nvirt
 
                 energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
-                energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                if(DECinfo%use_singles)then
+                   energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                else
+                   energy_tmp_2 = 0.0E0_realk
+                endif
                 eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
                                         & + energy_tmp_1 + energy_tmp_2
 
@@ -5453,7 +5422,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
     !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
-    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
+    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
     do j=1,nocc
     atomJ = occ_orbitals(j+offset)%CentralAtom
        do i=1,nocc
@@ -5463,7 +5432,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
              do a=1,nvirt
 
                 energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
-                energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                if(DECinfo%use_singles)then
+                   energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                else
+                   energy_tmp_2 = 0.0E0_realk
+                endif
                 eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) &
                                         & + energy_tmp_1 + energy_tmp_2
 
@@ -5517,15 +5490,29 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
     if(.not.DECinfo%CCDhack)then
-       call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
-            & 'CCSD occupied single energies','AF_CCSD_OCC')
-       call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
-            & Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
+       if( DECinfo%ccmodel == MODEL_MP2)then
+          call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+             & 'MP2 occupied single energies','AF_MP2_OCC')
+          call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+             & Distancetable, 'MP2 occupied pair energies','PF_MP2_OCC')
+       else if( DECinfo%ccmodel == MODEL_CC2 )then
+          call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+             & 'CC2 occupied single energies','AF_CC2_OCC')
+          call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+             & Distancetable, 'CC2 occupied pair energies','PF_CC2_OCC')
+       else if( DECinfo%ccmodel == MODEL_CCSD .or. DECinfo%ccmodel == MODEL_CCSDpT )then 
+          call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+             & 'CCSD occupied single energies','AF_CCSD_OCC')
+          call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+             & Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
+       else
+          call lsquit("ERROR(print_ccsd_full_occ) model not implemented",-1)
+       endif
     else
        call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
-            & 'CCD occupied single energies','AF_CCD_OCC')
+          & 'CCD occupied single energies','AF_CCD_OCC')
        call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
-            & Distancetable, 'CCD occupied pair energies','PF_CCD_OCC')
+          & Distancetable, 'CCD occupied pair energies','PF_CCD_OCC')
     endif
 
   end subroutine print_ccsd_full_occ
