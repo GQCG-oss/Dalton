@@ -485,9 +485,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
 
 #ifdef VAR_RSP
-        CALL Print_Memory_info(lupri,'before lsdalton_response')
-        call lsdalton_response(ls,config,F(1),D(1),S)
-        CALL Print_Memory_info(lupri,'after lsdalton_response')
+        IF(config%response%tasks%doDipole.OR.config%response%tasks%doResponse)THEN
+           CALL Print_Memory_info(lupri,'before lsdalton_response')
+           call lsdalton_response(ls,config,F(1),D(1),S)
+           CALL Print_Memory_info(lupri,'after lsdalton_response')
+        ENDIF
 #endif
         
         call config_shutdown(config)

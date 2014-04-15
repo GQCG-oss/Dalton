@@ -1478,8 +1478,14 @@ end function max_batch_dimension
     do i=1,natoms
 
        ! Skip if no orbitals are assigned - do NOT modify this line.
-       if(nocc_per_atom(i)==0 .or. nunocc_per_atom(i)==0) cycle
-
+!       if(nocc_per_atom(i)==0 .or. nunocc_per_atom(i)==0) cycle
+       if(DECinfo%onlyOccPart)THEN
+          if(nocc_per_atom(i)==0) cycle
+       elseif(DECinfo%onlyVirtPart)THEN
+          if(nunocc_per_atom(i)==0) cycle
+       else
+          if(nocc_per_atom(i)==0 .or. nunocc_per_atom(i)==0) cycle
+       endif
        if (DistMyAtom(i) .le. init_Occradius) then
           Occ(i) = .true.
        end if

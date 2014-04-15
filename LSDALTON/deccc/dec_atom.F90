@@ -173,7 +173,7 @@ contains
 
     ! Size of unoccupied EOS
     ! **********************
-
+    
     ! Logical vector keeping track of EOS orbitals
     call mem_alloc(unoccEOS,nunocc)
     unoccEOS=.false.
@@ -210,7 +210,6 @@ contains
     ! *******************************************************************************
     fragment%nunoccLOC = count(unocc_list)
     fragment%nunoccAOS => fragment%nunoccLOC  ! AOS orbitals = local orbitals
-
     ! Fragment-adapted information, for now set equal to local dimensions
     fragment%noccFA = fragment%noccLOC
     fragment%nunoccFA = fragment%nunoccLOC
@@ -285,7 +284,6 @@ contains
 
     ! Loop over remaining AOS orbitals (not EOS)
     do i=1,nunocc
-
        if(unocc_list(i) .and. (.not. unoccEOS(i)) ) then
           idx=idx+1
           fragment%unoccAOSidx(idx) = i
@@ -732,7 +730,6 @@ contains
           unocc_list(j)=.true.
        end if
     end do
-
 
     ! Create fragment based on logical vectors for occupied and virtual AOS
     call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_list, &
@@ -2635,29 +2632,28 @@ contains
     type(decfrag), intent(inout) :: fragment
     integer :: i,j,nocc_eos,nvirt_eos
 
-    ! don't do that if no occ assigned
-    if(fragment%noccEOS == 0) return
-
-    call mem_alloc(fragment%idxo,fragment%noccEOS)
-    do i=1,fragment%noccEOS
-       do j=1,fragment%noccAOS
-          if(fragment%occAOSidx(j) == fragment%occEOSidx(i)) then
-             fragment%idxo(i) = j
-             exit
-          end if
+    if(fragment%noccEOS .NE. 0)THEN
+       call mem_alloc(fragment%idxo,fragment%noccEOS)
+       do i=1,fragment%noccEOS
+          do j=1,fragment%noccAOS
+             if(fragment%occAOSidx(j) == fragment%occEOSidx(i)) then
+                fragment%idxo(i) = j
+                exit
+             end if
+          end do
        end do
-    end do
-
-    call mem_alloc(fragment%idxu,fragment%nunoccEOS)
-    do i=1,fragment%nunoccEOS
-       do j=1,fragment%nunoccAOS
-          if(fragment%unoccAOSidx(j) == fragment%unoccEOSidx(i)) then
-             fragment%idxu(i) = j
-             exit
-          end if
+    endif
+    if(fragment%nunoccEOS .NE. 0)THEN
+       call mem_alloc(fragment%idxu,fragment%nunoccEOS)
+       do i=1,fragment%nunoccEOS
+          do j=1,fragment%nunoccAOS
+             if(fragment%unoccAOSidx(j) == fragment%unoccEOSidx(i)) then
+                fragment%idxu(i) = j
+                exit
+             end if
+          end do
        end do
-    end do
-
+    endif
   end subroutine target_indices
 
 

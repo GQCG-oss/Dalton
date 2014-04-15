@@ -18,11 +18,11 @@ fi
 #  TEST DESCRIPTION
 #######################################################################
 cat > decccsdpt_virt.info <<'%EOF%'
-   DEC-CCSD(T) energy using fragment-adapted orbitals
+   DEC-CCSD(T) energy using virtual partitioning
    --------------------------------------------------
    Molecule:         Ethane
    Wave Function:    CCSD(T) / 6-31G
-   Test Purpose:     Test DEC-CCSD(T) energy (Janus J. Eriksen)
+   Test Purpose:     Test virtual partitioning and DEC-CCSD(T) 
 %EOF%
 
 #######################################################################
@@ -30,18 +30,19 @@ cat > decccsdpt_virt.info <<'%EOF%'
 #######################################################################
 cat > decccsdpt_virt.mol <<'%EOF%'
 BASIS
-6-31G
-
-
-Atomtypes=2 Charge=0 Nosymmetry Angstrom
-Charge=6.0 Atoms=2
-C          0.65790       -0.00446        0.06398
-C         -0.65783        0.00446       -0.06385
-Charge=1.0 Atoms=4
-H          1.16103        0.06607        1.02388
-H          1.33519       -0.08301       -0.78143
-H         -1.33549        0.08301        0.78127
-H         -1.16080       -0.06606       -1.02386
+3-21G
+This molecule should give orbital distribution with
+0 virtual orbitals assigned to the 1. and 4. He atom (and 0 occ on 4.)
+Atomtypes=1 Charge=0 Nosymmetry Angstrom
+Charge=2.0 Atoms=8
+He   0.00000000     0.00000000     0.00000000     
+He   0.00000000     0.00000000     0.25000000     
+He   0.00000000     0.00000000     0.50000000     
+He   0.00000000     0.00000000     1.00000000     
+He   0.00000000     0.00000000     1.50000000     
+He   0.00000000     0.00000000     2.00000000     
+He   0.00000000     0.00000000     3.00000000     
+He   0.00000000     0.00000000     4.00000000     
 %EOF%
 #######################################################################
 #  DALTON INPUT
@@ -55,16 +56,16 @@ cat > decccsdpt_virt.dal <<'%EOF%'
 TRILEVEL
 .NOATOMSTART
 .CONVTHR
-1.0d-6
+1.0d-5
 **INFO
 .DEBUG_MPI_MEM
 **DEC
 .ONLYVIRTPART
 .FOT
-4
+3
 .CCSD(T)
 .ccThr
-1.0d-6
+1.0d-5
 .MEMORY
 2.0
 *END OF INPUT
@@ -90,31 +91,31 @@ else
 fi
 
 # HF ENERGY
-CRIT1=`$GREP "Final HF energy: * \-78\.00374[8-9]" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * -8\.8728715" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF energy not correct"
 
 # CCSD ENERGY (unocc. part. scheme)
-CRIT1=`$GREP "CCSD virtual  correlation energy : * \-0\.209" $log | wc -l`
+CRIT1=`$GREP "CCSD virtual  correlation energy : * \-0\.1448" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy (unocc. part. scheme) is not correct"
 
 # E[4] contribution to (T) energy correction (unocc. part. scheme)
-CRIT1=`$GREP "\(T\) virtual  4th order energy * : * \-0\.5[3-4]" $log | wc -l`
+CRIT1=`$GREP "\(T\) virtual  4th order energy * : * \-0\.136" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
 ERROR[3]="4th-order contribution to (T) energy correction (unocc. part. scheme) is not correct"
 
 # E[5] contribution to (T) energy correction (unocc. part. scheme)
-CRIT1=`$GREP "\(T\) virtual  5th order energy * : * 0\.2[2-3]" $log | wc -l`
+CRIT1=`$GREP "\(T\) virtual  5th order energy * : * 0\.188" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="5th-order contribution to (T) energy correction (unocc. part. scheme) is not correct"
 
 # Total CCSD(T) correlation energy (unocc. part. scheme)
-CRIT1=`$GREP "Total CCSD\(T\) virtual  correlation energy : * \-0\.214" $log | wc -l`
+CRIT1=`$GREP "Total CCSD\(T\) virtual  correlation energy : * \-0\.1461" $log | wc -l`
 TEST[5]=`expr   $CRIT1`
 CTRL[5]=1
 ERROR[5]="Total CCSD(T) correlation energy (unocc. part. scheme) is not correct"
