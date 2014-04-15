@@ -81,6 +81,8 @@ contains
     type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
     logical :: DoBasis
+    logical :: ForcePrint
+    ForcePrint=.TRUE.
 
     ! **************************************************************
     ! *                       RUN CALCULATION                      *
@@ -96,12 +98,30 @@ contains
 
     ! Calculate fragment energies
     ! ***************************
+    
     call atomic_fragment_energy_and_prop(MyFragment)
+    call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output,ForcePrint)
 
-    call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output)
+!    CALL MP2_TK_energyContribution(MyFragment)
 
   end subroutine get_fragment_and_Energy
 
+  subroutine MP2_TK_energyContribution(MyFragment)
+    implicit none
+    type(decfrag), intent(inout) :: MyFragment
+    real(realk) :: tcpu, twall
+    logical :: ForcePrint
+    ForcePrint=.TRUE.
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    ! Calculate fragment energy quantities based on screening matrices
+    ! ***************************
+!    call MP2_TK_integrals_and_amplitudes(MyFragment)
+!    call MP2_TK2_integrals_and_amplitudes(MyFragment)
+    call MP2_TK3_integrals_and_amplitudes(MyFragment)
+
+    call LSTIMER('TK',tcpu,twall,DECinfo%output,ForcePrint)
+  end subroutine MP2_TK_energyContribution
 
   !> \brief Construct new fragment based on list of orbitals in OccAOS and UnoccAOS,
   !> and calculate fragment energy. 
@@ -125,7 +145,7 @@ contains
     logical, dimension(MyMolecule%nocc),intent(in) :: OccAOS
     !> Which atoms are in the unoccupied fragment space
     logical, dimension(MyMolecule%nunocc),intent(in) :: UnoccAOS
-    !> Atomic Fragment to be determined (NOT pair fragment)
+    !> Atomi Fragment to be determined (NOT pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
     logical :: DoBasis
@@ -246,7 +266,7 @@ contains
     else
        call atomic_fragment_energy_and_prop(MyFragment)
     end if
-
+ 
   end subroutine atomic_driver
 
 
@@ -377,23 +397,10 @@ contains
     ! If you implement a new correction (e.g. F12) please insert call to subroutine here
     ! which calculates atomic fragment contribution and saves it in myfragment%energies(?),
     ! see dec_readme file and FRAGMODEL_* definitions in dec_typedef.F90.
-
+    
 #ifdef MOD_UNRELEASED
     if(DECinfo%F12) then    
-      
-       ! Get the wrong density matrix (Not equal to the one for the fullmolecule)
-       ! call mat_init(Dmat, myfragment%nbasis,myfragment%nbasis)
-       ! call mem_alloc(dens, myfragment%nbasis, myfragment%nbasis)
-       ! call get_density_from_occ_orbitals( myfragment%nbasis,myfragment%noccAOS,Myfragment%Co,dens)
-       ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
-
-       print *, "*******************************************"
-       print *, "       F12 energy single fragment          "  
-       print *, "*******************************************"
-       call get_f12_fragment_energy(MyFragment)
-       print *, "f12_signle_fragment_energy: ", MyFragment%energies(FRAGMODEL_MP2f12)
-
-
+       call get_f12_fragment_energy(MyFragment, t2occ%val)
        !> Free cabs after each calculation
        call free_cabs()
 
@@ -964,23 +971,12 @@ contains
 
 #ifdef MOD_UNRELEASED
     if(DECinfo%F12) then
-       print *, "*******************************************"
-       print *, "       F12 energy pair fragment            "  
-       print *, "*******************************************"     
-       ! Get density matrix
-       ! call mem_alloc(dens,Pairfragment%nbasis,Pairfragment%nbasis)
-       ! call get_density_from_occ_orbitals(Pairfragment%nbasis,Pairfragment%noccAOS, &
-       !     & Pairfragment%Co,dens)
-       ! call mat_set_from_full(dens,1.0E0_realk,Dmat)
-       
-       call get_f12_fragment_energy(PairFragment, Fragment1, Fragment2, natoms)
-       print *, "f12_pair_fragment_energy: ", PairFragment%energies(FRAGMODEL_MP2f12)
-
+       call get_f12_fragment_energy(PairFragment, t2occ%val, Fragment1, Fragment2, natoms)
+    
        !> Free density matrix
        call free_cabs()
-       ! call mem_dealloc(dens)
-       ! call mat_free(Dmat)
     endif
+   
 #endif
     call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)
 
@@ -1350,7 +1346,7 @@ contains
     integer :: nthreads, idx, nbatchINT, intstep, ncore,offset
     integer :: i,j,k,a,b,c,atomI,atomJ,atomA,atomB
     real(realk) :: intMEM, solMEM,OO,VV,AA,BB,mem_required
-    real(realk) :: singleenergy, pairenergy, tmp, tmp2
+    real(realk) :: singleenergy, pairenergy, tmp, tmp2, InteractionEcorr
     real(realk),dimension(MyMolecule%natoms,MyMolecule%natoms) :: e1,e2,e3,e4,e1_tmp,e2_tmp,e3_tmp,e4_tmp
     integer, dimension(4) :: dims
     real(realk), pointer :: gval(:,:,:),t2val(:,:,:),ppfock(:,:)
@@ -1359,7 +1355,7 @@ contains
 #endif
     type(decorbital), pointer :: OccOrbitals(:)
     type(decorbital), pointer :: UnoccOrbitals(:)
-    integer :: nocc,nunocc,nbasis,natoms
+    integer :: nocc,nunocc,nbasis,natoms,lupri
 
     write(DECinfo%output,*) 'Using DEC-MP2 debug routine for full molecular system...'
 
@@ -1665,8 +1661,28 @@ contains
           Ecorr = Ecorr + e1(atomI,atomJ)
        end do
     end do
+    
+    IF(DECinfo%InteractionEnergy.OR.DECinfo%PrintInteractionEnergy)THEN
+       ! Total Interaction Energy
+       !mylsitem%input%molecule%ATOM(I)%SubSystemIndex
+       InteractionEcorr =0.0_realk
+       do atomI=1,natoms          
+          do atomJ=1,natoms
+             IF(MyMolecule%SubSystemIndex(atomI).NE.MyMolecule%SubSystemIndex(atomJ))THEN
+                energy_matrix(atomI,atomJ) = e1(atomI,atomJ) &
+                     & + e2(atomI,atomJ) + e3(atomI,atomJ) + e4(atomI,atomJ)
+                ! Calculate correlation energy using occ scheme
+                ! (of course we get the same for the other schemes).
+                InteractionEcorr = InteractionEcorr + e1(atomI,atomJ)
+             ENDIF
+          end do
+       end do
+       IF(DECinfo%InteractionEnergy)THEN
+          Ecorr = InteractionEcorr
+       ENDIF
+    ENDIF
 
-
+    
     ! Only consider pairs IJ where J>I; thus, move contributions
     do atomI=1,natoms
        do atomJ=atomI+1,natoms
@@ -1696,6 +1712,14 @@ contains
        call print_pair_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
             & MyMolecule%DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
     end if
+
+    IF(DECinfo%PrintInteractionEnergy)THEN
+     lupri=6
+     write(lupri,'(15X,a,f20.10)')'Interaction Correlation energy  :',InteractionEcorr
+     write(DECinfo%output,'(a)')' '
+     write(DECinfo%output,'(a)')' '
+     write(DECinfo%output,'(15X,a,f20.10)')'Interaction Correlation energy  :',InteractionEcorr
+    ENDIF
 
     call mem_dealloc(ppfock)
 
@@ -2224,7 +2248,6 @@ contains
 
  end if WhichReductionScheme
 
-
  if(freebasisinfo) then
     call atomic_fragment_free_basis_info(AtomicFragment)
  end if
@@ -2238,6 +2261,7 @@ contains
  ! Restore the original CC model 
  ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
  MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
+ ! call lsquit('TEST DONE',-1)
 
 end subroutine optimize_atomic_fragment
 
@@ -2292,7 +2316,7 @@ end subroutine optimize_atomic_fragment
     nvirt_exp = AtomicFragment%nunoccAOS
 
 
-
+    
     ! ======================================================================
     !                             Reduction loop
     ! ======================================================================
@@ -3120,6 +3144,7 @@ end subroutine optimize_atomic_fragment
     ! see decfrag type def to determine the "?".
 
     fragment%EoccFOP = 0.0_realk
+    fragment%EoccFOP_Corr = 0.0_realk
     fragment%EvirtFOP = 0.0_realk
     fragment%LagFOP = 0.0_realk
 
@@ -3132,8 +3157,8 @@ end subroutine optimize_atomic_fragment
 
 #ifdef MOD_UNRELEASED         
        if(Decinfo%F12) then
-          ! MP2-F12: MP2 + F12-correction
-          fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCMP2) + fragment%energies(FRAGMODEL_MP2f12)
+          ! MP2-F12: F12-correction
+          fragment%EoccFOP_Corr = fragment%energies(FRAGMODEL_MP2f12)
        endif
 #endif
 
@@ -3196,8 +3221,8 @@ end subroutine optimize_atomic_fragment
        fragment%energies(FRAGMODEL_VIRTMP2) = fragment%EvirtFOP 
 #ifdef MOD_UNRELEASED 
        if(DECinfo%F12) then
-          ! MP2-F12: MP2 + F12-correction
-          fragment%energies(FRAGMODEL_MP2f12) = fragment%EoccFOP
+          ! F12: F12-correction or the Single Fragments
+          fragment%energies(FRAGMODEL_MP2f12) = fragment%EoccFOP_Corr
        endif
 #endif
     case(MODEL_CC2)

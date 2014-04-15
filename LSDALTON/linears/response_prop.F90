@@ -14,6 +14,8 @@ module response_wrapper_module
        & transition_moment_density_matrix, print_response_func,&
        & rspfunc_or_transmoment
   use matrix_module, only: matrix
+  use lsdalton_rsp_contribs
+  use lstiming
   !warning matrix_operations and matrix_defop do not mix
   use matrix_operations,only: mat_write_to_disk
   use lsdalton_matrix_defop
@@ -24,6 +26,9 @@ module response_wrapper_module
        & DTPAinputItem, RSPSOLVERinputitem, MCDinputItem, ESDinputItem
   use decompMod, only: decompItem
   use TYPEDEFTYPE, only: LSSETTING
+  use complexsolver, only: rsp_complex_init, rsp_complex_solver
+  use complexsymsolver, only: rsp_sym_complex_init, rsp_sym_complex_solver
+
 
   public MCDresponse_driver, ALPHAresponse_driver, BETAresponse_driver, &
        & GAMMAresponse_driver, OPAresponse_driver, &
@@ -1160,7 +1165,6 @@ Contains
   !> \author Kasper Kristensen                                                                
   !> \date 2010-08
   subroutine calculate_and_store_transition_density_matrices(molcfg,F,D,S)
-    use decompMod, only: decompItem
     implicit none
     !> Info on molecule needed by solver and integral programs
     type(rsp_molcfg),intent(inout)    :: molcfg
@@ -1247,7 +1251,6 @@ Contains
   !> \author Kasper Kristensen                                                                
   !> \date 2010-08
   subroutine OPAresponse_driver(molcfg,F,D,S)
-    use decompMod, only: decompItem
     implicit none
     !> Info on molecule needed by solver and integral programs
     type(rsp_molcfg),intent(inout)    :: molcfg
@@ -1448,7 +1451,6 @@ Contains
   !> \author Kasper Kristensen                                                                
   !> \date 2010-08
   subroutine TPAresponse_driver(molcfg,F,D,S,TPAinput)
-    use decompMod, only: decompItem
     implicit none
     !> Info on molecule needed by solver and integral programs
     type(rsp_molcfg),intent(inout)    :: molcfg
@@ -1879,10 +1881,6 @@ Contains
     ! The damped one-photon spectrum is also calculated because
     ! the damped first-order equations are solved in the TPA procedure anyway.
 
-    use decompMod, only: decompItem
-    use complexsolver, only: rsp_complex_init, rsp_complex_solver
-    use complexsymsolver, only: rsp_sym_complex_init, rsp_sym_complex_solver
-
     implicit none
     !> Info on molecule needed by solver and integral programs
     type(rsp_molcfg),intent(inout)    :: molcfg
@@ -2265,8 +2263,6 @@ Contains
   subroutine calculate_component_of_RHS_for_DTPA(molcfg, Dj, Dk, Fj, Fk, J, K, &
        & RHS,D,S,DS,SD)
 
-    use lsdalton_matrix_defop
-
     implicit none
     !> structure containing the molecule, integral and solver settings
     type(rsp_molcfg), intent(inout) :: molcfg
@@ -2339,7 +2335,6 @@ Contains
   !> \author Kasper Kristensen                                                                
   !> \date 2010-09
   subroutine calculate_one_photon_absorption(molcfg,D,D1,one_photon)
-    use lsdalton_rsp_contribs
 
     implicit none
     !> structure containing the molecule, integral and solver settings
@@ -2687,8 +2682,6 @@ Contains
   !> \author Kasper Kristensen                                                                
   !> \date 2010-08
   subroutine ESGresponse_driver(molcfg,F,D,S,ESGinput,ESGgrad)
-    use decompMod, only: decompItem
-!    use molecule_typetype, only: molecule_PT, moleculeinfo, atomitem
     implicit none
     !> Info on molecule needed by solver and integral programs
     type(rsp_molcfg), intent(inout)   :: molcfg
@@ -3005,7 +2998,6 @@ Contains
   !> \author Kasper Kristensen                                                                
   !> \date 2010-08
   subroutine ESDresponse_driver(molcfg,F,D,S,ESDinput,DipoleMoment)
-    use decompMod, only: decompItem
     implicit none
     !> Info on molecule needed by solver and integral programs
     type(rsp_molcfg), intent(inout)   :: molcfg
@@ -4261,8 +4253,6 @@ END SUBROUTINE INSERTION_increasing
   !> Questions regarding this driver, the input structure etc. may be addressed to tkjaergaard@chem.au.dk.
   !> The result is placed in the tensor NMST which has dimensions (3*natoms)*3
 subroutine NMRshieldresponse_driver(molcfg,F,D,S)
-use lsdalton_rsp_contribs
-use lstiming
 implicit none
 type(rsp_molcfg), intent(inout) :: molcfg
 type(Matrix),intent(in) :: F,D,S
@@ -4271,7 +4261,7 @@ complex(8),allocatable       :: NMST(:,:)
 type(Matrix)                 :: Dx(3),Fx(3)
 real(realk)                  :: Factor
 integer                      :: natoms,icoor,jcoor,k,lupri,nbast
-Character(len=4),allocatable :: atomName(:) 
+Character(len=4),allocatable :: atomName(:)
 real(realk)         :: TS,TE
 character(len=1)        :: CHRXYZ(-3:3)
 DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
@@ -4279,7 +4269,6 @@ nbast = D%nrow
 lupri = molcfg%lupri
 natoms = molcfg%natoms
 CALL LSTIMER('START ',TS,TE,LUPRI)
-allocate(NMST(3*natoms,3))
 
 WRITE(LUPRI,*) '=========================================================='
 WRITE(LUPRI,*) '      NUCLEAR MAGNETIC SHIELDING(NMS) TENSOR RESULTS   '
@@ -4287,8 +4276,13 @@ WRITE(LUPRI,*) '=========================================================='
 
 call pert_dens(molcfg,S,(/'MAG '/),(/3/),(/D/),(/F/),Dx,Fx,freq=(/(0d0,0d0)/))
 Fx=0
-Factor=53.2513535188477d0!53.2513539566280 !1e6*alpha^2 
-NMST=(0.d0,0.d0)
+Factor=53.25135351884770E0_realk!53.2513539566280 !1e6*alpha^2 
+allocate(NMST(3*natoms,3))
+do icoor=1,3
+   do jcoor=1,3*natoms  
+      NMST(jcoor,icoor) = 0.0E0_realk
+   enddo
+enddo
 call rsp_oneave(molcfg, S,(/'NUCM'/),(/Dx/),(/3*natoms,3/), NMST)
 call rsp_oneave(molcfg, S,(/'NUCM','MAG '/),(/D/),(/3*natoms,3/), NMST)
 Dx=0

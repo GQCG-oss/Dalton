@@ -147,8 +147,12 @@
       gasci_input_init_wave_f_type = 2
 
       read(get_file_unit(), *) (nas1_gasci_input(i), i=1,nsym)
-      call kw_read(word, gasci_input_max_holes_ras1)
+!     call kw_read(word, gasci_input_max_holes_ras1)
 
+    end if
+
+    if (kw_matches(word, '.RAS1 E')) then
+      read(get_file_unit(), *) gasci_input_min_e_ras1, gasci_input_max_e_ras1
     end if
 
     if (kw_matches(word, '.RAS2  ')) then
@@ -160,8 +164,12 @@
 
       gasci_input_ras3_set = .true.
       read(get_file_unit(), *) (nas3_gasci_input(i), i=1,nsym)
-      call kw_read(word, gasci_input_max_e_ras3)
+!     call kw_read(word, gasci_input_max_e_ras3)
 
+    end if
+
+    if (kw_matches(word, '.RAS3 E')) then
+      read(get_file_unit(), *) gasci_input_min_e_ras3, gasci_input_max_e_ras3
     end if
 
     if (kw_matches(word, '.DENSI ')) then
@@ -227,6 +235,21 @@
 
     if (kw_matches(word, '.SKIP4I')) then
       gasci_input_skip_4index_trafo = .true.
+    end if
+! Mickael: I add Charge Tranfer control for GASCI 
+!    if (kw_matches(word, '.CT    ')) then
+!      gasci_input_charge_transfer = .true.
+!    end if
+!    if (kw_matches(word, '.CTAB  ')) then
+!      gasci_input_occlse_manual_control = .true.
+!    end if
+!    if (kw_matches(word, '.GAS_CT')) then
+!      gasci_input_gas_conf_for_ct = .true.
+!    end if
+! 
+
+    if (kw_matches(word, '.PLUS C')) then
+      gasci_input_plus_combi = .true.
     end if
 
     call check_whether_kw_found(word, kw_section)

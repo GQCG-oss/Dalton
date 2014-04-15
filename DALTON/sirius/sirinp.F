@@ -317,7 +317,7 @@ C
                IOPRHF = 0
             ELSE
                WRITE (LUPRI,'(/A)')
-     &            ' Lowering of symmetry for MCSCF not'//
+     &            ' Lowering of symmetry for MCSCF is not'//
      &            ' implemented in SIRIUS yet, sorry!'
                CALL QUIT('Lowering of symmetry for MCSCF not'//
      &            ' implemented in SIRIUS yet, sorry!')
@@ -1845,7 +1845,7 @@ C
       END IF
 C
       IF (MCTYPE .GT. 0 .AND. PARCAL) THEN
-         IF (RNRESP) CALL PARQUIT('MCSCF in RESPONSE')
+         ! IF (RNRESP) CALL PARQUIT('MCSCF in RESPONSE')
          IF (RNABAC) CALL PARQUIT('MCSCF in ABACUS')
       END IF
 
@@ -4093,6 +4093,16 @@ C
       CALL UPCASE(REWORD)
       IF (INDEX(REWORD,'BOYLOC') .GT. 0) THEN
          BOYORB = .TRUE.
+      ELSE IF (INDEX(REWORD,'SELECT') .GT. 0) THEN
+         BOYSEL = .TRUE.
+         CALL IZERO(NBOYS,8)
+         CALL IZERO(BOYSORB,MXBOYS*8)
+         READ(LUCMD,*)(NBOYS(I),I=1,NSYM)
+         DO I=1,NSYM
+            IF (NBOYS(I).GT.0) THEN
+               READ(LUCMD,*)(BOYSORB(J,I),J=1,NBOYS(I))
+            END IF
+         END DO
       ELSE IF (INDEX(REWORD,'PIPLOC') .GT. 0) THEN
          PIPORB = .TRUE.
          CALL QUIT('Pipek-Mezey localization not yet implemented')
@@ -4110,7 +4120,7 @@ C
 C ---
 C
  9000 CONTINUE
-      IF (BOYORB .OR. PIPORB) THEN
+      IF (BOYORB .OR. PIPORB .OR. BOYSEL) THEN
          IF (SUPSYM) THEN
             WRITE(LUPRI,'(/A)')
      &      'WARNING: .SUPSYM ignored because incompatible with .LOCALI'
@@ -5164,6 +5174,7 @@ C   DFTCOM : DFTRUN, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C   siripc : INPPRC
 C   gnrinf : NEWSYM,EMBEDDING,QM3,QMMM,?
+C   pgroup : GROUP, REP
 C   pcmlog : PCM
 C
 #include "priunit.h"
@@ -5172,6 +5183,7 @@ C
 #include "maxorb.h"
 C
 #include "gnrinf.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -5342,6 +5354,9 @@ C     formulation of NEVPT.
             ELSE IF (CORHOL) THEN
                WRITE(IWUNIT,1051)
      *         'Type: Frozen single core hole calculation using RAS'
+               WRITE(IWUNIT,'(T16,A,I4,A,I2,A)')
+     &         '      (The core hole orbital, no.',JCHORB,
+     &         ', in symmetry',JCHSYM,' has been moved to RAS1)'
             ELSE
                WRITE(IWUNIT,1051)
      *         'Type: restricted active space calculation (RAS)'
@@ -5557,16 +5572,19 @@ C     for SIRIUS (not LUCITA) :
       CALL MOLCHR(ICHARG)
 C     ... get total charge
       IF (.NOT. (DOLUCITA .AND. NUMRUN.EQ.1) ) WRITE(IWUNIT,1002)
-     &   TRIM(WFTYPE),NINEL,NACTEL,ICHARG,ISPIN,MS2,NSYM,LSYM
+     &   TRIM(WFTYPE),NINEL,NACTEL,ICHARG,ISPIN,MS2,
+     &   NSYM,GROUP,LSYM,REP(LSYM-1)
  1000 FORMAT(/5X,'Wave function specification'
-     *       /5X,'============================')
- 1002 FORMAT( '@    For the wave function of type :      >>> ',A,' <<<',
-     *       /'@    Number of closed shell electrons',I12,
-     *       /'@    Number of electrons in active shells',I8,
-     *       /'@    Total charge of the molecule',I16,
-     *      //'@    Spin multiplicity and 2 M_S',I17,I10,
-     *       /'     Total number of symmetries',I18,
-     *       /'@    Reference state symmetry',I20)
+     &       /5X,'============================')
+ 1002 FORMAT( '@    Wave function type        >>> ',A,' <<<',
+     &       /'@    Number of closed shell electrons',I12,
+     &       /'@    Number of electrons in active shells',I8,
+     &       /'@    Total charge of the molecule',I16,
+     &      //'@    Spin multiplicity and 2 M_S',I17,I10,
+     &       /'@    Total number of symmetries',I18,
+     &        ' (point group: ',A,')',
+     &       /'@    Reference state symmetry',I20,
+     &        ' (irrep name : ',A,')')
 C
       IF (MCTYPE .EQ. 2) THEN
          WRITE (IWUNIT,1075) NAS1T, NAS2T, NAS3T
@@ -5625,6 +5643,7 @@ C
 C ***** Orbital specifications *****
 C
       WRITE(IWUNIT,1100) (I,       I=1,NSYM)
+      WRITE(IWUNIT,1102) (REP(I-1),I=1,NSYM)
       WRITE(IWUNIT,1110) ('  ---', I=1,NSYM+1)
       IF (MCTYPE .GT. 0) THEN
          WRITE(IWUNIT,1200) NISHT,(NISH(I),I=1,NSYM)
@@ -5678,6 +5697,7 @@ C
  1100 FORMAT(/5X,'Orbital specifications',
      *       /5X,'======================',
      *       /5X,'Abelian symmetry species',T38,'  All |',8I5)
+ 1102 FORMAT(T44,'|',8(2X,A3))
  1110 FORMAT(T38,A5,' |',8A5)
  1200 FORMAT('@    Inactive orbitals',T38,I5,' |',8I5)
  1300 FORMAT('@    Active orbitals',T38,I5,' |',8I5)

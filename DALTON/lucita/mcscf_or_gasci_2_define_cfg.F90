@@ -69,6 +69,7 @@ contains
           lucita_cfg_inactive_shell_set = .true.
           lucita_cfg_minmax_occ_gas_set = .true.
           lucita_cfg_timing_par         = .false.
+          lucita_cfg_plus_combi         = flag(58) ! plus combination of degenerate start vectors
 
           select case(mctype) 
             case(1,3) ! CASSCF/GASSCF
@@ -112,9 +113,14 @@ contains
               do i = 1, nsym
                 j = j + nas1(i)
               end do
-              lucita_cfg_max_holes_ras1       = 2*j - NELMN1
-!             write(lupri,*) ' max holes ras1 ==> ',lucita_cfg_max_holes_ras1
+              if(j > 0)then
+                lucita_cfg_min_e_ras1       = NELMN1
+                lucita_cfg_max_e_ras1       = NELMX1
+              end if
+!             write(lupri,*) ' min/max e ras1 ==> ',lucita_cfg_min_e_ras1,lucita_cfg_max_e_ras1
+              lucita_cfg_min_e_ras3           =       NELMN3
               lucita_cfg_max_e_ras3           =       NELMX3
+!             write(lupri,*) ' min e-    ras3 ==> ',lucita_cfg_min_e_ras3
 !             write(lupri,*) ' max e-    ras3 ==> ',lucita_cfg_max_e_ras3
               call icopy(max_number_of_ptg_irreps,nas1,1,nas1_lucita,1)
               call icopy(max_number_of_ptg_irreps,nas2,1,nas2_lucita,1)
@@ -137,12 +143,15 @@ contains
           lucita_cfg_ras3_set             = gasci_input_ras3_set
           lucita_cfg_timing_par           = gasci_input_timing_par
           lucita_cfg_fci_dump             = gasci_input_fci_dump
+          lucita_cfg_plus_combi           = gasci_input_plus_combi! plus combination of degenerate start vectors
 
 !         integer block
           lucita_cfg_init_wave_f_type     = gasci_input_init_wave_f_type
           lucita_cfg_nr_active_e          = gasci_input_nr_active_e
           lucita_cfg_nr_gas_spaces        = gasci_input_nr_gas_spaces
-          lucita_cfg_max_holes_ras1       = gasci_input_max_holes_ras1
+          lucita_cfg_min_e_ras1           = gasci_input_min_e_ras1
+          lucita_cfg_max_e_ras1           = gasci_input_max_e_ras1
+          lucita_cfg_min_e_ras3           = gasci_input_min_e_ras3
           lucita_cfg_max_e_ras3           = gasci_input_max_e_ras3
           lucita_cfg_restart_ci           = gasci_input_restart_ci
           lucita_cfg_max_dav_subspace_dim = gasci_input_max_dav_subspace_dim

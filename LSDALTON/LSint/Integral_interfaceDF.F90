@@ -19,9 +19,24 @@ MODULE IntegralInterfaceModuleDF
   use GCtransMod
   use screen_mod
   public :: II_get_df_coulomb_mat,II_get_df_J_gradient, &
-       & II_get_df_exchange_mat, II_get_pari_df_exchange_mat
+       & II_get_df_exchange_mat, II_get_pari_df_exchange_mat,&
+       & init_IIDF_matrix,free_IIDF_matrix
   private
+
+SAVE
+logical :: SavealphaBeta
+type(matrix) :: AlphaBetaSave
 contains
+subroutine init_IIDF_matrix()
+SavealphaBeta = .FALSE.
+end subroutine init_IIDF_matrix
+
+subroutine free_IIDF_matrix()
+IF(SavealphaBeta)THEN
+   call mat_free(AlphaBetaSave)
+ENDIF
+end subroutine free_IIDF_matrix
+
 !> \brief Calculates the coulomb matrix using density fitting
 !> \author S. Reine
 !> \date 2010
@@ -104,7 +119,7 @@ Character(80)             :: Filename
 Real(realk)               :: eeGradtmp(3,setting%molecule(1)%p%nAtoms)
 
 integer :: nbast,naux
-logical :: ReCalcGab,saveNOSEGMENT,OnMaster
+logical :: ReCalcGab,saveNOSEGMENT
 
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
@@ -118,8 +133,7 @@ DO idmat=1,ndlhs
   write(Filename,'(A8,I3)') 'LSCALPHA',idmat
   IF (.not.io_file_exist(Filename,SETTING%IO)) call lsquit('Error in II_get_df_J_gradient. CALPHA does not exsit!',-1)
   CALL mat_init(calpha(idmat),naux,1)
-  OnMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-  call io_read_mat(calpha(idmat),Filename,Setting%IO,OnMaster,lupri,luerr)
+  call io_read_mat(calpha(idmat),Filename,Setting%IO,lupri,luerr)
 ENDDO
 
 
@@ -1580,15 +1594,18 @@ Real(realk),pointer :: DfullRHS(:,:,:)
 Real(realk),pointer :: Ffull(:,:,:)
 Real(realk)         :: TSTART,TEND
 Character(80)       :: Filename
-logical :: inc_scheme,do_inc
+logical :: inc_scheme,do_inc,SaveInMemory
 integer :: nmat,nrow,ncol
 integer :: i,j,natoms
 real(realk) :: tmp_sum
-logical :: OnMaster
 Real(realk),pointer   :: eigValphaBeta(:), copy_alpBeta(:,:)
 Real(realk)         :: minEigv,maxEigv,conditionNum
 
-OnMaster = .NOT.Setting%scheme%MATRICESINMEMORY
+#ifdef VAR_SCALAPACK
+   SaveInMemory = .TRUE.
+#else
+   SaveInMemory = .FALSE.
+#endif
 
 IF (matrix_type .EQ. mtype_unres_dense)THEN
   IF (SETTING%SCHEME%FMM) call lsquit('Not allowed combination in II_get_regular_df_coulomb_mat. FMM and unrestricted',-1)
@@ -1650,50 +1667,71 @@ do Idmat=1,nmat
    CALL ls_freeDmatFromSetting(setting)
    call LSTIMER('GALPHA',TSTART,TEND,LUPRI)
    !(alpha|beta)
-   call mat_init(alphabeta,naux,naux)
+   IF(.NOT.SaveInMemory)THEN
+      call mat_init(alphabeta,naux,naux)
+   ENDIF
    call io_get_filename(Filename,'ALBE',AODFdefault,AOEmpty,AODFdefault,AOEmpty,0,0,&
         &CoulombOperator,Contractedinttype,.FALSE.,LUPRI,LUERR)
 
 !  Either calculate the (alpha|beta) matrix and its cholesky-factorization and write
 !  OR read cholesky-factorization from file
-   IF (io_file_exist(Filename,SETTING%IO)) THEN
-      call io_read_mat(alphabeta,Filename,SETTING%IO,OnMaster,LUPRI,LUERR)
+   IF(SaveInMemory.AND.SaveAlphaBeta)THEN
+      !do nothing matrix is already in memory 
    ELSE
-      call mat_zero(alphabeta)
-      call initIntegralOutputDims(setting%output,naux,1,naux,1,1)
-      call ls_getIntegrals(AODFdefault,AOempty,&
-           &AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-      call retrieve_Output(lupri,setting,alphabeta,.FALSE.)
-
+      IF (io_file_exist(Filename,SETTING%IO)) THEN
+         call io_read_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
+      ELSE
+         !build Matrix 
+         IF(SaveInMemory)THEN
+            call mat_init(AlphaBetaSave,naux,naux)
+            call mat_zero(AlphaBetaSave)
+         ELSE
+            call mat_zero(alphabeta)
+         ENDIF
+         call initIntegralOutputDims(setting%output,naux,1,naux,1,1)
+         call ls_getIntegrals(AODFdefault,AOempty,&
+              &AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+         IF(SaveInMemory)THEN
+            call retrieve_Output(lupri,setting,alphabetaSave,.FALSE.)
+         ELSE
+            call retrieve_Output(lupri,setting,alphabeta,.FALSE.)
+         ENDIF
 #if 0
-     ! checking eigenvalues of the full (alpha|beta) matrix
-     call mem_alloc(copy_alpBeta,nAux,nAux)
-!      DO j=i,nAux
-!         DO i=1,nAux
-!            copy_alpBeta(i,j) = alphabeta(i,j)
-!         ENDDO
-!      ENDDO
-     call mat_to_full(alphabeta,1E0_realk,copy_alpBeta)
-     call mem_alloc(eigValphaBeta,nAux)
-     call II_get_eigv_square_mat(lupri,luerr,copy_alpBeta,eigValphaBeta,nAux) 
-     call check_min_max_Array_elem(minEigV,maxEigV,conditionNum,eigValphaBeta,nAux,lupri,luerr)
-     call mem_dealloc(eigValphaBeta)
-     call mem_dealloc(copy_alpBeta)
-     write(lupri,*) "(alpha|beta) full: minEigV of all (alpha|beta) matrix: ",minEigV
-     write(*,*)     "(alpha|beta) full: minEigV of all (alpha|beta) matrix: ",minEigV
-     write(lupri,*) "(alpha|beta) full: maxEigV of all (alpha|beta) matrix: ",maxEigV
-     write(*,*)     "(alpha|beta) full: maxEigV of all (alpha|beta) matrix: ",maxEigV
-     write(lupri,*) "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
-     write(*,*)     "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
-     !call LSQUIT('Testing eigenvalues of the FULL (alpha|beta) matrix - quitting II_get_regular_df_coulomb_mat()',-1)
+         IF(.NOT.SaveInMemory)THEN
+            ! checking eigenvalues of the full (alpha|beta) matrix
+            call mem_alloc(copy_alpBeta,nAux,nAux)
+            !      DO j=i,nAux
+            !         DO i=1,nAux
+            !            copy_alpBeta(i,j) = alphabeta(i,j)
+            !         ENDDO
+            !      ENDDO
+            call mat_to_full(alphabeta,1E0_realk,copy_alpBeta)
+            call mem_alloc(eigValphaBeta,nAux)
+            call II_get_eigv_square_mat(lupri,luerr,copy_alpBeta,eigValphaBeta,nAux) 
+            call check_min_max_Array_elem(minEigV,maxEigV,conditionNum,eigValphaBeta,nAux,lupri,luerr)
+            call mem_dealloc(eigValphaBeta)
+            call mem_dealloc(copy_alpBeta)
+            write(lupri,*) "(alpha|beta) full: minEigV of all (alpha|beta) matrix: ",minEigV
+            write(*,*)     "(alpha|beta) full: minEigV of all (alpha|beta) matrix: ",minEigV
+            write(lupri,*) "(alpha|beta) full: maxEigV of all (alpha|beta) matrix: ",maxEigV
+            write(*,*)     "(alpha|beta) full: maxEigV of all (alpha|beta) matrix: ",maxEigV
+            write(lupri,*) "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
+            write(*,*)     "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
+            !call LSQUIT('Testing eigenvalues of the FULL (alpha|beta) matrix - quitting II_get_regular_df_coulomb_mat()',-1)
+         ENDIF
 #endif
-
-
-!     Make Choleksy-factorization
-      CALL mat_dpotrf(alphabeta)
-!     Save Cholesky-factors to file
-      call io_add_filename(SETTING%IO,Filename,LUPRI)
-      call io_write_mat(alphabeta,Filename,SETTING%IO,OnMaster,LUPRI,LUERR)
+         IF(SaveInMemory)THEN
+            !Make Choleksy-factorization
+            CALL mat_dpotrf(alphabetaSave)            
+            SaveAlphaBeta = .TRUE.
+         ELSE
+            !Make Choleksy-factorization
+            CALL mat_dpotrf(alphabeta)
+            !Save Cholesky-factors to file
+            call io_add_filename(SETTING%IO,Filename,LUPRI)
+            call io_write_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
+         ENDIF
+      ENDIF
    ENDIF
    call LSTIMER('ALBE  ',TSTART,TEND,LUPRI)
 
@@ -1702,9 +1740,15 @@ do Idmat=1,nmat
    CALL mat_assign(calpha,galpha)
 
    !  Solve the system A*X = B, using the Cholesky-factorization if A and overwriting B with X.
-   CALL mat_dpotrs(alphabeta,calpha)
+   IF(SaveInMemory)THEN
+      CALL mat_dpotrs(alphabetasave,calpha)
+   ELSE
+      CALL mat_dpotrs(alphabeta,calpha)
+   ENDIF
 
-   call mat_free(alphabeta)
+   IF(.NOT.SaveInMemory)THEN
+      call mat_free(alphabeta)
+   ENDIF
    call mat_free(galpha)
 
    
@@ -1717,12 +1761,12 @@ do Idmat=1,nmat
       ELSE
          IF(setting%scheme%incremental) THEN
             call mat_init(calpha_old,naux,1)
-            call io_read_mat(calpha_old,Filename,Setting%IO,OnMaster,lupri,luerr)
+            call io_read_mat(calpha_old,Filename,Setting%IO,lupri,luerr)
             call mat_daxpy(1E0_realk,calpha_old,calpha)
             call mat_free(calpha_old)
          ENDIF
       ENDIF
-      call io_write_mat(calpha,Filename,Setting%IO,OnMaster,lupri,luerr)
+      call io_write_mat(calpha,Filename,Setting%IO,lupri,luerr)
       ! **** End write
    ENDIF
    

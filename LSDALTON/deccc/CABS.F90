@@ -50,7 +50,7 @@ CONTAINS
 
   subroutine free_cabs()
     implicit none
-    print*,'FREE CABS'
+        ! print*,'FREE CABS'
     IF(CMO_CABS_save_created)THEN
        call mat_free(CMO_CABS_save)
     ENDIF
@@ -174,7 +174,8 @@ CONTAINS
           CALL MAT_INIT(CMO_CABS_save,CMO_cabs%nrow,CMO_cabs%ncol)
           call mat_assign(CMO_CABS_save,CMO_cabs)
        ENDIF
-       print*,'BUILD CABS'
+
+       !   print*,'BUILD CABS'
 
        CALL LSTIMER('build_CABS_MO',TIMSTR,TIMEND,lupri)       
        SETTING%SCHEME%OD_SCREEN = ODSCREEN

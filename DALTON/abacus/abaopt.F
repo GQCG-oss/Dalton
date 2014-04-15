@@ -25,7 +25,7 @@ C
 C FILE: abaopt.F
 #include "single.h"
 C
-C 950915-vebjornb: New module taking care of optimizations.
+C 950915-vebjornb: New module taking care of geometry optimizations.
 C                  It uses both the old cbiwlk.h and the new optinf.h
 C
 C  /* Deck opinpu */
@@ -38,6 +38,7 @@ C  /* Deck opinpu */
 #include "maxorb.h"
 #include "infinp.h"
 #include "gnrinf.h"
+
       PARAMETER (NTABLE = 76, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
      &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-4, DEFDSP = 1.0D-3)
       LOGICAL NEWDEF, TRSTCH, TRSTFC, FIRST, REMCRD
@@ -6918,9 +6919,10 @@ C
          TMPLN = MLINE(I)
          CALL UPCASE(TMPLN)
          IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
-            CALL LINE5W(MLINE(I),Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
-     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,
-     &           RADIUS_PCM(ITYP), ALPHA_PCM(ITYP))
+!           CALL LINE5W(MLINE(I),Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
+!    &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,
+!    &           RADIUS_PCM(ITYP), ALPHA_PCM(ITYP))
+            CALL LINE5_UPD(MLINE(I),NONT(ITYP) + IXTRA)
          ELSE
             WRITE(MLINE(I)(11:15),'(I5)') NONT(ITYP) + IXTRA
          END IF

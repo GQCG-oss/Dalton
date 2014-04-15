@@ -285,7 +285,6 @@ def produce_files(installdir,lsutildir,args):
            for acc_case in range(6):
              sub_acc = write_subroutine_header_acc(acc_reord[idx][0],idxarr,perm,now,modes,acc_case)
              write_subroutine_body_acc(acc_reord[idx][0],idxarr,perm,modes,args,acc_case)
-             acc_reord[idx][0].write("#endif\n")
              acc_reord[idx][0].write("  end subroutine "+sub_acc+"\n\n")
 
        if(idx+minr!=4 and hack_only_4d_for_utils):
@@ -679,7 +678,7 @@ def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
     offsetstr2 = offsetstr + "  "
 
     #WRITING OPENACC DIRECTIVES:
-    oaccparallel_init = "!$acc parallel present(array_in,array_out)\n"
+    oaccparallel_init = "!$acc parallel present(array_in,array_out) async(async_id)\n"
     if(modes == 4):
       oaccloop_gang = "!$acc loop gang collapse(2)\n"
       oaccloop_worker = "!$acc loop worker\n"
@@ -755,6 +754,7 @@ def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
     
     oaccloop_end = "!$acc end loop\n"
     oaccparallel_end = "!$acc end parallel\n"
+
     for j in  range(modes-1,-1,-1):
       f.write(offsetstr2+"enddo\n")
       if (modes == 4 and j == 1):
@@ -876,7 +876,7 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr+= "  !\> \\author Janus Juul Eriksen & Patrick Ettenhuber\n"
   subheaderstr+= "  !\> \date "+str(now.month)+", "+str(now.year)+"\n"
   subheaderstr+= "  subroutine "+sname+"(dims,"
-  subheaderstr+= "pre1,array_in,pre2,array_out)\n"
+  subheaderstr+= "pre1,array_in,pre2,array_out,async_id)\n"
   subheaderstr+= "    implicit none\n"
   subheaderstr+= "    !>  the dimensions of the different modes in the original array\n"
   subheaderstr+= "    integer, intent(in) :: dims("+str(modes)+")\n"
@@ -886,6 +886,7 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr+= "    real(realk),intent(in) :: array_in("+reordstr2+")\n"
   subheaderstr+= "    !> reordered array\n"
   subheaderstr+= "    real(realk),intent(inout) :: array_out("+reordstr3+")\n"
+  subheaderstr+= "    integer(acc_handle_kind) :: async_id\n"
   subheaderstr+= "    integer :: "
   for i in range(modes):
     subheaderstr+= abc[i]+",d"+abc[i]+","
@@ -894,12 +895,12 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr += "\n"
   for i in range(modes):
     subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
+  subheaderstr += "\n" 
+  subheaderstr += "    if (async_id .eq. -1) async_id = acc_async_sync\n"
+  subheaderstr += "\n"
 
   f.write(subheaderstr)
-  f.write("#ifdef VAR_OPENACC\n")
-  f.write("\n")
   return sname
-
 
 
 def write_simple_module_header(f,idim,idx,now,args,kindof):
@@ -924,6 +925,9 @@ def write_simple_module_header(f,idim,idx,now,args,kindof):
      sys.exit()
 
    f.write("  use precision\n")
+   if(kindof=="acc"):
+     f.write("  use openacc\n")
+   f.write("\n")
    f.write("  contains\n")
 
 def write_simple_module_end_and_close(f,idim,idx,now,args,kindof):
@@ -968,10 +972,12 @@ def write_main_header(f,now,args,lsutildir,minr,maxr):
        if(mode==2 and i == 0):
          continue
        f.write("  use ""reord"+str(mode)+"d_"+str(i+1)+"_reord_module\n")
-#   if(args[4]):
-#     f.write("  use reord2d_acc_reord_module\n")
-#     f.write("  use reord3d_acc_reord_module\n")
-#     f.write("  use reord4d_acc_reord_module\n")
+   if(args[4]):
+     f.write("#ifdef VAR_OPENACC\n")
+     f.write("  use reord2d_acc_reord_module\n")
+     f.write("  use reord3d_acc_reord_module\n")
+     f.write("  use reord4d_acc_reord_module\n")
+     f.write("#endif\n")
    f.write("  use LSTIMING\n")
    #f.write("  contains\n")
    #Write the subroutines called by the user

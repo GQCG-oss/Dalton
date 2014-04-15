@@ -147,11 +147,12 @@ C
 C*****************************************************************************
 
 !       module dependencies
-        use parallel_communication_models_mpi
-        use one_sided_communication_wrappers
         use rma_windows
 
 #ifdef VAR_MPI
+        use parallel_communication_models_mpi
+        use one_sided_communication_wrappers
+
 #ifdef USE_MPI_MOD_F90
         use mpi
 #include "implicit.h"

@@ -1213,6 +1213,7 @@ C
 #include "dummy.h"
 C
 C  Used from common blocks:
+C     pgroup : REP
 C     INFORB : NISH(*), NISHT, ...
 Chj-sep99: do not use NRHF(*) and NRHFT, because they are not
 C          correct in DIIS if AUTOCC and occupations have changed.
@@ -1221,6 +1222,7 @@ C     INFIND : IROW(*),ISW(*)
 C
 #include "maxash.h"
 #include "maxorb.h"
+#include "pgroup.h"
 #include "molde.h"
 #include "infinp.h"
 #include "inforb.h"
@@ -1248,8 +1250,8 @@ C hjaaj TODO:   EKT orbital energies may be defined later.
       IF (IPRINT .LT. 10) WRITE (LUPRI,'(/A)') ' Only the five'//
      &   ' lowest virtual orbital energies printed in each symmetry.'
       IF (IPRINT .GE. 2) WRITE (LUPRI,'(/A,I5/A,8I5)')
-     *   ' Number of electrons :',2*NISHT,
-     *   ' Orbital occupations :',(NISH(I),I=1,NSYM)
+     &   ' Number of electrons :',2*NISHT,
+     &   ' Orbital occupations :',(NISH(I),I=1,NSYM)
 C
       KORBEN = 1
       LNEED  = KORBEN + NORBT 
@@ -1339,10 +1341,11 @@ C                     because the Fock matrix is not zero for these
          IF (NFRHFI .GT. 0) WRITE (LUPRI,'(A,I3,A)')
      &' Note: the first',NFRHFI,' orbitals in next symmetry are frozen'
          IF (SUPSYM) THEN
-            WRITE (LUPRI,1751)
-     &         ISYM,(SCRA(IORBI+I),ISSMO(IORBI+I),I=1,NLAST)
+            WRITE (LUPRI,1751) ISYM,REP(ISYM-1),
+     &         (SCRA(IORBI+I),ISSMO(IORBI+I),I=1,NLAST)
          ELSE
-            WRITE (LUPRI,1750) ISYM,(SCRA(IORBI+I),I=1,NLAST)
+            WRITE (LUPRI,1750) ISYM,REP(ISYM-1),
+     &         (SCRA(IORBI+I),I=1,NLAST)
          END IF
   200 CONTINUE
 
@@ -1404,8 +1407,8 @@ C1732 FORMAT( /' Hartree-Fock total      energy:',F30.15)
  1840 FORMAT( /' Sym       Kohn-Sham orbital energies')
  1841 FORMAT( /' Sym       Kohn-Sham orbital energies',
      &         ' (supersymmetry in parenthesis)')
- 1750 FORMAT(/I3,1X,5F15.8/,(4X,5F15.8) )
- 1751 FORMAT(/I3,1X,4(F15.8,' (',I2,')')/,(4X,4(F15.8,' (',I2,')')) ) 
+ 1750 FORMAT(/I1,1X,A3,5F15.8/,(5X,5F15.8) )
+ 1751 FORMAT(/I1,1X,A3,4(F15.8,' (',I2,')')/,(5X,4(F15.8,' (',I2,')')) )
 C
 C
 C *** end of subroutine RHFENR
@@ -2426,12 +2429,12 @@ C
    25 FORMAT(/1X,A8,' has not been called in this calculation.')
    30 FORMAT(/1X,A8,10X,4F15.2)
       END
-C  /* Deck wr_sifc */
+C  /* Deck wr_sirifc */
       SUBROUTINE WR_SIRIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
-     *                  GORB,ERLM,ORBHES,XINDX)
+     &                     GORB,ERLM,ORBHES,XINDX)
 C
-C MOTECC: this routine writes interface file for post-programs.
-C         The structure of the file is described here.
+C MOTECC: this routine writes the interface file SIRIFC for post-programs.
+C         The structure of the SIRIFC file is described here.
 C
 C Written 14-Feb-1985 Hans Joergen Aa. Jensen
 C Revisions:

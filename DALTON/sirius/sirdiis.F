@@ -125,7 +125,7 @@ C
 
       ! QM/NP/MM embedding
       IF (QMNPMM) THEN
-         call quit('not implemented in this version')
+         call quit('QMNPMM not implemented in this version')
       ELSE
          KRELMAT = 1
       END IF
@@ -304,7 +304,7 @@ C  INFINP : FLAG(*)
 C  INFORB : NCMOT,NNBAST,NSYM
 C  INFOPT : EPOT,EMCSCF,EMY,EACTIV,GRDNRM
 C  SCBRHF : THRRHF,MXDIIS, ?
-C  DFTCOM : HFXFAC
+C  DFTCOM : HFXFAC, DODFTD
 C  INFVAR : NWOPH
 C  SCBRHF : IOPRHF,AUTOCC
 C  CBIREA : LMULBS
@@ -346,7 +346,6 @@ C
 Cholesky
 C
 C------------------------
-C#include "mxcent.h"
 #include "pcmdef.h"
 #include "pcm.h"
 C
@@ -355,7 +354,7 @@ C
       PARAMETER (THREVC = 0.01D0, THRINC = 1.0D-10, CNVFAC = 0.8D0)
 C
       LOGICAL   ONLYFC, C2DIIS, DIFDEN, DODIFDEN, NEWTHR, RHFWOP, OLDWOP
-      LOGICAL   LCONV, LNEWOCC
+      LOGICAL   LCONV, LNEWOCC, DODFT_SAVE
       DIMENSION NISH_SAVE(8), NCAN(8)
       CHARACTER*8 CMOLBL
 C
@@ -373,9 +372,11 @@ C
       CALL SIRH1(H1AO,WRK(KFREE),LFREE)
 
 CAMT  If requested calculate the DFT-D energy correction
-      IF(DODFT .AND. DODFTD) THEN
+      IF (DODFT .AND. DODFTD) THEN
          NDERIV=0
          CALL DFT_D_DAL_IFC(EDISP,NDERIV,WRK(KFREE),LFREE)
+      ELSE
+         EDISP = 0.0D0
       END IF
 
 C
@@ -483,12 +484,13 @@ C       In iterations we want 0.001 times GRDNRM because we do
 C       keep vectors until GRDNRM fallen a factor 100
       DAMP   = D0
       EMCLOW = D0
-      GNRMSV = D0
+      GRDNRM_old = -1.0D0
       ITNOCC = 0
       NEWOCC = 0
       LNEWOCC = AUTOCC
 C     if (LNEWOCC) then write new BASINFO to SIRIUS.RST in NEWORB
-      NOSCIL = 0
+      N_OSCIL = 0
+      I_STALL = 0
 C------------------
       DODIFDEN = .NOT.FLAG(49) .AND. .NOT.HSFOCK
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
@@ -520,6 +522,12 @@ Chj      ... if (GEOWLK) then
          EMCGEO = EMCOLD
          DEPGEO = DEPRED
       END IF
+
+      HFXFAC_SAVE = HFXFAC
+      DODFT_SAVE  = DODFT
+C
+      ITDIIS = 0
+      JTDIIS = 0
 C
 C Projection operators for removing non-rotated orbitals (.FREEZE option)
 C A -> P_f*A*P_f(T), P_f = 1-S*D_f
@@ -759,6 +767,7 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
              xc_energy   = 0.0d0
              call daxpy(nbast*nbast, 0.5d0, dcao, 1,
      &                  dmat_ao, 1)
+             call interface_ao_write()
              call xc_integrate(
      &                         xc_mat_dim=nbast,
      &                         xc_nr_dmat=1,
@@ -778,17 +787,14 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
              deallocate(fmat_ao)
              deallocate(fmat_ao_tri)
 #else
-                        CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+             CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
 #endif /* USE_XCINT */
          END IF
 
 CAMT If calculated add the empirical dispersion energy correction
-         IF (DODFTD) THEN
-           EMY = EMY + EDISP
-         END IF
-
+         EMY = EMY + EDISP
 
 C
 c        we need to divide the solvent calls into mmpcm and not mmpcm
@@ -889,11 +895,10 @@ C
            CALL MEMGET2('REAL','F_PE', KFPE, NNBASX, WRK, KFREE, LFREE)
            CALL MEMGET2('REAL','E_PE', KEPE,      1, WRK, KFREE, LFREE)
            IF (NASHT == 0 .OR. HSFOCK) THEN
-             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE),
-     &                        WRK(KFREE), LFREE-KFREE+1)
+             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE))
            ELSE
              CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
-     &                        WRK(KEPE), WRK(KFREE), LFREE-KFREE+1)
+     &                        WRK(KEPE))
            END IF
            ESOLT = WRK(KEPE)
            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
@@ -916,11 +921,11 @@ C
      &               EVCSAV(1,INDEVC),WRK,KFREE,LFREE,IPR_DIIS)
 C        CALL DIIS_EVC(SMOAO,DCAO,DVAO,H1AO,FDAO,FVAO,CMO1,
 C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
-         IF (IPR_DIIS .GT. 20) THEN
+         IF (IPR_DIIS .GE. 20) THEN
             WRITE (LUPRI,*) ' Test output of all of EVCSAV, newest is',
      &         INDEVC
             CALL OUTPUT(EVCSAV,1,NNORBT,1,NEVC,NNORBT,NEVC,-1,LUPRI)
-         ELSE IF (IPR_DIIS .GT. 10) THEN
+         ELSE IF (IPR_DIIS .GE. 10) THEN
             WRITE (LUPRI,*) ' Error vector, DIIS iteration',ITDIIS
             CALL OUTPKB(EVCSAV(1,INDEVC),NORB,NSYM,-1,LUPRI)
          END IF
@@ -985,7 +990,7 @@ C        number of diis iterations since last change of occupation.
 C        970326-hjaaj: changed to ITNOCC>4 test; have today observed
 C        increase in energy in iter 4 with fixed HF OCCUP; let us
 C        allow two oscillations before exiting.
-C        970402-hjaaj: Always allow two oscillations (NOSCIL)
+C        970402-hjaaj: Always allow two oscillations (N_OSCIL)
 C        after a "NEWOCC"
 C
          EMCLOW = MIN(EMCLOW,EMCSCF)
@@ -997,8 +1002,8 @@ C            error, this modified test should only be positive if the exact
 C            energy has increased.
 C
          IF (EMCDIF .GT. EMCDIFERR .AND. ITNOCC .GT. 4) THEN
-            NOSCIL = NOSCIL + 1
-         IF (NOSCIL .GT. 10) THEN
+            N_OSCIL = N_OSCIL + 1
+         IF (N_OSCIL .GT. 10) THEN
             IF (AUTOCC .AND. NSYM .GT. 1 .AND. ITNOCC .LE. 6) THEN
 C              ... ITNOCC test because do not abort if same
 C                  occupation has been used in 6 iterations/970402-hjaaj
@@ -1019,7 +1024,8 @@ C
  4010 FORMAT(' DIIS aborted because energy increased in this iteration.'
      &      /' Program aborted because this means automatic symmetry'
      &      /' designation of occupied orbitals is not possible!'
-     &      /' Please send this output to dalton users mailing list !!!'
+     &      /' Please post this output as a bug report to the'//
+     &       ' dalton forum.'
      &      /' You may try again with explicit specfication of .DOUBLY')
  4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
      &      /' Backstep to orbitals from previous iteration.')
@@ -1111,7 +1117,7 @@ C        Test if convergence is stopping because of numerical problems
 C        (EMCDIF test should make sure we are in local region)
 C
 ckr         IF (ITNOCC .GT. 3 .AND. ABS(EMCDIF) .LT. THDDEF .AND.
-ckr     &       GRDNRM .GT. CNVFAC*GNRMSV .AND. .NOT. NEWTHR) THEN
+ckr     &       GRDNRM .GT. CNVFAC*GRDNRM_OLD .AND. .NOT. NEWTHR) THEN
 ckr            ICONV = 0
 ckr            WRITE (LUPRI,4140)
 ckr            IF (LUW4 .NE. LUPRI) WRITE (LUW4,4140)
@@ -1216,14 +1222,21 @@ C        Do not try that with open-shell - it does not work./pawsa
      &        GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
-     &         EMCDIF_test*(GRDNRM-GNRMSV) .LT. -1.0D-10) .AND. BCKSTP)
-     &       THEN
+     &         EMCDIF_test*(GRDNRM-GRDNRM_OLD) .LT. -1.0D-10 )
+     &        .AND. BCKSTP)  THEN
 C              .. test EMCDIF*grddif against -1.0D-10 instead of 0.0D0
 C                 to avoid round-off problems here /hjaaj Sep 2005
+
+             IF (I_STALL .LT. 1) THEN ! do not stop first time energy goes up
+                I_STALL = I_STALL + 1
+                GO TO 300
+             END IF
+             I_STALL = 0
+
              WRITE(LUPRI,'(1P/A,2(/A,G11.3),/A,I3,A)')
      &       '!!! Info: DIIS restarted because it was stalled ...',
      &       ' - energy changed by  ',EMCDIF,
-     &       ' - gradient changed by',GRDNRM - GNRMSV,
+     &       ' - gradient changed by',GRDNRM - GRDNRM_OLD,
      &       ' - or strange C vector coeff. for current index (=',
      &       INDEVC,') :'
              WRITE (LUPRI,'(10F12.6)') (CVEC(I),I=1,NEVC)
@@ -1265,14 +1278,15 @@ c            and slow down  the level shifting annealing...
          ELSE
              SHFTLVL =  SHFTLVL*SHFTFAC
 c            make sure we get right HOMO-LUMO gap in the end.
-             IF(ITDIIS.GT.1.AND.ABS(EMCDIF).LE.5.D-5) SHFTLVL = 0.D0
+             IF ( GRDNRM .LE. 100.00*THDIIS ) SHFTLVL = 0.D0
          END IF
+  300    CONTINUE
 C hjaaj 22-Jun-2005-B
 C        Level shift is only working for closed shell calculations ...
 C          (open shell problems reported by users ...)
          IF (NASHT .GT. 0) SHFTLVL = 0.0D0
 C hjaaj 22-Jun-2005-E
-         GNRMSV = GRDNRM
+         GRDNRM_OLD = GRDNRM
 C
 C        Iteration accepted; save current CMO for restart
          WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
@@ -1328,8 +1342,8 @@ C
                CALL OUTPKB(DCAO,NORB,NSYM,-1,LUPRI)
             END IF
          ELSE
-           DO 300 ISYM = 1,NSYM
-            IF (NASH(ISYM) .EQ. 0) GO TO 300
+           DO 330 ISYM = 1,NSYM
+            IF (NASH(ISYM) .EQ. 0) GO TO 330
             IF (IPR_DIIS .GT. 15) THEN
                WRITE (LUPRI,'(/A,I3)')
      &            ' Fock matrix before FV correction, symmetry',ISYM
@@ -1355,7 +1369,7 @@ C
      &            ' Fock matrix after FV correction, symmetry',ISYM
                CALL OUTPAK(DCAO(1+IIORB(ISYM)),NORB(ISYM),-1,LUPRI)
             END IF
-  300      CONTINUE
+  330      CONTINUE
          END IF
 C
 C        If requested (by SHFTLVL .ne. 0) :
@@ -1372,11 +1386,16 @@ C        Diagonalize (level-shifted) FC (saved in DCAO)
 C
          CALL ICOPY(8,NISH,1,NISH_SAVE,1)
          JOPRHF = IOPRHF
-         IF ( THDIIS .GE. 0.01D0*GRDNRM ) THEN
-            THR_FCKEIG = THDIIS
+         IF (GRDNRM_old > 0.0D0) THEN
+            GRDNRM_factor = MAX(12.0D0, GRDNRM_old/GRDNRM)
+         ELSE
+            GRDNRM_factor = 12.0D0
+         END IF
+         IF ( GRDNRM .LE. MAX(1.D-5, THDIIS*GRDNRM_factor) ) THEN
+            THR_FCKEIG = 0.8D0*THDIIS
             CALL ICOPY(8,NORB,1,NCAN,1) ! we need all orbitals canonical for CC
          ELSE
-            THR_FCKEIG = 0.01D0*GRDNRM
+            THR_FCKEIG = 0.05D0*GRDNRM
             CALL ICOPY(8,NOCC,1,NCAN,1) ! we only need oocupied orbitals canonical in global region
          END IF
 
@@ -1402,7 +1421,7 @@ C        Test if AUTOCC has changed occupation :
             NEWOCC = NEWOCC + 1
             LNEWOCC = .TRUE.
             ITNOCC = 0
-            NOSCIL = 0
+            N_OSCIL = 0
             IF (NEWOCC .GT. 6) THEN
                WRITE (LUPRI,4210) NEWOCC
                IF (LUW4 .NE. LUPRI) WRITE (LUW4,4210) NEWOCC
@@ -1541,24 +1560,24 @@ C
       END IF
       IF (PEQM) THEN
         IF (NASHT == 0 .OR. HSFOCK) THEN
-            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1,
-     &                         WRK(KFREE), LFREE-KFREE+1)
+            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
         ELSE
-            CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1,
-     &                         WRK(KFREE), LFREE-KFREE+1)
+            CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1)
         END IF
       END IF
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC
-C       FLAG(25) is true for .ABACUS (geometry optimization)
+C       FLAG(25) is true for .ABACUS (geometry optimization and many properties)
 C                         or .RESPONS (response calculation)
 C                         or .INTERFACE (request for write of SIRIFC)
+C                         or .WESTA
+C                         or .CC
 C       INERSI is true if this is initial state calculation
 C              in a solvent calculation with inertial polarization
 C
       IF ( IWRIFC .EQ. 1 ) THEN
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A)')
-     &      ' >>> Writing SIRIFC interface file <<<'
+     &      ' >>> Writing SIRIFC interface file'
          IF (ICI0 .EQ. 6) THEN
 Chj      ... if (GEOWLK) then
             IF (.NOT. OPTNEW) WRITE (LUPRI,'(//A/)')
@@ -1636,9 +1655,9 @@ C
       IF (ICONV .NE. 0 .AND. ABS(ITRFIN) .LE. 10 .AND.
      &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC) .AND.
      &    .NOT. CHOINT) THEN
-         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3,A)')
+         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3)')
      &      ' >>> Transforming 2-el. integrals acc. to'//
-     &      ' .FINAL TRANSFORMATION =',ITRFIN,' <<<'
+     &      ' .FINAL TRANSFORMATION =',ITRFIN
          JTRLVL = ITRFIN
          CALL TRACTL(JTRLVL,CMO,WRK(KFREE),LFREE)
       END IF
@@ -1653,7 +1672,7 @@ C     hjaaj-aug99: restore original IFTHRS value
       END
 C  /* Deck DIIS_EVC */
       SUBROUTINE DIIS_EVC(SMOAO,DCAO,DVAO,H1AO,FDAO,FVAO,CMO1,
-     &                  ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
+     &                    ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
 C
 C
 #include "implicit.h"
@@ -1789,13 +1808,18 @@ C
   320       CONTINUE
          END IF
 C
+C        note: now TMP1 = 4 Fmo = 4 Ct SAO (DCAO FDAO + DVAO FCAO) C
+C              (SMOAO contains "4 Ct SAO")
+C        note: DGETAP gives 0.5 (TMP1 - TMP1^t) = 2 ( Fmo - Fmo^t) = gradient
+C
          CALL DGETAP(NORBI,WRK(KTMP1),ERRVEC(1+IIORB(ISYM)))
+C
          IF (IPR_DIIS .GE. 15) THEN
             WRITE (LUPRI,'(/A/A/A,I3)')
-     &      ' (DIIS_EVC) error vector = orbital gradient vector =',
-     &      '          4 (DCmo FDmo + DVmo FCmo) = ',
-     &      '          4 Ct SAO (DCAO FDAO + DVAO FCAO) C for symmetry',
-     &      ISYM
+     &      ' (DIIS_EVC) 4 Fmo = 4 (DCmo FDmo + DVmo FCmo)',
+     &      '        = 4 Ct SAO (DCAO FDAO + DVAO FCAO) C for symmetry',
+     &      ISYM,
+     &      ' (error vector = gradient = 2 (Fmo - Fmo(transposed))'
             CALL OUTPUT(WRK(KTMP1),1,NORBI,1,NORBI,NORBI,NORBI,-1,LUPRI)
          END IF
   800 CONTINUE
@@ -2075,7 +2099,7 @@ C     EDFTY = EDFTY +EXCTRO-DP5*DDOT(N2BASX,DCAO,1,FCAO,1)
       RETURN
       END
 C  /* Deck fckeig */
-      SUBROUTINE FCKEIG(CMO,FC,SHFTLVL,THR_FCKEIG,NCAN,IPR_DIIS,
+      SUBROUTINE FCKEIG(CMO,FC,SHFTLVL,THR_FCKEIG,NCAN,IPRINT_in,
      &                  SCRA,LSCRA)
 C
 C Written 20-May-1993 by Hans Jorgen Aa. Jensen
@@ -2124,7 +2148,9 @@ C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       CALL QENTER('FCKEIG')
+      call gettim(t1,w1)
 C
+      IPR_FCKEIG = IPRINT_in
       LSAVE4 = P4FLAG(9)
       LSAVE6 = P6FLAG(6)
       P4FLAG(9) = .FALSE.
@@ -2138,6 +2164,16 @@ C
 C
 C     Step 1: Diagonalize (level-shifted) Fock-matrix:
 C
+      K = 0
+      DO, ISYM = 1,NSYM
+         K = K + NOCC(ISYM)*(NORB(ISYM)-NOCC(ISYM))
+      END DO
+      FAC_THR_JACO = 16*K
+      ! factor 16 because gradient ia = 2 F_ia = 4 FC_ia
+      FAC_THR_JACO = 1.0D0 / SQRT(FAC_THR_JACO)
+      ! factor to ensure gradient is less than THR_FCKEIG if all
+      ! occ-vir elements are less than THR_FCKEIG/FAC_THR_JACO /hjaaj
+
       DO 200 ISYM = 1,NSYM
          NCANI = NCAN(ISYM)
       IF ( .NOT.AUTOCC .AND. NCANI.EQ.0 ) GO TO 200
@@ -2199,10 +2235,10 @@ C
          END IF
 C
          IF (NCANI .gt. 0) THEN
-            THR_JACO = NCANI*NORBI*NSYM
-            THR_JACO = THR_FCKEIG / THR_JACO
+            THR_JACO = THR_FCKEIG * FAC_THR_JACO
+            THR_JACO = MIN( THR_JACO, 1.D-3)
          ELSE IF (AUTOCC) THEN
-            THR_JACO = 1.D-4
+            THR_JACO = 1.D-3
          ELSE
             GO TO 200
          END IF
@@ -2211,8 +2247,12 @@ C
          CALL JACO_THR(FC(IFSYM+1),CMO(ICSYM),NORBI,NMAX,NBASI,THR_JACO)
 C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_CONV)
 C
+         IF (IPR_FCKEIG .GT. 20) THEN
+            write (lupri,*) 'FCKEIG debug: FC after JACO_THR',NMAX,NORBI
+            call outpak(FC(IFSYM+1),NORBI,-1,LUPRI)
+         END IF
          DO, I=1,NORBI
-            FC(IORBI+I)=FC(IFSYM+IROW(I+1))
+            FC(IORBI+I) = FC(IFSYM+IROW(I+1))
          END DO
 C
          IF (AUTOCC) THEN
@@ -2233,27 +2273,27 @@ C         CALL PRORB(CMO,.FALSE.,LUPRI)
 C
 C If there are frozen open shell orbitals they are last - put back in place
 C
-         IF (IPR_DIIS .GE. 4) WRITE (LUPRI,'(/A,I2/,(5F15.5))')
-     &      ' DIIS Fock eigenvalues in symmetry',ISYM,
-     &      (FC(IORBI+I), I = 1,NORBI)
-
          IF (LNOROT) THEN
             NISHI=NISH(ISYM)
             NASHI=NASH(ISYM)
             JA=NISHI+1
             KA=IORBI+NISHI+1
             DO IA=1,NASHI
-
                JA=IA+NISHI
                KA=JA+IORBI
                IF (NOROT(KA).NE.0) THEN
                   CALL ROTCOL(CMO(ICSYM),NBASI,NORBI,JA,NORBI)
+                  CALL ROTCOL(FC(IORBI+1),1,NORBI,JA,NORBI)
                END IF
             END DO
          END IF
 C
 C         CALL HEADER('Reordered orbitals',-1)
 C         CALL PRORB(CMO,.FALSE.,LUPRI)
+         IF (IPR_FCKEIG .GE. 4) WRITE (LUPRI,'(/A,I2/,(5F15.5))')
+     &      ' DIIS Fock eigenvalues in symmetry',ISYM,
+     &      (FC(IORBI+I), I = 1,NORBI)
+
 
   200 CONTINUE
       IF (SUPSYM) CALL AVEORD()
@@ -2301,6 +2341,11 @@ C
 C
 C *** end of subroutine FCKEIG
 C
+      IF (IPR_FCKEIG > 0) THEN
+         call gettim(t2,w2)
+         write(lupri,'(A,1P,3D10.2)')
+     &      ' Time used in FCKEIG, thr_jaco: ',t2-t1,w2-w1,thr_jaco
+      END IF
       CALL QEXIT('FCKEIG')
       RETURN
 C

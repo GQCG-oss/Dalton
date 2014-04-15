@@ -185,7 +185,7 @@ CTRL[9]=6
 ERROR[9]="LINEAR RESPONSE NOT CORRECT"
 
 # First hyperpolarizabilities
-CRIT1=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Y\;Y\,Y\) \= * 1\.351" $log | wc -l`
+CRIT1=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Y\;Y\,Y\) \= * 1\.35[01]" $log | wc -l`
 CRIT2=`$GREP "\@ B\-freq \= (0| )\.065600 * C\-freq \= (0| )\.065600 * beta\(Y\;Y\,Y\) \= * 1\.(499|500)" $log | wc -l`
 CRIT3=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(X\;X\,Y\) \= * \-9\.147" $log | wc -l`
 CRIT4=`$GREP "\@ B\-freq \= (0| )\.065600 * C\-freq \= (0| )\.065600 * beta\(X\;X\,Y\) \= * \-10\.162" $log | wc -l`

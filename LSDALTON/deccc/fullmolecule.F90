@@ -76,6 +76,9 @@ contains
 
     call molecule_get_carmom(molecule,mylsitem)
 
+    call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
+    call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
+
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
        !> Sanity check 
        if(.NOT. present(D)) then
@@ -136,6 +139,9 @@ contains
      
     call molecule_get_carmom(molecule,mylsitem)
        
+    call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
+    call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
+
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
        IF(DECinfo%full_molecular_cc)THEN
           call dec_get_CABS_orbitals(molecule,mylsitem)
@@ -187,9 +193,12 @@ contains
     call calculate_fullmolecule_memory(molecule,memory_use)
     DECinfo%fullmolecule_memory = memory_use
 
+    !> SubSystem index
+    call mem_alloc(molecule%SubSystemIndex,molecule%natoms)
+    call GetSubSystemIndex(molecule%SubSystemIndex,molecule%natoms,mylsitem,DECinfo%output) 
+
     !> Interatomic distances in atomic units
     call mem_alloc(molecule%DistanceTable,molecule%natoms,molecule%natoms)
-    molecule%DistanceTable=0.0E0_realk
     call GetDistances(molecule%DistanceTable,molecule%natoms,mylsitem,DECinfo%output) 
 
     !> Which model to use for different pair calculations?
@@ -199,7 +208,7 @@ contains
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
-    write(DECinfo%output,'(/,a)') '-- Full moleculecular info --'
+    write(DECinfo%output,'(/,a)') '-- Full molecular info --'
     write(DECinfo%output,'(/,a,i6)') 'FULL: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
     write(DECinfo%output,'(/,a,i6)') 'FULL: Number of electrons        : ',molecule%nelectrons
     write(DECinfo%output,'(a,i6)')   'FULL: Number of atoms            : ',molecule%natoms
@@ -319,6 +328,7 @@ contains
     electrons = 0
     natoms = mylsitem%input%molecule%natoms
     do i=1,natoms
+       IF(mylsitem%input%molecule%Atom(i)%Phantom)CYCLE
        electrons = electrons + mylsitem%input%molecule%Atom(i)%Charge
     end do
     charge = nint(mylsitem%input%molecule%charge)
@@ -326,6 +336,18 @@ contains
 
     return
   end function get_num_electrons
+
+  subroutine getPhantomAtoms(mylsitem,PhantomAtom,nAtoms)
+    implicit none
+    integer,intent(in) :: nAtoms
+    logical,intent(inout) :: PhantomAtom(nAtoms)
+    type(lsitem), intent(inout) :: mylsitem
+    !
+    integer :: i
+    do i=1,natoms
+       PhantomAtom(i) = mylsitem%input%molecule%Atom(i)%Phantom
+    end do
+  end subroutine getPhantomAtoms
 
   !> \brief Get number of regular basis functions
   !> \param mylsitem Integral program input
@@ -708,6 +730,14 @@ contains
        call mem_dealloc(molecule%AtomCenters)
     end if
 
+    if(associated(molecule%PhantomAtom)) then
+       call mem_dealloc(molecule%PhantomAtom)
+    end if
+
+    if(associated(molecule%SubSystemIndex)) then
+       call mem_dealloc(molecule%SubSystemIndex)
+    end if
+
     if(associated(molecule%DistanceTable)) then
        call mem_dealloc(molecule%DistanceTable)
     end if
@@ -879,6 +909,7 @@ contains
     nocc     = MyMolecule%nocc
     nvirt    = MyMolecule%nunocc
     noccfull = nocc
+
 !HACK we do call Fcp for Fcp - indicating 
 !     that this is a Fock(nCabsMO,nbasis)
 !     However all AO -> MO transformations
@@ -897,12 +928,12 @@ contains
        print *, "--------------------------"
        print *, "Molecule_mo_f12"
        print *, "--------------------------"
-       print *, "nbasis: ", nbasis
-       print *, "nocc: ", nocc
-       print *, "nvirt: ", nvirt
+       print *, "nbasis:   ", nbasis
+       print *, "nocc:     ", nocc
+       print *, "nvirt:    ", nvirt
        print *, "--------------------------"
-       print *, "ncabsAO: ", ncabsAO
-       print *, "ncabsMO: ", ncabsMO
+       print *, "ncabsAO:  ", ncabsAO
+       print *, "ncabsMO:  ", ncabsMO
        print *, "nocvfull: ", nocc+nvirt
        print *, "--------------------------"
     end if
@@ -926,12 +957,12 @@ contains
       print *,'molecule_mo_f12: Get all F12 Fock integrals'
       print *,'-------------------------------------------'
       print *, "norm2D(hJir)", norm2D(MyMolecule%hJir)
-      print *, "norm2D(Krs)", norm2D(MyMolecule%Krs)
-      print *, "norm2D(Frs)", norm2D(MyMolecule%Frs)
-      print *, "norm2D(Fac)", norm2D(MyMolecule%Fac)
-      print *, "norm2D(Frm)", norm2D(MyMolecule%Frm)
-      print *, "norm2D(Fcp)", norm2D(MyMolecule%Fcp)
-      print *, "norm2D(Fij)", norm2D(MyMolecule%Fij)
+      print *, "norm2D(Krs)",  norm2D(MyMolecule%Krs)
+      print *, "norm2D(Frs)",  norm2D(MyMolecule%Frs)
+      print *, "norm2D(Fac)",  norm2D(MyMolecule%Fac)
+      print *, "norm2D(Frm)",  norm2D(MyMolecule%Frm)
+      print *, "norm2D(Fcp)",  norm2D(MyMolecule%Fcp)
+      print *, "norm2D(Fij)",  norm2D(MyMolecule%Fij)
       print *,'-------------------------------------------' 
     end if
 

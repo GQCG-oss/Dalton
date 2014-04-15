@@ -375,7 +375,9 @@ contains
 
    end subroutine mcci_cp_vcd_mpi_2_seq_io_interface
 !******************************************************************************
-#else
-module dummy_mcci_pario
-#endif
 end module
+#else
+subroutine mcci_pario
+! dummy routine for non-mpi compilation
+end
+#endif

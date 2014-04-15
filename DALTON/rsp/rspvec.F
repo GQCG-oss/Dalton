@@ -164,6 +164,7 @@ C   INFRSP : LURSP*
 C
 #include "maxorb.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "infdim.h"
@@ -232,11 +233,12 @@ C
       DO 100 KSYMOP = 1,NSYM
       IF ( NEXQR(KSYMOP).EQ.0 ) GO TO 100
 C     ... skip this symmetry if no operators
-         IF (IPRRSP.GE.2) THEN
-            WRITE(LUPRI,'(//A/A,I5/A,L5)')
-     *         ' Linear response excitations for quadratic response',
-     *         ' - symmetry of excitation operator',KSYMOP,
-     *         ' - is the operator a triplet operator ? ',TRPLET
+         IF (IPRRSP.GE.1) THEN
+            WRITE(LUPRI,'(//A/A,I5,3A/A,L5)')
+     &         ' Linear response excitations for quadratic response',
+     &         ' - symmetry of excitation operator',KSYMOP,
+     &         '  ( ',REP(KSYMOP-1),')',
+     &         ' - is the operator a triplet operator ? ',TRPLET
          END IF
 C
 C        DEFINE VARIABLES THAT DEPEND ON SYMMETRY
@@ -306,10 +308,11 @@ C
          DO 200 KSYMOP = 1,NSYM
          IF ( NLRQR(KSYMOP).EQ.0 ) GO TO 200
 C     ... skip this symmetry if no operators
-            IF (IPRRSP.GE.2) THEN
-               WRITE(LUPRI,'(//A/A,I5)')
-     *         ' Linear response calculations for quadratic response',
-     *         ' - singlet property operator of symmetry',KSYMOP
+            IF (IPRRSP.GE.1) THEN
+               WRITE(LUPRI,'(//A/A,I5,3A)')
+     &         ' Linear response calculations for quadratic response',
+     &         ' - singlet property operator of symmetry',KSYMOP,
+     &         '  ( ',REP(KSYMOP-1),')'
             END IF
 C
 C        DEFINE VARIABLES THAT DEPEND ON SYMMETRY
@@ -349,9 +352,10 @@ C
          IF ( NTRQR(KSYMOP).EQ.0 ) GO TO 210
 C     ... skip this symmetry if no operators
             IF (IPRRSP.GE.2) THEN
-               WRITE(LUPRI,'(//A/A,I5)')
-     *         ' Linear response calculations for quadratic response',
-     *         ' - triplet property operator(s) of symmetry',KSYMOP
+               WRITE(LUPRI,'(//A/A,I5,3A)')
+     &         ' Linear response calculations for quadratic response',
+     &         ' - triplet property operator of symmetry',KSYMOP,
+     &         '  ( ',REP(KSYMOP-1),')'
             END IF
 C
 C DEFINE VARIABLES THAT DEPEND ON SYMMETRY
@@ -406,12 +410,12 @@ C
       PARAMETER ( MAXSIM = 15, D0 = 0.0D0, BLANK='        ')
 C
 C Used from common blocks:
-C  /INFRSP/ : most items (/INFRSP/ gives control information for
+C  infrsp.h : most items (/INFRSP/ gives control information for
 C                         the response calculation(s) )
-C  /WRKRSP/ :
-C
-C  /INFORB/ : MULD2H
+C  wrkrsp.h :
+C  inforb.h : MULD2H
 #include "priunit.h"
+#include "pgroup.h"
 #include "inftap.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -506,15 +510,19 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
             NVEC   = IOFFSP + INQREX(KSYMOP,ISIM-1+IVEC)
             IF (IPRRSP.GT.10) THEN
                IF ( TRPLET ) THEN
-                  WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,1P,D14.6)')
-     *            '@ QRPPVE: TRIPLET EXCITATION VECTOR',ISIM-1+IVEC,
-     *            ' SYMMETRY',KSYMOP,'@ Triplet excitation energy',
-     *            EXCITA(KSYMOP,ISIM-1+IVEC,ISPN)
+                  WRITE(LUPRI,'(/A,I5,3X,A,I5,3A,/A,1P,D14.6)')
+     &            '@ QRPPVE: TRIPLET EXCITATION VECTOR',ISIM-1+IVEC,
+     &            ' SYMMETRY',KSYMOP,
+     &            '  ( ',REP(KSYMOP-1),')',
+     &            '@ Triplet excitation energy',
+     &            EXCITA(KSYMOP,ISIM-1+IVEC,ISPN)
                ELSE
-                  WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,1P,D14.6)')
-     *            '@ QRPPVE: SINGLET EXCITATION VECTOR',ISIM-1+IVEC,
-     *            ' SYMMETRY',KSYMOP,'@ Singlet excitation energy',
-     *            EXCITA(KSYMOP,ISIM-1+IVEC,ISPN)
+                  WRITE(LUPRI,'(/A,I5,3X,A,I5,3A,/A,1P,D14.6)')
+     &            '@ QRPPVE: SINGLET EXCITATION VECTOR',ISIM-1+IVEC,
+     &            ' SYMMETRY',KSYMOP,
+     &            '  ( ',REP(KSYMOP-1),')',
+     &            '@ Singlet excitation energy',
+     &            EXCITA(KSYMOP,ISIM-1+IVEC,ISPN)
                END IF
             END IF
             IF (IPRRSP.GE.3) THEN
@@ -554,6 +562,7 @@ C
       PARAMETER ( THRSML = 1.0D-9, D0 = 0.0D0, BLANK='        ')
 C
 #include "priunit.h"
+#include "pgroup.h"
 #include "infpri.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -702,8 +711,9 @@ C
      &               ANTSYM,WRK(KGP),LWRK1)
          GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
 C
-         WRITE (LUPRI,'(//A,I3,/2A,/A,I3,/A,(T25,5F10.6))')
+         WRITE (LUPRI,'(//A,I3,3A,/2A,/A,I3,/A,(T25,5F10.6))')
      &   ' QRLRVE -- linear response calculation for symmetry',KSYMOP,
+     &            '  ( ',REP(KSYMOP-1),')',
      &   ' QRLRVE -- operator label : ',LRLAB(ILRLAB),
      &   ' QRLRVE -- operator spin  : ',OPRANK(INDPRP(LRLAB(ILRLAB))),
      &   ' QRLRVE -- frequencies :',(WRK(KEIVAL+I),I=0,NFREQ-1)
@@ -743,8 +753,9 @@ C
             JBVECS = KBVECS
             DO 560 JFREQ = IFREQ,IFREQ-1+NBX
 CTODO        IF (IPRRSP.GE.5) THEN
-                  WRITE(LUPRI,'(/A,I5,3(3X,A),D14.6)')
-     &            ' QRLRVE: SINGLET SOLUTION FOR SYMMETRY',KSYMOP,
+                  WRITE(LUPRI,'(/A,I5,3A,3(3X,A),D14.6)')
+     &            '@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY',KSYMOP,
+     &            '  ( ',REP(KSYMOP-1),')',
      &            ' LABEL',LRLAB(ILRLAB),
      &            ' FREQUENCY ',WRK(KEIVAL-1+JFREQ)
                   JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
@@ -777,10 +788,11 @@ CTODO        END IF
          CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &                  ANTSYM,WRK(KGP),LWRK1)
          GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
-         WRITE (LUPRI,'(//A,I3,/2A,/A,(T25,5F10.6))')
+         WRITE (LUPRI,'(//A,I3,3A/2A,/A,(T25,5F10.6))')
      &   ' QRLRVE PRJ -- linear response calculation for sym',KSYMOP,
-     &   ' QRLRVE PRJ-- operator label : ',LRLAB(ILRLAB),
-     &   ' QRLRVE PRJ-- frequency :', WRK(KEIVAL+ifreq-1)
+     &            '  ( ',REP(KSYMOP-1),')',
+     &   ' QRLRVE PRJ -- operator label : ',LRLAB(ILRLAB),
+     &   ' QRLRVE PRJ -- frequency :', WRK(KEIVAL+ifreq-1)
 
          IF (GPNORM .LT. THRSML) THEN
            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
@@ -862,8 +874,9 @@ CTODO        END IF
           !DO 560 JFREQ = IFREQ,IFREQ-1+NBX
 !TODO     IF (IPRRSP.GE.5) THEN
           JFREQ = IFREQ
-          WRITE(LUPRI,'(/A,I5,3(3X,A),D14.6)')
-     &      ' QRLRVE: SINGLET SOLUTION FOR SYMMETRY',KSYMOP,
+          WRITE(LUPRI,'(/A,I5,3A,3(3X,A),D14.6)')
+     &      '@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY',KSYMOP,
+     &            '  ( ',REP(KSYMOP-1),')',
      &      ' LABEL',LRLAB(ILRLAB),
      &      ' FREQUENCY ',WRK(KEIVAL-1+IFREQ)
           CALL FLSHFO(LUPRI)
@@ -938,6 +951,7 @@ C
       PARAMETER ( D0 = 0.0D0, THRFRQ = 1.0D-14, BLANK = '        ')
 C
 #include "priunit.h"
+#include "pgroup.h"
 #include "infrsp.h"
 #include "maxorb.h"
 #include "infvar.h"
@@ -1672,19 +1686,20 @@ C
 C
       PARAMETER (BLANK = '        ')
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D4D3 = 4.0D0/3.0D0,
-     &            IMXEXC=20, D30 = 30.0D0)
+     &            D30 = 30.0D0)
       PARAMETER ( DP5 = 0.5D0 , D3 = 3.0D0)
-      DIMENSION RESSOM(3,3,IMXEXC,8), RESFRE(IMXEXC,8)
 C
 #include "iratdef.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "pgroup.h"
 C
 #include "rspprp.h"
 #include "infrsp.h"
 #include "infsmo.h"
 #include "indqr.h"
+      REAL*8, ALLOCATABLE  ::  RESSOM(:,:,:,:), RESFRE(:,:)
 #include "inforb.h"
-#include "maxorb.h"
-#include "priunit.h"
 #include "infvar.h"
 #include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
@@ -1719,8 +1734,9 @@ C temporary storages for the result in order to print out nicely after the
 C calculation.
 C
       IF (TWOPHO) THEN
-         CALL DZERO(RESSOM,3*3*IMXEXC*8)
-         CALL DZERO(RESFRE,IMXEXC*8)
+         ALLOCATE ( RESSOM(3,3,MXEXQR,8), RESFRE(MXEXQR,8) )
+         CALL DZERO(RESSOM,3*3*MXEXQR*8)
+         CALL DZERO(RESFRE,MXEXQR*8)
       END IF
       DO 300 MSYMC = 1,NSYM
          MSYMCX = MULD2H(IREFSY,MSYMC)
@@ -2090,17 +2106,12 @@ C
                                 PHOSEC(IDIP,IHSO,IC)=SMOM
                                END IF
                            IF (TWOPHO) THEN
-                              IF (IC.LE.IMXEXC) THEN
-                                 IA=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
-                                 IB=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
-                                 RESFRE(IC,MSYMC)=
+                              IA=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
+                              IB=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
+                              RESFRE(IC,MSYMC)=
      &                                EXCITA(MSYMC,IC,ISPINC+1)
-                                 RESSOM(IA,IB,IC,MSYMC)=SMOM
-                                 RESSOM(IB,IA,IC,MSYMC)=SMOM
-                              ELSE
-                                 WRITE(LUPRI,'(/A)') 
-     &             'WARNING!! not enough space in RESSOM result matrix'
-                              END IF
+                              RESSOM(IA,IB,IC,MSYMC)=SMOM
+                              RESSOM(IB,IA,IC,MSYMC)=SMOM
                            END IF
                            CALL FLSHFO(LUPRI)
 
@@ -2203,9 +2214,11 @@ C ---------------------------------------------------------------endofmcd-------
             END IF
  400     CONTINUE
          IF (PHOSPH .OR. MNFPHO .OR. ECPHOS) THEN
-            WRITE (LUPRI,'(/A/A,I3/A,I3/A/)')
+            IEXCSY = MULD2H(MSYMC,IREFSY)
+            WRITE (LUPRI,'(/A/A,I3,3A/A,I3/A/)')
      &         ' Phosphorescence electric dipole transition rates',
-     &         ' from excited states of symmetry',MULD2H(MSYMC,IREFSY),
+     &         ' from excited states of symmetry',IEXCSY,
+     &            '  ( ',REP(IEXCSY-1),')',
      &         ' to the ground state of symmetry',IREFSY,
      &         ' ----------------------------------'
             IF (PHOSPH) WRITE(LUPRI,'(A)')
@@ -2285,14 +2298,14 @@ C
       IF (TWOPHO) THEN
          CALL TITLER('FINAL RESULTS FROM TWO-PHOTON CALCULATION',
      &        '*',112)
-         WRITE(LUPRI,'(A64,5(/A64))') 
+         WRITE(LUPRI,'(A,5(/A))') 
      & ' The two-photon absorption strength for an average molecular  ',
      & ' orientation is computed according to formulas given by       ',
      & ' P.R. Monson and W.M. McClain in J. Chem. Phys. 53:29, 1970   ',
      & ' and W.M. McClain in J. Chem. Phys. 55:2789, 1971.            ',
      & ' The absorption depends on the light polarization.            ',
      & ' A monochromatic light source is assumed.                     '
-         WRITE(LUPRI,'(3(/A64))')
+         WRITE(LUPRI,'(3(/A))')
      & ' All results are presented in atomic units, except the        ',
      & ' excitation energy which is given in eV and two-photon cross  ',
      & ' section which is given in GM. A FWHM of 0.1 eV is assumed.   '
@@ -2311,16 +2324,11 @@ C
      &'---------------------------------------------------------------'
          DO ISYMC=1,NSYM
          DO IC = 1,NSMCNV(ISYMC)
-            IF (IC.LE.IMXEXC) THEN
-               WRITE(LUPRI,'(A4,2I4,F8.2,6F8.1)') ' ',ISYMC,IC,
+            WRITE(LUPRI,'(A4,2I4,F8.2,6F8.1)') ' ',ISYMC,IC,
      &              RESFRE(IC,ISYMC)*XTEV,
      &              (RESSOM(I,I,IC,ISYMC),I=1,3),
      &              RESSOM(1,2,IC,ISYMC),RESSOM(1,3,IC,ISYMC),
      &              RESSOM(2,3,IC,ISYMC)
-            ELSE
-               WRITE(LUPRI,'(/A)') 
-     &            'WARNING!! NOT ENOUGH WORK MEMORY TO IN RESULT MATRIX'
-            END IF
          END DO
          END DO
          WRITE(LUPRI,'(A68)')
@@ -2352,8 +2360,7 @@ C
      &'-----------------------------------------------------------',
      &'----------------------'
          DO ISYMC=1,NSYM
-         DO IC = 1,NSMCNV(ISYMC)
-            IF (IC.LE.IMXEXC) THEN
+            DO IC = 1,NSMCNV(ISYMC)
                DF=0.0D0
                DG=0.0D0
                DO I=1,3
@@ -2415,18 +2422,16 @@ C
                   WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
                END IF
-*********************************************************************
-            ELSE
-               WRITE(LUPRI,'(/A)') 
-     &            'WARNING!! NOT ENOUGH WORK MEMORY TO IN RESULT MATRIX'
-            END IF
-         END DO
+            END DO
          END DO
          WRITE(LUPRI,'(A62,A)')
      &'-----------------------------------------------------------',
      &'----------------------'
       END IF
 C
+      IF (TWOPHO) THEN
+         DEALLOCATE (RESSOM, RESFRE)
+      END IF
 C
       CALL QEXIT('QRSMO')
       RETURN
@@ -3247,7 +3252,7 @@ C
       CALL PRSYMB(LUPRI,'=',70,1)
       WRITE(LUPRI,'(A)') 
      &     ' >>>>>>>>    L I N E A R   R E S P O N S E   '//
-     &     'F U N C T I O N   <<<<<<<<'
+     &     'F U N C T I O N S   <<<<<<<<'
       CALL PRSYMB(LUPRI,'=',70,1)
 C
       WRITE (LUPRI,'(/A/A//A/A,1P,D10.2)')

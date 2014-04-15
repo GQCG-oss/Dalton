@@ -34,13 +34,11 @@ subroutine BuildRJ000CPUSeg1Prim2(nPassP,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         iP,iPassP,&
 !$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &
-!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&
-!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)
+!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) 
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -84,7 +82,7 @@ subroutine BuildRJ000CPUSeg1Prim2(nPassP,nPrimP,nPrimQ,reducedExponents,&
       RJ000Array( 2,iP) = RJ000( 2)
      ENDIF
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine BuildRJ000CPUSeg1Prim3(nPassP,nPrimP,nPrimQ,reducedExponents,&
@@ -118,13 +116,11 @@ subroutine BuildRJ000CPUSeg1Prim3(nPassP,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         iP,iPassP,&
 !$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &
-!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&
-!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)
+!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) 
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -173,7 +169,7 @@ subroutine BuildRJ000CPUSeg1Prim3(nPassP,nPrimP,nPrimQ,reducedExponents,&
       RJ000Array( 3,iP) = RJ000( 3)
      ENDIF
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine BuildRJ000CPUSeg1Prim4(nPassP,nPrimP,nPrimQ,reducedExponents,&
@@ -207,13 +203,11 @@ subroutine BuildRJ000CPUSeg1Prim4(nPassP,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         iP,iPassP,&
 !$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &
-!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&
-!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)
+!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) 
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -267,7 +261,7 @@ subroutine BuildRJ000CPUSeg1Prim4(nPassP,nPrimP,nPrimQ,reducedExponents,&
       RJ000Array( 4,iP) = RJ000( 4)
      ENDIF
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine BuildRJ000CPUSeg1Prim5(nPassP,nPrimP,nPrimQ,reducedExponents,&
@@ -301,13 +295,11 @@ subroutine BuildRJ000CPUSeg1Prim5(nPassP,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         iP,iPassP,&
 !$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &
-!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&
-!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)
+!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) 
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -366,7 +358,7 @@ subroutine BuildRJ000CPUSeg1Prim5(nPassP,nPrimP,nPrimQ,reducedExponents,&
       RJ000Array( 5,iP) = RJ000( 5)
      ENDIF
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine BuildRJ000CPUSeg1Prim6(nPassP,nPrimP,nPrimQ,reducedExponents,&
@@ -400,13 +392,11 @@ subroutine BuildRJ000CPUSeg1Prim6(nPassP,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         iP,iPassP,&
 !$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &
-!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&
-!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)
+!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) 
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -470,7 +460,7 @@ subroutine BuildRJ000CPUSeg1Prim6(nPassP,nPrimP,nPrimQ,reducedExponents,&
       RJ000Array( 6,iP) = RJ000( 6)
      ENDIF
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine BuildRJ000CPUSeg1Prim7(nPassP,nPrimP,nPrimQ,reducedExponents,&
@@ -504,13 +494,11 @@ subroutine BuildRJ000CPUSeg1Prim7(nPassP,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         iP,iPassP,&
 !$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &
-!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&
-!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)
+!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) 
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -579,7 +567,7 @@ subroutine BuildRJ000CPUSeg1Prim7(nPassP,nPrimP,nPrimQ,reducedExponents,&
       RJ000Array( 7,iP) = RJ000( 7)
      ENDIF
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 
 subroutine BuildRJ000CPUSeg1Prim8(nPassP,nPrimP,nPrimQ,reducedExponents,&
@@ -613,13 +601,11 @@ subroutine BuildRJ000CPUSeg1Prim8(nPassP,nPrimP,nPrimQ,reducedExponents,&
   REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
   REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
   REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-!$OMP PARALLEL DO DEFAULT(none) &
+!$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$OMP         iP,iPassP,&
 !$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &
-!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&
-!$OMP        TABFJW,reducedExponents,Pcent,Qcent,RJ000array)
+!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) 
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -693,6 +679,6 @@ subroutine BuildRJ000CPUSeg1Prim8(nPassP,nPrimP,nPrimQ,reducedExponents,&
       RJ000Array( 8,iP) = RJ000( 8)
      ENDIF
   ENDDO
-!$OMP END PARALLEL DO
+!$OMP END DO
  end subroutine
 end module

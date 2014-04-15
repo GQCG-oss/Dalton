@@ -122,6 +122,14 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
             "${CMAKE_Fortran_FLAGS} -mp -Mconcur"
             )
     endif()
+# WARNING you may need to add -Mcuda=5.5 
+# For now use --extra-fc-flags="-Mcuda=5.5"
+# ./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --openacc --extra-fc-flags="-Mcuda=5.5" build
+    if(ENABLE_OPENACC) 
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -acc"
+            )
+    endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
 #add -Mbounds at some point

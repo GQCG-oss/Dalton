@@ -65,6 +65,10 @@ type ConfigItem
    logical              :: doDEC
    !> Turns off DEC energy contribution for get_energy calls
    logical              :: noDecEnergy
+   !> Should Memory Information be printet 
+   logical              :: PrintMemory
+   !> Perform Counter Poise Correction
+   logical              :: CounterPoiseCorrection
    !> Used for Augmented Roothaan-Hall, direct density optimization etc.
    type(SolverItem),pointer     :: solver
    !> Used for davidson solver in SCF opt

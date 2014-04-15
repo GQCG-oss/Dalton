@@ -306,6 +306,7 @@ contains
       else if(pssign.ne.0.0d0.and.plsign.ne.0.0d0)then
         IDC = 4
       end if
+      plus_combi = lucita_cfg_plus_combi ! plus combination of start vectors
 !     default print levels - zero for the time being - should be
 !     controlled via input keyword
       IPRSTR  = 0
@@ -519,28 +520,25 @@ contains
 !         ras
           case('RASCI ')
 
-            mxelr1 = 0
-            mxelr2 = 0
-            do i = 1, nirrep
-              mxelr1 = mxelr1 + 2*ngsh_lucita(1,i)
-              mxelr2 = mxelr2 + 2*ngsh_lucita(2,i)
-            end do
+            if(luci_nactel <= 0) call quit('*** # active e- <= 0... ***')
 
-            nimx = mxelr1 + 0
-            nimn = nimx - lucita_cfg_max_holes_ras1
-            nemn = LUCI_NACTEL + 0
-            nemx = LUCI_NACTEL + 0
-            namx = nemx
+            nimx = lucita_cfg_max_e_ras1
+            nimn = lucita_cfg_min_e_ras1
+            nemn = LUCI_NACTEL
+            nemx = LUCI_NACTEL
+            namx = nemx - lucita_cfg_min_e_ras3
             namn = namx - lucita_cfg_max_e_ras3
             igsoccx(1,1,1) = nimn
             igsoccx(1,2,1) = nimx
             igsoccx(2,1,1) = namn
             igsoccx(2,2,1) = namx
+!           write(lupri,*) 'nimn, nimx, namn, namx, nemx, nemn', &
+!           nimn, nimx, namn, namx, nemx, nemn
             if(ngas > 2)then
               igsoccx(3,1,1) = nemn
               igsoccx(3,2,1) = nemx
             end if
-            if(nimx > namx .or.  namx > nemx ) call quit('*** reconsider your RAS setup - it is wrong...  ***')
+            if(namx > luci_nactel ) call quit('*** reconsider your RAS setup - it is wrong...  ***')
 !         gas
           case('GASCI ')
             do i = 1, ngas

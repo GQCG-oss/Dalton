@@ -128,6 +128,8 @@ implicit none
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
+  config%CounterPoiseCorrection = .false.
+  config%PrintMemory = .false.
   config%doESGopt = .false.
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
@@ -449,9 +451,9 @@ DO
                 call lsquit('.NOECONTINCREM must be placed some pointer after .ARH DAVID',-1)
                ENDIF
                config%opt%cfg_saveF0andD0 = .false.
-#ifdef MOD_UNRELEASED
-            CASE('.ASYM');       config%opt%cfg_asym = .true.
-#endif
+!#ifdef MOD_UNRELEASED
+!            CASE('.ASYM');       config%opt%cfg_asym = .true.
+!#endif
             CASE('.CHOLESKY');   config%decomp%lowdin_diagonalize = .false.; config%decomp%cholesky_decomp   = .true.
             CASE('.CONFSHIFT');  config%diag%cfg_no_conf_shift = .false.
             CASE('.CONTFAC');    READ(LUCMD,*) config%solver%cfg_arh_contract
@@ -468,7 +470,8 @@ DO
                                  config%av%CFG_lshift = diag_lshift_dorth
             CASE('.PURESCF');    config%opt%purescf = .true.
             CASE('.DUMPMAT');    config%opt%dumpmatrices = .true.
-            CASE('.EDIIS');      config%av%CFG_averaging = config%av%CFG_AVG_EDIIS
+!removed keyword - no testcase - and naturally it does not seem to work. TK
+!            CASE('.EDIIS');      config%av%CFG_averaging = config%av%CFG_AVG_EDIIS
             CASE('.EXPAND');     READ(LUCMD,*) config%solver%cfg_arh_expand_crit
             CASE('.EXPFAC');     READ(LUCMD,*) config%solver%cfg_arh_expand 
             CASE('.FIXSHIFT');   READ(LUCMD,*) shift 
@@ -524,10 +527,10 @@ DO
             CASE('.NEWDAMP');    config%solver%cfg_arh_newdamp = .true.
             CASE('.NVEC');       READ(LUCMD,*) NVEC; config%av%cfg_settings%max_history_size = NVEC
                                  config%av%diis_history_size = NVEC
-                                 config%av%ediis_history_size = NVEC
+!                                 config%av%ediis_history_size = NVEC
             CASE('.NVECDII');    READ(LUCMD,*) NVEC
                                  config%av%diis_history_size = NVEC
-                                 config%av%ediis_history_size = NVEC
+!                                 config%av%ediis_history_size = NVEC
             CASE('.NOPREC');     config%solver%cfg_NOPREC = .true.
                                  config%decomp%cfg_NOPREC = .true.
             CASE('.INCREM');     config%opt%cfg_incremental = .true.
@@ -541,7 +544,7 @@ DO
             !CASE('.PURIFY');     config%opt%cfg_density_method = config%opt%cfg_f2d_purification - NO LONGER SUPPORTED! /Stinne 16-08-2010
             !                     read(LUCMD,*) config%opt%cfg_purification_method
             CASE('.PRINTFINALCMO'); config%opt%print_final_cmo=.true.
-            CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
+!            CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
             CASE('.RESTART');    config%diag%CFG_restart =  .TRUE.
             CASE('.CRASHCALC');    config%opt%crashcalc =  .TRUE.
             CASE('.PURIFYRESTARTDENSITY'); config%diag%CFG_purifyrestart =  .TRUE.
@@ -549,7 +552,8 @@ DO
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
             CASE('.RH');         config%opt%CFG_density_method =  config%opt%CFG_F2D_ROOTHAAN
             CASE('.SAFE');       config%av%CFG_safe = .true.
-            CASE('.SCALVIR');    config%opt%cfg_scale_virt = .true.
+! obsolete keyword - noone knows what it does. Not in manual. Not in testcases
+!            CASE('.SCALVIR');    config%opt%cfg_scale_virt = .true.
             !SOEO keywords
             !To-do: Collect in some read-soeo-input
             CASE('.SOEO');       config%soeoinp%cfg_soeo = .true.
@@ -1022,6 +1026,9 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
+        CASE('.SCFCOUNTERPOISE')
+           !Perform Counter Poise Correction of the SCF Energy
+           config%CounterPoiseCorrection = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
@@ -1418,7 +1425,7 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
   LOGICAL,intent(inout)                :: READWORD
   character(len=80),intent(inout)  :: WORD
   character(len=2)   :: PROMPT
-  integer :: i
+  integer :: i,PrintMemoryLowerLimit
 
   INFOLOOP: DO   
      IF(READWORD) THEN
@@ -1436,6 +1443,19 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         EXIT INFOLOOP
      ENDIF
      SELECT CASE(WORD)
+     CASE('.PRINTMEMORY');  
+        config%PrintMemory = .TRUE.
+        call Set_MemModParamPrintMemory(config%PrintMemory,config%lupri)
+     CASE('.PRINTMEMORYLOWERLIMIT'); 
+        !Do not print stack everytime the Maximum Allocated memory is increased
+        !only print if Maximum Allocated memory is greater then PrintMemoryLowerLimit
+        !Give input in byte
+        IF(config%PrintMemory)THEN
+           READ(LUCMD,*) PrintMemoryLowerLimit
+           call Set_PrintMemoryLowerLimit(PrintMemoryLowerLimit)
+        ELSE
+           call lsquit('Error .PRINTMEMORYLOWERLIMIT requires .PRINTMEMORY',-1)
+        ENDIF
      CASE('.DEBUG_SCF_MEM')
         call Set_PrintSCFmemory(.TRUE.)
      CASE('.DEBUG_MPI_MEM')
@@ -1461,8 +1481,8 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         config%solver%DEBUG_DIAG_REDSPACE = .true.
      CASE('.DEBUG_DIAG_HESSIAN')
         config%opt%DEBUG_DIAG_HESSIAN = .true.
-     CASE('.DEBUG_HESSIAN')
-        config%solver%DEBUG_HESSIAN = .true.
+!     CASE('.DEBUG_HESSIAN')
+!        config%solver%DEBUG_HESSIAN = .true.
      CASE('.DEBUG_HESSIAN_EXACT')
         config%solver%DEBUG_HESSIAN_EXACT = .true. ; config%solver%DEBUG_HESSIAN = .true.
      CASE('.DEBUG_IDEMPOTENCY')
@@ -2831,10 +2851,12 @@ integer, external :: OMP_GET_NESTED
 IF(OMP_GET_NUM_THREADS().GT. 1)THEN
    WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',OMP_GET_NUM_THREADS(),' threads.'
 ELSEIF(OMP_GET_NUM_THREADS().EQ. 1)THEN
-   WRITE(lupri,'(4X,A)')'This is a Single core calculation.'
+   WRITE(lupri,'(4X,A)')'This is a Single core calculation. (no OpenMP)'
 ENDIF
 !$OMP END MASTER
 !$OMP END PARALLEL
+#else
+   WRITE(lupri,'(4X,A)')'This is a Single core calculation. (no OpenMP)'
 #endif
 
 #ifdef VAR_MPI
@@ -3290,6 +3312,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       WRITE(config%LUPRI,'(A)')' '
       CALL lsQUIT('Cartesian basisfunction without H1DAIG starting guess.',config%lupri)
    endif
+
+! Check Counter Poise Input :
+   IF(config%CounterPoiseCorrection.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
+      call lsquit('.SCFCOUNTERPOISE keyword require SubSystems in MOLECULE.INP',-1)
+   ENDIF
 
 ! Check integral input:
 !======================
