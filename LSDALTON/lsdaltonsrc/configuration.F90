@@ -886,9 +886,16 @@ subroutine DEC_meaningful_input(config)
 
      ! It is meaningless to run a DFT calculation and then build DEC (or full CC) on top of it...
      if(config%opt%calctype == config%opt%dftcalc) then
-        call lsquit('Error in input: DFT and DEC (or full molecular CC) calculation cannot &
-             & be combined!',-1)
+        DECinfo%DFTreference = .TRUE.
+!        call lsquit('Error in input: DFT and DEC (or full molecular CC) calculation cannot &
+!             & be combined!',-1)
      end if
+!    IT IS NOT MEANINGLESS 
+     WRITE(config%lupri,*)' '
+     WRITE(config%lupri,*)'Warning you use a Kohn-Sham Reference for DEC or CC calculation!'
+     WRITE(config%lupri,*)'I hope you know what you are doing!'
+     WRITE(config%lupri,*)' '
+
 
      ! DEC geometry optimization 
      ! *************************

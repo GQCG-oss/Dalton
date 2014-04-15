@@ -1306,9 +1306,6 @@ contains
                                & back to standard algorithm.'
       end if
       return
-    else 
-      write(DECinfo%output,'(a,F12.5,a)') ' Available memory:',MemFree,' GB'
-      write(DECinfo%output,'(a,F12.5,a)') ' Required memory :',MemNeed,' GB'
     end if
     Nbatch = (ntot-1)/dimMO + 1
 
@@ -2036,12 +2033,13 @@ contains
   
   end subroutine unpack_gmo
 
-  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local)
+  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective)
      implicit none
      type(array),intent(inout)   :: integral
      type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
      type(lsitem), intent(inout) :: mylsitem
      logical, intent(in) :: local
+     logical, intent(inout) :: collective
      !Integral stuff
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,MinAObatch
@@ -2066,9 +2064,11 @@ contains
      logical :: master
      integer(kind=ls_mpik) :: me, nnod
      integer, pointer :: jobdist(:,:)
+     real(realk), pointer :: work(:)
+     integer(kind=long) :: w1size, w2size
 
-    call time_start_phase( PHASE_WORK )
-    
+     call time_start_phase( PHASE_WORK )
+
 
      master  = .true.
      me      = 0
@@ -2111,7 +2111,8 @@ contains
      if(master)then
 #ifdef VAR_MPI
         call time_start_phase( PHASE_COMM )
-        if(.not.local)call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+        if(.not.local)call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,&
+           &trafo4,mylsitem,collective)
         call time_start_phase( PHASE_WORK )
 #endif
 
@@ -2126,15 +2127,21 @@ contains
 
               maxsize=max(max(nb**2*k*i,n1*n2*k*i),n1*n2*n3*n4)
               maxsize=maxsize + max(n1*nb*k*i,n1*n2*n3*i)
+              if(collective) maxsize = maxsize + n1*n2*n3*n4
 
               if(float(maxsize*8)/(1024.0**3) > 0.8E0_realk*MemFree )then
-                 nba = k - 1
-                 nbg = i
-                 exit gamm
+                 if(nba <= MinAObatch .and. nbg<= MinAObatch .and. collective)then
+                    collective = .false.
+                 else
+                    nba = k - 1
+                    nbg = i
+                    exit gamm
+                 endif
               endif
 
            enddo alp
         enddo gamm
+
 
         if(DECinfo%manual_batchsizes)then
            nbg = max(DECinfo%ccsdGbatch,MinAObatch)
@@ -2153,6 +2160,10 @@ contains
               if(nbg<MinAObatch)nbg=MinAObatch
            endif
         endif
+
+        !maxsize=max(max(nb**2*nba*nbg,n1*n2*nba*nbg),n1*n2*n3*n4)
+        !maxsize=maxsize + max(n1*nb*nba*nbg,n1*n2*n3*nbg)
+        !if(collective) maxsize = maxsize + n1*n2*n3*n4
 
         MaxAllowedDimGamma = nbg
         MaxAllowedDimAlpha = nba
@@ -2234,9 +2245,15 @@ contains
 
 
      maxsize=max(max(nb**2*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*MaxActualDimAlpha*MaxActualDimGamma),n1*n2*n3*n4)
-     call mem_alloc( w1, maxsize )
+     w1size = maxsize
+     call mem_alloc( w1, w1size )
      maxsize=max(n1*nb*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*n3*MaxActualDimGamma)
-     call mem_alloc( w2, maxsize )
+     w2size = maxsize
+     call mem_alloc( w2, w2size )
+     if(collective)then
+        call mem_alloc(work,(i8*n1)*n2*n3*n4)
+        work = 0.0E0_realk
+     endif
 
 
      ! ************************************************
@@ -2259,8 +2276,12 @@ contains
 
      call mem_alloc(jobdist,nbatchesAlpha,nbatchesGamma)
      !JOB distribution
+#ifdef VAR_MPI
      call distribute_mpi_jobs(jobdist,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
               &batchdimGamma,myload,nnod,me)
+#else
+     jobdist = 0
+#endif
 
 
      myload = 0
@@ -2300,13 +2321,17 @@ contains
            call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
            call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
            call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
-           call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
-           !something more sophisticated can be implemented here
-           call time_start_phase( PHASE_COMM )
-           call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize)
-           call time_start_phase( PHASE_WORK )
+           if(collective) then
+              call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,1.0E0_realk,work,n1*n2*n3)
+           else
+              call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
+              !something more sophisticated can be implemented here
+              call time_start_phase( PHASE_COMM )
+              call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize)
+              call time_start_phase( PHASE_WORK )
+           endif
 
         enddo BatchAlpha
      enddo BatchGamma
@@ -2341,8 +2366,6 @@ contains
 
      call mem_dealloc(jobdist)
 
-     call mem_dealloc( w1 )
-     call mem_dealloc( w2 )
 
      if(.not.local)then
         integral%access_type = MASTER_ACCESS
@@ -2352,19 +2375,31 @@ contains
         trafo4%access_type = MASTER_ACCESS
      endif
 
+     call mem_dealloc( w1 )
+     call mem_dealloc( w2 )
 
 #ifdef VAR_MPI
      call time_start_phase( PHASE_IDLE )
      call lsmpi_barrier(infpar%lg_comm)
+     if(collective)then
+        call time_start_phase( PHASE_COMM )
+        call lsmpi_reduction(work,(i8*n1)*n2*n3*n4,infpar%master,infpar%lg_comm)
+        if( me == 0 )then
+           call array_convert(work,integral)
+        endif
+     endif
      call time_start_phase( PHASE_WORK )
+#else
+     call array_convert(work,integral)
 #endif
+     if(collective) call mem_dealloc( work )
 
   end subroutine get_mo_integral_par
 
-end module ccintegrals
+  end module ccintegrals
 
 #ifdef VAR_MPI
-!> Purpose: Intermediate routine for the slaves, they get data
+  !> Purpose: Intermediate routine for the slaves, they get data
 !           from the local master and then call the routine to 
 !           calculate MO integrals (non-T1 transformed)
 !
@@ -2432,9 +2467,10 @@ subroutine get_mo_integral_par_slave()
    implicit none
    type(array) :: integral,trafo1,trafo2,trafo3,trafo4
    type(lsitem) :: mylsitem
+   logical :: c
 
-   call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
-   call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.)
+   call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,c)
+   call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.,c)
   call ls_free(mylsitem)
 
 end subroutine get_mo_integral_par_slave

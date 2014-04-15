@@ -1937,9 +1937,9 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    January 2014
-  subroutine mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
+  subroutine mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,t2,om2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-             & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock)
+             & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock,loc)
 
     implicit none
      
@@ -1948,9 +1948,8 @@ contains
     type(array) :: pgmo_diag, pgmo_up
     type(array) :: govov
     type(array) :: t1
-    type(array) :: omega1
     type(array) :: t2
-    type(array) :: omega2
+    type(array) :: om2
      
     !> Long-range correction to Fock matrix
     type(array) :: deltafock
@@ -1971,9 +1970,12 @@ contains
      
     !> Batches info:
     type(MObatchInfo) :: MOinfo
+    logical :: loc
 
     integer :: pgmo_diag_addr(infpar%lg_nodtot)   
     integer :: pgmo_up_addr(infpar%lg_nodtot)   
+    integer :: t1addr(infpar%lg_nodtot), t2addr(infpar%lg_nodtot)
+    integer :: gaddr(infpar%lg_nodtot), oaddr(infpar%lg_nodtot)
     integer :: ntot, k
     integer(kind=long) :: nelms
     logical :: master
@@ -1986,6 +1988,7 @@ contains
     call ls_mpi_buffer(nvir,infpar%master)
     call ls_mpi_buffer(iter,infpar%master)
     call ls_mpi_buffer(MOinfo%nbatch,infpar%master)
+    call ls_mpi_buffer(loc,infpar%master)
     if (.not.master) then
       call mem_alloc(MOinfo%dimInd1,MOinfo%nbatch)
       call mem_alloc(MOinfo%dimInd2,MOinfo%nbatch)
@@ -2000,6 +2003,17 @@ contains
     call ls_mpi_buffer(MOinfo%StartInd2,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%dimTot,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%tileInd,MOinfo%nbatch,2,infpar%master)
+
+    if(.not.loc)then
+      if(master)t1addr=t1%addr_p_arr
+      call ls_mpi_buffer(t1addr,infpar%lg_nodtot,infpar%master)
+      if(master)gaddr=govov%addr_p_arr
+      call ls_mpi_buffer(gaddr,infpar%lg_nodtot,infpar%master)
+      if(master)t2addr=t2%addr_p_arr
+      call ls_mpi_buffer(t2addr,infpar%lg_nodtot,infpar%master)
+      if(master)oaddr=om2%addr_p_arr
+      call ls_mpi_buffer(oaddr,infpar%lg_nodtot,infpar%master)
+    endif
 
     if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
     call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
@@ -2020,15 +2034,18 @@ contains
       !ccsd_data_preparation
       k=SPLIT_MSG_REC
 
-      nelms = nvir*nocc
-      call ls_mpibcast_chunks(t1%elm1,nelms,infpar%master,infpar%lg_comm,k)
-
       nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
       call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
       if (iter/=1) then
         call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
       endif
     else
+      if(.not.loc)then
+        t1    = get_arr_from_parr(t1addr(infpar%lg_mynum+1))
+        govov = get_arr_from_parr(gaddr(infpar%lg_mynum+1))
+        t2    = get_arr_from_parr(t2addr(infpar%lg_mynum+1))
+        om2   = get_arr_from_parr(oaddr(infpar%lg_mynum+1))
+      endif
       pgmo_diag = get_arr_from_parr(pgmo_diag_addr(infpar%lg_mynum+1))
       if (MOinfo%nbatch>1) pgmo_up = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
     endif
@@ -2108,6 +2125,7 @@ contains
     call ls_mpi_buffer(DECitem%InteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
+    call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
@@ -2250,11 +2268,12 @@ contains
 
   end subroutine mpi_dec_fullinfo_master_to_slaves_precursor
 
-  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,c)
      implicit none
      type(array),intent(inout)   :: integral
      type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
      type(lsitem), intent(inout) :: mylsitem
+     logical, intent(inout) :: c
      integer :: addr1(infpar%lg_nodtot)
      integer :: addr2(infpar%lg_nodtot)
      integer :: addr3(infpar%lg_nodtot)
@@ -2282,6 +2301,7 @@ contains
      call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
      call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
      call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+     call ls_mpi_buffer(c,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
      if(.not.master)then
