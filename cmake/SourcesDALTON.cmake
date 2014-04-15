@@ -106,7 +106,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/abacus/abaort.F
     DALTON/abacus/abapcm.F
     DALTON/abacus/abaptr.F
-    DALTON/abacus/abaqfit.F
     DALTON/abacus/abaqm3.F
     DALTON/abacus/abaqmmm.F
     DALTON/abacus/abaqpg.F
@@ -612,6 +611,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/sirorb.F
     DALTON/sirius/sirout.F
     DALTON/sirius/sir_mep.F
+    DALTON/sirius/sir_qfit.F
     DALTON/sirius/sirpcm.F
     DALTON/sirius/sirpcmder.F
     DALTON/sirius/sirpop.F

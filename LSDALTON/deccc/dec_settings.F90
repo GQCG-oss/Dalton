@@ -150,10 +150,12 @@ contains
     DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
     DECinfo%F12                     = .false.
     DECinfo%F12debug                = .false.
+    DECinfo%SOS                     = .false.
     DECinfo%PureHydrogenDebug       = .false.
     DECinfo%InteractionEnergy       = .false.
     DECinfo%PrintInteractionEnergy  = .false.
     DECinfo%StressTest              = .false.
+    DECinfo%DFTreference            = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -298,7 +300,8 @@ contains
           ! CC model
        case('.MP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
-          DECinfo%use_singles=.false.  
+          DECinfo%use_singles = .false.  
+          DECinfo%MOCCSD      = .false.
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -498,6 +501,8 @@ contains
        case('.PRINTINTERACTIONENERGY')     
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
+       case('.SOSEX')
+         DECinfo%SOS = .true.
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
