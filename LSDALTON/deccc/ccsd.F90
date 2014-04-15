@@ -22,6 +22,7 @@ module ccsd_module
 !       & ii_getbatchorbitalscreenk, ii_get_decpacked4center_k_eri
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
 !       & ii_get_fock_mat_full
+  use II_XC_interfaceModule
 
 #ifdef VAR_MPI
   use infpar_module
@@ -2288,6 +2289,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !anymore
      !call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
      !& Dens%elms,.false.,iFock%elms)
+     !    IF(DECinfo%DFTreference)THEN
+     !       call II_get_xc_fock_mat_full(DECinfo%output,DECinfo%output,&
+     !           ....)
+     !    ENDIF
+
      !use dens as temporay array 
 
 

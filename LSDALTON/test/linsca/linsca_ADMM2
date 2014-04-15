@@ -17,22 +17,22 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > linsca_ADMMP_df.info <<'%EOF%'
-   linsca_ADMMP_df
+cat > linsca_ADMM2.info <<'%EOF%'
+   linsca_ADMM2
    -------------
    Molecule:         HCN
    Wave Function:    HF
-   Test Purpose:     Check ADMMP exchange energy: variant of ADMM2
-                     (JCTC 6(8):2348–2364, 2010) where a partial-charge 
-                     constraint is added.
+   Test Purpose:     Check ADMM2 exchange energy:
+                     (JCTC 6(8):2348–2364, 2010)
+                     Simplest ADMM formulation by Guidon
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > linsca_ADMMP_df.mol <<'%EOF%'
+cat > linsca_ADMM2.mol <<'%EOF%'
 BASIS
-6-31G* Aux=df-def2 CABS=6-31G JK=3-21G
+6-31G* Aux=df-def2 CABS=3-21G JK=3-21G
 HCN molecule
 
 Atomtypes=3 Nosymmetry
@@ -47,13 +47,10 @@ C   0.0   0.0     0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > linsca_ADMMP_df.dal <<'%EOF%'
-**GENERAL
-.TIME
+cat > linsca_ADMM2.dal <<'%EOF%'
 **INTEGRALS
 .DENSFIT
-.ADMM-JK
-.ADMMQ-ScaleE
+.ADMM2
 **WAVE FUNCTIONS
 .DFT
 B3LYP
@@ -67,8 +64,8 @@ B3LYP
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >linsca_ADMMP_df.check
-cat >> linsca_ADMMP_df.check <<'%EOF%'
+echo $CHECK_SHELL >linsca_ADMM2.check
+cat >> linsca_ADMM2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -78,8 +75,7 @@ else
 fi
 
 # ENERGY test
-CRIT1=`$GREP "Final DFT energy: * -91.4060974[7-8]" $log | wc -l`
-CRIT1=`$GREP "Final DFT energy: * -91.8886890" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy.* -91.8886941" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT -"

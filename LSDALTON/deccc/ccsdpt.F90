@@ -3466,7 +3466,6 @@ contains
 
   end subroutine ccsdpt_energy_e5_frag 
 
-
   !> \brief: calculate E[5] contribution to pair fragment ccsd(t) energy correction
   !> \author: Janus Eriksen
   !> \date: september 2012
@@ -3618,6 +3617,8 @@ contains
     nvirt_eos = MyFragment%nunoccEOS
     nocc_aos = MyFragment%noccAOS
     nvirt_aos = MyFragment%nunoccAOS
+
+    !TK: please add .NOT.DECinfo%onlyOccPart around the E4 occ and virt contribs
 
     ! **************************************************************
     ! ************** do energy for single fragment *****************
