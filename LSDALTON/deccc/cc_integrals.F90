@@ -2045,7 +2045,7 @@ contains
      integer :: dim1,dim2,dim3,MinAObatch
      integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
      integer :: iorb,nthreads,magic
-     integer :: idx,nb,n1,n2,n3,n4,fa,fg,la,lg,i,k,myload,nba,nbg
+     integer :: idx,nb,n1,n2,n3,n4,fa,fg,la,lg,i,k,myload,nba,nbg,biA,biG,bsA,bsG
      type(batchtoorb), pointer :: batch2orbAlpha(:)
      type(batchtoorb), pointer :: batch2orbGamma(:)
      Character(80)        :: FilenameCS,FilenamePS
@@ -2170,6 +2170,8 @@ contains
 
         if(MaxAllowedDimAlpha < MinAObatch)call lsquit("ERROR(get_mo_integral_par)not enough memory",-1)
 
+        MaxAllowedDimGamma = nb
+        MaxAllowedDimAlpha = nb/2
      endif
 
 
@@ -2283,41 +2285,42 @@ contains
      jobdist = 0
 #endif
 
-
+     print *,me,"has",batchindexGamma,batchindexAlpha
+     call lsmpi_barrier(infpar%lg_comm)
      myload = 0
 
      BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
-        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-        GammaEnd   = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
-        !short hand notation
-        fg         = GammaStart
-        lg         = dimGamma
 
+        lg  = batchdimGamma(gammaB)                         ! Dimension of gamma batch
+        fg  = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+        biG = batchindexGamma(gammaB)
+        bsG = batchsizeGamma(gammaB)
 
         BatchAlpha: do alphaB = 1, nbatchesAlpha
 
+           la  = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
+           fa  = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+           biA = batchindexAlpha(alphaB)
+           bsA = batchsizeAlpha(alphaB)
+
+           print '(I3,"have",8I7)',me,lg,fg,biG,bsG,la,fa,biA,bsA
+           call lsmpi_barrier(infpar%lg_comm)
+
            if( me /= jobdist(alphaB,gammaB) ) cycle BatchAlpha
+
            if(DECinfo%PL>2)write (*, '("Rank",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
               &me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
-
-           dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
-           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-           AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)          ! Last index in alpha batch
-
-           !short hand notation
-           fa         = AlphaStart
-           la         = dimAlpha
            myload     = myload + la * lg
 
            IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
            IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
-           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,batchindexAlpha(alphaB),&
-              &batchindexGamma(gammaB),batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC)
+           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,biA,&
+              &biG,bsA,bsG,nb,nb,la,lg,fullRHS,INTSPEC)
 
 
+           !something more sophisticated can be implemented here
            call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
            call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
            call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
@@ -2327,7 +2330,6 @@ contains
            else
               call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
-              !something more sophisticated can be implemented here
               call time_start_phase( PHASE_COMM )
               call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize)
               call time_start_phase( PHASE_WORK )
