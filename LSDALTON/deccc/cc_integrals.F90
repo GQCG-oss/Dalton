@@ -16,6 +16,7 @@ module ccintegrals
   use screen_mod
   use Integralparameters
   use integralinterfaceMOD
+  use II_XC_interfaceModule
 
   ! MO-CCSD module:
   use tensor_interface_module
@@ -493,7 +494,7 @@ contains
     type(lsitem), intent(inout) :: MyLsItem
     !> Is U symmetric (true) or not (false)?
     logical, intent(in) :: symmetric
-
+    real(realk) :: Edft(1)
     ! Sanity check
     if(U%nrow /= U%ncol) then
        call lsquit('dec_fock_transformation:&
@@ -503,6 +504,10 @@ contains
     ! Carry out Fock transformation on U
     call II_get_Fock_mat(DECinfo%output, DECinfo%output, &
          & MyLsitem%setting,U,symmetric,FockU,1,.FALSE.)
+    IF(DECinfo%DFTreference)THEN
+       call II_get_xc_fock_mat(DECinfo%output,DECinfo%output,&
+            & MyLsItem%setting,U%nrow,U,FockU,Edft,1)
+    ENDIF
 
   end subroutine dec_fock_transformation
 

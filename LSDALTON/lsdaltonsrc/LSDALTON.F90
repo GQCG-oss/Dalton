@@ -434,17 +434,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
               ! Single point DEC calculation using current HF files
               DECcalculation: IF(DECinfo%doDEC) then
-                 if(config%opt%calctype == config%opt%dftcalc) then
-                    ls%input%dalton%exchangeFactor = 1.0E0_realk
-                    ls%SETTING%SCHEME%exchangeFactor = 1.0E0_realk
-                    call II_get_Fock_mat(LUPRI,LUERR,ls%SETTING,D,.TRUE.,F,1,.FALSE.)
-                    call save_fock_matrix_to_file(F(1))
-                 endif
                  call dec_main_prog_input(ls,F(1),D(1),S,CMO)
-                 if(config%opt%calctype == config%opt%dftcalc) then
-                    ls%input%dalton%exchangeFactor = config%integral%exchangeFactor
-                    ls%SETTING%SCHEME%exchangeFactor = config%integral%exchangeFactor
-                 endif
               endif DECcalculation
               ! free Cmo
               call mat_free(Cmo)
@@ -496,9 +486,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
 
 #ifdef VAR_RSP
-        CALL Print_Memory_info(lupri,'before lsdalton_response')
-        call lsdalton_response(ls,config,F(1),D(1),S)
-        CALL Print_Memory_info(lupri,'after lsdalton_response')
+        IF(config%response%tasks%doDipole.OR.config%response%tasks%doResponse)THEN
+           CALL Print_Memory_info(lupri,'before lsdalton_response')
+           call lsdalton_response(ls,config,F(1),D(1),S)
+           CALL Print_Memory_info(lupri,'after lsdalton_response')
+        ENDIF
 #endif
         
         call config_shutdown(config)
@@ -609,17 +601,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Single point DEC calculation using HF restart files
   DECcalculationHFrestart: if ( (DECinfo%doDEC .and. DECinfo%HFrestart) ) then
      CALL Print_Memory_info(lupri,'before dec_main_prog_file')
-     if(config%opt%calctype == config%opt%dftcalc) then
-        ls%input%dalton%exchangeFactor = 1.0E0_realk
-        ls%SETTING%SCHEME%exchangeFactor = 1.0E0_realk
-        call II_get_Fock_mat(LUPRI,LUERR,ls%SETTING,D,.TRUE.,F,1,.FALSE.)
-        call save_fock_matrix_to_file(F(1))
-     endif
      call dec_main_prog_file(ls)
-     if(config%opt%calctype == config%opt%dftcalc) then
-        ls%input%dalton%exchangeFactor = config%integral%exchangeFactor
-        ls%SETTING%SCHEME%exchangeFactor = config%integral%exchangeFactor
-     endif
      CALL Print_Memory_info(lupri,'after dec_main_prog_file')
   endif DECcalculationHFrestart
 
