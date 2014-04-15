@@ -924,7 +924,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           !$OMP dim1,dim2,dim3,counter,alpha,A,B,i,j,idx,idx2,deltaeps,num,mini1,mini2,mini3,mini4) &
           !$OMP SHARED(nvbatches,V,nvirt,nocc,nocctot,dimAlpha,alphaB,noccEOS,dim4,gocc,tocc, &
           !$OMP gvirt,tvirt,nvirtEOS,b1,b2,b3,tmp4,CvirtTspecial,UoccEOS,UoccEOST,UvirtEOS, &
-          !$OMP EVocc, EVvirt,fc)
+          !$OMP EVocc, EVvirt,fc,DECinfo)
 
 
           call init_threadmemvar()
@@ -1177,7 +1177,8 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                 ! b2(b,Abat,J,I) = sum_{B} U_{bB} b3(B,Abat,J,I)
                 n=dimA*nocc*nocc
                 dim2=i8*nvirtEOS*dimA*nocc*nocc    ! dimension of b2
-                call dec_simple_dgemm(nvirtEOS,nvirt, n, UvirtEOS, b3(num)%p(1:dim3), b2(num)%p(1:dim2), 'n', 'n',use_thread_safe=ts)
+                call dec_simple_dgemm(nvirtEOS,nvirt, n, UvirtEOS, b3(num)%p(1:dim3), &
+                   & b2(num)%p(1:dim2), 'n', 'n',use_thread_safe=ts)
                 
                 ! Reorder: b2(b,Abat,J,I) --> b3(Abat,b,J,I)
                 dim3=dim2
