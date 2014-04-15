@@ -389,6 +389,11 @@ C
          CALL QUIT('SRHYBR and non-singlet not implemented')
       END IF
 C
+! Manu debug
+!#ifdef SIRGRAD_DEBUG
+      write(lupri,*) 'from FCKMAT: ONLYFC =', ONLYFC 
+      write(lupri,*) 'from FCKMAT: NOFV =', NOFV 
+!#endif
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
@@ -566,6 +571,7 @@ C
 #ifdef SIRGRAD_DEBUG
       P6FLAG(11) = .true. !Cdbg DEBUG
       P6FLAG(18) = .true. !Cdbg DEBUG
+      P6FLAG(15) = .true. !Cdbg DEBUG
 #endif
 C
 C
@@ -588,6 +594,9 @@ C         (ESRDFTY is in common block and is calculated inside FCK2AO)
       HFXFAC_save=HFXFAC
       HFXFAC=D1
       END IF
+#ifdef SIRGRAD_DEBUG
+      write(lupri,*) 'from FCKMAO: ONLYFC =', ONLYFC
+#endif
 !!      
       CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
 !!
