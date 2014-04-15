@@ -11,7 +11,8 @@ module cc_debug_routines_module
    use dec_typedef_module
    use tensor_type_def_module
    use screen_mod
- 
+   use II_XC_interfaceModule
+   use IntegralInterfaceMOD 
 
    ! DEC DEPENDENCIES (within deccc directory)   
    ! *****************************************
@@ -2946,6 +2947,10 @@ module cc_debug_routines_module
     iFock = 0.0E0_realk
     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
     & Dens,.false.,iFock)
+    IF(DECinfo%DFTreference)THEN
+       call II_get_xc_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
+            & Dens,iFock)
+    ENDIF
     !use dens as temporay array 
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
          & Dens,nb,nb,AORdefault,AORdefault)
