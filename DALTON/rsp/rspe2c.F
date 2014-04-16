@@ -3308,6 +3308,7 @@ C
 #include "rspprp.h"
 #include "infpp.h"
 #include "inflr.h"
+#include "inflin.h"
 #include "inforb.h"
 #include "infdim.h"
 #include "infinp.h"
@@ -3795,6 +3796,15 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
+            IF (DOMO2) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
+     &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
+     &                             WRK(KWRK2),LWRK2)
+     
+
+            IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
+     &                             KZYVAR,KZVAR,CMO,LUPRI,
+     &                             WRK(KWRK2),LWRK2)
+
             IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
      &                             KZVAR,WRK(KCMO2),LUPRI)
             CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS+(INUM-1)*KZYVAR),
@@ -6017,7 +6027,7 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
                   tot=tot+sopr(ksymop,i,j)*2867.081D0
                endif
                if (lab2.eq.'Z2SPNORB' .and. lab1 .eq.'PVIOLA Z') then
-                  tot=tot+sopr(ksymop,i,j)*2867.081D0
+                tot=tot+sopr(ksymop,i,j)*2867.081D0
                endif
             enddo
          enddo
@@ -6091,6 +6101,362 @@ C
          END IF
          WRITE(LUPRI,'(/"@ Overlap diagnostic LAMBDA =",F10.4)') ALAMBDA
       END IF
+      RETURN
+      END
+
+C  /* Deck RSPMO2 */
+      SUBROUTINE RSPMO2 (WOP,NDIM2,NDIM1,CMO,LUPRI,WRK,LWRK)
+C
+C
+C     NDIM2 = KZYVAR
+C     NDIM1 = KZVAR
+C
+#include "implicit.h"
+      DIMENSION WOP(*),CMO(*),WRK(*)
+      PARAMETER (D0 = 0.0D0)
+      LOGICAL LOCDEB, ANTSYM
+C
+#include "codata.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+
+      IF ((NASHT .GT. 0) .OR. (NSYM .NE. 1)) RETURN
+
+      LOCDEB = .FALSE.
+
+      CALL HEADER('MO Overlap Diagnostic',-1)
+
+C     Memory allocation   
+      KUCMO   = 1
+      KWOPXY  = KUCMO  + NORBT*NBAST
+      KINT    = KWOPXY + NDIM1
+      KINTMO  = KINT   + 3*NNBASX
+      KINUMO  = KINTMO + 3*NNORBX 
+      KDIAX   = KINUMO + 3*N2ORBX
+      KDIAY   = KDIAX  + NORBT
+      KDIAZ   = KDIAY  + NORBT
+      KDIFX   = KDIAZ  + NORBT
+      KDIFY   = KDIFX  + NDIM1
+      KDIFZ   = KDIFY  + NDIM1
+      KDIFR   = KDIFZ  + NDIM1
+      KINDXI  = KDIFR  + NDIM1
+      KINDXA  = KINDXI + NDIM1
+      KWRK2   = KINDXA + NDIM1
+      LWRK2   = LWRK   - KWRK2 
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('RSPMO2',-KWRK2,LWRK2)
+
+      CALL DZERO(WRK(KUCMO),NORBT*NBAST)
+      CALL DZERO(WRK(KWOPXY),NDIM1)
+      CALL DZERO(WRK(KINT),3*NNBASX)
+      CALL DZERO(WRK(KINTMO),3*NNORBX) 
+      CALL DZERO(WRK(KINUMO),3*N2ORBX)
+      CALL DZERO(WRK(KDIAX),NORBT)
+      CALL DZERO(WRK(KDIAY),NORBT)
+      CALL DZERO(WRK(KDIAZ),NORBT)
+      CALL DZERO(WRK(KDIFX),NDIM1)
+      CALL DZERO(WRK(KDIFY),NDIM1)
+      CALL DZERO(WRK(KDIFZ),NDIM1)
+      CALL DZERO(WRK(KDIFR),NDIM1)
+      CALL DZERO(WRK(KINDXI),NDIM1)
+      CALL DZERO(WRK(KINDXA),NDIM1)
+
+      CALL UPKCMO(CMO,WRK(KUCMO))
+
+      IF (LOCDEB) THEN
+        WRITE(LUPRI,*) 'NWOPPT: ', NWOPPT
+        WRITE(LUPRI,*) 'Response Vector in RSPMO2'
+        DO 111 I=1,NDIM2
+          WRITE(LUPRI,*) I, WOP(I)
+ 111    CONTINUE
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'X part of Response Vector in RSPMO2' 
+        DO 112 I=1,NDIM1
+          WRITE(LUPRI,*) I, WOP(I)
+ 112    CONTINUE
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'Y part of Response Vector in RSPMO2'
+        DO 113 I=1,NDIM1
+          WRITE(LUPRI,*) I, WOP(I+NDIM1)
+ 113    CONTINUE
+      ENDIF
+
+C ADD X AND Y PARTS OF RESPONSE VECTOR
+
+      DO 114 I=1,NDIM1
+         WRK(KWOPXY+I-1) = WOP(I) - WOP(I+NDIM1)
+ 114  CONTINUE     
+
+      IF (LOCDEB) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'X+Y Response Vector in RSPMO2'
+        DO 115 I=1,NDIM1
+          WRITE(LUPRI,*) I, WRK(KWOPXY+I-1)
+ 115    CONTINUE
+      ENDIF
+
+C
+C READ DIPOLE MATRIX FROM FILE
+C
+      LU=-1
+      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
+     &   .FALSE.)
+
+      REWIND LU
+      CALL MOLLAB('XDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT))
+     
+      CALL MOLLAB('YDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+NNBASX)) 
+
+      CALL MOLLAB('ZDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+2*NNBASX))
+
+      CALL GPCLOSE(LU,'KEEP')
+
+      IF (LOCDEB)  THEN
+         WRITE (LUPRI,'(/A)') ' XDIPLEN AO Basis:'
+         CALL OUTPAK(WRK(KINT),NBAST,1,LUPRI)
+
+         WRITE (LUPRI,'(/A)') ' YDIPLEN AO Basis:'
+         CALL OUTPAK(WRK(KINT+NNBASX),NBAST,1,LUPRI)
+
+         WRITE (LUPRI,'(/A)') ' ZDIPLEN AO Basis:'
+         CALL OUTPAK(WRK(KINT+2*NNBASX),NBAST,1,LUPRI)
+      END IF
+
+
+      CALL UTHU(WRK(KINT),WRK(KINTMO),WRK(KUCMO),
+     &          WRK(KWRK2),NBAST,NORBT)
+
+      CALL DSPTSI(NORBT,WRK(KINTMO),WRK(KINUMO))
+
+      CALL UTHU(WRK(KINT+NNBASX),WRK(KINTMO+NNORBX),WRK(KUCMO),
+     &          WRK(KWRK2),NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KINTMO+NNORBX),WRK(KINUMO+N2ORBX))
+
+      CALL UTHU(WRK(KINT+2*NNBASX),WRK(KINTMO+2*NNORBX),WRK(KUCMO),
+     &          WRK(KWRK2),NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KINTMO+2*NNORBX),WRK(KINUMO+2*N2ORBX))
+
+      IF (LOCDEB) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'XDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'YDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO+N2ORBX),1,NORBT,1,NORBT,NORBT,
+     &              NORBT,1,LUPRI)
+        WRITE(LUPRI,*) 
+        WRITE(LUPRI,*) 'ZDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO+2*N2ORBX),1,NORBT,1,NORBT,NORBT,
+     &              NORBT,1,LUPRI)
+      ENDIF
+
+C Take out the diagonal elements
+
+        DO 116 I=1,NORBT
+          WRK(KDIAX+I-1) = WRK(KINUMO+I-1+NORBT*(I-1))
+          WRK(KDIAY+I-1) = WRK(KINUMO+I-1+NORBT*(I-1)+N2ORBX)
+          WRK(KDIAZ+I-1) = WRK(KINUMO+I-1+NORBT*(I-1)+2*N2ORBX)
+ 116    CONTINUE
+
+        IF (LOCDEB) THEN
+          WRITE(LUPRI,*) 'NORBT:', NORBT
+          WRITE(LUPRI,*) 'DIAGONAL ELEMENTS IN XDIP YDIP ZDIP'
+          DO 117 I=1,NORBT
+            WRITE(LUPRI,*) I, WRK(KDIAX+I-1), WRK(KDIAY+I-1), 
+     &                        WRK(KDIAZ+I-1)
+ 117      CONTINUE
+        ENDIF
+
+        IF (LOCDEB) THEN
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,*) 'Number of occ. orbitals: ', NRHFT
+          WRITE(LUPRI,*) 'Number of vir. orbitals: ', NVIRT
+        ENDIF
+
+        IF (LOCDEB) THEN
+          XDIPMOM = 0.0D0
+          YDIPMOM = 0.0D0
+          ZDIPMOM = 0.0D0
+          DO 222 I=1,NRHFT
+            XDIPMOM = XDIPMOM + WRK(KDIAX+I-1)
+            YDIPMOM = YDIPMOM + WRK(KDIAY+I-1)
+            ZDIPMOM = ZDIPMOM + WRK(KDIAZ+I-1)
+ 222      CONTINUE
+          XDIPMOM = 2*XDIPMOM
+          YDIPMOM = 2*YDIPMOM
+          ZDIPMOM = 2*ZDIPMOM
+
+          WRITE(LUPRI,*) 'Ground state electronic dipole moment'
+          WRITE(LUPRI,*) XDIPMOM, YDIPMOM, ZDIPMOM
+          WRITE(LUPRI,*)
+        ENDIF
+
+        KK=1
+        DO 118 I=1,NRHFT
+          DO 119 J=1,NVIRT
+             WRK(KDIFX+KK-1) = WRK(KDIAX+NRHFT+J-1) - WRK(KDIAX+I-1)
+             WRK(KDIFY+KK-1) = WRK(KDIAY+NRHFT+J-1) - WRK(KDIAY+I-1)
+             WRK(KDIFZ+KK-1) = WRK(KDIAZ+NRHFT+J-1) - WRK(KDIAZ+I-1)
+             WRK(KINDXI+KK-1) = I
+             WRK(KINDXA+KK-1) = NRHFT+J
+             KK=KK+1
+ 119      CONTINUE
+ 118   CONTINUE
+
+       IF ((KK-1) .NE. NDIM1) THEN
+         CALL QUIT('RSPMO2: Error in Dimension')
+       ENDIF
+
+        DO 120 I=1,NDIM1
+          TEMP=D0
+          TEMP = WRK(KDIFX+I-1)*WRK(KDIFX+I-1)+
+     &           WRK(KDIFY+I-1)*WRK(KDIFY+I-1)+
+     &           WRK(KDIFZ+I-1)*WRK(KDIFZ+I-1)
+          TEMP = SQRT(TEMP)
+          WRK(KDIFR+I-1) = TEMP
+ 120   CONTINUE
+
+        IF (LOCDEB) THEN
+          write(lupri,*) 'Norms for hole-particle component'
+          DO 333 I=1,NDIM1
+            KK = Int(WRK(KINDXI+I-1))
+            LL = Int(WRK(KINDXA+I-1))
+            Write(lupri,*) WRK(KDIFR+I-1), WRK(KWOPXY+I-1), KK, LL
+ 333      CONTINUE 
+        ENDIF
+
+        TEMP1=D0
+        TEMP2=D0
+        DO 121 I=1,NDIM1
+          TEMP1 = TEMP1 + WRK(KDIFR+I-1)*WRK(KWOPXY+I-1)*WRK(KWOPXY+I-1)
+          TEMP2 = TEMP2 + WRK(KWOPXY+I-1)*WRK(KWOPXY+I-1)
+121    CONTINUE
+
+       DELTAR = (TEMP1/TEMP2)*XTANG
+       WRITE(LUPRI,*)
+       WRITE(LUPRI,'(/A,F10.4)') 'Delta_R Diagnostic (Aa): ', DELTAR
+       WRITE(LUPRI,*)
+
+
+      RETURN
+      END
+C  /* Deck TRCHAR */
+      SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,LUPRI,WRK,LWRK)
+c
+      use qfit
+C
+C
+C     NDIM2 = KZYVAR
+C     NDIM1 = KZVAR
+C
+#include "implicit.h"
+      DIMENSION WOP(*),CMO(*),WRK(*), UDV(*)
+      PARAMETER (D0 = 0.0D0)
+      LOGICAL LOCDEB, ANTSYM
+      real*8, dimension(:), allocatable :: dens
+      DIMENSION TRDIP(3)
+C
+#include "mxcent.h"
+#include "codata.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "nuclei.h"
+
+      LOCDEB = .FALSE.
+
+      CALL HEADER('Calculation of Transition Density charges',-1)
+
+C     Memory allocation
+      KUBOVE  = 1
+      KDCAO   = KUBOVE + N2ORBX
+      KDVAO   = KDCAO  + N2BASX
+      KDENS   = KDVAO  + N2BASX
+      KINT    = KDENS  + NNBASX
+      KWRK2   = KINT   + 3*NNBASX
+      LWRK2   = LWRK   - KWRK2
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('TRCHAR',-KWRK2,LWRK2)
+
+      CALL DZERO(WRK(KUBOVE),N2ORBX)
+      CALL DZERO(WRK(KDCAO),N2BASX)
+      CALL DZERO(WRK(KDVAO),N2BASX)
+      CALL DZERO(WRK(KDENS),NNBASX)
+      CALL DZERO(WRK(KINT),3*NNBASX)
+
+      CALL RSPZYM(1,WOP,WRK(KUBOVE))
+      CALL DSCAL(N2ORBX,-1.0D0,WRK(KUBOVE),1) 
+
+      CALL DEQ27(CMO,WRK(KUBOVE),UDV,WRK(KDCAO),WRK(KDVAO),
+     &           WRK(KWRK2),LWRK2)
+
+      IF (NASHT .GT. 1) THEN
+        CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
+        CALL DZERO(WRK(KDVAO),N2BASX) 
+      ENDIF 
+
+      CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDVAO))
+      CALL PKSYM1(WRK(KDVAO),WRK(KDENS),NBAS,NSYM,1)
+
+      IF (LOCDEB)  THEN
+         WRITE (LUPRI,'(/A)') ' Transition Density Matrix'
+         CALL OUTPAK(WRK(KDENS),NBAST,1,LUPRI)
+      ENDIF
+
+      !write(*,*) "rsp:", cord
+      !write(*,*) "rsp:", charge
+      !call qfit_initialize(cord(:,1:natoms),charge(1:natoms))
+
+      LU=-1
+      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
+     &     .FALSE.)
+
+      REWIND LU
+      CALL MOLLAB('XDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT))
+
+      CALL MOLLAB('YDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+NNBASX))
+
+      CALL MOLLAB('ZDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+2*NNBASX))
+
+      CALL GPCLOSE(LU,'KEEP')
+
+      IF (LOCDEB) THEN
+          WRITE (LUPRI,'(/A)') ' XDIPLEN AO Basis:'
+          CALL OUTPAK(WRK(KINT),NBAST,1,LUPRI)
+
+          WRITE (LUPRI,'(/A)') ' YDIPLEN AO Basis:'
+          CALL OUTPAK(WRK(KINT+NNBASX),NBAST,1,LUPRI)
+
+          WRITE (LUPRI,'(/A)') ' ZDIPLEN AO Basis:'
+          CALL OUTPAK(WRK(KINT+2*NNBASX),NBAST,1,LUPRI)
+      ENDIF
+
+      TRDIP(1) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT),1)
+      TRDIP(2) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+NNBASX),1)
+      TRDIP(3) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+2*NNBASX),1) 
+
+      WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
+      WRITE(LUPRI,'(5x,3F12.6)') TRDIP
+
+      allocate( dens( nnbasx ) )
+      CALL DCOPY(NNBASX,WRK(KDENS),1,dens,1)
+      call qfit_set_transition_dipole( TRDIP )
+      call qfit_fit(dens)
+      deallocate( dens )
+      CALL QFITRES
       RETURN
       END
 ! -- end of rspe2c.F --

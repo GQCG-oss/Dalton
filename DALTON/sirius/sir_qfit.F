@@ -63,7 +63,6 @@ C
       integer :: icharg
 C
 #if defined (BUILD_QFITLIB)
-      write(*,*) "css: dpi0", dip0
       call molchr(icharg)
       call qfit_initialize(cord(1:3,1:natoms), charge(1:natoms),
      *                     icharg, dip0, diporg)
@@ -101,7 +100,7 @@ C
       write(lupri,*)
       write(lupri,'(a,f9.4)') '  Sum = total charge:', sum(charges)
 
-      call qfit_finalize
+      !call qfit_finalize
       deallocate( charges )
 #endif
  9000 format(4x,'Charges have been fitted to the molecular ',
@@ -173,19 +172,19 @@ C     NUCLEAR CONTRIBUTION
       CALL DIPNUC(DUM,DUM,0,.FALSE.)
 C
 C     ELECTRONIC CONTRIBUTION
-      lu = -1
-      call gpopen(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
+      LU = -1
+      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
      &     .FALSE.)
 
-      rewind lu
+      REWIND LU
 
-      call mollab('XDIPLEN ', LU, LUPRI)
-      call readt(LU, nnbasx, WRK(KXDIP))
-      call mollab('YDIPLEN ', LU, LUPRI)
-      call readt(LU, nnbasx, WRK(KYDIP))
-      call mollab('ZDIPLEN ', LU, LUPRI)
-      call readt(LU, nnbasx, WRK(KZDIP))
-      call gpclose(lu, 'keep')
+      CALL MOLLAB('XDIPLEN ', LU, LUPRI)
+      CALL READT(LU, NNBASX, WRK(KXDIP))
+      CALL MOLLAB('YDIPLEN ', LU, LUPRI)
+      CALL READT(LU, NNBASX, WRK(KYDIP))
+      CALL MOLLAB('ZDIPLEN ', LU, LUPRI)
+      CALL READT(LU, NNBASX, WRK(KZDIP))
+      CALL GPCLOSE(LU, 'KEEP')
 
       DIPME(1) = -DDOT(NNBASX, WRK(KDENS), 1, WRK(KXDIP), 1)
       DIPME(2) = -DDOT(NNBASX, WRK(KDENS), 1, WRK(KYDIP), 1)
