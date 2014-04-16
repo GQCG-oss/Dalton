@@ -34,7 +34,7 @@ module dec_workarounds_module
     real(realk),intent(in)    :: source(:)
     real(realk), intent(in), optional :: scal1,scal2
     integer(kind=8) :: block,i
-    integer, parameter :: k = 1000000
+    integer, parameter :: k = 50000000
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     procedure(subblock_op), pointer :: op_blocks
 

@@ -18,7 +18,6 @@ module rpa_module
   use integralinterfaceDEC
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
   use ccsd_module
-!       & ii_get_fock_mat_full
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
