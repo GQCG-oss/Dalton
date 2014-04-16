@@ -101,16 +101,22 @@ contains
 
 #ifdef VAR_MPI
 
+    call time_start_phase(PHASE_WORK)
+
     nodtotal = infpar%lg_nodtot
 
     ! bcast the JOB specifier and distribute data to all the slaves within local group
     waking_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .eq. infpar%master)) then
+
+       call time_start_phase(PHASE_COMM)
 
        ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
        call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%val,mylsitem)
+
+       call time_start_phase(PHASE_WORK)
 
     end if waking_the_slaves
 
@@ -192,9 +198,13 @@ contains
 
 #ifdef VAR_MPI
 
+    call time_start_phase(PHASE_WORK)
+
     ! the parallel version of the ijk-loop
     call ijk_loop_par(nocc,nvirt,jaik%val,abij%val,cbai,ccsd_doubles%val,&
                     & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt,nodtotal)
+
+    call time_start_phase(PHASE_WORK)
 
 #else
 
@@ -214,14 +224,19 @@ contains
 #ifdef VAR_MPI
 
     ! here, synchronize all procs
+    call time_start_phase(PHASE_IDLE)
     call lsmpi_barrier(infpar%lg_comm)
 
     ! reduce singles and doubles arrays into that residing on the master
     reducing_to_master: if (nodtotal .gt. 1) then
 
+       call time_start_phase(PHASE_COMM)
+
        call lsmpi_local_reduction(ccsdpt_singles%val,nocc,nvirt,infpar%master)
        call lsmpi_local_reduction(ccsdpt_doubles%val,nvirt,nocc,nvirt,nocc,infpar%master)
        call lsmpi_local_reduction(ccsdpt_doubles_2%val,nvirt,nocc,nvirt,nocc,infpar%master)
+
+       call time_start_phase(PHASE_WORK)
 
     end if reducing_to_master
 
@@ -240,6 +255,8 @@ contains
     ! release stuff located on slaves
     releasing_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .ne. infpar%master)) then
 
+       call time_start_phase(PHASE_WORK)
+
        ! release stuff initialized herein
        call array2_free(Uocc)
        call array2_free(Uvirt)
@@ -254,6 +271,8 @@ contains
        return
 
     end if releasing_the_slaves
+
+    call time_start_phase(PHASE_WORK)
 
 #endif
 
@@ -337,6 +356,7 @@ contains
     integer, dimension(10) :: async_id
 #endif
 
+    call time_start_phase(PHASE_WORK)
 
     ! init pdm work arrays for vvvo integrals
     ! init ccsd_doubles_help_arrays
@@ -472,7 +492,9 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(8))
 
                   ! get the j'th v^3 tile only
+                  call time_start_phase(PHASE_COMM)
                   call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
+                  call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
@@ -540,7 +562,9 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
 
                      ! get the i'th v^3 tile only
+                     call time_start_phase(PHASE_COMM)
                      call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+                     call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
@@ -577,7 +601,9 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
 
                      ! get the i'th v^3 tile
+                     call time_start_phase(PHASE_COMM)
                      call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+                     call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_i) async(async_id(2))
@@ -611,8 +637,10 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
 
                      ! get the i'th and j'th v^3 tiles
+                     call time_start_phase(PHASE_COMM)
                      call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
                      call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
+                     call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
@@ -664,7 +692,9 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
 
                         ! get the k'th tile
+                        call time_start_phase(PHASE_COMM)
                         call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
+                        call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_k) async(async_id(2))
@@ -711,7 +741,9 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
 
                         ! get the k'th tile
+                        call time_start_phase(PHASE_COMM)
                         call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
+                        call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_k) async(async_id(2))
@@ -902,6 +934,8 @@ contains
                end if
 
             end do ijrun_par
+
+    call time_start_phase(PHASE_WORK)
 
 !$acc wait
 
@@ -6512,7 +6546,7 @@ end module ccsdpt_module
   use precision
   use dec_typedef_module
   use memory_handling
-  use lstiming, only: lstimer
+  use lstiming!, only: lstimer
   use typedeftype, only: Lsitem,lssetting
 
   ! DEC DEPENDENCIES (within deccc directory)  
@@ -6528,6 +6562,8 @@ end module ccsdpt_module
     type(array2) :: ccsdpt_t1
     type(array4) :: ccsd_t2, ccsdpt_t2
     type(lsitem) :: mylsitem
+
+    call time_start_phase(PHASE_COMM)
 
     ! call ccsd(t) data routine in order to receive data from master
     call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%val,mylsitem)
@@ -6556,9 +6592,13 @@ end module ccsdpt_module
     ccsdpt_t1 = array2_init_plain([nvirt,nocc])
     ccsdpt_t2 = array4_init_standard([nvirt,nvirt,nocc,nocc])
 
+    call time_start_phase(PHASE_WORK)
+
     ! now enter the ccsd(t) driver routine
     call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_t2,&
                          & ccsdpt_t1,ccsdpt_t2)
+
+    call time_start_phase(PHASE_WORK)
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
     call array2_free(ccsdpt_t1)
