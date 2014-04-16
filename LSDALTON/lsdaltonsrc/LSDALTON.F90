@@ -100,7 +100,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use optimlocMOD, only: optimloc
   implicit none
   logical, intent(in) :: OnMaster
-  logical, intent(out):: meminfo_slaves
+  logical, intent(inout):: meminfo_slaves
   integer, intent(inout) :: lupri, luerr
   integer             :: nbast, lucmo
   TYPE(lsitem),target :: ls

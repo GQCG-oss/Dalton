@@ -2810,8 +2810,54 @@ module cc_debug_routines_module
     ENDIF
 
     myload = 0
-    fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
 
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+
+    ! This logical should be set - but for some reason it make major complications
+    ! So please Someone who knows this code - please comment this line in and fix the bug 
+!
+!#7  0x4F4ACC in __memory_handling_MOD_real_deallocate_1dim at memory.F90:2104 (discriminator 2)
+!#8  0x690DE2 in __tensor_basic_module_MOD_memory_deallocate_array_dense at tensor_basic.F90:279
+!#9  0x68F141 in __tensor_basic_module_MOD_array_free_basic at tensor_basic.F90:520 (discriminator 1)
+!#10  0xB71497 in __tensor_interface_module_MOD_array_free_standard at tensor_interface.F90:965
+!#11  0xB7130C in __tensor_interface_module_MOD_array_free at tensor_interface.F90:1017
+!#12  0x119679A in __ccdriver_MOD_ccsolver_par at cc_driver.F90:2239
+!#13  0x119E4B8 in __ccdriver_MOD_ccsolver_justenergy at cc_driver.F90:341
+!#14  0x87D8D9 in __full_MOD_full_cc_dispatch at full_driver.F90:158
+!#15  0x87DB09 in __full_MOD_full_driver at full_driver.F90:83
+!#16  0x83C83A in __dec_main_mod_MOD_dec_main_prog at dec_main.F90:204
+!#17  0x83DBC2 in __dec_main_mod_MOD_dec_main_prog_input at dec_main.F90:78
+!#18  0x48FBE5 in lsdalton_driver_ at LSDALTON.F90:437
+!    fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
+
+
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
+    print*,'WARNING'
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
