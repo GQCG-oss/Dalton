@@ -53,8 +53,11 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "inforb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
+#include "maxaqn.h"
+#include "symmet.h"
 #include "moldip.h"
 #include "magone.h"
 #include "orgcom.h"
@@ -64,7 +67,7 @@ C
 C
 #if defined (BUILD_QFITLIB)
       call molchr(icharg)
-      call qfit_initialize(cord(1:3,1:natoms), charge(1:natoms),
+      call qfit_initialize(cord(1:3,1:nucdep), charge(1:nucdep),
      *                     icharg, dip0, diporg)
       call qfit_fit(FDENS)
 #endif
@@ -88,13 +91,13 @@ C
 #if defined (BUILD_QFITLIB)
       CALL HEADER('Potential fitted charges (QFITLIB)',-1)
 
-      allocate( charges( natoms ) )
+      allocate( charges( nucdep ) )
       call qfit_get_results( charges )
 
       write(lupri,9000)
       write(lupri,*)
 
-      do m = 1, natoms
+      do m = 1, size(charges)
           write(lupri,'(a,a4,f9.4)') '@ ',namdep(m), charges(m)
       enddo
       write(lupri,*)
