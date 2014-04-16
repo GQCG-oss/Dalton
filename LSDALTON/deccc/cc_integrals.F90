@@ -2293,6 +2293,7 @@ contains
      !call lsmpi_barrier(infpar%lg_comm)
 
      myload = 0
+     fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
 
      BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
 
