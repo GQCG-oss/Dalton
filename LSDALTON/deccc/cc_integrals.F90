@@ -2171,7 +2171,7 @@ contains
         maxsize=maxsize + max(n1*nb*nba*nbg,n1*n2*n3*nbg)
         if(collective) maxsize = maxsize + n1*n2*n3*n4
 
-        if(maxsize > fraction_of*MemFree)call lsquit("ERROR(get_mo_integral_par)not enough memory",-1)
+        if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree)call lsquit("ERROR(get_mo_integral_par)not enough memory",-1)
 
         MaxAllowedDimGamma = nbg
         MaxAllowedDimAlpha = nba
