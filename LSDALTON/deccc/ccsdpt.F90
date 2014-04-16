@@ -508,7 +508,11 @@ contains
 
 ! no need to get i'th tile as j'th tile is already present on the host node.
 ! just copy on the host node and copyin to the device.
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+                     call assign_in_subblocks(vvvo_pdm_i,'=',vvvo_pdm_j,i8*nvirt**3)
+#else
                      vvvo_pdm_i = vvvo_pdm_j
+#endif
 !$acc enter data copyin(vvvo_pdm_i) async(async_id(2))
 
                   else ! i .gt. j
@@ -1801,9 +1805,13 @@ contains
                             & vvvo_tile_3,trip_tmp,async_idx)
     call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_portions_1,&
                             & ovoo_tile_13,trip_tmp,async_idx)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3,gpu=.true.)
+#else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
 !$acc end kernels
+#endif
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [2,1,3],1.0E0_realk,trip_ampl,async_idx)
@@ -1963,9 +1971,13 @@ contains
                             & vvvo_tile_2,trip_tmp,async_idx)
     call trip_amplitudes_ijk_occ(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_portions_2,&
                             & ovoo_tile_12,trip_tmp,async_idx)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3,gpu=.true.)
+#else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
 !$acc end kernels
+#endif
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [1,3,2],1.0E0_realk,trip_ampl,async_idx)
