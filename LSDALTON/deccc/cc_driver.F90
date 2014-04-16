@@ -505,6 +505,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,'(1X,a)') '*                      Full CC2 calculation is done !                       *'
    else if (ccmodel == MODEL_MP2 ) then
       write(DECinfo%output,'(1X,a)') '*                      Full MP2 calculation is done !                       *'
+   else if (ccmodel == MODEL_RPA ) then
+      write(DECinfo%output,'(1X,a)') '*                      Full RPA calculation is done !                       *'
    else
       call lsquit("ERROR(ccsolver_justenergy)model not recognized",-1)
    endif
@@ -541,7 +543,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,*)
    endif
 
-   if( ccmodel /= MODEL_MP2 ) then
+   if( ccmodel /= MODEL_MP2 .or. ccmodel /= MODEL_RPA ) then
       ! free amplitude arrays
       call array2_free(t1_final)
    endif
@@ -1747,7 +1749,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_free(tmp)
    end if
 
-   if( ccmodel /= MODEL_MP2)then
+   if( ccmodel /= MODEL_MP2 .or. ccmodel == MODEL_RPA )then
       call array_change_atype_to_d( ppfock_prec )
       call array_change_atype_to_d( qqfock_prec )
    endif
@@ -1776,17 +1778,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc(omega2,DECinfo%ccMaxIter)
 
    ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-   if(CCmodel /= MODEL_MP2) then
+   if(CCmodel /= MODEL_MP2 .or. ccmodel /= MODEL_RPA) then
       xo = array_minit( occ_dims, 2, local=local, atype='LDAR' )
       yo = array_minit( occ_dims, 2, local=local, atype='LDAR' )
       xv = array_minit( virt_dims,2, local=local, atype='LDAR' )
       yv = array_minit( virt_dims,2, local=local, atype='LDAR' )
    end if
 
-   iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
+   if(CCmodel == MODEL_RPA) then
+     iajb=array_minit( [no,nv,no,nv], 4, local=.true., atype='TDAR' )
+   else
+     iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
+   endif
    call array_zero(iajb)
 
-   if(ccmodel == MODEL_RPA) call lsquit("ERROR(ccsolver_par): model not implemented: RPA",-1)
+  ! if(ccmodel == MODEL_RPA) call lsquit("ERROR(ccsolver_par): model not implemented: RPA",-1)
 
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
@@ -1811,7 +1817,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    else
 
       !if MP2, just zero the array, and keep it in PDM all the time
-      if(ccmodel == MODEL_MP2)then
+      if(ccmodel == MODEL_MP2 .or. ccmodel == MODEL_RPA)then
          atype = 'TDAR'
          t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
          old_iter = 0
@@ -1862,6 +1868,22 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
             call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
                & nb,no,nv,CCmodel,MOinfo)
+
+            if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
+               &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
+
+         end if
+
+         !JOHANNES MODEL_RPA
+         if (ccmodel == MODEL_RPA) then
+            if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
+            write(*,*) 'getting gmo'
+
+            call  wrapper_to_get_real_t1_free_gmo(nb,no,nv,Co%elm2,Cv2%elm2,&
+              & iajb,ccmodel,mylsitem)
+            !call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
+              ! & nb,no,nv,CCmodel,MOinfo)
+            write(*,*) 'got gmo'
 
             if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
                &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
@@ -1952,7 +1974,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                & mo_ccsd,iter,local,restart)
 
          case( MODEL_RPA )
-            call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
+           
+           call RPA_residual_par(Omega2(iter),t2(iter),iajb%elm1,ppfock_prec,qqfock_prec,no,nv)
+            !call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
          case default
             call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
          end select SelectCoupledClusterModel
@@ -2724,5 +2748,30 @@ subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
    endif
 end subroutine save_current_guess
 
+!> Purpose: Wrapper for the RPA model: get MO integrals (non-T1 transformed)
+!
+!> Author:  Pablo Baudin
+!> Date:    January 2014
+subroutine wrapper_to_get_real_t1_free_gmo(nb,no,nv,Co,Cv,govov,ccmodel,mylsitem)
+
+  implicit none
+
+  integer, intent(in) :: nb, no, nv
+  real(realk), pointer, intent(in) :: Co(:,:), Cv(:,:)
+  type(array), intent(inout) :: govov
+  integer, intent(in) :: ccmodel
+  !> LS item with information needed for integrals
+  type(lsitem), intent(inout) :: MyLsItem
+     
+  ! dummy arguments:
+  type(array) :: pgmo_diag, pgmo_up
+  type(MObatchInfo) :: MOinfo
+  logical :: mo_ccsd  
+  
+  write(*,*) 'Johannes calls get_t1'
+  call get_t1_free_gmo(mo_ccsd,mylsitem,Co,Cv,govov,pgmo_diag,pgmo_up, &
+    & nb,no,nv,CCmodel,MOinfo)
+ 
+  end subroutine wrapper_to_get_real_t1_free_gmo
 
 end module ccdriver

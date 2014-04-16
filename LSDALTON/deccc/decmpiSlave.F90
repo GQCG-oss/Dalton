@@ -77,6 +77,8 @@ subroutine dec_lsmpi_slave(comm)
          call calculate_E2_and_permute_slave
       case(RPAGETRESIDUAL);
          call rpa_res_slave
+      case(RPAGETFOCK);
+         call rpa_fock_slave
 #ifdef MOD_UNRELEASED 
       case(CCSDPTSLAVE);
          call ccsdpt_slave

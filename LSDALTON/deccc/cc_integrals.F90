@@ -873,8 +873,10 @@ contains
         call init_gmo_arrays(ntot,dimP,Nbatch,local,local_moccsd,pgmo_diag,pgmo_up)
 
       case(MODEL_RPA)
+        write(*,*) 'Johannes First RPA in t1_free'
         call get_AO_batches_size_rpa(ntot,nb,no,nv,MaxAllowedDimAlpha, &
                   & MaxAllowedDimGamma,MyLsItem)
+        write(*,*) 'Johannes after first RPA in t1_free'
       case default
           call lsquit('only RPA, CCSD and CCSD(T) model should use this routine',DECinfo%output)
       end select
@@ -982,6 +984,7 @@ contains
 
 
     if(ccmodel == MODEL_RPA) then
+        write(*,*) 'Johannes second RPA '
       ! working arrays
       tmp_size = max(nb*MaxActualDimAlpha*MaxActualDimGamma, MaxActualDimGamma*no*nv)
       tmp_size = int(i8*tmp_size*no, kind=long)
@@ -1009,6 +1012,7 @@ contains
       tmp_size = int(i8*ntot*ntot*tmp_size, kind=long)
       call mem_alloc(tmp2, tmp_size)
     endif
+        write(*,*) 'Johannes after second RPA '
 
 
     ! Sanity checks for matrix sizes which need to be filled:
@@ -1039,6 +1043,7 @@ contains
     ! *******************************************************
 
     
+        write(*,*) 'Johannes before dist RPA '
 #ifdef VAR_MPI
       ! Calculate the batches for a good load balance
       call mem_alloc(tasks,nbatchesAlpha*nbatchesGamma)
@@ -1049,6 +1054,7 @@ contains
          &batchdimGamma,myload,nnod,myrank,4,no,nv,nb,batch2orbAlpha,&
          &batch2orbGamma)
 #endif
+        write(*,*) 'Johannes after dist RPA '
     myload = 0
 
     fullRHS = (nbatchesGamma.eq.1).and.(nbatchesAlpha.eq.1)
@@ -1057,6 +1063,7 @@ contains
     ! Begin the loop over gamma batches
     !**********************************
 
+        write(*,*) 'Johannes sum gammaB '
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
 
@@ -1100,8 +1107,10 @@ contains
 
        if (ccmodel == MODEL_RPA) then
 
+        write(*,*) 'Johannes sum RPA'
          call gao_to_govov(govov%elm1,gao,Co,Cv,nb,no,nv,AlphaStart,dimAlpha, &
               & GammaStart,dimGamma,tmp1,tmp2)
+        write(*,*) 'Johannes transfomre gao RPA'
 
        else
          idb = 0
@@ -1728,6 +1737,7 @@ contains
 
     A_end = A_sta +dimAlpha - 1
     G_end = G_sta +dimGamma - 1
+
 
 
     ! we have (beta delta alpha gamma)

@@ -408,7 +408,7 @@ module cc_debug_routines_module
      call mem_alloc(omega2,DECinfo%ccMaxIter)
 
      ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-     if(decinfo%ccmodel /= MODEL_MP2 .and.decinfo%ccmodel /= MODEL_RPA ) then
+     if(decinfo%ccmodel /= MODEL_MP2 .or. decinfo%ccmodel /= MODEL_RPA ) then
         xocc = array2_init(occ_dims)
         yocc = array2_init(occ_dims)
         xvirt = array2_init(virt_dims)
@@ -647,11 +647,11 @@ module cc_debug_routines_module
            !  !rpa_multipliers not yet implemented
            !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !else
-#ifdef VAR_MPI
-             call RPA_residualpar(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
-#else
+!#ifdef VAR_MPI
+!             call RPA_residualpar(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
+!#else
              call RPA_residualdeb(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
-#endif
+!#endif
            !call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
            !  call RPA_residual(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
            !endif
