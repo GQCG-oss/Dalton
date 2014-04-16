@@ -113,7 +113,7 @@ CTRL[5]=1
 ERROR[5]="Total CCSD(T) energy contribution is not correct"
 
 # Total CCSD(T) correlation energy
-CRIT1=`$GREP "Total CCSD\(T\) correlation energy * = * \-0\.136[3-4]" $log | wc -l`
+CRIT1=`$GREP "Total CCSD\(T\) correlation energy * = * \-0\.136375" $log | wc -l`
 TEST[6]=`expr   $CRIT1`
 CTRL[6]=1
 ERROR[6]="Total CCSD(T) correlation energy is not correct"
