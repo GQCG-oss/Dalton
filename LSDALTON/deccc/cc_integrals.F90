@@ -2290,8 +2290,8 @@ contains
      jobdist = 0
 #endif
 
-     print *,me,"has",batchindexGamma,batchindexAlpha
-     call lsmpi_barrier(infpar%lg_comm)
+     !print *,me,"has",batchindexGamma,batchindexAlpha
+     !call lsmpi_barrier(infpar%lg_comm)
      myload = 0
 
      BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
@@ -2308,8 +2308,8 @@ contains
            biA = batchindexAlpha(alphaB)
            bsA = batchsizeAlpha(alphaB)
 
-           print '(I3,"have",8I7)',me,lg,fg,biG,bsG,la,fa,biA,bsA
-           call lsmpi_barrier(infpar%lg_comm)
+           !print '(I3,"have",8I7)',me,lg,fg,biG,bsG,la,fa,biA,bsA
+           !call lsmpi_barrier(infpar%lg_comm)
 
            if( me /= jobdist(alphaB,gammaB) ) cycle BatchAlpha
 
