@@ -1796,25 +1796,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    if(DECinfo%use_singles)then
 
       t1(1) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
-      t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
+      t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
 
       call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
          & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
          & t1(1),safefilet11,safefilet12, safefilet1f  )
    else
 
-      !if MP2, just zero the array, and keep it in PDM all the time
+      atype = 'TDAR'
+      t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
+      !if MP2, just zero the array:
       if(ccmodel == MODEL_MP2)then
-         atype = 'TDAR'
-         t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
          old_iter = 0
       else
-         atype = 'TDPD'
-         t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
-
          call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
             & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
-
       endif
    endif
    restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
@@ -2124,7 +2120,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call array_free(omega1_prec)
                end if
                omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec,local)
-               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
+               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_prec)
                call array_free(omega2_prec)
@@ -2134,7 +2130,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call array_cp_data(t1_opt,t1(iter+1))
                   call array_add(t1(iter+1),1.0E0_realk,omega1_opt)
                endif
-               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
+               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
             end if
@@ -2207,11 +2203,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
-         t2_final = array4_init([nv,no,nv,no])
-         if(.not.restart_from_converged)then
-            call array_cp_tiled2dense(t2(last_iter),.true.)
-         endif
-         call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
+         ! Save two-electron integrals in the order (virt,occ,virt,occ)
+         t2_final = array4_init([nv,nv,no,no])
+         call array_convert(t2(last_iter),t2_final%val)
+         call array4_reorder(t2_final,[1,3,2,4])
+         !if(.not.restart_from_converged)then
+         !   call array_cp_tiled2dense(t2(last_iter),.true.)
+         !endif
+         !call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
 
          if(DECinfo%use_singles) then
             if(.not.longrange_singles) then ! intitialize and copy, else just copy
@@ -2231,7 +2230,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             endif
          endif
 
-         call array_change_itype_to_td(t2(last_iter),local)
+         !call array_change_itype_to_td(t2(last_iter),local)
       end if
 
       ! Free doubles residuals
@@ -2568,13 +2567,17 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
    endif
 
    if(readfile2)then
+      ! allocate dense part of t2 array:
+      call memory_allocate_array_dense(t2)
       READ(fu_t2) t2%elm1
       READ(fu_t2) norm
       READ(fu_t2) energy
       CLOSE(fu_t2)
+      ! mv dense part to tiles:
+      call array_mv_dense2tiled(t2,.false.)
       restart = .true.
    else
-     ! call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
+      !call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
       !call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
       call array_zero(t2)
       !call array_zero(iajb)
@@ -2591,11 +2594,11 @@ subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
    !> iteration number
    integer,intent(in) :: iter
    !> write the corresponding residual norm into the file
-   real(realk), intent(in) :: res_norm,energy
+   real(realk), intent(in)    :: res_norm,energy
    !> doubles guess amplitudes for the next iteration
-   type(array), intent(in) :: t2
+   type(array), intent(inout) :: t2
    !> alternating filenames for the doubles amplitudes
-   character(3),intent(in) :: safefilet21,safefilet22
+   character(3),intent(in)    :: safefilet21,safefilet22
    !> singles guess amplitudes for the next iteration
    type(array), intent(in), optional :: t1
    !> alternating filenames for the singles amplitudes
@@ -2612,6 +2615,9 @@ subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
    character(11) :: fullname11, fullname12, fullname21, fullname22
    character(11) :: fullname11D, fullname12D, fullname21D, fullname22D
 #endif
+   ! cp doubles from tile to dense part: (only if t2%itype/=DENSE)
+   call array_cp_tiled2dense(t2,.false.)
+
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12)
    fu_t11=111
    fu_t12=112
@@ -2719,6 +2725,8 @@ subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
       call lsquit("ERROR(ccdriver_par):impossible iteration&
          &number)",DECinfo%output)
    endif
+   ! deallocate dense part of doubles:
+   call memory_deallocate_array_dense(t2)
 end subroutine save_current_guess
 
 
