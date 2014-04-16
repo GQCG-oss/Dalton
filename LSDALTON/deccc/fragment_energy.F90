@@ -2179,7 +2179,8 @@ contains
                    & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
                    & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
                    & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-                   & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld)
+                   & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
+                   & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
               VirtUnchanged = COUNT(Virt_atoms).EQ.COUNT(VirtOld)
               IF(VirtUnchanged.AND.OccUnchanged)exit OccPartExpansionLoop
               ExpandVirt=.FALSE.  
@@ -2202,7 +2203,8 @@ contains
                    & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
                    & Occ_atoms,Virt_atoms,FOT2,DistMyAtom,SortedDistMyAtom,&
                    & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-                   & StepsizeLoop4,LagEnergyOld, OccEnergyOld, VirtEnergyOld)
+                   & StepsizeLoop4,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
+                   & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
               OccUnchanged = COUNT(Occ_atoms).EQ.COUNT(OccOld)
               IF(VirtUnchanged.AND.OccUnchanged)exit OccPartExpansionLoop
            END DO OccPartExpansionLoop
@@ -2233,7 +2235,8 @@ contains
                    & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
                    & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
                    & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-                   & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld)
+                   & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
+                   & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
 
               OccUnchanged = COUNT(Occ_atoms).EQ.COUNT(OccOld)
               IF(VirtUnchanged.AND.OccUnchanged)exit VirtPartExpansionLoop
@@ -2258,7 +2261,8 @@ contains
                    & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
                    & Occ_atoms,Virt_atoms,FOT2,DistMyAtom,SortedDistMyAtom,&
                    & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-                   & StepsizeLoop4,LagEnergyOld, OccEnergyOld, VirtEnergyOld)
+                   & StepsizeLoop4,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
+                   & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
               VirtUnchanged = COUNT(Virt_atoms).EQ.COUNT(VirtOld)
               IF(VirtUnchanged.AND.OccUnchanged)exit VirtPartExpansionLoop
            END DO VirtPartExpansionLoop
@@ -2285,7 +2289,8 @@ contains
                 & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
                 & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
                 & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-                & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld)
+                & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
+                & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
         ENDDO
      ENDIF
 
@@ -2438,7 +2443,8 @@ contains
           & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
           & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
           & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-          & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld)
+          & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
+          & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
        implicit none
      !> Number of occupied orbitals in molecule
      integer, intent(in) :: nOcc
@@ -2465,19 +2471,19 @@ contains
      !> Should we expand Occupied space
      logical,intent(in) :: ExpandOcc
      !> Should we expand Virtual space
-     logical,intent(in) :: ExpandVirt
+     logical,intent(in) :: ExpandVirt,FragmentExpansionRI
      logical, dimension(natoms)     :: Occ_atoms,Virt_atoms
      logical, dimension(natoms)     :: OccOld,VirtOld       !previous Fragment
      real(realk),intent(in)         :: FOT
-     integer,intent(in)             :: StepsizeLoop2
+     integer,intent(in)             :: StepsizeLoop2,nAtomsWithOccOrb,nAtomsWithVirtOrb
      real(realk),dimension(natoms),intent(in)  :: DistMyAtom,SortedDistMyAtom
      integer,dimension(natoms),intent(in)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
      real(realk),intent(inout)      :: LagEnergyOld, OccEnergyOld, VirtEnergyOld
      !Local variables
      real(realk)  :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff,EnergyDiff, FOT2
      integer      :: iter,i,idx,StepsizeLoop3
-     integer      :: max_iter_red,nAtomsWithOccOrb,nAtomsWithVirtOrb
-     logical :: expansion_converged,FragmentExpansionRI,ExpandFragmentConverged
+     integer      :: max_iter_red
+     logical :: expansion_converged,ExpandFragmentConverged
 
      StepsizeLoop3 = StepsizeLoop2
 
