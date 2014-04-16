@@ -2810,6 +2810,7 @@ module cc_debug_routines_module
     ENDIF
 
     myload = 0
+    fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
