@@ -1637,19 +1637,21 @@ end if
     call lsmpi_barrier(infpar%lg_comm)
     call time_start_phase( PHASE_COMM )
 
-    ! Add up contibutions to output arrays using MPI reduce
-    call lsmpi_local_reduction(goccEOS%val(:,:,:,:),goccEOS%dims(1),&
-          &goccEOS%dims(2),goccEOS%dims(3),goccEOS%dims(4),masterrank)
+    IF(.NOT.DECinfo%onlyVirtPart)THEN
+       ! Add up contibutions to output arrays using MPI reduce
+       call lsmpi_local_reduction(goccEOS%val(:,:,:,:),goccEOS%dims(1),&
+            &goccEOS%dims(2),goccEOS%dims(3),goccEOS%dims(4),masterrank)
+       
+       call lsmpi_local_reduction(toccEOS%val(:,:,:,:),toccEOS%dims(1),&
+            &toccEOS%dims(2),toccEOS%dims(3),toccEOS%dims(4),masterrank)
+    ENDIF
+    IF(.NOT.DECinfo%onlyOccPart)THEN
+       call lsmpi_local_reduction(gvirtEOS%val(:,:,:,:),gvirtEOS%dims(1),&
+            &gvirtEOS%dims(2),gvirtEOS%dims(3),gvirtEOS%dims(4),masterrank)
 
-    call lsmpi_local_reduction(toccEOS%val(:,:,:,:),toccEOS%dims(1),&
-          &toccEOS%dims(2),toccEOS%dims(3),toccEOS%dims(4),masterrank)
-
-    call lsmpi_local_reduction(gvirtEOS%val(:,:,:,:),gvirtEOS%dims(1),&
-          &gvirtEOS%dims(2),gvirtEOS%dims(3),gvirtEOS%dims(4),masterrank)
-
-    call lsmpi_local_reduction(tvirtEOS%val(:,:,:,:),tvirtEOS%dims(1),&
-          &tvirtEOS%dims(2),tvirtEOS%dims(3),tvirtEOS%dims(4),masterrank)
-
+       call lsmpi_local_reduction(tvirtEOS%val(:,:,:,:),tvirtEOS%dims(1),&
+            &tvirtEOS%dims(2),tvirtEOS%dims(3),tvirtEOS%dims(4),masterrank)
+    ENDIF
     if(first_order_integrals) then
        call lsmpi_local_reduction(djik%val(:,:,:,:),djik%dims(1),&
              &djik%dims(2),djik%dims(3),djik%dims(4),masterrank)
@@ -1659,10 +1661,14 @@ end if
    end if
 
    if(.not. master) then  ! SLAVE: Done with arrays and fragment
-      call array4_free(goccEOS)
-      call array4_free(toccEOS)
-      call array4_free(gvirtEOS)
-      call array4_free(tvirtEOS)
+      IF(.NOT.DECinfo%OnlyVirtPart)THEN
+         call array4_free(goccEOS)
+         call array4_free(toccEOS)
+      ENDIF
+      IF(.NOT.DECinfo%OnlyOccPart)THEN
+         call array4_free(gvirtEOS)
+         call array4_free(tvirtEOS)
+      ENDIF
       if(first_order_integrals) call array4_free(djik)
       if(first_order_integrals) call array4_free(blad)
       call atomic_fragment_free(MyFragment)
