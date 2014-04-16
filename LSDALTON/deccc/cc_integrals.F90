@@ -2068,9 +2068,10 @@ contains
      integer(kind=long) :: maxsize
      logical :: master
      integer(kind=ls_mpik) :: me, nnod
-     integer, pointer :: jobdist(:,:)
+     integer, pointer :: jobdist(:)
      real(realk), pointer :: work(:)
      integer(kind=long) :: w1size, w2size
+     real(realk), parameter :: fraction_of = 0.8E0_realk
 
      call time_start_phase( PHASE_WORK )
 
@@ -2134,7 +2135,7 @@ contains
               maxsize=maxsize + max(n1*nb*k*i,n1*n2*n3*i)
               if(collective) maxsize = maxsize + n1*n2*n3*n4
 
-              if(float(maxsize*8)/(1024.0**3) > 0.8E0_realk*MemFree )then
+              if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
                  if(nba <= MinAObatch .and. nbg<= MinAObatch .and. collective)then
                     collective = .false.
                  else
@@ -2166,17 +2167,15 @@ contains
            endif
         endif
 
-        !maxsize=max(max(nb**2*nba*nbg,n1*n2*nba*nbg),n1*n2*n3*n4)
-        !maxsize=maxsize + max(n1*nb*nba*nbg,n1*n2*n3*nbg)
-        !if(collective) maxsize = maxsize + n1*n2*n3*n4
+        maxsize=max(max(nb**2*nba*nbg,n1*n2*nba*nbg),n1*n2*n3*n4)
+        maxsize=maxsize + max(n1*nb*nba*nbg,n1*n2*n3*nbg)
+        if(collective) maxsize = maxsize + n1*n2*n3*n4
+
+        if(maxsize > fraction_of*MemFree)call lsquit("ERROR(get_mo_integral_par)not enough memory",-1)
 
         MaxAllowedDimGamma = nbg
         MaxAllowedDimAlpha = nba
 
-        if(MaxAllowedDimAlpha < MinAObatch)call lsquit("ERROR(get_mo_integral_par)not enough memory",-1)
-
-        MaxAllowedDimGamma = nb
-        MaxAllowedDimAlpha = nb/2
      endif
 
 
@@ -2281,7 +2280,7 @@ contains
            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
      ENDIF
 
-     call mem_alloc(jobdist,nbatchesAlpha,nbatchesGamma)
+     call mem_alloc(jobdist,nbatchesAlpha*nbatchesGamma)
      !JOB distribution
 #ifdef VAR_MPI
      call distribute_mpi_jobs(jobdist,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
@@ -2292,6 +2291,7 @@ contains
 
      !print *,me,"has",batchindexGamma,batchindexAlpha
      !call lsmpi_barrier(infpar%lg_comm)
+
      myload = 0
 
      BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
@@ -2311,7 +2311,7 @@ contains
            !print '(I3,"have",8I7)',me,lg,fg,biG,bsG,la,fa,biA,bsA
            !call lsmpi_barrier(infpar%lg_comm)
 
-           if( me /= jobdist(alphaB,gammaB) ) cycle BatchAlpha
+           if( me /= jobdist(gammaB + (alphaB-1) *nbatchesGamma) ) cycle BatchAlpha
 
            if(DECinfo%PL>2)write (*, '("Rank",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
               &me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
