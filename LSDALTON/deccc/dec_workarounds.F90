@@ -26,15 +26,22 @@ module dec_workarounds_module
   contains
   
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-  subroutine assign_in_subblocks(drain,op,source,nel,scal1,scal2)
+  subroutine assign_in_subblocks(drain,op,source,nel,scal1,scal2,gpu)
     implicit none
     integer(kind=8), intent(in) :: nel
     character, intent(in) :: op
     real(realk),intent(inout) :: drain(:)
     real(realk),intent(in)    :: source(:)
     real(realk), intent(in), optional :: scal1,scal2
+    logical, intent(in), optional :: gpu
     integer(kind=8) :: block,i
     integer, parameter :: k = 50000000
+
+    if (present(gpu) .and. (gpu)) then
+       gpu = .true.
+    else
+       gpu = .false.
+    endif
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     procedure(subblock_op), pointer :: op_blocks
 
@@ -54,7 +61,7 @@ module dec_workarounds_module
       block = k
       if( (nel-i)<k .and. mod(nel-i+1,k)/=0 ) block=mod(nel,k)
       !if(infpar%mynum == 0 ) print *,"begin",i,"end",i+block-1,"length",block,"of",nel
-      call op_blocks(drain(i:i+block-1),source(i:i+block-1),block,scal1=scal1,scal2=scal2)
+      call op_blocks(drain(i:i+block-1),source(i:i+block-1),block,gpu,scal1=scal1,scal2=scal2)
     enddo
 #else
     print *,"ERROR(assign_in_subblocks): you cannot use this workaround&
@@ -63,9 +70,10 @@ module dec_workarounds_module
 #endif
   end subroutine assign_in_subblocks
 
-  subroutine copy_subblock(drain,source,nel,scal1,scal2)
+  subroutine copy_subblock(drain,source,nel,gpu,scal1,scal2)
     implicit none
     integer(kind=8), intent(in) :: nel
+    logical, intent(in) :: gpu
     real(realk), intent(in), optional :: scal1,scal2
     real(realk), intent(inout) :: drain(nel)
     real(realk), intent(in) :: source(nel)
@@ -75,45 +83,115 @@ module dec_workarounds_module
       stop 1
     endif
 
-    if(present(scal2))then
-      !OMP WORKSHARE
-      drain = scal2 * source
-      !OMP WORKSHARE
+    if (gpu) then
+
+       if(present(scal2))then
+!$acc kernels present(drain,source)
+         drain = scal2 * source
+!$acc end kernels
+       else
+!$acc kernels present(drain,source)
+         drain = source
+!$acc end kernels
+       endif
+
     else
-      drain = source
+
+       if(present(scal2))then
+         !OMP WORKSHARE
+         drain = scal2 * source
+         !OMP WORKSHARE
+       else
+         drain = source
+       endif
+
     endif
+
   end subroutine copy_subblock
-  subroutine add_subblock(drain,source,nel,scal1,scal2)
+  subroutine add_subblock(drain,source,nel,gpu,scal1,scal2)
     implicit none
     integer(kind=8), intent(in) :: nel
+    logical, intent(in) :: gpu
     real(realk), intent(in), optional :: scal1,scal2
     real(realk), intent(inout) :: drain(nel)
     real(realk), intent(in) :: source(nel)
-    if(present(scal1).and.present(scal2))then
-      drain = scal1 * drain + scal2 * source
-    elseif(present(scal1))then
-      drain = scal1 * drain + source
-    elseif(present(scal2))then
-      drain = drain + scal2 * source
+
+    if (gpu) then
+
+       if(present(scal1).and.present(scal2))then
+!$acc kernels present(drain,source)
+         drain = scal1 * drain + scal2 * source
+!$acc end kernels
+       elseif(present(scal1))then
+!$acc kernels present(drain,source)
+         drain = scal1 * drain + source
+!$acc end kernels
+       elseif(present(scal2))then
+!$acc kernels present(drain,source)
+         drain = drain + scal2 * source
+!$acc end kernels
+       else
+!$acc kernels present(drain,source)
+         drain = drain + source
+!$acc end kernels
+       endif
+
     else
-      drain = drain + source
+
+       if(present(scal1).and.present(scal2))then
+         drain = scal1 * drain + scal2 * source
+       elseif(present(scal1))then
+         drain = scal1 * drain + source
+       elseif(present(scal2))then
+         drain = drain + scal2 * source
+       else
+         drain = drain + source
+       endif
+
     endif
   end subroutine add_subblock
-  subroutine subtract_subblock(drain,source,nel,scal1,scal2)
+  subroutine subtract_subblock(drain,source,nel,gpu,scal1,scal2)
     implicit none
     integer(kind=8), intent(in) :: nel
+    logical, intent(in) :: gpu
     real(realk), intent(in), optional :: scal1,scal2
     real(realk), intent(inout) :: drain(nel)
     real(realk), intent(in) :: source(nel)
-    if(present(scal1).and.present(scal2))then
-      drain = scal1 * drain - scal2 * source
-    elseif(present(scal1))then
-      drain = scal1 * drain - source
-    elseif(present(scal2))then
-      drain = drain - scal2 * source
+
+    if (gpu) then
+
+       if(present(scal1).and.present(scal2))then
+!$acc kernels present(drain,source)
+         drain = scal1 * drain - scal2 * source
+!$acc end kernels
+       elseif(present(scal1))then
+!$acc kernels present(drain,source)
+         drain = scal1 * drain - source
+!$acc end kernels
+       elseif(present(scal2))then
+!$acc kernels present(drain,source)
+         drain = drain - scal2 * source
+!$acc end kernels
+       else
+!$acc kernels present(drain,source)
+         drain = drain - source
+!$acc end kernels
+       endif
+
     else
-      drain = drain - source
+
+       if(present(scal1).and.present(scal2))then
+         drain = scal1 * drain - scal2 * source
+       elseif(present(scal1))then
+         drain = scal1 * drain - source
+       elseif(present(scal2))then
+         drain = drain - scal2 * source
+       else
+         drain = drain - source
+       endif
+
     endif
+
   end subroutine subtract_subblock
 #endif
   subroutine dec_workarounds_dummy
