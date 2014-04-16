@@ -1191,6 +1191,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if(iter/=1.and.master) call array_cp_tiled2dense(govov,.false.)
         endif 
         govov%access_type = MASTER_ACCESS
+        call array_cp_tiled2dense(t2,.false.)
 #endif
      endif
 
@@ -5683,6 +5684,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
+#ifdef VAR_MPI
+    ! Change array type to be dense:
+    if (.not.local.and.master) then
+      call array_cp_tiled2dense(t2,.false.)
+      if(iter==1) then
+        call memory_allocate_array_dense(govov)
+      else
+        call array_cp_tiled2dense(govov,.false.)
+      end if
+    end if 
+#endif
+
     !===========================================================================
     ! Calculate transformation matrix:
     !  xvir_ap = delta_ap - t_ai delta_ip
@@ -5721,19 +5734,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     call LSTIMER('MO-CCSD init calc.',tcpu1,twall1,DECinfo%output)
 
+
 #ifdef VAR_MPI
-     ! Change array type to be dense:
-     if (.not.local.and.master) then
-       govov%access_type  = ALL_ACCESS
-       if(iter==1) then
-         call memory_allocate_array_dense_pc(govov)
-       else
-         call array_cp_tiled2dense(govov,.false.)
-       end if
-       govov%access_type  = MASTER_ACCESS
-     end if 
-
-
     !===========================================================================
     !                          MPI COMMUNICATIONS
     !
@@ -7396,12 +7398,8 @@ subroutine moccsd_data_slave()
     omega2 = array_ainit( [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
     govov  = array_ainit( [nocc,nvir,nocc,nvir], 4, local=local, atype='LDAR' )
   else
-    t2%access_type=ALL_ACCESS
-    govov%access_type=ALL_ACCESS
-    call memory_allocate_array_dense_pc(t2)
-    call memory_allocate_array_dense_pc(govov)
-    t2%access_type=MASTER_ACCESS
-    govov%access_type=MASTER_ACCESS
+    call memory_allocate_array_dense(t2)
+    call memory_allocate_array_dense(govov)
   end if
 
   !split messages in 2GB parts, compare to counterpart in
@@ -7435,9 +7433,9 @@ subroutine moccsd_data_slave()
     call array_free(omega2)
     call array_free(govov)
   else
-    call memory_deallocate_array_dense_pc(omega2)
-    call memory_deallocate_array_dense_pc(t2)
-    call memory_deallocate_array_dense_pc(govov)
+    call memory_deallocate_array_dense(omega2)
+    call memory_deallocate_array_dense(t2)
+    call memory_deallocate_array_dense(govov)
   end if
 end subroutine moccsd_data_slave
 #endif
