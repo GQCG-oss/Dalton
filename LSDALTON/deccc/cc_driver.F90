@@ -2134,17 +2134,17 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
             end if
-
             !if .not.DECinfo%CCSDnosaferun option is set, make sure data is in dense
             if(saferun)then
 
                if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, twall = time_write ) 
 
                if(DECinfo%use_singles)then
-                  call save_current_guess(iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,safefilet22,&
-                     &t1(iter+1),safefilet11,safefilet12)
+                  call save_current_guess(local,iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,&
+                     &safefilet22,t1(iter+1),safefilet11,safefilet12)
                else
-                  call save_current_guess(iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,safefilet22)
+                  call save_current_guess(local,iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,&
+                     &safefilet22)
                endif
 
                if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_write, &
@@ -2222,10 +2222,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
          if(saferun.and..not.restart_from_converged)then
             if(DECinfo%use_singles)then
-               call save_current_guess(i+old_iter,two_norm_total,ccenergy,&
+               call save_current_guess(local,i+old_iter,two_norm_total,ccenergy,&
                   &t2(last_iter),safefilet2f,safefilet2f,t1(last_iter),safefilet1f,safefilet1f)
             else
-               call save_current_guess(i+old_iter,two_norm_total,ccenergy,&
+               call save_current_guess(local,i+old_iter,two_norm_total,ccenergy,&
                   &t2(last_iter),safefilet2f,safefilet2f)
             endif
          endif
@@ -2588,9 +2588,10 @@ end subroutine get_guess_vectors
 !iteration
 !> \author Patrick Ettenhuber
 !> \date Dezember 2012
-subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
+subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefilet22,&
       &t1,safefilet11,safefilet12)
    implicit none
+   logical, intent(in) :: local
    !> iteration number
    integer,intent(in) :: iter
    !> write the corresponding residual norm into the file
@@ -2616,7 +2617,7 @@ subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
    character(11) :: fullname11D, fullname12D, fullname21D, fullname22D
 #endif
    ! cp doubles from tile to dense part: (only if t2%itype/=DENSE)
-   call array_cp_tiled2dense(t2,.false.)
+   if (.not.local) call array_cp_tiled2dense(t2,.false.)
 
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12)
    fu_t11=111
@@ -2726,7 +2727,7 @@ subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
          &number)",DECinfo%output)
    endif
    ! deallocate dense part of doubles:
-   call memory_deallocate_array_dense(t2)
+   if (.not.local) call memory_deallocate_array_dense(t2)
 end subroutine save_current_guess
 
 
