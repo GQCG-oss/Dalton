@@ -25,8 +25,10 @@
         use polarizable_embedding, only: pe_input_reader
 #include "priunit.h"
         character(len=7), intent(inout) :: word
+        call qenter('pe_ifc_input_reader')
         peqm = .true.
         call pe_input_reader(word, lucmd)
+        call qexit('pe_ifc_input_reader')
       end subroutine pe_ifc_input_reader
 
       subroutine pe_ifc_init()
@@ -34,12 +36,16 @@
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
+        call qenter('pe_ifc_init')
         call pe_init(lupri, cord(1:3,1:natoms), charge(1:natoms))
+        call qexit('pe_ifc_init')
       end subroutine pe_ifc_init
 
       subroutine pe_ifc_finalize()
         use polarizable_embedding, only: pe_finalize
+        call qenter('pe_ifc_finalize')
         call pe_finalize()
+        call qexit('pe_ifc_finalize')
       end subroutine pe_ifc_finalize
 
       subroutine pe_ifc_fock(denmats, fckmats, nmats, energies)
@@ -49,8 +55,10 @@
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
         real*8, dimension(nmats), intent(out) :: energies
+        call qenter('pe_ifc_fock')
         call pe_master(runtype='fock', denmats=denmats, fckmats=fckmats,
      &                 nmats=nmats, energies=energies)
+        call qexit('pe_ifc_fock')
       end subroutine pe_ifc_fock
 
       subroutine pe_ifc_energy(denmats, nmats)
@@ -58,17 +66,21 @@
 #include "inforb.h"
         integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
+        call qenter('pe_ifc_energy')
         call pe_master(runtype='energy', denmats=denmats, nmats=nmats)
+        call qexit('pe_ifc_energy')
       end subroutine pe_ifc_energy
 
       function pe_ifc_noneq_sol()
         use pe_variables, only: pe_sol, pe_noneq
         integer :: pe_ifc_noneq_sol
+        call qenter('pe_ifc_noneq_sol')
         if (pe_sol .and. pe_noneq) then
             pe_ifc_noneq_sol = 1
         else
             pe_ifc_noneq_sol = 0
         end if
+        call qexit('pe_ifc_noneq_sol')
       end function pe_ifc_noneq_sol
 
       subroutine pe_ifc_noneq(denmats, fckmats, nmats)
@@ -77,28 +89,34 @@
         integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
+        call qenter('pe_ifc_noneq')
         call pe_master(runtype='noneq', denmats=denmats,
      &                 fckmats=fckmats, nmats=nmats)
+        call qexit('pe_ifc_noneq')
       end subroutine pe_ifc_noneq
 
       function pe_ifc_mep()
         use pe_variables, only: pe_mep
         integer :: pe_ifc_mep
+        call qenter('pe_ifc_mep')
         if (pe_mep) then
             pe_ifc_mep = 1
         else
             pe_ifc_mep = 0
         end if
+        call qexit('pe_ifc_mep')
       end function pe_ifc_mep
 
       function pe_ifc_mep_noqm()
         use pe_variables, only: pe_mep, mep_qmcube
         integer :: pe_ifc_mep_noqm
+        call qenter('pe_ifc_mep_noqm')
         if (pe_mep .and. .not. mep_qmcube) then
             pe_ifc_mep_noqm = 1
         else
             pe_ifc_mep_noqm = 0
         end if
+        call qexit('pe_ifc_mep_noqm')
       end function pe_ifc_mep_noqm
 
       subroutine pe_ifc_mepcalc(denmats, nmats)
@@ -107,14 +125,18 @@
 #include "inforb.h"
         integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
+        call qenter('pe_ifc_mepcalc')
         if (mep_qmcube) then
             call pe_master(runtype='mep', denmats=denmats, nmats=nmats)
         end if
+        call qexit('pe_ifc_mepcalc')
       end subroutine pe_ifc_mepcalc
 
       subroutine pe_ifc_mepcalc_noqm()
         use polarizable_embedding, only: pe_master
+        call qenter('pe_ifc_mepcalc_noqm')
         call pe_master(runtype='mep')
+        call qexit('pe_ifc_mepcalc_noqm')
       end subroutine pe_ifc_mepcalc_noqm
 
       subroutine pe_ifc_london(fckmats, nmats)
@@ -122,14 +144,18 @@
 #include "inforb.h"
         integer, intent(in) :: nmats
         real*8, dimension(3*nmats*n2basx), intent(out) :: fckmats
+        call qenter('pe_ifc_london')
         call pe_master('london', fckmats=fckmats, nmats=nmats)
+        call qexit('pe_ifc_london')
       end subroutine pe_ifc_london
 
 #if defined(VAR_MPI)
       subroutine pe_ifc_mpi(runtype)
         use polarizable_embedding, only: pe_mpi
         integer, intent(in) :: runtype
+        call qenter('pe_ifc_mpi')
         call pe_mpi(runtype)
+        call qexit('pe_ifc_mpi')
       end subroutine pe_ifc_mpi
 #endif
 
@@ -877,8 +903,6 @@ C
         real*8, dimension(:), allocatable :: txyoacs
         real*8, dimension(:), allocatable :: ovlp
         logical :: lexist, lopen
-
-        write(lupri,*)'trplet', trplet
 
         ! return if no polarization and not MCSCF
         if (tdhf .and. .not. pe_polar) then
@@ -1768,6 +1792,8 @@ C
          real*8, dimension(:), allocatable :: dcaos, fcaos
          real*8, dimension(:), allocatable :: fcmo
 
+         call qenter('pe_rspqro')
+
          call gtzymt(1, vecb, kzyvb, isymb, zymb, mjwop)
          call gtzymt(1, vecc, kzyvc, isymc, zymc, mjwop)
 
@@ -1843,6 +1869,8 @@ C
 
          deallocate(fcaos, fcmo, ufcmo)
 
+        call qexit('pe_rspqro')
+
       end subroutine pe_rspqro
 
 !------------------------------------------------------------------------------
@@ -1880,6 +1908,8 @@ C
          real*8, dimension(:), allocatable :: udcao, ufcmo
          real*8, dimension(:), allocatable :: dcaos, fcaos
          real*8, dimension(:), allocatable :: fcmo
+
+         call qenter('pe_rspcro')
 
          call gtzymt(1, vecb, kzyvb, isymb, zymb, mjwop)
          call gtzymt(1, vecc, kzyvc, isymc, zymc, mjwop)
@@ -2090,6 +2120,8 @@ C
 
          deallocate(fcaos, fcmo, ufcmo)
 
+        call qexit('pe_rspcro')
+
       end subroutine pe_rspcro
 
 !------------------------------------------------------------------------------
@@ -2118,6 +2150,8 @@ C
         integer, dimension(:), allocatable :: isphere
         real*8, dimension(:), allocatable :: areas, rvdw
         real*8, dimension(:,:), allocatable :: tess_coords
+
+        call qenter('dalton_cavity')
 
 C       van der Waals radii taken from "The Elements", 2nd edition,
 C       John Emsley, Clarendon Press, Oxford, 1991.  Unknown values
@@ -2209,6 +2243,8 @@ C     as to what works best for singly bonded C,N,O
 
         call gpclose(lusurf,'KEEP')
 
+        call qexit('dalton_cavity')
+
       end subroutine dalton_cavity
 
 !------------------------------------------------------------------------------
@@ -2228,7 +2264,7 @@ C     as to what works best for singly bonded C,N,O
 
       integer, intent(in) :: nints, ncomps
       real(8), dimension(3), intent(in) :: coord
-      real(8), dimension(nints*ncomps*3), intent(inout) :: Tk_ints
+      real(8), dimension(3*ncomps*nints), intent(out) :: Tk_ints
 
       integer :: i, j, k, l, m, n
       real(8) :: dd
@@ -2236,6 +2272,8 @@ C     as to what works best for singly bonded C,N,O
       character(len=7) :: inttype
       integer :: nwrk
       real(8), dimension(:), allocatable :: temp
+
+      call qenter('Tk_lao_integrals')
 
       dd = 0.001d0
       k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(ncomps)) - 1.0d0)) - 1
@@ -2265,11 +2303,11 @@ C     as to what works best for singly bonded C,N,O
 !        stop 'wrong order specified or not implemented'
       end if
 
-      if (associated(pewrk)) then
-          nwrk = size(pewrk)
-      else
+      if (.not. associated(pewrk)) then
         call quit('ERROR: pewrk not allocated')
       endif
+
+      nwrk = size(pewrk)
 
       Tk_ints = 0.0d0
 
@@ -2382,6 +2420,8 @@ C     as to what works best for singly bonded C,N,O
 
       runqm3 = .false.
       diporg = backup
+
+      call qexit('Tk_lao_integrals')
 
       end subroutine Tk_lao_integrals
 #endif
