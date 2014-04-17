@@ -572,11 +572,16 @@ C
 
                   CALL SRFUN_INPUT(SR_FUNCS)
 ! Allocate memory for the HF-srDFT density matrix in the MO and AO bases ... 
-                  CALL MEMGET('REAL',KDHFMO,N2ORBX,WRK,KFREE,LFREE)
                   CALL MEMGET('REAL',KDHFAO,N2BASX,WRK,KFREE,LFREE)
+                  CALL MEMGET('REAL',KDHFMO,N2ORBX,WRK,KFREE,LFREE)
 ! ... and compute it                  
                   CALL GETDHFAO(WRK(KDHFAO),WRK(KDHFMO),WRK(KCMO),
      &                          WRK(KFREE)) 
+
+! Manu & Yann: april 2014
+! Release memory allocated for DHFMO
+                  CALL MEMREL('Releasing memory',
+     &                          WRK,KFRSAV,KDHFMO,KFREE,LFREE)  
 !
 ! Manu debug
 !                 write(lupri,*) 'checking the HF-srDFT DM' //
@@ -644,6 +649,10 @@ C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
 !                 write(lupri,*) 'print VSRAO after calling sirfck2'
 !                 CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,
 !    &                        NBAST,1,LUPRI)
+! Manu & Yann: april 2014
+! Release memory allocated for DAO
+                  CALL MEMREL('Releasing memory',
+     &                          WRK,KFRSAV,KDAO,KFREE,LFREE)  
 !     
                   HFXFAC = HFXFAC_SAVE   ! recover its initial value
 !                                          (before call to herfck)
@@ -653,6 +662,7 @@ C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
 
 !                 write(lupri,*) 'E_srHFX = ', ESRHFX 
 !     
+#ifdef sirmp2_debug
 !***********************************************************
 ! *** Compute the lrHFX term for analysis purposes ***
 !
@@ -694,9 +704,10 @@ C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
 
 !                 write(lupri,*) 'E_lrHFX = ', ELRHFX 
 !***********************************************************
+#endif
 !                   
                   CALL MEMREL('Releasing memory',
-     &                          WRK,KFRSAV,KDHFMO,KFREE,LFREE)  
+     &                          WRK,KFRSAV,KDHFAO,KFREE,LFREE)  
 ! *** We can now sum up all the contributions *** 
 
 ! Manu debug b
@@ -705,8 +716,8 @@ C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
                   write(lupri,*) 'EMY =', EMY
                   write(lupri,*) 'ESRDFT =', ESRDFT
                   write(lupri,*) 'ESRHFX =', ESRHFX 
-                  write(lupri,*) 'ELRHFX =', ELRHFX 
-                  write(lupri,*) 'EHFX (lr+sr) =', ELRHFX+ESRHFX 
+!                 write(lupri,*) 'ELRHFX =', ELRHFX 
+!                 write(lupri,*) 'EHFX (lr+sr) =', ELRHFX+ESRHFX 
                   write(lupri,*) 'ESRDFTCMD =', ESRDFTCMD 
                   EHF1it = EMY-ESRDFT+ESRHFX
                   write(lupri,*) 'EHF1it', EHF1it 
