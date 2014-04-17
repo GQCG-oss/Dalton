@@ -6344,7 +6344,9 @@ contains
     AlphaDim=MinAObatch
     GammaDim=MinAObatch
   
-  
+    GammaOpt = 0
+    AlphaOpt = 0
+ 
     ! Gamma batch size
     ! =================================
     GammaLoop: do gamma = MaxAObatch,MinAOBatch,-1
@@ -6355,22 +6357,54 @@ contains
          if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
             if(adapt_to_nnodes)then
                if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
-                  GammaOpt = gamma 
+#ifdef VAR_MPI
+                  print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 1'
+#else
+                  print *,'we hit GammaOpt 1'
+#endif
+                  GammaOpt = gamma
                   exit GammaLoop
                endif
             else
+#ifdef VAR_MPI
+               print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 2'
+#else
+               print *,'we hit GammaOpt 2'
+#endif
                GammaOpt = gamma
                exit GammaLoop
             endif
          end if
-  
+
     end do GammaLoop
-  
+
+    if (GammaOpt .eq. 0) then
+
+#ifdef VAR_MPI
+       print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt NEW'
+#else
+       print *,'we hit GammaOpt NEW'
+#endif
+       GammaOpt = GammaDim
+
+    endif 
+
+#ifdef VAR_MPI
+    print *,'for proc no. = ',infpar%lg_mynum,', GammaOpt at the end of the GammaLoop is = ',GammaOpt
+#else
+    print *,'GammaOpt at the end of the GammaLoop is = ',GammaOpt
+#endif
+
     ! If gamma batch size was set manually we use that value instead
     if(DECinfo%ccsdGbatch/=0) then
        write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
+#ifdef VAR_MPI
+       print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 3'
+#else
+       print *,'we hit GammaOpt 3'
+#endif
        GammaOpt=DECinfo%ccsdGbatch
-    end if
+    end if 
   
     ! The optimal gamma batch size is GammaOpt.
     ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
@@ -6390,21 +6424,52 @@ contains
           if( adapt_to_nnodes  )then
 
              if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
-                AlphaOpt = alpha 
+#ifdef VAR_MPI
+                print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 1'
+#else
+                print *,'we hit AlphaOpt 1'
+#endif
+                AlphaOpt = alpha
                 exit AlphaLoop
              endif
-
           else
+#ifdef VAR_MPI
+             print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 2'
+#else
+             print *,'we hit AlphaOpt 2'
+#endif
              AlphaOpt = alpha
              exit AlphaLoop
           endif
        end if
 
     end do AlphaLoop
+
+    if (AlphaOpt .eq. 0) then
+
+#ifdef VAR_MPI
+       print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt NEW'
+#else
+       print *,'we hit AlphaOpt NEW'
+#endif
+       AlphaOpt = AlphaDim
+
+    endif
   
+#ifdef VAR_MPI
+    print *,'for proc no. = ',infpar%lg_mynum,', AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
+#else
+    print *,'AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
+#endif
+
     ! If alpha batch size was set manually we use that value instead
     if(DECinfo%ccsdAbatch/=0) then
        write(DECinfo%output,*) 'Alpha batch size was set manually, use that value instead!'
+#ifdef VAR_MPI
+       print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 3'
+#else
+       print *,'we hit AlphaOpt 3'
+#endif
        AlphaOpt=DECinfo%ccsdAbatch
     end if
   
@@ -6412,8 +6477,14 @@ contains
     ! We now find the maximum possible alpha batch size smaller than or equal to AlphaOpt
     ! and store this number in alphadim.
     call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
-  
-  
+   
+#ifdef VAR_MPI
+       print *,'for proc no. = ',infpar%lg_mynum,'final GammaOpt = ',GammaOpt,&
+             &', and AlphaOpt = ',AlphaOpt
+#else
+       print *,'final GammaOpt = ',GammaOpt,', and AlphaOpt = ',AlphaOpt
+#endif
+ 
     ! Print out and sanity check
     ! ==========================
  
