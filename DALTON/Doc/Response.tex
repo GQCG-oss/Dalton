@@ -209,6 +209,12 @@ calculations. Note that this keyword requires that \Key{SOPPA} or
 Invoke the Tamm-Dancoff approximation to RPA/TDHF or TDDFT. Equivalent to the
 use of \Key{CIS} on a Hartree-Fock calculation.
 
+\item{\Key{TRDQF}}
+Invoke the calculation of transition density fitted charges. Only implemented for
+\Sec{LINEAR} with \Key{SINGLE RESIDUE}. The fitted charges will be calculated for
+all \Key{ROOTS}. It requires that \Key{QFIT} has been specified in
+\Sec{*WAVE FUNCTIONS}.
+
 \item{\Key{TRPFLG}}
 Triplet flag. This option is set whenever triplet
 (spin-dependent)\index{triplet response}

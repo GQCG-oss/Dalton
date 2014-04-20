@@ -3796,7 +3796,7 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
-            IF (DOMO2) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
+            IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
      &                             WRK(KWRK2),LWRK2)
      

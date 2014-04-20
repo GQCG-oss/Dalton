@@ -831,7 +831,7 @@ C
 #include "abslrs.h"
 C
       LOGICAL NEWDEF, SET
-      PARAMETER ( NTABLE = 24 )
+      PARAMETER ( NTABLE = 25 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE TABLE, SET
@@ -843,7 +843,8 @@ C
      *            '.MAXRM ', '.QRREST', '.PROPAV',
      *            '.HIRPA ', '.SOPW4 ', '.SOPPA(',
      *            '.NODOIT', '.DFT-SO', '.PROP2A',
-     *            '.TDA   ', '.CIS   ', '.SOPRPA'/
+     *            '.TDA   ', '.CIS   ', '.SOPRPA',
+     *            '.TRDQF '/
       DATA SET /.FALSE./
 C
       IF (.NOT.SET) THEN
@@ -856,6 +857,7 @@ C
          MAXPHP = 100
          N1AVTOT = 0
          N2AVTOT = 0
+         TRDQF = .FALSE.
       END IF
       NEWDEF = (WORD .EQ. '*RESPON')
       ICHANG = 0
@@ -872,7 +874,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
      *                      11,12,13,14,15,16,17,18,19,20,21,22,23,
-     *                      24), I
+     *                      24,25), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1001,6 +1003,12 @@ C              .PROP2Average
      &             'Vacuum calc. - use .SOPPA instead'
                   CALL QUIT('RSPINP: Vacuum calc. - use .SOPPA instead')
                  END IF
+               GO TO 100
+ 25            CONTINUE
+                 IF(.NOT. QFIT) THEN
+                   CALL QUIT('RSPINP: Charge fitting requires .QFIT')
+                 ENDIF
+                 TRDQF = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
