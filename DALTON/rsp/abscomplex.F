@@ -66,7 +66,7 @@ C NCONF
 #include "infrsp.h"
 C
       LOGICAL NEWDEF, ALLCOMP, NXTLAB
-      PARAMETER ( NTABLE = 31 )
+      PARAMETER ( NTABLE = 32 )
       PARAMETER ( THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
       CHARACTER*8 DIPLEN(3),ANGMOM(3),THETA(6),RTNLBL(2),LABFND
@@ -82,9 +82,9 @@ c
      &            '.PRINT ','.DAMPIN','.ANALYZ','.FREQ I','.MCD   ',
      &            '.MCHD  ','.NSCD  ','.BETA  ','.BFREQ ','.BFREQI',
      &            '.CFREQ ','.CFREQI','.SHG   ','.XXCOMP','.YYCOMP',
-     &            '.ZZCOMP','.IMAG F','.NBATCH','.OLDCPP','.MAX MI',
-     &            '.MAXITO','.EXCITA','.MAX MA','.THCPP ','.REDUCE',
-     &            '.BATCH '/
+     &            '.ZZCOMP','.IMAG F','.NBATCH','.FREAKS','.OLDCPP',
+     &            '.MAX MI','.MAXITO','.EXCITA','.MAX MA','.THCPP ',
+     &            '.REDUCE','.BATCH '/
 C
       NEWDEF = (WORD .EQ. '*ABSORP')
       ICHANG = 0
@@ -116,7 +116,7 @@ C
                   IF (TABLE(I) .EQ. WORD) 
      &                GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      &                     16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,
-     &                     31),I
+     &                     31,32),I
                END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
@@ -278,9 +278,12 @@ c               ABS_REDUCE = .TRUE.
                READ(LUCMD,*) ABS_NBATCHMAX
                GOTO 100
  24            CONTINUE
-                 ABS_OLDCPP = .TRUE.
+                 ABS_FREAKS = .TRUE.
                GOTO 100
  25            CONTINUE
+                 ABS_OLDCPP = .TRUE.
+               GOTO 100
+ 26            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_MICRO
                ELSE
@@ -288,7 +291,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 26            CONTINUE
+ 27            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_ITORB
                   IF (MAX_ITORB .GT. 0) OPTORB = .TRUE.
@@ -297,7 +300,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 27             CONTINUE
+ 28             CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) NEXCITED_STATES
                ELSE
@@ -305,7 +308,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 28             CONTINUE
+ 29             CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_MACRO
                ELSE
@@ -313,7 +316,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 29            CONTINUE
+ 30            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) THCPP_ABSORP
                   ABS_THCLR=THCPP_ABSORP
@@ -322,14 +325,14 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 30            CONTINUE
+ 31            CONTINUE
                  IF (ABS_OLDCPP) THEN
                  ABS_REDUCE=.TRUE.
                ELSE
                   WRITE(LUPRI,1020) WORD
                END IF
                GOTO 100
- 31            CONTINUE
+ 32            CONTINUE
                READ(LUCMD,*) NFREQ_BATCH
                IF (NFREQ_BATCH.GT.MXFREQ) THEN
                   NFREQ_BATCH = MXFREQ
@@ -702,8 +705,16 @@ C
             CALL ABSINTER(ISYM,UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
      &                    KZVAR,WRK(KFREE),LFREE)
 C
+            DO IOPER=1,ABS_NOPER(ISYM)
+               LABEL=ABS_LABOP(IOPER,ISYM)
+               IF (ABSLRS_INTERVAL) THEN
+                 DO I=1,ABS_NFREQ_INTERVAL
+                   ABS_FREQ_ALPHA(I)=ABS_FREQ_INTERVAL(1) + 
+     &              (I-1)*ABS_FREQ_INTERVAL(3)
+                 END DO
+               END IF
             KGD   = 1
-            KXSOL = KGD + 2*KZVAR
+            KXSOL = KGD + 4*KZVAR
             KFREE = KXSOL + 4*ABS_NFREQ_INTERVAL*KZVAR
             LFREE = LWRK - KFREE 
 C
@@ -719,25 +730,35 @@ C
             CALL GPOPEN(LUAB,'ABS_AB','NEW',' ',' ',IDUMMY,.FALSE.)
             CALL GPOPEN(LUSS,'ABS_SS','NEW',' ',' ',IDUMMY,.FALSE.)
             CALL GPOPEN(LUAS,'ABS_AS','NEW',' ',' ',IDUMMY,.FALSE.)
+            IF (ABS_FREAKS) THEN
+            LUSSI(1) = -1
+            LUASI(1) = -1
+            LUSSI(2) = -1
+            LUASI(2) = -1
+            LUSSI(3) = -1
+            LUASI(3) = -1
+            LUSSI(4) = -1
+            LUASI(4) = -1
+            CALL GPOPEN(LUSSI(1),'ABS_SS1','NEW',' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUASI(1),'ABS_AS1','NEW',' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUSSI(2),'ABS_SS2','NEW',' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUASI(2),'ABS_AS2','NEW',' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUSSI(3),'ABS_SS3','NEW',' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUASI(3),'ABS_AS3','NEW',' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUSSI(4),'ABS_SS4','NEW',' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUASI(4),'ABS_AS4','NEW',' ',' ',IDUMMY,.FALSE.)
+            ENDIF
 C
-            LUE1RED = -1
-            LUE2RED = -1
-            LUSRED  = -1
-            CALL GPOPEN(LUE1RED,'ABS_E1RED','NEW',
-     &         ' ',' ',IDUMMY,.FALSE.)
-            CALL GPOPEN(LUE2RED,'ABS_E2RED','NEW',
-     &         ' ',' ',IDUMMY,.FALSE.)
-            CALL GPOPEN(LUSRED ,'ABS_SRED' ,'NEW',
-     &         ' ',' ',IDUMMY,.FALSE.)
+c            LUE1RED = -1
+c            LUE2RED = -1
+c            LUSRED  = -1
+c            CALL GPOPEN(LUE1RED,'ABS_E1RED','NEW',
+c     &         ' ',' ',IDUMMY,.FALSE.)
+c            CALL GPOPEN(LUE2RED,'ABS_E2RED','NEW',
+c     &         ' ',' ',IDUMMY,.FALSE.)
+c            CALL GPOPEN(LUSRED ,'ABS_SRED' ,'NEW',
+c     &         ' ',' ',IDUMMY,.FALSE.)
 C
-            DO IOPER=1,ABS_NOPER(ISYM)
-               LABEL=ABS_LABOP(IOPER,ISYM)
-               IF (ABSLRS_INTERVAL) THEN
-                 DO I=1,ABS_NFREQ_INTERVAL
-                   ABS_FREQ_ALPHA(I)=ABS_FREQ_INTERVAL(1) + 
-     &              (I-1)*ABS_FREQ_INTERVAL(3)
-                 END DO
-               END IF
                IF (IPRABSLRS.GE.0) THEN
                   WRITE(LUPRI,'(/2A,/3A,I2,A/,A,5(4F12.8,/,11X))') 
      &                 ' ABSLRS -- Solving linear response equations',
@@ -748,6 +769,8 @@ C
      &                               I=1,ABS_NFREQ_INTERVAL)
                END IF
 C
+               CALL DZERO(WRK(KGD),4*KZVAR)
+               CALL DZERO(WRK(KXSOL),4*KZVAR*ABS_NFREQ_INTERVAL)
                CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &              WRK(KFREE),LFREE)
                CALL DCOPY(2*KZVAR,WRK(KFREE),1,WRK(KGD),1)
@@ -762,7 +785,7 @@ C
                  WRITE(LUPRI,*) 'Vectors equal to zero'
                ELSE
                  CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                        ABS_FREQ_ALPHA,
+     &                        ABS_FREQ_ALPHA,ABS_NFREQ_INTERVAL,
      &                        MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
      &                        WRK(KFREE),LFREE)
                ENDIF
@@ -777,10 +800,20 @@ C
             CALL GPCLOSE(LUAB,'DELETE')
             CALL GPCLOSE(LUSS,'DELETE')
             CALL GPCLOSE(LUAS,'DELETE')
+            IF (ABS_FREAKS) THEN
+            CALL GPCLOSE(LUSSI(1),'DELETE')
+            CALL GPCLOSE(LUASI(1),'DELETE')
+            CALL GPCLOSE(LUSSI(2),'DELETE')
+            CALL GPCLOSE(LUASI(2),'DELETE')
+            CALL GPCLOSE(LUSSI(3),'DELETE')
+            CALL GPCLOSE(LUASI(3),'DELETE')
+            CALL GPCLOSE(LUSSI(4),'DELETE')
+            CALL GPCLOSE(LUASI(4),'DELETE')
+            ENDIF
 C
-            CALL GPCLOSE(LUE1RED,'DELETE')
-            CALL GPCLOSE(LUE2RED,'DELETE')
-            CALL GPCLOSE(LUSRED, 'DELETE')
+c            CALL GPCLOSE(LUE1RED,'DELETE')
+c            CALL GPCLOSE(LUE2RED,'DELETE')
+c            CALL GPCLOSE(LUSRED, 'DELETE')
 C
          END IF
       END DO
@@ -1159,8 +1192,10 @@ c
       CALL QEXIT('ABS_LINE2')
       RETURN
       END
-      SUBROUTINE ABS_LINE2_INTER(KZVAR,VECS,VECB,XTMP,XTEMP,ISYMB,NLT,
-     &                 NNMAX,KNVEC,CMO,FC,FCAC,FV,UDV,XINDX,MJWOP,
+      SUBROUTINE ABS_LINE2_INTER(KZVAR,VECS,VECB,XTMP,XTEMP,GD,ISYMB,
+     &                 NLT,
+     &                 NNMAX,KLRED,KNVEC,NFRPR,REDE,REDS,REDGD,CMO,FC,
+     &                 FCAC,FV,UDV,XINDX,MJWOP,
      &                 WRK,LWRK)
 C
 C PURPOSE:
@@ -1183,10 +1218,13 @@ c
 #include "pcmlog.h"
 #include "gnrinf.h"
 C
-      INTEGER   NLT,NNMAX,KZVAR
-      INTEGER   KNVEC(2)
-      DIMENSION VECS(KZVAR,NLT)
+      INTEGER   NLT,NNMAX,KZVAR,NFRPR
+      INTEGER   KNVEC(2),KLRED(2)
+      DIMENSION VECS(KZVAR,NLT),GD(4*KZVAR)
       DIMENSION VECB(KZVAR,NLT),XTMP(2*KZVAR,NNMAX),XTEMP(2*KZVAR,NNMAX)
+      DIMENSION REDE(ABS_MAXRM,ABS_MAXRM,2,NFRPR),
+     &          REDS(ABS_MAXRM,ABS_MAXRM),
+     &          REDGD(ABS_MAXRM,2)
       DIMENSION CMO(*),FC(*),FCAC(*),UDV(*),FV(*),WRK(LWRK)
       DIMENSION ISYMDM(2*NNMAX)
 C
@@ -1262,7 +1300,12 @@ c
      &                 ISYMB,KNTOT,CMO,FC,FCAC,FV,
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
        ENDDO
+C      
+C     !!fixme fixme Joanna
+C     CALL DCOPY(2*KZVAR*NNMAX,XTMP,1,XTEMP2,1)
+C     !!fixme fixme Joanna
 C
+       DO K=1,NFRPR
       IF (PEQM) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
      &               XTMP,WRK(KFREE),LFREE)
@@ -1296,6 +1339,18 @@ C
          WRITE(LUPRI,'(//A)') ' SIGMA VECTORS (IN ORDER REAL-SYM,
      &                REAL-ANTYSYM., IMG-ANTYSYM., IMG-SYM.'
          CALL OUTPUT(VECS,1,KZVAR,1,NLT,KZVAR,NLT,1,LUPRI)
+      ENDIF
+    
+      IF (ABS_FREAKS) THEN
+         CALL EXTEND_ABS_REDE(KZVAR,VECB,VECS,REDE(1,1,1,K),
+     &                   NLT,KLRED,KNVEC,LUSSI(K),LUASI(K),
+     &                   WRK(KFREE),LFREE)
+      ENDIF
+     
+      ENDDO
+      IF (ABS_FREAKS) THEN
+        CALL EXTEND_ABS_REDS(KZVAR,GD,VECB,REDS,REDGD,
+     &                       NLT,KLRED,KNVEC,WRK(KFREE),LFREE)
       ENDIF
 C
       CALL QEXIT('ABS_LINE2')
