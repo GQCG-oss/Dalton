@@ -73,7 +73,7 @@ contains
     type(array) :: cbai ! integrals (AI|BC) in the order (C,B,A,I)
 #ifdef VAR_MPI
     integer :: nodtotal
-    real(realk) :: jaik_norm, abij_norm, cbai_norm
+    real(realk) :: jaik_norm, abij_norm, cbai_norm, ccsd_doubles_norm
     real(realk) :: ccsdpt_doubles_norm, ccsdpt_doubles_2_norm, ccsdpt_singles_norm
 #endif
     !> orbital energies
@@ -145,6 +145,22 @@ contains
 
     call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
 
+#ifdef VAR_MPI
+
+    if (infpar%lg_mynum .eq. infpar%master) then
+
+       print *,'proc no. ',infpar%lg_mynum,'integrals after get_CCSDpT_integrals'
+       call array4_print_norm_nrm(jaik,jaik_norm)
+       call array4_print_norm_nrm(abij,abij_norm)
+       call array4_print_norm_nrm(ccsd_doubles,ccsd_doubles_norm)
+       print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
+       print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
+       print *,'proc no. ',infpar%lg_mynum,'ccsd_doubles_norm = ',ccsd_doubles_norm
+
+    end if
+
+#endif
+
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
     call array2_free(C_can_virt)
@@ -189,9 +205,6 @@ contains
     ! initially, reorder ccsd_doubles
     call array4_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
 
-    ! if cbai is tiled distributed, then put the three tiles into
-    ! an array structure, cbai_pdm. here, initialize the array structure.
-
     !**********************************************************
     ! here: the main ijk-loop: this is where the magic happens!
     !**********************************************************
@@ -208,12 +221,12 @@ contains
 
 #else
 
-!    ! the serial version of the ijk-loop
-!    call ijk_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
-!                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
-    ! the serial version of the abc-loop
-    call abc_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
+    ! the serial version of the ijk-loop
+    call ijk_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
                     & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
+!    ! the serial version of the abc-loop
+!    call abc_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
+!                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
 
 #endif
 
