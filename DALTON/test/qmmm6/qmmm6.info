@@ -1,5 +1,0 @@
-   qmmm6
-   -----------
-   Molecule:         CH2O(DFT)/2 H2O(MM)
-   Wave Function:    B3LYP / cc-pVDZ  
-   Test Purpose:     Test of freq. dep. hyper polarizability through RESPONSE

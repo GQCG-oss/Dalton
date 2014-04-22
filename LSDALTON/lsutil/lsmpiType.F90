@@ -258,7 +258,13 @@ module lsmpi_type
 !$OMP lsmpibufferInt8,lsmpibufferSho,lsmpibufferLog,lsmpibufferCha)
 
 contains
-
+#ifdef VAR_MPI
+    SUBROUTINE GET_MPI_COMM_SELF(outputcomm)
+      implicit none
+      integer(kind=ls_mpik),intent(inout) :: OutputComm   
+      OutputComm = MPI_COMM_SELF !Predefined Communicator - the local processor
+    END SUBROUTINE GET_MPI_COMM_SELF
+#endif
     subroutine ls_mpibcast_integer(buffer,master,comm)
       implicit none
       integer(kind=4) :: buffer
@@ -323,6 +329,7 @@ contains
       integer(kind=8) :: i,k
       integer(kind=ls_mpik):: ierr,count,datatype
       integer(kind=4),pointer :: intbuffer(:)
+      integer(kind=long) :: n1
       IERR=0
 
       !in case of a 32 bit mpi library, split the messages, else just send
@@ -339,8 +346,10 @@ contains
       else
 
         DATATYPE = MPI_INTEGER
-        COUNT = SIZE(buffer)
-        if(COUNT.NE.n)call lsquit('lsmpi error in ls_mpibcast_ShortV',-1)
+        COUNT = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        IF(n1.NE.COUNT)call lsquit('lsmpi error1 in ls_mpibcast_ShortV',-1)
+        if(COUNT.NE.n)call lsquit('lsmpi error2 in ls_mpibcast_ShortV',-1)
 
         IF (mod(n,int_to_short).NE.0) THEN
           write(*,*) 'Error in ls_mpibcast_shortV',n,int_to_short,mod(n,int_to_short)
@@ -361,11 +370,14 @@ contains
 #ifdef VAR_MPI
       integer(kind=ls_mpik):: ierr,count,datatype,n
       integer(kind=4),pointer :: intbuffer(:)
+      integer(kind=long) :: n1
       IERR=0
 
       DATATYPE = MPI_INTEGER
-      COUNT = SIZE(buffer)
-      if(COUNT.NE.nbuf)call lsquit('lsmpi error in ls_mpibcast_ShortV',-1)
+      COUNT = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_ShortV',-1)
+      if(COUNT.NE.nbuf)call lsquit('lsmpi error2 in ls_mpibcast_ShortV',-1)
 
       IF (mod(nbuf,int_to_short).NE.0) THEN
         write(*,*) 'Error in ls_mpibcast_shortV',nbuf,int_to_short,mod(nbuf,int_to_short)
@@ -388,6 +400,7 @@ contains
       integer(kind=4) :: n4
       integer(kind=8) :: i,k
       integer(kind=ls_mpik) :: ierr,count,datatype
+      integer(kind=long) :: n1
       !loop over batches, which contain a number of elements,
       !describable by 32 bit integers, here 2E9
       IERR=0
@@ -401,7 +414,10 @@ contains
         enddo
       else
         DATATYPE = MPI_INTEGER8
-        COUNT = SIZE(buffer)
+        COUNT = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_longV_wrapper8',-1)
+
         if(COUNT.NE.n)call lsquit('lsmpi error in ls_mpibcast_longV_wrapper8',-1)
         !      COUNT = nbuf
         CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
@@ -417,9 +433,13 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,datatype,n
+      integer(kind=long) :: n1
       IERR=0
       DATATYPE = MPI_INTEGER8
       n = SIZE(buffer)
+      n1 = SIZE(buffer,kind=long)
+      if(n.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_longV',-1)
+
       if(n.NE.nbuf)call lsquit('lsmpi error in ls_mpibcast_longV',-1)
       !      COUNT = nbuf
       CALL MPI_BCAST(BUFFER,n,DATATYPE,master,comm,IERR)
@@ -440,6 +460,7 @@ contains
       !loop over batches, which contain a number of elements,
       !describable by 32 bit integers, here 2E9
       integer(kind=ls_mpik) :: ierr,count,datatype
+      integer(kind=long) :: n1
       IERR=0
       if(ls_mpik==4)then
         k=SPLIT_MPI_MSG
@@ -451,7 +472,9 @@ contains
         enddo
       else
         DATATYPE = MPI_INTEGER4
-        COUNT = SIZE(buffer)
+        COUNT = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_longV',-1)
         if(COUNT.NE.n)call lsquit('lsmpi error in ls_mpibcast_integerV',-1)
         CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
@@ -466,9 +489,13 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,count,datatype
+      integer(kind=long) :: n1
       IERR=0
       DATATYPE = MPI_INTEGER4
-      COUNT = SIZE(buffer)
+      COUNT = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_integerV',-1)
+
       if(COUNT.NE.nbuf)call lsquit('lsmpi error in ls_mpibcast_integerV',-1)
       CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
@@ -504,7 +531,9 @@ contains
         nullify(buffertmp)
       else
         DATATYPE = MPI_INTEGER8
-        COUNT = SIZE(buffer)
+        COUNT = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_longM_wrapper8',-1)
         if(COUNT.NE.n)call lsquit('lsmpi error in ls_mpibcast_longM_wrapper8',-1)
         !      COUNT = nbuf
         CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
@@ -520,9 +549,13 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,datatype,n
+      integer(kind=long)    :: n1
       IERR=0
       DATATYPE = MPI_INTEGER8
-      n = SIZE(buffer)
+      n = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(n.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_longM',-1)
+
       if(n.NE.nbuf1*nbuf2)call lsquit('lsmpi error in ls_mpibcast_longM',-1)
       !      COUNT = nbuf
       CALL MPI_BCAST(BUFFER,n,DATATYPE,master,comm,IERR)
@@ -541,6 +574,7 @@ contains
       integer(kind=4),pointer :: buffertmp(:)
       integer(kind=8) :: i,k,n
       integer(kind=4) :: n4
+      integer(kind=long)    :: n1T
       !loop over batches, which contain a number of elements,
       !describable by 32 bit integers, here 2E9
       integer(kind=ls_mpik) :: ierr,count,datatype
@@ -557,7 +591,9 @@ contains
         nullify(buffertmp)
       else
         DATATYPE = MPI_INTEGER4
-        COUNT = SIZE(buffer)
+        COUNT = SIZE(buffer,kind=ls_mpik)
+        n1T = SIZE(buffer,kind=long)
+        if(COUNT.NE.n1T)call lsquit('lsmpi error1 in ls_mpibcast_integerM_wrapper8',-1)
         if(COUNT.NE.n)call lsquit('lsmpi error in ls_mpibcast_integerM_wrapper8',-1)
         CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
@@ -573,9 +609,13 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,count,datatype
+      integer(kind=long)    :: n1
       IERR=0
       DATATYPE = MPI_INTEGER4
-      COUNT = SIZE(buffer)
+      COUNT = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_integerM',-1)
+
       if(COUNT.NE.nbuf1*nbuf2)call lsquit('lsmpi error in ls_mpibcast_integerM',-1)
       CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,master,comm,IERR)
       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
@@ -608,7 +648,8 @@ contains
 #ifdef VAR_MPI
       integer(kind=4) :: n4
       integer(kind=8) :: i,k
-      integer(kind=ls_mpik) :: ierr,count,datatype
+      integer(kind=long) :: n1
+      integer(kind=ls_mpik) :: ierr,count,datatype      
       !loop over batches, which contain a number of elements,
       !describable by 32 bit integers, here 2E9
       IERR=0
@@ -622,6 +663,8 @@ contains
       else
         DATATYPE = MPI_DOUBLE_PRECISION
         COUNT = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_realkV_wrapper8',-1)
         if(COUNT.NE.n)THEN
            call lsquit('lsmpi error in ls_mpibcast_realkV_wrapper8',-1)
         endif
@@ -638,9 +681,12 @@ contains
       real(realk) :: buffer(:)
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,count,datatype
+      integer(kind=long)    :: n1
       IERR=0
       DATATYPE = MPI_DOUBLE_PRECISION
-      COUNT = SIZE(buffer)
+      COUNT = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_realkV',-1)
       if(COUNT.NE.nbuf)THEN
          call lsquit('lsmpi error in ls_mpibcast_realkV',-1)
       endif
@@ -757,6 +803,7 @@ contains
       integer(kind=ls_mpik) :: ierr,count,datatype
       logical(kind=4),pointer :: buffer4(:)
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
+      integer(kind=long) :: n1
       !loop over batches, which contain a number of elements,
       !escribable by 32 bit integers, here 2E9
       IERR=0
@@ -769,9 +816,11 @@ contains
         enddo
       else
         DATATYPE = MPI_LOGICAL
-        COUNT = SIZE(buffer)
+        COUNT = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_logical8V_wrapper8',-1)
         if(COUNT.NE.n)THEN
-           call lsquit('lsmpi error in ls_mpibcast_logicalV',-1)
+           call lsquit('lsmpi error in ls_mpibcast_logical8V_wrapper8',-1)
         endif
         call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
         IF(mpi_logical_extent.EQ.4)THEN
@@ -805,11 +854,14 @@ contains
       logical(kind=4),pointer :: buffer4(:)
       integer(kind=ls_mpik) :: ierr,count,datatype
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
+      integer(kind=long) :: n1
       IERR=0
       DATATYPE = MPI_LOGICAL
-      COUNT = SIZE(buffer)
+      COUNT = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_logical8V',-1)
       if(COUNT.NE.nbuf)THEN
-         call lsquit('lsmpi error in ls_mpibcast_logicalV',-1)
+         call lsquit('lsmpi error in ls_mpibcast_logical8V',-1)
       endif
       call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
       IF(mpi_logical_extent.EQ.4)THEN
@@ -843,6 +895,7 @@ contains
       integer(kind=8) :: i,k
       integer(kind=ls_mpik) :: ierr,count,datatype
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
+      integer(kind=long) :: n1
       !loop over batches, which contain a number of elements,
       !escribable by 32 bit integers, here 2E9
       IERR=0
@@ -855,7 +908,9 @@ contains
         enddo
       else
         DATATYPE = MPI_LOGICAL
-        COUNT = SIZE(buffer)
+        COUNT = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_logicalV',-1)
         if(COUNT.NE.n)THEN
            call lsquit('lsmpi error in ls_mpibcast_logicalV',-1)
         endif
@@ -890,10 +945,14 @@ contains
       logical(kind=8),pointer :: buffer8(:)
       integer(kind=ls_mpik) :: ierr,count,datatype
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
+      integer(kind=long) :: n1
       integer :: I
       IERR=0
       DATATYPE = MPI_LOGICAL
-      COUNT = SIZE(buffer)
+      COUNT = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(COUNT.NE.n1)call lsquit('lsmpi error1 in ls_mpibcast_logicalV',-1)
+
       if(COUNT.NE.nbuf)THEN
          call lsquit('lsmpi error in ls_mpibcast_logicalV',-1)
       endif
@@ -1353,6 +1412,7 @@ contains
       integer(kind=ls_mpik) :: mynum,tag
       integer(kind=8) :: i,k,n
       integer(kind=4) :: n4
+      integer(kind=long) :: n1
 #ifdef VAR_MPI
       IERR=0
       if(ls_mpik==4)then
@@ -1370,7 +1430,9 @@ contains
         call get_rank_for_comm(comm,mynum)
        
         DATATYPE = MPI_INTEGER
-        THESIZE = SIZE(buffer)
+        THESIZE = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_shortV',-1)
         if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_ShortV',-1)
        
         IF (mod(nbuf,int_to_short).NE.0) THEN
@@ -1402,13 +1464,16 @@ contains
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,thesize,datatype,n
       integer(kind=ls_mpik) :: mynum,tag
+      integer(kind=long)    :: n1
       IERR=0
       tag=3
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
       DATATYPE = MPI_INTEGER
-      THESIZE = SIZE(buffer)
+      THESIZE = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_shortV',-1)
       if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_ShortV',-1)
 
       IF (mod(nbuf,int_to_short).NE.0) THEN
@@ -1442,6 +1507,7 @@ contains
       integer(kind=ls_mpik) :: mynum,tag
       integer(kind=8) :: i,k
       integer(kind=4) :: n4
+      integer(kind=long)    :: n1
 #ifdef VAR_MPI
       IERR=0
       if(ls_mpik==4)then
@@ -1458,7 +1524,9 @@ contains
         call get_rank_for_comm(comm,mynum)
        
         DATATYPE = MPI_INTEGER8
-        THESIZE = SIZE(buffer)
+        THESIZE = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_longV',-1)
         if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_longV',-1)
        
         !     Send/receive 
@@ -1484,13 +1552,16 @@ contains
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,thesize,datatype
       integer(kind=ls_mpik) :: mynum,tag
+      integer(kind=long)    :: n1
       IERR=0
       tag=4
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
       DATATYPE = MPI_INTEGER8
-      THESIZE = SIZE(buffer)
+      THESIZE = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_longV',-1)
       if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_longV',-1)
 
       !     Send/receive 
@@ -1518,6 +1589,7 @@ contains
       integer(kind=ls_mpik) :: mynum,tag
       integer(kind=8) :: i,k
       integer(kind=4) :: n4
+      integer(kind=long)    :: n1
 #ifdef VAR_MPI
       IERR=0
       if(ls_mpik==4)then
@@ -1533,7 +1605,9 @@ contains
         ! Get rank within specific communicator
         call get_rank_for_comm(comm,mynum)
         DATATYPE = MPI_INTEGER4
-        THESIZE = SIZE(buffer)
+        THESIZE = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_integerV',-1)
         if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_integerV',-1)
        
         !     Send/receive 
@@ -1558,12 +1632,15 @@ contains
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,thesize,datatype
       integer(kind=ls_mpik) :: mynum,tag
+      integer(kind=long)    :: n1
       IERR=0
       tag=5
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
       DATATYPE = MPI_INTEGER4
-      THESIZE = SIZE(buffer)
+      THESIZE = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_integerV',-1)
       if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_integerV',-1)
 
       !     Send/receive 
@@ -1618,6 +1695,7 @@ contains
       integer(kind=ls_mpik) :: mynum,tag
       integer(kind=8) :: i,k
       integer(kind=4) :: n4
+      integer(kind=long)    :: n1
 #ifdef VAR_MPI
       IERR=0
       if(ls_mpik==4)then
@@ -1632,7 +1710,9 @@ contains
         ! Get rank within specific communicator
         call get_rank_for_comm(comm,mynum)
         DATATYPE = MPI_DOUBLE_PRECISION
-        THESIZE = SIZE(buffer)
+        THESIZE = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_realkV_wrapper8',-1)
         if(THESIZE.NE.nbuf)THEN
            call lsquit('lsmpi error in ls_mpisendrecv_realkV_wrapper8',-1)
         endif
@@ -1660,12 +1740,15 @@ contains
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,thesize,datatype
       integer(kind=ls_mpik) :: mynum,tag
+      integer(kind=long)    :: n1
       IERR=0
       tag=7
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
       DATATYPE = MPI_DOUBLE_PRECISION
-      THESIZE = SIZE(buffer)
+      THESIZE = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_realkV',-1)
       if(THESIZE.NE.nbuf)THEN
          call lsquit('lsmpi error in ls_mpisendrecv_realkV',-1)
       endif
@@ -1694,13 +1777,16 @@ contains
       integer(kind=ls_mpik) :: ierr,thesize,datatype
       integer(kind=ls_mpik) :: mynum,tag
       integer ::  I,J,offset
+      integer(kind=long)    :: n1
       IERR=0
       tag=8
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
       DATATYPE = MPI_DOUBLE_PRECISION
-      THESIZE = SIZE(buffer(:,:))
+      THESIZE = SIZE(buffer(:,:),kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_realkM',-1)
       if(THESIZE.NE.nbuf1*nbuf2) call lsquit('lsmpi error in ls_mpisendrecv_realkM',-1)
 
       !     Send/receive 
@@ -1727,13 +1813,16 @@ contains
       integer(kind=ls_mpik) :: ierr,thesize,datatype
       integer(kind=ls_mpik) :: mynum,tag
       integer :: I,J,K,offset
+      integer(kind=long)    :: n1
       IERR=0
       tag=9
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
       DATATYPE = MPI_DOUBLE_PRECISION
-      THESIZE = SIZE(buffer)
+      THESIZE = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_realT',-1)
       if(THESIZE.NE.nbuf1*nbuf2*nbuf3)THEN
          call lsquit('lsmpi error in ls_mpisendrecv_realkT',-1)
       endif
@@ -1763,13 +1852,16 @@ contains
       integer(kind=ls_mpik) :: ierr,thesize,datatype
       integer(kind=ls_mpik) :: mynum,tag
       integer :: I,J,K,offset
+      integer(kind=long)    :: n1
       IERR=0
       tag=10
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
       DATATYPE = MPI_DOUBLE_PRECISION
-      THESIZE = SIZE(buffer)
+      THESIZE = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_realkQ',-1)
       if(THESIZE.NE.nbuf1*nbuf2*nbuf3*nbuf4)THEN
          call lsquit('lsmpi error in ls_mpisendrecv_realkQ',-1)
       endif
@@ -1889,6 +1981,7 @@ contains
 #ifdef VAR_MPI
       logical(kind=4),pointer :: buffer4(:)
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
+      integer(kind=long)    :: n1
       IERR=0
       if(ls_mpik==4)then
         k=SPLIT_MPI_MSG
@@ -1903,7 +1996,9 @@ contains
         call get_rank_for_comm(comm,mynum)
        
         DATATYPE = MPI_LOGICAL
-        THESIZE = SIZE(buffer)
+        THESIZE = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logical8V_wrapper',-1)
         if(THESIZE.NE.nbuf)THEN
            call lsquit('lsmpi error in ls_mpisendrecv_logical8V_wrapper8',-1)
         endif
@@ -1959,13 +2054,16 @@ contains
       logical(kind=4),pointer :: buffer4(:)
       integer :: I
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
+      integer(kind=long)    :: n1
       IERR=0
       tag=12
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
       DATATYPE = MPI_LOGICAL
-      THESIZE = SIZE(buffer)
+      THESIZE = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logical8V',-1)
       if(THESIZE.NE.nbuf)THEN
          call lsquit('lsmpi error in ls_mpisendrecv_logical8V',-1)
       endif
@@ -2020,7 +2118,8 @@ contains
       integer(kind=4) :: n4
 #ifdef VAR_MPI
       logical(kind=8),pointer :: buffer8(:)
-      integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
+      integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb 
+      integer(kind=long)    :: n1
       IERR=0
       if(ls_mpik==4)then
         k=SPLIT_MPI_MSG
@@ -2035,7 +2134,9 @@ contains
         call get_rank_for_comm(comm,mynum)
        
         DATATYPE = MPI_LOGICAL
-        THESIZE = SIZE(buffer)
+        THESIZE = SIZE(buffer,kind=ls_mpik)
+        n1 = SIZE(buffer,kind=long)
+        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logicalV',-1)
         if(THESIZE.NE.nbuf)THEN
            call lsquit('lsmpi error in ls_mpisendrecv_logicalV',-1)
         endif
@@ -2092,13 +2193,16 @@ contains
       integer(kind=8) :: nbuf8
       integer :: I
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
+      integer(kind=long)    :: n1
       IERR=0
       tag=12
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
       DATATYPE = MPI_LOGICAL
-      THESIZE = SIZE(buffer)
+      THESIZE = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logicalV',-1)
       if(THESIZE.NE.nbuf)THEN
          call lsquit('lsmpi error in ls_mpisendrecv_logicalV',-1)
       endif
@@ -2156,13 +2260,16 @@ contains
       logical(kind=8),pointer :: buffer8(:,:)
       integer :: I,J
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
+      integer(kind=long)    :: n1
       IERR=0
       tag=13
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
       DATATYPE = MPI_LOGICAL
-      THESIZE = SIZE(buffer)
+      THESIZE = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logical4M',-1)
       if(THESIZE.NE.nbuf1*nbuf2)THEN
          call lsquit('lsmpi error in ls_mpisendrecv_logical4M',-1)
       endif
@@ -2221,13 +2328,16 @@ contains
       logical(kind=4),pointer :: buffer4(:,:)
       integer :: I,J 
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
+      integer(kind=long)    :: n1
       IERR=0
       tag=13
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
       DATATYPE = MPI_LOGICAL
-      THESIZE = SIZE(buffer)
+      THESIZE = SIZE(buffer,kind=ls_mpik)
+      n1 = SIZE(buffer,kind=long)
+      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logical8M',-1)
       if(THESIZE.NE.nbuf1*nbuf2)THEN
          call lsquit('lsmpi error in ls_mpisendrecv_logical8M',-1)
       endif
@@ -2464,6 +2574,7 @@ contains
 #ifdef VAR_MPI
       IF(AddToBuffer)THEN
          IF(iInt4+1 .GT. nInteger4)call increaselsmpibufferInt4(1_long)
+         IF(iInt4+1.GT.size(lsmpibufferInt4,kind=long))call lsquit('errorTK',-1)
          lsmpibufferInt4(iInt4+1) = buffer
          iInt4 = iInt4 + 1
       ELSE
@@ -2554,6 +2665,7 @@ contains
            call increaselsmpibufferInt4(nbuf)
          ENDIF
          DO I=1,nbuf
+            IF(iInt4+1.GT.size(lsmpibufferInt4,kind=long))call lsquit('errorTK',-1)
             lsmpibufferInt4(iInt4+I) = buffer(I)
          ENDDO
          iInt4 = iInt4 + nbuf
@@ -3436,12 +3548,12 @@ contains
             IF(MemModParamPrintMemory)THEN
                print*,'MemModParamPrintMemory   mynum',mynum
                CALL Print_Memory_info(MemModParamPrintMemorylupri,'FinalBuffer: Before deallocation')
-               Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',size(lsmpibufferDP)
-               Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',size(lsmpibufferInt4)
-               Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',size(lsmpibufferInt8)
-               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',size(lsmpibufferSho)
-               Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',size(lsmpibufferLog)
-               Write(MemModParamPrintMemorylupri,*)'# Character elements     ',size(lsmpibufferCha)
+               Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',size(lsmpibufferDP,kind=long)
+               Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',size(lsmpibufferInt4,kind=long)
+               Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',size(lsmpibufferInt8,kind=long)
+               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',size(lsmpibufferSho,kind=long)
+               Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',size(lsmpibufferLog,kind=long)
+               Write(MemModParamPrintMemorylupri,*)'# Character elements     ',size(lsmpibufferCha,kind=long)
             ENDIF
             call mem_dealloc(lsmpibufferDP)
             call mem_dealloc(lsmpibufferInt4)
@@ -3475,12 +3587,12 @@ contains
          IF(MemModParamPrintMemory)THEN
             print*,'MemModParamPrintMemory   mynum',mynum
             CALL Print_Memory_info(MemModParamPrintMemorylupri,'FinalBuffer: Before deallocation LSMPIREDUCTIONmaster')
-            Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',size(lsmpibufferDP)
-            Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',size(lsmpibufferInt4)
-            Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',size(lsmpibufferInt8)
-            Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',size(lsmpibufferSho)
-            Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',size(lsmpibufferLog)
-            Write(MemModParamPrintMemorylupri,*)'# Character elements     ',size(lsmpibufferCha)
+            Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',size(lsmpibufferDP,kind=long)
+            Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',size(lsmpibufferInt4,kind=long)
+            Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',size(lsmpibufferInt8,kind=long)
+            Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',size(lsmpibufferSho,kind=long)
+            Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',size(lsmpibufferLog,kind=long)
+            Write(MemModParamPrintMemorylupri,*)'# Character elements     ',size(lsmpibufferCha,kind=long)
          ENDIF
          call mem_dealloc(lsmpibufferDP)
          call mem_dealloc(lsmpibufferInt4)
@@ -3552,8 +3664,8 @@ contains
       integer(kind=8) :: add
       integer(kind=4),pointer :: tmpbuffer(:)
 !
-      integer :: i,n
-      n = size(lsmpibufferInt4)
+      integer(kind=long) :: i,n
+      n = size(lsmpibufferInt4,kind=long)
       call mem_alloc(tmpbuffer,n)
       DO i=1,n
          tmpbuffer(i) = lsmpibufferInt4(i)
@@ -3562,6 +3674,7 @@ contains
       nInteger4 = nInteger4 + MIN(MAX(incremInteger,add,nInteger4),MaxIncreaseSize)
       call mem_alloc(lsmpibufferInt4,nInteger4)
       DO i=1,n
+         IF(i.GT.size(lsmpibufferInt4,kind=long))call lsquit('errorTK',-1)
          lsmpibufferInt4(i) = tmpbuffer(i)
       ENDDO
       call mem_dealloc(tmpbuffer)
@@ -3573,8 +3686,8 @@ contains
       implicit none
       integer(kind=8) :: add
       integer(kind=8),pointer :: tmpbuffer(:)
-      integer :: i,n
-      n = size(lsmpibufferInt8)
+      integer(kind=long) :: i,n
+      n = size(lsmpibufferInt8,kind=long)
       call mem_alloc(tmpbuffer,n)
       DO i=1,n
          tmpbuffer(i) = lsmpibufferInt8(i)
@@ -3595,8 +3708,8 @@ contains
       integer :: add
       integer(kind=short),pointer :: tmpbuffer(:)
 !
-      integer :: i,n
-      n = size(lsmpibufferSho)
+      integer(kind=long) :: i,n
+      n = size(lsmpibufferSho,kind=long)
       call mem_alloc(tmpbuffer,n)
       DO i=1,n
          tmpbuffer(i) = lsmpibufferSho(i)
@@ -3617,8 +3730,8 @@ contains
       integer :: add
       logical,pointer :: tmpbuffer(:)
 !
-      integer :: i,n
-      n = size(lsmpibufferLog)
+      integer(kind=long) :: i,n
+      n = size(lsmpibufferLog,kind=long)
       call mem_alloc(tmpbuffer,n)
       DO i=1,n
          tmpbuffer(i) = lsmpibufferLog(i)
@@ -3639,8 +3752,8 @@ contains
       integer :: add
       character,pointer :: tmpbuffer(:)
 !
-      integer :: i,n
-      n = size(lsmpibufferCha)
+      integer(kind=long) :: i,n
+      n = size(lsmpibufferCha,kind=long)
       call mem_alloc(tmpbuffer,n)
       DO i=1,n
          tmpbuffer(i) = lsmpibufferCha(i)
@@ -3661,8 +3774,8 @@ contains
       integer :: add
       real(realk),pointer :: tmpbuffer(:)
 !
-      integer :: i,n
-      n = size(lsmpibufferDP)
+      integer(kind=long) :: i,n
+      n = size(lsmpibufferDP,kind=long)
       call mem_alloc(tmpbuffer,n)
       DO i=1,n
          tmpbuffer(i) = lsmpibufferDP(i)

@@ -76,7 +76,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use soeo_loop, only: soeoloop, soeo_restart
   ! GEO OPTIMIZER
   use ls_optimizer_mod, only: LS_RUNOPT
-  use SCFCounterPoiseCorrectionMod, only: SCFCounterPoiseCorrection
+  use SCFinteractionEnergyMod, only: SCFinteractionEnergy
   use lsmpi_type, only: lsmpi_finalize
   use lstensorMem, only: lstmem_init, lstmem_free
 #ifdef MOD_UNRELEASED
@@ -93,13 +93,14 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use papi_module
 #endif
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
-       & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter
+       & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter,&
+       & II_get_Fock_mat
   use integralinterfaceIchorMod, only: II_Unittest_Ichor
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
   implicit none
   logical, intent(in) :: OnMaster
-  logical, intent(out):: meminfo_slaves
+  logical, intent(inout):: meminfo_slaves
   integer, intent(inout) :: lupri, luerr
   integer             :: nbast, lucmo
   TYPE(lsitem),target :: ls
@@ -473,8 +474,8 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            Endif
         endif
 
-        if (config%CounterPoiseCorrection) then
-           CALL SCFCounterPoiseCorrection(E,config,H1,F,D,S,CMO,ls)           
+        if (config%SCFinteractionEnergy) then
+           CALL SCFinteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
         endif
         !PROPERTIES SECTION
 
@@ -485,9 +486,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
 
 #ifdef VAR_RSP
-        CALL Print_Memory_info(lupri,'before lsdalton_response')
-        call lsdalton_response(ls,config,F(1),D(1),S)
-        CALL Print_Memory_info(lupri,'after lsdalton_response')
+        IF(config%response%tasks%doDipole.OR.config%response%tasks%doResponse)THEN
+           CALL Print_Memory_info(lupri,'before lsdalton_response')
+           call lsdalton_response(ls,config,F(1),D(1),S)
+           CALL Print_Memory_info(lupri,'after lsdalton_response')
+        ENDIF
 #endif
         
         call config_shutdown(config)

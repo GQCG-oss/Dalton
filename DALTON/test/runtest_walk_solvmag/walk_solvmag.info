@@ -1,6 +1,0 @@
-   walk_solvmag
-   ------------
-   Molecule:         CH3F
-   Wave Function:    SCF
-   Test Purpose:     Geometry walk and shielding and magnetizability for
-                     a solvated molecule (equilibrium solvation)
