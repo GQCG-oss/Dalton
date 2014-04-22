@@ -76,6 +76,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use soeo_loop, only: soeoloop, soeo_restart
   ! GEO OPTIMIZER
   use ls_optimizer_mod, only: LS_RUNOPT
+  use SCFinteractionEnergyMod, only: SCFinteractionEnergy
   use lsmpi_type, only: lsmpi_finalize
   use lstensorMem, only: lstmem_init, lstmem_free
 #ifdef MOD_UNRELEASED
@@ -92,13 +93,14 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use papi_module
 #endif
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
-       & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter
+       & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter,&
+       & II_get_Fock_mat
   use integralinterfaceIchorMod, only: II_Unittest_Ichor
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
   implicit none
   logical, intent(in) :: OnMaster
-  logical, intent(out):: meminfo_slaves
+  logical, intent(inout):: meminfo_slaves
   integer, intent(inout) :: lupri, luerr
   integer             :: nbast, lucmo
   TYPE(lsitem),target :: ls
@@ -472,6 +474,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            Endif
         endif
 
+        if (config%SCFinteractionEnergy) then
+           CALL SCFinteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
+        endif
         !PROPERTIES SECTION
 
         if (config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. & 
@@ -481,9 +486,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
 
 #ifdef VAR_RSP
-        CALL Print_Memory_info(lupri,'before lsdalton_response')
-        call lsdalton_response(ls,config,F(1),D(1),S)
-        CALL Print_Memory_info(lupri,'after lsdalton_response')
+        IF(config%response%tasks%doDipole.OR.config%response%tasks%doResponse)THEN
+           CALL Print_Memory_info(lupri,'before lsdalton_response')
+           call lsdalton_response(ls,config,F(1),D(1),S)
+           CALL Print_Memory_info(lupri,'after lsdalton_response')
+        ENDIF
 #endif
         
         call config_shutdown(config)
@@ -652,9 +659,10 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
   use memory_handling, only: init_globalmemvar
-  use lstiming, only: init_timers, lstimer,  print_timers
+  use lstiming, only: init_timers, lstimer,  print_timers,time_start_phase,PHASE_WORK
   use lspdm_tensor_operations_module,only:init_persistent_array
   use GCtransMod, only: init_AO2GCAO_GCAO2AO
+  use IntegralInterfaceModuleDF,only:init_IIDF_matrix
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
@@ -666,6 +674,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   integer, intent(inout)     :: lupri, luerr
   real(realk), intent(inout) :: t1,t2
   
+  !INITIALIZING TIMERS SHOULD ALWAYS BE THE FIRST CALL
+  call init_timers
+
   ! Init PAPI FLOP counting event using global parameter "eventset" stored in papi_module
 #ifdef VAR_PAPI
   call mypapi_init(eventset)
@@ -674,12 +685,12 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call set_matrix_default !initialize global matrix counters
   call init_rsp_util      !initialize response util module
   call lstmem_init
+  call init_IIDF_matrix
 #ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
 #endif
   call init_AO2GCAO_GCAO2AO()
   call init_persistent_array
-  call init_timers !initialize timers
   ! MPI initialization
   call lsmpi_init(OnMaster)
 
@@ -688,6 +699,8 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
     call LSTIMER('START',t1,t2,LUPRI)
     call open_lsdalton_files(lupri,luerr)
   endif
+
+  call time_start_phase(PHASE_WORK)
 END SUBROUTINE lsinit_all
 
 SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
@@ -698,6 +711,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use lstensorMem, only: lstmem_free
   use lspdm_tensor_operations_module,only:free_persistent_array
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
+  use IntegralInterfaceModuleDF,only:free_IIDF_matrix
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
@@ -716,6 +730,7 @@ implicit none
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
+  call free_IIDF_matrix
   call lstmem_free
 
 #ifdef VAR_ICHOR

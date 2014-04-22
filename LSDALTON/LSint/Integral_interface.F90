@@ -92,7 +92,8 @@ MODULE IntegralInterfaceMOD
        & II_get_exchange_mat_regular_full, II_get_admm_exchange_mat,get_T23,&
        & II_get_ADMM_K_gradient, II_get_coulomb_mat,ii_get_exchange_mat_mixed,&
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
-       & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI
+       & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
+       & II_get_2int_ScreenRealMat
   private
 
 INTERFACE II_get_coulomb_mat
@@ -2856,6 +2857,33 @@ CALL retrieve_Output(lupri,setting,GAB,setting%IntegralTransformGC)
 
 END SUBROUTINE II_get_2int_ScreenMat
 
+!> \brief Calculates the 4 center 2 eri screening mat
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param Gab the output matrix
+SUBROUTINE II_get_2int_ScreenRealMat(LUPRI,LUERR,SETTING,nbast,GAB)
+IMPLICIT NONE
+INTEGER               :: LUPRI,LUERR,nbast
+real(realk)           :: GAB(nbast,nbast)
+TYPE(LSSETTING)       :: SETTING
+IF(setting%IntegralTransformGC)THEN
+   !I do not think it makes sense to transform afterwards 
+   !so here the basis needs to be transformed
+   call lsquit('II_get_2int_ScreenMat and IntegralTransformGC do not work',-1)
+ENDIF
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+call ls_dzero(GAB,nbast*nbast)
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+setting%Output%RealGabMatrix = .TRUE.
+CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
+     &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
+setting%Output%RealGabMatrix = .FALSE.
+CALL retrieve_Output(lupri,setting,GAB,setting%IntegralTransformGC)
+END SUBROUTINE II_get_2int_ScreenRealMat
+
 !> \brief Calculates get the maxGabelm eri screening mat
 !> \author J. Rekkedal
 !> \date 2010
@@ -5186,14 +5214,14 @@ integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
 real(realk)         :: lambda, constrain_factor, scaling_ADMMQ,scaling_ADMMQs, scaling_ADMMP, printConstFactor, printLambda
-logical             :: const_electrons
-logical             :: scaleXC2, scale_finalE
+logical             :: isADMMQ
+logical             :: isADMMS, isADMMP
 real(realk)         :: tracek2d2,tracex2d2,tracex3d3
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
-const_electrons = setting%scheme%ADMM_CONST_EL
-scaleXC2 = setting%scheme%ADMMQ_ScaleXC2
-scale_finalE = setting%scheme%ADMMQ_ScaleE
+isADMMQ = setting%scheme%ADMM_CONST_EL
+isADMMS = setting%scheme%ADMMQ_ScaleXC2
+isADMMP = setting%scheme%ADMMQ_ScaleE
 
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
@@ -5276,7 +5304,7 @@ ENDIF
 
 constrain_factor = 1.0E0_realk
 lambda = 0E0_realk 
-IF (const_electrons) THEN   
+IF (isADMMQ) THEN   
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
             &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
 ENDIF
@@ -5305,7 +5333,7 @@ tracek2d2 = mat_trAB(F2(1),D2(1))
 call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AO2,AO3,GC2,GC3,constrain_factor)
 fac = 1E0_realk
-IF (scale_finalE) fac = constrain_factor**(4.E0_realk)
+IF (isADMMP) fac = constrain_factor**(4.E0_realk)
 call mat_daxpy(fac,TMPF,F)
 CALL lstimer('AUX-EX',ts,te,lupri)
 call mat_zero(F2(1))
@@ -5329,11 +5357,11 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 !Level 2 XC matrix
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
 
-IF (scaleXC2) THEN
+IF (isADMMS) THEN
    EX2 = constrain_factor**(4./3.)*EX2            ! RE-SCALING EXC2 TO FIT k2
    call mat_scal(constrain_factor**(4./3.),F2(1)) ! RE-SCALING XC2 TO FIT k2  
 ENDIF
-IF (.NOT.(scale_finalE)) THEN
+IF (.NOT.(isADMMP)) THEN
    call mat_daxpy(-GGAXfactor,F2(1),k2_xc2)
 endif
 tracex2d2 = mat_trAB(F2(1),D2(1))
@@ -5390,7 +5418,7 @@ IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_
 !call mat_free(TMP)
 
 
-IF (const_electrons) THEN
+IF (isADMMQ) THEN
 ! term of Kadmm coming from dependance of K on lambda: K=[D,lambda(D)]
   CALL mat_init(S32,nbast,nbast2)
   CALL mat_init(S33,nbast,nbast)
@@ -5401,7 +5429,7 @@ IF (const_electrons) THEN
   CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AO2,AO3,GC2,GC3,constrain_factor)
 
   CALL mat_mul(S32,T23,'n','n',-1E0_realk,0E0_realk,tmp33)
-  IF(scale_finalE) THEN
+  IF(isADMMP) THEN
     call mat_scal(constrain_factor*constrain_factor, tmp33)
   ENDIF
   call mat_daxpy(1E0_realk,S33,tmp33)
@@ -5409,10 +5437,10 @@ IF (const_electrons) THEN
   write(lupri,*) 'debug:constrain_factor ',constrain_factor
   scaling_ADMMQ = 2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
 
-  IF (scaleXC2) THEN
+  IF (isADMMS) THEN
      scaling_ADMMQ = scaling_ADMMQ - 2E0_realk/3E0_realk*EX2(1)*GGAXfactor/nelectrons
   ENDIF
-  IF (scale_finalE) THEN
+  IF (isADMMP) THEN
      !scaling_ADMMP = 1E0_realk / mat_trAB(D,S33) * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
      scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(4.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
      call mat_scal(scaling_ADMMP, tmp33)
@@ -5579,8 +5607,8 @@ TYPE(MATRIX) :: S23,S22,S22inv
 Character(80) :: Filename = 'ADMM_T23'
 Logical :: McWeeny,ERI2C
 real(realk) :: lambda
-Logical     :: const_electrons
-Logical     :: scale_finalE
+Logical     :: isADMMQ
+Logical     :: isADMMP
 
 !these options are for the ERI metric
 !with McWeeny ADMM1 is assumed, without ADMM2
@@ -5617,10 +5645,10 @@ ENDIF
 ! IF constraining the total charge
 ! Lagrangian multiplier for conservation of the total nb. of electrons
 ! constrain_factor = 1 / (1-lambda)
-const_electrons = setting%scheme%ADMM_CONST_EL
-scale_finalE = setting%scheme%ADMMQ_ScaleE
+isADMMQ = setting%scheme%ADMM_CONST_EL
+isADMMP = setting%scheme%ADMMQ_ScaleE
 
-IF (const_electrons .AND. .NOT.(scale_finalE)) THEN
+IF (isADMMQ .AND. .NOT.(isADMMP)) THEN
    call mat_scal(constrain_factor,T23)
 ENDIF
 END SUBROUTINE get_T23
@@ -5658,11 +5686,11 @@ character(len=80)   :: WORD
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
 real(realk)         :: lambda, constrain_factor,nrm
-logical             :: const_electrons,DEBUG_ADMM_CONST,scaleXC2
+logical             :: isADMMQ,DEBUG_ADMM_CONST,isADMMS
 integer             :: iAtom,iX
 !
-const_electrons = setting%scheme%ADMM_CONST_EL
-scaleXC2 = setting%scheme%ADMMQ_ScaleXC2
+isADMMQ = setting%scheme%ADMM_CONST_EL
+isADMMS = setting%scheme%ADMMQ_ScaleXC2
 DEBUG_ADMM_CONST = .FALSE.
 call lstimer('START',ts,te,lupri)
 IF (setting%scheme%cam) THEN
@@ -5700,7 +5728,7 @@ DO idmat=1,ndrhs
    AO3 = AORdefault ! assuming optlevel.EQ.3
 
    ! Get the scaling factor derived from constraining the total charge
-   IF (const_electrons) THEN   
+   IF (isADMMQ) THEN   
       call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
                & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
                & nbast2,nbast,AO2,AO3,GC2,GC3)
@@ -5795,7 +5823,7 @@ DO idmat=1,ndrhs
    call mem_alloc(ADMM_charge_term,3,nAtoms)
    call ls_dzero(ADMM_charge_term,3*nAtoms)
    
-   IF (const_electrons) THEN
+   IF (isADMMQ) THEN
       call get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,k2,xc2,&
                   & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                   & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
@@ -6002,11 +6030,11 @@ CONTAINS
       logical                    :: DEBUG_ADMM_CONST
       Type(matrix),pointer       :: Sa(:),S32x(:),S23x(:),S33x(:),S22x(:) ! derivative along x,y and z for each atom
       Type(matrix),pointer       :: D3x(:),D3x1(:),D3x3(:)
-      Logical                    :: const_electrons,scaleXC2
+      Logical                    :: isADMMQ,isADMMS
       !
       DEBUG_ADMM_CONST = .FALSE.
-      const_electrons = setting%scheme%ADMM_CONST_EL
-      scaleXC2 =  setting%scheme%ADMMQ_ScaleXC2
+      isADMMQ = setting%scheme%ADMM_CONST_EL
+      isADMMS =  setting%scheme%ADMMQ_ScaleXC2
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(T23,n2,n3)
       call mat_zero(T23)
@@ -6024,7 +6052,7 @@ CONTAINS
       call mat_init(A22,n2,n2)
       call mat_zero(A22)
       call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
-      IF (const_electrons) THEN
+      IF (isADMMQ) THEN
          call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaE,&
                      & GGAXfactor,D2,k2,xc2,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3)

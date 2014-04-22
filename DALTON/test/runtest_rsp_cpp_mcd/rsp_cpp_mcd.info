@@ -1,0 +1,6 @@
+   rsp_cpp_mcd
+   -------
+   Molecule:         H2O
+   Wave Function:    DFT (CAMB3LYP)
+   Test Purpose:     MCD calculations with damping using
+                     the solver with symmetrized trial vectors

@@ -1,0 +1,6 @@
+   prop_newtrasoppacc
+   --------------
+   Molecule:         H2O
+   Wave Function:    CCSD (SOPPA(CCSD))
+   Test Purpose:     Calculation of SOPPA(CCSD) spin-spin coupling constants
+                     through ABACUS using New integral transformation

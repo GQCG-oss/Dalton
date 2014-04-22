@@ -63,6 +63,7 @@ C
 C
 C Used from common blocks:
 C   gnrinf : WFTYPE, ?
+C   pgroup : REP,GROUP
 C   INFINP : ISPIN,LSYM,ISTATE, NACTEL,POTNUC, THRPWF, DOCINO, MCTYPE
 C   INFVAR : NCONF,NWOPT
 C   INFORB : NCMOT,NORBT,NNASHX,NISHT,?
@@ -73,6 +74,7 @@ C
 #include "mxcent.h"
 #include "priunit.h"
 #include "gnrinf.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "inforb.h"
@@ -287,7 +289,7 @@ C
       CALL MOLCHR(ICHRG)
 C     ... get total molecular charge
       CALL TITLER('>>> Final results from SIRIUS <<<',' ',200)
-      WRITE (LUPRI,5000) ISPIN,LSYM,ICHRG
+      WRITE (LUPRI,5000) ISPIN,LSYM,REP(LSYM-1),GROUP,ICHRG
       IF (NFIELD .GT. 0) THEN
          WRITE (LUPRI,'(/A/A/A)')
      *      ' The molecule is placed in a static field.',
@@ -417,6 +419,7 @@ C        ... DIIS-DFT or QC-DFT optimization
 
  5000 FORMAT(/'@    Spin multiplicity:',T31,I5,
      *       /'@    Spatial symmetry:',T31,I5,
+     &        ' ( irrep  ',A,' in ',A,' )',
      *       /'@    Total charge of molecule:',T31,I5)
  5010 FORMAT(/'@    This was a CI-NO calculation.')
  5012 FORMAT(/'@    This was a CI calculation.')
@@ -476,6 +479,10 @@ C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
 C
       IF (DOMEP) THEN
          CALL CALC_MEP(WRK(KCMO),WRK,KFREE,LFREE)
+      ENDIF
+
+      IF (QFIT) THEN
+         CALL QFITGSCALC(WRK(KCMO),WRK,KFREE,LFREE)
       ENDIF
 
       IF (MOLDEN) THEN

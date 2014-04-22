@@ -1,0 +1,5 @@
+   choles_lda_prop
+    ---------------
+   Molecule:         HCN
+   Wave Function:    LDA / aug-cc-pVDZ
+   Test Purpose:     Cholesky LDA energy and properties

@@ -5,6 +5,7 @@ include ../Makefile.config
 INCLUDES := $(INCLUDES) -I../LSint -I../lsutil
 
 F90_OBJS = dec_settings.o \
+        cc_tools.o \
         dec_workarounds.o \
 	decmpi.o \
 	decmpiSlave.o \
@@ -17,7 +18,6 @@ F90_OBJS = dec_settings.o \
 	ccarray4_simple.o \
 	ccarray3_simple.o \
 	fullmolecule.o \
-	ccri_simple.o \
 	mp2.o \
 	ccsdpt.o \
 	ccorbital.o \

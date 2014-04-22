@@ -6,10 +6,11 @@
 !> \date 2010-06-16
 !>
 MODULE DEC_settings_mod
-
+  use typedeftype
   use fundamental
   use precision
   use dec_typedef_module
+  use dec_fragment_utils
   use ls_util
 #ifdef VAR_MPI
   use infpar_module
@@ -84,7 +85,6 @@ contains
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
     DECinfo%MOCCSD               = .false.
-    DECinfo%Max_num_MO           = 300
 
     ! -- Output options 
     DECinfo%output               = output
@@ -115,12 +115,14 @@ contains
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
     DECinfo%FragmentExpansionSize  = 5
+    DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_one_frag_job      = .false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
     DECinfo%OnlyOccPart            = .false.
+    DECinfo%OnlyVirtPart            = .false.
     ! Repeat atomic fragment calcs after fragment optimization
     DECinfo%RepeatAF               = .true.
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
@@ -143,16 +145,17 @@ contains
     ! -- CC solver options
 
     DECinfo%ccsd_expl               = .false.
-    DECinfo%simulate_eri            = .false.
-    DECinfo%fock_with_ri            = .false.
     DECinfo%ccMaxIter               = 100
     DECinfo%ccMaxDIIS               = 3
     DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
     DECinfo%F12                     = .false.
     DECinfo%F12debug                = .false.
+    DECinfo%SOS                     = .false.
     DECinfo%PureHydrogenDebug       = .false.
     DECinfo%InteractionEnergy       = .false.
     DECinfo%PrintInteractionEnergy  = .false.
+    DECinfo%StressTest              = .false.
+    DECinfo%DFTreference            = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
@@ -242,7 +245,7 @@ contains
 #ifdef VAR_MPI
     ! Number of workers = Number of nodes minus master itself
     nworkers = infpar%nodtot -1
-    if(nworkers<1) then
+    if(nworkers<1.and..not.fullcalc) then
        call lsquit('DEC calculations using MPI require at least two MPI processes!',-1)
     end if
 #endif
@@ -297,7 +300,8 @@ contains
           ! CC model
        case('.MP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
-          DECinfo%use_singles=.false.  
+          DECinfo%use_singles = .false.  
+          DECinfo%MOCCSD      = .false.
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -470,7 +474,6 @@ contains
        !***********
 
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
-       case('.MAX_NUM_MO'); read(input,*) DECinfo%Max_num_MO
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
@@ -482,6 +485,7 @@ contains
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
+       case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
 
        case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     
@@ -497,6 +501,11 @@ contains
        case('.PRINTINTERACTIONENERGY')     
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
+       case('.SOSEX')
+         DECinfo%SOS = .true.
+       case('.STRESSTEST')     
+          !Calculate biggest 2 atomic fragments and the biggest pair fragment
+          DECinfo%StressTest  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -540,6 +549,7 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
+       case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.ONLY_ONE_JOB'); DECinfo%only_one_frag_job    = .true.
 
@@ -628,6 +638,10 @@ contains
           call lsquit('DEC gradient cannot be evaluated when only occupied &
                & partitioning scheme is used!',DECinfo%output)
        end if
+       if(DECinfo%onlyvirtpart) then
+          call lsquit('DEC gradient cannot be evaluated when only virtual &
+               & partitioning scheme is used!',DECinfo%output)
+       end if
 
     end if MP2gradientCalculation
 
@@ -683,7 +697,59 @@ contains
 
 
   end subroutine check_dec_input
-  
+
+  !> \brief Check that CC input is consistent with calc requirements
+  !> \author Thomas Kjaergaard
+  !> \date October 2014
+  subroutine check_cc_input(mylsitem,nocc,nvirt,nbasis)
+    implicit none
+    type(lsitem),intent(inout) :: mylsitem
+    integer,intent(in) :: nocc,nvirt,nbasis
+    !
+    real(realk) :: OO,VV,BB,AA,intMEM, solMEM,mem_required,GB
+    integer     :: intstep,nthreads
+    ! Number of OMP threads
+#ifdef VAR_OMP
+    integer, external :: OMP_GET_MAX_THREADS
+    nthreads=OMP_GET_MAX_THREADS()
+#else
+    ! No OMP, set number of threads to one
+    nthreads=1
+#endif
+
+    GB = 1.0E+9_realk !1GB
+    SELECT CASE(DECinfo%ccModel)
+    CASE(MODEL_MP2)
+       OO=nocc      ! Number of occupied orbitals (as real)
+       VV=nvirt     ! Number of virtual orbitals (as real)
+       ! Maximum batch dimension (as real)
+       BB=max_batch_dimension(mylsitem,nbasis)
+       AA=nbasis    ! Number of atomic orbitals (as real)       
+       call estimate_memory_for_mp2_energy(nthreads,OO,VV,AA,BB,intMEM,intStep,solMEM)
+       mem_required = max(intMEM,solMEM)
+       mem_required = mem_required + DECinfo%fullmolecule_memory
+       mem_required = nocc*nvirt*nocc*nvirt*8.0E0_realk/GB
+       IF(mem_required.GT.DECinfo%memory)THEN
+          CALL FullMemoryError(mem_required)
+          call lsquit('Memory specification too small',DECinfo%output)
+       ENDIF
+!    CASE(MODEL_CC2)
+!    CASE(MODEL_CCSD)
+!    CASE(MODEL_CCSDpT)
+    case default
+    end SELECT
+  end subroutine check_cc_input
+
+  subroutine FullMemoryError(nsize)
+    implicit none
+    real(realk) :: nsize
+    WRITE(DECinfo%output,'(A)')'Error in Memory specification. '
+    WRITE(DECinfo%output,'(A)')'The memory specified using the .MEMORY keyword'
+    WRITE(DECinfo%output,'(A)')'is not big enough for the calculations requirements '
+    WRITE(DECinfo%output,'(A,F10.2,A)')'Requirements    :',nsize,' Gb'
+    WRITE(DECinfo%output,'(A,I12,A)')  'Memory specified:',DECinfo%memory,' Gb'
+  end subroutine FullMemoryError
+
   subroutine DEC_settings_print(DECitem,lupri)
     type(DECsettings) :: DECitem
     integer,intent(in) :: lupri
@@ -735,8 +801,6 @@ contains
     write(lupri,*) 'use_preconditioner ', DECitem%use_preconditioner
     write(lupri,*) 'use_preconditioner_in_b ', DECitem%use_preconditioner_in_b
     write(lupri,*) 'use_crop ', DECitem%use_crop
-    write(lupri,*) 'simulate_eri ', DECitem%simulate_eri
-    write(lupri,*) 'fock_with_ri ', DECitem%fock_with_ri
 #ifdef MOD_UNRELEASED    
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
@@ -770,6 +834,7 @@ contains
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
+    write(lupri,*) 'FragmentExpansionRI ', DECitem%FragmentExpansionRI
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
@@ -898,14 +963,14 @@ contains
     case('.RPA');     modelnumber = MODEL_RPA
     case default
        print *, 'Model not found: ', myword
-       write(DECinfo%output)'Model not found: ', myword
-       write(DECinfo%output)'Models supported are:'
-       write(DECinfo%output)'.MP2'
-       write(DECinfo%output)'.CC2'
-       write(DECinfo%output)'.CCSD'
-       write(DECinfo%output)'.CCD'
-       write(DECinfo%output)'.CCSD(T)'
-       write(DECinfo%output)'.RPA'
+       write(DECinfo%output,*)'Model not found: ', myword
+       write(DECinfo%output,*)'Models supported are:'
+       write(DECinfo%output,*)'.MP2'
+       write(DECinfo%output,*)'.CC2'
+       write(DECinfo%output,*)'.CCSD'
+       write(DECinfo%output,*)'.CCD'
+       write(DECinfo%output,*)'.CCSD(T)'
+       write(DECinfo%output,*)'.RPA'
        call lsquit('Requested model not found!',-1)
     end SELECT
 

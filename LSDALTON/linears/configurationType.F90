@@ -67,6 +67,10 @@ type ConfigItem
    logical              :: noDecEnergy
    !> Should Memory Information be printet 
    logical              :: PrintMemory
+   !> Perform SCF interaction energies using Counter Poise Correction
+   logical              :: SCFinteractionEnergy
+   !> Same SubSystems in SCF interaction energies
+   logical              :: SameSubSystems
    !> Used for Augmented Roothaan-Hall, direct density optimization etc.
    type(SolverItem),pointer     :: solver
    !> Used for davidson solver in SCF opt

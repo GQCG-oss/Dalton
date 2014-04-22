@@ -99,7 +99,6 @@
 
     integer, dimension(4) :: new_order,order1,order2,dims
     integer :: a,b,c,d,maxdim
-    integer :: dim1,dim2,dim3,dim4,dim1b,dim2b,dim3b,vdim
     integer :: i,j,l
     integer :: aa,bb,cc,dd,block_size,fina,finb,finc,find
     integer :: order_type,m,n
@@ -328,24 +327,23 @@
     real(realk), intent(in)::    array_in(i8*d1*d2*d3*d4),pre1,pre2
     real(realk), intent(inout):: array_out(i8*d1*d2*d3*d4)
     integer, dimension(4), intent(in) :: order
-    integer(kind=acc_hand_kind), optional :: async_id
+    integer(kind=acc_handle_kind), optional :: async_id
 
     integer, dimension(4) :: new_order,order1,order2,dims
     integer :: a,b,c,d,maxdim
-    integer :: dim1,dim2,dim3,dim4,dim1b,dim2b,dim3b,vdim
     integer :: i,j,l
     integer :: aa,bb,cc,dd,fina,finb,finc,find
     integer :: order_type,m,n
     integer :: di3(3), di2(2)
     real(realk) :: tcpu1,twall1,tcpu2,twall2
     integer(kind=long) :: vec_size64
-    integer(kind=acc_hand_kind) :: async_idx
+    integer(kind=acc_handle_kind) :: async_idx
 
     ! test for async_id - if not present, set async_idx to -1 (blocking)
     if (present(async_id)) then
        async_idx = async_id
     else
-       async_idx = int(-1,kind=acc_hand_kind)
+       async_idx = int(-1,kind=acc_handle_kind)
     end if 
 
     vec_size64 = int(d1*d2*d3*d4,kind=8)
@@ -820,7 +818,6 @@
 
     integer, dimension(3) :: new_order,order1,order2,dims
     integer :: a,b,c,fina,finb,finc
-    integer :: dim1,dim2,dim3,dim1b,dim2b
     integer :: aa,bb,cc,block_size
     integer :: order_type
     integer :: vec_size
@@ -922,7 +919,6 @@
 
     integer, dimension(3) :: new_order,order1,order2,dims
     integer :: a,b,c,fina,finb,finc
-    integer :: dim1,dim2,dim3,dim1b,dim2b
     integer :: aa,bb,cc,block_size
     integer :: order_type
     integer :: di2(2)

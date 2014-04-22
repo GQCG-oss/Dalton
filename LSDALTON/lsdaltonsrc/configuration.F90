@@ -36,7 +36,8 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_symm_dense, mtype_dense, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
-use DEC_settings_mod, only: dec_set_default_config, config_dec_input
+use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
+     & check_cc_input
 use dec_typedef_module,only: DECinfo,MODEL_MP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
@@ -128,6 +129,8 @@ implicit none
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
+  config%SCFinteractionEnergy = .false.
+  config%SameSubSystems = .false.
   config%PrintMemory = .false.
   config%doESGopt = .false.
   config%noDecEnergy = .false.
@@ -883,9 +886,16 @@ subroutine DEC_meaningful_input(config)
 
      ! It is meaningless to run a DFT calculation and then build DEC (or full CC) on top of it...
      if(config%opt%calctype == config%opt%dftcalc) then
-        call lsquit('Error in input: DFT and DEC (or full molecular CC) calculation cannot &
-             & be combined!',-1)
+        DECinfo%DFTreference = .TRUE.
+!        call lsquit('Error in input: DFT and DEC (or full molecular CC) calculation cannot &
+!             & be combined!',-1)
      end if
+!    IT IS NOT MEANINGLESS 
+     WRITE(config%lupri,*)' '
+     WRITE(config%lupri,*)'Warning you use a Kohn-Sham Reference for DEC or CC calculation!'
+     WRITE(config%lupri,*)'I hope you know what you are doing!'
+     WRITE(config%lupri,*)' '
+
 
      ! DEC geometry optimization 
      ! *************************
@@ -1025,6 +1035,12 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
+        CASE('.SCFINTERACTIONENERGY')
+           !Calculated the SCF Interaction energy 
+           !using Counter Poise Correction
+           config%SCFinteractionEnergy = .true.
+        CASE('.SAMESUBSYSTEMS')
+           config%SameSubSystems = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
@@ -1253,8 +1269,70 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            ENDIF
            INTEGRAL%ADMM_CONST_EL    = .TRUE.
            INTEGRAL%ADMMQ_ScaleXC2   = .FALSE.
-	   INTEGRAL%ADMMQ_ScaleE     = .TRUE.
-        CASE ('.PRINT_EK3');
+           INTEGRAL%ADMMQ_ScaleE     = .TRUE.
+        CASE ('.ADMM2');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE  = .TRUE.
+           INTEGRAL%ADMM_GCBASIS     = .FALSE.
+           INTEGRAL%ADMM_DFBASIS     = .FALSE.
+           INTEGRAL%ADMM_JKBASIS     = .TRUE.
+           INTEGRAL%ADMM_MCWEENY       = .FALSE.
+           INTEGRAL%ADMM_CONST_EL      = .FALSE.
+           INTEGRAL%ADMMQ_ScaleXC2     = .FALSE.
+           INTEGRAL%ADMMQ_ScaleE       = .FALSE.
+        CASE ('.ADMM1');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE  = .TRUE.
+           INTEGRAL%ADMM_GCBASIS     = .FALSE.
+           INTEGRAL%ADMM_DFBASIS     = .FALSE.
+           INTEGRAL%ADMM_JKBASIS     = .TRUE.
+           INTEGRAL%ADMM_MCWEENY       = .TRUE.
+           INTEGRAL%ADMM_CONST_EL      = .FALSE.
+           INTEGRAL%ADMMQ_ScaleXC2     = .FALSE.
+           INTEGRAL%ADMMQ_ScaleE       = .FALSE.
+        CASE ('.ADMMQ');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE  = .TRUE.
+           INTEGRAL%ADMM_GCBASIS     = .FALSE.
+           INTEGRAL%ADMM_DFBASIS     = .FALSE.
+           INTEGRAL%ADMM_JKBASIS     = .TRUE.
+           INTEGRAL%ADMM_MCWEENY       = .FALSE.
+           INTEGRAL%ADMM_CONST_EL      = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2     = .FALSE.
+           INTEGRAL%ADMMQ_ScaleE       = .FALSE.
+        CASE ('.ADMMS');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE  = .TRUE.
+           INTEGRAL%ADMM_GCBASIS     = .FALSE.
+           INTEGRAL%ADMM_DFBASIS     = .FALSE.
+           INTEGRAL%ADMM_JKBASIS     = .TRUE.
+           INTEGRAL%ADMM_MCWEENY       = .FALSE.
+           INTEGRAL%ADMM_CONST_EL      = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2     = .TRUE.
+           INTEGRAL%ADMMQ_ScaleE       = .FALSE.
+        CASE ('.ADMMP');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE  = .TRUE.
+           INTEGRAL%ADMM_GCBASIS     = .FALSE.
+           INTEGRAL%ADMM_DFBASIS     = .FALSE.
+           INTEGRAL%ADMM_JKBASIS     = .TRUE.
+           INTEGRAL%ADMM_MCWEENY       = .FALSE.
+           INTEGRAL%ADMM_CONST_EL      = .TRUE.
+           INTEGRAL%ADMMQ_ScaleXC2     = .FALSE.
+           INTEGRAL%ADMMQ_ScaleE       = .TRUE.
+        CASE ('.PRINT_EK3'); 
+        ! calculate and print full Exchange when doing ADMM exchange approx.
+        ! > Debugging purpose only
 	   INTEGRAL%PRINT_EK3        = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
@@ -1582,6 +1660,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
      if (WORD(1:1) == '*') then
        !which type of response is wanted??
        SELECT CASE(WORD)
+       CASE('*DIPOLE')
+          config%response%tasks%doDipole=.true.
        ! Kasper K
        CASE('*ALPHA')
            config%response%tasks%doALPHA=.true.
@@ -3309,6 +3389,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       CALL lsQUIT('Cartesian basisfunction without H1DAIG starting guess.',config%lupri)
    endif
 
+! Check Counter Poise Input :
+   IF(config%SCFinteractionEnergy.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
+      call lsquit('.SCFINTERACTIONENERGY keyword require SubSystems in MOLECULE.INP',-1)
+   ENDIF
+
 ! Check integral input:
 !======================
 
@@ -3671,6 +3756,9 @@ ENDIF
    ! Check that DEC input is consistent with geometry optimization and orbital localization.
    call DEC_meaningful_input(config)
 
+   nocc = config%decomp%nocc
+   nvirt = (nbast-nocc)
+   call check_cc_input(ls,nocc,nvirt,nbast)
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)

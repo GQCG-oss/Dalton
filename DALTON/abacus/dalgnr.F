@@ -1296,7 +1296,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 12, NTABLE = 34, D0 = 0.D0)
+      PARAMETER (NDIR = 13, NTABLE = 35, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1309,7 +1309,7 @@ C
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
-     &            '*READIN', '*QMNPMM'/
+     &            '*READIN', '*QMNPMM', '*QFIT  '/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
@@ -1321,7 +1321,7 @@ C
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
      &            '.THRRED', '.DOUGLA', '.PEQM  ',
-     &            '.PEMEP '/
+     &            '.QFIT  ', '.PEMEP '/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1386,6 +1386,7 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       PEMEP  = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
+      QFIT = .FALSE.
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
@@ -1495,7 +1496,7 @@ C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.PEMEP '
+C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  ', '.PEMEP '.
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1509,7 +1510,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132,133,134), I
+     &                131,132,133,134,135), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1638,8 +1639,17 @@ C        '.DOUGLA'
             CALL QUIT('ERROR for .PEQM: PE library not enabled.')
 #endif
          GOTO 100
-!        .PEMEP
+!        '.QFIT   '
  134     CONTINUE
+#if defined (BUILD_QFITLIB)
+         QFIT = .TRUE.
+#else
+         WRITE(LUPRI,*) 'ERROR for .QFIT: QFITLIB not enabled.'
+         CALL QUIT('ERROR for .QFIT: QFITLIB not enabled.')
+#endif
+         GOTO 100
+!        '.PEMEP '
+ 135     CONTINUE
 #if defined (BUILD_PELIB)
             PEMEP = .TRUE.
 #else
@@ -1764,6 +1774,8 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (PEQM) WRITE(LUPRI,'(4X,A)')
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
+      IF(QFIT) WRITE(LUPRI,'(4X,A)')
+     &   'Potential derived charges will be calculated (QFITLIB)'
 C
 Cholesky
       IF (CHOINT) THEN
@@ -1787,7 +1799,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1878,6 +1890,13 @@ C     "*QMNPMM" input
         call quit('not available in this version')
 !       CALL QMNPINP(WORD)
       GO TO 200
+   13 CONTINUE
+#if defined (BUILD_QFITLIB)
+        CALL QFITINP(WORD)! *QFIT
+#else
+        CALL QUIT('ERROR for *QFIT: QFITLIB not enabled.')
+#endif
+      GOTO 200
 C     "*END OF" or "**something"
     1 CONTINUE
 C

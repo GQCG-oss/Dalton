@@ -18,7 +18,6 @@ module rpa_module
   use integralinterfaceDEC
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
   use ccsd_module
-!       & ii_get_fock_mat_full
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
@@ -31,7 +30,6 @@ module rpa_module
   use decmpi_module!, only: mpi_communicate_ccsd_calcdata,distribute_mpi_jobs
 #endif
     use dec_fragment_utils
-    use ri_simple_operations
     use tensor_interface_module
     use array2_simple_operations!, only: array2_init, array2_add,&
 !         & array2_transpose, array2_free, array2_add_to
