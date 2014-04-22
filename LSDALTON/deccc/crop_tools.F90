@@ -20,6 +20,11 @@ module crop_tools_module
       module procedure get_cc_energy_arrold
       module procedure get_cc_energy_arrnew
    end interface
+   ! Interface for MP2 and CCD energies
+   interface get_mp2_energy
+      module procedure get_mp2_energy_arrold
+      module procedure get_mp2_energy_arrnew
+   end interface
    
    contains
    
@@ -130,7 +135,7 @@ module crop_tools_module
    !> \return Full molecular MP2 energy
    !> \param t2 Double amplitudes
    !> \param Lmo Two-electron integrals L_{bjai} = 2*g_{bjai} - g_{ajbi}
-   function get_mp2_energy(t2,Lmo) result(ecorr)
+   function get_mp2_energy_arrold(t2,Lmo) result(ecorr)
 
       implicit none
       type(array4), intent(in) :: Lmo,t2
@@ -139,7 +144,7 @@ module crop_tools_module
       ! Ecorr = sum_{aibj} t2_{bjai}*Lmo_{bjai}
       Ecorr=t2*Lmo
 
-   end function get_mp2_energy
+   end function get_mp2_energy_arrold
 
    !> \brief Coupled-cluster correlation energy
    !> \author Marcin Ziolkowski
@@ -200,6 +205,7 @@ module crop_tools_module
       ecorr_d = 0.0E0_realk
 
       if(t2%itype==DENSE.and.gmo%itype==DENSE.and.(t1%itype==DENSE.or.t1%itype==REPLICATED))then
+
          do j=1,nocc
             do b=1,nvirt
                do i=1,nocc
@@ -219,15 +225,56 @@ module crop_tools_module
          end if
 
          ecorr = ecorr_s + ecorr_d
+
       else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
-         t1%itype=REPLICATED
+
+         t1%itype = REPLICATED
          call array_sync_replicated(t1)
-         ecorr=get_cc_energy_parallel(t1,t2,gmo)
-         t1%itype=DENSE
+         ecorr    = get_cc_energy_parallel(t1,t2,gmo)
+         t1%itype = DENSE
+
       endif
 
 
    end function get_cc_energy_arrnew
+
+   function get_mp2_energy_arrnew(t2,gmo,nocc,nvirt) result(ecorr)
+
+      implicit none
+      type(array), intent(in) :: t2
+      type(array), intent(inout) :: gmo
+      integer, intent(in) :: nocc,nvirt
+      real(realk) :: ecorr,ecorr_d
+      integer :: a,i,b,j
+
+      ecorr = 0.0E0_realk
+      ecorr_d = 0.0E0_realk
+
+      if(t2%itype==DENSE.and.gmo%itype==DENSE)then
+         !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(nocc,&
+         !$OMP nvirt,t2,gmo) REDUCTION(+:ecorr_d)
+         do j=1,nocc
+            do b=1,nvirt
+               do i=1,nocc
+                  do a=1,nvirt
+                     ecorr_d = ecorr_d + t2%elm4(a,b,i,j)* &
+                        (2.0E0_realk*gmo%elm4(i,a,j,b)-gmo%elm4(i,b,j,a))
+                  end do
+               end do
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         ecorr = ecorr_d
+
+      else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+
+         ecorr=get_mp2_energy_parallel(t2,gmo)
+
+      endif
+
+
+   end function get_mp2_energy_arrnew
    
    !> \brief Get antisymmetrized double amplitudes
    !> \return Array4 structure with antisymmetrized double amplitudes

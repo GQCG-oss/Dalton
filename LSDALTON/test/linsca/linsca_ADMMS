@@ -17,22 +17,21 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > linsca_ADMMQ_df.info <<'%EOF%'
-   linsca_ADMMQ_df
+cat > linsca_ADMMS.info <<'%EOF%'
+   linsca_ADMMS
    -------------
    Molecule:         HCN
    Wave Function:    HF
-   Test Purpose:     Check ADMMQ exchange energy: a variant of ADMM2
-                     (JCTC 6(8):2348–2364, 2010) where the total charge
-                     is constrained.
+   Test Purpose:     Check ADMMS exchange energy: scaled ADMMQ variant
+                     to equally scale k(d') and x(d') wrt d'
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > linsca_ADMMQ_df.mol <<'%EOF%'
+cat > linsca_ADMMS.mol <<'%EOF%'
 BASIS
-6-31G* Aux=df-def2 CABS=6-31G JK=3-21G
+6-31G* Aux=df-def2 CABS=3-21G JK=3-21G
 HCN molecule
 
 Atomtypes=3 Nosymmetry
@@ -47,11 +46,14 @@ C   0.0   0.0     0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > linsca_ADMMQ_df.dal <<'%EOF%'
+cat > linsca_ADMMS.dal <<'%EOF%'
+**GENERAL
+.TIME
 **INTEGRALS
 .DENSFIT
-.ADMM-JK
-.ADMM-CONST-EL
+!.ADMM-JK
+!.ADMMQ-ScaleE
+.ADMMS
 **WAVE FUNCTIONS
 .DFT
 B3LYP
@@ -65,8 +67,8 @@ B3LYP
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >linsca_ADMMQ_df.check
-cat >> linsca_ADMMQ_df.check <<'%EOF%'
+echo $CHECK_SHELL >linsca_ADMMS.check
+cat >> linsca_ADMMS.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -76,7 +78,7 @@ else
 fi
 
 # ENERGY test
-CRIT1=`$GREP "Final DFT energy.* -91.8922268" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy: * -91.8889341" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT -"

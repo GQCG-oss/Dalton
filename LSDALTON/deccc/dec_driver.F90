@@ -457,7 +457,11 @@ contains
 
     ! Plot pair interaction energies using occ. partitioning scheme
     ! *************************************************************
-    call get_occfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+    IF(DECinfo%onlyVirtPart)THEN
+       call get_virtfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+    ELSE
+       call get_occfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+    ENDIF
     call plot_pair_energies(natoms,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
          & MyMolecule,dofrag)
 
@@ -572,24 +576,48 @@ contains
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! MP2, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCMP2)
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTMP2)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCMP2)
+       ENDIF
 #ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
-          Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
+          IF(DECinfo%onlyVirtPart)THEN
+             Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_VIRTMP2)
+          ELSE
+             Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
+          ENDIF
        endif
 #endif 
     case(MODEL_RPA)
        ! RPA, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCRPA)
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTRPA)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCRPA)
+       ENDIF
     case(MODEL_CC2)
        ! CC2, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCCC2)
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTCC2)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCCC2)
+       ENDIF
     case(MODEL_CCSD)
        ! CCSD, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCCCSD)
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTCCSD)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCCCSD)
+       ENDIF
     case(MODEL_CCSDpT)
        ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
-       Ecorr = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTCCSD) + energies(FRAGMODEL_VIRTpT)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
+       ENDIF
     case default
        write(DECinfo%output,*) 'main_fragment_driver: Needs implementation for model ', DECinfo%ccmodel
        call lsquit('main_fragment_driver: Needs implementation for model!',-1)
@@ -617,9 +645,8 @@ subroutine print_dec_info()
    write(LU,'(a,/)') '--------------------------'
    write(LU,'(a,g15.2)') 'FOT (Fragment Optimization Threshold)               = ',DECinfo%FOT
    write(LU,'(a,A5)')    'Use Pair Estimates to screen pairs                  =           ',&
-   
         & LogicString(Log2It(DECinfo%PairEstimate))
-
+   
    if(DECinfo%PairEstimate) then
         write(LU,'(a,g15.3)') 'Pair distance cutoff threshold (Angstrom)           = ',&
           & DECinfo%pair_distance_threshold*bohr_to_angstrom
@@ -631,6 +658,8 @@ subroutine print_dec_info()
         & DECinfo%simple_orbital_threshold
    write(LU,'(a,i5)')    'Expansion step size                                 =           ',&
         & DECinfo%FragmentExpansionSize
+   write(LU,'(a,A5)')    'Use RI for Expansion step                           =           ',&
+        & LogicString(Log2It(DECinfo%FragmentExpansionRI))
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL
    write(LU,'(a,A5)')    'Fragment-adapted orbitals                           =           ',&
         & LogicString(Log2It(DECinfo%FragAdapt))
@@ -1210,7 +1239,7 @@ subroutine print_dec_info()
     type(decfrag), intent(inout),dimension(MyMolecule%natoms) :: AtomicFragments
     !> Fragment energies 
     real(realk),intent(inout) :: FragEnergies(MyMolecule%natoms,MyMolecule%natoms,ndecenergies)
-    real(realk),pointer :: FragEnergiesOcc(:,:)
+    real(realk),pointer :: FragEnergiesPart(:,:)
     type(decfrag),pointer :: EstAtomicFragments(:)
     logical :: DoBasis,calcAF
     real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est
@@ -1319,20 +1348,21 @@ subroutine print_dec_info()
 
     if(esti) then
        ! Get estimated pair fragment energies for occupied partitioning scheme
-       call mem_alloc(FragEnergiesOcc,natoms,natoms)
-       call get_occfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesOcc)
-
+       call mem_alloc(FragEnergiesPart,natoms,natoms)
+       IF(DECinfo%onlyVirtPart)THEN
+          call get_virtfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesPart)
+       ELSE
+          call get_occfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesPart)
+       ENDIF
        ! We do not want to consider atomic fragment energies now so zero them
        ! (they might be zero already but in this way we avoid wrong print out below).
        do i=1,natoms
-          FragEnergiesOcc(i,i)=0.0_realk
+          FragEnergiesPart(i,i)=0.0_realk
        end do
-
        ! Define which model to use in each pair calculation (info stored in MyMolecule%ccmodel)
        ! (Also calculate estimated correlation energy and estimated error by skipping pairs).
-       call define_pair_calculations(natoms,dofrag,FragEnergiesOcc,MyMolecule,Epair_est,Eskip_est)
-       call mem_dealloc(FragEnergiesOcc)
-
+       call define_pair_calculations(natoms,dofrag,FragEnergiesPart,MyMolecule,Epair_est,Eskip_est)
+       call mem_dealloc(FragEnergiesPart)
     end if
 
 

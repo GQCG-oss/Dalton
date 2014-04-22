@@ -65,7 +65,7 @@ SLOPPY
 .STRESSTEST
 .MP2
 .FOT
-3
+6
 .FROZENCORE
 .MEMORY
 2.0
@@ -98,7 +98,7 @@ CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # Total correlation energy
-CRIT1=`$GREP "Correlation energy  \: * \-0.2958" $log | wc -l`
+CRIT1=`$GREP "Correlation energy  \: * \-0.2965" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="Total correlation energy is not correct"
