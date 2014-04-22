@@ -1751,27 +1751,13 @@ contains
        DO j=1,nocc
           DO a=1,nvirt
              DO b=1,nvirt
-!                tmp = 0.0E0_realk
                 DO c=1,ncabs
-!                   tmp = tmp + Ciajb(i,a,j,b) + Givic(i,a,j,c)*Fvc(b,c)+Givic(j,b,i,c)*Fvc(a,c)
                    Ciajb(i,a,j,b) = Ciajb(i,a,j,b) + Givic(i,a,j,c)*Fvc(b,c)+Givic(j,b,i,c)*Fvc(a,c)
                 ENDDO
-!                print *, "i j a b Cijab", i,j,a,b, tmp               
              ENDDO
           ENDDO
        ENDDO
     ENDDO
-
-    print *, '----------------------------------------'
-    print *, '            Fvc matrix - Terms            '
-    print *, '----------------------------------------'
-    do a=1, nvirt
-       do c=1, ncabs    
-          if(abs(Fvc(a,c)) > 1.0E-10 ) then
-             print *,'a,c Fvc', a,c, Fvc(a,c)
-          endif
-       end do
-    end do
 
   end subroutine mp2f12_Ciajb
 
