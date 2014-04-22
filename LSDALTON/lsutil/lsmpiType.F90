@@ -5847,7 +5847,7 @@ contains
     endif
 #endif
   end subroutine lsmpi_put_realkV
-  subroutine lsmpi_put_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze)
+  subroutine lsmpi_put_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
     real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
@@ -5855,29 +5855,50 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
+    logical, intent(in), optional :: flush_it
 #ifdef VAR_MPI
     integer :: newpos
     integer(kind=4) :: n4,k,i
     integer(kind=8) :: n,j
+    logical :: fi
+
+    fi = .false.
+    if(present(flush_it))fi = flush_it
+
     if(ls_mpik==4)then
+
       k=SPLIT_MPI_MSG
+
       do i=1,nelms,k
+
         n4=k
         if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
-        call lsmpi_put_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze)
+        call lsmpi_put_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze,flush_it = flush_it)
+
       enddo
+
     else
+
       do j=1,nelms,batchsze
+
         n=batchsze
+
         if(((nelms-j)<batchsze).and.&
           &(mod(nelms-j+1,batchsze)/=0))n=mod(nelms,batchsze)
+
         newpos = pos+j-1
+
         call lsmpi_put_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
+
+#ifdef VAR_HAVE_MPI3
+        if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+#endif
       enddo
+
     endif
 #endif
   end subroutine lsmpi_put_realkV_parts_wrapper8
-  subroutine lsmpi_put_realkV_parts(buf,nelms,pos,dest,win,batchsze)
+  subroutine lsmpi_put_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
     real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
@@ -5885,15 +5906,30 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
+    logical, intent(in), optional :: flush_it
 #ifdef VAR_MPI
     integer :: newpos
     integer(kind=8) :: n,i
+    logical :: fi
+
+    fi = .false.
+    if(present(flush_it))fi = flush_it
+
     do i=1,nelms,batchsze
+
       n=batchsze
+
       if(((nelms-i)<batchsze).and.&
         &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
+
       newpos = pos+i-1
+
       call lsmpi_put_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
+
+#ifdef VAR_HAVE_MPI3
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+#endif
+
     enddo
 #endif
   end subroutine lsmpi_put_realkV_parts
@@ -6009,7 +6045,7 @@ contains
     endif
 #endif
   end subroutine lsmpi_get_realkV
-  subroutine lsmpi_get_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze)
+  subroutine lsmpi_get_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
     real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
@@ -6017,29 +6053,43 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
+    logical, intent(in), optional :: flush_it
 #ifdef VAR_MPI
     integer :: newpos
     integer(kind=4) :: n4,k,i
     integer(kind=8) :: n,j
+    logical :: fi
+
+    fi = .false.
+    if(present(flush_it))fi = flush_it
+
     if(ls_mpik==4)then
+
       k=SPLIT_MPI_MSG
+
       do i=1,nelms,k
         n4=k
         if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
-        call lsmpi_get_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze)
+
+        call lsmpi_get_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze,flush_it=flush_it)
       enddo
+
     else
+
       do j=1,nelms,batchsze
         n=batchsze
         if(((nelms-j)<batchsze).and.&
           &(mod(nelms-j+1,batchsze)/=0))n=mod(nelms,batchsze)
         newpos = pos+j-1
         call lsmpi_get_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
+#ifdef VAR_HAVE_MPI3
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+#endif
       enddo
     endif
 #endif
   end subroutine lsmpi_get_realkV_parts_wrapper8
-  subroutine lsmpi_get_realkV_parts(buf,nelms,pos,dest,win,batchsze)
+  subroutine lsmpi_get_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
     real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
@@ -6047,15 +6097,30 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
+    logical, intent(in), optional :: flush_it
 #ifdef VAR_MPI
     integer :: newpos
     integer(kind=8) :: n,i
+    logical :: fi
+
+    fi = .false.
+    if(present(flush_it))fi = flush_it
+
     do i=1,nelms,batchsze
+
       n=batchsze
+
       if(((nelms-i)<batchsze).and.&
         &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
+
       newpos = pos+i-1
+
       call lsmpi_get_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
+
+#ifdef VAR_HAVE_MPI3
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+#endif
+
     enddo
 #endif
   end subroutine lsmpi_get_realkV_parts
@@ -6228,17 +6293,21 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
-    logical, intent(in) :: flush_it
+    logical,optional, intent(in) :: flush_it
 #ifdef VAR_MPI
+    logical :: fi
     integer :: newpos
     integer(kind=4) :: n4,k,i
     integer(kind=8) :: n,j
+    fi = .false.
+    if(present(flush_it))fi = flush_it
     if(ls_mpik==4)then
       k=SPLIT_MPI_MSG
       do i=1,nelms,k
         n4=k
         if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
-        call lsmpi_acc_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,win,batchsze,flush_it)
+        call lsmpi_acc_realkV_parts(buf(i:i+n4-1),n4,pos+i-1,dest,&
+        &win,batchsze,flush_it=flush_it)
       enddo
     else
       do j=1,nelms,batchsze
@@ -6248,7 +6317,7 @@ contains
         newpos = pos+j-1
         call lsmpi_acc_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
 #ifdef VAR_HAVE_MPI3
-        if(flush_it)call lsmpi_win_flush(win,rank=dest,local=.true.)
+        if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
 #endif
       enddo
     endif
@@ -6262,19 +6331,30 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer, intent(in) :: batchsze
-    logical, intent(in) :: flush_it
+    logical,optional, intent(in) :: flush_it
 #ifdef VAR_MPI
+    logical :: fi
     integer :: newpos
     integer(kind=8) :: n,i
+
+    fi = .false.
+    if(present(flush_it))fi = flush_it
+
     do i=1,nelms,batchsze
+
       n=batchsze
+
       if(((nelms-i)<batchsze).and.&
         &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
+
       newpos = pos+i-1
+
       call lsmpi_acc_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
+
 #ifdef VAR_HAVE_MPI3
-      if(flush_it)call lsmpi_win_flush(win,rank=dest,local=.true.)
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
 #endif
+
     enddo
 #endif
   end subroutine lsmpi_acc_realkV_parts
@@ -6352,6 +6432,7 @@ contains
     endif
 #endif
   end subroutine lsmpi_localallgatherv_realk8
+
   subroutine lsmpi_localallgatherv_realk4(sendbuf,recbuf,reccounts,disps)
     implicit none
     real(realk), intent(in) :: sendbuf(:)

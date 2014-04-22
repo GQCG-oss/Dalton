@@ -367,6 +367,15 @@ contains
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
+#ifdef VAR_MPI
+    do ij_count=1,infpar%lg_nodtot
+       if( ij_count - 1 == infpar%lg_mynum)then
+          print *,infpar%lg_mynum," jobs 2 ",jobs
+       endif
+       call lsmpi_barrier(infpar%lg_comm)
+    enddo
+#endif
+
     ! release ij_array
     call mem_dealloc(ij_array)
 
@@ -468,7 +477,7 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(8))
 
                   ! get the j'th v^3 tile only
-                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
+                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
@@ -532,7 +541,7 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
 
                      ! get the i'th v^3 tile only
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
@@ -569,7 +578,7 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
 
                      ! get the i'th v^3 tile
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_i) async(async_id(2))
@@ -603,8 +612,8 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
 
                      ! get the i'th and j'th v^3 tiles
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
-                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
+                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
@@ -656,7 +665,7 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
 
                         ! get the k'th tile
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
+                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_k) async(async_id(2))
@@ -703,7 +712,7 @@ contains
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
 
                         ! get the k'th tile
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
+                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
 
 ! move integrals to the device
 !$acc enter data copyin(vvvo_pdm_k) async(async_id(2))
@@ -4406,7 +4415,7 @@ contains
 
     ! Determine optimal batchsizes and corresponding sizes of arrays
     call get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
-         & size1,size2,size3,.true.)
+         & size1,size2,size3,.false.)
 
 
     ! ************************************************
@@ -4517,6 +4526,12 @@ contains
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
     &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
 
+    do alphaB=1,infpar%lg_nodtot
+       if( alphaB - 1 == infpar%lg_mynum)then
+          print *,infpar%lg_mynum," distribution ",distribution
+       endif
+       call lsmpi_barrier(infpar%lg_comm)
+    enddo
 #endif
 
     ! Start looping over gamma and alpha batches and calculate integrals
@@ -4636,7 +4651,7 @@ contains
 
              call time_start_phase(PHASE_COMM)
              call arr_lock_win(CBAI,i,'s',assert=mode)
-             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
+             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
              call arr_unlock_win(CBAI,i)
              call time_start_phase(PHASE_WORK)
 
@@ -4679,6 +4694,12 @@ contains
     ! dealloc distribution array
     call mem_dealloc(distribution)
 
+    
+    if(infpar%lg_mynum  == 0)then
+       call print_norm(JAIB)
+       call print_norm(JAIK)
+    endif
+    call print_norm(CBAI)
 #endif
 
     ! free stuff
