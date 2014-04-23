@@ -4230,7 +4230,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
       !INTRODUCE PERMUTATION
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-      call assign_in_subblocks(w1,'=',omega2%elm1,o2v2)
+      call assign_in_subblocks(w_o2v2,'=',omega2%elm1,o2v2)
 #else
       !$OMP WORKSHARE
       w_o2v2(1_long:o2v2) = omega2%elm1(1_long:o2v2)
