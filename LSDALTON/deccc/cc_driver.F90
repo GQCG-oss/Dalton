@@ -2292,7 +2292,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end do
    
-   if(.not.DECinfo%use_singles)then
+   if(CCmodel == MODEL_RPA)then
      t1_final = array2_init([nv,no])
    endif
 
