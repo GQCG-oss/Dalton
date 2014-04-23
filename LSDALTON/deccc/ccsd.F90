@@ -809,8 +809,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
     if (mo_ccsd) then 
-       call get_mo_ccsd_residual(pgmo_diag,pgmo_up,t1,omega1,t2,omega2,iajb,nb,no,nv,&
-            & iter,MOinfo,mylsitem,xo%elm2,xv%elm2,yo%elm2,yv%elm2,delta_fock,ppfock,&
+       call get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2,iajb,nb,no,nv,&
+            & iter,MOinfo,mylsitem,xo%elm2,xv%elm2,yo%elm2,yv%elm2,delta_fock,fock,ppfock,&
             & pqfock,qpfock,qqfock,local)
     else 
        call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
@@ -2093,7 +2093,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
 
-     call ccsd_debug_print(1,master,local,scheme,print_debug,o2v2,w1,&
+     call ccsd_debug_print(ccmodel,1,master,local,scheme,print_debug,o2v2,w1,&
         &omega2,govov,gvvooa,gvoova)
 
 
@@ -2151,7 +2151,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(sio4)
 
 
-        call ccsd_debug_print(2,master,local,scheme,print_debug,o2v2,w1,&
+        call ccsd_debug_print(ccmodel,2,master,local,scheme,print_debug,o2v2,w1,&
            &omega2,govov,gvvooa,gvoova)
 
 
@@ -2183,7 +2183,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
 
-        call ccsd_debug_print(3,master,local,scheme,print_debug,o2v2,w1,&
+        call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,&
            &omega2,govov,gvvooa,gvoova)
 
 
@@ -4786,6 +4786,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
   !> \brief Precondition singles 
+
+
   function precondition_singles_newarr(omega1,ppfock,qqfock) result(prec)
 
     implicit none
@@ -5537,12 +5539,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !
   !> Author:  Pablo Baudin
   !> Date:    November 2013
-  subroutine get_mo_ccsd_residual(pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
+  subroutine get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-             & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock,local)
+             & lamho,lamhv,deltafock,fock,ppfock,pqfock,qpfock,qqfock,local)
 
     implicit none
 
+    !> CC model
+    integer,intent(inout) :: ccmodel
     !> MO pack integrals; amplitudes and residuals:
     integer, intent(in) :: nbas, nocc, nvir, iter
     type(array), intent(inout) :: pgmo_diag, pgmo_up
@@ -5554,6 +5558,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !> Long-range correction to Fock matrix
     type(array), intent(in) :: deltafock
+    !> AO Fock matrix:
+    type(array), intent(inout) :: fock
     !> occupied-occupied block of the t1-fock matrix
     type(array), intent(inout) :: ppfock
     !> virtual-virtual block of the t1-fock matrix
@@ -5748,9 +5754,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call time_start_phase(PHASE_COMM)
     StartUpSlaves: if (master.and.nnod>1) then
       call ls_mpibcast(MOCCSDDATA,infpar%master,infpar%lg_comm)
-      call mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,t2,omega2, &
-             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-             & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock,local)
+      call mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,omega2, &
+             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,local)
     end if StartUpSlaves
     call time_start_phase(PHASE_WORK)
 
@@ -5823,7 +5828,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       end if
 
       ! Get intermediate for the calculation of residual
-      call wrapper_get_intermediates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
+      call wrapper_get_intermediates(ccmodel,ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
                          & xvir,yocc,t2%elm1,u2,goooo,B2prep,omega2%elm1,G_Pi,H_aQ, &
                          & govov%elm1,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
@@ -5839,42 +5844,34 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Calculate norm of A2:
     if (print_debug.and.nnod==1) call print_norm(omega2,'debug: residual A2 norm:           ')
 
-    ! get final B2 term and add it to residual:
-    call dgemm('n','n',nvir*nvir,nocc*nocc,nocc*nocc,0.5E0_realk,t2%elm1,nvir*nvir, &
-              & B2prep,nocc*nocc,0.5E0_realk,omega2%elm1,nvir*nvir)
+    if (ccmodel>MODEL_CC2) then
+      ! get final B2 term and add it to residual:
+      call dgemm('n','n',nvir*nvir,nocc*nocc,nocc*nocc,0.5E0_realk,t2%elm1,nvir*nvir, &
+                & B2prep,nocc*nocc,0.5E0_realk,omega2%elm1,nvir*nvir)
+       
+      ! Calculate norm of A2 + B2 residual:
+      if (print_debug.and.nnod==1) call print_norm(omega2,'debug: residual B2 norm:           ')
+    end if
 
-    ! Calculate norm of A2 + B2 residual:
-    if (print_debug.and.nnod==1) call print_norm(omega2,'debug: residual B2 norm:           ')
-
-#ifdef VAR_MPI
-    call time_start_phase(PHASE_COMM)
-    ! MPI reduction of arrays: omega2, B2prep, G_Pi, HaQ, and all int
-    no2v2 = int(nvir*nvir*nocc*nocc, kind=long)
-    call lsmpi_local_reduction(G_Pi,ntot*nocc,infpar%master,SPLIT_MSG_REC)
-    call lsmpi_local_reduction(H_aQ,nvir*ntot,infpar%master,SPLIT_MSG_REC)
-    call lsmpi_local_reduction(goooo,nocc**4,infpar%master,SPLIT_MSG_REC)
-    call lsmpi_local_reduction(govoo,nvir*nocc**3,infpar%master,SPLIT_MSG_REC)
-    call lsmpi_local_reduction(gvooo,nvir*nocc**3,infpar%master,SPLIT_MSG_REC)
-     
-    ! ALL REDUCE FOR C2 AND D2 TERMS WITH MPI:
-    call lsmpi_allreduce(gvoov,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
-    call lsmpi_allreduce(gvvoo,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
-    if (iter==1) call lsmpi_allreduce(govov%elm1,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
-    call time_start_phase(PHASE_WORK)
-#endif
+    call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ,goooo, &
+                & govoo,gvooo,gvoov,gvvoo,govov)
 
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
 
-    call LSTIMER('MO-CCSD A2 B2 + comm',tcpu1,twall1,DECinfo%output)
+    if (ccmodel>MODEL_CC2) then
+      call LSTIMER('MO-CCSD A2 B2 + comm',tcpu1,twall1,DECinfo%output)
 
-    ! Get C2 and D2 terms
-    call wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo,nocc,nvir,omega2)
+      ! Get C2 and D2 terms
+      call wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo,nocc,nvir,omega2)
+    end if
+
     nullify(tmp1)
     nullify(tmp2)
 
 #ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
+    no2v2 = int(nvir*nvir*nocc*nocc, kind=long)
     call lsmpi_local_reduction(omega2%elm1,no2v2,infpar%master,SPLIT_MSG_REC)
     call time_start_phase(PHASE_WORK)
 #endif
@@ -5903,7 +5900,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
 
     ! Calculate norm of A2 + B2 + C2 + D2 residual:
-    if (print_debug) then 
+    if (print_debug.and.ccmodel>MODEL_CC2) then 
       call print_norm(omega2,'debug: residual D2 norm:            ')
       call LSTIMER('MO-CCSD A2, B2, C2, D2',tcpu1,twall1,DECinfo%output)
     end if
@@ -5911,9 +5908,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !===========================================================================
     !                          GET MO-FOCK MATRICES
-    call get_MO_fock_matrices(nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
+    call get_MO_fock_matrices(ccmodel,nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
                   & goooo,govoo,gvooo,gvoov,gvvoo,ppfock%elm1,pqfock%elm1, & 
-                  & qpfock%elm1,qqfock%elm1,deltafock%elm1,MyLsItem)
+                  & qpfock%elm1,qqfock%elm1,fock%elm1,deltafock%elm1,MyLsItem)
 
     if (print_debug) then
       call print_norm(ppfock,"MO-CCSD (ppfock):                ")
@@ -5955,6 +5952,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Calculate D1 term:
     ! Omega_ai += F_ai
     call daxpy(nocc*nvir,1.0E0_realk,qpfock%elm1,1,omega1%elm1,1)
+
     ! Calculate norm of full single residual:
     if (print_debug) then
       call print_norm(omega1,'debug: residual D1 norm:                 ')
@@ -5966,7 +5964,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !                   GET DOUBLES CCSD RESIDUAL AND FINALIZE
     !
     ! Get E2 term and introduce permutational symmetry
-    call get_E2_and_permute(ntot,nocc,nvir,ppfock%elm1,qqfock%elm1,tmp0,t2%elm1,G_Pi,H_aQ,omega2%elm1)
+    call get_E2_and_permute(ccmodel,ntot,nocc,nvir,ppfock%elm1,qqfock%elm1,tmp0,&
+         & t2%elm1,G_Pi,H_aQ,omega2%elm1)
 
     ! Calculate norm of full double residual:
     if (print_debug) then
@@ -6019,12 +6018,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !
   !> Author:  Pablo Baudin
   !> Date:    November 2013
-  subroutine wrapper_get_intermediates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
+  subroutine wrapper_get_intermediates(ccmodel,ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
                                      & xvir,yocc,t2,u2,goooo,B2prep,omega2,G_Pi,H_aQ, &
                                      & govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
     implicit none
 
+    !> CC model
+    integer,intent(inout) :: ccmodel
     !> dimensions for arrays:
     integer, intent(in) :: ntot, nocc, nvir
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
@@ -6052,46 +6053,27 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk), intent(inout) :: tmp0(:), tmp1(:), tmp2(:)
 
 
-    ! If the coresponding PQ batch is a diagonal block then it should be
-    ! suqared and it is treated only once:
-    if ((P_sta==Q_sta).and.(dimP==dimQ)) then
+    call get_A2_and_B2prep_terms(ccmodel,ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
+                        & xvir,yocc,t2,goooo,B2prep,omega2,tmp0,tmp1,tmp2)
+    call get_G_and_H_intermeditates(ntot,nocc,nvir,dimP,dimQ, &
+                        &  P_sta,Q_sta,gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
+    call get_MO_integrals(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
+                        & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
 
-      call get_A2_and_B2prep_terms(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
-                          & xvir,yocc,t2,goooo,B2prep,omega2,tmp0,tmp1,tmp2)
-      call get_G_and_H_intermeditates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta, &
-                          & gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
-      call get_MO_integrals(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-                          & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
-
-    ! If the PQ batch is an upper diagonal block, it is treated twice:
-    else if (P_sta<Q_sta) then
-
-      ! 1) treat PQ batch:
-      call get_A2_and_B2prep_terms(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
-                          & xvir,yocc,t2,goooo,B2prep,omega2,tmp0,tmp1,tmp2)
-      call get_G_and_H_intermeditates(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta, &
-                          & gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
-      call get_MO_integrals(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-                          & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
-
-      ! 2) treat QP batch:
+    ! If the PQ batch is an upper diagonal block, we repeat the oprerations
+    ! with the transposed batch:
+    if (P_sta<Q_sta) then
       ! transpose gmo to get batch QP:
       call array_reorder_3d(1.0E0_realk,gmo,dimP,dimQ,ntot*ntot, &
                           & [2,1,3],0.0E0_realk,tmp1)
       call dcopy(dimQ*dimP*ntot*ntot,tmp1,1,gmo,1)
-      call lsmpi_poke() 
 
-      ! treat it:
-      call get_A2_and_B2prep_terms(ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta,gmo, &
+      call get_A2_and_B2prep_terms(ccmodel,ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta,gmo, &
                           & xvir,yocc,t2,goooo,B2prep,omega2,tmp0,tmp1,tmp2)
-      call get_G_and_H_intermeditates(ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta, &
-                          & gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
+      call get_G_and_H_intermeditates(ntot,nocc,nvir,dimQ,dimP, &
+                          & Q_sta,P_sta,gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
       call get_MO_integrals(ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta,iter,gmo, &
                           & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
-
-    ! Default case:
-    else 
-      call lsquit('batch not square in the diagonal', DECinfo%output)
     end if
 
   end subroutine wrapper_get_intermediates  
@@ -6102,11 +6084,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !
   !> Author:  Pablo Baudin
   !> Date:    November 2013
-  subroutine get_A2_and_B2prep_terms(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
+  subroutine get_A2_and_B2prep_terms(ccmodel,ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,gmo, &
                           & xvir,yocc,t2,goooo,B2prep,omega2,tmp0,tmp1,tmp2)
 
     implicit none
 
+    !> CC model
+    integer,intent(inout) :: ccmodel
     !> dimensions for arrays:
     integer, intent(in) :: ntot, nocc, nvir
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
@@ -6182,6 +6166,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               & 1.0E0_realk,omega2)
     !===========================================================================
      
+    if (ccmodel==MODEL_CC2) return
 
     !===========================================================================
     ! add O4 int. to B2 term
@@ -6661,6 +6646,49 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   end subroutine get_MO_integrals
   
 
+  !> Purpose: MPI reduction for intermediate arrays and integrals after the 
+  !           main loop.
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    April 2014
+  subroutine  mpi_reduction_after_main_loop(ccmodel,nt,nv,no,iter,G_Pi,H_aQ,goooo, &
+                & govoo,gvooo,gvoov,gvvoo,govov)
+
+    implicit none
+  
+    integer, intent(in) :: ccmodel, nt, nv, no, iter
+    real(realk), intent(inout) :: G_Pi(:), H_aQ(:)
+    real(realk), intent(inout) :: goooo(:), govoo(:), gvooo(:)
+    real(realk), intent(inout) :: gvoov(:), gvvoo(:)
+    type(array), intent(inout) :: govov
+    
+    integer(kind=long) :: no2v2
+
+#ifdef VAR_MPI
+    call time_start_phase(PHASE_COMM)
+    no2v2 = int(nv*nv*no*no, kind=long)
+    call lsmpi_local_reduction(goooo,no**4,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(govoo,nv*no**3,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(gvooo,nv*no**3,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(G_Pi,nt*no,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(H_aQ,nv*nt,infpar%master,SPLIT_MSG_REC)
+
+    if (ccmodel>MODEL_CC2) then
+      ! ALL REDUCE FOR C2 AND D2 TERMS WITH MPI:
+      call lsmpi_allreduce(gvoov,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
+      call lsmpi_allreduce(gvvoo,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
+      if (iter==1) call lsmpi_allreduce(govov%elm1,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
+    else if(ccmodel==MODEL_CC2) then
+      call lsmpi_local_reduction(gvoov,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
+      call lsmpi_local_reduction(gvvoo,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
+      if (iter==1) call lsmpi_local_reduction(govov%elm1,nv*nt,infpar%master,SPLIT_MSG_REC)
+    end if
+    call time_start_phase(PHASE_WORK)
+#endif
+
+  end subroutine  mpi_reduction_after_main_loop
+
+
   subroutine wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo,no,nv,omega2)
 
     implicit none
@@ -6706,11 +6734,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !
   !> Author:  Pablo Baudin
   !> Date:    Movember 2013
-  subroutine get_MO_fock_matrices(nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
-             & goooo,govoo,gvooo,gvoov,gvvoo,Foo,Fov,Fvo,Fvv,deltafock,MyLsItem)
+  subroutine get_MO_fock_matrices(ccmodel,nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
+             & goooo,govoo,gvooo,gvoov,gvvoo,Foo,Fov,Fvo,Fvv,fock,deltafock,MyLsItem)
  
     implicit none
 
+    !> CC model:
+    integer, intent(in) :: ccmodel
     integer, intent(in) :: nbas, nocc, nvir
     !> Transformation matrices:
     real(realk), intent(in) :: lampo(nbas,nocc), lampv(nbas,nvir)
@@ -6720,6 +6750,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> T1-transformed MO integrals:
     real(realk), intent(in) :: goooo(:), govoo(:), gvooo(:)
     real(realk), intent(in) :: gvoov(:), gvvoo(:)
+    !> AO fock matrix:
+    real(realk), intent(in) :: fock(nbas*nbas)
     !> T1-transformed MO inactive Fock matrices:
     real(realk), intent(inout) :: Foo(nocc*nocc), Fov(nocc*nvir)
     real(realk), intent(inout) :: Fvo(nvir*nocc), Fvv(nvir*nvir)
@@ -6747,9 +6779,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! -> Fop
     call dgemm('t','n',nocc,nbas,nbas,1.0E0_realk,lampo,nbas,iFock%elms,nbas, &
               & 0.0E0_realk,tmp0,nocc)
+
+    if (ccmodel>MODEL_CC2) then
     ! -> Foo
     call dgemm('n','n',nocc,nocc,nbas,1.0E0_realk,tmp0,nocc,lamho,nbas, &
               & 0.0E0_realk,Foo,nocc)
+    end if
+
     ! -> Fov
     call dgemm('n','n',nocc,nvir,nbas,1.0E0_realk,tmp0,nocc,lamhv,nbas, &
               & 0.0E0_realk,Fov,nocc)
@@ -6759,9 +6795,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! -> Fvo
     call dgemm('n','n',nvir,nocc,nbas,1.0E0_realk,tmp0,nvir,lamho,nbas, &
               & 0.0E0_realk,Fvo,nvir)
+
+    if (ccmodel>MODEL_CC2) then
     ! -> Fvv
     call dgemm('n','n',nvir,nvir,nbas,1.0E0_realk,tmp0,nvir,lamhv,nbas, &
               & 0.0E0_realk,Fvv,nvir)
+    end if
 
     ! Free the 1-electron AO fock matrix
     call mat_free(iFock)
@@ -6769,6 +6808,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !===================================================================
     ! Get two-electron contribution to MO Fock matrix:
 
+    if (ccmodel>MODEL_CC2) then
     ! Foo:
     call array_reorder_3d(1.0E0_realk,goooo,nocc,nocc*nocc,nocc,[1,3,2], &
               & 0.0E0_realk,tmp0)
@@ -6777,6 +6817,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call daxpy(nocc*nocc,2.0E0_realk,goooo(pos1),1,Foo,1)
       call daxpy(nocc*nocc,-1.0E0_realk,tmp0(pos1),1,Foo,1)
     end do
+    end if
 
     ! Fov:
     call array_reorder_4d(1.0E0_realk,govoo,nocc,nvir,nocc,nocc,[3,2,4,1], &
@@ -6796,6 +6837,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call daxpy(nvir*nocc,-1.0E0_realk,tmp0(pos1),1,Fvo,1)
     end do
 
+    if (ccmodel>MODEL_CC2) then
     ! Get Fvv:
     call array_reorder_3d(1.0E0_realk,gvoov,nvir,nocc*nocc,nvir,[1,3,2], &
               & 0.0E0_realk,tmp0)
@@ -6804,7 +6846,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call daxpy(nvir*nvir,2.0E0_realk,gvvoo(pos1),1,Fvv,1)
       call daxpy(nvir*nvir,-1.0E0_realk,tmp0(pos1),1,Fvv,1)
     end do
-
+    else if (ccmodel==MODEL_CC2) then
+      ! get Block diag. MO-Fock matrices for CC2 model:
+      ! -> Foo
+      call dgemm('t','n',nocc,nbas,nbas,1.0E0_realk,lampo,nbas,fock,nbas, &
+                & 0.0E0_realk,tmp0,nocc)
+      call dgemm('n','n',nocc,nocc,nbas,1.0E0_realk,tmp0,nocc,lamho,nbas, &
+                & 0.0E0_realk,Foo,nocc)
+      ! -> Fvv
+      call dgemm('t','n',nvir,nbas,nbas,1.0E0_realk,lampv,nbas,fock,nbas, &
+                & 0.0E0_realk,tmp0,nvir)
+      call dgemm('n','n',nvir,nvir,nbas,1.0E0_realk,tmp0,nvir,lamhv,nbas, &
+                & 0.0E0_realk,Fvv,nvir)
+    end if
+ 
 
   end subroutine get_MO_Fock_matrices
 
@@ -6816,11 +6871,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !
   !> Author:  Pablo Baudin
   !> Date:    Novemeber 2013
-  subroutine get_E2_and_permute(ntot,nocc,nvir,ppfock,qqfock,tmp0,t2,G_Pi,H_aQ,omega2)
+  subroutine get_E2_and_permute(ccmodel,ntot,nocc,nvir,ppfock,qqfock,tmp0,t2,G_Pi,H_aQ,omega2)
 
     implicit none
 
-    integer, intent(in) :: ntot, nocc, nvir
+    integer, intent(in) :: ccmodel, ntot, nocc, nvir
     real(realk), intent(in) :: ppfock(:), qqfock(:)
     real(realk), intent(inout) :: tmp0(:)
     real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc)
@@ -6835,34 +6890,49 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !===================================================================
     ! Calculate contribution from E2.1 to residual:
-    ! H_aQ := - F_bc + H_bc:
-    call daxpy(nvir*nvir,-1.0E0_realk,qqfock,1,H_aQ(1+nvir*nocc),1)
-
     ! transpose t2: -> t2[ij, ac]
     call mat_transpose(nvir*nvir, nocc*nocc, 1.0E0_realk, t2, 0.0E0_realk, tmp0)
 
-    ! Get E2.1[ijab] = - t2[ij, ac] * tmp_bc
-    call dgemm('n','t',nocc*nocc*nvir,nvir,nvir,-1.0E0_realk,tmp0,nocc*nocc*nvir, &
-              & H_aQ(1+nvir*nocc),nvir,0.0E0_realk,tmp1,nocc*nocc*nvir)
+    ! for CCSD H_aQ := - F_bc + H_bc
+    if (ccmodel>MODEL_CC2) then
+      call daxpy(nvir*nvir,-1.0E0_realk,qqfock,1,H_aQ(1+nvir*nocc),1)
+       
+      ! Get E2.1[ijab] = - t2[ij, ac] * tmp_bc
+      call dgemm('n','t',nocc*nocc*nvir,nvir,nvir,-1.0E0_realk,tmp0,nocc*nocc*nvir, &
+                & H_aQ(1+nvir*nocc),nvir,0.0E0_realk,tmp1,nocc*nocc*nvir)
 
-    ! Transpose and add to omega2:
-    call mat_transpose(nocc*nocc, nvir*nvir, 1.0E0_realk, tmp1, 1.0E0_realk, omega2)
+      ! Transpose and add to omega2:
+      call mat_transpose(nocc*nocc, nvir*nvir, 1.0E0_realk, tmp1, 1.0E0_realk, omega2)
+    else if (ccmodel==MODEL_CC2) then
+      ! for CC2:
+      ! Get E2.1[ijab] = t2[ij, ac] * F__bc
+      call dgemm('n','t',nocc*nocc*nvir,nvir,nvir,1.0E0_realk,tmp0,nocc*nocc*nvir, &
+                & qqfock,nvir,0.0E0_realk,tmp1,nocc*nocc*nvir)
+
+      ! Transpose and add to omega2:
+      call mat_transpose(nocc*nocc, nvir*nvir, 1.0E0_realk, tmp1, 0.5E0_realk, omega2)
+    end if
 
 
     !===================================================================
-    ! Calculate contribution from E2.1 to residual:
+    ! Calculate contribution from E2.2 to residual:
     ! Get G_kj from G_pi:
-    do i=1,nocc
-      call dcopy(nocc,G_Pi(1+(i-1)*ntot),1,tmp0(1+(i-1)*nocc),1)
-    end do
+    if (ccmodel>MODEL_CC2) then
+      do i=1,nocc
+        call dcopy(nocc,G_Pi(1+(i-1)*ntot),1,tmp0(1+(i-1)*nocc),1)
+      end do
 
-    ! Sum F_kj and G_kj:
-    call daxpy(nocc*nocc,1.0E0_realk,ppfock,1,tmp0,1)
+      ! Sum F_kj and G_kj:
+      call daxpy(nocc*nocc,1.0E0_realk,ppfock,1,tmp0,1)
 
-    ! Omega2 += - t[abik] * tmp0_kj
-    call dgemm('n','n',nvir*nvir*nocc,nocc,nocc,-1.0E0_realk,t2,nvir*nvir*nocc, &
-              & tmp0,nocc,1.0E0_realk,omega2,nvir*nvir*nocc)
-
+      ! Omega2 += - t[abik] * tmp0_kj
+      call dgemm('n','n',nvir*nvir*nocc,nocc,nocc,-1.0E0_realk,t2,nvir*nvir*nocc, &
+                & tmp0,nocc,1.0E0_realk,omega2,nvir*nvir*nocc)
+    else if (ccmodel==MODEL_CC2) then
+      ! Omega2 += - t[abik] * F_kj
+      call dgemm('n','n',nvir*nvir*nocc,nocc,nocc,-1.0E0_realk,t2,nvir*nvir*nocc, &
+                & ppfock,nocc,1.0E0_realk,omega2,nvir*nvir*nocc)
+    end if
 
     !===================================================================
     ! Introduce permutational symmetry:
@@ -6875,9 +6945,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
   end subroutine get_E2_and_permute
 
-  subroutine ccsd_debug_print(print_nr,master,local,&
+  subroutine ccsd_debug_print(ccmodel,print_nr,master,local,&
         &scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
      implicit none
+     integer,intent(in) :: ccmodel
      integer,intent(in) :: print_nr
      integer,intent(in) :: scheme
      integer(kind=8)    :: o2v2
@@ -6915,26 +6986,28 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call print_norm(govov,msg)
            endif
 
-           !DEBUG PRINT NORM GVVOO
-           write(msg,*)"NORM(gvvoo):"
-           if(scheme==4)then
-              if(master)call print_norm(gvvooa,msg)
-           else
-              call array_gather(1.0E0_realk,gvvooa,0.0E0_realk,w1%d,o2v2)
-              if(master)call print_norm(w1%d,o2v2,msg)
-           endif
-
-           !DEBUG PRINT NORM GVOOV
-           write(msg,*)"NORM(gvoov):"
-           if(scheme==4)then
-              if(master)call print_norm(gvoova%elm1,o2v2,msg)
-           else
-              call array_gather(1.0E0_realk,gvoova,0.0E0_realk,w1%d,o2v2)
-              if(master)call print_norm(w1%d,o2v2,msg)
+           if (ccmodel>MODEL_CC2) then
+              !DEBUG PRINT NORM GVVOO
+              write(msg,*)"NORM(gvvoo):"
+              if(scheme==4)then
+                 if(master)call print_norm(gvvooa,msg)
+              else
+                 call array_gather(1.0E0_realk,gvvooa,0.0E0_realk,w1%d,o2v2)
+                 if(master)call print_norm(w1%d,o2v2,msg)
+              endif
+               
+              !DEBUG PRINT NORM GVOOV
+              write(msg,*)"NORM(gvoov):"
+              if(scheme==4)then
+                 if(master)call print_norm(gvoova%elm1,o2v2,msg)
+              else
+                 call array_gather(1.0E0_realk,gvoova,0.0E0_realk,w1%d,o2v2)
+                 if(master)call print_norm(w1%d,o2v2,msg)
+              endif
            endif
         endif
      case(2)
-        if(print_debug)then
+        if(print_debug.and.ccmodel>MODEL_CC2)then
 #ifdef VAR_MPI
            if(.not.local)call arr_unlock_wins(omega2,.true.)
 #endif
@@ -6954,7 +7027,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if(master)call print_norm(w1%d,o2v2,msg)
         endif
      case(3)
-        if(print_debug)then
+        if(print_debug.and.ccmodel>MODEL_CC2)then
 #ifdef VAR_MPI
            if(.not.local)call arr_unlock_wins(omega2,.true.)
 #endif
@@ -7352,6 +7425,8 @@ subroutine moccsd_data_slave()
 
   implicit none
 
+  !> CC model
+  integer :: ccmodel
   !> MO pack integrals; amplitudes and residuals:
   integer :: nbas, nocc, nvir, iter
   type(array) :: pgmo_diag, pgmo_up
@@ -7363,6 +7438,8 @@ subroutine moccsd_data_slave()
 
   !> Long-range correction to Fock matrix
   type(array) :: deltafock
+  !> AO fock matrix
+  type(array) :: fock
   !> occupied-occupied block of the t1-fock matrix
   type(array) :: ppfock
   !> virtual-virtual block of the t1-fock matrix
@@ -7386,9 +7463,8 @@ subroutine moccsd_data_slave()
   logical :: local
 
 
-  call mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,t2,omega2, &
-         & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-         & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock,local)
+  call mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,omega2, &
+         & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,local)
   
   !==============================================================================
   ! Initialize arrays:
@@ -7414,9 +7490,9 @@ subroutine moccsd_data_slave()
 
   !==============================================================================
   ! the slave call the routine to get MO-CCSD residual:
-  call get_mo_ccsd_residual(pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
+  call get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
          & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-         & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock,local)
+         & lamho,lamhv,deltafock,fock,ppfock,pqfock,qpfock,qqfock,local)
 
   ! deallocate slave stuff:
   call ls_free(MyLsItem)

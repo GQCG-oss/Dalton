@@ -1937,12 +1937,13 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    January 2014
-  subroutine mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,t2,om2, &
-             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-             & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock,loc)
+  subroutine mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,om2, &
+             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,loc)
 
     implicit none
      
+    !> CC model
+    integer,intent(inout) :: ccmodel
     !> MO pack integrals; amplitudes and residuals:
     integer :: nbas, nocc, nvir, iter
     type(array) :: pgmo_diag, pgmo_up
@@ -1950,20 +1951,6 @@ contains
     type(array) :: t1
     type(array) :: t2
     type(array) :: om2
-     
-    !> Long-range correction to Fock matrix
-    type(array) :: deltafock
-    !> occupied-occupied block of the t1-fock matrix
-    type(array) :: ppfock
-    !> virtual-virtual block of the t1-fock matrix
-    type(array) :: qqfock
-    !> occupied-virtual block of the t1-fock matrix
-    type(array) :: pqfock
-    !> virtual-occupied block of the t1-fock matrix
-    type(array) :: qpfock
-    !> transformation matrices from AO to t1-MO:
-    real(realk), pointer :: lampo(:,:), lampv(:,:)
-    real(realk), pointer :: lamho(:,:), lamhv(:,:)
      
     !> LS item with information needed for integrals
     type(lsitem) :: MyLsItem
@@ -1989,6 +1976,7 @@ contains
     call ls_mpi_buffer(iter,infpar%master)
     call ls_mpi_buffer(MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(loc,infpar%master)
+    call ls_mpi_buffer(ccmodel,infpar%master)
     if (.not.master) then
       call mem_alloc(MOinfo%dimInd1,MOinfo%nbatch)
       call mem_alloc(MOinfo%dimInd2,MOinfo%nbatch)

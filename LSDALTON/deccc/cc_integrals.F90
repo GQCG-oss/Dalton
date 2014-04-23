@@ -857,7 +857,7 @@ contains
     if (master) then 
       select case(CCmodel)
 
-      case(MODEL_CCSD,MODEL_CCSDpT)
+      case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
         call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nb,no,nv, &
                & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem,.false.)
         if (.not.mo_ccsd) return
