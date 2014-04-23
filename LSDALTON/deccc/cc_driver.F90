@@ -2620,13 +2620,13 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
 
    if(readfile2)then
       ! allocate dense part of t2 array:
-      call memory_allocate_array_dense(t2)
+      if (.not.local) call memory_allocate_array_dense(t2)
       READ(fu_t2) t2%elm1
       READ(fu_t2) norm
       READ(fu_t2) energy
       CLOSE(fu_t2)
       ! mv dense part to tiles:
-      call array_mv_dense2tiled(t2,.false.)
+      if (.not.local) call array_mv_dense2tiled(t2,.false.)
       restart = .true.
    else
       !call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
