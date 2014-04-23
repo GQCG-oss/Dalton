@@ -32,6 +32,7 @@ module ccsdpt_module
 #ifdef VAR_MPI
       use decmpi_module
 #endif
+  use dec_workarounds_module
   use dec_fragment_utils
   use array2_simple_operations
   use array3_simple_operations

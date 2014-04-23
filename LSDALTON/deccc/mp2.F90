@@ -30,6 +30,7 @@ module mp2_module
 #ifdef VAR_MPI
       use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
 #endif
+  use dec_workarounds_module
 
   use dec_fragment_utils!,only: calculate_fragment_memory, &
 !       & dec_simple_dgemm_update,start_flop_counter,&
