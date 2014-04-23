@@ -18,7 +18,6 @@ module rpa_module
   use integralinterfaceDEC
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
   use ccsd_module
-!       & ii_get_fock_mat_full
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
@@ -48,7 +47,9 @@ module rpa_module
 
 
     public :: RPA_residual,RPA_energy,SOSEX_contribution,RPA_multiplier,&
-              &rpa_residualdeb,RPA_residual_par_add,RPA_residual_par,RPA_fock_para
+              &rpa_residualdeb,RPA_residual_par_add,RPA_residual_par,&
+              & RPA_fock_para,get_rpa_energy_arrnew,get_sosex_cont_arrnew,&
+              & rpa_fock_para2
     
 
     private
@@ -295,6 +296,7 @@ contains
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
     real(realk) :: starttime,stoptime
+    character(ARR_MSG_LEN) :: msg
 
 
     call cpu_time(starttime)
@@ -303,9 +305,18 @@ contains
     !call getDoublesResidualMP2_simple(Omega2,t2,gmo,pfock,qfock, &
     !           & nocc,nvirt)
     !write(*,*) 'I am now in residualdeb, and everything is ok'
+    msg = 'Norm of t2'
+    call print_norm(t2%val,i8*nvirt*nvirt*nocc*nocc,msg)
 
     call RPA_fock_partdeb(omega2,t2,pfock,qfock,nocc,nvirt)
+   ! msg = 'Norm of fockpart'
+   ! call print_norm(omega2%val,i8*nvirt*nvirt*nocc*nocc,msg)
+
     call RPA_residual_adddeb(omega2,t2,gmo,nocc,nvirt)
+
+    !call print_norm
+  !  msg = 'Norm of omega2'
+  !  call print_norm(omega2%val,i8*nvirt*nvirt*nocc*nocc,msg)
 
     !for debugging
     !call array4_add_to(omega2,2.0E0_realk,gmo)
@@ -374,63 +385,63 @@ contains
   !\brief Calculate fock matrix part of the RPA residual 
   !> \author Johannes Rekkedal and Thomas Bondo
   !> \date March 2013
-  subroutine RPA_fock_part2(omega2,t2,pfock,qfock,nocc,nvirt)
-
-    implicit none
-    type(array), intent(inout) :: omega2,t2
-    type(array), intent(inout) :: pfock,qfock
-    integer, intent(in) :: nocc,nvirt
-    type(array) :: tmp
-    integer, dimension(4) :: tmp_dims
-    integer :: a,b,c,i,j,k
-    character(ARR_MSG_LEN) :: msg
-
-
-    ! 1
-    !call array2_transpose(qfock)
-    
-    tmp = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
-    call array_contract_outer_indices_rl(-1.0E0_realk,t2,pfock,0.0E0_realk,tmp)
-    call array_add(omega2,1.0E0_realk,tmp)
-    ! 1
-    call array_contract_outer_indices_rl(1.0E0_realk,qfock,t2,0.0E0_realk,tmp)
-    call array_add(omega2,1.0E0_realk,tmp)
-
-    call array_contract_outer_indices_lr(-1.0E0_realk,pfock,t2,0.0E0_realk,tmp)
-    call array_add(omega2,1.0E0_realk,tmp)
-    ! 2
-    call array_contract_outer_indices_lr(1.0E0_realk,t2,qfock,0.0E0_realk,tmp)
-    call array_add(omega2,1.0E0_realk,tmp)
-
-    call array_free(tmp)
-
-    !call array4_contract1(t2,qfock,omega2,.false.)
-    !call array2_transpose(qfock)
-
-    !! 3
-    !call array4_reorder(t2,[4,3,2,1])
-    !tmp = array4_init([nocc,nvirt,nocc,nvirt])
-    !call array4_contract1(t2,pfock,tmp,.true.)
-    !call array4_reorder(t2,[4,3,2,1])
-    !call array4_reorder(tmp,[4,3,2,1])
-    !call array4_add_to(omega2,-1.0E0_realk,tmp)
-    !call array4_free(tmp)
-
-    !! 4
-    !call array4_reorder(t2,[2,1,3,4])
-    !tmp = array4_init([nocc,nvirt,nvirt,nocc])
-    !call array4_contract1(t2,pfock,tmp,.true.)
-    !call array4_reorder(t2,[2,1,3,4])
-    !call array4_reorder(tmp,[2,1,3,4])
-    !call array4_add_to(omega2,-1.0E0_realk,tmp)
-    !call array4_free(tmp)
-
-
-    !For debugging
-    !call array4_add_to(omega2,2.0E0_realk,gmo)
-
-    return
-  end subroutine RPA_fock_part2
+!  subroutine RPA_fock_part2(omega2,t2,pfock,qfock,nocc,nvirt)
+!
+!    implicit none
+!    type(array), intent(inout) :: omega2,t2
+!    type(array), intent(inout) :: pfock,qfock
+!    integer, intent(in) :: nocc,nvirt
+!    type(array) :: tmp
+!    integer, dimension(4) :: tmp_dims
+!    integer :: a,b,c,i,j,k
+!    character(ARR_MSG_LEN) :: msg
+!
+!
+!    ! 1
+!    !call array2_transpose(qfock)
+!    
+!    tmp = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+!    call array_contract_outer_indices_rl(-1.0E0_realk,t2,pfock,0.0E0_realk,tmp)
+!    call array_add(omega2,1.0E0_realk,tmp)
+!    ! 1
+!    call array_contract_outer_indices_rl(1.0E0_realk,qfock,t2,0.0E0_realk,tmp)
+!    call array_add(omega2,1.0E0_realk,tmp)
+!
+!    call array_contract_outer_indices_lr(-1.0E0_realk,pfock,t2,0.0E0_realk,tmp)
+!    call array_add(omega2,1.0E0_realk,tmp)
+!    ! 2
+!    call array_contract_outer_indices_lr(1.0E0_realk,t2,qfock,0.0E0_realk,tmp)
+!    call array_add(omega2,1.0E0_realk,tmp)
+!
+!    call array_free(tmp)
+!
+!    !call array4_contract1(t2,qfock,omega2,.false.)
+!    !call array2_transpose(qfock)
+!
+!    !! 3
+!    !call array4_reorder(t2,[4,3,2,1])
+!    !tmp = array4_init([nocc,nvirt,nocc,nvirt])
+!    !call array4_contract1(t2,pfock,tmp,.true.)
+!    !call array4_reorder(t2,[4,3,2,1])
+!    !call array4_reorder(tmp,[4,3,2,1])
+!    !call array4_add_to(omega2,-1.0E0_realk,tmp)
+!    !call array4_free(tmp)
+!
+!    !! 4
+!    !call array4_reorder(t2,[2,1,3,4])
+!    !tmp = array4_init([nocc,nvirt,nvirt,nocc])
+!    !call array4_contract1(t2,pfock,tmp,.true.)
+!    !call array4_reorder(t2,[2,1,3,4])
+!    !call array4_reorder(tmp,[2,1,3,4])
+!    !call array4_add_to(omega2,-1.0E0_realk,tmp)
+!    !call array4_free(tmp)
+!
+!
+!    !For debugging
+!    !call array4_add_to(omega2,2.0E0_realk,gmo)
+!
+!    return
+!  end subroutine RPA_fock_part2
 
 
   !\brief Calculate fock matrix part of the RPA residual 
@@ -444,10 +455,11 @@ contains
     integer, intent(inout) :: no,nv
     !type(array2), intent(inout) :: pfock,qfock
     type(array), intent(inout) :: pfock,qfock
-    !real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
+    !real(realk),pointer, intent(inout) :: pfock(:),qfock(:)
+    !real(realk) intent(inout) :: pfock(no,no),qfock(nv,nv)
     type(array) :: tmpt2,omegaw2
     real(realk),pointer :: tmp(:,:),w1(:),w2(:),w3(:),w4(:),omegw(:),w5(:)
-    real(realk), pointer :: w_o2v2(:),om2(:)
+    real(realk), pointer :: w_o2v2(:)
     integer, dimension(4) :: tmp_dims
     integer(kind=long) :: o2v2
     integer :: no2,nv2,o2v,v2o
@@ -457,9 +469,10 @@ contains
     real(realk) :: tw,tc
     integer(kind=ls_mpik) me,mode,nod, nnod
     character(ARR_MSG_LEN) :: msg
-    logical :: master,lock_outside,lock_safe
+    logical :: master,lock_outside,lock_safe,local
 
     master=.true.
+    local = .true.
 #ifdef VAR_MPI
     master        = .false.
     master        = (infpar%lg_mynum == 0)
@@ -470,12 +483,6 @@ contains
 
     
     dim1=no*nv
-#ifdef VAR_MPI
-    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
-      call ls_mpibcast(RPAGETFOCK,infpar%master,infpar%lg_comm)
-      call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nv,no)
-    endif StartUpSlaves
-#endif
 
     no2  = no**2
     nv2  = nv**2
@@ -483,7 +490,51 @@ contains
     o2v  = no2*nv 
     v2o  = nv2*no 
     call mem_alloc(w_o2v2,t2%nelms)
-    call mem_alloc(om2,t2%nelms)
+    
+    if(local) then
+
+
+      write(*,*) 'before first dgemm'
+      !calculate first part of doubles E term and its permutation
+      ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
+      call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,pfock%elm1,no,0.0E0_realk,w_o2v2,v2o)
+      !call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm4,v2o,pfock%elm4,no,1.0E0_realk,omega2%elm4,v2o)
+      write(*,*) 'after first dgemm'
+
+      !calculate second part of doubles E term
+      ! F [a c] * t [c b i j] =+ Omega [a b i j]
+      call dgemm('n','n',nv,o2v,nv,1.0E0_realk,qfock%elm1,nv,t2%elm1,nv,1.0E0_realk,w_o2v2,nv)
+      write(*,*) 'after second dgemm'
+
+      call mem_alloc(w3,no2*nv2)
+
+      call array_scatter(1.0E0_realk,w_o2v2,0.0E0_realk,omega2,o2v2)
+      call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
+      call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
+
+
+!      !INTRODUCE PERMUTATION
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!      call assign_in_subblocks(w1,'=',omega2%elm1,o2v2)
+!#else
+!      !$OMP WORKSHARE
+!      w_o2v2(1_long:o2v2) = omega2%elm1(1_long:o2v2)
+!      !$OMP END WORKSHARE
+!#endif
+!
+!      call array_reorder_4d(1.0E0_realk,w_o2v2,nv,nv,no,no,[2,1,4,3],1.0E0_realk,omega2%elm1)
+
+   else
+
+#ifdef VAR_MPI
+     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
+       call ls_mpibcast(RPAGETFOCK,infpar%master,infpar%lg_comm)
+       call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nv,no)
+    endif StartUpSlaves
+#endif
+
+
+#ifdef VAR_MPI
 
     omega2%access_type = ALL_ACCESS
     t2%access_type     = ALL_ACCESS
@@ -521,6 +572,7 @@ contains
         do i=1,no
         call dcopy(tri,w_o2v2(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
         enddo
+        !write(*,*) 'printing w3', w3
       endif
       if(me==0.or.me==nod)then
         write(*,*) 'send recv', me
@@ -617,6 +669,9 @@ contains
       call mem_dealloc(w3)
       lock_outside     = lock_safe
 
+#endif
+
+   endif
 
    call mem_dealloc(w_o2v2)
 
@@ -626,6 +681,134 @@ contains
 
     return
   end subroutine RPA_fock_para
+
+
+ !\brief Calculate fock matrix part of the RPA residual 
+  !> \author Johannes Rekkedal and Thomas Bondo
+  !> \date March 2013
+  subroutine RPA_fock_para2(omega2,t2,pfock,qfock,no,nv)
+
+    implicit none
+    type(array), intent(inout) :: t2,omega2
+    !type(array4), intent(inout) :: omega2
+    integer, intent(inout) :: no,nv
+    !type(array2), intent(inout) :: pfock,qfock
+    type(array), intent(inout) :: pfock,qfock
+    !real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
+    type(array) :: tmpt2,omegaw2
+    real(realk),pointer :: tmp(:,:),w1(:),w2(:),w3(:),w4(:),omegw(:),w5(:)
+    real(realk), pointer :: w_o2v2(:)
+    integer, dimension(4) :: tmp_dims
+    type(array) :: t_par
+    integer(kind=long) :: o2v2
+    integer :: no2,nv2,o2v,v2o
+    integer(kind=8) :: w3size,b0
+    integer :: faip,faiv,tlp,tlv,dim1,fai1,fai2,tl1,tl2,fri,tri
+    integer :: i 
+    real(realk) :: tw,tc
+    integer(kind=ls_mpik) me,mode,nod, nnod
+    character(ARR_MSG_LEN) :: msg
+    logical :: master,lock_outside,lock_safe,local
+
+    master=.true.
+#ifdef VAR_MPI
+    master        = .false.
+    master        = (infpar%lg_mynum == infpar%master)
+    nnod          = infpar%lg_nodtot
+    me            = infpar%lg_mynum
+    mode          = int(MPI_MODE_NOCHECK,kind=ls_mpik)
+#endif
+
+    
+    dim1=no*nv
+    b0= i8*0
+
+    no2  = no**2
+    nv2  = nv**2
+    o2v2 = (i8*no2)*(i8*nv2)
+    o2v  = no2*nv 
+    v2o  = nv2*no 
+    
+
+#ifdef VAR_MPI
+     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
+       call ls_mpibcast(RPAGETFOCK,infpar%master,infpar%lg_comm)
+       call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nv,no)
+    endif StartUpSlaves
+#endif
+
+
+!#ifdef VAR_MPI
+
+    !Setting transformation variables for each rank
+    !**********************************************
+    call mo_work_dist(v2o,fai1,tl1)
+    call mo_work_dist(o2v,fai2,tl2)
+
+
+    w3size = max(tl1*no,tl2*nv)
+    if(nnod>1)w3size = max(w3size,2*omega2%tsize)
+    call mem_alloc(w3,w3size)
+    call mo_work_dist(nv*nv*no,fri,tri)
+    call mem_alloc(w2,tl1*no)
+    call mem_alloc(w_o2v2,tl1*no)
+
+
+    t_par = array_ainit([nv,nv,no,no],4,atype='TDAR',local=.false.)
+    call array_convert(t2%elm4,t_par)
+    !call array_two_dim_1batch(t2,[1,2,3,4],'g',t_par%elm1,1,0,no2*nv2,.false.,debug=.true.)
+
+    ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
+    !if(me==0) call array_convert(t2,w_o2v2,t2%nelms)
+      !call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
+
+#ifdef VAR_MPI
+      write(*,*) 'Johannes first two_dim_batch',infpar%lg_mynum,fai1,tl1
+      write(*,*) 'Johannes first fri tri',infpar%lg_mynum,fri,tri
+#endif
+
+      call array_two_dim_1batch(t_par,[4,2,1,3],'g',w2,3,fai1,tl1,.false.,debug=.true.)
+      write(*,*) 'Johannes after first two_dim_batch'
+
+      call dgemm('n','n',tl1,no,no,-1.0E0_realk,w2,tl1,pfock%elm1,no,0.0E0_realk,w_o2v2,v2o)
+      write(*,*) 'Johannes Debug after dgemm'
+
+    call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
+      write(*,*) 'Johannes Debug after first omega2 update'
+    call array_two_dim_1batch(omega2,[3,4,1,2],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
+      write(*,*) 'Johannes Debug after 2 omega2 update'
+#ifdef VAR_MPI
+    call lsmpi_barrier(infpar%lg_comm)
+#endif
+
+    call mem_dealloc(w_o2v2)
+    call mem_dealloc(w2)
+    !DO ALL THINGS DEPENDING ON 2
+    call mem_alloc(w_o2v2,tl2*nv)
+    call mem_alloc(w2,tl2*nv)
+
+    ! F[a c] * t [c b i j] =+ Omega [a b i j]
+      call array_two_dim_1batch(t_par,[4,3,2,1],'g',w2,3,fai2,tl2,.false.,debug=.false.)
+      !call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
+      call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
+
+    call array_two_dim_1batch(omega2,[4,3,2,1],'a',w_o2v2,2,fai2,tl2,.false.,debug=.false.)
+    call array_two_dim_1batch(omega2,[3,4,1,2],'a',w_o2v2,2,fai2,tl2,.false.,debug=.false.)
+#ifdef VAR_MPI
+    call lsmpi_barrier(infpar%lg_comm)
+#endif
+
+
+!#endif
+
+
+   call array_free(t_par)
+   call mem_dealloc(w_o2v2)
+
+    return
+  end subroutine RPA_fock_para2
+
+
 
 
   !\brief Calculate additional linear and quadratic terms of the RPA residual 
@@ -793,12 +976,12 @@ contains
     !type(array4), intent(inout) :: omega2,t2
     type(array), intent(inout) :: omega2
     type(array), intent(inout) :: t2
+    integer, intent(in) :: nocc,nvirt
     real(realk),pointer, intent(inout) :: gmo(:)
     !type(array), intent(inout) :: gmo
-    !type(array2), intent(inout) :: pfock,qfock
     type(array),intent(inout) :: pfock,qfock
-    integer, intent(in) :: nocc,nvirt
-    real(realk),pointer :: foo(:),fvv(:)
+    !type(array2), intent(inout) :: pfock,qfock
+    !real(realk),pointer,intent(inout) :: pfock(:),qfock(:)
     !real(realk), intent(inout) :: pfock(nocc,nocc),qfock(nvirt,nvirt)
     !type(array4) :: tmp
     real(realk),pointer :: w2(:)!,foo(:,:),fvv(:,:)
@@ -807,96 +990,50 @@ contains
     real(realk) :: starttime,stoptime
     type(array) :: om_par,t_par,t_par1
     integer :: nnod,mynum,fai,tl
-    integer :: nvir,noc
+    integer :: nvir,noc,dim1
     logical :: master
     character(ARR_MSG_LEN) :: msg
     type(array) :: Sckdl
     
-
     nvir=nvirt
     noc=nocc
-    write(*,*) 'Johannes addr res_par',omega2%addr_p_arr
-    write(*,*) 'Johannes addr res_par',t2%addr_p_arr
+    dim1=nocc*nvirt
+  !  write(*,*) 'Johannes addr res_par',omega2%addr_p_arr
+  !  write(*,*) 'Johannes addr res_par',t2%addr_p_arr
 
-    !call mem_alloc(foo,noc,noc)
-    !call mem_alloc(fvv,nvir,nvir)
-
-    !foo = array_minit([nocc,nocc],2,atype='TDAR')
-    !fvv = array_minit([nvirt,nvirt],2,atype='TDAR',local=.false.)
-    !call array_convert(pfock%val,foo)
-    !call array_convert(qfock%val,fvv)
-    call mem_alloc(foo,nocc*nocc)
-    call mem_alloc(fvv,nvirt*nvirt)
-    !foo(:)=pfock%elm1(:)
-    !fvv(:)=qfock%elm1(:)
+!    call mem_alloc(foo,nocc*nocc)
+!    call mem_alloc(fvv,nvirt*nvirt)
 
 
     call cpu_time(starttime)
 
     !t_par = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
 
-    !call array4_reorder(t2,[1,3,2,4])
-    !call array_convert(t2%val,t_par)
-    !call array4_reorder(t2,[1,3,2,4])
-    !write(*,*) 't2',t_par%elm1
-
-    !write(*,*) 't_par dims',t_par%dims
-    !write(*,*) 't_par tdim',t_par%tdim
-    !write(*,*) 'init om_par'
-    !om_par = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
-    !write(*,*) 'om_par dims',om_par%dims
-    !write(*,*) 'om_par tdim',om_par%tdim
-
-    call RPA_fock_para(omega2,t2,pfock,qfock,noc,nvir)
-
-
-    !call mem_dealloc(foo)
-    !call mem_dealloc(fvv)
-
-    !call array4_reorder(omega2,[1,3,2,4])
-
-    !write(*,*) 'tiles',om_par%ntiles
-    !call array_gather(1.0E0_realk,om_par,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
-
-    !call array4_reorder(omega2,[1,3,2,4])
-
-    
-
     Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,local=.true.,atype='TDAR')
-    call array_two_dim_1batch(t2,[1,2,3,4],'g',Sckdl%elm4,2,fai,tl,.false.,debug=.true.)
-    !Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,local=.false.,atype='TDAR')
-    !call copy_array(t2,Sckdl)
-    !call array4_reorder(t2,[1,3,2,4])
-    !call array_convert(t2%elm4,Sckdl)
-    !Sckdl = array4_duplicate(t2)
-    !call array4_reorder(t2,[1,3,2,4])
+    call array_gather(1.0E0_realk,t2,0.0E0_realk,Sckdl%elm1,i8*dim1*dim1,oo=[1,2,3,4])
+
+    !call RPA_fock_para2(omega2,Sckdl,pfock,qfock,noc,nvir)
+    call RPA_fock_para(omega2,Sckdl,pfock,qfock,noc,nvir)
+    msg = 'Norm of fockpart'
+    call print_norm(omega2,msg)
+
+    !msg = 'Norm of omega2 after fock para'
+    !call print_norm(omega2,msg)
+
+    !Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,local=.true.,atype='TDAR')
+    !call array_gather(1.0E0_realk,t2,0.0E0_realk,Sckdl%elm1,i8*dim1*dim1,oo=[4,2,3,1])
 
     do a=1,nvirt
     do i=1,nocc
     Sckdl%elm4(a,a,i,i)=Sckdl%elm4(a,a,i,i)+1._realk
-    !remember to change to a,a,i,i,when t2 = array
     enddo
     enddo
-
-    !write(*,*) 'JOHANNES PAR addres'
     !call RPA_residual_addpar(omega2,Sckdl,gmo,noc,nvir)
     call RPA_residual_par_add(omega2,Sckdl,gmo,noc,nvir)
     !write(*,*) 'JOHANNES added'
 
-    ! MPI: here you should start the slaves!!
-
-    !call lsmpi_barrier(infpar%lg_comm)
-    !call lsmpi_barrier(infpar%lg_comm)
-    !print*, infpar%lg_mynum, 'par residual'
-    !call lsmpi_barrier(infpar%lg_comm)
-    
-
-
-
-
     call cpu_time(stoptime)
 
-    !call lsquit('RPA_residual: Needs implementation',-1)
 
   end subroutine RPA_residual_par
 
@@ -904,77 +1041,77 @@ contains
   !\brief Calculate fock matrix part of the RPA residual 
   !> \author Johannes Rekkedal and Thomas Bondo
   !> \date March 2013
-  subroutine RPA_fock_partpar(omega2,t2,pfock,qfock,nocc,nvirt)
-
-    implicit none
-    type(array4), intent(inout) :: omega2,t2
-    integer, intent(in) :: nocc,nvirt
-    type(array2), intent(inout) :: qfock,pfock
-    !real(realk), intent(inout) :: qfock(nvirt,nvirt),pfock(nocc,nocc)
-    !real(realk), intent(inout),dimension(nvirt,nvirt) :: qfock
-    !real(realk), intent(inout),dimension(nocc,nocc) :: pfock
-    type(array4) :: tmp
-    integer, dimension(4) :: tmp_dims
-    integer :: a,b,c,i,j,k,noc,nvir
-    nvir =nvirt
-    noc = nocc
-
-
-!#ifdef VAR_MPI
-!    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
-!      call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
-!      call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nvir,noc)
-!    endif StartUpSlaves
-!#endif
+!  subroutine RPA_fock_partpar(omega2,t2,pfock,qfock,nocc,nvirt)
 !
-!    call mo_work_dist(nvirt*nocc,fai,tl)
-!    call mem_alloc(w2,tl*nocc*nvirt*nocc)
+!    implicit none
+!    type(array4), intent(inout) :: omega2,t2
+!    integer, intent(in) :: nocc,nvirt
+!    type(array2), intent(inout) :: qfock,pfock
+!    !real(realk), intent(inout) :: qfock(nvirt,nvirt),pfock(nocc,nocc)
+!    !real(realk), intent(inout),dimension(nvirt,nvirt) :: qfock
+!    !real(realk), intent(inout),dimension(nocc,nocc) :: pfock
+!    type(array4) :: tmp
+!    integer, dimension(4) :: tmp_dims
+!    integer :: a,b,c,i,j,k,noc,nvir
+!    nvir =nvirt
+!    noc = nocc
 !
-!    t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
 !
-    call array4_reorder(t2,[1,3,2,4])
-!    call array_convert(t2%val,t_par)
-
-!    call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
-
-    ! 1
-    call array2_transpose(qfock)
-    call array4_reorder(t2,[3,4,1,2])
-    tmp = array4_init([nvirt,nocc,nvirt,nocc])
-    call array4_contract1(t2,qfock,tmp,.true.)
-    call array4_reorder(tmp,[3,4,1,2])
-    call array4_add_to(omega2,1.0E0_realk,tmp)
-    call array4_free(tmp)
-    call array4_reorder(t2,[3,4,1,2])
-
-    ! 2
-    call array4_contract1(t2,qfock,omega2,.false.)
-    call array2_transpose(qfock)
-
-    ! 3
-    call array4_reorder(t2,[4,3,2,1])
-    tmp = array4_init([nocc,nvirt,nocc,nvirt])
-    call array4_contract1(t2,pfock,tmp,.true.)
-    call array4_reorder(t2,[4,3,2,1])
-    call array4_reorder(tmp,[4,3,2,1])
-    call array4_add_to(omega2,-1.0E0_realk,tmp)
-    call array4_free(tmp)
-
-    ! 4
-    call array4_reorder(t2,[2,1,3,4])
-    tmp = array4_init([nocc,nvirt,nvirt,nocc])
-    call array4_contract1(t2,pfock,tmp,.true.)
-    call array4_reorder(t2,[2,1,3,4])
-    call array4_reorder(tmp,[2,1,3,4])
-    call array4_add_to(omega2,-1.0E0_realk,tmp)
-    call array4_free(tmp)
-
-
-    !For debugging
-    !call array4_add_to(omega2,2.0E0_realk,gmo)
-
-    return
-  end subroutine RPA_fock_partpar
+!!#ifdef VAR_MPI
+!!    StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
+!!      call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
+!!      call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nvir,noc)
+!!    endif StartUpSlaves
+!!#endif
+!!
+!!    call mo_work_dist(nvirt*nocc,fai,tl)
+!!    call mem_alloc(w2,tl*nocc*nvirt*nocc)
+!!
+!!    t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+!!
+!    call array4_reorder(t2,[1,3,2,4])
+!!    call array_convert(t2%val,t_par)
+!
+!!    call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
+!
+!    ! 1
+!    call array2_transpose(qfock)
+!    call array4_reorder(t2,[3,4,1,2])
+!    tmp = array4_init([nvirt,nocc,nvirt,nocc])
+!    call array4_contract1(t2,qfock,tmp,.true.)
+!    call array4_reorder(tmp,[3,4,1,2])
+!    call array4_add_to(omega2,1.0E0_realk,tmp)
+!    call array4_free(tmp)
+!    call array4_reorder(t2,[3,4,1,2])
+!
+!    ! 2
+!    call array4_contract1(t2,qfock,omega2,.false.)
+!    call array2_transpose(qfock)
+!
+!    ! 3
+!    call array4_reorder(t2,[4,3,2,1])
+!    tmp = array4_init([nocc,nvirt,nocc,nvirt])
+!    call array4_contract1(t2,pfock,tmp,.true.)
+!    call array4_reorder(t2,[4,3,2,1])
+!    call array4_reorder(tmp,[4,3,2,1])
+!    call array4_add_to(omega2,-1.0E0_realk,tmp)
+!    call array4_free(tmp)
+!
+!    ! 4
+!    call array4_reorder(t2,[2,1,3,4])
+!    tmp = array4_init([nocc,nvirt,nvirt,nocc])
+!    call array4_contract1(t2,pfock,tmp,.true.)
+!    call array4_reorder(t2,[2,1,3,4])
+!    call array4_reorder(tmp,[2,1,3,4])
+!    call array4_add_to(omega2,-1.0E0_realk,tmp)
+!    call array4_free(tmp)
+!
+!
+!    !For debugging
+!    !call array4_add_to(omega2,2.0E0_realk,gmo)
+!
+!    return
+!  end subroutine RPA_fock_partpar
 
 
   !\brief Calculate additional linear and quadratic terms of the RPA residual 
@@ -1015,27 +1152,6 @@ contains
       call rpa_res_communicate_data(gmo,u2,omega2,nvirt,nocc)
     endif StartUpSlaves
 #endif
-   
-
-    !omegaw1 = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
-    !write(*,*) 'omegaw1 tdim=',omegaw1%tdim
-    !write(*,*) 'omegaw1 dims=',omegaw1%dims
-    !write(*,*) 'omegaw1 tile=',omegaw1%ntiles
-
-!#ifdef VAR_MPI
-!    if(master) then
-!      call array4_reorder(omega2,[1,3,2,4])
-!      call array_convert(omega2%val,omegaw1)
-!      !write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
-!      write(*,*) 'omegaw1 tdim=',omegaw1%tdim
-!      !call print_norm(omegaw1,msg)
-!    endif
-!#else
-!#endif
-
-    !call array4_reorder(omega2,[1,3,2,4])
-    !call array_convert(omega2%val,omegaw1)
-!#endif
 
 
     call mo_work_dist(nvirt*nocc,fai,tl)
@@ -1050,8 +1166,6 @@ contains
     !call mem_alloc(omegw,tl*tl)
 
     t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
-    !call array4_reorder(u2,[1,3,2,4])
-    !call copy_array(u2,t_par)
     call array_convert(u2%elm4,t_par)
 
     call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.true.)
@@ -1335,6 +1449,210 @@ contains
     return
 
   end subroutine RPA_multi_add
+ 
+
+  function get_rpa_energy_arrnew(t2,gmo,nocc,nvirt) result(ecorr)
+
+    implicit none
+    type(array), intent(in) :: t2
+    type(array), intent(inout) :: gmo
+    integer, intent(in) :: nocc,nvirt
+    real(realk) :: ecorr,ecorr_d
+    integer :: a,i,b,j
+
+    ecorr = 0.0E0_realk
+    ecorr_d = 0.0E0_realk
+
+    if(t2%itype==DENSE.and.gmo%itype==DENSE)then
+      !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(nocc,&
+      !$OMP nvirt,t2,gmo) REDUCTION(+:ecorr_d)
+      do j=1,nocc
+      do b=1,nvirt
+      do i=1,nocc
+      do a=1,nvirt
+      ecorr_d = ecorr_d + t2%elm4(a,b,i,j)* &
+        (1.0E0_realk*gmo%elm4(i,a,j,b))
+      end do
+      end do
+      end do
+      end do
+      !$OMP END PARALLEL DO
+
+      ecorr = ecorr_d
+
+    else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+
+      ecorr=get_rpa_energy_parallel(t2,gmo)
+
+    endif
+
+
+  end function get_rpa_energy_arrnew
+
+
+  function get_sosex_cont_arrnew(t2,gmo,nocc,nvirt) result(ecorr)
+
+    implicit none
+    type(array), intent(in) :: t2
+    type(array), intent(inout) :: gmo
+    integer, intent(in) :: nocc,nvirt
+    real(realk) :: ecorr,ecorr_d
+    integer :: a,i,b,j
+
+    ecorr = 0.0E0_realk
+    ecorr_d = 0.0E0_realk
+
+    if(t2%itype==DENSE.and.gmo%itype==DENSE)then
+      !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(nocc,&
+      !$OMP nvirt,t2,gmo) REDUCTION(+:ecorr_d)
+      do j=1,nocc
+      do b=1,nvirt
+      do i=1,nocc
+      do a=1,nvirt
+      ecorr_d = ecorr_d + t2%elm4(a,b,i,j)* &
+        (-0.5E0_realk*gmo%elm4(i,b,j,a))
+      end do
+      end do
+      end do
+      end do
+      !$OMP END PARALLEL DO
+
+      ecorr = ecorr_d
+
+    else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+
+      ecorr=get_sosex_cont_parallel(t2,gmo)
+
+    endif
+
+
+  end function get_sosex_cont_arrnew
+
+
+  function get_rpa_energy_parallel(t2,gmo) result(Ec)
+    implicit none
+    !> two electron integrals in the mo-basis
+    type(array), intent(inout) :: gmo
+    !> doubles amplitudes
+    type(array), intent(in) :: t2
+    !> on return Ec contains the correlation energy
+    real(realk) :: E1,E2,Ec
+    real(realk),pointer :: t(:,:,:,:)
+    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+
+#ifdef VAR_MPI
+    !Get the slaves to this routine
+    if(infpar%lg_mynum==infpar%master)then
+      call pdm_array_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
+    endif
+    call memory_allocate_array_dense(gmo)
+    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
+
+    E2=0.0E0_realk
+    Ec=0.0E0_realk
+    do lt=1,t2%nlti
+      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
+      !get offset for global indices
+      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+      do j=1,t2%mode
+        o(j)=(o(j)-1)*t2%tdim(j)
+      enddo
+
+      da = t2%ti(lt)%d(1)
+      db = t2%ti(lt)%d(2)
+      di = t2%ti(lt)%d(3)
+      dj = t2%ti(lt)%d(4)
+      !count over local indices
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t,&
+      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
+      do j=1,dj
+        do i=1,di
+          do b=1,db
+            do a=1,da
+     
+              E2 = E2 + t(a,b,i,j)*&
+              & (1.0E0_realk*  gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2)))
+   
+            enddo 
+          enddo
+        enddo
+      enddo
+      !$OMP END PARALLEL DO
+      nullify(t)
+    enddo
+
+    call arr_deallocate_dense(gmo)
+    
+    call lsmpi_local_reduction(E2,infpar%master)
+
+    Ec = E2
+#else
+    Ec = 0.0E0_realk
+#endif
+  end function get_rpa_energy_parallel
+
+
+  function get_sosex_cont_parallel(t2,gmo) result(Ec)
+    implicit none
+    !> two electron integrals in the mo-basis
+    type(array), intent(inout) :: gmo
+    !> doubles amplitudes
+    type(array), intent(in) :: t2
+    !> on return Ec contains the correlation energy
+    real(realk) :: E1,E2,Ec
+    real(realk),pointer :: t(:,:,:,:)
+    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+
+#ifdef VAR_MPI
+    !Get the slaves to this routine
+    if(infpar%lg_mynum==infpar%master)then
+      call pdm_array_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
+    endif
+    call memory_allocate_array_dense(gmo)
+    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
+
+    E2=0.0E0_realk
+    Ec=0.0E0_realk
+    do lt=1,t2%nlti
+      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
+      !get offset for global indices
+      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+      do j=1,t2%mode
+        o(j)=(o(j)-1)*t2%tdim(j)
+      enddo
+
+      da = t2%ti(lt)%d(1)
+      db = t2%ti(lt)%d(2)
+      di = t2%ti(lt)%d(3)
+      dj = t2%ti(lt)%d(4)
+      !count over local indices
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t,&
+      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
+      do j=1,dj
+        do i=1,di
+          do b=1,db
+            do a=1,da
+     
+              E2 = E2 + t(a,b,i,j)*&
+              & (-0.5E0_realk* gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)) )
+   
+            enddo 
+          enddo
+        enddo
+      enddo
+      !$OMP END PARALLEL DO
+      nullify(t)
+    enddo
+
+    call arr_deallocate_dense(gmo)
+    
+    call lsmpi_local_reduction(E2,infpar%master)
+
+    Ec = E2
+#else
+    Ec = 0.0E0_realk
+#endif
+  end function get_sosex_cont_parallel
 
 
 
@@ -1415,15 +1733,16 @@ subroutine rpa_fock_slave()
   !> number of orbitals:
   type(array) :: t2
   type(array) :: omega2!,t2
-  !type(array4) :: omega2!,t2
-  real(realk),pointer :: gmo(:)
   type(array)  :: pfock,qfock
+  real(realk),pointer :: gmo(:)
+  !real(realk),pointer  :: pfock(:),qfock(:)
   integer :: nbas, nocc, nvirt
   !> how to pack integrals:
   print*, infpar%lg_mynum,'rpa_fock_slave'
   call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nocc,nvirt)
   write(*,*) 'slaves, calling fock_para'
-  call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
+  call RPA_fock_para2(omega2,t2,pfock,qfock,nocc,nvirt)
+  !call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
 
 end subroutine rpa_fock_slave
 #endif

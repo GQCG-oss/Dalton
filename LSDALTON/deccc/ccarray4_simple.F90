@@ -3194,8 +3194,6 @@ contains
     integer :: nEOS,i
     integer, pointer :: EOS_idx(:)
 
-
-
     ! Copy of original array
     ! **********************
 
@@ -3290,26 +3288,29 @@ contains
     ! Extract virtual EOS indices and leave occupied indices untouched
     ! ****************************************************************
 
-    if(DECinfo%array4OnFile) then ! array values stored on file
-       call array4_extract_eos_indices_virt_file(Arr_virtEOS,Arr_orig,&
-            & nvirt,MyFragment%idxu(1:nvirt))
-    else ! array values are kept in memory
-       call array4_extract_eos_indices_virt_memory(Arr_virtEOS,Arr_orig,&
-            & nvirt,MyFragment%idxu(1:nvirt))
-    end if
 
+    IF(.NOT.DECinfo%OnlyOccPart)THEN
+       if(DECinfo%array4OnFile) then ! array values stored on file
+          call array4_extract_eos_indices_virt_file(Arr_virtEOS,Arr_orig,&
+               & nvirt,MyFragment%idxu(1:nvirt))
+       else ! array values are kept in memory
+          call array4_extract_eos_indices_virt_memory(Arr_virtEOS,Arr_orig,&
+               & nvirt,MyFragment%idxu(1:nvirt))
+       end if
+    ENDIF
 
     ! Extract occupied EOS indices and leave virtual indices untouched
     ! ****************************************************************
 
-    if(DECinfo%array4OnFile) then ! array values stored on file
-       call array4_extract_eos_indices_occ_file(Arr_occEOS,Arr_orig,&
-            & nocc, MyFragment%idxo(1:nocc))
-    else ! array values are kept in memory
-       call array4_extract_eos_indices_occ_memory(Arr_occEOS,Arr_orig,&
-            & nocc, MyFragment%idxo(1:nocc))
-    end if
-
+    IF(.NOT.DECinfo%OnlyVIRTPart)THEN
+       if(DECinfo%array4OnFile) then ! array values stored on file
+          call array4_extract_eos_indices_occ_file(Arr_occEOS,Arr_orig,&
+               & nocc, MyFragment%idxo(1:nocc))
+       else ! array values are kept in memory
+          call array4_extract_eos_indices_occ_memory(Arr_occEOS,Arr_orig,&
+               & nocc, MyFragment%idxo(1:nocc))
+       end if
+    ENDIF
 
   end subroutine array4_extract_eos_indices_both_schemes
 

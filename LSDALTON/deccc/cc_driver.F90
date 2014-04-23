@@ -99,9 +99,6 @@ contains
 !#ifdef VAR_MPI
 !   if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
 !#endif
-!   ! temporary default for moccsd:
-!   if (decinfo%moccsd) local = .true.
-!
 !
 !
 !   if(DECinfo%CCDEBUG)then
@@ -307,8 +304,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
 #endif
-    ! temporary default for moccsd:
-    if (decinfo%moccsd) local = .true.
 
    ! is this a frozen core calculation or not?
    if (DECinfo%frozencore) then
@@ -543,7 +538,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,*)
    endif
 
-   if( ccmodel /= MODEL_MP2 .or. ccmodel /= MODEL_RPA ) then
+   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
       ! free amplitude arrays
       call array2_free(t1_final)
    endif
@@ -591,8 +586,6 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
 #endif
-   ! temporary default for moccsd:
-   if (DECinfo%MOCCSD) local = .true.
 
    ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
    ! from previous fragment calculations to describe long-range
@@ -1749,7 +1742,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_free(tmp)
    end if
 
-   if( ccmodel /= MODEL_MP2 .or. ccmodel == MODEL_RPA )then
+   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA )then
       call array_change_atype_to_d( ppfock_prec )
       call array_change_atype_to_d( qqfock_prec )
    endif
@@ -1778,7 +1771,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc(omega2,DECinfo%ccMaxIter)
 
    ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-   if(CCmodel /= MODEL_MP2 .or. ccmodel /= MODEL_RPA) then
+   if(CCmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA) then
       xo = array_minit( occ_dims, 2, local=local, atype='LDAR' )
       yo = array_minit( occ_dims, 2, local=local, atype='LDAR' )
       xv = array_minit( virt_dims,2, local=local, atype='LDAR' )
@@ -1809,7 +1802,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    if(DECinfo%use_singles)then
 
       t1(1) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
-      t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
+      t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
 
       call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
          & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
@@ -1817,17 +1810,17 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    else
 
       !if MP2, just zero the array, and keep it in PDM all the time
-      if(ccmodel == MODEL_MP2 .or. ccmodel == MODEL_RPA)then
+      if(ccmodel == MODEL_MP2 )then
          atype = 'TDAR'
          t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
          old_iter = 0
-      else
-         atype = 'TDPD'
+       elseif(ccmodel == MODEL_RPA) then
+         atype = 'TDAR'
          t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
-
+         call array_zero(t2(1))
+      else
          call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
             & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
-
       endif
    endif
    restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
@@ -1941,6 +1934,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! get singles
          T1Related : if(DECinfo%use_singles) then
 
+            ! synchronize singles data on slaves
+            call array_sync_replicated(t1(iter))
+
             ! get the T1 transformation matrices
             call array_cp_data(Cv2,yv)
             call array_cp_data(Cv,xv)
@@ -1968,6 +1964,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) !CC2 or  CCSD or CCSD(T)
 
+
             call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2(iter),t2(iter),&
                & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
                & MyLsItem,omega1(iter),t1(iter),pgmo_diag,pgmo_up,MOinfo,&
@@ -1975,7 +1972,20 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          case( MODEL_RPA )
            
+            !msg = 'Norm of gmo'
+            !call print_norm(iajb,msg)
+
+            !msg = 'Norm of t2'
+            !call print_norm(t2(iter),msg)
+
+            !msg = 'Norm of omega2'
+            !call print_norm(omega2(iter),msg)
+
            call RPA_residual_par(Omega2(iter),t2(iter),iajb%elm1,ppfock_prec,qqfock_prec,no,nv)
+
+            !msg = 'Norm of omega2 after computations'
+            !call print_norm(omega2(iter),msg)
+
             !call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
          case default
             call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
@@ -2128,8 +2138,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
 
          case(MODEL_RPA)
+           !ccenergy = get_RPA_energy_arrnew(t2(iter),iajb,no,nv)
+           !if(DECinfo%SOS) then
+           !  ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter),iajb,no,nv)
+           !endif
 
-            call lsquit("ERROR(ccsolver_par): RPA energy not yet implemented",-1)
 
          case default
 
@@ -2152,7 +2165,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call array_free(omega1_prec)
                end if
                omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec,local)
-               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
+               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_prec)
                call array_free(omega2_prec)
@@ -2162,21 +2175,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call array_cp_data(t1_opt,t1(iter+1))
                   call array_add(t1(iter+1),1.0E0_realk,omega1_opt)
                endif
-               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
+               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
             end if
-
             !if .not.DECinfo%CCSDnosaferun option is set, make sure data is in dense
             if(saferun)then
 
                if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, twall = time_write ) 
 
                if(DECinfo%use_singles)then
-                  call save_current_guess(iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,safefilet22,&
-                     &t1(iter+1),safefilet11,safefilet12)
+                  call save_current_guess(local,iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,&
+                     &safefilet22,t1(iter+1),safefilet11,safefilet12)
                else
-                  call save_current_guess(iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,safefilet22)
+                  call save_current_guess(local,iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,&
+                     &safefilet22)
                endif
 
                if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_write, &
@@ -2235,11 +2248,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
-         t2_final = array4_init([nv,no,nv,no])
-         if(.not.restart_from_converged)then
-            call array_cp_tiled2dense(t2(last_iter),.true.)
-         endif
-         call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
+         ! Save two-electron integrals in the order (virt,occ,virt,occ)
+         t2_final = array4_init([nv,nv,no,no])
+         call array_convert(t2(last_iter),t2_final%val)
+         call array4_reorder(t2_final,[1,3,2,4])
+         !if(.not.restart_from_converged)then
+         !   call array_cp_tiled2dense(t2(last_iter),.true.)
+         !endif
+         !call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
 
          if(DECinfo%use_singles) then
             if(.not.longrange_singles) then ! intitialize and copy, else just copy
@@ -2251,15 +2267,15 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
          if(saferun.and..not.restart_from_converged)then
             if(DECinfo%use_singles)then
-               call save_current_guess(i+old_iter,two_norm_total,ccenergy,&
+               call save_current_guess(local,i+old_iter,two_norm_total,ccenergy,&
                   &t2(last_iter),safefilet2f,safefilet2f,t1(last_iter),safefilet1f,safefilet1f)
             else
-               call save_current_guess(i+old_iter,two_norm_total,ccenergy,&
+               call save_current_guess(local,i+old_iter,two_norm_total,ccenergy,&
                   &t2(last_iter),safefilet2f,safefilet2f)
             endif
          endif
 
-         call array_change_itype_to_td(t2(last_iter),local)
+         !call array_change_itype_to_td(t2(last_iter),local)
       end if
 
       ! Free doubles residuals
@@ -2275,6 +2291,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end if
 
    end do
+   
+   if(.not.DECinfo%use_singles)then
+     t1_final = array2_init([nv,no])
+   endif
+
+   call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
 
    ! Write finalization message
    call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter+old_iter,&
@@ -2285,6 +2307,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call array_convert(iajb,VOVO%val)
    call array_free(iajb)
    call array4_reorder(VOVO,[2,1,4,3])
+   call print_norm(VOVO%val,i8*no*no*nv*nv)
 
    ! deallocate stuff
    if(DECinfo%use_singles) then
@@ -2316,9 +2339,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_free(qpfock)
    end if
 
-   if(ccmodel /= MODEL_MP2)then
-      call array_free(ppfock)
-      call array_free(qqfock)
+   
+   if(ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA)then
+     call array_free(ppfock)
+     call array_free(qqfock)
    endif
 
    call array_free(Co)
@@ -2367,7 +2391,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 #endif
 
    if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_finalize, &
-      &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output, twall = ttotstart_wall )
+      &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output )
 
 end subroutine ccsolver_par
 
@@ -2595,13 +2619,17 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
    endif
 
    if(readfile2)then
+      ! allocate dense part of t2 array:
+      call memory_allocate_array_dense(t2)
       READ(fu_t2) t2%elm1
       READ(fu_t2) norm
       READ(fu_t2) energy
       CLOSE(fu_t2)
+      ! mv dense part to tiles:
+      call array_mv_dense2tiled(t2,.false.)
       restart = .true.
    else
-     ! call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
+      !call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
       !call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
       call array_zero(t2)
       !call array_zero(iajb)
@@ -2612,17 +2640,18 @@ end subroutine get_guess_vectors
 !iteration
 !> \author Patrick Ettenhuber
 !> \date Dezember 2012
-subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
+subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefilet22,&
       &t1,safefilet11,safefilet12)
    implicit none
+   logical, intent(in) :: local
    !> iteration number
    integer,intent(in) :: iter
    !> write the corresponding residual norm into the file
-   real(realk), intent(in) :: res_norm,energy
+   real(realk), intent(in)    :: res_norm,energy
    !> doubles guess amplitudes for the next iteration
-   type(array), intent(in) :: t2
+   type(array), intent(inout) :: t2
    !> alternating filenames for the doubles amplitudes
-   character(3),intent(in) :: safefilet21,safefilet22
+   character(3),intent(in)    :: safefilet21,safefilet22
    !> singles guess amplitudes for the next iteration
    type(array), intent(in), optional :: t1
    !> alternating filenames for the singles amplitudes
@@ -2639,6 +2668,9 @@ subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
    character(11) :: fullname11, fullname12, fullname21, fullname22
    character(11) :: fullname11D, fullname12D, fullname21D, fullname22D
 #endif
+   ! cp doubles from tile to dense part: (only if t2%itype/=DENSE)
+   if (.not.local) call array_cp_tiled2dense(t2,.false.)
+
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12)
    fu_t11=111
    fu_t12=112
@@ -2746,6 +2778,8 @@ subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
       call lsquit("ERROR(ccdriver_par):impossible iteration&
          &number)",DECinfo%output)
    endif
+   ! deallocate dense part of doubles:
+   if (.not.local) call memory_deallocate_array_dense(t2)
 end subroutine save_current_guess
 
 !> Purpose: Wrapper for the RPA model: get MO integrals (non-T1 transformed)
@@ -2768,7 +2802,6 @@ subroutine wrapper_to_get_real_t1_free_gmo(nb,no,nv,Co,Cv,govov,ccmodel,mylsitem
   type(MObatchInfo) :: MOinfo
   logical :: mo_ccsd  
   
-  write(*,*) 'Johannes calls get_t1'
   call get_t1_free_gmo(mo_ccsd,mylsitem,Co,Cv,govov,pgmo_diag,pgmo_up, &
     & nb,no,nv,CCmodel,MOinfo)
  

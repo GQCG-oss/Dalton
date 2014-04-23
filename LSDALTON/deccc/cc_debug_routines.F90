@@ -11,7 +11,8 @@ module cc_debug_routines_module
    use dec_typedef_module
    use tensor_type_def_module
    use screen_mod
- 
+   use II_XC_interfaceModule
+   use IntegralInterfaceMOD 
 
    ! DEC DEPENDENCIES (within deccc directory)   
    ! *****************************************
@@ -408,7 +409,7 @@ module cc_debug_routines_module
      call mem_alloc(omega2,DECinfo%ccMaxIter)
 
      ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-     if(decinfo%ccmodel /= MODEL_MP2 .or. decinfo%ccmodel /= MODEL_RPA ) then
+     if(decinfo%ccmodel /= MODEL_MP2 .and. decinfo%ccmodel /= MODEL_RPA ) then
         xocc = array2_init(occ_dims)
         yocc = array2_init(occ_dims)
         xvirt = array2_init(virt_dims)
@@ -650,6 +651,8 @@ module cc_debug_routines_module
 !#ifdef VAR_MPI
 !             call RPA_residualpar(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
 !#else
+             msg =' Norm of gmo'
+             call print_norm(govov,msg)
              call RPA_residualdeb(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
 !#endif
            !call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
@@ -2810,6 +2813,8 @@ module cc_debug_routines_module
 
     myload = 0
 
+    fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
+
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
@@ -2946,6 +2951,10 @@ module cc_debug_routines_module
     iFock = 0.0E0_realk
     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
     & Dens,.false.,iFock)
+    IF(DECinfo%DFTreference)THEN
+       call II_get_xc_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
+            & Dens,iFock)
+    ENDIF
     !use dens as temporay array 
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
          & Dens,nb,nb,AORdefault,AORdefault)

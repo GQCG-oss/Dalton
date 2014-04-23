@@ -385,6 +385,8 @@ C
      &  '(QM/MM, PE-CC)',
      *'Arnfinn H. Steindal,','UiT The Arctic U. of Norway,',
      &  'Norway','(parallel QM/MM)',
+     *'Casper Steinmann,','Univ. of Southern Denmark,','Denmark',
+     &  '(QFIT)',
      *'K. O. Sylvester-Hvid,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF)',
      *'Peter R. Taylor,','VLSCI/Univ. of Melbourne,','Australia',

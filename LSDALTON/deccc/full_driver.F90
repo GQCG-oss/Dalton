@@ -1680,8 +1680,6 @@ contains
 #ifdef VAR_MPI
     local = .false.
 #endif
-    ! temporary default for moccsd:
-    if (decinfo%moccsd) local = .true.
 
 
     ! Quick fix to always use CCSD model

@@ -16,6 +16,7 @@ module ccintegrals
   use screen_mod
   use Integralparameters
   use integralinterfaceMOD
+  use II_XC_interfaceModule
 
   ! MO-CCSD module:
   use tensor_interface_module
@@ -493,7 +494,7 @@ contains
     type(lsitem), intent(inout) :: MyLsItem
     !> Is U symmetric (true) or not (false)?
     logical, intent(in) :: symmetric
-
+    real(realk) :: Edft(1)
     ! Sanity check
     if(U%nrow /= U%ncol) then
        call lsquit('dec_fock_transformation:&
@@ -503,6 +504,10 @@ contains
     ! Carry out Fock transformation on U
     call II_get_Fock_mat(DECinfo%output, DECinfo%output, &
          & MyLsitem%setting,U,symmetric,FockU,1,.FALSE.)
+    IF(DECinfo%DFTreference)THEN
+       call II_get_xc_fock_mat(DECinfo%output,DECinfo%output,&
+            & MyLsItem%setting,U%nrow,U,FockU,Edft,1)
+    ENDIF
 
   end subroutine dec_fock_transformation
 
@@ -984,7 +989,6 @@ contains
 
 
     if(ccmodel == MODEL_RPA) then
-        write(*,*) 'Johannes second RPA '
       ! working arrays
       tmp_size = max(nb*MaxActualDimAlpha*MaxActualDimGamma, MaxActualDimGamma*no*nv)
       tmp_size = int(i8*tmp_size*no, kind=long)
@@ -1012,7 +1016,6 @@ contains
       tmp_size = int(i8*ntot*ntot*tmp_size, kind=long)
       call mem_alloc(tmp2, tmp_size)
     endif
-        write(*,*) 'Johannes after second RPA '
 
 
     ! Sanity checks for matrix sizes which need to be filled:
@@ -1043,7 +1046,6 @@ contains
     ! *******************************************************
 
     
-        write(*,*) 'Johannes before dist RPA '
 #ifdef VAR_MPI
       ! Calculate the batches for a good load balance
       call mem_alloc(tasks,nbatchesAlpha*nbatchesGamma)
@@ -1054,7 +1056,6 @@ contains
          &batchdimGamma,myload,nnod,myrank,4,no,nv,nb,batch2orbAlpha,&
          &batch2orbGamma)
 #endif
-        write(*,*) 'Johannes after dist RPA '
     myload = 0
 
     fullRHS = (nbatchesGamma.eq.1).and.(nbatchesAlpha.eq.1)
@@ -1063,7 +1064,6 @@ contains
     ! Begin the loop over gamma batches
     !**********************************
 
-        write(*,*) 'Johannes sum gammaB '
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
 
@@ -1106,11 +1106,10 @@ contains
        call lsmpi_poke()
 
        if (ccmodel == MODEL_RPA) then
+         
 
-        write(*,*) 'Johannes sum RPA'
          call gao_to_govov(govov%elm1,gao,Co,Cv,nb,no,nv,AlphaStart,dimAlpha, &
               & GammaStart,dimGamma,tmp1,tmp2)
-        write(*,*) 'Johannes transfomre gao RPA'
 
        else
          idb = 0
@@ -1315,9 +1314,6 @@ contains
                                & back to standard algorithm.'
       end if
       return
-    else 
-      write(DECinfo%output,'(a,F12.5,a)') ' Available memory:',MemFree,' GB'
-      write(DECinfo%output,'(a,F12.5,a)') ' Required memory :',MemNeed,' GB'
     end if
     Nbatch = (ntot-1)/dimMO + 1
 
@@ -2058,7 +2054,7 @@ contains
      integer :: dim1,dim2,dim3,MinAObatch
      integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
      integer :: iorb,nthreads,magic
-     integer :: idx,nb,n1,n2,n3,n4,fa,fg,la,lg,i,k,myload,nba,nbg
+     integer :: idx,nb,n1,n2,n3,n4,fa,fg,la,lg,i,k,myload,nba,nbg,biA,biG,bsA,bsG
      type(batchtoorb), pointer :: batch2orbAlpha(:)
      type(batchtoorb), pointer :: batch2orbGamma(:)
      Character(80)        :: FilenameCS,FilenamePS
@@ -2076,9 +2072,10 @@ contains
      integer(kind=long) :: maxsize
      logical :: master
      integer(kind=ls_mpik) :: me, nnod
-     integer, pointer :: jobdist(:,:)
+     integer, pointer :: jobdist(:)
      real(realk), pointer :: work(:)
      integer(kind=long) :: w1size, w2size
+     real(realk), parameter :: fraction_of = 0.8E0_realk
 
      call time_start_phase( PHASE_WORK )
 
@@ -2142,7 +2139,7 @@ contains
               maxsize=maxsize + max(n1*nb*k*i,n1*n2*n3*i)
               if(collective) maxsize = maxsize + n1*n2*n3*n4
 
-              if(float(maxsize*8)/(1024.0**3) > 0.8E0_realk*MemFree )then
+              if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
                  if(nba <= MinAObatch .and. nbg<= MinAObatch .and. collective)then
                     collective = .false.
                  else
@@ -2174,14 +2171,14 @@ contains
            endif
         endif
 
-        !maxsize=max(max(nb**2*nba*nbg,n1*n2*nba*nbg),n1*n2*n3*n4)
-        !maxsize=maxsize + max(n1*nb*nba*nbg,n1*n2*n3*nbg)
-        !if(collective) maxsize = maxsize + n1*n2*n3*n4
+        maxsize=max(max(nb**2*nba*nbg,n1*n2*nba*nbg),n1*n2*n3*n4)
+        maxsize=maxsize + max(n1*nb*nba*nbg,n1*n2*n3*nbg)
+        if(collective) maxsize = maxsize + n1*n2*n3*n4
+
+        if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree)call lsquit("ERROR(get_mo_integral_par)not enough memory",-1)
 
         MaxAllowedDimGamma = nbg
         MaxAllowedDimAlpha = nba
-
-        if(MaxAllowedDimAlpha < MinAObatch)call lsquit("ERROR(get_mo_integral_par)not enough memory",-1)
 
      endif
 
@@ -2287,7 +2284,7 @@ contains
            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
      ENDIF
 
-     call mem_alloc(jobdist,nbatchesAlpha,nbatchesGamma)
+     call mem_alloc(jobdist,nbatchesAlpha*nbatchesGamma)
      !JOB distribution
 #ifdef VAR_MPI
      call distribute_mpi_jobs(jobdist,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
@@ -2296,41 +2293,44 @@ contains
      jobdist = 0
 #endif
 
+     !print *,me,"has",batchindexGamma,batchindexAlpha
+     !call lsmpi_barrier(infpar%lg_comm)
 
      myload = 0
+     fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
 
      BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
-        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-        GammaEnd   = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
-        !short hand notation
-        fg         = GammaStart
-        lg         = dimGamma
 
+        lg  = batchdimGamma(gammaB)                         ! Dimension of gamma batch
+        fg  = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+        biG = batchindexGamma(gammaB)
+        bsG = batchsizeGamma(gammaB)
 
         BatchAlpha: do alphaB = 1, nbatchesAlpha
 
-           if( me /= jobdist(alphaB,gammaB) ) cycle BatchAlpha
+           la  = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
+           fa  = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+           biA = batchindexAlpha(alphaB)
+           bsA = batchsizeAlpha(alphaB)
+
+           !print '(I3,"have",8I7)',me,lg,fg,biG,bsG,la,fa,biA,bsA
+           !call lsmpi_barrier(infpar%lg_comm)
+
+           if( me /= jobdist(gammaB + (alphaB-1) *nbatchesGamma) ) cycle BatchAlpha
+
            if(DECinfo%PL>2)write (*, '("Rank",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
               &me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
-
-           dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
-           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-           AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)          ! Last index in alpha batch
-
-           !short hand notation
-           fa         = AlphaStart
-           la         = dimAlpha
            myload     = myload + la * lg
 
            IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
            IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
-           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,batchindexAlpha(alphaB),&
-              &batchindexGamma(gammaB),batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC)
+           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,biA,&
+              &biG,bsA,bsG,nb,nb,la,lg,fullRHS,INTSPEC)
 
 
+           !something more sophisticated can be implemented here
            call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
            call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
            call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
@@ -2340,7 +2340,6 @@ contains
            else
               call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
-              !something more sophisticated can be implemented here
               call time_start_phase( PHASE_COMM )
               call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize)
               call time_start_phase( PHASE_WORK )
