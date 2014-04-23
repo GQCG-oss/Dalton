@@ -404,47 +404,6 @@ contains
        end do
     endif
   
-    if(DECinfo%F12DEBUG) then    
-
-    endif
-    
-    print *, '----------------------------------------'
-    print *, '            R matrix - Terms            '
-    print *, '----------------------------------------'
-    do i=1, nocc
-       do j=1, nocc      
-          do a=1, nvirt
-             do c=1, ncabs     
-                print *,'i,j,a,c Giajc', i,j,a,c, Giajc(i,a,j,c)
-             end do
-          end do
-       end do
-    end do
-    print *, '----------------------------------------'
-    print *, '            T matrix - Terms            '
-    print *, '----------------------------------------'
-    do i=1, nocc
-       do j=1, nocc      
-          do a=1, nvirt
-             do b=1, nvirt     
-                print *,'i,j,a,b Taibj', i,j,a,b, Taibj(a,i,b,j)
-             end do
-          end do
-       end do
-    end do
-    print *, '----------------------------------------'
-    print *, '            C matrix - Terms            '
-    print *, '----------------------------------------'
-    do i=1, nocc
-       do j=1, nocc      
-          do a=1, nvirt
-             do b=1, nvirt      
-                print *,'i,j,a,b Cijab', i,j,a,b, Ciajb(i,a,j,b)
-             end do
-          end do
-       end do
-    end do
-
     call mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
     call mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
 

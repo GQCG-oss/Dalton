@@ -73,7 +73,7 @@ contains
     type(array) :: cbai ! integrals (AI|BC) in the order (C,B,A,I)
 #ifdef VAR_MPI
     integer :: nodtotal
-    real(realk) :: jaik_norm, abij_norm, cbai_norm
+    real(realk) :: jaik_norm, abij_norm, cbai_norm, ccsd_doubles_norm
     real(realk) :: ccsdpt_doubles_norm, ccsdpt_doubles_2_norm, ccsdpt_singles_norm
 #endif
     !> orbital energies
@@ -145,6 +145,22 @@ contains
 
     call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
 
+#ifdef VAR_MPI
+
+    if (infpar%lg_mynum .eq. infpar%master) then
+
+       print *,'proc no. ',infpar%lg_mynum,'integrals after get_CCSDpT_integrals'
+       call array4_print_norm_nrm(jaik,jaik_norm)
+       call array4_print_norm_nrm(abij,abij_norm)
+       call array4_print_norm_nrm(ccsd_doubles,ccsd_doubles_norm)
+       print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
+       print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
+       print *,'proc no. ',infpar%lg_mynum,'ccsd_doubles_norm = ',ccsd_doubles_norm
+
+    end if
+
+#endif
+
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
     call array2_free(C_can_virt)
@@ -189,9 +205,6 @@ contains
     ! initially, reorder ccsd_doubles
     call array4_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
 
-    ! if cbai is tiled distributed, then put the three tiles into
-    ! an array structure, cbai_pdm. here, initialize the array structure.
-
     !**********************************************************
     ! here: the main ijk-loop: this is where the magic happens!
     !**********************************************************
@@ -208,12 +221,12 @@ contains
 
 #else
 
-!    ! the serial version of the ijk-loop
-!    call ijk_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
-!                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
-    ! the serial version of the abc-loop
-    call abc_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
+    ! the serial version of the ijk-loop
+    call ijk_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
                     & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
+!    ! the serial version of the abc-loop
+!    call abc_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
+!                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
 
 #endif
 
@@ -391,6 +404,15 @@ contains
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
+#ifdef VAR_MPI
+    do ij_count=1,infpar%lg_nodtot
+       if( ij_count - 1 == infpar%lg_mynum)then
+          print *,infpar%lg_mynum," jobs 2 ",jobs
+       endif
+       call lsmpi_barrier(infpar%lg_comm)
+    enddo
+#endif
+
     ! release ij_array
     call mem_dealloc(ij_array)
 
@@ -493,7 +515,7 @@ contains
 
                   ! get the j'th v^3 tile only
                   call time_start_phase(PHASE_COMM)
-                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
+                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
                   call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
@@ -563,7 +585,7 @@ contains
 
                      ! get the i'th v^3 tile only
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
                      call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
@@ -602,7 +624,7 @@ contains
 
                      ! get the i'th v^3 tile
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
                      call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
@@ -638,8 +660,8 @@ contains
 
                      ! get the i'th and j'th v^3 tiles
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
-                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
+                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
+                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
                      call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
@@ -693,7 +715,7 @@ contains
 
                         ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
+                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
                         call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
@@ -742,7 +764,7 @@ contains
 
                         ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
+                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
                         call time_start_phase(PHASE_WORK)
 
 ! move integrals to the device
@@ -5953,7 +5975,7 @@ contains
 
     ! Determine optimal batchsizes and corresponding sizes of arrays
     call get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
-         & size1,size2,size3,.true.)
+         & size1,size2,size3,.false.)
 
 
     ! ************************************************
@@ -6064,6 +6086,12 @@ contains
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
     &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
 
+    do alphaB=1,infpar%lg_nodtot
+       if( alphaB - 1 == infpar%lg_mynum)then
+          print *,infpar%lg_mynum," distribution ",distribution
+       endif
+       call lsmpi_barrier(infpar%lg_comm)
+    enddo
 #endif
 
     ! Start looping over gamma and alpha batches and calculate integrals
@@ -6183,7 +6211,7 @@ contains
 
              call time_start_phase(PHASE_COMM)
              call arr_lock_win(CBAI,i,'s',assert=mode)
-             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.)
+             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
              call arr_unlock_win(CBAI,i)
              call time_start_phase(PHASE_WORK)
 
@@ -6226,6 +6254,12 @@ contains
     ! dealloc distribution array
     call mem_dealloc(distribution)
 
+    
+    if(infpar%lg_mynum  == 0)then
+       call print_norm(JAIB)
+       call print_norm(JAIK)
+    endif
+    call print_norm(CBAI)
 #endif
 
     ! free stuff
@@ -6344,7 +6378,9 @@ contains
     AlphaDim=MinAObatch
     GammaDim=MinAObatch
   
-  
+    GammaOpt = 0
+    AlphaOpt = 0
+ 
     ! Gamma batch size
     ! =================================
     GammaLoop: do gamma = MaxAObatch,MinAOBatch,-1
@@ -6355,22 +6391,54 @@ contains
          if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
             if(adapt_to_nnodes)then
                if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
-                  GammaOpt = gamma 
+#ifdef VAR_MPI
+                  print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 1'
+#else
+                  print *,'we hit GammaOpt 1'
+#endif
+                  GammaOpt = gamma
                   exit GammaLoop
                endif
             else
+#ifdef VAR_MPI
+               print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 2'
+#else
+               print *,'we hit GammaOpt 2'
+#endif
                GammaOpt = gamma
                exit GammaLoop
             endif
          end if
-  
+
     end do GammaLoop
-  
+
+    if (GammaOpt .eq. 0) then
+
+#ifdef VAR_MPI
+       print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt NEW'
+#else
+       print *,'we hit GammaOpt NEW'
+#endif
+       GammaOpt = GammaDim
+
+    endif 
+
+#ifdef VAR_MPI
+    print *,'for proc no. = ',infpar%lg_mynum,', GammaOpt at the end of the GammaLoop is = ',GammaOpt
+#else
+    print *,'GammaOpt at the end of the GammaLoop is = ',GammaOpt
+#endif
+
     ! If gamma batch size was set manually we use that value instead
     if(DECinfo%ccsdGbatch/=0) then
        write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
+#ifdef VAR_MPI
+       print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 3'
+#else
+       print *,'we hit GammaOpt 3'
+#endif
        GammaOpt=DECinfo%ccsdGbatch
-    end if
+    end if 
   
     ! The optimal gamma batch size is GammaOpt.
     ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
@@ -6390,21 +6458,52 @@ contains
           if( adapt_to_nnodes  )then
 
              if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
-                AlphaOpt = alpha 
+#ifdef VAR_MPI
+                print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 1'
+#else
+                print *,'we hit AlphaOpt 1'
+#endif
+                AlphaOpt = alpha
                 exit AlphaLoop
              endif
-
           else
+#ifdef VAR_MPI
+             print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 2'
+#else
+             print *,'we hit AlphaOpt 2'
+#endif
              AlphaOpt = alpha
              exit AlphaLoop
           endif
        end if
 
     end do AlphaLoop
+
+    if (AlphaOpt .eq. 0) then
+
+#ifdef VAR_MPI
+       print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt NEW'
+#else
+       print *,'we hit AlphaOpt NEW'
+#endif
+       AlphaOpt = AlphaDim
+
+    endif
   
+#ifdef VAR_MPI
+    print *,'for proc no. = ',infpar%lg_mynum,', AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
+#else
+    print *,'AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
+#endif
+
     ! If alpha batch size was set manually we use that value instead
     if(DECinfo%ccsdAbatch/=0) then
        write(DECinfo%output,*) 'Alpha batch size was set manually, use that value instead!'
+#ifdef VAR_MPI
+       print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 3'
+#else
+       print *,'we hit AlphaOpt 3'
+#endif
        AlphaOpt=DECinfo%ccsdAbatch
     end if
   
@@ -6412,8 +6511,14 @@ contains
     ! We now find the maximum possible alpha batch size smaller than or equal to AlphaOpt
     ! and store this number in alphadim.
     call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
-  
-  
+   
+#ifdef VAR_MPI
+       print *,'for proc no. = ',infpar%lg_mynum,'final GammaOpt = ',GammaOpt,&
+             &', and AlphaOpt = ',AlphaOpt
+#else
+       print *,'final GammaOpt = ',GammaOpt,', and AlphaOpt = ',AlphaOpt
+#endif
+ 
     ! Print out and sanity check
     ! ==========================
  
