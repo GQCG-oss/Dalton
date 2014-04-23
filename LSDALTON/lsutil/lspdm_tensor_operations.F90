@@ -44,7 +44,7 @@ module lspdm_tensor_operations_module
 
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
   abstract interface
-    subroutine put_acc_tile(arr,globtilenr,fort,nelms,lock_set)
+    subroutine put_acc_tile(arr,globtilenr,fort,nelms,lock_set,flush_it)
       use precision
       import
       implicit none
@@ -56,7 +56,7 @@ module lspdm_tensor_operations_module
       integer(kind=4),intent(in) :: nelms
 #endif
       real(realk),intent(inout) :: fort(*)
-      logical, optional, intent(in) :: lock_set
+      logical, optional, intent(in) :: lock_set,flush_it
     end subroutine put_acc_tile
     subroutine put_acc_el(buf,pos,dest,win)
       use precision
@@ -747,7 +747,7 @@ module lspdm_tensor_operations_module
     !> doubles amplitudes
     type(array), intent(in) :: t2
     !> on return Ec contains the correlation energy
-    real(realk) :: E1,E2,Ec
+    real(realk) :: E2,Ec
     real(realk),pointer :: t(:,:,:,:)
     integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
 
@@ -775,7 +775,7 @@ module lspdm_tensor_operations_module
       dj = t2%ti(lt)%d(4)
       !count over local indices
       !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t,&
-      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
+      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E2) COLLAPSE(3)
       do j=1,dj
         do i=1,di
           do b=1,db
