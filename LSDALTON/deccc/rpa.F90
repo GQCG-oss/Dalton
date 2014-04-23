@@ -494,17 +494,14 @@ contains
     if(local) then
 
 
-      write(*,*) 'before first dgemm'
       !calculate first part of doubles E term and its permutation
       ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
       call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,pfock%elm1,no,0.0E0_realk,w_o2v2,v2o)
       !call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm4,v2o,pfock%elm4,no,1.0E0_realk,omega2%elm4,v2o)
-      write(*,*) 'after first dgemm'
 
       !calculate second part of doubles E term
       ! F [a c] * t [c b i j] =+ Omega [a b i j]
       call dgemm('n','n',nv,o2v,nv,1.0E0_realk,qfock%elm1,nv,t2%elm1,nv,1.0E0_realk,w_o2v2,nv)
-      write(*,*) 'after second dgemm'
 
       call mem_alloc(w3,no2*nv2)
 
@@ -1014,6 +1011,7 @@ contains
 
     !call RPA_fock_para2(omega2,Sckdl,pfock,qfock,noc,nvir)
     call RPA_fock_para(omega2,Sckdl,pfock,qfock,noc,nvir)
+    !call RPA_fock_para(omega2,t2,pfock,qfock,noc,nvir)
     msg = 'Norm of fockpart'
     call print_norm(omega2,msg)
 
@@ -1741,7 +1739,7 @@ subroutine rpa_fock_slave()
   print*, infpar%lg_mynum,'rpa_fock_slave'
   call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nocc,nvirt)
   write(*,*) 'slaves, calling fock_para'
-  call RPA_fock_para2(omega2,t2,pfock,qfock,nocc,nvirt)
+  call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
   !call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
 
 end subroutine rpa_fock_slave
