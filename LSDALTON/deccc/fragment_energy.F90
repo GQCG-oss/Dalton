@@ -295,7 +295,7 @@ contains
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
-    case(MODEL_CC2,MODEL_RPA,MODEL_CCSD,MODEL_CCSDpT) ! higher order CC (currently CC2 or CCSD)
+    case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (currently CC2 or CCSD)
 
        call dec_fragment_time_init(times_ccsd)
 
@@ -362,6 +362,7 @@ contains
 
        call array2_free(t1)
        call array4_free(t2)
+
 
     case default
       call lsquit("ERROR(atomic_fragment_energy_and_prop):MODEL not implemented",-1)
@@ -2127,18 +2128,18 @@ contains
 
      ! Start fragment optimization by calculating initial fragment 
      IF(DECinfo%onlyoccpart) then
-        !All Occupied orbitals assigned to atoms within 1.5 Angstrom of central atom are included
-        init_Occradius = 1.5_realk/bohr_to_angstrom
+        !All Occupied orbitals assigned to atoms within 1.0 Angstrom of central atom are included
+        init_Occradius = 0.5_realk/bohr_to_angstrom
      ELSE
-        !All Occupied orbitals assigned to atoms within 2.5 Angstrom of central atom are included
-        init_Occradius = 2.5_realk/bohr_to_angstrom
+        !All Occupied orbitals assigned to atoms within 3.0 Angstrom of central atom are included
+        init_Occradius = 3.0_realk/bohr_to_angstrom
      ENDIF
      IF(DECinfo%onlyvirtpart) then
-        !All Virtual orbitals assigned to atoms within 1.5 Angstrom of central atom are included
-        init_Virtradius = 1.5_realk/bohr_to_angstrom
+        !All Virtual orbitals assigned to atoms within 1.0 Angstrom of central atom are included
+        init_Virtradius = 0.5_realk/bohr_to_angstrom
      ELSE
-        !All Virtual orbitals assigned to atoms within 2.5 Angstrom of central atom are included
-        init_Virtradius = 2.5_realk/bohr_to_angstrom
+        !All Virtual orbitals assigned to atoms within 3.0 Angstrom of central atom are included
+        init_Virtradius = 3.0_realk/bohr_to_angstrom
      ENDIF
      call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
         & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
@@ -2152,147 +2153,30 @@ contains
           & nunocc_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
 
      StepsizeLoop2 = DECinfo%FragmentExpansionSize
-     IF(DECinfo%onlyoccpart) then               
-        NF = 1
-        IF(FragmentExpansionRI)NF=2!RI and standard expansion
-        DO I=1,NF
-           IF(I.EQ.2)THEN
-              !switch from RI to standard:
-              !New Reference without RI
-              FragmentExpansionRI  = .FALSE.              
-              call atomic_fragment_free(AtomicFragment)
-              call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-                   & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-                   & AtomicFragment,FragmentExpansionRI)
-              !Reduce the step size as the sizes have already been converged 
-              !at the RI - MP2 level 
-              StepsizeLoop2 = 1
-           ENDIF
-           OccUnchanged = .FALSE.
-           VirtUnchanged = .FALSE.
-           OccPartExpansionLoop: DO IT=1,100
-              ExpandVirt=.TRUE.!Start by expanding Virtual Space untill convergence
-              ExpandOcc=.FALSE.         
-              VirtOld = Virt_atoms
-              call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
-                   & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
-                   & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
-                   & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
-                   & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-                   & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
-                   & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
-              VirtUnchanged = COUNT(Virt_atoms).EQ.COUNT(VirtOld)
-              IF(VirtUnchanged.AND.OccUnchanged)exit OccPartExpansionLoop
-              ExpandVirt=.FALSE.  
-              ExpandOcc=.TRUE. 
-              OccOld = Occ_atoms
-              !Expanding Occupied Space - this only have a implicit impact on the energy
-
-              ! if stepsize too small we have a problem as the accumalted effect is neglected 
-              ! 2 fragments with individual contributions less then FOT will be neglected even when
-              ! the combined contribution is bigger than the FOT threshold  
-              !
-              ! if stepsize is too big too many things are included and in case of ONLYOCCPART
-              ! we are unable to remove virt orbitals (no OccContribs) . 
-              !
-              ! we solve this (for now) by using a small stepsize but tighter FOT
-              StepsizeLoop4 = 1
-              FOT2 = 0.2E0_realk*FOT
-              call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
-                   & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
-                   & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
-                   & Occ_atoms,Virt_atoms,FOT2,DistMyAtom,SortedDistMyAtom,&
-                   & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-                   & StepsizeLoop4,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
-                   & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
-              OccUnchanged = COUNT(Occ_atoms).EQ.COUNT(OccOld)
-              IF(VirtUnchanged.AND.OccUnchanged)exit OccPartExpansionLoop
-           END DO OccPartExpansionLoop
-        ENDDO
-     ELSEIF(DECinfo%onlyvirtpart) then
-        NF = 1
-        IF(FragmentExpansionRI)NF=2!RI and standard expansion
-        DO I=1,NF
-           IF(I.EQ.2)THEN
-              !New Reference without RI
-              FragmentExpansionRI  = .FALSE.              
-              call atomic_fragment_free(AtomicFragment)
-              call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-                   & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-                   & AtomicFragment,FragmentExpansionRI)
-              !Reduce the step size as the sizes have already been converged 
-              !at the RI - MP2 level 
-              StepsizeLoop2 = 1
-           ENDIF
-           OccUnchanged = .FALSE.
-           VirtUnchanged = .FALSE.
-           VirtPartExpansionLoop: DO IT=1,100
-              ExpandOcc=.TRUE.         !Start by expanding Occupied Space untill convergence
-              ExpandVirt=.FALSE.         
-              OccOld = Occ_atoms
-              call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
-                   & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
-                   & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
-                   & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
-                   & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-                   & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
-                   & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
-
-              OccUnchanged = COUNT(Occ_atoms).EQ.COUNT(OccOld)
-              IF(VirtUnchanged.AND.OccUnchanged)exit VirtPartExpansionLoop
-              !Expanding Virtual Space - this only have a implicit impact on the energy
-              ExpandOcc=.FALSE. 
-              ExpandVirt=.TRUE.  
-              VirtOld = Virt_atoms
-              !Expanding Virtual Space - this only have a implicit impact on the energy
-
-              ! if stepsize too small we have a problem as the accumalted effect is neglected 
-              ! 2 fragments with individual contributions less then FOT will be neglected even when
-              ! the combined contribution is bigger than the FOT threshold  
-              !
-              ! if stepsize is too big too many things are included and in case of ONLYVIRTPART
-              ! we are unable to remove occ orbitals (no VirtContribs) . 
-              !
-              ! we solve this (for now) by using a small stepsize but tighter FOT
-              FOT2 = 0.2E0_realk*FOT
-              StepsizeLoop4 = 1
-              call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
-                   & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
-                   & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
-                   & Occ_atoms,Virt_atoms,FOT2,DistMyAtom,SortedDistMyAtom,&
-                   & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-                   & StepsizeLoop4,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
-                   & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
-              VirtUnchanged = COUNT(Virt_atoms).EQ.COUNT(VirtOld)
-              IF(VirtUnchanged.AND.OccUnchanged)exit VirtPartExpansionLoop
-           END DO VirtPartExpansionLoop
-        ENDDO
-     ELSE
-        NF = 1
-        IF(FragmentExpansionRI)NF=2 !RI and standard expansion
-        DO I=1,NF
-           IF(I.EQ.2)THEN
-              !New Reference without RI
-              FragmentExpansionRI  = .FALSE.              
-              call atomic_fragment_free(AtomicFragment)
-              call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-                   & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-                   & AtomicFragment,FragmentExpansionRI)
-              !Reduce the step size as the sizes have already been converged 
-              !at the RI - MP2 level 
-              StepsizeLoop2 = MIN(2,StepsizeLoop2)
-           ENDIF
-           ExpandVirt=.TRUE.        !Expand both Occupied Space untill convergence
-           ExpandOcc=.TRUE. 
-           call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
-                & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
-                & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
-                & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
-                & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-                & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
-                & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
-        ENDDO
-     ENDIF
+     NF = 1
+     IF(FragmentExpansionRI)NF=2 !RI and standard expansion
+     DO I=1,NF
+        IF(I.EQ.2)THEN
+           !New Reference without RI
+           FragmentExpansionRI  = .FALSE.              
+           call atomic_fragment_free(AtomicFragment)
+           call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+                & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+                & AtomicFragment,FragmentExpansionRI)
+           !Reduce the step size as the sizes have already been converged 
+           !at the RI - MP2 level 
+           StepsizeLoop2 = MIN(2,StepsizeLoop2)
+        ENDIF
+        ExpandVirt=.TRUE.    !Expand both Occupied and Virtual Space untill convergence
+        ExpandOcc=.TRUE. 
+        call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
+             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
+             & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
+             & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
+             & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
+             & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
+             & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
+     ENDDO
 
      ! ======================================================================
      !             Transition from expansion to reduction loop
