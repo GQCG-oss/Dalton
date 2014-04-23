@@ -2452,7 +2452,7 @@ subroutine cc_gmo_data_slave()
   call mem_dealloc(Co)
   call mem_dealloc(Cv)
   call ls_free(MyLsItem)
-  if (ccmodel==MODEL_CCSD) then 
+  if (ccmodel/=MODEL_RPA) then 
     call mem_dealloc(MOinfo%dimInd1)
     call mem_dealloc(MOinfo%dimInd2)
     call mem_dealloc(MOinfo%StartInd1)

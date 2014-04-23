@@ -6679,9 +6679,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call lsmpi_allreduce(gvvoo,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
       if (iter==1) call lsmpi_allreduce(govov%elm1,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
     else if(ccmodel==MODEL_CC2) then
-      call lsmpi_local_reduction(gvoov,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
-      call lsmpi_local_reduction(gvvoo,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
-      if (iter==1) call lsmpi_local_reduction(govov%elm1,nv*nt,infpar%master,SPLIT_MSG_REC)
+      call lsmpi_local_reduction(gvoov,no2v2,infpar%master,SPLIT_MSG_REC)
+      call lsmpi_local_reduction(gvvoo,no2v2,infpar%master,SPLIT_MSG_REC)
+      if (iter==1) call lsmpi_local_reduction(govov%elm1,no2v2,infpar%master,SPLIT_MSG_REC)
     end if
     call time_start_phase(PHASE_WORK)
 #endif
@@ -6781,9 +6781,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               & 0.0E0_realk,tmp0,nocc)
 
     if (ccmodel>MODEL_CC2) then
-    ! -> Foo
-    call dgemm('n','n',nocc,nocc,nbas,1.0E0_realk,tmp0,nocc,lamho,nbas, &
-              & 0.0E0_realk,Foo,nocc)
+      ! -> Foo
+      call dgemm('n','n',nocc,nocc,nbas,1.0E0_realk,tmp0,nocc,lamho,nbas, &
+                & 0.0E0_realk,Foo,nocc)
     end if
 
     ! -> Fov
@@ -6797,9 +6797,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               & 0.0E0_realk,Fvo,nvir)
 
     if (ccmodel>MODEL_CC2) then
-    ! -> Fvv
-    call dgemm('n','n',nvir,nvir,nbas,1.0E0_realk,tmp0,nvir,lamhv,nbas, &
-              & 0.0E0_realk,Fvv,nvir)
+      ! -> Fvv
+      call dgemm('n','n',nvir,nvir,nbas,1.0E0_realk,tmp0,nvir,lamhv,nbas, &
+                & 0.0E0_realk,Fvv,nvir)
     end if
 
     ! Free the 1-electron AO fock matrix
@@ -6809,14 +6809,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Get two-electron contribution to MO Fock matrix:
 
     if (ccmodel>MODEL_CC2) then
-    ! Foo:
-    call array_reorder_3d(1.0E0_realk,goooo,nocc,nocc*nocc,nocc,[1,3,2], &
-              & 0.0E0_realk,tmp0)
-    do i=1, nocc
-      pos1 = 1 + (i-1)*nocc*nocc*(nocc+1)
-      call daxpy(nocc*nocc,2.0E0_realk,goooo(pos1),1,Foo,1)
-      call daxpy(nocc*nocc,-1.0E0_realk,tmp0(pos1),1,Foo,1)
-    end do
+      ! Foo:
+      call array_reorder_3d(1.0E0_realk,goooo,nocc,nocc*nocc,nocc,[1,3,2], &
+                & 0.0E0_realk,tmp0)
+      do i=1, nocc
+        pos1 = 1 + (i-1)*nocc*nocc*(nocc+1)
+        call daxpy(nocc*nocc,2.0E0_realk,goooo(pos1),1,Foo,1)
+        call daxpy(nocc*nocc,-1.0E0_realk,tmp0(pos1),1,Foo,1)
+      end do
     end if
 
     ! Fov:
@@ -6838,14 +6838,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end do
 
     if (ccmodel>MODEL_CC2) then
-    ! Get Fvv:
-    call array_reorder_3d(1.0E0_realk,gvoov,nvir,nocc*nocc,nvir,[1,3,2], &
-              & 0.0E0_realk,tmp0)
-    do i=1, nocc
-      pos1 = 1 + (i-1)*nvir*nvir*(nocc+1)
-      call daxpy(nvir*nvir,2.0E0_realk,gvvoo(pos1),1,Fvv,1)
-      call daxpy(nvir*nvir,-1.0E0_realk,tmp0(pos1),1,Fvv,1)
-    end do
+      ! Get Fvv:
+      call array_reorder_3d(1.0E0_realk,gvoov,nvir,nocc*nocc,nvir,[1,3,2], &
+                & 0.0E0_realk,tmp0)
+      do i=1, nocc
+        pos1 = 1 + (i-1)*nvir*nvir*(nocc+1)
+        call daxpy(nvir*nvir,2.0E0_realk,gvvoo(pos1),1,Fvv,1)
+        call daxpy(nvir*nvir,-1.0E0_realk,tmp0(pos1),1,Fvv,1)
+      end do
     else if (ccmodel==MODEL_CC2) then
       ! get Block diag. MO-Fock matrices for CC2 model:
       ! -> Foo
