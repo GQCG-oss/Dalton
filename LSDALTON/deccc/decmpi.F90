@@ -2200,59 +2200,141 @@ contains
   subroutine rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
     implicit none
     real(realk),intent(inout),pointer :: gmo(:)
-    type(array4), intent(inout) :: omega2
+    !type(array4), intent(inout) :: omega2
+    type(array), intent(inout) :: omega2
     !type(array4),intent(inout)         :: t2
     type(array),intent(inout)         :: t2
+    !real(realk),intent(inout)         :: t2(:,:,:,:)
     integer,intent(inout)             :: nvirt,nocc
     logical :: master
+    integer :: addr1(infpar%lg_nodtot)
+    integer :: addr2(infpar%lg_nodtot)
+    integer :: addr3(infpar%lg_nodtot)
 
 
     master = (infpar%lg_mynum == infpar%master)
+
+    if(master) then
+   !   write(*,*)'Johannes addr in comm', omega2%addr_p_arr
+      addr1 = omega2%addr_p_arr
+  !    addr2 = t2%addr_p_arr
+    endif
+
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
+    call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+  !  call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+    !call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+
+
     if(.not.master)then
       call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+      omega2 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+  !    t2     = get_arr_from_parr(addr2(infpar%lg_mynum+1))
       !t2=array4_init([nvirt,nocc,nvirt,nocc])
-      omega2=array4_init([nvirt,nocc,nvirt,nocc])
-      t2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+      !omega2=array4_init([nvirt,nocc,nvirt,nocc])
+      !omega2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+      t2=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
     endif
     call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+    !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+    print*,' inside rpa_res_comm',infpar%lg_mynum
 
     
-    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    !call ls_mpibcast(t2%val,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-    call ls_mpibcast(omega2%val,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    print*,' after gmo',infpar%lg_mynum
+
+    print*,' after omega2',infpar%lg_mynum
+
+
     call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    print*,' after t2',infpar%lg_mynum
+
+
+    !call ls_mpibcast(omega2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+
+    print*,' after finalize',infpar%lg_mynum
+    !call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+
 
   end subroutine rpa_res_communicate_data
 
-  subroutine rpa_fock_communicate_data(omega2,t2,pfock,qfock,nocc,nvirt)
+  subroutine rpa_fock_communicate_data(t2,omega2,pfock,qfock,no,nv)
     implicit none
-    type(array4), intent(inout) :: omega2
-    type(array2), intent(inout) :: pfock,qfock
-    type(array4),intent(inout)         :: t2
-    integer,intent(inout)             :: nvirt,nocc
+    !type(array4), intent(inout) :: omega2
+    type(array), intent(inout) :: omega2
+    type(array),intent(inout)         :: t2
+    type(array), intent(inout) :: pfock,qfock
+    integer,intent(inout)             :: nv,no
+    integer :: addr1(infpar%lg_nodtot)
+    integer :: addr2(infpar%lg_nodtot)
+    integer :: addr3(infpar%lg_nodtot)
+    integer :: addr4(infpar%lg_nodtot)
+    !real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
     logical :: master
 
 
     master = (infpar%lg_mynum == infpar%master)
-    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpi_buffer(nvirt,infpar%master)
-    call ls_mpi_buffer(nocc,infpar%master)
-    if(.not.master)then
-      !call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
-      t2=array4_init([nvirt,nocc,nvirt,nocc])
-      pfock=array2_init([nocc,nocc])
-      qfock=array2_init([nvirt,nvirt])
-    endif
-    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
-    call ls_mpi_buffer(pfock%val,nocc,nocc,infpar%master)
-    call ls_mpi_buffer(qfock%val,nvirt,nvirt,infpar%master)
 
+    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpi_buffer(nv,infpar%master)
+    call ls_mpi_buffer(no,infpar%master)
+
+    if(master) then
+      addr1 = pfock%addr_p_arr
+      addr2 = qfock%addr_p_arr
+      addr3 = t2%addr_p_arr
+      addr4 = omega2%addr_p_arr
+    endif
+
+    call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
+
+
+!    if(.not.master)then
+!      !call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+!      !t2=array4_init([nvirt,nocc,nvirt,nocc])
+!      !omega2=array4_init([nv,no,nv,no])
+!
+!      write(*,*) 't2 ainit'
+!      !t2=array_ainit([nv,nv,no,no],4,atype='TDAR')
+!      write(*,*) 't2 init'
+!    !  pfock=array_ainit([no,no],2,atype='TDAR')
+!      write(*,*) 'pf init'
+!    !  qfock=array_ainit([nv,nv],2,atype='TDAR')
+!    !  pfock   = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+!      write(*,*) 'vf init'
+!    !  qfock    = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+!      !pfock=array2_init([nocc,nocc])
+!      !qfock=array2_init([nvirt,nvirt])
+!    endif
+!    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+    !call ls_mpi_buffer(pfock%val,nocc,nocc,infpar%master)
+    !call ls_mpi_buffer(qfock%val,nvirt,nvirt,infpar%master)
+
+!    write(*,*) 'bcast t2',infpar%lg_mynum
     
+    !call ls_mpibcast(t2%elm4,nv,nv,no,no,infpar%master,infpar%lg_comm)
+!    write(*,*) 'after bcast t2',infpar%lg_mynum
+    !call ls_mpibcast(pfock%elm2,no,no,infpar%master,infpar%lg_comm)
+    !call ls_mpibcast(qfock%elm2,nv,nv,infpar%master,infpar%lg_comm)
+
+!    write(*,*) 'finalized buffer',infpar%lg_mynum
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpibcast(t2%val,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
+
+    if(.not.master)then
+      !t2=array_ainit([nv,nv,no,no],4,local =.true.,atype='TDAR')
+      pfock   = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+      qfock    = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+      t2    = get_arr_from_parr(addr3(infpar%lg_mynum+1))
+      omega2   = get_arr_from_parr(addr4(infpar%lg_mynum+1))
+    endif
+    !call ls_mpibcast(t2%elm1,nv*nv*no*no,infpar%master,infpar%lg_comm)
+
 
   end subroutine rpa_fock_communicate_data
 
