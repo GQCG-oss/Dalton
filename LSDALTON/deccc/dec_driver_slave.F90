@@ -90,6 +90,7 @@ contains
     call mem_alloc(dofrag,natoms)
     call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,&
          & natoms,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
+      print *,"SLAVE DOFRAG",dofrag
 
     IF(DECinfo%StressTest)THEN
      call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,&
@@ -142,6 +143,7 @@ contains
 
        ! Special for step 2: Reset first-order keywords and get optimized fragments
        ! **************************************************************************
+       print *,"SLAVE",doFRAG
        Step2: if(step==2) then
 
           ! Restore first order keywords for second step

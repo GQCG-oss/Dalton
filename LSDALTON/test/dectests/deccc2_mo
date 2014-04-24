@@ -17,65 +17,66 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decrpa_energy.info <<'%EOF%'
-   DEC-RPA energies for full DEC
-   -----------------------------
-   Molecule:         HCCH
-   Wave Function:    RPA / 6-31G
-   Test Purpose:     DEC-RPA energy calculation (Johannes R)
+cat > deccc2_mo.info <<'%EOF%'
+   DEC-CC2 energy using fragment calculations without long-range t1
+   -----------------------------------------------------------------
+   Molecule:         3 BH molecules with stretched bonds
+   Wave Function:    MO-CC2 / STO-3G
+   Test Purpose:     Test DEC energy for MO-CC2 (Pablo Baudin)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decrpa_energy.mol <<'%EOF%'
-BASIS
-6-31G
-
-
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=2
-C          0.57878        0.01237        0.13701
-C         -0.57877       -0.01239       -0.13714
-Charge=1.0 Atoms=2
-H          1.61433        0.03455        0.38251
-H         -1.61434       -0.03454       -0.38238
+cat > deccc2_mo.mol <<'%EOF%'
+BASIS                                                   
+STO-3G
+                                                        
+                                                        
+Atomtypes=2 Nosymmetry Angstrom 
+Charge=5.0 Atoms=3
+B          0.000000      0.0000000    0.0000000
+B          3.000000      0.0000000    1.4500000
+B          6.000000      0.0000000    0.0000000
+Charge=1.0 Atoms=3
+H          0.000000      1.4500000    0.0000000
+H          3.000000      0.0000000    0.0000000
+H          6.000000      0.0000000    1.4500000
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decrpa_energy.dal <<'%EOF%'
+cat > deccc2_mo.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .ARH
 .START
 TRILEVEL
-.NOATOMSTART
+.CONVTHR
+ 1.0d-5
+**INFO
+.DEBUG_MPI_MEM
 **DEC
-.MPISPLIT
-0
-.CCDEBUG
+.CC2
 .MOCCSD
-.RPA
-.SOSEX
+.MPIsplit
+ 0
 .FOT
-4
+ 5
 .MEMORY
-2.0
-*END OF INPUT
+ 2.0
+*END OF INPUT  
 %EOF%
 #######################################################################
 
- 
+
 
 #######################################################################
 
 #######################################################################
-#  CHECK SCRIPT
-#######################################################################
-echo $CHECK_SHELL >decrpa_energy.check
-cat >>decrpa_energy.check <<'%EOF%'
+echo $CHECK_SHELL >deccc2_mo.check
+cat >>deccc2_mo.check <<'%EOF%'
 
 log=$1
 
@@ -86,37 +87,31 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-76\.435586" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-74\.1900454" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
-CTRL[1]=1
+CTRL[1]=2
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# Total correlation energy
-CRIT1=`$GREP "Correlation energy  \: * \-0.11908" $log | wc -l`
+# CC2 ENERGY
+CRIT1=`$GREP "Correlation energy  : * \-0\.106" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="Total correlation energy is not correct"
+ERROR[2]="CCSD correlation energy is not correct"
 
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
 TEST[3]=`expr  $CRIT1`                                                    
 CTRL[3]=1                                                                 
 ERROR[3]="Memory leak -"
-                                                                          
+
 # Memory test for array4                                                  
 CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
 TEST[4]=`expr  $CRIT1`                                                    
 CTRL[4]=1                                                                 
 ERROR[4]="Memory leak for array4 -" 
 
-# MPI Memory test
-CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
-TEST[5]=`expr  $CRIT1`
-CTRL[5]=0
-ERROR[5]="MPI Memory leak -"
-
 PASSED=1
-for i in 1 2 3 4 5
+for i in 1 2 3 4  
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
@@ -134,7 +129,6 @@ else
 fi
 
 %EOF%
-
 
 
 

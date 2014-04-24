@@ -712,6 +712,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use lspdm_tensor_operations_module,only:free_persistent_array
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:free_IIDF_matrix
+  use dec_settings_mod, only:free_decinfo
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
@@ -738,6 +739,7 @@ implicit none
 #endif
   call free_AO2GCAO_GCAO2AO()
   call free_persistent_array
+  call free_decinfo()
 
   if(OnMaster) call stats_mem(lupri)
 
