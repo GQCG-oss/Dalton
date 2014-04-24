@@ -1072,7 +1072,7 @@ TYPE(DFTDATATYPE) :: DFTDATA
 !REAL(REALK), pointer
 CALL ls_mpi_buffer(DMAT,NBAST,NBAST,NDMAT,infpar%master)
 !SETTING
-CALL mpicopy_setting(setting,comm)
+CALL mpicopy_setting(setting,comm,.FALSE.)
 !DFTDATA
 call mpicopy_dftdata(dftdata,setting%node)
 call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
@@ -1123,7 +1123,7 @@ end subroutine lsmpi_XCgeneric_masterToSlave
 !!$ENDIF
 !!$CALL ls_mpi_buffer(ABSVALOVERLAP,NMO,NMO,infpar%master)
 !!$!SETTING
-!!$CALL mpicopy_setting(setting,comm)
+!!$CALL mpicopy_setting(setting,comm,.FALSE.)
 !!$call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
 !!$end subroutine lsmpi_ABSVAL_masterToSlave
 
@@ -1182,7 +1182,7 @@ end subroutine lsmpi_II_DFT_KSM_Slave
 !!$ENDIF
 !!$call mem_dft_alloc(ABSVALOVERLAP,NMO,NMO)
 !!$CALL ls_mpi_buffer(ABSVALOVERLAP,NMO,NMO,infpar%master)
-!!$CALL mpicopy_setting(setting,comm)
+!!$CALL mpicopy_setting(setting,comm,.FALSE.)
 !!$call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
 !!$
 !!$IF(SameCmat)THEN

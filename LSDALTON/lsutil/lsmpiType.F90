@@ -178,11 +178,11 @@ module lsmpi_type
 !Constants for MPIBUFFER!
 !!!!!!!!!!!!!!!!!!!!!!!!!
 
-#ifdef VAR_MPI
   integer,parameter     :: LSMPIBROADCAST       = 1
   integer,parameter     :: LSMPIREDUCTION       = 2
   integer,parameter     :: LSMPIREDUCTIONmaster = 3
   integer,parameter     :: LSMPISENDRECV        = 4
+#ifdef VAR_MPI
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -258,6 +258,38 @@ module lsmpi_type
 !$OMP lsmpibufferInt8,lsmpibufferSho,lsmpibufferLog,lsmpibufferCha)
 
 contains
+  SUBROUTINE NullifyMPIbuffers()
+    implicit none
+    nullify(lsmpibufferDP)
+    nullify(lsmpibufferInt4)
+    nullify(lsmpibufferInt8)
+    nullify(lsmpibufferSho)
+    nullify(lsmpibufferLog)
+    nullify(lsmpibufferCha)
+    nLog=0
+    nDP=0
+    nShort=0
+    nInteger4=0
+    nInteger8=0
+    nCha=0
+    iLog=0
+    iDP=0
+    iSho=0
+    iInt4=0
+    iInt8=0
+    iCha=0
+  END SUBROUTINE NULLIFYMPIBUFFERS
+
+  SUBROUTINE PrintMPIbuffersizes()
+    implicit none
+    print*,'# DoublePrecison elements',nDP
+    print*,'# Integer 4 elements     ',nInteger4
+    print*,'# Integer 8 elements     ',nInteger8
+    print*,'# Short integer elements ',nShort
+    print*,'# Logical elements       ',nLog
+    print*,'# Character elements     ',nCha
+  END SUBROUTINE PRINTMPIBUFFERSIZES
+
 #ifdef VAR_MPI
     SUBROUTINE GET_MPI_COMM_SELF(outputcomm)
       implicit none
@@ -2571,7 +2603,6 @@ contains
       implicit none
       integer(kind=4) :: buffer
       integer(kind=ls_mpik) :: master
-#ifdef VAR_MPI
       IF(AddToBuffer)THEN
          IF(iInt4+1 .GT. nInteger4)call increaselsmpibufferInt4(1_long)
          IF(iInt4+1.GT.size(lsmpibufferInt4,kind=long))call lsquit('errorTK',-1)
@@ -2582,14 +2613,12 @@ contains
          buffer = lsmpibufferInt4(iInt4+1)
          iInt4 = iInt4 + 1
       ENDIF
-#endif
     end subroutine ls_mpi_buffer4_integer
 
     subroutine ls_mpi_buffer8_integer(buffer,master)
       implicit none
       integer(kind=8) :: buffer
       integer(kind=ls_mpik) :: master
-#ifdef VAR_MPI
       IF(AddToBuffer)THEN
          IF(iInt8+1 .GT. nInteger8)call increaselsmpibufferInt8(1_long)
          lsmpibufferInt8(iInt8+1) = buffer
@@ -2599,7 +2628,6 @@ contains
          buffer = lsmpibufferInt8(iInt8+1)
          iInt8 = iInt8 + 1
       ENDIF
-#endif
     end subroutine ls_mpi_buffer8_integer
     
     subroutine ls_mpi_buffer_integer8V_buf4_wrapper(buffer,nbuf,master)
@@ -2607,11 +2635,9 @@ contains
       integer(kind=ls_mpik):: master
       integer(kind=4) :: nbuf
       integer(kind=8) :: buffer(:)
-#ifdef VAR_MPI
       integer(kind=8) :: nbuf8
       nbuf8=nbuf
       call ls_mpi_buffer_integer8V(buffer,nbuf8,master)
-#endif
     end subroutine ls_mpi_buffer_integer8V_buf4_wrapper
 
     subroutine ls_mpi_buffer_integer8V(buffer,nbuf,master)
@@ -2619,7 +2645,6 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=8) :: nbuf
       integer(kind=8) :: buffer(:)
-#ifdef VAR_MPI
       integer :: I
       IF(AddToBuffer)THEN
          IF(iInt8+nbuf .GT. nInteger8) THEN
@@ -2631,7 +2656,7 @@ contains
          iInt8 = iInt8 + nbuf
       ELSE
          IF(iInt8+nbuf .GT. nInteger8) THEN
-           write(*,*) 'ls_mpi_buffer_integer8V:',infpar%mynum,iInt8,nbuf,nInteger8
+           write(*,*) 'ls_mpi_buffer_integer8V:',iInt8,nbuf,nInteger8
            call lsquit('ls_mpi_buffer_integerV: error using buffer',-1)
          ENDIF
          DO I=1,nbuf
@@ -2639,7 +2664,6 @@ contains
          ENDDO
          iInt8 = iInt8 + nbuf
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_integer8V
 
     subroutine ls_mpi_buffer_integer4V_buf4_wrapper(buffer,nbuf,master)
@@ -2647,18 +2671,15 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=4) :: nbuf
       integer(kind=4) :: buffer(:)
-#ifdef VAR_MPI
       integer(kind=8) :: nbuf8
       nbuf8=nbuf
       call ls_mpi_buffer_integer4V(buffer,nbuf8,master)
-#endif
     end subroutine ls_mpi_buffer_integer4V_buf4_wrapper
     subroutine ls_mpi_buffer_integer4V(buffer,nbuf,master)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=8) :: nbuf
       integer(kind=4) :: buffer(:)
-#ifdef VAR_MPI
       integer :: I
       IF(AddToBuffer)THEN
          IF(iInt4+nbuf .GT. nInteger4) THEN
@@ -2671,7 +2692,7 @@ contains
          iInt4 = iInt4 + nbuf
       ELSE
          IF(iInt4+nbuf .GT. nInteger4) THEN
-           write(*,*) 'ls_mpi_buffer_integer4V:',infpar%mynum,iInt4,nbuf,nInteger4
+           write(*,*) 'ls_mpi_buffer_integer4V:',iInt4,nbuf,nInteger4
            call lsquit('ls_mpi_buffer_integer4V: error using buffer',-1)
          ENDIF
          DO I=1,nbuf
@@ -2679,7 +2700,6 @@ contains
          ENDDO
          iInt4 = iInt4 + nbuf
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_integer4V
 
     subroutine ls_mpi_buffer_integer4M_wrapper4(buffer,nbuf1,nbuf2,master)
@@ -2687,56 +2707,48 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=4) :: nbuf1,nbuf2
       integer(kind=4) :: buffer(nbuf1,nbuf2)
-#ifdef VAR_MPI
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2
       call ass_44I2to1(buffer,buf,[nbuf1,nbuf2])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer4M_wrapper4
     subroutine ls_mpi_buffer_integer4M_wrapper8(buffer,nbuf1,nbuf2,master)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=8) :: nbuf1,nbuf2
       integer(kind=4) :: buffer(nbuf1*nbuf2)
-#ifdef VAR_MPI
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2
       call ass_48I2to1(buffer,buf,[nbuf1,nbuf2])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer4M_wrapper8
     subroutine ls_mpi_buffer_integer8M_wrapper4(buffer,nbuf1,nbuf2,master)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=4) :: nbuf1,nbuf2
       integer(kind=8) :: buffer(nbuf1,nbuf2)
-#ifdef VAR_MPI
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2
       call ass_84I2to1(buffer,buf,[nbuf1,nbuf2])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer8M_wrapper4
     subroutine ls_mpi_buffer_integer8M_wrapper8(buffer,nbuf1,nbuf2,master)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=8) :: nbuf1,nbuf2
       integer(kind=8) :: buffer(nbuf1,nbuf2)
-#ifdef VAR_MPI
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2
       call ass_88I2to1(buffer,buf,[nbuf1,nbuf2])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer8M_wrapper8
 
 
@@ -2745,56 +2757,48 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=4) :: nbuf1,nbuf2,nbuf3
       integer(kind=4) :: buffer(nbuf1,nbuf2,nbuf3)
-#ifdef VAR_MPI
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3
       call ass_44I3to1(buffer,buf,[nbuf1,nbuf2,nbuf3])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer4T_wrapper4
     subroutine ls_mpi_buffer_integer4T_wrapper8(buffer,nbuf1,nbuf2,nbuf3,master)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=8) :: nbuf1,nbuf2,nbuf3
       integer(kind=4) :: buffer(nbuf1,nbuf2,nbuf3)
-#ifdef VAR_MPI
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3
       call ass_48I3to1(buffer,buf,[nbuf1,nbuf2,nbuf3])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer4T_wrapper8
     subroutine ls_mpi_buffer_integer8T_wrapper4(buffer,nbuf1,nbuf2,nbuf3,master)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=4) :: nbuf1,nbuf2,nbuf3
       integer(kind=8) :: buffer(nbuf1,nbuf2,nbuf3)
-#ifdef VAR_MPI
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3
       call ass_84I3to1(buffer,buf,[nbuf1,nbuf2,nbuf3])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer8T_wrapper4
     subroutine ls_mpi_buffer_integer8T_wrapper8(buffer,nbuf1,nbuf2,nbuf3,master)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=8) :: nbuf1,nbuf2,nbuf3
       integer(kind=8) :: buffer(nbuf1,nbuf2,nbuf3)
-#ifdef VAR_MPI
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3
       call ass_88I3to1(buffer,buf,[nbuf1,nbuf2,nbuf3])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer8T_wrapper8
 
 
@@ -2803,56 +2807,48 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=4) :: nbuf1,nbuf2,nbuf3,nbuf4
       integer(kind=4) :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
-#ifdef VAR_MPI
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3*nbuf4
       call ass_44I4to1(buffer,buf,[nbuf1,nbuf2,nbuf3,nbuf4])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer4Q_wrapper4
     subroutine ls_mpi_buffer_integer4Q_wrapper8(buffer,nbuf1,nbuf2,nbuf3,nbuf4,master)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=8) :: nbuf1,nbuf2,nbuf3,nbuf4
       integer(kind=4) :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
-#ifdef VAR_MPI
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3*nbuf4
       call ass_48I4to1(buffer,buf,[nbuf1,nbuf2,nbuf3,nbuf4])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer4Q_wrapper8
     subroutine ls_mpi_buffer_integer8Q_wrapper4(buffer,nbuf1,nbuf2,nbuf3,nbuf4,master)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=4) :: nbuf1,nbuf2,nbuf3,nbuf4
       integer(kind=8) :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
-#ifdef VAR_MPI
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3*nbuf4
       call ass_84I4to1(buffer,buf,[nbuf1,nbuf2,nbuf3,nbuf4])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer8Q_wrapper4
     subroutine ls_mpi_buffer_integer8Q_wrapper8(buffer,nbuf1,nbuf2,nbuf3,nbuf4,master)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=8) :: nbuf1,nbuf2,nbuf3,nbuf4
       integer(kind=8) :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
-#ifdef VAR_MPI
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3*nbuf4
       call ass_88I4to1(buffer,buf,[nbuf1,nbuf2,nbuf3,nbuf4])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
-#endif
     end subroutine ls_mpi_buffer_integer8Q_wrapper8
 
 
@@ -2860,7 +2856,6 @@ contains
       implicit none
       real(realk) :: buffer
       integer(kind=ls_mpik) :: master
-#ifdef VAR_MPI
       IF(AddToBuffer)THEN
          IF(iDP+1 .GT. nDP)call increaselsmpibufferDP(1)
          lsmpibufferDP(iDP+1) = buffer
@@ -2870,7 +2865,6 @@ contains
          buffer = lsmpibufferDP(iDP+1)
          iDP = iDP + 1
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_realk
 
     subroutine ls_mpi_buffer_realkV(buffer,nbuf,master)
@@ -2878,7 +2872,6 @@ contains
       integer :: nbuf
       integer(kind=ls_mpik) :: master
       real(realk) :: buffer(:)
-#ifdef VAR_MPI
       integer :: I
       IF(AddToBuffer)THEN
          IF(iDP + nbuf.GT. nDP)call increaselsmpibufferDP(nbuf)
@@ -2893,7 +2886,6 @@ contains
          ENDDO
          iDP = iDP + nbuf
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_realkV
 
     subroutine ls_mpi_buffer_realkM(buffer,nbuf1,nbuf2,master)
@@ -2901,7 +2893,6 @@ contains
       integer :: nbuf1,nbuf2
       integer(kind=ls_mpik) :: master
       real(realk) :: buffer(:,:)
-#ifdef VAR_MPI
       integer :: ierr,count,datatype,I,J,offset
       IERR=0
       IF(AddToBuffer)THEN
@@ -2923,7 +2914,6 @@ contains
          ENDDO
          iDP = iDP + nbuf1*nbuf2
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_realkM
 
     subroutine ls_mpi_buffer_realkT(buffer,nbuf1,nbuf2,nbuf3,master)
@@ -2931,7 +2921,6 @@ contains
       integer(kind=ls_mpik) :: master
       integer :: nbuf1,nbuf2,nbuf3
       real(realk) :: buffer(:,:,:)
-#ifdef VAR_MPI
       integer :: ierr,count,datatype,I,J,K,offset
       IERR=0
       IF(AddToBuffer)THEN
@@ -2957,14 +2946,12 @@ contains
          ENDDO
          iDP = iDP + nbuf1*nbuf2*nbuf3
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_realkT
 
     subroutine ls_mpi_buffer_logical(buffer,master)
       implicit none
       logical :: buffer
       integer(kind=ls_mpik) :: master
-#ifdef VAR_MPI
       integer :: ierr,count,datatype
       IERR=0
       IF(AddToBuffer)THEN
@@ -2976,7 +2963,6 @@ contains
          buffer = lsmpibufferLog(iLog+1)
          iLog = iLog + 1
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_logical
 
     subroutine ls_mpi_buffer_logicalV(buffer,nbuf,master)
@@ -2984,7 +2970,6 @@ contains
       integer :: nbuf
       integer(kind=ls_mpik) :: master
       logical :: buffer(:)
-#ifdef VAR_MPI
       integer :: ierr,count,datatype,I
       IERR=0
       IF(AddToBuffer)THEN
@@ -3000,7 +2985,6 @@ contains
          ENDDO
          iLog = iLog + nbuf
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_logicalV
 
     subroutine ls_mpi_buffer_logicalM(buffer,nbuf1,nbuf2,master)
@@ -3008,7 +2992,6 @@ contains
       integer :: nbuf1,nbuf2
       integer(kind=ls_mpik) :: master
       logical :: buffer(:,:)
-#ifdef VAR_MPI
       integer :: ierr,count,datatype,I,J,offset
       IERR=0
       IF(AddToBuffer)THEN
@@ -3030,14 +3013,12 @@ contains
          ENDDO
          iLog = iLog + nbuf1*nbuf2
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_logicalM
 
     subroutine ls_mpi_buffer_charac(buffer,master)
       implicit none
       character :: buffer
       integer(kind=ls_mpik) :: master
-#ifdef VAR_MPI
       integer :: ierr,count,datatype
       IERR=0
       IF(AddToBuffer)THEN
@@ -3049,7 +3030,6 @@ contains
          buffer = lsmpibufferCha(iCha+1)
          iCha = iCha + 1
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_charac
 
     subroutine ls_mpi_buffer_characV(buffer,nbuf,master)
@@ -3057,7 +3037,6 @@ contains
       integer :: nbuf
       integer(kind=ls_mpik) :: master
       character*(*) :: buffer
-#ifdef VAR_MPI
       character :: tmpbuffer
       integer :: ierr,count,datatype,I
       IERR=0
@@ -3074,7 +3053,6 @@ contains
          ENDDO
          iCha = iCha + nbuf
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_characV
 
     subroutine ls_mpi_buffer_characV2(buffer,nbuf,master)
@@ -3082,7 +3060,6 @@ contains
       integer :: nbuf
       integer(kind=ls_mpik) :: master
       character :: buffer(nbuf)
-#ifdef VAR_MPI
       character :: tmpbuffer
       integer :: ierr,count,datatype,I
       IERR=0
@@ -3099,7 +3076,6 @@ contains
          ENDDO
          iCha = iCha + nbuf
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_characV2
 
     subroutine ls_mpi_buffer_shortinteger(buffer,master)
@@ -3107,7 +3083,6 @@ contains
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=short) :: buffer
-#ifdef VAR_MPI
       IF(AddToBuffer)THEN
          IF(iSho+1 .GT. nShort)call increaselsmpibufferSho(1)
          lsmpibufferSho(iSho+1) = buffer
@@ -3120,7 +3095,6 @@ contains
          buffer = lsmpibufferSho(iSho+1)
          iSho = iSho + 1
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_shortinteger
 
     subroutine ls_mpi_buffer_shortintegerV(buffer,nbuf,master)
@@ -3128,7 +3102,6 @@ contains
       integer :: nbuf
       integer(kind=ls_mpik) :: master
       integer(kind=short) :: buffer(:)
-#ifdef VAR_MPI
       integer :: I
 
       IF(AddToBuffer)THEN
@@ -3147,7 +3120,6 @@ contains
          ENDDO
          iSho = iSho + nbuf
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_shortintegerV
 
     subroutine ls_mpi_buffer_shortintegerM(buffer,nbuf1,nbuf2,master)
@@ -3155,7 +3127,6 @@ contains
       integer :: nbuf1,nbuf2
       integer(kind=ls_mpik) :: master
       integer(kind=short) :: buffer(:,:)
-#ifdef VAR_MPI
       integer :: I,J,offset
 
       IF(AddToBuffer)THEN
@@ -3180,7 +3151,6 @@ contains
          ENDDO
          iSho = iSho + nbuf1*nbuf2
       ENDIF
-#endif
     end subroutine ls_mpi_buffer_shortintegerM
 
 !######################################################
@@ -3188,6 +3158,32 @@ contains
 !#
 !#
 !######################################################
+    subroutine ls_mpiInitBufferAddToBuffer(AddToBuffer2)
+      implicit none
+      logical,intent(in) :: AddToBuffer2
+      AddToBuffer = AddToBuffer2
+      iDP   = 0
+      iInt4 = 0
+      iInt8 = 0
+      iSho  = 0
+      iLog  = 0
+      iCha  = 0
+    end subroutine ls_mpiInitBufferAddToBuffer
+
+    subroutine ls_mpiModbuffersizes
+      implicit none
+      integer :: additional,modula
+      nDP = iDP
+      nInteger4 = iInt4
+      nInteger8 = iInt8
+      nLoG = iLog
+      nCha = iCha
+      modula = mod(iSho,int_to_short)
+      additional = 0
+      IF (modula.GT.0) additional = int_to_short - modula
+      nShort = iSho + additional
+    end subroutine ls_mpiModbuffersizes
+    
     subroutine ls_mpiInitBuffer(master,Job,comm,sender,receiver)
       implicit none
       integer(kind=ls_mpik) :: master
@@ -3197,13 +3193,15 @@ contains
       integer(kind=ls_mpik),intent(in),optional :: sender
       !> Only for Job=LSMPISENDRECV: rank for receiver within comm group
       integer(kind=ls_mpik),intent(in),optional :: receiver
-#ifdef VAR_MPI
       integer(kind=8) :: ndim(6)
       integer(kind=ls_mpik) :: mynum  ! Number of node WITHIN group specified by communicator
 
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
       AddToBuffer = (mynum.EQ.master) .OR. (Job.EQ.LSMPIREDUCTION)
+
+      print*,'ls_mpiInitBuffer:comm,mynum,master',comm,mynum,master
+      print*,'ls_mpiInitBuffer:AddToBuffer',AddToBuffer
 
       ! Special settings for send/receive job 
       if(job.eq.LSMPISENDRECV) then
@@ -3240,12 +3238,13 @@ contains
          ! If receiver: Receive stuff from buffer
 
          if(addtobuffer) then  ! put stuff info buffer
-            IF(nLog.EQ.0) nLog = incremLog
-            IF(nDP.EQ.0) nDP = incremDP
-            IF(nInteger4.EQ.0) nInteger4 = incremInteger
-            IF(nInteger8.EQ.0) nInteger8 = incremInteger
-            IF(nShort.EQ.0) nShort = incremShort
-            IF(nCha.EQ.0) nCha = incremCha
+            print*,'nLog = ',nLog
+            nLog = incremLog
+            nDP = incremDP
+            nInteger4 = incremInteger
+            nInteger8 = incremInteger
+            nShort = incremShort
+            nCha = incremCha
             IF(MemModParamPrintMemory)THEN
                print*,'MemModParamPrintMemory   mynum',mynum
                CALL Print_Memory_info(MemModParamPrintMemorylupri,&
@@ -3257,6 +3256,13 @@ contains
                Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
                Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
             ENDIF
+            IF(associated(lsmpibufferDP))call lsquit('lsmpibufferDP associated in ls_mpiInitBuffer',-1)
+            IF(associated(lsmpibufferInt4))call lsquit('lsmpibufferInt4 associated in ls_mpiInitBuffer',-1)
+            IF(associated(lsmpibufferInt8))call lsquit('lsmpibufferInt8 associated in ls_mpiInitBuffer',-1)
+            IF(associated(lsmpibufferSho))call lsquit('lsmpibufferSho associated in ls_mpiInitBuffer',-1)
+            IF(associated(lsmpibufferLog))call lsquit('lsmpibufferLog associated in ls_mpiInitBuffer',-1)
+            IF(associated(lsmpibufferCha))call lsquit('lsmpibufferCha associated in ls_mpiInitBuffer',-1)
+            print*,'alloc buffers'
             call mem_alloc(lsmpibufferDP,nDP)
             call mem_alloc(lsmpibufferInt4,nInteger4)
             call mem_alloc(lsmpibufferInt8,nInteger8)
@@ -3267,18 +3273,20 @@ contains
                CALL Print_Memory_info(MemModParamPrintMemorylupri,&
                     &'InitBuffer: After allocation in AddtoBuffer')
             ENDIF
-           iDP   = 0
+            iDP   = 0
             iInt4 = 0
             iInt8 = 0
             iSho  = 0
             iLog  = 0
             iCha  = 0
          ELSE ! read stuff from buffer
+#ifdef VAR_MPI
             if(job.eq.LSMPIBROADCAST) then  ! bcast
                call ls_mpibcast(ndim,6,master,COMM)
             else ! specific receiver
                call ls_mpisendrecv(ndim,6,comm,sender,receiver)
             end if
+#endif
             nDP = ndim(1)
             nInteger4 = ndim(2)
             nInteger8 = ndim(3)
@@ -3295,6 +3303,12 @@ contains
                Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
                Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
             ENDIF
+            IF(associated(lsmpibufferDP))call lsquit('lsmpibufferDP associated in ls_mpiInitBuffer',-1)
+            IF(associated(lsmpibufferInt4))call lsquit('lsmpibufferInt4 associated in ls_mpiInitBuffer',-1)
+            IF(associated(lsmpibufferInt8))call lsquit('lsmpibufferInt8 associated in ls_mpiInitBuffer',-1)
+            IF(associated(lsmpibufferSho))call lsquit('lsmpibufferSho associated in ls_mpiInitBuffer',-1)
+            IF(associated(lsmpibufferLog))call lsquit('lsmpibufferLog associated in ls_mpiInitBuffer',-1)
+            IF(associated(lsmpibufferCha))call lsquit('lsmpibufferCha associated in ls_mpiInitBuffer',-1)
             if(ndp.gt.0) call mem_alloc(lsmpibufferDP,nDP)
             if(ninteger4.gt.0) call mem_alloc(lsmpibufferInt4,nInteger4)
             if(ninteger8.gt.0) call mem_alloc(lsmpibufferInt8,nInteger8)
@@ -3304,6 +3318,7 @@ contains
             IF(MemModParamPrintMemory)THEN
                CALL Print_Memory_info(MemModParamPrintMemorylupri,'InitBuffer: After allocation in ReadFromBuffer')
             ENDIF
+#ifdef VAR_MPI
             if(job.eq.lsmpibroadcast) then  ! BCAST
                IF(ndim(1).GT.0)THEN
                   call ls_mpibcast(lsmpibufferDP,nDP,master,COMM)
@@ -3344,7 +3359,7 @@ contains
                   call ls_mpisendrecv(lsmpibufferCha,nCha,comm,sender,receiver)
                ENDIF
             end if
-               
+#endif               
             iDP = 0
             iInt4 = 0
             iInt8 = 0
@@ -3353,12 +3368,12 @@ contains
             iCha = 0
          ENDIF
       else if(Job.EQ.LSMPIREDUCTION)THEN
-         IF(nLog.EQ.0) nLog = incremLog+1
-         IF(nDP.EQ.0) nDP = incremDP+1
-         IF(nInteger4.EQ.0) nInteger4 = incremInteger+1
-         IF(nInteger8.EQ.0) nInteger8 = incremInteger+1
-         IF(nShort.EQ.0) nShort = incremShort+int_to_short
-         IF(nCha.EQ.0) nCha = incremCha+1
+         nLog = incremLog+1
+         nDP = incremDP+1
+         nInteger4 = incremInteger+1
+         nInteger8 = incremInteger+1
+         nShort = incremShort+int_to_short
+         nCha = incremCha+1
          IF(MemModParamPrintMemory)THEN
             print*,'MemModParamPrintMemory   mynum',mynum
             CALL Print_Memory_info(MemModParamPrintMemorylupri,'InitBuffer: Before allocation in LSMPIREDUCTION')
@@ -3369,6 +3384,12 @@ contains
             Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
             Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
          ENDIF
+         IF(associated(lsmpibufferDP))call lsquit('lsmpibufferDP associated in ls_mpiInitBuffer',-1)
+         IF(associated(lsmpibufferInt4))call lsquit('lsmpibufferInt4 associated in ls_mpiInitBuffer',-1)
+         IF(associated(lsmpibufferInt8))call lsquit('lsmpibufferInt8 associated in ls_mpiInitBuffer',-1)
+         IF(associated(lsmpibufferSho))call lsquit('lsmpibufferSho associated in ls_mpiInitBuffer',-1)
+         IF(associated(lsmpibufferLog))call lsquit('lsmpibufferLog associated in ls_mpiInitBuffer',-1)
+         IF(associated(lsmpibufferCha))call lsquit('lsmpibufferCha associated in ls_mpiInitBuffer',-1)
          call mem_alloc(lsmpibufferDP,nDP)
          call mem_alloc(lsmpibufferInt4,nInteger4)
          call mem_alloc(lsmpibufferInt8,nInteger8)
@@ -3387,7 +3408,6 @@ contains
       ELSE
          call lsquit('Job specifier invalid in ls_mpiInitBuffer',-1)
       ENDIF
-#endif
 
     end subroutine ls_mpiInitBuffer
 
@@ -3400,7 +3420,6 @@ contains
       integer(kind=ls_mpik),intent(in),optional :: sender
       !> Only for Job=LSMPISENDRECV: rank for receiver
       integer(kind=ls_mpik),intent(in),optional :: receiver
-#ifdef VAR_MPI
       integer(kind=8) :: ndim(6)
       integer :: II,additional,modula
       integer(kind=ls_mpik) :: mynum  ! Number of node WITHIN group specified by communicator
@@ -3448,6 +3467,7 @@ contains
             nShort = iSho + additional
             nLoG = iLog
             nCha = iCha
+#ifdef VAR_MPI           
             if(job .eq. LSMPIBROADCAST) then  ! communication via bcast
                call ls_mpibcast(ndim,6,master,COMM)
                IF(ndim(1).GT.0)THEN
@@ -3468,9 +3488,6 @@ contains
                IF(ndim(6).GT.0)THEN
                   call ls_mpibcast(lsmpibufferCha(1:ndim(6)),ndim(6),master,COMM)
                ENDIF
-
-               call nullify_mpibuffer
-
             else  ! Sender: Send buffer to receiver
                call ls_mpisendrecv(ndim,6,comm,sender,receiver)
 
@@ -3493,7 +3510,7 @@ contains
                   call ls_mpisendrecv(lsmpibufferCha(1:ndim(6)),ndim(6),comm,sender,receiver)
                ENDIF
             end if
-
+#endif
             call nullify_mpibuffer
 
          ELSE ! Receiver - dealloc buffer 
@@ -3520,6 +3537,7 @@ contains
             call nullify_mpibuffer
          ENDIF
       else if(Job.EQ.LSMPIREDUCTION)THEN
+#ifdef VAR_MPI           
          IF(iDP.GT.0)THEN
             call lsmpi_barrier(comm)
             call lsmpi_reduction(lsmpibufferDP(1:iDP),iDP,master,comm)
@@ -3536,6 +3554,7 @@ contains
             call lsmpi_barrier(comm)
             call lsmpi_sho_reduction(lsmpibufferSho(1:iSho),iSho,master,comm)
          ENDIF
+#endif
          IF(iLog.GT.0)THEN
             call lsquit('implement a logical reduction',-1)
             !call ls_log_reduction(lsmpibufferLog,iLog,master,COMM)
@@ -3607,10 +3626,8 @@ contains
       ELSE
          call lsquit('Job specifier invalid in ls_mpiFinalizeBuffer',-1)
       ENDIF
-#endif
     end subroutine ls_mpiFinalizeBuffer
 
-#ifdef VAR_MPI
 
     !> \brief Dealloc (if associated) and nullify MPI buffers
     !> \author Kasper Kristensen
@@ -3645,19 +3662,8 @@ contains
          call mem_dealloc(lsmpibufferCha)
       end if
 
-      nullify(lsmpibufferDP)
-      nullify(lsmpibufferInt4)
-      nullify(lsmpibufferInt8)
-      nullify(lsmpibufferSho)
-      nullify(lsmpibufferLog)
-      nullify(lsmpibufferCha)
-
-
     end subroutine nullify_mpibuffer
 
-#endif
-
-#ifdef VAR_MPI
     subroutine increaselsmpibufferInt4(add)
       use memory_handling
       implicit none
@@ -3789,9 +3795,6 @@ contains
       call mem_dealloc(tmpbuffer)
 
     end subroutine increaselsmpibufferDP
-#endif
-
-
 
     subroutine LSMPI_MYFAIL(IERR)
       implicit none
@@ -4919,6 +4922,48 @@ contains
 #endif
   end subroutine lsmpi_max_realk_reduction
 
+  !> Get rank number within a specific communicator
+  !> \author Kasper Kristensen
+  !> \date March 2011
+  subroutine get_rank_for_comm(comm,rank)
+    implicit none
+    !> Communicator 
+    integer(kind=ls_mpik),intent(in) :: comm
+    !> Rank number in communicator group
+    integer(kind=ls_mpik),intent(inout) :: rank
+    integer(kind=ls_mpik) :: ierr
+    ierr=0
+#ifdef VAR_MPI
+    call MPI_COMM_RANK(comm,rank,ierr)
+#else
+    rank = 0
+#endif
+    if(ierr/=0) then
+       call lsquit('get_rank_for_comm: Something wrong!',-1)
+    end if
+  end subroutine get_rank_for_comm
+
+  !> Get number of processors for a specific communicator
+  !> \author Thomas Kjaergaard
+  !> \date juni 2012
+  subroutine get_size_for_comm(comm,nodtot)
+    implicit none
+    !> Communicator
+    integer(kind=ls_mpik),intent(in) :: comm
+    !> Rank number in communicator group
+    integer(kind=ls_mpik),intent(inout) :: nodtot
+    integer(kind=ls_mpik) :: ierr
+    ierr=0
+#ifdef VAR_MPI
+    call MPI_COMM_SIZE(comm,nodtot,ierr)
+#else
+    nodtot = 1
+#endif
+    if(ierr/=0) then
+       call lsquit('get_size_for_comm: Something wrong!',-1)
+    end if
+  end subroutine get_size_for_comm
+
 #ifdef VAR_MPI
   !> \brief Initialize MPI groups by setting information in the global
   !> type infpar. In particular, 
@@ -5157,42 +5202,6 @@ contains
     end do
 
   end subroutine print_mpi_group_info
-
-  !> Get rank number within a specific communicator
-  !> \author Kasper Kristensen
-  !> \date March 2011
-  subroutine get_rank_for_comm(comm,rank)
-    implicit none
-    !> Communicator 
-    integer(kind=ls_mpik),intent(in) :: comm
-    !> Rank number in communicator group
-    integer(kind=ls_mpik),intent(inout) :: rank
-    integer(kind=ls_mpik) :: ierr
-    ierr=0
-    call MPI_COMM_RANK(comm,rank,ierr)
-    if(ierr/=0) then
-       call lsquit('get_rank_for_comm: Something wrong!',-1)
-    end if
-  end subroutine get_rank_for_comm
-
-  !> Get number of processors for a specific communicator
-  !> \author Thomas Kjaergaard
-  !> \date juni 2012
-  subroutine get_size_for_comm(comm,nodtot)
-    implicit none
-    !> Communicator
-    integer(kind=ls_mpik),intent(in) :: comm
-    !> Rank number in communicator group
-    integer(kind=ls_mpik),intent(inout) :: nodtot
-    integer(kind=ls_mpik) :: ierr
-    ierr=0
-    call MPI_COMM_SIZE(comm,nodtot,ierr)
-    if(ierr/=0) then
-       call lsquit('get_size_for_comm: Something wrong!',-1)
-    end if
-  end subroutine get_size_for_comm
-
-
 
   !> \brief Divide local MPI group into ngroups smaller of dimensions defined in input.
   !> To do this the global parameters infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm 
