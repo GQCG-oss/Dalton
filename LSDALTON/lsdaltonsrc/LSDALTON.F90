@@ -182,13 +182,20 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      HFdone=.true.
 
 #ifndef VAR_MPI
-#ifdef VAR_LSDEBUG
-     !we basicly use the MPICOPY_SETTING routine to place the setting structure
-     !in the MPI buffers, deallocate ls%setting and reallocate it again using
-     !the MPI buffers - we thereby test some of the functionality of the MPI
-     !system  
-!     call TestMPIcopySetting(ls%SETTING)
-#endif
+     IF(config%doTestMPIcopySetting)THEN
+        !we basicly use the MPICOPY_SETTING routine to place the setting structure
+        !in the MPI buffers, deallocate ls%setting and reallocate it again using
+        !the MPI buffers - we thereby test some of the functionality of the MPI
+        !system. 
+        !This Test would (at this moment) break PARI and other testcases because
+        !ls%setting%Molecule(1) will nolonger point to ls%input%molecule
+        !instead the info in ls%input%molecule will be copied to 
+        !ls%setting%Molecule(1),ls%setting%Molecule(2),ls%setting%Molecule(3),...
+        !so when you assume a pointer behaviour this test would make the calc crash
+        !with something like  
+        !Reason: Error in Molecule_free - memory previously released
+        call TestMPIcopySetting(ls%SETTING)
+     ENDIF
 #endif     
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
 
@@ -485,13 +492,20 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
 
 #ifndef VAR_MPI
-#ifdef VAR_LSDEBUG
-     !we basicly use the MPICOPY_SETTING routine to place the setting structure
-     !in the MPI buffers, deallocate ls%setting and reallocate it again using
-     !the MPI buffers - we thereby test some of the functionality of the MPI
-     !system  
-!     call TestMPIcopySetting(ls%SETTING)
-#endif
+     IF(config%doTestMPIcopySetting)THEN
+        !we basicly use the MPICOPY_SETTING routine to place the setting structure
+        !in the MPI buffers, deallocate ls%setting and reallocate it again using
+        !the MPI buffers - we thereby test some of the functionality of the MPI
+        !system  
+        !This Test would (at this moment) break PARI and other testcases because
+        !ls%setting%Molecule(1) will nolonger point to ls%input%molecule
+        !instead the info in ls%input%molecule will be copied to 
+        !ls%setting%Molecule(1),ls%setting%Molecule(2),ls%setting%Molecule(3),...
+        !so when you assume a pointer behaviour this test would make the calc crash
+        !with something like  
+        !Reason: Error in Molecule_free - memory previously released
+        call TestMPIcopySetting(ls%SETTING)
+     ENDIF
 #endif     
 
         if (config%SCFinteractionEnergy) then

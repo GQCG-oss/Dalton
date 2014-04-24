@@ -143,7 +143,7 @@ implicit none
   config%doplt=.false.
   !F12 calc?
   config%doF12=.false.
-  
+  config%doTestMPIcopySetting = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
 #endif
@@ -1047,6 +1047,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.GCBASIS');      config%decomp%cfg_gcbasis = .true. ! left for backward compatibility
         CASE('.NOGCBASIS');    config%decomp%cfg_gcbasis = .false.
         CASE('.FORCEGCBASIS'); config%INTEGRAL%FORCEGCBASIS = .true.
+        CASE('.TESTMPICOPY'); config%doTestMPIcopySetting = .true.
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **GENERAL readin.'

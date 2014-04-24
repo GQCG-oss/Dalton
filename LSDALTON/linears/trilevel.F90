@@ -1880,7 +1880,8 @@ type(LowAccuracyStartType)  :: LAStype
   !we restore the default settings, which sets the GRDONE=0 
   !so that the dft grid is calculated with the full basis 
   !on the next kohn-sham matrix build
-  call typedef_set_default_setting(ls%setting,ls%input)
+!  call typedef_set_default_setting(ls%setting,ls%input)
+  CALL typedef_setIntegralSchemeFromInput(LS%INPUT%DALTON,LS%SETTING%SCHEME)
 
   IF(.NOT.config%decomp%cfg_gcbasis)then
      IF(.NOT.ls%input%basis%REGULAR%DunningsBasis)THEN
