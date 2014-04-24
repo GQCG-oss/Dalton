@@ -5429,8 +5429,9 @@ IF (isADMMQ) THEN
   CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AO2,AO3,GC2,GC3,constrain_factor)
 
   CALL mat_mul(S32,T23,'n','n',-1E0_realk,0E0_realk,tmp33)
+  call mat_scal(constrain_factor, tmp33)
   IF(isADMMP) THEN
-    call mat_scal(constrain_factor*constrain_factor, tmp33)
+    call mat_scal(constrain_factor, tmp33)
   ENDIF
   call mat_daxpy(1E0_realk,S33,tmp33)
 
