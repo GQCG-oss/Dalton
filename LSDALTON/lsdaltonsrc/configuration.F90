@@ -3748,13 +3748,14 @@ ENDIF
        write(config%lupri,*) ' system, use options  .START/TRILEVEL and .LCM in *DENSOPT section.   '  
        write(config%lupri,*) 
    endif 
-
    ! Check that DEC input is consistent with geometry optimization and orbital localization.
    call DEC_meaningful_input(config)
 
-   nocc = config%decomp%nocc
-   nvirt = (nbast-nocc)
-   call check_cc_input(ls,nocc,nvirt,nbast)
+   if(config%doDEC) then
+      nocc = config%decomp%nocc
+      nvirt = (nbast-nocc)
+      call check_cc_input(ls,nocc,nvirt,nbast)
+   endif
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)
