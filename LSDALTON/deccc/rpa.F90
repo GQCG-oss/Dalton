@@ -482,7 +482,7 @@ contains
 #endif
 
     
-    dim1=no*nv
+    !dim1=no*nv
 
     no2  = no**2
     nv2  = nv**2
@@ -555,7 +555,7 @@ contains
     call mem_alloc(w3,w3size)
 
 
-
+    write(*,*) 'fai1 tl1',fai1,tl1,'nod',me,nv2*no2
 
 
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
@@ -566,6 +566,7 @@ contains
       do nod=1,nnod-1
       call mo_work_dist(nv*nv*no,fri,tri,nod)
       if(me==0)then
+        write(*,*) 'fri and tri',fri,tri,'nod',nod
         do i=1,no
         call dcopy(tri,w_o2v2(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
         enddo
@@ -666,6 +667,7 @@ contains
       call mem_dealloc(w3)
       lock_outside     = lock_safe
 
+
 #endif
 
    endif
@@ -718,7 +720,6 @@ contains
 
     
     dim1=no*nv
-    b0= i8*0
 
     no2  = no**2
     nv2  = nv**2
@@ -735,7 +736,7 @@ contains
 #endif
 
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
 
     !Setting transformation variables for each rank
     !**********************************************
@@ -749,54 +750,53 @@ contains
     call mo_work_dist(nv*nv*no,fri,tri)
     call mem_alloc(w2,tl1*no)
     call mem_alloc(w_o2v2,tl1*no)
+    call mem_alloc(w2,tl1*no)
 
 
-    t_par = array_ainit([nv,nv,no,no],4,atype='TDAR',local=.false.)
-    call array_convert(t2%elm4,t_par)
-    !call array_two_dim_1batch(t2,[1,2,3,4],'g',t_par%elm1,1,0,no2*nv2,.false.,debug=.true.)
+    !t_par = array_ainit([nv,nv,no,no],4,atype='TDAR',local=.false.)
+    !call array_convert(t2%elm4,t_par)
+    call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai1,tl1,.false.,debug=.true.)
 
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
     !if(me==0) call array_convert(t2,w_o2v2,t2%nelms)
       !call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
 
-#ifdef VAR_MPI
-      write(*,*) 'Johannes first two_dim_batch',infpar%lg_mynum,fai1,tl1
-      write(*,*) 'Johannes first fri tri',infpar%lg_mynum,fri,tri
-#endif
 
-      call array_two_dim_1batch(t_par,[4,2,1,3],'g',w2,3,fai1,tl1,.false.,debug=.true.)
+      !call array_two_dim_1batch(t_par,[4,2,1,3],'g',w2,3,fai1,tl1,.false.,debug=.true.)
       write(*,*) 'Johannes after first two_dim_batch'
 
       call dgemm('n','n',tl1,no,no,-1.0E0_realk,w2,tl1,pfock%elm1,no,0.0E0_realk,w_o2v2,v2o)
       write(*,*) 'Johannes Debug after dgemm'
 
+
     call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
       write(*,*) 'Johannes Debug after first omega2 update'
     call array_two_dim_1batch(omega2,[3,4,1,2],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
       write(*,*) 'Johannes Debug after 2 omega2 update'
-#ifdef VAR_MPI
+      
     call lsmpi_barrier(infpar%lg_comm)
 #endif
 
-    call mem_dealloc(w_o2v2)
+     write(*,*) 'Johannes dealloc w_o2v2'
     call mem_dealloc(w2)
+    call mem_dealloc(w_o2v2)
+     write(*,*) 'Johannes dealloc w_o2v2 finished'
     !DO ALL THINGS DEPENDING ON 2
     call mem_alloc(w_o2v2,tl2*nv)
     call mem_alloc(w2,tl2*nv)
 
     ! F[a c] * t [c b i j] =+ Omega [a b i j]
-      call array_two_dim_1batch(t_par,[4,3,2,1],'g',w2,3,fai2,tl2,.false.,debug=.false.)
+      call array_two_dim_1batch(t2,[4,3,2,1],'g',w2,2,fai2,tl2,.false.,debug=.false.)
       !call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
       call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
 
+#ifdef VAR_MPI
     call array_two_dim_1batch(omega2,[4,3,2,1],'a',w_o2v2,2,fai2,tl2,.false.,debug=.false.)
     call array_two_dim_1batch(omega2,[3,4,1,2],'a',w_o2v2,2,fai2,tl2,.false.,debug=.false.)
-#ifdef VAR_MPI
     call lsmpi_barrier(infpar%lg_comm)
+
+
 #endif
-
-
-!#endif
 
 
    call array_free(t_par)
@@ -974,8 +974,8 @@ contains
     type(array), intent(inout) :: omega2
     type(array), intent(inout) :: t2
     integer, intent(in) :: nocc,nvirt
-    real(realk),pointer, intent(inout) :: gmo(:)
-    !type(array), intent(inout) :: gmo
+    !real(realk),pointer, intent(inout) :: gmo(:)
+    type(array), intent(inout) :: gmo
     type(array),intent(inout) :: pfock,qfock
     !type(array2), intent(inout) :: pfock,qfock
     !real(realk),pointer,intent(inout) :: pfock(:),qfock(:)
@@ -985,7 +985,7 @@ contains
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
     real(realk) :: starttime,stoptime
-    type(array) :: om_par,t_par,t_par1
+    type(array) :: gtmp
     integer :: nnod,mynum,fai,tl
     integer :: nvir,noc,dim1
     logical :: master
@@ -1010,6 +1010,7 @@ contains
     call array_gather(1.0E0_realk,t2,0.0E0_realk,Sckdl%elm1,i8*dim1*dim1,oo=[1,2,3,4])
 
     !call RPA_fock_para2(omega2,Sckdl,pfock,qfock,noc,nvir)
+    !call RPA_fock_para2(omega2,t2,pfock,qfock,noc,nvir)
     call RPA_fock_para(omega2,Sckdl,pfock,qfock,noc,nvir)
     !call RPA_fock_para(omega2,t2,pfock,qfock,noc,nvir)
     msg = 'Norm of fockpart'
@@ -1027,7 +1028,10 @@ contains
     enddo
     enddo
     !call RPA_residual_addpar(omega2,Sckdl,gmo,noc,nvir)
-    call RPA_residual_par_add(omega2,Sckdl,gmo,noc,nvir)
+    gtmp = array_minit([nocc,nvirt,nocc,nvirt],4,local=.true.,atype='TDAR')
+    call array_gather(1.0E0_realk,gmo,0.0E0_realk,gtmp%elm1,i8*dim1*dim1,oo=[1,2,3,4])
+    call RPA_residual_par_add(omega2,Sckdl,gtmp%elm1,noc,nvir)
+    call array_free(gtmp)
     !write(*,*) 'JOHANNES added'
 
     call cpu_time(stoptime)
@@ -1148,8 +1152,11 @@ contains
     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
       call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
       call rpa_res_communicate_data(gmo,u2,omega2,nvirt,nocc)
+      !call rpa_res_communicate_data(w4,u2,omega2,nvirt,nocc)
     endif StartUpSlaves
 #endif
+
+    !call array_cp_tiled2dense()
 
 
     call mo_work_dist(nvirt*nocc,fai,tl)
@@ -1168,14 +1175,20 @@ contains
 
     call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.true.)
 
+    !write(msg,*) 'Norm of gmo',infpar%lg_mynum
+    !call print_norm(gmo,msg)
+    !call array_gather(1.0E0_realk,gmo,0.0E0_realk,w4,i8*dim1*dim1)
+    !call array_convert(gmo,w4) ! does not work
 
+!    call lsmpi_barrier(infpar%lg_comm)
     omegw=0.0_realk
 
     !When fock part is parallelized instead of zero 1.0_realk
     call dgemm('n','n',tl,dim1,dim1, &
          1.0E0_realk,w2,tl,gmo,dim1,0.0E0_realk,w3,tl)
 !#ifdef VAR_MPI
-!    write(msg,*) 'Norm of w3',infpar%lg_mynum
+    !write(msg,*) 'Norm of w3',infpar%lg_mynum
+    !call print_norm(w3,i8*tl*dim1,msg)
 !#else
 !    write(msg,*) 'Norm of w3'
 !#endif
@@ -1527,130 +1540,123 @@ contains
   end function get_sosex_cont_arrnew
 
 
-  function get_rpa_energy_parallel(t2,gmo) result(Ec)
-    implicit none
-    !> two electron integrals in the mo-basis
-    type(array), intent(inout) :: gmo
-    !> doubles amplitudes
-    type(array), intent(in) :: t2
-    !> on return Ec contains the correlation energy
-    real(realk) :: E1,E2,Ec
-    real(realk),pointer :: t(:,:,:,:)
-    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
-
-#ifdef VAR_MPI
-    !Get the slaves to this routine
-    if(infpar%lg_mynum==infpar%master)then
-      call pdm_array_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
-    endif
-    call memory_allocate_array_dense(gmo)
-    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
-
-    E2=0.0E0_realk
-    Ec=0.0E0_realk
-    do lt=1,t2%nlti
-      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
-      !get offset for global indices
-      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
-      do j=1,t2%mode
-        o(j)=(o(j)-1)*t2%tdim(j)
-      enddo
-
-      da = t2%ti(lt)%d(1)
-      db = t2%ti(lt)%d(2)
-      di = t2%ti(lt)%d(3)
-      dj = t2%ti(lt)%d(4)
-      !count over local indices
-      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t,&
-      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
-      do j=1,dj
-        do i=1,di
-          do b=1,db
-            do a=1,da
-     
-              E2 = E2 + t(a,b,i,j)*&
-              & (1.0E0_realk*  gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2)))
-   
-            enddo 
-          enddo
-        enddo
-      enddo
-      !$OMP END PARALLEL DO
-      nullify(t)
-    enddo
-
-    call arr_deallocate_dense(gmo)
-    
-    call lsmpi_local_reduction(E2,infpar%master)
-
-    Ec = E2
-#else
-    Ec = 0.0E0_realk
-#endif
-  end function get_rpa_energy_parallel
-
-
-  function get_sosex_cont_parallel(t2,gmo) result(Ec)
-    implicit none
-    !> two electron integrals in the mo-basis
-    type(array), intent(inout) :: gmo
-    !> doubles amplitudes
-    type(array), intent(in) :: t2
-    !> on return Ec contains the correlation energy
-    real(realk) :: E1,E2,Ec
-    real(realk),pointer :: t(:,:,:,:)
-    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
-
-#ifdef VAR_MPI
-    !Get the slaves to this routine
-    if(infpar%lg_mynum==infpar%master)then
-      call pdm_array_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
-    endif
-    call memory_allocate_array_dense(gmo)
-    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
-
-    E2=0.0E0_realk
-    Ec=0.0E0_realk
-    do lt=1,t2%nlti
-      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
-      !get offset for global indices
-      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
-      do j=1,t2%mode
-        o(j)=(o(j)-1)*t2%tdim(j)
-      enddo
-
-      da = t2%ti(lt)%d(1)
-      db = t2%ti(lt)%d(2)
-      di = t2%ti(lt)%d(3)
-      dj = t2%ti(lt)%d(4)
-      !count over local indices
-      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t,&
-      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
-      do j=1,dj
-        do i=1,di
-          do b=1,db
-            do a=1,da
-     
-              E2 = E2 + t(a,b,i,j)*&
-              & (-0.5E0_realk* gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)) )
-   
-            enddo 
-          enddo
-        enddo
-      enddo
-      !$OMP END PARALLEL DO
-      nullify(t)
-    enddo
-
-    call arr_deallocate_dense(gmo)
-    
-    call lsmpi_local_reduction(E2,infpar%master)
-
-    Ec = E2
-#else
-    Ec = 0.0E0_realk
-#endif
-  end function get_sosex_cont_parallel
+!  function get_rpa_energy_parallel(t2,gmo) result(Ec)
+!    implicit none
+!    !> two electron integrals in the mo-basis
+!    type(array), intent(inout) :: gmo
+!    !> doubles amplitudes
+!    type(array), intent(in) :: t2
+!    !> on return Ec contains the correlation energy
+!    real(realk) :: E1,E2,Ec
+!    real(realk),pointer :: t(:,:,:,:)
+!    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+!
+!#ifdef VAR_MPI
+!    !Get the slaves to this routine
+!    if(infpar%lg_mynum==infpar%master)then
+!      call pdm_array_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
+!    endif
+!    call memory_allocate_array_dense(gmo)
+!    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
+!
+!    E2=0.0E0_realk
+!    Ec=0.0E0_realk
+!    do lt=1,t2%nlti
+!      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
+!      !get offset for global indices
+!      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+!      do j=1,t2%mode
+!        o(j)=(o(j)-1)*t2%tdim(j)
+!      enddo
+!
+!      da = t2%ti(lt)%d(1)
+!      db = t2%ti(lt)%d(2)
+!      di = t2%ti(lt)%d(3)
+!      dj = t2%ti(lt)%d(4)
+!      !count over local indices
+!      do j=1,dj
+!        do i=1,di
+!          do b=1,db
+!            do a=1,da
+!     
+!              E2 = E2 + t(a,b,i,j)*&
+!              & (1.0E0_realk*  gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2)))
+!   
+!            enddo 
+!          enddo
+!        enddo
+!      enddo
+!      nullify(t)
+!    enddo
+!
+!    call arr_deallocate_dense(gmo)
+!    
+!    call lsmpi_local_reduction(E2,infpar%master)
+!
+!    Ec = E2
+!#else
+!    Ec = 0.0E0_realk
+!#endif
+!  end function get_rpa_energy_parallel
+!
+!
+!  function get_sosex_cont_parallel(t2,gmo) result(Ec)
+!    implicit none
+!    !> two electron integrals in the mo-basis
+!    type(array), intent(inout) :: gmo
+!    !> doubles amplitudes
+!    type(array), intent(in) :: t2
+!    !> on return Ec contains the correlation energy
+!    real(realk) :: E2,Ec
+!    real(realk),pointer :: t(:,:,:,:)
+!    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+!
+!#ifdef VAR_MPI
+!    !Get the slaves to this routine
+!    if(infpar%lg_mynum==infpar%master)then
+!      call pdm_array_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
+!    endif
+!    call memory_allocate_array_dense(gmo)
+!    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
+!
+!    E2=0.0E0_realk
+!    Ec=0.0E0_realk
+!    do lt=1,t2%nlti
+!      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
+!      !get offset for global indices
+!      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+!      do j=1,t2%mode
+!        o(j)=(o(j)-1)*t2%tdim(j)
+!      enddo
+!
+!      da = t2%ti(lt)%d(1)
+!      db = t2%ti(lt)%d(2)
+!      di = t2%ti(lt)%d(3)
+!      dj = t2%ti(lt)%d(4)
+!      do j=1,dj
+!        do i=1,di
+!          do b=1,db
+!            do a=1,da
+!     
+!              E2 = E2 + t(a,b,i,j)*&
+!              & (-0.5E0_realk* gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)) )
+!   
+!            enddo 
+!          enddo
+!        enddo
+!      enddo
+!      nullify(t)
+!    enddo
+!
+!    call arr_deallocate_dense(gmo)
+!    
+!    call lsmpi_local_reduction(E2,infpar%master)
+!
+!    Ec = E2
+!#else
+!    Ec = 0.0E0_realk
+!#endif
+!  end function get_sosex_cont_parallel
 
 
 
@@ -1708,6 +1714,7 @@ subroutine rpa_res_slave()
   implicit none
   !> number of orbitals:
   type(array) :: omega2,t2
+  !type(array) :: gmo
   !type(array4) :: omega2!,t2
   real(realk),pointer :: gmo(:)!,t2(:,:,:,:)
   type(array2)  :: pfock,qfock
@@ -1740,7 +1747,7 @@ subroutine rpa_fock_slave()
   call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nocc,nvirt)
   write(*,*) 'slaves, calling fock_para'
   call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
-  !call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
+  !call RPA_fock_para2(omega2,t2,pfock,qfock,nocc,nvirt)
 
 end subroutine rpa_fock_slave
 #endif

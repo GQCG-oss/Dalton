@@ -990,6 +990,9 @@ contains
 
     if(ccmodel == MODEL_RPA) then
       ! working arrays
+      gmosize = int(i8*no*nv*no*nv,kind=long)
+      call mem_alloc(gmo,gmosize)
+      gmo = 0.0_realk
       tmp_size = max(nb*MaxActualDimAlpha*MaxActualDimGamma, MaxActualDimGamma*no*nv)
       tmp_size = int(i8*tmp_size*no, kind=long)
       call mem_alloc(tmp1, tmp_size)
@@ -1108,7 +1111,9 @@ contains
        if (ccmodel == MODEL_RPA) then
          
 
-         call gao_to_govov(govov%elm1,gao,Co,Cv,nb,no,nv,AlphaStart,dimAlpha, &
+         !call gao_to_govov(govov%elm1,gao,Co,Cv,nb,no,nv,AlphaStart,dimAlpha, &
+         !     & GammaStart,dimGamma,tmp1,tmp2)
+         call gao_to_govov(gmo,gao,Co,Cv,nb,no,nv,AlphaStart,dimAlpha, &
               & GammaStart,dimGamma,tmp1,tmp2)
 
        else
@@ -1135,11 +1140,13 @@ contains
            end if
 
          end do BatchPQ
+
        end if
 
 
     end do BatchAlpha
     end do BatchGamma
+
 
  
     ! Free integral stuff
@@ -1170,15 +1177,26 @@ contains
     end do
     call mem_dealloc(batch2orbAlpha)
 
+
+    if (ccmodel==MODEL_RPA) then 
+      !call array_scatter(1.0E0_realk,gmo,0.0E0_realk,govov,i8*no*nv*no*nv)
+      if(master) then
+      !  call print_norm(gmo,i8*no*no*nv*nv)
+        call array_convert(gmo,govov)
+      !  call print_norm(govov)
+      endif
+      !call daxpy(ncopy,1.0E0_realk,gmo,1,govov%elm1,1)
+    endif
+
     ! Free matrices:
     call mem_dealloc(gao)
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
+    call mem_dealloc(gmo)
     if (ccmodel/=MODEL_RPA) then 
       call mem_dealloc(Cov)
       call mem_dealloc(CP)
       call mem_dealloc(CQ)
-      call mem_dealloc(gmo)
     end if
      
 #ifdef VAR_MPI

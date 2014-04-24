@@ -140,6 +140,8 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_INIT_ARR_PC         = 24
   integer,parameter :: JOB_TEST_ARRAY          = 25
   integer,parameter :: JOB_GET_MP2_ENERGY      = 26
+  integer,parameter :: JOB_GET_RPA_ENERGY      = 27
+  integer,parameter :: JOB_GET_SOS_ENERGY      = 28
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -801,6 +803,137 @@ module lspdm_tensor_operations_module
     Ec = 0.0E0_realk
 #endif
   end function get_mp2_energy_parallel
+
+
+  function get_rpa_energy_parallel(t2,gmo) result(Ec)
+    implicit none
+    !> two electron integrals in the mo-basis
+    type(array), intent(inout) :: gmo
+    !> doubles amplitudes
+    type(array), intent(in) :: t2
+    !> on return Ec contains the correlation energy
+    real(realk) :: E1,E2,Ec
+    real(realk),pointer :: t(:,:,:,:)
+    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+
+#ifdef VAR_MPI
+    !Get the slaves to this routine
+    if(infpar%lg_mynum==infpar%master)then
+      call pdm_array_sync(infpar%lg_comm,JOB_GET_RPA_ENERGY,t2,gmo)
+    endif
+    call memory_allocate_array_dense(gmo)
+    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
+
+    E2=0.0E0_realk
+    Ec=0.0E0_realk
+    do lt=1,t2%nlti
+      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
+      !get offset for global indices
+      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+      do j=1,t2%mode
+        o(j)=(o(j)-1)*t2%tdim(j)
+      enddo
+
+      da = t2%ti(lt)%d(1)
+      db = t2%ti(lt)%d(2)
+      di = t2%ti(lt)%d(3)
+      dj = t2%ti(lt)%d(4)
+      !count over local indices
+      !count over local indices
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t,&
+      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E2) COLLAPSE(3)
+      do j=1,dj
+        do i=1,di
+          do b=1,db
+            do a=1,da
+     
+              E2 = E2 + t(a,b,i,j)*&
+              & (1.0E0_realk*  gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2)))
+   
+            enddo 
+          enddo
+        enddo
+      enddo
+      !$OMP END PARALLEL DO
+      nullify(t)
+    enddo
+
+    call arr_deallocate_dense(gmo)
+    
+    call lsmpi_local_reduction(E2,infpar%master)
+
+    Ec = E2
+#else
+    Ec = 0.0E0_realk
+#endif
+  end function get_rpa_energy_parallel
+
+
+  function get_sosex_cont_parallel(t2,gmo) result(Ec)
+    implicit none
+    !> two electron integrals in the mo-basis
+    type(array), intent(inout) :: gmo
+    !> doubles amplitudes
+    type(array), intent(in) :: t2
+    !> on return Ec contains the correlation energy
+    real(realk) :: E2,Ec
+    real(realk),pointer :: t(:,:,:,:)
+    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+
+#ifdef VAR_MPI
+    !Get the slaves to this routine
+    if(infpar%lg_mynum==infpar%master)then
+      call pdm_array_sync(infpar%lg_comm,JOB_GET_SOS_ENERGY,t2,gmo)
+    endif
+    call memory_allocate_array_dense(gmo)
+    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
+
+    E2=0.0E0_realk
+    Ec=0.0E0_realk
+    do lt=1,t2%nlti
+      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
+      !get offset for global indices
+      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+      do j=1,t2%mode
+        o(j)=(o(j)-1)*t2%tdim(j)
+      enddo
+
+      da = t2%ti(lt)%d(1)
+      db = t2%ti(lt)%d(2)
+      di = t2%ti(lt)%d(3)
+      dj = t2%ti(lt)%d(4)
+      !count over local indices
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t,&
+      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E2) COLLAPSE(3)
+      do j=1,dj
+        do i=1,di
+          do b=1,db
+            do a=1,da
+     
+              E2 = E2 + t(a,b,i,j)*&
+              & (-0.5E0_realk* gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)) )
+   
+            enddo 
+          enddo
+        enddo
+      enddo
+      !$OMP END PARALLEL DO
+      nullify(t)
+    enddo
+
+    call arr_deallocate_dense(gmo)
+    
+    call lsmpi_local_reduction(E2,infpar%master)
+
+    Ec = E2
+#else
+    Ec = 0.0E0_realk
+#endif
+  end function get_sosex_cont_parallel
+
+
+
+
 
   !> \brief doubles preconditionning routine for pdm distributed doubles
   !amplitudes

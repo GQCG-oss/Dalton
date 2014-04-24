@@ -1779,7 +1779,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    end if
 
    if(CCmodel == MODEL_RPA) then
-     iajb=array_minit( [no,nv,no,nv], 4, local=.true., atype='TDAR' )
+     iajb=array_minit( [no,nv,no,nv], 4, local=.false., atype='TDAR' )
    else
      iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
    endif
@@ -1810,14 +1810,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    else
 
       !if MP2, just zero the array, and keep it in PDM all the time
+         atype = 'TDAR'
+         t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
       if(ccmodel == MODEL_MP2 )then
-         atype = 'TDAR'
-         t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
          old_iter = 0
-       elseif(ccmodel == MODEL_RPA) then
-         atype = 'TDAR'
-         t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
-         call array_zero(t2(1))
       else
          call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
             & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
@@ -1872,10 +1868,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
             write(*,*) 'getting gmo'
 
-            call  wrapper_to_get_real_t1_free_gmo(nb,no,nv,Co%elm2,Cv2%elm2,&
-              & iajb,ccmodel,mylsitem)
-            !call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
-              ! & nb,no,nv,CCmodel,MOinfo)
+            !call  wrapper_to_get_real_t1_free_gmo(nb,no,nv,Co%elm2,Cv2%elm2,&
+            !  & iajb,ccmodel,mylsitem)
+            call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
+               & nb,no,nv,CCmodel,MOinfo)
             write(*,*) 'got gmo'
 
             if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
@@ -1981,7 +1977,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             !msg = 'Norm of omega2'
             !call print_norm(omega2(iter),msg)
 
-           call RPA_residual_par(Omega2(iter),t2(iter),iajb%elm1,ppfock_prec,qqfock_prec,no,nv)
+           call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
 
             !msg = 'Norm of omega2 after computations'
             !call print_norm(omega2(iter),msg)
@@ -2138,10 +2134,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
 
          case(MODEL_RPA)
-           !ccenergy = get_RPA_energy_arrnew(t2(iter),iajb,no,nv)
-           !if(DECinfo%SOS) then
-           !  ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter),iajb,no,nv)
-           !endif
+           ccenergy = get_RPA_energy_arrnew(t2(iter),iajb,no,nv)
+           if(DECinfo%SOS) then
+             ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter),iajb,no,nv)
+           endif
 
 
          case default
@@ -2292,8 +2288,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end do
    
+   !in the call to get_combined_SingleDouble_amplitudes
+   !t1 is used, for RPA use_singles = .false. it has to be 
    if(CCmodel == MODEL_RPA)then
      t1_final = array2_init([nv,no])
+     write(*,*) t1_final%val
    endif
 
    call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
@@ -2615,7 +2614,7 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
 
       !   end do
       !end do
-      call array_zero(t1)
+      if(DECinfo%use_singles) call array_zero(t1)
    endif
 
    if(readfile2)then

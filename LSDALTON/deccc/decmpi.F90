@@ -2194,6 +2194,7 @@ contains
     implicit none
     real(realk),intent(inout),pointer :: gmo(:)
     !type(array4), intent(inout) :: omega2
+    !type(array), intent(inout) :: gmo
     type(array), intent(inout) :: omega2
     !type(array4),intent(inout)         :: t2
     type(array),intent(inout)         :: t2
@@ -2202,7 +2203,7 @@ contains
     logical :: master
     integer :: addr1(infpar%lg_nodtot)
     integer :: addr2(infpar%lg_nodtot)
-    integer :: addr3(infpar%lg_nodtot)
+    !integer :: addr3(infpar%lg_nodtot)
 
 
     master = (infpar%lg_mynum == infpar%master)
@@ -2210,21 +2211,23 @@ contains
     if(master) then
    !   write(*,*)'Johannes addr in comm', omega2%addr_p_arr
       addr1 = omega2%addr_p_arr
-  !    addr2 = t2%addr_p_arr
+      !addr2 = gmo%addr_p_arr
+      !addr3 = t2%addr_p_arr
     endif
 
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
-  !  call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
     !call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
 
 
     if(.not.master)then
       call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
       omega2 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
-  !    t2     = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+      !gmo     = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+  !    t2     = get_arr_from_parr(addr3(infpar%lg_mynum+1))
       !t2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
@@ -2284,7 +2287,7 @@ contains
 
     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
     call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
-    call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+    !call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
     call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
 
 
@@ -2320,13 +2323,13 @@ contains
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
     if(.not.master)then
-      !t2=array_ainit([nv,nv,no,no],4,local =.true.,atype='TDAR')
+      t2=array_ainit([nv,nv,no,no],4,local =.true.,atype='TDAR')
       pfock   = get_arr_from_parr(addr1(infpar%lg_mynum+1))
       qfock    = get_arr_from_parr(addr2(infpar%lg_mynum+1))
-      t2    = get_arr_from_parr(addr3(infpar%lg_mynum+1))
+      !t2    = get_arr_from_parr(addr3(infpar%lg_mynum+1))
       omega2   = get_arr_from_parr(addr4(infpar%lg_mynum+1))
     endif
-    !call ls_mpibcast(t2%elm1,nv*nv*no*no,infpar%master,infpar%lg_comm)
+    call ls_mpibcast(t2%elm1,nv*nv*no*no,infpar%master,infpar%lg_comm)
 
 
   end subroutine rpa_fock_communicate_data

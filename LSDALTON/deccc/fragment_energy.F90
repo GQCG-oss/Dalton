@@ -297,12 +297,23 @@ contains
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (currently CC2 or CCSD)
 
+
        call dec_fragment_time_init(times_ccsd)
+
 
        ! Solve CC equation to calculate amplitudes and integrals 
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
        call fragment_ccsolver(MyFragment,t1,t2,VOVO)
+
+       !in the call to get_combined_SingleDouble_amplitudes
+       !t1 is used, for RPA use_singles = .false.
+       !For now it is in cc_driver as I get
+       !the wrong energy if it is initialized here
+       !if(.not. DECinfo%use_singles) then
+       !  t1 = array2_init([t2%dims(1),t2%dims(2)])
+       !endif
+
 
        ! Extract EOS indices for integrals
        ! *********************************
