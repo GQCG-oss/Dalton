@@ -781,7 +781,8 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G ', '.LOCALI', '.LRESC ' / ! jim May-12 for LRESC
+     &             '.VIB_G ', '.LOCALI', '.LRESC '/  ! jim May-12 for LRESC
+C
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -1268,6 +1269,7 @@ Cend-PFP
  160     CONTINUE ! jim-gesc 1.2: set RNLRSC true
          RNLRSC = .TRUE.
          GOTO 100
+C
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1895,7 +1897,6 @@ CAMT--------------
 
         END IF
       END IF
-
 C
 C
 C

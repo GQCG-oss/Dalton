@@ -250,7 +250,7 @@ call build_ichor_AOextent(MaxnAtomsC,MaxnprimC,MaxnContC,ntypesC,exponentsOfType
      & nContOfTypeC,nPrimOfTypeC,ContractCoeffOfTypeC,AngmomOfTypeC,Threshold_OD,ExtentOfTypeC)
 call build_ichor_AOextent(MaxnAtomsD,MaxnprimD,MaxnContD,ntypesD,exponentsOfTypeD,ODscreen,&
      & nContOfTypeD,nPrimOfTypeD,ContractCoeffOfTypeD,AngmomOfTypeD,Threshold_OD,ExtentOfTypeD)
-call set_ichor_memvar(MaxMemAllocated,MemAllocated)
+call set_ichor_memvar(MaxMemAllocated,MemAllocated,MaxMem)
 INTPRINT=IchorDebugSpec
 IF(INTPRINT.GT.50)WRITE(LUPRI,'(A)') ' IchorEri'
 allocate(OrderdListA(nTypesA))
@@ -296,25 +296,22 @@ IF(CSScreen)THEN
    call ObtainMaxGabForType(MaxGabForTypeAB,nTypesA,nTypesB,nAtomsOfTypeA,&
         & nAtomsOfTypeB,BatchIndexOfTypeA,BatchIndexOfTypeB,BATCHGAB,&
         & nBatchA,nBatchB)
+
+   allocate(BatchIndexOfTypeC(nTypesC))
+   call mem_ichor_alloc(BatchIndexOfTypeC)
+   allocate(BatchIndexOfTypeD(nTypesD))
+   call mem_ichor_alloc(BatchIndexOfTypeD)
+   allocate(MaxGabForTypeCD(nTypesC,nTypesD))
+   call mem_ichor_alloc(MaxGabForTypeCD)
    IF(IchorGabID1.EQ.IchorGabID2)THEN
       BATCHGCD => BATCHGAB
-      allocate(MaxGabForTypeCD(nTypesC,nTypesD))
-      call mem_ichor_alloc(MaxGabForTypeCD)
       MaxGabForTypeCD = MaxGabForTypeAB
-      allocate(BatchIndexOfTypeC(nTypesC))
-      call mem_ichor_alloc(BatchIndexOfTypeC)
       BatchIndexOfTypeC = BatchIndexOfTypeA
-      allocate(BatchIndexOfTypeD(nTypesD))
-      call mem_ichor_alloc(BatchIndexOfTypeD)
       BatchIndexOfTypeD = BatchIndexOfTypeB
       nBatchC = nBatchA
       nBatchD = nBatchB
    ELSE
-      allocate(BatchIndexOfTypeC(nTypesC))
-      call mem_ichor_alloc(BatchIndexOfTypeC)
       call ConstructBatchIndexOfType(BatchIndexOfTypeC,nTypesC,nAtomsOfTypeC,nBatchC)
-      allocate(BatchIndexOfTypeD(nTypesD))
-      call mem_ichor_alloc(BatchIndexOfTypeD)
       call ConstructBatchIndexOfType(BatchIndexOfTypeD,nTypesD,nAtomsOfTypeD,nBatchD)
       allocate(BATCHGCD(nBatchC,nBatchD))
       call mem_ichor_alloc(BATCHGCD)
@@ -333,8 +330,6 @@ IF(CSScreen)THEN
       ELSE
          call RetrieveGabFromIchorSaveGabModule(nBatchC,nBatchD,IchorGabID2,BATCHGCD)
       ENDIF
-      allocate(MaxGabForTypeCD(nTypesC,nTypesD))
-      call mem_ichor_alloc(MaxGabForTypeCD)
       call ObtainMaxGabForType(MaxGabForTypeCD,nTypesC,nTypesD,nAtomsOfTypeC,&
            & nAtomsOfTypeD,BatchIndexOfTypeC,BatchIndexOfTypeD,BATCHGCD,&
            & nBatchC,nBatchD)
@@ -795,20 +790,19 @@ IF(CSScreen)THEN
    deallocate(BatchIndexOfTypeB)
    call mem_ichor_dealloc(MaxGabForTypeAB)
    deallocate(MaxGabForTypeAB)
+   call mem_ichor_dealloc(BatchIndexOfTypeC)
+   deallocate(BatchIndexOfTypeC)
+   call mem_ichor_dealloc(BatchIndexOfTypeD)
+   deallocate(BatchIndexOfTypeD)
+   call mem_ichor_dealloc(MaxGabForTypeCD)
+   deallocate(MaxGabForTypeCD)
    IF(IchorGabID1.EQ.IchorGabID2)THEN
       !nothing
    ELSE
-      call mem_ichor_dealloc(BatchIndexOfTypeC)
-      deallocate(BatchIndexOfTypeC)
-      call mem_ichor_dealloc(BatchIndexOfTypeD)
-      deallocate(BatchIndexOfTypeD)
       call mem_ichor_dealloc(BATCHGCD)
       deallocate(BATCHGCD)
-      call mem_ichor_dealloc(MaxGabForTypeCD)
-      deallocate(MaxGabForTypeCD)
    ENDIF
 ENDIF
-
 call mem_ichor_dealloc(OrderdListA)
 deallocate(OrderdListA)
 call mem_ichor_dealloc(OrderdListB)
@@ -820,6 +814,9 @@ deallocate(OrderdListD)
 call retrieve_ichor_memvar(MaxMemAllocated,MemAllocated)
 IF(INTPRINT.GT.3)THEN
    call stats_ichor_mem(lupri)
+ENDIF
+IF(MemAllocated.NE.0)THEN
+   call ichorquit('MemoryLeak in IchorEri',lupri)
 ENDIF
 
 end subroutine IchorEri

@@ -1,0 +1,1999 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Sun Sep  8 20:38:35 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/bast/DALTON-2013.0-Source/build/test_dft_rspexci_nosym
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+**INTEGRALS                                       
+.PROPRINT                                         
+**WAVE FUNCTIONS                                  
+.DFT                                              
+ B3LYP                                            
+**RESPONSE                                        
+*LINEAR                                           
+.SINGLE RESIDUE                                   
+.ROOTS                                            
+ 3                                                
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+cc-pVDZ                                                                        
+H2O                                                                            
+                                                                               
+    2    0                                                                     
+        8.    1                                                                
+O     0.0  0.0000000000 0.0                                                    
+        1.    2                                                                
+H1    1.430    0.0  1.1                                                        
+H2   -1.430    0.0  1.1                                                        
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: H2O                                                                     
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H1          1.007825
+                           H2          1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.123106
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  Basis set used is "cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    26    14      [9s4p1d|3s2p1d]                                    
+  H2          2    1.0000     7     5      [4s1p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      3   10.0000    40    24
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+  H1      :     4  x   1.4300000000    5  y   0.0000000000    6  z   1.1000000000
+  H2      :     7  x  -1.4300000000    8  y   0.0000000000    9  z   1.1000000000
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H1          H2    
+            ------      ------      ------
+ O     :    0.000000
+ H1    :    0.954707    0.000000
+ H2    :    0.954707    1.513447    0.000000
+
+
+  Max    interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
+  between atoms    3 and    2, "H2    " and "H1    ".
+
+  Min HX interatomic separation is    0.9547 Angstrom (    1.8041 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H1         O            0.954707
+  bond distance:  H2         O            0.954707
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H1         O          H2           104.863
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.606537          1.000000    0.000000    0.000000
+   IB       1.154222          0.000000    0.000000    1.000000
+   IC       1.760759          0.000000    1.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         833220.2929         437852.3988         287023.3200 MHz
+           27.793237           14.605184            9.574067 cm-1
+
+
+@  Nuclear repulsion energy :    9.218170507464 Hartree
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.123106354520
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: HUCKOVLP !
+                        +---------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       1.00000000
+       2       0.00000114     1.00000000
+       3       0.19189620     0.93332372     1.00000000
+       4       0.00000000     0.00000000     0.00000000     1.00000000
+       7       0.00000000     0.00000000     0.00000000     0.80456378
+      12       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15       0.06538843     0.52054540     0.61845340     0.32463382
+      16       0.06822982     0.53766218     0.64902830     0.20051332
+      17      -0.08801043    -0.34158416    -0.31075471    -0.08017549
+      19      -0.06770033    -0.26275705    -0.23904208    -0.30520851
+      20       0.06538843     0.52054540     0.61845340    -0.32463382
+      21       0.06822982     0.53766218     0.64902830    -0.20051332
+      22       0.08801043     0.34158416     0.31075471    -0.08017549
+      24      -0.06770033    -0.26275705    -0.23904208     0.30520851
+      25       0.99999950    -0.00000582     0.19190838     0.00000000
+      26      -0.00000611     0.99985277     0.93292841     0.00000000
+      27       0.00000000     0.00000000     0.00000000     0.99701045
+      30       0.06282219     0.50854431     0.60346779     0.33376264
+      31       0.06282219     0.50854431     0.60346779    -0.33376264
+
+               Column   5     Column   6     Column   7     Column   8
+       5       1.00000000
+       6       0.00000000     1.00000000
+       7       0.00000000     0.00000000     1.00000000
+       8       0.80456378     0.00000000     0.00000000     1.00000000
+       9       0.00000000     0.80456378     0.00000000     0.00000000
+      15       0.00000000     0.24971833     0.44548105     0.00000000
+      16       0.00000000     0.15424101     0.31009992     0.00000000
+      17       0.00000000    -0.30520851     0.07206547     0.00000000
+      18       0.31659556     0.00000000     0.00000000     0.39308490
+      19       0.00000000     0.08181979    -0.24693802     0.00000000
+      20       0.00000000     0.24971833    -0.44548105     0.00000000
+      21       0.00000000     0.15424101    -0.31009992     0.00000000
+      22       0.00000000     0.30520851     0.07206547     0.00000000
+      23       0.31659556     0.00000000     0.00000000     0.39308490
+      24       0.00000000     0.08181979     0.24693802     0.00000000
+      27       0.00000000     0.00000000     0.81041643     0.00000000
+      28       0.99701045     0.00000000     0.00000000     0.81041643
+      29       0.00000000     0.99701045     0.00000000     0.00000000
+      30       0.00000000     0.25674049     0.45384170     0.00000000
+      31       0.00000000     0.25674049    -0.45384170     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9       1.00000000
+      10       0.00000000     1.00000000
+      11       0.00000000     0.00000000     1.00000000
+      12       0.00000000     0.00000000     0.00000000     1.00000000
+      15       0.34267773     0.00000000     0.00000000     0.00852906
+      16       0.23853840     0.00000000     0.00000000     0.00138463
+      17      -0.24693802     0.00000000     0.00000000    -0.17120941
+      18       0.00000000     0.25367058     0.19513121     0.00000000
+      19       0.20313257     0.00000000     0.00000000     0.20627763
+      20       0.34267773     0.00000000     0.00000000     0.00852906
+      21       0.23853840     0.00000000     0.00000000     0.00138463
+      22       0.24693802     0.00000000     0.00000000     0.17120941
+      23       0.00000000    -0.25367058     0.19513121     0.00000000
+      24       0.20313257     0.00000000     0.00000000     0.20627763
+      25       0.00000000     0.00000000     0.00000000     0.00000000
+      26       0.00000000     0.00000000     0.00000000     0.00000000
+      29       0.81041643     0.00000000     0.00000000     0.00000000
+      30       0.34910900     0.00000000     0.00000000     0.00952304
+      31       0.34910900     0.00000000     0.00000000     0.00952304
+
+               Column  13     Column  14     Column  15     Column  16
+      13       1.00000000
+      14       0.00000000     1.00000000
+      15       0.12390058     0.08053538     1.00000000
+      16       0.02011436     0.01307433     0.90368690     1.00000000
+      17      -0.16444726     0.01994457    -0.00000000    -0.00000000
+      19      -0.02292825    -0.17978924    -0.00000000     0.00000000
+      20      -0.12390058     0.08053538     0.37572254     0.48518021
+      21      -0.02011436     0.01307433     0.48518021     0.60716445
+      22      -0.16444726    -0.01994457     0.18188527     0.17523033
+      24       0.02292825    -0.17978924    -0.00000000     0.00000000
+      25       0.00000000     0.00000000     0.06561523     0.06860432
+      26       0.00000000     0.00000000     0.52450055     0.54486048
+      27       0.00000000     0.00000000     0.33687810     0.22222629
+      29       0.00000000     0.00000000     0.25913700     0.17094330
+      30       0.13834002     0.08992102     0.99798624     0.87697288
+      31      -0.13834002     0.08992102     0.35746496     0.46503425
+
+               Column  17     Column  18     Column  19     Column  20
+      17       1.00000000
+      18       0.00000000     1.00000000
+      19       0.00000000     0.00000000     1.00000000
+      20      -0.18188527     0.00000000    -0.00000000     1.00000000
+      21      -0.17523033     0.00000000     0.00000000     0.90368690
+      22      -0.25294319     0.00000000     0.00000000     0.00000000
+      23       0.00000000     0.05113508     0.00000000     0.00000000
+      24       0.00000000     0.00000000     0.05113508    -0.00000000
+      25      -0.08785561     0.00000000    -0.06758123     0.06561523
+      26      -0.33901046     0.00000000    -0.26077727     0.52450055
+      27      -0.07219700     0.00000000    -0.29854368    -0.33687810
+      28       0.00000000     0.31590979     0.00000000     0.00000000
+      29      -0.29854368     0.00000000     0.08626080     0.25913700
+      30      -0.00000000     0.00000000     0.00000000     0.35746496
+      31      -0.17803978     0.00000000     0.00000000     0.99798624
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.00000000
+      22       0.00000000     1.00000000
+      23       0.00000000     0.00000000     1.00000000
+      24       0.00000000     0.00000000     0.00000000     1.00000000
+      25       0.06860432     0.08785561     0.00000000    -0.06758123
+      26       0.54486048     0.33901046     0.00000000    -0.26077727
+      27      -0.22222629    -0.07219700     0.00000000     0.29854368
+      28       0.00000000     0.00000000     0.31590979     0.00000000
+      29       0.17094330     0.29854368     0.00000000     0.08626080
+      30       0.46503425     0.17803978     0.00000000     0.00000000
+      31       0.87697288     0.00000000     0.00000000     0.00000000
+
+               Column  25     Column  26     Column  27     Column  28
+      25       1.00000000
+      26      -0.00000000     1.00000000
+      27       0.00000000     0.00000000     1.00000000
+      28       0.00000000     0.00000000     0.00000000     1.00000000
+      30       0.06303009     0.51211637     0.34443094     0.00000000
+      31       0.06303009     0.51211637    -0.34443094     0.00000000
+
+               Column  29     Column  30     Column  31
+      29       1.00000000
+      30       0.26494688     1.00000000
+      31       0.26494688     0.33978673     1.00000000
+    ==== End of matrix output ====
+
+
+                         +-------------------------------+
+                         ! Integrals of operator: HUCKEL !
+                         +-------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       1.00000000
+       2       0.00000114     1.00000000
+       3       0.19189620     0.93332372     1.00000000
+       4       0.00000000     0.00000000     0.00000000     1.00000000
+       7       0.00000000     0.00000000     0.00000000     0.80456378
+      12       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15       0.06538843     0.52054540     0.61845340     0.32463382
+      16       0.06822982     0.53766218     0.64902830     0.20051332
+      17      -0.08801043    -0.34158416    -0.31075471    -0.08017549
+      19      -0.06770033    -0.26275705    -0.23904208    -0.30520851
+      20       0.06538843     0.52054540     0.61845340    -0.32463382
+      21       0.06822982     0.53766218     0.64902830    -0.20051332
+      22       0.08801043     0.34158416     0.31075471    -0.08017549
+      24      -0.06770033    -0.26275705    -0.23904208     0.30520851
+      25       0.99999950    -0.00000582     0.19190838     0.00000000
+      26      -0.00000611     0.99985277     0.93292841     0.00000000
+      27       0.00000000     0.00000000     0.00000000     0.99701045
+      30       0.06282219     0.50854431     0.60346779     0.33376264
+      31       0.06282219     0.50854431     0.60346779    -0.33376264
+
+               Column   5     Column   6     Column   7     Column   8
+       5       1.00000000
+       6       0.00000000     1.00000000
+       7       0.00000000     0.00000000     1.00000000
+       8       0.80456378     0.00000000     0.00000000     1.00000000
+       9       0.00000000     0.80456378     0.00000000     0.00000000
+      15       0.00000000     0.24971833     0.44548105     0.00000000
+      16       0.00000000     0.15424101     0.31009992     0.00000000
+      17       0.00000000    -0.30520851     0.07206547     0.00000000
+      18       0.31659556     0.00000000     0.00000000     0.39308490
+      19       0.00000000     0.08181979    -0.24693802     0.00000000
+      20       0.00000000     0.24971833    -0.44548105     0.00000000
+      21       0.00000000     0.15424101    -0.31009992     0.00000000
+      22       0.00000000     0.30520851     0.07206547     0.00000000
+      23       0.31659556     0.00000000     0.00000000     0.39308490
+      24       0.00000000     0.08181979     0.24693802     0.00000000
+      27       0.00000000     0.00000000     0.81041643     0.00000000
+      28       0.99701045     0.00000000     0.00000000     0.81041643
+      29       0.00000000     0.99701045     0.00000000     0.00000000
+      30       0.00000000     0.25674049     0.45384170     0.00000000
+      31       0.00000000     0.25674049    -0.45384170     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9       1.00000000
+      10       0.00000000     1.00000000
+      11       0.00000000     0.00000000     1.00000000
+      12       0.00000000     0.00000000     0.00000000     1.00000000
+      15       0.34267773     0.00000000     0.00000000     0.00852906
+      16       0.23853840     0.00000000     0.00000000     0.00138463
+      17      -0.24693802     0.00000000     0.00000000    -0.17120941
+      18       0.00000000     0.25367058     0.19513121     0.00000000
+      19       0.20313257     0.00000000     0.00000000     0.20627763
+      20       0.34267773     0.00000000     0.00000000     0.00852906
+      21       0.23853840     0.00000000     0.00000000     0.00138463
+      22       0.24693802     0.00000000     0.00000000     0.17120941
+      23       0.00000000    -0.25367058     0.19513121     0.00000000
+      24       0.20313257     0.00000000     0.00000000     0.20627763
+      25       0.00000000     0.00000000     0.00000000     0.00000000
+      26       0.00000000     0.00000000     0.00000000     0.00000000
+      29       0.81041643     0.00000000     0.00000000     0.00000000
+      30       0.34910900     0.00000000     0.00000000     0.00952304
+      31       0.34910900     0.00000000     0.00000000     0.00952304
+
+               Column  13     Column  14     Column  15     Column  16
+      13       1.00000000
+      14       0.00000000     1.00000000
+      15       0.12390058     0.08053538     1.00000000
+      16       0.02011436     0.01307433     0.90368690     1.00000000
+      17      -0.16444726     0.01994457    -0.00000000    -0.00000000
+      19      -0.02292825    -0.17978924    -0.00000000     0.00000000
+      20      -0.12390058     0.08053538     0.37572254     0.48518021
+      21      -0.02011436     0.01307433     0.48518021     0.60716445
+      22      -0.16444726    -0.01994457     0.18188527     0.17523033
+      24       0.02292825    -0.17978924    -0.00000000     0.00000000
+      25       0.00000000     0.00000000     0.06561523     0.06860432
+      26       0.00000000     0.00000000     0.52450055     0.54486048
+      27       0.00000000     0.00000000     0.33687810     0.22222629
+      29       0.00000000     0.00000000     0.25913700     0.17094330
+      30       0.13834002     0.08992102     0.99798624     0.87697288
+      31      -0.13834002     0.08992102     0.35746496     0.46503425
+
+               Column  17     Column  18     Column  19     Column  20
+      17       1.00000000
+      18       0.00000000     1.00000000
+      19       0.00000000     0.00000000     1.00000000
+      20      -0.18188527     0.00000000    -0.00000000     1.00000000
+      21      -0.17523033     0.00000000     0.00000000     0.90368690
+      22      -0.25294319     0.00000000     0.00000000     0.00000000
+      23       0.00000000     0.05113508     0.00000000     0.00000000
+      24       0.00000000     0.00000000     0.05113508    -0.00000000
+      25      -0.08785561     0.00000000    -0.06758123     0.06561523
+      26      -0.33901046     0.00000000    -0.26077727     0.52450055
+      27      -0.07219700     0.00000000    -0.29854368    -0.33687810
+      28       0.00000000     0.31590979     0.00000000     0.00000000
+      29      -0.29854368     0.00000000     0.08626080     0.25913700
+      30      -0.00000000     0.00000000     0.00000000     0.35746496
+      31      -0.17803978     0.00000000     0.00000000     0.99798624
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.00000000
+      22       0.00000000     1.00000000
+      23       0.00000000     0.00000000     1.00000000
+      24       0.00000000     0.00000000     0.00000000     1.00000000
+      25       0.06860432     0.08785561     0.00000000    -0.06758123
+      26       0.54486048     0.33901046     0.00000000    -0.26077727
+      27      -0.22222629    -0.07219700     0.00000000     0.29854368
+      28       0.00000000     0.00000000     0.31590979     0.00000000
+      29       0.17094330     0.29854368     0.00000000     0.08626080
+      30       0.46503425     0.17803978     0.00000000     0.00000000
+      31       0.87697288     0.00000000     0.00000000     0.00000000
+
+               Column  25     Column  26     Column  27     Column  28
+      25     -20.68090000
+      26       0.00000000    -1.25040000
+      27       0.00000000     0.00000000    -0.61620000
+      28       0.00000000     0.00000000     0.00000000    -0.61620000
+
+               Column  29     Column  30     Column  31
+      29      -0.61620000
+      30       0.00000000    -0.50000000
+      31       0.00000000     0.00000000    -0.50000000
+    ==== End of matrix output ====
+
+
+                         +--------------------------------+
+                         ! Integrals of operator: OVERLAP !
+                         +--------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       1.00000000
+       2       0.00000114     1.00000000
+       3       0.19189620     0.93332372     1.00000000
+       4       0.00000000     0.00000000     0.00000000     1.00000000
+       7       0.00000000     0.00000000     0.00000000     0.80456378
+      12       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15       0.06538843     0.52054540     0.61845340     0.32463382
+      16       0.06822982     0.53766218     0.64902830     0.20051332
+      17      -0.08801043    -0.34158416    -0.31075471    -0.08017549
+      19      -0.06770033    -0.26275705    -0.23904208    -0.30520851
+      20       0.06538843     0.52054540     0.61845340    -0.32463382
+      21       0.06822982     0.53766218     0.64902830    -0.20051332
+      22       0.08801043     0.34158416     0.31075471    -0.08017549
+      24      -0.06770033    -0.26275705    -0.23904208     0.30520851
+
+               Column   5     Column   6     Column   7     Column   8
+       5       1.00000000
+       6       0.00000000     1.00000000
+       7       0.00000000     0.00000000     1.00000000
+       8       0.80456378     0.00000000     0.00000000     1.00000000
+       9       0.00000000     0.80456378     0.00000000     0.00000000
+      15       0.00000000     0.24971833     0.44548105     0.00000000
+      16       0.00000000     0.15424101     0.31009992     0.00000000
+      17       0.00000000    -0.30520851     0.07206547     0.00000000
+      18       0.31659556     0.00000000     0.00000000     0.39308490
+      19       0.00000000     0.08181979    -0.24693802     0.00000000
+      20       0.00000000     0.24971833    -0.44548105     0.00000000
+      21       0.00000000     0.15424101    -0.31009992     0.00000000
+      22       0.00000000     0.30520851     0.07206547     0.00000000
+      23       0.31659556     0.00000000     0.00000000     0.39308490
+      24       0.00000000     0.08181979     0.24693802     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9       1.00000000
+      10       0.00000000     1.00000000
+      11       0.00000000     0.00000000     1.00000000
+      12       0.00000000     0.00000000     0.00000000     1.00000000
+      15       0.34267773     0.00000000     0.00000000     0.00852906
+      16       0.23853840     0.00000000     0.00000000     0.00138463
+      17      -0.24693802     0.00000000     0.00000000    -0.17120941
+      18       0.00000000     0.25367058     0.19513121     0.00000000
+      19       0.20313257     0.00000000     0.00000000     0.20627763
+      20       0.34267773     0.00000000     0.00000000     0.00852906
+      21       0.23853840     0.00000000     0.00000000     0.00138463
+      22       0.24693802     0.00000000     0.00000000     0.17120941
+      23       0.00000000    -0.25367058     0.19513121     0.00000000
+      24       0.20313257     0.00000000     0.00000000     0.20627763
+
+               Column  13     Column  14     Column  15     Column  16
+      13       1.00000000
+      14       0.00000000     1.00000000
+      15       0.12390058     0.08053538     1.00000000
+      16       0.02011436     0.01307433     0.90368690     1.00000000
+      17      -0.16444726     0.01994457    -0.00000000    -0.00000000
+      19      -0.02292825    -0.17978924    -0.00000000     0.00000000
+      20      -0.12390058     0.08053538     0.37572254     0.48518021
+      21      -0.02011436     0.01307433     0.48518021     0.60716445
+      22      -0.16444726    -0.01994457     0.18188527     0.17523033
+      24       0.02292825    -0.17978924    -0.00000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+      17       1.00000000
+      18       0.00000000     1.00000000
+      19       0.00000000     0.00000000     1.00000000
+      20      -0.18188527     0.00000000    -0.00000000     1.00000000
+      21      -0.17523033     0.00000000     0.00000000     0.90368690
+      22      -0.25294319     0.00000000     0.00000000     0.00000000
+      23       0.00000000     0.05113508     0.00000000     0.00000000
+      24       0.00000000     0.00000000     0.05113508    -0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.00000000
+      22       0.00000000     1.00000000
+      23       0.00000000     0.00000000     1.00000000
+      24       0.00000000     0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: HJPOPOVL !
+                        +---------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       1.00000000     0.00000114     0.19189620     0.00000000     0.00000000
+       2       0.00000114     1.00000000     0.93332372     0.00000000     0.00000000
+       3       0.19189620     0.93332372     1.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       7       0.00000000     0.00000000     0.00000000     0.80456378     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.00000000     0.80456378
+      15       0.12561738     0.64093838     0.68200756     0.36271461     0.00000000
+      16       0.13431695     0.82137741     0.92482326     0.30209911     0.00000000
+      17      -0.15885303    -0.27404708    -0.18253405    -0.12687905     0.00000000
+      18       0.00000000     0.00000000     0.00000000     0.00000000     0.26689074
+      19      -0.12219464    -0.21080545    -0.14041081    -0.30289984     0.00000000
+      20       0.12561738     0.64093838     0.68200756    -0.36271461     0.00000000
+      21       0.13431695     0.82137741     0.92482326    -0.30209911     0.00000000
+      22       0.15885303     0.27404708     0.18253405    -0.12687905     0.00000000
+      23       0.00000000     0.00000000     0.00000000     0.00000000     0.26689074
+      24      -0.12219464    -0.21080545    -0.14041081     0.30289984     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       4       0.00000000     0.80456378     0.00000000     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.80456378     0.00000000     0.00000000
+       6       1.00000000     0.00000000     0.00000000     0.80456378     0.00000000
+       7       0.00000000     1.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       9       0.80456378     0.00000000     0.00000000     1.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+      15       0.27901124     0.41306334     0.00000000     0.31774103     0.00000000
+      16       0.23238393     0.42975338     0.00000000     0.33057952     0.00000000
+      17      -0.30289984     0.03958819     0.00000000    -0.13565208     0.00000000
+      18       0.00000000     0.00000000     0.21593589     0.00000000     0.31443476
+      19       0.03389086    -0.13565208     0.00000000     0.11158814     0.00000000
+      20       0.27901124    -0.41306334     0.00000000     0.31774103     0.00000000
+      21       0.23238393    -0.42975338     0.00000000     0.33057952     0.00000000
+      22       0.30289984     0.03958819     0.00000000     0.13565208     0.00000000
+      23       0.00000000     0.00000000     0.21593589     0.00000000    -0.31443476
+      24       0.03389086     0.13565208     0.00000000     0.11158814     0.00000000
+
+               Column  11     Column  12     Column  13     Column  14     Column  15
+       1       0.00000000     0.00000000     0.00000000    -0.00000000     0.00515948
+       2       0.00000000     0.00000000     0.00000000     0.00000000     0.40015241
+       3       0.00000000     0.00000000     0.00000000     0.00000000     0.55489923
+       4       0.00000000     0.00000000     0.00000000     0.00000000     0.28655304
+       6       0.00000000     0.00000000     0.00000000     0.00000000     0.22042542
+       7       0.00000000     0.00000000     0.00000000     0.00000000     0.47789876
+       9       0.00000000     0.00000000     0.00000000     0.00000000     0.36761443
+      11       1.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+      12       0.00000000     1.00000000     0.00000000     0.00000000     0.00619847
+      13       0.00000000     0.00000000     1.00000000     0.00000000     0.09004444
+      14       0.00000000     0.00000000     0.00000000     1.00000000     0.05852889
+      15       0.00000000     0.01085964     0.15775672     0.10254187     1.00000000
+      16       0.00000000     0.00251077     0.03647363     0.02370786     0.90368690
+      17       0.00000000    -0.21222087    -0.20383892     0.02472208    -0.00000000
+      18       0.24187289     0.00000000     0.00000000     0.00000000     0.00000000
+      19       0.00000000     0.25568932    -0.02842048    -0.22285591    -0.00000000
+      20       0.00000000     0.01085964    -0.15775672     0.10254187     0.37572254
+      21       0.00000000     0.00251077    -0.03647363     0.02370786     0.59384012
+      22       0.00000000     0.21222087    -0.20383892    -0.02472208     0.10049332
+      23       0.24187289     0.00000000     0.00000000     0.00000000     0.00000000
+      24       0.00000000     0.25568932     0.02842048    -0.22285591    -0.00000000
+
+               Column  16     Column  17     Column  18     Column  19     Column  20
+       1       0.00214270    -0.01716784     0.00000000    -0.01320603     0.00515948
+       2       0.25394695    -0.40912125     0.00000000    -0.31470865     0.40015241
+       3       0.37323334    -0.43897537     0.00000000    -0.33767336     0.55489923
+       4       0.09892752    -0.03347194     0.00000000    -0.30751717    -0.28655304
+       5       0.00000000     0.00000000     0.36630039     0.00000000     0.00000000
+       6       0.07609809    -0.30751717     0.00000000     0.12974872     0.22042542
+       7       0.19044647     0.10454274     0.00000000    -0.35822397    -0.47789876
+       8       0.00000000     0.00000000     0.57023390     0.00000000     0.00000000
+       9       0.14649728    -0.35822397     0.00000000     0.29467700     0.36761443
+      10       0.00000000     0.00000000     0.19290639     0.00000000     0.00000000
+      11       0.00000000     0.00000000     0.14838953     0.00000000     0.00000000
+      12       0.00025849    -0.13019795     0.00000000     0.15686594     0.00619847
+      13       0.00375509    -0.12505561     0.00000000    -0.01743602    -0.09004444
+      14       0.00244081     0.01516705     0.00000000    -0.13672257     0.05852889
+      15       0.90368690    -0.00000000     0.00000000    -0.00000000     0.37572254
+      16       1.00000000    -0.00000000     0.00000000     0.00000000     0.59384012
+      17      -0.00000000     1.00000000     0.00000000     0.00000000    -0.10049332
+      18       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.00000000     1.00000000    -0.00000000
+      20       0.37652030    -0.26327722     0.00000000    -0.00000000     1.00000000
+      21       0.60716445    -0.30010000     0.00000000     0.00000000     0.90368690
+      22       0.05036066    -0.25294319     0.00000000     0.00000000     0.00000000
+      23       0.00000000     0.00000000     0.05113508     0.00000000     0.00000000
+      24       0.00000000     0.00000000     0.00000000     0.05113508    -0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+       1       0.00214270     0.01716784     0.00000000    -0.01320603
+       2       0.25394695     0.40912125     0.00000000    -0.31470865
+       3       0.37323334     0.43897537     0.00000000    -0.33767336
+       4      -0.09892752    -0.03347194     0.00000000     0.30751717
+       5       0.00000000     0.00000000     0.36630039     0.00000000
+       6       0.07609809     0.30751717     0.00000000     0.12974872
+       7      -0.19044647     0.10454274     0.00000000     0.35822397
+       8       0.00000000     0.00000000     0.57023390     0.00000000
+       9       0.14649728     0.35822397     0.00000000     0.29467700
+      10       0.00000000     0.00000000    -0.19290639     0.00000000
+      11       0.00000000     0.00000000     0.14838953     0.00000000
+      12       0.00025849     0.13019795     0.00000000     0.15686594
+      13      -0.00375509    -0.12505561     0.00000000     0.01743602
+      14       0.00244081    -0.01516705     0.00000000    -0.13672257
+      15       0.37652030     0.26327722     0.00000000    -0.00000000
+      16       0.60716445     0.30010000     0.00000000     0.00000000
+      17      -0.05036066    -0.25294319     0.00000000     0.00000000
+      18       0.00000000     0.00000000     0.05113508     0.00000000
+      19       0.00000000     0.00000000     0.00000000     0.05113508
+      20       0.90368690     0.00000000     0.00000000    -0.00000000
+      21       1.00000000     0.00000000     0.00000000     0.00000000
+      22       0.00000000     1.00000000     0.00000000     0.00000000
+      23       0.00000000     0.00000000     1.00000000     0.00000000
+      24       0.00000000     0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+                         +--------------------------------+
+                         ! Integrals of operator: XDIPLEN !
+                         +--------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       4       0.06146481     0.66674206     0.75341513     0.00000000
+       7       0.01316247     0.68348554     0.90690836     0.00000000
+      12       0.00000000     0.00000000     0.00000000    -0.26904328
+      14       0.00000000     0.00000000     0.00000000     0.46599662
+      15       0.00368903     0.28610898     0.39675295     0.64716551
+      16       0.00153203     0.18157207     0.26686184     0.64540163
+      17      -0.00762663    -0.02070878     0.04556196     0.04714547
+      19      -0.00944231    -0.22501669    -0.24143645    -0.36666468
+      20      -0.00368903    -0.28610898    -0.39675295     0.64716551
+      21      -0.00153203    -0.18157207    -0.26686184     0.64540163
+      22      -0.00762663    -0.02070878     0.04556196    -0.04714547
+      24       0.00944231     0.22501669     0.24143645    -0.36666468
+
+               Column   5     Column   6     Column   7     Column   8
+      10       0.46599662     0.00000000     0.00000000     0.40345265
+      12       0.00000000     0.00000000    -0.23293349     0.00000000
+      13       0.00000000     0.46599662     0.00000000     0.00000000
+      14       0.00000000     0.00000000     0.40345265     0.00000000
+      15       0.00000000     0.15760417     0.98708205     0.00000000
+      16       0.00000000     0.05441013     1.02491141     0.00000000
+      17       0.00000000    -0.01840957     0.32807114     0.00000000
+      18       0.26190478     0.00000000     0.00000000     0.40771724
+      19       0.00000000     0.09277033    -0.37489488     0.00000000
+      20       0.00000000    -0.15760417     0.98708205     0.00000000
+      21       0.00000000    -0.05441013     1.02491141     0.00000000
+      22       0.00000000    -0.01840957    -0.32807114     0.00000000
+      23      -0.26190478     0.00000000     0.00000000    -0.40771724
+      24       0.00000000    -0.09277033    -0.37489488     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+      13       0.40345265     0.00000000     0.00000000     0.00000000
+      15       0.26284432     0.00000000     0.00000000    -0.06787231
+      16       0.10474556     0.00000000     0.00000000    -0.04308280
+      17       0.05749851     0.00000000     0.00000000    -0.02642588
+      18       0.00000000     0.25993083     0.10609851     0.00000000
+      19       0.21069406     0.00000000     0.00000000     0.21200559
+      20      -0.26284432     0.00000000     0.00000000     0.06787231
+      21      -0.10474556     0.00000000     0.00000000     0.04308280
+      22       0.05749851     0.00000000     0.00000000    -0.02642588
+      23       0.00000000     0.25993083    -0.10609851     0.00000000
+      24      -0.21069406     0.00000000     0.00000000    -0.21200559
+
+               Column  13     Column  14     Column  15     Column  16
+      15       0.16071607     0.16708273     1.43000000
+      16       0.06033237     0.07668690     1.29227227     1.43000000
+      17      -0.15625536    -0.02300962     0.66550264     0.59015169
+      19      -0.02349409    -0.27069576    -0.00000000     0.00000000
+      20       0.16071607    -0.16708273    -0.00000000    -0.15538367
+      21       0.06033237    -0.07668690     0.15538367     0.00000000
+      22       0.15625536    -0.02300962     0.04478749     0.07254025
+      24      -0.02349409     0.27069576    -0.00000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+      17       1.43000000
+      18       0.00000000     1.43000000
+      19       0.00000000     0.00000000     1.43000000
+      20       0.04478749     0.00000000     0.00000000    -1.43000000
+      21       0.07254025     0.00000000     0.00000000    -1.29227227
+      22      -0.00000000     0.00000000     0.00000000     0.66550264
+      24       0.00000000     0.00000000     0.00000000     0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+      21      -1.43000000
+      22       0.59015169    -1.43000000
+      23       0.00000000     0.00000000    -1.43000000
+      24       0.00000000     0.00000000     0.00000000    -1.43000000
+    ==== End of matrix output ====
+
+
+                         +--------------------------------+
+                         ! Integrals of operator: YDIPLEN !
+                         +--------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       5       0.06146481     0.66674206     0.75341513     0.00000000
+       8       0.01316247     0.68348554     0.90690836     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.46599662
+      18       0.00464838     0.27181291     0.35942935     0.26190478
+      23       0.00464838     0.27181291     0.35942935    -0.26190478
+
+               Column   5     Column   6     Column   7     Column   8
+      10       0.00000000     0.00000000     0.40345265     0.00000000
+      11       0.00000000     0.46599662     0.00000000     0.00000000
+      12      -0.26904328     0.00000000     0.00000000    -0.23293349
+      14      -0.46599662     0.00000000     0.00000000    -0.40345265
+      15       0.44228009     0.00000000     0.00000000     0.64538444
+      16       0.57466845     0.00000000     0.00000000     0.88874219
+      17      -0.19082688     0.00000000     0.00000000    -0.15439416
+      18       0.00000000     0.20146521     0.40771724     0.00000000
+      19      -0.14678990     0.00000000     0.00000000    -0.11876474
+      20       0.44228009     0.00000000     0.00000000     0.64538444
+      21       0.57466845     0.00000000     0.00000000     0.88874219
+      22       0.19082688     0.00000000     0.00000000     0.15439416
+      23       0.00000000     0.20146521    -0.40771724     0.00000000
+      24      -0.14678990     0.00000000     0.00000000    -0.11876474
+
+               Column   9     Column  10     Column  11     Column  12
+      11       0.40345265     0.00000000     0.00000000
+      15       0.00000000     0.12523458     0.09633429     0.00000000
+      16       0.00000000     0.07494172     0.05764748     0.00000000
+      17       0.00000000    -0.10281810    -0.17293912     0.00000000
+      18       0.31362865     0.00000000     0.00000000    -0.06313472
+      19       0.00000000    -0.17293912    -0.01102733     0.00000000
+      20       0.00000000    -0.12523458     0.09633429     0.00000000
+      21       0.00000000    -0.07494172     0.05764748     0.00000000
+      22       0.00000000    -0.10281810     0.17293912     0.00000000
+      23       0.31362865     0.00000000     0.00000000    -0.06313472
+      24       0.00000000     0.17293912    -0.01102733     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+      18       0.10609851    -0.05303872     0.66550264     0.59015169
+      23      -0.10609851    -0.05303872     0.16117798     0.25110388
+
+               Column  17     Column  18     Column  19     Column  20
+      20       0.00000000     0.16117798     0.00000000     0.00000000
+      21       0.00000000     0.25110388     0.00000000     0.00000000
+      22       0.00000000     0.07312316     0.00000000     0.00000000
+      23      -0.07312316     0.00000000     0.00000000     0.66550264
+
+               Column  21     Column  22     Column  23     Column  24
+      23       0.59015169     0.00000000     0.00000000
+    ==== End of matrix output ====
+
+
+                         +--------------------------------+
+                         ! Integrals of operator: ZDIPLEN !
+                         +--------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       6       0.06146481     0.66674206     0.75341513     0.00000000
+       9       0.01316247     0.68348554     0.90690836     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.46599662
+      15       0.00283771     0.22008383     0.30519458     0.15760417
+      16       0.00117848     0.13967082     0.20527833     0.05441013
+      17      -0.00944231    -0.22501669    -0.24143645    -0.01840957
+      19      -0.00261494     0.09872315     0.17370900     0.09277033
+      20       0.00283771     0.22008383     0.30519458    -0.15760417
+      21       0.00117848     0.13967082     0.20527833    -0.05441013
+      22       0.00944231     0.22501669     0.24143645    -0.01840957
+      24      -0.00261494     0.09872315     0.17370900    -0.09277033
+
+               Column   5     Column   6     Column   7     Column   8
+      11       0.46599662     0.00000000     0.00000000     0.40345265
+      12       0.00000000     0.53808655     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.40345265     0.00000000
+      15       0.00000000     0.56351407     0.26284432     0.00000000
+      16       0.00000000     0.61652240     0.10474556     0.00000000
+      17       0.00000000    -0.35996132     0.05749851     0.00000000
+      18       0.20146521     0.00000000     0.00000000     0.31362865
+      19       0.00000000     0.12603710     0.21069406     0.00000000
+      20       0.00000000     0.56351407    -0.26284432     0.00000000
+      21       0.00000000     0.61652240    -0.10474556     0.00000000
+      22       0.00000000     0.35996132     0.05749851     0.00000000
+      23       0.20146521     0.00000000     0.00000000     0.31362865
+      24       0.00000000     0.12603710    -0.21069406     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+      12       0.46586699     0.00000000     0.00000000     0.00000000
+      15       0.84757238     0.00000000     0.00000000     0.11464642
+      16       0.96931569     0.00000000     0.00000000     0.06670775
+      17      -0.35141735     0.00000000     0.00000000    -0.27130177
+      18       0.00000000     0.10609851     0.20361700     0.00000000
+      19       0.35693626     0.00000000     0.00000000     0.08084660
+      20       0.84757238     0.00000000     0.00000000     0.11464642
+      21       0.96931569     0.00000000     0.00000000     0.06670775
+      22       0.35141735     0.00000000     0.00000000     0.27130177
+      23       0.00000000    -0.10609851     0.20361700     0.00000000
+      24       0.35693626     0.00000000     0.00000000     0.08084660
+
+               Column  13     Column  14     Column  15     Column  16
+      15       0.17475902     0.03219089     1.10000000
+      16       0.07700702     0.00134244     0.99405559     1.10000000
+      17      -0.17159868     0.00834188    -0.00000000    -0.00000000
+      19      -0.07643042    -0.00623338     0.66550264     0.59015169
+      20      -0.17475902     0.03219089     0.41329480     0.53369823
+      21      -0.07700702     0.00134244     0.53369823     0.66788090
+      22      -0.17159868    -0.00834188     0.20007380     0.19275336
+      24       0.07643042    -0.00623338     0.16117798     0.25110388
+
+               Column  17     Column  18     Column  19     Column  20
+      17       1.10000000
+      18       0.00000000     1.10000000
+      19       0.00000000     0.00000000     1.10000000
+      20      -0.20007380     0.00000000     0.16117798     1.10000000
+      21      -0.19275336     0.00000000     0.25110388     0.99405559
+      22      -0.27823751     0.00000000     0.07312316     0.00000000
+      23       0.00000000     0.05624858     0.00000000     0.00000000
+      24      -0.07312316     0.00000000     0.05624858     0.66550264
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.10000000
+      22       0.00000000     1.10000000
+      23       0.00000000     0.00000000     1.10000000
+      24       0.59015169     0.00000000     0.00000000     1.10000000
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: XXQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.00885416
+       2       0.00724095     0.26152299
+       3       0.00667801     0.31635116     0.41349653
+       4       0.00000000     0.00000000     0.00000000     0.19134323
+       7       0.00000000     0.00000000     0.00000000     0.26879432
+      12       0.00139385     0.05120071     0.05582967     0.00000000
+      14      -0.00241422    -0.08868223    -0.09669983     0.00000000
+      15       0.00220571     0.22615158     0.32574407     0.12885466
+      16       0.00217781     0.27015222     0.39864285     0.10560719
+      17      -0.00333578    -0.10743430    -0.12237235    -0.00527304
+      19      -0.00228001     0.01274449     0.04549418     0.01169545
+      20       0.00220571     0.22615158     0.32574407    -0.12885466
+      21       0.00217781     0.27015222     0.39864285    -0.10560719
+      22       0.00333578     0.10743430     0.12237235    -0.00527304
+      24      -0.00228001     0.01274449     0.04549418    -0.01169545
+
+               Column   5     Column   6     Column   7     Column   8
+       5       0.38268647
+       6       0.00000000     0.38268647
+       7       0.00000000     0.00000000     0.45405013
+       8       0.53758864     0.00000000     0.00000000     0.90810025
+       9       0.00000000     0.53758864     0.00000000     0.00000000
+      15       0.00000000     0.17994135     0.23093661     0.00000000
+      16       0.00000000     0.15920565     0.20397482     0.00000000
+      17       0.00000000    -0.13235218     0.02944403     0.00000000
+      18       0.16102964     0.00000000     0.00000000     0.25864976
+      19       0.00000000     0.12935357     0.06175933     0.00000000
+      20       0.00000000     0.17994135    -0.23093661     0.00000000
+      21       0.00000000     0.15920565    -0.20397482     0.00000000
+      22       0.00000000     0.13235218     0.02944403     0.00000000
+      23       0.16102964     0.00000000     0.00000000     0.25864976
+      24       0.00000000     0.12935357    -0.06175933     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9       0.90810025
+      10       0.00000000     0.21097046
+      11       0.00000000     0.00000000     0.31645570
+      12       0.00000000     0.00000000     0.00000000     0.28129395
+      14       0.00000000     0.00000000     0.00000000     0.06090193
+      15       0.32191390     0.00000000     0.00000000     0.04113835
+      16       0.30700338     0.00000000     0.00000000     0.03468701
+      17      -0.16248516     0.00000000     0.00000000    -0.08724178
+      18       0.00000000     0.07743046     0.08507591     0.00000000
+      19       0.25877782     0.00000000     0.00000000     0.05231306
+      20       0.32191390     0.00000000     0.00000000     0.04113835
+      21       0.30700338     0.00000000     0.00000000     0.03468701
+      22       0.16248516     0.00000000     0.00000000     0.08724178
+      23       0.00000000    -0.07743046     0.08507591     0.00000000
+      24       0.25877782     0.00000000     0.00000000     0.05231306
+
+               Column  13     Column  14     Column  15     Column  16
+      13       0.21097046
+      14       0.00000000     0.21097046
+      15       0.03948808    -0.02807751     0.79792662
+      16       0.00774787    -0.05116020     0.94954171     1.32709016
+      17      -0.05019592     0.03051194    -0.00000000    -0.00000000
+      19       0.01518939     0.00384507     0.36602645     0.32458343
+      20      -0.03948808    -0.02807751     0.35501392     0.53254601
+      21      -0.00774787    -0.05116020     0.53254601     0.80576197
+      22      -0.05019592    -0.03051194     0.10028804     0.10460621
+      24      -0.01518939     0.00384507     0.08864789     0.13810713
+
+               Column  17     Column  18     Column  19     Column  20
+      17       0.47443948
+      18       0.00000000     0.64637895
+      19       0.00000000     0.00000000     0.64637895
+      20      -0.10028804     0.00000000     0.08864789     0.79792662
+      21      -0.10460621     0.00000000     0.13810713     0.94954171
+      22      -0.12000624     0.00000000     0.04021774     0.00000000
+      23       0.00000000     0.03305264     0.00000000     0.00000000
+      24      -0.04021774     0.00000000     0.03305264     0.36602645
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.32709016
+      22       0.00000000     0.47443948
+      23       0.00000000     0.00000000     0.64637895
+      24       0.32458343     0.00000000     0.00000000     0.64637895
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: XYQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       5       0.00000000     0.00000000     0.00000000    -0.09567162
+       8       0.00000000     0.00000000     0.00000000    -0.13439716
+      10      -0.00241422    -0.08868223    -0.09669983     0.00000000
+      18      -0.00018588    -0.06200107    -0.09075739    -0.09075338
+      23       0.00018588     0.06200107     0.09075739    -0.09075338
+
+               Column   5     Column   6     Column   7     Column   8
+       7      -0.13439716     0.00000000     0.00000000
+       8       0.00000000     0.00000000    -0.22702506     0.00000000
+      15      -0.05253455     0.00000000     0.00000000    -0.09377573
+      16      -0.05068008     0.00000000     0.00000000    -0.09756479
+      17       0.00287757     0.00000000     0.00000000    -0.00898751
+      18       0.00000000    -0.04558664    -0.15474642     0.00000000
+      19       0.02643717     0.00000000     0.00000000     0.03079642
+      20       0.05253455     0.00000000     0.00000000     0.09377573
+      21       0.05068008     0.00000000     0.00000000     0.09756479
+      22       0.00287757     0.00000000     0.00000000    -0.00898751
+      23       0.00000000     0.04558664    -0.15474642     0.00000000
+      24      -0.02643717     0.00000000     0.00000000    -0.03079642
+
+               Column   9     Column  10     Column  11     Column  12
+      12       0.00000000     0.06090193     0.00000000     0.00000000
+      13       0.00000000     0.00000000    -0.05274262     0.00000000
+      14       0.00000000     0.00000000     0.00000000     0.00000000
+      15       0.00000000    -0.05374476    -0.00832050     0.00000000
+      16       0.00000000    -0.05619632    -0.00192371     0.00000000
+      17       0.00000000     0.02442406     0.01075100     0.00000000
+      18      -0.08132582     0.00000000     0.00000000     0.01815689
+      19       0.00000000     0.04430176     0.00149897     0.00000000
+      20       0.00000000    -0.05374476     0.00832050     0.00000000
+      21       0.00000000    -0.05619632     0.00192371     0.00000000
+      22       0.00000000    -0.02442406     0.01075100     0.00000000
+      23       0.08132582     0.00000000     0.00000000    -0.01815689
+      24       0.00000000     0.04430176    -0.00149897     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+      18      -0.02717922    -0.00937444    -0.23791719    -0.21097923
+      23      -0.02717922     0.00937444     0.03498725     0.06397012
+
+               Column  17     Column  18     Column  19     Column  20
+      18      -0.08596974     0.00000000
+      20       0.00000000    -0.03498725     0.00000000     0.00000000
+      21       0.00000000    -0.06397012     0.00000000     0.00000000
+      22       0.00000000    -0.00439607     0.00000000     0.00000000
+      23      -0.00439607     0.00000000     0.00000000     0.23791719
+
+               Column  21     Column  22     Column  23     Column  24
+      23       0.21097923    -0.08596974     0.00000000
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: XZQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       6       0.00000000     0.00000000     0.00000000    -0.09567162
+       9       0.00000000     0.00000000     0.00000000    -0.13439716
+      13      -0.00241422    -0.08868223    -0.09669983     0.00000000
+      15      -0.00004804    -0.03757212    -0.05685721    -0.07133241
+      16       0.00002285    -0.01294887    -0.02110114    -0.04450581
+      17       0.00035615     0.00052414    -0.00884968    -0.01977621
+      19       0.00019807    -0.02491086    -0.04386224    -0.03583256
+      20       0.00004804     0.03757212     0.05685721    -0.07133241
+      21      -0.00002285     0.01294887     0.02110114    -0.04450581
+      22       0.00035615     0.00052414    -0.00884968     0.01977621
+      24      -0.00019807     0.02491086     0.04386224    -0.03583256
+
+               Column   5     Column   6     Column   7     Column   8
+       7       0.00000000    -0.13439716     0.00000000
+       9       0.00000000     0.00000000    -0.22702506     0.00000000
+      15       0.00000000    -0.07632011    -0.12853587     0.00000000
+      16       0.00000000    -0.05492711    -0.08654865     0.00000000
+      17       0.00000000     0.00239546    -0.06543911     0.00000000
+      18      -0.04558664     0.00000000     0.00000000    -0.08132582
+      19       0.00000000    -0.03813262    -0.07996756     0.00000000
+      20       0.00000000     0.07632011    -0.12853587     0.00000000
+      21       0.00000000     0.05492711    -0.08654865     0.00000000
+      22       0.00000000     0.00239546     0.06543911     0.00000000
+      23       0.04558664     0.00000000     0.00000000     0.08132582
+      24       0.00000000     0.03813262    -0.07996756     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+      11       0.00000000    -0.05274262     0.00000000
+      13       0.00000000     0.00000000     0.00000000    -0.03045096
+      15      -0.13716088     0.00000000     0.00000000    -0.00535922
+      16      -0.10641003     0.00000000     0.00000000    -0.00111540
+      17      -0.02045652     0.00000000     0.00000000     0.01517736
+      18       0.00000000    -0.02717922    -0.02767812     0.00000000
+      19      -0.09255575     0.00000000     0.00000000    -0.01185509
+      20       0.13716088     0.00000000     0.00000000     0.00535922
+      21       0.10641003     0.00000000     0.00000000     0.00111540
+      22      -0.02045652     0.00000000     0.00000000     0.01517736
+      23       0.00000000    -0.02717922     0.02767812     0.00000000
+      24       0.09255575     0.00000000     0.00000000     0.01185509
+
+               Column  13     Column  14     Column  15     Column  16
+      14      -0.05274262     0.00000000
+      15      -0.06821303    -0.01356463    -0.39325000
+      16      -0.05774502    -0.00196851    -0.35537487    -0.39325000
+      17       0.04076263     0.00240596    -0.18301323    -0.16229171
+      19       0.01957915     0.00234629    -0.23791719    -0.21097923
+      20      -0.06821303     0.01356463    -0.00000000     0.04273051
+      21      -0.05774502     0.00196851    -0.04273051     0.00000000
+      22      -0.04076263     0.00240596    -0.01231656    -0.01994857
+      24       0.01957915    -0.00234629     0.03498725     0.06397012
+
+               Column  17     Column  18     Column  19     Column  20
+      17      -0.39325000
+      18       0.00000000    -0.39325000
+      19      -0.08596974     0.00000000    -0.39325000
+      20      -0.01231656     0.00000000    -0.03498725     0.39325000
+      21      -0.01994857     0.00000000    -0.06397012     0.35537487
+      22       0.00000000     0.00000000    -0.00439607    -0.18301323
+      24      -0.00439607     0.00000000     0.00000000     0.23791719
+
+               Column  21     Column  22     Column  23     Column  24
+      21       0.39325000
+      22      -0.16229171     0.39325000
+      23       0.00000000     0.00000000     0.39325000
+      24       0.21097923    -0.08596974     0.00000000     0.39325000
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: YYQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.00885416
+       2       0.00724095     0.26152299
+       3       0.00667801     0.31635116     0.41349653
+       4       0.00000000     0.00000000     0.00000000     0.38268647
+       7       0.00000000     0.00000000     0.00000000     0.53758864
+      12       0.00139385     0.05120071     0.05582967     0.00000000
+      14       0.00241422     0.08868223     0.09669983     0.00000000
+      15       0.00226816     0.27499533     0.39965844     0.27412134
+      16       0.00214810     0.28698576     0.42607434     0.21414482
+      17      -0.00361288    -0.04611461    -0.02011037     0.10831185
+      19      -0.00277914    -0.03547277    -0.01546952    -0.08613879
+      20       0.00226816     0.27499533     0.39965844    -0.27412134
+      21       0.00214810     0.28698576     0.42607434    -0.21414482
+      22       0.00361288     0.04611461     0.02011037     0.10831185
+      24      -0.00277914    -0.03547277    -0.01546952     0.08613879
+
+               Column   5     Column   6     Column   7     Column   8
+       5       0.19134323
+       6       0.00000000     0.38268647
+       7       0.00000000     0.00000000     0.90810025
+       8       0.26879432     0.00000000     0.00000000     0.45405013
+       9       0.00000000     0.53758864     0.00000000     0.00000000
+      15       0.00000000     0.21086257     0.49180898     0.00000000
+      16       0.00000000     0.16472678     0.41405285     0.00000000
+      17       0.00000000    -0.08613879     0.27824882     0.00000000
+      18       0.15731078     0.00000000     0.00000000     0.26632761
+      19       0.00000000     0.15403167    -0.06624962     0.00000000
+      20       0.00000000     0.21086257    -0.49180898     0.00000000
+      21       0.00000000     0.16472678    -0.41405285     0.00000000
+      22       0.00000000     0.08613879     0.27824882     0.00000000
+      23       0.15731078     0.00000000     0.00000000     0.26632761
+      24       0.00000000     0.15403167     0.06624962     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9       0.90810025
+      10       0.00000000     0.21097046
+      11       0.00000000     0.00000000     0.21097046
+      12       0.00000000     0.00000000     0.00000000     0.28129395
+      14       0.00000000     0.00000000     0.00000000    -0.06090193
+      15       0.37831460     0.00000000     0.00000000     0.02937035
+      16       0.31850219     0.00000000     0.00000000     0.03180547
+      17      -0.06624962     0.00000000     0.00000000    -0.10092157
+      18       0.00000000     0.09617933     0.07398410     0.00000000
+      19       0.31341208     0.00000000     0.00000000     0.09470382
+      20       0.37831460     0.00000000     0.00000000     0.02937035
+      21       0.31850219     0.00000000     0.00000000     0.03180547
+      22       0.06624962     0.00000000     0.00000000     0.10092157
+      23       0.00000000    -0.09617933     0.07398410     0.00000000
+      24       0.31341208     0.00000000     0.00000000     0.09470382
+
+               Column  13     Column  14     Column  15     Column  16
+      13       0.31645570
+      14       0.00000000     0.21097046
+      15       0.06661733     0.08622937     1.30915162
+      16       0.01168490     0.06129068     1.41152905     1.83831516
+      17      -0.05500784     0.00188681     0.47583439     0.42195846
+      19       0.01049682    -0.09804673     0.36602645     0.32458343
+      20      -0.06661733     0.08622937     0.39030825     0.56675654
+      21      -0.01168490     0.06129068     0.56675654     0.80576197
+      22      -0.05500784    -0.00188681     0.05636469     0.02215606
+      24      -0.01049682    -0.09804673     0.08864789     0.13810713
+
+               Column  17     Column  18     Column  19     Column  20
+      17       1.15760395
+      18       0.00000000     0.98566448
+      19       0.00000000     0.00000000     1.15760395
+      20      -0.05636469     0.00000000     0.08864789     1.30915162
+      21      -0.02215606     0.00000000     0.13810713     1.41152905
+      22      -0.11121410     0.00000000     0.04021774    -0.47583439
+      23       0.00000000     0.02426050     0.00000000     0.00000000
+      24      -0.04021774     0.00000000     0.03305264     0.36602645
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.83831516
+      22      -0.42195846     1.15760395
+      23       0.00000000     0.00000000     0.98566448
+      24       0.32458343     0.00000000     0.00000000     1.15760395
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: YZQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+      11      -0.00241422    -0.08868223    -0.09669983     0.00000000
+      18      -0.00014299    -0.04769313    -0.06981338    -0.04558664
+      23      -0.00014299    -0.04769313    -0.06981338     0.04558664
+
+               Column   5     Column   6     Column   7     Column   8
+       6      -0.09567162     0.00000000
+       8       0.00000000    -0.13439716     0.00000000     0.00000000
+       9      -0.13439716     0.00000000     0.00000000    -0.22702506
+      15      -0.04041119     0.00000000     0.00000000    -0.07213518
+      16      -0.03898468     0.00000000     0.00000000    -0.07504984
+      17       0.02643717     0.00000000     0.00000000     0.03079642
+      18       0.00000000    -0.06655740    -0.08132582     0.00000000
+      19      -0.01115446     0.00000000     0.00000000    -0.02533330
+      20      -0.04041119     0.00000000     0.00000000    -0.07213518
+      21      -0.03898468     0.00000000     0.00000000    -0.07504984
+      22      -0.02643717     0.00000000     0.00000000    -0.03079642
+      23       0.00000000    -0.06655740     0.08132582     0.00000000
+      24      -0.01115446     0.00000000     0.00000000    -0.02533330
+
+               Column   9     Column  10     Column  11     Column  12
+      12       0.00000000     0.00000000    -0.03045096     0.00000000
+      13       0.00000000    -0.05274262     0.00000000     0.00000000
+      14       0.00000000     0.00000000     0.05274262     0.00000000
+      15       0.00000000    -0.00832050    -0.04932849     0.00000000
+      16       0.00000000    -0.00192371    -0.05517527     0.00000000
+      17       0.00000000     0.01075100     0.04511496     0.00000000
+      18      -0.11158118     0.00000000     0.00000000    -0.00812895
+      19       0.00000000     0.00149897     0.00918979     0.00000000
+      20       0.00000000     0.00832050    -0.04932849     0.00000000
+      21       0.00000000     0.00192371    -0.05517527     0.00000000
+      22       0.00000000     0.01075100    -0.04511496     0.00000000
+      23      -0.11158118     0.00000000     0.00000000    -0.00812895
+      24       0.00000000    -0.00149897     0.00918979     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+      18      -0.02767812     0.00554590    -0.18301323    -0.16229171
+      23       0.02767812     0.00554590    -0.04432394    -0.06905357
+
+               Column  17     Column  18     Column  19     Column  20
+      19       0.00000000    -0.08596974     0.00000000
+      20       0.00000000    -0.04432394     0.00000000     0.00000000
+      21       0.00000000    -0.06905357     0.00000000     0.00000000
+      22       0.00000000    -0.02010887     0.00000000     0.00000000
+      23       0.02010887     0.00000000    -0.00439607    -0.18301323
+      24       0.00000000    -0.00439607     0.00000000     0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+      23      -0.16229171     0.00000000     0.00000000
+      24       0.00000000     0.00000000    -0.08596974     0.00000000
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: ZZQUADRU !
+                        +---------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.00885416
+       2       0.00724095     0.26152299
+       3       0.00667801     0.31635116     0.41349653
+       4       0.00000000     0.00000000     0.00000000     0.38268647
+       7       0.00000000     0.00000000     0.00000000     0.53758864
+      12      -0.00278770    -0.10240142    -0.11165934     0.00000000
+      14       0.00000000     0.00000000     0.00000000     0.00000000
+      15       0.00223121     0.24609370     0.35592212     0.25033579
+      16       0.00216568     0.27702509     0.40984269     0.20989780
+      17      -0.00322894    -0.00902440     0.02678478     0.10782974
+      19      -0.00276977    -0.10232811    -0.11902308    -0.15070859
+      20       0.00223121     0.24609370     0.35592212    -0.25033579
+      21       0.00216568     0.27702509     0.40984269    -0.20989780
+      22       0.00322894     0.00902440    -0.02678478     0.10782974
+      24      -0.00276977    -0.10232811    -0.11902308     0.15070859
+
+               Column   5     Column   6     Column   7     Column   8
+       5       0.38268647
+       6       0.00000000     0.19134323
+       7       0.00000000     0.00000000     0.90810025
+       8       0.53758864     0.00000000     0.00000000     0.90810025
+       9       0.00000000     0.26879432     0.00000000     0.00000000
+      15       0.00000000     0.11174361     0.44842383     0.00000000
+      16       0.00000000     0.08349049     0.40520761     0.00000000
+      17       0.00000000    -0.00666096     0.26677981     0.00000000
+      18       0.18522563     0.00000000     0.00000000     0.30181500
+      19       0.00000000     0.04698702    -0.18960179     0.00000000
+      20       0.00000000     0.11174361    -0.44842383     0.00000000
+      21       0.00000000     0.08349049    -0.40520761     0.00000000
+      22       0.00000000     0.00666096     0.26677981     0.00000000
+      23       0.18522563     0.00000000     0.00000000     0.30181500
+      24       0.00000000     0.04698702     0.18960179     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9       0.45405013
+      10       0.00000000     0.31645570
+      11       0.00000000     0.00000000     0.21097046
+      12       0.00000000     0.00000000     0.00000000     0.17580872
+      14       0.00000000     0.00000000     0.00000000     0.00000000
+      15       0.20067105     0.00000000     0.00000000    -0.06019158
+      16       0.16159849     0.00000000     0.00000000    -0.06461891
+      17       0.03464269     0.00000000     0.00000000    -0.00485225
+      18       0.00000000     0.11825355     0.06545025     0.00000000
+      19       0.10530086     0.00000000     0.00000000     0.09337276
+      20       0.20067105     0.00000000     0.00000000    -0.06019158
+      21       0.16159849     0.00000000     0.00000000    -0.06461891
+      22      -0.03464269     0.00000000     0.00000000     0.00485225
+      23       0.00000000    -0.11825355     0.06545025     0.00000000
+      24       0.10530086     0.00000000     0.00000000     0.09337276
+
+               Column  13     Column  14     Column  15     Column  16
+      13       0.21097046
+      14       0.00000000     0.31645570
+      15       0.04377026     0.03926732     1.00665162
+      16       0.00778445     0.00756072     1.13816376     1.53581516
+      17      -0.02631392     0.02804643     0.47583439     0.42195846
+      19      -0.00769052    -0.08381230     0.00000000     0.00000000
+      20      -0.04377026     0.03926732     0.27665218     0.41998953
+      21      -0.00778445     0.00756072     0.41998953     0.62209472
+      22      -0.02631392    -0.02804643     0.00134440    -0.03085112
+      24       0.00769052    -0.08381230     0.00000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+      17       0.85510395
+      18       0.00000000     0.85510395
+      19       0.00000000     0.00000000     0.68316448
+      20      -0.00134440     0.00000000     0.00000000     1.00665162
+      21       0.03085112     0.00000000     0.00000000     1.13816376
+      22      -0.03469878     0.00000000     0.00000000    -0.47583439
+      23       0.00000000     0.01758428     0.00000000     0.00000000
+      24       0.00000000     0.00000000     0.00879214     0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+      21       1.53581516
+      22      -0.42195846     0.85510395
+      23       0.00000000     0.00000000     0.85510395
+      24       0.00000000     0.00000000     0.00000000     0.68316448
+    ==== End of matrix output ====
+
+
+                        +---------------------------------+
+                        ! Integrals of operator: KINENERG !
+                        +---------------------------------+
+
+ Symmetry of operator:  A  ( 1)
+
+               Column   1     Column   2     Column   3     Column   4
+       1      29.21492803
+       2      -8.02494220     3.10607772
+       3       0.16670741     0.49951317     0.45345000
+       4       0.00000000     0.00000000     0.00000000     2.53596069
+       7       0.00000000     0.00000000     0.00000000     0.70004312
+      12      -0.00000000     0.00000000     0.00000000     0.00000000
+      15       0.00734823     0.13464281     0.16560673     0.20383886
+      16       0.01818233     0.11963193     0.13732131     0.08093705
+      17      -0.04060608    -0.30858797    -0.23953109    -0.36166769
+      19      -0.03123544    -0.23737536    -0.18425468    -0.47608526
+      20       0.00734823     0.13464281     0.16560673    -0.20383886
+      21       0.01818233     0.11963193     0.13732131    -0.08093705
+      22       0.04060608     0.30858797     0.23953109    -0.36166769
+      24      -0.03123544    -0.23737536    -0.18425468     0.47608526
+
+               Column   5     Column   6     Column   7     Column   8
+       5       2.53596069
+       6       0.00000000     2.53596069
+       7       0.00000000     0.00000000     0.68825000
+       8       0.70004312     0.00000000     0.00000000     0.68825000
+       9       0.00000000     0.70004312     0.00000000     0.00000000
+      15       0.00000000     0.15679912     0.25815252     0.00000000
+      16       0.00000000     0.06225927     0.11664817     0.00000000
+      17       0.00000000    -0.47608526    -0.07495922     0.00000000
+      18       0.25724314     0.00000000     0.00000000     0.29043069
+      19       0.00000000    -0.10897629    -0.28106916     0.00000000
+      20       0.00000000     0.15679912    -0.25815252     0.00000000
+      21       0.00000000     0.06225927    -0.11664817     0.00000000
+      22       0.00000000     0.47608526    -0.07495922     0.00000000
+      23       0.25724314     0.00000000     0.00000000     0.29043069
+      24       0.00000000    -0.10897629     0.28106916     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9       0.68825000
+      10       0.00000000     4.14750000
+      11       0.00000000     0.00000000     4.14750000
+      12       0.00000000     0.00000000     0.00000000     4.14750000
+      15       0.19857886     0.00000000     0.00000000     0.01279825
+      16       0.08972936     0.00000000     0.00000000     0.00096182
+      17      -0.28106916     0.00000000     0.00000000    -0.33603274
+      18       0.00000000     0.46483025     0.35756173     0.00000000
+      19       0.07422364     0.00000000     0.00000000     0.36082837
+      20       0.19857886     0.00000000     0.00000000     0.01279825
+      21       0.08972936     0.00000000     0.00000000     0.00096182
+      22       0.28106916     0.00000000     0.00000000     0.33603274
+      23       0.00000000    -0.46483025     0.35756173     0.00000000
+      24       0.07422364     0.00000000     0.00000000     0.36082837
+
+               Column  13     Column  14     Column  15     Column  16
+      13       4.14750000
+      14       0.00000000     4.14750000
+      15       0.18591864     0.12084711     0.49928923
+      16       0.01397218     0.00908192     0.20997889     0.18300000
+      17      -0.62536843    -0.17407435    -0.00000000    -0.00000000
+      19      -0.29126988    -0.49146508     0.00000000     0.00000000
+      20      -0.18591864     0.12084711     0.03288011     0.06183623
+      21      -0.01397218     0.00908192     0.06183623     0.07415143
+      22      -0.62536843     0.17407435     0.03120717     0.06024490
+      24       0.29126988    -0.49146508     0.00000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+      17       1.81750000
+      18       0.00000000     1.81750000
+      19       0.00000000     0.00000000     1.81750000
+      20      -0.03120717     0.00000000     0.00000000     0.49928923
+      21      -0.06024490     0.00000000     0.00000000     0.20997889
+      22      -0.13403274     0.00000000     0.00000000     0.00000000
+      23       0.00000000    -0.01759445     0.00000000     0.00000000
+      24       0.00000000     0.00000000    -0.01759445     0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+      21       0.18300000
+      22       0.00000000     1.81750000
+      23       0.00000000     0.00000000     1.81750000
+      24       0.00000000     0.00000000     0.00000000     1.81750000
+    ==== End of matrix output ====
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:       21643 ( 47.9% )
+ Megabytes written:                              0.254
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    7
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -20.685009      -1.613106      -0.779035      -0.687725      -0.616200
+           -0.231553      -0.167271
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:35 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ Title lines from ".mol" input file:
+     H2O                                                                     
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Kohn-Sham DFT calculation.
+
+@    Time-dependent Kohn-Sham DFT calculation (TD-DFT).
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+     Wave function specification
+     ============================
+@    For the wave function of type :      >>> KS-DFT <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 1
+@    Reference state symmetry                   1
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1
+                                       --- |  ---
+@    Occupied SCF orbitals               5 |    5
+     Secondary orbitals                 19 |   19
+     Total number of orbitals           24 |   24
+     Number of basis functions          24 |   24
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations             95
+     ------------------------------------------
+@    Total number of variables               96
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.473190092289   9.9999994663   -5.34D-07
+@  1    -76.2131060636        1.63871D+00   -7.62D+01    1
+      Virial theorem: -V/T =      2.004803
+@      MULPOP O      -0.55; H1      0.28; H2      0.28; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.558040043666   9.9999994678   -5.32D-07
+@  2    -76.3692535578        5.88047D-01   -1.56D-01    2
+      Virial theorem: -V/T =      2.002496
+@      MULPOP O      -0.17; H1      0.09; H2      0.09; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.544043519609   9.9999994653   -5.35D-07
+@  3    -76.3830021761        2.77990D-02   -1.37D-02    3
+      Virial theorem: -V/T =      2.004012
+@      MULPOP O      -0.26; H1      0.13; H2      0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.539687984308   9.9999994655   -5.34D-07
+@  4    -76.3830368427        1.83113D-02   -3.47D-05    4
+      Virial theorem: -V/T =      2.004457
+@      MULPOP O      -0.25; H1      0.12; H2      0.12; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.543298207208   9.9999994652   -5.35D-07
+@  5    -76.3830505343        4.42111D-03   -1.37D-05    5
+      Virial theorem: -V/T =      2.004044
+@      MULPOP O      -0.25; H1      0.13; H2      0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.542583533275   9.9999994653   -5.35D-07
+@  6    -76.3830514037        1.09703D-04   -8.69D-07    6
+      Virial theorem: -V/T =      2.004125
+@      MULPOP O      -0.25; H1      0.13; H2      0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.542600561344   9.9999994653   -5.35D-07
+@  7    -76.3830514043        7.36834D-06   -5.79D-10    7
+
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -76.383051404261    7.37D-06
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Sym       Kohn-Sham orbital energies
+
+  1    -19.11779939    -0.99258312    -0.51216675    -0.36062747    -0.28460697
+         0.05581138     0.13164246     0.56760772     0.61891654     0.90436023
+
+    E(LUMO) :     0.05581138 au (symmetry 1)
+  - E(HOMO) :    -0.28460697 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.34041835 au
+
+ >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       2.631       2.646
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
+
+@    Final DFT energy:            -76.383051404261                 
+@    Nuclear repulsion:             9.218170507464
+@    Electronic energy:           -85.601221911725
+
+@    Final gradient norm:           0.000007368344
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:38 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O   :1s    -1.0027   0.0067   0.0000  -0.0073  -0.0000   0.0312   0.0000
+   2 O   :1s    -0.0151  -0.8672   0.0000   0.3247  -0.0000  -0.2509   0.0000
+   3 O   :1s     0.0128   0.1515  -0.0000   0.1921  -0.0000  -0.7691  -0.0000
+   4 O   :2px   -0.0000  -0.0000  -0.7344  -0.0000  -0.0000   0.0000   0.5309
+   5 O   :2py    0.0000  -0.0000  -0.0000   0.0000   0.9267  -0.0000  -0.0000
+   6 O   :2pz   -0.0029  -0.1676  -0.0000  -0.7983   0.0000  -0.3507   0.0000
+   7 O   :2px   -0.0000   0.0000   0.1437   0.0000   0.0000   0.0000   0.3706
+   8 O   :2py    0.0000  -0.0000  -0.0000   0.0000   0.0620  -0.0000  -0.0000
+   9 O   :2pz    0.0021   0.0859  -0.0000   0.0136   0.0000  -0.1470  -0.0000
+  11 O   :3d1-   0.0000  -0.0000  -0.0000   0.0000   0.0193  -0.0000  -0.0000
+  12 O   :3d0   -0.0000  -0.0022  -0.0000  -0.0185   0.0000  -0.0082   0.0000
+  13 O   :3d1+  -0.0000   0.0000  -0.0238   0.0000   0.0000   0.0000   0.0117
+  15 H1  :1s     0.0009  -0.3526  -0.5641  -0.3391   0.0000   0.1785  -0.1605
+  16 H1  :1s    -0.0014   0.1613   0.1732   0.1231  -0.0000   0.6843  -1.2469
+  17 H1  :2px   -0.0010   0.0377   0.0156   0.0244   0.0000   0.0018   0.0030
+  18 H1  :2py   -0.0000   0.0000   0.0000  -0.0000   0.0329   0.0000   0.0000
+  19 H1  :2pz   -0.0009   0.0188   0.0281  -0.0157  -0.0000  -0.0049  -0.0013
+  20 H2  :1s     0.0009  -0.3526   0.5641  -0.3391   0.0000   0.1785   0.1605
+  21 H2  :1s    -0.0014   0.1613  -0.1732   0.1231   0.0000   0.6843   1.2469
+  22 H2  :2px    0.0010  -0.0377   0.0156  -0.0244   0.0000  -0.0018   0.0030
+  23 H2  :2py   -0.0000   0.0000   0.0000  -0.0000   0.0329   0.0000   0.0000
+  24 H2  :2pz   -0.0009   0.0188  -0.0281  -0.0157  -0.0000  -0.0049   0.0013
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      2.63 seconds
+ >>>> Total wall time used in SIRIUS :      2.65 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:38 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+  Linear Response single residue calculation
+ -------------------------------------------
+
+ Print level                                    : IPRPP  =   2
+ Maximum number of iterations for eigenval.eqs. : MAXITP =  60
+ Threshold for convergence of eigenvalue eqs.   : THCPP  = 1.000D-03
+ Maximum iterations in optimal orbital algorithm: MAXITO =   5
+
+      3 Excitation energies are calculated for symmetry no.    1
+
+ Integral transformation: Total CPU and WALL times (sec)       0.007       0.007
+
+
+   SCF energy         :      -76.383051404260783
+ -- inactive part     :      -85.601221911724835
+ -- nuclear repulsion :        9.218170507464057
+
+
+                    *****************************************
+                    *** DFT response calculation (TD-DFT) ***
+                    *****************************************
+
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    1
+
+ Number of excitations of this symmetry            3
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      95
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      95
+ Electrons in DFTMOMO:    9.99999946525284
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  1; triplet =   F
+
+
+ *** THE REQUESTED    3 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   22)
+ RSP solution vector no.    1; norm of residual   4.39D-05
+ RSP solution vector no.    2; norm of residual   3.18D-04
+ RSP solution vector no.    3; norm of residual   4.81D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+  ******************************************************************************
+  *** @ Excit. operator sym 1 & ref. state sym 1 => excited state symmetry 1 ***
+  ******************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry  1
+ ---------------------------------------
+
+@ Excitation energy :  0.28013193    au
+@                      7.6227776     eV
+@                      61481.852     cm-1
+                       735.48627     kJ / mol
+
+@ Total energy :      -76.102919     au
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+             J Chem Phys 128, 044118 (2008)
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+      5    6 -0.707101 -0.015364  0.421541  0.322069  0.478500  0.201707
+
+@ Overlap diagnostic LAMBDA =    0.4218
+
+
+ @ Excited state no:    2 in symmetry  1
+ ---------------------------------------
+
+@ Excitation energy :  0.34860558    au
+@                      9.4860403     eV
+@                      76510.080     cm-1
+                       915.26380     kJ / mol
+
+@ Total energy :      -76.034446     au
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+             J Chem Phys 128, 044118 (2008)
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+      5    7  0.706382  0.005425  0.353210  0.273219  0.491341  0.173547
+
+@ Overlap diagnostic LAMBDA =    0.3534
+
+
+ @ Excited state no:    3 in symmetry  1
+ ---------------------------------------
+
+@ Excitation energy :  0.36477161    au
+@                      9.9259404     eV
+@                      80058.114     cm-1
+                       957.70771     kJ / mol
+
+@ Total energy :      -76.018280     au
+
+
+                            PBHT MO Overlap Diagnostic
+                            --------------------------
+
+  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.
+             J Chem Phys 128, 044118 (2008)
+
+
+  The dominant contributions:
+
+      I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
+
+      4    6 -0.704165 -0.015482  0.481190  0.309744  0.474285  0.228221
+
+@ Overlap diagnostic LAMBDA =    0.4842
+
+
+ Time used in polarization propagator calculation is      4.24 CPU seconds for symmetry 1
+
+ >>>> Total CPU  time used in RESPONSE:   4.25 seconds
+ >>>> Total wall time used in RESPONSE:   4.28 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   6.93 seconds
+ >>>> Total wall time used in DALTON:   6.97 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:38:42 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

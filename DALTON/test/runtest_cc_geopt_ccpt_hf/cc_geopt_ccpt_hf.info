@@ -1,0 +1,5 @@
+   cc_geopt_ccpt_hf
+   --------------
+   Molecule:         HF, C2v 
+   Wave Function:    CCSD(T) / cc-pVDZ
+   Test Purpose:     CCSD(T) gradient

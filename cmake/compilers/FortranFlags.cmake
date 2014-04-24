@@ -172,7 +172,12 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Cray) 
     add_definitions(-DVAR_CRAY)
-    set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ")
+
+    if(ENABLE_TITANBUILD)
+       set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ -hsystem_alloc")
+    else()
+       set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ")
+    endif()
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE " ")
     set(CMAKE_Fortran_FLAGS_PROFILE "-g")

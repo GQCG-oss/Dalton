@@ -26,6 +26,9 @@ module dec_typedef_module
 
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
+  !> how many real models in total are there, disregard MODEL_NONE
+  integer,parameter :: ndecmodels   = 5
+  !> Number of different fragment energies
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
   integer,parameter :: MODEL_CC2    = 2
@@ -180,9 +183,6 @@ module dec_typedef_module
      logical :: PNOtriangular
      !> Use MO-based algorithm to solve the CCSD equations
      logical :: MOCCSD
-     !> Maximum number of MOs until which an MO-CCSD calculation should be
-     !> performed
-     integer :: Max_num_MO
      !> do not update the singles residual
      logical :: CCDhack
      !> Crash Calc Debug keyword - to test restart option
@@ -209,12 +209,6 @@ module dec_typedef_module
      logical :: use_preconditioner_in_b
      !> Use CROP (if false we use DIIS)
      logical :: use_crop
-     !> Simulate full ERI using RI arrays 
-     !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
-     logical :: simulate_eri
-     !> Construct Fock matrix from RI integrals (obsolete for the moment)
-     !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
-     logical :: fock_with_ri
      !> logial to set whether special communication processes should be spawned
      logical :: spawn_comm_proc
 
@@ -228,6 +222,8 @@ module dec_typedef_module
      !> Use F12 correction
      logical :: F12DEBUG
 
+     logical :: SOS
+
      !> Debug keyword to specify pure hydrogen atoms
      logical :: PUREHYDROGENdebug
 
@@ -235,6 +231,11 @@ module dec_typedef_module
      logical :: InteractionEnergy
      !> Print the Interaction Energy (Ref to article)
      logical :: PrintInteractionEnergy
+
+     !> Stress Test 
+     logical :: StressTest
+     !> Kohn-Sham Reference
+     logical :: DFTreference
 
      !> MPI settings
      !> ************
@@ -291,7 +292,8 @@ module dec_typedef_module
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
      !> Hack to only do fragment optimization
-     logical :: only_one_frag_job
+     integer :: only_n_frag_jobs
+     integer,pointer :: frag_job_nr(:)
      !> Has simple orbital threshold been defined manually in input (true),
      !> or should simple orbital threshold be adapted to FOT 
      !> as descripted under FOTlevel (false)?
@@ -323,12 +325,16 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
+     !> Use RI for Fragment Expansion 
+     logical :: FragmentExpansionRI
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
+     !> Only consider virtual partitioning
+     logical :: OnlyVirtPart
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
@@ -643,6 +649,8 @@ module dec_typedef_module
      !> without thinking about which CC model we are using...
      !> Energy using occupied partitioning scheme
      real(realk) :: EoccFOP
+     !> Energy using occupied partitioning scheme with the F12 Correction
+     real(realk) :: EoccFOP_Corr
      !> Energy using virtual partitioning scheme
      real(realk) :: EvirtFOP
      !> Lagrangian energy 
@@ -837,7 +845,9 @@ module dec_typedef_module
      ! INTEGRAL TIME ACCOUNTING
      ! ************************
      ! MPI: Time(s) used by local slaves
-     real(realk) :: slavetime
+     real(realk),dimension(ndecmodels) :: slavetime_work
+     real(realk),dimension(ndecmodels) :: slavetime_comm
+     real(realk),dimension(ndecmodels) :: slavetime_idle
 
 
   end type decfrag
@@ -1079,8 +1089,11 @@ module dec_typedef_module
      !> Time used for local master
      real(realk),pointer :: LMtime(:)
      !> Measure of load distribution:
-     !> { (total times for nodes) / (time for local master) } / number of nodes
-     real(realk),pointer :: load(:)
+     !> ( work and communication times for nodes) / {(time for local master) * (number of nodes) }
+     !> ( work times for nodes) / {(time for local master) * (number of nodes) }
+     real(realk),pointer :: commt(:)
+     real(realk),pointer :: workt(:)
+     real(realk),pointer :: idlet(:)
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.

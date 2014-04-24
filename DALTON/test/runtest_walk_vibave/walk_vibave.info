@@ -1,0 +1,6 @@
+   walk_vibave
+   -----------
+   Molecule:         NH3
+   Wave Function:    SCF / STO-3G
+   Test Purpose:     Vibrational average of shieldings, magnetizabilities
+                     and polarizabilities

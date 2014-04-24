@@ -209,6 +209,11 @@ contains
     call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,natoms,&
          & OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
+    if(DECinfo%StressTest)then
+       call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,&
+            & MyMolecule%DistanceTable,OccOrbitals, UnoccOrbitals, dofrag, mylsitem)
+    endif
+
     if(DECinfo%PairEstimate .and. count(dofrag)>1) then
        ! Use estimated pair fragments to determine which pair fragments to calculate at the FOT level
        ! (only if there actually are any pair fragments)
@@ -321,7 +326,6 @@ contains
        end if
     end do
 
-
     ! Now all atomic fragment energies have been calculated and the
     ! fragment information has been stored in AtomicFragments.
 
@@ -358,7 +362,6 @@ contains
     if(DECinfo%first_order) then
        call init_fullmp2grad(MyMolecule,fullgrad)
     end if
-
 
 #ifdef VAR_MPI
 
@@ -424,6 +427,10 @@ contains
              call read_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
           end if
        end if
+       if(DECinfo%only_n_frag_jobs > 0)then
+          jobs%jobsdone  = .false.
+          jobs%dofragopt = .false.
+       endif
 
        call fragment_jobs(nocc,nunocc,natoms,MyMolecule,mylsitem,&
             & OccOrbitals,UnoccOrbitals,jobs,AtomicFragments,&
@@ -450,7 +457,11 @@ contains
 
     ! Plot pair interaction energies using occ. partitioning scheme
     ! *************************************************************
-    call get_occfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+    IF(DECinfo%onlyVirtPart)THEN
+       call get_virtfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+    ELSE
+       call get_occfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+    ENDIF
     call plot_pair_energies(natoms,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
          & MyMolecule,dofrag)
 
@@ -472,6 +483,7 @@ contains
        call print_MPI_fragment_statistics(jobs,mastertime,'PAIR FRAGMENTS')
     end if
 #endif
+
     IF(DECinfo%InteractionEnergy)THEN
        ! Interaction correlation energy 
        do j=1,ndecenergies
@@ -483,13 +495,14 @@ contains
        do j=1,ndecenergies
           call add_dec_energies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
        end do
-       IF(DECinfo%PrintInteractionEnergy)THEN
+       if(DECinfo%PrintInteractionEnergy)then
           do j=1,ndecenergies
              call add_dec_Interactionenergies(natoms,FragEnergies(:,:,j),dofrag,&
                   & Interactionenergies(j),mymolecule%SubSystemIndex)
           end do
-       ENDIF
-    ENDIF
+       endif
+    endif
+
     ! Print all fragment energies
     call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
          & mymolecule%DistanceTable,energies)
@@ -563,24 +576,48 @@ contains
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! MP2, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCMP2)
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTMP2)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCMP2)
+       ENDIF
 #ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
-          Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
+          IF(DECinfo%onlyVirtPart)THEN
+             Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_VIRTMP2)
+          ELSE
+             Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
+          ENDIF
        endif
 #endif 
     case(MODEL_RPA)
        ! RPA, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCRPA)
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTRPA)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCRPA)
+       ENDIF
     case(MODEL_CC2)
        ! CC2, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCCC2)
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTCC2)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCCC2)
+       ENDIF
     case(MODEL_CCSD)
        ! CCSD, use occ energy
-       Ecorr = energies(FRAGMODEL_OCCCCSD)
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTCCSD)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCCCSD)
+       ENDIF
     case(MODEL_CCSDpT)
        ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
-       Ecorr = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTCCSD) + energies(FRAGMODEL_VIRTpT)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
+       ENDIF
     case default
        write(DECinfo%output,*) 'main_fragment_driver: Needs implementation for model ', DECinfo%ccmodel
        call lsquit('main_fragment_driver: Needs implementation for model!',-1)
@@ -608,9 +645,8 @@ subroutine print_dec_info()
    write(LU,'(a,/)') '--------------------------'
    write(LU,'(a,g15.2)') 'FOT (Fragment Optimization Threshold)               = ',DECinfo%FOT
    write(LU,'(a,A5)')    'Use Pair Estimates to screen pairs                  =           ',&
-   
         & LogicString(Log2It(DECinfo%PairEstimate))
-
+   
    if(DECinfo%PairEstimate) then
         write(LU,'(a,g15.3)') 'Pair distance cutoff threshold (Angstrom)           = ',&
           & DECinfo%pair_distance_threshold*bohr_to_angstrom
@@ -622,6 +658,8 @@ subroutine print_dec_info()
         & DECinfo%simple_orbital_threshold
    write(LU,'(a,i5)')    'Expansion step size                                 =           ',&
         & DECinfo%FragmentExpansionSize
+   write(LU,'(a,A5)')    'Use RI for Expansion step                           =           ',&
+        & LogicString(Log2It(DECinfo%FragmentExpansionRI))
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL
    write(LU,'(a,A5)')    'Fragment-adapted orbitals                           =           ',&
         & LogicString(Log2It(DECinfo%FragAdapt))
@@ -754,7 +792,7 @@ subroutine print_dec_info()
     real(realk) :: fragenergy(ndecenergies)
     real(realk) :: t1cpu, t2cpu, t1wall, t2wall, dt
     integer(kind=ls_mpik) ::master, sender, groupsize,IERR
-    logical :: only_update,dofragopt
+    logical :: only_update,dofragopt,backup_files
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE)
 #endif
@@ -857,7 +895,7 @@ subroutine print_dec_info()
        counter=counter+1
 
        if(k<=jobs%njobs) then
-          if(jobs%jobsdone(k)) cycle  ! job is already done
+          if(jobs%jobsdone(k)) cycle JobLoop ! job is already done
        end if
 
        ! *********************************************
@@ -950,8 +988,15 @@ subroutine print_dec_info()
        ! atomA/=atomB : Pair fragment job
 
        if(atomA==atomB) then ! single
-          print '(1X,a,i8,a,i15,a,i8)', 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
-               &  ' is single fragment: ', atomA
+
+          if(jobs%dofragopt(jobdone)) then
+             write(*, '(1X,a,i6,a,i15,a,i8)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
+                &  ' is single fragment optimization: ', atomA
+          else
+             write(*, '(1X,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
+                &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nunoccAOS,&
+                &' #b',AtomicFragments(atomA)%nbasis,' is single fragment: ', atomA
+          endif
 
           ! Fragment "atomA" is stored in AtomicFragments(atomA).
           ! However, the basis information has not yet been initialized
@@ -1001,8 +1046,6 @@ subroutine print_dec_info()
 
        else ! pair calculation
 
-          print '(1X,a,i8,a,i15,a,2i8)', 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
-               &  ' is pair fragment: ', atomA,atomB
 
           ! Get energy (and possibly density or gradient)
           ! *********************************************
@@ -1011,20 +1054,34 @@ subroutine print_dec_info()
           if(jobs%esti(jobdone)) then
              ! Estimated pair fragment
              call merged_fragment_init(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
-                  & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
-                  & MyMolecule,mylsitem,.true.,PairFragment,esti=.true.)
+                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
+                & MyMolecule,mylsitem,.true.,PairFragment,esti=.true.)
+
+             write(*, '(1X,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
+                &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                &' #b',PairFragment%nbasis,' is pair   estimate: ', atomA,atomB
+
           else
              ! Pair fragment according to FOT precision
              call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                  & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
-                  & MyMolecule,mylsitem,.true.,PairFragment)
+                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
+                & MyMolecule,mylsitem,.true.,PairFragment)
+
+             write(*, '(1X,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
+                &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                &' #b',PairFragment%nbasis,' is pair   fragment: ', atomA,atomB
+
           end if
 
+
           if(DECinfo%SinglesPolari) then
+
              call pair_driver_singles(natoms,nocc,nunocc,&
                   & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),PairFragment,t1old,t1new)
+
           else
+
              if(jobs%esti(jobdone)) then
                 call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                      & EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
@@ -1034,6 +1091,7 @@ subroutine print_dec_info()
                      & AtomicFragments(atomA), AtomicFragments(atomB),&
                      & natoms,PairFragment,grad)
              end if
+
           end if
 
           ! Update pair energies
@@ -1096,9 +1154,22 @@ subroutine print_dec_info()
           call LSTIMER('START',t2cpu,t2wall,DECinfo%output)
           dt = t2wall - t1wall
 
+                    !BACKUP IF:
+          !1) We are doing a fragopt, safe every converged fragment
+
+          !2) OR 
+          !   a) the finished job is one of the first quarter according to the
+          !      job-list, i.e. if it is one of the largest calcluations.
+          !   b) the time since the last backup is larger than DECinfo%TimeBackup
+
+          !3) DECinfo%only_one_frag_job is requested -- this is only for debugging
+
+          backup_files =  (((float(jobdone) < 0.25*float(jobs%njobs)) .or. &
+              &(dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. & 
+              & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_n_frag_jobs>0) 
+
           ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
-          Backup: if( (( (dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. &
-               & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_one_frag_job) ) then
+          Backup: if( backup_files )then
              ! Note: If only fragment optimization jobs are requested this is not necessary
              ! because the fragment energies are anyway stored in add_fragment_to_file above.
 
@@ -1124,12 +1195,6 @@ subroutine print_dec_info()
           call free_joblist(singlejob)
 #endif
 
-         if(DECinfo%only_one_frag_job)then
-           print *,"HACK: only one fragment job was requested. The fragment was&
-           & saved and the master is crashed to kill the job"
-           stop 0
-         endif
-
        end if RestartStuff
 
 
@@ -1143,8 +1208,6 @@ subroutine print_dec_info()
 
 
   end subroutine fragment_jobs
-
-
 
   !> \brief Carry out fragment optimizations and (possibly) calculate 
   !> estimated pair fragment energies.
@@ -1176,7 +1239,7 @@ subroutine print_dec_info()
     type(decfrag), intent(inout),dimension(MyMolecule%natoms) :: AtomicFragments
     !> Fragment energies 
     real(realk),intent(inout) :: FragEnergies(MyMolecule%natoms,MyMolecule%natoms,ndecenergies)
-    real(realk),pointer :: FragEnergiesOcc(:,:)
+    real(realk),pointer :: FragEnergiesPart(:,:)
     type(decfrag),pointer :: EstAtomicFragments(:)
     logical :: DoBasis,calcAF
     real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est
@@ -1192,12 +1255,12 @@ subroutine print_dec_info()
 
     ! Initialize job list for atomic fragment optimizations
     call create_dec_joblist_fragopt(natoms,nocc,nunocc,MyMolecule%DistanceTable,&
-         & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
+       & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
 
     if(DECinfo%DECrestart) then
        write(DECinfo%output,*) 'Restarting atomic fragment optimizations....'
        call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
-            & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
+          & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
     end if
 
     write(DECinfo%output,*)
@@ -1221,17 +1284,17 @@ subroutine print_dec_info()
           end do
        end do
        IF(DECinfo%InteractionEnergy)THEN
-        !We are only intrested in certain fragments. 
-        !So we only do estimates on those we are 
-        !intrested in. 
-        do i=1,natoms
-         do j=1,natoms
-          IF(MyMolecule%SubSystemIndex(i).EQ.MyMolecule%SubSystemIndex(j))THEN
-           MyMolecule%ccmodel(i,j) = MODEL_NONE
-          ENDIF
-         end do
-        end do
-       ENDIF
+          !We are only intrested in certain fragments. 
+          !So we only do estimates on those we are 
+          !intrested in. 
+          do i=1,natoms
+             do j=1,natoms
+                if(MyMolecule%SubSystemIndex(i).EQ.MyMolecule%SubSystemIndex(j))then
+                   MyMolecule%ccmodel(i,j) = MODEL_NONE
+                endif
+             end do
+          end do
+       endif
 
 !
        ! Init estimated atomic fragments by including orbitals assigned to neighbour atoms
@@ -1285,21 +1348,21 @@ subroutine print_dec_info()
 
     if(esti) then
        ! Get estimated pair fragment energies for occupied partitioning scheme
-       call mem_alloc(FragEnergiesOcc,natoms,natoms)
-       ! Always MP2 model for estimated fragments
-       call get_occfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesOcc)
-
+       call mem_alloc(FragEnergiesPart,natoms,natoms)
+       IF(DECinfo%onlyVirtPart)THEN
+          call get_virtfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesPart)
+       ELSE
+          call get_occfragenergies(natoms,MODEL_MP2,FragEnergies,FragEnergiesPart)
+       ENDIF
        ! We do not want to consider atomic fragment energies now so zero them
        ! (they might be zero already but in this way we avoid wrong print out below).
        do i=1,natoms
-          FragEnergiesOcc(i,i)=0.0_realk
+          FragEnergiesPart(i,i)=0.0_realk
        end do
-
        ! Define which model to use in each pair calculation (info stored in MyMolecule%ccmodel)
        ! (Also calculate estimated correlation energy and estimated error by skipping pairs).
-       call define_pair_calculations(natoms,dofrag,FragEnergiesOcc,MyMolecule,Epair_est,Eskip_est)
-       call mem_dealloc(FragEnergiesOcc)
-
+       call define_pair_calculations(natoms,dofrag,FragEnergiesPart,MyMolecule,Epair_est,Eskip_est)
+       call mem_dealloc(FragEnergiesPart)
     end if
 
 

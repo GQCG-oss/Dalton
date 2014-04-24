@@ -1017,6 +1017,7 @@ C
 C
 #include "maxorb.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "infdim.h"
@@ -1064,8 +1065,6 @@ C
 C
 C Solve eigenvalue equation
 C
-         WRITE(LUPRI,'(//A/)')
-     *' <<<<< Solving eigenvalue equations for cubic response >>>>>'
          DO 100 KSYMOP = 1,NSYM
 C
 C Set up vectors defining the number of eigenvectors that need
@@ -1083,6 +1082,11 @@ C
 C Skip symmetry if no operators
 C
             IF ( NEXCR(KSYMOP).EQ.0 ) GOTO 100
+
+            WRITE(LUPRI,'(//A/A,I2,3A/A,I5)')
+     &' <<<<< Solving eigenvalue equations for cubic response >>>>>',
+     &'       Symmetry',KSYMOP,'  ( ',REP(KSYMOP-1),')',
+     &'       Number of excitations:',NEXCR(KSYMOP)
 C
 C     Then we check if there appears to be correct number of eigenvectors
 C     of this symmetry on file
@@ -1134,9 +1138,6 @@ C
 C
 C SOLVE SINGLET LINEAR RESPONSE EQUATIONS
 C
-         WRITE(LUPRI,'(//A/)')
-     *   ' <<<<< Solving set of linear response equations'//
-     *   ' for cubic response >>>>>'
          KEXSIM = 1
          KEXCNV = 1
          DO 200 KSYMOP = 1,NSYM
@@ -1149,6 +1150,12 @@ C
 C Skip this symmetry if no operators
 C
             IF ( NLRCR(KSYMOP).EQ.0 ) GO TO 200
+
+            WRITE(LUPRI,'(//A/A,I2,3A/A,I5)')
+     &' <<<<< Solving linear response equations'//
+     &   ' for cubic response >>>>>',
+     &'       Symmetry',KSYMOP,'  ( ',REP(KSYMOP-1),')',
+     &'       Number of different response vectors:',NLRCR(KSYMOP)
 C
             IF ( KZVAR.EQ.0 ) THEN
                NINFO = NINFO + 1

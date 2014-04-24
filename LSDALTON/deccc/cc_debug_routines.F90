@@ -11,14 +11,14 @@ module cc_debug_routines_module
    use dec_typedef_module
    use tensor_type_def_module
    use screen_mod
- 
+   use II_XC_interfaceModule
+   use IntegralInterfaceMOD 
 
    ! DEC DEPENDENCIES (within deccc directory)   
    ! *****************************************
    use crop_tools_module
    use array2_simple_operations
    use array4_simple_operations
-   use ri_simple_operations
    use mp2_module
    use ccintegrals
    use ccsd_module
@@ -233,7 +233,7 @@ module cc_debug_routines_module
      MaxSubSpace = DECinfo%ccMaxDIIS
 
      ! title
-     Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace)
+     Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,get_mult,nbasis,nocc,nvirt,MaxSubSpace,.false.,.false.,1)
 
      ! dimension vectors
      occ_dims   = [nbasis,nocc]
@@ -362,15 +362,6 @@ module cc_debug_routines_module
      call get_full_eri(mylsitem,nbasis,gao)
      if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,/)') 'debug :: AO integrals done'
 
-     ! Simulate two-electron integrals (debug mode)
-     if(DECinfo%simulate_eri .or. DECinfo%fock_with_ri) then
-        if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') &
-             'debug :: calculate RI intermediate - temporary'
-        l_ao = get_ao_ri_intermediate(mylsitem)
-        if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a)') &
-             'debug :: intermediates done'
-     end if
-
      if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
      if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -418,7 +409,7 @@ module cc_debug_routines_module
      call mem_alloc(omega2,DECinfo%ccMaxIter)
 
      ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-     if(decinfo%ccmodel /= MODEL_MP2 .and.decinfo%ccmodel /= MODEL_RPA ) then
+     if(decinfo%ccmodel /= MODEL_MP2 .and. decinfo%ccmodel /= MODEL_RPA ) then
         xocc = array2_init(occ_dims)
         yocc = array2_init(occ_dims)
         xvirt = array2_init(virt_dims)
@@ -518,13 +509,7 @@ module cc_debug_routines_module
               call getT1transformation(t1(iter),xocc,xvirt,yocc,yvirt,Co,Cv,Co2,Cv2)
            endif
 
-           ! get inactive fock
-           if(DECinfo%fock_with_ri) then
-              ! Debug mode
-              ifock = getInactiveFockFromRI(l_ao,xocc,yocc,h1)
-           else
-              ifock = getInactiveFock_simple(h1,gao,xocc,yocc,nocc,nbasis)
-           end if
+           ifock = getInactiveFock_simple(h1,gao,xocc,yocc,nocc,nbasis)
            ! Note: If not fock_with_ri or ccsd_old, then the relevant
            ! ifock is calculated below in get_ccsd_residual_integral_direct.
            ! Long range fock matrix correction using old scheme
@@ -663,11 +648,13 @@ module cc_debug_routines_module
            !  !rpa_multipliers not yet implemented
            !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !else
-#ifdef VAR_MPI
-             call RPA_residualpar(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
-#else
+!#ifdef VAR_MPI
+!             call RPA_residualpar(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
+!#else
+             msg =' Norm of gmo'
+             call print_norm(govov,msg)
              call RPA_residualdeb(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
-#endif
+!#endif
            !call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
            !  call RPA_residual(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
            !endif
@@ -1011,12 +998,6 @@ module cc_debug_routines_module
      ! remove fock correction
      call array2_free(delta_fock)
      call array4_free(gao)
-
-     if(DECinfo%simulate_eri .or. DECinfo%fock_with_ri) then
-        call ri_free(l_ao)
-        call ri_reset()
-     end if
-
 
      if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
         call array2_free(ppfock_prec)
@@ -2832,6 +2813,8 @@ module cc_debug_routines_module
 
     myload = 0
 
+    fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
+
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
@@ -2968,6 +2951,10 @@ module cc_debug_routines_module
     iFock = 0.0E0_realk
     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
     & Dens,.false.,iFock)
+    IF(DECinfo%DFTreference)THEN
+       call II_get_xc_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
+            & Dens,iFock)
+    ENDIF
     !use dens as temporay array 
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
          & Dens,nb,nb,AORdefault,AORdefault)

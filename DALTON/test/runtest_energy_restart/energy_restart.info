@@ -1,0 +1,5 @@
+   energy_restart
+   --------------
+   Molecule:         H2O
+   Wave Functions:   MCSCF (RAS) / cc-pVDZ
+   Test Purpose:     Restart an MCSCF wave function optimization

@@ -7,6 +7,8 @@ MODULE CABS_operations
   use matrix_operations
   use integralinterfaceMod
   use lstiming
+  use dec_typedef_module
+
 SAVE
 logical  :: CMO_CABS_save_created
 TYPE(Matrix) :: CMO_CABS_save
@@ -50,7 +52,7 @@ CONTAINS
 
   subroutine free_cabs()
     implicit none
-    print*,'FREE CABS'
+        ! print*,'FREE CABS'
     IF(CMO_CABS_save_created)THEN
        call mat_free(CMO_CABS_save)
     ENDIF
@@ -164,8 +166,12 @@ CONTAINS
        call mat_free(tmp)
        
        call mat_mul(S_minus_sqrt_cabs,Vnull,'N','N',1.0E0_realk,0.0E0_realk,CMO_cabs)
-       !test
-       call test_CABS_MO_orthonomality(CMO_cabs,SETTING,lupri)
+
+       !test of cabs orthonomality
+       !If(DECinfo%F12debug) then
+        !call test_CABS_MO_orthonomality(CMO_cabs,SETTING,lupri)
+       !endif
+
        call mat_free(S_minus_sqrt_cabs)
        call mat_free(Vnull)       
        
@@ -174,7 +180,8 @@ CONTAINS
           CALL MAT_INIT(CMO_CABS_save,CMO_cabs%nrow,CMO_cabs%ncol)
           call mat_assign(CMO_CABS_save,CMO_cabs)
        ENDIF
-       print*,'BUILD CABS'
+
+       !   print*,'BUILD CABS'
 
        CALL LSTIMER('build_CABS_MO',TIMSTR,TIMEND,lupri)       
        SETTING%SCHEME%OD_SCREEN = ODSCREEN

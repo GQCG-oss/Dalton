@@ -22,8 +22,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-DALTON=$SCRIPT_DIR/dalton.x
-DALMPI=$SCRIPT_DIR/dalton.x
+DALTON_EXECUTABLE=$SCRIPT_DIR/dalton.x
 
 MPIRUN=@MPIEXEC@
 INSTALL_BASDIR=$SCRIPT_DIR/basis
@@ -65,7 +64,6 @@ optd=0
 optD=1
 optf=0
 optn=0
-optlam=
 opti=0
 opto=0
 potfil=
@@ -73,7 +71,6 @@ frl=rel
 optx=0
 opt_nobackup=0
 opt_noarch=0
-opt_valgrind=0
 opt_noappend=0
 
 
@@ -114,16 +111,17 @@ usage (){
         echo '                    (defaults to 1 or DALTON_NUM_MPI_PROCS if defined)'
         echo ' -rsh             : use rsh/rcp for communication with MPI nodes'
         echo '                    (default: ssh/scp)'
-	    echo ' -nocpex          : force to not copy dalton executable from master node to'
+        echo ' -nocpex          : force to not copy dalton executable from master node to'
         echo '                    slave nodes (for global work)'
         echo ' -omp num         : set the number of OpenMP threads (default: 1). Note that'
         echo '                    Dalton is not OpenMP parallelized, however, this option'
         echo '                    can be used with e.g. threaded MKL'
-        echo ' -valgrind        : run with valgrind'
-        echo
-        #echo ' -lam file  : call "lamboot file" and "wipe file" before and after mpirun'
-        # Jan 2013: lammpi is not an active mpi implementation any more
         echo ' -x dalmol1 dalmol2 : calculate nexafs spectrum from ground and core hole states'
+        echo
+        echo "Environment variables understood by the $0 script:"
+        echo '    DALTON_TMPDIR             : scratch directory'
+        echo '    DALTON_USE_GLOBAL_SCRATCH : use global scratch directory, do not copy any files to worker nodes'
+        echo '    DALTON_LAUNCHER           : launcher for the dalton.x binary'
          }
 #
 # Define backup function
@@ -158,7 +156,6 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -D ) optD=0;;
       -nobackup ) opt_nobackup=1;;
       -noarch ) opt_noarch=1;;
-      -valgrind ) opt_valgrind=1;;
       -nocpex ) opt_nocpex=1;;
       -noappend ) opt_noappend=1;;
       -ext ) OUTEXT=$2; shift;;
@@ -168,7 +165,6 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
       -omp ) export OMP_NUM_THREADS=$2; shift;;
-      -lam* ) optlam=$2; shift;;
       -m|-mw ) WRKMEM=$2; export WRKMEM; shift;;
       -M|-mb ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
          -nw ) NODE_WRKMEM=$2; export NODE_WRKMEM; shift;;
@@ -182,6 +178,11 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
    esac
    shift
 done
+
+if ! [ -s "$DALTON_EXECUTABLE" -a -x "$DALTON_EXECUTABLE" ]; then
+   echo "ERROR: $DALTON_EXECUTABLE does not exist or is not executable"
+   exit 1
+fi
 
 # append default basis set directory /hjaaj Apr 2006
 len_INSTALL_BASDIR=`echo $INSTALL_BASDIR | wc -c`
@@ -308,7 +309,8 @@ fi
 if [ $opt_noappend -eq 1 ]; then
     SCRATCHDIR=$DALTON_TMPDIR
 else
-    SCRATCHDIR=$DALTON_TMPDIR/$outnam
+    # append pid to scratch directory to avoid multiple tests running in the same directory
+    SCRATCHDIR=$DALTON_TMPDIR/${outnam}_$$
 fi
 
 
@@ -328,9 +330,7 @@ echo "   Calculation: $outnam  ($input_files)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
 echo "   Scratch dir: $SCRATCHDIR"
-#echo "  Work memory: $WRKMEM"
 echo;
-#
 
 
 ierr=0
@@ -417,106 +417,97 @@ if [ -n "$DALTON_NUM_MPI_PROCS" ]; then
 fi
 
 if [ $optn -gt 1 ] ; then
-   if [ -s "$MPIRUN" -a -x "$MPIRUN" ]; then
-      if [ -s "$DALMPI" -a -x "$DALMPI" ]; then
-         cp $DALMPI ./dalton_mpi_copy.x
-         if [ -n "$PBS_NODEFILE" -a "$opt_nocpex" != "1" ] ; then
-	     echo 'Copying dalton executable from master node: ' ${HOSTNAME}
-             # $PBS_NODEFILE is defined, then do the instructions below
-			 echo 'Nodelist:'
-             cat $PBS_NODEFILE | sort | uniq
-             for node in `cat $PBS_NODEFILE | sort | uniq`
-             do
-                if [ ${node} == ${HOSTNAME%\.local} ]
-                then
-                    continue
-                else
-                    $SSH ${node} "mkdir -p $SCRATCHDIR"
-                    $SCP dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
-                    echo 'Copying executable to: ' ${node}
-                fi
-             done
-         fi
-         if [ -n "$optlam" ] ; then
-            lamboot -v  $WRKDIR/$optlam
-            $MPIRUN -wd $SCRATCHDIR -np $optn ./dalton_mpi_copy.x
-            ierr=$?
-            wipe    -v  $WRKDIR/$optlam
-         else
-            $MPIRUN -np $optn ./dalton_mpi_copy.x
-#           $MPIRUN --prefix /usr/local/lib/openmpi -np $optn $DALMPI
-            ierr=$?
-         fi
-         if [ $ierr -ne 0 ];then
-            echo "Error in $MPIRUN -np $optn $DALMPI, exit code $ierr"
-#           No "exit $ierr" here, because we want to save output and 
-#           tar-file for restart possibilities !!!!!!
-         fi
-      else
-         echo "$DALMPI does not exist or is not executable"
-         exit 1
-      fi
-   else
+
+   if ! [ -s "$MPIRUN" -a -x "$MPIRUN" ]; then
       echo
-      echo "FATAL ERROR: $optn MPI nodes were requested, however"
-      echo 'FATAL ERROR: mpirun command has not been defined, does not exist or is not executable'
-      echo 'FATAL ERROR: echo $MPIRUN gives this string: "' $MPIRUN '"'
+      echo "ERROR: $optn MPI nodes were requested, however"
+      echo '       mpirun command has not been defined, does not exist or is not executable'
+      echo '       echo $MPIRUN gives this string: "' $MPIRUN '"'
       exit 1
    fi
+
+   if [ -n "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
+       echo 'DALTON_USE_GLOBAL_SCRATCH is defined: Dalton will use global scratch dir'
+   else
+       if [ -n "$PBS_NODEFILE" -a "$opt_nocpex" != "1" ] ; then
+       echo 'Copying dalton executable from master node: ' ${HOSTNAME}
+           # $PBS_NODEFILE is defined, then do the instructions below
+           echo 'Nodelist:'
+           cat $PBS_NODEFILE | sort | uniq
+           for node in `cat $PBS_NODEFILE | sort | uniq`
+           do
+              if [ ${node} == ${HOSTNAME%\.local} ]
+              then
+                  continue
+              else
+                  $SSH ${node} "mkdir -p $SCRATCHDIR"
+                  $SCP dalton.x ${node}:$SCRATCHDIR/dalton.x
+                  echo 'Copying executable to: ' ${node}
+              fi
+           done
+       fi
+   fi
+
+   $MPIRUN -np $optn $DALTON_EXECUTABLE
+   ierr=$?
+
+   if [ $ierr -ne 0 ];then
+      echo "Error in $MPIRUN -np $optn $DALTON_EXECUTABLE, exit code $ierr"
+#     No "exit $ierr" here, because we want to save output and 
+#     tar-file for restart possibilities !!!!!!
+   fi
+
    if [ "$optx" != "0" ] ; then
       if [ -s $WRKDIR/$gs.tar.gz -a -r $WRKDIR/$gs.tar.gz ] ; then
          echo "The '-x' option is active, now unpacking $gs.tar.gz into:"
-	 gunzip < $WRKDIR/$gs.tar.gz | tar xvf - SIRIFC
-	 if [ -s SIRIFC -a -r SIRIFC ] ; then
-	    mv -v SIRIFC SIRIFC1
-	 else
-	    echo $WRKDIR/$gs.tar.gz does not contain interface file SIRIFC
-	    ierr=1
-	 fi
+         gunzip < $WRKDIR/$gs.tar.gz | tar xvf - SIRIFC
+         if [ -s SIRIFC -a -r SIRIFC ] ; then
+            mv -v SIRIFC SIRIFC1
+         else
+            echo $WRKDIR/$gs.tar.gz does not contain interface file SIRIFC
+            ierr=1
+         fi
       else
          echo "$WRKDIR/$gs.tar.gz does not exist or is not readable"
          ierr=1
       fi
       if [ -s $WRKDIR/$ch.tar.gz -a -r $WRKDIR/$ch.tar.gz ] ; then
          echo "The '-x' option is active, now unpacking $ch.tar.gz into:"
-	 gunzip < $WRKDIR/$ch.tar.gz | tar xvf - SIRIFC
-	 if [ -s SIRIFC -a -r SIRIFC ] ; then
-	    mv -v SIRIFC SIRIFC2
-	 else
-	    echo $WRKDIR/$ch.tar.gz does not contain interface file SIRIFC
-	    ierr=1
-	 fi
+         gunzip < $WRKDIR/$ch.tar.gz | tar xvf - SIRIFC
+         if [ -s SIRIFC -a -r SIRIFC ] ; then
+            mv -v SIRIFC SIRIFC2
+         else
+            echo $WRKDIR/$ch.tar.gz does not contain interface file SIRIFC
+            ierr=1
+         fi
       else
          echo "$WRKDIR/$ch.tar.gz does not exist or is not readable"
          ierr=1
       fi
    fi
 else
-   if [ -s $DALTON -a -x $DALTON ]; then
-      cp $DALTON dalton_copy.x
-      if [ $opt_valgrind -eq 1 ]; then
-          valgrind ./dalton_copy.x
-      else
-          ./dalton_copy.x
-      fi
+   if [ -n "$DALTON_LAUNCHER" ]; then
+      $DALTON_LAUNCHER $DALTON_EXECUTABLE
       ierr=$?
       if [ $ierr -ne 0 ];then
-         echo "Error in $DALTON, exit code $ierr"
+         echo "Error in $DALTON_LAUNCHER $DALTON_EXECUTABLE, exit code $ierr"
 #        No "exit $ierr" here, because we want to save output and 
 #        tar-file for restart possibilities.
       fi
    else
-      echo "$DALTON does not exist or is not executable"
-      exit 1
+      $DALTON_EXECUTABLE
+      ierr=$?
+      if [ $ierr -ne 0 ];then
+         echo "Error in $DALTON_EXECUTABLE, exit code $ierr"
+#        No "exit $ierr" here, because we want to save output and 
+#        tar-file for restart possibilities.
+      fi
    fi
 fi
 
-#
-# filelist is list of files which will be saved in $outnam.tar.gz
+# list of files which will be saved in $outnam.tar.gz
 # for subsequent calculations
-#
-
-filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off FCIDUMP pe_*.bin UNIT1 UNIT2 cavity.off PEDRA.OUT PCM_matrix PCM_mep_asc rsp_tensor_human final_geometry.xyz $GET_FILES"
+filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off FCIDUMP pe_*.bin UNIT1 UNIT2 rsp_tensor_human final_geometry.xyz *.cube cavity.off PEDRA.OUT PCM_matrix PCM_mep_asc $GET_FILES"
 
 if [ -s DALTON.OUT.n0001 -a -r DALTON.OUT.n0001 ]; then
    tarfilelist="DALTON.OUT.n*"
@@ -626,4 +617,3 @@ echo "   ***************************************** "
 if [ $ierr -ne 0 ]; then
    exit $ierr
 fi
-# last line of dalton job script

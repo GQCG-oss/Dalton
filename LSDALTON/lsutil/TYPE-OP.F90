@@ -127,11 +127,7 @@ DALTON%DOPASS = .TRUE.
 DALTON%DENSFIT = .FALSE.
 DALTON%DF_K = .FALSE.
 DALTON%INTEREST = .FALSE.
-#ifdef VAR_SCALAPACK
-DALTON%MATRICESINMEMORY = .TRUE.
-#else
-DALTON%MATRICESINMEMORY = .TRUE.!.FALSE.
-#endif
+DALTON%MATRICESINMEMORY = .FALSE.
 DALTON%MEMDIST = .FALSE.
 DALTON%LOW_ACCURACY_START = .FALSE.
 DALTON%LINSCA = .FALSE.
@@ -2572,6 +2568,8 @@ implicit none
 TYPE(integralconfig), INTENT(IN) :: dalton_inp
 TYPE(LSINTSCHEME),INTENT(INOUT) :: scheme
 
+scheme%doMPI                 = .TRUE.
+scheme%MasterWakeSlaves      = .TRUE.
 scheme%noOMP                 = dalton_inp%noOMP
 scheme%CFG_LSDALTON          = dalton_inp%CFG_LSDALTON
 scheme%DOPASS                = dalton_inp%DOPASS
@@ -2703,6 +2701,8 @@ TYPE(LSINTSCHEME),INTENT(IN) :: scheme
 INTEGER,INTENT(IN)           :: IUNIT
 
 WRITE(IUNIT,'(3X,A22,L7)') 'noBQBQ                ', scheme%noBQBQ
+WRITE(IUNIT,'(3X,A22,L7)') 'doMPI                 ', scheme%doMPI
+WRITE(IUNIT,'(3X,A22,L7)') 'MasterWakeSlaves      ', scheme%MasterWakeSlaves
 WRITE(IUNIT,'(3X,A22,L7)') 'noOMP                 ', scheme%noOMP
 WRITE(IUNIT,'(3X,A22,L7)') 'CFG_LSDALTON          ', scheme%CFG_LSDALTON
 WRITE(IUNIT,'(3X,A22,L7)') 'DOPASS                ', scheme%DOPASS

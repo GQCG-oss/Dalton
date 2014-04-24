@@ -1,0 +1,6 @@
+   cc_rsp_alpha
+   ------------
+   Molecule:         HF in C1
+   Wave Functions:   CCS, CCSD / 6-31G**
+   Test Purpose:     Frequency-dependent polarizabilities and
+                     dispersion coefficients

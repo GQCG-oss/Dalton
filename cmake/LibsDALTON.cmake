@@ -25,6 +25,11 @@ if(ENABLE_PELIB)
     add_dependencies(dalton pelib)
 endif()
 
+if(ENABLE_QFITLIB)
+    include(LibsQFITlib)
+    add_dependencies(dalton qfitlib)
+endif()
+
 if(ENABLE_OPENRSP)
     include(LibsOpenRSP)
 endif()

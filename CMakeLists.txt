@@ -38,6 +38,7 @@ option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable PE library"                                ON)
+option(ENABLE_QFITLIB        "Enable charge fittling library (QFITLIB)"         ON)
 option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                         ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
@@ -68,7 +69,13 @@ include(ConfigCompilerFlags)
 include(CheckFortranStandardCompatibility)
 include(ConfigExternal)
 include(ConfigOMP)
+
+# math detection
+set(BLAS_LANG "Fortran")
+set(LAPACK_LANG "Fortran")
+set(MKL_COMPILER_BINDINGS ${CMAKE_Fortran_COMPILER_ID})
 include(ConfigMath)
+
 include(ConfigExplicitLibs)
 include(ConfigMPI)
 include(ConfigSafeGuards)
@@ -156,6 +163,12 @@ include(LibsLSDALTON)
 
 # copy basis/ to build directory
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
+
+# copy test scripts to build/test
+# FIXME this will not work on windows
+execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/test)
+execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest.py        ${CMAKE_BINARY_DIR}/test)
+execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest_dalton.py ${CMAKE_BINARY_DIR}/test)
 
 # this controlls "make install" target
 include(ConfigMakeInstall)

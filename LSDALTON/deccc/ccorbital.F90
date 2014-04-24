@@ -618,7 +618,8 @@ contains
           charge = charge + lowdin_charge(n,i)
           error = 1E0_realk - charge
 
-          if(error < approximated_norm_threshold) then ! atom list converged for orbital i
+          if(error < approximated_norm_threshold .or. n==natoms ) then 
+             ! atom list converged for orbital i
 
              ! Set list of atoms to consider for orbital and exit loop
              norbital_extent = n
@@ -670,7 +671,7 @@ contains
     end do
 
     if(count(which_hydrogens)==natoms .and. (.NOT.decinfo%PureHydrogendebug) &
-         & .and. (.not. DECinfo%OnlyOccPart) ) then
+         & .and. (.not. DECinfo%OnlyOccPart.AND..not. DECinfo%OnlyVirtPart) ) then
        print*,'Orbital assignment failed because there are only hydrogen atoms!'
        print*,'For development & debug purposes the keyword PUREHYDROGENDEBUG can be used.'
        call lsquit('Orbital assignment failed because there are only hydrogen atoms!',-1)
@@ -711,7 +712,8 @@ contains
     ! * Reassign: Ensure that all atoms have both occupied and unoccupied orbitals assigned  *
     ! ****************************************************************************************
 
-    REASSIGNING: if(.not. DECinfo%onlyoccpart .and. (.not. decinfo%PureHydrogendebug) ) then
+    REASSIGNING: if((.not. (DECinfo%onlyoccpart.or.DECinfo%OnlyVirtPart)).and.&
+         & (.not. decinfo%PureHydrogendebug) ) then
 
        ! Count # orbitals assigned to each atom
        call mem_alloc(countOcc,natoms)
@@ -2192,13 +2194,16 @@ contains
     nfrags=0
     do i=1,natoms
 
-       if( (.not. DECinfo%onlyoccpart) .and. (.NOT.decinfo%PureHydrogendebug) ) then
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)&
+            & .and.(.NOT.decinfo%PureHydrogendebug))then
           if( (nocc_per_atom(i) == 0) .and. (nunocc_per_atom(i)/=0) ) something_wrong=.true.
           if( (nocc_per_atom(i) /= 0) .and. (nunocc_per_atom(i)==0) ) something_wrong=.true.
           if(something_wrong) then
              write(DECinfo%output,*) 'Atom = ',i
              write(DECinfo%output,*) 'Number of occupied orbitals   assigned = ', nocc_per_atom(i)
              write(DECinfo%output,*) 'Number of unoccupied orbitals assigned = ', nunocc_per_atom(i)
+             write(DECinfo%output,*) 'If you use Phantom Atoms try .ONLYOCCPART keyword'
+             print*,'If you use Phantom Atoms try .ONLYOCCPART keyword'
              call lsquit('Orbital assigment is inconsistent &
                   & with DEC scheme',DECinfo%output)
           end if
@@ -2329,6 +2334,18 @@ contains
                 print*,'Setting dofrag to false'
              endif
           endif
+       elseif(DECinfo%onlyvirtpart) then
+          ! Only consider virtual orbitals
+          if( (nunocc_per_atom(i)==0) ) then
+             dofrag(i)=.false.
+          else
+             if(PhantomAtom(i))then
+                print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nunocc_per_atom(i)',nunocc_per_atom(i)
+                print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
+                dofrag(i)=.false.
+                print*,'Setting dofrag to false'
+             endif
+          endif
        else
           ! Consider occupied as well as unoccupied orbitals
           if( (nocc_per_atom(i)==0) .and. (nunocc_per_atom(i)==0) )then
@@ -2343,6 +2360,13 @@ contains
           endif
        end if
     end do
+    if( DECinfo%only_n_frag_jobs>0)then
+       print *,"HACK TO ONLY DO ONE FRAGMENT JOB"
+       dofrag = .false.
+       do i = 1, DECinfo%only_n_frag_jobs
+          dofrag(DECinfo%frag_job_nr(i)) = .true.
+       enddo
+    endif
 
   end subroutine which_atoms_have_orbitals_assigned
 

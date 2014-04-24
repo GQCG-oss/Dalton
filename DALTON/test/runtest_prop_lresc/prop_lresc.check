@@ -1,0 +1,109 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Basis set
+CRIT1=`$GREP "F * 1 * 9\.0000 * 43 * 43 * \[10s6p3d\|10s6p3d\]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * 1\.0000 * 12 * 12 * \[6s2p\|6s2p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 2 * 10\.0000 * 55 * 55" $log | wc -l`
+CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=4
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * 3\.2739519969" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7`
+CTRL[2]=7
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# LRESC setup 
+CRIT1=`$GREP "LRESC Corrections for Shielding"  $log | wc -l`
+CRIT2=`$GREP "Selected Atom *  \: \# 1\: F" $log | wc -l`
+CRIT3=`$GREP "Atom coordinates \:  *  0\.0000    0\.0000    0\.0000"  $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="LRESC SETUP NOT SET CORRECTLY"
+
+# Paramagnetic Corrections : Singlet Second Order
+CRIT1=`$GREP "Lkin \: * 0\.4631. * 0\.4631. * 0\.1796. * 0\.3686." $log | wc -l`
+CRIT2=`$GREP "PsoKin \: * 1\.0624. * 1\.0624. * \-*0*\.0000. * 0\.7083." $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="LRESC PARAMAGNETIC Second Order Singlets NOT CORRECT"
+
+# Paramagnetic Corrections : Triplet Second Order
+CRIT1=`$GREP "FcKin \: *   9\.96    *   9\.96    *   9\.96    *   9\.96341" $log | wc -l`
+CRIT2=`$GREP "SdKin \: *   0\.10908 *   0\.10908 *   0\.10295 *   0\.10704" $log | wc -l`
+CRIT3=`$GREP "FcBso \: * \-2\.56974 * \-2\.56974 * \-2\.60640 * \-2\.58196" $log | wc -l`
+CRIT4=`$GREP "SdBso \: *   0\.14860 *   0\.14860 *   0\.16864 *   0\.15528" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[5]=4
+ERROR[5]="LRESC PARAMAGNETIC Second Order Triplets NOT CORRECT"
+
+
+# Paramagnetic Corrections : Triplet Second Order
+CRIT1=`$GREP "FcKin \: *   9\.96    *   9\.96    *   9\.96    *   9\.96341" $log | wc -l`
+CRIT2=`$GREP "SdKin \: *   0\.10908 *   0\.10908 *   0\.10295 *   0\.10704" $log | wc -l`
+CRIT3=`$GREP "FcBso \: * \-2\.56974 * \-2\.56974 * \-2\.60640 * \-2\.58196" $log | wc -l`
+CRIT4=`$GREP "SdBso \: *   0\.14860 *   0\.14860 *   0\.16864 *   0\.15528" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[6]=4
+ERROR[6]="LRESC PARAMAGNETIC Second Order Triplets NOT CORRECT"
+
+
+# Diamagnetic Corrections : First Order
+CRIT1=`$GREP "Fc     \: * \-4\.44438 * \-4\.44438 * \-4\.44438 * \-4\.44438" $log | wc -l`
+CRIT2=`$GREP "DiaKin \: * \-0\.85956 * \-0\.85956 * \-0\.86075 * \-0\.85996" $log | wc -l`
+CRIT3=`$GREP "AngPso \: * \-0\.02710 * \-0\.02710 * \-0\.03277 * \-0\.02899" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[7]=3
+ERROR[7]="LRESC DIAMAGENTIC First Order NOT CORRECT"
+
+
+# Diamagnetic Corrections : Second Order Singlets
+CRIT1=`$GREP "DiaMv  \: *   3\.56951 *   3\.56951 *   3\.61785 *   3\.58562 " $log | wc -l`
+CRIT2=`$GREP "DiaDw  \: * \-1\.91999 * \-1\.91999 * \-1\.94691 * \-1\.92896 " $log | wc -l`
+TEST[8]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[8]=2
+ERROR[8]="LRESC DIAMAGENTIC Second Order Singlets NOT CORRECT"
+
+
+# Total LRESC corrections, checked if totals are ok
+CRIT1=`$GREP "Total Paramagnetic Corrections \: *   8\.7207." $log | wc -l`
+CRIT2=`$GREP "Total Diamagnetic Corrections \:  * \-3\.67667" $log | wc -l`
+CRIT3=`$GREP "Sum of corrections \: * 5\.0440." $log | wc -l`
+TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[9]=3
+ERROR[9]="LRESC Total contributions NOT CORRECT"
+
+PASSED=1
+
+for i in 1 2 3 4 5 6 7 8 9 
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+

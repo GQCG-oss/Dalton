@@ -1,0 +1,6 @@
+   pehsrohf_wft
+   -----------
+   Molecule:         Formaldehyde and two classical water molecules
+   Wave Function:    PE-HSROHF / STO-3G
+   Test Purpose:     Testing high-spin restricted open-shell
+                     wavefunction using the PE library

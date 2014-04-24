@@ -187,6 +187,8 @@ Subroutine LS_dynamics_init(dynamics_input)
   Dynamics_Input%CLen = 3
   ! Number of Nose-Hoover multisteps is set to 1 by default
   Dynamics_Input%MStep = 1
+  ! Whether initial variables of NH chain thermostat are read
+  Dynamics_Input%Init_NHC = .FALSE.
 End subroutine LS_dynamics_init
 !=========================!
 !   LS_dynamics_input     !
@@ -301,7 +303,7 @@ Write(*,*)'READWORD',ReadWord
             ! If initial conditions for thermostat are
             ! specified (say, to restart)
             Case('.ININHC')
-               Dynamics_Input%Init = .TRUE.
+               Dynamics_Input%Init_NHC = .TRUE.
                !
                ! Allocate initial conditions for Nose-Hoover chain
                !

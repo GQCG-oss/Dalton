@@ -1,0 +1,6 @@
+   dft_rspexci_nosym
+   --------------------
+   Molecule:         H2O
+   Wave Functions:   DFT B3LYP / cc-pVDZ
+   Test Purpose:     DFT B3LYP response test w/o symmetry:
+                     excitation energies

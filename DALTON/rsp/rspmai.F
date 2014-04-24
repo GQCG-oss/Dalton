@@ -85,6 +85,7 @@ C INFTRA : USEDRC
 C
 #include "maxorb.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "inforb.h"
 #include "infpri.h"
 #include "infmp2.h"
@@ -339,7 +340,7 @@ C
          IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
-         IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
+         ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
 C
@@ -523,10 +524,10 @@ C
      *       .AND.  NGPC6(KSYMOP).EQ.0 )
      *      GO TO 100
 C     ... skip this symmetry if no operators
-         WRITE(LUPRI,'(//A/A,I5)')
+         WRITE(LUPRI,'(//A/A,I5,3A)')
      *      ' >>>>>>>>>> Linear response calculation',
      *      ' >>>>>>>>>> Symmetry of excitation/property operator(s)',
-     *      KSYMOP
+     *      KSYMOP,'  ( ',REP(KSYMOP-1),')'
          WRITE(LUPRI,'(3(/A,I5))')
      *      ' Number of excitations of this symmetry        ',
      *      NPPCNV(KSYMOP),

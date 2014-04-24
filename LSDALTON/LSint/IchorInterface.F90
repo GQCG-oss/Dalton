@@ -1,26 +1,18 @@
 !> @file
-!> Contains the main Ichor integral drivers
+!> Contains the main LSDALTON to Ichor integral Interfaces 
 !> Ichor is the "Integral Code Hand Optimized for Rapid evaluation" 
 !> Ichor is the ethereal golden fluid that is the blood of the greek gods
+!> The Ichor code is in the IchorIntegrals directory. 
 
-!> \brief Main Ichor drivers for the calculation of integrals 
-!> based on the McMurchie-Davidson(McM)/Obara Saika(OS)/Head-Gordon-Pople(HGP)/Rys 
+!> \brief Main Ichor Interface for the calculation of integrals 
+!> based on the Obara Saika(OS)/Head-Gordon-Pople(HGP)
 !> \author T. Kjaergaard
 !> \date 2013 
 MODULE IchorErimoduleHost
   use precision
   use TYPEDEFTYPE,only: lssetting,BASISSETINFO,MOLECULEINFO
-  use memory_handling, only: mem_alloc,mem_dealloc
+  use memory_handling, only: mem_alloc,mem_dealloc, mem_add_external_memory
   use dec_typedef_module, only: DecAObatchinfo
-#ifdef VAR_ICHOR
-  use IchorGabmodule
-  use IchorErimodule
-  use IchorParametersModule
-  use IchorBatchToolsModule !DetermineBatchSize, GenerateOrderdListOfTypes
-  use IchorSaveGabModule!, only: SET_IchorGabID,GET_IchorGabID,&
-!       & InitIchorSaveGabModule, FreeIchorSaveGabModule,&
-!       & addgabtoichorsavegabmodule
-#endif
 public:: MAIN_ICHORERI_DRIVER, SCREEN_ICHORERI_DRIVER, &
      & determine_MinimumAllowedAObatchSize, &
      & determine_Ichor_nbatchesofAOS, determine_Ichor_batchesofAOS,&
@@ -493,16 +485,16 @@ call build_TypeInfo2(setting%MOLECULE(4)%p,AObasis,nTypesD,&
      & spherical,MaxnAtomsD,MaxnPrimD,MaxnContD,startOrbitalOfTypeD,&
      & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,nbatchDstart2,nbatchDend2)
 
-SphericalSpec=SphericalParam 
-IchorJobSpec=IcorJobEri          !4 center 2 electronic repulsion integrals
-IchorInputSpec=IcorInputNoInput  !no input in inputstorage (no Density matrix)
+call GetIchorSphericalParamIdentifier(SphericalSpec)
+call GetIchorJobEriIdentifier(IchorJobSpec)
+call GetIchorInputIdentifier(IchorInputSpec)
 IchorInputDim1=1                 !not used since   IcorInputNoInput
 IchorInputDim2=1                 !not used since   IcorInputNoInput
 IchorInputDim3=1                 !not used since   IcorInputNoInput
 call mem_alloc(InputStorage,1)
-IchorParSpec=IchorParNone        !no parallelization
-IchorDebugSpec=iprint            !Debug PrintLevel
-IchorAlgoSpec=IchorAlgoOS        !IchorAlgoOS means Obara-Saika/Head-Gordon-Pople
+call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
+call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
+call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
 IF(FullBatch)THEN
    SameLHSaos = intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)
    SameRHSaos = intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)
@@ -526,33 +518,21 @@ ELSE
    SameODs = (CRIT1.AND.CRIT2).AND.(CRIT3.AND.CRIT4)
 ENDIF
 
-IF(SameODs.AND.SameRHSaos.AND.SameLHSaos)THEN
-   IchorPermuteSpec= IchorPermuteTTT
-ELSEIF(SameRHSaos.AND.SameLHSaos)THEN
-   IchorPermuteSpec=IchorPermuteTTF 
-ELSEIF(SameODs)THEN
-   IchorPermuteSpec=IchorPermuteFFT 
-ELSEIF(SameLHSaos)THEN
-   IchorPermuteSpec=IchorPermuteTFF
-ELSEIF(SameRHSaos)THEN
-   IchorPermuteSpec=IchorPermuteFTF
-ELSE
-   IchorPermuteSpec=IchorPermuteFFF
-ENDIF
-filestorageIdentifier=IchorNofilestorage !Logical Unit number or IchorNofilestorage if no file storage
-MaxMem = 0                       !Maximum Memory Ichor is allowed to use. Zero means no restrictions
-MaxFileStorage = 0               !Maximum File size, if zero - no file will be written or read. 
-MaxMemAllocated = 0              !Maximum Memory used in the program. Ichor adds to this value
-MemAllocated = 0                 !Memory allocated in the Ichor program
+call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
+call GetIchorFileStorageIdentifier(filestorageIdentifier)
 
+MaxMem=0         !Maximum Memory Ichor is allowed to use. Zero = no restrictions
+MaxFileStorage=0 !Maximum File size, if zero - no file will be written or read. 
+MaxMemAllocated=0!Maximum Memory used in the program. Ichor adds to this value
+MemAllocated = 0 !Memory allocated in the Ichor program
+
+call GetIchorScreeningParameter(IchorScreenSpec,SETTING%SCHEME%CS_SCREEN,&
+     & SETTING%SCHEME%OD_SCREEN,.FALSE.)
 IF(SETTING%SCHEME%CS_SCREEN.AND.SETTING%SCHEME%OD_SCREEN)THEN
-   IchorScreenSpec=IchorScreen      !Default screening         
-   CALL GET_IchorGabID(IchorGabID1,IchorGabID2)
+   CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
 ELSEIF(SETTING%SCHEME%CS_SCREEN)THEN
-   IchorScreenSpec=IchorScreenCS  !Cauchy-Schwarz screening         
-   CALL GET_IchorGabID(IchorGabID1,IchorGabID2)
+   CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
 ELSE   
-   IchorScreenSpec=IchorScreenNone    !deactivate screening in CS screening
    IchorGabID1=0 !screening Matrix Identifier, not used if IchorScreenNone
    IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
 ENDIF
@@ -569,7 +549,7 @@ THRESHOLD_QQR = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*0.50E0_realk
 !=====================================================================
 !  Main Call
 !=====================================================================
-call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
+call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
      & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
      & nbatchAstart2,nbatchAend2,&
@@ -593,7 +573,8 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & integrals,lupri)
-!print*,'MaxMemAllocated,MemAllocated',MaxMemAllocated,MemAllocated
+
+call Mem_Add_external_memory(MaxMemAllocated)
 call mem_dealloc(InputStorage)
 !=====================================================================
 
@@ -688,8 +669,8 @@ Integer(kind=long) :: MaxMem,MaxMemAllocated,MemAllocated
 logical   :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
 
-call FreeIchorSaveGabModule
-call InitIchorSaveGabModule()
+call FreeIchorSaveGabModuleInterface
+call InitIchorSaveGabModuleInterface
 
 spherical = .TRUE.
 IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
@@ -755,35 +736,37 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
         & spherical,MaxnAtomsB,MaxnPrimB,MaxnContB,startOrbitalOfTypeB,&
         & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,1,nBatchB)
    
-   SphericalSpec=SphericalParam 
-   IchorJobSpec=IcorJobEri          !4 center 2 electronic repulsion integrals
-   IchorInputSpec=IcorInputNoInput  !no input in inputstorage (no Density matrix)
+   call GetIchorSphericalParamIdentifier(SphericalSpec)
+   call GetIchorJobEriIdentifier(IchorJobSpec)
+   call GetIchorInputIdentifier(IchorInputSpec)
    IchorInputDim1=1                 !not used since   IcorInputNoInput
    IchorInputDim2=1                 !not used since   IcorInputNoInput
    IchorInputDim3=1                 !not used since   IcorInputNoInput
    call mem_alloc(InputStorage,1)
-   IchorParSpec=IchorParNone        !no parallelization
-   IchorDebugSpec=iprint            !Debug PrintLevel
-   IchorAlgoSpec=IchorAlgoOS        !IchorAlgoOS means Obara-Saika/Head-Gordon-Pople
-   IchorPermuteSpec=IchorPermuteFFF !no Permutational Sym: SameLHSaos=SameRHSaos=SameODs=.FALSE. 
-   filestorageIdentifier=IchorNofilestorage !Logical Unit number or IchorNofilestorage if no file storage
+   call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
+   call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
+   call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
+   !no Permutational Sym: SameLHSaos=SameRHSaos=SameODs=.FALSE. 
+   call GetIchorPermuteParameter(IchorPermuteSpec,.FALSE.,.FALSE.,.FALSE.)
+   call GetIchorFileStorageIdentifier(filestorageIdentifier)
    MaxMem = 0                       !Maximum Memory Ichor is allowed to use. Zero means no restrictions
    MaxFileStorage = 0               !Maximum File size, if zero - no file will be written or read. 
    MaxMemAllocated = 0              !Maximum Memory used in the program. Ichor adds to this value
    MemAllocated = 0                 !Memory allocated in the Ichor program
-   !LHS
    OutputDim1 = nBatchA
    OutputDim2 = nBatchB
    OutputDim3 = 1
    OutputDim4 = 1
    OutputDim5 = 1
+   call GetIchorScreeningParameter(IchorScreenSpec,.TRUE.,.TRUE.,.FALSE.)
+   !LHS
    IF (intSpec(1).EQ.intSpec(2).AND.SAMEMOL)THEN
       SameLHSaos = .TRUE.
    ELSE
       SameLHSaos = .FALSE.
    ENDIF
    call mem_alloc(BATCHGAB,nBatchA*nBatchB)
-   call IchorGab(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
+   call IchorGabInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
         & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
         & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
         & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
@@ -796,11 +779,12 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
         & MaxFileStorage,MaxMemAllocated,MemAllocated,&
         & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
         & BATCHGAB,lupri)
+   call Mem_Add_external_memory(MaxMemAllocated)
+
    CALL GenerateIdentifier(INTSPEC,GabIdentifier)
-   call AddGabToIchorSaveGabModule(nBatchA,nBatchB,GabIdentifier,BATCHGAB)
+   call AddGabToIchorSaveGabModuleInterface(nBatchA,nBatchB,&
+        & GabIdentifier,BATCHGAB)
    call mem_dealloc(BATCHGAB)   
-   !   call DetermineBatchSize(nTypesC,nAtomsOfTypeC,nBatchC)
-   !   call DetermineBatchSize(nTypesD,nAtomsOfTypeD,nBatchD)
    IchorGabID1=GabIdentifier !screening Matrix Identifier
    
    !A
@@ -899,7 +883,7 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
          SameLHSaos = .FALSE.
       ENDIF
       call mem_alloc(BATCHGCD,nBatchC*nBatchD)
-      call IchorGab(nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
+      call IchorGabInterface(nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
            & AngmomOfTypeC,nAtomsOfTypeC,nPrimOfTypeC,nContOfTypeC,&
            & startOrbitalOfTypeC,Ccenters,exponentsOfTypeC,ContractCoeffOfTypeC,&
            & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
@@ -912,11 +896,13 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
            & MaxFileStorage,MaxMemAllocated,MemAllocated,&
            & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
            & BATCHGCD,lupri)
+      call mem_Add_external_memory(MaxMemAllocated)
+
       CALL GenerateIdentifier(INTSPEC,GabIdentifier)
       IF(GabIdentifier.EQ.IchorGabID1)THEN
          GabIdentifier = GabIdentifier + 53210
       ENDIF
-      call AddGabToIchorSaveGabModule(nBatchC,nBatchD,GabIdentifier,BATCHGCD)
+      call AddGabToIchorSaveGabModuleInterface(nBatchC,nBatchD,GabIdentifier,BATCHGCD)
       call mem_dealloc(BATCHGCD)
       IchorGabID2=GabIdentifier !screening Matrix Identifier   
 
@@ -941,13 +927,13 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
       call mem_dealloc(ContractCoeffOfTypeD)
       call mem_dealloc(Dcenters)
    ENDIF
-   IchorScreenSpec=IchorScreenCS  !Cauchy-Schwarz screening         
+   call GetIchorScreeningParameter(IchorScreenSpec,.TRUE.,.FALSE.,.FALSE.)
 ELSE   
-   IchorScreenSpec=IchorScreenNone    !deactivate screening in CS screening
+   call GetIchorScreeningParameter(IchorScreenSpec,.FALSE.,.FALSE.,.FALSE.)
    IchorGabID1=0 !screening Matrix Identifier, not used if IchorScreenNone
    IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
 ENDIF
-CALL SET_IchorGabID(IchorGabID1,IchorGabID2)
+CALL SET_IchorGabIDinterface(IchorGabID1,IchorGabID2)
 #else
 call lsquit('IchorEri requires -DVAR_ICHOR',-1)
 #endif
@@ -963,11 +949,13 @@ integer,intent(inout) :: nBatchA,nBatchB
 ! local variables
 integer :: IchorGabID1,IchorGabID2
 #ifdef VAR_ICHOR
-CALL GET_IchorGabID(IchorGabID1,IchorGabID2)
+CALL GET_IchorGabIDinterface(IchorGabID1,IchorGabID2)
 IF(LHS)THEN
-   call RetrieveGabDIMFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID1)
+   call RetrieveGabDIMFromIchorSaveGabModuleInterface(&
+        & nBatchA,nBatchB,IchorGabID1)
 ELSE
-   call RetrieveGabDIMFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID2)   
+   call RetrieveGabDIMFromIchorSaveGabModuleInterface(&
+        & nBatchA,nBatchB,IchorGabID2)   
 ENDIF
 #else
 call lsquit('IchorEri requires -DVAR_ICHOR',-1)
@@ -984,11 +972,11 @@ real(realk),intent(inout) :: BATCHGAB(nBatchA*nBatchB)
 ! local variables
 integer :: IchorGabID1,IchorGabID2
 #ifdef VAR_ICHOR
-CALL GET_IchorGabID(IchorGabID1,IchorGabID2)
+CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
 IF(LHS)THEN
-   call RetrieveGabFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID1,BATCHGAB)
+   call RetrieveGabFromIchorSaveGabModuleInterface(nBatchA,nBatchB,IchorGabID1,BATCHGAB)
 ELSE
-   call RetrieveGabFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID2,BATCHGAB)
+   call RetrieveGabFromIchorSaveGabModuleInterface(nBatchA,nBatchB,IchorGabID2,BATCHGAB)
 ENDIF
 #else
 call lsquit('IchorEri requires -DVAR_ICHOR',-1)
@@ -998,8 +986,8 @@ END SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GAB
 SUBROUTINE FREE_SCREEN_ICHORERI()
 implicit none
 #ifdef VAR_ICHOR
-CALL SET_IchorGabID(0,0)
-call FreeIchorSaveGabModule
+CALL SET_IchorGabIDInterface(0,0)
+call FreeIchorSaveGabModuleInterface
 #else
 call lsquit('IchorEri requires -DVAR_ICHOR',-1)
 #endif
