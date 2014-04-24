@@ -3915,13 +3915,13 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
      dim4=i8*BatchDimAlpha*nvirt*nocc*nocctot
      dim1=max(dim1,i8*BatchDimA*nvirt*nocc*nocctot)
      dim3=max(dim3,i8*BatchDimA*nvirt*nocc*nocctot)
-     IF(.NOT.DECinfo%OnlyVirtPart)THEN
+!     IF(.NOT.DECinfo%OnlyVirtPart)THEN
         dim2=max(dim2,i8*BatchDimA*nvirt*nocc*noccEOS)
-     ENDIF
-     IF(.NOT.DECinfo%OnlyOccPart)THEN
+!     ENDIF
+!     IF(.NOT.DECinfo%OnlyOccPart)THEN
         dim2=max(dim2,i8*nvirtEOS*BatchDimA*nocc*nocctot)
         dim2=max(dim2,i8*nvirtEOS*nvirtEOS*nocc*nocctot)
-     ENDIF
+!     ENDIF
      ! Memory needed is the sum of the array sizes
      ! However, tmp1,tmp2, and tmp3 are used for EACH thread.
      ! Thus, we multiply these by the number of threads
@@ -3930,12 +3930,12 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
      ! After loop
   case(3)
 
-     IF(.NOT.DECinfo%OnlyVirtPart)THEN
+!     IF(.NOT.DECinfo%OnlyVirtPart)THEN
         dim1=max(dim1,i8*nvirt*noccEOS*noccEOS*nvirt)
-     ENDIF
-     IF(.NOT.DECinfo%OnlyOccPart)THEN
+!     ENDIF
+!     IF(.NOT.DECinfo%OnlyOccPart)THEN
         dim1=max(dim1,i8*nvirtEOS*nvirtEOS*nocc*nocctot)
-     ENDIF
+!     ENDIF
      dim2=dim1
 
      if(first_order_integrals) then
