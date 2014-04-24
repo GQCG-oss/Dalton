@@ -450,11 +450,11 @@ contains
     integer :: i,j,k,a,b,c
     real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
     real(realk) :: e1, e2, e3, e4,tmp,multaibj
-    logical ::  something_wrong
+    logical ::  something_wrong,doOccPart,doVirtPart
     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     real(realk),pointer :: occ_tmp(:),virt_tmp(:)
     real(realk) :: prefac_coul,prefac_k
-
+    
     ! Lagrangian energy can be split into four contributions:
     ! The first two (e1 and e2) use occupied EOS orbitals and virtual AOS orbitals.
     ! The last two (e3 and e4) use virtual EOS orbitals and occupied AOS orbitals.
@@ -483,6 +483,9 @@ contains
     ! is the estimated change in the energy if occupied orbital with index
     ! MyFragment%occAOSidx(i) is removed from the fragment.
 
+    !For MP2 we always do both occ and virt
+    doOccPart = (.NOT.DECinfo%OnlyVirtPart) .OR.(MyFragment%ccmodel==MODEL_MP2)
+    doVirtPart = (.NOT.DECinfo%OnlyOccPart) .OR.(MyFragment%ccmodel==MODEL_MP2)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
@@ -512,7 +515,7 @@ contains
     ! Sanity checks
     ! *************
     something_wrong=.false.
-    IF(.NOT.DECinfo%OnlyVirtPart)THEN
+    IF(doOccPart)THEN
        if(t2occ%dims(1) /= nvirtAOS) something_wrong=.true.
        if(t2occ%dims(2) /= noccEOS) something_wrong=.true.
        if(t2occ%dims(3) /= nvirtAOS) something_wrong=.true.
@@ -524,7 +527,7 @@ contains
        if(gocc%dims(4) /= noccEOS) something_wrong=.true.
     ENDIF
 
-    IF(.NOT.DECinfo%OnlyOccPart)THEN
+    IF(doVirtPart)THEN
        if(t2virt%dims(1) /= nvirtEOS) something_wrong=.true.
        if(t2virt%dims(2) /= noccAOS) something_wrong=.true.
        if(t2virt%dims(3) /= nvirtEOS) something_wrong=.true.
@@ -549,7 +552,7 @@ contains
     end if
 
 
-    IF(.NOT.DECinfo%OnlyVirtPart)THEN
+    IF(doOccPart)THEN
        call mem_TurnONThread_Memory()
        !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c,virt_tmp)
        call init_threadmemvar()
@@ -641,7 +644,7 @@ contains
        lag_occ = 0.0E0_realk
     ENDIF
 
-    IF(.NOT.DECinfo%OnlyOccPart)THEN
+    IF(doVirtPart)THEN
        ! Calculate e3 and e4
        ! *******************
 
@@ -755,13 +758,13 @@ contains
     write(DECinfo%output,'(1X,a,i7)') 'Energy summary for fragment: ', &
          & MyFragment%EOSatoms(1)
     write(DECinfo%output,*) '**********************************************************************'
-    if(.not. DECinfo%onlyvirtpart) then
+    if(doOccPart) then
        write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', Eocc
     endif
-    if(.not. DECinfo%onlyoccpart) then
+    if(doVirtPart) then
        write(DECinfo%output,'(1X,a,g20.10)') 'Single virtual  energy = ', Evirt
     endif
-    if(.not. (DECinfo%onlyoccpart.OR. DECinfo%onlyvirtpart)) then
+    if(doOccPart.AND.doVirtPart) then
        write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian occ term  = ', lag_occ
        write(DECinfo%output,'(1X,a,g20.10)') 'Single Lagrangian virt term = ', lag_virt
     end if
@@ -2132,14 +2135,22 @@ contains
         init_Occradius = 0.5_realk/bohr_to_angstrom
      ELSE
         !All Occupied orbitals assigned to atoms within 3.0 Angstrom of central atom are included
-        init_Occradius = 3.0_realk/bohr_to_angstrom
+        IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
+           init_Occradius = 2.0_realk/bohr_to_angstrom
+        ELSE
+           init_Occradius = 3.0_realk/bohr_to_angstrom
+        ENDIF
      ENDIF
      IF(DECinfo%onlyvirtpart) then
         !All Virtual orbitals assigned to atoms within 1.0 Angstrom of central atom are included
         init_Virtradius = 0.5_realk/bohr_to_angstrom
      ELSE
         !All Virtual orbitals assigned to atoms within 3.0 Angstrom of central atom are included
-        init_Virtradius = 3.0_realk/bohr_to_angstrom
+        IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
+           init_Virtradius = 2.0_realk/bohr_to_angstrom
+        ELSE
+           init_Virtradius = 3.0_realk/bohr_to_angstrom
+        ENDIF
      ENDIF
      call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
         & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
@@ -3368,15 +3379,20 @@ contains
     !> Number of orbitals AFTER the reduction has been carried out
     integer,intent(inout) :: Nafter
     integer :: i,Nbefore,Nexcl
+    logical :: doOccPart,doVirtPart
 
     ! Number of orbitals at input
     Nbefore = count(OrbAOS)
+
+    !For MP2 we always do both occ and virt
+    doOccPart = (.NOT.DECinfo%OnlyVirtPart) .OR.(MyFragment%ccmodel==MODEL_MP2)
+    doVirtPart = (.NOT.DECinfo%OnlyOccPart) .OR.(MyFragment%ccmodel==MODEL_MP2)
 
 
     ! Exclude orbitals with contributions smaller than threshold
     if(OccOrVirt=='O') then ! checking occupied orbitals
        !contributions = OccContribs 
-       IF(.NOT.DECinfo%OnlyOccPart)THEN
+       IF(doVirtPart)THEN
           do i=1,norb_full
              if (abs(contributions(i)) < Thresh) OrbAOS(i)=.false.
           end do
@@ -3387,7 +3403,7 @@ contains
        ENDIF
     elseif(OccOrVirt=='V') then
        !contributions = VirtContribs
-       IF(.NOT.DECinfo%OnlyVirtPart)THEN
+       IF(doOccPart)THEN
           do i=1,norb_full
              if (abs(contributions(i)) < Thresh) OrbAOS(i)=.false.
           end do
