@@ -313,6 +313,7 @@ contains
        !if(.not. DECinfo%use_singles) then
        !  t1 = array2_init([t2%dims(1),t2%dims(2)])
        !endif
+       !call print_norm(t1%val,i8*t2%dims(1)*t2%dims(2))
 
 
        ! Extract EOS indices for integrals
@@ -326,6 +327,7 @@ contains
        ! ********************************************
        ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)          
        call get_combined_SingleDouble_amplitudes(t1,t2,u)
+       !call print_norm(u%val,i8*t2%dims(1)*t2%dims(2)*t2%dims(1)*t2%dims(2))
 
 
        ! Extract EOS indices for amplitudes

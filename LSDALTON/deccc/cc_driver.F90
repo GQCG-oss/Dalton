@@ -2289,10 +2289,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    end do
    
    !in the call to get_combined_SingleDouble_amplitudes
-   !t1 is used, for RPA use_singles = .false. it has to be 
+   !t1 is used, for RPA use_singles = .false. 
+   !it should be moved out of this routine
+   !but I get a wrong energy if it is moved out of the
+   !routine. Johannes 
    if(CCmodel == MODEL_RPA)then
      t1_final = array2_init([nv,no])
-     write(*,*) t1_final%val
    endif
 
    call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
