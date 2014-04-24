@@ -31,8 +31,8 @@ module dec_workarounds_module
     implicit none
     integer(kind=8), intent(in) :: nel
     character, intent(in) :: op
-    real(realk),intent(inout) :: drain(:)
-    real(realk),intent(in)    :: source(:)
+    real(realk),intent(inout) :: drain(nel)
+    real(realk),intent(in)    :: source(nel)
     real(realk), intent(in), optional :: scal1,scal2
     logical, intent(in), optional :: gpu
     logical :: use_gpu_code
