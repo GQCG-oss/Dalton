@@ -39,31 +39,23 @@ OUTEXT="out"
 DALEXT="dal"
 MOLEXT="mol"
 AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
-#deafult values for options
+
+# default values for options
 opt_valgrind=0
 opt_lslib_test=0
-opta=0
-optA=0
-optd=0
 optgeo1=0
 optgeo2=0
 optdens=0
 optpg=0
+optd=0
 optD=1
 optf=
 optF=0
 optn=0
 optlam=0
-opti=0
 opto=0
-optstex=0
-optvib=0
-opthes=0
-optloc=0
-optI=0
-optv=0
-optw=0
 frl=rel
+
 #
 # Define usage message
 #
