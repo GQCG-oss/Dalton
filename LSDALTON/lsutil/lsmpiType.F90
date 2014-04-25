@@ -4474,28 +4474,6 @@ contains
 #endif
   end subroutine lsmpi_allreduce_D4
 
-  ! MPI reduction within local group (infpar%lg_comm communicator)
-  subroutine lsmpi_local_max(buffer,master)
-    implicit none
-    integer(kind=ls_mpik) :: master
-    real(realk) :: buffer
-#ifdef VAR_MPI
-    integer(kind=ls_mpik) :: ierr,n1
-    real(realk) :: null
-    IERR=0
-    n1=1
-    IF(infpar%lg_mynum.EQ.master) THEN
-      CALL MPI_REDUCE(MPI_IN_PLACE,BUFFER,n1,MPI_DOUBLE_PRECISION,MPI_MAX,&
-           &master,infpar%lg_comm,IERR)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-    ELSE
-      CALL MPI_REDUCE(BUFFER,NULL,n1,MPI_DOUBLE_PRECISION,MPI_MAX,&
-           &master,infpar%lg_comm,IERR)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-    ENDIF
-#endif
-  end subroutine lsmpi_local_max
-
   subroutine lsmpi_local_reduction_int(buffer,master)
     implicit none
     integer(kind=ls_mpik) :: master

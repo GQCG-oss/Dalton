@@ -973,7 +973,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: myload,nelms,n4
      real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2, deb1,deb2,MemFree,ActuallyUsed
      real(realk) :: tcpu_end,twall_end,time_a, time_c, time_d,time_singles
-     real(realk) :: time_doubles,timewall_start,wait_time,max_wait_time
+     real(realk) :: time_doubles,timewall_start,wait_time,max_wait_time,min_wait_time,ave_wait_time
      integer     :: scheme
      integer(kind=8) :: els2add
 
@@ -1974,6 +1974,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
      max_wait_time = time_intloop_idle
+     min_wait_time = time_intloop_idle
 
 
      if(scheme==3)then
@@ -2011,11 +2012,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         &infpar%mynum,myload,time_intloop_idle
 #endif
      call lsmpi_local_reduction(time_intloop_idle,infpar%master)
-     call lsmpi_local_max(max_wait_time,infpar%master)
+     call lsmpi_reduce_realk_min(max_wait_time,infpar%master,infpar%lg_comm)
+     call lsmpi_reduce_realk_min(min_wait_time,infpar%master,infpar%lg_comm)
+     ave_wait_time = time_intloop_idle/(infpar%nodtot*1.0E0_realk)
      if(master.and.print_debug)then
         write(*,'("----------------------------------------------------------")')
         write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)') time_intloop_idle,&
-           &time_intloop_idle/(infpar%nodtot*1.0E0_realk),max_wait_time
+           &ave_wait_time,max_wait_time
      endif
 
 
@@ -2066,7 +2069,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         write( *,'("     total work time   :",g10.3,"s")') time_intloop_work+time_intloop_B1work
         write( *,'("     total comm time   :",g10.3,"s")') time_intloop_comm+time_intloop_B1comm
         write( *,'("     total ints time   :",g10.3,"s")') time_intloop_int
-        write( *,'("     total idle time   :",g10.3,"s")') time_intloop_idle
+        write( *,'("     max/ave/min idle  :",g10.3,"s",g10.3,"s",g10.3,"s")') max_wait_time,ave_wait_time,min_wait_time
         write( *,'("     B1 work time      :",g10.3,"s")') time_intloop_B1work
         write( *,'("     B1 comm time      :",g10.3,"s")') time_intloop_B1comm
         if(DECinfo%PL>3)then

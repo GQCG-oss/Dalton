@@ -5976,7 +5976,7 @@ contains
 
     ! Determine optimal batchsizes and corresponding sizes of arrays
     call get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
-         & size1,size2,size3,.false.)
+         & size1,size2,size3,.true.)
 
 
     ! ************************************************
@@ -6256,11 +6256,11 @@ contains
     call mem_dealloc(distribution)
 
     
-    if(infpar%lg_mynum  == 0)then
-       call print_norm(JAIB)
-       call print_norm(JAIK)
-    endif
-    call print_norm(CBAI)
+    !if(infpar%lg_mynum  == 0)then
+    !   call print_norm(JAIB)
+    !   call print_norm(JAIK)
+    !endif
+    !call print_norm(CBAI)
 #endif
 
     ! free stuff
@@ -6348,20 +6348,27 @@ contains
     !> memory reals
     real(realk) :: MemoryNeeded, MemoryAvailable
     integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma
-    integer(kind=ls_mpik) :: nnod
-    nnod = 1
-#ifdef VAR_MPI
-    nnod = infpar%lg_nodtot
-#endif
-
-
+    integer(kind=ls_mpik) :: nnod,me
+    logical :: master
     ! Memory currently available
     ! **************************
     call get_currently_available_memory(MemoryAvailable)
     ! Note: We multiply by 85 % to be on the safe side!
     MemoryAvailable = 0.85*MemoryAvailable
   
+    nnod = 1
+    me   = 0
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+    me   = infpar%lg_mynum
+    call lsmpi_reduce_realk_min(MemoryAvailable,infpar%master,infpar%lg_comm)
+#endif
+
+    master = (me == 0)
+
   
+
+    if ( master ) then
   
     ! Maximum and minimum possible batch sizes
     ! ****************************************
@@ -6522,12 +6529,6 @@ contains
  
     ! Print out and sanity check
     ! ==========================
- 
-#ifdef VAR_MPI
-
-    if (infpar%lg_mynum .ne. infpar%master) goto 666
-
-#endif
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -6549,10 +6550,12 @@ contains
     write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
     write(DECinfo%output,*)
   
+
+    endif
+
 #ifdef VAR_MPI
-
-666 continue
-
+    call ls_mpibcast(Gammadim,infpar%master,infpar%lg_comm)
+    call ls_mpibcast(Alphadim,infpar%master,infpar%lg_comm)
 #endif
 
     ! Sanity check
