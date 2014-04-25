@@ -6321,250 +6321,250 @@ contains
   !> \author Kasper Kristensen & Janus Eriksen
   !> \date September 2011, rev. October 2012
   subroutine get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
-     & size1,size2,size3,adapt_to_nnodes)
+        & size1,size2,size3,adapt_to_nnodes)
 
-    implicit none
-  
-    !> Integral info
-    type(lsitem), intent(inout) :: mylsitem
-    !> Number of AO basis functions
-    integer,intent(in) :: nbasis
-    !> Number of occupied (AOS) orbitals
-    integer,intent(in) :: nocc
-    !> Number of virt (AOS) orbitals
-    integer,intent(in) :: nvirt
-    !> Max size for AO alpha batch
-    integer,intent(inout) :: alphadim
-    !> Max size for AO gamma batch
-    integer,intent(inout) :: gammadim
-    !> Dimension of temporary array 1
-    integer(kind=long),intent(inout) :: size1
-    !> Dimension of temporary array 2
-    integer(kind=long),intent(inout) :: size2
-    !> Dimension of temporary array 3
-    integer(kind=long),intent(inout) :: size3
-    !> choose to split if more nodes are available than necessary
-    logical,intent(in) :: adapt_to_nnodes
-    !> memory reals
-    real(realk) :: MemoryNeeded, MemoryAvailable
-    integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma
-    integer(kind=ls_mpik) :: nnod,me
-    logical :: master
-    ! Memory currently available
-    ! **************************
-    call get_currently_available_memory(MemoryAvailable)
-    ! Note: We multiply by 85 % to be on the safe side!
-    MemoryAvailable = 0.85*MemoryAvailable
-  
-    nnod = 1
-    me   = 0
+     implicit none
+
+     !> Integral info
+     type(lsitem), intent(inout) :: mylsitem
+     !> Number of AO basis functions
+     integer,intent(in) :: nbasis
+     !> Number of occupied (AOS) orbitals
+     integer,intent(in) :: nocc
+     !> Number of virt (AOS) orbitals
+     integer,intent(in) :: nvirt
+     !> Max size for AO alpha batch
+     integer,intent(inout) :: alphadim
+     !> Max size for AO gamma batch
+     integer,intent(inout) :: gammadim
+     !> Dimension of temporary array 1
+     integer(kind=long),intent(inout) :: size1
+     !> Dimension of temporary array 2
+     integer(kind=long),intent(inout) :: size2
+     !> Dimension of temporary array 3
+     integer(kind=long),intent(inout) :: size3
+     !> choose to split if more nodes are available than necessary
+     logical,intent(in) :: adapt_to_nnodes
+     !> memory reals
+     real(realk) :: MemoryNeeded, MemoryAvailable
+     integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma
+     integer(kind=ls_mpik) :: nnod,me
+     logical :: master
+     ! Memory currently available
+     ! **************************
+     call get_currently_available_memory(MemoryAvailable)
+     ! Note: We multiply by 85 % to be on the safe side!
+     MemoryAvailable = 0.85*MemoryAvailable
+
+     nnod = 1
+     me   = 0
 #ifdef VAR_MPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
-    call lsmpi_reduce_realk_min(MemoryAvailable,infpar%master,infpar%lg_comm)
+     nnod = infpar%lg_nodtot
+     me   = infpar%lg_mynum
+     call lsmpi_reduce_realk_min(MemoryAvailable,infpar%master,infpar%lg_comm)
 #endif
 
-    master = (me == 0)
+     master = (me == 0)
 
-  
 
-    if ( master ) then
-  
-    ! Maximum and minimum possible batch sizes
-    ! ****************************************
-  
-    ! The largest possible AO batch is the number of basis functions
-    MaxAObatch = nbasis
-  
-    ! The smallest possible AO batch depends on the basis set
-    ! (More precisely, if all batches are made as small as possible, then the
-    !  call below determines the largest of these small batches).
-    call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
-  
-  
-    ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
-    AlphaDim=MinAObatch
-    GammaDim=MinAObatch
-  
-    GammaOpt = 0
-    AlphaOpt = 0
- 
-    ! Gamma batch size
-    ! =================================
-    GammaLoop: do gamma = MaxAObatch,MinAOBatch,-1
-  
-       call get_max_arraysizes_for_ccsdpt_integrals(alphaDim,gamma,nbasis,nocc,nvirt,&
-            & size1,size2,size3,MemoryNeeded)
-  
-         if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
-            if(adapt_to_nnodes)then
-               if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
+
+     if ( master ) then
+
+        ! Maximum and minimum possible batch sizes
+        ! ****************************************
+
+        ! The largest possible AO batch is the number of basis functions
+        MaxAObatch = nbasis
+
+        ! The smallest possible AO batch depends on the basis set
+        ! (More precisely, if all batches are made as small as possible, then the
+        !  call below determines the largest of these small batches).
+        call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
+
+
+        ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
+        AlphaDim=MinAObatch
+        GammaDim=MinAObatch
+
+        GammaOpt = 0
+        AlphaOpt = 0
+
+        ! Gamma batch size
+        ! =================================
+        GammaLoop: do gamma = MaxAObatch,MinAOBatch,-1
+
+           call get_max_arraysizes_for_ccsdpt_integrals(alphaDim,gamma,nbasis,nocc,nvirt,&
+              & size1,size2,size3,MemoryNeeded)
+
+           if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
+              if(adapt_to_nnodes)then
+                 if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
 #ifdef VAR_MPI
-                  print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 1'
+                    print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 1'
 #else
-                  print *,'we hit GammaOpt 1'
+                    print *,'we hit GammaOpt 1'
 #endif
-                  GammaOpt = gamma
-                  exit GammaLoop
-               endif
-            else
+                    GammaOpt = gamma
+                    exit GammaLoop
+                 endif
+              else
 #ifdef VAR_MPI
-               print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 2'
+                 print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 2'
 #else
-               print *,'we hit GammaOpt 2'
+                 print *,'we hit GammaOpt 2'
 #endif
-               GammaOpt = gamma
-               exit GammaLoop
-            endif
-         end if
+                 GammaOpt = gamma
+                 exit GammaLoop
+              endif
+           end if
 
-    end do GammaLoop
+        end do GammaLoop
 
-    if (GammaOpt .eq. 0) then
+        if (GammaOpt .eq. 0) then
 
 #ifdef VAR_MPI
-       print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt NEW'
+           print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt NEW'
 #else
-       print *,'we hit GammaOpt NEW'
+           print *,'we hit GammaOpt NEW'
 #endif
-       GammaOpt = GammaDim
+           GammaOpt = GammaDim
 
-    endif 
+        endif 
 
 #ifdef VAR_MPI
-    print *,'for proc no. = ',infpar%lg_mynum,', GammaOpt at the end of the GammaLoop is = ',GammaOpt
+        print *,'for proc no. = ',infpar%lg_mynum,', GammaOpt at the end of the GammaLoop is = ',GammaOpt
 #else
-    print *,'GammaOpt at the end of the GammaLoop is = ',GammaOpt
+        print *,'GammaOpt at the end of the GammaLoop is = ',GammaOpt
 #endif
 
-    ! If gamma batch size was set manually we use that value instead
-    if(DECinfo%ccsdGbatch/=0) then
-       write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
+        ! If gamma batch size was set manually we use that value instead
+        if(DECinfo%ccsdGbatch/=0) then
+           write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
 #ifdef VAR_MPI
-       print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 3'
+           print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 3'
 #else
-       print *,'we hit GammaOpt 3'
+           print *,'we hit GammaOpt 3'
 #endif
-       GammaOpt=DECinfo%ccsdGbatch
-    end if 
-  
-    ! The optimal gamma batch size is GammaOpt.
-    ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
-    ! and store this number in gammadim.
-    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,GammaOpt,gammadim,'R')
-  
-  
-    ! Largest possible alpha batch size
-    ! =================================
-    AlphaLoop: do alpha = MaxAObatch,MinAOBatch,-1
+           GammaOpt=DECinfo%ccsdGbatch
+        end if 
 
-       call get_max_arraysizes_for_ccsdpt_integrals(alpha,gammadim,nbasis,nocc,nvirt,&
-          & size1,size2,size3,MemoryNeeded)
+        ! The optimal gamma batch size is GammaOpt.
+        ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
+        ! and store this number in gammadim.
+        call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,GammaOpt,gammadim,'R')
 
-       if(MemoryNeeded < MemoryAvailable .or. (alpha==minAObatch) ) then
 
-          if( adapt_to_nnodes  )then
+        ! Largest possible alpha batch size
+        ! =================================
+        AlphaLoop: do alpha = MaxAObatch,MinAOBatch,-1
 
-             if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
+           call get_max_arraysizes_for_ccsdpt_integrals(alpha,gammadim,nbasis,nocc,nvirt,&
+              & size1,size2,size3,MemoryNeeded)
+
+           if(MemoryNeeded < MemoryAvailable .or. (alpha==minAObatch) ) then
+
+              if( adapt_to_nnodes  )then
+
+                 if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
 #ifdef VAR_MPI
-                print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 1'
+                    print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 1'
 #else
-                print *,'we hit AlphaOpt 1'
+                    print *,'we hit AlphaOpt 1'
 #endif
-                AlphaOpt = alpha
-                exit AlphaLoop
-             endif
-          else
+                    AlphaOpt = alpha
+                    exit AlphaLoop
+                 endif
+              else
 #ifdef VAR_MPI
-             print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 2'
+                 print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 2'
 #else
-             print *,'we hit AlphaOpt 2'
+                 print *,'we hit AlphaOpt 2'
 #endif
-             AlphaOpt = alpha
-             exit AlphaLoop
-          endif
-       end if
+                 AlphaOpt = alpha
+                 exit AlphaLoop
+              endif
+           end if
 
-    end do AlphaLoop
+        end do AlphaLoop
 
-    if (AlphaOpt .eq. 0) then
+        if (AlphaOpt .eq. 0) then
 
 #ifdef VAR_MPI
-       print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt NEW'
+           print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt NEW'
 #else
-       print *,'we hit AlphaOpt NEW'
+           print *,'we hit AlphaOpt NEW'
 #endif
-       AlphaOpt = AlphaDim
+           AlphaOpt = AlphaDim
 
-    endif
-  
+        endif
+
 #ifdef VAR_MPI
-    print *,'for proc no. = ',infpar%lg_mynum,', AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
+        print *,'for proc no. = ',infpar%lg_mynum,', AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
 #else
-    print *,'AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
+        print *,'AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
 #endif
 
-    ! If alpha batch size was set manually we use that value instead
-    if(DECinfo%ccsdAbatch/=0) then
-       write(DECinfo%output,*) 'Alpha batch size was set manually, use that value instead!'
+        ! If alpha batch size was set manually we use that value instead
+        if(DECinfo%ccsdAbatch/=0) then
+           write(DECinfo%output,*) 'Alpha batch size was set manually, use that value instead!'
 #ifdef VAR_MPI
-       print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 3'
+           print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 3'
 #else
-       print *,'we hit AlphaOpt 3'
+           print *,'we hit AlphaOpt 3'
 #endif
-       AlphaOpt=DECinfo%ccsdAbatch
-    end if
-  
-    ! The optimal alpha batch size is AlphaOpt.
-    ! We now find the maximum possible alpha batch size smaller than or equal to AlphaOpt
-    ! and store this number in alphadim.
-    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
-   
+           AlphaOpt=DECinfo%ccsdAbatch
+        end if
+
+        ! The optimal alpha batch size is AlphaOpt.
+        ! We now find the maximum possible alpha batch size smaller than or equal to AlphaOpt
+        ! and store this number in alphadim.
+        call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
+
 #ifdef VAR_MPI
-       print *,'for proc no. = ',infpar%lg_mynum,'final GammaOpt = ',GammaOpt,&
-             &', and AlphaOpt = ',AlphaOpt
+        print *,'for proc no. = ',infpar%lg_mynum,'final GammaOpt = ',GammaOpt,&
+           &', and AlphaOpt = ',AlphaOpt
 #else
-       print *,'final GammaOpt = ',GammaOpt,', and AlphaOpt = ',AlphaOpt
+        print *,'final GammaOpt = ',GammaOpt,', and AlphaOpt = ',AlphaOpt
 #endif
- 
-    ! Print out and sanity check
-    ! ==========================
 
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '======================================================================='
-    write(DECinfo%output,*) '                     CCSD(T) INTEGRALS: MEMORY SUMMARY                 '
-    write(DECinfo%output,*) '======================================================================='
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) 'To be on the safe side we use only 85% of the estimated available memory'
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
-    write(DECinfo%output,'(1X,a,i8)')    'Number of occupied orbitals             =', nocc
-    write(DECinfo%output,'(1X,a,i8)')    'Number of virtual  orbitals             =', nvirt
-    write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', alphadim
-    write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', gammadim
-    write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9
-    write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
-    write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
-    write(DECinfo%output,*)
-  
+        ! Print out and sanity check
+        ! ==========================
 
-    endif
+        write(DECinfo%output,*)
+        write(DECinfo%output,*)
+        write(DECinfo%output,*) '======================================================================='
+        write(DECinfo%output,*) '                     CCSD(T) INTEGRALS: MEMORY SUMMARY                 '
+        write(DECinfo%output,*) '======================================================================='
+        write(DECinfo%output,*)
+        write(DECinfo%output,*) 'To be on the safe side we use only 85% of the estimated available memory'
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
+        write(DECinfo%output,'(1X,a,i8)')    'Number of occupied orbitals             =', nocc
+        write(DECinfo%output,'(1X,a,i8)')    'Number of virtual  orbitals             =', nvirt
+        write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', alphadim
+        write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', gammadim
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
+        write(DECinfo%output,*)
+
+
+     endif
 
 #ifdef VAR_MPI
-    call ls_mpibcast(Gammadim,infpar%master,infpar%lg_comm)
-    call ls_mpibcast(Alphadim,infpar%master,infpar%lg_comm)
+     call ls_mpibcast(Gammadim,infpar%master,infpar%lg_comm)
+     call ls_mpibcast(Alphadim,infpar%master,infpar%lg_comm)
 #endif
 
-    ! Sanity check
-    call get_max_arraysizes_for_ccsdpt_integrals(alphadim,gammadim,nbasis,nocc,nvirt,&
-         & size1,size2,size3,MemoryNeeded)  
-    if(MemoryNeeded > MemoryAvailable) then
-       write(DECinfo%output,*) 'Requested/available memory: ', MemoryNeeded, MemoryAvailable
-       call lsquit('CCSD(T) integrals: Insufficient memory!',-1)
-    end if
+     ! Sanity check
+     call get_max_arraysizes_for_ccsdpt_integrals(alphadim,gammadim,nbasis,nocc,nvirt,&
+        & size1,size2,size3,MemoryNeeded)  
+     if(MemoryNeeded > MemoryAvailable) then
+        write(DECinfo%output,*) 'Requested/available memory: ', MemoryNeeded, MemoryAvailable
+        call lsquit('CCSD(T) integrals: Insufficient memory!',-1)
+     end if
 
 
   end subroutine get_optimal_batch_sizes_ccsdpt_integrals
