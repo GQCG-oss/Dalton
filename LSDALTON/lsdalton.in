@@ -40,7 +40,6 @@ MOLEXT="mol"
 AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 
 # default values for options
-opt_valgrind=0
 opt_lslib_test=0
 optgeo1=0
 optgeo2=0
@@ -80,6 +79,9 @@ usage (){
       echo ' -w dir    change WRKDIR from default to dir'
       echo ' -exe exec change the LSDALTON_EXECUTABLE from default (lsdalton.x) to exec'
       echo
+      echo "Environment variables understood by the $0 script:"
+      echo '    DALTON_TMPDIR             : scratch directory'
+      echo '    LSDALTON_LAUNCHER         : launcher for the lsdalton.x binary'
      }
 #
 # Define backup function
@@ -111,7 +113,6 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -d ) optd=1;;
       -D ) optD=0;;
       -pg ) optpg=1;;
-      -valgrind ) opt_valgrind=1;;
       -lslib_test ) opt_lslib_test=1;;
       -geo1 ) optgeo1=1;;
       -geo2 ) optgeo2=1;;
@@ -277,28 +278,30 @@ else
       exit 1
    fi
 
-   if [ $optgeo1 -eq 1 ] ; then
-        $LSDALTON_EXECUTABLE
-      lsdalton_exitcode=$?
+   if [ -n "$LSDALTON_LAUNCHER" ]; then
+      LSDALTON_EXE="$LSDALTON_LAUNCHER $LSDALTON_EXECUTABLE"
    else
-     if [ $optgeo2 -eq 1 ] ; then
-        $GEOOPT
-        lsdalton_exitcode=$?
-     else
-      if [ $opt_valgrind -eq 1 ]; then
-         valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON_EXECUTABLE
-         lsdalton_exitcode=$?
-      else
-            if [ $opt_lslib_test -eq 1 ]; then
+      LSDALTON_EXE=$LSDALTON_EXECUTABLE
+   fi
+
+   if [ $optgeo1 -eq 1 ] ; then
+       $LSDALTON_EXE
+       lsdalton_exitcode=$?
+   else
+       if [ $optgeo2 -eq 1 ] ; then
+           $GEOOPT
+           lsdalton_exitcode=$?
+       else
+           if [ $opt_lslib_test -eq 1 ]; then
                $LSLIB_TEST
                lsdalton_exitcode=$?
-            else
-               $LSDALTON_EXECUTABLE
+           else
+               $LSDALTON_EXE
                lsdalton_exitcode=$?
-            fi
-      fi
-     fi
+           fi
+       fi
    fi
+
    if [ $optpg -eq 1 ] ; then
       gprof $LSDALTON_EXECUTABLE gmon.out > PROFILE
    fi
