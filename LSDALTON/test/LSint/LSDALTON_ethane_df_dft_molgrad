@@ -52,7 +52,7 @@ H6     -2.1888617992     -1.9457507963     0.0000000000
 #######################################################################
 cat > LSDALTON_ethane_df_dft_molgrad.dal <<'%EOF%'
 **GENERAL
-.TESTMPICOPY
+!.TESTMPICOPY
 **INTEGRAL
 .DENSFIT
 **WAVE FUNCTIONS
