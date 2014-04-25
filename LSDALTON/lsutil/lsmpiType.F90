@@ -3200,9 +3200,6 @@ contains
       call get_rank_for_comm(comm,mynum)
       AddToBuffer = (mynum.EQ.master) .OR. (Job.EQ.LSMPIREDUCTION)
 
-      print*,'ls_mpiInitBuffer:comm,mynum,master',comm,mynum,master
-      print*,'ls_mpiInitBuffer:AddToBuffer',AddToBuffer
-
       ! Special settings for send/receive job 
       if(job.eq.LSMPISENDRECV) then
 
@@ -3238,7 +3235,6 @@ contains
          ! If receiver: Receive stuff from buffer
 
          if(addtobuffer) then  ! put stuff info buffer
-            print*,'nLog = ',nLog
             nLog = incremLog
             nDP = incremDP
             nInteger4 = incremInteger
@@ -3262,7 +3258,6 @@ contains
             IF(associated(lsmpibufferSho))call lsquit('lsmpibufferSho associated in ls_mpiInitBuffer',-1)
             IF(associated(lsmpibufferLog))call lsquit('lsmpibufferLog associated in ls_mpiInitBuffer',-1)
             IF(associated(lsmpibufferCha))call lsquit('lsmpibufferCha associated in ls_mpiInitBuffer',-1)
-            print*,'alloc buffers'
             call mem_alloc(lsmpibufferDP,nDP)
             call mem_alloc(lsmpibufferInt4,nInteger4)
             call mem_alloc(lsmpibufferInt8,nInteger8)
