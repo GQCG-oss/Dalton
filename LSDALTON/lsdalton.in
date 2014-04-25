@@ -186,7 +186,6 @@ echo "   Calculation: $outnam  (input files: $dalfil and $molfil)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
 echo "   Scratch dir: $DALTON_TMPDIR/$outnam"
-#echo "  Work memory: $WRKMEM"
 echo;
 #
 if [ ! -d "$DALTON_TMPDIR" ]; then
@@ -383,6 +382,3 @@ if [ $optD -eq 1 ] ; then
 fi
 
 exit $lsdalton_exitcode
-
-# end of LSDALTON job script
-
