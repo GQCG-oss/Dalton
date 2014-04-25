@@ -38,6 +38,7 @@ module lsmpi_op
        & ls_mpiInitBuffer, ls_MpiFinalizeBuffer,LSMPIBROADCAST,&
        & ls_mpiinitbufferaddtobuffer,printmpibuffersizes,ls_mpiModbuffersizes
 #endif
+  use screen_mod
   !*****************************************
   !*
   !* OBJECTS CONTAINING INFORMATION ABOUT 
@@ -520,6 +521,85 @@ call ls_mpiModbuffersizes
 setting%node = 0
 call ls_MpiFinalizeBuffer(master,Job,comm)
 end Subroutine TestMPIcopySetting
+
+SUBROUTINE mpicopy_screen(Slave,Master)
+implicit none
+logical :: slave
+integer(kind=ls_mpik) :: master
+!
+logical :: assStart
+
+IF(SLAVE)call screen_init()
+assStart = associated(SCREENFROMLSSCREEN%start)
+call LS_MPI_BUFFER(assStart,Master)
+IF(assStart)THEN
+   IF(SLAVE)THEN
+      allocate(SCREENFROMLSSCREEN%start)
+      nullify(SCREENFROMLSSCREEN%start%next)
+   ENDIF
+   call mpicopy_screenchain(SCREENFROMLSSCREEN,SCREENFROMLSSCREEN%start,slave,Master)
+ELSE
+   IF(SLAVE)nullify(SCREENFROMLSSCREEN%start)
+ENDIF
+end SUBROUTINE mpicopy_screen
+
+recursive SUBROUTINE mpicopy_screenchain(screen,screenchain,Slave,Master)
+implicit none
+type(screenitem) :: screen
+type(screenchainitem),pointer :: ScreenChain
+logical :: slave
+integer(kind=ls_mpik) :: master
+!
+type(LSTENSOR),pointer :: GAB  
+logical :: assStart
+
+call LS_MPI_BUFFER(ScreenChain%filename,80,master)
+IF(SLAVE)THEN
+   nullify(ScreenChain%LST%p)
+   allocate(ScreenChain%LST%p)   
+ENDIF
+call mpicopy_lstensor(ScreenChain%LST%p,slave,master)
+assStart = associated(Screenchain%next)
+call LS_MPI_BUFFER(assStart,Master)
+IF(assStart)THEN
+   IF(SLAVE)THEN
+      allocate(ScreenChain%next)
+      nullify(ScreenChain%next%next)
+   ENDIF
+   call mpicopy_screenchain(SCREEN,ScreenChain%next,Slave,Master)
+ELSE
+   IF(SLAVE)THEN
+      nullify(Screenchain%next)
+      SCREEN%end => Screenchain
+   ENDIF
+ENDIF
+end SUBROUTINE mpicopy_screenchain
+
+Subroutine TestMPIcopyScreen()
+implicit none
+integer(kind=ls_mpik) :: master,comm
+integer :: Job
+logical :: AddToBuffer2,slave
+Job=LSMPIBROADCAST 
+master=0
+comm=1
+!This will set the addtobuffer (lsmpiType.F90 module variable)
+!and allocate the mpibuffers
+call ls_mpiInitBuffer(master,Job,comm) 
+!place info of setting into buffers (using setting%node = 0 => SLAVE=FALSE)
+slave = .FALSE.
+call mpicopy_screen(slave,master)
+call screen_free
+!This will set the addtobuffer (lsmpiType.F90 module variable) to false
+AddToBuffer2 = .FALSE.
+call ls_mpiInitBufferAddToBuffer(AddToBuffer2)
+!place info of buffers into setting (using setting%node = 1 => SLAVE=TRUE)
+slave = .TRUE.
+call mpicopy_screen(slave,master)
+!sets the nDP = iDP etc. in lsmpiType.F90 (otherwise an error in ls_MpiFinalizeBuffer)
+call ls_mpiModbuffersizes
+call ls_MpiFinalizeBuffer(master,Job,comm)
+end Subroutine TestMPIcopyScreen
 
 #ifdef VAR_MPI
 subroutine lsmpi_isend_lstmemrealkbuf(lstmem_index,NodeToRecv,Mynum,comm)

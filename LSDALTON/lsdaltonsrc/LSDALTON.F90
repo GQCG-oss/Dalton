@@ -78,7 +78,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use ls_optimizer_mod, only: LS_RUNOPT
   use SCFinteractionEnergyMod, only: SCFinteractionEnergy
   use lsmpi_type, only: lsmpi_finalize
-  use lsmpi_op, only: TestMPIcopySetting
+  use lsmpi_op, only: TestMPIcopySetting,TestMPIcopyScreen
   use lstensorMem, only: lstmem_init, lstmem_free
 #ifdef MOD_UNRELEASED
   use pbc_setup, only: set_pbc_molecules
@@ -182,7 +182,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      HFdone=.true.
 
 #ifndef VAR_MPI
-     IF(config%doTestMPIcopySetting)THEN
+     IF(config%doTestMPIcopy)THEN
         !we basicly use the MPICOPY_SETTING routine to place the setting structure
         !in the MPI buffers, deallocate ls%setting and reallocate it again using
         !the MPI buffers - we thereby test some of the functionality of the MPI
@@ -198,6 +198,16 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      ENDIF
 #endif     
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+
+#ifndef VAR_MPI
+     IF(config%doTestMPIcopy)THEN
+        !we basicly use the MPICOPY_SCREEN routine to place the screen structure
+        !in the MPI buffers, deallocate screen in screen_mod and reallocate it 
+        !again using the MPI buffers - we thereby test some of the 
+        !functionality of the MPI system. 
+        call TestMPIcopyScreen
+     ENDIF
+#endif     
 
      CALL Print_Memory_info(lupri,'after II_precalc_ScreesMat')
 
@@ -492,7 +502,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
 
 #ifndef VAR_MPI
-     IF(config%doTestMPIcopySetting)THEN
+     IF(config%doTestMPIcopy)THEN
         !we basicly use the MPICOPY_SETTING routine to place the setting structure
         !in the MPI buffers, deallocate ls%setting and reallocate it again using
         !the MPI buffers - we thereby test some of the functionality of the MPI
