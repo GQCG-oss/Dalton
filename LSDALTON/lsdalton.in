@@ -68,7 +68,7 @@ usage (){
 	  echo ' -pg       do profiling'
 	  echo ' -dens     copy dens.restart and maybe fock.restart lcm_orbitals.u'
 	  echo ' -valgrind run with valgrind'
-	  echo ' -lslib_test run lslib test'	  
+	  echo ' -lslib_test run lslib test'
 	  echo ' -D        do not delete DALTON_TMPDIR after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -o FILE   redirect output from program to FILE in WRKDIR'
@@ -92,7 +92,7 @@ backup () {
      if [ -f "${i}" ]; then
         for j in 6 5 4 3 2 1 0 ; do
            jp=`expr $j + 1`
-           if [ -f "${i}.${j}" ]; then 
+           if [ -f "${i}.${j}" ]; then
               [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
               mv -f "${i}.${j}" "${i}.${jp}"
            fi
@@ -219,9 +219,9 @@ if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
       [ -f $WRKDIR/$molfil.dens.restart ] && cp -f $WRKDIR/$molfil.dens.restart dens.restart
       [ -f $WRKDIR/$molfil.fock.restart ] && cp -f $WRKDIR/$molfil.fock.restart fock.restart
       [ -f $WRKDIR/$molfil.lcm_orbitals.u ] && cp -f $WRKDIR/$molfil.lcm_orbitals.u lcm_orbitals.u
-   fi 
+   fi
    if [ $optgeo2 -eq 1 ] ; then
-      [ -f $WRKDIR/$molfil.runopt.history ] && cp -f $WRKDIR/$molfil.runopt.history runopt.history 
+      [ -f $WRKDIR/$molfil.runopt.history ] && cp -f $WRKDIR/$molfil.runopt.history runopt.history
       [ -f $WRKDIR/$molfil.$MOLEXT ] && cp -f $WRKDIR/$molfil.$MOLEXT runopt.initMOLECULE
       if [ -s $WRKDIR/$dalfil.$DALEXT.2 -a -r $WRKDIR/$dalfil.$DALEXT.2 ]; then
 	  cp $WRKDIR/$dalfil.$DALEXT.2 LSDALTON.INP
@@ -271,49 +271,49 @@ if [ $optn -gt 1 ] ; then
       exit 1
    fi
 else
-   if [ -s $LSDALTON_EXECUTABLE -a -x $LSDALTON_EXECUTABLE ]; then
-      if [ $optgeo1 -eq 1 ] ; then
-      	 $LSDALTON_EXECUTABLE
-	 lsdalton_exitcode=$?
-      else
-	if [ $optgeo2 -eq 1 ] ; then
-	   $GEOOPT
-	   lsdalton_exitcode=$?
-        else
-	 if [ $opt_valgrind -eq 1 ]; then	
-	    valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON_EXECUTABLE
-	    lsdalton_exitcode=$?
-	 else	
-               if [ $opt_lslib_test -eq 1 ]; then
-                  $LSLIB_TEST
-	          lsdalton_exitcode=$?
-	       else	  
-	          $LSDALTON_EXECUTABLE	 	
-	          lsdalton_exitcode=$?
-               fi
-   	 fi		   
-	fi
-      fi
-      if [ $optpg -eq 1 ] ; then
-	 gprof $LSDALTON_EXECUTABLE gmon.out > PROFILE
-      fi      
-      if [ $optdens -eq 1 ] ; then
-      	 echo "copy dens.restart to $WRKDIR/$molfil.dens.restart back"
-	 [ -f dens.restart ] && cp -f dens.restart $WRKDIR/$molfil.dens.restart
-	 [ -f fock.restart ] && cp -f fock.restart $WRKDIR/$molfil.fock.restart
-	 [ -f lcm_orbitals.u ] && cp -f lcm_orbitals.u $WRKDIR/$molfil.lcm_orbitals.u
-      fi
-      if [ $optgeo1 -eq 1 ] ; then
-	  [ -f runopt.history ] && cp -f runopt.history $WRKDIR/$molfil.runopt.history
-	  [ -f MOLECULE.OUT ] && cp -f MOLECULE.OUT $WRKDIR/$molfil.molout1
-      fi
-      if [ $optgeo2 -eq 1 ] ; then
-	 [ -f MOLECULE.OUT ] && cp -f MOLECULE.OUT $WRKDIR/$molfil.molout2
-      fi
-   else
+   if ! [ -s $LSDALTON_EXECUTABLE -a -x $LSDALTON_EXECUTABLE ]; then
       echo; echo  "FATAL ERROR:"
       echo "$LSDALTON_EXECUTABLE does not exist or is not executeable"
       exit 1
+   fi
+
+   if [ $optgeo1 -eq 1 ] ; then
+   	 $LSDALTON_EXECUTABLE
+      lsdalton_exitcode=$?
+   else
+     if [ $optgeo2 -eq 1 ] ; then
+        $GEOOPT
+        lsdalton_exitcode=$?
+     else
+      if [ $opt_valgrind -eq 1 ]; then
+         valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON_EXECUTABLE
+         lsdalton_exitcode=$?
+      else
+            if [ $opt_lslib_test -eq 1 ]; then
+               $LSLIB_TEST
+               lsdalton_exitcode=$?
+            else
+               $LSDALTON_EXECUTABLE
+               lsdalton_exitcode=$?
+            fi
+      fi
+     fi
+   fi
+   if [ $optpg -eq 1 ] ; then
+      gprof $LSDALTON_EXECUTABLE gmon.out > PROFILE
+   fi
+   if [ $optdens -eq 1 ] ; then
+   	 echo "copy dens.restart to $WRKDIR/$molfil.dens.restart back"
+      [ -f dens.restart ] && cp -f dens.restart $WRKDIR/$molfil.dens.restart
+      [ -f fock.restart ] && cp -f fock.restart $WRKDIR/$molfil.fock.restart
+      [ -f lcm_orbitals.u ] && cp -f lcm_orbitals.u $WRKDIR/$molfil.lcm_orbitals.u
+   fi
+   if [ $optgeo1 -eq 1 ] ; then
+       [ -f runopt.history ] && cp -f runopt.history $WRKDIR/$molfil.runopt.history
+       [ -f MOLECULE.OUT ] && cp -f MOLECULE.OUT $WRKDIR/$molfil.molout1
+   fi
+   if [ $optgeo2 -eq 1 ] ; then
+      [ -f MOLECULE.OUT ] && cp -f MOLECULE.OUT $WRKDIR/$molfil.molout2
    fi
 fi
 
@@ -340,7 +340,7 @@ else
 fi
 
 if [ -s $outnam.tar.gz ] ; then
-   backup -v $WRKDIR/$outnam.tar.gz 
+   backup -v $WRKDIR/$outnam.tar.gz
    cp $outnam.tar.gz $WRKDIR
    echo "$outnam.tar.gz has been copied to $WRKDIR"
 else
