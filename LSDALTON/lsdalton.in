@@ -39,7 +39,6 @@ DALEXT="dal"
 MOLEXT="mol"
 AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 #deafult values for options
-opt_valgrind=0
 opt_lslib_test=0
 opt_restart=0
 optd=0
@@ -62,7 +61,6 @@ usage (){
       echo ' -d        delete DALTON_TMPDIR before calculation starts'
       echo ' -pg       do profiling'
       echo ' -dens     copy dens.restart and maybe fock.restart lcm_orbitals.u'
-      echo ' -valgrind run with valgrind'
       echo ' -restart  run the calc twice to test restart option'
       echo ' -lslib_test run lslib test'
       echo ' -D        do not delete DALTON_TMPDIR after calculation stops'
@@ -76,6 +74,9 @@ usage (){
       echo ' -w dir    change WRKDIR from default to dir'
       echo " -exe exec change the executable from default ($LSDALTON_EXECUTABLE) to exec"
       echo
+      echo "Environment variables understood by the $0 script:"
+      echo '    DALTON_TMPDIR             : scratch directory'
+      echo '    DALTON_LAUNCHER           : launcher for the dalton.x binary'
      }
 #
 # Define backup function
@@ -107,7 +108,6 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -d ) optd=1;;
       -D ) optD=0;;
       -pg ) optpg=1;;
-      -valgrind ) opt_valgrind=1;;
       -lslib_test ) opt_lslib_test=1;;
       -restart ) opt_restart=1;;
       -dens ) optdens=1;;
@@ -268,41 +268,40 @@ if [ $optn -gt 1 ] ; then
       exit 1
    fi
 else
-   if [ -s $LSDALTON_EXECUTABLE -a -x $LSDALTON_EXECUTABLE ]; then
-      if [ $opt_valgrind -eq 1 ]; then
-     valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON_EXECUTABLE
-         if [ $opt_restart -eq 1 ] ; then
-          cp LSDALTON.INP.2 LSDALTON.INP
-        valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON_EXECUTABLE
-         fi
-     lsdalton_exitcode=$?
-      else
-         if [ $opt_lslib_test -eq 1 ]; then
-            $LSLIB_TEST
+    if ! [ -s $LSDALTON_EXECUTABLE -a -x $LSDALTON_EXECUTABLE ]; then
+       echo; echo  "FATAL ERROR:"
+       echo "$LSDALTON_EXECUTABLE does not exist or is not executeable"
+       exit 1
+    fi
+    
+    if [ $opt_lslib_test -eq 1 ]; then
+        $LSLIB_TEST
         lsdalton_exitcode=$?
-     else
-        $LSDALTON_EXECUTABLE
-            if [ $opt_restart -eq 1 ] ; then
-             cp LSDALTON.INP.2 LSDALTON.INP
-           $LSDALTON_EXECUTABLE
-            fi
+    else
+        if [ -n "$LSDALTON_LAUNCHER" ]; then
+           LSDALTON_EXE="$LSDALTON_LAUNCHER $LSDALTON_EXECUTABLE"
+        else
+           LSDALTON_EXE=$LSDALTON_EXECUTABLE
+        fi
+
+        $LSDALTON_EXE
+        if [ $opt_restart -eq 1 ] ; then
+            cp LSDALTON.INP.2 LSDALTON.INP
+            $LSDALTON_EXE
+        fi
         lsdalton_exitcode=$?
-         fi
-      fi
-      if [ $optpg -eq 1 ] ; then
-     gprof $LSDALTON_EXECUTABLE gmon.out > PROFILE
-      fi
-      if [ $optdens -eq 1 ] ; then
-           echo "copy dens.restart to $WRKDIR/$molfil.dens.restart back"
-     [ -f dens.restart ] && cp -f dens.restart $WRKDIR/$molfil.dens.restart
-     [ -f fock.restart ] && cp -f fock.restart $WRKDIR/$molfil.fock.restart
-     [ -f lcm_orbitals.u ] && cp -f lcm_orbitals.u $WRKDIR/$molfil.lcm_orbitals.u
-      fi
-   else
-      echo; echo  "FATAL ERROR:"
-      echo "$LSDALTON_EXECUTABLE does not exist or is not executeable"
-      exit 1
-   fi
+    fi
+
+    if [ $optpg -eq 1 ] ; then
+        gprof $LSDALTON_EXECUTABLE gmon.out > PROFILE
+    fi
+
+    if [ $optdens -eq 1 ] ; then
+        echo "copy dens.restart to $WRKDIR/$molfil.dens.restart back"
+        [ -f dens.restart ] && cp -f dens.restart $WRKDIR/$molfil.dens.restart
+        [ -f fock.restart ] && cp -f fock.restart $WRKDIR/$molfil.fock.restart
+        [ -f lcm_orbitals.u ] && cp -f lcm_orbitals.u $WRKDIR/$molfil.lcm_orbitals.u
+    fi
 fi
 
 if [ $lsdalton_exitcode -ne 0 ] ; then
