@@ -17,13 +17,14 @@ DALTON
 - Print irrep names together with symmetry numbers for easier interpretation of output
 - More important output with '@' in column 1 (can be obtained with 'grep @' on the output)
 - Environment variable DALTON_USE_GLOBAL_SCRATCH disables copying of binaries to worker nodes.
-- Environment variable DALTON_LAUNCHER introduced, bypasses all the explicit mpi switches.
+- Environment variable DALTON_LAUNCHER introduced.
 - Fixed output information about number of MPI processes and number of OpenMP threads.
 
 
 LSDALTON
 --------
 
+- Environment variable LSDALTON_LAUNCHER introduced.
 
 
 ===========================
