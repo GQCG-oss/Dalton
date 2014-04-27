@@ -67,31 +67,31 @@ frl=rel
 # Define usage message
 #
 usage (){
-	  echo
-	  echo "Usage:    lsdalton [-b directory] [-d] [-D] [-ext log | -o file] [-f] [-m mem | -M mem]"
-	  echo  "[-N cores] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
-	  echo
-	  echo 'Options:'
-	  echo ' -b dir    change directory where basis sets are searched for to dir'
-	  echo ' -d        delete DALTON_TMPDIR before calculation starts'
-	  echo ' -pg       do profiling'
-	  echo ' -dens     copy dens.restart and maybe fock.restart lcm_orbitals.u'
-	  echo ' -valgrind run with valgrind'
-	  echo ' -restart  run the calc twice to test restart option'	  
-	  echo ' -lslib_test run lslib test'	  
-	  echo ' -D        do not delete DALTON_TMPDIR after calculation stops'
-	  echo ' -ext log  change output extension from ".out" to ".log"'
-	  echo ' -o FILE   redirect output from program to FILE in WRKDIR'
-	  echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
-	  echo ' -m mem    set scratch memory to mem Mwords'
-	  echo ' -M mem    set scratch memory to mem Mb'
-	  echo ' -N num    use num MPI procs (defaults to DALTON_NUM_MPI_PROCS)'
-	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
-	  echo ' -t dir    change DALTON_TMPDIR from default to dir'
-	  echo ' -w dir    change WRKDIR from default to dir'
-	  echo ' -exe exec change the DALTON and DALMPI executables from default to exec'
-	  echo
-	 }
+      echo
+      echo "Usage:    lsdalton [-b directory] [-d] [-D] [-ext log | -o file] [-f] [-m mem | -M mem]"
+      echo  "[-N cores] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
+      echo
+      echo 'Options:'
+      echo ' -b dir    change directory where basis sets are searched for to dir'
+      echo ' -d        delete DALTON_TMPDIR before calculation starts'
+      echo ' -pg       do profiling'
+      echo ' -dens     copy dens.restart and maybe fock.restart lcm_orbitals.u'
+      echo ' -valgrind run with valgrind'
+      echo ' -restart  run the calc twice to test restart option'
+      echo ' -lslib_test run lslib test'
+      echo ' -D        do not delete DALTON_TMPDIR after calculation stops'
+      echo ' -ext log  change output extension from ".out" to ".log"'
+      echo ' -o FILE   redirect output from program to FILE in WRKDIR'
+      echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
+      echo ' -m mem    set scratch memory to mem Mwords'
+      echo ' -M mem    set scratch memory to mem Mb'
+      echo ' -N num    use num MPI procs (defaults to DALTON_NUM_MPI_PROCS)'
+      echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
+      echo ' -t dir    change DALTON_TMPDIR from default to dir'
+      echo ' -w dir    change WRKDIR from default to dir'
+      echo ' -exe exec change the DALTON and DALMPI executables from default to exec'
+      echo
+     }
 #
 # Define backup function
 #
@@ -103,7 +103,7 @@ backup () {
      if [ -f "${i}" ]; then
         for j in 6 5 4 3 2 1 0 ; do
            jp=`expr $j + 1`
-           if [ -f "${i}.${j}" ]; then 
+           if [ -f "${i}.${j}" ]; then
               [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
               mv -f "${i}.${j}" "${i}.${jp}"
            fi
@@ -231,14 +231,14 @@ if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
       [ -f $WRKDIR/$molfil.dens.restart ] && cp -f $WRKDIR/$molfil.dens.restart dens.restart
       [ -f $WRKDIR/$molfil.fock.restart ] && cp -f $WRKDIR/$molfil.fock.restart fock.restart
       [ -f $WRKDIR/$molfil.lcm_orbitals.u ] && cp -f $WRKDIR/$molfil.lcm_orbitals.u lcm_orbitals.u
-   fi 
+   fi
    if [ "$optf" != "" ] ; then
       if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
          echo "Unpacking restart files..."
-	 gunzip < $WRKDIR/$optf.tar.gz | tar xvf -
+     gunzip < $WRKDIR/$optf.tar.gz | tar xvf -
       else
-	 echo "$WRKDIR/$optf.tar.gz does not exist or is not readable"
-	 exit 1
+     echo "$WRKDIR/$optf.tar.gz does not exist or is not readable"
+     exit 1
       fi
    fi
    if [ $opt_restart -eq 1 ] ; then
@@ -247,7 +247,7 @@ if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
     else
        echo "$WRKDIR/$dalfil.$DALEXT.2 does not exist or is not readable"
        exit 1
-    fi 
+    fi
    fi
 else
    echo "$DALTON_TMPDIR does not exist or is not writeable"
@@ -270,26 +270,26 @@ if [ $optn -gt 1 ] ; then
    fi
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
       if [ -a $MPI -a -x $MPI ]; then
-	 if [ $optlam -eq 0 ] ; then
-	    $MPIRUN -np $optn $MPI
+     if [ $optlam -eq 0 ] ; then
+        $MPIRUN -np $optn $MPI
             if [ $opt_restart -eq 1 ] ; then
-  	       cp LSDALTON.INP.2 LSDALTON.INP
-	       $MPIRUN -np $optn $MPI
+             cp LSDALTON.INP.2 LSDALTON.INP
+           $MPIRUN -np $optn $MPI
             fi
-	    lsdalton_exitcode=$?
-	 else
-	    lamboot -v  $WRKDIR/$optlam
-	    $MPIRUN -np $optn $MPI
+        lsdalton_exitcode=$?
+     else
+        lamboot -v  $WRKDIR/$optlam
+        $MPIRUN -np $optn $MPI
             if [ $opt_restart -eq 1 ] ; then
-  	       cp LSDALTON.INP.2 LSDALTON.INP
-	       $MPIRUN -np $optn $MPI
+             cp LSDALTON.INP.2 LSDALTON.INP
+           $MPIRUN -np $optn $MPI
             fi
-	    lsdalton_exitcode=$?
-	    wipe    -v  $WRKDIR/$optlam
-	 fi
+        lsdalton_exitcode=$?
+        wipe    -v  $WRKDIR/$optlam
+     fi
       else
-	 echo "$MPI does not exist or is not executeable"
-	 exit 1
+     echo "$MPI does not exist or is not executeable"
+     exit 1
       fi
    else
       echo "$MPIRUN does not exist or is not executeable"
@@ -297,34 +297,34 @@ if [ $optn -gt 1 ] ; then
    fi
 else
    if [ -s $LSDALTON -a -x $LSDALTON ]; then
-      if [ $opt_valgrind -eq 1 ]; then	
-	 valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON
+      if [ $opt_valgrind -eq 1 ]; then
+     valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON
          if [ $opt_restart -eq 1 ] ; then
-  	    cp LSDALTON.INP.2 LSDALTON.INP
-	    valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON
+          cp LSDALTON.INP.2 LSDALTON.INP
+        valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON
          fi
-	 lsdalton_exitcode=$?
-      else	
+     lsdalton_exitcode=$?
+      else
          if [ $opt_lslib_test -eq 1 ]; then
             $LSLIB_TEST
-	    lsdalton_exitcode=$?
-	 else	  
-	    $LSDALTON
+        lsdalton_exitcode=$?
+     else
+        $LSDALTON
             if [ $opt_restart -eq 1 ] ; then
-  	       cp LSDALTON.INP.2 LSDALTON.INP
-	       $LSDALTON	 	
+             cp LSDALTON.INP.2 LSDALTON.INP
+           $LSDALTON
             fi
-	    lsdalton_exitcode=$?
+        lsdalton_exitcode=$?
          fi
-      fi		   
+      fi
       if [ $optpg -eq 1 ] ; then
-	 gprof $LSDALTON gmon.out > PROFILE
-      fi      
+     gprof $LSDALTON gmon.out > PROFILE
+      fi
       if [ $optdens -eq 1 ] ; then
-      	 echo "copy dens.restart to $WRKDIR/$molfil.dens.restart back"
-	 [ -f dens.restart ] && cp -f dens.restart $WRKDIR/$molfil.dens.restart
-	 [ -f fock.restart ] && cp -f fock.restart $WRKDIR/$molfil.fock.restart
-	 [ -f lcm_orbitals.u ] && cp -f lcm_orbitals.u $WRKDIR/$molfil.lcm_orbitals.u
+           echo "copy dens.restart to $WRKDIR/$molfil.dens.restart back"
+     [ -f dens.restart ] && cp -f dens.restart $WRKDIR/$molfil.dens.restart
+     [ -f fock.restart ] && cp -f fock.restart $WRKDIR/$molfil.fock.restart
+     [ -f lcm_orbitals.u ] && cp -f lcm_orbitals.u $WRKDIR/$molfil.lcm_orbitals.u
       fi
    else
       echo; echo  "FATAL ERROR:"
@@ -356,7 +356,7 @@ else
 fi
 
 if [ -s $outnam.tar.gz ] ; then
-   backup -v $WRKDIR/$outnam.tar.gz 
+   backup -v $WRKDIR/$outnam.tar.gz
    cp $outnam.tar.gz $WRKDIR
    echo "$outnam.tar.gz has been copied to $WRKDIR"
 else
