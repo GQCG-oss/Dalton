@@ -11,9 +11,8 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-LSDALTON=$SCRIPT_DIR/lsdalton.x
 LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
-DALMPI=$SCRIPT_DIR/lsdalton.x
+LSDALTON_EXECUTABLE=$SCRIPT_DIR/lsdalton.x
 MPIRUN=@MPIEXEC@
 INSTALL_BASDIR=$SCRIPT_DIR/basis
 
@@ -75,7 +74,7 @@ usage (){
       echo ' -N num    use num MPI procs (defaults to DALTON_NUM_MPI_PROCS)'
       echo ' -t dir    change DALTON_TMPDIR from default to dir'
       echo ' -w dir    change WRKDIR from default to dir'
-      echo ' -exe exec change the DALTON and DALMPI executables from default to exec'
+      echo " -exe exec change the executable from default ($LSDALTON_EXECUTABLE) to exec"
       echo
      }
 #
@@ -120,7 +119,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
       -t ) DALTON_TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
-      -exe ) DALTON=$2; DALMPI=$2; shift;;
+      -exe ) LSDALTON_EXECUTABLE=$2; shift;;
       * ) usage; exit 1;;
    esac
    shift
@@ -250,7 +249,7 @@ if [ $optn -gt 1 ] ; then
    if [ $opt_lslib_test -eq 1 ]; then
       MPI=$LSLIB_TEST
    else
-      MPI=$DALMPI
+      MPI=$LSDALTON_EXECUTABLE
    fi
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
       if [ -a $MPI -a -x $MPI ]; then
@@ -269,12 +268,12 @@ if [ $optn -gt 1 ] ; then
       exit 1
    fi
 else
-   if [ -s $LSDALTON -a -x $LSDALTON ]; then
+   if [ -s $LSDALTON_EXECUTABLE -a -x $LSDALTON_EXECUTABLE ]; then
       if [ $opt_valgrind -eq 1 ]; then
-     valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON
+     valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON_EXECUTABLE
          if [ $opt_restart -eq 1 ] ; then
           cp LSDALTON.INP.2 LSDALTON.INP
-        valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON
+        valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON_EXECUTABLE
          fi
      lsdalton_exitcode=$?
       else
@@ -282,16 +281,16 @@ else
             $LSLIB_TEST
         lsdalton_exitcode=$?
      else
-        $LSDALTON
+        $LSDALTON_EXECUTABLE
             if [ $opt_restart -eq 1 ] ; then
              cp LSDALTON.INP.2 LSDALTON.INP
-           $LSDALTON
+           $LSDALTON_EXECUTABLE
             fi
         lsdalton_exitcode=$?
          fi
       fi
       if [ $optpg -eq 1 ] ; then
-     gprof $LSDALTON gmon.out > PROFILE
+     gprof $LSDALTON_EXECUTABLE gmon.out > PROFILE
       fi
       if [ $optdens -eq 1 ] ; then
            echo "copy dens.restart to $WRKDIR/$molfil.dens.restart back"
@@ -301,7 +300,7 @@ else
       fi
    else
       echo; echo  "FATAL ERROR:"
-      echo "$LSDALTON does not exist or is not executeable"
+      echo "$LSDALTON_EXECUTABLE does not exist or is not executeable"
       exit 1
    fi
 fi
