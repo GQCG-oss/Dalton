@@ -47,6 +47,8 @@ H    -0.69081489 -1.72614891  1.56891868
 #  DALTON INPUT
 #######################################################################
 cat > LSresponse_DFT_alpha.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **WAVE FUNCTIONS
 .DFT
 B3LYP

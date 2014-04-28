@@ -14,6 +14,7 @@ use lattice_type, only: lvec_list_t
  use lattice_vectors, only: pbc_setup_default
 #endif
 use basis_type, only: copy_basissetinfo, free_basissetinfo
+use basis_typetype,only: nullifyBasis
 use io, only: io_init, io_free
 use molecule_type, only: free_moleculeinfo
 use READMOLEFILE, only: read_molfile_and_build_molecule
@@ -575,19 +576,21 @@ integer            :: IPRINT
 integer            :: IAO
 CHARACTER(len=9)   :: BASISLABEL
 
+FRAGMENT%lupri = lsfull%lupri
+FRAGMENT%luerr = lsfull%luerr
+FRAGMENT%optlevel = lsfull%optlevel
+FRAGMENT%fopen = lsfull%fopen
+
 CALL io_init(FRAGMENT%INPUT%IO)
+!no pointers so a simple copy is fine
 FRAGMENT%INPUT%DALTON = lsfull%INPUT%DALTON
+FRAGMENT%INPUT%DALTON%DFT = lsfull%INPUT%DALTON%DFT
 
 NULLIFY(FRAGMENT%INPUT%BASIS)
 ALLOCATE(FRAGMENT%INPUT%BASIS)
 CALL Copy_basissetinfo(lsfull%INPUT%BASIS%REGULAR,fragment%INPUT%BASIS%REGULAR)
 
 !The values of daltonitem which are set in readmolfile
-fragment%INPUT%BASIS%AUXILIARY%natomtypes = 0
-fragment%INPUT%BASIS%AUXILIARY%nChargeindex = 0  
-fragment%INPUT%BASIS%AUXILIARY%labelindex = 0  
-nullify(fragment%INPUT%BASIS%AUXILIARY%Chargeindex)
-
 fragment%input%DALTON%AUXBASIS = lsfull%input%DALTON%AUXBASIS
 fragment%input%DALTON%CABSBASIS = lsfull%input%DALTON%CABSBASIS
 fragment%input%DALTON%JKBASIS = lsfull%input%DALTON%JKBASIS
@@ -598,30 +601,23 @@ FRAGMENT%input%DALTON%NOGCINTEGRALTRANSFORM=.TRUE.
 IF(FRAGMENT%INPUT%DALTON%AUXBASIS)THEN
    CALL Copy_basissetinfo(lsfull%input%BASIS%AUXILIARY,fragment%input%BASIS%AUXILIARY)
 ELSE
-   fragment%input%BASIS%AUXILIARY%nAtomtypes=0
+   call nullifyBasis(fragment%input%BASIS%AUXILIARY)
 ENDIF
 
 IF(FRAGMENT%INPUT%DALTON%CABSBASIS)THEN
    CALL Copy_basissetinfo(lsfull%input%BASIS%CABS,fragment%input%BASIS%CABS)
 ELSE
-   fragment%input%BASIS%CABS%nAtomtypes=0
+   call nullifyBasis(fragment%input%BASIS%CABS)
 ENDIF
 
 IF(FRAGMENT%INPUT%DALTON%JKBASIS)THEN
    CALL Copy_basissetinfo(lsfull%input%BASIS%JK,fragment%input%BASIS%JK)
 ELSE
-   fragment%input%BASIS%JK%nAtomtypes=0
+   call nullifyBasis(fragment%input%BASIS%JK)
 ENDIF
 
-fragment%INPUT%BASIS%VALENCE%natomtypes = 0
-fragment%INPUT%BASIS%VALENCE%nChargeindex = 0  
-fragment%INPUT%BASIS%VALENCE%labelindex = 0  
-nullify(fragment%INPUT%BASIS%VALENCE%Chargeindex)
-
-nullify(fragment%INPUT%BASIS%GCtrans%ATOMTYPE)
-fragment%INPUT%BASIS%GCtrans%natomtypes = 0
-fragment%INPUT%BASIS%GCtrans%labelindex = 2
-fragment%INPUT%BASIS%GCtrans%nChargeindex = 0
+call nullifyBasis(fragment%input%BASIS%VALENCE)
+call nullifyBasis(fragment%input%BASIS%GCtrans)
 fragment%INPUT%BASIS%GCtransAlloc = .FALSE.
 
 NULLIFY(FRAGMENT%INPUT%MOLECULE)
@@ -637,8 +633,6 @@ IF(IPRINT .GT. 0)THEN
       CALL PRINT_MOLECULE_AND_BASIS(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS%AUXILIARY)
    ENDIF
 ENDIF
-
-FRAGMENT%input%DALTON%exchangeFactor = 1.0E0_realk
 
 CALL typedef_init_setting(FRAGMENT%setting)
 CALL typedef_set_default_setting(FRAGMENT%SETTING,FRAGMENT%INPUT)

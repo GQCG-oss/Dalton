@@ -151,11 +151,12 @@ contains
     end if
 
     ! Sanity check 2: Basis info in "Expensive box" in decfrag should not be sent
-    if(MyFragment%BasisInfoIsSet .and. mynum==MySender) then
-       call lsquit('mpi_send_recv_single_fragment: Not implemented for &
-            & sending/receiving fragment basis info!',-1)
-    end if
-
+    if(mynum==MySender) then
+       if(MyFragment%BasisInfoIsSet) then
+          call lsquit('mpi_send_recv_single_fragment: Not implemented for &
+               & sending/receiving fragment basis info!',-1)
+       end if
+    endif
     ! Init buffer
     call ls_mpiInitBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
 
@@ -291,11 +292,12 @@ contains
        CommunicateFragment: if(whichfrags(atom)) then
 
           ! Sanity check: Basis info in "Expensive box" in decfrag should not be sent
-          if(Fragments(atom)%BasisInfoIsSet .and. mynum==0) then
-             call lsquit('mpi_bcast_many_fragments: Not implemented for &
-                  & sending/receiving fragment basis info!',-1)
-          end if
-
+          if(mynum==0) then
+             if(Fragments(atom)%BasisInfoIsSet) then
+                call lsquit('mpi_bcast_many_fragments: Not implemented for &
+                     & sending/receiving fragment basis info!',-1)
+             end if
+          endif
           ! Master: Copy fragment info into buffer
           ! Slave: Read fragment info from buffer into Fragments(atom)
           call mpicopy_fragment(Fragments(atom),comm,.false.)
@@ -1937,12 +1939,13 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    January 2014
-  subroutine mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,t2,om2, &
-             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-             & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock,loc)
+  subroutine mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,om2, &
+             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,loc)
 
     implicit none
      
+    !> CC model
+    integer,intent(inout) :: ccmodel
     !> MO pack integrals; amplitudes and residuals:
     integer :: nbas, nocc, nvir, iter
     type(array) :: pgmo_diag, pgmo_up
@@ -1950,20 +1953,6 @@ contains
     type(array) :: t1
     type(array) :: t2
     type(array) :: om2
-     
-    !> Long-range correction to Fock matrix
-    type(array) :: deltafock
-    !> occupied-occupied block of the t1-fock matrix
-    type(array) :: ppfock
-    !> virtual-virtual block of the t1-fock matrix
-    type(array) :: qqfock
-    !> occupied-virtual block of the t1-fock matrix
-    type(array) :: pqfock
-    !> virtual-occupied block of the t1-fock matrix
-    type(array) :: qpfock
-    !> transformation matrices from AO to t1-MO:
-    real(realk), pointer :: lampo(:,:), lampv(:,:)
-    real(realk), pointer :: lamho(:,:), lamhv(:,:)
      
     !> LS item with information needed for integrals
     type(lsitem) :: MyLsItem
@@ -1989,6 +1978,7 @@ contains
     call ls_mpi_buffer(iter,infpar%master)
     call ls_mpi_buffer(MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(loc,infpar%master)
+    call ls_mpi_buffer(ccmodel,infpar%master)
     if (.not.master) then
       call mem_alloc(MOinfo%dimInd1,MOinfo%nbatch)
       call mem_alloc(MOinfo%dimInd2,MOinfo%nbatch)
@@ -2187,6 +2177,13 @@ contains
     call ls_mpi_buffer(DECitem%ncalc,mydim,Master)
     call ls_mpi_buffer(DECitem%EerrFactor,Master)
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
+    call ls_mpi_buffer(DECitem%only_n_frag_jobs,Master)
+    if(DECitem%only_n_frag_jobs>0)then
+       if(.not. AddToBuffer)then
+          call mem_alloc(DECitem%frag_job_nr,DECitem%only_n_frag_jobs)
+       endif
+       call ls_mpi_buffer(DECitem%frag_job_nr,DECitem%only_n_frag_jobs,Master)
+    endif
 
   end subroutine mpicopy_dec_settings
 

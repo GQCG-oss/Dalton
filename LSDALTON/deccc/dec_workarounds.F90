@@ -10,10 +10,11 @@ module dec_workarounds_module
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
   abstract interface
-    subroutine subblock_op(drain,source,nel,scal1,scal2)
+    subroutine subblock_op(drain,source,nel,gpu,scal1,scal2)
     import
     implicit none
     integer(kind=8), intent(in) :: nel
+    logical, intent(in) :: gpu
     real(realk), intent(in), optional :: scal1,scal2
     real(realk), intent(inout) :: drain(nel)
     real(realk), intent(in) :: source(nel)
@@ -30,20 +31,18 @@ module dec_workarounds_module
     implicit none
     integer(kind=8), intent(in) :: nel
     character, intent(in) :: op
-    real(realk),intent(inout) :: drain(:)
-    real(realk),intent(in)    :: source(:)
+    real(realk),intent(inout) :: drain(nel)
+    real(realk),intent(in)    :: source(nel)
     real(realk), intent(in), optional :: scal1,scal2
     logical, intent(in), optional :: gpu
+    logical :: use_gpu_code
     integer(kind=8) :: block,i
     integer, parameter :: k = 50000000
-
-    if (present(gpu) .and. (gpu)) then
-       gpu = .true.
-    else
-       gpu = .false.
-    endif
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     procedure(subblock_op), pointer :: op_blocks
+
+    use_gpu_code = .false.
+    if (present(gpu)) use_gpu_code = gpu
 
     select case(op)
     case("+")
@@ -61,7 +60,7 @@ module dec_workarounds_module
       block = k
       if( (nel-i)<k .and. mod(nel-i+1,k)/=0 ) block=mod(nel,k)
       !if(infpar%mynum == 0 ) print *,"begin",i,"end",i+block-1,"length",block,"of",nel
-      call op_blocks(drain(i:i+block-1),source(i:i+block-1),block,gpu,scal1=scal1,scal2=scal2)
+      call op_blocks(drain(i:i+block-1),source(i:i+block-1),block,use_gpu_code,scal1=scal1,scal2=scal2)
     enddo
 #else
     print *,"ERROR(assign_in_subblocks): you cannot use this workaround&

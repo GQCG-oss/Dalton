@@ -182,7 +182,6 @@ ENDIF
 end subroutine free_DFTdata
 
 
-#ifdef VAR_MPI
 subroutine mpicopy_DFTparam(DFT,master)
 implicit none
 integer(kind=ls_mpik) :: master
@@ -262,7 +261,6 @@ do i=1,size(DFT%GridObject)
 enddo
 
 end subroutine mpicopy_DFTparam
-#endif
 
 subroutine initDFTdatatype(DFTdata)
 implicit none

@@ -110,10 +110,22 @@ INTEGER,pointer     :: CHARGE(:)!size natoms
 END TYPE BASINF
 
 contains
-
-!Added to avoid "has no symbols" linking warning
-subroutine basis_typetype_void()
-end subroutine basis_typetype_void
+subroutine nullifyBasis(BAS)
+  implicit none
+  TYPE(BASISSETINFO) :: BAS
+  BAS%DunningsBasis = .FALSE.
+  BAS%SPHERICAL = .FALSE.
+  BAS%GCbasis = .FALSE.
+  BAS%GCONT = .FALSE.
+  BAS%nAtomtypes=0
+  nullify(BAS%ATOMTYPE)
+  BAS%labelindex = 0  
+  nullify(BAS%Chargeindex)
+  BAS%nChargeindex = 0  
+  BAS%nbast = -1
+  BAS%nprimbast = -1
+  BAS%label = 'Empty Bas'
+end subroutine nullifyBasis
 
 END MODULE basis_typetype
 

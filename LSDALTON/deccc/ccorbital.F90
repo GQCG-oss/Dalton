@@ -104,7 +104,6 @@ contains
     end if
     call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals)
 
-
     ! Check that assigment is meaningful
     call dec_orbital_sanity_check(natoms,nocc,nunocc,OccOrbitals,&
          & UnoccOrbitals,MyMolecule)
@@ -1020,9 +1019,9 @@ contains
     type(fullmolecule), intent(in) :: MyMolecule
     integer, intent(inout) :: central_atom
     !
-    integer :: atom,catom(1),nocc,nvirt
+    integer :: atom,catom,nocc,nvirt
     real(realk) :: XMO,YMO,ZMO,XATOM,YATOM,ZATOM,XDIST,YDIST,ZDIST
-    real(realk) :: SQDIST(nAtoms)    
+    real(realk) :: SQDIST(nAtoms),SQDISTVAL    
     nocc=MyMolecule%nocc
     ! Init stuff
     IF(orbI.GT.nocc)THEN
@@ -1046,8 +1045,17 @@ contains
        ZDIST = ZATOM + ZMO
        SQDIST(atom) = XDIST*XDIST + YDIST*YDIST + ZDIST*ZDIST
     enddo
-    catom = MINLOC(SQDIST)
-    central_atom = catom(1)    
+    SQDISTVAL=HUGE(SQDIST(1))
+    catom = -101
+    do atom=1,natoms
+       IF(SQDIST(atom).LT.SQDISTVAL)THEN
+          IF(.NOT.MyMolecule%PhantomAtom(atom))THEN
+             SQDISTVAL = SQDIST(atom)
+             catom = atom
+          ENDIF
+       ENDIF
+    enddo
+    central_atom = catom
   end subroutine GetDistanceCentralAtom
 
 
@@ -2109,7 +2117,7 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
-    if(DECinfo%PL>0) then ! print specific info for each orbital
+!    if(DECinfo%PL>0) then ! print specific info for each orbital
        do i=1,nocc
           write(DECinfo%output,*) 'Occupied orbital: ', i
           write(DECinfo%output,*) '************************************************'
@@ -2138,8 +2146,7 @@ contains
        write(DECinfo%output,*)
        write(DECinfo%output,*)
 
-    end if
-
+    !end if
 
 
   end subroutine print_orbital_info
@@ -2324,6 +2331,7 @@ contains
     do i=1,natoms
        if(DECinfo%onlyoccpart) then
           ! Only consider occupied orbitals
+
           if( (nocc_per_atom(i)==0) ) then
              dofrag(i)=.false.
           else
@@ -2360,6 +2368,13 @@ contains
           endif
        end if
     end do
+    if( DECinfo%only_n_frag_jobs>0)then
+       print *,"HACK TO ONLY DO ONE FRAGMENT JOB"
+       dofrag = .false.
+       do i = 1, DECinfo%only_n_frag_jobs
+          dofrag(DECinfo%frag_job_nr(i)) = .true.
+       enddo
+    endif
 
   end subroutine which_atoms_have_orbitals_assigned
 

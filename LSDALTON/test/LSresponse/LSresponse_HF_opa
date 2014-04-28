@@ -45,10 +45,12 @@ F 1.96000000  0.0000000000   0.000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > LSresponse_HF_opa.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.ARH DAVID                                                                                       
+.ARH DAVID                   
 .CONVDYN
 TIGHT
 **RESPONS

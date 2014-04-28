@@ -526,7 +526,6 @@ set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/ks-settings.F90
     LSDALTON/lsutil/lsmpi-operations.F90
     LSDALTON/lsutil/lsutilities.F90
-    LSDALTON/lsutil/ls_screenMPI.F90
     LSDALTON/lsutil/LSoptType.F90
     LSDALTON/lsutil/ddynType.F90
     LSDALTON/lsutil/ProfileType.F90

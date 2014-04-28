@@ -857,7 +857,7 @@ contains
     if (master) then 
       select case(CCmodel)
 
-      case(MODEL_CCSD,MODEL_CCSDpT)
+      case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
         call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nb,no,nv, &
                & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem,.false.)
         if (.not.mo_ccsd) return
@@ -2472,7 +2472,7 @@ subroutine cc_gmo_data_slave()
   call mem_dealloc(Co)
   call mem_dealloc(Cv)
   call ls_free(MyLsItem)
-  if (ccmodel==MODEL_CCSD) then 
+  if (ccmodel/=MODEL_RPA) then 
     call mem_dealloc(MOinfo%dimInd1)
     call mem_dealloc(MOinfo%dimInd2)
     call mem_dealloc(MOinfo%StartInd1)

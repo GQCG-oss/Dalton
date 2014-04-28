@@ -54,6 +54,8 @@ H         0.00000000      0.00000000     14.02766500
 #  DALTON INPUT
 #######################################################################
 cat > linsca_las.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **WAVE FUNCTIONS
 .HF
 *DENSOPT

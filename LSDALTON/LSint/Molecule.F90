@@ -349,7 +349,7 @@ TYPE(MOLECULEINFO),intent(INOUT)      :: FRAGMOL
 TYPE(BASISINFO),intent(INOUT)         :: FRAGBASIS
 LOGICAL,intent(in)                    :: AUXBASIS,CABSBASIS,JKBASIS 
 !
-INTEGER            :: I
+INTEGER            :: I,nelectrons
 Character(len=22)  :: FRAGMENTNAME
 
 IF ((NATOMS.GT. 999999).OR.(ATOMS(1).GT. 999999).OR.(ATOMS(NATOMS).GT. 999999)) &
@@ -357,9 +357,12 @@ IF ((NATOMS.GT. 999999).OR.(ATOMS(1).GT. 999999).OR.(ATOMS(NATOMS).GT. 999999)) 
 write(FRAGMENTNAME,'(A4,3I6)') 'FRAG',NATOMS,ATOMS(1),ATOMS(NATOMS)
 CALL init_MoleculeInfo(FRAGMOL,natoms,FRAGMENTNAME)
 FRAGMOL%charge = DALMOL%charge
+nelectrons = 0
 DO I = 1,nAtoms
    CALL COPY_ATOM(DALMOL,ATOMS(I),FRAGMOL,I,lupri)
+   nelectrons = nelectrons + INT(FRAGMOL%ATOM(I)%Charge)
 ENDDO
+FRAGMOL%nelectrons = nelectrons
 FRAGMOL%nbastREG=0
 FRAGMOL%nprimbastREG=0
 FRAGMOL%nbastAUX=0
@@ -498,7 +501,6 @@ IF(BASINFO%label(1:9) .EQ. 'AUXILIARY') AUX = .TRUE.
 IF(BASINFO%label(1:9) .EQ. 'CABS     ') CABS = .TRUE.
 IF(BASINFO%label(1:9) .EQ. 'JKAUX    ') JKAUX = .TRUE.
 IF(BASINFO%label(1:9) .EQ. 'VALENCE  ') VAL = .TRUE.
-
 IF(.NOT.MOLECULE%pointMolecule)THEN
    TOTcont=0
    TOTprim=0

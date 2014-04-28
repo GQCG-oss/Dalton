@@ -30,6 +30,7 @@ module mp2_module
 #ifdef VAR_MPI
       use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
 #endif
+  use dec_workarounds_module
 
   use dec_fragment_utils!,only: calculate_fragment_memory, &
 !       & dec_simple_dgemm_update,start_flop_counter,&
@@ -256,16 +257,16 @@ contains
     ! Size of EOS arrays used for updating inside integral loop
     ! *********************************************************
 
-    IF(.NOT.DECinfo%OnlyVirtPart)THEN
+!    IF(.NOT.DECinfo%OnlyVirtPart)THEN
        ! occupied EOS dimension during integral loop (different from output dimensions!)
        dimocc=[nvirt,noccEOS,noccEOS,nvirt]
        call mem_alloc(gocc,dimocc(1),dimocc(2),dimocc(3),dimocc(4) )  ! occ EOS integrals
        call mem_alloc(tocc,dimocc(1),dimocc(2),dimocc(3),dimocc(4) )  ! occ EOS amplitudes
        gocc=0E0_realk
        tocc=0E0_realk
-    ENDIF
+!    ENDIF
 
-    IF(.NOT.DECinfo%OnlyOccPart)THEN
+!    IF(.NOT.DECinfo%OnlyOccPart)THEN
        ! virtual EOS dimension during integral loop (different from output dimensions)
        dimvirt=[nvirtEOS,nvirtEOS,nocc,nocc]
        call mem_alloc(tvirt,dimvirt(1),dimvirt(2),dimvirt(3),dimvirt(4) )  ! virt EOS amplitudes
@@ -273,7 +274,7 @@ contains
        call mem_alloc(gvirt,dimvirt(1),dimvirt(2),dimvirt(3),nocctot )  ! virt EOS integrals
        gvirt=0E0_realk
        tvirt=0E0_realk
-    ENDIF
+!    ENDIF
 
     ! Arrays used for updating integrals used for first-order MP2 properties
     if(first_order_integrals) then
@@ -956,7 +957,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                 & tmp4%p(1:dim4),b1(num)%p(1:dim1), 'n', 'n',use_thread_safe=ts)
 
 
-             IF(.NOT.DECinfo%OnlyVirtPart)THEN
+!             IF(.NOT.DECinfo%OnlyVirtPart)THEN
                 ! Transform from diagonal to local basis: Two-electron integrals, OCC partitioning
                 ! ********************************************************************************
                 ! Note: Here "I" is ONLY valence! (But that changes for VIRT partitioning below).
@@ -1009,10 +1010,10 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                       end do
                    end do
                 end do
-             ENDIF
+!             ENDIF
 
 
-             IF(.NOT.DECinfo%OnlyOccPart)THEN
+!             IF(.NOT.DECinfo%OnlyOccPart)THEN
                 ! Transform from diagonal to local basis: Two-electron integrals, VIRT partitioning
                 ! *********************************************************************************
                 ! Now again index "I" is both core+valence for first order integrals/frozen core:
@@ -1071,7 +1072,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                    end do
                 end do
                 !$OMP END CRITICAL (gvirtupdate)
-             ENDIF
+!             ENDIF
 
              ! Solve amplitude equation and transform amplitudes to EOS
              ! ********************************************************
@@ -1105,7 +1106,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                 end do
              end do
 
-             IF(.NOT.DECinfo%OnlyVirtPart)THEN
+!             IF(.NOT.DECinfo%OnlyVirtPart)THEN
                 ! The amplitudes may now be transformed to local EOS indices for
                 ! both the occupied and virtual partitioning schemes - using exactly the
                 ! same transformations as were used for the integrals above.
@@ -1155,9 +1156,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                       end do
                    end do
                 end do
-             ENDIF
+             !ENDIF
 
-             IF(.NOT.DECinfo%OnlyOccPart)THEN
+             !IF(.NOT.DECinfo%OnlyOccPart)THEN
 
                 ! Transform from diagonal to local basis: Two-electron amplitudes, VIRT partitioning
                 ! **********************************************************************************
@@ -1213,7 +1214,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                    end do
                 end do
                 !$OMP END CRITICAL (tvirtupdate)
-             ENDIF
+             !ENDIF
 
           end do BatchA
 
@@ -1341,7 +1342,7 @@ call mem_dealloc(decmpitasks)
 
 
 
- IF(.NOT.DECinfo%OnlyVirtPart)THEN
+! IF(.NOT.DECinfo%OnlyVirtPart)THEN
     ! OCCUPIED PARTITIONING: Transform virtual diagonal indices to local basis
     ! ************************************************************************
     
@@ -1406,8 +1407,8 @@ call mem_dealloc(decmpitasks)
     !   end do
     !end do
     
- ENDIF
- IF(.NOT.DECinfo%OnlyOccPart)THEN
+! ENDIF
+! IF(.NOT.DECinfo%OnlyOccPart)THEN
 
     ! VIRTUAL PARTITIONING: Transform occupied diagonal indices to local basis
     ! ************************************************************************
@@ -1513,7 +1514,7 @@ call mem_dealloc(decmpitasks)
     !      end do
     !   end do
     !end do
- ENDIF
+! ENDIF
 
 
  ! Finalize integrals used for first order MP2 integrals
@@ -1637,21 +1638,21 @@ end if
     call lsmpi_barrier(infpar%lg_comm)
     call time_start_phase( PHASE_COMM )
 
-    IF(.NOT.DECinfo%onlyVirtPart)THEN
+!    IF(.NOT.DECinfo%onlyVirtPart)THEN
        ! Add up contibutions to output arrays using MPI reduce
        call lsmpi_local_reduction(goccEOS%val(:,:,:,:),goccEOS%dims(1),&
             &goccEOS%dims(2),goccEOS%dims(3),goccEOS%dims(4),masterrank)
        
        call lsmpi_local_reduction(toccEOS%val(:,:,:,:),toccEOS%dims(1),&
             &toccEOS%dims(2),toccEOS%dims(3),toccEOS%dims(4),masterrank)
-    ENDIF
-    IF(.NOT.DECinfo%onlyOccPart)THEN
+!    ENDIF
+!    IF(.NOT.DECinfo%onlyOccPart)THEN
        call lsmpi_local_reduction(gvirtEOS%val(:,:,:,:),gvirtEOS%dims(1),&
             &gvirtEOS%dims(2),gvirtEOS%dims(3),gvirtEOS%dims(4),masterrank)
 
        call lsmpi_local_reduction(tvirtEOS%val(:,:,:,:),tvirtEOS%dims(1),&
             &tvirtEOS%dims(2),tvirtEOS%dims(3),tvirtEOS%dims(4),masterrank)
-    ENDIF
+!    ENDIF
     if(first_order_integrals) then
        call lsmpi_local_reduction(djik%val(:,:,:,:),djik%dims(1),&
              &djik%dims(2),djik%dims(3),djik%dims(4),masterrank)
@@ -1661,14 +1662,14 @@ end if
    end if
 
    if(.not. master) then  ! SLAVE: Done with arrays and fragment
-      IF(.NOT.DECinfo%OnlyVirtPart)THEN
+!      IF(.NOT.DECinfo%OnlyVirtPart)THEN
          call array4_free(goccEOS)
          call array4_free(toccEOS)
-      ENDIF
-      IF(.NOT.DECinfo%OnlyOccPart)THEN
+!      ENDIF
+!      IF(.NOT.DECinfo%OnlyOccPart)THEN
          call array4_free(gvirtEOS)
          call array4_free(tvirtEOS)
-      ENDIF
+!      ENDIF
       if(first_order_integrals) call array4_free(djik)
       if(first_order_integrals) call array4_free(blad)
       call atomic_fragment_free(MyFragment)
@@ -3914,13 +3915,13 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
      dim4=i8*BatchDimAlpha*nvirt*nocc*nocctot
      dim1=max(dim1,i8*BatchDimA*nvirt*nocc*nocctot)
      dim3=max(dim3,i8*BatchDimA*nvirt*nocc*nocctot)
-     IF(.NOT.DECinfo%OnlyVirtPart)THEN
+!     IF(.NOT.DECinfo%OnlyVirtPart)THEN
         dim2=max(dim2,i8*BatchDimA*nvirt*nocc*noccEOS)
-     ENDIF
-     IF(.NOT.DECinfo%OnlyOccPart)THEN
+!     ENDIF
+!     IF(.NOT.DECinfo%OnlyOccPart)THEN
         dim2=max(dim2,i8*nvirtEOS*BatchDimA*nocc*nocctot)
         dim2=max(dim2,i8*nvirtEOS*nvirtEOS*nocc*nocctot)
-     ENDIF
+!     ENDIF
      ! Memory needed is the sum of the array sizes
      ! However, tmp1,tmp2, and tmp3 are used for EACH thread.
      ! Thus, we multiply these by the number of threads
@@ -3929,12 +3930,12 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
      ! After loop
   case(3)
 
-     IF(.NOT.DECinfo%OnlyVirtPart)THEN
+!     IF(.NOT.DECinfo%OnlyVirtPart)THEN
         dim1=max(dim1,i8*nvirt*noccEOS*noccEOS*nvirt)
-     ENDIF
-     IF(.NOT.DECinfo%OnlyOccPart)THEN
+!     ENDIF
+!     IF(.NOT.DECinfo%OnlyOccPart)THEN
         dim1=max(dim1,i8*nvirtEOS*nvirtEOS*nocc*nocctot)
-     ENDIF
+!     ENDIF
      dim2=dim1
 
      if(first_order_integrals) then
@@ -4230,7 +4231,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
       !INTRODUCE PERMUTATION
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-      call assign_in_subblocks(w1,'=',omega2%elm1,o2v2)
+      call assign_in_subblocks(w_o2v2,'=',omega2%elm1,o2v2)
 #else
       !$OMP WORKSHARE
       w_o2v2(1_long:o2v2) = omega2%elm1(1_long:o2v2)

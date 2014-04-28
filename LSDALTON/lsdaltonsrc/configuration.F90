@@ -143,7 +143,7 @@ implicit none
   config%doplt=.false.
   !F12 calc?
   config%doF12=.false.
-  
+  config%doTestMPIcopy = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
 #endif
@@ -1047,6 +1047,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.GCBASIS');      config%decomp%cfg_gcbasis = .true. ! left for backward compatibility
         CASE('.NOGCBASIS');    config%decomp%cfg_gcbasis = .false.
         CASE('.FORCEGCBASIS'); config%INTEGRAL%FORCEGCBASIS = .true.
+        CASE('.TESTMPICOPY'); config%doTestMPIcopy = .true.
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **GENERAL readin.'
@@ -3748,13 +3749,14 @@ ENDIF
        write(config%lupri,*) ' system, use options  .START/TRILEVEL and .LCM in *DENSOPT section.   '  
        write(config%lupri,*) 
    endif 
-
    ! Check that DEC input is consistent with geometry optimization and orbital localization.
    call DEC_meaningful_input(config)
 
-   nocc = config%decomp%nocc
-   nvirt = (nbast-nocc)
-   call check_cc_input(ls,nocc,nvirt,nbast)
+   if(config%doDEC) then
+      nocc = config%decomp%nocc
+      nvirt = (nbast-nocc)
+      call check_cc_input(ls,nocc,nvirt,nbast)
+   endif
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)
