@@ -19,6 +19,7 @@ DALTON
 - Environment variable DALTON_USE_GLOBAL_SCRATCH disables copying of binaries to worker nodes.
 - Environment variable DALTON_LAUNCHER introduced.
 - Fixed output information about number of MPI processes and number of OpenMP threads.
+- Added information in the error messages when values in maxorb.h are exceeded (which values to increase).
 
 
 LSDALTON
