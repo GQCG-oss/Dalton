@@ -989,7 +989,8 @@ IF (ADMMexchange) THEN
    IF (setting%scheme%ADMM_GCBASIS) THEN !.AND.(ls%input%basis%valence%nAtomtypes.EQ.0)
       call lsquit('Auxiliary Density Matrix GC-basis type Calculation requires TRILEVEL start guess',-1)
    ENDIF
-   CALL II_get_ADMM_K_gradient(kGrad,DmatLHS,DmatRHS,ndlhs,ndrhs,setting,lupri,luerr)
+   !CALL II_get_ADMM_K_gradient(kGrad,DmatLHS,DmatRHS,ndlhs,ndrhs,setting,lupri,luerr)
+   CALL II_get_ADMM_K_gradient_DEBUG(kGrad,DmatLHS,DmatRHS,ndlhs,ndrhs,setting,lupri,luerr)
  ELSE
 ! *********************************************************************************
 ! *                      regular exchange
@@ -5429,8 +5430,9 @@ IF (isADMMQ) THEN
   CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AO2,AO3,GC2,GC3,constrain_factor)
 
   CALL mat_mul(S32,T23,'n','n',-1E0_realk,0E0_realk,tmp33)
+  call mat_scal(constrain_factor, tmp33)
   IF(isADMMP) THEN
-    call mat_scal(constrain_factor*constrain_factor, tmp33)
+    call mat_scal(constrain_factor, tmp33)
   ENDIF
   call mat_daxpy(1E0_realk,S33,tmp33)
 
@@ -7035,6 +7037,503 @@ call II_get_Fock_mat_array(LUPRI,LUERR,SETTING,(/D/),Dsym,Farray,ndmat,setting_i
 call mat_assign(F,Farray(1))
 call mat_free(Farray(1))
 END SUBROUTINE II_get_Fock_mat_single
+
+
+!> \brief Calculates the ADMM2/Q exchange contribution to the molecular gradient
+!> \author S. Reine and P. Merlot
+!> \date 2014-01-16
+!> \param kGrad The ADMM exchange gradient
+!> \param DmatLHS The left-hand-side (or first electron) density matrix
+!> \param DmatRHS The reft-hand-side (or second electron) density matrix
+!> \param ndlhs The number of LHS density matrices
+!> \param ndrhs The number of RHS density matrices
+!> \param setting Integral evalualtion settings
+!> \param lupri Default print unit
+!> \param luerr Unit for error printing
+SUBROUTINE II_get_ADMM_K_gradient_DEBUG(admm_Kgrad,DmatLHS,DmatRHS,ndlhs,ndrhs,setting,lupri,luerr)
+IMPLICIT NONE
+!
+type(lssetting),intent(inout) :: setting
+real(realk),intent(inout)     :: admm_Kgrad(3,setting%molecule(1)%p%nAtoms)
+integer,intent(in)            :: lupri,luerr,ndlhs,ndrhs
+type(MatrixP),intent(in)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
+!
+real(realk),pointer :: grad_k2(:,:),grad_xc2(:,:),grad_XC3(:,:)
+real(realk),pointer :: ADMM_proj(:,:),ADMM_charge_term(:,:)
+integer             :: nbast,nbast2,AO2,AO3,idmat,nAtoms
+real(realk)         :: ts,te,hfweight
+real(realk)         :: Exc2(1)
+type(Matrix),target :: D2
+type(Matrix)        :: k2,xc2,zeromat
+type(matrixp)       :: D2p(1)
+logical             :: GC3,GC2,testNelectrons,grid_done,DSym,unres
+integer             :: AOdfold,AORold
+character(len=80)   :: WORD
+character(21)       :: L2file,L3file
+real(realk)         :: GGAXfactor
+real(realk)         :: lambda, constrain_factor,nrm
+logical             :: isADMMQ,DEBUG_ADMM_CONST,isADMMS
+integer             :: iAtom,iX
+!
+isADMMQ = setting%scheme%ADMM_CONST_EL
+isADMMS = setting%scheme%ADMMQ_ScaleXC2
+DEBUG_ADMM_CONST = .FALSE.
+call lstimer('START',ts,te,lupri)
+IF (setting%scheme%cam) THEN
+  GGAXfactor = 1.0E0_realk
+ELSE
+  GGAXfactor = setting%scheme%exchangeFactor
+ENDIF
+
+IF (ndrhs.NE.ndlhs) call lsquit('II_get_ADMM_K_gradient:Different LHS/RHS density matrices not implemented',-1)
+
+nAtoms = setting%molecule(1)%p%nAtoms
+call ls_dzero(admm_Kgrad,3*nAtoms)
+nbast  = DmatLHS(1)%p%nrow
+unres  = matrix_type .EQ. mtype_unres_dense
+
+  
+DO idmat=1,ndrhs
+   IF (setting%scheme%ADMM_DFBASIS) THEN
+     AO2 = AOdfAux
+   ELSE IF (setting%scheme%ADMM_JKBASIS) THEN
+     AO2 = AOdfJK
+   ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
+     AO2 = AOVAL
+   ELSE 
+     call lsquit('II_get_ADMM_K_gradient:Auxiliary Density Matrix Calculation requested, but no basis given',-1)
+   ENDIF
+   
+   nbast2 = getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
+   
+   !ADMM/Level 2 basis is GC basis only if ADMM_GCBASIS option is active and optlevel 3
+   GC3 = setting%IntegralTransformGC
+   GC2 = setting%scheme%ADMM_GCBASIS !  .AND. (optlevel.EQ.3)
+   setting%IntegralTransformGC = GC2
+   
+   AO3 = AORdefault ! assuming optlevel.EQ.3
+
+   ! Get the scaling factor derived from constraining the total charge
+   IF (isADMMQ) THEN   
+      call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
+               & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
+               & nbast2,nbast,AO2,AO3,GC2,GC3)
+   ELSE
+      constrain_factor = 1.0E0_realk
+      lambda = 0E0_realk  
+   ENDIF
+
+   !!We transform the full Density to a level 2 density D2
+   call mat_init(D2,nbast2,nbast2)
+   call mat_zero(D2)
+   call transform_D3_to_D2(DmatLHS(idmat)%p,D2,setting,lupri,luerr,&
+                           & nbast2,nbast,AO2,AO3,&
+                           & setting%scheme%ADMM_MCWEENY,GC2,GC3,&
+                           & constrain_factor)
+ 
+   !Store original AO-indeces (AOdf will not change, but is still stored)
+   AORold  = AORdefault
+   AOdfold = AODFdefault
+   
+   !!****Calculation of Level 2 exchange gradient from level 2 Density matrix starts here
+   !ADMM (level 2) AO settings 
+   call set_default_AOs(AO2,AOdfold)
+   
+   D2p(1)%p => D2
+   
+   ! LEVEL 2 exact exchange matrix
+   call mat_init(k2,nbast2,nbast2)
+   call mat_zero(k2)
+   Dsym = .TRUE. !symmetric Density matrix !!!!!!!!!!!!!!!!!!!    ASSUMPTION WITHOUT LSQUIT HERE      !!!!!!!!!!!!!!!!!!!!!!!!
+   call II_get_exchange_mat(lupri,luerr,setting,D2,1,Dsym,k2)
+   
+   call mem_alloc(grad_k2,3,nAtoms)
+   call ls_dzero(grad_k2,3*nAtoms)
+   call II_get_regular_K_gradient(grad_k2,D2p,D2p,1,1,setting,lupri,luerr)
+   call DSCAL(3*nAtoms,1E0_realk,grad_k2,1) !Include factor 4 to use D instead of 2D
+   call DAXPY(3*nAtoms,1E0_realk,grad_k2,1,admm_Kgrad,1) 
+   CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_k2,nAtoms,'grad_k2')
+   call mem_dealloc(grad_k2)
+   
+   ! XC-correction
+   !****Calculation of Level 2 XC gradient from level 2 Density matrix starts here
+   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
+   
+   !choose the ADMM Level 2 grid
+   setting%scheme%dft%igrid = Grid_ADMML2
+
+   !Only test electrons if the D2 density matrix is McWeeny purified
+
+   testNelectrons = setting%scheme%dft%testNelectrons
+   setting%scheme%dft%testNelectrons = .FALSE. !setting%scheme%ADMM_MCWEENY
+   
+   !Level 2 XC matrix
+   call mat_init(xc2,nbast2,nbast2)
+   call mat_zero(xc2)
+   Exc2(1) = 0.0E0_realk
+   call II_get_xc_Fock_mat(lupri,luerr,setting,nbast2,D2,xc2,Exc2,1)
+   IF (isADMMS) THEN   
+      call DSCAL(3*nAtoms,constrain_factor**(4./3.),xc2,1)
+   ENDIF
+ 
+   !Level 2 XC gradient
+   call mem_alloc(grad_xc2,3,nAtoms)
+   call ls_dzero(grad_xc2,3*nAtoms)
+   call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast2,D2,grad_xc2,nAtoms)
+   call DSCAL(3*nAtoms,-GGAXfactor,grad_xc2,1) !Include -GGAfactor
+   IF (isADMMS) THEN   
+      call DSCAL(3*nAtoms,constrain_factor**(4./3.),grad_xc2,1)
+   ENDIF
+   call DAXPY(3*nAtoms,1E0_realk,grad_xc2,1,admm_Kgrad,1)
+   CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_xc2,nAtoms,'grad_xc2')
+   call mem_dealloc(grad_xc2)
+   
+   !Re-set to level 3 grid
+   setting%scheme%dft%igrid = Grid_Default
+   
+   !****Calculation of Level 3 XC gradient
+   call set_default_AOs(AORold,AOdfold)  !Revert back to original settings and free stuff 
+   setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
+
+   call mem_alloc(grad_XC3,3,nAtoms)
+   call ls_dzero(grad_XC3,3*nAtoms)
+   call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast,DmatLHS(idmat)%p,grad_XC3,nAtoms)
+   call DSCAL(3*nAtoms,GGAXfactor,grad_XC3,1) !Include -GGAfactor
+   call DAXPY(3*nAtoms,1E0_realk,grad_XC3,1,admm_Kgrad,1)
+   CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_XC3,nAtoms,'grad_XC3')
+   call mem_dealloc(grad_XC3)
+
+   
+   ! set back the default choice for testing the nb. of electrons
+   setting%scheme%dft%testNelectrons = testNelectrons
+   
+   ! Additional (reorthonormalisation like) projection terms coming from the 
+   ! derivative of the small d2 Density matrix
+   ! calculating Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+   call mem_alloc(ADMM_proj,3,nAtoms)
+   call ls_dzero(ADMM_proj,3*nAtoms)
+   call mem_alloc(ADMM_charge_term,3,nAtoms)
+   call ls_dzero(ADMM_charge_term,3*nAtoms)
+   
+   IF (isADMMQ) THEN
+      call get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,k2,xc2,&
+                  & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
+                  & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
+                  & lambda)
+      call DSCAL(3*nAtoms,2E0_realk,ADMM_charge_term,1)
+      call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM-Chrg')  
+      call DAXPY(3*nAtoms,1E0_realk,ADMM_charge_term,1,admm_Kgrad,1)
+   ENDIF
+   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,&
+               & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
+               & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
+               & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
+   call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1)
+   call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_proj,nAtoms,'ADMM_proj')  
+   call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)   
+                     
+
+
+   !FREE MEMORY
+   call mem_dealloc(ADMM_proj)
+   call mem_dealloc(ADMM_charge_term)
+   call mat_free(k2)
+   call mat_free(xc2)
+   call mat_free(D2)
+ENDDO !idmat
+
+call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)
+
+!Restore dft functional to original
+IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
+!
+CONTAINS
+   SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
+                     & constrain_factor,D3,setting,lupri,luerr,n2,n3,&
+                     & AO2,AO3,GCAO2,GCAO3)
+      implicit none
+      type(matrix),intent(in)    :: D3     !level 3 matrix input 
+      real(realk),intent(inout)  :: lambda, constrain_factor
+      type(lssetting)            :: setting
+      integer                    :: n2,n3,AO3,AO2,lupri,luerr
+      logical                    :: GCAO2,GCAO3
+      !
+      TYPE(MATRIX) :: temp,S23,T23,S22,D2,tmp22
+      real(realk)  :: trace
+      integer      :: nelectrons
+      logical      :: DEBUG_ADMM_CONST
+
+      DEBUG_ADMM_CONST = .FALSE.
+      CALL mat_init(T23,n2,n3)
+      CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,1E0_realk)
+     
+      CALL mat_init(S23,n2,n3)
+      CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+      ! The lagrangian multiplier
+      ! lambda = 1 - sqrt[ 2/N Tr(D3 S32 T23) ] 
+      CALL mat_init(temp,n3,n3)
+      CALL mat_mul(S23,T23,'t','n',1E0_realk,0E0_realk,temp)
+      CALL mat_free(S23)
+      CALL mat_free(T23)
+         
+      trace = mat_trAB(D3,temp)
+      CALL mat_free(temp)
+      
+      nelectrons = setting%molecule(1)%p%nelectrons
+      
+      lambda = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
+      
+      ! Scaling factor for the constrained reduced density matrix
+      constrain_factor = 1.0E0_realk / (1E0_realk - lambda)
+      if(DEBUG_ADMM_CONST) then
+         write(*,*)     "Tr(D S32 T23)=", trace
+         write(lupri,*) "Tr(D S32 T23)=", trace
+         write(*,*)     "nelectrons=", nelectrons
+         write(lupri,*) "nelectrons=", nelectrons
+         write(*,*)     "lambda=", lambda
+         write(lupri,*) "lambda=", lambda
+         write(*,*)     "(1-lambda)^2=", (1E0_realk - lambda)**2
+         write(lupri,*) "(1-lambda)^2=", (1E0_realk - lambda)**2
+         write(*,*)     "1/[(1-lambda)^2]=", constrain_factor**2
+         write(lupri,*) "1/[(1-lambda)^2]=", constrain_factor**2
+         write(*,*)     "factor = 1/(1-lambda)=", constrain_factor
+         write(lupri,*) "factor = 1/(1-lambda)=", constrain_factor
+         CALL mat_init(D2,n2,n2)
+         CALL mat_init(S22,n2,n2)
+         CALL mat_init(tmp22,n2,n2)
+         CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+         write(lupri,*) 'Trace(d2 S22)=N? ', mat_trAB(D2,S22)
+         CALL mat_free(D2)
+         CALL mat_free(S22)
+         CALL mat_free(tmp22)
+      endif
+   END SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients
+
+   ! LAMBDA = (2/N) sqrt([k2-xc2]d2)
+   SUBROUTINE get_Lagrange_multiplier_charge_conservation_in_Energy(LAMBDA,&
+                     & GGAXfactor,D2,k2,xc2,setting,lupri,luerr,n2,n3,&
+                     & AO2,AO3,GCAO2,GCAO3)
+      implicit none
+      type(matrix),intent(in)    :: D2  !level 2 ADMM projected matrix 
+      type(matrix),intent(in)    :: k2  !ADMM exchange matrix k2(d2)
+      type(matrix),intent(in)    :: xc2 !ADMM XC matrix xc2(d2)
+      real(realk),intent(inout)  :: lambda
+      real(realk),intent(in)     :: GGAXfactor
+      type(lssetting)            :: setting
+      integer                    :: n2,n3,AO3,AO2,lupri,luerr
+      logical                    :: GCAO2,GCAO3
+      !
+      TYPE(MATRIX) :: tmp22
+      real(realk)  :: trace
+      integer      :: NbEl
+      !
+      NbEl = setting%molecule(1)%p%nelectrons
+      call mat_init(tmp22,n2,n2)
+      call mat_zero(tmp22)
+      call mat_daxpy( 1E0_realk,k2 ,tmp22)
+      call mat_daxpy(-GGAXfactor,xc2,tmp22)
+      trace = mat_trAB(tmp22,D2)
+      LAMBDA = 2E0_realk/NbEl*trace
+      write(lupri,*) "Tr([k2-xc2]d2)=", trace
+      write(lupri,*) "LAMBDA in Energy", LAMBDA
+      CALL mat_free(tmp22)
+   END SUBROUTINE get_Lagrange_multiplier_charge_conservation_in_Energy
+   
+   
+   SUBROUTINE get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,&
+                                 & k2,xc2,D3,D2,n2,n3,&
+                                 & nAtoms,GGAXfactor,AO2,AO3,GCAO2,GCAO3,&
+                                 & setting,lupri,luerr,lambda)
+      implicit none
+      type(lssetting),intent(inout) :: setting
+      real(realk),intent(inout)  :: ADMM_charge_term(3,nAtoms)
+      type(matrix),intent(in),target    :: D3 !Regular density matrix
+      type(matrix),intent(in),target    :: D2 !ADMM projected density matrix
+      type(matrix),intent(in)    :: k2 !ADMM exchange matrix k2(d2)
+      type(matrix),intent(in)    :: xc2 !ADMM XC matrix xc2(d2)
+      integer,intent(in)         :: nAtoms
+      integer,intent(in)         :: n2,n3,lupri,luerr
+      integer,intent(in)         :: AO2,AO3
+      logical,intent(in)         :: GCAO2,GCAO3
+      real(realk),intent(in)     :: GGAXfactor
+      real(realk),intent(IN)     :: lambda
+      !
+      real(realk)                :: LambdaEnergy
+      type(matrixp)              :: tmpDFD(1)
+      real(realk),pointer        :: reOrtho_D3(:,:),reOrtho_d2(:,:)
+      !
+      call ls_dzero(ADMM_charge_term,3*nAtoms)
+
+      tmpDFD(1)%p => D3
+      call mem_alloc(reOrtho_D3,3,nAtoms)
+      call ls_dzero(reOrtho_D3,3*nAtoms)
+      call II_get_reorthoNormalization(reOrtho_D3,tmpDFD,1,setting,lupri,luerr)
+      call DAXPY(3*nAtoms, 1E0_realk,reOrtho_D3,1,ADMM_charge_term,1)
+      
+      tmpDFD(1)%p => D2
+      call mem_alloc(reOrtho_d2,3,nAtoms)
+      call ls_dzero(reOrtho_d2,3*nAtoms)
+      call II_get_reorthoNormalization_mixed(reOrtho_d2,tmpDFD,1,AO2,AO2,&
+                                       & GCAO2,GCAO2,setting,lupri,luerr)
+      call DAXPY(3*nAtoms,-1E0_realk,reOrtho_d2,1,ADMM_charge_term,1)
+
+      call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaEnergy,&
+                     & GGAXfactor,D2,k2,xc2,setting,lupri,luerr,n2,n3,&
+                     & AO2,AO3,GCAO2,GCAO3)
+      write(lupri,*) 'debug:CONSTRAIN FACTOR',1E0_realk/(1E0_realk-lambda)
+      call DSCAL(3*nAtoms,LambdaEnergy,ADMM_charge_term,1)   
+      
+      ! free memory                                 
+      call mem_dealloc(reOrtho_D3)
+      call mem_dealloc(reOrtho_d2)
+   END SUBROUTINE get_ADMM_K_gradient_constrained_charge_term
+
+   
+   SUBROUTINE get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,D3,D2,n2,n3,&
+                                 & nAtoms,GGAXfactor,AO2,AO3,GCAO2,GCAO3,&
+                                 & setting,lupri,luerr,lambda,constrain_factor)
+      implicit none
+      type(lssetting),intent(inout) :: setting
+      real(realk),intent(inout)  :: ADMM_proj(3,nAtoms)
+      type(matrix),intent(in)    :: D3 !Regular density matrix
+      type(matrix),intent(in)    :: D2 !ADMM projected density matrix
+      type(matrix),intent(in)    :: k2 !ADMM exchange matrix k2(d2)
+      type(matrix),intent(in)    :: xc2 !ADMM XC matrix xc2(d2)
+      integer,intent(in)         :: nAtoms
+      integer,intent(in)         :: n2,n3,lupri,luerr
+      integer,intent(in)         :: AO2,AO3
+      logical,intent(in)         :: GCAO2,GCAO3
+      real(realk),intent(in)     :: GGAXfactor
+      real(realk),intent(IN)     :: constrain_factor,lambda ! Lagrange Mult. for coeff.
+      !
+      type(matrix),target        :: A22,B32,C22
+      real(realk)                :: LambdaE ! Lagrange Mult. for energy chg. const.
+      type(matrix),target        :: tmp33,tmp23,tmp22,tmp22b,tmp33c,tmp33d,tmp33e
+      type(matrix)               :: S22,S22inv,T23,tmp32,S32,tmp33x,tmpS32
+      type(matrix)               :: S23,S33,S33o,tr_D3
+      type(matrixp)              :: tmpDFD(1)
+      real(realk),pointer        :: reOrtho1(:,:),reOrtho2(:,:)
+      real(realk),pointer        :: lambda_x(:,:),xtraTerm(:,:),xtra1_debug(:,:)
+      real(realk),pointer        :: tr_D3x(:,:)
+      real(realk),pointer        :: xtra1(:,:),xtra2(:,:),xtra3(:,:),xtra4(:,:)
+      real(realk)                :: Tr_d2A22,nrm, val
+      integer                    :: NbEl ! nb. electrons
+      integer                    :: i,j,iAtom,iX
+      logical                    :: DEBUG_ADMM_CONST
+      Type(matrix),pointer       :: Sa(:),S32x(:),S23x(:),S33x(:),S22x(:) ! derivative along x,y and z for each atom
+      Type(matrix),pointer       :: D3x(:),D3x1(:),D3x3(:)
+      Logical                    :: isADMMQ,isADMMS
+      !
+      DEBUG_ADMM_CONST = .FALSE.
+      isADMMQ = setting%scheme%ADMM_CONST_EL
+      isADMMS =  setting%scheme%ADMMQ_ScaleXC2
+      NbEl = setting%molecule(1)%p%nelectrons
+      call mat_init(T23,n2,n3)
+      call mat_zero(T23)
+      call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,&
+                  & constrain_factor)
+      ! S22^(-1)
+      call mat_init(S22,n2,n2)
+      call mat_zero(S22)
+      call mat_init(S22inv,n2,n2)       
+      call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+      call mat_inv(S22,S22inv)
+      
+      !    A22 = 2*[ k2(d2) - xc2(d2) ]
+      ! or A22 = 2*[ k2(d2) - xc2(d2) ] - LAMBDA_energy S22
+      call mat_init(A22,n2,n2)
+      call mat_zero(A22)
+      call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
+      IF (isADMMQ) THEN
+         call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaE,&
+                     & GGAXfactor,D2,k2,xc2,setting,lupri,luerr,n2,n3,&
+                     & AO2,AO3,GCAO2,GCAO3)
+      call mat_daxpy(-2E0_realk*LambdaE,S22,A22)
+      ENDIF
+
+      ! B32 = D33 T32 A22 S22inv
+      call mat_init(B32,n3,n2)
+      call mat_init(tmp32,n3,n2)
+      call mat_mul(D3 ,T23,'n','t',1E0_realk,0E0_realk,B32)
+      call mat_mul(B32,A22,'n','n',1E0_realk,0E0_realk,tmp32)
+      call mat_mul(tmp32,S22inv,'n','n',1E0_realk,0E0_realk,B32)
+
+      ! C22 = D22 A22 S22inv
+      call mat_init(C22,n2,n2)
+      call mat_init(tmp22,n2,n2)
+      call mat_mul(D2 ,A22,'n','n',1E0_realk,0E0_realk,tmp22)
+      call mat_mul(tmp22,S22inv,'n','n',1E0_realk,0E0_realk,C22)
+
+      ! 2 correction terms similar to the reorthonormalisation gradient term 
+      tmpDFD(1)%p => C22
+      call mem_alloc(reOrtho2,3,nAtoms)
+      call ls_dzero(reOrtho2,3*nAtoms)
+      call II_get_reorthoNormalization_mixed(reOrtho2,tmpDFD,1,AO2,AO2,&
+                                       & GCAO2,GCAO2,setting,lupri,luerr)
+      tmpDFD(1)%p => B32
+      call mem_alloc(reOrtho1,3,nAtoms)
+      call ls_dzero(reOrtho1,3*nAtoms)
+      call II_get_reorthoNormalization_mixed(reOrtho1,tmpDFD,1,AO3,AO2,&
+                                       & GCAO3,GCAO2,setting,lupri,luerr)
+
+      call ls_dzero(ADMM_proj,3*nAtoms)
+      
+      call DAXPY(3*nAtoms,constrain_factor,reOrtho1,1,ADMM_proj,1)
+      call DAXPY(3*nAtoms,-1E0_realk,reOrtho2,1,ADMM_proj,1)
+      
+      ! -- free memory --
+      call mem_dealloc(reOrtho1)
+      call mem_dealloc(reOrtho2)
+      call mat_free(S22inv)
+      call mat_free(S22)
+      call mat_free(T23)
+      call mat_free(A22)
+      call mat_free(B32)
+      call mat_free(C22)
+      call mat_free(tmp22)
+     
+      call mat_free(tmp32)
+      !
+   END SUBROUTINE get_ADMM_K_gradient_projection_term
+   
+   SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,luerr,n2,n3,AO2,AO3,&
+                                 & McWeeny,GCAO2,GCAO3,constrain_factor)
+     implicit none
+     type(matrix),intent(in)    :: D     !level 3 matrix input 
+     type(matrix),intent(inout) :: D2 !level 2 matrix input 
+     type(lssetting) :: setting
+     integer :: n2,n3,AO3,AO2,lupri,luerr
+     logical :: McWeeny,GCAO2,GCAO3
+     real(realk),intent(IN)        :: constrain_factor
+     !
+     TYPE(MATRIX)       :: S22,tmp23,T23
+     Logical            :: purify_failed
+   
+     CALL mat_init(T23,n2,n3)
+     CALL mat_init(tmp23,n2,n3)
+   
+     CALL get_T23(setting,lupri,luerr,T23,n2,n3,&
+                  & AO2,AO3,GCAO2,GCAO3,constrain_factor)
+   
+     CALL mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,tmp23)
+     CALL mat_mul(tmp23,T23,'n','t',1E0_realk,0E0_realk,D2)
+    
+     IF (McWeeny) THEN
+       CALL mat_init(S22,n2,n2)
+       CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+       CALL McWeeney_purify(S22,D2,purify_failed)
+       IF (purify_failed) THEN
+         CALL LSQUIT('McWeeney_purify failed in transform_D3_to_D2',-1)
+       ENDIF
+       CALL mat_free(S22)
+     ENDIF
+      CALL mat_free(T23)
+      CALL mat_free(tmp23)
+   END SUBROUTINE TRANSFORM_D3_TO_D2
+   
+!CONTAINS END
+END SUBROUTINE II_get_ADMM_K_gradient_DEBUG
+
 
 End MODULE IntegralInterfaceMOD
 
