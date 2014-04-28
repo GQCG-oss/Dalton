@@ -642,6 +642,12 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
       call save_fragment_t1_AOSAOSamplitudes(MyFragment,t1)
    end if
 
+   !in the call to get_combined_SingleDouble_amplitudes
+   !t1 is used, for RPA use_singles = .false.
+   if(MyFragment%ccmodel == MODEL_RPA)then
+     t1 = array2_init([t2%dims(1),t2%dims(2)])
+   endif
+
 end subroutine fragment_ccsolver
 
 
@@ -1976,9 +1982,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
             !msg = 'Norm of omega2'
             !call print_norm(omega2(iter),msg)
-
+#ifdef VAR_MPI
            call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
-
+#else
+           call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
+#endif
             !msg = 'Norm of omega2 after computations'
             !call print_norm(omega2(iter),msg)
 
@@ -2293,9 +2301,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !it should be moved out of this routine
    !but I get a wrong energy if it is moved out of the
    !routine. Johannes 
-   if(CCmodel == MODEL_RPA)then
-     t1_final = array2_init([nv,no])
-   endif
+  ! if(CCmodel == MODEL_RPA)then
+  !   t1_final = array2_init([nv,no])
+  ! endif
 
    call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
 

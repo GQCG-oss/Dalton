@@ -2287,7 +2287,7 @@ contains
 
     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
     call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
-    !call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
     call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
 
 
@@ -2323,13 +2323,13 @@ contains
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
     if(.not.master)then
-      t2=array_ainit([nv,nv,no,no],4,local =.true.,atype='TDAR')
+      !t2=array_ainit([nv,nv,no,no],4,local =.true.,atype='TDAR')
       pfock   = get_arr_from_parr(addr1(infpar%lg_mynum+1))
       qfock    = get_arr_from_parr(addr2(infpar%lg_mynum+1))
-      !t2    = get_arr_from_parr(addr3(infpar%lg_mynum+1))
+      t2    = get_arr_from_parr(addr3(infpar%lg_mynum+1))
       omega2   = get_arr_from_parr(addr4(infpar%lg_mynum+1))
     endif
-    call ls_mpibcast(t2%elm1,nv*nv*no*no,infpar%master,infpar%lg_comm)
+    !call ls_mpibcast(t2%elm1,nv*nv*no*no,infpar%master,infpar%lg_comm)
 
 
   end subroutine rpa_fock_communicate_data

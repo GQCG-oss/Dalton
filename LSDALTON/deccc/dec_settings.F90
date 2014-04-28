@@ -318,11 +318,11 @@ contains
           DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.RPA')
           call find_model_number_from_input(word, DECinfo%ccModel)
-#ifdef VAR_MPI
+!#ifdef VAR_MPI
           DECinfo%use_singles=.false.
-#else
-          DECinfo%use_singles=.false.; DECinfo%CCDEBUG=.true.
-#endif
+!#else
+!          DECinfo%use_singles=.false.; DECinfo%CCDEBUG=.true.
+!#endif
 
 
           ! CC SOLVER INFO

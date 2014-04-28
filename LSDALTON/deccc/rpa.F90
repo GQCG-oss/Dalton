@@ -63,31 +63,31 @@ contains
   subroutine RPA_residual(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
 
     implicit none
-    type(array4), intent(inout) :: omega2,t2
-    type(array4), intent(in) :: gmo
-    type(array2), intent(inout) :: pfock,qfock
+    !type(array4), intent(inout) :: omega2,t2
+    !type(array4), intent(in) :: gmo
+    !type(array2), intent(inout) :: pfock,qfock
+    !type(array4) :: tmp
+    type(array), intent(inout) :: omega2,t2
+    type(array), intent(in) :: gmo
+    type(array), intent(inout) :: pfock,qfock
+    type(array) :: tmp
     integer, intent(in) :: nocc,nvirt
-    type(array4) :: tmp
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
     real(realk) :: starttime,stoptime
+    character(ARR_MSG_LEN) :: msg
 
 
     call cpu_time(starttime)
 
-    !get the MP2 part of the residual
-    !call getDoublesResidualMP2_simple(Omega2,t2,gmo,pfock,qfock, &
-    !           & nocc,nvirt)
 
+    !call array_zero(omega2)
     call RPA_fock_part(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
-    call RPA_residual_add(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
-
-    !for debugging
-    !call array4_add_to(omega2,2.0E0_realk,gmo)
+    !msg = 'Norm of fockpart'
+    !call print_norm(omega2,msg)
+    call RPA_residual_add(omega2,t2,gmo,nocc,nvirt)
 
     call cpu_time(stoptime)
-
-    !call lsquit('RPA_residual: Needs implementation',-1)
 
   end subroutine RPA_residual
 
@@ -96,50 +96,47 @@ contains
   !\brief Calculate fock matrix part of the RPA residual 
   !> \author Johannes Rekkedal and Thomas Bondo
   !> \date March 2013
-  subroutine RPA_fock_part(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+  subroutine RPA_fock_part(omega2,t2,gmo,pfock,qfock,no,nv)
 
     implicit none
-    type(array4), intent(inout) :: omega2,t2
-    type(array4), intent(in) :: gmo
-    type(array2), intent(inout) :: pfock,qfock
-    integer, intent(in) :: nocc,nvirt
-    type(array4) :: tmp
+    !type(array4), intent(inout) :: omega2,t2
+    !type(array4), intent(in) :: gmo
+    !type(array2), intent(inout) :: pfock,qfock
+    !type(array4) :: tmp
+    type(array), intent(inout) :: omega2,t2
+    type(array), intent(in) :: gmo
+    type(array), intent(inout) :: pfock,qfock
+    type(array) :: tmp
+    real(realk),pointer :: w_o2v2(:)
+    integer, intent(in) :: no,nv
     integer, dimension(4) :: tmp_dims
-    integer :: a,b,c,i,j,k
+    integer(KIND=LONG) :: o2v2
+    integer :: a,b,c,i,j,k,nv2,no2,o2v,v2o
 
+    no2=no*no
+    nv2=nv*nv
+    o2v=no*no*nv
+    v2o=nv*nv*no
+    o2v2=i8*no2*nv2
+    call mem_alloc(w_o2v2,no2*nv2)
 
-    ! 1
-    call array2_transpose(qfock)
-    call array4_reorder(t2,[3,4,1,2])
-    tmp = array4_init([nvirt,nocc,nvirt,nocc])
-    call array4_contract1(t2,qfock,tmp,.true.)
-    call array4_reorder(tmp,[3,4,1,2])
-    call array4_add_to(omega2,1.0E0_realk,tmp)
-    call array4_free(tmp)
-    call array4_reorder(t2,[3,4,1,2])
+    !calculate first part of doubles E term and its permutation
+    ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
+    call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,pfock%elm1,no,0.0E0_realk,w_o2v2,v2o)
+    !call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm4,v2o,pfock%elm4,no,1.0E0_realk,omega2%elm4,v2o)
 
-    ! 2
-    call array4_contract1(t2,qfock,omega2,.false.)
-    call array2_transpose(qfock)
+    !calculate second part of doubles E term
+    ! F [a c] * t [c b i j] =+ Omega [a b i j]
+    call dgemm('n','n',nv,o2v,nv,1.0E0_realk,qfock%elm1,nv,t2%elm1,nv,1.0E0_realk,w_o2v2,nv)
 
-    ! 3
-    call array4_reorder(t2,[4,3,2,1])
-    tmp = array4_init([nocc,nvirt,nocc,nvirt])
-    call array4_contract1(t2,pfock,tmp,.true.)
-    call array4_reorder(t2,[4,3,2,1])
-    call array4_reorder(tmp,[4,3,2,1])
-    call array4_add_to(omega2,-1.0E0_realk,tmp)
-    call array4_free(tmp)
+    call array_convert(w_o2v2,omega2)
+    call array_reorder_4d(1.0E0_realk,omega2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,w_o2v2)
+    call array_convert(w_o2v2,omega2)
+    call mem_dealloc(w_o2v2)
 
-    ! 4
-    call array4_reorder(t2,[2,1,3,4])
-    tmp = array4_init([nocc,nvirt,nvirt,nocc])
-    call array4_contract1(t2,pfock,tmp,.true.)
-    call array4_reorder(t2,[2,1,3,4])
-    call array4_reorder(tmp,[2,1,3,4])
-    call array4_add_to(omega2,-1.0E0_realk,tmp)
-    call array4_free(tmp)
-
+    !call array_convert(t2%elm4,t_par)
+    !call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
+    !call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
 
     !For debugging
     !call array4_add_to(omega2,2.0E0_realk,gmo)
@@ -150,39 +147,51 @@ contains
   !\brief Calculate additional linear and quadratic terms of the RPA residual 
   !> \author Johannes Rekkedal and Thomas Bondo
   !> \date March 2013
-  subroutine RPA_residual_add(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+  subroutine RPA_residual_add(omega2,t2,gmo,nocc,nvirt)
 
     implicit none
-    type(array4), intent(inout) :: omega2,t2
-    type(array4), intent(in) :: gmo
-    type(array2), intent(inout) :: pfock,qfock
+    !type(array4), intent(inout) :: omega2,t2
+    !type(array4), intent(in) :: gmo
+    type(array), intent(inout) :: omega2,t2
+    type(array), intent(in) :: gmo
     integer, intent(in) :: nocc,nvirt
-    type(array4) :: Sckdl,Dckbj
+    type(array) :: Sckdl
+    real(realk),pointer :: Dckbj(:),omegatmp(:)
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k,dim1
     real(realk) :: starttime,stoptime
+    character(ARR_MSG_LEN) :: msg
 
-    !Sckdl = array4_init([nvirt,nocc,nvirt,nocc])
-    Sckdl = array4_duplicate(t2)
-    Dckbj = array4_init([nvirt,nocc,nvirt,nocc])
+    dim1 = nocc*nvirt
+    Sckdl = array_minit([nocc,nvirt,nocc,nvirt],4,atype='TDAR')
+
+    call array_reorder_4d(1.0E0_realk,t2%elm4,nvirt,nvirt,nocc,nocc,&
+      & [3,1,4,2],0.0E0_realk,Sckdl%elm4)
 
     do a=1,nvirt
      do i=1,nocc
-        Sckdl%val(a,i,a,i)=Sckdl%val(a,i,a,i)+1._realk
+        Sckdl%elm4(i,a,i,a)=Sckdl%elm4(i,a,i,a)+1._realk
      enddo
     enddo
 
-
-    dim1=nocc*nvirt
-    call dgemm('n','n',dim1,dim1,dim1, &
-         1.0E0_realk,gmo%val,dim1,Sckdl%val,dim1,0.0E0_realk,Dckbj%val,dim1)
+    call mem_alloc(Dckbj,dim1*dim1)
 
     call dgemm('n','n',dim1,dim1,dim1, &
-         2.0E0_realk,Sckdl%val,dim1,Dckbj%val,dim1,1.0E0_realk,omega2%val,dim1)
+         & 1.0E0_realk,Sckdl%elm4,dim1,gmo%elm1,dim1,0.0E0_realk,Dckbj,dim1)
+
+    call mem_alloc(omegatmp,dim1*dim1)
+
+    call dgemm('n','n',dim1,dim1,dim1, &
+         & 2.0E0_realk,Dckbj,dim1,Sckdl%elm4,dim1,0.0E0_realk,omegatmp,dim1)
     
+    call mem_dealloc(Dckbj)
+    call array_free(Sckdl)
 
-    call array4_free(Dckbj)
-    call array4_free(Sckdl)
+
+    call array_reorder_4d(1.0E0_realk,omegatmp,nocc,nvirt,nocc,nvirt,&
+    & [4,2,3,1],1.0E0_realk,omega2%elm1)
+
+    call mem_dealloc(omegatmp)
 
 
   end subroutine RPA_residual_add
@@ -305,12 +314,8 @@ contains
     !call getDoublesResidualMP2_simple(Omega2,t2,gmo,pfock,qfock, &
     !           & nocc,nvirt)
     !write(*,*) 'I am now in residualdeb, and everything is ok'
-    msg = 'Norm of t2'
-    call print_norm(t2%val,i8*nvirt*nvirt*nocc*nocc,msg)
 
     call RPA_fock_partdeb(omega2,t2,pfock,qfock,nocc,nvirt)
-   ! msg = 'Norm of fockpart'
-   ! call print_norm(omega2%val,i8*nvirt*nvirt*nocc*nocc,msg)
 
     call RPA_residual_adddeb(omega2,t2,gmo,nocc,nvirt)
 
@@ -695,7 +700,7 @@ contains
     type(array), intent(inout) :: pfock,qfock
     !real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
     type(array) :: tmpt2,omegaw2
-    real(realk),pointer :: tmp(:,:),w1(:),w2(:),w3(:),w4(:),omegw(:),w5(:)
+    real(realk),pointer :: tmp(:,:),w1(:),w2(:,:),w3(:),w4(:),omegw(:),w5(:)
     real(realk), pointer :: w_o2v2(:)
     integer, dimension(4) :: tmp_dims
     type(array) :: t_par
@@ -748,47 +753,48 @@ contains
     if(nnod>1)w3size = max(w3size,2*omega2%tsize)
     call mem_alloc(w3,w3size)
     call mo_work_dist(nv*nv*no,fri,tri)
-    call mem_alloc(w2,tl1*no)
+    call mem_alloc(w2,nv2*no,no)
     call mem_alloc(w_o2v2,tl1*no)
-    call mem_alloc(w2,tl1*no)
+    !call mem_alloc(w2,tl1*no)
 
 
     !t_par = array_ainit([nv,nv,no,no],4,atype='TDAR',local=.false.)
     !call array_convert(t2%elm4,t_par)
-    call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai1,tl1,.false.,debug=.true.)
+   ! call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai1,tl1,.false.,debug=.true.)
+    call array_convert(t2,w2)
+   !if(master) then
+   !  call array_gather(1.0E0_realk,t2,0.0E0_realk,w2,o2v2)
+   !endif
 
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
-    !if(me==0) call array_convert(t2,w_o2v2,t2%nelms)
-      !call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
+
+      call dgemm('n','n',tl1,no,no,-1.0E0_realk,w2(fai1:tl1,:),tl1,pfock%elm1,no,0.0E0_realk,w_o2v2,v2o)
+
+    call array_scatter(1.0E0_realk,w_o2v2,0.0E0_realk,omega2,o2v2)
+    !write(*,*) 'Johannes after scatter',me
 
 
-      !call array_two_dim_1batch(t_par,[4,2,1,3],'g',w2,3,fai1,tl1,.false.,debug=.true.)
-      write(*,*) 'Johannes after first two_dim_batch'
-
-      call dgemm('n','n',tl1,no,no,-1.0E0_realk,w2,tl1,pfock%elm1,no,0.0E0_realk,w_o2v2,v2o)
-      write(*,*) 'Johannes Debug after dgemm'
-
-
-    call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
-      write(*,*) 'Johannes Debug after first omega2 update'
-    call array_two_dim_1batch(omega2,[3,4,1,2],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
-      write(*,*) 'Johannes Debug after 2 omega2 update'
+    !call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
+    !call array_two_dim_1batch(omega2,[3,4,1,2],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
       
     call lsmpi_barrier(infpar%lg_comm)
 #endif
 
-     write(*,*) 'Johannes dealloc w_o2v2'
+     !write(*,*) 'Johannes dealloc w_o2v2'
     call mem_dealloc(w2)
     call mem_dealloc(w_o2v2)
-     write(*,*) 'Johannes dealloc w_o2v2 finished'
+     !write(*,*) 'Johannes dealloc w_o2v2 finished'
     !DO ALL THINGS DEPENDING ON 2
     call mem_alloc(w_o2v2,tl2*nv)
-    call mem_alloc(w2,tl2*nv)
+    !call mem_alloc(w2,tl2*nv)
+    call mem_alloc(w2,nv,no2*nv)
+    call array_convert(t2,w2)
 
     ! F[a c] * t [c b i j] =+ Omega [a b i j]
-      call array_two_dim_1batch(t2,[4,3,2,1],'g',w2,2,fai2,tl2,.false.,debug=.false.)
-      !call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
-      call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
+
+      call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w2(:,fai2:tl2),nv,0.0E0_realk,w_o2v2,nv)
+
+    call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
 
 #ifdef VAR_MPI
     call array_two_dim_1batch(omega2,[4,3,2,1],'a',w_o2v2,2,fai2,tl2,.false.,debug=.false.)
@@ -799,10 +805,15 @@ contains
 #endif
 
 
-   call array_free(t_par)
-   call mem_dealloc(w_o2v2)
+   if(master) then
+     call array_reorder_4d(1.0E0_realk,w_o2v2,nv,nv,no,no,[3,4,1,2],&
+       & 0.0E0_realk,w2)
+     call array_scatter(1.0E0_realk,w2,1.0E0_realk,omega2,o2v2)
+     call mem_dealloc(w_o2v2)
+     call mem_dealloc(w2)
+   endif
 
-    return
+   return
   end subroutine RPA_fock_para2
 
 
@@ -821,6 +832,7 @@ contains
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k,dim1
     real(realk) :: starttime,stoptime
+    character(ARR_MSG_LEN) :: msg
 
     !Sckdl = array4_init([nvirt,nocc,nvirt,nocc])
     Sckdl = array4_duplicate(t2)
@@ -838,11 +850,12 @@ contains
 
     dim1=nocc*nvirt
     call dgemm('n','n',dim1,dim1,dim1, &
-         1.0E0_realk,gmo,dim1,Sckdl%val,dim1,0.0E0_realk,Dckbj%val,dim1)
+       &  1.0E0_realk,gmo,dim1,Sckdl%val,dim1,0.0E0_realk,Dckbj%val,dim1)
+
 
     call array4_reorder(omega2,[2,1,4,3])
     call dgemm('n','n',dim1,dim1,dim1, &
-         2.0E0_realk,Sckdl%val,dim1,Dckbj%val,dim1,1.0E0_realk,omega2%val,dim1)
+        & 2.0E0_realk,Sckdl%val,dim1,Dckbj%val,dim1,1.0E0_realk,omega2%val,dim1)
 
     call array4_reorder(omega2,[2,1,4,3])
    
@@ -1032,6 +1045,8 @@ contains
     call array_gather(1.0E0_realk,gmo,0.0E0_realk,gtmp%elm1,i8*dim1*dim1,oo=[1,2,3,4])
     call RPA_residual_par_add(omega2,Sckdl,gtmp%elm1,noc,nvir)
     call array_free(gtmp)
+    msg = 'Norm of omega2'
+    call print_norm(omega2,msg)
     !write(*,*) 'JOHANNES added'
 
     call cpu_time(stoptime)
@@ -1128,7 +1143,7 @@ contains
     !type(array), intent(inout):: gmo
     integer,intent(inout) :: nocc,nvirt
     !type(array4) :: Sckdl,Dckbj
-    type(array) :: Sckdl,Dckbj
+    type(array) :: Sckdl
     type(array) :: t_par,omegaw1
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k,dim1
@@ -1166,8 +1181,6 @@ contains
 !#endif
     call mem_alloc(w2,tl*nocc*nvirt)
     call mem_alloc(w3,tl*nocc*nvirt)
-    call mem_alloc(w4,nocc*nvirt*nocc*nvirt)
-    call mem_alloc(omegw,tl*nocc*nvirt)
     !call mem_alloc(omegw,tl*tl)
 
     t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
@@ -1181,11 +1194,10 @@ contains
     !call array_convert(gmo,w4) ! does not work
 
 !    call lsmpi_barrier(infpar%lg_comm)
-    omegw=0.0_realk
 
     !When fock part is parallelized instead of zero 1.0_realk
     call dgemm('n','n',tl,dim1,dim1, &
-         1.0E0_realk,w2,tl,gmo,dim1,0.0E0_realk,w3,tl)
+        & 1.0E0_realk,w2,tl,gmo,dim1,0.0E0_realk,w3,tl)
 !#ifdef VAR_MPI
     !write(msg,*) 'Norm of w3',infpar%lg_mynum
     !call print_norm(w3,i8*tl*dim1,msg)
@@ -1197,6 +1209,8 @@ contains
 !#ifdef VAR_MPI
     !call array_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
     !call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
+    call mem_dealloc(w2)
+    call mem_alloc(w4,nocc*nvirt*nocc*nvirt)
     call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
 !    write(msg,*) 'Norm of w4',infpar%lg_mynum
 !#else
@@ -1209,9 +1223,11 @@ contains
     !call sleep(1)
     !call lsmpi_barrier(infpar%lg_comm)
     !stop
+    call mem_alloc(omegw,tl*nocc*nvirt)
+    omegw=0.0_realk
     
     call dgemm('n','n',tl,dim1,dim1, &
-         2.0E0_realk,w3,tl,w4,dim1,0.0E0_realk,omegw,tl)
+       &  2.0E0_realk,w3,tl,w4,dim1,0.0E0_realk,omegw,tl)
 
 !#ifdef VAR_MPI
 !    write(msg,*) 'Norm of omegw',infpar%lg_mynum
@@ -1222,6 +1238,8 @@ contains
     !call lsmpi_barrier(infpar%lg_comm)
     !stop
 !#endif
+    call mem_dealloc(w3)
+    call mem_dealloc(w4)
     
 
     !call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
@@ -1250,9 +1268,6 @@ contains
     call array_free(t_par)
     call array_free(u2)
     !call array_free(omegaw1)
-    call mem_dealloc(w2)
-    call mem_dealloc(w3)
-    call mem_dealloc(w4)
     call mem_dealloc(omegw)
 
 
@@ -1436,24 +1451,24 @@ contains
 
     dim1=nocc*nvirt
     call dgemm('n','n',dim1,dim1,dim1, &
-         1.0E0_realk,gmo%val,dim1,t2%val,dim1,0.0E0_realk,omega2%val,dim1)
+        & 1.0E0_realk,gmo%val,dim1,t2%val,dim1,0.0E0_realk,omega2%val,dim1)
 
     call dgemm('n','n',dim1,dim1,dim1, &
-         1.0E0_realk,t2%val,dim1,gmo%val,dim1,1.0E0_realk,omega2%val,dim1)
+        & 1.0E0_realk,t2%val,dim1,gmo%val,dim1,1.0E0_realk,omega2%val,dim1)
     
        !gmo*t2*m2
     call dgemm('n','n',dim1,dim1,dim1, &
-         1.0E0_realk,gmo%val,dim1,t2_final%val,dim1,0.0E0_realk,Sckdl%val,dim1)
+        & 1.0E0_realk,gmo%val,dim1,t2_final%val,dim1,0.0E0_realk,Sckdl%val,dim1)
 
     call dgemm('n','n',dim1,dim1,dim1, &
-         1.0E0_realk,Sckdl%val,dim1,t2%val,dim1,1.0E0_realk,omega2%val,dim1)
+        & 1.0E0_realk,Sckdl%val,dim1,t2%val,dim1,1.0E0_realk,omega2%val,dim1)
 
        !m2*t2*gmo
     call dgemm('n','n',dim1,dim1,dim1, &
-         1.0E0_realk,t2%val,dim1,t2_final%val,dim1,0.0E0_realk,Sckdl%val,dim1)
+        & 1.0E0_realk,t2%val,dim1,t2_final%val,dim1,0.0E0_realk,Sckdl%val,dim1)
 
     call dgemm('n','n',dim1,dim1,dim1, &
-         1.0E0_realk,Sckdl%val,dim1,gmo%val,dim1,1.0E0_realk,omega2%val,dim1)
+        & 1.0E0_realk,Sckdl%val,dim1,gmo%val,dim1,1.0E0_realk,omega2%val,dim1)
 
     call array4_free(Sckdl)
 
@@ -1482,7 +1497,7 @@ contains
       do i=1,nocc
       do a=1,nvirt
       ecorr_d = ecorr_d + t2%elm4(a,b,i,j)* &
-        (1.0E0_realk*gmo%elm4(i,a,j,b))
+       & (1.0E0_realk*gmo%elm4(i,a,j,b))
       end do
       end do
       end do
@@ -1521,7 +1536,7 @@ contains
       do i=1,nocc
       do a=1,nvirt
       ecorr_d = ecorr_d + t2%elm4(a,b,i,j)* &
-        (-0.5E0_realk*gmo%elm4(i,b,j,a))
+       & (-0.5E0_realk*gmo%elm4(i,b,j,a))
       end do
       end do
       end do
@@ -1746,8 +1761,8 @@ subroutine rpa_fock_slave()
   print*, infpar%lg_mynum,'rpa_fock_slave'
   call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nocc,nvirt)
   write(*,*) 'slaves, calling fock_para'
-  call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
-  !call RPA_fock_para2(omega2,t2,pfock,qfock,nocc,nvirt)
+  !call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
+  call RPA_fock_para2(omega2,t2,pfock,qfock,nocc,nvirt)
 
 end subroutine rpa_fock_slave
 #endif

@@ -878,10 +878,8 @@ contains
         call init_gmo_arrays(ntot,dimP,Nbatch,local,local_moccsd,pgmo_diag,pgmo_up)
 
       case(MODEL_RPA)
-        write(*,*) 'Johannes First RPA in t1_free'
         call get_AO_batches_size_rpa(ntot,nb,no,nv,MaxAllowedDimAlpha, &
                   & MaxAllowedDimGamma,MyLsItem)
-        write(*,*) 'Johannes after first RPA in t1_free'
       case default
           call lsquit('only RPA, CCSD and CCSD(T) model should use this routine',DECinfo%output)
       end select
