@@ -955,13 +955,9 @@ contains
     enddo
     enddo
 
-
     call array_cp_tiled2dense(gmo,.true.)
     call RPA_residual_par_add(omega2,Sckdl,gmo,noc,nvir)
-    call array_cp_tiled2dense(gmo,.false.)
 
-   ! msg = 'Norm of omega2'
-   ! call print_norm(omega2,msg)
 
     call cpu_time(stoptime)
 
@@ -1089,16 +1085,12 @@ contains
 
 
     call mo_work_dist(nvirt*nocc,fai,tl)
-    !call mem_alloc(w2,tl*nocc*nvirt)
-!#ifdef VAR_MPI
-!    write(*,*) 'size of tile',tl,fai,infpar%lg_mynum,nvirt*nocc!*nvirt*nocc
-!#endif
     call mem_alloc(w2,tl*nocc*nvirt)
     call mem_alloc(w3,tl*nocc*nvirt)
-    !call mem_alloc(omegw,tl*tl)
 
     t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
     call array_convert(u2%elm4,t_par)
+    
 
     call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.false.)
     !call array_two_dim_1batch(u2,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.false.)
