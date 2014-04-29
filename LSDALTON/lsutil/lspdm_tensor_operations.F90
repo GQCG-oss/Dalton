@@ -696,7 +696,6 @@ module lspdm_tensor_operations_module
   if(DECinfo%v2o2_free_solver)  nomem = .true.
 #ifdef VAR_MPI
   if (nomem) then
-    write(DECinfo%output,*) "Enter get energy in pdm"
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(infpar%lg_comm,JOB_GET_CC_ENERGY,t1,t2,gmo)
@@ -722,6 +721,10 @@ module lspdm_tensor_operations_module
       db = t2%ti(lt)%d(2)
       di = t2%ti(lt)%d(3)
       dj = t2%ti(lt)%d(4)
+
+      ! lock all windows:
+      call arr_lock_wins(gmo,'s',MPI_MODE_NOCHECK)
+
       !count over local indices
       do j=1,dj
         do i=1,di
@@ -742,9 +745,7 @@ module lspdm_tensor_operations_module
               source = get_residence_of_tile(tile_comp_idx,gmo)
              
               ! get tile elmts from source:
-              call lsmpi_win_lock(source,gmo%wi(tile_comp_idx),'s')
               call lsmpi_get(g_iajb(idx),pos,source,gmo%wi(tile_comp_idx))
-              call lsmpi_win_unlock(source,gmo%wi(tile_comp_idx))
              
               ! GET G_IBJA ELMT FROM PDM ARRAY:    
               ! get global mode index of elmt in integral [i,b,j,a]:
@@ -759,9 +760,7 @@ module lspdm_tensor_operations_module
               source = get_residence_of_tile(tile_comp_idx,gmo)
              
               ! get tile elmts from source:
-              call lsmpi_win_lock(source,gmo%wi(tile_comp_idx),'s')
               call lsmpi_get(g_ibja(idx),pos,source,gmo%wi(tile_comp_idx))
-              call lsmpi_win_unlock(source,gmo%wi(tile_comp_idx))
              
               ! reorder t1 contributions into one big tile:
               t1tile(idx) = t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4))
@@ -770,6 +769,9 @@ module lspdm_tensor_operations_module
           enddo
         enddo
       enddo
+      ! unlock all windows
+      call arr_unlock_wins(gmo)
+
       E2 = E2 + ddot(da*db*di*dj,t2%ti(lt)%t,1,2.0E0_realk*g_iajb,1)
       E2 = E2 - ddot(da*db*di*dj,t2%ti(lt)%t,1,g_ibja,1)
       E1 = E1 + ddot(da*db*di*dj,t1tile,1,2.0E0_realk*g_iajb,1)
@@ -786,7 +788,6 @@ module lspdm_tensor_operations_module
     call lsmpi_local_reduction(E2,infpar%master)
 
     Ec=E1+E2
-    write(DECinfo%output,*) "Out of get energy in pdm"
 
   else 
     !Get the slaves to this routine
