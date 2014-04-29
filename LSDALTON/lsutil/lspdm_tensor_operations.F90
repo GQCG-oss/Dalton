@@ -683,7 +683,8 @@ module lspdm_tensor_operations_module
     integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
 
     integer :: glob_mode_idx(4), tile_mode_idx(4), idx_in_tile(4)
-    integer :: tile_comp_idx, pos, source, k
+    integer :: tile_comp_idx, pos, k
+    integer(kind=ls_mpik) :: source
     real(realk) :: g_iajb, g_ibja
     logical :: nomem
 
