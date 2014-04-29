@@ -211,6 +211,8 @@ module dec_typedef_module
      logical :: use_crop
      !> logial to set whether special communication processes should be spawned
      logical :: spawn_comm_proc
+     !> temporary debug keyword to calculate energy without using dense array of v2o2 size:
+     logical :: v2o2_free_solver
 
      !> F12 settings
      !> ************

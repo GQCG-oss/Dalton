@@ -2145,24 +2145,24 @@ contains
      ! Start fragment optimization by calculating initial fragment 
      IF(DECinfo%onlyoccpart) then
         !All Occupied orbitals assigned to atoms within 1.0 Angstrom of central atom are included
-        init_Occradius = 0.5_realk/bohr_to_angstrom
+        init_Occradius = 2.0_realk/bohr_to_angstrom
      ELSE
         !All Occupied orbitals assigned to atoms within 3.0 Angstrom of central atom are included
         IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
            init_Occradius = 2.0_realk/bohr_to_angstrom
         ELSE
-           init_Occradius = 3.0_realk/bohr_to_angstrom
+           init_Occradius = 2.0_realk/bohr_to_angstrom
         ENDIF
      ENDIF
      IF(DECinfo%onlyvirtpart) then
         !All Virtual orbitals assigned to atoms within 1.0 Angstrom of central atom are included
-        init_Virtradius = 0.5_realk/bohr_to_angstrom
+        init_Virtradius = 2.0_realk/bohr_to_angstrom
      ELSE
         !All Virtual orbitals assigned to atoms within 3.0 Angstrom of central atom are included
         IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
            init_Virtradius = 2.0_realk/bohr_to_angstrom
         ELSE
-           init_Virtradius = 3.0_realk/bohr_to_angstrom
+           init_Virtradius = 2.0_realk/bohr_to_angstrom
         ENDIF
      ENDIF
      call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
@@ -2428,9 +2428,9 @@ contains
            IF(DECinfo%onlyVirtPart)THEN
               EnergyDiff = VirtEnergyDiff
            ENDIF
-           IF(EnergyDiff.LT.FOT*300.0E0_realk)THEN
-              StepsizeLoop3 = MAX(1,StepsizeLoop3-1)
-           ENDIF
+!           IF(EnergyDiff.LT.FOT*300.0E0_realk)THEN
+!              StepsizeLoop3 = MAX(1,StepsizeLoop3-1)
+!           ENDIF
            FOT2 = FOT
         ELSE
            FOT2 = FOT
@@ -2441,11 +2441,13 @@ contains
            &FOT2,expansion_converged)
 
         IF(ExpandFragmentConverged)THEN
-           IF(.NOT.FragmentExpansionRI)THEN
-              WRITE(DECinfo%output,*)'Expansion Include Full Molecule'
-              OccOld = Occ_atoms;VirtOld = Virt_atoms
+           IF(.NOT.expansion_converged)THEN
+              IF(.NOT.FragmentExpansionRI)THEN
+                 WRITE(DECinfo%output,*)'Expansion Include Full Molecule'
+                 OccOld = Occ_atoms;VirtOld = Virt_atoms
+              ENDIF
+              expansion_converged = .TRUE.
            ENDIF
-           expansion_converged = .TRUE.
         ENDIF
 
         ! Exit loop if we are converged
