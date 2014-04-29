@@ -1708,8 +1708,10 @@ C
 !     END IF
       IF(NOCCT .LT.0 .OR. NOCCT .GT.MAXOCC) THEN
          INPERR = INPERR + 1
-         WRITE(LUPRI,'(/A,I5/A,I5)') 'ERROR: Number of occ. orbitals :',
-     *      NOCCT,' is .lt. 0 or .gt. MAXOCC :',MAXOCC
+         WRITE(LUPRI,'(/A,I5/A,I5/A)') 
+     *      'ERROR: Number of occ. orbitals :',
+     *      NOCCT,' is .lt. 0 or .gt. MAXOCC :',MAXOCC,
+     *      'Increase MAXOCC in DALTON/include/maxorb.h and recompile'
       END IF
       IF(NSSHT .LT.0 .OR.NSSHT .GT.MXCORB) CALL ERRINP(11,INPERR)
 C

@@ -22,6 +22,11 @@ add_definitions(-DIMPLICIT_NONE)
 
 if(ENABLE_TITANBUILD)
    add_definitions(-DVAR_HAVE_MPI3)
+   if(CMAKE_Fortran_COMPILER_ID MATCHES Cray) 
+      if(ENABLE_TITANBUILD)
+          add_definitions(-DVAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN)
+      endif()
+   endif()
 endif()
 
 add_definitions(-DBINARY_INFO_AVAILABLE)

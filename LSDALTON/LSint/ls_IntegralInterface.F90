@@ -4794,7 +4794,6 @@ SUBROUTINE ls_setDefaultFragments(setting)
 implicit none
 TYPE(LSSETTING),intent(inout) :: setting
 Integer :: iao
-
 DO iao=1,4
   setting%fragment(iao)%p => setting%molecule(iao)%p
 ENDDO
@@ -6942,7 +6941,7 @@ Input(8) = geoOrder
 Input(9) = LUPRI
 Input(10)= LUERR
 CALL ls_mpi_buffer(Input,10,infpar%master)
-CALL mpicopy_setting(setting,setting%comm)
+CALL mpicopy_setting(setting,setting%comm,.FALSE.)
 call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,setting%comm)
 
 END SUBROUTINE lsmpi_getIntegrals_masterToSlave
@@ -6975,7 +6974,7 @@ Spec = Input(7)
 geoOrder = Input(8)
 LUPRI = Input(9)
 LUERR = Input(10)
-CALL mpicopy_setting(setting,comm)
+CALL mpicopy_setting(setting,comm,.FALSE.)
 call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
 
 call ls_getIntegrals(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR,geoOrder)
@@ -7011,7 +7010,7 @@ CALL ls_mpi_buffer(intType,infpar%master)
 CALL ls_mpi_buffer(LUPRI,infpar%master)
 CALL ls_mpi_buffer(LUERR,infpar%master)
 !call lstimer('master1',ts,te,lupri)
-CALL mpicopy_setting(setting,setting%comm)
+CALL mpicopy_setting(setting,setting%comm,.FALSE.)
 !call lstimer('master2',ts,te,lupri)
 call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,setting%comm)
 !call lstimer('master3',ts,te,lupri)
@@ -7041,7 +7040,7 @@ CALL ls_mpi_buffer(Spec,infpar%master)
 CALL ls_mpi_buffer(intType,infpar%master)
 CALL ls_mpi_buffer(LUPRI,infpar%master)
 CALL ls_mpi_buffer(LUERR,infpar%master)
-CALL mpicopy_setting(setting,comm)
+CALL mpicopy_setting(setting,comm,.FALSE.)
 call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
 call ls_jengine(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
 
@@ -7073,7 +7072,7 @@ Input(7) = spec
 Input(8) = LUPRI
 Input(9) = LUERR
 CALL ls_mpi_buffer(Input,9,infpar%master)
-CALL mpicopy_setting(setting,setting%comm)
+CALL mpicopy_setting(setting,setting%comm,.FALSE.)
 call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,setting%comm)
 
 END SUBROUTINE lsmpi_LinK_masterToSlave
@@ -7112,7 +7111,7 @@ if(infpar%mynum /= infpar%master) then
    LUPRI=0
    LUERR=0
 end if
-CALL mpicopy_setting(setting,comm)
+CALL mpicopy_setting(setting,comm,.FALSE.)
 call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
 
 call ls_get_exchange_mat(AO1,AO3,AO2,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)

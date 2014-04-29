@@ -175,7 +175,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
 
     if(ENABLE_TITANBUILD)
        set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ -hsystem_alloc")
-       add_definitions(-DVAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN)
     else()
        set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ")
     endif()

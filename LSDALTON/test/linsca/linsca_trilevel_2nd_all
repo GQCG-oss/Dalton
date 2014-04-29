@@ -45,6 +45,8 @@ H      0.55168  -0.77340   0.00000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_trilevel_2nd_all.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **INTEGRAL
 .DENSFIT
 **WAVE FUNCTIONS

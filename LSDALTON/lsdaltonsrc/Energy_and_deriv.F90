@@ -59,8 +59,10 @@ contains
     Logical :: do_decomp,integraltransformGC
 
 
-       Eerr = 0E0_realk
-       nbast = D(1)%nrow
+
+       Eerr   = 0E0_realk
+       ExcitE = 0E0_realk    !Zeroing to initialize
+       nbast  = D(1)%nrow
        do_decomp =.TRUE. !(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
 !           & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
 !           & config%decomp%cfg_check_converged_solution .or. &
