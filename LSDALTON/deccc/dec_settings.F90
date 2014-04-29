@@ -509,6 +509,7 @@ contains
        case('.PRINTINTERACTIONENERGY')     
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
+          DECinfo%full_print_frag_energies=.true.
        case('.SOSEX')
          DECinfo%SOS = .true.
        case('.STRESSTEST')     
