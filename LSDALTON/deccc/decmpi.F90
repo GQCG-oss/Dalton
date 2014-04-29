@@ -2189,9 +2189,9 @@ contains
 
   subroutine rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
     implicit none
-    real(realk),intent(inout),pointer :: gmo(:)
+    !real(realk),intent(inout),pointer :: gmo(:)
     !type(array4), intent(inout) :: omega2
-    !type(array), intent(inout) :: gmo
+    type(array), intent(inout) :: gmo
     type(array), intent(inout) :: omega2
     !type(array4),intent(inout)         :: t2
     type(array),intent(inout)         :: t2
@@ -2216,40 +2216,42 @@ contains
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
-    call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+    !call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
     !call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
 
 
     if(.not.master)then
-      call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+     ! call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
       omega2 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
       !gmo     = get_arr_from_parr(addr2(infpar%lg_mynum+1))
-  !    t2     = get_arr_from_parr(addr3(infpar%lg_mynum+1))
+      !t2     = get_arr_from_parr(addr3(infpar%lg_mynum+1))
       !t2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+      gmo=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
       t2=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
     endif
-    call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
     !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-    print*,' inside rpa_res_comm',infpar%lg_mynum
+    !print*,' inside rpa_res_comm',infpar%lg_mynum
 
     
-    print*,' after gmo',infpar%lg_mynum
+    !print*,' after gmo',infpar%lg_mynum
 
-    print*,' after omega2',infpar%lg_mynum
+    !print*,' after omega2',infpar%lg_mynum
 
 
-    call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-    print*,' after t2',infpar%lg_mynum
+    !call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    !print*,' after t2',infpar%lg_mynum
+    call ls_mpibcast(gmo%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
 
 
     !call ls_mpibcast(omega2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
 
-    print*,' after finalize',infpar%lg_mynum
-    !call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+    !print*,' after finalize',infpar%lg_mynum
+    call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
 
 
   end subroutine rpa_res_communicate_data

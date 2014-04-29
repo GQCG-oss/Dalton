@@ -531,11 +531,9 @@ contains
     do nod=1,nnod-1
     call mo_work_dist(nv*nv*no,fri,tri,nod)
     if(me==0)then
-      write(*,*) 'fri and tri',fri,tri,'nod',nod
       do i=1,no
       call dcopy(tri,w_o2v2(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
       enddo
-      !write(*,*) 'printing w3', w3
     endif
     if(me==0.or.me==nod)then
       call ls_mpisendrecv(w3(1:no*tri),int((i8*no)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
@@ -632,7 +630,7 @@ contains
     !real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
     type(array) :: tmpt2,omegaw2
     real(realk),pointer :: tmp(:,:),w1(:),w3(:),w4(:),omegw(:),w5(:)
-    real(realk), pointer :: w_o2v2(:,:),w2(:,:)
+    real(realk), pointer :: w_o2v2(:),w2(:)
     integer, dimension(4) :: tmp_dims
     type(array) :: t_par
     integer(kind=long) :: o2v2
@@ -684,65 +682,53 @@ contains
     if(nnod>1)w3size = max(w3size,2*omega2%tsize)
     call mem_alloc(w3,w3size)
     call mo_work_dist(nv*nv*no,fri,tri)
-    call mem_alloc(w2,nv2*no,no)
-    call mem_alloc(w_o2v2,nv2*no,no)
-    !call mem_alloc(w2,tl1*no)
+    !call mem_alloc(w2,nv2*no,no)
+    !call mem_alloc(w_o2v2,nv2*no,no)
+    call mem_alloc(w_o2v2,tl1*no)
+    call mem_alloc(w2,tl1*no)
 
 
     !t_par = array_ainit([nv,nv,no,no],4,atype='TDAR',local=.false.)
     !call array_convert(t2%elm4,t_par)
-   ! call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai1,tl1,.false.,debug=.true.)
-    !call array_convert(t2,w2)
-   !if(master) then
-    write(*,*) 'Johannes before gather',me
-     call array_gather(1.0E0_realk,t2,0.0E0_realk,w2,o2v2)
-    write(*,*) 'Johannes after gather',me
-   !endif
-    write(msg,*) 'Norm of t2 from:',me
-    call print_norm(w2,o2v2,msg)
-    call lsmpi_barrier(infpar%lg_comm)
+    call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,3,fai1,tl1,.false.,debug=.false.)
+
+    !call array_gather(1.0E0_realk,t2,0.0E0_realk,w2,o2v2)
 
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
 
-      call dgemm('n','n',tl1,no,no,-1.0E0_realk,w2(fai1:tl1,:),tl1,pfock%elm1,no,0.0E0_realk,w_o2v2(fai1:tl1,:),tl1)
+    call dgemm('n','n',tl1,no,no,-1.0E0_realk,w2,tl1,pfock%elm1,no,0.0E0_realk,w_o2v2,tl1)
 
-    write(*,*) 'Norm of w_o2v2 from:',me,fai1,tl1,v2o
-    !write(*,*) 'fai2 tl2:',me,fai2,tl2,o2v
-    call print_norm(w_o2v2,o2v2,msg)
 
-   !if(master) then
-    write(*,*) 'Johannes before scatter',me
-    call array_scatter(1.0E0_realk,w_o2v2,0.0E0_realk,omega2,o2v2)
-    write(*,*) 'Johannes after scatter',me
-   !endif
+    call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.false.,debug=.false.)
 
     call lsmpi_barrier(infpar%lg_comm)
-
-    !call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
+    call array_two_dim_1batch(omega2,[2,1,4,3],'a',w_o2v2,3,fai1,tl1,.false.,debug=.false.)
+    call lsmpi_barrier(infpar%lg_comm)
     !call array_two_dim_1batch(omega2,[3,4,1,2],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
       
     !call lsmpi_barrier(infpar%lg_comm)
 #endif
 
-     !write(*,*) 'Johannes dealloc w_o2v2'
     call mem_dealloc(w2)
     call mem_dealloc(w_o2v2)
-     !write(*,*) 'Johannes dealloc w_o2v2 finished'
     !DO ALL THINGS DEPENDING ON 2
-    call mem_alloc(w_o2v2,nv,no2*nv)
+    call mem_alloc(w_o2v2,tl2*nv)
     !call mem_alloc(w2,tl2*nv)
-    call mem_alloc(w2,nv,no2*nv)
-    call array_convert(t2,w2)
+    call mem_alloc(w2,tl2*nv)
+    !call array_convert(t2,w2)
+    
+    call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,3,fai2,tl2,.false.,debug=.false.)
 
     ! F[a c] * t [c b i j] =+ Omega [a b i j]
 
-      call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w2(:,fai2:tl2),nv,0.0E0_realk,w_o2v2(:,fai2:tl2),tl2)
+      call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w2,nv,0.0E0_realk,w_o2v2,tl2)
 
-    call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
+    !call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
 
 #ifdef VAR_MPI
-    call array_two_dim_1batch(omega2,[4,3,2,1],'a',w_o2v2,2,fai2,tl2,.false.,debug=.false.)
-    call array_two_dim_1batch(omega2,[3,4,1,2],'a',w_o2v2,2,fai2,tl2,.false.,debug=.false.)
+    call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai2,tl2,.false.,debug=.false.)
+    call lsmpi_barrier(infpar%lg_comm)
+    call array_two_dim_1batch(omega2,[2,1,4,3],'a',w_o2v2,3,fai2,tl2,.false.,debug=.false.)
     call lsmpi_barrier(infpar%lg_comm)
 
 
@@ -861,14 +847,7 @@ contains
     call array4_reorder(t2,[1,3,2,4])
     call array_convert(t2%val,t_par)
     call array4_reorder(t2,[1,3,2,4])
-    !write(*,*) 't2',t_par%elm1
 
-    !write(*,*) 't_par dims',t_par%dims
-    !write(*,*) 't_par tdim',t_par%tdim
-    !write(*,*) 'init om_par'
-    !om_par = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
-    !write(*,*) 'om_par dims',om_par%dims
-    !write(*,*) 'om_par tdim',om_par%tdim
 
     call RPA_fock_partdeb(omega2,t2,pfock,qfock,nocc,nvirt)
     !call RPA_fock_para(omega2,t_par,foo,fvv,noc,nvir)
@@ -879,7 +858,6 @@ contains
 
     !call array4_reorder(omega2,[1,3,2,4])
 
-    !write(*,*) 'tiles',om_par%ntiles
     !call array_gather(1.0E0_realk,om_par,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
 
     !call array4_reorder(omega2,[1,3,2,4])
@@ -899,9 +877,7 @@ contains
     enddo
     enddo
 
-    !write(*,*) 'JOHANNES PAR addres'
     !call RPA_residual_addpar(omega2,Sckdl,gmo,noc,nvir)
-    !write(*,*) 'JOHANNES added'
 
     ! MPI: here you should start the slaves!!
 
@@ -938,7 +914,7 @@ contains
     !real(realk),pointer,intent(inout) :: pfock(:),qfock(:)
     !real(realk), intent(inout) :: pfock(nocc,nocc),qfock(nvirt,nvirt)
     !type(array4) :: tmp
-    real(realk),pointer :: w2(:)!,foo(:,:),fvv(:,:)
+    real(realk),pointer :: w2(:,:,:,:)!,foo(:,:),fvv(:,:)
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
     real(realk) :: starttime,stoptime
@@ -952,8 +928,6 @@ contains
     nvir=nvirt
     noc=nocc
     dim1=nocc*nvirt
-  !  write(*,*) 'Johannes addr res_par',omega2%addr_p_arr
-  !  write(*,*) 'Johannes addr res_par',t2%addr_p_arr
 
 !    call mem_alloc(foo,nocc*nocc)
 !    call mem_alloc(fvv,nvirt*nvirt)
@@ -963,35 +937,31 @@ contains
 
     !t_par = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
 
-    Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,local=.true.,atype='TDAR')
-    call array_gather(1.0E0_realk,t2,0.0E0_realk,Sckdl%elm1,i8*dim1*dim1,oo=[1,2,3,4])
 
-    !call RPA_fock_para2(omega2,Sckdl,pfock,qfock,noc,nvir)
     !call RPA_fock_para2(omega2,t2,pfock,qfock,noc,nvir)
-    !call RPA_fock_para(omega2,Sckdl,pfock,qfock,noc,nvir)
     call RPA_fock_para(omega2,t2,pfock,qfock,noc,nvir)
-    msg = 'Norm of fockpart'
-    call print_norm(omega2,msg)
 
     !msg = 'Norm of omega2 after fock para'
-    !call print_norm(omega2,msg)
+    !call print_norm(omega!2,msg)
+    !call mem_alloc(w2,nvirt,nvirt,nocc,nocc)
+    !w2=0._realk
 
-    !Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,local=.true.,atype='TDAR')
-    !call array_gather(1.0E0_realk,t2,0.0E0_realk,Sckdl%elm1,i8*dim1*dim1,oo=[4,2,3,1])
+    Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,local=.true.,atype='TDAR')
+    call array_convert(t2,Sckdl%elm1)
 
     do a=1,nvirt
     do i=1,nocc
     Sckdl%elm4(a,a,i,i)=Sckdl%elm4(a,a,i,i)+1._realk
     enddo
     enddo
-    !call RPA_residual_addpar(omega2,Sckdl,gmo,noc,nvir)
-    gtmp = array_minit([nocc,nvirt,nocc,nvirt],4,local=.true.,atype='TDAR')
-    call array_gather(1.0E0_realk,gmo,0.0E0_realk,gtmp%elm1,i8*dim1*dim1,oo=[1,2,3,4])
-    call RPA_residual_par_add(omega2,Sckdl,gtmp%elm1,noc,nvir)
-    call array_free(gtmp)
-    msg = 'Norm of omega2'
-    call print_norm(omega2,msg)
-    !write(*,*) 'JOHANNES added'
+
+
+    call array_cp_tiled2dense(gmo,.true.)
+    call RPA_residual_par_add(omega2,Sckdl,gmo,noc,nvir)
+    call array_cp_tiled2dense(gmo,.false.)
+
+   ! msg = 'Norm of omega2'
+   ! call print_norm(omega2,msg)
 
     call cpu_time(stoptime)
 
@@ -1083,8 +1053,8 @@ contains
     implicit none
     !type(array4), intent(inout) :: omega2!,u2
     type(array), intent(inout) :: u2 ,omega2
-    real(realk), intent(inout),pointer :: gmo(:)
-    !type(array), intent(inout):: gmo
+    !real(realk), intent(inout),pointer :: gmo(:)
+    type(array), intent(inout):: gmo
     integer,intent(inout) :: nocc,nvirt
     !type(array4) :: Sckdl,Dckbj
     type(array) :: Sckdl
@@ -1130,7 +1100,8 @@ contains
     t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
     call array_convert(u2%elm4,t_par)
 
-    call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.true.)
+    call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.false.)
+    !call array_two_dim_1batch(u2,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.false.)
 
     !write(msg,*) 'Norm of gmo',infpar%lg_mynum
     !call print_norm(gmo,msg)
@@ -1141,7 +1112,7 @@ contains
 
     !When fock part is parallelized instead of zero 1.0_realk
     call dgemm('n','n',tl,dim1,dim1, &
-        & 1.0E0_realk,w2,tl,gmo,dim1,0.0E0_realk,w3,tl)
+        & 1.0E0_realk,w2,tl,gmo%elm1,dim1,0.0E0_realk,w3,tl)
 !#ifdef VAR_MPI
     !write(msg,*) 'Norm of w3',infpar%lg_mynum
     !call print_norm(w3,i8*tl*dim1,msg)
@@ -1156,6 +1127,7 @@ contains
     call mem_dealloc(w2)
     call mem_alloc(w4,nocc*nvirt*nocc*nvirt)
     call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
+    !call array_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
 !    write(msg,*) 'Norm of w4',infpar%lg_mynum
 !#else
 !    write(msg,*) 'Norm of w4'
@@ -1673,9 +1645,9 @@ subroutine rpa_res_slave()
   implicit none
   !> number of orbitals:
   type(array) :: omega2,t2
-  !type(array) :: gmo
+  type(array) :: gmo
   !type(array4) :: omega2!,t2
-  real(realk),pointer :: gmo(:)!,t2(:,:,:,:)
+  !real(realk),pointer :: gmo(:)!,t2(:,:,:,:)
   type(array2)  :: pfock,qfock
   integer :: nbas, nocc, nvirt
   !> how to pack integrals:
