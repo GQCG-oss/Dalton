@@ -474,10 +474,9 @@ contains
     real(realk) :: tw,tc
     integer(kind=ls_mpik) me,mode,nod, nnod
     character(ARR_MSG_LEN) :: msg
-    logical :: master,lock_outside,lock_safe,local
+    logical :: master
 
     master=.true.
-    local = .true.
 #ifdef VAR_MPI
     master        = .false.
     master        = (infpar%lg_mynum == 0)
@@ -495,43 +494,12 @@ contains
     o2v  = no2*nv 
     v2o  = nv2*no 
     call mem_alloc(w_o2v2,t2%nelms)
-    
-    if(local) then
 
-
-      !calculate first part of doubles E term and its permutation
-      ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
-      call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,pfock%elm1,no,0.0E0_realk,w_o2v2,v2o)
-      !call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm4,v2o,pfock%elm4,no,1.0E0_realk,omega2%elm4,v2o)
-
-      !calculate second part of doubles E term
-      ! F [a c] * t [c b i j] =+ Omega [a b i j]
-      call dgemm('n','n',nv,o2v,nv,1.0E0_realk,qfock%elm1,nv,t2%elm1,nv,1.0E0_realk,w_o2v2,nv)
-
-      call mem_alloc(w3,no2*nv2)
-
-      call array_scatter(1.0E0_realk,w_o2v2,0.0E0_realk,omega2,o2v2)
-      call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
-      call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
-
-
-!      !INTRODUCE PERMUTATION
-!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-!      call assign_in_subblocks(w1,'=',omega2%elm1,o2v2)
-!#else
-!      !$OMP WORKSHARE
-!      w_o2v2(1_long:o2v2) = omega2%elm1(1_long:o2v2)
-!      !$OMP END WORKSHARE
-!#endif
-!
-!      call array_reorder_4d(1.0E0_realk,w_o2v2,nv,nv,no,no,[2,1,4,3],1.0E0_realk,omega2%elm1)
-
-   else
 
 #ifdef VAR_MPI
      StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
        call ls_mpibcast(RPAGETFOCK,infpar%master,infpar%lg_comm)
-       call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nv,no)
+       call rpa_fock_communicate_data(t2,omega2,pfock,qfock,no,nv)
     endif StartUpSlaves
 #endif
 
@@ -545,9 +513,6 @@ contains
     nnod               = infpar%lg_nodtot
     me                 = infpar%lg_mynum
     mode               = int(MPI_MODE_NOCHECK,kind=ls_mpik)
-    lock_safe          = .false.
-    !FIXME: the code has to work with lock_outside=.true.
-    lock_outside       = .false.
 
     !Setting transformation variables for each rank
     !**********************************************
@@ -559,128 +524,94 @@ contains
     if(nnod>1)w3size = max(w3size,2*omega2%tsize)
     call mem_alloc(w3,w3size)
 
-
-    write(*,*) 'fai1 tl1',fai1,tl1,'nod',me,nv2*no2
-
-
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
     !if(me==0) call array_convert(t2,w_o2v2,t2%nelms)
-    if(.not.lock_outside)then
-      call time_start_phase(PHASE_COMM, at = tw)
-      call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
-      do nod=1,nnod-1
-      call mo_work_dist(nv*nv*no,fri,tri,nod)
-      if(me==0)then
-        write(*,*) 'fri and tri',fri,tri,'nod',nod
-        do i=1,no
-        call dcopy(tri,w_o2v2(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
-        enddo
-        !write(*,*) 'printing w3', w3
-      endif
-      if(me==0.or.me==nod)then
-        write(*,*) 'send recv', me
-        call ls_mpisendrecv(w3(1:no*tri),int((i8*no)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-        write(*,*) 'after recv',me
-      endif
+    call time_start_phase(PHASE_COMM, at = tw)
+    call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
+    do nod=1,nnod-1
+    call mo_work_dist(nv*nv*no,fri,tri,nod)
+    if(me==0)then
+      write(*,*) 'fri and tri',fri,tri,'nod',nod
+      do i=1,no
+      call dcopy(tri,w_o2v2(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
       enddo
-      if(me==0)then
-        do i=1,no
-        call dcopy(tl1,w_o2v2(fai1+(i-1)*no*nv*nv),1,w3(1+(i-1)*tl1),1)
-        enddo
-      endif
-      w_o2v2=0.0E0_realk
-      call time_start_phase(PHASE_WORK, at = tc)
-    else
-      call arr_unlock_wins(t2)
+      !write(*,*) 'printing w3', w3
     endif
+    if(me==0.or.me==nod)then
+      call ls_mpisendrecv(w3(1:no*tri),int((i8*no)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+    endif
+    enddo
+    if(me==0)then
+      do i=1,no
+      call dcopy(tl1,w_o2v2(fai1+(i-1)*no*nv*nv),1,w3(1+(i-1)*tl1),1)
+      enddo
+    endif
+    w_o2v2=0.0E0_realk
+    call time_start_phase(PHASE_WORK, at = tc)
 
-    print *,me,"contraction done",omega2%tdim
+    !print *,me,"contraction done",omega2%tdim
     call lsmpi_barrier(infpar%lg_comm)
 
-    if(.not.lock_outside)then
-      call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,pfock%elm1,no,0.0E0_realk,w_o2v2(fai1),v2o)
-      call time_start_phase(PHASE_COMM, at = tw)
-      call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
-      call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
-      call time_start_phase(PHASE_WORK, at = tc)
-    endif
+    call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,pfock%elm1,no,0.0E0_realk,w_o2v2(fai1),v2o)
+    call time_start_phase(PHASE_COMM, at = tw)
+    call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
+    call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
+    call time_start_phase(PHASE_WORK, at = tc)
 
 
     !DO ALL THINGS DEPENDING ON 2
 
 
     ! F[a c] * t [c b i j] =+ Omega [a b i j]
-    if(.not.lock_outside)then
-      call time_start_phase(PHASE_COMM, at = tw)
-      call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
-      do nod=1,nnod-1
-      call mo_work_dist(nv*no*no,fri,tri,nod)
-      if(me==0)then
-        do i=1,tri
-        call dcopy(nv,w_o2v2(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
-        enddo
-      endif
-      if(me==0.or.me==nod)then
-        call ls_mpisendrecv(w3(1:nv*tri),int((i8*nv)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-        call time_start_phase(PHASE_WORK, at = tc)
-      endif
+    call time_start_phase(PHASE_COMM, at = tw)
+    call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
+    do nod=1,nnod-1
+    call mo_work_dist(nv*no*no,fri,tri,nod)
+    if(me==0)then
+      do i=1,tri
+      call dcopy(nv,w_o2v2(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
       enddo
-      if(me==0)then
-        do i=1,tl2
-        call dcopy(nv,w_o2v2(1+(fai2+i-2)*nv),1,w3(1+(i-1)*nv),1)
-        enddo
-      endif
-      w_o2v2=0.0E0_realk
-      else
-        call arr_unlock_wins(t2)
-      endif
+    endif
+    if(me==0.or.me==nod)then
+      call ls_mpisendrecv(w3(1:nv*tri),int((i8*nv)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+      call time_start_phase(PHASE_WORK, at = tc)
+    endif
+    enddo
+    if(me==0)then
+      do i=1,tl2
+      call dcopy(nv,w_o2v2(1+(fai2+i-2)*nv),1,w3(1+(i-1)*nv),1)
+      enddo
+    endif
+    w_o2v2=0.0E0_realk
 
 
-      if(.not.lock_outside)then
-        call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
-        call time_start_phase(PHASE_COMM, at = tw)
-        call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
-        call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
-        call time_start_phase(PHASE_WORK, at = tc)
-      endif
+    call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
+    call time_start_phase(PHASE_COMM, at = tw)
+    call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
+    call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
+    call time_start_phase(PHASE_WORK, at = tc)
 
 
 
-      !INTRODUCE PERMUTATION
-      omega2%access_type = MASTER_ACCESS
-      t2%access_type     = MASTER_ACCESS
-      pfock%access_type    = MASTER_ACCESS
-      qfock%access_type    = MASTER_ACCESS
+    !INTRODUCE PERMUTATION
+    omega2%access_type = MASTER_ACCESS
+    t2%access_type     = MASTER_ACCESS
+    pfock%access_type    = MASTER_ACCESS
+    qfock%access_type    = MASTER_ACCESS
 
-      if(.not.lock_outside)then
-         call time_start_phase(PHASE_COMM, at = tw)
-         call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,wrk=w3,iwrk=w3size)
-         call array_gather(1.0E0_realk,omega2,1.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
-         call array_scatter_densetotiled(omega2,w_o2v2,o2v2,infpar%master)
-         call time_start_phase(PHASE_WORK, at = tc)
-      else
-         if(me==0)then
-            call arr_lock_wins(omega2,'s',mode)
-            call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
-            call arr_unlock_wins(omega2,.true.)
-            call arr_lock_wins(omega2,'s',mode)
-            call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
-            call arr_unlock_wins(omega2,.true.)
-         endif
-      endif
+    call time_start_phase(PHASE_COMM, at = tw)
+    call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,wrk=w3,iwrk=w3size)
+    call array_gather(1.0E0_realk,omega2,1.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
+    call array_scatter_densetotiled(omega2,w_o2v2,o2v2,infpar%master)
+    call time_start_phase(PHASE_WORK, at = tc)
 
-      call mem_dealloc(w3)
-      lock_outside     = lock_safe
+    call mem_dealloc(w3)
 
 
 #endif
 
-   endif
 
-   call mem_dealloc(w_o2v2)
-
-
-
+    call mem_dealloc(w_o2v2)
 
 
     return
@@ -700,14 +631,14 @@ contains
     type(array), intent(inout) :: pfock,qfock
     !real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
     type(array) :: tmpt2,omegaw2
-    real(realk),pointer :: tmp(:,:),w1(:),w2(:,:),w3(:),w4(:),omegw(:),w5(:)
-    real(realk), pointer :: w_o2v2(:)
+    real(realk),pointer :: tmp(:,:),w1(:),w3(:),w4(:),omegw(:),w5(:)
+    real(realk), pointer :: w_o2v2(:,:),w2(:,:)
     integer, dimension(4) :: tmp_dims
     type(array) :: t_par
     integer(kind=long) :: o2v2
     integer :: no2,nv2,o2v,v2o
     integer(kind=8) :: w3size,b0
-    integer :: faip,faiv,tlp,tlv,dim1,fai1,fai2,tl1,tl2,fri,tri
+    integer :: dim1,fai1,fai2,tl1,tl2,fri,tri
     integer :: i 
     real(realk) :: tw,tc
     integer(kind=ls_mpik) me,mode,nod, nnod
@@ -736,7 +667,7 @@ contains
 #ifdef VAR_MPI
      StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
        call ls_mpibcast(RPAGETFOCK,infpar%master,infpar%lg_comm)
-       call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nv,no)
+       call rpa_fock_communicate_data(t2,omega2,pfock,qfock,no,nv)
     endif StartUpSlaves
 #endif
 
@@ -754,30 +685,43 @@ contains
     call mem_alloc(w3,w3size)
     call mo_work_dist(nv*nv*no,fri,tri)
     call mem_alloc(w2,nv2*no,no)
-    call mem_alloc(w_o2v2,tl1*no)
+    call mem_alloc(w_o2v2,nv2*no,no)
     !call mem_alloc(w2,tl1*no)
 
 
     !t_par = array_ainit([nv,nv,no,no],4,atype='TDAR',local=.false.)
     !call array_convert(t2%elm4,t_par)
    ! call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai1,tl1,.false.,debug=.true.)
-    call array_convert(t2,w2)
+    !call array_convert(t2,w2)
    !if(master) then
-   !  call array_gather(1.0E0_realk,t2,0.0E0_realk,w2,o2v2)
+    write(*,*) 'Johannes before gather',me
+     call array_gather(1.0E0_realk,t2,0.0E0_realk,w2,o2v2)
+    write(*,*) 'Johannes after gather',me
    !endif
+    write(msg,*) 'Norm of t2 from:',me
+    call print_norm(w2,o2v2,msg)
+    call lsmpi_barrier(infpar%lg_comm)
 
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
 
-      call dgemm('n','n',tl1,no,no,-1.0E0_realk,w2(fai1:tl1,:),tl1,pfock%elm1,no,0.0E0_realk,w_o2v2,v2o)
+      call dgemm('n','n',tl1,no,no,-1.0E0_realk,w2(fai1:tl1,:),tl1,pfock%elm1,no,0.0E0_realk,w_o2v2(fai1:tl1,:),tl1)
 
+    write(*,*) 'Norm of w_o2v2 from:',me,fai1,tl1,v2o
+    !write(*,*) 'fai2 tl2:',me,fai2,tl2,o2v
+    call print_norm(w_o2v2,o2v2,msg)
+
+   !if(master) then
+    write(*,*) 'Johannes before scatter',me
     call array_scatter(1.0E0_realk,w_o2v2,0.0E0_realk,omega2,o2v2)
-    !write(*,*) 'Johannes after scatter',me
+    write(*,*) 'Johannes after scatter',me
+   !endif
 
+    call lsmpi_barrier(infpar%lg_comm)
 
     !call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
     !call array_two_dim_1batch(omega2,[3,4,1,2],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
       
-    call lsmpi_barrier(infpar%lg_comm)
+    !call lsmpi_barrier(infpar%lg_comm)
 #endif
 
      !write(*,*) 'Johannes dealloc w_o2v2'
@@ -785,14 +729,14 @@ contains
     call mem_dealloc(w_o2v2)
      !write(*,*) 'Johannes dealloc w_o2v2 finished'
     !DO ALL THINGS DEPENDING ON 2
-    call mem_alloc(w_o2v2,tl2*nv)
+    call mem_alloc(w_o2v2,nv,no2*nv)
     !call mem_alloc(w2,tl2*nv)
     call mem_alloc(w2,nv,no2*nv)
     call array_convert(t2,w2)
 
     ! F[a c] * t [c b i j] =+ Omega [a b i j]
 
-      call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w2(:,fai2:tl2),nv,0.0E0_realk,w_o2v2,nv)
+      call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w2(:,fai2:tl2),nv,0.0E0_realk,w_o2v2(:,fai2:tl2),tl2)
 
     call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
 
@@ -806,7 +750,7 @@ contains
 
 
    if(master) then
-     call array_reorder_4d(1.0E0_realk,w_o2v2,nv,nv,no,no,[3,4,1,2],&
+     call array_reorder_4d(1.0E0_realk,w_o2v2,nv,nv,no,no,[2,1,4,3],&
        & 0.0E0_realk,w2)
      call array_scatter(1.0E0_realk,w2,1.0E0_realk,omega2,o2v2)
      call mem_dealloc(w_o2v2)
@@ -1024,8 +968,8 @@ contains
 
     !call RPA_fock_para2(omega2,Sckdl,pfock,qfock,noc,nvir)
     !call RPA_fock_para2(omega2,t2,pfock,qfock,noc,nvir)
-    call RPA_fock_para(omega2,Sckdl,pfock,qfock,noc,nvir)
-    !call RPA_fock_para(omega2,t2,pfock,qfock,noc,nvir)
+    !call RPA_fock_para(omega2,Sckdl,pfock,qfock,noc,nvir)
+    call RPA_fock_para(omega2,t2,pfock,qfock,noc,nvir)
     msg = 'Norm of fockpart'
     call print_norm(omega2,msg)
 
@@ -1761,8 +1705,8 @@ subroutine rpa_fock_slave()
   print*, infpar%lg_mynum,'rpa_fock_slave'
   call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nocc,nvirt)
   write(*,*) 'slaves, calling fock_para'
-  !call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
-  call RPA_fock_para2(omega2,t2,pfock,qfock,nocc,nvirt)
+  call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
+  !call RPA_fock_para2(omega2,t2,pfock,qfock,nocc,nvirt)
 
 end subroutine rpa_fock_slave
 #endif
