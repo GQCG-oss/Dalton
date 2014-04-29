@@ -78,6 +78,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use ls_optimizer_mod, only: LS_RUNOPT
   use SCFinteractionEnergyMod, only: SCFinteractionEnergy
   use lsmpi_type, only: lsmpi_finalize
+  use lsmpi_op, only: TestMPIcopySetting,TestMPIcopyScreen
   use lstensorMem, only: lstmem_init, lstmem_free
 #ifdef MOD_UNRELEASED
   use pbc_setup, only: set_pbc_molecules
@@ -180,7 +181,33 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   else 
      HFdone=.true.
 
+#ifndef VAR_MPI
+     IF(config%doTestMPIcopy)THEN
+        !we basicly use the MPICOPY_SETTING routine to place the setting structure
+        !in the MPI buffers, deallocate ls%setting and reallocate it again using
+        !the MPI buffers - we thereby test some of the functionality of the MPI
+        !system. 
+        !This Test would (at this moment) break PARI and other testcases because
+        !ls%setting%Molecule(1) will nolonger point to ls%input%molecule
+        !instead the info in ls%input%molecule will be copied to 
+        !ls%setting%Molecule(1),ls%setting%Molecule(2),ls%setting%Molecule(3),...
+        !so when you assume a pointer behaviour this test would make the calc crash
+        !with something like  
+        !Reason: Error in Molecule_free - memory previously released
+        call TestMPIcopySetting(ls%SETTING)
+     ENDIF
+#endif     
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+
+#ifndef VAR_MPI
+     IF(config%doTestMPIcopy)THEN
+        !we basicly use the MPICOPY_SCREEN routine to place the screen structure
+        !in the MPI buffers, deallocate screen in screen_mod and reallocate it 
+        !again using the MPI buffers - we thereby test some of the 
+        !functionality of the MPI system. 
+        call TestMPIcopyScreen
+     ENDIF
+#endif     
 
      CALL Print_Memory_info(lupri,'after II_precalc_ScreesMat')
 
@@ -474,6 +501,23 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            Endif
         endif
 
+#ifndef VAR_MPI
+     IF(config%doTestMPIcopy)THEN
+        !we basicly use the MPICOPY_SETTING routine to place the setting structure
+        !in the MPI buffers, deallocate ls%setting and reallocate it again using
+        !the MPI buffers - we thereby test some of the functionality of the MPI
+        !system  
+        !This Test would (at this moment) break PARI and other testcases because
+        !ls%setting%Molecule(1) will nolonger point to ls%input%molecule
+        !instead the info in ls%input%molecule will be copied to 
+        !ls%setting%Molecule(1),ls%setting%Molecule(2),ls%setting%Molecule(3),...
+        !so when you assume a pointer behaviour this test would make the calc crash
+        !with something like  
+        !Reason: Error in Molecule_free - memory previously released
+        call TestMPIcopySetting(ls%SETTING)
+     ENDIF
+#endif     
+
         if (config%SCFinteractionEnergy) then
            CALL SCFinteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
         endif
@@ -669,6 +713,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_ICHOR
   use IchorSaveGabModule
 #endif
+  use lsmpi_type,only: NullifyMPIbuffers
   implicit none
   logical, intent(inout)     :: OnMaster
   integer, intent(inout)     :: lupri, luerr
@@ -682,6 +727,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call mypapi_init(eventset)
 #endif
   call init_globalmemvar  !initialize the global memory counters
+  call NullifyMPIbuffers  !initialize the MPI buffers
   call set_matrix_default !initialize global matrix counters
   call init_rsp_util      !initialize response util module
   call lstmem_init

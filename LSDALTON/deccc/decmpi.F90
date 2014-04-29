@@ -151,11 +151,12 @@ contains
     end if
 
     ! Sanity check 2: Basis info in "Expensive box" in decfrag should not be sent
-    if(MyFragment%BasisInfoIsSet .and. mynum==MySender) then
-       call lsquit('mpi_send_recv_single_fragment: Not implemented for &
-            & sending/receiving fragment basis info!',-1)
-    end if
-
+    if(mynum==MySender) then
+       if(MyFragment%BasisInfoIsSet) then
+          call lsquit('mpi_send_recv_single_fragment: Not implemented for &
+               & sending/receiving fragment basis info!',-1)
+       end if
+    endif
     ! Init buffer
     call ls_mpiInitBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
 
@@ -291,11 +292,12 @@ contains
        CommunicateFragment: if(whichfrags(atom)) then
 
           ! Sanity check: Basis info in "Expensive box" in decfrag should not be sent
-          if(Fragments(atom)%BasisInfoIsSet .and. mynum==0) then
-             call lsquit('mpi_bcast_many_fragments: Not implemented for &
-                  & sending/receiving fragment basis info!',-1)
-          end if
-
+          if(mynum==0) then
+             if(Fragments(atom)%BasisInfoIsSet) then
+                call lsquit('mpi_bcast_many_fragments: Not implemented for &
+                     & sending/receiving fragment basis info!',-1)
+             end if
+          endif
           ! Master: Copy fragment info into buffer
           ! Slave: Read fragment info from buffer into Fragments(atom)
           call mpicopy_fragment(Fragments(atom),comm,.false.)
@@ -2085,6 +2087,7 @@ contains
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%MOCCSD,Master)
+    call ls_mpi_buffer(DECitem%v2o2_free_solver,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)

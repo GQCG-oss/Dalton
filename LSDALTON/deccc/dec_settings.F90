@@ -86,6 +86,7 @@ contains
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
     DECinfo%MOCCSD               = .false.
+    DECinfo%v2o2_free_solver     = .false.
 
     ! -- Output options 
     DECinfo%output               = output
@@ -442,6 +443,7 @@ contains
           read(input,*) DECinfo%MPIgroupsize
        case('.CRASHCALC') 
           DECinfo%CRASHCALC= .true.
+       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
 
 
 #ifndef VAR_MPI
@@ -507,6 +509,7 @@ contains
        case('.PRINTINTERACTIONENERGY')     
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
+          DECinfo%full_print_frag_energies=.true.
        case('.SOSEX')
          DECinfo%SOS = .true.
        case('.STRESSTEST')     

@@ -38,7 +38,7 @@ MODULE IntegralInterfaceMOD
                          util_get_symm_and_antisymm_part_full
   use memory_handling, only: mem_alloc, mem_dealloc
 #ifdef VAR_MPI
-  use screen_modMPI, only: mpicopy_screen
+  use lsmpi_op, only: mpicopy_screen
   use lsmpi_type!, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, &
 !       & LSMPIBROADCAST,  ls_mpibcast, get_rank_for_comm
   use infpar_module
@@ -5429,8 +5429,9 @@ IF (isADMMQ) THEN
   CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AO2,AO3,GC2,GC3,constrain_factor)
 
   CALL mat_mul(S32,T23,'n','n',-1E0_realk,0E0_realk,tmp33)
+  call mat_scal(constrain_factor, tmp33)
   IF(isADMMP) THEN
-    call mat_scal(constrain_factor*constrain_factor, tmp33)
+    call mat_scal(constrain_factor, tmp33)
   ENDIF
   call mat_daxpy(1E0_realk,S33,tmp33)
 

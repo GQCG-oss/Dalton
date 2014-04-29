@@ -288,7 +288,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    type(decorbital), pointer :: unocc_orbitals(:)
    logical, pointer :: orbitals_assigned(:)
    logical :: local
-   real(realk) :: InteractionECCSD,InteractionECCSDPT4,InteractionECCSDPT5
+   real(realk) :: InteractionE,InteractionECCSDPT4,InteractionECCSDPT5
 
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
@@ -420,7 +420,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    endif
    if(DECinfo%PrintInteractionEnergy)then
       call add_dec_interactionenergies(natoms,ccsd_mat_tot%val,orbitals_assigned,&
-         & interactionECCSD,MyMolecule%SubSystemIndex,2)
+         & interactionE,MyMolecule%SubSystemIndex,2)
    endif
 
    ! release ccsd stuff
@@ -455,7 +455,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          write(DECinfo%output,'(A)') ' '
          write(DECinfo%output,'(A)') 'Interaction Energies '
          write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
-            & interactionECCSD
+            & interactionE
          write(DECinfo%output,'(1X,a,g20.10)') '(fourth order) CCSD(T) Interaction correlation energy:',&
             & InteractionECCSDPT4
          call add_dec_interactionenergies(natoms,e5_mat_tot%val,orbitals_assigned,&
@@ -463,16 +463,27 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          write(DECinfo%output,'(1X,a,g20.10)') '(fifth order) CCSD(T) Interaction correlation energy :',&
             & InteractionECCSDPT5
          write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) Interaction correlation energy         :',&
-            & InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionECCSD
+            & InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionE
          write(DECinfo%output,'(A)') ' '
+         interactionE = InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionE
       endif
 
       ! release stuff
       call array2_free(e4_mat_tot)
       call array2_free(e4_mat_tmp)
       call array2_free(e5_mat_tot)
+   else
+      if(DECinfo%PrintInteractionEnergy)then
+         write(DECinfo%output,'(A)') ' '
+         if (ccmodel == MODEL_CCSD ) then
+            write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
+                 & interactionE
+         else if (ccmodel == MODEL_MP2 ) then
+            write(DECinfo%output,'(1X,a,g20.10)') 'MP2 Interaction correlation energy                  :',&
+                 & interactionE
+         endif
+      endif
    endif
-
 
 
    do i=1,nocc_tot
@@ -511,6 +522,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
    write(DECinfo%output,*)
    write(DECinfo%output,'(1X,a,g20.10)') 'Total CC solver correlation energy           =', ccenergy
+   if(DECinfo%PrintInteractionEnergy)then
+    write(DECinfo%output,'(1X,a,g20.10)')'Total CC interaction correlation energy      =', interactionE
+   endif
    write(DECinfo%output,*)
 
    ! now update ccenergy with ccsd(t) correction
