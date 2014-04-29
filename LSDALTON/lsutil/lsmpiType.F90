@@ -524,7 +524,6 @@ contains
         k=SPLIT_MPI_MSG
         do i=1,n,k
           n4=k
-          !if((n-i)<k)n4=mod(n,k)
           if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
           call ls_mpibcast_longV(buffertmp(i:i+n4-1),n4,master,comm)
         enddo
