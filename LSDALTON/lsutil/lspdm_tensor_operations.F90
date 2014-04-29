@@ -810,7 +810,7 @@ module lspdm_tensor_operations_module
       di = t2%ti(lt)%d(3)
       dj = t2%ti(lt)%d(4)
       !count over local indices
-      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t,&
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t2tile,&
       !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
       do j=1,dj
         do i=1,di
