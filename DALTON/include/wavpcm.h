@@ -6,8 +6,8 @@
 ! WAVPCM .TRUE. if wavelet-pcm is to be used
 !
       LOGICAL WAVPCM, WAVPCN
-      COMMON /WAVPC/ WAVSPH(MXCENT),                                    &
-     &                WAVDEN(MXORBT), WAVFCK(MXORBT),                   &
-     &                WAVOE(MXCORB), WAVSCFE,                           &
+      COMMON /WAVPC/ WAVSPH(1),                                         &
+     &                WAVDEN(1), WAVFCK(1),                             &
+     &                WAVOE(1), WAVSCFE,                                &
      &                WAVPCM, WAVPCN
 
