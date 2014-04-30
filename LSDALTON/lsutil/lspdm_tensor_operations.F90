@@ -687,11 +687,12 @@ module lspdm_tensor_operations_module
 
     integer :: glob_mode_idx(4), tile_mode_idx(4), idx_in_tile(4)
     integer :: tile_comp_idx, pos, k, idx
-    integer(kind=ls_mpik) :: source
+    integer(kind=ls_mpik) :: source, mode
     integer(kind=long) :: tiledim
     logical :: nomem
     real(realk), external :: ddot
 
+  mode  = MPI_MODE_NOCHECK
   nomem = .false.
   if(DECinfo%v2o2_free_solver)  nomem = .true.
 #ifdef VAR_MPI
@@ -723,7 +724,7 @@ module lspdm_tensor_operations_module
       dj = t2%ti(lt)%d(4)
 
       ! lock all windows:
-      call arr_lock_wins(gmo,'s',MPI_MODE_NOCHECK)
+      call arr_lock_wins(gmo,'s',mode)
 
       !count over local indices
       do j=1,dj
