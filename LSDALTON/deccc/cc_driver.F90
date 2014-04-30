@@ -1798,14 +1798,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       yv = array_minit( virt_dims,2, local=local, atype='LDAR' )
    end if
 
-   if(CCmodel == MODEL_RPA) then
-     iajb=array_minit( [no,nv,no,nv], 4, local=.false., atype='TDAR' )
-   else
-     iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
-   endif
+   iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
    call array_zero(iajb)
-
-  ! if(ccmodel == MODEL_RPA) call lsquit("ERROR(ccsolver_par): model not implemented: RPA",-1)
 
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
