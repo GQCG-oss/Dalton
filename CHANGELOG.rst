@@ -25,6 +25,7 @@ DALTON
   MAXOCC 800 -> 1500; MXCENT 200 -> 500; MXCENT_QM 200 -> 500
   (the static size of dalton.x went from 100 MB to 165 MB) 
 - do not print garbage non-zero transition moments and oscillator strengths for triplet excitations (*EXCITA module)
+- corrected input description for transition moments between excited states (*QUADRA with .DOUBLE RESIDUE)
 
 
 LSDALTON
