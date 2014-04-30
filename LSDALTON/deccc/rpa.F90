@@ -687,10 +687,12 @@ contains
 
     !t_par = array_ainit([nv,nv,no,no],4,atype='TDAR',local=.false.)
     !call array_convert(t2%elm4,t_par)
+#ifdef VAR_MPI
     call arr_lock_wins(t2,'s',mode)
     call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,3,fai1,tl1,.true.,debug=.false.)
 
     call arr_unlock_wins(t2)
+#endif
     !call array_gather(1.0E0_realk,t2,0.0E0_realk,w2,o2v2)
 
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
@@ -698,10 +700,12 @@ contains
     call dgemm('n','n',tl1,no,no,-1.0E0_realk,w2,tl1,pfock%elm1,no,0.0E0_realk,w_o2v2,tl1)
 
 
+#ifdef VAR_MPI
     call arr_lock_wins(omega2,'s',mode)
     call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.false.,debug=.false.)
     !call array_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.true.)
     call arr_unlock_wins(omega2)
+#endif
 
     call lsmpi_barrier(infpar%lg_comm)
 
@@ -717,10 +721,12 @@ contains
     call mem_alloc(w2,tl2*nv)
     !call array_convert(t2,w2)
     
+#ifdef VAR_MPI
     call arr_lock_wins(t2,'s',mode)
     call array_two_dim_2batch(t2,[1,2,3,4],'g',w2,3,fai2,tl2,.true.)
 
     call arr_unlock_wins(t2)
+#endif
     ! F[a c] * t [c b i j] =+ Omega [a b i j]
     write(*,*) 'Starting with dgemm virtual'
 
@@ -744,6 +750,7 @@ contains
    call mem_dealloc(w_o2v2)
    call mem_dealloc(w2)
 
+#ifdef VAR_MPI
    if(master) then
      call mem_alloc(w_o2v2,no2*nv2)
      write(*,*) 'lock omega2'
@@ -758,6 +765,7 @@ contains
      call arr_unlock_wins(omega2,.true.)
      call mem_dealloc(w_o2v2)
    endif
+#endif
 
    return
   end subroutine RPA_fock_para2
