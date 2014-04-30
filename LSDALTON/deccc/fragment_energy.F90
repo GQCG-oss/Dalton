@@ -564,6 +564,9 @@ contains
             & Input dimensions do not match!',-1)
     end if
 
+!    IF(MyFragment%ccmodel==MODEL_MP2.AND.DECinfo%OnlyOccPart)THEN
+!       nvirtEOS = 1
+!    ENDIF
 
     IF(doOccPart)THEN
        call mem_TurnONThread_Memory()
@@ -2445,6 +2448,9 @@ contains
               IF(.NOT.FragmentExpansionRI)THEN
                  WRITE(DECinfo%output,*)'Expansion Include Full Molecule'
                  OccOld = Occ_atoms;VirtOld = Virt_atoms
+                 LagEnergyOld = AtomicFragment%LagFOP
+                 OccEnergyOld = AtomicFragment%EoccFOP
+                 VirtEnergyOld = AtomicFragment%EvirtFOP
               ENDIF
               expansion_converged = .TRUE.
            ENDIF
