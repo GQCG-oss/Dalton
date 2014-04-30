@@ -173,7 +173,7 @@ contains
     DECinfo%first_order = .false.
 
     !> MP2 density matrix   
-    DECinfo%MP2density = .false.
+    DECinfo%density = .false.
     DECinfo%SkipFull = .false.
 
     !-- MP2 gradient
@@ -408,7 +408,7 @@ contains
 
           !> Carry out MP2 density calculation (subset of gradient calculation)
        case('.DENSITY') 
-          DECinfo%MP2density=.true.
+          DECinfo%density=.true.
           DECinfo%first_order=.true.
 
           ! Threshold for residual norm of kappabar multiplier equation in first-order MP2 calculations
@@ -625,18 +625,19 @@ contains
     end if ArraysOnFile
 
 
-    BeyondMp2: if(DECinfo%ccModel /= MODEL_MP2) then
+    FirstOrderModel: if(DECinfo%ccModel /= MODEL_MP2.and.DECinfo%ccModel /= MODEL_CCSD) then
 
 
-       if(DECinfo%MP2density) then
-          call lsquit('Calculation of density matrix is only implemented for MP2!', DECinfo%output)
+       if(DECinfo%density) then
+          call lsquit('Calculation of density matrix is only implemented for MP2/CCSD!', DECinfo%output)
        end if
 
        if(DECinfo%gradient) then
-          call lsquit('Calculation of molecular gradient is only implemented for MP2!', DECinfo%output)
+          call lsquit('Calculation of molecular gradient is only implemented for MP2/CCSD!', DECinfo%output)
        end if
 
-    end if BeyondMp2
+    end if FirstOrderModel
+
 
 
     MP2gradientCalculation: if(DECinfo%first_order) then
@@ -655,6 +656,12 @@ contains
                & partitioning scheme is used!',DECinfo%output)
        end if
 
+       !Make sure, that if first order is specified, we calculate the CCSD
+       !multipliers
+       if( DECinfo%ccmodel == MODEL_CCSD)then
+          DECinfo%CCSDmultipliers = .true.
+       endif
+
     end if MP2gradientCalculation
 
 
@@ -672,7 +679,7 @@ contains
     end if
 
     ! Never use gradient and density at the same time (density is a subset of gradient)
-    if(DECinfo%MP2density .and. DECinfo%gradient) then
+    if(DECinfo%density .and. DECinfo%gradient) then
        call lsquit('Density and gradient cannot both be turned on at the same time! &
             & Note that density is a subset of a gradient calculation',DECinfo%output)
     end if
@@ -857,7 +864,7 @@ contains
     write(lupri,*) 'PairMP2 ', DECitem%PairMP2
     write(lupri,*) 'PairEstimate ', DECitem%PairEstimate
     write(lupri,*) 'first_order ', DECitem%first_order
-    write(lupri,*) 'MP2density ', DECitem%MP2density
+    write(lupri,*) 'density ', DECitem%density
     write(lupri,*) 'gradient ', DECitem%gradient
     write(lupri,*) 'kappa_use_preconditioner ', DECitem%kappa_use_preconditioner
     write(lupri,*) 'kappa_use_preconditioner_in_b ', DECitem%kappa_use_preconditioner_in_b

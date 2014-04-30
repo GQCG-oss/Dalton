@@ -372,10 +372,10 @@ contains
     ! Quick solution to ensure that the MP2 gradient contributions are not set
     save_first_order = DECinfo%first_order
     save_grad = DECinfo%gradient
-    save_dens = DECinfo%MP2density
+    save_dens = DECinfo%density
     DECinfo%first_order = .false.
     DECinfo%gradient = .false.
-    DECinfo%MP2density=.false.
+    DECinfo%density=.false.
     
     write(DECinfo%output,*) 'Calculating DEC correlation energy, FOT = ', DECinfo%FOT
 
@@ -408,7 +408,7 @@ contains
     ! Reset DEC parameters to the same as they were at input
     DECinfo%first_order = save_first_order
     DECinfo%gradient = save_grad
-    DECinfo%MP2density = save_dens
+    DECinfo%density = save_dens
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
     ! (the current value of Eerr) and the intrinsic error at the previous geometry.

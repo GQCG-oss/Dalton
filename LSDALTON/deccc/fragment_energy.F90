@@ -268,8 +268,8 @@ contains
     type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
-    type(array2) :: t1, ccsdpt_t1
-    type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2
+    type(array2) :: t1, ccsdpt_t1, m1
+    type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
@@ -304,7 +304,12 @@ contains
        ! Solve CC equation to calculate amplitudes and integrals 
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
-       call fragment_ccsolver(MyFragment,t1,t2,VOVO)
+       print *," HERE I GO",DECinfo%first_order
+       if(DECinfo%first_order) then  ! calculate also MP2 density integrals
+          call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
+       else
+          call fragment_ccsolver(MyFragment,t1,t2,VOVO)
+       endif
 
        !in the call to get_combined_SingleDouble_amplitudes
        !t1 is used, for RPA use_singles = .false.
@@ -321,6 +326,14 @@ contains
        call array4_extract_eos_indices_both_schemes(VOVO, &
             & VOVOocc, VOVOvirt, MyFragment)
        call array4_free(VOVO)
+
+       if(DECinfo%first_order) then
+          print *,"DIMA: We should extract the necessary multipliers here, and&
+          & actually change to type(array) and do everything in parallel"
+          call array4_free(m2)
+          call array2_free(m1)
+
+       endif
 
 
        ! Calculate combined single+doubles amplitudes
@@ -423,6 +436,10 @@ contains
     ! First order properties
     ! **********************
     if(DECinfo%first_order) then
+       if(DECinfo%ccmodel == MODEL_CCSD)then
+          print *,"DIMA, time to work!!!"
+          stop 0
+       endif
        call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
        call array4_free(VOOO)
        call array4_free(VOVV)

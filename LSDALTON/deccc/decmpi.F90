@@ -2165,7 +2165,7 @@ contains
     call ls_mpi_buffer(DECitem%PairEstimate,Master)
     call ls_mpi_buffer(DECitem%EstimateINITradius,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
-    call ls_mpi_buffer(DECitem%MP2density,Master)
+    call ls_mpi_buffer(DECitem%density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner_in_b,Master)
