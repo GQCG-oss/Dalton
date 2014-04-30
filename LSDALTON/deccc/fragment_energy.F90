@@ -277,16 +277,16 @@ contains
     times_ccsd => null()
     times_pt   => null()
 
-    ! type(matrix) :: Dmat
-    ! real(realk),pointer :: dens(:,:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-
     ! Which model? MP2,CC2, CCSD etc.
     WhichCCmodel: select case(MyFragment%ccmodel)
+
     case(MODEL_NONE) ! SKip calculation
+
        return
+
     case(MODEL_MP2) ! MP2 calculation
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
@@ -295,36 +295,23 @@ contains
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
-    case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (currently CC2 or CCSD)
-
+    case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
 
        call dec_fragment_time_init(times_ccsd)
-
 
        ! Solve CC equation to calculate amplitudes and integrals 
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
-       print *," HERE I GO",DECinfo%first_order
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
        else
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
        endif
 
-       !in the call to get_combined_SingleDouble_amplitudes
-       !t1 is used, for RPA use_singles = .false.
-       !For now it is in cc_driver as I get
-       !the wrong energy if it is initialized here
-       !if(.not. DECinfo%use_singles) then
-       !  t1 = array2_init([t2%dims(1),t2%dims(2)])
-       !endif
-       !call print_norm(t1%val,i8*t2%dims(1)*t2%dims(2))
-
 
        ! Extract EOS indices for integrals
        ! *********************************
-       call array4_extract_eos_indices_both_schemes(VOVO, &
-            & VOVOocc, VOVOvirt, MyFragment)
+       call array4_extract_eos_indices_both_schemes(VOVO,VOVOocc,VOVOvirt,MyFragment)
        call array4_free(VOVO)
 
        if(DECinfo%first_order) then
@@ -340,13 +327,10 @@ contains
        ! ********************************************
        ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)          
        call get_combined_SingleDouble_amplitudes(t1,t2,u)
-       !call print_norm(u%val,i8*t2%dims(1)*t2%dims(2)*t2%dims(1)*t2%dims(2))
-
 
        ! Extract EOS indices for amplitudes
        ! **********************************
-       call array4_extract_eos_indices_both_schemes(u, &
-            & t2occ, t2virt, MyFragment)
+       call array4_extract_eos_indices_both_schemes(u, t2occ, t2virt, MyFragment)
        ! Note, t2occ and t2virt also contain singles contributions
        call array4_free(u)
 
@@ -386,12 +370,16 @@ contains
        end if
 #endif 
 
-       call array2_free(t1)
+       if(DECinfo%use_singles)then
+          call array2_free(t1)
+       endif
        call array4_free(t2)
 
 
     case default
-      call lsquit("ERROR(atomic_fragment_energy_and_prop):MODEL not implemented",-1)
+
+       call lsquit("ERROR(atomic_fragment_energy_and_prop):MODEL not implemented",-1)
+
     end select WhichCCmodel
 
 

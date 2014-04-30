@@ -3935,31 +3935,37 @@ contains
   !> \author Kasper Kristensen
   !> \date January 2012
   subroutine get_combined_SingleDouble_amplitudes(t1,t2,u)
-    implicit none
-    !> Singles amplitudes t1(a,i)
-    type(array2),intent(in) :: t1
-    !> Doubles amplitudes t2(a,i,b,j)
-    type(array4),intent(in) :: t2
-    !> Combined single+double amplitudes
-    type(array4),intent(inout) :: u
-    integer :: i,j,a,b,nocc,nvirt
+     implicit none
+     !> Singles amplitudes t1(a,i)
+     type(array2),intent(in) :: t1
+     !> Doubles amplitudes t2(a,i,b,j)
+     type(array4),intent(in) :: t2
+     !> Combined single+double amplitudes
+     type(array4),intent(inout) :: u
+     integer :: i,j,a,b,nocc,nvirt
 
-    ! Number of occupied/virtual orbitals assuming index ordering given above
-    nocc=t1%dims(2)
-    nvirt=t1%dims(1)
+     ! Number of occupied/virtual orbitals assuming index ordering given above
+     nocc=t1%dims(2)
+     nvirt=t1%dims(1)
 
-    ! Init combined amplitudes
-    u = array4_init(t2%dims)
+     ! Init combined amplitudes
+     u = array4_init(t2%dims)
 
-    do j=1,nocc
-       do b=1,nvirt
-          do i=1,nocc
-             do a=1,nvirt
-                u%val(a,i,b,j) = t2%val(a,i,b,j) + t1%val(a,i)*t1%val(b,j)
-             end do
-          end do
-       end do
-    end do
+     if(DECinfo%use_singles)then
+        do j=1,nocc
+           do b=1,nvirt
+              do i=1,nocc
+                 do a=1,nvirt
+                    u%val(a,i,b,j) = t2%val(a,i,b,j) + t1%val(a,i)*t1%val(b,j)
+                 end do
+              end do
+           end do
+        end do
+     else
+        !$OMP WORKSHARE
+        u%val = t2%val
+        !$OMP END WORKSHARE
+     endif
 
 
   end subroutine get_combined_SingleDouble_amplitudes

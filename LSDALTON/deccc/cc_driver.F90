@@ -678,9 +678,9 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
 
    !in the call to get_combined_SingleDouble_amplitudes
    !t1 is used, for RPA use_singles = .false.
-   if(MyFragment%ccmodel == MODEL_RPA)then
-     t1 = array2_init([t2%dims(1),t2%dims(2)])
-   endif
+   !if(MyFragment%ccmodel == MODEL_RPA)then
+   !  t1 = array2_init([t2%dims(1),t2%dims(2)])
+   !endif
 
 end subroutine fragment_ccsolver
 
