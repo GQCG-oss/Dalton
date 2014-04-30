@@ -1753,7 +1753,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  if(talker.and.lock_outside) call arr_lock_wins(gvvooa,'s',mode)
                  if( worker )call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,0.0E0_realk,w2%d,nv)
                  if( lspdm_use_comm_proc )call lsmpi_barrier(infpar%pc_comm)
-                 print *,infpar%lg_mynum,"update 1"
                  call time_start_phase(PHASE_COMM, at = time_intloop_work)
                  if( talker )call array_add(gvvooa,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
                  call time_start_phase(PHASE_WORK, at = time_intloop_comm)
@@ -1787,7 +1786,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  if( worker )call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1%d,la,0.0E0_realk,w2%d,no)
                  if( lspdm_use_comm_proc  )call lsmpi_barrier(infpar%pc_comm)
                  call time_start_phase(PHASE_COMM, at = time_intloop_work)
-                 print *,infpar%lg_mynum,"update 2"
                  if( talker .and. .not. restart )call array_add(govov,1.0E0_realk,w2%d,order=[1,4,2,3],wrk=w3%d,iwrk=w3%n)
                  if( talker .and. restart )call array_add(govov,1.0E0_realk,w2%d,order=[1,4,2,3] )
                  call time_start_phase(PHASE_WORK, at = time_intloop_comm)
@@ -1826,7 +1824,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  call time_start_phase(PHASE_COMM, at = time_intloop_work)
                  if( talker .and. lock_outside )call arr_lock_wins(gvoova,'s',mode)
                  if( lspdm_use_comm_proc       )call lsmpi_barrier(infpar%pc_comm)
-                 print *,infpar%lg_mynum,"update 3"
                  if( talker                    )call array_add(gvoova,1.0E0_realk,w2%d)
                  call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 #endif
@@ -1865,7 +1862,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  !the gamma batch, chose the trafolength as minimum of alpha batch-length
                  !and the difference between first element of alpha batch and last element
                  !of gamma batch
-                 print *,infpar%lg_mynum,"in a22"
                  call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
                     &xo,yo,xv,yv,omega2,sio4%d,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
                     &worker,talker,time_intloop_B1work, time_intloop_B1comm )
@@ -1906,7 +1902,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               if( worker )call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,0.0E0_realk,w2%d,nv)
               call time_start_phase(PHASE_COMM, at = time_intloop_work )
               if( lspdm_use_comm_proc )call lsmpi_barrier(infpar%pc_comm)
-              print *,infpar%lg_mynum,"update 4"
               if( talker )call array_add(omega2,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
               call time_start_phase(PHASE_WORK, at = time_intloop_comm )
 #endif

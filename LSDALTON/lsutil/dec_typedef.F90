@@ -376,10 +376,10 @@ module dec_typedef_module
 
      ! First order properties
      ! **********************
-     !> Do first order properties (MP2 density, electric dipole, mp2 gradient)
+     !> Do first order properties (density, electric dipole, gradient)
      logical :: first_order
-     !> MP2 density matrix (and not gradient)
-     logical :: MP2density    
+     !> density matrix (and not gradient)
+     logical :: density    
      !> Calculate MP2 gradient  (density is then also calculated as a subset of the calculation)
      logical :: gradient
      !> Use preconditioner for kappa multiplier equation
