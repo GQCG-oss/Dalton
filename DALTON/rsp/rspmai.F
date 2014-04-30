@@ -4106,7 +4106,6 @@ C--------------------
 #include "gnrinf.h"
 #include "qm3.h"
 #include "mxcent.h"
-#include "wavpcm.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -4345,10 +4344,6 @@ Cjje
         DO I = 1,NNORBT
            FC(I) = FC(I) + WRK(I)
         ENDDO
-      ELSE IF (WAVPCM) THEN
-         DO I = 1,NNORBT
-            FC(I) = FC(I) + WAVFCK(I)
-         ENDDO
       END IF
 Cjje
 C
