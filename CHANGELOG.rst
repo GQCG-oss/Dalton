@@ -24,6 +24,7 @@ DALTON
   MXSHEL 1000 -> 1500; MXCORB 2400 -> 5000; MXPRIM 8000 -> 15000;
   MAXOCC 800 -> 1500; MXCENT 200 -> 500; MXCENT_QM 200 -> 500
   (the static size of dalton.x went from 100 MB to 165 MB) 
+- do not print garbage non-zero transition moments and oscillator strengths for triplet excitations (*EXCITA module)
 
 
 LSDALTON
