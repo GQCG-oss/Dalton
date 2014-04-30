@@ -297,12 +297,24 @@ contains
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (currently CC2 or CCSD)
 
+
        call dec_fragment_time_init(times_ccsd)
+
 
        ! Solve CC equation to calculate amplitudes and integrals 
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
        call fragment_ccsolver(MyFragment,t1,t2,VOVO)
+
+       !in the call to get_combined_SingleDouble_amplitudes
+       !t1 is used, for RPA use_singles = .false.
+       !For now it is in cc_driver as I get
+       !the wrong energy if it is initialized here
+       !if(.not. DECinfo%use_singles) then
+       !  t1 = array2_init([t2%dims(1),t2%dims(2)])
+       !endif
+       !call print_norm(t1%val,i8*t2%dims(1)*t2%dims(2))
+
 
        ! Extract EOS indices for integrals
        ! *********************************
@@ -315,6 +327,7 @@ contains
        ! ********************************************
        ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)          
        call get_combined_SingleDouble_amplitudes(t1,t2,u)
+       !call print_norm(u%val,i8*t2%dims(1)*t2%dims(2)*t2%dims(1)*t2%dims(2))
 
 
        ! Extract EOS indices for amplitudes
@@ -551,6 +564,9 @@ contains
             & Input dimensions do not match!',-1)
     end if
 
+!    IF(MyFragment%ccmodel==MODEL_MP2.AND.DECinfo%OnlyOccPart)THEN
+!       nvirtEOS = 1
+!    ENDIF
 
     IF(doOccPart)THEN
        call mem_TurnONThread_Memory()
@@ -2432,6 +2448,9 @@ contains
               IF(.NOT.FragmentExpansionRI)THEN
                  WRITE(DECinfo%output,*)'Expansion Include Full Molecule'
                  OccOld = Occ_atoms;VirtOld = Virt_atoms
+                 LagEnergyOld = AtomicFragment%LagFOP
+                 OccEnergyOld = AtomicFragment%EoccFOP
+                 VirtEnergyOld = AtomicFragment%EvirtFOP
               ENDIF
               expansion_converged = .TRUE.
            ENDIF

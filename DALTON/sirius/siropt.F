@@ -1229,7 +1229,6 @@ C
 #include "scbrhf.h"
 #include "infind.h"
 #include "mxcent.h"
-#include "wavpcm.h"
 C
       CALL QENTER('RHFENR')
 C
@@ -1389,13 +1388,6 @@ C     take care of 1-electron case and no virtuals case
      *      ' Deviation from canonical Hartree-Fock orbitals :',
      *      ' Largest off-diagonal Fock matrix element is',VALCON
       END IF
-CVW Catch orbital energies
-      IF (WAVPCM) THEN
-         DO I = 1, NBAST
-            WAVOE(I) = SCRA(I)
-         END DO
-      END IF
-CVW
  9999 CALL QEXIT('RHFENR')
       RETURN
 C

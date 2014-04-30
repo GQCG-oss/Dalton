@@ -150,7 +150,8 @@ SUBROUTINE DGEMM_TS(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
   END IF
   IF (INFO.NE.0) THEN
      print *, 'INFO = ', INFO
-     stop 'DGEMM_TS: Something wrong with input!'
+     call lsquit('DGEMM_TS: Something wrong with input!',-1)
+!     stop 'DGEMM_TS: Something wrong with input!'
   END IF
 
   !     Quick return if possible.
