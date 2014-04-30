@@ -2467,7 +2467,7 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
    simp = .false.
    if(present(simple))simp = simple
 
-   if(present(comm))then
+   if(present(comm).and..not.simp)then
 #ifdef VAR_MPI
       loc = .false.
       if(present(local))loc=local

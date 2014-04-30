@@ -405,14 +405,14 @@ contains
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
-#ifdef VAR_MPI
-    do ij_count=1,infpar%lg_nodtot
-       if( ij_count - 1 == infpar%lg_mynum)then
-          print *,infpar%lg_mynum," jobs 2 ",jobs
-       endif
-       call lsmpi_barrier(infpar%lg_comm)
-    enddo
-#endif
+!#ifdef VAR_MPI
+!    do ij_count=1,infpar%lg_nodtot
+!       if( ij_count - 1 == infpar%lg_mynum)then
+!          print *,infpar%lg_mynum," jobs 2 ",jobs
+!       endif
+!       call lsmpi_barrier(infpar%lg_comm)
+!    enddo
+!#endif
 
     ! release ij_array
     call mem_dealloc(ij_array)
@@ -6087,12 +6087,12 @@ contains
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
     &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
 
-    do alphaB=1,infpar%lg_nodtot
-       if( alphaB - 1 == infpar%lg_mynum)then
-          print *,infpar%lg_mynum," distribution ",distribution
-       endif
-       call lsmpi_barrier(infpar%lg_comm)
-    enddo
+    !do alphaB=1,infpar%lg_nodtot
+    !   if( alphaB - 1 == infpar%lg_mynum)then
+    !      print *,infpar%lg_mynum," distribution ",distribution
+    !   endif
+    !   call lsmpi_barrier(infpar%lg_comm)
+    !enddo
 #endif
 
     ! Start looping over gamma and alpha batches and calculate integrals

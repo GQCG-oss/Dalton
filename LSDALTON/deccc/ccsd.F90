@@ -1982,13 +1982,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call mem_alloc(gvvoo,o2v2,comm=infpar%pc_comm,local=.true.)
            call mem_alloc(gvoov,o2v2,comm=infpar%pc_comm,local=.true.)
         else
-#ifdef VAR_HAVE_MPI3
-           call mem_alloc(gvvoo,o2v2,comm=infpar%lg_comm)
-           call mem_alloc(gvoov,o2v2,comm=infpar%lg_comm)
-#else
+!#ifdef VAR_HAVE_MPI3
+!           call mem_alloc(gvvoo,o2v2,comm=infpar%lg_comm)
+!           call mem_alloc(gvoov,o2v2,comm=infpar%lg_comm)
+!#else
            call mem_alloc(gvvoo,o2v2,simple=.true.)
            call mem_alloc(gvoov,o2v2,simple=.true.)
-#endif
+!#endif
         endif
      endif
 
