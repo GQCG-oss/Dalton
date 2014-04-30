@@ -651,8 +651,8 @@ module cc_debug_routines_module
 !#ifdef VAR_MPI
 !             call RPA_residualpar(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
 !#else
-             msg =' Norm of gmo'
-             call print_norm(govov,msg)
+             !msg =' Norm of gmo'
+             !call print_norm(govov,msg)
              call RPA_residualdeb(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
 !#endif
            !call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
@@ -961,9 +961,9 @@ module cc_debug_routines_module
         call array4_free(t2(i))
 
      end do
-     if(.not.DECinfo%use_singles)then
-       t1_final = array2_init([nvirt,nocc])
-     endif
+     !if(.not.DECinfo%use_singles)then
+     !  t1_final = array2_init([nvirt,nocc])
+     !endif
 
      ! Write finalization message
      !---------------------------
