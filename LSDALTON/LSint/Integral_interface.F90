@@ -5446,7 +5446,6 @@ IF (isADMMQ) THEN
      scaling_ADMMQ = scaling_ADMMQ - 2E0_realk/3E0_realk*EX2(1)*GGAXfactor/nelectrons
   ENDIF
   IF (isADMMP) THEN
-     !scaling_ADMMP = 1E0_realk / mat_trAB(D,S33) * constrain_factor**(2.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
      scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(4.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
      call mat_scal(scaling_ADMMP, tmp33)
      write(lupri,*) 'debug:LAMBDA ',scaling_ADMMP
@@ -5896,8 +5895,10 @@ call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)
 IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
 !
 CONTAINS
+
    ! LAMBDA_Q = (2/N) Tr([k2-xc2] d')
    ! LAMBDA_S = (2/N) [ Tr(k2 d') - xi**(2/3) Tr(x2 d')] - 2/(3N) xi**(2/3) Ex2(d')
+   ! LAMBDA_P = (2/N) xi**2 Tr([k2-xc2] d)
    SUBROUTINE get_Lagrange_multiplier_charge_conservation_in_Energy(LAMBDA,&
                      & GGAXfactor,D2,k2,xc2,E_x2,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3,constrain_factor)
@@ -5926,7 +5927,7 @@ CONTAINS
       IF (isADMMS) THEN
          LAMBDA = 2E0_realk/NbEl * ( trace - E_x2/3E0_realk )
       ELSEIF (isADMMP) THEN
-         LAMBDA = 2E0_realk/NbEl * constrain_factor**(4.) * trace
+         LAMBDA = 2E0_realk/NbEl * constrain_factor**(4.) * (mat_trAB(k2,D2) - E_x2)
       ELSE
          LAMBDA = 2E0_realk/NbEl*trace
       ENDIF
