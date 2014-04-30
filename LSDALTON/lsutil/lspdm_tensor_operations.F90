@@ -692,10 +692,10 @@ module lspdm_tensor_operations_module
     logical :: nomem
     real(realk), external :: ddot
 
-  mode  = MPI_MODE_NOCHECK
   nomem = .false.
   if(DECinfo%v2o2_free_solver)  nomem = .true.
 #ifdef VAR_MPI
+  mode  = MPI_MODE_NOCHECK
   if (nomem) then
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
