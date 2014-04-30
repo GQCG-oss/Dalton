@@ -678,9 +678,6 @@ contains
     call mo_work_dist(o2v,fai2,tl2)
 
 
-    w3size = max(tl1*no,tl2*nv)
-    if(nnod>1)w3size = max(w3size,2*omega2%tsize)
-    call mem_alloc(w3,w3size)
     call mo_work_dist(nv*nv*no,fri,tri)
     !call mem_alloc(w2,nv2*no,no)
     !call mem_alloc(w_o2v2,nv2*no,no)
@@ -690,8 +687,10 @@ contains
 
     !t_par = array_ainit([nv,nv,no,no],4,atype='TDAR',local=.false.)
     !call array_convert(t2%elm4,t_par)
-    call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,3,fai1,tl1,.false.,debug=.false.)
+    call arr_lock_wins(t2,'s',mode)
+    call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,3,fai1,tl1,.true.,debug=.false.)
 
+    call arr_unlock_wins(t2)
     !call array_gather(1.0E0_realk,t2,0.0E0_realk,w2,o2v2)
 
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
@@ -699,14 +698,15 @@ contains
     call dgemm('n','n',tl1,no,no,-1.0E0_realk,w2,tl1,pfock%elm1,no,0.0E0_realk,w_o2v2,tl1)
 
 
+    call arr_lock_wins(omega2,'s',mode)
     call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.false.,debug=.false.)
+    !call array_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.true.)
+    call arr_unlock_wins(omega2)
 
     call lsmpi_barrier(infpar%lg_comm)
-    call array_two_dim_1batch(omega2,[2,1,4,3],'a',w_o2v2,3,fai1,tl1,.false.,debug=.false.)
-    call lsmpi_barrier(infpar%lg_comm)
-    !call array_two_dim_1batch(omega2,[3,4,1,2],'a',w_o2v2,2,fri,tri,.false.,debug=.false.)
+
+    write(*,*) 'Done with occupied'
       
-    !call lsmpi_barrier(infpar%lg_comm)
 #endif
 
     call mem_dealloc(w2)
@@ -717,30 +717,46 @@ contains
     call mem_alloc(w2,tl2*nv)
     !call array_convert(t2,w2)
     
-    call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,3,fai2,tl2,.false.,debug=.false.)
+    call arr_lock_wins(t2,'s',mode)
+    call array_two_dim_2batch(t2,[1,2,3,4],'g',w2,3,fai2,tl2,.true.)
 
+    call arr_unlock_wins(t2)
     ! F[a c] * t [c b i j] =+ Omega [a b i j]
+    write(*,*) 'Starting with dgemm virtual'
 
-      call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w2,nv,0.0E0_realk,w_o2v2,tl2)
+      call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w2,nv,0.0E0_realk,w_o2v2,nv)
+      write(*,*) 'Done with dgemm virtual'
 
-    !call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
 
 #ifdef VAR_MPI
-    call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai2,tl2,.false.,debug=.false.)
+    call arr_lock_wins(omega2,'s',mode)
+    call array_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai2,tl2,.true.)
     call lsmpi_barrier(infpar%lg_comm)
-    call array_two_dim_1batch(omega2,[2,1,4,3],'a',w_o2v2,3,fai2,tl2,.false.,debug=.false.)
-    call lsmpi_barrier(infpar%lg_comm)
+    call arr_unlock_wins(omega2)
+    !call array_two_dim_1batch(omega2,[2,1,4,3],'a',w_o2v2,3,fai2,tl2,.false.,debug=.false.)
+    !call array_two_dim_2batch(omega2,[2,1,4,3],'a',w_o2v2,3,fai2,tl2,.true.)
+    !call lsmpi_barrier(infpar%lg_comm)
+    write(*,*) 'Done with virtual'
 
 
 #endif
 
+   call mem_dealloc(w_o2v2)
+   call mem_dealloc(w2)
 
    if(master) then
-     call array_reorder_4d(1.0E0_realk,w_o2v2,nv,nv,no,no,[2,1,4,3],&
-       & 0.0E0_realk,w2)
-     call array_scatter(1.0E0_realk,w2,1.0E0_realk,omega2,o2v2)
+     call mem_alloc(w_o2v2,no2*nv2)
+     write(*,*) 'lock omega2'
+     call arr_lock_wins(omega2,'s',mode)
+     write(*,*) 'gather omega2'
+     call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
+     write(*,*) 'unlock omega2'
+     call arr_unlock_wins(omega2,.true.)
+     call arr_lock_wins(omega2,'s',mode)
+     write(*,*) 'scatter to omega2'
+     call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
+     call arr_unlock_wins(omega2,.true.)
      call mem_dealloc(w_o2v2)
-     call mem_dealloc(w2)
    endif
 
    return
@@ -1085,11 +1101,12 @@ contains
 
 
     call mo_work_dist(nvirt*nocc,fai,tl)
-    call mem_alloc(w2,tl*nocc*nvirt)
-    call mem_alloc(w3,tl*nocc*nvirt)
 
     t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
     call array_convert(u2%elm4,t_par)
+    call array_free(u2)
+    call mem_alloc(w2,tl*nocc*nvirt)
+    call mem_alloc(w3,tl*nocc*nvirt)
     
 
     call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.false.)
@@ -1174,7 +1191,6 @@ contains
 
 
     call array_free(t_par)
-    call array_free(u2)
     !call array_free(omegaw1)
     call mem_dealloc(omegw)
 
