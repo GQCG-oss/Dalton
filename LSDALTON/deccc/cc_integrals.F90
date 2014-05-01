@@ -2058,13 +2058,14 @@ contains
   
   end subroutine unpack_gmo
 
-  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective)
+  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective,order)
      implicit none
      type(array),intent(inout)   :: integral
      type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
      type(lsitem), intent(inout) :: mylsitem
      logical, intent(in) :: local
      logical, intent(inout) :: collective
+     integer, intent(in), optional :: order(4)
      !Integral stuff
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,MinAObatch
@@ -2084,7 +2085,7 @@ contains
      integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
      TYPE(DECscreenITEM)  :: DecScreen
      real(realk), pointer :: w1(:),w2(:)
-     real(realk) :: MemFree
+     real(realk) :: MemFree,nrm
      integer(kind=long) :: maxsize
      logical :: master
      integer(kind=ls_mpik) :: me, nnod
@@ -2148,25 +2149,25 @@ contains
 
         nba = nb
         nbg = nb
-        gamm: do i = MinAObatch, nb
-           alp: do k = MinAObatch, nb
+        alp: do i = MinAObatch, nb
+           gamm: do k = MinAObatch, nb
 
-              maxsize=max(max(nb**2*k*i,n1*n2*k*i),n1*n2*n3*n4)
-              maxsize=maxsize + max(n1*nb*k*i,n1*n2*n3*i)
+              maxsize=max(max(nb**2*i*k,n1*n2*k*i),n1*n2*n3*n4)
+              maxsize=maxsize + max(n1*nb*i*k,n1*n2*n3*k)
               if(collective) maxsize = maxsize + n1*n2*n3*n4
 
               if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
                  if(nba <= MinAObatch .and. nbg<= MinAObatch .and. collective)then
                     collective = .false.
                  else
-                    nba = k - 1
-                    nbg = i
-                    exit gamm
+                    nba = i
+                    nbg = k - 1
+                    exit alp
                  endif
               endif
 
-           enddo alp
-        enddo gamm
+           enddo gamm
+        enddo alp
 
 
         if(DECinfo%manual_batchsizes)then
@@ -2181,7 +2182,7 @@ contains
            if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==MinAObatch).and.nnod>1)then
               do while((nb/nba)*(nb/nbg)<magic*nnod)
                  nbg=nbg-1
-                 if(nbg<1)exit
+                 if(nbg<=MinAObatch)exit
               enddo
               if(nbg<MinAObatch)nbg=MinAObatch
            endif
@@ -2357,7 +2358,7 @@ contains
               call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
               call time_start_phase( PHASE_COMM )
-              call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize)
+              call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize, order = order)
               call time_start_phase( PHASE_WORK )
            endif
 
@@ -2395,14 +2396,6 @@ contains
      call mem_dealloc(jobdist)
 
 
-     if(.not.local)then
-        integral%access_type = MASTER_ACCESS
-        trafo1%access_type = MASTER_ACCESS
-        trafo2%access_type = MASTER_ACCESS
-        trafo3%access_type = MASTER_ACCESS
-        trafo4%access_type = MASTER_ACCESS
-     endif
-
      call mem_dealloc( w1 )
      call mem_dealloc( w2 )
 
@@ -2411,16 +2404,28 @@ contains
      call lsmpi_barrier(infpar%lg_comm)
      if(collective)then
         call time_start_phase( PHASE_COMM )
-        call lsmpi_reduction(work,(i8*n1)*n2*n3*n4,infpar%master,infpar%lg_comm)
-        if( me == 0 )then
-           call array_convert(work,integral)
-        endif
+        call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm,SPLIT_MSG_REC)
+        call array_convert(work,integral, order = order )
      endif
      call time_start_phase( PHASE_WORK )
 #else
-     call array_convert(work,integral)
+     call array_convert(work,integral, order = order )
 #endif
      if(collective) call mem_dealloc( work )
+
+     if(DECinfo%PL>2)then
+        call print_norm(integral,nrm)
+        if(master) print *," NORM of the integral :",nrm
+     endif
+
+     if(.not.local)then
+        integral%access_type = MASTER_ACCESS
+        trafo1%access_type = MASTER_ACCESS
+        trafo2%access_type = MASTER_ACCESS
+        trafo3%access_type = MASTER_ACCESS
+        trafo4%access_type = MASTER_ACCESS
+     endif
+
 
   end subroutine get_mo_integral_par
 

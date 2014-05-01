@@ -569,9 +569,9 @@ end function ccsolver_justenergy
 !> \brief For a given fragment, calculate singles and doubles amplitudes and
 !> two-electron integrals (a i | bj ) required for CC energy.
 !> Intended to be used for CC2 and CCSD (and NOT for MP2).
-!> \author Kasper Kristensen
+!> \author Kasper Kristensen, heavily modifed by PE
 !> \date January 2012
-subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
+subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
 
    implicit none
 
@@ -583,6 +583,10 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
    type(array4),intent(inout) :: t2
    !> Two electron integrals (a i | b j) stored as (a,i,b,j)
    type(array4),intent(inout) :: VOVO
+   !> Singles multipliers m1(a,i)
+   type(array2),intent(inout), optional :: m1
+   !> Doubles multipliers m2(a,i,b,j)
+   type(array4),intent(inout), optional :: m2
 
    !INTERNAL PARAMETERS
    type(array4) :: mp2_amp
@@ -643,12 +647,28 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
             & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
             & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,SOLVE_AMPLITUDES)
 
+         if(DECinfo%CCSDmultipliers)then
+
+            call array4_free(VOVO)
+
+            call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,myfragment%fock,myfragment%nbasis,&
+               &myfragment%noccAOS,myfragment%nunoccAOS, &
+               &myfragment%mylsitem,DECinfo%PL,.true.,myfragment%ppfock,myfragment%qqfock,ccenergy, &
+               & t1,t2,VOVO, .false., SOLVE_MULTIPLIERS, m2 = m2, m1 = m1)
+
+         endif
+
       endif
    else
+
       call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,local)
+
+      if(DECinfo%CCSDmultipliers)then
+         call lsquit("ERROR(fragment_ccsolver):no parallel version of multipliers, yet. run with .CCDEBUG",-1)
+      endif
    endif
 
    ! Save singles amplitudes in fragment structure
@@ -658,9 +678,9 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
 
    !in the call to get_combined_SingleDouble_amplitudes
    !t1 is used, for RPA use_singles = .false.
-   if(MyFragment%ccmodel == MODEL_RPA)then
-     t1 = array2_init([t2%dims(1),t2%dims(2)])
-   endif
+   !if(MyFragment%ccmodel == MODEL_RPA)then
+   !  t1 = array2_init([t2%dims(1),t2%dims(2)])
+   !endif
 
 end subroutine fragment_ccsolver
 

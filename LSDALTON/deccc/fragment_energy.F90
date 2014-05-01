@@ -268,8 +268,8 @@ contains
     type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
-    type(array2) :: t1, ccsdpt_t1
-    type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2
+    type(array2) :: t1, ccsdpt_t1, m1
+    type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
@@ -277,16 +277,16 @@ contains
     times_ccsd => null()
     times_pt   => null()
 
-    ! type(matrix) :: Dmat
-    ! real(realk),pointer :: dens(:,:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-
     ! Which model? MP2,CC2, CCSD etc.
     WhichCCmodel: select case(MyFragment%ccmodel)
+
     case(MODEL_NONE) ! SKip calculation
+
        return
+
     case(MODEL_MP2) ! MP2 calculation
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
@@ -295,45 +295,42 @@ contains
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
-    case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (currently CC2 or CCSD)
-
+    case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
 
        call dec_fragment_time_init(times_ccsd)
-
 
        ! Solve CC equation to calculate amplitudes and integrals 
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
-       call fragment_ccsolver(MyFragment,t1,t2,VOVO)
-
-       !in the call to get_combined_SingleDouble_amplitudes
-       !t1 is used, for RPA use_singles = .false.
-       !For now it is in cc_driver as I get
-       !the wrong energy if it is initialized here
-       !if(.not. DECinfo%use_singles) then
-       !  t1 = array2_init([t2%dims(1),t2%dims(2)])
-       !endif
-       !call print_norm(t1%val,i8*t2%dims(1)*t2%dims(2))
+       if(DECinfo%first_order) then  ! calculate also MP2 density integrals
+          call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
+       else
+          call fragment_ccsolver(MyFragment,t1,t2,VOVO)
+       endif
 
 
        ! Extract EOS indices for integrals
        ! *********************************
-       call array4_extract_eos_indices_both_schemes(VOVO, &
-            & VOVOocc, VOVOvirt, MyFragment)
+       call array4_extract_eos_indices_both_schemes(VOVO,VOVOocc,VOVOvirt,MyFragment)
        call array4_free(VOVO)
+
+       if(DECinfo%first_order) then
+          print *,"DIMA: We should extract the necessary multipliers here, and&
+          & actually change to type(array) and do everything in parallel"
+          call array4_free(m2)
+          call array2_free(m1)
+
+       endif
 
 
        ! Calculate combined single+doubles amplitudes
        ! ********************************************
        ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)          
        call get_combined_SingleDouble_amplitudes(t1,t2,u)
-       !call print_norm(u%val,i8*t2%dims(1)*t2%dims(2)*t2%dims(1)*t2%dims(2))
-
 
        ! Extract EOS indices for amplitudes
        ! **********************************
-       call array4_extract_eos_indices_both_schemes(u, &
-            & t2occ, t2virt, MyFragment)
+       call array4_extract_eos_indices_both_schemes(u, t2occ, t2virt, MyFragment)
        ! Note, t2occ and t2virt also contain singles contributions
        call array4_free(u)
 
@@ -373,12 +370,16 @@ contains
        end if
 #endif 
 
-       call array2_free(t1)
+       if(DECinfo%use_singles)then
+          call array2_free(t1)
+       endif
        call array4_free(t2)
 
 
     case default
-      call lsquit("ERROR(atomic_fragment_energy_and_prop):MODEL not implemented",-1)
+
+       call lsquit("ERROR(atomic_fragment_energy_and_prop):MODEL not implemented",-1)
+
     end select WhichCCmodel
 
 
@@ -423,6 +424,10 @@ contains
     ! First order properties
     ! **********************
     if(DECinfo%first_order) then
+       if(DECinfo%ccmodel == MODEL_CCSD)then
+          print *,"DIMA, time to work!!!"
+          stop 0
+       endif
        call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
        call array4_free(VOOO)
        call array4_free(VOVV)
@@ -564,6 +569,9 @@ contains
             & Input dimensions do not match!',-1)
     end if
 
+!    IF(MyFragment%ccmodel==MODEL_MP2.AND.DECinfo%OnlyOccPart)THEN
+!       nvirtEOS = 1
+!    ENDIF
 
     IF(doOccPart)THEN
        call mem_TurnONThread_Memory()
@@ -2445,6 +2453,9 @@ contains
               IF(.NOT.FragmentExpansionRI)THEN
                  WRITE(DECinfo%output,*)'Expansion Include Full Molecule'
                  OccOld = Occ_atoms;VirtOld = Virt_atoms
+                 LagEnergyOld = AtomicFragment%LagFOP
+                 OccEnergyOld = AtomicFragment%EoccFOP
+                 VirtEnergyOld = AtomicFragment%EvirtFOP
               ENDIF
               expansion_converged = .TRUE.
            ENDIF
