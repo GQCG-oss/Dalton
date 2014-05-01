@@ -1900,13 +1900,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !JOHANNES MODEL_RPA
          if (ccmodel == MODEL_RPA) then
             if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
-            write(*,*) 'getting gmo'
 
-            !call  wrapper_to_get_real_t1_free_gmo(nb,no,nv,Co%elm2,Cv2%elm2,&
-            !  & iajb,ccmodel,mylsitem)
-            call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
-               & nb,no,nv,CCmodel,MOinfo)
-            write(*,*) 'got gmo'
+            call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,&
+              & pgmo_diag,pgmo_up,nb,no,nv,CCmodel,MOinfo)
 
             if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
                &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
