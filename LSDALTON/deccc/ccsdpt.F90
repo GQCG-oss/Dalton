@@ -101,6 +101,10 @@ contains
     occAO       = [nbasis,nocc]
     virtAO      = [nbasis,nvirt]
 
+    !Zero to be able to sum up 
+    call array_zero(ccsdpt_singles)
+    call array_zero(ccsdpt_doubles)
+
 #ifdef VAR_MPI
 
     call time_start_phase(PHASE_WORK)
@@ -171,14 +175,8 @@ contains
     ! transform ccsd doubles amplitudes to diagonal basis
     ! ***************************************************
 
-    call ccsdpt_local_can_trans(ccsd_doubles,nocc,nvirt,Uocc,Uvirt)
-    !call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vovo=ccsd_doubles%elm1)
+    call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vovo=ccsd_doubles%elm1)
 
-    ! Now we transpose the unitary transformation matrices as we will need these in the transformation
-    ! of the ^{ccsd}T^{ab}_{ij}, ^{*}T^{a}_{i}, and ^{*}T^{ab}_{ij} amplitudes from canonical to local basis
-    ! later on
-    call array2_transpose(Uocc)
-    call array2_transpose(Uvirt)
 
     ! ********************************
     ! begin actual triples calculation
@@ -310,9 +308,8 @@ contains
     ! ***** do canonical --> local transformation *****
     ! *************************************************
 
-    call ccsdpt_can_local_trans(ccsd_doubles,ccsdpt_singles,ccsdpt_doubles,nocc,nvirt,Uocc,Uvirt)
-    !call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1,vo=ccsdpt_singles%elm1)
-    !call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1)
+    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1,vo=ccsdpt_singles%elm1)
+    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1)
 
     ! now, release Uocc and Uvirt
     call array2_free(Uocc)
@@ -324,14 +321,6 @@ contains
     call array4_free(abij)
     call array_free(cbai)
     call array4_free(jaik)
-
-    ! **************************************************************
-    ! *** do final reordering of amplitudes and clean the dishes ***
-    ! **************************************************************
-
-    ! reorder ccsdpt_doubles and ccsd_doubles back to (a,b,i,j) sequence
-    call array_reorder(ccsdpt_doubles,[3,4,1,2])
-    call array_reorder(ccsd_doubles,[4,3,2,1])
 
   end subroutine ccsdpt_driver
 

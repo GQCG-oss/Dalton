@@ -440,10 +440,24 @@ contains
        call dec_time_evaluate_efficiency_frag(MyFragment,times_pt,MODEL_CCSDpT,'(T)  part')
     endif
     ! Free remaining arrays
-    call array_free(VOVOocc)
-    call array_free(VOVOvirt)
-    call array_free(t2occ)
-    call array_free(t2virt)
+    if(.not.DECinfo%OnlyVIRTPart)then
+       call array_free(VOVOocc)
+       call array_free(t2occ)
+    endif
+    if(.not.DECinfo%OnlyOccPart)then
+       call array_free(VOVOvirt)
+       call array_free(t2virt)
+    endif
+    !print *,"s1",VOVOocc%initialized,associated(VOVOocc%elm1)
+    !print *,"s2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
+    !print *,"s3",t2virt%initialized,associated(t2virt%elm1)
+    !print *,"s4",t2occ%initialized,associated(t2occ%elm1)
+    !print *,"s5",VOVO%initialized,associated(VOVO%elm1)
+    !print *,"s6",t2%initialized,associated(t2%elm1)
+    !print *,"s7",t1%initialized,associated(t1%elm1)
+    !print *,"s8",ccsdpt_t1%initialized,associated(ccsdpt_t1%elm1)
+    !print *,"s9",ccsdpt_t2%initialized,associated(ccsdpt_t2%elm1)
+    !print *,"s10",u%initialized,associated(u%elm1)
 
   end subroutine atomic_fragment_energy_and_prop
 
@@ -927,7 +941,7 @@ contains
     type(decfrag), intent(inout) :: PairFragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout) :: grad
-    type(array) :: t1, ccsdpt_t1
+    type(array) :: t1, ccsdpt_t1,m1,m2
     type(array) :: g,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVO,ccsdpt_t2,VOVOvirtTMP
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
@@ -941,9 +955,15 @@ contains
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-    WhichCCmodel: if(PairFragment%ccmodel==MODEL_NONE) then ! SKip calculation
+
+    ! Which model? MP2,CC2, CCSD etc.
+    WhichCCmodel: select case(PairFragment%ccmodel) 
+    
+    case( MODEL_NONE ) ! SKip calculation
+
        return
-    elseif(PairFragment%ccModel==MODEL_MP2) then ! MP2
+
+    case( MODEL_MP2 ) ! MP2
 
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
@@ -951,20 +971,30 @@ contains
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
-    else ! higher order CC 
+    case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
 
        call dec_fragment_time_init(times_ccsd)
 
        ! Solve CC equation to calculate amplitudes and integrals 
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices. 
-       call fragment_ccsolver(PairFragment,t1,t2,VOVO)
+       if(DECinfo%first_order) then 
+          call fragment_ccsolver(PairFragment,t1,t2,VOVO,m1_arr=m1,m2_arr=m2)
+       else
+          call fragment_ccsolver(PairFragment,t1,t2,VOVO)
+       endif
 
 
        ! Extract EOS indices for integrals 
        ! *********************************
        call array_extract_eos_indices(VOVO, PairFragment, Arr_occEOS=VOVOocc, Arr_virtEOS=VOVOvirt)
        call array_free(VOVO)
+
+       if(DECinfo%first_order) then
+          print *,"DIMA: same for pair fragments"
+          call array_free(m2)
+          call array_free(m1)
+       endif
 
 
        ! Calculate combined single+doubles amplitudes
@@ -981,7 +1011,11 @@ contains
 
        call dec_fragment_time_get(times_ccsd)
 
-    end if WhichCCmodel
+    case default
+
+       call lsquit("ERROR(pair_fragment_energy_and_prop):MODEL not implemented",-1)
+
+    end select WhichCCmodel
 
 
     ! Calculate pair interaction energy using Lagrangian scheme
@@ -1068,7 +1102,9 @@ contains
 #endif
 
     if( PairFragment%ccmodel /= MODEL_MP2 ) then
-       call array_free(t1)
+       if(DECinfo%use_singles)then
+          call array_free(t1)
+       endif
        call array_free(t2)
        call dec_time_evaluate_efficiency_frag(PairFragment,times_ccsd,MODEL_CCSD,'CCSD part')
     end if
@@ -1078,12 +1114,25 @@ contains
     endif
 
     ! Free remaining arrays
-    call array_free(VOVOocc)
-    call array_free(VOVOvirt)
-    call array_free(t2occ)
-    call array_free(t2virt)
+    if(.not.DECinfo%OnlyVIRTPart.or.PairFragment%ccmodel == MODEL_MP2)then
+       call array_free(VOVOocc)
+       call array_free(t2occ)
+    endif
+    if(.not.DECinfo%OnlyOccPart.or.PairFragment%ccmodel == MODEL_MP2)then
+       call array_free(t2virt)
+       call array_free(VOVOvirt)
+    endif
 
-
+    !print *,"p1",VOVOocc%initialized,associated(VOVOocc%elm1)
+    !print *,"p2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
+    !print *,"p3",t2virt%initialized,associated(t2virt%elm1)
+    !print *,"p4",t2occ%initialized,associated(t2occ%elm1)
+    !print *,"p5",VOVO%initialized,associated(VOVO%elm1)
+    !print *,"p6",t2%initialized,associated(t2%elm1)
+    !print *,"p7",t1%initialized,associated(t1%elm1)
+    !print *,"p8",ccsdpt_t1%initialized,associated(ccsdpt_t1%elm1)
+    !print *,"p9",ccsdpt_t2%initialized,associated(ccsdpt_t2%elm1)
+    !print *,"p10",u%initialized,associated(u%elm1)
 
   end subroutine pair_fragment_energy_and_prop
 
@@ -1124,7 +1173,7 @@ contains
      real(realk) :: tcpu1,tcpu2,twall1,twall2
      logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
      real(realk) :: Eocc, lag_occ,Evirt,lag_virt
-     logical :: something_wrong
+     logical :: something_wrong, do_non_pdm
      real(realk) :: prefac_coul,prefac_k
 
 
@@ -1221,8 +1270,15 @@ contains
            & Input dimensions do not match!',-1)
      end if
 
-     if( t2occ%itype == DENSE .and. gocc%itype == DENSE .and. &
-        &t2virt%itype ==  DENSE .and. gvirt%itype == DENSE )then
+     do_non_pdm = .false.
+     if( .not.DECinfo%OnlyVIRTPart )then
+        do_non_pdm = do_non_pdm .or. (t2occ%itype == DENSE .and. gocc%itype == DENSE )
+     endif
+     if(.not.DECinfo%OnlyoccPart)then
+        do_non_pdm = do_non_pdm .or. (t2virt%itype ==  DENSE .and. gvirt%itype == DENSE)
+     endif
+
+     if( do_non_pdm )then
 
         if(.not. DECinfo%onlyVirtpart) then
 
@@ -2204,8 +2260,8 @@ contains
            !at the RI - MP2 level 
            StepsizeLoop2 = MIN(2,StepsizeLoop2)
         ENDIF
-        ExpandVirt=.TRUE.    !Expand both Occupied and Virtual Space untill convergence
-        ExpandOcc=.TRUE. 
+        ExpandVirt = .TRUE.    !Expand both Occupied and Virtual Space untill convergence
+        ExpandOcc  = .TRUE. 
         call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
              & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
              & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&

@@ -617,7 +617,7 @@ contains
     integer :: nocc, nvirt
 
     ! Number of occ and virt orbitals on central atom in fragment
-    nocc = MyFragment%noccEOS
+    nocc  = MyFragment%noccEOS
     nvirt = MyFragment%nunoccEOS
 
     ! Extract virtual EOS indices and leave occupied indices untouched
@@ -1530,9 +1530,17 @@ contains
     &dimensions are not the same",-1)
     select case(arr%itype)
       case(DENSE)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+#else
         call dcopy(int(nelms),fortarr,1,arr%elm1,1)
+#endif
       case(REPLICATED)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+#else
         call dcopy(int(nelms),fortarr,1,arr%elm1,1)
+#endif
         call array_sync_replicated(arr)
       case(TILED)
         call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
@@ -1587,7 +1595,11 @@ contains
     &dimensions are not the same",DECinfo%output)
     select case(arr%itype)
       case(DENSE)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(fort,'=',arr%elm1,nelms)
+#else
         call dcopy(int(nelms),arr%elm1,1,fort,1)
+#endif
       case(TILED)
         if(present(order))call cp_tileddata2fort(arr,fort,nelms,.false.,order)
         if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.false.)

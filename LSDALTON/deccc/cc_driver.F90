@@ -508,12 +508,15 @@ subroutine fragment_ccsolver(MyFragment,t1_arr,t2_arr,VOVO_arr,m1_arr,m2_arr)
       call array_convert(t1%val,t1_arr)
       call array2_free(t1)
    endif
+
    t2_arr = array_init(t2%dims,4)
    call array_convert(t2%val,t2_arr)
    call array4_free(t2)
+
    VOVO_arr = array_init(VOVO%dims,4)
    call array_convert(VOVO%val,VOVO_arr)
    call array4_free(VOVO)
+
    if(DECinfo%CCSDmultipliers)then
       if(present(m1_arr))then
          m1_arr = array_init(m1%dims,2)
