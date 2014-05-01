@@ -33,6 +33,7 @@ module ccsdpt_module
       use decmpi_module
 #endif
   use dec_workarounds_module
+  use crop_tools_module
   use dec_fragment_utils
   use array2_simple_operations
   use array3_simple_operations
@@ -65,7 +66,7 @@ contains
     !> mylsitem for fragment or full molecule
     type(lsitem), intent(inout) :: mylsitem
     !> ccsd doubles amplitudes
-    type(array4), intent(inout) :: ccsd_doubles
+    type(array), intent(inout) :: ccsd_doubles
     !> 2-el integrals
     type(array4) :: jaik ! integrals (AI|JK) in the order (J,A,I,K)
     type(array4) :: abij ! integrals (AI|BJ) in the order (A,B,I,J)
@@ -87,8 +88,8 @@ contains
     integer, dimension(4) :: dims_iaai, dims_aaii
     !> input for the actual triples computation
     type(array4) :: ccsdpt_doubles_2
-    type(array4),intent(inout) :: ccsdpt_doubles
-    type(array2),intent(inout) :: ccsdpt_singles
+    type(array),intent(inout) :: ccsdpt_doubles
+    type(array),intent(inout) :: ccsdpt_singles
 
     ! init dimensions
     occdims     = [nocc,nocc]
@@ -115,7 +116,7 @@ contains
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%val,mylsitem)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%elm4,mylsitem)
 
        call time_start_phase(PHASE_WORK)
 
@@ -151,9 +152,9 @@ contains
     if (infpar%lg_mynum .eq. infpar%master) then
 
        print *,'proc no. ',infpar%lg_mynum,'integrals after get_CCSDpT_integrals'
-       call array4_print_norm_nrm(jaik,jaik_norm)
-       call array4_print_norm_nrm(abij,abij_norm)
-       call array4_print_norm_nrm(ccsd_doubles,ccsd_doubles_norm)
+       call print_norm(jaik,jaik_norm)
+       call print_norm(abij,abij_norm)
+       call print_norm(ccsd_doubles,ccsd_doubles_norm)
        print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
        print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
        print *,'proc no. ',infpar%lg_mynum,'ccsd_doubles_norm = ',ccsd_doubles_norm
@@ -171,6 +172,7 @@ contains
     ! ***************************************************
 
     call ccsdpt_local_can_trans(ccsd_doubles,nocc,nvirt,Uocc,Uvirt)
+    !call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vovo=ccsd_doubles%elm1)
 
     ! Now we transpose the unitary transformation matrices as we will need these in the transformation
     ! of the ^{ccsd}T^{ab}_{ij}, ^{*}T^{a}_{i}, and ^{*}T^{ab}_{ij} amplitudes from canonical to local basis
@@ -204,7 +206,7 @@ contains
     ccsdpt_doubles_2 = array4_init_standard(dims_iaai)
 
     ! initially, reorder ccsd_doubles
-    call array4_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
+    call array_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
 
     !**********************************************************
     ! here: the main ijk-loop: this is where the magic happens!
@@ -215,16 +217,16 @@ contains
     call time_start_phase(PHASE_WORK)
 
     ! the parallel version of the ijk-loop
-    call ijk_loop_par(nocc,nvirt,jaik%val,abij%val,cbai,ccsd_doubles%val,&
-                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt,nodtotal)
+    call ijk_loop_par(nocc,nvirt,jaik%val,abij%val,cbai,ccsd_doubles%elm1,&
+                    & ccsdpt_doubles%elm1,ccsdpt_doubles_2%val,ccsdpt_singles%elm1,eivalocc,eivalvirt,nodtotal)
 
     call time_start_phase(PHASE_WORK)
 
 #else
 
     ! the serial version of the ijk-loop
-    call ijk_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
-                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
+    call ijk_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%elm1,&
+                    & ccsdpt_doubles%elm1,ccsdpt_doubles_2%val,ccsdpt_singles%elm1,eivalocc,eivalvirt)
 !    ! the serial version of the abc-loop
 !    call abc_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
 !                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
@@ -246,8 +248,10 @@ contains
 
        call time_start_phase(PHASE_COMM)
 
-       call lsmpi_local_reduction(ccsdpt_singles%val,nocc,nvirt,infpar%master)
-       call lsmpi_local_reduction(ccsdpt_doubles%val,nvirt,nocc,nvirt,nocc,infpar%master)
+       call lsmpi_local_reduction(ccsdpt_singles%elm1,ccsdpt_singles%nelms,infpar%master,SPLIT_MSG_REC)
+       call lsmpi_local_reduction(ccsdpt_doubles%elm1,ccsdpt_doubles%nelms,infpar%master,SPLIT_MSG_REC)
+       !FIXME: Please introduce SPLIT_MSG_REC here, otherwise buffers may beocme
+       !too big
        call lsmpi_local_reduction(ccsdpt_doubles_2%val,nvirt,nocc,nvirt,nocc,infpar%master)
 
        call time_start_phase(PHASE_WORK)
@@ -257,9 +261,9 @@ contains
     if (infpar%lg_mynum .eq. infpar%master) then
 
        print *,'proc no. ',infpar%lg_mynum,'after lsmpi_local_reduction'
-       call array4_print_norm_nrm(ccsdpt_doubles,ccsdpt_doubles_norm)
-       call array4_print_norm_nrm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
-       call array2_print_norm_nrm(ccsdpt_singles,ccsdpt_singles_norm)
+       call print_norm(ccsdpt_doubles,ccsdpt_doubles_norm)
+       call print_norm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
+       call print_norm(ccsdpt_singles,ccsdpt_singles_norm)
        print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_norm = ',ccsdpt_doubles_norm
        print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_2_norm = ',ccsdpt_doubles_2_norm
        print *,'proc no. ',infpar%lg_mynum,'ccsdpt_singles_norm = ',ccsdpt_singles_norm
@@ -297,7 +301,7 @@ contains
     ! (*) here, ccsdpt_doubles_2 is simultaneously reordered as (j,a,b,i) --> (a,b,i,j)
     call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_2%val,ccsdpt_doubles_2%dims(1),&
                                &ccsdpt_doubles_2%dims(2),ccsdpt_doubles_2%dims(3),ccsdpt_doubles_2%dims(4),&
-                               &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%val)
+                               &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%elm1)
 
     ! release ccsdpt_doubles_2 array4 structure
     call array4_free(ccsdpt_doubles_2)
@@ -307,6 +311,8 @@ contains
     ! *************************************************
 
     call ccsdpt_can_local_trans(ccsd_doubles,ccsdpt_singles,ccsdpt_doubles,nocc,nvirt,Uocc,Uvirt)
+    !call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1,vo=ccsdpt_singles%elm1)
+    !call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1)
 
     ! now, release Uocc and Uvirt
     call array2_free(Uocc)
@@ -324,8 +330,8 @@ contains
     ! **************************************************************
 
     ! reorder ccsdpt_doubles and ccsd_doubles back to (a,b,i,j) sequence
-    call array4_reorder(ccsdpt_doubles,[3,4,1,2])
-    call array4_reorder(ccsd_doubles,[4,3,2,1])
+    call array_reorder(ccsdpt_doubles,[3,4,1,2])
+    call array_reorder(ccsd_doubles,[4,3,2,1])
 
   end subroutine ccsdpt_driver
 
@@ -3498,17 +3504,23 @@ contains
   !> \date: september 2012
   !> \param: ccsd_t2, no and nv are nocc and nvirt, respectively, and U_occ and U_virt
   !          are unitary matrices from local --> canonical basis
-  subroutine ccsdpt_local_can_trans(ccsd_t2,no,nv,U_occ,U_virt)
+  subroutine ccsdpt_local_can_trans(ccsd_t2_arr,no,nv,U_occ,U_virt)
 
     implicit none
     !> ccsd doubles
-    type(array4), intent(inout) :: ccsd_t2
+    type(array), intent(inout) :: ccsd_t2_arr
     !> unitary transformation matrices
     type(array2), intent(inout) :: U_occ, U_virt
     !> integers
     integer, intent(in) :: no, nv
     !> temp array4 structures
     type(array4) :: tmp1, tmp2
+    type(array4) :: ccsd_t2
+
+    !FIXME: THIS IS A CRAPPY HACK, USING A LOT OF MEMORY
+    ccsd_t2       = array4_init(ccsd_t2_arr%dims)
+    ccsd_t2%val   = ccsd_t2_arr%elm4
+    call deassoc_ptr_arr(ccsd_t2_arr) 
 
     ! (a,i,b,j) are local basis indices and (A,I,B,J) refer to the canonical basis.
     ! we want to carry out the transformation:
@@ -3539,6 +3551,11 @@ contains
     call array4_contract1(tmp1,U_virt,ccsd_t2,.true.)
     call array4_free(tmp1)
 
+    ccsd_t2_arr%dims = ccsd_t2%dims        
+    call assoc_ptr_arr(ccsd_t2_arr) 
+    ccsd_t2_arr%elm4 = ccsd_t2%val  
+    call array4_free(ccsd_t2)
+
   end subroutine ccsdpt_local_can_trans
 
 
@@ -3547,13 +3564,13 @@ contains
   !> \date: september 2012
   !> \param: ccsd_t2, ccsdpt_t1, ccsdpt_t2, no and nv are nocc and nvirt, respectively, 
   !<         and U_occ and U_virt are unitary matrices from canonical --> local basis
-  subroutine ccsdpt_can_local_trans(ccsd_t2,ccsdpt_t1,ccsdpt_t2,no,nv,U_occ,U_virt)
+  subroutine ccsdpt_can_local_trans(ccsd_t2_arr,ccsdpt_t1_arr,ccsdpt_t2_arr,no,nv,U_occ,U_virt)
 
     implicit none
     !> ccsdpt_singles
-    type(array2), intent(inout) :: ccsdpt_t1
+    type(array), intent(inout) :: ccsdpt_t1_arr
     !> ccsd_doubles and ccsdpt_doubles
-    type(array4), intent(inout) :: ccsd_t2, ccsdpt_t2
+    type(array), intent(inout) :: ccsd_t2_arr, ccsdpt_t2_arr
     !> unitary transformation matrices
     type(array2), intent(inout) :: U_occ, U_virt
     !> integers
@@ -3561,6 +3578,20 @@ contains
     !> temp array2 and array4 structures
     type(array2) :: tmp0
     type(array4) :: tmp1, tmp2, tmp3, tmp4
+    type(array2) :: ccsdpt_t1
+    type(array4) :: ccsd_t2, ccsdpt_t2
+
+    !FIXME: THIS IS A CRAPPY HACK, USING A LOT OF MEMORY
+    ccsdpt_t1     = array2_init(ccsdpt_t1_arr%dims)
+    ccsdpt_t1%val = ccsdpt_t1_arr%elm2
+    ccsdpt_t2     = array4_init(ccsdpt_t2_arr%dims)
+    ccsdpt_t2%val = ccsdpt_t2_arr%elm4
+    ccsd_t2       = array4_init(ccsd_t2_arr%dims)
+    ccsd_t2%val   = ccsd_t2_arr%elm4
+    
+    call deassoc_ptr_arr(ccsdpt_t1_arr) 
+    call deassoc_ptr_arr(ccsdpt_t2_arr) 
+    call deassoc_ptr_arr(ccsd_t2_arr) 
 
     ! (a,i,b,j) are local basis indices and (A,I,B,J) refer to the canonical basis.
 
@@ -3640,6 +3671,22 @@ contains
     ! free tmp1 and tmp3
     call array4_free(tmp1)
     call array4_free(tmp3)
+
+    ccsdpt_t1_arr%dims    =  ccsdpt_t1%dims      
+    ccsdpt_t2_arr%dims    =  ccsdpt_t2%dims      
+    ccsd_t2_arr%dims      =  ccsd_t2%dims        
+
+    call assoc_ptr_arr(ccsdpt_t1_arr) 
+    call assoc_ptr_arr(ccsdpt_t2_arr) 
+    call assoc_ptr_arr(ccsd_t2_arr) 
+
+    ccsdpt_t1_arr%elm2 = ccsdpt_t1%val
+    ccsdpt_t2_arr%elm4 = ccsdpt_t2%val
+    ccsd_t2_arr%elm4   = ccsd_t2%val  
+
+    call array2_free(ccsdpt_t1)
+    call array4_free(ccsdpt_t2)
+    call array4_free(ccsd_t2)
 
   end subroutine ccsdpt_can_local_trans
 
@@ -4872,7 +4919,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
     integer :: nocc_eos, nvirt_eos, i,a, i_eos, a_eos
     !> temp energy
@@ -4902,7 +4949,7 @@ contains
        do a=1,nvirt_eos
           a_eos = MyFragment%idxu(a)
 
-          energy_tmp = ccsd_singles%val(a_eos,i_eos) * ccsdpt_singles%val(a_eos,i_eos)
+          energy_tmp = ccsd_singles%elm2(a_eos,i_eos) * ccsdpt_singles%elm2(a_eos,i_eos)
           ccsdpt_e5 = ccsdpt_e5 + energy_tmp
 
        end do 
@@ -4943,7 +4990,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
     integer :: nocc_eos, nvirt_eos, i, a, idx, adx, AtomI, AtomA, i_eos, a_eos
     !> logicals to avoid double counting
@@ -4987,8 +5034,8 @@ contains
 
           if (occ_in_frag_1 .and. virt_in_frag_2) then
              PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
-               & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
-               & * ccsdpt_singles%val(a_eos,i_eos)
+               & + 2.0E0_realk * ccsd_singles%elm2(a_eos,i_eos) &
+               & * ccsdpt_singles%elm2(a_eos,i_eos)
           end if
 
           ! virt in frag # 1, occ in frag # 2
@@ -5009,8 +5056,8 @@ contains
              
           if (occ_in_frag_2 .and. virt_in_frag_1) then
              PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
-               & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
-               & * ccsdpt_singles%val(a_eos,i_eos)
+               & + 2.0E0_realk * ccsd_singles%elm2(a_eos,i_eos) &
+               & * ccsdpt_singles%elm2(a_eos,i_eos)
           end if
 
           ! sanity checks
@@ -5065,7 +5112,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) doubles amplitudes
-    type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> is this called from inside the ccsd(t) fragment optimization routine?
     logical, optional, intent(in) :: fragopt_pT
     !> incomming orbital contribution vectors
@@ -5137,8 +5184,8 @@ contains
              do b=1,nvirt_aos
                 do a=1,nvirt_aos
    
-                   energy_tmp = 4.0E0_realk * ccsd_doubles%val(a,b,i_eos,j_eos) &
-                                  & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                   energy_tmp = 4.0E0_realk * ccsd_doubles%elm4(a,b,i_eos,j_eos) &
+                                  & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
                    energy_res_cou = energy_res_cou + energy_tmp
    
                    ! update contribution from aos orbital a
@@ -5156,7 +5203,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder from (a,b,i,j) to (a,b,j,i)
-       call array4_reorder(ccsd_doubles,[1,2,4,3])
+       call array_reorder(ccsd_doubles,[1,2,4,3])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
@@ -5169,8 +5216,8 @@ contains
              do b=1,nvirt_aos
                 do a=1,nvirt_aos
    
-                   energy_tmp = 2.0E0_realk * ccsd_doubles%val(a,b,i_eos,j_eos) &
-                                  & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                   energy_tmp = 2.0E0_realk * ccsd_doubles%elm4(a,b,i_eos,j_eos) &
+                                  & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
                    energy_res_exc = energy_res_exc - energy_tmp
    
                    ! update contribution from aos orbital a
@@ -5206,16 +5253,16 @@ contains
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array4_reorder(ccsd_doubles,[3,4,1,2])
-          call array4_reorder(ccsdpt_doubles,[3,4,1,2])
+          call array_reorder(ccsd_doubles,[3,4,1,2])
+          call array_reorder(ccsdpt_doubles,[3,4,1,2])
 
        else
 
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array4_reorder(ccsd_doubles,[4,3,1,2])
-          call array4_reorder(ccsdpt_doubles,[3,4,1,2])
+          call array_reorder(ccsd_doubles,[4,3,1,2])
+          call array_reorder(ccsdpt_doubles,[3,4,1,2])
 
        end if
 
@@ -5233,8 +5280,8 @@ contains
              do j=1,nocc_aos
                 do i=1,nocc_aos
    
-                   energy_tmp = 2.0E0_realk * ccsd_doubles%val(i,j,a_eos,b_eos) &
-                                  & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                   energy_tmp = 2.0E0_realk * ccsd_doubles%elm4(i,j,a_eos,b_eos) &
+                                  & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
                    energy_res_exc = energy_res_exc - energy_tmp
    
                    ! update contribution from aos orbital i
@@ -5252,7 +5299,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder form (j,i,a,b) to (i,j,a,b)
-       call array4_reorder(ccsd_doubles,[2,1,3,4])
+       call array_reorder(ccsd_doubles,[2,1,3,4])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
@@ -5265,8 +5312,8 @@ contains
              do j=1,nocc_aos
                 do i=1,nocc_aos
    
-                   energy_tmp = 4.0E0_realk * ccsd_doubles%val(i,j,a_eos,b_eos) &
-                                  & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                   energy_tmp = 4.0E0_realk * ccsd_doubles%elm4(i,j,a_eos,b_eos) &
+                                  & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
                    energy_res_cou = energy_res_cou + energy_tmp
    
                    ! update contribution from aos orbital i
@@ -5305,17 +5352,17 @@ contains
        if (do_occ .and. (.not. do_virt)) then
 
           ! reorder from (a,b,j,i) to (a,i,b,j)
-          if (fragopt_pT) call array4_reorder(ccsd_doubles,[1,4,2,3])
+          if (fragopt_pT) call array_reorder(ccsd_doubles,[1,4,2,3])
 
        else if (do_virt .and. (.not. do_virt)) then
 
           ! reorder from (i,j,a,b) to (a,i,b,j)
-          if (fragopt_pT) call array4_reorder(ccsd_doubles,[3,1,4,2])
+          if (fragopt_pT) call array_reorder(ccsd_doubles,[3,1,4,2])
 
        else if (do_occ .and. do_virt) then
 
           ! reorder from (i,j,a,b) to (a,i,b,j)
-          if (fragopt_pT) call array4_reorder(ccsd_doubles,[3,1,4,2])
+          if (fragopt_pT) call array_reorder(ccsd_doubles,[3,1,4,2])
 
        end if
 
@@ -5342,7 +5389,7 @@ contains
     !> pair fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
-    type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     ! logical pointers for keeping hold of which pairs are to be handled
     logical, pointer :: dopair_occ(:,:), dopair_virt(:,:)
     !> integers
@@ -5424,8 +5471,8 @@ contains
              do b=1,nvirt_aos
                 do a=1,nvirt_aos
    
-                   energy_tmp = ccsd_doubles%val(a,b,i_eos,j_eos) &
-                              & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                   energy_tmp = ccsd_doubles%elm4(a,b,i_eos,j_eos) &
+                              & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
                    energy_res_cou = energy_res_cou + energy_tmp
    
                 end do
@@ -5436,7 +5483,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder from (a,b,i,j) to (a,b,j,i)
-       call array4_reorder(ccsd_doubles,[1,2,4,3])
+       call array_reorder(ccsd_doubles,[1,2,4,3])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
@@ -5451,8 +5498,8 @@ contains
              do b=1,nvirt_aos
                 do a=1,nvirt_aos
    
-                   energy_tmp = ccsd_doubles%val(a,b,i_eos,j_eos) &
-                              & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                   energy_tmp = ccsd_doubles%elm4(a,b,i_eos,j_eos) &
+                              & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
                    energy_res_exc = energy_res_exc + energy_tmp
    
                 end do
@@ -5481,16 +5528,16 @@ contains
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array4_reorder(ccsd_doubles,[3,4,1,2])
-          call array4_reorder(ccsdpt_doubles,[3,4,1,2])
+          call array_reorder(ccsd_doubles,[3,4,1,2])
+          call array_reorder(ccsdpt_doubles,[3,4,1,2])
 
        else
 
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array4_reorder(ccsd_doubles,[4,3,1,2])
-          call array4_reorder(ccsdpt_doubles,[3,4,1,2])
+          call array_reorder(ccsd_doubles,[4,3,1,2])
+          call array_reorder(ccsdpt_doubles,[3,4,1,2])
 
        end if
 
@@ -5510,8 +5557,8 @@ contains
              do j=1,nocc_aos
                 do i=1,nocc_aos
    
-                   energy_tmp = ccsd_doubles%val(i,j,a_eos,b_eos) &
-                              & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                   energy_tmp = ccsd_doubles%elm4(i,j,a_eos,b_eos) &
+                              & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
                    energy_res_exc = energy_res_exc + energy_tmp
    
                 end do
@@ -5522,7 +5569,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder form (j,i,a,b) to (i,j,a,b)
-       call array4_reorder(ccsd_doubles,[2,1,3,4])
+       call array_reorder(ccsd_doubles,[2,1,3,4])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
@@ -5537,8 +5584,8 @@ contains
              do j=1,nocc_aos
                 do i=1,nocc_aos
    
-                   energy_tmp = ccsd_doubles%val(i,j,a_eos,b_eos) &
-                              & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                   energy_tmp = ccsd_doubles%elm4(i,j,a_eos,b_eos) &
+                              & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
                    energy_res_cou = energy_res_cou + energy_tmp
    
                 end do
@@ -5591,7 +5638,7 @@ contains
     implicit none
 
     !> ccsd and ccsd(t) doubles amplitudes
-    type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
@@ -5629,7 +5676,7 @@ contains
           do b=1,nvirt
              do a=1,nvirt
 
-                energy_tmp = ccsd_doubles%val(a,b,i,j) * ccsdpt_doubles%val(a,b,i,j)
+                energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
                 eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) + energy_tmp
                 energy_res_cou = energy_res_cou + energy_tmp
 
@@ -5641,7 +5688,7 @@ contains
     !$OMP END PARALLEL DO
 
     ! reorder from (a,b,i,j) to (a,b,j,i)
-    call array4_reorder(ccsd_doubles,[1,2,4,3])
+    call array_reorder(ccsd_doubles,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp),REDUCTION(+:energy_res_exc),&
     !$OMP REDUCTION(+:eccsdpt_matrix_exc),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
@@ -5653,7 +5700,7 @@ contains
           do b=1,nvirt
              do a=1,nvirt
 
-                energy_tmp = ccsd_doubles%val(a,b,i,j) * ccsdpt_doubles%val(a,b,i,j)
+                energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
                 eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) + energy_tmp
                 energy_res_exc = energy_res_exc + energy_tmp
 
@@ -5769,7 +5816,7 @@ contains
     implicit none
 
     !> ccsd and ccsd(t) singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
@@ -5798,7 +5845,7 @@ contains
        do a=1,nvirt
        AtomA = unocc_orbitals(a)%CentralAtom
 
-           energy_tmp = ccsd_singles%val(a,i) * ccsdpt_singles%val(a,i)
+           energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
            e5_matrix(AtomA,AtomI) = e5_matrix(AtomA,AtomI) + energy_tmp
            ccsdpt_e5 = ccsdpt_e5 + energy_tmp
 
@@ -6668,14 +6715,16 @@ end module ccsdpt_module
     implicit none
     integer :: nocc, nvirt,nbasis
     real(realk), pointer :: ppfock(:,:), qqfock(:,:), Co(:,:), Cv(:,:)
-    type(array2) :: ccsdpt_t1
-    type(array4) :: ccsd_t2, ccsdpt_t2
+    type(array) :: ccsdpt_t1
+    type(array) :: ccsd_t2, ccsdpt_t2
     type(lsitem) :: mylsitem
 
     call time_start_phase(PHASE_COMM)
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%val,mylsitem)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%elm4,mylsitem)
+
+    !FIXME: split MPI messages!!!!!!!!!!
 
     ! init and receive ppfock
     call mem_alloc(ppfock,nocc,nocc)
@@ -6694,12 +6743,12 @@ end module ccsdpt_module
     call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
 
     ! init and receive ccsd_doubles array4 structure
-    ccsd_t2 = array4_init([nvirt,nocc,nvirt,nocc])
-    call ls_mpibcast(ccsd_t2%val,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
+    ccsd_t2 = array_init([nvirt,nocc,nvirt,nocc],4)
+    call ls_mpibcast(ccsd_t2%elm4,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
 
     ! init ccsd(t) singles and ccsd(t) doubles
-    ccsdpt_t1 = array2_init_plain([nvirt,nocc])
-    ccsdpt_t2 = array4_init_standard([nvirt,nvirt,nocc,nocc])
+    ccsdpt_t1 = array_init([nvirt,nocc],2)
+    ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
 
     call time_start_phase(PHASE_WORK)
 
@@ -6710,9 +6759,9 @@ end module ccsdpt_module
     call time_start_phase(PHASE_WORK)
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
-    call array2_free(ccsdpt_t1)
-    call array4_free(ccsd_t2)
-    call array4_free(ccsdpt_t2)
+    call array_free(ccsdpt_t1)
+    call array_free(ccsd_t2)
+    call array_free(ccsdpt_t2)
 
     ! finally, release fragment or full molecule quantities
     call ls_free(mylsitem)

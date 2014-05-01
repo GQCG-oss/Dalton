@@ -94,6 +94,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/dec_main.F90
     LSDALTON/deccc/dec_settings.F90
     LSDALTON/deccc/dec_utils.F90
+    LSDALTON/deccc/dec_tools.F90
     LSDALTON/deccc/dec_workarounds.F90
     LSDALTON/deccc/full_driver_f12contractions.F90
     LSDALTON/deccc/fullmolecule.F90
