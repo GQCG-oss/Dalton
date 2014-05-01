@@ -571,22 +571,27 @@ end function ccsolver_justenergy
 !> Intended to be used for CC2 and CCSD (and NOT for MP2).
 !> \author Kasper Kristensen, heavily modifed by PE
 !> \date January 2012
-subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
+subroutine fragment_ccsolver(MyFragment,t1_arr,t2_arr,VOVO_arr,m1_arr,m2_arr)
 
    implicit none
 
    !> Fragment info (only t1 information in MyFragment may be changed here)
    type(decfrag), intent(inout) :: MyFragment
    !> Singles amplitudes t1(a,i)
-   type(array2),intent(inout) :: t1
+   type(array),intent(inout) :: t1_arr
    !> Doubles amplitudes t2(a,i,b,j)
-   type(array4),intent(inout) :: t2
+   type(array),intent(inout) :: t2_arr
    !> Two electron integrals (a i | b j) stored as (a,i,b,j)
-   type(array4),intent(inout) :: VOVO
+   type(array),intent(inout) :: VOVO_arr
    !> Singles multipliers m1(a,i)
-   type(array2),intent(inout), optional :: m1
+   type(array),intent(inout), optional :: m1_arr
    !> Doubles multipliers m2(a,i,b,j)
-   type(array4),intent(inout), optional :: m2
+   type(array),intent(inout), optional :: m2_arr
+   type(array2) :: t1
+   type(array4) :: t2
+   type(array4) :: VOVO
+   type(array2) :: m1
+   type(array4) :: m2
 
    !INTERNAL PARAMETERS
    type(array4) :: mp2_amp
@@ -676,74 +681,92 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
       call save_fragment_t1_AOSAOSamplitudes(MyFragment,t1)
    end if
 
-   !in the call to get_combined_SingleDouble_amplitudes
-   !t1 is used, for RPA use_singles = .false.
-   !if(MyFragment%ccmodel == MODEL_RPA)then
-   !  t1 = array2_init([t2%dims(1),t2%dims(2)])
-   !endif
+   if(DECinfo%use_singles)then
+      t1_arr = array_init(t1%dims,2)
+      call array_convert(t1%val,t1_arr)
+      call array2_free(t1)
+   endif
+   t2_arr = array_init(t2%dims,4)
+   call array_convert(t2%val,t2_arr)
+   call array4_free(t2)
+   VOVO_arr = array_init(VOVO%dims,4)
+   call array_convert(VOVO%val,VOVO_arr)
+   call array4_free(VOVO)
+   if(DECinfo%CCSDmultipliers)then
+      if(present(m1_arr))then
+         m1_arr = array_init(m1%dims,2)
+         call array_convert(m1%val,m1_arr)
+         call array2_free(m1)
+      endif
+      if(present(m2_arr))then
+         m2_arr = array_init(m2%dims,4)
+         call array_convert(m2%val,m2_arr)
+         call array4_free(m2)
+      endif
+   endif
 
 end subroutine fragment_ccsolver
 
 
 
-!> \brief For a given fragment, calculate combined doubles+singles amplitudes:
-!> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
-!> and two-electron integrals (a i | bj ).
-!> The EOS indices are extracted for both the occupied and
-!> the virtual spaces
-!> Intended to be used for CC2 and CCSD (and NOT for MP2).
-!> \author Kasper Kristensen
-!> \date January 2012
-subroutine CCfragment_get_EOS_amplitudes_and_integrals(MyFragment,&
-      & uocc,uvirt,VOVOocc,VOVOvirt)
-
-   implicit none
-
-   !> Fragment info (only t1 information in MyFragment may be changed here)
-   type(decfrag), intent(inout) :: MyFragment
-   !> Combined doubles+singles amplitudes for occupied partitioning
-   type(array4),intent(inout) :: uocc
-   !> Combined doubles+singles amplitudes for virtual partitioning
-   type(array4),intent(inout) :: uvirt
-   !> Two electron integrals (a i | b j) stored as (a,i,b,j) for occ part.
-   !> (a,b: AOS orbitals;   i,j: EOS orbitals)
-   type(array4),intent(inout) :: VOVOocc
-   !> Two electron integrals (a i | b j) stored as (a,i,b,j) for virt part.
-   !> (a,b: EOS orbitals;   i,j: AOS orbitals)
-   type(array4),intent(inout) :: VOVOvirt
-   type(array2) :: t1
-   type(array4) :: t2,u,VOVO
-
-
-   ! Solve CC equation to calculate amplitudes and integrals
-   ! *******************************************************
-   ! Here all output indices in t1,t2, and VOVO are AOS indices.
-   call fragment_ccsolver(MyFragment,t1,t2,VOVO)
-
-
-   ! Extract EOS indices for integrals
-   ! *********************************
-   call array4_extract_eos_indices_both_schemes(VOVO, &
-      & VOVOocc, VOVOvirt, MyFragment)
-   call array4_free(VOVO)
-
-
-   ! Calculate combined single+doubles amplitudes
-   ! ********************************************
-   ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
-   call get_combined_SingleDouble_amplitudes(t1,t2,u)
-   call array2_free(t1)
-   call array4_free(t2)
-
-
-   ! Extract EOS indices for amplitudes
-   ! **********************************
-   call array4_extract_eos_indices_both_schemes(u, &
-      & uocc, uvirt, MyFragment)
-   call array4_free(u)
-
-
-end subroutine CCfragment_get_EOS_amplitudes_and_integrals
+!!> \brief For a given fragment, calculate combined doubles+singles amplitudes:
+!!> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
+!!> and two-electron integrals (a i | bj ).
+!!> The EOS indices are extracted for both the occupied and
+!!> the virtual spaces
+!!> Intended to be used for CC2 and CCSD (and NOT for MP2).
+!!> \author Kasper Kristensen
+!!> \date January 2012
+!subroutine CCfragment_get_EOS_amplitudes_and_integrals(MyFragment,&
+!      & uocc,uvirt,VOVOocc,VOVOvirt)
+!
+!   implicit none
+!
+!   !> Fragment info (only t1 information in MyFragment may be changed here)
+!   type(decfrag), intent(inout) :: MyFragment
+!   !> Combined doubles+singles amplitudes for occupied partitioning
+!   type(array4),intent(inout) :: uocc
+!   !> Combined doubles+singles amplitudes for virtual partitioning
+!   type(array4),intent(inout) :: uvirt
+!   !> Two electron integrals (a i | b j) stored as (a,i,b,j) for occ part.
+!   !> (a,b: AOS orbitals;   i,j: EOS orbitals)
+!   type(array4),intent(inout) :: VOVOocc
+!   !> Two electron integrals (a i | b j) stored as (a,i,b,j) for virt part.
+!   !> (a,b: EOS orbitals;   i,j: AOS orbitals)
+!   type(array4),intent(inout) :: VOVOvirt
+!   type(array2) :: t1
+!   type(array4) :: t2,u,VOVO
+!
+!
+!   ! Solve CC equation to calculate amplitudes and integrals
+!   ! *******************************************************
+!   ! Here all output indices in t1,t2, and VOVO are AOS indices.
+!   call fragment_ccsolver(MyFragment,t1,t2,VOVO)
+!
+!
+!   ! Extract EOS indices for integrals
+!   ! *********************************
+!   call array4_extract_eos_indices_both_schemes(VOVO, &
+!      & VOVOocc, VOVOvirt, MyFragment)
+!   call array4_free(VOVO)
+!
+!
+!   ! Calculate combined single+doubles amplitudes
+!   ! ********************************************
+!   ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
+!   call get_combined_SingleDouble_amplitudes(t1,t2,u)
+!   call array2_free(t1)
+!   call array4_free(t2)
+!
+!
+!   ! Extract EOS indices for amplitudes
+!   ! **********************************
+!   call array4_extract_eos_indices_both_schemes(u, &
+!      & uocc, uvirt, MyFragment)
+!   call array4_free(u)
+!
+!
+!end subroutine CCfragment_get_EOS_amplitudes_and_integrals
 
 
 

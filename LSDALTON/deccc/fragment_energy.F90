@@ -268,8 +268,8 @@ contains
     type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
-    type(array2) :: t1, ccsdpt_t1, m1
-    type(array4) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
+    type(array) :: t1, ccsdpt_t1, m1
+    type(array) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
@@ -303,147 +303,147 @@ contains
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
        if(DECinfo%first_order) then  ! calculate also MP2 density integrals
-          call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
+          call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1_arr=m1,m2_arr=m2)
        else
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
        endif
-
-
-       ! Extract EOS indices for integrals
-       ! *********************************
-       call array4_extract_eos_indices_both_schemes(VOVO,VOVOocc,VOVOvirt,MyFragment)
-       call array4_free(VOVO)
-
-       if(DECinfo%first_order) then
-          print *,"DIMA: We should extract the necessary multipliers here, and&
-          & actually change to type(array) and do everything in parallel"
-          call array4_free(m2)
-          call array2_free(m1)
-
-       endif
-
-
-       ! Calculate combined single+doubles amplitudes
-       ! ********************************************
-       ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)          
-       call get_combined_SingleDouble_amplitudes(t1,t2,u)
-
-       ! Extract EOS indices for amplitudes
-       ! **********************************
-       call array4_extract_eos_indices_both_schemes(u, t2occ, t2virt, MyFragment)
-       ! Note, t2occ and t2virt also contain singles contributions
-       call array4_free(u)
-
-       call dec_fragment_time_get(times_ccsd)
-
-#ifdef MOD_UNRELEASED
-       ! calculate ccsd(t) fragment energies
-       ! ***********************************
-
-       ! we calculate (T) contribution to single  fragment energy 
-       ! and store in MyFragment%energies(FRAGMODEL_OCCpT) and MyFragment%energies(FRAGMODEL_VIRTpT)
-       if(MyFragment%ccmodel==MODEL_CCSDpT) then
-
-          call dec_fragment_time_init(times_pt)
-
-          ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
-          ccsdpt_t1 = array2_init([MyFragment%nunoccAOS,MyFragment%noccAOS])
-          ccsdpt_t2 = array4_init([MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
-               &MyFragment%noccAOS,MyFragment%noccAOS])
-
-          ! call ccsd(t) driver and single fragment evaluation
-          call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nunoccAOS,&
-                             & MyFragment%nbasis,MyFragment%ppfock,&
-                             & MyFragment%qqfock,MyFragment%Co,&
-                             & MyFragment%Cv,MyFragment%mylsitem,&
-                             & t2,ccsdpt_t1,ccsdpt_t2)
-          call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
-                             & MyFragment%OccContribs,MyFragment%VirtContribs)
-          call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
-
-          ! release ccsd(t) singles and doubles amplitudes
-          call array2_free(ccsdpt_t1)
-          call array4_free(ccsdpt_t2)
-
-          call dec_fragment_time_get(times_pt)
-
-       end if
-#endif 
-
-       if(DECinfo%use_singles)then
-          call array2_free(t1)
-       endif
-       call array4_free(t2)
-
-
+!
+!
+!       ! Extract EOS indices for integrals
+!       ! *********************************
+!       call array4_extract_eos_indices_both_schemes(VOVO,VOVOocc,VOVOvirt,MyFragment)
+!       call array4_free(VOVO)
+!
+!       if(DECinfo%first_order) then
+!          print *,"DIMA: We should extract the necessary multipliers here, and&
+!          & actually change to type(array) and do everything in parallel"
+!          call array4_free(m2)
+!          call array2_free(m1)
+!
+!       endif
+!
+!
+!       ! Calculate combined single+doubles amplitudes
+!       ! ********************************************
+!       ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)          
+!       call get_combined_SingleDouble_amplitudes(t1,t2,u)
+!
+!       ! Extract EOS indices for amplitudes
+!       ! **********************************
+!       call array4_extract_eos_indices_both_schemes(u, t2occ, t2virt, MyFragment)
+!       ! Note, t2occ and t2virt also contain singles contributions
+!       call array4_free(u)
+!
+!       call dec_fragment_time_get(times_ccsd)
+!
+!#ifdef MOD_UNRELEASED
+!       ! calculate ccsd(t) fragment energies
+!       ! ***********************************
+!
+!       ! we calculate (T) contribution to single  fragment energy 
+!       ! and store in MyFragment%energies(FRAGMODEL_OCCpT) and MyFragment%energies(FRAGMODEL_VIRTpT)
+!       if(MyFragment%ccmodel==MODEL_CCSDpT) then
+!
+!          call dec_fragment_time_init(times_pt)
+!
+!          ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
+!          ccsdpt_t1 = array2_init([MyFragment%nunoccAOS,MyFragment%noccAOS])
+!          ccsdpt_t2 = array4_init([MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
+!               &MyFragment%noccAOS,MyFragment%noccAOS])
+!
+!          ! call ccsd(t) driver and single fragment evaluation
+!          call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nunoccAOS,&
+!                             & MyFragment%nbasis,MyFragment%ppfock,&
+!                             & MyFragment%qqfock,MyFragment%Co,&
+!                             & MyFragment%Cv,MyFragment%mylsitem,&
+!                             & t2,ccsdpt_t1,ccsdpt_t2)
+!          call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
+!                             & MyFragment%OccContribs,MyFragment%VirtContribs)
+!          call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
+!
+!          ! release ccsd(t) singles and doubles amplitudes
+!          call array2_free(ccsdpt_t1)
+!          call array4_free(ccsdpt_t2)
+!
+!          call dec_fragment_time_get(times_pt)
+!
+!       end if
+!#endif 
+!
+!       if(DECinfo%use_singles)then
+!          call array2_free(t1)
+!       endif
+!       call array4_free(t2)
+!
+!
     case default
 
        call lsquit("ERROR(atomic_fragment_energy_and_prop):MODEL not implemented",-1)
 
     end select WhichCCmodel
-
-
-    ! Calcuate atomic fragment energy
-    ! *******************************
-
-    ! MODIFY FOR NEW MODEL!
-    ! Two possible situations:
-    ! (1) Your new model fits into the standard CC energy expression. 
-    !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
-    ! (2) Your model does NOT fit into the standard CC energy expression.
-    !     In this case you need to make a new atomic fragment energy subroutine and call it from
-    !     here instead of calling get_atomic_fragment_energy.
-
-    ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
-    ! since they, "rather incoveniently", are required for the gradient but not for the energy
-    if(DECinfo%frozencore .and. DECinfo%first_order) then
-       call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
-       call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
-       call array4_free(VOVOvirtTMP)
-    else ! use VOVOvirt as it is
-       call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
-    end if
-
-    ! MODIFY FOR NEW CORRECTION!
-    ! If you implement a new correction (e.g. F12) please insert call to subroutine here
-    ! which calculates atomic fragment contribution and saves it in myfragment%energies(?),
-    ! see dec_readme file and FRAGMODEL_* definitions in dec_typedef.F90.
-    
-#ifdef MOD_UNRELEASED
-    if(DECinfo%F12) then    
-       call get_f12_fragment_energy(MyFragment, t2occ%val)
-       !> Free cabs after each calculation
-       call free_cabs()
-
-       ! call mem_dealloc(dens)
-       ! call mat_free(Dmat)
-    endif
-#endif
-    call LSTIMER('SINGLE L.ENERGY',tcpu,twall,DECinfo%output)
-
-    ! First order properties
-    ! **********************
-    if(DECinfo%first_order) then
-       if(DECinfo%ccmodel == MODEL_CCSD)then
-          print *,"DIMA, time to work!!!"
-          stop 0
-       endif
-       call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
-       call array4_free(VOOO)
-       call array4_free(VOVV)
-    end if
-
-    if(MyFragment%ccmodel /= MODEL_MP2)then
-       call dec_time_evaluate_efficiency_frag(MyFragment,times_ccsd,MODEL_CCSD,'CCSD part')
-    endif
-    if(MyFragment%ccmodel == MODEL_CCSDpT)then
-       call dec_time_evaluate_efficiency_frag(MyFragment,times_pt,MODEL_CCSDpT,'(T)  part')
-    endif
-    ! Free remaining arrays
-    call array4_free(VOVOocc)
-    call array4_free(VOVOvirt)
-    call array4_free(t2occ)
-    call array4_free(t2virt)
+!
+!
+!    ! Calcuate atomic fragment energy
+!    ! *******************************
+!
+!    ! MODIFY FOR NEW MODEL!
+!    ! Two possible situations:
+!    ! (1) Your new model fits into the standard CC energy expression. 
+!    !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
+!    ! (2) Your model does NOT fit into the standard CC energy expression.
+!    !     In this case you need to make a new atomic fragment energy subroutine and call it from
+!    !     here instead of calling get_atomic_fragment_energy.
+!
+!    ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
+!    ! since they, "rather incoveniently", are required for the gradient but not for the energy
+!    if(DECinfo%frozencore .and. DECinfo%first_order) then
+!       call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
+!       call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
+!       call array4_free(VOVOvirtTMP)
+!    else ! use VOVOvirt as it is
+!       call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
+!    end if
+!
+!    ! MODIFY FOR NEW CORRECTION!
+!    ! If you implement a new correction (e.g. F12) please insert call to subroutine here
+!    ! which calculates atomic fragment contribution and saves it in myfragment%energies(?),
+!    ! see dec_readme file and FRAGMODEL_* definitions in dec_typedef.F90.
+!    
+!#ifdef MOD_UNRELEASED
+!    if(DECinfo%F12) then    
+!       call get_f12_fragment_energy(MyFragment, t2occ%val)
+!       !> Free cabs after each calculation
+!       call free_cabs()
+!
+!       ! call mem_dealloc(dens)
+!       ! call mat_free(Dmat)
+!    endif
+!#endif
+!    call LSTIMER('SINGLE L.ENERGY',tcpu,twall,DECinfo%output)
+!
+!    ! First order properties
+!    ! **********************
+!    if(DECinfo%first_order) then
+!       if(DECinfo%ccmodel == MODEL_CCSD)then
+!          print *,"DIMA, time to work!!!"
+!          stop 0
+!       endif
+!       call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
+!       call array4_free(VOOO)
+!       call array4_free(VOVV)
+!    end if
+!
+!    if(MyFragment%ccmodel /= MODEL_MP2)then
+!       call dec_time_evaluate_efficiency_frag(MyFragment,times_ccsd,MODEL_CCSD,'CCSD part')
+!    endif
+!    if(MyFragment%ccmodel == MODEL_CCSDpT)then
+!       call dec_time_evaluate_efficiency_frag(MyFragment,times_pt,MODEL_CCSDpT,'(T)  part')
+!    endif
+!    ! Free remaining arrays
+!    call array4_free(VOVOocc)
+!    call array4_free(VOVOvirt)
+!    call array4_free(t2occ)
+!    call array4_free(t2virt)
 
   end subroutine atomic_fragment_energy_and_prop
 
@@ -927,8 +927,8 @@ contains
     type(decfrag), intent(inout) :: PairFragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout) :: grad
-    type(array2) :: t1, ccsdpt_t1
-    type(array4) :: g,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVO,ccsdpt_t2,VOVOvirtTMP
+    type(array) :: t1, ccsdpt_t1
+    type(array) :: g,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVO,ccsdpt_t2,VOVOvirtTMP
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
     real(realk),pointer :: times_ccsd(:), times_pt(:)
@@ -951,139 +951,139 @@ contains
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
-    else ! higher order CC (currently CC2 or CCSD)
-
-       call dec_fragment_time_init(times_ccsd)
-
-       ! Solve CC equation to calculate amplitudes and integrals 
-       ! *******************************************************
-       ! Here all output indices in t1,t2, and VOVO are AOS indices. 
-       call fragment_ccsolver(PairFragment,t1,t2,VOVO)
-
-
-       ! Extract EOS indices for integrals 
-       ! *********************************
-       call array4_extract_eos_indices_both_schemes(VOVO, &
-            & VOVOocc, VOVOvirt, PairFragment)
-       call array4_free(VOVO)
-
-
-       ! Calculate combined single+doubles amplitudes
-       ! ********************************************
-       ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j) 
-       call get_combined_SingleDouble_amplitudes(t1,t2,u)
-
-
-       ! Extract EOS indices for amplitudes
-       ! **********************************
-       call array4_extract_eos_indices_both_schemes(u, &
-            & t2occ, t2virt, PairFragment)
-       ! Note, t2occ and t2virt also contain singles contributions
-       call array4_free(u)
-
-       call dec_fragment_time_get(times_ccsd)
-
+!    else ! higher order CC (currently CC2 or CCSD)
+!
+!       call dec_fragment_time_init(times_ccsd)
+!
+!       ! Solve CC equation to calculate amplitudes and integrals 
+!       ! *******************************************************
+!       ! Here all output indices in t1,t2, and VOVO are AOS indices. 
+!       call fragment_ccsolver(PairFragment,t1,t2,VOVO)
+!
+!
+!       ! Extract EOS indices for integrals 
+!       ! *********************************
+!       call array4_extract_eos_indices_both_schemes(VOVO, &
+!            & VOVOocc, VOVOvirt, PairFragment)
+!       call array4_free(VOVO)
+!
+!
+!       ! Calculate combined single+doubles amplitudes
+!       ! ********************************************
+!       ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j) 
+!       call get_combined_SingleDouble_amplitudes(t1,t2,u)
+!
+!
+!       ! Extract EOS indices for amplitudes
+!       ! **********************************
+!       call array4_extract_eos_indices_both_schemes(u, &
+!            & t2occ, t2virt, PairFragment)
+!       ! Note, t2occ and t2virt also contain singles contributions
+!       call array4_free(u)
+!
+!       call dec_fragment_time_get(times_ccsd)
+!
     end if WhichCCmodel
-
-
-    ! Calculate pair interaction energy using Lagrangian scheme
-    ! *********************************************************
-
-    ! MODIFY FOR NEW MODEL!
-    ! Two possible situations:
-    ! (1) Your new model fits into the standard CC energy expression. 
-    !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
-    ! (2) Your model does NOT fit into the standard CC energy expression.
-    !     In this case you need to make a new pair interaction energy subroutine and call it from
-    !     here instead of calling get_pair_fragment_energy.
-
-    ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
-    ! since they, "rather incoveniently", are required for the gradient but not for the energy
-    if(DECinfo%frozencore .and. DECinfo%first_order) then
-       call remove_core_orbitals_from_last_index(PairFragment,VOVOvirt,VOVOvirtTMP)
-       call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
-            & Fragment1, Fragment2, PairFragment,natoms,DistanceTable)
-       call array4_free(VOVOvirtTMP)
-    else ! use VOVOvirt as it is
-       call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
-            & Fragment1, Fragment2, PairFragment,natoms,DistanceTable)
-    end if
-
-    ! MODIFY FOR NEW CORRECTION!
-    ! If you implement a new correction (e.g. F12) please insert call to subroutine here
-    ! which calculates pair fragment contribution and saves it in pairfragment%energies(?),
-    ! see dec_readme file.
-
-#ifdef MOD_UNRELEASED
-    if(DECinfo%F12) then
-       call get_f12_fragment_energy(PairFragment, t2occ%val, Fragment1, Fragment2, natoms)
-    
-       !> Free density matrix
-       call free_cabs()
-    endif
-   
-#endif
-    call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)
-
-
-    ! First order properties
-    ! **********************
-    if(DECinfo%first_order) then
-       call pair_calculate_mp2gradient_driver(Fragment1,Fragment2,PairFragment,&
-            & t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
-       call array4_free(VOOO)
-       call array4_free(VOVV)
-    end if
-
-#ifdef MOD_UNRELEASED
-    ! calculate ccsd(t) pair interaction energies
-    ! *******************************************
-
-    ! (T) energy contributions are stored 
-    ! in PairFragment%energies(FRAGMODEL_OCCpT) and PairFragment%energies(FRAGMODEL_VIRTpT) 
-
-    if (PairFragment%CCModel == MODEL_CCSDpT) then
-
-       call dec_fragment_time_init(times_pt)
-
-       ! init ccsd(t) singles and ccsd(t) doubles
-       ccsdpt_t1 = array2_init([PairFragment%nunoccAOS,PairFragment%noccAOS])
-       ccsdpt_t2 = array4_init([PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
-            & PairFragment%noccAOS,PairFragment%noccAOS])
-
-       ! call ccsd(t) driver and pair fragment evaluation
-       call ccsdpt_driver(PairFragment%noccAOS,PairFragment%nunoccAOS,&
-                          & PairFragment%nbasis,PairFragment%ppfock,&
-                          & PairFragment%qqfock,PairFragment%Co,&
-                          & PairFragment%Cv,PairFragment%mylsitem,&
-                          & t2,ccsdpt_t1,ccsdpt_t2)
-       call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2,ccsdpt_t2)
-       call ccsdpt_energy_e5_pair(Fragment1,Fragment2,PairFragment,t1,ccsdpt_t1)
-
-       ! release ccsd(t) singles and doubles amplitudes
-       call array2_free(ccsdpt_t1)
-       call array4_free(ccsdpt_t2)
-
-       call dec_fragment_time_get(times_pt)
-
-    end if
-#endif
-
-    if( PairFragment%ccmodel /= MODEL_MP2 ) then
-       call array2_free(t1)
-       call array4_free(t2)
-       call dec_time_evaluate_efficiency_frag(PairFragment,times_ccsd,MODEL_CCSD,'CCSD part')
-    end if
-
-    if(PairFragment%ccmodel == MODEL_CCSDpT)then
-       call dec_time_evaluate_efficiency_frag(PairFragment,times_pt,MODEL_CCSDPT,'(T)  part')
-    endif
-
-    ! Free remaining arrays
-    call array4_free(VOVOocc)
-    call array4_free(VOVOvirt)
-    call array4_free(t2occ)
-    call array4_free(t2virt)
+!
+!
+!    ! Calculate pair interaction energy using Lagrangian scheme
+!    ! *********************************************************
+!
+!    ! MODIFY FOR NEW MODEL!
+!    ! Two possible situations:
+!    ! (1) Your new model fits into the standard CC energy expression. 
+!    !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
+!    ! (2) Your model does NOT fit into the standard CC energy expression.
+!    !     In this case you need to make a new pair interaction energy subroutine and call it from
+!    !     here instead of calling get_pair_fragment_energy.
+!
+!    ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
+!    ! since they, "rather incoveniently", are required for the gradient but not for the energy
+!    if(DECinfo%frozencore .and. DECinfo%first_order) then
+!       call remove_core_orbitals_from_last_index(PairFragment,VOVOvirt,VOVOvirtTMP)
+!       call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
+!            & Fragment1, Fragment2, PairFragment,natoms,DistanceTable)
+!       call array4_free(VOVOvirtTMP)
+!    else ! use VOVOvirt as it is
+!       call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
+!            & Fragment1, Fragment2, PairFragment,natoms,DistanceTable)
+!    end if
+!
+!    ! MODIFY FOR NEW CORRECTION!
+!    ! If you implement a new correction (e.g. F12) please insert call to subroutine here
+!    ! which calculates pair fragment contribution and saves it in pairfragment%energies(?),
+!    ! see dec_readme file.
+!
+!#ifdef MOD_UNRELEASED
+!    if(DECinfo%F12) then
+!       call get_f12_fragment_energy(PairFragment, t2occ%val, Fragment1, Fragment2, natoms)
+!    
+!       !> Free density matrix
+!       call free_cabs()
+!    endif
+!   
+!#endif
+!    call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)
+!
+!
+!    ! First order properties
+!    ! **********************
+!    if(DECinfo%first_order) then
+!       call pair_calculate_mp2gradient_driver(Fragment1,Fragment2,PairFragment,&
+!            & t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
+!       call array4_free(VOOO)
+!       call array4_free(VOVV)
+!    end if
+!
+!#ifdef MOD_UNRELEASED
+!    ! calculate ccsd(t) pair interaction energies
+!    ! *******************************************
+!
+!    ! (T) energy contributions are stored 
+!    ! in PairFragment%energies(FRAGMODEL_OCCpT) and PairFragment%energies(FRAGMODEL_VIRTpT) 
+!
+!    if (PairFragment%CCModel == MODEL_CCSDpT) then
+!
+!       call dec_fragment_time_init(times_pt)
+!
+!       ! init ccsd(t) singles and ccsd(t) doubles
+!       ccsdpt_t1 = array2_init([PairFragment%nunoccAOS,PairFragment%noccAOS])
+!       ccsdpt_t2 = array4_init([PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
+!            & PairFragment%noccAOS,PairFragment%noccAOS])
+!
+!       ! call ccsd(t) driver and pair fragment evaluation
+!       call ccsdpt_driver(PairFragment%noccAOS,PairFragment%nunoccAOS,&
+!                          & PairFragment%nbasis,PairFragment%ppfock,&
+!                          & PairFragment%qqfock,PairFragment%Co,&
+!                          & PairFragment%Cv,PairFragment%mylsitem,&
+!                          & t2,ccsdpt_t1,ccsdpt_t2)
+!       call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2,ccsdpt_t2)
+!       call ccsdpt_energy_e5_pair(Fragment1,Fragment2,PairFragment,t1,ccsdpt_t1)
+!
+!       ! release ccsd(t) singles and doubles amplitudes
+!       call array2_free(ccsdpt_t1)
+!       call array4_free(ccsdpt_t2)
+!
+!       call dec_fragment_time_get(times_pt)
+!
+!    end if
+!#endif
+!
+!    if( PairFragment%ccmodel /= MODEL_MP2 ) then
+!       call array2_free(t1)
+!       call array4_free(t2)
+!       call dec_time_evaluate_efficiency_frag(PairFragment,times_ccsd,MODEL_CCSD,'CCSD part')
+!    end if
+!
+!    if(PairFragment%ccmodel == MODEL_CCSDpT)then
+!       call dec_time_evaluate_efficiency_frag(PairFragment,times_pt,MODEL_CCSDPT,'(T)  part')
+!    endif
+!
+!    ! Free remaining arrays
+!    call array4_free(VOVOocc)
+!    call array4_free(VOVOvirt)
+!    call array4_free(t2occ)
+!    call array4_free(t2virt)
 
 
 
