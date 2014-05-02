@@ -1693,6 +1693,8 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2,tcmpi1,tcmpi2,twmpi1
   real(realk) :: Evirt,Evirt2
   integer(kind=long) :: maxsize
+  real(realk),pointer :: OccContribsFull(:),VirtContribsFull(:)
+  real(realk),pointer :: occ_tmp(:),virt_tmp(:)
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
@@ -1780,7 +1782,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      enddo
   enddo
 
-  IF(.NOT.DECinfo%onlyoccpart)THEN
+!  IF(.NOT.DECinfo%onlyoccpart)THEN
      ! Extract virtual EOS indices from rows of Uvirt
      call array2_extract_EOS(Uvirt,MyFragment,'V','R',tmparray2)
      call mem_alloc(UvirtEOST,nvirt,nvirtEOS)
@@ -1798,9 +1800,9 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
         enddo
      enddo
      call array2_free(Uocc)
-  ELSE
-     call array2_free(Uocc)     
-  ENDIF
+!  ELSE
+!     call array2_free(Uocc)     
+!  ENDIF
   call array2_free(Uvirt)
 
 
@@ -1901,7 +1903,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   !  Occupied Partitioning Use UoccEOST,UvirtT: allocated Calpha,AlphaCD3
   !=====================================================================================
   Eocc = 0.0E0_realk
-  IF(.NOT.DECinfo%onlyvirtpart)THEN     
+!  IF(.NOT.DECinfo%onlyvirtpart)THEN     
      call mem_alloc(tocc,nvirt,nvirt,noccEOS,noccEOS)
      !$OMP PARALLEL DEFAULT(shared) &
      !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
@@ -1940,10 +1942,10 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_dealloc(toccTMP)
      !$OMP END CRITICAL
      !$OMP END PARALLEL
-     IF(DECinfo%onlyoccpart)THEN
-        call mem_dealloc(EVocc)
-        call mem_dealloc(EVvirt)
-     ENDIF
+!     IF(DECinfo%onlyoccpart)THEN
+!        call mem_dealloc(EVocc)
+!        call mem_dealloc(EVvirt)
+!     ENDIF
      ! Transform index delta to local occupied index 
      !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
      M = nbasisAux*nvirt  !rows of Output Matrix
@@ -1952,9 +1954,9 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_alloc(AlphaCD4,nbasisAux,nvirt,noccEOS)
      !OpenMP hopefully
      call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD3,M,UoccEOST,nocc,0.0E0_realk,AlphaCD4,M)
-     IF(DECinfo%onlyoccpart)THEN
-        call mem_dealloc(AlphaCD3)
-     ENDIF
+!     IF(DECinfo%onlyoccpart)THEN
+!        call mem_dealloc(AlphaCD3)
+!     ENDIF
      
      call mem_alloc(AlphaCD5,nbasisAux,nvirt,noccEOS)
      !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
@@ -1983,9 +1985,9 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_alloc(Calpha2,nbasisAux,nvirt,noccEOS)
      !OpenMP hopefully
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,nocc,0.0E0_realk,Calpha2,M)
-     IF(DECinfo%onlyoccpart)THEN
-        call mem_dealloc(Calpha)
-     ENDIF
+!     IF(DECinfo%onlyoccpart)THEN
+!        call mem_dealloc(Calpha)
+!     ENDIF
      call mem_dealloc(UoccEOST)
      
      call mem_alloc(Calpha3,nbasisAux,nvirt,noccEOS)
@@ -2005,12 +2007,20 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      enddo
      !$OMP END PARALLEL DO
      call mem_dealloc(Calpha2)
-     
+
      !make t(a,i,b,j) and contract with g(a,i,b,j) to get E
      Eocc = 0.0E0_realk
+     call mem_alloc(VirtContribsFull,nvirt)
+     do aLoc=1,nvirt
+        VirtContribsFull(aLoc) = 0.0E0_realk
+     end do
      !$OMP PARALLEL DEFAULT(shared) &
-     !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG,TMP,Gtmp1,Gtmp2,Etmp,Eocc2,TMP1)
+     !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG,TMP,Gtmp1,Gtmp2,Etmp,Eocc2,TMP1,virt_tmp)
      Eocc2 = 0.0E0_realk
+     call mem_alloc(virt_tmp,nvirt)
+     do aLoc=1,nvirt
+        virt_tmp(aLoc) = 0.0E0_realk
+     end do
      !$OMP DO COLLAPSE(3) 
      do bLOC=1,nvirt
         do aLOC=1,nvirt
@@ -2036,6 +2046,8 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
                  Gtmp = (2.0E0_realk*Gtmp1 - Gtmp2)
                  Etmp = TMP * Gtmp
                  Eocc2 = Eocc2 + Etmp
+                 virt_tmp(aLoc) = virt_tmp(aLoc) + Etmp
+                 if(aLOC/=bLOC) virt_tmp(bLoc) = virt_tmp(bLoc) + Etmp
               enddo
            enddo
         enddo
@@ -2043,22 +2055,27 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !$OMP END DO NOWAIT
      !$OMP CRITICAL
      Eocc = Eocc + Eocc2
+     do aLoc=1,nvirt
+        VirtContribsFull(aLoc) = VirtContribsFull(aLoc) + virt_tmp(aLoc)
+     end do
      !$OMP END CRITICAL
+     call mem_dealloc(virt_tmp)
      !$OMP END PARALLEL
      call mem_dealloc(UvirtT) 
      call mem_dealloc(tocc)
      call mem_dealloc(Calpha3)
      call mem_dealloc(alphaCD5)
-  ELSE
-     call mem_dealloc(UoccEOST)     
-     call mem_dealloc(UvirtT) 
-  ENDIF
+!  ELSE
+!     call mem_dealloc(UoccEOST)     
+!     call mem_dealloc(UvirtT) 
+!  ENDIF
+
   !=====================================================================================
   !  Virtual Partitioning use UvirtEOST,UoccT:     allocated Calpha,AlphaCD3
   !=====================================================================================
   
   Evirt = 0.0E0_realk
-  IF(.NOT.DECinfo%onlyoccpart)THEN     
+!  IF(.NOT.DECinfo%onlyoccpart)THEN     
      call mem_alloc(tvirt,nocc,nocc,nvirtEOS,nvirtEOS)
      !$OMP PARALLEL DEFAULT(shared) &
      !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
@@ -2156,9 +2173,17 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_dealloc(Calpha2)
      call mem_dealloc(UvirtEOST)
 
+     call mem_alloc(OccContribsFull,nocc)
+     do iLoc=1,nOcc
+        OccContribsFull(iLoc) = 0.0E0_realk
+     end do
      !$OMP PARALLEL DEFAULT(shared) &
-     !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG,TMP,Gtmp1,Gtmp2,Etmp,Evirt2,TMP1)
+     !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG,TMP,Gtmp1,Gtmp2,Etmp,Evirt2,TMP1,Occ_tmp)
      Evirt2 = 0.0E0_realk
+     call mem_alloc(Occ_tmp,nocc)
+     do iLoc=1,nOcc
+        Occ_tmp(iLoc) = 0.0E0_realk
+     end do
      !$OMP DO COLLAPSE(3) 
      do bLOC=1,nvirtEOS
       do aLOC=1,nvirtEOS
@@ -2184,6 +2209,8 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
          Gtmp = (2.0E0_realk*Gtmp1 - Gtmp2)
          Etmp = TMP * Gtmp
          Evirt2 = Evirt2 + Etmp
+         Occ_tmp(iLoc) = Occ_tmp(iLoc) + Etmp
+         if(iLOC/=iLOC) Occ_tmp(jLoc) = Occ_tmp(jLoc) + Etmp
         enddo
        enddo
       enddo
@@ -2191,14 +2218,17 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !$OMP END DO NOWAIT
      !$OMP CRITICAL
      Evirt = Evirt + Evirt2
+     do iLoc=1,nocc
+        OccContribsFull(iLoc) = OccContribsFull(iLoc) + Occ_tmp(iLoc)
+     end do
      !$OMP END CRITICAL
+     call mem_dealloc(Occ_tmp)
      !$OMP END PARALLEL
-
      call mem_dealloc(UoccT)
      call mem_dealloc(tvirt)
      call mem_dealloc(Calpha3)
      call mem_dealloc(alphaCD5)
-  ENDIF
+!  ENDIF
 
   call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
   tmpidiff = twmpi2-twmpi1
@@ -2231,6 +2261,8 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
         MyFragment%slavetime_work(MODEL_MP2)=0.0E0_realk
      end if
      call time_start_phase( PHASE_COMM )
+     call lsmpi_reduction(OccContribsFull,nocc,infpar%master,infpar%lg_comm)
+     call lsmpi_reduction(VirtContribsFull,nvirt,infpar%master,infpar%lg_comm)
      call lsmpi_reduction(EnergyMPI,N,infpar%master,infpar%lg_comm)
      call lsmpi_reduction(flops,infpar%master,infpar%lg_comm)
      call lsmpi_reduction(MyFragment%slavetime_work(MODEL_MP2),infpar%master,infpar%lg_comm)
@@ -2256,18 +2288,27 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
           & MyFragment%EOSatoms(1)
      write(DECinfo%output,*) '**********************************************************************'
      write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied RI energy = ', Eocc
-     if(.not. DECinfo%onlyoccpart) then
+!     if(.not. DECinfo%onlyoccpart) then
         write(DECinfo%output,'(1X,a,g20.10)') 'Single virtual RI energy = ', Evirt
-     end if
+!     end if
      write(DECinfo%output,*)
      write(DECinfo%output,*)
 
      MyFragment%energies(FRAGMODEL_OCCMP2)  = Eocc
      MyFragment%energies(FRAGMODEL_VIRTMP2) = Evirt
      MyFragment%energies(FRAGMODEL_LAGMP2)  = 0.5E0_realk*(Eocc + Evirt)
+     do iLoc=1,nocc
+        MyFragment%OccContribs(iLoc) = OccContribsFull(iLoc)
+     end do
+     do aLoc=1,nvirt
+        MyFragment%VirtContribs(aLoc) = VirtContribsFull(aLoc)
+     end do
   endif
 
   IF(master)call LSTIMER('MP2_RI_Energy',tcpu,twall,DECinfo%output,ForcePrint)
+
+  call mem_dealloc(VirtContribsFull)
+  call mem_dealloc(OccContribsFull)
 
 end subroutine MP2_RI_EnergyContribution
 

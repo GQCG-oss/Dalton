@@ -54,7 +54,7 @@ contains
   !> \date January 2011
   subroutine get_fragment_and_Energy(MyAtom,natoms,occ_atoms,Unocc_atoms,&
        & MyMolecule,MyLsitem,nocc_tot,nunocc_tot,OccOrbitals,UnoccOrbitals,&
-       & MyFragment,FragmentExpansionRI)
+       & MyFragment)
 
     implicit none
     !> Central atom in fragment
@@ -79,8 +79,6 @@ contains
     type(decorbital), dimension(nUnocc_tot), intent(in) :: UnoccOrbitals
     !> Atomic fragment to be determined  (NOT pair fragment)
     type(decfrag), intent(inout) :: MyFragment
-    !> Perform Energy Calc using RI?
-    logical,intent(in) :: FragmentExpansionRI
     real(realk) :: tcpu, twall
     logical :: DoBasis
     logical :: ForcePrint
@@ -100,7 +98,7 @@ contains
 
     ! Calculate fragment energies
     ! ***************************
-    IF(FragmentExpansionRI)THEN
+    IF(DECinfo%FragmentExpansionRI)THEN
        CALL MP2_RI_energyContribution(MyFragment)
        call get_occ_virt_lag_energies_fragopt(MyFragment)
     ELSE
@@ -2130,17 +2128,15 @@ contains
      integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
      integer      :: iter,i,idx,StepsizeLoop3,StepsizeLoop2,NF,IT,StepsizeLoop4
      integer      :: max_iter_red,nAtomsWithOccOrb,nAtomsWithVirtOrb
-     logical :: expansion_converged,FragmentExpansionRI,ExpandFragmentConverged
+     logical :: expansion_converged,ExpandFragmentConverged
      logical :: OccUnchanged,VirtUnchanged,ExpandVirt,ExpandOcc
-     logical :: BinarySearch
+     logical :: BinarySearch,SeperateExpansion
      type(array4) :: t2,g
      real(realk),pointer :: OccContribs(:),VirtContribs(:)    
      real(realk),pointer :: times_fragopt(:)
 
      times_fragopt => null()
      call dec_fragment_time_init(times_fragopt)
-
-     FragmentExpansionRI = DECinfo%FragmentExpansionRI        
      
      write(DECinfo%output,'(a)')    ' FOP'
      write(DECinfo%output,'(a)')    ' FOP ==============================================='
@@ -2149,12 +2145,18 @@ contains
      write(DECinfo%output,'(a)')    ' FOP'
 
      BinarySearch = .FALSE.
+     SeperateExpansion = .FALSE.
      write(DECinfo%output,'(a)') ' FOP  Fragment optimization scheme '
      IF(DECinfo%FragmentExpansionScheme.EQ.1)THEN
         write(DECinfo%output,'(a)') ' FOP  Standard Fragment optimization scheme is used'
      ELSEIF(DECinfo%FragmentExpansionScheme.EQ.2)THEN
         write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
         BinarySearch = .TRUE.
+     ELSEIF(DECinfo%FragmentExpansionScheme.EQ.3)THEN
+        write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
+        write(DECinfo%output,'(a)') ' FOP Expansion for Occ and Virt is done seperately'        
+        BinarySearch = .TRUE.
+        SeperateExpansion = .TRUE.        
      ELSE
         call lsquit('FragmentExpansionScheme unknown',-1)
      ENDIF
@@ -2227,22 +2229,22 @@ contains
      ! Start fragment optimization by calculating initial fragment 
      IF(DECinfo%onlyoccpart) then
         !All Occupied orbitals assigned to atoms within 1.0 Angstrom of central atom are included
-        init_Occradius = 2.0_realk/bohr_to_angstrom
+        init_Occradius = 1.0_realk/bohr_to_angstrom
      ELSE
         !All Occupied orbitals assigned to atoms within 3.0 Angstrom of central atom are included
         IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
-           init_Occradius = 2.0_realk/bohr_to_angstrom
+           init_Occradius = 3.0_realk/bohr_to_angstrom
         ELSE
            init_Occradius = 2.0_realk/bohr_to_angstrom
         ENDIF
      ENDIF
      IF(DECinfo%onlyvirtpart) then
         !All Virtual orbitals assigned to atoms within 1.0 Angstrom of central atom are included
-        init_Virtradius = 2.0_realk/bohr_to_angstrom
+        init_Virtradius = 1.0_realk/bohr_to_angstrom
      ELSE
         !All Virtual orbitals assigned to atoms within 3.0 Angstrom of central atom are included
         IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
-           init_Virtradius = 2.0_realk/bohr_to_angstrom
+           init_Virtradius = 3.0_realk/bohr_to_angstrom
         ELSE
            init_Virtradius = 2.0_realk/bohr_to_angstrom
         ENDIF
@@ -2251,7 +2253,7 @@ contains
         & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
      call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
         & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-        & AtomicFragment,FragmentExpansionRI)
+        & AtomicFragment)
      ! Print initial fragment information
      call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
@@ -2259,30 +2261,16 @@ contains
           & nunocc_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
 
      StepsizeLoop2 = DECinfo%FragmentExpansionSize
-     NF = 1
-     IF(FragmentExpansionRI)NF=2 !RI and standard expansion
-     DO I=1,NF
-        IF(I.EQ.2)THEN
-           !New Reference without RI
-           FragmentExpansionRI  = .FALSE.              
-           call atomic_fragment_free(AtomicFragment)
-           call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-                & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-                & AtomicFragment,FragmentExpansionRI)
-           !Reduce the step size as the sizes have already been converged 
-           !at the RI - MP2 level 
-           StepsizeLoop2 = MIN(2,StepsizeLoop2)
-        ENDIF
-        ExpandVirt = .TRUE.    !Expand both Occupied and Virtual Space untill convergence
-        ExpandOcc  = .TRUE. 
-        call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
-             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
-             & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
-             & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
-             & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
-             & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
-             & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
-     ENDDO
+
+     ExpandVirt = .TRUE.    !Expand both Occupied and Virtual Space untill convergence
+     ExpandOcc  = .TRUE. 
+     call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
+          & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
+          & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
+          & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
+          & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
+          & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
+          & nAtomsWithOccOrb,nAtomsWithVirtOrb)
 
      ! ======================================================================
      !             Transition from expansion to reduction loop
@@ -2364,7 +2352,12 @@ contains
         ! Different model in expansion and reduction steps - Calculate new reference energy
         ! for converged fragment from expansion loop.
         AtomicFragment%ccmodel = MyMolecule%ccmodel(MyAtom,Myatom)
-        call atomic_fragment_energy_and_prop(AtomicFragment)
+        IF(DECinfo%FragmentExpansionRI)THEN
+           CALL MP2_RI_energyContribution(AtomicFragment)
+           call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+        ELSE
+           call atomic_fragment_energy_and_prop(AtomicFragment)
+        ENDIF
         LagEnergyDiff=0.0_realk
         OccEnergyDiff=0.0_realk
         VirtEnergyDiff=0.0_realk
@@ -2443,7 +2436,7 @@ contains
           & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
           & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
           & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
-          & nAtomsWithOccOrb,nAtomsWithVirtOrb,FragmentExpansionRI)
+          & nAtomsWithOccOrb,nAtomsWithVirtOrb)
        implicit none
      !> Number of occupied orbitals in molecule
      integer, intent(in) :: nOcc
@@ -2470,7 +2463,7 @@ contains
      !> Should we expand Occupied space
      logical,intent(in) :: ExpandOcc
      !> Should we expand Virtual space
-     logical,intent(in) :: ExpandVirt,FragmentExpansionRI
+     logical,intent(in) :: ExpandVirt
      logical, dimension(natoms)     :: Occ_atoms,Virt_atoms
      logical, dimension(natoms)     :: OccOld,VirtOld       !previous Fragment
      real(realk),intent(in)         :: FOT
@@ -2479,7 +2472,7 @@ contains
      integer,dimension(natoms),intent(in)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
      real(realk),intent(inout)      :: LagEnergyOld, OccEnergyOld, VirtEnergyOld
      !Local variables
-     real(realk)  :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff,EnergyDiff, FOT2
+     real(realk)  :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff,EnergyDiff
      integer      :: iter,i,idx,StepsizeLoop3
      integer      :: max_iter_red
      logical :: expansion_converged,ExpandFragmentConverged
@@ -2506,40 +2499,25 @@ contains
         call atomic_fragment_free(AtomicFragment)
         call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
            & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-           & AtomicFragment,FragmentExpansionRI)
+           & AtomicFragment)
 
         ! Energy differences
         LagEnergyDiff=abs(LagEnergyOld-AtomicFragment%LagFOP)
         OccEnergyDiff=abs(OccEnergyOld-AtomicFragment%EoccFOP)
         VirtEnergyDiff=abs(VirtEnergyOld-AtomicFragment%EvirtFOP)
-        call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
-        IF(FragmentExpansionRI)THEN
-           EnergyDiff = OccEnergyDiff
-           IF(DECinfo%onlyVirtPart)THEN
-              EnergyDiff = VirtEnergyDiff
-           ENDIF
-!           IF(EnergyDiff.LT.FOT*300.0E0_realk)THEN
-!              StepsizeLoop3 = MAX(1,StepsizeLoop3-1)
-!           ENDIF
-           FOT2 = FOT
-        ELSE
-           FOT2 = FOT
-        ENDIF
+        call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
         ! Test if fragment energy (or energies) are converged to FOT precision
         call fragopt_check_convergence(LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,&
-           &FOT2,expansion_converged)
-
+           &FOT,expansion_converged)
         IF(ExpandFragmentConverged)THEN
            IF(.NOT.expansion_converged)THEN
-              IF(.NOT.FragmentExpansionRI)THEN
-                 WRITE(DECinfo%output,*)'Expansion Include Full Molecule'
-                 OccOld = Occ_atoms;VirtOld = Virt_atoms
-                 LagEnergyOld = AtomicFragment%LagFOP
-                 OccEnergyOld = AtomicFragment%EoccFOP
-                 VirtEnergyOld = AtomicFragment%EvirtFOP
-              ENDIF
+              WRITE(DECinfo%output,*)'Expansion Include Full Molecule'
+              OccOld = Occ_atoms;VirtOld = Virt_atoms
+              LagEnergyOld = AtomicFragment%LagFOP
+              OccEnergyOld = AtomicFragment%EoccFOP
+              VirtEnergyOld = AtomicFragment%EvirtFOP
               expansion_converged = .TRUE.
            ENDIF
         ENDIF
@@ -2547,7 +2525,7 @@ contains
         ! Exit loop if we are converged
         ExpansionConvergence: if(expansion_converged) then
            Occ_atoms = OccOld;Virt_atoms = VirtOld
-           IF(FragmentExpansionRI)THEN
+           IF(DECinfo%FragmentExpansionRI)THEN
               write(DECinfo%output,*) 'FOP RI Fragment expansion converged in iteration ', iter
            ELSE
               IF(ExpandOcc.AND.ExpandVirt)THEN
@@ -2908,8 +2886,27 @@ contains
 
        nHigherOcc  = nocc_orig  !the highest number of Occupied that has been verified to be acceptable
        nHigherVirt = nvirt_orig !the highest number of Virtuals that has been verified to be acceptable
-       nLowerOcc  = AtomicFragment%noccEOS     !the highest number of Occupied that has been verified to be NOT acceptable
-       nLowerVirt = AtomicFragment%nunoccEOS   !the highest number of Virtuals that has been verified to be NOT acceptable
+
+       IF(.FALSE.)THEN
+          nLowerOcc  = AtomicFragment%noccEOS  !highest number of Occupied that has been verified to be NOT acceptable
+          nLowerVirt = AtomicFragment%nunoccEOS!highest number of Virtuals that has been verified to be NOT acceptable
+       ELSE
+          !RejectThresh a little bigger than FOT to ensure that this step would be rejected 
+          !and provide a good lower guess
+          RejectThresh = FOT*1.2E0_realk 
+          OccAOS_new = OccAOS_old
+          VirtAOS_new = VirtAOS_old          
+          !Reduce occupied/virtual AOS according to rejection threshold
+          write(DECinfo%output,*) ' FOP OCC: '
+          call ReduceSpace_orbitalspecific(AtomicFragment,nocc,OccContribs,'O',&
+               & RejectThresh,OccAOS_new,nocc_new)
+          write(DECinfo%output,*) ' FOP VIRT: '
+          call ReduceSpace_orbitalspecific(AtomicFragment,nunocc,VirtContribs,'V',&
+               & RejectThresh,VirtAOS_new,nvirt_new)
+          nLowerOcc  = nocc_new  !highest number of Occupied that has been verified to be NOT acceptable
+          nLowerVirt = nvirt_new !highest number of Virtuals that has been verified to be NOT acceptable          
+       ENDIF
+          
        reduction_converged = .FALSE.
 
        nDimOcc  = nHigherOcc-nLowerOcc
@@ -2946,6 +2943,7 @@ contains
                 nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
              ENDIF
           ENDIF
+       
           IF(DECinfo%PL.GT.1)THEN
              WRITE(DECinfo%output,*)'BIN SEARCH nHigherOcc,nHigherVirt',nHigherOcc,nHigherVirt
              WRITE(DECinfo%output,*)'BIN SEARCH nLowerOcc,nLowerVirt  ',nLowerOcc,nLowerVirt
@@ -2960,7 +2958,12 @@ contains
           call atomic_fragment_free(AtomicFragment)
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
                & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-          call atomic_fragment_energy_and_prop(AtomicFragment)
+          IF(DECinfo%FragmentExpansionRI)THEN
+             CALL MP2_RI_energyContribution(AtomicFragment)
+             call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+          ELSE
+             call atomic_fragment_energy_and_prop(AtomicFragment)
+          ENDIF
           
           ! Check if reduced fragment energy is converged to FOT precision
           ! **************************************************************
@@ -3079,7 +3082,12 @@ contains
                   & OccAOS_orig,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
                   & AtomicFragment,.true.,.false.)
              
-             call atomic_fragment_energy_and_prop(AtomicFragment)
+             IF(DECinfo%FragmentExpansionRI)THEN
+                CALL MP2_RI_energyContribution(AtomicFragment)
+                call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+             ELSE
+                call atomic_fragment_energy_and_prop(AtomicFragment)
+             ENDIF
              exit REDUCTION_LOOP
           end if
           
@@ -3095,7 +3103,12 @@ contains
           call atomic_fragment_free(AtomicFragment)
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
                & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-          call atomic_fragment_energy_and_prop(AtomicFragment)
+          IF(DECinfo%FragmentExpansionRI)THEN
+             CALL MP2_RI_energyContribution(AtomicFragment)
+             call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+          ELSE
+             call atomic_fragment_energy_and_prop(AtomicFragment)
+          ENDIF
           
           
           ! Check if reduced fragment energy is converged to FOT precision

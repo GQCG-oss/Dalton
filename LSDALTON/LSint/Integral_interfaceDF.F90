@@ -2519,6 +2519,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      ENDIF
      CALL freeMolecularOrbitalInfo(orbitalInfo)
      call typedef_setMolecules(setting,molecule,1,2,3,4)
+     call pari_free_atomic_fragments(ATOMS,nAtoms)
      deallocate(ATOMS)
   ENDIF
   call LSTIMER('AlphaCD',TSTART,TEND,LUPRI)
