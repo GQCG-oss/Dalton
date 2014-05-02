@@ -440,11 +440,11 @@ contains
        call dec_time_evaluate_efficiency_frag(MyFragment,times_pt,MODEL_CCSDpT,'(T)  part')
     endif
     ! Free remaining arrays
-    if(.not.DECinfo%OnlyVIRTPart)then
+    if(.not.DECinfo%OnlyVIRTPart.or.MyFragment%ccmodel == MODEL_MP2)then
        call array_free(VOVOocc)
        call array_free(t2occ)
     endif
-    if(.not.DECinfo%OnlyOccPart)then
+    if(.not.DECinfo%OnlyOccPart.or.MyFragment%ccmodel == MODEL_MP2)then
        call array_free(VOVOvirt)
        call array_free(t2virt)
     endif

@@ -1366,17 +1366,6 @@ call mem_dealloc(decmpitasks)
     goccEOS=array4_init(dimocc)
     idx=0
     call array_reorder_4d(1.0E0_realk,tmp1%p,nvirt,noccEOS,noccEOS,nvirt,[1,3,4,2],0.0E0_realk,goccEOS%val)
-    !do c=1,nvirt
-    !   do j=1,noccEOS
-    !      do i=1,noccEOS
-    !         do d=1,nvirt
-    !            idx=idx+1
-    !            goccEOS%val(d,j,c,i) = tmp1%p(idx)
-    !         end do
-    !      end do
-    !   end do
-    !end do
-    
     
     
     ! Amplitudes
@@ -1395,17 +1384,6 @@ call mem_dealloc(decmpitasks)
     ! Put amplitudes into output array in the correct order
     toccEOS=array4_init(dimocc)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nvirt,noccEOS,noccEOS,nvirt,[1,3,4,2],0.0E0_realk,toccEOS%val)
-    !idx=0
-    !do c=1,nvirt
-    !   do j=1,noccEOS
-    !      do i=1,noccEOS
-    !         do d=1,nvirt
-    !            idx=idx+1
-    !            toccEOS%val(d,j,c,i) = tmp1%p(idx)
-    !         end do
-    !      end do
-    !   end do
-    !end do
     
 ! ENDIF
 ! IF(.NOT.DECinfo%OnlyOccPart)THEN
@@ -1464,17 +1442,6 @@ call mem_dealloc(decmpitasks)
     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocctot]   ! Output order
     gvirtEOS=array4_init(dimvirt)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nocc,nvirtEOS,nvirtEOS,nocctot,[3,1,2,4],0.0E0_realk,gvirtEOS%val)
-    !idx=0
-    !do k=1,nocctot
-    !   do b=1,nvirtEOS
-    !      do a=1,nvirtEOS
-    !         do l=1,nocc
-    !            idx=idx+1
-    !            gvirtEOS%val(b,l,a,k) = tmp1%p(idx)
-    !         end do
-    !      end do
-    !   end do
-    !end do
     
     
     ! Amplitudes
@@ -1503,17 +1470,6 @@ call mem_dealloc(decmpitasks)
     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocc]   ! Output order
     tvirtEOS=array4_init(dimvirt)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nocc,nvirtEOS,nvirtEOS,nocc,[3,1,2,4],0.0E0_realk,tvirtEOS%val)
-    !idx=0
-    !do k=1,nocc
-    !   do b=1,nvirtEOS
-    !      do a=1,nvirtEOS
-    !         do l=1,nocc
-    !            idx=idx+1
-    !            tvirtEOS%val(b,l,a,k) = tmp1%p(idx)             
-    !         end do
-    !      end do
-    !   end do
-    !end do
 ! ENDIF
 
 

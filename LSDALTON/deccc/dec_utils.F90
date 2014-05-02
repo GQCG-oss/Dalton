@@ -5086,8 +5086,8 @@ end function max_batch_dimension
      integer :: i,j,a,b,nocc,nvirt
 
      ! Number of occupied/virtual orbitals assuming index ordering given above
-     nocc  = t1%dims(2)
-     nvirt = t1%dims(1)
+     nocc  = t2%dims(2)
+     nvirt = t2%dims(1)
 
      if(t2%itype == DENSE)then
         ! Init combined amplitudes
