@@ -1366,17 +1366,6 @@ call mem_dealloc(decmpitasks)
     goccEOS=array4_init(dimocc)
     idx=0
     call array_reorder_4d(1.0E0_realk,tmp1%p,nvirt,noccEOS,noccEOS,nvirt,[1,3,4,2],0.0E0_realk,goccEOS%val)
-    !do c=1,nvirt
-    !   do j=1,noccEOS
-    !      do i=1,noccEOS
-    !         do d=1,nvirt
-    !            idx=idx+1
-    !            goccEOS%val(d,j,c,i) = tmp1%p(idx)
-    !         end do
-    !      end do
-    !   end do
-    !end do
-    
     
     
     ! Amplitudes
@@ -1395,17 +1384,6 @@ call mem_dealloc(decmpitasks)
     ! Put amplitudes into output array in the correct order
     toccEOS=array4_init(dimocc)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nvirt,noccEOS,noccEOS,nvirt,[1,3,4,2],0.0E0_realk,toccEOS%val)
-    !idx=0
-    !do c=1,nvirt
-    !   do j=1,noccEOS
-    !      do i=1,noccEOS
-    !         do d=1,nvirt
-    !            idx=idx+1
-    !            toccEOS%val(d,j,c,i) = tmp1%p(idx)
-    !         end do
-    !      end do
-    !   end do
-    !end do
     
 ! ENDIF
 ! IF(.NOT.DECinfo%OnlyOccPart)THEN
@@ -1464,17 +1442,6 @@ call mem_dealloc(decmpitasks)
     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocctot]   ! Output order
     gvirtEOS=array4_init(dimvirt)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nocc,nvirtEOS,nvirtEOS,nocctot,[3,1,2,4],0.0E0_realk,gvirtEOS%val)
-    !idx=0
-    !do k=1,nocctot
-    !   do b=1,nvirtEOS
-    !      do a=1,nvirtEOS
-    !         do l=1,nocc
-    !            idx=idx+1
-    !            gvirtEOS%val(b,l,a,k) = tmp1%p(idx)
-    !         end do
-    !      end do
-    !   end do
-    !end do
     
     
     ! Amplitudes
@@ -1503,17 +1470,6 @@ call mem_dealloc(decmpitasks)
     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocc]   ! Output order
     tvirtEOS=array4_init(dimvirt)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nocc,nvirtEOS,nvirtEOS,nocc,[3,1,2,4],0.0E0_realk,tvirtEOS%val)
-    !idx=0
-    !do k=1,nocc
-    !   do b=1,nvirtEOS
-    !      do a=1,nvirtEOS
-    !         do l=1,nocc
-    !            idx=idx+1
-    !            tvirtEOS%val(b,l,a,k) = tmp1%p(idx)             
-    !         end do
-    !      end do
-    !   end do
-    !end do
 ! ENDIF
 
 
@@ -3454,13 +3410,17 @@ end subroutine Get_ijba_integrals
     !> Atomic fragment (or pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: goccEOS
+    type(array),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: toccEOS
+    type(array),intent(inout) :: toccEOS
     !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: gvirtEOS
+    type(array),intent(inout) :: gvirtEOS
     !> Amplitudes for virt EOS in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: tvirtEOS
+    type(array),intent(inout) :: tvirtEOS
+    type(array4) :: goccEOS_arr4
+    type(array4) :: toccEOS_arr4
+    type(array4) :: gvirtEOS_arr4
+    type(array4) :: tvirtEOS_arr4
     type(array4) :: dummy1,dummy2
     type(mp2_batch_construction) :: bat
     logical :: first_order_integrals
@@ -3468,8 +3428,21 @@ end subroutine Get_ijba_integrals
     first_order_integrals=.false. ! just energy
 
     ! Calculate integrals and amplitudes
-    call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS, toccEOS, &
-         & gvirtEOS, tvirtEOS, dummy1, dummy2,bat,first_order_integrals)
+    call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS_arr4, toccEOS_arr4, &
+         & gvirtEOS_arr4, tvirtEOS_arr4, dummy1, dummy2,bat,first_order_integrals)
+
+    goccEOS = array_init(goccEOS_arr4%dims,4)
+    call array_convert(goccEOS_arr4%val,goccEOS)
+    call array4_free(goccEOS_arr4)
+    toccEOS = array_init(toccEOS_arr4%dims,4)
+    call array_convert(toccEOS_arr4%val,toccEOS)
+    call array4_free(toccEOS_arr4)
+    gvirtEOS = array_init(gvirtEOS_arr4%dims,4)
+    call array_convert(gvirtEOS_arr4%val,gvirtEOS)
+    call array4_free(gvirtEOS_arr4)
+    tvirtEOS = array_init(tvirtEOS_arr4%dims,4)
+    call array_convert(tvirtEOS_arr4%val,tvirtEOS)
+    call array4_free(tvirtEOS_arr4)
 
   end subroutine MP2_integrals_and_amplitudes_energy
 
@@ -3488,25 +3461,50 @@ end subroutine Get_ijba_integrals
     !> Atomic fragment (or pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: goccEOS
+    type(array),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: toccEOS
+    type(array),intent(inout) :: toccEOS
     !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: gvirtEOS
+    type(array),intent(inout) :: gvirtEOS
     !> Amplitudes for virt EOS in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: tvirtEOS
+    type(array),intent(inout) :: tvirtEOS
     !> Occ EOS integrals (d j | i k) in the order (d,j,i,k)  [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: djik
+    type(array),intent(inout) :: djik
     !> Virt EOS integrals (b l | a d) in the order (b,l,a,d)  [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: blad
+    type(array),intent(inout) :: blad
+    type(array4) :: goccEOS_arr4
+    type(array4) :: toccEOS_arr4
+    type(array4) :: gvirtEOS_arr4
+    type(array4) :: tvirtEOS_arr4
+    type(array4) :: djik_arr4
+    type(array4) :: blad_arr4
     type(mp2_batch_construction) :: bat
     logical :: first_order_integrals
 
     first_order_integrals=.true. ! first order properties requested
 
     ! Calculate integrals and amplitudes
-    call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS, toccEOS, &
-         & gvirtEOS, tvirtEOS, djik,blad,bat,first_order_integrals)
+    call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS_arr4, toccEOS_arr4, &
+         & gvirtEOS_arr4, tvirtEOS_arr4, djik_arr4,blad_arr4,bat,first_order_integrals)
+
+    goccEOS = array_init(goccEOS_arr4%dims,4)
+    call array_convert(goccEOS_arr4%val,goccEOS)
+    call array4_free(goccEOS_arr4)
+    toccEOS = array_init(toccEOS_arr4%dims,4)
+    call array_convert(toccEOS_arr4%val,toccEOS)
+    call array4_free(toccEOS_arr4)
+    gvirtEOS = array_init(gvirtEOS_arr4%dims,4)
+    call array_convert(gvirtEOS_arr4%val,gvirtEOS)
+    call array4_free(gvirtEOS_arr4)
+    tvirtEOS = array_init(tvirtEOS_arr4%dims,4)
+    call array_convert(tvirtEOS_arr4%val,tvirtEOS)
+    call array4_free(tvirtEOS_arr4)
+    djik = array_init(djik_arr4%dims,4)
+    call array_convert(djik_arr4%val,djik)
+    call array4_free(djik_arr4)
+    blad = array_init(blad_arr4%dims,4)
+    call array_convert(blad_arr4%val,blad)
+    call array4_free(blad_arr4)
 
   end subroutine MP2_integrals_and_amplitudes_energy_and_first_order
 

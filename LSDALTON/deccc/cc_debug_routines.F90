@@ -307,13 +307,13 @@ module cc_debug_routines_module
        if(get_mult)then
 
          if(DECinfo%use_singles)then
-           call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val,vo=t1_final%val)
+           call local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val,vo=t1_final%val)
          else
-           call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val)
+           call local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val)
          endif
 
        elseif(u_pnos)then
-         call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=m2%val)
+         call local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=m2%val)
        endif
 
 
@@ -1026,14 +1026,14 @@ module cc_debug_routines_module
 
      !transform back to original basis   
      if(DECinfo%use_singles)then
-       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=t2_final%val,vo=t1_final%val)
-       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=VOVO%val)
      else
-       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=t2_final%val)
-       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=VOVO%val)
      endif
 

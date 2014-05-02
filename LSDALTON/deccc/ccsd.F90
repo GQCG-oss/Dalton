@@ -5373,9 +5373,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     implicit none
 
     !> ccsd doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
-    type(array4), intent(inout) :: ccsd_doubles, integral
+    type(array), intent(inout) :: ccsd_doubles, integral
     !> ccsd singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles
+    type(array), intent(inout) :: ccsd_singles
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
@@ -5413,9 +5413,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           do b=1,nvirt
              do a=1,nvirt
 
-                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
+                energy_tmp_1 = ccsd_doubles%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
                 if(DECinfo%use_singles)then
-                   energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                   energy_tmp_2 = ccsd_singles%elm2(a,i) * ccsd_singles%elm2(b,j) * integral%elm4(a,b,i,j)
                 else
                    energy_tmp_2 = 0.0E0_realk
                 endif
@@ -5430,7 +5430,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !$OMP END PARALLEL DO
 
     ! reorder from (a,b,i,j) to (a,b,j,i)
-    call array4_reorder(integral,[1,2,4,3])
+    call array_reorder(integral,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
     !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
@@ -5443,9 +5443,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           do b=1,nvirt
              do a=1,nvirt
 
-                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
+                energy_tmp_1 = ccsd_doubles%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
                 if(DECinfo%use_singles)then
-                   energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                   energy_tmp_2 = ccsd_singles%elm2(a,i) * ccsd_singles%elm2(b,j) * integral%elm4(a,b,i,j)
                 else
                    energy_tmp_2 = 0.0E0_realk
                 endif

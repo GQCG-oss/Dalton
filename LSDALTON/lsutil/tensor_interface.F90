@@ -595,6 +595,300 @@ contains
 
   end function array_ddot
 
+  !> \brief Extract EOS indices from array4 for both occupied and virtual partitioning schemes:
+  !> 1. Arr_occEOS: The occupied orbitals not assigned to the central atom are removed while
+  !>                the virtual indices are unchanged.
+  !> 2. Arr_virtEOS: The virtual orbitals not assigned to the central atom are removed while
+  !>                 the occupied indices are unchanged.
+  !> \author Patrick Ettenhuber, adapted from Kasper Kristensen
+  !> \date August 2014
+  subroutine array_extract_eos_indices(Arr_orig,MyFragment,Arr_occEOS,Arr_virtEOS)
+
+
+    implicit none
+    !> Array where occupied EOS indices are extracted
+    type(array),intent(inout),optional :: Arr_occEOS
+    !> Array where virtual EOS indices are extracted
+    type(array),intent(inout),optional :: Arr_virtEOS
+    !> Original array with AOS fragment indices for both occ and virt spaces
+    type(array),intent(in) :: Arr_orig
+    !> Atomic fragment
+    type(decfrag),intent(inout) :: MyFragment
+    integer :: nocc, nvirt
+
+    ! Number of occ and virt orbitals on central atom in fragment
+    nocc  = MyFragment%noccEOS
+    nvirt = MyFragment%nunoccEOS
+
+    ! Extract virtual EOS indices and leave occupied indices untouched
+    ! ****************************************************************
+
+    if(.not.DECinfo%OnlyOccPart.and.present(Arr_virtEOS))then
+       call array_extract_eos_indices_virt(Arr_virtEOS,Arr_orig,&
+          & nvirt,MyFragment%idxu(1:nvirt))
+    endif
+
+    ! Extract occupied EOS indices and leave virtual indices untouched
+    ! ****************************************************************
+
+    if(.not.DECinfo%OnlyVIRTPart.and.present(Arr_occEOS))then
+       call array_extract_eos_indices_occ(Arr_occEOS,Arr_orig,&
+          & nocc, MyFragment%idxo(1:nocc))
+    endif
+
+  end subroutine array_extract_eos_indices
+
+
+  subroutine array_extract_eos_indices_virt(Arr,Arr_full,nEOS,EOS_idx)
+
+    implicit none
+    !> Array output where EOS indices are extracted
+    type(array),intent(inout) :: Arr
+    !> Original array
+    type(array),intent(in) :: Arr_full
+    !> Number of EOS indices
+    integer,intent(in) :: nEOS
+    !> List of EOS indices in the total (EOS+buffer) list of orbitals
+    integer, dimension(nEOS),intent(in) :: EOS_idx
+    integer :: nocc,nvirt,i,a,b,j,ax,bx
+    integer, dimension(4) :: new_dims
+
+    ! Initialize stuff
+    ! ****************
+    nocc = arr_full%dims(2)  ! Total number of occupied orbitals
+    nvirt = arr_full%dims(1)  ! Total number of virtual orbitals
+    new_dims=[nEOS,nocc,nEOS,nocc] ! nEOS=Number of virtual EOS orbitals
+
+
+    ! Sanity checks
+    ! *************
+
+    ! 1. Positive number of orbitals
+    if( (nocc<1) .or. (nvirt<1) ) then
+       write(DECinfo%output,*) 'nocc = ', nocc
+       write(DECinfo%output,*) 'nvirt = ', nvirt
+       call lsquit('array_extract_eos_indices_virt: &
+          & Negative or zero number of orbitals!',DECinfo%output)
+    end if
+
+    ! 2. Array structure is (virt,occ,virt,occ)
+    if( (nvirt/=arr_full%dims(3)) .or. (nocc/=arr_full%dims(4)) ) then
+       write(DECinfo%output,*) 'arr_full%dims(1) = ', arr_full%dims(1)
+       write(DECinfo%output,*) 'arr_full%dims(2) = ', arr_full%dims(2)
+       write(DECinfo%output,*) 'arr_full%dims(3) = ', arr_full%dims(3)
+       write(DECinfo%output,*) 'arr_full%dims(4) = ', arr_full%dims(4)
+       call lsquit('array_extract_eos_indices_virt: &
+          & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+    end if
+
+    ! 3. EOS dimension must be smaller than (or equal to) total number of virt orbitals
+    if(nEOS > nvirt) then
+       write(DECinfo%output,*) 'nvirt = ', nvirt
+       write(DECinfo%output,*) 'nEOS  = ', nEOS
+       call lsquit('array4_extract_eos_indices_virt_memory: &
+          & Number of EOS orbitals must be smaller than (or equal to) total number of &
+          & virtual orbitals!',DECinfo%output)
+    end if
+
+    ! 4. EOS indices must not exceed total number of virtual orbitals
+    do i=1,nEOS
+       if(EOS_idx(i) > nvirt) then
+          write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
+          write(DECinfo%output,*) 'nvirt   = ', nvirt
+          write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
+          call lsquit('array4_extract_eos_indices_virt_memory: &
+             & EOS index value larger than nvirt!',DECinfo%output)
+       end if
+    end do
+
+
+    ! Extract virtual EOS indices and store in Arr
+    ! ********************************************
+
+    if( arr_full%itype == DENSE )then
+       ! Initiate Arr with new dimensions (nvirt_EOS,nocc,nvirt_EOS,nocc)
+       Arr=array_init(new_dims,4)
+
+       ! Set Arr equal to the EOS indices of the original Arr array (arr_full)
+       do j=1,nocc
+          do b=1,nEOS
+             bx=EOS_idx(b)
+             do i=1,nocc
+                do a=1,nEOS
+                   ax=EOS_idx(a)
+                   Arr%elm4(a,i,b,j) = arr_full%elm4(ax,i,bx,j)
+                end do
+             end do
+          end do
+       end do
+    else
+       call lsquit("ERROR(array_extract_eos_indices_virt): NO PDM version implemented yet",-1)
+    endif
+
+
+  end subroutine array_extract_eos_indices_virt
+
+  subroutine array_extract_eos_indices_occ(Arr,arr_full,nEOS,EOS_idx)
+     implicit none
+     !> Array where EOS indices where are extracted
+     type(array),intent(inout) :: Arr
+     !> Original array
+     type(array),intent(in) :: arr_full
+     !> Number of EOS indices
+     integer,intent(in) :: nEOS
+     !> List of EOS indices in the total (EOS+buffer) list of orbitals
+     integer, dimension(nEOS),intent(in) :: EOS_idx
+     integer :: nocc,nvirt,i,a,b,j,ix,jx
+     integer, dimension(4) :: new_dims
+
+     ! Initialize stuff
+     ! ****************
+     nocc = arr_full%dims(2)  ! Total number of occupied orbitals
+     nvirt = arr_full%dims(1)  ! Total number of virtual orbitals
+     new_dims=[nvirt,nEOS,nvirt,nEOS] ! nEOS=Number of occupied EOS orbitals
+
+     ! Sanity checks
+     ! *************
+     if( arr_full%mode /= 4)then
+        call lsquit("ERROR(array_extract_eos_indices_occ): wrong mode of arr_full",-1)
+     endif
+
+     ! 1. Positive number of orbitals
+     if( (nocc<1) .or. (nvirt<1) ) then
+        write(DECinfo%output,*) 'nocc = ', nocc
+        write(DECinfo%output,*) 'nvirt = ', nvirt
+        call lsquit('array_extract_eos_indices_occ: &
+           & Negative or zero number of orbitals!',DECinfo%output)
+     end if
+
+     ! 2. Array structure is (virt,occ,virt,occ)
+     if( (nvirt/=arr_full%dims(3)) .or. (nocc/=arr_full%dims(4)) ) then
+        write(DECinfo%output,*) 'arr_full%dims(1) = ', arr_full%dims(1)
+        write(DECinfo%output,*) 'arr_full%dims(2) = ', arr_full%dims(2)
+        write(DECinfo%output,*) 'arr_full%dims(3) = ', arr_full%dims(3)
+        write(DECinfo%output,*) 'arr_full%dims(4) = ', arr_full%dims(4)
+        call lsquit('array_extract_eos_indices_occ: &
+           & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+     end if
+
+     ! 3. EOS dimension must be smaller than (or equal to) total number of occ orbitals
+     if(nEOS > nocc) then
+        write(DECinfo%output,*) 'nocc = ', nocc
+        write(DECinfo%output,*) 'nEOS = ', nEOS
+        call lsquit('array_extract_eos_indices_occ: &
+           & Number of EOS orbitals must be smaller than (or equal to) total number of &
+           & occupied orbitals!',DECinfo%output)
+     end if
+
+     ! 4. EOS indices must not exceed total number of occupied orbitals
+     do i=1,nEOS
+        if(EOS_idx(i) > nocc) then
+           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nocc!'
+           write(DECinfo%output,*) 'nocc = ', nocc
+           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
+           call lsquit('array_extract_eos_indices_occ: &
+              & EOS index value larger than nocc!',DECinfo%output)
+        end if
+     end do
+
+
+     ! Extract occupied EOS indices and store in Arr
+     ! *********************************************
+
+     if( arr_full%itype == DENSE )then
+
+        ! Initiate Arr with new dimensions (nvirt,nocc_EOS,nvirt,nocc_EOS)
+        Arr=array_init(new_dims,4)
+
+        ! Set Arr equal to the EOS indices of the original Arr array (arr_full)
+        do j=1,nEOS
+           jx=EOS_idx(j)
+           do b=1,nvirt
+              do i=1,nEOS
+                 ix=EOS_idx(i)
+                 do a=1,nvirt
+                    Arr%elm4(a,i,b,j) = arr_full%elm4(a,ix,b,jx)
+                 end do
+              end do
+           end do
+        end do
+     else
+        call lsquit("ERROR(array_extract_eos_indices_occ): NO PDM version implemented yet",-1)
+     endif
+
+
+  end subroutine array_extract_eos_indices_occ
+
+
+  !> \brief Reorder indices with additional memory allocation
+  !> \author Patrick Ettenhuber
+  subroutine array_reorder(arr,order)
+
+     implicit none
+     type(array), intent(inout) :: arr
+     integer, dimension(arr%mode), intent(in) :: order
+     integer, dimension(arr%mode) :: new_dims,order1,order2
+     real(realk), pointer :: new_data(:)
+     integer :: a,b,c,d
+     integer :: dim1,dim2,dim3,dim4
+     integer :: i,j
+     integer :: aa,bb,cc,dd
+     integer :: order_type,m,n
+     real(realk) :: tcpu1,twall1,tcpu2,twall2
+     integer(kind=long) :: nelms
+
+     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+
+
+     nelms = arr%nelms
+     do i=1,arr%mode
+        new_dims(i) = arr%dims(order(i))
+     end do
+
+     if( arr%itype == DENSE )then
+
+        ! Allocate space for reordered data
+
+        call deassoc_ptr_arr(arr)
+
+        call mem_alloc( new_data,nelms )
+
+        select case(arr%mode)
+        case(2)
+           call array_reorder_2d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+              & order,0.0E0_realk,new_data)
+        case(3)
+           call array_reorder_3d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+              &arr%dims(3),order,0.0E0_realk,new_data)
+        case(4)
+           call array_reorder_4d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+              &arr%dims(3),arr%dims(4),order,0.0E0_realk,new_data)
+        case default
+           call lsquit("ERROR(arr_reorder) no default for arbitrary modes",-1)
+        end select
+
+        arr%dims=new_dims
+
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
+#else
+        !$OMP WORKSHARE
+        arr%elm1 = new_data
+        !$OMP END WORKSHARE
+#endif
+
+        call mem_dealloc(new_data)
+
+        call assoc_ptr_arr(arr)
+
+     else
+        call lsquit("ERROR(arr_reorder) only implemented for dense arrs yet",-1)
+     endif
+
+     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
+
+  end subroutine array_reorder
+
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY de-/init ROUTINES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1236,9 +1530,17 @@ contains
     &dimensions are not the same",-1)
     select case(arr%itype)
       case(DENSE)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+#else
         call dcopy(int(nelms),fortarr,1,arr%elm1,1)
+#endif
       case(REPLICATED)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+#else
         call dcopy(int(nelms),fortarr,1,arr%elm1,1)
+#endif
         call array_sync_replicated(arr)
       case(TILED)
         call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
@@ -1293,7 +1595,11 @@ contains
     &dimensions are not the same",DECinfo%output)
     select case(arr%itype)
       case(DENSE)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(fort,'=',arr%elm1,nelms)
+#else
         call dcopy(int(nelms),arr%elm1,1,fort,1)
+#endif
       case(TILED)
         if(present(order))call cp_tileddata2fort(arr,fort,nelms,.false.,order)
         if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.false.)
