@@ -325,6 +325,8 @@ module dec_typedef_module
      integer :: FOTlevel
      !> Max accepted FOT level
      integer :: maxFOTlevel
+     !> Which Fragment Expansion Scheme should be used
+     integer :: FragmentExpansionScheme
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
      !> Use RI for Fragment Expansion 

@@ -116,6 +116,7 @@ contains
     DECinfo%PL                     = 0
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
+    DECinfo%FragmentExpansionScheme= 1
     DECinfo%FragmentExpansionSize  = 5
     DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
@@ -557,6 +558,7 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
+       case('.FRAGMENTEXPANSIONSCHEME'); read(input,*) DECinfo%FragmentExpansionScheme
        case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
@@ -739,19 +741,20 @@ contains
     GB = 1.0E+9_realk !1GB
     SELECT CASE(DECinfo%ccModel)
     CASE(MODEL_MP2)
-       OO=nocc      ! Number of occupied orbitals (as real)
-       VV=nvirt     ! Number of virtual orbitals (as real)
-       ! Maximum batch dimension (as real)
-       BB=max_batch_dimension(mylsitem,nbasis)
-       AA=nbasis    ! Number of atomic orbitals (as real)       
-       call estimate_memory_for_mp2_energy(nthreads,OO,VV,AA,BB,intMEM,intStep,solMEM)
-       mem_required = max(intMEM,solMEM)
-       mem_required = mem_required + DECinfo%fullmolecule_memory
-       mem_required = nocc*nvirt*nocc*nvirt*8.0E0_realk/GB
-       IF(mem_required.GT.DECinfo%memory)THEN
-          CALL FullMemoryError(mem_required)
-          call lsquit('Memory specification too small',DECinfo%output)
-       ENDIF
+!CODE OBSOLETE DUE TO PATRICK NEW FANCY MP2 CODE
+!       OO=nocc      ! Number of occupied orbitals (as real)
+!       VV=nvirt     ! Number of virtual orbitals (as real)
+!       ! Maximum batch dimension (as real)
+!       BB=max_batch_dimension(mylsitem,nbasis)
+!       AA=nbasis    ! Number of atomic orbitals (as real)       
+!       call estimate_memory_for_mp2_energy(nthreads,OO,VV,AA,BB,intMEM,intStep,solMEM)
+!       mem_required = max(intMEM,solMEM)
+!       mem_required = mem_required + DECinfo%fullmolecule_memory
+!       mem_required = nocc*nvirt*nocc*nvirt*8.0E0_realk/GB
+!       IF(mem_required.GT.DECinfo%memory)THEN
+!          CALL FullMemoryError(mem_required)
+!          call lsquit('Memory specification too small',DECinfo%output)
+!       ENDIF
 !    CASE(MODEL_CC2)
 !    CASE(MODEL_CCSD)
 !    CASE(MODEL_CCSDpT)
@@ -852,6 +855,7 @@ contains
     write(lupri,*) 'MaxIter ', DECitem%MaxIter
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
+    write(lupri,*) 'FragmentExpansionScheme ', DECitem%FragmentExpansionScheme
     write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
     write(lupri,*) 'FragmentExpansionRI ', DECitem%FragmentExpansionRI
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
