@@ -2166,24 +2166,24 @@ end function max_batch_dimension
   !> \brief Get list of atoms sorted according to distance from "MyAtom".
   !> \author Ida-Marie Hoeyvik
   subroutine GetSortedList(ListMyAtom,ListTrack,ToSort,&
-       & natoms,MyAtom)
+       & n1,natoms,MyAtom)
     implicit none
-    integer,intent(in)     :: natoms,MyAtom
-    real(realk),intent(in) :: ToSort(natoms,natoms)
-    real(realk)            :: ListMyAtom(natoms), TempList(natoms)
-    integer                :: ListTrack(natoms), TempTrack(natoms)
+    integer,intent(in)     :: n1,natoms,MyAtom
+    real(realk),intent(in) :: ToSort(n1,natoms)
+    real(realk)            :: ListMyAtom(n1), TempList(n1)
+    integer                :: ListTrack(n1), TempTrack(n1)
     integer                :: counter,i
 
     ListMyAtom(:)=ToSort(:,MyAtom)
     ! Sort large--> small
-    call real_inv_sort_with_tracking(ListMyAtom,ListTrack,natoms)
+    call real_inv_sort_with_tracking(ListMyAtom,ListTrack,n1)
 
     TempList = 0.0E0_realk
     TempTrack = 0
     counter = 1
 
     ! change to small-->large
-    do i=natoms,1,-1
+    do i=n1,1,-1
        TempList(counter) = ListMyAtom(i)
        TempTrack(counter)= ListTrack(i)
        counter = counter + 1

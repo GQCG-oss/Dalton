@@ -13,7 +13,7 @@ module tensor_interface_module
   use reorder_frontend_module
   use lspdm_tensor_operations_module
   use matrix_module
-
+  use dec_workarounds_module
 
   !> Number of created arrays
   integer(kind=long) :: ArraysCreated=0

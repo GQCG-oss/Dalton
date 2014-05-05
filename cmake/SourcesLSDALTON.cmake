@@ -95,7 +95,6 @@ set(DEC_SOURCES
     LSDALTON/deccc/dec_settings.F90
     LSDALTON/deccc/dec_utils.F90
     LSDALTON/deccc/dec_tools.F90
-    LSDALTON/deccc/dec_workarounds.F90
     LSDALTON/deccc/full_driver_f12contractions.F90
     LSDALTON/deccc/fullmolecule.F90
     LSDALTON/deccc/mp2_gradient.F90
@@ -517,6 +516,7 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/lspdm_basic.F90
     LSDALTON/lsutil/tensor_basic.F90
     LSDALTON/lsutil/lspdm_tensor_operations.F90
+    LSDALTON/lsutil/dec_workarounds.F90
     )
 set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/lowdin.F90
