@@ -2002,7 +2002,7 @@ contains
 
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call time_start_phase(PHASE_COMM)
-        call array_get_tile(pack_gmo,tile,tmp,ncopy)
+        call array_get_tile(pack_gmo,tile,tmp,ncopy,lock_set=.true.)
         call time_start_phase(PHASE_WORK)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
@@ -2040,7 +2040,7 @@ contains
 
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call time_start_phase(PHASE_COMM)
-        call array_get_tile(pack_gmo,tile,tmp,ncopy)
+        call array_get_tile(pack_gmo,tile,tmp,ncopy,lock_set=.true.)
         call time_start_phase(PHASE_WORK)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
