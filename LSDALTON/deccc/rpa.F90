@@ -479,7 +479,7 @@ contains
     master=.true.
 #ifdef VAR_MPI
     master        = .false.
-    master        = (infpar%lg_mynum == 0)
+    master        = (infpar%lg_mynum == infpar%master)
     nnod          = infpar%lg_nodtot
     me            = infpar%lg_mynum
     mode          = int(MPI_MODE_NOCHECK,kind=ls_mpik)
@@ -1668,7 +1668,7 @@ subroutine rpa_res_slave()
   integer :: nbas, nocc, nvirt
   !> how to pack integrals:
   
-  print*, infpar%lg_mynum,'rpa_res_slave'
+  !print*, infpar%lg_mynum,'rpa_res_slave'
   call rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
   call RPA_residual_par_add(omega2,t2,gmo,nocc,nvirt)
 
@@ -1690,9 +1690,8 @@ subroutine rpa_fock_slave()
   !real(realk),pointer  :: pfock(:),qfock(:)
   integer :: nbas, nocc, nvirt
   !> how to pack integrals:
-  print*, infpar%lg_mynum,'rpa_fock_slave'
+  !print*, infpar%lg_mynum,'rpa_fock_slave'
   call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nocc,nvirt)
-  write(*,*) 'slaves, calling fock_para'
   call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
   !call RPA_fock_para2(omega2,t2,pfock,qfock,nocc,nvirt)
 
