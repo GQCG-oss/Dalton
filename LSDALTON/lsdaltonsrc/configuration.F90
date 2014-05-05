@@ -878,7 +878,11 @@ subroutine DEC_meaningful_input(config)
      if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .CSR!',-1)
      end if
-
+     if(DECinfo%FragmentExpansionRI .AND. (.NOT. config%integral%auxbasis))then
+        WRITE(config%LUPRI,'(/A)') &
+             &     'You have specified .FRAGMENTEXPANSIONRI in the input but not supplied a fitting basis set'
+        CALL lsquit('MP2 RI input inconsitensy: add fitting basis set',config%lupri)
+     endif
      ! DEC and response do not go together right now...
      if(config%response%tasks%doResponse) then
         call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
