@@ -1349,6 +1349,8 @@ C
 #include "implicit.h"
       CHARACTER*(*) FILENM, TASK
       CHARACTER FILTMP*80
+      PARAMETER (LEN_NODEID = 6)
+      CHARACTER*(LEN_NODEID) F_NODEID
       INTEGER FILELN
       LOGICAL VALUE
 #include "chrnos.h"
@@ -1357,11 +1359,13 @@ C
 C
       FILELN = LNBLNK(FILENM)
       IF (MYNUM .GT. 0) THEN
-         FILTMP(1:FILELN+4) = FILENM(1:FILELN)//
-     &                        '#'//CHRNOS(MYNUM/100)//
-     &                        CHRNOS(MOD(MYNUM,100)/10)//
-     &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-         FILELN = FILELN + 4
+         F_NODEID = '.n' //
+     &             CHRNOS(    MYNUM/1000    ) //
+     &             CHRNOS(MOD(MYNUM/ 100,10)) //
+     &             CHRNOS(MOD(MYNUM/  10,10)) //
+     &             CHRNOS(MOD(MYNUM     ,10))
+         FILTMP(1:FILELN+LEN_NODEID) = FILENM(1:FILELN)//F_NODEID
+         FILELN = FILELN + LEN_NODEID
       ELSE
          FILTMP(1:FILELN) = FILENM(1:FILELN)
       END IF
