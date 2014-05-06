@@ -5,6 +5,7 @@ include ../Makefile.config
 INCLUDES := $(INCLUDES) -I../LSint -I../lsutil
 
 F90_OBJS = dec_settings.o \
+        cc_tools.o \
         dec_workarounds.o \
 	decmpi.o \
 	decmpiSlave.o \

@@ -142,6 +142,8 @@ subroutine lsmpi_slave(comm)
          ! DEC MP2 integrals and amplitudes
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave
+      case(MP2INAMPRI);
+         call MP2_RI_EnergyContribution_slave
       case(CCGETGMO);
          call cc_gmo_data_slave
       case(MOCCSDDATA);
@@ -162,6 +164,8 @@ subroutine lsmpi_slave(comm)
       case(CCSDPTSLAVE);
          call ccsdpt_slave
 #endif
+      case(SIMPLE_MP2_PAR);
+         call get_simple_parallel_mp2_residual_slave
       case(ARRAYTEST);
          call get_slaves_to_array_test
       case(GROUPINIT);

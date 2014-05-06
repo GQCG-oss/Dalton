@@ -1586,6 +1586,18 @@ type(LowAccuracyStartType)  :: LAStype
 
   !loops over all distinct atoms and build valensbasis
   call trilevel_full2valence(ls,ai,config%LUPRI)
+
+  IF(.NOT.ASSOCIATED(ls%SETTING%BASIS(1)%p,ls%input%basis))THEN
+     DO iAO=1,ls%SETTING%nAO
+        IF(ls%SETTING%BASIS(iAO)%p%VALENCE%nAtomtypes.NE.0)THEN
+           call lsquit('this should not happen setting valence basis non zero',-1)
+           call free_basissetinfo(ls%SETTING%BASIS(iAO)%p%VALENCE)
+        ENDIF
+        call copy_basissetinfo(ls%input%basis%valence,ls%SETTING%BASIS(iAO)%p%VALENCE)
+        call determine_nbast(ls%setting%MOLECULE(iAO)%p,ls%SETTING%BASIS(iAO)%p%VALENCE,&
+             &ls%setting%scheme%DoSpherical,ls%setting%scheme%uncont)
+     ENDDO
+  ENDIF
   !in the valence basis is built as a GC basis
   !so we do not need to transform when doing integrals
 
@@ -1831,6 +1843,11 @@ type(LowAccuracyStartType)  :: LAStype
   call typedef_setlist_valence2full(list,vlist,len,ls,ls%input%BASIS%VALENCE)
   !Due to the construction of Vbasis from regular basis we need to free some space
   !that is not used in the valence basis - But we do not actually free the basis
+  IF(.NOT.ASSOCIATED(ls%SETTING%BASIS(1)%p,ls%input%basis))THEN
+     DO iAO=1,ls%SETTING%nAO
+        call freeVbasis(ls%SETTING%BASIS(iAO)%p)
+     ENDDO
+  ENDIF
   call freeVbasis(ls%input%BASIS)
 
   ! initialize decomp%lcv_CMO
@@ -1863,7 +1880,8 @@ type(LowAccuracyStartType)  :: LAStype
   !we restore the default settings, which sets the GRDONE=0 
   !so that the dft grid is calculated with the full basis 
   !on the next kohn-sham matrix build
-  call typedef_set_default_setting(ls%setting,ls%input)
+!  call typedef_set_default_setting(ls%setting,ls%input)
+  CALL typedef_setIntegralSchemeFromInput(LS%INPUT%DALTON,LS%SETTING%SCHEME)
 
   IF(.NOT.config%decomp%cfg_gcbasis)then
      IF(.NOT.ls%input%basis%REGULAR%DunningsBasis)THEN

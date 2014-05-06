@@ -20,6 +20,11 @@ module crop_tools_module
       module procedure get_cc_energy_arrold
       module procedure get_cc_energy_arrnew
    end interface
+   ! Interface for MP2 and CCD energies
+   interface get_mp2_energy
+      module procedure get_mp2_energy_arrold
+      module procedure get_mp2_energy_arrnew
+   end interface
    
    contains
    
@@ -130,7 +135,7 @@ module crop_tools_module
    !> \return Full molecular MP2 energy
    !> \param t2 Double amplitudes
    !> \param Lmo Two-electron integrals L_{bjai} = 2*g_{bjai} - g_{ajbi}
-   function get_mp2_energy(t2,Lmo) result(ecorr)
+   function get_mp2_energy_arrold(t2,Lmo) result(ecorr)
 
       implicit none
       type(array4), intent(in) :: Lmo,t2
@@ -139,7 +144,7 @@ module crop_tools_module
       ! Ecorr = sum_{aibj} t2_{bjai}*Lmo_{bjai}
       Ecorr=t2*Lmo
 
-   end function get_mp2_energy
+   end function get_mp2_energy_arrold
 
    !> \brief Coupled-cluster correlation energy
    !> \author Marcin Ziolkowski
@@ -200,6 +205,7 @@ module crop_tools_module
       ecorr_d = 0.0E0_realk
 
       if(t2%itype==DENSE.and.gmo%itype==DENSE.and.(t1%itype==DENSE.or.t1%itype==REPLICATED))then
+
          do j=1,nocc
             do b=1,nvirt
                do i=1,nocc
@@ -219,15 +225,59 @@ module crop_tools_module
          end if
 
          ecorr = ecorr_s + ecorr_d
+
       else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
-         t1%itype=REPLICATED
+
+         t1%itype = REPLICATED
          call array_sync_replicated(t1)
-         ecorr=get_cc_energy_parallel(t1,t2,gmo)
-         t1%itype=DENSE
+         ecorr    = get_cc_energy_parallel(t1,t2,gmo)
+         t1%itype = DENSE
+
       endif
 
 
    end function get_cc_energy_arrnew
+
+   function get_mp2_energy_arrnew(t2,gmo,nocc,nvirt) result(ecorr)
+
+      implicit none
+      type(array), intent(in) :: t2
+      type(array), intent(inout) :: gmo
+      integer, intent(in) :: nocc,nvirt
+      real(realk) :: ecorr,ecorr_d
+      integer :: a,i,b,j
+
+      ecorr = 0.0E0_realk
+      ecorr_d = 0.0E0_realk
+
+      if(t2%itype==DENSE.and.gmo%itype==DENSE)then
+         !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(nocc,&
+         !$OMP nvirt,t2,gmo) REDUCTION(+:ecorr_d)
+         do j=1,nocc
+            do b=1,nvirt
+               do i=1,nocc
+                  do a=1,nvirt
+                     ecorr_d = ecorr_d + t2%elm4(a,b,i,j)* &
+                        (2.0E0_realk*gmo%elm4(i,a,j,b)-gmo%elm4(i,b,j,a))
+                  end do
+               end do
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         ecorr = ecorr_d
+
+      else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+
+         ecorr=get_mp2_energy_parallel(t2,gmo)
+
+      endif
+
+
+   end function get_mp2_energy_arrnew
+
+
+
    
    !> \brief Get antisymmetrized double amplitudes
    !> \return Array4 structure with antisymmetrized double amplitudes
@@ -508,13 +558,13 @@ module crop_tools_module
    !> \date: April 2013
    !> \param: t2, gvovo, t1, no and nv are nocc and nvirt, respectively, 
    !<         and U_occ and U_virt are unitary matrices from canonical --> local basis
-   subroutine ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,vovo,vo,bo,bv)
+   subroutine can_local_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,vo,bo,bv)
 
       implicit none
       !> integers
       integer, intent(in) :: no, nv, nb
       !> general quantities with the respective sizes
-      real(realk), intent(inout),optional :: vovo(nv*nv*no*no)
+      real(realk), intent(inout),optional :: vovo(nv*nv*no*no),vvoo(nv*nv*no*no)
       real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
       real(realk), intent(inout),optional :: vo(nv*no)
       !> unitary transformation matrices - indices: (local,pseudo-canonical)
@@ -525,6 +575,7 @@ module crop_tools_module
 
       wrksize = 0
       if(present(vovo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
+      if(present(vvoo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
       if(present(vo))   wrksize = max(wrksize,(i8*nv) * no)
       if(present(bo))   wrksize = max(wrksize,(i8*nb) * no)
       if(present(bv))   wrksize = max(wrksize,(i8*nb) * nv)
@@ -532,7 +583,9 @@ module crop_tools_module
       call mem_alloc(tmp,wrksize)
 
       !successive transformation of vovo:
-      if(present(vovo)) call successive_xyxy_trafo(nv,no,vovo,Uvirt,Uocc,tmp)
+      if(present(vovo)) call successive_wxyz_trafo(nv,no,nv,no,vovo,Uvirt,Uocc,Uvirt,Uocc,tmp)
+      !successive transformation of vvoo:
+      if(present(vvoo)) call successive_wxyz_trafo(nv,nv,no,no,vvoo,Uvirt,Uvirt,Uocc,Uocc,tmp)
 
       !if t1 trafo has to be done as well
       if(present(vo))then
@@ -555,15 +608,15 @@ module crop_tools_module
       endif
 
       call mem_dealloc(tmp)
-   end subroutine ccsolver_can_local_trans
+   end subroutine can_local_trans
 
-   subroutine ccsolver_local_can_trans(no,nv,nb,Uocc,Uvirt,vovo,vo,bo,bv)
+   subroutine local_can_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,vo,bo,bv)
 
       implicit none
       !> integers
       integer, intent(in) :: no, nv, nb
       !> general quantities with the respective sizes
-      real(realk), intent(inout),optional :: vovo(nv*nv*no*no)
+      real(realk), intent(inout),optional :: vovo(nv*nv*no*no),vvoo(nv*nv*no*no)
       real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
       real(realk), intent(inout),optional :: vo(nv*no)
       !> unitary transformation matrices
@@ -579,6 +632,7 @@ module crop_tools_module
 
       wrksize = 0
       if(present(vovo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
+      if(present(vvoo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
       if(present(vo))   wrksize = max(wrksize,(i8*nv) * no)
       if(present(bo))   wrksize = max(wrksize,(i8*nb) * no)
       if(present(bv))   wrksize = max(wrksize,(i8*nb) * nv)
@@ -586,7 +640,9 @@ module crop_tools_module
       call mem_alloc(tmp,wrksize)
 
       !successive transformation of vovo:
-      if(present(vovo))call successive_xyxy_trafo(nv,no,vovo,UvirtT,UoccT,tmp)
+      if(present(vovo))call successive_wxyz_trafo(nv,no,nv,no,vovo,UvirtT,UoccT,UvirtT,UoccT,tmp)
+      !successive transformation of vvoo:
+      if(present(vvoo))call successive_wxyz_trafo(nv,nv,no,no,vvoo,UvirtT,UvirtT,UoccT,UoccT,tmp)
 
       if(present(vo))then
          !U(a,A) t(AI)    -> t(aI)
@@ -608,7 +664,22 @@ module crop_tools_module
       endif
 
       call mem_dealloc(tmp)
-   end subroutine ccsolver_local_can_trans
+   end subroutine local_can_trans
+
+   subroutine successive_wxyz_trafo(w,x,y,z,WXYZ,WW,XX,YY,ZZ,WRKWXYZ)
+      implicit none
+      integer, intent(in) :: w,x,y,z
+      real(realk), intent(inout) :: WXYZ(w*x*y*z),WRKWXYZ(w*x*y*z)
+      real(realk), intent(in) :: WW(w,W),XX(x,X),YY(y,Y),ZZ(z,Z)
+      !WXYZ(W,XYZ)^T WW(w,W)^T   -> WRKWXYZ (XYZ,x)
+      call dgemm('t','t',X*Y*Z,w,W,1.0E0_realk,WXYZ,W,WW,w,0.0E0_realk,WRKWXYZ,X*Y*Z)
+      ! WRKWXYZ(X,YZw)^T XX(x,X)^T   -> WXYZ (YZw,x)
+      call dgemm('t','t',Y*Z*w,x,X,1.0E0_realk,WRKWXYZ,X,XX,x,0.0E0_realk,WXYZ,Y*Z*w)
+      ! WXYZ(Y,Zwx)^T YY(y,Y)^T   -> WRKWXYZ (Zwx,y)
+      call dgemm('t','t',Z*w*x,y,Y,1.0E0_realk,WXYZ,Y,YY,y,0.0E0_realk,WRKWXYZ,Z*w*x)
+      ! WRKWXYZ(Z,wxy)^T ZZ(z,Z)^T   -> WXYZ (wxyz)
+      call dgemm('t','t',w*x*y,z,Z,1.0E0_realk,WRKWXYZ,z,ZZ,Z,0.0E0_realk,WXYZ,w*x*y)
+   end subroutine successive_wxyz_trafo
 
    subroutine successive_xyxy_trafo(x,y,XYXY,XX,YY,WRKYXYX)
       implicit none

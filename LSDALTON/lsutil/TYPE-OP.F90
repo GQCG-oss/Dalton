@@ -503,6 +503,61 @@ WRITE(LUPRI,*)'node        ',SET%node
 
 END SUBROUTINE PRINT_LSSETTING
 
+#ifdef VAR_MPI
+!!$subroutine VerifySetting(Setting,master,lupri)
+!!$Type(LSSETTING)      :: SETTING
+!!$Type(LSSETTING)      :: SETTING2
+!!$integer(kind=ls_mpik) :: master
+!!$integer :: lupri
+!!$!
+!!$integer :: LUI
+!!$integer(kind=ls_mpik) :: comm,mynum,master,nodtot
+!!$integer :: IAO
+!!$
+!!$comm = Setting%comm
+!!$call get_rank_for_comm(comm,mynum)
+!!$
+!!$LUI=-1
+!!$CALL lsOPEN(LUI,'VerifySetting'//mynum,'UNKNOWN','UNFORMATTED')
+!!$
+!!$WRITE(LUI,*)Setting%comm
+!!$WRITE(LUI,*)Setting%IntegralTransformGC
+!!$do IAO=1,4
+!!$   WRITE(LUI,*)Setting%BASIS(IAO)
+!!$enddo
+!!$
+!!$call lsclose(LUI,'KEEP')
+!!$
+!!$call lsmpi_barrier(comm)
+!!$
+!!$IF(mynum.EQ.master)THEN
+!!$   call get_size_for_comm(comm,nodtot)
+!!$   do mynum = 0,nodtot-1
+!!$      LUI=-1
+!!$      CALL lsOPEN(LUI,'VerifySetting'//mynum,'UNKNOWN','UNFORMATTED')
+!!$
+!!$      READ(LUI,*)Setting2%comm
+!!$      READ(LUI,*)Setting2%IntegralTransformGC
+!!$      allocate(Setting2%BASIS(4))
+!!$      do IAO=1,4
+!!$         READ(LUI,*)Setting2%BASIS(IAO)
+!!$      enddo      
+!!$
+!!$      !compare
+!!$
+!!$
+!!$      deallocate(Setting2%BASIS)
+!!$      call lsclose(LUI,'DELETE')
+!!$      WRITE(lupri,*)'Done settings from rank=',mynum
+!!$   enddo
+!!$   WRITE(lupri,*)'Done Testing all settings'
+!!$ENDIF
+!!$
+!!$call lsmpi_barrier(comm)
+!!$
+!!$end subroutine VerifySetting
+#endif
+
 !> \brief print the moleculeinfo structure
 !> \author S. Reine and T. Kjaergaard
 !> \date 2010
@@ -2568,6 +2623,8 @@ implicit none
 TYPE(integralconfig), INTENT(IN) :: dalton_inp
 TYPE(LSINTSCHEME),INTENT(INOUT) :: scheme
 
+scheme%doMPI                 = .TRUE.
+scheme%MasterWakeSlaves      = .TRUE.
 scheme%noOMP                 = dalton_inp%noOMP
 scheme%CFG_LSDALTON          = dalton_inp%CFG_LSDALTON
 scheme%DOPASS                = dalton_inp%DOPASS
@@ -2699,6 +2756,8 @@ TYPE(LSINTSCHEME),INTENT(IN) :: scheme
 INTEGER,INTENT(IN)           :: IUNIT
 
 WRITE(IUNIT,'(3X,A22,L7)') 'noBQBQ                ', scheme%noBQBQ
+WRITE(IUNIT,'(3X,A22,L7)') 'doMPI                 ', scheme%doMPI
+WRITE(IUNIT,'(3X,A22,L7)') 'MasterWakeSlaves      ', scheme%MasterWakeSlaves
 WRITE(IUNIT,'(3X,A22,L7)') 'noOMP                 ', scheme%noOMP
 WRITE(IUNIT,'(3X,A22,L7)') 'CFG_LSDALTON          ', scheme%CFG_LSDALTON
 WRITE(IUNIT,'(3X,A22,L7)') 'DOPASS                ', scheme%DOPASS

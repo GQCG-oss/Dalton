@@ -6,7 +6,7 @@ module lsmpi_op
   use typedeftype, only: DALTONINPUT,LSITEM,lssetting,reducedScreeningInfo,&
        & lsintscheme, integralconfig
   use typedef, only: integral_set_default_config, typedef_init_setting,&
-       & init_reduced_screen_info
+       & init_reduced_screen_info, typedef_free_setting
   use basis_typetype, only: BASISSETINFO
   use basis_type, only: lsmpi_alloc_basissetinfo
   use lstiming, only: lstimer
@@ -23,19 +23,22 @@ module lsmpi_op
        & retrieve_lstMemVal, free_lstensorMem, set_lstmemrealkbufferpointer
   use f12_module, only: GaussianGeminal
   use integraloutput_typetype, only: INTEGRALOUTPUT
-#ifdef VAR_MPI
   use dft_type,only: mpicopy_DFTparam
+#ifdef VAR_MPI
   use lsmpi_type, only: ls_mpibcast, lsmpi_reduction, ls_mpisendrecv, &
        & ls_mpi_buffer, lsmpi_local_reduction, get_rank_for_comm, &
        & get_size_for_comm, ls_mpiInitBuffer, ls_MpiFinalizeBuffer, &
        & lsmpi_print, lsmpi_default_mpi_group, lsmpi_finalize, lsmpi_barrier,&
-       & LSMPIREDUCTION, LSMPIREDUCTIONmaster
+       & LSMPIREDUCTION, LSMPIREDUCTIONmaster, LSMPIBROADCAST,&
+       & ls_mpiinitbufferaddtobuffer,printmpibuffersizes,ls_mpiModbuffersizes
   use infpar_module
   use lsmpi_module
-
-
-
+#else
+  use lsmpi_type, only: ls_mpi_buffer, get_rank_for_comm, get_size_for_comm, &
+       & ls_mpiInitBuffer, ls_MpiFinalizeBuffer,LSMPIBROADCAST,&
+       & ls_mpiinitbufferaddtobuffer,printmpibuffersizes,ls_mpiModbuffersizes
 #endif
+  use screen_mod
   !*****************************************
   !*
   !* OBJECTS CONTAINING INFORMATION ABOUT 
@@ -139,7 +142,7 @@ integer(kind=ls_mpik) :: mynum
 #ifdef VAR_MPI
 call get_rank_for_comm(comm,mynum)
 call mpicopy_daltoninput(ls%input,comm)
-call mpicopy_setting(ls%setting,comm)
+call mpicopy_setting(ls%setting,comm,.FALSE.)
 IF(mynum.NE.infpar%master)THEN !SLAVE
    ls%lupri = -1
    ls%luerr = -1
@@ -207,38 +210,46 @@ END SUBROUTINE mpicopy_daltoninput
 !> \author T. Kjaergaard
 !> \date 2010
 !> \param setting the setting structure to broadcast
-SUBROUTINE mpicopy_setting(setting,comm)
+SUBROUTINE mpicopy_setting(setting,comm,rankslave)
   implicit none
   type(lssetting),intent(inout) :: setting
   integer(kind=ls_mpik),intent(in) :: comm  ! communicator
-  integer :: lupri
+  logical,intent(in) :: rankslave
   !
-#ifdef VAR_MPI
+  integer :: lupri
   integer :: I,nAO,ndmat,dim1,dim2,dim3,iAO
   logical :: SLAVE,nonemptyMolecule,DsymRHSassociated,DsymLHSassociated
   logical :: LHS_GAB,RHS_GAB
 
   real(realk) :: ts,te
   integer(kind=ls_mpik) :: mynum,nodtot,ierr,master
+#ifdef VAR_MPI
   Master  = infpar%master
-
+#else
+  Master  = 0  
+#endif
   call get_rank_for_comm(comm,mynum)
   CALL get_size_for_comm(comm, nodtot)
   setting%numNodes = nodtot 
-  setting%node = mynum
+  IF(rankslave)THEN
+     setting%node = 1
+     mynum = 1
+  ELSE
+     setting%node = mynum     
+  ENDIF
   setting%comm = comm
 
   dim1 = AORdefault
   dim2 = AODFdefault
   CALL LS_MPI_BUFFER(dim1,Master)        
   CALL LS_MPI_BUFFER(dim2,Master)        
-  IF(mynum.NE.infpar%master)THEN !SLAVE
+  IF(mynum.NE.master)THEN !SLAVE
      call set_default_AOs(dim1,dim2)
   ENDIF
 
 
   !call lstimer('START',ts,te,6)
-  IF(mynum.NE.infpar%master)THEN !SLAVE
+  IF(mynum.NE.master)THEN !SLAVE
      call typedef_init_setting(SETTING)
   ENDIF
   call mpicopy_scheme(setting%SCHEME,Slave,Master)                           !LSSETTING008
@@ -468,6 +479,7 @@ SUBROUTINE mpicopy_setting(setting,comm)
   call LS_MPI_BUFFER(SETTING%RHSdmatAOindex2,Master)                         !LSSETTING073
   !if (.NOT.SLAVE) call lstimer('copy6b',ts,te,6)
   !if (.NOT.SLAVE) call lstimer('copy6c',ts,te,6)
+
   call mpicopy_output(setting%output,Slave,Master)                           !LSSETTING078
   !if (.NOT.SLAVE) call lstimer('copy6d',ts,te,6)
 
@@ -479,9 +491,115 @@ SUBROUTINE mpicopy_setting(setting,comm)
 
   !if (.NOT.SLAVE) call lstimer('copy8',ts,te,6)
 
-#endif
-
 END SUBROUTINE mpicopy_setting
+
+Subroutine TestMPIcopySetting(setting)
+implicit none
+type(lssetting) :: setting
+!
+integer(kind=ls_mpik) :: master,comm
+integer :: Job
+logical :: AddToBuffer2,rankslave
+Job=LSMPIBROADCAST 
+master=0
+comm=1
+!This will set the addtobuffer (lsmpiType.F90 module variable)
+!and allocate the mpibuffers
+call ls_mpiInitBuffer(master,Job,comm) 
+!place info of setting into buffers (using setting%node = 0 => SLAVE=FALSE)
+rankslave = .FALSE.
+call mpicopy_setting(setting,comm,rankslave)
+CALL typedef_free_setting(setting)
+!This will set the addtobuffer (lsmpiType.F90 module variable) to false
+AddToBuffer2 = .FALSE.
+call ls_mpiInitBufferAddToBuffer(AddToBuffer2)
+!place info of buffers into setting (using setting%node = 1 => SLAVE=TRUE)
+rankslave = .TRUE.
+call mpicopy_setting(setting,comm,rankslave)
+!sets the nDP = iDP etc. in lsmpiType.F90 (otherwise an error in ls_MpiFinalizeBuffer)
+call ls_mpiModbuffersizes
+setting%node = 0
+call ls_MpiFinalizeBuffer(master,Job,comm)
+end Subroutine TestMPIcopySetting
+
+SUBROUTINE mpicopy_screen(Slave,Master)
+implicit none
+logical :: slave
+integer(kind=ls_mpik) :: master
+!
+logical :: assStart
+
+IF(SLAVE)call screen_init()
+assStart = associated(SCREENFROMLSSCREEN%start)
+call LS_MPI_BUFFER(assStart,Master)
+IF(assStart)THEN
+   IF(SLAVE)THEN
+      allocate(SCREENFROMLSSCREEN%start)
+      nullify(SCREENFROMLSSCREEN%start%next)
+   ENDIF
+   call mpicopy_screenchain(SCREENFROMLSSCREEN,SCREENFROMLSSCREEN%start,slave,Master)
+ELSE
+   IF(SLAVE)nullify(SCREENFROMLSSCREEN%start)
+ENDIF
+end SUBROUTINE mpicopy_screen
+
+recursive SUBROUTINE mpicopy_screenchain(screen,screenchain,Slave,Master)
+implicit none
+type(screenitem) :: screen
+type(screenchainitem),pointer :: ScreenChain
+logical :: slave
+integer(kind=ls_mpik) :: master
+!
+type(LSTENSOR),pointer :: GAB  
+logical :: assStart
+
+call LS_MPI_BUFFER(ScreenChain%filename,80,master)
+IF(SLAVE)THEN
+   nullify(ScreenChain%LST%p)
+   allocate(ScreenChain%LST%p)   
+ENDIF
+call mpicopy_lstensor(ScreenChain%LST%p,slave,master)
+assStart = associated(Screenchain%next)
+call LS_MPI_BUFFER(assStart,Master)
+IF(assStart)THEN
+   IF(SLAVE)THEN
+      allocate(ScreenChain%next)
+      nullify(ScreenChain%next%next)
+   ENDIF
+   call mpicopy_screenchain(SCREEN,ScreenChain%next,Slave,Master)
+ELSE
+   IF(SLAVE)THEN
+      nullify(Screenchain%next)
+      SCREEN%end => Screenchain
+   ENDIF
+ENDIF
+end SUBROUTINE mpicopy_screenchain
+
+Subroutine TestMPIcopyScreen()
+implicit none
+integer(kind=ls_mpik) :: master,comm
+integer :: Job
+logical :: AddToBuffer2,slave
+Job=LSMPIBROADCAST 
+master=0
+comm=1
+!This will set the addtobuffer (lsmpiType.F90 module variable)
+!and allocate the mpibuffers
+call ls_mpiInitBuffer(master,Job,comm) 
+!place info of setting into buffers (using setting%node = 0 => SLAVE=FALSE)
+slave = .FALSE.
+call mpicopy_screen(slave,master)
+call screen_free
+!This will set the addtobuffer (lsmpiType.F90 module variable) to false
+AddToBuffer2 = .FALSE.
+call ls_mpiInitBufferAddToBuffer(AddToBuffer2)
+!place info of buffers into setting (using setting%node = 1 => SLAVE=TRUE)
+slave = .TRUE.
+call mpicopy_screen(slave,master)
+!sets the nDP = iDP etc. in lsmpiType.F90 (otherwise an error in ls_MpiFinalizeBuffer)
+call ls_mpiModbuffersizes
+call ls_MpiFinalizeBuffer(master,Job,comm)
+end Subroutine TestMPIcopyScreen
 
 #ifdef VAR_MPI
 subroutine lsmpi_isend_lstmemrealkbuf(lstmem_index,NodeToRecv,Mynum,comm)
@@ -610,7 +728,7 @@ DO WHILE(.NOT.ALLMessageRecieved)
 ENDDO
 IF(ALLOC)call mem_dealloc(buffer2)
 end subroutine lsmpi_blocking_recv_add_lstmemrealkbuf
-
+#endif
 !!$subroutine lsmpi_blocking_recv_add_lstmemrealkbuf2(lstmem_index,Mynum,comm,&
 !!$     & inputMessageRecieved,numnodes)
 !!$implicit none
@@ -1116,6 +1234,7 @@ ENDIF
 
 END SUBROUTINE mpicopy_output
 
+#ifdef VAR_MPI
 SUBROUTINE mpicopy_integralconfig(dalton,Slave,Master)
 implicit none
 type(integralconfig) :: dalton
@@ -1291,6 +1410,7 @@ call LS_MPI_BUFFER(dalton%molcharge,Master)
 call LS_MPI_BUFFER(dalton%run_dec_gradient_test,Master)
 
 END SUBROUTINE MPICOPY_INTEGRALCONFIG
+#endif
 
 SUBROUTINE mpicopy_scheme(scheme,slave,master)
 implicit none
@@ -1300,6 +1420,8 @@ integer(kind=ls_mpik) :: master
 
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 call LS_MPI_BUFFER(scheme%NOBQBQ,Master)
+call LS_MPI_BUFFER(scheme%doMPI,Master)
+call LS_MPI_BUFFER(scheme%MasterWakeSlaves,Master)
 call LS_MPI_BUFFER(scheme%noOMP,Master)
 call LS_MPI_BUFFER(scheme%CFG_LSDALTON,Master)
 call LS_MPI_BUFFER(scheme%DOPASS,Master)
@@ -1437,6 +1559,7 @@ call LS_MPI_BUFFER(scheme%PropOper,Master)
   
 END SUBROUTINE mpicopy_scheme
 
+#ifdef VAR_MPI
 subroutine lsmpi_lstensor_reduction(Tensor,master,mynum,comm)
 implicit none
 type(lstensor) :: tensor
@@ -1464,6 +1587,7 @@ CALL LS_GETTIM(t3,t4)
 !write(*,*) 'debug:master-reduction2',t3 - t1
 ENDIF
 end subroutine lsmpi_lstensor_reduction
+#endif
 
 !> \brief fill the lstensor into buffer or extract from buffer
 !> \author T. Kjaergaard
@@ -1536,6 +1660,8 @@ integer :: I
 
 call LS_MPI_BUFFER(MOLECULE%nAtoms,Master)
 call LS_MPI_BUFFER(MOLECULE%nAtomsNPC,Master)
+call LS_MPI_BUFFER(MOLECULE%nelectrons,Master)
+call LS_MPI_BUFFER(MOLECULE%charge,Master)
 
 IF(SLAVE)THEN
    MOLECULE%nbastREG = 0
@@ -1554,12 +1680,9 @@ do I = 1, MOLECULE%nAtoms
    call mpicopy_atom(MOLECULE,I,Slave,Master)
 enddo
 
-call LS_MPI_BUFFER(MOLECULE%label,22,Master)
-call LS_MPI_BUFFER(MOLECULE%nelectrons,Master)
-call LS_MPI_BUFFER(MOLECULE%charge,Master)
-
-
+call LS_MPI_BUFFER(MOLECULE%pointMolecule,Master)
 call LS_MPI_BUFFER(MOLECULE%nSubSystems,Master)
+call LS_MPI_BUFFER(MOLECULE%label,22,Master)
 IF(Molecule%nSubSystems.NE.0)THEN
    IF(SLAVE)THEN
       call mem_alloc(Molecule%SubSystemLabel,Molecule%nSubSystems)
@@ -1783,6 +1906,7 @@ IF (SLAVE) call init_reduced_screen_info(redCS)
 
 END SUBROUTINE mpicopy_reduced_screen_info
 
+#ifdef VAR_MPI
   subroutine init_slave_timers(times,comm)
      implicit none
      integer(kind=ls_mpik),intent(in) :: comm

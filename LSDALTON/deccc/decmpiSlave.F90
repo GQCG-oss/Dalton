@@ -62,6 +62,9 @@ subroutine dec_lsmpi_slave(comm)
          ! DEC MP2 integrals and amplitudes
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave
+         ! DEC MP2 RI energy
+      case(MP2INAMPRI);
+         call MP2_RI_EnergyContribution_slave
       case(CCSDDATA);
          call ccsd_data_preparation
       case(CCGETGMO);
@@ -74,10 +77,14 @@ subroutine dec_lsmpi_slave(comm)
          call calculate_E2_and_permute_slave
       case(RPAGETRESIDUAL);
          call rpa_res_slave
+      case(RPAGETFOCK);
+         call rpa_fock_slave
 #ifdef MOD_UNRELEASED 
       case(CCSDPTSLAVE);
          call ccsdpt_slave
 #endif
+      case(SIMPLE_MP2_PAR);
+         call get_simple_parallel_mp2_residual_slave
       case(GROUPINIT);
          call init_mpi_groups_slave
          ! DEC driver - main loop

@@ -67,8 +67,10 @@ type ConfigItem
    logical              :: noDecEnergy
    !> Should Memory Information be printet 
    logical              :: PrintMemory
-   !> Perform Counter Poise Correction
-   logical              :: CounterPoiseCorrection
+   !> Perform SCF interaction energies using Counter Poise Correction
+   logical              :: SCFinteractionEnergy
+   !> Same SubSystems in SCF interaction energies
+   logical              :: SameSubSystems
    !> Used for Augmented Roothaan-Hall, direct density optimization etc.
    type(SolverItem),pointer     :: solver
    !> Used for davidson solver in SCF opt
@@ -118,6 +120,8 @@ type ConfigItem
    type(pltinfo) :: PLT
    !> Should we do an F12 calc which requires a CABS basis
    logical              :: doF12
+   !> do MPI testing of mpicopy_setting and mpicopy_screen
+   logical              :: doTestMPIcopy
 end type ConfigItem
 
 type LowAccuracyStartType

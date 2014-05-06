@@ -212,6 +212,8 @@ module dec_typedef_module
      logical :: use_crop
      !> logial to set whether special communication processes should be spawned
      logical :: spawn_comm_proc
+     !> temporary debug keyword to calculate energy without using dense array of v2o2 size:
+     logical :: v2o2_free_solver
 
      !> F12 settings
      !> ************
@@ -223,6 +225,8 @@ module dec_typedef_module
      !> Use F12 correction
      logical :: F12DEBUG
 
+     logical :: SOS
+
      !> Debug keyword to specify pure hydrogen atoms
      logical :: PUREHYDROGENdebug
 
@@ -233,6 +237,8 @@ module dec_typedef_module
 
      !> Stress Test 
      logical :: StressTest
+     !> Kohn-Sham Reference
+     logical :: DFTreference
 
      !> MPI settings
      !> ************
@@ -289,7 +295,8 @@ module dec_typedef_module
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
      !> Hack to only do fragment optimization
-     logical :: only_one_frag_job
+     integer :: only_n_frag_jobs
+     integer,pointer :: frag_job_nr(:)
      !> Has simple orbital threshold been defined manually in input (true),
      !> or should simple orbital threshold be adapted to FOT 
      !> as descripted under FOTlevel (false)?
@@ -319,14 +326,20 @@ module dec_typedef_module
      integer :: FOTlevel
      !> Max accepted FOT level
      integer :: maxFOTlevel
+     !> Which Fragment Expansion Scheme should be used
+     integer :: FragmentExpansionScheme
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
+     !> Use RI for Fragment Expansion 
+     logical :: FragmentExpansionRI
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
+     !> Only consider virtual partitioning
+     logical :: OnlyVirtPart
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
@@ -366,10 +379,10 @@ module dec_typedef_module
 
      ! First order properties
      ! **********************
-     !> Do first order properties (MP2 density, electric dipole, mp2 gradient)
+     !> Do first order properties (density, electric dipole, gradient)
      logical :: first_order
-     !> MP2 density matrix (and not gradient)
-     logical :: MP2density    
+     !> density matrix (and not gradient)
+     logical :: density    
      !> Calculate MP2 gradient  (density is then also calculated as a subset of the calculation)
      logical :: gradient
      !> Use preconditioner for kappa multiplier equation
@@ -553,6 +566,10 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+     !> Distances between Occ Orbitals and Atoms
+     real(realk), pointer :: DistanceTableOrbAtomOcc(:,:) => null()
+     !> Distances between Virtual Orbitals and Atoms
+     real(realk), pointer :: DistanceTableOrbAtomVirt(:,:) => null()
      !> Which atoms are phantom atoms (only basis functions)
      Logical, pointer :: PhantomAtom(:) => null()
      

@@ -99,10 +99,10 @@ contains
     ! Internal control of first order property keywords
     ! (Necessary because these must be false during fragment optimization.)
     ! Better solution should be implemented at some point...
-    dens_save = DECinfo%MP2density
+    dens_save = DECinfo%density
     FO_save = DECinfo%first_order
     grad_save = DECinfo%gradient
-    DECinfo%MP2density=.false.
+    DECinfo%density=.false.
     DECinfo%first_order=.false.
     DECinfo%gradient=.false.
 
@@ -145,7 +145,7 @@ contains
        Step2: if(step==2) then
 
           ! Restore first order keywords for second step
-          DECinfo%MP2density=dens_save
+          DECinfo%density=dens_save
           DECinfo%first_order = FO_save
           DECinfo%gradient = grad_save
 

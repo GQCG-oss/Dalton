@@ -69,11 +69,22 @@ call mem_alloc(analytical_gradient_min,3,nAtoms)
 call mem_alloc(numerical_gradient_plus,ls%INPUT%MOLECULE%nAtoms,3)
 call mem_alloc(numerical_gradient_min,ls%INPUT%MOLECULE%nAtoms,3)
 call mem_alloc(numerical_gradient,ls%INPUT%MOLECULE%nAtoms,3)
- 
 
 if(doNumGrad) then
    call get_numerical_gradient(h,E(1),lupri,luerr,nbast,ls,H1,S,F(1),D(1),C,config,unperturbed_molecule,numerical_gradient)
    call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,TRANSPOSE(numerical_gradient),ls%SETTING%MOLECULE(1)%p%nAtoms,'NUMGR')
+
+   IF(.TRUE.) THEN
+        call get_gradient(E(1),Eerr,lupri,ls%INPUT%MOLECULE%nAtoms,S,F(1),D(1),ls,config,C,analytical_gradient)
+        call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,analytical_gradient,ls%INPUT%MOLECULE%nAtoms,'Ana molgrad')
+        call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,TRANSPOSE(numerical_gradient),ls%INPUT%MOLECULE%nAtoms,'Num molgrad')
+        DO i = 1,ls%INPUT%MOLECULE%nAtoms
+             analytical_gradient(:,i) = numerical_gradient(i,:) - analytical_gradient(:,i)
+        ENDDO
+        write (*,*) "Difference: (Ana - Num) molgrad"
+        write (lupri,*) "Difference: (Ana - Num) molgrad"
+        call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,analytical_gradient,ls%INPUT%MOLECULE%nAtoms,'Ana-Num molgrad')
+   ENDIF
 endif
 
 !Checking whether the molecule is linear to determine vibrational degrees of freedom.

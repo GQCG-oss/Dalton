@@ -16,7 +16,7 @@ module II_XC_interfaceModule
   use DFT_type
   use GCtransMod
   private
-  public :: II_get_xc_Fock_mat,&
+  public :: II_get_xc_Fock_mat, II_get_xc_Fock_mat_full,&
 !!$       & II_get_AbsoluteValue_overlap, II_get_AbsoluteValueOcc_overlap,&
        & II_get_xc_geoderiv_molgrad, II_get_xc_linrsp,&
        & II_get_xc_quadrsp, II_get_xc_magderiv_kohnsham_mat,&
@@ -174,6 +174,69 @@ call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_Fock_mat)
 
 END SUBROUTINE II_get_xc_Fock_mat_array
+
+SUBROUTINE II_get_xc_Fock_mat_full(LUPRI,LUERR,SETTING,nbast,DmatAO,FmatAO)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in)    :: LUPRI
+!> the logical unit number for the error file
+INTEGER,intent(in)    :: LUERR
+!> info about molecule,basis and dft parameters
+TYPE(LSSETTING)       :: SETTING
+!> number of basisfunctions
+INTEGER,intent(in)    :: nbast
+!!> number of Densitymatrices
+!INTEGER,intent(in)    :: ndmat
+!> The density matrix
+real(realk),intent(in) :: DmatAO(nbast,nbast)
+!> The Kohn-Sham matrix
+real(realk),intent(inout) :: FmatAO(nbast,nbast)
+!
+INTEGER               :: i,j,ndmat2,idmat
+TYPE(DFTDATATYPE)     :: DFTDATA
+REAL(REALK),pointer   :: EDFT2(:)
+REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2,CPUTIME,WALLTIME,DUMMY(1,1)
+LOGICAL               :: UNRES
+call time_II_operations1
+ndmat2 = 1
+UNRES=.FALSE.
+IF(SETTING%SCHEME%DFT%DODISP) THEN 
+   call lsquit('DODISP not implemented II_get_xc_Fock_mat_full',-1)
+ENDIF
+IF(setting%IntegralTransformGC)THEN
+   call lsquit('IntegralTransformGC not implemented for II_get_xc_Fock_mat_full',-1)
+ENDIF
+call init_dftmemvar
+CALL LSTIMER('START',TS,TE,LUPRI)
+call initDFTdatatype(DFTDATA)
+DFTDATA%LB94=SETTING%SCHEME%DFT%LB94
+DFTDATA%CS00=SETTING%SCHEME%DFT%CS00
+DFTDATA%CS00shift=SETTING%SCHEME%DFT%CS00shift
+DFTDATA%CS00eHOMO=SETTING%SCHEME%DFT%CS00eHOMO
+DFTDATA%CS00ZND1=SETTING%SCHEME%DFT%CS00ZND1
+DFTDATA%CS00ZND2=SETTING%SCHEME%DFT%CS00ZND2
+DFTDATA%HFexchangeFac=SETTING%SCHEME%DFT%HFexchangeFac
+IF(DFTDATA%CS00)THEN
+   IF(ABS(DFTDATA%CS00shift).LT.1.0E-12_realk)THEN
+      IF(ABS(DFTDATA%CS00eHOMO).LT.1.0E-12_realk)THEN
+         call lsquit('The CS00 keyword only work with a method which calculates the HOMO energy',-1)
+      ENDIF
+   ENDIF
+ENDIF
+DFTDATA%nbast = nbast
+call mem_dft_alloc(EDFT2,ndmat2)
+DFTDATA%ndmat = ndmat2
+DFTDATA%nfmat = ndmat2
+call mem_dft_alloc(DFTDATA%FKSM,nbast,nbast,ndmat2)
+CALL LS_DZERO(DFTDATA%FKSM,nbast*nbast*ndmat2)
+CALL II_DFT_KSM(SETTING,LUPRI,1,nbast,ndmat2,DmatAO,DFTDATA,EDFT2,UNRES)
+call mem_dft_dealloc(EDFT2)
+call DAXPY(nbast*nbast*ndmat2,0.5E0_realk,DFTDATA%FKSM,1,FmatAO,1)
+call mem_dft_dealloc(DFTDATA%FKSM)
+CALL LSTIMER('II_get_xc_Fock_mat_full',TS,TE,LUPRI)
+call stats_dft_mem(lupri)
+call time_II_operations2(JOB_II_get_xc_Fock_mat)
+END SUBROUTINE II_get_xc_Fock_mat_full
 
 !!$SUBROUTINE II_get_AbsoluteValue_overlap(LUPRI,LUERR,SETTING,nbast,CMO,S)
 !!$IMPLICIT NONE

@@ -89,7 +89,6 @@ C
 #include "pcmlog.h"
 #include "qm3.h"
 #include "qmmm.h"
-#include "wavpcm.h"
 ! MOLDEN
 #include "molde.h"
 C
@@ -478,6 +477,10 @@ C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
 C
       IF (DOMEP) THEN
          CALL CALC_MEP(WRK(KCMO),WRK,KFREE,LFREE)
+      ENDIF
+
+      IF (QFIT) THEN
+         CALL QFITGSCALC(WRK(KCMO),WRK,KFREE,LFREE)
       ENDIF
 
       IF (MOLDEN) THEN

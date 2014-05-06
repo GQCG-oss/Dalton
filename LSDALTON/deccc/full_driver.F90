@@ -68,20 +68,20 @@ contains
        call lsquit('f12 not released',-1)
 #endif
     else
-       if(DECinfo%ccModel==MODEL_MP2) then
+       !if(DECinfo%ccModel==MODEL_MP2) then
 
-          if(DECinfo%use_canonical .and. (.not.  DECinfo%full_print_frag_energies) ) then
-             ! simple conventional MP2 calculation, only works for canonical orbitals
-             call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
-          else
-             ! Call routine which calculates individual fragment contributions and prints them,
-             ! works both for canonical and local orbitals
-             call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
-          end if
+       !   if(DECinfo%use_canonical .and. (.not.  DECinfo%full_print_frag_energies) ) then
+       !      ! simple conventional MP2 calculation, only works for canonical orbitals
+       !      call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+       !   else
+       !      ! Call routine which calculates individual fragment contributions and prints them,
+       !      ! works both for canonical and local orbitals
+       !      call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
+       !   end if
 
-       else
+       !else
           call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
-       end if
+       !end if
     end if
 
     ! Get HF energy
@@ -404,47 +404,6 @@ contains
        end do
     endif
   
-    if(DECinfo%F12DEBUG) then    
-
-    endif
-    
-    print *, '----------------------------------------'
-    print *, '            R matrix - Terms            '
-    print *, '----------------------------------------'
-    do i=1, nocc
-       do j=1, nocc      
-          do a=1, nvirt
-             do c=1, ncabs     
-                print *,'i,j,a,c Giajc', i,j,a,c, Giajc(i,a,j,c)
-             end do
-          end do
-       end do
-    end do
-    print *, '----------------------------------------'
-    print *, '            T matrix - Terms            '
-    print *, '----------------------------------------'
-    do i=1, nocc
-       do j=1, nocc      
-          do a=1, nvirt
-             do b=1, nvirt     
-                print *,'i,j,a,b Taibj', i,j,a,b, Taibj(a,i,b,j)
-             end do
-          end do
-       end do
-    end do
-    print *, '----------------------------------------'
-    print *, '            C matrix - Terms            '
-    print *, '----------------------------------------'
-    do i=1, nocc
-       do j=1, nocc      
-          do a=1, nvirt
-             do b=1, nvirt      
-                print *,'i,j,a,b Cijab', i,j,a,b, Ciajb(i,a,j,b)
-             end do
-          end do
-       end do
-    end do
-
     call mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
     call mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
 
@@ -1680,8 +1639,6 @@ contains
 #ifdef VAR_MPI
     local = .false.
 #endif
-    ! temporary default for moccsd:
-    if (decinfo%moccsd) local = .true.
 
 
     ! Quick fix to always use CCSD model
