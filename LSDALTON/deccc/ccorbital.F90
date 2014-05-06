@@ -104,7 +104,6 @@ contains
     end if
     call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals)
 
-
     ! Check that assigment is meaningful
     call dec_orbital_sanity_check(natoms,nocc,nunocc,OccOrbitals,&
          & UnoccOrbitals,MyMolecule)
@@ -318,11 +317,12 @@ contains
              endif
              central_atom = central_atom2 
           else
-             ! -- number of atom with max value of the Mulliken charge
-             catom = maxloc(abs(gross_charge),dim=1)
+             ! -- number of atom with max value of the Mulliken charge             
+             catom = maxloc(abs(gross_charge),dim=1,MASK=.NOT.MyMolecule%PhantomAtom)
              central_atom = catom(1)
           endif
        else
+
 
           ! sort mulliken charge/atomic density keeping track on the original index
           call mem_alloc(atomic_idx,natoms)
@@ -331,6 +331,9 @@ contains
           end do
 
           gross_charge = abs(gross_charge)
+          !obtain the central atom - as the atom (which is not Phantom) with biggest 
+          !mulliken charge
+          catom = maxloc(gross_charge,dim=1,MASK=.NOT.MyMolecule%PhantomAtom)
           call real_inv_sort_with_tracking(gross_charge,atomic_idx,natoms)
 
           if(DECinfo%PL>0) then
@@ -442,6 +445,9 @@ contains
 
           ! -- number of atom with max value of the Mulliken charge
           central_atom = atomic_idx(1)
+          iF(MyMolecule%PhantomAtom(atomic_idx(1)))THEN
+             central_atom = catom(1)
+          ENDIF
           call mem_dealloc(atomic_idx)
        endif
 
@@ -563,6 +569,39 @@ contains
        ! Sort Lowdin charges
        call real_inv_sort_with_tracking(lowdin_charge(:,i),atomic_idx(:,i),natoms)
 
+       IF(MyMolecule%PhantomAtom(atomic_idx(1,i)))THEN
+          !the first atom in the lowdin_charge(:,i) list is a Phantom atom
+          !we reorder the lowdin_charge(:,i) list to put a non Phantom atom on top
+          call mem_alloc(tmplowdin_charge,nAtoms)
+          call mem_alloc(tmpatomic_idx,nAtoms)
+          ni=0
+          do n=1,natoms
+             tmplowdin_charge(n) = lowdin_charge(n,i)
+             tmpatomic_idx(n) = atomic_idx(n,i)
+             IF(.NOT.MyMolecule%PhantomAtom(atomic_idx(n,i)))THEN
+                IF(ni.EQ.0)THEN
+                   !found the first non Phantom atom in lowdin list
+                   ni = n
+                ENDIF
+             ENDIF
+          enddo
+          !place the first non Phantom atom first
+          lowdin_charge(1,i) = tmplowdin_charge(ni) 
+          atomic_idx(1,i) = tmpatomic_idx(ni)
+          !place the other atoms in list
+          do n=1,ni-1                               
+             lowdin_charge(1+n,i) = tmplowdin_charge(n)
+             atomic_idx(1+n,i) = tmpatomic_idx(n)                
+          enddo
+          !number ni should not be placed because it is now number 1
+          !place the rest of the atoms in the list
+          do n=ni+1,nAtoms
+             lowdin_charge(n,i) = tmplowdin_charge(n)
+             atomic_idx(n,i) = tmpatomic_idx(n)                
+          enddo
+          call mem_dealloc(tmplowdin_charge)
+          call mem_dealloc(tmpatomic_idx)
+       ENDIF
     end do GetLowdinCharges
     call mem_dealloc(ShalfC)
 
@@ -1020,9 +1059,9 @@ contains
     type(fullmolecule), intent(in) :: MyMolecule
     integer, intent(inout) :: central_atom
     !
-    integer :: atom,catom(1),nocc,nvirt
+    integer :: atom,catom,nocc,nvirt
     real(realk) :: XMO,YMO,ZMO,XATOM,YATOM,ZATOM,XDIST,YDIST,ZDIST
-    real(realk) :: SQDIST(nAtoms)    
+    real(realk) :: SQDIST(nAtoms),SQDISTVAL    
     nocc=MyMolecule%nocc
     ! Init stuff
     IF(orbI.GT.nocc)THEN
@@ -1046,8 +1085,17 @@ contains
        ZDIST = ZATOM + ZMO
        SQDIST(atom) = XDIST*XDIST + YDIST*YDIST + ZDIST*ZDIST
     enddo
-    catom = MINLOC(SQDIST)
-    central_atom = catom(1)    
+    SQDISTVAL=HUGE(SQDIST(1))
+    catom = -101
+    do atom=1,natoms
+       IF(SQDIST(atom).LT.SQDISTVAL)THEN
+          IF(.NOT.MyMolecule%PhantomAtom(atom))THEN
+             SQDISTVAL = SQDIST(atom)
+             catom = atom
+          ENDIF
+       ENDIF
+    enddo
+    central_atom = catom
   end subroutine GetDistanceCentralAtom
 
 
@@ -2109,7 +2157,7 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
-    if(DECinfo%PL>0) then ! print specific info for each orbital
+!    if(DECinfo%PL>0) then ! print specific info for each orbital
        do i=1,nocc
           write(DECinfo%output,*) 'Occupied orbital: ', i
           write(DECinfo%output,*) '************************************************'
@@ -2138,8 +2186,7 @@ contains
        write(DECinfo%output,*)
        write(DECinfo%output,*)
 
-    end if
-
+    !end if
 
 
   end subroutine print_orbital_info
@@ -2228,6 +2275,9 @@ contains
     else
        DECinfo%RepeatAF=.false.
     end if
+    IF(DECinfo%FragmentExpansionRI)THEN
+       DECinfo%RepeatAF=.true.
+    ENDIF
     IF(DECinfo%InteractionEnergy)THEN
        IF(DECinfo%ccmodel.NE.DECinfo%fragopt_red_model)THEN
           !turn of recalculation of Atomic fragment calculations
@@ -2324,6 +2374,7 @@ contains
     do i=1,natoms
        if(DECinfo%onlyoccpart) then
           ! Only consider occupied orbitals
+
           if( (nocc_per_atom(i)==0) ) then
              dofrag(i)=.false.
           else

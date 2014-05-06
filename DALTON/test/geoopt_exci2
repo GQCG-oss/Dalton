@@ -136,13 +136,13 @@ fi
 
 # Optimization setup
 CRIT1=`$GREP "Default 1st order method will be used\: * BFGS update\." $log | wc -l`
-CRIT2=`$GREP "Optimization will be performed in redundant internal coordinates\." $log | wc -l`
+CRIT2=`$GREP "Optimization will be performed in redundant internal coordinates" $log | wc -l`
 CRIT3=`$GREP "Model Hessian will be used as initial Hessian\." $log | wc -l`
 CRIT4=`$GREP "The model Hessian parameters of Roland Lindh will be used\." $log | wc -l`
 CRIT5=`$GREP "Trust region method will be used to control step \(default\)\." $log | wc -l`
 CRIT6=`$GREP "1st Order Geometry Optimization" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[1]=4 ! no redundant internal coordinates for diatomics any more
+CTRL[1]=6
 ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Basis set

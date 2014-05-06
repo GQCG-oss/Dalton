@@ -1276,7 +1276,6 @@ C
 #include "infpar.h"
 #include "inftap.h"
 #include "krcom.h"
-#include "wavpcm.h"
 C
       CHARACTER*7 INTLAB
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1346,7 +1345,7 @@ C
          LWRK = LWORK - KLAST
       END IF
 #if defined (VAR_MPI)
-      IF (NODTOT .GE. 1 .AND. .NOT. WAVPCM) THEN
+      IF (NODTOT .GE. 1) THEN
          CALL J1INTP(NBAST,NOSIM,KSYMP,WORK(KDEN),EXP1VL,EXPVAL,TOFILE,
      &               IPRTYP,MATDIM,WORK(KLAST),LWRK)
          IF (.NOT. EXP1VL) CALL DAXPY(MATDIM*NOSIM,1.0D0,WORK(KDEN),1,

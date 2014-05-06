@@ -2307,44 +2307,57 @@ C
 C       Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, number of shells                    ',KMAX,
-     *  '                   current maximum number              ',MXSHEL
-        CALL QUIT('BASPRO: Too many shells')
+        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
+     *  ' >>> BASPRO error, number of shells                    ',
+     *  KMAX,
+     *  '                   current maximum number              ',
+     *  MXSHEL,
+     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
+        CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5010 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
+        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
      *  ' >>> BASPRO error, number of contracted basis functions',
      *  NBASIS,
-     *  '                   current maximum number              ',MXCORB
+     *  '                   current maximum number              ',
+     *  MXCORB,
+     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, number of primitive basis functions',NPBAS,
-     *  '                   current maximum number             ',MXPRIM
-        CALL QUIT('BASPRO: Too many primitives')
+        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
+     *  ' >>> BASPRO error, number of primitive basis functions',
+     *  NPBAS,
+     *  '                   current maximum number             ',
+     *  MXPRIM,
+     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
+        CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
  5040 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
+        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
      *  ' >>> BASPRO error, # of shells when adding Huckel orbitals',
-     &     ISHELL,
+     *     ISHELL,
      *  '                   current maximum number                 ',
-     &     MXSHEL
-        CALL QUIT('BASPRO: Too many shells')
+     *     MXSHEL,
+     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
+        CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5050 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, # of contracted bf. after adding Huckel '//
-     &     'orbitals',IORBD,
-     *  '                   current maximum number                  '//
-     &     '        ',MXCORB
+        WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
+     *  ' >>> BASPRO error, # of contracted bf. after adding Huckel ',
+     *     'orbitals',
+     *  IORBD,
+     *  '                   current maximum number                  ',
+     *  '        ',MXCORB,
+     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5060 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, # of primitive bf after adding Huckel '//
-     &     'orbitals',IPRIMD,
-     *  '                   current maximum number                 '//
-     &     '        ',MXPRIM
-        CALL QUIT('BASPRO: Too many primitives')
+        WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
+     *  ' >>> BASPRO error, # of primitive bf after adding Huckel ',
+     *     'orbitals',
+     *  IPRIMD,
+     *  '                   current maximum number                 ',
+     *  '       ',MXPRIM,
+     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
+        CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
       END
 C  /* Deck basout */
       SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO, BASREF,
@@ -7210,7 +7223,10 @@ C
 C     Update number of atom types in atom-specific input line in new format
 C     hjaaj March 2014
 C
-#include "implicit.h"
+C#include "implicit.h"
+      IMPLICIT NONE
+#include "priunit.h"
+      INTEGER NONT, IPOS, IPOS2
       CHARACTER LINE*(*)
       CHARACTER BKP_LINE*(200)
 

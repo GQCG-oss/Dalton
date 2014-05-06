@@ -100,25 +100,25 @@ CTRL[1]=1
 ERROR[1]="HF energy not correct"
 
 # CCSD ENERGY (occ. part. scheme)
-CRIT1=`$GREP "CCSD occupied correlation energy : * \-0\.21025" $log | wc -l`
+CRIT1=`$GREP "CCSD occupied correlation energy : * \-0\.20925" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy (occ. part. scheme) is not correct"
 
 # E[4] contribution to (T) energy correction (unocc. part. scheme)
-CRIT1=`$GREP "\(T\) occupied 4th order energy * : * \-0\.5876" $log | wc -l`
+CRIT1=`$GREP "\(T\) occupied 4th order energy * : * \-0\.5319" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
 ERROR[3]="4th-order contribution to (T) energy correction (occ. part. scheme) is not correct"
 
 # E[5] contribution to (T) energy correction (unocc. part. scheme)
-CRIT1=`$GREP "\(T\) occupied 5th order energy * : * 0\.2934" $log | wc -l`
+CRIT1=`$GREP "\(T\) occupied 5th order energy * : * 0\.3128" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="5th-order contribution to (T) energy correction (occ. part. scheme) is not correct"
 
 # Total CCSD(T) correlation energy (unocc. part. scheme)
-CRIT1=`$GREP "Total CCSD\(T\) occupied correlation energy : * \-0\.215834" $log | wc -l`
+CRIT1=`$GREP "Total CCSD\(T\) occupied correlation energy : * \-0\.214263" $log | wc -l`
 TEST[5]=`expr   $CRIT1`
 CTRL[5]=1
 ERROR[5]="Total CCSD(T) correlation energy (unocc. part. scheme) is not correct"

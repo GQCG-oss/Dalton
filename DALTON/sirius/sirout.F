@@ -92,7 +92,6 @@ C
 #include "pcmlog.h"
 #include "qm3.h"
 #include "qmmm.h"
-#include "wavpcm.h"
 ! MOLDEN
 #include "molde.h"
 C

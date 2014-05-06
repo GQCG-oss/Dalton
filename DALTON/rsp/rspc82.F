@@ -589,7 +589,6 @@ C
 #include "infrsp.h"
 #include "gnrinf.h"
 #include "mxcent.h"
-#include "wavpcm.h"
 C
       logical :: is_pcmsolver = .false.
 #if defined (PCM_MODULE)
@@ -673,7 +672,7 @@ C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
 C EMBEDDING = (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM .OR. .OR. QMNPMM
 C
-      IF (EMBEDDING .OR. WAVPCM .or. is_pcmsolver) THEN
+      IF (EMBEDDING .or. is_pcmsolver) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF

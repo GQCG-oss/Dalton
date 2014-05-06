@@ -66,7 +66,14 @@ INTEGER                   :: tmpprimorbitalindex,primorbitalindex,icharge
 INTEGER                   :: nbat,SUM1,nMODELEXP,itype
 INTEGER,pointer           :: MODELEXP(:)
 LOGICAL                   :: NOFAMILY,OLDATOM,NOSEGMENT,NORM
-IF(BASISINFO%natomtypes.EQ. 0)CALL LSQUIT('Error BUILD_AO called with empty basis',lupri)
+IF(BASISINFO%natomtypes.EQ. 0)THEN
+   print*,'Error BUILD_AO called with empty basis'
+   print*,'BASISINFO%label        ',BASISINFO%label
+   print*,'BASISINFO%nChargeindex ',BASISINFO%nChargeindex
+   print*,'BASISINFO%nbast        ',BASISINFO%nbast
+   print*,'BASISINFO%nprimbast    ',BASISINFO%nprimbast
+   CALL LSQUIT('Error BUILD_AO called with empty basis',lupri)
+ENDIF
 IF(PRESENT(NORMA))THEN
    NORM=NORMA
 ELSE

@@ -143,7 +143,7 @@ implicit none
   config%doplt=.false.
   !F12 calc?
   config%doF12=.false.
-  
+  config%doTestMPIcopy = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
 #endif
@@ -878,7 +878,11 @@ subroutine DEC_meaningful_input(config)
      if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .CSR!',-1)
      end if
-
+     if(DECinfo%FragmentExpansionRI .AND. (.NOT. config%integral%auxbasis))then
+        WRITE(config%LUPRI,'(/A)') &
+             &     'You have specified .FRAGMENTEXPANSIONRI in the input but not supplied a fitting basis set'
+        CALL lsquit('MP2 RI input inconsitensy: add fitting basis set',config%lupri)
+     endif
      ! DEC and response do not go together right now...
      if(config%response%tasks%doResponse) then
         call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
@@ -1047,6 +1051,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.GCBASIS');      config%decomp%cfg_gcbasis = .true. ! left for backward compatibility
         CASE('.NOGCBASIS');    config%decomp%cfg_gcbasis = .false.
         CASE('.FORCEGCBASIS'); config%INTEGRAL%FORCEGCBASIS = .true.
+        CASE('.TESTMPICOPY'); config%doTestMPIcopy = .true.
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **GENERAL readin.'
