@@ -508,7 +508,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
          DO 750 IVEC = 1,NBX
             IBV    = (IVEC-1)*KZYVAR + KBVECS
             NVEC   = IOFFSP + INQREX(KSYMOP,ISIM-1+IVEC)
-            IF (IPRRSP.GT.10) THEN
+            IF (IPRRSP.GT.1) THEN
                IF ( TRPLET ) THEN
                   WRITE(LUPRI,'(/A,I5,3X,A,I5,3A,/A,1P,D14.6)')
      &            '@ QRPPVE: TRIPLET EXCITATION VECTOR',ISIM-1+IVEC,
