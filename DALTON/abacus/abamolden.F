@@ -185,9 +185,15 @@ c
                            WRITE (LUMOLDEN,'(1X,A1,1X,I3,A5)')
      &                          GTOTMP, NNUC, ' 1.00'
                            DO 410 INNUC = 1, NNUC
-                              WRITE (LUMOLDEN,'(1X,F15.7,1X,F15.10)')
+                              IF (PRIEXP(IPSTRT+INNUC) .GT. 1.D6) THEN
+                                 WRITE (LUMOLDEN,'(1X,F15.2,1X,F15.10)')
      &                             PRIEXP(IPSTRT+INNUC),
      &                             CPRIMU(INNUC,INNRC,KBCH)
+                              ELSE
+                                 WRITE (LUMOLDEN,'(1X,F15.7,1X,F15.10)')
+     &                             PRIEXP(IPSTRT+INNUC),
+     &                             CPRIMU(INNUC,INNRC,KBCH)
+                              END IF
 
  410                       CONTINUE
  420                    CONTINUE
