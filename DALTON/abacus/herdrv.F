@@ -110,12 +110,6 @@ C     ***** Input Section *****
 C     *************************
 C
       TIMSTR = SECOND()
-      CALL GPINQ('AOPROPER','EXIST',FEXIST)
-      IF (FEXIST) THEN
-         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
-     &                                  IDUMMY,.FALSE.)
-         CALL GPCLOSE(LUPROP,'DELETE')
-      END IF
       CALL HERINP(WORK,LWORK)
       IF (TSTINP) THEN
          WRITE (LUPRI,'(/15X,A)')
@@ -129,7 +123,13 @@ C     ************************************
 C     ***** Calculation of Integrals *****
 C     ************************************
 C
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+
+      CALL GPINQ('AOPROPER','EXIST',FEXIST)
+      IF (FEXIST) THEN
+         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
+     &                                  IDUMMY,.FALSE.)
+         CALL GPCLOSE(LUPROP,'DELETE')
+      END IF
 C
       IF (QM3) THEN
          QM3LO1 = .TRUE.
@@ -2286,8 +2286,16 @@ C     **********************************
 C     ***** One-Electron Integrals *****
 C     **********************************
 C
+C     Both Hamiltionian and property one-electron integrals.
+C
       IF (RUNONE) THEN
          IF (IPRDEF .GT. 1) CALL TITLER('Output from HERONE','*',126)
+
+!        Open standard property integral file AOPROPER if LUPROP .le. 0
+!        (if calculating integrals for DKH, then LUPROP is already opened
+!         as AODKHINT)
+         IF (LUPROP .LE. 0)
+     &   CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
 C           ***** These integrals are used to modify the Hamiltonian ****
 C           ***** thus calculated first of all if requested          ****
@@ -3376,7 +3384,8 @@ C
             END IF
 cLig <<
          END IF
-      END IF
+      END IF  ! (RUNONE)
+      RUNONE = .TRUE. ! enable one-electron integrals for next iteration if e.g. geometry optimization
 C
 C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
       NOPP12 = 0

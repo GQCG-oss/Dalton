@@ -74,6 +74,8 @@ C
       CALL HERINI
       HAMILT = .FALSE.
       PVPINT = .TRUE.
+!     we do not need to save the following variables
+!     because HERINP has not been called yet.
       POTENE = .TRUE.
       KINENE = .TRUE.
       PROPRI = .FALSE.
