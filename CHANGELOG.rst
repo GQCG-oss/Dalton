@@ -26,6 +26,7 @@ DALTON
   (the static size of dalton.x went from 100 MB to 165 MB) 
 - do not print garbage non-zero transition moments and oscillator strengths for triplet excitations (*EXCITA module)
 - corrected input description for transition moments between excited states (*QUADRA with .DOUBLE RESIDUE)
+- fix for **RESPONSE .EXMOM .ISPABC=1,0,1 (only half the excited state spin-orbit transition moments were calculated)
 
 
 LSDALTON

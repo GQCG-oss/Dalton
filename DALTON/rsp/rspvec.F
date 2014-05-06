@@ -2485,7 +2485,7 @@ C
       IPRRSP = IPREXM
       DO 300 MSYMC = 1,NSYM
          MSYMCX = MULD2H(IREFSY,MSYMC)
-         IF (DOESA .OR. EXMTES) THEN
+         IF (DOESA .OR. EXMTES .OR. ISPINB.NE.ISPINC) THEN
             MSYMBE = NSYM
          ELSE
             MSYMBE = MSYMC
@@ -2553,7 +2553,8 @@ C
                   END IF
                   IF (DOESA) THEN
                      IBE = 1
-                  ELSE IF (EXMTES .OR. MSYMB.NE.MSYMC) THEN
+                  ELSE IF (EXMTES .OR. MSYMB.NE.MSYMC
+     &                           .OR. ISPINB.NE.ISPINC) THEN
                      IBE = NPPCNV(MSYMB)
                   ELSE
                      IBE = IC
