@@ -1,7 +1,9 @@
 SECT toplevel 2 False
-TAG F KW 1
+TAG F KW 2
 STR Units 1 True
 AU
+INT CODATA 1 False
+2010
 SECT Cavity 0 True
 TAG F KW 14
 DBL Area 1 True
@@ -13,11 +15,7 @@ DBL Coarsity 1 False
 INT_ARRAY Atoms 0 False
 BOOL Scaling 1 True
 False
-DBL_ARRAY Spheres 4 False
-0.0
-0.0
-0.0
-0.0
+DBL_ARRAY Spheres 0 False
 DBL_ARRAY Radii 0 False
 STR Mode 1 True
 Implicit
