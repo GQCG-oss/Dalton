@@ -367,10 +367,12 @@ C
             CALL QUIT('ERROR: MCSCF linear response not implemented'//
      &                ' with the PE library.')
         ENDIF
+#ifdef BUILD_PELIB
         CALL PE_RSPLIN(NCSIM, NOSIM, BCVECS, BOVECS, WRK(KCREF), CMO,
      &                 INDXCI, UDV, WRK(KDV), WRK(KUDVTR), WRK(KDVTR),
      &                 WRK(KDVT), WRK(KDVTTR), EVECS,
      &                 EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
+#endif
       END IF
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)

@@ -1128,7 +1128,9 @@ C
       CALL PLTORB(WORK(KKIND),LMWORK)
 C
 !     release memory used in PElib
+#if defined (BUILD_PELIB)
       IF (PEQM) CALL PE_IFC_FINALIZE()
+#endif
 
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR

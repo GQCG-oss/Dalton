@@ -834,12 +834,14 @@ C
          IF (PEQM) THEN
            CALL MEMGET('REAL', KFPE, NNBASX, WRK, KFREE, LFREE)
            CALL MEMGET('REAL', KEPE, 1, WRK, KFREE, LFREE)
+#ifdef BUILD_PELIB
            IF (NASHT == 0 .OR. HSFOCK) THEN
              CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE))
            ELSE
              CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
      &                        WRK(KEPE))
            END IF
+#endif
            ESOLT = WRK(KEPE)
            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
      &                          + WRK(KFPE:KFPE+NNBASX-1)
@@ -1466,11 +1468,13 @@ C
 C
       END IF
       IF (PEQM) THEN
+#ifdef BUILD_PELIB
         IF (NASHT == 0 .OR. HSFOCK) THEN
             CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
         ELSE
             CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1)
         END IF
+#endif
       END IF
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC

@@ -406,9 +406,12 @@ C
             CALL QUIT('ERROR: triplets not implemented for quadratic'//
      &                ' response with the PE library.')
         ENDIF
+
+#ifdef BUILD_PELIB
         CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
      &                 UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
      &                 ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+#endif
       END IF
 
       IF (QM3) THEN
