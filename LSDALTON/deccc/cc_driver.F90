@@ -284,7 +284,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    real(realk), dimension(nocc,nocc), intent(in),optional :: ppfock_fc
    !> Coupled cluster energy for full molecule
    real(realk) :: ccenergy,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
-   type(array4) :: t2_final,ccsdpt_t2,VOVO
+   type(array4) :: t2_final,ccsdpt_t2,VOVO, mp2_amp
    type(array2) :: t1_final,ccsdpt_t1,ccsd_mat_tot,ccsd_mat_tmp,e4_mat_tot,e4_mat_tmp,e5_mat_tot
    integer :: natoms,ncore,nocc_tot,p,pdx,i
    type(decorbital), pointer :: occ_orbitals(:)
@@ -324,9 +324,29 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       end if
 
       if (DECinfo%CCDEBUG) then
-         call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-            & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
+         if(DECinfo%use_pnos)then
+
+            !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
+            call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, MyMolecule%Cv, Co_fc, VOVO )
+            call mp2_solver( nocc, nvirt, ppfock_fc, MyMolecule%qqfock, VOVO, mp2_amp )
+            call array4_free( VOVO )
+
+            !CALL THE SOLVER WITH PNO ARGUMENT
+            call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt, &
+               & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy, &
+               & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
+
+            !FREE MP2 AMPLITUDES
+            call array4_free( mp2_amp )
+
+         else
+
+            call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+               & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
+               & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
+
+         endif
+
       else
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
@@ -337,9 +357,26 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       ncore = 0
 
       if (DECinfo%CCDEBUG) then
-         call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-            & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
+         if(DECinfo%use_pnos)then
+
+            !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
+            call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, MyMolecule%Cv, MyMolecule%Co, VOVO )
+            call mp2_solver( nocc, nvirt,MyMolecule%ppfock,MyMolecule%qqfock, VOVO, mp2_amp )
+            call array4_free( VOVO )
+
+            !CALL THE SOLVER WITH PNO ARGUMENT
+            call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt, &
+               & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy, &
+               & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
+
+            !FREE MP2 AMPLITUDES
+            call array4_free( mp2_amp )
+
+         else
+            call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+               & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+               & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
+         endif
       else
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
@@ -356,7 +393,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          &labeldwidle = 'MASTER IDLE CCSD: ') 
    endif
 
-   natoms = MyMolecule%natoms
+   natoms   = MyMolecule%natoms
    nocc_tot = MyMolecule%nocc
 
    if(ccmodel == MODEL_CCSDpT)then
@@ -483,7 +520,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    do i=1,nocc_tot
       call orbital_free(occ_orbitals(i))
    end do
+
    call mem_dealloc(occ_orbitals)
+
    do i=1,nvirt
       call orbital_free(unocc_orbitals(i))
    end do

@@ -2385,7 +2385,7 @@ module pno_ccsd_module
 
               endif
               add_contrib = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
-                    &.or.(.not. PS1 .and. i/=j)
+                    &.or.(.not. PS1 .and. i/=k)
 
               if(add_contrib     .and.pair1==1)bpc = 1
               if(.not.add_contrib.and.pair1==1)bpc = 2
@@ -2393,6 +2393,8 @@ module pno_ccsd_module
               if(.not.add_contrib.and.pair1==2)epc = 1
            enddo
 
+           bpc = 1
+           epc = 2
 
            !LOOP OVER THE CONTRIBUTIONS
            do pair1 = bpc, epc
@@ -2462,7 +2464,9 @@ module pno_ccsd_module
                  rpd2 =  pno_cv(ns2)%rpd
                  PS2  =  pno_cv(ns2)%PS
 
+
                  if( PS2 )then
+
                     if(ns==ns2)then
                        l = idx2(paircontrib(1,pair1))
                     else
@@ -2475,7 +2479,7 @@ module pno_ccsd_module
                     if( l == i ) cycle
                  endif
                  print *,""
-                 print *,"PAIR CONTRIB LOOP",ns2,PS1,PS2,i,j,k,l
+                 print *,"PAIR CONTRIB LOOP",ns,ns1,ns2,PS1,PS2,i,j,k,l
 
                  !Get the integrals kdlc -> ckld and transform c and d to their
                  !corresponding spaces, (iajb -> bija) 
@@ -2501,7 +2505,7 @@ module pno_ccsd_module
                     if( PS2 ) then
 
                        do kc=1,pno1
-                          p1(kc,1,:,:) = p2(idx1(kc),:,oidx2(nidx2+diff21+1,3),:)
+                          p1(kc,1,:,:) = p2(idx1(kc),:,l,:)
                        enddo
 
                     else
@@ -2529,6 +2533,7 @@ module pno_ccsd_module
                     nidx_h2 = 1
                  else
                     call ass_D1to4( w3,  p3, [rpd2,pnv2,nidx_h2,pnv2] )
+                    print *,"#CHECK",nidx2,pno2,oidx2(1,2)
                     do b=1,pnv2
                        do jc=1,nidx2
                           do a=1,pnv2
@@ -2594,7 +2599,7 @@ module pno_ccsd_module
               enddo OneIdxSpaceLoop21
 
               print *,""
-              print *,"EXIT RECT CONTRIB LOOP",pair1
+              print *,"EXIT PAIR CONTRIB LOOP",pair1
 
 
               !get the amplitudes, extract the necessary indices, 
@@ -2639,12 +2644,14 @@ module pno_ccsd_module
                     &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ - Before')
 
                  add_contrib1 = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
-                    &.or.(.not. PS1 .and. i/=j)
+                    &.or.(.not. PS1 .and. j/=idx1(kc))
                  add_contrib2 = ((PS1 .and. ((i>j.and.oidx1(1,3)==idx(1)).or.(i<j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
-                    &.or.(.not. PS1 .and. i/=j)
+                    &.or.(.not. PS1 .and. i/=idx1(kc))
 
-                 if(add_contrib1) call array_reorder_2d(p10,h2,pnv,pnv,paircontrib(:,3-pair1),p10,o)
-                 if(add_contrib2) call array_reorder_2d(p05,h2,pnv,pnv,paircontrib(:,pair1),p10,o)
+                 if(add_contrib1)then
+                    call array_reorder_2d(p10,h2,pnv,pnv,paircontrib(:,3-pair1),p10,o)
+                    call array_reorder_2d(p05,h2,pnv,pnv,paircontrib(:,pair1),p10,o)
+                 endif
 
                  call print_tensor_unfolding_with_labels(o,&
                     &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
@@ -2894,10 +2901,10 @@ module pno_ccsd_module
         endif
 
         
-        if(ns==2 .and. ns1==2)then
-           print *,"DONE"
-           stop 0
-        endif
+        !if(ns==2 .and. ns1==2)then
+        !   print *,"DONE"
+        !   stop 0
+        !endif
 
 
 
