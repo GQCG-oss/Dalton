@@ -1366,17 +1366,6 @@ call mem_dealloc(decmpitasks)
     goccEOS=array4_init(dimocc)
     idx=0
     call array_reorder_4d(1.0E0_realk,tmp1%p,nvirt,noccEOS,noccEOS,nvirt,[1,3,4,2],0.0E0_realk,goccEOS%val)
-    !do c=1,nvirt
-    !   do j=1,noccEOS
-    !      do i=1,noccEOS
-    !         do d=1,nvirt
-    !            idx=idx+1
-    !            goccEOS%val(d,j,c,i) = tmp1%p(idx)
-    !         end do
-    !      end do
-    !   end do
-    !end do
-    
     
     
     ! Amplitudes
@@ -1395,17 +1384,6 @@ call mem_dealloc(decmpitasks)
     ! Put amplitudes into output array in the correct order
     toccEOS=array4_init(dimocc)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nvirt,noccEOS,noccEOS,nvirt,[1,3,4,2],0.0E0_realk,toccEOS%val)
-    !idx=0
-    !do c=1,nvirt
-    !   do j=1,noccEOS
-    !      do i=1,noccEOS
-    !         do d=1,nvirt
-    !            idx=idx+1
-    !            toccEOS%val(d,j,c,i) = tmp1%p(idx)
-    !         end do
-    !      end do
-    !   end do
-    !end do
     
 ! ENDIF
 ! IF(.NOT.DECinfo%OnlyOccPart)THEN
@@ -1464,17 +1442,6 @@ call mem_dealloc(decmpitasks)
     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocctot]   ! Output order
     gvirtEOS=array4_init(dimvirt)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nocc,nvirtEOS,nvirtEOS,nocctot,[3,1,2,4],0.0E0_realk,gvirtEOS%val)
-    !idx=0
-    !do k=1,nocctot
-    !   do b=1,nvirtEOS
-    !      do a=1,nvirtEOS
-    !         do l=1,nocc
-    !            idx=idx+1
-    !            gvirtEOS%val(b,l,a,k) = tmp1%p(idx)
-    !         end do
-    !      end do
-    !   end do
-    !end do
     
     
     ! Amplitudes
@@ -1503,17 +1470,6 @@ call mem_dealloc(decmpitasks)
     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocc]   ! Output order
     tvirtEOS=array4_init(dimvirt)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nocc,nvirtEOS,nvirtEOS,nocc,[3,1,2,4],0.0E0_realk,tvirtEOS%val)
-    !idx=0
-    !do k=1,nocc
-    !   do b=1,nvirtEOS
-    !      do a=1,nvirtEOS
-    !         do l=1,nocc
-    !            idx=idx+1
-    !            tvirtEOS%val(b,l,a,k) = tmp1%p(idx)             
-    !         end do
-    !      end do
-    !   end do
-    !end do
 ! ENDIF
 
 
@@ -1737,6 +1693,8 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2,tcmpi1,tcmpi2,twmpi1
   real(realk) :: Evirt,Evirt2
   integer(kind=long) :: maxsize
+  real(realk),pointer :: OccContribsFull(:),VirtContribsFull(:)
+  real(realk),pointer :: occ_tmp(:),virt_tmp(:)
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
@@ -1824,7 +1782,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      enddo
   enddo
 
-  IF(.NOT.DECinfo%onlyoccpart)THEN
+!  IF(.NOT.DECinfo%onlyoccpart)THEN
      ! Extract virtual EOS indices from rows of Uvirt
      call array2_extract_EOS(Uvirt,MyFragment,'V','R',tmparray2)
      call mem_alloc(UvirtEOST,nvirt,nvirtEOS)
@@ -1842,9 +1800,9 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
         enddo
      enddo
      call array2_free(Uocc)
-  ELSE
-     call array2_free(Uocc)     
-  ENDIF
+!  ELSE
+!     call array2_free(Uocc)     
+!  ENDIF
   call array2_free(Uvirt)
 
 
@@ -1945,7 +1903,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   !  Occupied Partitioning Use UoccEOST,UvirtT: allocated Calpha,AlphaCD3
   !=====================================================================================
   Eocc = 0.0E0_realk
-  IF(.NOT.DECinfo%onlyvirtpart)THEN     
+!  IF(.NOT.DECinfo%onlyvirtpart)THEN     
      call mem_alloc(tocc,nvirt,nvirt,noccEOS,noccEOS)
      !$OMP PARALLEL DEFAULT(shared) &
      !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
@@ -1984,10 +1942,10 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_dealloc(toccTMP)
      !$OMP END CRITICAL
      !$OMP END PARALLEL
-     IF(DECinfo%onlyoccpart)THEN
-        call mem_dealloc(EVocc)
-        call mem_dealloc(EVvirt)
-     ENDIF
+!     IF(DECinfo%onlyoccpart)THEN
+!        call mem_dealloc(EVocc)
+!        call mem_dealloc(EVvirt)
+!     ENDIF
      ! Transform index delta to local occupied index 
      !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
      M = nbasisAux*nvirt  !rows of Output Matrix
@@ -1996,9 +1954,9 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_alloc(AlphaCD4,nbasisAux,nvirt,noccEOS)
      !OpenMP hopefully
      call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD3,M,UoccEOST,nocc,0.0E0_realk,AlphaCD4,M)
-     IF(DECinfo%onlyoccpart)THEN
-        call mem_dealloc(AlphaCD3)
-     ENDIF
+!     IF(DECinfo%onlyoccpart)THEN
+!        call mem_dealloc(AlphaCD3)
+!     ENDIF
      
      call mem_alloc(AlphaCD5,nbasisAux,nvirt,noccEOS)
      !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
@@ -2027,9 +1985,9 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_alloc(Calpha2,nbasisAux,nvirt,noccEOS)
      !OpenMP hopefully
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,nocc,0.0E0_realk,Calpha2,M)
-     IF(DECinfo%onlyoccpart)THEN
-        call mem_dealloc(Calpha)
-     ENDIF
+!     IF(DECinfo%onlyoccpart)THEN
+!        call mem_dealloc(Calpha)
+!     ENDIF
      call mem_dealloc(UoccEOST)
      
      call mem_alloc(Calpha3,nbasisAux,nvirt,noccEOS)
@@ -2049,12 +2007,20 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      enddo
      !$OMP END PARALLEL DO
      call mem_dealloc(Calpha2)
-     
+
      !make t(a,i,b,j) and contract with g(a,i,b,j) to get E
      Eocc = 0.0E0_realk
+     call mem_alloc(VirtContribsFull,nvirt)
+     do aLoc=1,nvirt
+        VirtContribsFull(aLoc) = 0.0E0_realk
+     end do
      !$OMP PARALLEL DEFAULT(shared) &
-     !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG,TMP,Gtmp1,Gtmp2,Etmp,Eocc2,TMP1)
+     !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG,TMP,Gtmp1,Gtmp2,Etmp,Eocc2,TMP1,virt_tmp)
      Eocc2 = 0.0E0_realk
+     call mem_alloc(virt_tmp,nvirt)
+     do aLoc=1,nvirt
+        virt_tmp(aLoc) = 0.0E0_realk
+     end do
      !$OMP DO COLLAPSE(3) 
      do bLOC=1,nvirt
         do aLOC=1,nvirt
@@ -2080,6 +2046,8 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
                  Gtmp = (2.0E0_realk*Gtmp1 - Gtmp2)
                  Etmp = TMP * Gtmp
                  Eocc2 = Eocc2 + Etmp
+                 virt_tmp(aLoc) = virt_tmp(aLoc) + Etmp
+                 if(aLOC/=bLOC) virt_tmp(bLoc) = virt_tmp(bLoc) + Etmp
               enddo
            enddo
         enddo
@@ -2087,22 +2055,27 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !$OMP END DO NOWAIT
      !$OMP CRITICAL
      Eocc = Eocc + Eocc2
+     do aLoc=1,nvirt
+        VirtContribsFull(aLoc) = VirtContribsFull(aLoc) + virt_tmp(aLoc)
+     end do
      !$OMP END CRITICAL
+     call mem_dealloc(virt_tmp)
      !$OMP END PARALLEL
      call mem_dealloc(UvirtT) 
      call mem_dealloc(tocc)
      call mem_dealloc(Calpha3)
      call mem_dealloc(alphaCD5)
-  ELSE
-     call mem_dealloc(UoccEOST)     
-     call mem_dealloc(UvirtT) 
-  ENDIF
+!  ELSE
+!     call mem_dealloc(UoccEOST)     
+!     call mem_dealloc(UvirtT) 
+!  ENDIF
+
   !=====================================================================================
   !  Virtual Partitioning use UvirtEOST,UoccT:     allocated Calpha,AlphaCD3
   !=====================================================================================
   
   Evirt = 0.0E0_realk
-  IF(.NOT.DECinfo%onlyoccpart)THEN     
+!  IF(.NOT.DECinfo%onlyoccpart)THEN     
      call mem_alloc(tvirt,nocc,nocc,nvirtEOS,nvirtEOS)
      !$OMP PARALLEL DEFAULT(shared) &
      !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
@@ -2200,9 +2173,17 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_dealloc(Calpha2)
      call mem_dealloc(UvirtEOST)
 
+     call mem_alloc(OccContribsFull,nocc)
+     do iLoc=1,nOcc
+        OccContribsFull(iLoc) = 0.0E0_realk
+     end do
      !$OMP PARALLEL DEFAULT(shared) &
-     !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG,TMP,Gtmp1,Gtmp2,Etmp,Evirt2,TMP1)
+     !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG,TMP,Gtmp1,Gtmp2,Etmp,Evirt2,TMP1,Occ_tmp)
      Evirt2 = 0.0E0_realk
+     call mem_alloc(Occ_tmp,nocc)
+     do iLoc=1,nOcc
+        Occ_tmp(iLoc) = 0.0E0_realk
+     end do
      !$OMP DO COLLAPSE(3) 
      do bLOC=1,nvirtEOS
       do aLOC=1,nvirtEOS
@@ -2228,6 +2209,8 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
          Gtmp = (2.0E0_realk*Gtmp1 - Gtmp2)
          Etmp = TMP * Gtmp
          Evirt2 = Evirt2 + Etmp
+         Occ_tmp(iLoc) = Occ_tmp(iLoc) + Etmp
+         if(iLOC/=iLOC) Occ_tmp(jLoc) = Occ_tmp(jLoc) + Etmp
         enddo
        enddo
       enddo
@@ -2235,14 +2218,17 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !$OMP END DO NOWAIT
      !$OMP CRITICAL
      Evirt = Evirt + Evirt2
+     do iLoc=1,nocc
+        OccContribsFull(iLoc) = OccContribsFull(iLoc) + Occ_tmp(iLoc)
+     end do
      !$OMP END CRITICAL
+     call mem_dealloc(Occ_tmp)
      !$OMP END PARALLEL
-
      call mem_dealloc(UoccT)
      call mem_dealloc(tvirt)
      call mem_dealloc(Calpha3)
      call mem_dealloc(alphaCD5)
-  ENDIF
+!  ENDIF
 
   call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
   tmpidiff = twmpi2-twmpi1
@@ -2275,6 +2261,8 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
         MyFragment%slavetime_work(MODEL_MP2)=0.0E0_realk
      end if
      call time_start_phase( PHASE_COMM )
+     call lsmpi_reduction(OccContribsFull,nocc,infpar%master,infpar%lg_comm)
+     call lsmpi_reduction(VirtContribsFull,nvirt,infpar%master,infpar%lg_comm)
      call lsmpi_reduction(EnergyMPI,N,infpar%master,infpar%lg_comm)
      call lsmpi_reduction(flops,infpar%master,infpar%lg_comm)
      call lsmpi_reduction(MyFragment%slavetime_work(MODEL_MP2),infpar%master,infpar%lg_comm)
@@ -2300,18 +2288,27 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
           & MyFragment%EOSatoms(1)
      write(DECinfo%output,*) '**********************************************************************'
      write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied RI energy = ', Eocc
-     if(.not. DECinfo%onlyoccpart) then
+!     if(.not. DECinfo%onlyoccpart) then
         write(DECinfo%output,'(1X,a,g20.10)') 'Single virtual RI energy = ', Evirt
-     end if
+!     end if
      write(DECinfo%output,*)
      write(DECinfo%output,*)
 
      MyFragment%energies(FRAGMODEL_OCCMP2)  = Eocc
      MyFragment%energies(FRAGMODEL_VIRTMP2) = Evirt
      MyFragment%energies(FRAGMODEL_LAGMP2)  = 0.5E0_realk*(Eocc + Evirt)
+     do iLoc=1,nocc
+        MyFragment%OccContribs(iLoc) = OccContribsFull(iLoc)
+     end do
+     do aLoc=1,nvirt
+        MyFragment%VirtContribs(aLoc) = VirtContribsFull(aLoc)
+     end do
   endif
 
   IF(master)call LSTIMER('MP2_RI_Energy',tcpu,twall,DECinfo%output,ForcePrint)
+
+  call mem_dealloc(VirtContribsFull)
+  call mem_dealloc(OccContribsFull)
 
 end subroutine MP2_RI_EnergyContribution
 
@@ -3454,13 +3451,17 @@ end subroutine Get_ijba_integrals
     !> Atomic fragment (or pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: goccEOS
+    type(array),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: toccEOS
+    type(array),intent(inout) :: toccEOS
     !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: gvirtEOS
+    type(array),intent(inout) :: gvirtEOS
     !> Amplitudes for virt EOS in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: tvirtEOS
+    type(array),intent(inout) :: tvirtEOS
+    type(array4) :: goccEOS_arr4
+    type(array4) :: toccEOS_arr4
+    type(array4) :: gvirtEOS_arr4
+    type(array4) :: tvirtEOS_arr4
     type(array4) :: dummy1,dummy2
     type(mp2_batch_construction) :: bat
     logical :: first_order_integrals
@@ -3468,8 +3469,21 @@ end subroutine Get_ijba_integrals
     first_order_integrals=.false. ! just energy
 
     ! Calculate integrals and amplitudes
-    call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS, toccEOS, &
-         & gvirtEOS, tvirtEOS, dummy1, dummy2,bat,first_order_integrals)
+    call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS_arr4, toccEOS_arr4, &
+         & gvirtEOS_arr4, tvirtEOS_arr4, dummy1, dummy2,bat,first_order_integrals)
+
+    goccEOS = array_init(goccEOS_arr4%dims,4)
+    call array_convert(goccEOS_arr4%val,goccEOS)
+    call array4_free(goccEOS_arr4)
+    toccEOS = array_init(toccEOS_arr4%dims,4)
+    call array_convert(toccEOS_arr4%val,toccEOS)
+    call array4_free(toccEOS_arr4)
+    gvirtEOS = array_init(gvirtEOS_arr4%dims,4)
+    call array_convert(gvirtEOS_arr4%val,gvirtEOS)
+    call array4_free(gvirtEOS_arr4)
+    tvirtEOS = array_init(tvirtEOS_arr4%dims,4)
+    call array_convert(tvirtEOS_arr4%val,tvirtEOS)
+    call array4_free(tvirtEOS_arr4)
 
   end subroutine MP2_integrals_and_amplitudes_energy
 
@@ -3488,25 +3502,50 @@ end subroutine Get_ijba_integrals
     !> Atomic fragment (or pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: goccEOS
+    type(array),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: toccEOS
+    type(array),intent(inout) :: toccEOS
     !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: gvirtEOS
+    type(array),intent(inout) :: gvirtEOS
     !> Amplitudes for virt EOS in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: tvirtEOS
+    type(array),intent(inout) :: tvirtEOS
     !> Occ EOS integrals (d j | i k) in the order (d,j,i,k)  [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: djik
+    type(array),intent(inout) :: djik
     !> Virt EOS integrals (b l | a d) in the order (b,l,a,d)  [see MP2_integrals_and_amplitudes_workhorse]
-    type(array4),intent(inout) :: blad
+    type(array),intent(inout) :: blad
+    type(array4) :: goccEOS_arr4
+    type(array4) :: toccEOS_arr4
+    type(array4) :: gvirtEOS_arr4
+    type(array4) :: tvirtEOS_arr4
+    type(array4) :: djik_arr4
+    type(array4) :: blad_arr4
     type(mp2_batch_construction) :: bat
     logical :: first_order_integrals
 
     first_order_integrals=.true. ! first order properties requested
 
     ! Calculate integrals and amplitudes
-    call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS, toccEOS, &
-         & gvirtEOS, tvirtEOS, djik,blad,bat,first_order_integrals)
+    call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS_arr4, toccEOS_arr4, &
+         & gvirtEOS_arr4, tvirtEOS_arr4, djik_arr4,blad_arr4,bat,first_order_integrals)
+
+    goccEOS = array_init(goccEOS_arr4%dims,4)
+    call array_convert(goccEOS_arr4%val,goccEOS)
+    call array4_free(goccEOS_arr4)
+    toccEOS = array_init(toccEOS_arr4%dims,4)
+    call array_convert(toccEOS_arr4%val,toccEOS)
+    call array4_free(toccEOS_arr4)
+    gvirtEOS = array_init(gvirtEOS_arr4%dims,4)
+    call array_convert(gvirtEOS_arr4%val,gvirtEOS)
+    call array4_free(gvirtEOS_arr4)
+    tvirtEOS = array_init(tvirtEOS_arr4%dims,4)
+    call array_convert(tvirtEOS_arr4%val,tvirtEOS)
+    call array4_free(tvirtEOS_arr4)
+    djik = array_init(djik_arr4%dims,4)
+    call array_convert(djik_arr4%val,djik)
+    call array4_free(djik_arr4)
+    blad = array_init(blad_arr4%dims,4)
+    call array_convert(blad_arr4%val,blad)
+    call array4_free(blad_arr4)
 
   end subroutine MP2_integrals_and_amplitudes_energy_and_first_order
 

@@ -330,14 +330,12 @@ add_dependencies(linearslib ls-openrsp)
 add_dependencies(linearslib ls-matrix-defop)
 endif()
 
-if(DEVELOPMENT_CODE)
-    add_library(
-        rsp_propertieslib
-        ${RSP_PROPERTIES_SOURCES}
-        )
-    add_dependencies(rsp_propertieslib linearslib)
-    target_link_libraries(rsp_propertieslib lsintlib)
-endif()
+add_library(
+    rsp_propertieslib
+    ${RSP_PROPERTIES_SOURCES}
+    )
+add_dependencies(rsp_propertieslib linearslib)
+target_link_libraries(rsp_propertieslib lsintlib)
 
 add_library(
     geooptlib
@@ -356,9 +354,7 @@ target_link_libraries(lsdaltonmain geooptlib)
 target_link_libraries(lsdaltonmain linearslib)
 target_link_libraries(lsdaltonmain declib)
 target_link_libraries(lsdaltonmain ddynamlib)
-if(DEVELOPMENT_CODE)
-    target_link_libraries(lsdaltonmain rsp_propertieslib)
-endif()
+target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
 
@@ -431,13 +427,11 @@ set(LIBS_TO_MERGE
     lsdaltonmain 
     )
 
-if(DEVELOPMENT_CODE)
-    MERGE_STATIC_LIBS(
-        rsp_prop
-        rsp_propertieslib
-        )
-    set(LIBS_TO_MERGE ${LIBS_TO_MERGE} rsp_prop)
-endif()
+MERGE_STATIC_LIBS(
+    rsp_prop
+    rsp_propertieslib
+    )
+set(LIBS_TO_MERGE ${LIBS_TO_MERGE} rsp_prop)
 
 MERGE_STATIC_LIBS(
     lsdalton
