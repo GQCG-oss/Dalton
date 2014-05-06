@@ -5373,9 +5373,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     implicit none
 
     !> ccsd doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
-    type(array4), intent(inout) :: ccsd_doubles, integral
+    type(array), intent(inout) :: ccsd_doubles, integral
     !> ccsd singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles
+    type(array), intent(inout) :: ccsd_singles
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
@@ -5413,9 +5413,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           do b=1,nvirt
              do a=1,nvirt
 
-                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
+                energy_tmp_1 = ccsd_doubles%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
                 if(DECinfo%use_singles)then
-                   energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                   energy_tmp_2 = ccsd_singles%elm2(a,i) * ccsd_singles%elm2(b,j) * integral%elm4(a,b,i,j)
                 else
                    energy_tmp_2 = 0.0E0_realk
                 endif
@@ -5430,7 +5430,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !$OMP END PARALLEL DO
 
     ! reorder from (a,b,i,j) to (a,b,j,i)
-    call array4_reorder(integral,[1,2,4,3])
+    call array_reorder(integral,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
     !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
@@ -5443,9 +5443,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           do b=1,nvirt
              do a=1,nvirt
 
-                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
+                energy_tmp_1 = ccsd_doubles%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
                 if(DECinfo%use_singles)then
-                   energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                   energy_tmp_2 = ccsd_singles%elm2(a,i) * ccsd_singles%elm2(b,j) * integral%elm4(a,b,i,j)
                 else
                    energy_tmp_2 = 0.0E0_realk
                 endif
@@ -5601,7 +5601,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> MPI info:
     integer, pointer :: joblist(:)
     logical :: master
-    integer(kind=ls_mpik) :: tile_master, myrank, nnod
+    integer(kind=ls_mpik) :: tile_master, myrank, nnod, mode
  
     !> Working arrays:
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
@@ -5644,6 +5644,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     nnod          = 1
     master        = .true.
 #ifdef VAR_MPI
+    mode        = MPI_MODE_NOCHECK
     myrank        = infpar%lg_mynum
     nnod          = infpar%lg_nodtot
     master        = (myrank == infpar%master)
@@ -5797,6 +5798,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      omega2%itype = DENSE
      govov%itype  = DENSE
    end if
+
+   ! lock all windows in PDM integral array for get tiles in main loop
+   if (.not.local_moccsd) then
+     call arr_lock_wins(pgmo_diag,'s',mode)
+     if (Nbat>1) call arr_lock_wins(pgmo_up,'s',mode)
+   end if 
 #endif
     if (iter==1) call array_zero(govov)
     call array_zero(omega2)
@@ -5837,6 +5844,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     end do BatchPQ
  
+#ifdef VAR_MPI
+   ! unlock all windows in PDM integral array for get tiles in main loop
+   if (.not.local_moccsd) then
+     call arr_unlock_wins(pgmo_diag)
+     if (Nbat>1) call arr_unlock_wins(pgmo_up)
+   end if 
+#endif
+
     call LSTIMER('MO-CCSD main loop',tcpu1,twall1,DECinfo%output)
 
 

@@ -685,12 +685,12 @@ module lspdm_tensor_operations_module
     real(realk),pointer :: t1tile(:), g_iajb(:), g_ibja(:)
     integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
 
-    integer :: glob_mode_idx(4), tile_mode_idx(4), idx_in_tile(4)
-    integer :: tile_comp_idx, pos, k, idx
-    integer(kind=ls_mpik) :: source, mode
+    integer :: glob_mode_idx(gmo%mode), idx
+    integer(kind=ls_mpik) :: mode
     integer(kind=long) :: tiledim
-    logical :: nomem
     real(realk), external :: ddot
+
+    logical :: nomem
 
   nomem = .false.
   if(DECinfo%v2o2_free_solver)  nomem = .true.
@@ -727,49 +727,30 @@ module lspdm_tensor_operations_module
       call arr_lock_wins(gmo,'s',mode)
 
       !count over local indices
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t1tile,g_iajb,g_ibja,&
+      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b,idx,glob_mode_idx)
       do j=1,dj
         do i=1,di
           do b=1,db
             do a=1,da
-
+              ! get combined index for tiles:
               idx = a + (b-1)*da + (i-1)*da*db + (j-1)*da*db*di
+
               ! GET G_IAJB ELMT FROM PDM ARRAY:    
-              ! get global mode index of elmt in integral [i,a,j,b]:
               glob_mode_idx = [i+o(3),a+o(1),j+o(4),b+o(2)]
-              ! get tile mode index:
-              do k=1,gmo%mode
-                tile_mode_idx(k) = (glob_mode_idx(k)-1)/gmo%tdim(k) + 1
-                idx_in_tile(k)   = mod((glob_mode_idx(k)-1) , gmo%tdim(k)) + 1
-              end do
-              tile_comp_idx = get_cidx(tile_mode_idx,gmo%ntpm,gmo%mode)
-              pos           = get_cidx(idx_in_tile,gmo%tdim,gmo%mode)
-              source = get_residence_of_tile(tile_comp_idx,gmo)
-             
-              ! get tile elmts from source:
-              call lsmpi_get(g_iajb(idx),pos,source,gmo%wi(tile_comp_idx))
-             
+              call get_elmt_from_pdm_arr(gmo,glob_mode_idx,g_iajb(idx))
+
               ! GET G_IBJA ELMT FROM PDM ARRAY:    
-              ! get global mode index of elmt in integral [i,b,j,a]:
               glob_mode_idx = [i+o(3),b+o(2),j+o(4),a+o(1)]
-              ! get tile mode index:
-              do k=1,gmo%mode
-                tile_mode_idx(k) = (glob_mode_idx(k)-1)/gmo%tdim(k) + 1
-                idx_in_tile(k)   = mod((glob_mode_idx(k)-1) , gmo%tdim(k)) + 1
-              end do
-              tile_comp_idx = get_cidx(tile_mode_idx,gmo%ntpm,gmo%mode)
-              pos           = get_cidx(idx_in_tile,gmo%tdim,gmo%mode)
-              source = get_residence_of_tile(tile_comp_idx,gmo)
-             
-              ! get tile elmts from source:
-              call lsmpi_get(g_ibja(idx),pos,source,gmo%wi(tile_comp_idx))
+              call get_elmt_from_pdm_arr(gmo,glob_mode_idx,g_ibja(idx))
              
               ! reorder t1 contributions into one big tile:
               t1tile(idx) = t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4))
-             
             enddo 
           enddo
         enddo
       enddo
+      !$OMP END PARALLEL DO
       ! unlock all windows
       call arr_unlock_wins(gmo)
 
@@ -4551,6 +4532,32 @@ module lspdm_tensor_operations_module
     nmsg_get              = nmsg_get + 1
 #endif
   end subroutine array_gettile_combidx4
+
+  !> Purpose: get an element of a PDM array base on its mode index
+  !> Author:  Pablo Baudin
+  !> Date:    May 2014
+  subroutine get_elmt_from_pdm_arr(arr,glob_mode_idx,elmt)
+    implicit none
+    type(array), intent(in) :: arr
+    integer, intent(in) :: glob_mode_idx(arr%mode)
+    real(realk), intent(out) :: elmt
+    integer :: tile_mode_idx(arr%mode), idx_in_tile(arr%mode)
+    integer :: pos, tile_comp_idx, k
+    integer(kind=ls_mpik) :: source
+#ifdef VAR_MPI
+    ! get tile mode index:
+    do k=1,arr%mode
+      tile_mode_idx(k) = (glob_mode_idx(k)-1)/arr%tdim(k) + 1
+      idx_in_tile(k)   = mod((glob_mode_idx(k)-1) , arr%tdim(k)) + 1
+    end do
+    tile_comp_idx = get_cidx(tile_mode_idx,arr%ntpm,arr%mode)
+    pos           = get_cidx(idx_in_tile,arr%tdim,arr%mode)
+    source = get_residence_of_tile(tile_comp_idx,arr)
+
+    ! get tile elmts from source:
+    call lsmpi_get(elmt,pos,source,arr%wi(tile_comp_idx))
+#endif
+  end subroutine get_elmt_from_pdm_arr
 
   subroutine get_int_dist_info(o2v2,firstintel,nintel,remoterank)
     implicit none

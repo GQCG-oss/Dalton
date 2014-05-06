@@ -353,24 +353,24 @@ module tensor_basic_module
     !> \author Patrick Ettenhuber
     !> \date September 2012
     subroutine assoc_ptr_arr(arr)
-      implicit none
-      type(array)::arr
-      select case(arr%mode)
-        case(2)
-                call ass_D1to2(arr%elm1,arr%elm2,arr%dims)
-        case(3)
-                call ass_D1to3(arr%elm1,arr%elm3,arr%dims)
-        case(4)
-                call ass_D1to4(arr%elm1,arr%elm4,arr%dims)
-        case(5)
-                call ass_D1to5(arr%elm1,arr%elm5,arr%dims)
-        case(6)
-                call ass_D1to6(arr%elm1,arr%elm6,arr%dims)
-        case(7)
-                call ass_D1to7(arr%elm1,arr%elm7,arr%dims)
-        case default
-                return
-      end select
+       implicit none
+       type(array)::arr
+       select case(arr%mode)
+       case(2)
+          call ass_D1to2(arr%elm1,arr%elm2,arr%dims)
+       case(3)
+          call ass_D1to3(arr%elm1,arr%elm3,arr%dims)
+       case(4)
+          call ass_D1to4(arr%elm1,arr%elm4,arr%dims)
+       case(5)
+          call ass_D1to5(arr%elm1,arr%elm5,arr%dims)
+       case(6)
+          call ass_D1to6(arr%elm1,arr%elm6,arr%dims)
+       case(7)
+          call ass_D1to7(arr%elm1,arr%elm7,arr%dims)
+       case default
+          return
+       end select
     end subroutine assoc_ptr_arr
     
     !\brief deassociate all pointers again

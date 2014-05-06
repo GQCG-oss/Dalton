@@ -494,7 +494,8 @@ contains
     type(lsitem), intent(inout) :: MyLsItem
     !> Is U symmetric (true) or not (false)?
     logical, intent(in) :: symmetric
-    real(realk) :: Edft(1)
+    real(realk) :: Edft(1),DFTELS
+    logical :: doMPI 
     ! Sanity check
     if(U%nrow /= U%ncol) then
        call lsquit('dec_fock_transformation:&
@@ -505,8 +506,20 @@ contains
     call II_get_Fock_mat(DECinfo%output, DECinfo%output, &
          & MyLsitem%setting,U,symmetric,FockU,1,.FALSE.)
     IF(DECinfo%DFTreference)THEN
+       IF(DECinfo%FrozenCore)THEN
+          !not the full number of electrons we deactivate the testing
+          DFTELS = MyLsItem%setting%scheme%DFT%DFTELS
+          MyLsItem%setting%scheme%DFT%DFTELS = 100.0E0_realk
+       ENDIF
+       !Deactivate MPI - done at the DEC level - maybe this could
+       !be done in the local group - then the MyLsItem%setting%node
+       !and MyLsItem%setting%comm needs to be set correctly
+       doMPI = MyLsItem%setting%scheme%doMPI
+       MyLsItem%setting%scheme%doMPI = .FALSE.
        call II_get_xc_fock_mat(DECinfo%output,DECinfo%output,&
-            & MyLsItem%setting,U%nrow,U,FockU,Edft,1)
+            & MyLsItem%setting,U%nrow,U,FockU,Edft,1)       
+       MyLsItem%setting%scheme%doMPI = doMPI 
+       IF(DECinfo%FrozenCore)MyLsItem%setting%scheme%DFT%DFTELS = DFTELS
     ENDIF
 
   end subroutine dec_fock_transformation
@@ -1989,7 +2002,7 @@ contains
 
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call time_start_phase(PHASE_COMM)
-        call array_get_tile(pack_gmo,tile,tmp,ncopy)
+        call array_get_tile(pack_gmo,tile,tmp,ncopy,lock_set=.true.)
         call time_start_phase(PHASE_WORK)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
@@ -2027,7 +2040,7 @@ contains
 
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call time_start_phase(PHASE_COMM)
-        call array_get_tile(pack_gmo,tile,tmp,ncopy)
+        call array_get_tile(pack_gmo,tile,tmp,ncopy,lock_set=.true.)
         call time_start_phase(PHASE_WORK)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
