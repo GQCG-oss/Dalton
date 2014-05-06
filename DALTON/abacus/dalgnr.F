@@ -430,7 +430,7 @@ C
 C
 C     Third parameter .TRUE. in call indicates that LUONEL will be written.
 C
-      CALL READIN(WORK(1),LMWORK,.TRUE.)
+      CALL READIN(WORK(1),LMWORK,RNHERM)
 C
 C     Initialize Hermit variables, also when RNHERM false (e.g. for ABACUS)
 C
@@ -453,7 +453,7 @@ C
          CALL HERCTL(WORK(1),LMWORK)
 C        ... Note: if RUNTWO or RUNERI then HERCTL sets FTRCTL = .TRUE.
 C        for transformation control, old AO/MO files cannot be used any more.
-C     ***************************************************************
+C        ***************************************************************
          CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'HERMIT')
          CALL TITLER('End of Integral Section (HERMIT)',' ',200)
          CALL FLSHFO(LUPRI)
