@@ -1244,6 +1244,45 @@ contains
 ! ########################################################################
 !                          MPI SEND/RECEIVE
 ! ########################################################################
+    subroutine lsmpi_send_realkV_4(buffer,nbuf,comm,receiver)
+      implicit none
+      real(realk) :: buffer(:)
+      integer(kind=4) :: nbuf
+      integer(kind=ls_mpik) :: comm
+      integer(kind=ls_mpik) :: receiver
+      integer(kind=ls_mpik) :: tag
+      integer(kind=ls_mpik) :: nel,dtype,ierr
+#ifdef VAR_MPI
+#ifdef VAR_MPI_32BIT_INT
+      tag   = 124_ls_mpik
+      ierr  = 0_ls_mpik
+      nel   = int(nbuf,kind=ls_mpik)
+      dtype = MPI_DOUBLE_PRECISION
+      call MPI_SEND(buffer,nbuf,dtype,receiver,tag,comm,ierr)
+      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+#endif 
+#endif 
+    end subroutine lsmpi_send_realkV_4
+    subroutine lsmpi_recv_realkV_4(buffer,nbuf,comm,sender)
+      implicit none
+      real(realk) :: buffer(:)
+      integer(kind=4) :: nbuf
+      integer(kind=ls_mpik) :: comm
+      integer(kind=ls_mpik) :: sender
+      integer(kind=ls_mpik) :: tag
+      integer(kind=ls_mpik) :: nel,dtype,ierr
+#ifdef VAR_MPI
+#ifdef VAR_MPI_32BIT_INT
+      tag   = 124_ls_mpik
+      ierr  = 0_ls_mpik
+      nel   = int(nbuf,kind=ls_mpik)
+      dtype = MPI_DOUBLE_PRECISION
+      call MPI_RECV(buffer,nbuf,dtype,sender,tag,comm,status,ierr)
+      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+#endif 
+#endif 
+    end subroutine lsmpi_recv_realkV_4
+    
     subroutine lsmpi_send_realkV_8(buffer,nbuf,comm,receiver)
       implicit none
       real(realk) :: buffer(:)
@@ -1255,6 +1294,7 @@ contains
       integer(kind=4) :: n4
       integer(kind=8) :: i,k
 #ifdef VAR_MPI
+#ifndef VAR_MPI_32BIT_INT
       tag   = 124_ls_mpik
       ierr  = 0_ls_mpik
       nel   = int(nbuf,kind=ls_mpik)
@@ -1271,24 +1311,8 @@ contains
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       endif
 #endif 
-    end subroutine lsmpi_send_realkV_8
-    subroutine lsmpi_send_realkV_4(buffer,nbuf,comm,receiver)
-      implicit none
-      real(realk) :: buffer(:)
-      integer(kind=4) :: nbuf
-      integer(kind=ls_mpik) :: comm
-      integer(kind=ls_mpik) :: receiver
-      integer(kind=ls_mpik) :: tag
-      integer(kind=ls_mpik) :: nel,dtype,ierr
-#ifdef VAR_MPI
-      tag   = 124_ls_mpik
-      ierr  = 0_ls_mpik
-      nel   = int(nbuf,kind=ls_mpik)
-      dtype = MPI_DOUBLE_PRECISION
-      call MPI_SEND(buffer,nbuf,dtype,receiver,tag,comm,ierr)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif 
-    end subroutine lsmpi_send_realkV_4
+    end subroutine lsmpi_send_realkV_8
     subroutine lsmpi_recv_realkV_8(buffer,nbuf,comm,sender)
       implicit none
       real(realk) :: buffer(:)
@@ -1300,6 +1324,7 @@ contains
       integer(kind=4) :: n4
       integer(kind=8) :: i,k
 #ifdef VAR_MPI
+#ifndef VAR_MPI_32BIT_INT
       tag   = 124_ls_mpik
       ierr  = 0_ls_mpik
       nel   = int(nbuf,kind=ls_mpik)
@@ -1316,25 +1341,8 @@ contains
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       endif
 #endif 
-    end subroutine lsmpi_recv_realkV_8
-    subroutine lsmpi_recv_realkV_4(buffer,nbuf,comm,sender)
-      implicit none
-      real(realk) :: buffer(:)
-      integer(kind=4) :: nbuf
-      integer(kind=ls_mpik) :: comm
-      integer(kind=ls_mpik) :: sender
-      integer(kind=ls_mpik) :: tag
-      integer(kind=ls_mpik) :: nel,dtype,ierr
-#ifdef VAR_MPI
-      tag   = 124_ls_mpik
-      ierr  = 0_ls_mpik
-      nel   = int(nbuf,kind=ls_mpik)
-      dtype = MPI_DOUBLE_PRECISION
-      call MPI_RECV(buffer,nbuf,dtype,sender,tag,comm,status,ierr)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif 
-    end subroutine lsmpi_recv_realkV_4
-    
+    end subroutine lsmpi_recv_realkV_8
 
     subroutine ls_mpisendrecv_integer(buffer,comm,sender,receiver)
       implicit none
@@ -1443,6 +1451,7 @@ contains
       integer(kind=4) :: n4
       integer(kind=long) :: n1
 #ifdef VAR_MPI
+#ifndef VAR_MPI_32BIT_INT
       IERR=0
       if(ls_mpik==4)then
         n=nbuf
@@ -1483,6 +1492,7 @@ contains
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       endif
 #endif
+#endif
     end subroutine ls_mpisendrecv_shortV_wrapper8
     subroutine ls_mpisendrecv_shortV(buffer,nbuf,comm,sender,receiver)
       implicit none
@@ -1491,6 +1501,7 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
+#ifdef VAR_MPI_32BIT_INT
       integer(kind=ls_mpik) :: ierr,thesize,datatype,n
       integer(kind=ls_mpik) :: mynum,tag
       integer(kind=long)    :: n1
@@ -1523,6 +1534,7 @@ contains
       end if
       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif
+#endif
     end subroutine ls_mpisendrecv_shortV
 
 
@@ -1538,6 +1550,7 @@ contains
       integer(kind=4) :: n4
       integer(kind=long)    :: n1
 #ifdef VAR_MPI
+#ifndef VAR_MPI_32BIT_INT
       IERR=0
       if(ls_mpik==4)then
         k=SPLIT_MPI_MSG
@@ -1571,6 +1584,7 @@ contains
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       endif
 #endif
+#endif
     end subroutine ls_mpisendrecv_longV_wrapper8
     subroutine ls_mpisendrecv_longV(buffer,nbuf,comm,sender,receiver)
       implicit none
@@ -1579,6 +1593,7 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
+#ifdef VAR_MPI_32BIT_INT
       integer(kind=ls_mpik) :: ierr,thesize,datatype
       integer(kind=ls_mpik) :: mynum,tag
       integer(kind=long)    :: n1
@@ -1605,6 +1620,7 @@ contains
       end if
       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif
+#endif
     end subroutine ls_mpisendrecv_longV
 
 
@@ -1620,6 +1636,7 @@ contains
       integer(kind=4) :: n4
       integer(kind=long)    :: n1
 #ifdef VAR_MPI
+#ifndef VAR_MPI_32BIT_INT
       IERR=0
       if(ls_mpik==4)then
         k=SPLIT_MPI_MSG
@@ -1651,6 +1668,7 @@ contains
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       endif
 #endif
+#endif
     end subroutine ls_mpisendrecv_integerV_wrapper8
     subroutine ls_mpisendrecv_integerV(buffer,nbuf,comm,sender,receiver)
       implicit none
@@ -1659,6 +1677,7 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
+#ifdef VAR_MPI_32BIT_INT
       integer(kind=ls_mpik) :: ierr,thesize,datatype
       integer(kind=ls_mpik) :: mynum,tag
       integer(kind=long)    :: n1
@@ -1682,6 +1701,7 @@ contains
        call lsquit('ls_mpisendrecv_integerV: Rank not sender nor receiver',-1)
       end if
       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+#endif
 #endif
     end subroutine ls_mpisendrecv_integerV
 
@@ -3922,6 +3942,7 @@ contains
     integer(kind=8) :: n
     integer(kind=8) :: buffer(:)
 #ifdef VAR_MPI
+#ifndef VAR_MPI_32BIT_INT
     integer(kind=4) :: n4
     integer(kind=8) :: i,k
     integer(kind=ls_mpik) :: mynum
@@ -3950,6 +3971,7 @@ contains
         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       ENDIF
     endif
+#endif
 #endif
     end subroutine lsmpi_reduction_integer8_wrapper8
     subroutine lsmpi_reduction_integer8(buffer,n1,master,comm)
