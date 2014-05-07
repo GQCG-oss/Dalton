@@ -47,7 +47,7 @@ module ccsdpt_module
 
 contains
 
-#ifdef MOD_UNRELEASED
+!#ifdef MOD_UNRELEASED
 
   !> \brief: driver routine for dec-ccsd(t)
   !> \author: Janus Juul Eriksen
@@ -977,7 +977,7 @@ contains
     call mem_dealloc(trip_tmp)
 
   end subroutine ijk_loop_par
-#endif
+!#endif
 
 
   !> \brief: main ijk-loop (serial version)
