@@ -2012,7 +2012,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         &infpar%mynum,myload,time_intloop_idle
 #endif
      call lsmpi_local_reduction(time_intloop_idle,infpar%master)
-     call lsmpi_reduce_realk_min(max_wait_time,infpar%master,infpar%lg_comm)
+     call lsmpi_reduce_realk_max(max_wait_time,infpar%master,infpar%lg_comm)
      call lsmpi_reduce_realk_min(min_wait_time,infpar%master,infpar%lg_comm)
      ave_wait_time = time_intloop_idle/(infpar%nodtot*1.0E0_realk)
      if(master.and.print_debug)then
