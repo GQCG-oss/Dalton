@@ -71,8 +71,8 @@ public mem_deallocated_mem_lvec_data
 public mem_allocated_lattice_cell
 public mem_allocated_mem_lattice_cell
 public mem_deallocated_mem_lattice_cell
-public mem_add_external_memory
 #endif
+public mem_add_external_memory
 public longintbuffersize
 logical,save :: PrintSCFmemory
 logical,save :: MemModParamPrintMemory

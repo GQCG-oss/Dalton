@@ -11,7 +11,7 @@
 MODULE IchorErimoduleHost
   use precision
   use TYPEDEFTYPE,only: lssetting,BASISSETINFO,MOLECULEINFO
-  use memory_handling, only: mem_alloc,mem_dealloc!, mem_add_external_memory
+  use memory_handling, only: mem_alloc,mem_dealloc, mem_add_external_memory
   use dec_typedef_module, only: DecAObatchinfo
 public:: MAIN_ICHORERI_DRIVER, SCREEN_ICHORERI_DRIVER, &
      & determine_MinimumAllowedAObatchSize, &
@@ -574,7 +574,7 @@ call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & integrals,lupri)
 
-!call Mem_Add_external_memory(MaxMemAllocated)
+call Mem_Add_external_memory(MaxMemAllocated)
 call mem_dealloc(InputStorage)
 !=====================================================================
 
@@ -779,7 +779,7 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
         & MaxFileStorage,MaxMemAllocated,MemAllocated,&
         & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
         & BATCHGAB,lupri)
-!   call Mem_Add_external_memory(MaxMemAllocated)
+   call Mem_Add_external_memory(MaxMemAllocated)
 
    CALL GenerateIdentifier(INTSPEC,GabIdentifier)
    call AddGabToIchorSaveGabModuleInterface(nBatchA,nBatchB,&
@@ -896,7 +896,7 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
            & MaxFileStorage,MaxMemAllocated,MemAllocated,&
            & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
            & BATCHGCD,lupri)
-!      call mem_Add_external_memory(MaxMemAllocated)
+      call mem_Add_external_memory(MaxMemAllocated)
 
       CALL GenerateIdentifier(INTSPEC,GabIdentifier)
       IF(GabIdentifier.EQ.IchorGabID1)THEN
