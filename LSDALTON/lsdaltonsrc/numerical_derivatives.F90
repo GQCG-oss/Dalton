@@ -41,8 +41,10 @@ Type(moleculeinfo),pointer :: unperturbed_molecule
 character(len=1) :: V,L
 real(realk),allocatable :: WORK(:)
 integer :: LWORK,IERR
-logical :: doNumHess,doNumGrad,doNumGradHess
+logical :: doNumHess,doNumGrad,doNumGradHess,debugAnaGrad
 real(realk) :: Eerr
+
+debugAnaGrad = .FALSE.
 
 CALL mat_init(H1,nbast,nbast)
 CALL mat_init(S,nbast,nbast)
@@ -71,11 +73,13 @@ call mem_alloc(numerical_gradient_min,ls%INPUT%MOLECULE%nAtoms,3)
 call mem_alloc(numerical_gradient,ls%INPUT%MOLECULE%nAtoms,3)
 
 if(doNumGrad) then
+   IF(debugAnaGrad) THEN
+       call get_gradient(E(1),Eerr,lupri,ls%INPUT%MOLECULE%nAtoms,S,F(1),D(1),ls,config,C,analytical_gradient)
+   ENDIF
    call get_numerical_gradient(h,E(1),lupri,luerr,nbast,ls,H1,S,F(1),D(1),C,config,unperturbed_molecule,numerical_gradient)
    call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,TRANSPOSE(numerical_gradient),ls%SETTING%MOLECULE(1)%p%nAtoms,'NUMGR')
 
-   IF(.TRUE.) THEN
-        call get_gradient(E(1),Eerr,lupri,ls%INPUT%MOLECULE%nAtoms,S,F(1),D(1),ls,config,C,analytical_gradient)
+   IF(debugAnaGrad) THEN
         call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,analytical_gradient,ls%INPUT%MOLECULE%nAtoms,'Ana molgrad')
         call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,TRANSPOSE(numerical_gradient),ls%INPUT%MOLECULE%nAtoms,'Num molgrad')
         DO i = 1,ls%INPUT%MOLECULE%nAtoms

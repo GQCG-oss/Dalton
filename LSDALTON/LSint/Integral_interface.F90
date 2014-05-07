@@ -5213,7 +5213,7 @@ real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
-real(realk)         :: lambda, constrain_factor, scaling_ADMMQ,scaling_ADMMQs, scaling_ADMMP, printConstFactor, printLambda
+real(realk)         :: lambda, constrain_factor, scaling_ADMMQ, scaling_ADMMP, printConstFactor, printLambda
 logical             :: isADMMQ
 logical             :: isADMMS, isADMMP,PRINT_EK3
 real(realk)         :: tracek2d2,tracex2d2,tracex3d3
@@ -5327,6 +5327,8 @@ call set_default_AOs(AO2,AOdfold)
 CALL lstimer('AUX-IN',ts,te,lupri)
 call mat_zero(F2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,F2)
+!call mat_zero(F2(1)) !DEBUG ADMMP
+
 call mat_zero(k2_xc2)
 call mat_daxpy(1E0_realk,F2(1),k2_xc2)
 tracek2d2 = mat_trAB(F2(1),D2(1))
@@ -5334,7 +5336,8 @@ tracek2d2 = mat_trAB(F2(1),D2(1))
 call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AO2,AO3,GC2,GC3,constrain_factor)
 fac = 1E0_realk
-IF (isADMMP) fac = constrain_factor**(4.E0_realk)
+!IF (isADMMP) fac = 1.E0_realk !constrain_factor**(4.E0_realk) ! DEBUG ADMMP
+IF (isADMMP) fac = constrain_factor**(4.E0_realk) ! DEBUG ADMMP
 call mat_daxpy(fac,TMPF,F)
 CALL lstimer('AUX-EX',ts,te,lupri)
 call mat_zero(F2(1))
@@ -5357,6 +5360,8 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 
 !Level 2 XC matrix
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
+!EX2 = 0.E0_realk !DEBUG ADMMP
+!call mat_zero(F2(1)) !DEBUG ADMMP
 
 IF (isADMMS) THEN
    EX2 = constrain_factor**(4./3.)*EX2            ! RE-SCALING EXC2 TO FIT k2
@@ -5389,10 +5394,14 @@ setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 CALL mat_init(F3(1),nbast,nbast)
 CALL mat_zero(F3(1))
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
+!EX3 = 0.E0_realk !DEBUG ADMMP
+!call mat_zero(F3(1)) !DEBUG ADMMP
+
 tracex3d3 = mat_trAB(F3(1),D)
 
 CALL mat_daxpy(GGAXfactor,F3(1),dXC)
 EdXC = (EX3(1)- fac*EX2(1))*GGAXfactor
+!EdXC = 0.E0_realk !DEBUG ADMMP GRADIENT
 
 IF (PRINT_EK3) THEN
    write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
@@ -5447,14 +5456,18 @@ IF (isADMMQ) THEN
   ENDIF
   IF (isADMMP) THEN
      scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(4.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+     !scaling_ADMMP = 0E0_realk !DEBUG ADMMP GRADIENT
      call mat_scal(scaling_ADMMP, tmp33)
-     write(lupri,*) 'debug:LAMBDA ',scaling_ADMMP
+     write(lupri,*) 'debug:LAMBDA_P',scaling_ADMMP
   ELSE
+     !scaling_ADMMQ = 0E0_realk !DEBUG ADMMP GRADIENT
      call mat_scal(scaling_ADMMQ, tmp33)
-     write(lupri,*) 'debug:LAMBDA ',scaling_ADMMQ
+     write(lupri,*) 'debug:LAMBDA_QS',scaling_ADMMQ
   ENDIF
 
-  call mat_daxpy(1E0_realk,tmp33,dXC)
+
+  call mat_daxpy(1E0_realk,tmp33,dXC) !DEBUG ADMMP GRADIENT
+  !call mat_daxpy(0E0_realk,tmp33,dXC) !DEBUG ADMMP GRADIENT
 
   CALL mat_free(S33)
   CALL mat_free(S32)
@@ -5726,6 +5739,9 @@ nbast  = DmatLHS(1)%p%nrow
 unres  = matrix_type .EQ. mtype_unres_dense
 
   
+   write(lupri,*) "DEBUGGING ADMMP GRADIENT"
+   write(*,*)     "DEBUGGING ADMMP GRADIENT"
+  
 DO idmat=1,ndrhs
    IF (setting%scheme%ADMM_DFBASIS) THEN
      AO2 = AOdfAux
@@ -5779,13 +5795,17 @@ DO idmat=1,ndrhs
    call mat_zero(k2)
    Dsym = .TRUE. !symmetric Density matrix !!!!!!!!!!!!!!!!!!!    ASSUMPTION WITHOUT LSQUIT HERE      !!!!!!!!!!!!!!!!!!!!!!!!
    call II_get_exchange_mat(lupri,luerr,setting,D2,1,Dsym,k2)
+   !call mat_zero(k2) !DEBUG ADMMP
    
    call mem_alloc(grad_k2,3,nAtoms)
    call ls_dzero(grad_k2,3*nAtoms)
    call II_get_regular_K_gradient(grad_k2,D2p,D2p,1,1,setting,lupri,luerr)
+   !call ls_dzero(grad_k2,3*nAtoms) !DEBUG ADMMP
+   
    call DSCAL(3*nAtoms,4E0_realk,grad_k2,1) !Include factor 4 to use D instead of 2D
    IF (isADMMP) THEN   
-      call DSCAL(3*nAtoms,constrain_factor**(4.),grad_k2,1)
+      call DSCAL(3*nAtoms,constrain_factor**(4.E0_realk),grad_k2,1)
+      !call DSCAL(3*nAtoms,(1.E0_realk),grad_k2,1) ! DEBUG ADMMP
    ENDIF
    call DAXPY(3*nAtoms,1E0_realk,grad_k2,1,admm_Kgrad,1) 
    CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_k2,nAtoms,'grad_k2')
@@ -5807,8 +5827,12 @@ DO idmat=1,ndrhs
    call mat_init(xc2,nbast2,nbast2)
    call mat_zero(xc2)
    Exc2(1) = 0.0E0_realk
-   E_x2    = 0.0E0_realk
    call II_get_xc_Fock_mat(lupri,luerr,setting,nbast2,D2,xc2,Exc2,1)
+   !Exc2    = 0.E0_realk !DEBUG ADMMP
+   !Exc2(1) = 0.E0_realk !DEBUG ADMMP
+   !call mat_zero(xc2)   !DEBUG ADMMP
+   
+   E_x2    = 0.0E0_realk
    IF (isADMMS) THEN   
       call mat_scal(constrain_factor**(4./3.),xc2)
       E_x2 = Exc2(1)*constrain_factor**(4./3.)*GGAXfactor
@@ -5821,14 +5845,18 @@ DO idmat=1,ndrhs
    call mem_alloc(grad_xc2,3,nAtoms)
    call ls_dzero(grad_xc2,3*nAtoms)
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast2,D2,grad_xc2,nAtoms)
+   !call ls_dzero(grad_xc2,3*nAtoms) !DEBUG ADMMP
+   
    IF (isADMMS) THEN   
-      call DSCAL(3*nAtoms,constrain_factor**(4./3.),grad_xc2,1)
+      call DSCAL(3*nAtoms,constrain_factor**(4.E0_realk/3.E0_realk),grad_xc2,1)
+   ELSEIF (isADMMP) THEN   
+      call DSCAL(3*nAtoms,constrain_factor**(4.E0_realk),grad_xc2,1)
+      !call DSCAL(3*nAtoms,(1.E0_realk),grad_xc2,1) ! DEBUG ADMMP
    ENDIF
    call DSCAL(3*nAtoms,-GGAXfactor,grad_xc2,1) !Include -GGAfactor
-   IF (isADMMP) THEN   
-      call DSCAL(3*nAtoms,constrain_factor**(4.),grad_xc2,1)
-   ENDIF
+
    call DAXPY(3*nAtoms,1E0_realk,grad_xc2,1,admm_Kgrad,1)
+   !call DAXPY(3*nAtoms,0E0_realk,grad_xc2,1,admm_Kgrad,1) ! DEBUG ADMMP
    CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_xc2,nAtoms,'grad_xc2')
    call mem_dealloc(grad_xc2)
    
@@ -5842,8 +5870,13 @@ DO idmat=1,ndrhs
    call mem_alloc(grad_XC3,3,nAtoms)
    call ls_dzero(grad_XC3,3*nAtoms)
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast,DmatLHS(idmat)%p,grad_XC3,nAtoms)
+   !call ls_dzero(grad_XC3,3*nAtoms) !DEBUG ADMMP
+   
    call DSCAL(3*nAtoms,GGAXfactor,grad_XC3,1) !Include -GGAfactor
+   
    call DAXPY(3*nAtoms,1E0_realk,grad_XC3,1,admm_Kgrad,1)
+   !call DAXPY(3*nAtoms,0E0_realk,grad_XC3,1,admm_Kgrad,1) !DEBUG ADMMP
+   
    CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_XC3,nAtoms,'grad_XC3')
    call mem_dealloc(grad_XC3)
 
@@ -5851,9 +5884,7 @@ DO idmat=1,ndrhs
    ! set back the default choice for testing the nb. of electrons
    setting%scheme%dft%testNelectrons = testNelectrons
    
-   ! Additional (reorthonormalisation like) projection terms coming from the 
-   ! derivative of the small d2 Density matrix
-   ! calculating Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+
    call mem_alloc(ADMM_proj,3,nAtoms)
    call ls_dzero(ADMM_proj,3*nAtoms)
    call mem_alloc(ADMM_charge_term,3,nAtoms)
@@ -5864,21 +5895,27 @@ DO idmat=1,ndrhs
                   & E_x2,DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                   & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
                   & lambda)
+      !call DSCAL(3*nAtoms,0E0_realk,ADMM_charge_term,1) ! DEBUG ADMMP GRADIENT    
       call DSCAL(3*nAtoms,2E0_realk,ADMM_charge_term,1)
-      call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM-Chrg')  
-      call DAXPY(3*nAtoms,1E0_realk,ADMM_charge_term,1,admm_Kgrad,1)
+      
+      call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM-Chrg') 
+      call DAXPY(3*nAtoms,1E0_realk,ADMM_charge_term,1,admm_Kgrad,1) ! DEBUG ADMMP GRADIENT  
+      !call DAXPY(3*nAtoms,0E0_realk,ADMM_charge_term,1,admm_Kgrad,1) ! DEBUG ADMMP GRADIENT  
    ENDIF
+   
+   ! Additional (reorthonormalisation like) projection terms coming from the 
+   ! derivative of the small d2 Density matrix
+   ! calculating Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
    call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,E_x2,&
                & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
                & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
    call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1)
-   IF (isADMMP) THEN   
-      call DSCAL(3*nAtoms,constrain_factor**(4.),ADMM_proj,1)
-   ENDIF
+   !call DSCAL(3*nAtoms,0E0_realk,ADMM_proj,1) ! DEBUG ADMMP GRADIENT 
    call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_proj,nAtoms,'ADMM_proj')  
-   call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)   
-                     
+   call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)  
+   ! DEBUG ADMMP: can't remove projection term if keep either k2 or x2 !!!
+   !call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1) ! DEBUG ADMMP GRADIENT  
 
 
    !FREE MEMORY
@@ -5925,16 +5962,17 @@ CONTAINS
       call mat_daxpy(-GGAXfactor,xc2,tmp22)
       trace = mat_trAB(tmp22,D2)
       IF (isADMMS) THEN
-         LAMBDA = 2E0_realk/NbEl * ( trace - E_x2/3E0_realk )
+         LAMBDA = 2E0_realk/NbEl * ( trace - E_x2/3.E0_realk )
       ELSEIF (isADMMP) THEN
-         LAMBDA = 2E0_realk/NbEl * constrain_factor**(4.) * (mat_trAB(k2,D2) - E_x2)
+         LAMBDA = 2E0_realk/NbEl * constrain_factor**(4.E0_realk) * (mat_trAB(k2,D2) - E_x2)
       ELSE
          LAMBDA = 2E0_realk/NbEl*trace
       ENDIF
       
-      IF (DEBUG_ADMM_CONST) THEN
+      !IF (DEBUG_ADMM_CONST) THEN
+      IF (.TRUE.) THEN
          write(lupri,*) "Tr([k2-xc2]d2)=", trace
-         write(lupri,*) "LAMBDA in Energy", LAMBDA
+         write(lupri,*) "LAMBDA in gradient", LAMBDA
       ENDIF
       CALL mat_free(tmp22)
    END SUBROUTINE get_Lagrange_multiplier_charge_conservation_in_Energy
@@ -5978,14 +6016,15 @@ CONTAINS
       call II_get_reorthoNormalization_mixed(reOrtho_d2,tmpDFD,1,AO2,AO2,&
                                        & GCAO2,GCAO2,setting,lupri,luerr)
       IF (isADMMP) THEN   
-         call DSCAL(3*nAtoms,constrain_factor**(2.),reOrtho_d2,1)
+         call DSCAL(3*nAtoms,constrain_factor**(2.E0_realk),reOrtho_d2,1) ! DEBUG ADMMP
+         !call DSCAL(3*nAtoms,(1.E0_realk),reOrtho_d2,1)  ! DEBUG ADMMP
       ENDIF
       call DAXPY(3*nAtoms,-1E0_realk,reOrtho_d2,1,ADMM_charge_term,1)
 
       call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaEnergy,&
                      & GGAXfactor,D2,k2,xc2,E_x2,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3,constrain_factor)
-      write(lupri,*) 'debug:CONSTRAIN FACTOR',1E0_realk/(1E0_realk-lambda)
+      !write(lupri,*) 'debug:CONSTRAIN FACTOR',1E0_realk/(1E0_realk-lambda)
       call DSCAL(3*nAtoms,LambdaEnergy,ADMM_charge_term,1)   
       
       ! free memory                                 
@@ -6049,11 +6088,17 @@ CONTAINS
       call mat_init(A22,n2,n2)
       call mat_zero(A22)
       call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
-      IF (isADMMQ .AND. .NOT.(isADMMP)) THEN
+      IF (isADMMQ) THEN                       ! DEBUG ADMMP
          call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaE,&
                      & GGAXfactor,D2,k2,xc2,E_x2,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3,constrain_factor)
-      call mat_daxpy(-2E0_realk*LambdaE,S22,A22)
+         IF (isADMMP) THEN
+            ! scaling here to avoid scalign too much this Lambda_P s2 contribution
+            ! since we scale the whole (k2-x2-lbd_P s2 / xi) by xi**2 afterward
+            call mat_daxpy(-2E0_realk*LambdaE/(constrain_factor**(2E0_realk)),S22,A22)
+         ELSE
+             call mat_daxpy(-2E0_realk*LambdaE,S22,A22)   
+         ENDIF   
       ENDIF
 
       ! B32 = D33 T32 A22 S22inv
@@ -6083,9 +6128,21 @@ CONTAINS
 
       call ls_dzero(ADMM_proj,3*nAtoms)
       
-      call DAXPY(3*nAtoms,constrain_factor,reOrtho1,1,ADMM_proj,1)
-      call DAXPY(3*nAtoms,-1E0_realk,reOrtho2,1,ADMM_proj,1)
+      IF (isADMMQ .AND. (.NOT.isADMMP)) THEN
+         ! for ADMMQ and ADMMS, transpose(T') s2 T' replaced by S32 T'
+         ! so need to compensate for the missing scaling of transpose(T23)
+         ! in B32 only, not C22
+         call DSCAL(3*nAtoms,constrain_factor,reOrtho1,1)
+      ENDIF
+      call DAXPY(3*nAtoms, 1E0_realk,reOrtho1,1,ADMM_proj,1) !  Tr(B32 S23e)
+      call DAXPY(3*nAtoms,-1E0_realk,reOrtho2,1,ADMM_proj,1) ! -Tr(C22 s2e)
       
+      IF (isADMMP) THEN   
+         ! scale k2 and x2 by xi^2, BUT (lambda_P s2) scaled by xi *ONLY*
+         ! the latter is taken care of earlier in the subroutine
+         call DSCAL(3*nAtoms,constrain_factor**(4.E0_realk),ADMM_proj,1)
+         !call DSCAL(3*nAtoms,(1.E0_realk),ADMM_proj,1) ! DEBUG ADMMP
+      ENDIF
       ! -- free memory --
       call mem_dealloc(reOrtho1)
       call mem_dealloc(reOrtho2)
