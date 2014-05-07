@@ -1156,32 +1156,31 @@ C
              CALL DSCAL(NCSIM*N2ORBX,DM1,FVTD(1,1,NCSIM+1),1)
          END IF
 C
-         IF (IPRRSP.GT.30 .AND. .NOT.SOPPA) THEN
-            DO 800 ICSIM = 1,NCSIM
-               WRITE(LUPRI,'(/A,I5,A)') ' QATD FOR ',ICSIM,
-     *             ' CONFIGURATION TRIAL VECTOR'
+         IF (IPRRSP.GT.30) THEN
+            DO, ICSIM = 1,NCSIM
+               WRITE(LUPRI,'(/A,I5)')
+     *         ' FVTD total contribution FOR VECTOR ',ICSIM
+               CALL OUTPUT(FVTD(1,1,ICSIM),
+     *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+            IF (.NOT.SOPPA) THEN
+               WRITE(LUPRI,'(/A,I5,A)')
+     *         ' QATD FOR ',ICSIM,' CONFIGURATION TRIAL VECTOR'
                CALL OUTPUT(QATD(1,1,ICSIM),1,NORBT,1,NASHT,
      *                     NORBT,NASHT,-1,LUPRI)
-               WRITE(LUPRI,'(/A,I5,A)') ' QBTD FOR',ICSIM,
-     *             ' CONFIGURATION TRIAL VECTOR'
+               WRITE(LUPRI,'(/A,I5,A)')
+     *         ' QBTD FOR',ICSIM,' CONFIGURATION TRIAL VECTOR'
                CALL OUTPUT(QBTD(1,1,ICSIM),1,NORBT,1,NASHT,
      *                     NORBT,NASHT,-1,LUPRI)
- 800        CONTINUE
-         END IF
-         IF (IPRRSP.GT.30) THEN
-            DO 1014 ICSIM = 1,NCSIM
-            WRITE(LUPRI,'(/2A,I5)')' FVTD total contribution'
-     *         ,' FOR VECTOR ',ICSIM
-            CALL OUTPUT(FVTD(1,1,ICSIM),
-     *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+            END IF
             IF (DOMCSRDFT) THEN
-                WRITE(LUPRI,'(/2A,I5)')'V^[2c]sr_Hxc total contribution'
-     *         ,' FOR VECTOR ',ICSIM
+               WRITE(LUPRI,'(/A,I5)')
+     *         'V^[2c]sr_Hxc total contribution FOR VECTOR ',ICSIM
                CALL OUTPUT(FVTD(1,1,NCSIM+ICSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
             END IF
- 1014       CONTINUE
+            END DO
          END IF
+
          IF (HSROHF.OR.DODFT) THEN
             CALL RSPORB(.TRUE.,NCSIM,FC,WRK(KFC),FVTD,QATD,QBTD,UDV,
      *               EVECS)
@@ -1205,6 +1204,16 @@ C           ... special MCSRDFT contribution to csf sigma-vectors,
 C               stored in FTV(1,NCSIM+ICSIM) in SIRTR1 after the
 C               standard FTV matrices.
 C               In paper: V^([2c]xc-SR) matrix.
+
+            IF (TRPLET) THEN
+               CALL QUIT('ERROR: triplet linear response '//
+     &            'not implemented for MC-srDFT yet')
+               JSPIN1 = 1
+               JSPIN2 = 0
+            ELSE
+               JSPIN1 = 0
+               JSPIN2 = 0
+            END IF
 C
 C           Aug. 09: structure inspired from rspsol:SLVSC routine /hjaaj
 C
@@ -1222,8 +1231,6 @@ C
                   CALL OUTPUT(WRK(KSRW),
      &               1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
                END IF
-               JSPIN1 = 0
-               JSPIN2 = 0
 C
 #ifdef DEBUG_RSPOLI
                IF (IPRRSP.GT.101) THEN
@@ -1231,10 +1238,10 @@ C
      *            ' Z CONF  PART OF LINEAR TRANSFORMED',
      *            ' before Vsr[2c] contr.',
      *            'CONF TRIAL VECTOR'
-                  CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
-     *                                        KZVAR,2,-1,LUPRI)
                   write(lupri,*) 'kzvar  = ', kzvar
                   write(lupri,*) 'kzconf = ', kzconf
+                  CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
+     *                                        KZVAR,2,-1,LUPRI)
                 END IF
 #endif
 C
@@ -1252,7 +1259,7 @@ C
                write(lupri,*) 'KSYMST = ', KSYMST
 #endif
 
-               IF (IREFSY .EQ. KSYMST) THEN
+               IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
                   FAC = DDOT(KZCONF,EVECS(JEVECS),1,WRK(KCREF),1)
                   CALL DAXPY(KZCONF,(-FAC),WRK(KCREF),1,EVECS(JEVECS),1)
                END IF
@@ -1278,13 +1285,10 @@ C
      &                  EVECS(JYEVECS),WRK(KSRW),DUMMY,
      &                  .TRUE.,.FALSE.,XINDX,JSPIN1,JSPIN2,
      &                  WRK(KFREE),LFREE)
-               IF (IREFSY .EQ. KSYMST) THEN
+               IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
                   FAC = DDOT(KZCONF,EVECS(JYEVECS),1,WRK(KCREF),1)
-                  CALL DAXPY(KZCONF,(-FAC),WRK(KCREF),1,EVECS(JYEVECS),
-     &                       1)
-!
-!
-
+                  CALL DAXPY(KZCONF,(-FAC),WRK(KCREF),1,
+     &                       EVECS(JYEVECS),1)
                END IF
 !
 ! Manu:        For the Y conf. part, the transition density matrix changes sign.
