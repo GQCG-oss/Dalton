@@ -4401,7 +4401,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \brief calculate batch sizes automatically-->dirty but better than nothing
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  recursive subroutine get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,&
+  subroutine get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,&
   &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split)
     implicit none
     integer, intent(inout) :: scheme
@@ -4426,16 +4426,26 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !magic = DECinfo%MPIsplit/5
     magic = 2
     !test for scheme with highest reqirements --> fastest
-    mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
+    scheme   = 4
+    mem_used = get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
+
     if(first)then
+
       if (mem_used>frac_of_total_mem*MemFree)then
 #ifdef VAR_MPI
+
         !test for scheme with medium requirements
-        mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,3,.false.)
+        scheme   = 3
+        mem_used = get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
+
         if (mem_used>frac_of_total_mem*MemFree)then
+
           !test for scheme with low requirements
-          mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,2,.false.)
+          scheme   = 2
+          mem_used = get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
+
           if (mem_used>frac_of_total_mem*MemFree)then
+
             write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
             write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
             &frac_of_total_mem*MemFree
@@ -4444,18 +4454,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
             write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
             mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
             write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
-            call lsquit("ERROR(CCSD): there is just not enough memory&
-            & available",DECinfo%output)
-          else
-            scheme=2
+            call lsquit("ERROR(CCSD): there is just not enough memory available",DECinfo%output)
+
           endif
-        else
-          scheme=3
         endif
 #endif
-      else
-        scheme=4
       endif
+
+    endif
+
+    if(scheme /= 4 .and. scheme /= 3 .and. scheme /= 2 )then
+      call lsquit("ERROR(get_ccsd_residual_integral_driven) this can never happen",-1)
     endif
 
     if(DECinfo%force_scheme)then
@@ -4488,13 +4497,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     if (manual) then
       ! KK and PE hacks -> only for debugging
       ! extended to mimic the behaviour of the mem estimation routine when memory is filled up
-      if((DECinfo%ccsdGbatch==0).and.(DECinfo%ccsdAbatch==0)) then
-        call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree, &
-             & .false.,e2a,local,mpi_split)
-      else
-        nba = DECinfo%ccsdAbatch - iter * 0
-        nbg = DECinfo%ccsdGbatch - iter * 0
-      endif
+      !if((DECinfo%ccsdGbatch==0).and.(DECinfo%ccsdAbatch==0)) then
+      !  call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree, &
+      !       & .false.,e2a,local,mpi_split)
+      !else
+        nba = min(DECinfo%ccsdAbatch - iter * 0,nb)
+        nbg = min(DECinfo%ccsdGbatch - iter * 0,nb)
+      !endif
       ! Use value given in input --> the zero can be adjusted to vary batch sizes during the iterations
 
       m = nbg-0*iter
