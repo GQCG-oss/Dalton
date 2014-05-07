@@ -728,8 +728,8 @@ C
                   IF (IPREXC.GT.3) THEN
                      WRITE (LUPRI,'(A,I4)') 'Solution Vector no. ',
      &                      IEXVAL
-                     CALL OUTPUT(WORK(KSLV),1,2*NVARPT,1,1,2*NVARPT,
-     &                           1,1,LUPRI)
+                     CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,2,
+     &                           1,LUPRI)
                      WRITE (LUPRI,'(A,F15.8)')
      &               'Excitation energy = ',WORK(KEXVAL-1+IEXVAL)
 C-tbp                WRITE (LUPRI,'(3A,F15.8)')
@@ -977,6 +977,9 @@ C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
          WRITE(LUPRI,'(15X,A)')
      &     '========================================'
 C-tbp END IF
+
+      IF (.NOT. EXCTRP) THEN ! transition moments zero for singlet operators and triplet excitations
+
       IF (DIPSTR .OR. ROTSTR .OR. ROTVEL) THEN
          CALL HEADER_A('Electric transition dipole moments (au)',15)
          WRITE (LUPRI,'(A)')
@@ -1745,6 +1748,8 @@ C
          WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DTSSUM(K,J),J=1,4),K=-6,2)
       ENDIF
+
+      END IF    ! (.NOT. EXCTRP) THEN ! transition moments zero for singlet operators and triplet excitations
 C
 C        *** If numerical derivatives are calculated, then ***
 C        *** write properties to file.                     ***
@@ -1753,14 +1758,10 @@ C
          DO ISYM = 1, NSYM
             NMDTXT = '         '
             DO IEXVAL=1, NEXCIT(ISYM)
-               IF (IEXVAL.LT.10) THEN
-                  WRITE (NMDTXT(5:6),'(2I1)') ISYM, IEXVAL
-               ELSE
-                  WRITE (NMDTXT(5:7),'(I1,I2)') ISYM, IEXVAL
-               END IF
+               WRITE (NMDTXT(5:7),'(I1,I2.2)') ISYM, IEXVAL
                NMDTXT(1:4) = 'EXEN'
                CALL WRAVFL(EXENG(ISYM,IEXVAL),1,1,1,NMDTXT,IPREXC)
-               IF (DIPSTR) THEN
+               IF (DIPSTR .AND. .NOT.EXCTRP) THEN
                   NMDTXT(1:4) = 'TRDP'
                   CALL WRAVFL(TRLEN(1,ISYM,IEXVAL),3,1,1,NMDTXT,IPREXC)
                END IF
