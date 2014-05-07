@@ -730,8 +730,10 @@ module lspdm_tensor_operations_module
       call time_start_phase(PHASE_COMM)
       call arr_lock_wins(gmo,'s',mode)
       do i=1,t2%ti(lt)%e
-        call lsmpi_get(g_iajb(i),table_iajb(i,1),table_iajb(i,2),table_iajb(i,3))
-        call lsmpi_get(g_ibja(i),table_ibja(i,1),table_ibja(i,2),table_ibja(i,3))
+        call lsmpi_get(g_iajb(i),table_iajb(i,1),int(table_iajb(i,2),kind=ls_mpik), &
+             & int(table_iajb(i,3),kind=ls_mpik))
+        call lsmpi_get(g_ibja(i),table_ibja(i,1),int(table_ibja(i,2),kind=ls_mpik), &
+             & int(table_ibja(i,3),kind=ls_mpik))
       end do
       call arr_unlock_wins(gmo)
       call time_start_phase(PHASE_WORK)
@@ -830,8 +832,7 @@ module lspdm_tensor_operations_module
     !> mode idex of the elmt in dense array
     integer ::  modeinde(4)
 
-    integer :: pos, k, idx, da, db, di, dj, a, b, i, j
-    integer(kind=ls_mpik) :: source
+    integer :: source, pos, k, idx, da, db, di, dj, a, b, i, j
 #ifdef VAR_MPI
       da = dims(1)
       db = dims(2)
