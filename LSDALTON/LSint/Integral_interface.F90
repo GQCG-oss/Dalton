@@ -5454,6 +5454,8 @@ IF (isADMMQ) THEN
      write(lupri,*) 'debug:LAMBDA_QS',scaling_ADMMQ
   ENDIF
 
+  call mat_daxpy(1E0_realk,tmp33,dXC)
+
   CALL mat_free(S33)
   CALL mat_free(S32)
   CALL mat_free(T23)
@@ -5724,9 +5726,6 @@ nbast  = DmatLHS(1)%p%nrow
 unres  = matrix_type .EQ. mtype_unres_dense
 
   
-   write(lupri,*) "DEBUGGING ADMMP GRADIENT"
-   write(*,*)     "DEBUGGING ADMMP GRADIENT"
-  
 DO idmat=1,ndrhs
    IF (setting%scheme%ADMM_DFBASIS) THEN
      AO2 = AOdfAux
@@ -5809,9 +5808,8 @@ DO idmat=1,ndrhs
    call mat_init(xc2,nbast2,nbast2)
    call mat_zero(xc2)
    Exc2(1) = 0.0E0_realk
-   call II_get_xc_Fock_mat(lupri,luerr,setting,nbast2,D2,xc2,Exc2,1)
-   
    E_x2    = 0.0E0_realk
+   call II_get_xc_Fock_mat(lupri,luerr,setting,nbast2,D2,xc2,Exc2,1)
    IF (isADMMS) THEN   
       call mat_scal(constrain_factor**(4./3.),xc2)
       E_x2 = Exc2(1)*constrain_factor**(4./3.)*GGAXfactor
@@ -5870,8 +5868,7 @@ DO idmat=1,ndrhs
                   & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
                   & lambda)
       call DSCAL(3*nAtoms,2E0_realk,ADMM_charge_term,1)
-      
-      call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM-Chrg') 
+      call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM-Chrg')  
       call DAXPY(3*nAtoms,1E0_realk,ADMM_charge_term,1,admm_Kgrad,1)
    ENDIF
    
@@ -5882,9 +5879,9 @@ DO idmat=1,ndrhs
                & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
                & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
-   call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1) 
+   call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1)
    call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_proj,nAtoms,'ADMM_proj')  
-   call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)  
+   call DAXPY(3*nAtoms,1E0_realk,ADMM_proj,1,admm_Kgrad,1)   
 
    !FREE MEMORY
    call mem_dealloc(ADMM_proj)
@@ -5937,8 +5934,7 @@ CONTAINS
          LAMBDA = 2E0_realk/NbEl*trace
       ENDIF
       
-      !IF (DEBUG_ADMM_CONST) THEN
-      IF (.TRUE.) THEN
+      IF (DEBUG_ADMM_CONST) THEN
          write(lupri,*) "Tr([k2-xc2]d2)=", trace
          write(lupri,*) "LAMBDA in gradient", LAMBDA
       ENDIF

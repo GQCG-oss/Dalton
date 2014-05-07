@@ -172,6 +172,10 @@ real(realk) :: Eerr
 
 do i=1,ls%INPUT%MOLECULE%nAtoms
    do j=1, 3
+   write(lupri,*) 'atom: ', i, 'out of ', ls%INPUT%MOLECULE%nAtoms
+   write(lupri,*) 'coordinate: ', j, 'out of 3'
+   write(*,*) 'atom: ', i, 'out of ', ls%INPUT%MOLECULE%nAtoms
+   write(*,*) 'coordinate: ', j, 'out of 3'
       ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)-h 
       CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,ls%INPUT%MOLECULE%nAtoms,lupri,luerr)
       Emin=E(1)
